@@ -128,7 +128,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                            "		check file '/etc/hosts.equiv' (read man pages for help)\n"
                            "	- the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
                            "	- the PT_SERVER host is not up\n"
-                           "	- the tcp_id is already used by another programm\n"
+                           "	- the tcp_id is already used by another program\n"
                            "		check $ARBHOME/lib/arb_tcp.dat and /etc/services\n");
 }
 
