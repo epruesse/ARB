@@ -250,7 +250,7 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
                     char *qdup = GB_STRDUP((char *)qsave);
                     GB_CSTR qnew = gb_quicksaveName(path,j);
 
-                    GB_rename(qdup,qnew);
+                    GB_rename_file(qdup,qnew);
                     free(qdup);
                 }
 
@@ -1050,12 +1050,12 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
 
     if (!dump_to_stdout) {
-        if (GB_rename(sec_path, path)==0){
+        if (GB_rename_file(sec_path, path)==0){
             if (map_path){
                 GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
                 long path_mode = GB_mode_of_file(path);
 
-                if (GB_rename(overwrite_map_path, map_path)==0)
+                if (GB_rename_file(overwrite_map_path, map_path)==0)
                 {
                     GB_set_mode_of_file(map_path,path_mode);        /* set mapfile to same mode as binary file */
                 }
@@ -1273,7 +1273,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     erg |= fclose(out);
     if (erg!=0) return GB_export_error("Cannot write to '%s'",sec_path); /* was: '%s%%'",path);*/
 
-    if (GB_rename(sec_path,path)) return GB_get_error();
+    if (GB_rename_file(sec_path,path)) return GB_get_error();
 
     Main->last_saved_transaction = GB_read_clock(gb);
     Main->last_saved_time = GB_time_of_day();

@@ -260,7 +260,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
 
     GB_commit_transaction(psg.gb_main);
     fclose(out);
-    if (GB_rename(t2name,tname) ) {
+    if (GB_rename_file(t2name,tname) ) {
         GB_print_error();
     }
 

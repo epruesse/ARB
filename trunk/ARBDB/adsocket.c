@@ -610,7 +610,7 @@ GB_ERROR GB_set_mode_of_file(const char *path,long mode)
     return 0;
 }
 
-GB_ERROR GB_rename(const char *oldpath,const char *newpath){
+GB_ERROR GB_rename_file(const char *oldpath,const char *newpath){
     long old_mod = GB_mode_of_file(newpath);
     if (old_mod == -1) old_mod = GB_mode_of_file(oldpath);
     if (rename(oldpath,newpath)) {
