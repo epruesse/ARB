@@ -56,67 +56,6 @@ void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
 
 
 
-// AW_window *nt_create_intro_window(AW_root *awr)
-// {
-//   AW_window_simple *aws = new AW_window_simple;
-//   aws->init( awr, "ARB_INTRO", "ARB INTRO", 400, 100 );
-//   aws->load_xfig("arb_intro.fig");
-
-//   aws->callback( (AW_CB0)exit);
-//   aws->at("close");
-//   aws->create_button("CANCEL","CANCEL","C");
-
-//   aws->at("help");
-//   aws->callback(AW_POPUP_HELP,(AW_CL)"arb_intro.hlp");
-//   aws->create_button("HELP","HELP","H");
-
-//   awt_create_selection_box(aws,"tmp/nt/arbdb");
-
-//   aws->button_length(0);
-
-//   aws->at("logo");
-//   aws->create_button(0,"#logo.bitmap");
-
-//   // 	aws->button_length(25);
-
-//   aws->at("old");
-//   aws->callback(nt_intro_start_old);
-//   aws->create_autosize_button("OPEN_SELECTED","OPEN SELECTED","O");
-
-//   aws->at("del");
-//   aws->callback(nt_delete_database);
-//   aws->create_autosize_button("DELETE_SELECTED","DELETE SELECTED");
-
-//   aws->at("new_complex");
-//   aws->callback(nt_intro_start_import);
-//   aws->create_autosize_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");
-
-//   aws->at("merge");
-//   aws->callback((AW_CB1)nt_intro_start_merge,0);
-//   aws->create_autosize_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
-
-//   aws->at("novice");
-//   aws->create_toggle("NT/GB_NOVICE");
-
-//   return (AW_window *)aws;
-// }
-
-// GB_ERROR create_nt_window(AW_root *aw_root){
-//   AW_window *aww;
-//   GB_ERROR error = GB_request_undo_type(gb_main, GB_UNDO_NONE);
-//   if (error) aw_message(error);
-//   create_all_awars(aw_root,AW_ROOT_DEFAULT);
-//   if (GB_NOVICE){
-//     aw_root->set_sensitive(AWM_BASIC);
-//   }
-//   aww = create_nt_main_window(aw_root,0);
-//   aww->show();
-//   error = GB_request_undo_type(gb_main, GB_UNDO_UNDO);
-//   if (error) aw_message(error);
-//   return error;
-// }
-
-
 void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 
 {
@@ -242,51 +181,6 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 
 }
 
-// void NT_insertValidNames(AW_window*, AW_CL, AW_CL)
-// {
-//   using validNames::Desco;
-//   //  printf ("Hallo\n");
-//   NAMELIST oldFullNames; // stl container derived
-
-
-//   GB_begin_transaction(gb_main);
-//   GBDATA* GBT_actspecies = GBT_first_species(gb_main);
-
-//   char* GBT_oldName = GBT_read_name(GBT_actspecies);
-//   printf ("%s\n",  GBT_oldName);
-
-//   GBDATA* GB_full_name = GB_find(GBT_actspecies,"full_name",0,down_level);
-//   char* fullName =  GB_read_string(GB_full_name);
-//   printf ("%s\n",  fullName);
-
-// //     for (	gb_species = GBT_first_species(gb_main);
-// //             gb_species;
-// //             gb_species = GBT_next_species(gb_species) ){
-// //         GB_write_flag(gb_species,flag);
-// //     }
-
-// // strange loop
-//   for (GBDATA *spe=GBT_first_species(gb_main);
-//        spe;
-//        spe=GBT_next_species(spe)) ;
-
-//   GBDATA* GBT_next;
-//   while( (GBT_next = GBT_next_species(GBT_actspecies)) )
-//     {
-//       printf ("%s\n",  GBT_read_name(GBT_next));
-//       GBDATA* GB_full_name = GB_find(GBT_next,"full_name",0,down_level);
-//       char* fullName = (char*) GB_read_string(GB_full_name);
-//       printf ("%s\n",  fullName);
-//       oldFullNames.push_back(fullName);
-//       GBT_actspecies = GBT_next;
-
-//     }
-//   GB_commit_transaction(gb_main);
-
-
-
-// };
-
 
 void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
 {
@@ -384,38 +278,3 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
         GB_commit_transaction(gb_main);
     }
 }
-/*
-void NT_createNameList_Awars(AW_root *aw_root, AW_default 0) {
-    aw_root->awar_string( AWAR_SAI_SELECT,                   "Name not selected" , 0);
-}
-
-
-AW_window *NT_searchManuallyNames(AW_root *aw_root, AW_CL)
-{
-
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually", 50,10 );
-    aws->load_xfig("ad_selManNam.fig");
-
-    aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN); // arb specific close callback, like a constant
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->at("nameList");
-    //    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_SELECT);
-
-
-    //   aws->at("label");
-    //    aws->create_button(0,"Please enter the name\nfor the Color Translation Table");
-
-    //    aws->at("input");
-    //    aws->create_input_field(AWAR_SAI_COLOR_TRANS_TABLE_CREATE,15);
-
-    //    aws->at("ok");
-    //    aws->callback(createColorTranslationTable,0);
-    //    aws->create_button("GO","GO","G");
-
-    return (AW_window *)aws;
-
-}
-*/
