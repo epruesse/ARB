@@ -314,11 +314,22 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
 	       char extralen;           (length of word) -
 	   char[idxlen+1];		index (low,high)
 
-   tag==64 -> end of dictionary compressed block (if not coded in last uncompressed block)
+       tag == 64 -> end of dictionary compressed block (if not coded in last uncompressed block)
 */
 
-#define ALPHA_DICT_OFFSET(i) 	ntohl(offset[ntohl(resort[i])])
-#define INDEX_DICT_OFFSET(i) 	ntohl(offset[i])
+GB_INLINE int INDEX_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
+    ad_assert(idx<dict->words);
+    return ntohl(dict->offsets[idx]);
+}
+GB_INLINE int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
+    int realIndex;
+    ad_assert(idx<dict->words);
+    realIndex = ntohl(dict->resort[idx]);
+    return INDEX_DICT_OFFSET(realIndex, dict);
+}
+
+/* #define ALPHA_DICT_OFFSET(i) 	ntohl(offset[ntohl(resort[i])]) */
+/* #define INDEX_DICT_OFFSET(i) 	ntohl(offset[i]) */
 
 #define LEN_BITS             	4
 #define INDEX_BITS		        2
@@ -348,8 +359,8 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
 #define LAST_COMPRESSED_BIT     64
 
 #ifdef DEBUG
-# define DUMP_COMPRESSION_TEST 	1
-/*	0 = no output
+# define DUMP_COMPRESSION_TEST 	0
+/*	0 = only compression ratio
 	1 = + original/compressed/decompressed
 	2 = + words used to compress/uncompress
 	3 = + matching words in dictionary
@@ -398,8 +409,8 @@ static cu_str lstr(cu_str s, int len) {
 #if DUMP_COMPRESSION_TEST>=2
 
 static cu_str dict_word(GB_DICTIONARY *dict, int idx, int len) {
-    GB_NINT *offset = dict->offsets;
-    return lstr(dict->text+INDEX_DICT_OFFSET(idx), len);
+/*     GB_NINT *offset = dict->offsets; */
+    return lstr(dict->text+INDEX_DICT_OFFSET(idx, dict), len);
 }
 
 #endif
@@ -449,14 +460,14 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
     int l = 0;
     int h = dict->words-1;
     cu_str text = dict->text;
-    GB_NINT *offset = dict->offsets;
+/*     GB_NINT *offset = dict->offsets; */
     GB_NINT *resort = dict->resort;
     int dsize = dict->textlen;
     int ilen = 0;
 
     while (l<h-1) {
         int m = (l+h)/2;
-        long off = ALPHA_DICT_OFFSET(m);
+        long off = ALPHA_DICT_OFFSET(m, dict);
         cu_str dictword = text+off;
         long msize = min(size,dsize-off);
 
@@ -469,7 +480,7 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
     }
 
     while (l<=h) {
-        int off = ALPHA_DICT_OFFSET(l);
+        int off = ALPHA_DICT_OFFSET(l, dict);
         cu_str word = text+off;
         int msize = (int)min(size, dsize-off);
         int equal = 0;
@@ -479,14 +490,15 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
 
 #if DUMP_COMPRESSION_TEST>=3
         if (equal>=MIN_COMPR_WORD_LEN) {
-            printf("  EQUAL=%i '%s' (%i->%i, off=%li)", equal, lstr(text+off,equal), l, ntohl(resort[l]), ALPHA_DICT_OFFSET(l));
+            printf("  EQUAL=%i '%s' (%i->%i, off=%i)", equal, lstr(text+off,equal), l, ntohl(resort[l]), ALPHA_DICT_OFFSET(l, dict));
             printf(" (context=%s)\n", lstr(text+off-min(off,20),min(off,20)+equal+20));
         }
 #endif
 
         if (equal>ilen) {
             ilen = equal;
-            idx = ntohl(resort[l]);
+            idx  = ntohl(resort[l]);
+            ad_assert(idx<dict->words);
         }
 
         l++;
@@ -519,7 +531,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
     u_str dest;
     u_str buffer;
     cu_str text = dict->text;
-    GB_NINT *offset = dict->offsets;
+/*     GB_NINT *offset = dict->offsets; */
     int done = 0;
 
     dest = buffer = (u_str)GB_give_other_buffer(s_source,size+2);
@@ -548,7 +560,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
             ad_assert(idx<(GB_ULONG)dict->words);
 
             {
-                cu_str word = text+INDEX_DICT_OFFSET(idx);
+                cu_str word = text+INDEX_DICT_OFFSET(idx, dict);
 
 #if DUMP_COMPRESSION_TEST>=2
                 printf("  word='%s' (idx=%lu, off=%li, len=%i)\n",
@@ -2115,9 +2127,10 @@ static void dump_dictionary(GB_DICTIONARY *dict)
            dict->textlen);
 
     for (idx=0; idx<dict->words; idx++) {
-        u_str word = dict->text+dict->offsets[dict->resort[idx]]; /* @@@@ ntoh */
+        u_str word = dict->text+ALPHA_DICT_OFFSET(idx, dict);
+        /*dict->offsets[dict->resort[idx]];*/ /* @@@@ ntoh */
 
-        printf("    word%03i='%s' (%i)\n", idx, lstr(word,30), dict->resort[idx]);
+        printf("    word%03i='%s' (%i)\n", idx, lstr(word,30), ntohl(dict->resort[idx]));
     }
 }
 #endif
@@ -2302,7 +2315,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             int nextWordLen = 0;
             int len;
 
-#if DEBUG
+#if DUMP_COMPRESSION_TEST>=4
             printf("word='%s' (occur=%li overlap=%i)\n", lstr(buffer, wordLen), wordFrequency, overlap);
 #endif
 
@@ -2526,7 +2539,10 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                 readAndWrite(&gbk[idx]);
 
 #if defined(TEST_DICT)
-                test_dictionary(dict,&(gbk[idx]), &uncompressed_sum, &compressed_sum);
+                {
+                    GB_DICTIONARY *dict_reloaded = gb_get_dictionary(Main, idx);
+                    test_dictionary(dict_reloaded,&(gbk[idx]), &uncompressed_sum, &compressed_sum);
+                }
 #endif /* TEST_DICT */
             }
         }
@@ -2549,10 +2565,10 @@ ompressed size = %li b\n"
 }
 
 GB_ERROR GB_optimize(GBDATA *gb_main) {
-    unsigned long maxKB = GB_get_physical_memory();
-    long maxMem;
-    GB_ERROR error = 0;
-    GB_UNDO_TYPE undo_type =  GB_get_requested_undo_type(gb_main);
+    unsigned long maxKB     = GB_get_physical_memory();
+    long          maxMem;
+    GB_ERROR      error     = 0;
+    GB_UNDO_TYPE  undo_type = GB_get_requested_undo_type(gb_main);
 
 #ifdef DEBUG
     maxKB /= 2;
