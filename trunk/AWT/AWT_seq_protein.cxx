@@ -127,11 +127,13 @@ AP_FLOAT AP_sequence_protein::combine( const AP_sequence *lefts, const AP_sequen
 
             bool ignore_continued_dashes = false;
             if (p->patd[0] & dash_bit) { // contains a gap
-                if (i>0 && (p[-1].patd[0] & dash_bit)) { // previous position also contains a gap
-                    if (((p1->patd[0] == dash_bit) && (p1[-1].patd[0] == dash_bit)) ||
-                        ((p2->patd[0] == dash_bit) && (p2[-1].patd[0] == dash_bit)))
+                if (i>0 && (p[-1].patd[0] & dash_bit)) { // previous position also contains a gap ..
+                    if (((p1->patd[0] & dash_bit) && (p1[-1].patd[0] & dash_bit)) || // .. in same sequence
+                        ((p2->patd[0] & dash_bit) && (p2[-1].patd[0] & dash_bit)))
                     {
-                        ignore_continued_dashes = true;
+                        if (!(p1[-1].patd[0] & dash_bit) || !(p2[-1].patd[0] & dash_bit)) { // if one of the sequences had no gap at previous position
+                            ignore_continued_dashes = true; // dont count current position
+                        }
                     }
                 }
             }
