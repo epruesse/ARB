@@ -5,5 +5,5 @@ GB_O =	adsort.o adlang1.o adstring.o arbdb.o \
 	adquery.o ad_save_load.o  \
 	adcompr.o admalloc.o ad_load.o \
 	admap.o adTest.o adtune.o
-GB_T =	adtools.o adseqcompr.o adtables.o
+GB_T =	adtools.o adseqcompr.o adtables.o adRevCompl.o
 GB_PP = arbdbpp.o

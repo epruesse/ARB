@@ -4,9 +4,10 @@
 #define AWAR_EXPORT_MULTIPLE_FILES "tmp/export/multiple_files"
 
 struct export_format_struct {
-	char	*system;
-	char	*new_format;
-	char	*suffix;
+	char *system;
+    char *internal_command;
+	char *new_format;
+	char *suffix;
 
 	export_format_struct(void);
 	~export_format_struct(void);

@@ -12,6 +12,7 @@
 #include <sys/time.h>
 
 #include <arbdb.h>
+#include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 
@@ -625,7 +626,8 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 	part[p] = strndup(compressed+start, llen);
 	if (rand()%2)
 	{
-	    AWTC_mirrorSequence(part[p], llen, GB_AT_RNA);
+	    //AWTC_mirrorSequence(part[p], llen, GB_AT_RNA);
+	    GBT_reverseComplementNucSequence(part[p], llen, GB_AT_RNA);
 	    printf(" (reverted)");
 	}
 	printf("\n");

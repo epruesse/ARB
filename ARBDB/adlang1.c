@@ -700,10 +700,12 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, // gb_item may be a species or
             break;
         }
         case GBT_ITEM_GENE: {
-            GBDATA *gb_pos1 = GB_find(gb_item, "pos_begin", 0, down_level);
-            GBDATA *gb_pos2 = GB_find(gb_item, "pos_end", 0, down_level);
-            long    pos1    = gb_pos1 ? GB_read_int(gb_pos1) : -1;
-            long    pos2    = gb_pos2 ? GB_read_int(gb_pos2) : -1;
+            GBDATA *gb_pos1       = GB_find(gb_item, "pos_begin", 0, down_level);
+            GBDATA *gb_pos2       = GB_find(gb_item, "pos_end", 0, down_level);
+            GBDATA *gb_complement = GB_find(gb_item, "complement", 0, down_level);
+            long    pos1          = gb_pos1 ? GB_read_int(gb_pos1) : -1;
+            long    pos2          = gb_pos2 ? GB_read_int(gb_pos2) : -1;
+            int     complement    = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
 
             if (pos1<1 || pos2<1 || pos2<pos1) {
                 GBDATA     *gb_name   = GB_find(gb_item, "name", 0, down_level);
@@ -725,7 +727,9 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, // gb_item may be a species or
                     memcpy(result, seq_data+pos1, length);
                     result[length] = 0;
 
-                    (*argvout)[(*argcout)++].str = result;
+                    if (complement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
+
+                    if (!error) (*argvout)[(*argcout)++].str = result;
                 }
             }
 

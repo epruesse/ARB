@@ -2684,3 +2684,4 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
     return result;
 
 }
+

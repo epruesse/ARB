@@ -31,126 +31,17 @@
 
 #define FA_AWAR_ROOT			"faligner/"
 
-#define FA_AWAR_TO_ALIGN		(FA_AWAR_ROOT "what")
-#define FA_AWAR_REFERENCE		(FA_AWAR_ROOT "against")
-#define FA_AWAR_REFERENCE_NAME		(FA_AWAR_ROOT "sagainst")
-#define FA_AWAR_RANGE			(FA_AWAR_ROOT "range")
-#define FA_AWAR_PROTECTION 		(FA_AWAR_ROOT "protection")
-#define FA_AWAR_AROUND			(FA_AWAR_ROOT "around")
+#define FA_AWAR_TO_ALIGN		   (FA_AWAR_ROOT "what")
+#define FA_AWAR_REFERENCE		   (FA_AWAR_ROOT "against")
+#define FA_AWAR_REFERENCE_NAME	   (FA_AWAR_ROOT "sagainst")
+#define FA_AWAR_RANGE			   (FA_AWAR_ROOT "range")
+#define FA_AWAR_PROTECTION 		   (FA_AWAR_ROOT "protection")
+#define FA_AWAR_AROUND			   (FA_AWAR_ROOT "around")
 //#define FA_AWAR_MARK_PROFILE		(FA_AWAR_ROOT "mark_profile")
-#define FA_AWAR_MIRROR			(FA_AWAR_ROOT "mirror")
-#define FA_AWAR_INSERT			(FA_AWAR_ROOT "insert")
-#define FA_AWAR_SHOW_GAPS_MESSAGES	(FA_AWAR_ROOT "show_gaps")
-#define FA_AWAR_NEXT_RELATIVES  	(FA_AWAR_ROOT "next_relatives")
-
-// -------------------------------------------------------------------------------- reverse complement functions
-
-char AWTC_complementBase(char c, char T_or_U)
-{
-    char n = c;
-
-    switch (c)
-    {
-        case 'A': n = T_or_U; break;			// A <-> TU
-        case 'a': n = tolower(T_or_U); break;
-        case 'U':
-        case 'T': n = 'A'; break;
-        case 'u':
-        case 't': n = 'a'; break;
-
-        case 'C': n = 'G'; break;			// C <-> G
-        case 'c': n = 'g'; break;
-        case 'G': n = 'C'; break;
-        case 'g': n = 'c'; break;
-
-        case 'M': n = 'K'; break;			// M=A/C <-> TU/G=K
-        case 'm': n = 'k'; break;
-        case 'K': n = 'M'; break;
-        case 'k': n = 'm'; break;
-
-        case 'R': n = 'Y'; break;			// R=A/G <-> TU/C=Y
-        case 'r': n = 'y'; break;
-        case 'Y': n = 'R'; break;
-        case 'y': n = 'r'; break;
-
-        case 'V': n = 'B'; break;    			// V=A/C/G <-> TU/G/C=B
-        case 'v': n = 'b'; break;
-        case 'B': n = 'V'; break;
-        case 'b': n = 'v'; break;
-
-        case 'H': n = 'D'; break;    			// H=A/C/TU <-> TU/G/A=D
-        case 'h': n = 'd'; break;
-        case 'D': n = 'H'; break;
-        case 'd': n = 'h'; break;
-
-        case 'S':					// S=C/G <-> G/C=S
-        case 's':
-        case 'W': 					// W=A/TU <-> TU/A=W
-        case 'w':
-        case 'N':					// N=A/C/G/TU
-        case 'n':
-        case '.':
-        case '-': break;
-
-        default: break;
-    }
-
-    return n;
-}
-
-char *AWTC_reverseString(const char *s, int len) {
-    char *n = (char*)malloc(len+1);
-    int p;
-
-    if (!n) {
-        GB_memerr();
-        return 0;
-    }
-
-    len--;
-    for (p=0; len>=0; p++,len--) {
-        n[p] = s[len];
-    }
-    n[p] = 0;
-
-    return n;
-}
-char *AWTC_complementString(const char *s, int len, char T_or_U) {
-    char *n = (char*)malloc(len+1);
-    int p;
-
-    for (p=0; p<len; p++) {
-        n[p] = AWTC_complementBase(s[p], T_or_U);
-    }
-    n[p] = 0;
-
-    return n;
-}
-
-GB_ERROR AWTC_mirrorSequence(char *seq, long length, GB_alignment_type alignment_type)
-{
-    long i,l;
-    char T_or_U = 0;
-    GB_ERROR error = 0;
-
-    switch (alignment_type)
-    {
-        case GB_AT_RNA: T_or_U = 'U'; break;
-        case GB_AT_DNA: T_or_U = 'T'; break;
-        default: error = GB_export_error("Cannot turn sequence for current alignment-type"); break;
-    }
-
-    if (!error) {
-        for (i=0,l=length-1; i<l; i++,l--) {
-            char c = seq[i];
-
-            seq[i] = AWTC_complementBase(seq[l], T_or_U);
-            seq[l] = AWTC_complementBase(c, T_or_U);
-        }
-    }
-
-    return error;
-}
+#define FA_AWAR_MIRROR			   (FA_AWAR_ROOT "mirror")
+#define FA_AWAR_INSERT			   (FA_AWAR_ROOT "insert")
+#define FA_AWAR_SHOW_GAPS_MESSAGES (FA_AWAR_ROOT "show_gaps")
+#define FA_AWAR_NEXT_RELATIVES     (FA_AWAR_ROOT "next_relatives")
 
 // --------------------------------------------------------------------------------
 
@@ -176,11 +67,10 @@ static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prote
             int length = GB_read_string_count(gbd);
             GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, ali);
 
-            error = AWTC_mirrorSequence(seq, length, ali_type);
+            // error = AWTC_mirrorSequence(seq, length, ali_type);
+            error    = GBT_reverseComplementNucSequence(seq, length, ali_type);
 
-            if (!error) {
-                error = GB_write_string(gbd, seq);
-            }
+            if (!error) error = GB_write_string(gbd, seq);
         }
         else { // protection error
             char *name = GBT_read_name(gb_species);
@@ -1625,7 +1515,8 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                 long length = strlen(mirroredSequence);
                 long bestMirroredScore = -1;
 
-                AWTC_mirrorSequence(mirroredSequence, length, global_alignmentType);
+//                 AWTC_mirrorSequence(mirroredSequence, length, global_alignmentType);
+                GBT_reverseComplementNucSequence(mirroredSequence, length, global_alignmentType);
 
                 error = family.go(pt_server_id, mirroredSequence,0,maxNextRelatives+1);
                 if (!error) {

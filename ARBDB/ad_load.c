@@ -451,8 +451,7 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in){
 						"	- or the data is destroyed by the program\n"
 						"	- it is not an arb file\n"
 						" 	You may recover part of your data by running\n"
-						"		arb_2_ascii old_arb_file panic.arb\n"
-						"	or send it to strunk@mikro.biologie.tu-muenchen.de\n");
+						"		arb_2_ascii old_arb_file panic.arb\n");
 		return -1;
     }
     pos = ftell(in);

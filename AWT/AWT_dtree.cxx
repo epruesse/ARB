@@ -1064,41 +1064,47 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
     tree_sort = type;
     switch(type) {
         case AP_RADIAL_TREE:
-            exports.dont_fit_x = 0;
-            exports.dont_fit_y = 0;
-            exports.left_offset = 150;
-            exports.right_offset = 150;
-            exports.top_offset = 30;
-            exports.bottom_offset = 30;
-            exports.dont_scroll = 0;
+            exports.dont_fit_x      = 0;
+            exports.dont_fit_y      = 0;
+            exports.dont_fit_larger = 0;
+            exports.left_offset     = 150;
+            exports.right_offset    = 150;
+            exports.top_offset      = 30;
+            exports.bottom_offset   = 30;
+            exports.dont_scroll     = 0;
             break;
 
         case AP_NDS_TREE:
-            exports.dont_fit_x = 1;
-            exports.dont_fit_y = 1;
-            exports.left_offset = 0;
-            exports.right_offset = 300;
-            exports.top_offset = 30;
-            exports.bottom_offset = 30;
-            exports.dont_scroll = 0;
+            exports.dont_fit_x      = 1;
+            exports.dont_fit_y      = 1;
+            exports.dont_fit_larger = 0;
+            exports.left_offset     = 0;
+            exports.right_offset    = 300;
+            exports.top_offset      = 30;
+            exports.bottom_offset   = 30;
+            exports.dont_scroll     = 0;
             break;
+
         case AP_IRS_TREE:
-            exports.dont_fit_x = 1;
-            exports.dont_fit_y = 1;
-            exports.left_offset = 0;
-            exports.right_offset = 300;
-            exports.top_offset = 30;
-            exports.bottom_offset = 30;
-            exports.dont_scroll = 1;
+            exports.dont_fit_x      = 1;
+            exports.dont_fit_y      = 1;
+            exports.dont_fit_larger = 0;
+            exports.left_offset     = 0;
+            exports.right_offset    = 300;
+            exports.top_offset      = 30;
+            exports.bottom_offset   = 30;
+            exports.dont_scroll     = 1;
             break;
+
         case AP_LIST_TREE:
-            exports.dont_fit_x = 0;
-            exports.dont_fit_y = 1;
-            exports.left_offset = 0;
-            exports.right_offset = 300;
-            exports.top_offset = 30;
-            exports.bottom_offset = 30;
-            exports.dont_scroll = 0;
+            exports.dont_fit_x      = 0;
+            exports.dont_fit_y      = 1;
+            exports.dont_fit_larger = 0;
+            exports.left_offset     = 0;
+            exports.right_offset    = 300;
+            exports.top_offset      = 30;
+            exports.bottom_offset   = 30;
+            exports.dont_scroll     = 0;
             break;
     }
 }

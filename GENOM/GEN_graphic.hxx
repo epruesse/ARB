@@ -21,6 +21,15 @@ enum {
 	GEN_GC_MAX
 };                              // AW_gc
 
+typedef enum {
+    GEN_DISPLAY_STYLE_RADIAL,
+    GEN_DISPLAY_STYLE_BOOK,
+    GEN_DISPLAY_STYLE_VERTICAL,
+
+    GEN_DISPLAY_STYLES // counter
+} GEN_DisplayStyle;
+
+
 //  -----------------------------------------------
 //      class GEN_graphic : public AWT_graphic
 //  -----------------------------------------------
@@ -32,18 +41,24 @@ protected:
     AW_clicked_text rot_ct;
     AW_clicked_line old_rot_cl;
 
-    AW_device *disp_device;	// device for  rekursiv Funktions
+    AW_device        *disp_device; // device for  rekursiv Funktions
+    GEN_DisplayStyle  style;
+    void (*callback_installer)(bool install, AWT_canvas*);
 
 public:
     GBDATA   *gb_main;
     AW_root  *aw_root;
     GEN_root *gen_root;
-    int	      change_flag;	    // used to indicate resize ....
+    int	      change_flag;      // used to indicate resize ....
 
-    GEN_graphic(AW_root *aw_root, GBDATA *gb_main);
+    GEN_graphic(AW_root *aw_root, GBDATA *gb_main, void (*callback_installer_)(bool install, AWT_canvas*));
     virtual ~GEN_graphic();
 
-    void reinit_gen_root(); // also does init
+    void delete_gen_root(AWT_canvas *ntw); // reinit_gen_root is normally called afterwards
+    void reinit_gen_root(AWT_canvas *ntw);
+
+    void set_display_style(GEN_DisplayStyle type);
+    GEN_DisplayStyle get_display_style() const { return style; }
 
     virtual	AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 

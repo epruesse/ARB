@@ -29,7 +29,7 @@ GB_ERROR gbl_gcgcheck P_((GBDATA *gb_species, char *com, int argcinput, GBL *arg
 GB_ERROR gbl_srt P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_calculator P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_readdb P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
-GB_ERROR gbl_sequence P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
+GB_ERROR gbl_sequence P_((GBDATA *gb_item, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_sequence_type P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_format_sequence P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GBDATA *gbl_search_sai_species P_((const char *species, const char *sai));

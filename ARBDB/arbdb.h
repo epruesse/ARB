@@ -120,7 +120,7 @@ typedef enum {
 
 struct gb_transaction_save;
 
-#endif /*GBL_INCLUDED*/ 
+#endif /*GBL_INCLUDED*/
 
 enum {GB_FALSE = 0 , GB_TRUE = 1 };
 
@@ -139,7 +139,7 @@ typedef enum gb_key_types {
     GB_FLOATS	= 10,
     GB_LINK		= 11,
     GB_STRING	= 12,
-    GB_STRING_SHRT	= 13,
+    GB_STRING_SHRT	= 13, /* not working and not used anywhere */
     GB_DB		= 15,
     GB_TYPE_MAX	= 16
 } GB_TYPES;
@@ -171,7 +171,7 @@ struct gbcmc_comm {
 #define SIZOFINTERN 10
 
 struct gb_extern_data {
-	
+
     GB_REL_STRING rel_data;	/* Typ: (char *) */
     long	memsize;
     long	size;
@@ -222,23 +222,23 @@ typedef enum
     GB_AT_DNA,		/* Nucleotide sequence (T) */
     GB_AT_AMI,		/* AminoAcid */
     GB_AT_PRO		/* Protein */
-    
+
 } GB_alignment_type;
-	
+
 /*********** Sort ***********/
 
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
     typedef long (*GB_MERGE_SORT)(void *, void *, char *cd);
-    /*#define GB_MERGE_SORT long (*)(void *, void *, char *cd )*/    
-    
-#ifdef __cplusplus    
+    /*#define GB_MERGE_SORT long (*)(void *, void *, char *cd )*/
+
+#ifdef __cplusplus
 }
-#endif 
-    
+#endif
+
 extern long GB_NOVICE;
 
 	/*********** Commands ***********/
@@ -252,7 +252,7 @@ extern long GB_NOVICE;
 #define GBL_COMMAND_DECL(x) GB_ERROR (*x)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, \
 		int argcparam,GBL *argvparam, \
 		int *argcout, GBL **argvout)
-*/		
+*/
 
 typedef struct gbl_struct {
     char *str;
@@ -260,16 +260,16 @@ typedef struct gbl_struct {
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
-    
-    typedef GB_ERROR (*GBL_COMMAND)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, 
-                                    int argcparam,GBL *argvparam, 
+#endif
+
+    typedef GB_ERROR (*GBL_COMMAND)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput,
+                                    int argcparam,GBL *argvparam,
                                     int *argcout, GBL **argvout);
-    
-#ifdef __cplusplus    
+
+#ifdef __cplusplus
 }
-#endif 
-    
+#endif
+
 struct GBL_command_table {
     const char *command_identifier;
     GBL_COMMAND function;
@@ -283,39 +283,39 @@ typedef struct GBDATA_SET_STRUCT {
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
-    typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link); 
+    typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link);
     typedef long (*gbs_hash_sort_func_type)(const char *key0,long val0,const char *key1,long val1);
     typedef long (*gb_compare_two_items_type)(void *p0,void *p1,char *cd);
     typedef long (*gb_hash_loop_type)(const char *key, long val);
     typedef long (*gb_hash_loop_type2)(const char *key, long val, void *parameter);
     typedef void (*gb_warning_func_type)(const char *msg);
     typedef int (*gb_status_func_type)(double val);
-    typedef int (*gb_status_func2_type)(const char *val); 
+    typedef int (*gb_status_func2_type)(const char *val);
     typedef void (*gb_error_handler_type)(const char *msg);
-    
+
 #ifdef __cplusplus
 }
 #endif
-    
+
 #if defined(__GNUG__) || defined(__cplusplus)
-extern "C" {    
-#endif    
-    
+extern "C" {
+#endif
+
 # define P_(s) s
 
-#include <stdio.h>    
+#include <stdio.h>
 #include <ad_prot.h>
 #ifdef GBL_INCLUDED
 #include <ad_lpro.h>
 #endif /*GBL_INCLUDED*/
-    
+
 #undef P_
 
 #if defined(__GNUG__) || defined(__cplusplus)
 }
-#endif 
+#endif
 
 #endif /*GB_INCLUDED*/
 

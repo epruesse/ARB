@@ -40,6 +40,7 @@ public:
 
     long StartPos() const { return pos1; }
     long EndPos() const { return pos2; }
+    long Length() const { return pos2-pos1+1; }
     int Level() const { return level; }
     const string& Name() const { return name; }
     const GBDATA *GbGene() const { return gb_gene; }
@@ -60,7 +61,8 @@ private:
     GEN_gene_set  gene_set;
     string        error_reason; // reason why we can't display gene_map
     long          length;       // length of organism sequence
-//     long          bp_per_line;  // base positions per line
+
+    GBDATA *gb_gene_data; // i am build upon this
 
 public:
     GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment);

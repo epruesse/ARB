@@ -1222,7 +1222,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
 	sprintf(buffer,"tmp/arbdb_query_%i/where",query_id);
 	cbs->awar_where = strdup(buffer);
-	aw_root->awar_int( cbs->awar_where, AWT_QUERY_CURRENT_SPECIES);
+	aw_root->awar_int( cbs->awar_where, AWT_QUERY_ALL_SPECIES);
 
 	sprintf(buffer,"tmp/arbdb_query_%i/count",query_id);
 	cbs->awar_count = strdup(buffer);
