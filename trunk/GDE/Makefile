@@ -64,9 +64,8 @@ depends: $(ARCHS:.dummy=.depend)
 		"ARBHOME=$(ARBHOME)" \
 		depends;
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
-	@cat $(@D)/Makefile | sed \
-			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
-			-e "s/[ /t]\.\// /g" \
+	@cat $(@D)/Makefile \
+		| ../SOURCE_TOOLS/fix_depends.pl \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
@@ -87,3 +86,6 @@ depends: $(ARCHS:.dummy=.depend)
 		"MAIN = $(@F:.dummy=.a)"
 
 # DO NOT DELETE
+
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
