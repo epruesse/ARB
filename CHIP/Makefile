@@ -5,8 +5,8 @@
 #-----------------------------------------------------------------------------
 
 
-#LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -lARBDB
-LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -L /usr/arb/LIBLINK -lARBDB
+LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -lARBDB
+#LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -L /usr/arb/LIBLINK -lARBDB
 
 .SUFFIXES: .o .c .cxx
 
