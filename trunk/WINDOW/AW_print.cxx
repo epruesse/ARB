@@ -75,7 +75,7 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
     int fontnr = common->root->font_2_xfig(gcm->fontnr);
     if (fontnr<0) fontnr = - fontnr;
     if (str[0]) {
-        fprintf(device->out, "4 0 %d %d 0 0 0 0.000 4 %d %d %d %d ",
+        fprintf(device->get_FILE(), "4 0 %d %d 0 0 0 0.000 4 %d %d %d %d ",
                 fontnr,
                 gcm->fontsize,
                 (int)gcm->fontinfo.max_letter_height,
@@ -83,10 +83,10 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
                 AW_INT(X),AW_INT(Y));
         char *p;
         for (p = pstr; *p; p++) {
-            if (*p >= 32) putc(*p,device->out);
+            if (*p >= 32) putc(*p,device->get_FILE());
         }
-        fputc(1,device->out);
-        fputc('\n',device->out);
+        fputc(1,device->get_FILE());
+        fputc('\n',device->get_FILE());
     }
     free(pstr);
     return 1;
@@ -124,7 +124,7 @@ int AW_device_print::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height,
     return this->filled_area(gc,4,q,filteri,cd1,cd2);
 }
 
-int AW_device_print::circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::circle(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos x1,y1;
@@ -157,7 +157,6 @@ int AW_device_print::circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heig
     }
     return 0;
 }
-
 
 int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2){
     int erg = 0;
