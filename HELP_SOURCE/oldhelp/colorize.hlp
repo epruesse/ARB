@@ -23,7 +23,7 @@ DESCRIPTION     Allows to toggle between colored and marked items.
                 Then select an action by clicking onto one of the action buttons on
                 the left side.
 
-NOTES		None
+NOTES		You can define the color names in properties.
 
 EXAMPLES	None
 
