@@ -5,7 +5,7 @@ ARB-Input-Mask
 @ITEMTYPE=Species
 
 # Title of the user-mask-window
-@TITLE=Test mask
+@TITLE=Test mask (global)
 
 # Spacing in window
 @X_SPACING=5
