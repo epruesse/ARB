@@ -49,7 +49,7 @@ DESCRIPTION	Allows 	# database searching,
 		Press the 'RUN QUERY' button of the results area.
 
 	Data Transfer:
-		
+
 		To transfer a single 'species' and all its 'field' entries,
 			select the species from the list displayed in the 'HIT
 			LIST' subwindow and press The 'TRANSFER SELECTED
@@ -63,13 +63,13 @@ DESCRIPTION	Allows 	# database searching,
 		To transfer the entries of a 'field' selected from the 'Search
 			field' subwindow for all listed 'species, press the
 			'TRANSFER A FIELD FOR ALL LISTED SPECIES' button in the
-			 middle column of the 'TRANSFER SPECIES' window.
-			
-		To save modifications pres the 'Save result' button of the
+                        middle column of the 'TRANSFER SPECIES' window.
+
+		To save modifications press the 'Save result' button of the
 			'ARB_MERGE' window.
 
 	Preserve Alignment:
-		
+
 		ARB Merge tries to keep the alignment correct. Normally people
 		have inserted new gaps in either the left or right database.
 		By entering the name of some reference species in the input
@@ -78,9 +78,9 @@ DESCRIPTION	Allows 	# database searching,
 		create a coloumn reference list, and realign all transfered
 		sequences. If you do not want this feature, turn off the
 		'Preserve Alignment' togge.
-		 
 
-NOTES		None	
+
+NOTES		None
 
 
 EXAMPLES	For examples for database searching see 'HELP: Search Database

@@ -12,9 +12,12 @@ SUB	selected.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		What are Species ?
 
-DESCRIPTION	One species is one database entry conaining many database entries
-		describing the species and one or more sequences. Every sequence
-		belongs to a different alignment:
+DESCRIPTION	One species is one database entry containing many database entries
+		describing the species and one or more sequences (every sequence
+		belongs to a different alignment).
+
+                A species is not necessarily consistent with a taxonomic species.
+
 
 		[Database field name]		[Comment]
 
