@@ -8,7 +8,7 @@ all: $(TARGET)
 $(TARGET) : $(SOURCE) $(DEPEND_ON)
 	chmod a+w $(TARGET)
 	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
-	chmod a+w $(TARGET)
+	chmod a-w $(TARGET)
 
 save:
 	rm -f arbgdemenus*.tar.gz
