@@ -30,21 +30,24 @@ typedef enum {
 } AWT_COMMAND_MODE;
 
 class AWT_graphic_exports {
-		public:
-		unsigned int	zoom_reset:1;
-		unsigned int	resize:1;
-		unsigned int	refresh:1;
-		unsigned int	save:1;
-		unsigned int	structure_change:1;		// maybe useless
-		unsigned int	dont_fit_x:1;
-		unsigned int	dont_fit_y:1;
-                unsigned int	dont_scroll:1;
-		void clear(void);
-		short	left_offset;
-		short	right_offset;
-		short	top_offset;
-		short	bottom_offset;
-	};
+public:
+    unsigned int zoom_reset:1;
+    unsigned int resize:1;
+    unsigned int refresh:1;
+    unsigned int save:1;
+    unsigned int structure_change:1; // maybe useless
+    unsigned int dont_fit_x:1;
+    unsigned int dont_fit_y:1;
+    unsigned int dont_fit_larger:1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_scroll:1;
+
+    void clear(void);
+
+    short left_offset;
+    short right_offset;
+    short top_offset;
+    short bottom_offset;
+};
 
 class AWT_graphic {
 	friend class AWT_canvas;
@@ -74,7 +77,7 @@ class AWT_graphic {
 
 
 	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button,
-				AW_event_type type,AW_pos x, AW_pos y, 
+				AW_event_type type,AW_pos x, AW_pos y,
 				AW_clicked_line *cl, AW_clicked_text *ct);
 	virtual void text(AW_device *device, char *text);
 	AWT_graphic(void);

@@ -13,7 +13,7 @@
 void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
 void nt_draw_zoom_box(AW_device *device, int gc,
 		AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 );
-void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw, 
+void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
 	int left_border, int right_border,
 	int top_border, int bottom_border,
 	int hor_overlap, int ver_overlap);
@@ -54,31 +54,31 @@ AWT_canvas::set_vertical_scrollbar_position(AW_window *dummy, int pos)
 
 void
 AWT_canvas::set_scrollbars( )
-	// 
+	//
 {
 	AW_pos width = this->worldinfo.r - this->worldinfo.l;
 	AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
 	worldsize.l = 0;
-	worldsize.r = width*this->trans_to_fit + 
+	worldsize.r = width*this->trans_to_fit +
 		tree_disp->exports.left_offset + tree_disp->exports.right_offset;
 	worldsize.t = 0;
 	AW_pos scale = this->trans_to_fit;
 	if (tree_disp->exports.dont_fit_y) scale = 1.0;
-	worldsize.b = height*scale + 
+	worldsize.b = height*scale +
 		tree_disp->exports.top_offset + tree_disp->exports.bottom_offset;
 
 	aww->tell_scrolled_picture_size(worldsize);
 
 	aww->calculate_scrollbars();
 
-	this->old_hor_scroll_pos = (int)((-this->worldinfo.l - 
+	this->old_hor_scroll_pos = (int)((-this->worldinfo.l -
 							this->shift_x_to_fit)*
 							this->trans_to_fit +
 							tree_disp->exports.left_offset);
 	this->set_horizontal_scrollbar_position(this->aww, old_hor_scroll_pos);
 
-	this->old_vert_scroll_pos = (int)((-this->worldinfo.t - 
+	this->old_vert_scroll_pos = (int)((-this->worldinfo.t -
 							this->shift_y_to_fit)*
 							this->trans_to_fit+
 							tree_disp->exports.top_offset);
@@ -103,45 +103,62 @@ AWT_canvas::zoom_reset( void )
 	device->reset();
 	this->tree_disp->show(device);
 	device->get_size_information(&(this->worldinfo));
-	AW_pos width = this->worldinfo.r - this->worldinfo.l;
+
+	AW_pos width  = this->worldinfo.r - this->worldinfo.l;
 	AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
 	device->get_area_size(&(this->rect));	// real world size (no offset)
 
-	AW_pos net_window_width = rect.r - rect.l -
-		(tree_disp->exports.left_offset + tree_disp->exports.right_offset);
-	AW_pos net_window_height = rect.b - rect.t -
-		(tree_disp->exports.top_offset + tree_disp->exports.bottom_offset);
-	if (net_window_width<AWT_MIN_WIDTH) net_window_width=AWT_MIN_WIDTH;
-	if (net_window_height<AWT_MIN_WIDTH) net_window_height=AWT_MIN_WIDTH;
-	if (width <EPS) width = EPS;
-	AW_pos x_scale = net_window_width/width;
-	if (height <EPS) height = EPS;
-	AW_pos y_scale = net_window_height/height;
+	AW_pos net_window_width  = rect.r - rect.l - (tree_disp->exports.left_offset + tree_disp->exports.right_offset);
+	AW_pos net_window_height = rect.b - rect.t - (tree_disp->exports.top_offset + tree_disp->exports.bottom_offset);
 
-	if (tree_disp->exports.dont_fit_x) {
-		if (tree_disp->exports.dont_fit_y) {
-			x_scale = y_scale = 1.0;
-		}else{
-			x_scale = y_scale;
-		}
-	}else{
-		if (tree_disp->exports.dont_fit_y) {
-			;
-		}else{
-			if (y_scale < x_scale) x_scale = y_scale;
-		}
-	}
-	
+	if (net_window_width<AWT_MIN_WIDTH) net_window_width   = AWT_MIN_WIDTH;
+	if (net_window_height<AWT_MIN_WIDTH) net_window_height = AWT_MIN_WIDTH;
+
+	if (width <EPS) width   = EPS;
+	AW_pos x_scale          = net_window_width/width;
+	if (height <EPS) height = EPS;
+	AW_pos y_scale          = net_window_height/height;
+
+    if (tree_disp->exports.dont_fit_larger) {
+        if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
+            x_scale = y_scale;
+        }
+        else {                  // like dont_fit_y = 1; dont_fit_x = 0;
+            y_scale = x_scale;
+        }
+    }
+    else {
+        if (tree_disp->exports.dont_fit_x) {
+            if (tree_disp->exports.dont_fit_y) {
+                x_scale = y_scale = 1.0;
+            }
+            else {
+                x_scale = y_scale;
+            }
+        }
+        else {
+            if (tree_disp->exports.dont_fit_y) {
+                y_scale = x_scale;
+            }
+            else {
+                ;
+            }
+//             if (tree_disp->exports.dont_fit_y) { // Ralf: old version (IMHO wrong)
+//                 ;
+//             }else{
+//                 if (y_scale < x_scale) x_scale = y_scale;
+//             }
+        }
+    }
+
 	this->trans_to_fit = x_scale;
 
 	// complete, upper left corner
-	this->shift_x_to_fit= - this->worldinfo.l +
-			 tree_disp->exports.left_offset/x_scale;
-	this->shift_y_to_fit= - this->worldinfo.t +
-			 tree_disp->exports.top_offset/x_scale;
+	this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.left_offset/x_scale;
+	this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.top_offset/x_scale;
 
-	this->old_hor_scroll_pos = 0;
+	this->old_hor_scroll_pos  = 0;
 	this->old_vert_scroll_pos = 0;
 
 	// scale
@@ -169,7 +186,7 @@ AWT_canvas::tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos
 	AW_rectangle *rectangle;
 	AW_pos wsx,wsy,wex,wey,h;
 
-	
+
 	if(ex<sx){
 		h=ex; ex=sx; sx=h;
 	}
@@ -238,7 +255,7 @@ void AWT_canvas::set_mode(AWT_COMMAND_MODE mo)
 	this->mode = mo;
 }
 
-void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw, 
+void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
                      int left_border, int right_border,
                      int top_border, int bottom_border,
                      int hor_overlap, int ver_overlap)
@@ -289,7 +306,7 @@ void AWT_canvas::refresh( void )
 {
 	AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
 	device->clear();
-	AWT_clip_expose(this->aww, this, this->rect.l, this->rect.r, 
+	AWT_clip_expose(this->aww, this, this->rect.l, this->rect.r,
 				this->rect.t, this->rect.b,0,0);
 }
 
@@ -408,8 +425,8 @@ AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
     click_device->get_clicked_text(&ntw->clicked_text);
 
     ntw->tree_disp->command(device, ntw->mode,
-                            event.button, event.type, event.x, 
-                            event.y, &ntw->clicked_line, 
+                            event.button, event.type, event.x,
+                            event.y, &ntw->clicked_line,
                             &ntw->clicked_text );
     if (ntw->tree_disp->exports.save ) {
         // save it
@@ -489,8 +506,8 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 				click_device->get_clicked_text(&ntw->clicked_text);
 			   default:
 				ntw->tree_disp->command(device, ntw->mode,
-					event.button, AW_Mouse_Drag, event.x, 
-					event.y, &ntw->clicked_line, 
+					event.button, AW_Mouse_Drag, event.x,
+					event.y, &ntw->clicked_line,
 					&ntw->clicked_text );
 				if (ntw->gb_main) {
 					ntw->tree_disp->update(ntw->gb_main);
@@ -513,8 +530,8 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 			click_device->get_clicked_text(&ntw->clicked_text);
 		   default:
 			ntw->tree_disp->command(device, ntw->mode,
-				event.button, AW_Mouse_Drag, event.x, 
-				event.y, &ntw->clicked_line, 
+				event.button, AW_Mouse_Drag, event.x,
+				event.y, &ntw->clicked_line,
 				&ntw->clicked_text );
 			if (ntw->gb_main) {
 				ntw->tree_disp->update(ntw->gb_main);
@@ -568,7 +585,7 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 	default:
 		break;
 	} /* switch event_action(event) */
-	
+
 	if (ntw->tree_disp->exports.zoom_reset) {
 	    ntw->zoom_reset();
 	    ntw->refresh();
@@ -586,7 +603,7 @@ void
 AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollbars)
 {
 	AWUSE(dummy);
-	
+
 	int csx, cdx, cwidth, csy, cdy, cheight;
 	AW_device *device;
 	if (!dont_update_scrollbars) {
@@ -632,7 +649,7 @@ AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollb
 	    // x-stripe
 	    if((int)dx>0){
 		AWT_clip_expose(aww, this, screenwidth-dx, screenwidth,
-				0, screenheight, 
+				0, screenheight,
 				-CLIP_OVERLAP , 0);
 	    }
 	    if((int)dx<0){
@@ -720,19 +737,19 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini,	AW_window *awwi, AWT_graphic *awd, AW_g
 	aww->set_vertical_change_callback((AW_CB)AWT_scroll_vert_cb,(AW_CL)this, 0 );
 }
 
-GB_ERROR AWT_graphic::load(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) { 
+GB_ERROR AWT_graphic::load(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) {
 	AWUSE(name); AWUSE(cd1);AWUSE(cd2);AWUSE(gb_main);
 	return "this object cannot be loaded";
 }
 
-GB_ERROR AWT_graphic::save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) { 
+GB_ERROR AWT_graphic::save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) {
 	AWUSE(name); AWUSE(cd1);AWUSE(cd2);AWUSE(gb_main);
 	return "this object cannot be saved";
 }
-int AWT_graphic::check_update(GBDATA *gb_main) { 
+int AWT_graphic::check_update(GBDATA *gb_main) {
 	AWUSE(gb_main);return -1;
 }
-void AWT_graphic::update(GBDATA *gb_main) { 
+void AWT_graphic::update(GBDATA *gb_main) {
 	AWUSE(gb_main);return;
 }
 
@@ -764,11 +781,11 @@ void AWT_graphic::text(AW_device *device, char *text){
 }
 
 AWT_graphic::~AWT_graphic(void)
-	{
+{
 }
 
 AWT_graphic::AWT_graphic(void)
-	{
+{
 }
 
 

@@ -321,12 +321,12 @@ NTREE = bin/arb_ntree
 ARCHS_NTREE = NAMES_COM/server.a $(ARCHS_CLIENTACC) NTREE/NTREE.a STAT/STAT.a MULTI_PROBE/MULTI_PROBE.a \
 	ARB_GDE/ARB_GDE.a PROBE_DESIGN/PROBE_DESIGN.a \
 	AWTC/AWTC.a AWTI/AWTI.a SERVERCNTRL/SERVERCNTRL.a MERGE/MERGE.a CAT/CAT.a $(SEERLIB) \
-	GENOM/GENOM.a PRIMER_DESIGN/PRIMER_DESIGN.a
+	GENOM/GENOM.a PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a
 $(NTREE): $(ARCHS_NTREE) aw db
 	$(CPP) $(lflags) -o $@ $(LIBPATH) \
 		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
 		AWTC/AWTC.a AWTI/AWTI.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) GENOM/GENOM.a \
-		PRIMER_DESIGN/PRIMER_DESIGN.a \
+		PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a \
 		$(ARCHS_CLIENTACC) -lAWT $(LIBS)
 
 #***********************************	arb_edit **************************************
@@ -545,6 +545,8 @@ de:		$(ARCHS_AWDEMO:.a=.dummy)	$(AWDEMO)
 e4:		$(ARCHS_EDIT4:.a=.dummy) $(EDIT4)
 we:		$(ARCHS_WETC:.a=.dummy)		$(WETC)
 eb:		$(ARCHS_EDITDB:.a=.dummy)	$(EDITDB)
+
+xml:	XML/XML.dummy
 
 #********************************************************************************
 

@@ -13,6 +13,10 @@
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
 
+#include "xml.hxx"
+
+using namespace rs::xml;
+
 export_format_struct::export_format_struct(void){
 	memset((char *)this,0,sizeof(export_format_struct));
 }
@@ -31,8 +35,7 @@ char *awtc_read_export_format(export_format_struct * efo,char *file){
 
 	FILE *in = fopen(fullfile,"r");
 	delete fullfile;
-	sprintf(AW_ERROR_BUFFER,"Form %s not readable (select a form or check permissions)",
-			file);
+	sprintf(AW_ERROR_BUFFER,"Form %s not readable (select a form or check permissions)", file);
 	if (!in) return AW_ERROR_BUFFER;
 	char *s1=0,*s2=0;
 
@@ -41,6 +44,8 @@ char *awtc_read_export_format(export_format_struct * efo,char *file){
 			continue;
 		}else if (!strcmp(s1,"SYSTEM")) {
 			efo->system = s2; s2 = 0;
+		}else if (!strcmp(s1,"INTERNAL")) {
+			efo->internal_command = s2; s2 = 0;
 		}else if (!strcmp(s1,"PRE_FORMAT")) {
 			efo->new_format = s2; s2 = 0;
 		}else if (!strcmp(s1,"SUFFIX")) {
@@ -56,16 +61,73 @@ char *awtc_read_export_format(export_format_struct * efo,char *file){
 	return 0;
 }
 
-GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple,
-		int openstatus )
-	{
-	char *fullformname = AWT_unfold_path(formname,"ARBHOME");
-	FILE	*out = 0;
-	GB_ERROR error = 0;
-	int	count = 0;
+//  -----------------------------
+//      enum AWTI_EXPORT_CMD
+//  -----------------------------
+enum AWTI_EXPORT_CMD {
+    AWTI_EXPORT_XML,
 
-	char *form = GB_read_file(fullformname);
-	if (!form) {
+    AWTI_EXPORT_COMMANDS,       // counter
+    AWTI_EXPORT_BY_FORM,
+};
+
+static const char *internal_export_commands[AWTI_EXPORT_COMMANDS] = {
+    "xml_write"
+};
+
+//  --------------------------------------------------------
+//      static GB_ERROR AWTI_XML_recursive(GBDATA *gbd)
+//  --------------------------------------------------------
+static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
+    GB_ERROR    error     = 0;
+    const char *key_name  = GB_read_key_pntr(gbd);
+    XML_Tag    *tag = 0;
+
+    if (strncmp(key_name, "ali_", 4) == 0)
+    {
+        tag = new XML_Tag("ali");
+        tag->add_attribute("name", key_name+4);
+    }
+    else {
+        tag = new XML_Tag(key_name);
+    }
+
+    switch (GB_read_type(gbd)) {
+        case GB_DB: {
+            for (GBDATA *gb_child = GB_find(gbd, 0, 0, down_level);
+                 gb_child && !error;
+                 gb_child = GB_find(gb_child, 0, 0, this_level|search_next))
+            {
+                error = AWTI_XML_recursive(gb_child);
+            }
+            break;
+        }
+        default: {
+            char *content = GB_read_as_string(gbd);
+            if (content) {
+                XML_Text text(content);
+            }
+            else {
+                tag->add_attribute("error", "unsavable");
+            }
+        }
+    }
+
+    delete tag;
+    return error;
+}
+
+//  -----------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus)
+//  -----------------------------------------------------------------------------------------------------------------
+GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus)
+{
+    char            *fullformname = AWT_unfold_path(formname,"ARBHOME");
+    GB_ERROR         error        = 0;
+    char            *form         = GB_read_file(fullformname);
+    AWTI_EXPORT_CMD  cmd          = AWTI_EXPORT_BY_FORM;
+
+    if (!form || form[0] == 0) {
 		error = "Form not found";
 	}else{
 		char *form2 = GBS_string_eval(form,"*\nBEGIN*\n*=*3:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:",0);
@@ -83,13 +145,33 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 		if (efo->system && !efo->new_format) {
 			error = "Format File Error: You can only use the command SYSTEM "
 				"when you use the command PRE_FORMAT";
-		}else if (efo->new_format) {
+		}
+        else if (efo->internal_command) {
+            if (efo->system) {
+                error = "Format File Error: You can't use SYSTEM together with INTERNAL";
+            }
+            else if (efo->new_format) {
+                error = "Format File Error: You can't use PRE_FORMAT together with INTERNAL";
+            }
+            else {
+                for (int c = 0; c<AWTI_EXPORT_COMMANDS; ++c) {
+                    if (strcmp(internal_export_commands[c], efo->internal_command) == 0) {
+                        cmd = (AWTI_EXPORT_CMD)c;
+                        break;
+                    }
+                }
+
+                if (cmd == AWTI_EXPORT_COMMANDS) {
+                    error = GB_export_error("Format File Error: Unknown INTERNAL command '%s'", efo->internal_command);
+                }
+            }
+        }
+        else if (efo->new_format) {
 			if (efo->system) {
 				char intermediate[1024];
 				char srt[1024];
 				sprintf(intermediate,"/tmp/%s_%i",outname,getpid());
-				error =
- 				 AWTC_export_format(gb_main,efo->new_format, intermediate,0,0);
+				error = AWTC_export_format(gb_main,efo->new_format, intermediate,0,0);
 				if (!error) {
 					sprintf(srt,"$<=%s:$>=%s",intermediate, outname);
 					char *sys = GBS_string_eval(efo->system,srt,0);
@@ -102,80 +184,116 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 					delete sys;
 				}
 			}else{
-				error =
-				 AWTC_export_format(gb_main,efo->new_format, outname,multiple,0);
+				error = AWTC_export_format(gb_main,efo->new_format, outname,multiple,0);
 			}
 			goto end_of_AWTC_export_format;
 		}
 	}
 
+    if (!error) {
+        try {
+            FILE         *out   = 0;
+            int	          count = 0;
+            char          buffer[1024];
+            XML_Document *xml   = 0;
 
-	GBDATA *gb_species;
+            if (!error && !multiple) {
+                sprintf(buffer, "%s.%s", outname, efo->suffix);
+                out = fopen(buffer,"w");
+                if (!out) {
+                    sprintf(AW_ERROR_BUFFER,"Error: I Cannot write to file %s",outname);
+                    error = AW_ERROR_BUFFER;
+                }
+            }
 
-	count = 0;
-	char	buffer[1024];
+            for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+                 !error && gb_species;
+                 gb_species = GBT_next_marked_species(gb_species))
+            {
+                if (multiple) {
+                    char  buf[1024];
+                    char *name = GBT_read_name(gb_species);
 
-	if (!error && !multiple) {
-		out = fopen(outname,"w");
-		if (!out) {
-			sprintf(AW_ERROR_BUFFER,"Error: I Cannot write to file %s",outname);
-			error = AW_ERROR_BUFFER;
-		}
-	}
+                    sprintf(buf,"%s_%s.%s",outname,name, efo->suffix);
+                    delete name;
+                    out = fopen(buf,"w");
+                    if (!out){
+                        sprintf(AW_ERROR_BUFFER,"Error: I Cannot write to file %s", buf);
+                        error = AW_ERROR_BUFFER;
+                        break;
+                    }
+                }
 
+                switch (cmd) {
+                    case AWTI_EXPORT_BY_FORM: {
+                        if (count % 10 == 0) {
+                            char *name = GBT_read_name(gb_species);
+                            sprintf(buffer,"%s: %i",name, count);
+                            if (aw_status(buffer)) break;
+                            delete name;
+                        }
+                        char *pars = GBS_string_eval(" ",form,gb_species);
+                        if (!pars) {
+                            error = GB_get_error();
+                            break;
+                        }
+                        char *p;
+                        char *o = pars;
+                        while ( (p = GBS_find_string(o,"$$DELETE_LINE$$",0)) ) {
+                            char *l,*r;
+                            for (l = p; l>o; l--) if (*l=='\n') break;
+                            r = strchr(p,'\n'); if (!r) r = p +strlen(p);
+                            fwrite(o,1,l-o,out);
+                            o = r;
+                        }
+                        fprintf(out,"%s",o);
+                        delete pars;
 
-	for (gb_species = GBT_first_marked_species(gb_main);
-		!error && gb_species;
-		gb_species = GBT_next_marked_species(gb_species)){
-		if (multiple) {
-			char buf[1024];
-			char *name = GBT_read_name(gb_species);
-			sprintf(buf,"%s_%s",outname,name);
-			delete name;
-			out = fopen(buf,"w");
-			if (!out){
-				error = "Cannot open Outfile";
-				break;
-			}
-		}
-		if (count % 10 == 0) {
-			char *name = GBT_read_name(gb_species);
-			sprintf(buffer,"%s: %i",name, count);
-			if (aw_status(buffer)) break;
-			delete name;
-		}
-		char *pars = GBS_string_eval(" ",form,gb_species);
-		if (!pars) {
-			error = GB_get_error();
-			break;
-		}
-		char *p;
-		char *o = pars;
-		while ( (p = GBS_find_string(o,"$$DELETE_LINE$$",0)) ) {
-			char *l,*r;
-			for (l = p; l>o;l--) if (*l=='\n') break;
-			r = strchr(p,'\n'); if (!r) r = p +strlen(p);
-			fwrite(o,1,l-o,out);
-			o = r;
-		}
-		fprintf(out,"%s",o);
-		delete pars;
+                        break;
+                    }
+                    case AWTI_EXPORT_XML: {
+                        if (!xml) {
+                            xml = new XML_Document("arb_export", "ARB_exp.dtd", out);
+                            XML_Comment("You have to create ARB_exp.dtd by yourself, because the ARB-database may contain any kind of fields");
+                        }
 
-		if (multiple) {
-			if (out) fclose(out);
-			out = 0;
-		}
-		count ++;
-	}
+                        error = AWTI_XML_recursive(gb_species);
 
-	if (out) fclose(out);
-	end_of_AWTC_export_format:
+                        if (multiple) {
+                            delete xml;
+                            xml = 0;
+                        }
+                        break;
+                    }
+                    default: {
+                        gb_assert(0);
+                        break;
+                    }
+                }
 
+                if (multiple) {
+                    if (out) fclose(out);
+                    out = 0;
+                    // @@@ FIXME: delete written file if error != 0
+                }
+                count ++;
+            }
+
+            delete xml;
+            if (out) fclose(out);
+        }
+        catch (string& err) {
+            error = GB_export_error("Error: %s (programmers error)", err.c_str());
+        }
+    }
+
+ end_of_AWTC_export_format:
 	if (openstatus) aw_closestatus();
 
 	delete fullformname;
 	delete form;
 	delete efo;
+
 	return error;
 }
 

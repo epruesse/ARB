@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Sat Mar/24/2001 16:36 MET Coder@ReallySoft.de>
+// Time-stamp: <Sun Apr/01/2001 02:21 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -23,8 +23,8 @@
 #ifndef __STRING__
 #include <string>
 #endif
-#ifndef __IOSTREAM__
-#include <iostream>
+#ifndef __CSTDIO__
+#include <cstdio>
 #endif
 
 namespace rs {
@@ -36,7 +36,7 @@ namespace rs {
     namespace xml {
 
         class                XML_Document;
-        extern XML_Document *theDocument; // there can only be one
+        extern XML_Document *theDocument; // there can only be one at a time
 
         //  ----------------------------
         //      class XML_Attribute
@@ -53,7 +53,7 @@ namespace rs {
 
             XML_Attribute *append_to(XML_Attribute *queue);
 
-            void print(ostream& out) const;
+            void print(FILE *out) const;
         };
 
 
@@ -67,17 +67,16 @@ namespace rs {
             int       indent;
 
         public:
-            XML_Node();
+            XML_Node(bool is_tag);
             virtual ~XML_Node();
 
             int Indent() const { return indent; }
             bool Opened() const { return opened; }
-//             void set_Opened(bool opened_) { opened = opened_; }
 
-            virtual void add_son(XML_Node *son_)    = 0;
-            virtual void remove_son(XML_Node *son_) = 0;
-            virtual void open(ostream& out)         = 0;
-            virtual void close(ostream& out)        = 0;
+            virtual void add_son(XML_Node *son_, bool son_is_tag) = 0;
+            virtual void remove_son(XML_Node *son_)               = 0;
+            virtual void open(FILE *out)                          = 0;
+            virtual void close(FILE *out)                         = 0;
         };
 
         //  ----------------------------------------
@@ -90,11 +89,12 @@ namespace rs {
             string         name;
             XML_Node      *son;
             XML_Attribute *attribute;
+            int            state; // 0 = no son; 1 = only content; 2 = son-tag;
 
         public:
             /** Create a new xml element
                 @param name_ element name
-             */
+            */
             XML_Tag(const string &name_);
             virtual ~XML_Tag();
 
@@ -102,11 +102,11 @@ namespace rs {
                 @param name_ attribute name
                 @param content_ attribute value
             */
-            void add_attribute(const string& name_, const string& content_);
-            virtual void add_son(XML_Node *son_);
+            void         add_attribute(const string& name_, const string& content_);
+            virtual void add_son(XML_Node *son_, bool son_is_tag);
             virtual void remove_son(XML_Node *son_);
-            virtual void open(ostream& out);
-            virtual void close(ostream& out);
+            virtual void open(FILE *out);
+            virtual void close(FILE *out);
         };
 
         //  -----------------------------------------
@@ -121,15 +121,23 @@ namespace rs {
             /** Create text (content) in xml
                 @param content_ the content
              */
-            XML_Text(const string& content_) : content(content_) {}
+            XML_Text(const string& content_) : XML_Node(false), content(content_) {}
             virtual ~XML_Text();
 
-            virtual void add_son(XML_Node *son_);
+            virtual void add_son(XML_Node *son_, bool son_is_tag);
             virtual void remove_son(XML_Node *son_);
-            virtual void open(ostream& out);
-            virtual void close(ostream& out);
+            virtual void open(FILE *out);
+            virtual void close(FILE *out);
         };
 
+        //  --------------------------------------------
+        //      class XML_Comment : public XML_Text
+        //  --------------------------------------------
+        class XML_Comment : public XML_Text {
+        public:
+            XML_Comment(const string& content_) : XML_Text("<!-- "+content_+" -->") {}
+            virtual ~XML_Comment() {}
+        };
 
         //  ---------------------------
         //      class XML_Document
@@ -140,21 +148,24 @@ namespace rs {
             string    dtd;
             XML_Tag  *root;
             XML_Node *latest_son;
-            ostream&  out;
+            FILE     *out;
 
         public:
             /** Create and stream (at destruction) a xml document
                 @param name_ name of the root node
                 @param dtd_ filename of dtd
-                @param out_ stream where xml document will be written to
+                @param out_ FILE where xml document will be written to
             */
-            XML_Document(const string& name_, const string& dtd_, ostream& out_);
+            XML_Document(const string& name_, const string& dtd_, FILE *out_);
             virtual ~XML_Document();
+
+            /// true -> tags w/o content or attributes are skipped (default = false)
+            bool skip_empty_tags;
 
             XML_Node* LatestSon() { return latest_son; }
             void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
 
-            ostream& Out() { return out; }
+            FILE *Out() { return out; }
         };
     };                          // end of namespace xml
 };                              // end of namespace rs

@@ -60,6 +60,13 @@ adReference.o:
 adReference.o:   arbdb.h
 adReference.o: ./ad_prot.h adlocal.h adtune.h adlmacros.h
 adReference.o: 
+adRevCompl.o:  
+adRevCompl.o:  
+adRevCompl.o:  
+adRevCompl.o:  
+adRevCompl.o:  
+adRevCompl.o:  
+adRevCompl.o:  
 adTest.o:  
 adTest.o:  
 adTest.o:  

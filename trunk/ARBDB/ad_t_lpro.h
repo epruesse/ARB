@@ -37,6 +37,8 @@ char *gb_uncompress_by_sequence P_((GBDATA *gbd, const char *s, long size, GB_ER
 /* adtables.c */
 GBDATA *gbt_table_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *link));
 
+/* adRevCompl.c */
+
 #ifdef __cplusplus
 }
 #endif

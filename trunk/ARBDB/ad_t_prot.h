@@ -130,6 +130,12 @@ GB_TYPES GBT_get_type_of_table_entry_field P_((GBDATA *gb_table, const char *fie
 GB_ERROR GBT_savely_write_table_entry_field P_((GBDATA *gb_table, GBDATA *gb_entry, const char *fieldname, const char *value_in_ascii_format));
 GBDATA *GBT_open_table_field P_((GBDATA *gb_table, const char *fieldname, GB_TYPES type_of_field));
 
+/* adRevCompl.c */
+char GBT_complementNucleotide P_((char c, char T_or_U));
+char *GBT_reverseNucSequence P_((const char *s, int len));
+char *GBT_complementNucSequence P_((const char *s, int len, char T_or_U));
+GB_ERROR GBT_reverseComplementNucSequence P_((char *seq, long length, GB_alignment_type alignment_type));
+
 #ifdef __cplusplus
 }
 #endif

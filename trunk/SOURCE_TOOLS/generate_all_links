@@ -171,6 +171,7 @@ ln -s ../ARBDB/arbdb.c ARBDBS/arbdb.c
 ln -s ../ARBDB/arbdb.h ARBDBS/arbdb.h
 ln -s ../ARBDB/arbdbpp.cxx ARBDBS/arbdbpp.cxx
 ln -s ../ARBDB/arbdbt.h ARBDBS/arbdbt.h
+ln -s ../ARBDB/adRevCompl.c ARBDBS/adRevCompl.c
 
 ln -s ../ARBDB/AD_MOBJECTS.h ARBDB2/AD_MOBJECTS.h
 ln -s ../ARBDB/adReference.c ARBDB2/adReference.c
@@ -213,6 +214,7 @@ ln -s ../ARBDB/arbdb.c ARBDB2/arbdb.c
 ln -s ../ARBDB/arbdb.h ARBDB2/arbdb.h
 ln -s ../ARBDB/arbdbpp.cxx ARBDB2/arbdbpp.cxx
 ln -s ../ARBDB/arbdbt.h ARBDB2/arbdbt.h
+ln -s ../ARBDB/adRevCompl.c ARBDB2/adRevCompl.c
 
 # small dirs
 
