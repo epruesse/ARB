@@ -57,7 +57,8 @@ public:
         GB_ERROR err = 0;
         if (!link) {
             const char *name_server = "ARB_NAME_SERVER";
-            if (arb_look_and_start_server(AISC_MAGIC_NUMBER,name_server,gb_main)){
+
+            if (arb_look_and_start_server(AISC_MAGIC_NUMBER,name_server,gb_main)) {
                 err = "Sorry I can't start the NAME SERVER";
             }
             else {
