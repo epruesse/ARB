@@ -1,8 +1,8 @@
 #include "island_hopping.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #define EXTERN
 extern "C" {
@@ -65,7 +65,7 @@ GB_ERROR IslandHopping::do_align() {
     char *XX=NULL;
     char *YY=NULL;
 
-    int i,j,k;
+    int i,j,k,J,K,L;
 
     Error = 0;
 
@@ -83,16 +83,28 @@ GB_ERROR IslandHopping::do_align() {
 
     // @@@ helix?
 
-    j = 0;
-    k = 0;
+    j = 0; J=0;
+    k = 0; K=0; L=0;
 
     for(i=0;i<alignment_length;i++) {
         if(ref_sequence[i]!='-' && ref_sequence[i]!='.') {
-            X[j] = ref_sequence[i]; secX[j]=0;
+            X[j] = ref_sequence[i];
+            switch(ref_helix[j]) {
+             case '-': case '.':                     if(L!=0) J++; L=0; break;
+             case '[': case '<': case '(': case '{': if(L!=1) J++; L=1; break;
+             case ']': case '>': case ')': case '}': if(L!=2) J++; L=2; break;
+            } 
+            secX[j]=L?J:0;
             j++;
         }
         if(toAlign_sequence[i]!='-' && toAlign_sequence[i]!='.') {
-            Y[k] = toAlign_sequence[i]; secY[k]=0;
+            Y[k] = toAlign_sequence[i];
+            switch(toAlign_helix[k]) {
+             case '-': case '.':                     if(L!=0) K++; L=0; break;
+             case '[': case '<': case '(': case '{': if(L!=1) K++; L=1; break;
+             case ']': case '>': case ')': case '}': if(L!=2) K++; L=2; break;
+            }   
+            secY[k]=L?K:0;
             k++;
         }
     }
