@@ -101,14 +101,14 @@ ifdef DARWIN
 
    XHOME = /usr/X11R6
    havebool = -DHAVE_BOOL
-   lflags = $(LDFLAGS) -force_flat_namespace
+   lflags = $(LDFLAGS) -force_flat_namespace -Wl,-stack_size -Wl,10000000 -Wl,-stack_addr -Wl,c0000000
    DARWIN_SPECIALS = -DNO_REGEXPR  -no-cpp-precomp -DHAVE_BOOL
    CPP = cc -D$(MACH) $(DARWIN_SPECIALS)
    ACC = cc -D$(MACH) $(DARWIN_SPECIALS)
    CCLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
    CCPLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
-   AR = ld -r $(lflags) -o#			# Archive Linker
-   ARLIB = ld -r $(lflags)  -o#			# Archive Linker shared libs.
+   AR = ld -r -o#                 # Archive Linker
+   ARLIB = $(AR)#                 # Archive Linker shared libs.
 #  ARLIB = cc -bundle -flat_namespace -undefined suppress -o
    SHARED_LIB_SUFFIX = a#
 # .. Just building shared libraries static, i was having problems otherwise
