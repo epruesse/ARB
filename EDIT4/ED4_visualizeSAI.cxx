@@ -216,8 +216,8 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     aw_root->awar(AWAR_SAI_SELECT)->add_callback(saiChanged_callback);
 }
 
-void createCopyClrTransTable(AW_window *aws, long int mode) {
-    AW_root *aw_root = aws->get_root();
+void createCopyClrTransTable(AW_window *aws, long int mode) {  // mode=0 copies the existing color translation table 
+    AW_root *aw_root = aws->get_root();                        // mode=1 creates a new color translation table
     char    *newClrTransTabName = 0;
     char    *clrTabSourceName   = 0;
 
@@ -232,10 +232,14 @@ void createCopyClrTransTable(AW_window *aws, long int mode) {
         newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_COPY)->read_string());
         clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
         if(clrTabSourceName[0]!='?') {
-            aw_root->awar_string(getClrDefAwar(newClrTransTabName), aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string(), AW_ROOT_DEFAULT);
+            if (strcmp(newClrTransTabName,clrTabSourceName)!=0) {
+                aw_root->awar_string(getClrDefAwar(newClrTransTabName), aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string(), AW_ROOT_DEFAULT);
+                aws->insert_selection(clrTransTableLst, newClrTransTabName, newClrTransTabName);
+                aws->update_selection_list(clrTransTableLst);
+            }
+            else aw_message("Source and Destination names are same!. Color Translation Table cannot be COPYIED!");
         }
-        aws->insert_selection(clrTransTableLst, newClrTransTabName, newClrTransTabName);
-        aws->update_selection_list(clrTransTableLst);
+        else aw_message("Please select a valid Color Translation Table to COPY!");
         break;
     default:
         break;
@@ -247,7 +251,7 @@ void createCopyClrTransTable(AW_window *aws, long int mode) {
 void deleteColorTranslationTable(AW_window *aws){
     AW_root *aw_root = aws->get_root();
 
-    int answer = aw_message("Are you sure to delete the selected COLOR TRANLATION TABLE?","OK,CANCEL");
+    int answer = aw_message("Are you sure you want to delete the selected COLOR TRANLATION TABLE?","OK,CANCEL");
     if(answer) return;
 
     char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
@@ -256,9 +260,9 @@ void deleteColorTranslationTable(AW_window *aws){
         aws->delete_selection_from_list(clrTransTableLst, clrTabName);
         aws->insert_default_selection(clrTransTableLst, "????", "????");
         aws->update_selection_list(clrTransTableLst);
+        aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
     }
-
-    aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
+    else aw_message("Selected Color Translation Table is not VALID and cannot be DELETED!");
     free(clrTabName);
 
     //refresh editor
