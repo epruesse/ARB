@@ -2,6 +2,7 @@ class SQ_consensus_marked {
 
 public:
     SQ_consensus_marked();
+    //~SQ_consensus_marked();
     void SQ_calc_consensus(char base, int position);
     char SQ_get_consensus(int position);
 
@@ -24,6 +25,11 @@ SQ_consensus_marked::SQ_consensus_marked(){
     }
 
 }
+
+
+/* SQ_consensus_marked::~SQ_consensus_marked(){ */
+/*     free(consensus); */
+/* } */
 
 
 void SQ_consensus_marked::SQ_calc_consensus(char base, int position){
