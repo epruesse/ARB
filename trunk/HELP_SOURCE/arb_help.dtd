@@ -40,5 +40,9 @@
 <!ATTLIST P indentation CDATA #IMPLIED >
 <!ATTLIST P enumerated CDATA #IMPLIED >
 
-<!ELEMENT T (#PCDATA) >
+<!ELEMENT T (#PCDATA|LINK)* >
 <!ATTLIST T reflow (0|1) #REQUIRED >
+
+<!ELEMENT LINK EMPTY>
+<!ATTLIST LINK dest CDATA #REQUIRED> <!--destination of link (may be other helpfile, email- or web-address)-->
+<!ATTLIST LINK type (help|email|www) #REQUIRED>
