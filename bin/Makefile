@@ -1,24 +1,25 @@
 help:
-	@echo	'Options'
-	@echo	'	all:	Create all links to binaries in: SH PERL_SCRIPTS'
-#	@echo	'		DEPOT SH PERL_SCRIPTS'
-	@echo	'	realclean: remove everything but this Makefile'
-	@echo	'	arbclean:  remove all arb_binaries'
+	@echo	'Known targets:'
+	@echo	''
+	@echo	'  all		create all links to binaries in: SH PERL_SCRIPTS'
+	@echo	'  develall     create links to arb_binaries in: SOURCE_TOOLS (development only)'
+	@echo	'  realclean:   remove everything but this Makefile'
+	@echo	'  cleanlinks:  remove all links'
 
-
-all:
-	rm -f dummyprg `find . -type l -print`
+all: cleanlinks
 ifdef DEBIAN
 	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 else
 	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-#	/bin/ln -s `find ../DEPOT ../SH ../PERL5/bin ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 endif
+
+develall: all
 	/bin/ln -s `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
 
 
 realclean:
 	rm -f dummyprg `find . ! -name Makefile -print`
 
-arbclean:
-	rm -f `find . ! -type l -name 'arb_*' -print`
+cleanlinks:
+	ln -s dummy dummy
+	rm -f dummy `find . -type l -print`
