@@ -50,7 +50,7 @@ void probe_design_create_result_window(AW_window *aww)
         return;
     }
     pd_gl.pd_design = new AW_window_simple;
-    pd_gl.pd_design->init(aww->get_root(), "PD_RESULT", "PD RESULT", 0, 400);
+    pd_gl.pd_design->init(aww->get_root(), "PD_RESULT", "PD RESULT");
     pd_gl.pd_design->load_xfig("pd_reslt.fig");
 
     pd_gl.pd_design->at("close");
@@ -672,14 +672,22 @@ void resolved_probe_chosen(AW_root *root) {
 void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
 {
     char buffer[256]; memset(buffer,0,256);
-    int i;
+    int  i;
     pd_gl.pd_design = 0;        /* design result window not created */
     root->awar_string( AWAR_PD_MATCH_ITEM, "" , db1);
     root->awar_float( "probe_design/DTEDGE", .5  ,    db1);
     root->awar_float( "probe_design/DT", .5  ,    db1);
+
+    double default_bonds[16] = {
+        0.0, 0.0, 0.5, 1.1,
+        0.0, 0.0, 1.5, 0.0,
+        0.5, 1.5, 0.4, 0.9,
+        1.1, 0.0, 0.9, 0.0
+    };
+
     for (i=0;i<16;i++) {
         sprintf(buffer,"probe_design/bonds/pos%i",i);
-        root->awar_float( buffer, 0.0  ,    db1);
+        root->awar_float( buffer, default_bonds[i], db1);
         root->awar(buffer)->set_minmax(0,3.0);
     }
 #if 0
@@ -763,7 +771,7 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
     int i;
     char buffer[256];
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "PD_EXPERT","PD-SPECIALS", 10, 10 );
+    aws->init( root, "PD_EXPERT","PD-SPECIALS");
 
     aws->load_xfig("pd_spec.fig");
     aws->label_length(30);
@@ -845,7 +853,7 @@ void probe_design_save_default(AW_window *aw,AW_default aw_def)
 AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     AWUSE(def);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "PROBE_DESIGN","PROBE DESIGN", 10, 10 );
+    aws->init( root, "PROBE_DESIGN","PROBE DESIGN");
 
     aws->load_xfig("pd_main.fig");
 
@@ -1072,7 +1080,7 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     GB_transaction dummy(gb_main);
     AW_window_simple *aws = new AW_window_simple;
     AWUSE(def);
-    aws->init( root, "PROBE_MATCH", "PROBE MATCH", 0, 0 );
+    aws->init( root, "PROBE_MATCH", "PROBE MATCH");
 
     aws->load_xfig("pd_match.fig");
 
@@ -1283,7 +1291,7 @@ void pd_edit_arb_tcp(AW_window *aww){
 AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     AW_window_simple *aws = new AW_window_simple;
     AWUSE(def);
-    aws->init( root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN", 0, 0 );
+    aws->init( root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN");
 
     aws->load_xfig("pd_admin.fig");
 
@@ -1521,7 +1529,7 @@ static void create_probe_group_groups_window(AW_window *aww) {
     if (pg_global.pg_groups_window==0) { // window was not created yet
         AW_window_simple *aws = new AW_window_simple;
 
-        aws->init(aw_root, "PG_RESULT_SELECTION", "Probe group results", 600, 600);
+        aws->init(aw_root, "PG_RESULT_SELECTION", "Probe group results");
         aws->load_xfig("pg_select.fig");
 
         aws->at("close");
