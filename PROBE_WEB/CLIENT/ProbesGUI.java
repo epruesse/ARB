@@ -3,6 +3,7 @@
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.text.*;
 
 public class ProbesGUI extends Frame
 {
@@ -21,7 +22,6 @@ public class ProbesGUI extends Frame
     private Dimension       estimatedScrollPaneSize;
     private final Dimension wantedScrollPaneSize;
 
-
     public ProbesGUI(int levels, String title, Client cl, Rectangle frame_bounds, Dimension wantedScrollPaneSize_, int textWidth) throws Exception
     {
         super(title);
@@ -30,9 +30,12 @@ public class ProbesGUI extends Frame
         estimatedScrollPaneSize = new Dimension(frame_bounds.width, frame_bounds.height);
         client                  = cl;
 
-        Color backgroundColor = new Color(160, 180, 255);
-        Font  fixedFont       = new Font("Monospaced", Font.PLAIN, 14); // used 4 probe list
-        // Font  normalFont      = new Font("SansSerif", Font.PLAIN, 18); // used everywhere else
+        Color backgroundColor    = new Color(160, 180, 255);
+        Font  fixedFont          = findFixedFont();
+        // if (fixedFont           == ;
+            // Font fixedFont       = new Font("Courier", Font.PLAIN, 14); // used 4 probe list
+            // Font  fixedFont   = new Font("Monospaced", Font.PLAIN, 14); // used 4 probe list
+            // Font  normalFont  = new Font("SansSerif", Font.PLAIN, 18); // used everywhere else
 
         setVisible(false);
         setBackground(Color.lightGray);
@@ -157,6 +160,43 @@ public class ProbesGUI extends Frame
         addWindowListener(new WindowClosingAdapter(true));
     }
 
+    private static String probe_list_chars = "ACGTU=%0123456789° ";
+
+    private static Font findFixedFont() {
+        if (false) {
+            // @@@ FIXME: currently disabled - unfinished
+            
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Font allFonts[]        = ge.getAllFonts();
+
+            for (int i = 0; i<allFonts.length; ++i) {
+                Font f = allFonts[i];
+                if (f.isPlain()) { // don't check bold and italic fonts
+                    System.out.print("checking font '"+f.getName()+"'");
+
+                    int can = f.canDisplayUpTo(probe_list_chars); // slow!
+
+                    System.out.print(" family='"+f.getFamily()+"'");
+                    // System.out.print(" size='"+f.getSize()+"'"); // always 1
+                    System.out.print(" style='"+f.getStyle()+"'");
+                    // System.out.print(" weight='"+f.getWeight()+"'");
+
+
+                    // int can = f.canDisplayUpTo(probe_list_chars); // slow!
+                    // if (can == -1 || can == probe_list_chars.length()) {
+                    // System.out.print(" OK");
+                    // }
+                    // else {
+                    // System.out.print(" cannot display '"+probe_list_chars.substring(can)+"' can="+can);
+                    // }
+
+                    System.out.println("");
+                }
+            }
+        }
+        return new Font("Monospaced", Font.PLAIN, 14);
+    }
+
     public void toggleOverlap() throws Exception {
         // Note : intentionally placed here (because a 2nd probelist is planned)
 
@@ -189,7 +229,7 @@ public class ProbesGUI extends Frame
 
     public Dimension getPreferredScrollPaneSize() { return sc.getPreferredSize(); }
     public Dimension getScrollPaneViewportSize() { return sc.getViewportSize(); }
-    
+
     public TreeDisplay getTreeDisplay() { return td; }
     public TreeToolbar getTreeToolbar() { return tree_toolbar; }
 
