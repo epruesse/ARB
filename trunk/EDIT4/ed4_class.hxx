@@ -4,6 +4,10 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef AW_FONT_GROUP_HXX
+#include <aw_font_group.hxx>
+#endif
+
 #define e4_assert(bed) arb_assert(bed)
 
 #ifdef DEBUG
@@ -1031,46 +1035,6 @@ public:
     virtual ~ED4_terminal();
 };
 
-
-// --------------------------------------------------------------------------------
-//     class ED4_font_info
-// --------------------------------------------------------------------------------
-class ED4_font_info
-{
-    int width, height, ascent, descent; // maximum letter sizes
-
-    static int max_width;
-    static int max_height;
-    static int max_ascent;
-    static int max_descent;
-public:
-    ED4_font_info() {}
-
-    static void reset_maximas() {
-        max_width   = 0;
-        max_ascent  = 0;
-        max_height  = 0;
-        max_descent = 0;
-    }
-
-    void update(AW_font_information *font_info) {
-        width   = font_info->max_letter_width;      if (width>max_width)     max_width = width;
-        height  = font_info->max_letter_height;     if (height>max_height)   max_height = height;
-        ascent  = font_info->max_letter_ascent;     if (ascent>max_ascent)   max_ascent = ascent;
-        descent = font_info->max_letter_descent;    if (descent>max_descent) max_descent = descent;
-    }
-
-    int get_width() const { return width; } // this font
-    int get_height() const { return height; }
-    int get_ascent() const { return ascent; }
-    int get_descent() const { return descent; }
-
-    static int get_max_width() { return max_width; }    // all update'd fonts
-    static int get_max_height() { return max_height; }
-    static int get_max_ascent() { return max_ascent; }
-    static int get_max_descent() { return max_descent; }
-};
-
 typedef enum {
     ED4_SM_MOVE,
     ED4_SM_KILL,
@@ -1146,7 +1110,7 @@ public:
     AW_window     *temp_aww;
     AW_device     *temp_device;
     int            temp_gc;
-    ED4_font_info  font_info[ED4_G_LAST_FONT+1];
+    AW_font_group  font_group;
 
     //Initializing functions
     ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);      // flag only needed for loading a new configuration
