@@ -104,7 +104,7 @@ void table_add(int *mis_tabled, int *mis_tables, int length)
 #define MAX_LIST_PART_SIZE 50
 
 static const char *get_list_part(const char *list, int& offset) {
-    // scans strings with format "xxxx#yyyy#zzzz"
+    // scans strings with format "xxxx#yyyy#zzzz#" (Note: has to end with '#')
     // your first call should be with offset == 0
     //
     // returns : static copy of each part or 0 when done
@@ -124,7 +124,7 @@ static const char *get_list_part(const char *list, int& offset) {
     else { // last list part
         num_offset = offset+strlen(list+offset);
     }
-    pt_assert(list[num_offset] == '#' || list[num_offset] == 0);
+    pt_assert(list[num_offset] == '#');
 
     int len = num_offset-offset;
     pt_assert(len <= MAX_LIST_PART_SIZE);
@@ -132,7 +132,7 @@ static const char *get_list_part(const char *list, int& offset) {
     memcpy(buffer[curr_buff], list+offset, len);
     buffer[curr_buff][len] = 0; // EOS
 
-    offset = list[num_offset] ? num_offset+1 : -1; // set offset for next part
+    offset = list[num_offset+1] ? num_offset+1 : -1; // set offset for next part
 
     return buffer[curr_buff];
 }
@@ -142,15 +142,16 @@ static const char *get_list_part(const char *list, int& offset) {
 /* read the name list seperated by # and set the flag for the group members,
    + returns a list of names which have not been found */
 
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums) {
-    /* clear 'is_group' */
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
+    /* clear 'is_group' */    
     for (int i = 0; i < psg.data_count; i++) {
         psg.data[i].is_group = 0; // Note: probes are designed for species with is_group == 1
     }
     locs->group_count = 0;
+    error             = 0; 
 
     if (!names_list) {
-        printf("Can't design probes for no species (species list is empty)\n");
+        error = "Can't design probes for no species (species list is empty)";
         return 0;
     }
 
@@ -166,7 +167,13 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         if (gene_flag) {
             const char *slash = strchr(arb_name, '/');
 
-            pt_assert(slash); // ARB has to send 'species/gene'
+            if (!slash) {
+                // ARB has to send 'species/gene'.
+                // If it did not, user did not mark 'Gene probes ?' flag
+
+                error = GBS_global_string("Expected '/' in '%s' (this PT-server can only design probes for genes)", arb_name);
+                break;
+            }
 
             internal_name = arb2internal_name(arb_name);
             pt_assert(internal_name);
@@ -200,10 +207,15 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         }
     }
 
-    if (not_found) return GBS_strclose(not_found);
-    return 0;
+    char *result = not_found ? GBS_strclose(not_found) : 0;
+    if (error) {
+        free(result);
+        result = 0;
+    }
+    return result;
 }
 
+#if 0
 char *ptpd_read_names_old(PT_local * locs, char *names_listi, char *checksumsi)
 {
     char *names_list;
@@ -300,17 +312,23 @@ char *ptpd_read_names_old(PT_local * locs, char *names_listi, char *checksumsi)
     return 0;
 }
 
+#endif
 
 extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc){
     static bytestring un = {0,0};
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;
-    un.data    = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data);
+    
+    const char *error;
+    un.data = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data, error);    
     if (un.data) {
-        un.size		= strlen(un.data) + 1;
-    }else{
-        un.data		= strdup("");
-        un.size		= 1;
+        un.size = strlen(un.data) + 1;
+        pt_assert(!error);
+    }
+    else {        
+        un.data = strdup("");
+        un.size = 1;
+        if (error) pt_export_error(locs, error);
     }
     return &un;
 }
