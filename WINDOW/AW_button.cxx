@@ -27,7 +27,7 @@
 #include "aw_window_Xm.hxx"
 
 #if defined(DEVEL_RALF)
-#define DUMP_BUTTON_CREATION
+// #define DUMP_BUTTON_CREATION
 #endif // DEVEL_RALF
 
 /*********************************************************************************************************************/
