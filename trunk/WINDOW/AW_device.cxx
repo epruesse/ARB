@@ -456,26 +456,51 @@ AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,XID windo
 						DEVICE and GCS
 **********************************************************************************************/
 
+#if defined(DEBUG)
+// #define SHOW_CLIP_STACK_CHANGES
+#endif // DEBUG
 
-void		AW_device::push_clip_scale(void)
+#if defined(SHOW_CLIP_STACK_CHANGES)
+static const char *clipstatestr(AW_device *device) {
+    static char   buffer[1024];
+    AW_rectangle& clip_rect = device->clip_rect;
+    sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
+            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r
+            );
+
+    return buffer;
+}
+#endif // SHOW_CLIP_STACK_CHANGES
+
+
+void AW_device::push_clip_scale(void)
 {
     AW_clip_scale_stack *stack = new AW_clip_scale_stack;
-    stack->next = clip_scale_stack;
-    clip_scale_stack = stack;
-    stack->scale = scale;
-    stack->xoffset = xoffset;
-    stack->yoffset = yoffset;
-    stack->top_font_overlap = top_font_overlap;
+    stack->next                = clip_scale_stack;
+    clip_scale_stack           = stack;
+    stack->scale               = scale;
+    stack->xoffset             = xoffset;
+    stack->yoffset             = yoffset;
+    stack->top_font_overlap    = top_font_overlap;
     stack->bottom_font_overlap = bottom_font_overlap;
-    stack->left_font_overlap = left_font_overlap;
-    stack->right_font_overlap = right_font_overlap;
-    stack->clip_rect = clip_rect;
+    stack->left_font_overlap   = left_font_overlap;
+    stack->right_font_overlap  = right_font_overlap;
+    stack->clip_rect           = clip_rect;
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    printf("push_clip_scale: %s\n", clipstatestr(this));
+#endif // SHOW_CLIP_STACK_CHANGES
 }
-void		AW_device::pop_clip_scale(void){
+void AW_device::pop_clip_scale(void){
     if (!clip_scale_stack) {
         AW_ERROR("To many pop_clip_scale on that device");
         return;
     }
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    char *state_before_pop = strdup(clipstatestr(this));
+#endif // SHOW_CLIP_STACK_CHANGES
+
     scale = clip_scale_stack->scale;
     xoffset = clip_scale_stack->xoffset;
     yoffset = clip_scale_stack->yoffset;
@@ -487,6 +512,11 @@ void		AW_device::pop_clip_scale(void){
     AW_clip_scale_stack *oldstack = clip_scale_stack;
     clip_scale_stack = clip_scale_stack->next;
     delete oldstack;
+
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    printf("pop_clip_scale: %s -> %s\n", state_before_pop, clipstatestr(this));
+    free(state_before_pop);
+#endif // SHOW_CLIP_STACK_CHANGES
 }
 
 void AW_device::get_area_size(AW_rectangle *rect) {	//get the extends from the class AW_device
