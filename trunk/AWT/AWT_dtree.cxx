@@ -281,7 +281,8 @@ void AWT_show_circle(AW_device *device, const char *bootstrap, double len, doubl
     radius *= 2;
     radius *= len;
     if (radius < 0) return;
-    if (radius > 0.04) radius = 0.04;
+    //if (radius > 0.04) radius = 0.04;
+    if (radius > 0.06) radius = 0.06;
     device->circle(AWT_GC_BRANCH_REMARK, x,y,radius,radius,filter,cd1 , (AW_CL) cd2 );
 }
 
