@@ -2,11 +2,12 @@
 
 if [ -z $1 ] ; then
     echo ''
-    echo 'Usage: arb_valgrind [-c <callers>] [-f <filter>] [-l [-r]] <arb_program> <arguments>'
+    echo 'Usage: arb_valgrind [-m] [-c <callers>] [-f <filter>] [-l [-r]] <arb_program> <arguments>'
     echo ''
-    echo '    runs valgrind on that program piping results through a filter'
+    echo '    runs valgrind (versions 2.x) on <arb_program> piping results through a filter'
     echo '    so that the output can be used as emacs error messages'
     echo ''
+    echo '    -m             use memcheck (default uses addrcheck)'
     echo '    <callers>      show <callers> stackframes (default: none)'
     echo '                   [in fact they are always shown, but not marked as errors]'
     echo '    <filter>       regexpr to filter the reason (default: all)'
@@ -46,6 +47,7 @@ else
     CALLERS=0
     FILTER='.*'
     LEAK_CHECK=''
+    TOOL='--tool=addrcheck'
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -58,6 +60,11 @@ else
 
         while [ $SCAN_ARGS = 1 ] ; do
             SCAN_ARGS=0
+            if [ $1 = '-m' ] ; then
+                TOOL='--tool=memcheck'
+                shift 1
+                SCAN_ARGS=1
+            fi
             if [ $1 = '-c' ] ; then
                 CALLERS=$2
                 shift 2
@@ -90,7 +97,7 @@ else
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
-        valgrind -v --error-limit=no --num-callers=10 $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
+        valgrind --tool=memcheck -v --error-limit=no --num-callers=10 $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
         echo 'valgrind done.'
     fi
 fi
