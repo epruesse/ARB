@@ -18,9 +18,28 @@ DESCRIPTION
 
         - Select what kind of information should be extracted
 
-                   Information         Formula
+             Information         Formula
+             -------------------------------------
+             G+C ratio           (G+C) / N
+             G+A ratio           (G+A) / N
+             Rate                mutation_sum / frequency_sum
+             TT ratio            (min.mutations + transversions) / transversions
+             Most freq. base     F1 / N
+             2nd freq. base      F2 / N
+             3rd freq. base      F3 / N
+             Least freq. base    F4 / N
+             A ratio             A / N
+             C ratio             C / N
+             G ratio             G / N
+             TU ratio            (T+U) / N
+             Helix               boolean (helix or not helix)
 
-                   G+C Ratio           G+C
+             Legend:
+             -------
+             A/C/G/T/U = amount of A/C/G/T/U's in each column
+             N         = total amount of bases in each column
+             Fx        = F1 = count of most freq. base, ..., F4 of least freq. base
+
 
         - Select if you like smoothing of the values (before they are written to file)
 
