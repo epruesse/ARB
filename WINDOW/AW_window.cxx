@@ -1186,11 +1186,11 @@ int aw_status_dummy2(const char *val){
 
 void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     // Initialisiert eine gesamte X-Anwendung
-    int a = 0;
-    int i;
+    int          a = 0;
+    int          i;
     XFontStruct *fontstruct;
-    char buffer[256];
-    String fallback_resources[100];
+    char         buffer[256];
+    char        *fallback_resources[100];
     p_r-> no_exit  = no_exit;
 
     for (i=0;i<1000;i++) {
@@ -1206,6 +1206,8 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     GB_install_status((gb_status_func_type)aw_status_dummy);
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
+
+    // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtAppInitialize(&(p_r->context), programmname, NULL, 0,
                                            &a, /*&argc*/
                                            NULL, /*argv*/
