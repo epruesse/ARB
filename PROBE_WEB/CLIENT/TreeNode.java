@@ -41,8 +41,6 @@ public class TreeNode
     private String binaryPath;
     private String codedPath;
 
-    private static final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-
     // data structure
     private boolean  isLeaf;
     private TreeNode father;
@@ -111,11 +109,15 @@ public class TreeNode
         //         int myIdx                 = father.upperSon() == this ? 0 : 1;
         //         return (TreeNode)(father.childNodes.elementAt(1-myIdx));
     }
-    public NodeProbes getNodeProbes(boolean exactMatches) throws Exception {
+    public NodeProbes getNodeProbes() throws Exception {
         if (retrievedProbes == null) {
-            retrievedProbes = new NodeProbes(this, exactMatches);
+            retrievedProbes = new NodeProbes(this, getExactMatches() != 0);
         }
         return retrievedProbes;
+    }
+
+    public void cacheAllHits() throws Exception {
+        getNodeProbes().cacheAllHits();
     }
 
     public void fold() { folded = true; }
@@ -126,13 +128,13 @@ public class TreeNode
         }
     }
 
-    // safe version : 
+    // safe version :
     public boolean isFoldedGroup() { return isGroup() && folded; }
     public boolean isUnfoldedGroup() { return isGroup() && !folded; }
-    // quick version : 
+    // quick version :
     // public boolean isFoldedGroup() { return folded; }
     // public boolean isUnfoldedGroup() { return !folded; }
-    
+
     // public boolean isFolded() { return folded; }
 
     public boolean isAutofolded() { return isGroup() && groupName.equals(autofold); }
@@ -477,9 +479,9 @@ public class TreeNode
             lowerSon().searchAndMark(text, ignoreCase);
     }
 
-    public void setPath(String path) throws Exception {
+    public void setPath(String path) {
         binaryPath = path;
-        codedPath  = encodePath(binaryPath);
+        codedPath  = Toolkit.encodePath(binaryPath);
         if (!isLeaf()) {
             upperSon().setPath(binaryPath + "0");
             lowerSon().setPath(binaryPath + "1");
@@ -488,49 +490,6 @@ public class TreeNode
 
     public String getBinaryPath() { return binaryPath; }
     public String getCodedPath() { return codedPath; }
-
-    // -------------------------------------------------------------------
-    // NOTE: if you change encodePath() please keep encodePath/decodePath()
-    //       in ./PROBE_SERVER/WORKER/psw_main.cxx up-to-date
-
-    private String encodePath(String path) throws Exception {
-        StringBuffer coded = new StringBuffer();
-        int pathLength = path.length();
-
-        // transform length into two byte hex format
-        for (int digit = 0; digit < 4; digit ++)
-        {
-            int remain = pathLength%16;
-            pathLength = pathLength/16;
-            coded.insert(0,hexToken[remain]);
-        }
-
-
-        int value = 0;
-        int position;
-        for (position = 0; position < path.length(); position++ ) {
-            if (path.charAt(position) == '1') {
-                switch (position%4) {
-                    case 0: value += 8; break;
-                    case 1: value += 4; break;
-                    case 2: value += 2; break;
-                    case 3: value += 1; break;
-                    default:
-                        Toolkit.InternalError("logical error in encodePath");
-                }
-
-            };
-            if ((position%4) == 3) {
-                coded.append(hexToken[value]);
-                value = 0;
-            }
-        }
-
-        if ((position%4) != 0) {
-            coded.append(hexToken[value]);
-        }
-        return coded.toString();
-    }
 
     public boolean unfoldAll(boolean recursive) {
         if (!isLeaf()) {
@@ -693,6 +652,45 @@ public class TreeNode
 
     public boolean contains(TreeNode child) {
         return child.hasAnchestor(this);
+    }
+
+    public void storeFolding(StringBuffer buf) {
+        if (!isLeaf()) {
+            if (isGroup() && !isAutofolded()) {
+                buf.append(isFoldedGroup() ? '1' : '0');
+            }
+            upperSon().storeFolding(buf);
+            lowerSon().storeFolding(buf);
+        }
+    }
+    public int restoreFolding(String folding, int pos) {
+        if (!isLeaf()) {
+            if (isGroup() && !isAutofolded()) {
+                char c = folding.charAt(pos);
+                ++pos;
+                if (c == '1') {
+                    if (isUnfoldedGroup()) fold();
+                }
+                else {
+                    if (isFoldedGroup()) unfold();
+                }
+            }
+            pos = upperSon().restoreFolding(folding, pos);
+            pos = lowerSon().restoreFolding(folding, pos);
+        }
+        return pos;
+    }
+
+    public TreeNode findNodeByBinaryPath(String binaryPath, int pos) {
+        if (pos == binaryPath.length()) return this;
+        if (isLeaf()) return null;
+
+        if (binaryPath.charAt(pos) == '0') {
+            return upperSon().findNodeByBinaryPath(binaryPath, pos+1);
+        }
+        else {
+            return lowerSon().findNodeByBinaryPath(binaryPath, pos+1);
+        }
     }
 
 }// end of class
