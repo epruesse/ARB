@@ -463,7 +463,7 @@ ARCHS = \
 			NAMES_COM/server.a \
 			NTREE/NTREE.a \
 			RNA3D/RNA3D.a \
-			RNA3D/OPENGL/OPENGL.a \
+#			RNA3D/OPENGL/OPENGL.a \
 			ORS_CGI/ORS_CGI.a \
 			ORS_COM/server.a \
 			ORS_SERVER/ORS_SERVER.a \
@@ -539,14 +539,17 @@ $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 RNA3D = bin/arb_rna3d
 ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
+#		RNA3D/OPENGL/OPENGL.a \
 
-$(RNA3D): gl $(ARCHS_RNA3D:.a=.dummy) shared_libs
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) \
-		)
+$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
+	@echo $@ currently does not work as standalone application
+	false
+
+#	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
+#		echo Link $@ ; \
+#		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
+#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) \
+#		)
 
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
@@ -570,6 +573,8 @@ ARCHS_EDIT4 = \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
+		RNA3D/RNA3D.a \
+#		RNA3D/OPENGL/OPENGL.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
@@ -579,8 +584,8 @@ ARCHS_EDIT4 = \
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(GLLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  $(GLLIBS)  \
 		)
 
 #***********************************	arb_wetc **************************************
@@ -1251,7 +1256,7 @@ else
 OPENGL_TARGETS=
 endif
 
-arbxtras: tg ps pc pst chip $(OPENGL_TARGETS)
+arbxtras: tg ps pc pst chip # $(OPENGL_TARGETS)
 
 tryxtras:
 		@echo $(SEP)

@@ -1,8 +1,9 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = Main.o Camera.o Menu.o Mouse.o \
-			  Structure3D.o #Graphics.o OpenGLEngine.o 
+CPP_OBJECTS = RNA3D_Interface.o RNA3D_Graphics.o RNA3D_OpenGLEngine.o 
+
+#CPP_OBJECTS = Main.o Camera.o Menu.o Mouse.o Structure3D.o 
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
@@ -25,34 +26,3 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
-
-Camera.o: Camera.hxx
-Camera.o: GlobalHeader.hxx
-Camera.o: Structure3D.hxx
-Camera.o: $(ARBHOME)/INCLUDE/GL/glpng.h
-
-Main.o: Camera.hxx
-Main.o: GlobalHeader.hxx
-Main.o: Globals.hxx
-Main.o: Main.hxx
-Main.o: Menu.hxx
-Main.o: Mouse.hxx
-Main.o: OPENGL/OpenGLGraphics.hxx
-Main.o: OPENGL/Renderer.hxx
-Main.o: OPENGL/TextureMapping.hxx
-Main.o: Structure3D.hxx
-Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
-
-Menu.o: GlobalHeader.hxx
-Menu.o: Menu.hxx
-Menu.o: $(ARBHOME)/INCLUDE/GL/glpng.h
-
-Mouse.o: GlobalHeader.hxx
-Mouse.o: Mouse.hxx
-Mouse.o: $(ARBHOME)/INCLUDE/GL/glpng.h
-
-Structure3D.o: GlobalHeader.hxx
-Structure3D.o: Globals.hxx
-Structure3D.o: OPENGL/OpenGLGraphics.hxx
-Structure3D.o: Structure3D.hxx
-Structure3D.o: $(ARBHOME)/INCLUDE/GL/glpng.h
