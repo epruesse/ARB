@@ -27,6 +27,7 @@ probe_design.o: probe_design.hxx
 probe_design.o: SaiProbeVisualization.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -44,6 +45,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
+probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
