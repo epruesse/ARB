@@ -13,8 +13,14 @@ CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
 
 CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
 
+DATE_HEADER=nt_date.h
+
 $(MAIN): nt_date_update $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(DATE_HEADER) $(CPP_OBJECTS) || ( \
+		echo "Link $(MAIN)" ; \
+		echo $(AR) $(MAIN) $(CPP_OBJECTS) ; \
+		$(AR) $(MAIN) $(CPP_OBJECTS) ; \
+	)
 
 nt_date.h: nt_date_update
 
