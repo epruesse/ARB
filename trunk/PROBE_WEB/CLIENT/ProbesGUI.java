@@ -11,6 +11,7 @@ public class ProbesGUI extends Frame
 private ScrollPane              sc;
 private TextArea                details;
 private ProbeList               probe_list;
+private int                     probeListWidth = 200;
 private int                     treeLevels;
 private TreeDisplay             td;
 private TreeNode                root;
@@ -49,12 +50,14 @@ public ProbesGUI( TreeNode root, int levels, String title)
     details = new TextArea("Display detail information", 10, 40, TextArea.SCROLLBARS_BOTH);
     add(details, BorderLayout.SOUTH);
 
-    probe_list = new ProbeList();
+    probe_list = new ProbeList(probeListWidth, tree_height);
     probe_list.add("Right click a node");
     probe_list.add("to display probes.");
+    //    probe_list.setSize(100, tree_height);
+
 
     add(probe_list, BorderLayout.EAST);
-//     probe_list.resize(40, tree_height);
+
 
     sc = new ScrollPane();
     if (root == null) {
