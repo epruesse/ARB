@@ -14,6 +14,11 @@ AW_window *create_tree_window(AW_root *aw_root);
 GBDATA *gb_main;
 char **filter_text;
 
+GB_ERROR ph_check_initialized() {
+    if (!PHDATA::ROOT) return "Please select alignment and press DONE";
+    return 0;
+}
+
 void create_filter_text()
 {
     filter_text = (char **) calloc(5,sizeof (char *));
@@ -36,8 +41,9 @@ void startup_sequence_cb(AW_window *aww,void *cd1)
     aw_root=(AW_root *) cd1;
     // loading database
     GB_push_transaction(gb_main);
-    if(GBT_get_alignment_len(gb_main,aw_root->awar("phyl/alignment")->read_string())<1)
-        aw_root->awar("phyl/which_species")->write_string(GBT_get_default_alignment(gb_main));
+    if(GBT_get_alignment_len(gb_main,aw_root->awar("phyl/alignment")->read_string())<1) {
+        aw_root->awar("phyl/alignment")->write_string(GBT_get_default_alignment(gb_main));
+    }
     GB_pop_transaction(gb_main);
 
     use = aw_root->awar("phyl/alignment")->read_string();
@@ -94,17 +100,20 @@ void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 //                            { if(PHDATA::ROOT->markerline[x]>=0.0)
 
 static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr) {
-    GBDATA *gb_sai = GBT_create_SAI(gb_main, sai_name);
-    GBDATA *gbd, *gb2;
-    GB_ERROR error = 0;
+    GBDATA   *gb_sai = GBT_create_SAI(gb_main, sai_name);
+    GBDATA   *gbd, *gb2;
+    GB_ERROR  error  = ph_check_initialized();
 
-    for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
-        gb2 = GB_find(gbd,0,0,this_level|search_next);
-        const char *key = GB_read_key_pntr(gbd);
-        if (!strcmp(key,"name")) continue;
-        if (!strncmp(key,"ali_",4)) continue;
-        error = GB_delete(gbd);
-        if (error) break;
+    if (!error) {
+        for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
+
+            gb2             = GB_find(gbd,0,0,this_level|search_next);
+            const char *key = GB_read_key_pntr(gbd);
+            if (!strcmp(key,"name")) continue;
+            if (!strncmp(key,"ali_",4)) continue;
+            error = GB_delete(gbd);
+            if (error) break;
+        }
     }
 
     if (!error) {
@@ -129,8 +138,12 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     }
 
     if (!error) {
-        gb_TYPE = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
+        gb_TYPE             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
         if (!gb_TYPE) error = GB_get_error();
+    }
+
+    if (!error && !PHDATA::ROOT->markerline) {
+        error = "Nothing calculated yet";
     }
 
     if (!error) {
@@ -231,17 +244,22 @@ void PH_save_ml_multiline_cb(AW_window *aww) {
 void PH_save_ml_cb(AW_window *aww) {
     GB_begin_transaction(gb_main);
     GB_ERROR error = 0;
-    char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
+
+    char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
     GBDATA *gb_sai = GBT_create_SAI(gb_main,fname);
     GBDATA *gbd,*gb2;
 
-    for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
-        gb2 = GB_find(gbd,0,0,this_level|search_next);
-        const char *key = GB_read_key_pntr(gbd);
-        if (!strcmp(key,"name")) continue;
-        if (!strncmp(key,"ali_",4)) continue;
-        error = GB_delete(gbd);
-        if (error) break;
+    error = ph_check_initialized();
+
+    if (!error) {
+        for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
+            gb2                                             = GB_find(gbd,0,0,this_level|search_next);
+            const char *key                                 = GB_read_key_pntr(gbd);
+            if (!strcmp(key,"name")) continue;
+            if (!strncmp(key,"ali_",4)) continue;
+            error                                           = GB_delete(gbd);
+            if (error) break;
+        }
     }
 
     if (!error) {
@@ -266,8 +284,12 @@ void PH_save_ml_cb(AW_window *aww) {
     }
 
     if (!error) {
-        gb_TYPE = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
+        gb_TYPE             = GBT_add_data(gb_sai,PHDATA::ROOT->use,"_TYPE",GB_STRING);
         if (!gb_TYPE) error = GB_get_error();
+    }
+
+    if (!error && !PHDATA::ROOT->markerline) {
+        error = "Nothing calculated yet";
     }
 
     if (!error) {
@@ -506,10 +528,13 @@ main(int argc, char **argv)
 	//loading database
     GB_push_transaction(gb_main);
 	alignment_names = GBT_get_alignment_names(gb_main);
+
 	for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++);
 	if (num_alignments > 1) {
-		(create_select_alignment_window(aw_root))->show();
-	} else {
+        AW_window *sel_ali_aww = create_select_alignment_window(aw_root);
+        sel_ali_aww->show();
+    }
+    else {
 		aw_root->awar("phyl/alignment")->write_string( alignment_names[0]);
 		startup_sequence_cb(0, aw_root);
 	}
