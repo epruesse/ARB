@@ -99,8 +99,8 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
         }
 
         if (tree->name && save_groupnames) {
-            if (use_NDS) buf = make_node_text_nds(gb_main, tree->gb_node,0,tree);
-            else buf         = tree->name;
+            /*if (use_NDS) buf = make_node_text_nds(gb_main, tree->gb_node,0,tree);
+              else*/ buf         = tree->name;
         }
 
         const char *print = 0;
