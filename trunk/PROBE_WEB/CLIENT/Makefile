@@ -27,6 +27,7 @@ help:
 	@echo "    all         Build $(JAR)"
 	@echo "    test        Run $(JAR)"
 	@echo "    clean       remove made files"
+	@echo "    depends     update dependencies"
 	@echo ""
 
 JAVAS=$(wildcard *.java)
