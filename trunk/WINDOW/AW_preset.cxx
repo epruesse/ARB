@@ -305,7 +305,7 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     delete colorname;
 }
 
-static const char *color_group[] = {
+static const char *color_group[AW_COLOR_GROUPS+1] = {
     "+-" AW_COLOR_GROUP_PREFIX  "1$#ff0000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",
     "+-" AW_COLOR_GROUP_PREFIX  "3$#00ff00", "-" AW_COLOR_GROUP_PREFIX  "4$#ff00ff",
     "+-" AW_COLOR_GROUP_PREFIX  "5$#0000ff", "-" AW_COLOR_GROUP_PREFIX  "6$#ffff00",
