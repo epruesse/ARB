@@ -64,6 +64,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -75,6 +76,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -89,6 +91,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -108,6 +111,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -122,6 +126,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -135,6 +140,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_consensus.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -149,6 +155,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -165,6 +172,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -179,6 +187,7 @@ AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -194,6 +203,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -207,6 +217,7 @@ ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -222,6 +233,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -241,6 +253,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -260,6 +273,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -294,6 +308,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -332,6 +347,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -346,6 +362,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
@@ -356,6 +373,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -375,6 +393,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -393,6 +412,7 @@ NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -405,6 +425,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -416,6 +437,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_validManual.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -430,6 +452,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/awt.hxx

@@ -73,6 +73,7 @@ pg_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 pg_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+pg_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/client.h

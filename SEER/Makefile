@@ -39,6 +39,7 @@ SEER_arb.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEER_arb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEER_arb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEER_arb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEER_arb.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEER_arb.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEER_arb.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEER_arb.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -64,6 +65,7 @@ SEER_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEER_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEER_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEER_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEER_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEER_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEER_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEER_main.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -82,6 +84,7 @@ SEER_to_seer.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEER_to_seer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/awt.hxx

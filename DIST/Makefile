@@ -36,6 +36,7 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -49,6 +50,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -68,6 +70,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -90,6 +93,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_mldist.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -111,6 +115,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -131,6 +136,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
@@ -151,6 +157,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -169,6 +176,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/arbdb.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdbt.h
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/awt.hxx

@@ -67,6 +67,7 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+edit_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx

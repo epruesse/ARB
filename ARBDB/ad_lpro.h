@@ -251,7 +251,7 @@ GB_ERROR gb_check_huffmann_tree P_((struct gb_compress_tree *t));
 struct gb_compress_tree *gb_build_uncompress_tree P_((const unsigned char *data, long short_flag, char **end));
 void gb_free_compress_tree P_((struct gb_compress_tree *tree));
 struct gb_compress_list *gb_build_compress_list P_((const unsigned char *data, long short_flag, long *size));
-char *gb_compress_bits P_((const char *source, long size, const char *c_0, long *msize));
+char *gb_compress_bits P_((const char *source, long size, const unsigned char *c_0, long *msize));
 GB_CPNTR gb_uncompress_bits P_((const char *source, long size, char c_0, char c_1));
 void gb_compress_equal_bytes_2 P_((const char *source, long size, long *msize, char *dest));
 GB_CPNTR gb_compress_equal_bytes P_((const char *source, long size, long *msize, int last_flag));

@@ -43,6 +43,7 @@ AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -58,6 +59,7 @@ AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -69,6 +71,7 @@ AWTC_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -91,6 +94,7 @@ AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/client.h
@@ -110,5 +114,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
