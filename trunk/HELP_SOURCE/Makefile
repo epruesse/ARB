@@ -142,6 +142,11 @@ $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
 
 $(HTML) : $(STYLE_HTML) $(DTD)
 
+# Google logo
+google_logo: $(HTML_LOCATION)/Logo_25wht.gif
+$(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
+		cp -p $< $@
+
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
 		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
@@ -161,7 +166,7 @@ $(HTML_IDX) : html.list
 
 # --------------------------------------------------------------------------------
 
-html : $(HTML)
+html : $(HTML) google_logo
 
 html_index : $(HTML_IDX)
 
