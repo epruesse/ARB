@@ -311,6 +311,20 @@ int percent(int part, int all) {
     return 0;
 }
 
+GB_ERROR PG_tree_name2id(GBT_TREE *node) {
+    if (!node->is_leaf) {
+        GB_ERROR error    = PG_tree_name2id(node->leftson);
+        if (!error) error = PG_tree_name2id(node->rightson);
+        return error;
+    }
+
+    // leaf
+    SpeciesID id = PG_SpeciesName2SpeciesID(node->name);
+    free(node->name);
+    node->name   = GBS_global_string_copy("%i", id);
+    return 0;
+}
+
 //  ------------------------------------------
 //      Int Main(Int Argc,  Char *Argv[])
 //  ------------------------------------------
@@ -633,6 +647,18 @@ int main(int argc,char *argv[]) {
                 }
 
                 if (!error) {
+                    // GBT_unlink_tree(gbt_tree);
+                    error = PG_tree_name2id(gbt_tree); // exchange species-names against species ids in tree
+                    if (!error) {
+                        error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
+                    }
+
+                    if (!error) {
+                        error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
+                    }
+                }
+
+                if (!error) {
                     error = setDatabaseState(pba_main, 0, "complete"); // set the state of the database
                     error = setDatabaseState(pbb_main, 0, "complete"); // set the state of the database
                 }
@@ -643,6 +669,7 @@ int main(int argc,char *argv[]) {
                 if (!error) {
                     out.put("Saving %s ...",para.db_out_alt_name.c_str());
                     error = GB_save(pba_main,para.db_out_alt_name.c_str(), SAVE_MODE); // was "a"
+
                     out.put("Saving %s ...",para.db_out_alt_name2.c_str());
                     error = GB_save(pbb_main,para.db_out_alt_name2.c_str(), SAVE_MODE); // was "a"
                 }
