@@ -234,14 +234,53 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
 void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_gene = GEN_get_current_gene(gb_main, awr);
+    bool            clear   = true;
 
     if (gb_gene) {
         char *gene_content = GBT_read_gene_sequence(gb_gene, false); // ignore complement here (to highlight gene in ARB_EDIT4)
+        
         awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
+        clear = false;
         free(gene_content);
     }
     else {
-        awr->awar(AWAR_GENE_CONTENT)->write_string(""); // clear if gene is unknown (e.g. for gene-pt-server intergene regions)
+        char      *gene_name  = awr->awar(AWAR_GENE_NAME)->read_string();
+        const int  prefix_len = 10;
+
+        if (strncmp(gene_name, "intergene_", prefix_len) == 0) { // special case (non-gene result from gene pt server)
+            char *start_pos_ptr = gene_name+prefix_len;
+            char *end_pos_ptr   = strchr(start_pos_ptr, '_');
+
+            gen_assert(end_pos_ptr);
+            if (end_pos_ptr) {
+                *end_pos_ptr++ = 0;
+                long start_pos = atol(start_pos_ptr);
+                long end_pos   = atol(end_pos_ptr);
+
+                gen_assert(end_pos >= start_pos);
+
+                GBDATA *gb_organism = GEN_get_current_organism(gb_main, awr);
+                if (gb_organism) {
+                    GBDATA     *gb_seq   = GBT_read_sequence(gb_organism, "ali_genom");
+                    const char *seq_data = GB_read_char_pntr(gb_seq);
+
+                    long  len    = end_pos-start_pos+1;
+                    char *buffer = (char*)malloc(len+1);
+                    memcpy(buffer, seq_data+start_pos, len);
+                    buffer[len]  = 0;
+
+                    awr->awar(AWAR_GENE_CONTENT)->write_string(buffer);
+                    clear = false;
+                    
+                    free(buffer);
+                }
+            }
+        }
+        free(gene_name);
+    }
+
+    if (clear) {
+        awr->awar(AWAR_GENE_CONTENT)->write_string(""); // if we did not detect any gene sequence -> clear
     }
 }
 
