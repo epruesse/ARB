@@ -878,7 +878,7 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
         GBDATA *gb_remark = GB_find(gbd, "ali_16s", 0, down_level);
         if (gb_remark) {
             if (GB_rename(gb_remark, "ali_16s_new") != 0) {
-                error = "Can't rename MssVanni/ali_16s";
+                error = GB_get_error();
             }
         }
         else {
