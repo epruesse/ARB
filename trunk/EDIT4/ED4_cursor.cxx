@@ -943,7 +943,7 @@ static int current_position = -1;
 
 static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, bool test_for_base) {
     bool test_succeeded = false;
-    
+
     if (terminal->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
         int len;
@@ -954,7 +954,7 @@ static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, boo
                 bool(ADPP_IS_ALIGN_CHARACTER(seq[current_position])) != test_for_base;
         }
     }
-    
+
 #if defined(DEBUG) && 0
     printf("test_for_base=%i test_succeeded=%i\n", int(test_for_base), int(test_succeeded));
 #endif // DEBUG
@@ -990,13 +990,13 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
     switch (event->keycode) {
         case AW_KEY_UP: {
             if (event->keymodifier & AW_KEY_CONTROL) {
-                current_position = last_seq_position;                
+                current_position = last_seq_position;
                 bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
-                
+
                 get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_UP, y,
                                             has_base ? terminal_has_gap_at_current_position : terminal_has_base_at_current_position);
                 if (!has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
-                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);          
+                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);
                 }
             }
             else {
@@ -1026,13 +1026,13 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
 
         case AW_KEY_DOWN: {
             if (event->keymodifier & AW_KEY_CONTROL) {
-                current_position = last_seq_position;                
+                current_position = last_seq_position;
                 bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
-                
+
                 get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen,
                                             has_base ? terminal_has_gap_at_current_position : terminal_has_base_at_current_position);
                 if (!has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
-                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);          
+                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);
                 }
             }
             else {
@@ -1409,17 +1409,17 @@ void ED4_base_position::calc4base(ED4_base *base)
                 pos[count++] = p;
             }
         }
-        
+
         if (count) {
             seq_pos = new int[count];
             for (p=0; p<count; p++) {
                 seq_pos[p] = pos[p];
-            }            
+            }
         }
         else {
             seq_pos = 0;
         }
-        
+
         delete[] pos;
     }
 
@@ -1429,7 +1429,7 @@ int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
 {
     if (!base) return 0;
     if (base!=calced4base) calc4base(base);
-    
+
     if (count==0) return 0;
     if (sequence_position>seq_pos[count-1]) return count;
 
