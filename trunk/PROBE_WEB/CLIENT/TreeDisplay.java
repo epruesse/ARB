@@ -146,8 +146,8 @@ public class TreeDisplay extends Canvas
         if (xSpreading<min_xSpreading) xSpreading = min_xSpreading;
         
         if (xSpreading != old_xSpreading) {
-            System.out.println("old xSpreading="+old_xSpreading);
-            System.out.println("new xSpreading="+xSpreading);
+//             System.out.println("old xSpreading="+old_xSpreading);
+//             System.out.println("new xSpreading="+xSpreading);
             recalcLayout();
         }
     }

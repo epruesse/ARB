@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : Probe.java                                             // 
 //    Purpose   : Object holding one probe                               // 
-//    Time-stamp: <Wed Mar/10/2004 13:04 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Wed Mar/10/2004 14:10 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -37,12 +37,12 @@ public class Probe implements Comparable
 
     public static boolean setOverlapProbe(Probe p) {
         if (overlapProbe == null || !overlapProbe.equals(p)) { // new probe
-            if (p != null) System.out.println("setOverlapProbe: Set overlapProbe to '"+p.sequence()+"'");
-            else System.out.println("setOverlapProbe: Clear overlapProbe");
+//             if (p != null) System.out.println("setOverlapProbe: Set overlapProbe to '"+p.sequence()+"'");
+//             else System.out.println("setOverlapProbe: Clear overlapProbe");
 
             overlapProbe = p;
             overlapProbeTime++;
-            System.out.println("setOverlapProbe: overlapProbeTime="+overlapProbeTime);
+//             System.out.println("setOverlapProbe: overlapProbeTime="+overlapProbeTime);
             return true;
         }
         return false;
@@ -51,13 +51,8 @@ public class Probe implements Comparable
         return overlapProbe;
     }
 
-    //     public Probe(String probeString, String group_id) {
-//         this.probeString = probeString;
-//         this.group_id    = group_id;
-//     }
-
     public Probe(String probe_definition, TreeNode target) throws Exception {
-        System.out.println("probe_definition='"+probe_definition+"'");
+        // System.out.println("probe_definition='"+probe_definition+"'");
 
         int komma1 = probe_definition.indexOf(',');
         if (komma1 != -1) {
