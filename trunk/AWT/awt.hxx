@@ -9,7 +9,7 @@
 #ifndef aw_window_hxx_included
 #include <aw_window.hxx>
 #endif
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 

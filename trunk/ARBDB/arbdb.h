@@ -1,5 +1,5 @@
-#ifndef arbdb_h_included
-#define arbdb_h_included
+#ifndef ARBDB_H
+#define ARBDB_H
 
 #ifndef _STDIO_H
 #error "arbdb.h needs stdio.h included"
@@ -312,4 +312,4 @@ int GB_info(struct gb_data_base_type2 *gbd);
 
 #else
 #error "arbdb.h included twice"
-#endif /*arbdb_h_included*/
+#endif /*ARBDB_H*/

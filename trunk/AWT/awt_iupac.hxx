@@ -1,7 +1,7 @@
 #ifndef awt_iupac_included
 #define awt_iupac_included
 
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 
