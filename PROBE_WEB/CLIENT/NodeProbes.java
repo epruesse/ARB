@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : NodeProbes.java                                        // 
 //    Purpose   : Contains probes for one node                           // 
-//    Time-stamp: <Fri Mar/05/2004 21:42 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Tue Mar/09/2004 15:31 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -16,8 +16,10 @@ import java.util.*;
 
 public class NodeProbes
 {
-    private Vector       probes = null;
-    public static HttpSubsystem webAccess = null;
+    private Vector probes;
+    private Vector sorted_probes;
+
+    public static HttpSubsystem webAccess;
 
     public NodeProbes(TreeNode target, boolean exactMatches) throws Exception {
         String encodedPath = target.getCodedPath();
@@ -41,15 +43,6 @@ public class NodeProbes
                     for (int i = 0; i<count; ++i) {
                         String probe_def = parsed.getValue("probe"+i);
                         probes.addElement(new Probe(probe_def, target));
-
-                        //                     int komma = probe.indexOf(',');
-
-                        //                     if (komma == -1) {
-                        //                         error = "comma expected in '"+probe+"'";
-                        //                         break;
-                        //                     }
-
-                        //                     probes.addElement(new Probe(probe.substring(komma+1), probe.substring(0, komma)));
                     }
                 }
                 catch (ClientException e) {
@@ -60,16 +53,21 @@ public class NodeProbes
 
         if (error != null)
             Toolkit.AbortWithError("While retrieving probe information: "+error);
+
+        resortProbes();
+    }
+
+    public void resortProbes() {
+        TreeSet sorted = new TreeSet(probes);
+        sorted_probes  = new Vector(sorted);
     }
 
     Probe getProbe(int index) {
-        if (index < 0 || index >= probes.size()) {
-            return null;
-        }
-        return (Probe)probes.get(index);
+        if (index < 0 || index >= sorted_probes.size()) return null;
+        return (Probe)sorted_probes.get(index);
     }
 
     int size() {
-        return probes.size();
+        return sorted_probes.size();
     }
 }
