@@ -180,16 +180,18 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
 
 
 
-void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,int message_reload)
+void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload, bool show_label)
 {
-    if (message_reload){
-        aws->get_root()->awar(awar)->add_callback(aw_message_reload);
+    if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
+    if (show_label) {
+        aw_assert(label);
+        aws->label(label);
     }
     aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar),(AW_CL)strdup(label));
     aws->create_button("SELECT_A_COLOR","S");
 }
 
-void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,int message_reload)
+void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload)
 {
     if (message_reload){
         aws->get_root()->awar(awar)->add_callback(aw_message_reload);
@@ -454,8 +456,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 free(id_copy); id_copy = 0;
             }
 
-            if (flag_fixed_fonts_only) def_font = AW_LUCIDA_SANS_TYPEWRITER;
-            else	def_font = AW_LUCIDA_SANS;
+            if (flag_fixed_fonts_only) def_font = AW_DEFAULT_FIXED_FONT; // AW_LUCIDA_SANS_TYPEWRITER;
+            else def_font                       = AW_DEFAULT_NORMAL_FONT; // AW_LUCIDA_SANS;
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
@@ -747,28 +749,29 @@ AW_window *AWT_preset_window( AW_root *root )
     aws->create_input_field( "window/font", 12 );
     aws->at_newline();
 
-    AW_preset_create_color_chooser(aws,"window/background", "Window Background", 1 );
+    aws->button_length(3);
+    AW_preset_create_color_chooser(aws,"window/background", "Application Background", true, true);
     aws->at_x(tabstop);
     aws->create_input_field( "window/background", 12 );
     aws->at_newline();
 
-    AW_preset_create_color_chooser(aws,"window/foreground", "Window Foreground", 1 );
+    AW_preset_create_color_chooser(aws,"window/foreground", "Application Foreground", true, true );
     aws->at_x(tabstop);
     aws->create_input_field( "window/foreground", 12 );
     aws->at_newline();
 
 
-    AW_preset_create_color_chooser(aws,"window/color_1", "COLOR 1", 1 );
+    AW_preset_create_color_chooser(aws,"window/color_1", "Color 1", true, true );
     aws->at_x(tabstop);
     aws->create_input_field( "window/color_1", 12 );
     aws->at_newline();
 
-    AW_preset_create_color_chooser(aws,"window/color_2", "COLOR 2", 1 );
+    AW_preset_create_color_chooser(aws,"window/color_2", "Color 2", true, true );
     aws->at_x(tabstop);
     aws->create_input_field( "window/color_2", 12 );
     aws->at_newline();
 
-    AW_preset_create_color_chooser(aws,"window/color_3", "COLOR 3", 1 );
+    AW_preset_create_color_chooser(aws,"window/color_3", "Color 3", true, true );
     aws->at_x(tabstop);
     aws->create_input_field( "window/color_3", 12 );
     aws->at_newline();
