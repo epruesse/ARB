@@ -1060,7 +1060,7 @@ ED4_Edit_String::ED4_Edit_String()
 
 ED4_Edit_String::~ED4_Edit_String()
 {
-    delete old_seq;
+    free(old_seq);
 }
 
 void ED4_Edit_String::edit(ED4_work_info *info)
