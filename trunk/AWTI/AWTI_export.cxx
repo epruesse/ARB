@@ -191,7 +191,12 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
 			if (efo->system) {
 				char intermediate[1024];
 				char srt[1024];
-				sprintf(intermediate,"/tmp/%s_%i",outname,getpid());
+
+                {
+                    const char *out_nameonly        = strrchr(outname, '/');
+                    if (!out_nameonly) out_nameonly = outname;
+                    sprintf(intermediate,"/tmp/%s_%i",out_nameonly,getpid());
+                }
 
                 char *intermediate_resulting = 0;
 				error = AWTI_export_format(aw_root, gb_main, efo->new_format, intermediate, 0, 0, &intermediate_resulting);
