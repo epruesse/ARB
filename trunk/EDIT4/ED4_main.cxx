@@ -360,7 +360,7 @@ void ED4_create_awars(AW_root *root, const char *config_name) { // cursor awars 
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,0)->add_callback(ED4_compression_changed_cb);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT,1)->add_callback(ED4_compression_changed_cb)->set_minmax(1,99);
-    root->awar_int(ED4_AWAR_COMPRESS_LEFT_COLUMN,0);
+//     root->awar_int(ED4_AWAR_COMPRESS_LEFT_COLUMN,0);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);
     root->awar_int(ED4_AWAR_FAST_CURSOR_JUMP, 0);

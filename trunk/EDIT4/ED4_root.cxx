@@ -418,6 +418,8 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
 #endif
 
     if (MAXSEQUENCECHARACTERLENGTH!=new_length) { // otherwise we already did this (i.e. we were called by changed_by_database)
+        bool was_increased = new_length>MAXSEQUENCECHARACTERLENGTH;
+
         MAXSEQUENCECHARACTERLENGTH = new_length;
 
         const char *err = ED4_ROOT->helix->init(gb_main); // reload helix
@@ -426,8 +428,10 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         err = ED4_ROOT->ecoli_ref->init(gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
 
-        ED4_ROOT->main_manager->route_down_hierarchy((void**)&new_length, 0, change_char_table_length);
-        ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
+        if (was_increased) {
+            ED4_ROOT->main_manager->route_down_hierarchy((void**)&new_length, 0, change_char_table_length);
+            ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
+        }
     }
 }
 

@@ -1629,7 +1629,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->create_input_field(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT);
 
     aws->at("leftcol");
-    aws->create_input_field(ED4_AWAR_COMPRESS_LEFT_COLUMN);
+//     aws->create_input_field(ED4_AWAR_COMPRESS_LEFT_COLUMN);
 
     aws->at("repeat");
     aws->label("Use digits to repeat edit commands?");
