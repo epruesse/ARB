@@ -15,35 +15,35 @@ typedef void (*AW_CB2)(AW_window*,AW_CL,AW_CL);
 typedef AW_window *(*AW_Window_Creator)(AW_root*,AW_CL);
 
 #define AW_POPUP  ((AW_CB)(-1))
-	// AW_POPDOWN is defined later in this section
+// AW_POPDOWN is defined later in this section
 
 #define AW_MESSAGE_TIME 2000
-#define AW_HEADER_MAIN	extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
+#define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
 
 #ifndef _AW_DEVICE_INCLUDED
 #include <aw_device.hxx>
 #endif
 
 #ifndef _AW_KEY_CODES_INCLUDED
-	typedef enum {AW_KEY_NONE} AW_key_code;
-	typedef enum {AW_KEYMODE_NONE = 0} AW_key_mod;
+typedef enum {AW_KEY_NONE} AW_key_code;
+typedef enum {AW_KEYMODE_NONE = 0} AW_key_mod;
 #endif
 
 #ifndef _AW_AT_INCLUDED
-	class AW_at;
+class AW_at;
 #endif
 
 class AW_at_size {
 
-    int		to_offset_x; // here we use offsets (not positions like in AW_at)
-    int		to_offset_y;
-    AW_BOOL	to_position_exists;
+    int     to_offset_x; // here we use offsets (not positions like in AW_at)
+    int     to_offset_y;
+    AW_BOOL to_position_exists;
 
-    AW_BOOL	attach_x;           // attach right side to right form
-    AW_BOOL	attach_y;
-    AW_BOOL	attach_lx;          // attach left side to right form
-    AW_BOOL	attach_ly;
-    AW_BOOL	attach_any;
+    AW_BOOL attach_x;           // attach right side to right form
+    AW_BOOL attach_y;
+    AW_BOOL attach_lx;          // attach left side to right form
+    AW_BOOL attach_ly;
+    AW_BOOL attach_any;
 
 
 public:
@@ -52,29 +52,29 @@ public:
 };
 
 typedef enum {
-	AW_Keyboard_Press	= 1,
-	AW_Keyboard_Release	= 2,
-	AW_Mouse_Press		= 3,
-	AW_Mouse_Release	= 4,
-	AW_Mouse_Drag		= 5
+    AW_Keyboard_Press   = 1,
+    AW_Keyboard_Release = 2,
+    AW_Mouse_Press      = 3,
+    AW_Mouse_Release    = 4,
+    AW_Mouse_Drag       = 5
 } AW_event_type;
 
-typedef const char *AW_label;		// label for buttons menues etc
-				// "fsdf" simple label	// no '/' symbol !!!
-				// "awarname/asdf"	// awar name (any '/' in string)
-				// "#file.bitmap"	// bitmap in $ARBHOME/lib/pixmaps/file.bitmap
+typedef const char *AW_label;       // label for buttons menues etc
+// "fsdf" simple label  // no '/' symbol !!!
+// "awarname/asdf"  // awar name (any '/' in string)
+// "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
 
 
 typedef struct {
-	AW_event_type		type;		/* AW_Keyboard or AW_Mouse */
-	unsigned long 		time;     	/* time in msec, when event occured */
-	//***** button fields
-	unsigned int		button;		/* which mouse button was pressed 1,2,3 */
-	int			x,y;		/* pointer x,y coordinates in the event window */
-	//****** key fields
-	AW_key_mod		keymodifier;	/* control alt meta .... */
-	AW_key_code		keycode;	/* which key type was pressed */
-	char			character;	/* the c character */
+    AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
+    unsigned long       time;       /* time in msec, when event occured */
+    //***** button fields
+    unsigned int        button;     /* which mouse button was pressed 1,2,3 */
+    int         x,y;        /* pointer x,y coordinates in the event window */
+    //****** key fields
+    AW_key_mod      keymodifier;    /* control alt meta .... */
+    AW_key_code     keycode;    /* which key type was pressed */
+    char            character;  /* the c character */
 } AW_event;
 
 
@@ -92,28 +92,28 @@ private:
     class AW_cb_struct *next;
 public:
     // ************ This is not the public section *************
-    AW_window	*pop_up_window;
+    AW_window   *pop_up_window;
     void (*f)(AW_window*,AW_CL ,AW_CL);
     AW_window *aw;
     const char *help_text;
     char *id;
     // ************ The real public section *************
     AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i = 0, AW_CL cd2i = 0, const char *help_texti = 0, AW_cb_struct *next = 0);
-    void		run_callback(void);	// runs the whole list
+    void        run_callback(void); // runs the whole list
 };
 
 
 enum {
     AWM_ALL = -1,
     AWM_EXP = 1,
-    AWM_TREE = 2,		// Basic
+    AWM_TREE = 2,       // Basic
     AWM_TREE2 = 4,
-    AWM_PRO = 8,		// Protein data
-    AWM_SEC = 16,		// Secundaerystructure
-    AWM_SEQ = 32,		// Sequence Basic
+    AWM_PRO = 8,        // Protein data
+    AWM_SEC = 16,       // Secundaerystructure
+    AWM_SEQ = 32,       // Sequence Basic
     AWM_SEQ2 = 64,
-    AWM_PRB = 0x100,		// probe design
-    AWM_TUM = 0x200,		// W. Ludwig Specials
+    AWM_PRB = 0x100,        // probe design
+    AWM_TUM = 0x200,        // W. Ludwig Specials
     AWM_BASIC = 2 + 32
 };
 
@@ -129,17 +129,17 @@ struct AW_select_table_struct;
 class AW_selection_list {
     AW_select_table_struct *loop_pntr;
 public:
-	AW_selection_list( const char *variable_namei, int variable_typei, Widget select_list_widgeti );
+    AW_selection_list( const char *variable_namei, int variable_typei, Widget select_list_widgeti );
 
-    char			 *variable_name;
-	AW_VARIABLE_TYPE  variable_type;
-	Widget			  select_list_widget;
+    char             *variable_name;
+    AW_VARIABLE_TYPE  variable_type;
+    Widget            select_list_widget;
     bool              value_equal_display; // set true to fix load/save of some selection lists
 
-	AW_select_table_struct *list_table;
-	AW_select_table_struct *last_of_list_table;
-	AW_select_table_struct *default_select;
-	AW_selection_list	   *next;
+    AW_select_table_struct *list_table;
+    AW_select_table_struct *last_of_list_table;
+    AW_select_table_struct *default_select;
+    AW_selection_list      *next;
 
     // ******************** real public ***************
     void selectAll();
@@ -153,31 +153,31 @@ class AW_window {
 private:
 
 protected:
-    AW_root		 *root;
-    void		check_at_pos( void );
-    void		create_devices(void);
+    AW_root      *root;
+    void        check_at_pos( void );
+    void        create_devices(void);
 public:
 
-	// ************ This is not the public section *************
+    // ************ This is not the public section *************
 
-    AW_window_Motif	*p_w;       // Do not use !!!
-    AW_at		    *_at;
-    AW_cb_struct	*_callback;
-    AW_cb_struct	*_d_callback;
+    AW_window_Motif *p_w;       // Do not use !!!
+    AW_at           *_at;
+    AW_cb_struct    *_callback;
+    AW_cb_struct    *_d_callback;
 
     AW_window();
     ~AW_window();
 
 
-    AW_event	   event;
+    AW_event       event;
     unsigned long  click_time;
-    long		   color_table_size;
+    long           color_table_size;
     unsigned long *color_table;
 
-    int	recalc_size_at_show;
-    int	number_of_timed_title_changes;
+    int recalc_size_at_show;
+    int number_of_timed_title_changes;
 
-    void /*AW_xfig*/	*xfig_data;
+    void /*AW_xfig*/    *xfig_data;
 
     void create_window_variables( void );
     void show_grabbed(void);
@@ -216,180 +216,180 @@ public:
     //***************************** *********************** ***********************************
     //***************************** The read only   section ***********************************
     //***************************** *********************** ***********************************
-    char 	 *window_name;		// window title
-    char	 *window_defaults_name;
-    AW_BOOL	  window_is_shown;
+    char     *window_name;      // window title
+    char     *window_defaults_name;
+    AW_BOOL   window_is_shown;
 
-    int	left_indent_of_horizontal_scrollbar;
-    int	top_indent_of_vertical_scrollbar;
-    int	bottom_indent_of_vertical_scrollbar;
-    int	slider_pos_vertical;
-    int	slider_pos_horizontal;
-    int	main_drag_gc;
+    int left_indent_of_horizontal_scrollbar;
+    int top_indent_of_vertical_scrollbar;
+    int bottom_indent_of_vertical_scrollbar;
+    int slider_pos_vertical;
+    int slider_pos_horizontal;
+    int main_drag_gc;
 
-    AW_rectangle *picture;		// the result of tell scrolled
-								// picture size
+    AW_rectangle *picture;      // the result of tell scrolled
+                                // picture size
 
     //***************************** *********************** ***********************************
     //***************************** The real public section ***********************************
     //***************************** *********************** ***********************************
-	AW_root *get_root(void) { return root; };
+    AW_root *get_root(void) { return root; };
 
     //******************* Global layout functions **********************
-	void show(void);		// bring hidden window to front of screen
-	void hide(void);		// hide (dont destroy) a window (<->show)
-	AW_BOOL get_show(void);	// is window shown (== AW_TRUE) or hidden (== AW_FALSE)
-	void message( char *title, int ms );	// Set for ms milliseconds the title of the window
-	void set_window_title( const char *title );	// Set the window title forever
-	void set_icon( const char *pixmap_name = 0,const char *default_icon = 0); // Set the Pixmap
-	char *get_window_title( void );		// Get the window's title
-	void set_info_area_height(int height);
-	void set_bottom_area_height(int height);
+    void show(void);        // bring hidden window to front of screen
+    void hide(void);        // hide (dont destroy) a window (<->show)
+    AW_BOOL get_show(void); // is window shown (== AW_TRUE) or hidden (== AW_FALSE)
+    void message( char *title, int ms );    // Set for ms milliseconds the title of the window
+    void set_window_title( const char *title ); // Set the window title forever
+    void set_icon( const char *pixmap_name = 0,const char *default_icon = 0); // Set the Pixmap
+    char *get_window_title( void );     // Get the window's title
+    void set_info_area_height(int height);
+    void set_bottom_area_height(int height);
 
     //******************* Input and Motion Events **********************
 
-	void set_popup_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_popup_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
 
-	void set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-	void set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-	void set_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-	void set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
-	void set_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+    void set_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
 
-	void get_event(AW_event *eventi);		// In an event callback get the events info
+    void get_event(AW_event *eventi);       // In an event callback get the events info
 
     //******************* Get the devices **********************
-	AW_device *get_device (AW_area area);
-	AW_device *get_click_device 	(AW_area area, int mousex,int mousey, AW_pos max_distance_linei,
+    AW_device *get_device (AW_area area);
+    AW_device *get_click_device     (AW_area area, int mousex,int mousey, AW_pos max_distance_linei,
                                      AW_pos max_distance_texti, AW_pos radi);
-	AW_device *get_size_device	(AW_area area);
-	AW_device *get_print_device	(AW_area area);
+    AW_device *get_size_device  (AW_area area);
+    AW_device *get_print_device (AW_area area);
 
     // ************** Create the menu buttons *********
-	void create_menu(	const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-	void insert_sub_menu(	const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-	void insert_menu_topic(	const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void close_sub_menu(void);
+    void create_menu(   const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void insert_sub_menu(   const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void insert_menu_topic( const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void close_sub_menu(void);
 
-	void insert_separator(void);
-	void insert_help_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void insert_separator_help(void);
+    void insert_separator(void);
+    void insert_help_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void insert_separator_help(void);
     // ************** Create modes on the left side ******************
-	int create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void select_mode(int mode);
+    int create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void select_mode(int mode);
 
 
     // ************** Control the size of the main drawing area + scrollbars  *********
-	void tell_scrolled_picture_size(AW_rectangle rectangle);
-	void tell_scrolled_picture_size(AW_world rectangle);
-	AW_pos get_scrolled_picture_width();
-	AW_pos get_scrolled_picture_height();
-	void reset_scrolled_picture_size();
+    void tell_scrolled_picture_size(AW_rectangle rectangle);
+    void tell_scrolled_picture_size(AW_world rectangle);
+    AW_pos get_scrolled_picture_width();
+    AW_pos get_scrolled_picture_height();
+    void reset_scrolled_picture_size();
 
-	void calculate_scrollbars(void);
-	void set_vertical_scrollbar_position(int position);
-	void set_horizontal_scrollbar_position(int position);
-	void set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-	void set_horizontal_scrollbar_left_indent(int indent);
-	void set_vertical_scrollbar_top_indent(int indent);
-	void set_vertical_scrollbar_bottom_indent(int indent);
+    void calculate_scrollbars(void);
+    void set_vertical_scrollbar_position(int position);
+    void set_horizontal_scrollbar_position(int position);
+    void set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_horizontal_scrollbar_left_indent(int indent);
+    void set_vertical_scrollbar_top_indent(int indent);
+    void set_vertical_scrollbar_bottom_indent(int indent);
 
 
     // ************** Control window size  *********
-	void set_window_size( int width, int height );
-	void get_window_size( int& width, int& height );
-	void window_fit(void);		// Recalculate the size of a window with buttons
+    void set_window_size( int width, int height );
+    void get_window_size( int& width, int& height );
+    void window_fit(void);      // Recalculate the size of a window with buttons
 
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
     // ************** ********************************************************************  *********
 
     // *** global modifier: ****
-	void load_xfig(const char *file, AW_BOOL resize=AW_TRUE); // Loads the background graphic
+    void load_xfig(const char *file, AW_BOOL resize=AW_TRUE); // Loads the background graphic
     void draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL resize); // draws a line on the background
 
-	void label_length( int length ); // Justifies all following labels
-	void button_length( int length ); // Sets the width of all following buttons
-	void highlight( void );		// Creates a frame around the button
-	void auto_increment( int dx, int dy ); // enable automatic placement of buttons
+    void label_length( int length ); // Justifies all following labels
+    void button_length( int length ); // Sets the width of all following buttons
+    void highlight( void );     // Creates a frame around the button
+    void auto_increment( int dx, int dy ); // enable automatic placement of buttons
     // dx is the horizontal distance between the left
     // borders of two buttons
-	void auto_space( int xspace, int yspace ); // enable automatic placement of buttons
+    void auto_space( int xspace, int yspace ); // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
-	void auto_off( void );				// disable auto_xxxxx
-	void shadow_width (int shadow_thickness);		// set the shadow_thickness of buttons
+    void auto_off( void );              // disable auto_xxxxx
+    void shadow_width (int shadow_thickness);       // set the shadow_thickness of buttons
 
     // *** local modifiers: ********
-	void    at( int x, int y );	// abs pos of a button (>10,10)
-	void    at_x( int x );		// abs x pos
-	void    at_y( int y );		// abs y pos
-	void    at_shift( int x, int y ); // rel pos of a button
-	void    at_newline( void );	// in auto_space mode only: newline
-	void    at( const char *id ); // place the button at the position set in the .fig
+    void    at( int x, int y ); // abs pos of a button (>10,10)
+    void    at_x( int x );      // abs x pos
+    void    at_y( int y );      // abs y pos
+    void    at_shift( int x, int y ); // rel pos of a button
+    void    at_newline( void ); // in auto_space mode only: newline
+    void    at( const char *id ); // place the button at the position set in the .fig
     // file (loaded with load_xfig) by the string $id
-	AW_BOOL at_ifdef(const  char *id); // check whether 'id' is an element if the .fig file
-	void    label( const char *label ); // Create a label before the button
+    AW_BOOL at_ifdef(const  char *id); // check whether 'id' is an element if the .fig file
+    void    label( const char *label ); // Create a label before the button
 
-	void get_at_position( int *x, int *y );
+    void get_at_position( int *x, int *y );
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
-	void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
-	void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
+    void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
+    void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
 
-	void id( const char *id );	// Set the id of the button (for set_sensitive)
-	void mask( AW_active mask ); // Set the mask used for set_sensitive
-	void help_text(const char *id ); // Set the help text of a button
-	void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // normal callbacks
-	void callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);
-	void callback( void (*f)(AW_window*));
-	void callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
+    void id( const char *id );  // Set the id of the button (for set_sensitive)
+    void mask( AW_active mask ); // Set the mask used for set_sensitive
+    void help_text(const char *id ); // Set the help text of a button
+    void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // normal callbacks
+    void callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);
+    void callback( void (*f)(AW_window*));
+    void callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
     // aww in awcbs
-	void d_callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // double click callbacks
-	void d_callback( void (*f)(AW_window*,AW_CL), AW_CL cd1); // selection lists only !!
-	void d_callback( void (*f)(AW_window*));
-	void d_callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
+    void d_callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // double click callbacks
+    void d_callback( void (*f)(AW_window*,AW_CL), AW_CL cd1); // selection lists only !!
+    void d_callback( void (*f)(AW_window*));
+    void d_callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
     void set_background(const char *colorname);
     // *** create the buttons ********
 
-	void create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
-	void create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
+    void create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
+    void create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
 
-	void create_toggle( const char *awar_name);		// int 0/1	string yes/no	float undef
-	void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap);
-	void create_input_field( const char *awar_name, int columns = 0 );	// One line textfield
-	void create_text_field( const char *awar_name, int columns = 20, int rows = 4 );	// Multi line textfield
-								// with scrollbars
+    void create_toggle( const char *awar_name);     // int 0/1  string yes/no   float undef
+    void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap);
+    void create_input_field( const char *awar_name, int columns = 0 );  // One line textfield
+    void create_text_field( const char *awar_name, int columns = 20, int rows = 4 );    // Multi line textfield
+    // with scrollbars
 
 
     // ***** option_menu is a static menu (only one selection visible at a time)
-	void create_option_menu( const char *awar_name, AW_label label=0,const char *mnemonic=0 );
-	// for string
+    void create_option_menu( const char *awar_name, AW_label label=0,const char *mnemonic=0 );
+    // for string
     void insert_option( AW_label choice_label, const char *mnemonic,const char *var_value, const char *name_of_color = 0);
     void insert_default_option( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0 );
-	// for int
+    // for int
     void insert_option( AW_label choice_label, const char *mnemonic, int var_value, const char *name_of_color = 0 );
     void insert_default_option( AW_label choice_label, const char *mnemonic, int var_value, const char *name_of_color = 0 );
-	// for float
+    // for float
     void insert_option( AW_label choice_label, const char *mnemonic, float var_value, const char *name_of_color = 0 );
     void insert_default_option( AW_label choice_label, const char *mnemonic, float var_value, const char *name_of_color = 0 );
-	void update_option_menu( void );
+    void update_option_menu( void );
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)
-	void create_toggle_field( const char *awar_name, AW_label label, const char *mnemonic );
-	void create_toggle_field( const char *awar_name, int orientation = 0 );// 1 = horizontal
-	// for string
+    void create_toggle_field( const char *awar_name, AW_label label, const char *mnemonic );
+    void create_toggle_field( const char *awar_name, int orientation = 0 );// 1 = horizontal
+    // for string
     void insert_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value );
     void insert_default_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value );
-	// for int
+    // for int
     void insert_toggle( AW_label toggle_label, const char *mnemonic, int var_value );
     void insert_default_toggle( AW_label toggle_label, const char *mnemonic, int var_value );
-	// for float
+    // for float
     void insert_toggle( AW_label toggle_label, const char *mnemonic, float var_value );
     void insert_default_toggle( AW_label toggle_label, const char *mnemonic, float var_value );
-	void update_toggle_field( void );
+    void update_toggle_field( void );
 
     // ***** selection list is a redefinable scrolled list of items
 
@@ -442,55 +442,55 @@ public:
 
 
 class AW_window_menu_modes : public AW_window {
-	private:
-		void	*AW_window_menu_modes_private;    // Do not use !!!
-	public:
-		AW_window_menu_modes(void);
-		~AW_window_menu_modes(void);
-		void init(AW_root *root, const char *wid, const char *windowname,
-			int width, int height,
-			int posx, int posy);
+private:
+    void    *AW_window_menu_modes_private;    // Do not use !!!
+public:
+    AW_window_menu_modes(void);
+    ~AW_window_menu_modes(void);
+    void init(AW_root *root, const char *wid, const char *windowname,
+              int width, int height,
+              int posx, int posy);
 };
 
 
 class AW_window_menu : public AW_window {
-	private:
-	public:
-		AW_window_menu(void);
-		~AW_window_menu(void);
-		void init(AW_root *root, const char *wid, const char *windowname,
-			int width, int height,
-			int posx, int posy);
+private:
+public:
+    AW_window_menu(void);
+    ~AW_window_menu(void);
+    void init(AW_root *root, const char *wid, const char *windowname,
+              int width, int height,
+              int posx, int posy);
 };
 
 class AW_window_simple_menu : public AW_window {
-	private:
-	public:
-		AW_window_simple_menu(void);
-		~AW_window_simple_menu(void);
-		void init(AW_root *root, const char *wid, const char *windowname,
-			int width, int height,
-			int posx, int posy);
+private:
+public:
+    AW_window_simple_menu(void);
+    ~AW_window_simple_menu(void);
+    void init(AW_root *root, const char *wid, const char *windowname,
+              int width, int height,
+              int posx, int posy);
 };
 
 
 class AW_window_simple : public AW_window {
-	private:
-	public:
-		AW_window_simple(void);
-		~AW_window_simple(void);
-		void init(AW_root *root, const char *wid, const char *windowname,int posx, int posy);
+private:
+public:
+    AW_window_simple(void);
+    ~AW_window_simple(void);
+    void init(AW_root *root, const char *wid, const char *windowname,int posx, int posy);
 };
 
 
 class AW_window_message : public AW_window {
-	private:
-	public:
-		AW_window_message(void);
-		~AW_window_message(void);
-		void init(AW_root *root, const char *windowname,
-			int width, int height,
-			int posx, int posy);
+private:
+public:
+    AW_window_message(void);
+    ~AW_window_message(void);
+    void init(AW_root *root, const char *windowname,
+              int width, int height,
+              int posx, int posy);
 };
 
 
