@@ -299,6 +299,15 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
 /****************************************************************************************************************************/
 /****************************************************************************************************************************/
 
+void AW_window::create_autosize_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, unsigned xtraSpace) {
+    int   len               = strlen(buttonlabel)+(xtraSpace*2);
+    short length_of_buttons = _at->length_of_buttons;
+
+    _at->length_of_buttons = len+1;
+    create_button(macro_name, buttonlabel, mnemonic);
+    _at->length_of_buttons = length_of_buttons;
+}
+
 void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic) {
     AWUSE(mnemonic);
     Widget button                = 0;
