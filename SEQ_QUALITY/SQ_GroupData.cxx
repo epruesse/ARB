@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.cxx                                       //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Tue Feb/03/2004 14:34 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/05/2004 12:12 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -18,7 +18,6 @@
 
 using namespace std;
 
-
 SQ_GroupData::SQ_GroupData() {
     size         = 0;
     avg_bases    = 0;
@@ -31,7 +30,7 @@ SQ_GroupData::SQ_GroupData() {
 SQ_GroupData::~SQ_GroupData() { }
 
 
-double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
+double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) const {
     double deviation = 0;
     //    double value     = 0;
     int current[7];
@@ -143,7 +142,7 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
 }
 
 
-double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) {
+double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) const {
     double value = 0;
     int sum = 0;
     int current[7];
@@ -418,11 +417,11 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 }
 
 
-double SQ_GroupData_PRO::SQ_calc_consensus_deviation(const char *sequence) {
+double SQ_GroupData_PRO::SQ_calc_consensus_deviation(const char *sequence) const {
 #warning implementation missing
 }
 
-double SQ_GroupData_PRO::SQ_calc_consensus_conformity(const char *sequence) {
+double SQ_GroupData_PRO::SQ_calc_consensus_conformity(const char *sequence) const {
 #warning implementation missing
 }
 
