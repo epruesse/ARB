@@ -581,7 +581,7 @@ void NT_focus_cb(AW_window *aww)
 
 void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
 {
-	AW_window *aws = create_species_window(aww->get_root());
+	AW_window *aws = NT_create_species_window(aww->get_root());
 	aws->show();
 	nt_mode_event(aww,(AWT_canvas*)cd1,(AWT_COMMAND_MODE)cd2);
 }
@@ -736,7 +736,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Species","p","species.hlp",	AWM_ALL);
         {
-            AWMIMT( "species_info",		"Info (Copy Delete Rename Modify) ...", "I",	"sp_info.hlp",		AWM_ALL,AW_POPUP,   (AW_CL)create_species_window,	0 );
+            AWMIMT( "species_info",		"Info (Copy Delete Rename Modify) ...", "I",	"sp_info.hlp",		AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,	0);
             AWMIMT( "species_search",	"Search and Query",			"Q",	"sp_search.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,	0 );
             awm->insert_sub_menu(0, "Species Database Fields Admin","F");
             {

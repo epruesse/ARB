@@ -8,6 +8,8 @@
 #include "adlocal.h"
 #include "arbdbt.h"
 
+
+
 /********************************************************************************************
 					Parameter Functions
 ********************************************************************************************/
@@ -666,8 +668,7 @@ static gbt_item_type identify_gb_item(GBDATA *gb_item) {
 }
 
 
-
-GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, // gb_item may be a species or a gene
+GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or a gene */
                       int     argcinput, GBL *argvinput,
                       int     argcparam,GBL *argvparam,
                       int    *argcout, GBL **argvout)
@@ -700,38 +701,10 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, // gb_item may be a species or
             break;
         }
         case GBT_ITEM_GENE: {
-            GBDATA *gb_pos1       = GB_find(gb_item, "pos_begin", 0, down_level);
-            GBDATA *gb_pos2       = GB_find(gb_item, "pos_end", 0, down_level);
-            GBDATA *gb_complement = GB_find(gb_item, "complement", 0, down_level);
-            long    pos1          = gb_pos1 ? GB_read_int(gb_pos1) : -1;
-            long    pos2          = gb_pos2 ? GB_read_int(gb_pos2) : -1;
-            int     complement    = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
-
-            if (pos1<1 || pos2<1 || pos2<pos1) {
-                GBDATA     *gb_name   = GB_find(gb_item, "name", 0, down_level);
-                const char *gene_name = gb_name ? GB_read_char_pntr(gb_name) : "<unknown>";
-
-                error = GBS_global_string("Illegal sequence positions for gene '%s'", gene_name);
-            }
-            else {
-                GBDATA *gb_species = GB_get_father(GB_get_father(gb_item));
-
-                use    = GBT_get_default_alignment(GB_get_root(gb_species));
-                gb_seq = GBT_read_sequence(gb_species,use);
-
-                {
-                    const char *seq_data = GB_read_char_pntr(gb_seq);
-                    long        length   = pos2-pos1+1;
-                    char       *result   = (char*)malloc(length+1);
-
-                    memcpy(result, seq_data+pos1, length);
-                    result[length] = 0;
-
-                    if (complement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
-
-                    if (!error) (*argvout)[(*argcout)++].str = result;
-                }
-            }
+            char *seq = GBT_read_gene_sequence(gb_item);
+            error     = GB_get_error();
+            gb_assert(!seq || !error);
+            if (!error) (*argvout)[(*argcout)++].str = seq;
 
             break;
         }

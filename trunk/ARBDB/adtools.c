@@ -2686,3 +2686,67 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
 }
 
+/*  -------------------------------------------------  */
+/*      char *GBT_read_gene_sequence(GBDATA *gb_gene)       */
+/*  -------------------------------------------------  */
+/* GBT_read_gene_sequence is intentionally located here (otherwise we get serious linkage problems) */
+
+char *GBT_read_gene_sequence(GBDATA *gb_gene) {
+    /* read the sequence for the specified gene */
+
+    GB_ERROR  error  = 0;
+    char     *result = 0;
+
+    GBDATA *gb_pos1       = GB_find(gb_gene, "pos_begin", 0, down_level);
+    GBDATA *gb_pos2       = GB_find(gb_gene, "pos_end", 0, down_level);
+    GBDATA *gb_complement = GB_find(gb_gene, "complement", 0, down_level);
+
+    long pos1       = gb_pos1 ? GB_read_int(gb_pos1) : -1;
+    long pos2       = gb_pos2 ? GB_read_int(gb_pos2) : -1;
+    int  complement = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
+
+    GBDATA *gb_species   = GB_get_father(GB_get_father(gb_gene));
+
+    if (pos1<1 || pos2<1 || pos2<pos1) {
+        error = "Illegal gene positions";
+    }
+    else {
+        GBDATA *gb_seq    = GBT_read_sequence(gb_species, "ali_genom");
+        GBDATA *gb_joined = GB_find(gb_gene, "pos_joined", 0, down_level);
+        int     parts     = gb_joined ? GB_read_int(gb_joined) : 1;
+
+        if (parts>1) {
+            error = "Using sequence of joined genes not supported yet!"; /* @@@ */
+        }
+
+        if (!error) {
+            const char *seq_data = GB_read_char_pntr(gb_seq);
+            long        length   = pos2-pos1+1;
+
+            result = (char*)malloc(length+1);
+            memcpy(result, seq_data+pos1, length);
+            result[length] = 0;
+
+            if (complement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
+
+            if (error)  {
+                free(result);
+                result = 0;
+            }
+        }
+    }
+
+    if (error) {
+        GBDATA *gb_name   = GB_find(gb_gene, "name", 0, down_level);
+        char   *gene_name = GBS_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed gene>");
+        char   *species_name;
+
+        gb_name      = GB_find(gb_species, "name", 0, down_level);
+        species_name = GBS_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed species>");
+
+        error = GB_export_error("%s (in %s/%s)", error, species_name, gene_name);
+    }
+
+    return result;
+}
+

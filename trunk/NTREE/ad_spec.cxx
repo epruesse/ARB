@@ -224,13 +224,14 @@ void ad_species_delete_cb(AW_window *aww){
 static AW_CL ad_global_scannerid = 0;
 static AW_root *ad_global_scannerroot = 0;
 
-void AD_map_species(AW_root *aw_root, AW_CL scannerid)
+void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 {
     GB_push_transaction(gb_main);
-    char *source = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    char *source = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = GBT_find_species(gb_main,source);
-    if (gb_species)
+    if (gb_species) {
         awt_map_arbdb_scanner(scannerid,gb_species,0, CHANGE_KEY_PATH);
+    }
     GB_pop_transaction(gb_main);
     delete source;
 }
@@ -752,14 +753,25 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
 
     return (AW_window *)aws;
 }
-AW_window *create_species_window(AW_root *aw_root)
+
+AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
 {
-    static AW_window_simple_menu *aws = 0;
-    if (aws){
-        return (AW_window *)aws;
+    int windowIdx = (int)organismWindow;
+
+    static AW_window_simple_menu *AWS[2] = { 0, 0 };
+    if (AWS[windowIdx]){
+        return (AW_window *)AWS[windowIdx];
     }
+
+    AW_window_simple_menu *& aws = AWS[windowIdx];
+
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION", 0,0,800, 0 );
+    if (organismWindow) {
+        aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION", 0,0,800, 0 );
+    }
+    else {
+        aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION", 0,0,800, 0 );
+    }
     aws->load_xfig("ad_spec.fig");
 
     aws->button_length(8);
@@ -777,7 +789,8 @@ AW_window *create_species_window(AW_root *aw_root)
     aws->create_button("HELP","HELP","H");
 
 
-    AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, &AWT_species_selector);
+    AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER,
+                                               organismWindow ? &AWT_organism_selector : &AWT_species_selector);
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 
@@ -792,12 +805,22 @@ AW_window *create_species_window(AW_root *aw_root)
     aws->create_menu(       0,   "FIELDS",     "I", "spa_fields.hlp",  AD_F_ALL );
     ad_spec_create_field_items(aws);
 
-    aws->get_root()->awar(AWAR_SPECIES_NAME)->add_callback(	AD_map_species,scannerid);
+    aws->get_root()
+        ->awar((bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)
+        ->add_callback( AD_map_species, scannerid, (AW_CL)organismWindow);
 
     aws->show();
-    AD_map_species(aws->get_root(),scannerid);
+    AD_map_species(aws->get_root(),scannerid, (AW_CL)organismWindow);
     return (AW_window *)aws;
 }
+
+AW_window *NT_create_species_window(AW_root *aw_root) {
+    return create_speciesOrganismWindow(aw_root, false);
+}
+AW_window *NT_create_organism_window(AW_root *aw_root) {
+    return create_speciesOrganismWindow(aw_root, true);
+}
+
 
 AW_CL ad_query_global_cbs = 0;
 
@@ -842,7 +865,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     awtqs.do_set_pos_fig	  = "doset";
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
-    awtqs.create_view_window  = (AW_CL)create_species_window;
+    awtqs.create_view_window  = (AW_CL)NT_create_species_window;
     awtqs.selector            = &AWT_species_selector;
 
     AW_CL cbs           = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);

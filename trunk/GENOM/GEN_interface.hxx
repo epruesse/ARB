@@ -4,12 +4,11 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
-#ifndef GEN_MAP_HXX
-#define GEN_MAP_HXX
+#ifndef GEN_INTERFACE_HXX
+#define GEN_INTERFACE_HXX
 
-// AW_window *GEN_map_create_main_window(AW_root *awr);
-void       GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_ntw, GB_CB_TYPE gb_type);
+extern struct ad_item_selector GEN_item_selector;
 
 #else
-#error GEN_map.hxx included twice
-#endif // GEN_MAP_HXX
+#error GEN_interface.hxx included twice
+#endif // GEN_INTERFACE_HXX

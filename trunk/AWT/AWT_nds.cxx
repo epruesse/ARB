@@ -18,16 +18,17 @@
 #define NDS_STRING_SIZE 4000
 
 struct make_node_text_struct {
-	char     	buf[NDS_STRING_SIZE];
-	char            zbuf[NDS_COUNT];
-	long		lengths[NDS_COUNT];
-	long		rek[NDS_COUNT];
-	char		*dkeys[NDS_COUNT];
-	char		*parsing[NDS_COUNT];
-	long		inherit[NDS_COUNT];
-	long		count;
-	int		errorclip;
-	} *awt_nds_ms=0;
+	char  buf[NDS_STRING_SIZE];
+	char  zbuf[NDS_COUNT];
+	long  lengths[NDS_COUNT];
+	long  rek[NDS_COUNT];
+	char *dkeys[NDS_COUNT];
+	char *parsing[NDS_COUNT];
+	long  inherit[NDS_COUNT];
+	long  count;
+	int	  errorclip;
+
+} *awt_nds_ms = 0;
 
 void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main)
 	{
@@ -309,33 +310,34 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 
 
 void make_node_text_init(GBDATA *gb_main){
-
-	GBDATA         *gbz,*gbe;
-	const char           *sf, *sl;
-	int		count;
+	GBDATA     *gbz,*gbe;
+	const char *sf, *sl;
+	int		    count;
 
 	sf = "flag1";
 	sl = "len1";
-	if (!awt_nds_ms) awt_nds_ms = (struct make_node_text_struct *)
-		GB_calloc(sizeof(struct make_node_text_struct),1);
-	GBDATA *gb_arb_presets =
-		GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
-	count = 0;
+
+	if (!awt_nds_ms) awt_nds_ms = (struct make_node_text_struct *) GB_calloc(sizeof(struct make_node_text_struct),1);
+
+	GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
+	count                  = 0;
+
 	for (gbz = GB_find(gb_arb_presets, "viewkey", NULL, down_level);
 	     gbz != NULL;
-	     gbz = GB_find
-	     (gbz, "viewkey", NULL, this_level + search_next)) {
+	     gbz  = GB_find(gbz, "viewkey", NULL, this_level + search_next))
+    {
 		/* toggle set ? */
 		if (GB_read_int(GB_find(gbz, sf, NULL, down_level))) {
 			if (awt_nds_ms->dkeys[count]) free(awt_nds_ms->dkeys[count]);
-			awt_nds_ms->dkeys[count] = GB_read_string(
-			  GB_find(gbz, "key_text", NULL, down_level));
-			if (GB_first_non_key_char(awt_nds_ms->dkeys[count])) awt_nds_ms->rek[count] = 1;
-			else awt_nds_ms->rek[count] = 0;
-			awt_nds_ms->lengths[count] = GB_read_int(
-				  GB_find(gbz, sl, NULL, down_level));
-			awt_nds_ms->inherit[count] = GB_read_int(
-			     GB_find(gbz, "inherit", NULL, down_level));
+			awt_nds_ms->dkeys[count] = GB_read_string(GB_find(gbz, "key_text", NULL, down_level));
+			if (GB_first_non_key_char(awt_nds_ms->dkeys[count])) {
+                awt_nds_ms->rek[count] = 1;
+            }
+			else {
+                awt_nds_ms->rek[count] = 0;
+            }
+			awt_nds_ms->lengths[count] = GB_read_int(GB_find(gbz, sl, NULL, down_level));
+			awt_nds_ms->inherit[count] = GB_read_int(GB_find(gbz, "inherit", NULL, down_level));
 			gbe = GB_find(gbz, "pars", NULL, down_level);
 			if (awt_nds_ms->parsing[count]) {
 				free(awt_nds_ms->parsing[count]);
@@ -347,10 +349,9 @@ void make_node_text_init(GBDATA *gb_main){
 	}
 	awt_nds_ms->errorclip = 0;
 	awt_nds_ms->count = count;
-
 }
 
-char * make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species)
+char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species)
 {
     /* if mode ==0 compress info else format info */
     char           *bp, *p;
@@ -419,8 +420,7 @@ char * make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spe
                         char *pars = 0;
                         if (awt_nds_ms->parsing[i]) {
                             p = GB_read_string(gbe);
-                            pars = GB_command_interpreter(gb_main,p,
-                                                          awt_nds_ms->parsing[i],gbd);
+                            pars = GB_command_interpreter(gb_main,p, awt_nds_ms->parsing[i],gbd);
                             free(p);
                             if (!pars){
                                 pars = strdup("<error>");
@@ -442,8 +442,7 @@ char * make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spe
                             int len = strlen(p);
                             j = len;
                             if (j > dlen)	j = dlen;
-                            for (; j; j--)
-                                *bp++ = *p++;
+                            for (; j; j--) *bp++ = *p++;
                             if (mode){
                                 post = dlen - len;
                                 while (post-- > 0) *(bp++) = ' ';
@@ -471,8 +470,7 @@ char * make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spe
     return awt_nds_ms->buf;
 }
 
-char *
-make_node_text_list(GBDATA * gbd, FILE *fp)
+char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
 	/* if mode==0 screen else file */
 	char           *bp, *p;

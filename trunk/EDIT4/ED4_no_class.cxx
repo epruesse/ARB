@@ -1964,17 +1964,10 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 error = "It's no good to create short-name for new species by nameserver! (has no acc yet)";
             }
             else {
-                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name);
-                if (!error) { // name was created
+                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name, true);
+                if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
-                        char *uniqueName = 0;
-                        int name_len = strlen(new_species_name);
-
-                        for (int l=name_len-1; l>=0 && !uniqueName; --l) {
-                            new_species_name[l] = 0;
-                            uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
-                        }
-
+                        char *uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
                         free(new_species_name);
                         new_species_name = uniqueName;
 
@@ -1983,25 +1976,9 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 }
             }
 
-            if (error) { // try to make a random name
-                error = 0;
-
-                char short_name[9];
-                short_name[8] = 0;
-                int count = 1000;
-
-                while (count--) {
-                    for (int x=0; x<8; ++x) {
-                        int r = int((double(rand())/RAND_MAX)*36);
-                        short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
-                    }
-
-                    GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, short_name);
-                    if (!gb_new_species) {
-                        new_species_name = strdup(short_name);
-                        break;
-                    }
-                }
+            if (error) {        // try to make a random name
+                error            = 0;
+                new_species_name = AWTC_generate_random_name(gb_species_data);
 
                 if (!new_species_name) {
                     error = GB_export_error("Failed to create a new name for '%s'", new_species_full_name);

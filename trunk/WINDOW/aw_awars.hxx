@@ -33,11 +33,18 @@
 
 /* global awars */
 
-#define AWAR_CURSOR_POSITION        "tmp/focus/cursor_position"     /* int: position in sequence */
-#define AWAR_SET_CURSOR_POSITION    "tmp/focus/set_cursor_position" /* int: set position in sequence (remote control for ARB_EDIT4) */
-#define AWAR_SPECIES_NAME           "tmp/focus/species_name"	    /* string: name of selected species */
-#define AWAR_HELIX_NAME             "tmp/focus/helix_name"		    /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
-#define AWAR_ERROR_MESSAGES         "tmp/Message"		            /* error: messages */
+#define AWAR_CURSOR_POSITION     "tmp/focus/cursor_position" /* int: position in sequence */
+#define AWAR_SET_CURSOR_POSITION "tmp/focus/set_cursor_position" /* int: set position in sequence (remote control for ARB_EDIT4) */
+
+#define AWAR_SPECIES_NAME  "tmp/focus/species_name" /* string: name of selected species */
+#define AWAR_ORGANISM_NAME "tmp/focus/organism_name" /* string: name of selected organism (differs from AWAR_SPECIES_NAME only for pseudo-gene-species) */
+/* - normally AWAR_ORGANISM_NAME contains the same value as AWAR_SPECIES_NAME
+   - if AWAR_SPECIES_NAME contains the name of a pseudo gene-species then AWAR_ORGANISM_NAME
+   contains the name of the species the pseudo gene-species originated from */
+
+
+#define AWAR_HELIX_NAME     "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
+#define AWAR_ERROR_MESSAGES "tmp/Message" /* error: messages */
 
 
 

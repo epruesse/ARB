@@ -310,6 +310,8 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a\
 			PROBE_COM/server.a\
 			ORS_COM/server.a
 
+# communication libs need aisc and aisc_mkpts:
+$(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
 #***************************************************************************************
 #		Individual Programs Section
@@ -499,6 +501,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 #***************************************************************************************
 
 mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
+
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 db:		ARBDB/libARBDB.dummy
@@ -550,15 +553,27 @@ xml:	XML/XML.dummy
 #********************************************************************************
 
 depend: $(ARCHS:.a=.depend)
-tags:
+
+#********************************************************************************
+
+tags: tags_$(MACH)
+tags_LINUX: tags2
+tags_SUN5: tags1
+
+tags1:
 # first search class definitions
-	$(CTAGS)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-	$(CTAGS) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
+		$(CTAGS)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+		$(CTAGS) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-	$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-	$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+		$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
+		$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+
+# if the above tag creation does not work -> try tags2:
 tags2:
-	ctags -e `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f`
+		ctags    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+		ctags -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+
+#********************************************************************************
 
 links: SOURCE_TOOLS/generate_all_links.stamp
 
