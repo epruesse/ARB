@@ -23,6 +23,8 @@ GB_ERROR gbl_tail P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinp
 GB_ERROR gbl_mid0 P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_mid P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_tab P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
+GB_ERROR gbl_pretab P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
+GB_ERROR gbl_crop P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_cut P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_extract_words P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_extract_sequence P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));

@@ -718,6 +718,23 @@ GB_ERROR GBT_delete_tree(GBT_TREE *tree)
     return 0;
 }
 
+GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name) {
+    GB_ERROR error = 0;
+    size_t   len   = strlen(new_group_name);
+
+    if (len >= GB_GROUP_NAME_MAX) {
+        char *shortened = (char*)GB_calloc(10+len+1, 1);
+        strcpy(shortened, "Too long: ");
+        strcpy(shortened+10, new_group_name);
+        strcpy(shortened+GB_GROUP_NAME_MAX-4, "..."); // cut end
+        error = GB_write_string(gb_group_name, shortened);
+    }
+    else {
+        error = GB_write_string(gb_group_name, new_group_name);
+    }
+    return error;
+}
+
 long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
 {
     long me;
@@ -731,7 +748,8 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
             node->gb_node = GB_create_container(gb_tree,"node");
         }
         gb_name = GB_search(node->gb_node,"group_name",GB_STRING);
-        error = GB_write_string(gb_name,node->name);
+        error = GBT_write_group_name(gb_name, node->name);
+/*         error = GB_write_string(gb_name,node->name); */
         if (error) return -1;
     }
     if (node->gb_node){			/* delete not used nodes else write id */
@@ -931,7 +949,9 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         *data = p1;
         if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])){
             gb_group_name = GB_find(node->gb_node,"group_name",0,down_level);
-            if (gb_group_name) node->name = GB_read_string(gb_group_name);
+            if (gb_group_name) {
+                node->name = GB_read_string(gb_group_name);
+            }
         }
         (*startid)++;
         node->leftson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree);

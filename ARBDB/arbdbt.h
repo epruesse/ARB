@@ -5,6 +5,8 @@
 #define GBT_SAI_INDEX_SIZE           1000
 #define GB_COMPRESSION_TAGS_SIZE_MAX 100
 
+#define GB_GROUP_NAME_MAX 256
+
 typedef float GBT_LEN;
 
 #define GBT_TREE_ELEMENTS(type)                     \
