@@ -45,11 +45,12 @@ pg_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 
 pg_main.o: pg_search.hxx pg_def.hxx $(ARBHOME)/INCLUDE/arb_assert.h
 pg_main.o: pg_db.hxx $(ARBHOME)/INCLUDE/arbdb.h
-pg_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+pg_main.o: $(ARBHOME)/INCLUDE/ad_prot.h ../global_defs.h
 pg_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 pg_main.o: $(ARBHOME)/INCLUDE/output.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
-pg_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ../global_defs.h ../common.h
+pg_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ../common.h ../path_code.h
+pg_main.o: ../read_config.h $(ARBHOME)/INCLUDE/config_parser.h
 
 pg_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 pg_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -61,4 +62,4 @@ pg_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/PT_com.h
 pg_search.o: $(ARBHOME)/INCLUDE/client.h
 pg_search.o: $(ARBHOME)/INCLUDE/servercntrl.h pg_search.hxx pg_def.hxx
-pg_search.o: pg_db.hxx
+pg_search.o: pg_db.hxx ../global_defs.h
