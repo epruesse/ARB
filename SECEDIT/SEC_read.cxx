@@ -1,21 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <cstring>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include <arbdb.h>
 
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 
-#include <iostream.h>
-#include <ctype.h>
-#include <string.h>
-#include <fstream.h>
-#include <strstream.h>
-
 #include"secedit.hxx"
 #define BUFFER_SIZE 1000
 
-
+using namespace std;
 
 /***********************************************************************
  * Supplementary Functions
@@ -233,7 +233,7 @@ void SEC_helix_strand::read(SEC_loop *loop_, istream & in) {
 }
 
 GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current_ali_len) {
-    istrstream in(input_string);
+    istringstream in(input_string);
 
     int n = 0;
     if (template_sequence != NULL) {
