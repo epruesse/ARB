@@ -166,16 +166,13 @@ void selectAlignment(AW_window *aws){
 }
 
 void selectAllAlignments(AW_window *aws){
-    
-    int listCount = aws->get_no_of_entries(db_alignment_list);
-    if (!listCount) return;
 
-    const char *temp_list_entry;
+    const char *listEntry = db_alignment_list->first_element();
     aws->clear_selection_list(con_alignment_list);
 
-    for(int i =1; i<listCount; i++){
-        temp_list_entry = aws->get_element_of_index(db_alignment_list, i);
-        aws->insert_selection(con_alignment_list, temp_list_entry, temp_list_entry);
+    while (listEntry) {
+        aws->insert_selection(con_alignment_list, listEntry, listEntry);
+        listEntry = db_alignment_list->next_element();
     }
 	aws->insert_default_selection(con_alignment_list,"????", "????" );
     aws->update_selection_list(con_alignment_list);
@@ -207,44 +204,53 @@ void shiftAlignment(AW_window *aws, long int direction){
     char *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
     if (!selected_alignment || !selected_alignment[0] || selected_alignment == NULL) return;
 
-    int index     = aws->get_index_of_element(con_alignment_list, selected_alignment);
-    int listCount = aws->get_no_of_entries(con_alignment_list);
-    const char *temp_list_entry = 0;
+    int curr_index        = 0;
+    int sel_element_index = aws->get_index_of_element(con_alignment_list, selected_alignment);
+    const char *listEntry = con_alignment_list->first_element();            
+    const char *temp_listEntry = 0;
     
     aws->clear_selection_list(temp_list);
+  
+    while(listEntry){
+        switch(direction) {
+          case MOVE_UP:       //shifting alignments upwards
+              if (sel_element_index == curr_index+1){
+                  aws->insert_selection(temp_list, selected_alignment, selected_alignment);
+                  temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index++);
+                  if(temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
+              }
+              else {
+                  temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index);
+                  if(temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
+              }
+              curr_index++;
+              break;
 
-    for (int i = 1; i<listCount; i++){
-        if(direction){  //shifting alignments upwards
-            if (index == i+1){
-                aws->insert_selection(temp_list, selected_alignment, selected_alignment);
-                temp_list_entry = aws->get_element_of_index(con_alignment_list, i++);
-                aws->insert_selection(temp_list, temp_list_entry, temp_list_entry);
-            }
-            else {
-                temp_list_entry = aws->get_element_of_index(con_alignment_list, i);
-                aws->insert_selection(temp_list, temp_list_entry, temp_list_entry);
-            }
+          case MOVE_DOWN:    //shifting alignments downwards
+              if (sel_element_index == curr_index){
+                  temp_listEntry = aws->get_element_of_index(con_alignment_list, ++curr_index);
+                  if(temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
+                  aws->insert_selection(temp_list, selected_alignment, selected_alignment);
+              }
+              else {
+                  temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index);
+                  if(temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
+              }
+              curr_index++;
+              break;
         }
-        else { //shifting alignments downwards
-            if (index == i){
-                if(++i>=listCount) return; 
-                temp_list_entry = aws->get_element_of_index(con_alignment_list, i);
-                aws->insert_selection(temp_list, temp_list_entry, temp_list_entry);
-                aws->insert_selection(temp_list, selected_alignment, selected_alignment);
-            }
-            else {
-                temp_list_entry = aws->get_element_of_index(con_alignment_list, i);
-                aws->insert_selection(temp_list, temp_list_entry, temp_list_entry);
-            }
-        }
+        listEntry = con_alignment_list->next_element();            
     }
+
     aws->insert_default_selection(temp_list,"????", "????" );
     aws->update_selection_list(temp_list);
 
     aws->clear_selection_list(con_alignment_list);
-    for(int j =1; j<listCount; j++){
-        temp_list_entry = aws->get_element_of_index(temp_list, j);
-        aws->insert_selection(con_alignment_list, temp_list_entry, temp_list_entry);
+    listEntry = temp_list->first_element();            
+
+    while (listEntry) {                                            
+        aws->insert_selection(con_alignment_list, listEntry, listEntry);
+        listEntry = temp_list->next_element();
     }
     aws->insert_default_selection(con_alignment_list,"????", "????" );
     aws->update_selection_list(con_alignment_list);

@@ -20,6 +20,8 @@
 #define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"  
 
 #define MERGE_SIMILAR_CONCATENATE_ALIGNMENTS 1
+#define MOVE_DOWN  0
+#define MOVE_UP    1
 
 struct conAlignStruct{
     GBDATA            *gb_main; 
