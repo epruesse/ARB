@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Aug/17/2001 21:44 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Sep/07/2001 13:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -13,8 +13,8 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef AWT_INPUT_MASK_H
-#define AWT_INPUT_MASK_H
+#ifndef AWT_INPUT_MASK_HXX
+#define AWT_INPUT_MASK_HXX
 
 #ifndef __STRING__
 #include <string>
@@ -28,6 +28,10 @@
 
 #ifndef SMARTPTR_H
 #include <smartptr.h>
+#endif
+
+#ifndef AWT_HOTKEYS_HXX
+#include <awt_hotkeys.hxx>
 #endif
 
 typedef enum {
@@ -45,7 +49,7 @@ extern const char *awt_itemtype_names[]; // names of itemtypes
 //  -------------------------------------
 //      class awt_item_type_selector
 //  -------------------------------------
-// awt_item_type_selector is a interface for specific item-types
+// awt_item_type_selector is an interface for specific item-types
 //
 // derive from awt_item_type_selector to get the functionality for
 // other item types.
@@ -55,21 +59,27 @@ extern const char *awt_itemtype_names[]; // names of itemtypes
 
 class awt_item_type_selector {
 private:
+    awt_item_type my_type;
 public:
-    awt_item_type_selector() {}
+    awt_item_type_selector(awt_item_type for_type) : my_type(for_type) {}
     virtual ~awt_item_type_selector() {}
+
+    awt_item_type get_item_type() const { return my_type; }
 
     // add callbacks to awars (i.e. to AWAR_SPECIES_NAME)
     virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
 
-    // give the current item
+    // returns the current item
     virtual GBDATA *current(AW_root *root) const = 0;
 
-    // give the keypath for items
+    // returns the keypath for items
     virtual const char *getKeyPath() const = 0;
 
-    // give the name of an awar containing the name of the current item
-    virtual const char *get_self_awar() const =  0;
+    // returns the name of an awar containing the name of the current item
+    virtual const char *get_self_awar() const = 0;
+
+    // returns the maximum length of the name of the current item
+    virtual size_t get_self_awar_content_length() const = 0;
 };
 
 //  ------------------------------------
@@ -78,12 +88,14 @@ public:
 // data global to one input mask
 class awt_input_mask_global {
 private:
-    AW_root       *awr;
-    GBDATA        *gb_main;
-    string         awar_root;
-    awt_item_type  itemtype;    // what kind of item do we handle ?
+    mutable AW_root *awr;
+    mutable GBDATA  *gb_main;
+    string           awar_root;
+    awt_item_type    itemtype;  // what kind of item do we handle ?
 
     const awt_item_type_selector *sel;
+
+    awt_hotkeys hotkeys;
 
 public:
     awt_input_mask_global(AW_root *awr_, GBDATA *gb_main_, const string& awar_root_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
@@ -95,11 +107,12 @@ public:
     {}
     virtual ~awt_input_mask_global() {}
 
-    AW_root *get_root() { return awr; }
-    GBDATA *get_gb_main() { return gb_main; }
+    AW_root *get_root() const { return awr; }
+    GBDATA *get_gb_main() const { return gb_main; }
     const string& get_awar_root() const { return awar_root; }
     awt_item_type get_itemtype() const { return itemtype; }
     const awt_item_type_selector *get_selector() const { aw_assert(sel); return sel; }
+    const char* hotkey(const string& label)  { return hotkeys.hotkey(label); }
 };
 
 
@@ -269,6 +282,9 @@ public:
     virtual string db2awar(const string& db_content) const;
 
     virtual void build_widget(AW_window *aws);
+
+    size_t no_of_toggles() const { return buttons.size(); }
+    size_t default_toggle() const { return default_position; }
 };
 
 
@@ -315,9 +331,12 @@ public:
     void relink();
 };
 
+
+
 awt_item_type AWT_getItemType(const string& itemtype_name);
+void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL));
 
 #else
-#error AWT_input_mask.h included twice
-#endif // AWT_INPUT_MASK_H
+#error AWT_input_mask.hxx included twice
+#endif // AWT_INPUT_MASK_HXX
 
