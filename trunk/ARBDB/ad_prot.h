@@ -47,6 +47,8 @@ GB_CPNTR GBS_find_string P_((const char *str, const char *key, long match_mode))
 long GBS_string_scmp P_((const char *str, const char *search, long upper_case));
 long GBS_string_cmp P_((const char *str, const char *search, long upper_case));
 char *GBS_remove_escape P_((char *com));
+char *GBS_escape_string P_((const char *str, const char *chars_to_escape, char escape_char));
+char *GBS_unescape_string P_((const char *str, const char *escaped_chars, char escape_char));
 void *GBS_stropen P_((long init_size));
 char *GBS_strclose P_((void *strstruct));
 GB_CPNTR GBS_mempntr P_((void *strstruct));
