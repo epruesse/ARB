@@ -173,8 +173,10 @@ NT_extern.o: nt_import.hxx nt_date.h $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_extern.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 NT_ins_col.o:  
 NT_ins_col.o:  
 NT_ins_col.o:  

@@ -86,15 +86,24 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
     return 0;
 }
 
-GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type) {
-	return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH);
-}
-GB_ERROR awt_add_new_gene_changekey(GBDATA *gb_main,const char *name, int type) {
-	return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_GENES);
-}
+GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type)              { return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH); }
+GB_ERROR awt_add_new_gene_changekey(GBDATA *gb_main,const char *name, int type)         { return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_GENES); }
+GB_ERROR awt_add_new_experiment_changekey(GBDATA *gb_main,const char *name, int type)   { return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_EXPERIMENTS); }
 
-#define GENE_DATA_PATH 			"gene_data/gene/"
-#define GENE_DATA_PATH_LEN 		15
+static const char GENE_DATA_PATH[]       = "gene_data/gene/";
+static const char EXPERIMENT_DATA_PATH[] = "experiment_data/experiment/";
+
+#define GENE_DATA_PATH_LEN       (sizeof(GENE_DATA_PATH)-1)
+#define EXPERIMENT_DATA_PATH_LEN (sizeof(EXPERIMENT_DATA_PATH)-1)
+
+inline bool is_in_GENE_path(const char *fieldpath)          { return strncmp(fieldpath, GENE_DATA_PATH,         GENE_DATA_PATH_LEN) == 0; }
+inline bool is_in_EXPERIMENT_path(const char *fieldpath)    { return strncmp(fieldpath, EXPERIMENT_DATA_PATH,   EXPERIMENT_DATA_PATH_LEN) == 0; }
+
+inline bool is_in_reserved_path(const char *fieldpath)  {
+    return
+        is_in_GENE_path(fieldpath) ||
+        is_in_EXPERIMENT_path(fieldpath);
+}
 
 void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GB_push_transaction(gb_main);
@@ -111,7 +120,8 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     awt_add_new_changekey(gb_main,"tmp",GB_STRING);
     for (name = names; *name; name++) {
         if ( (1<<(**name)) & bitfilter ) {	// look if already exists
-			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) != 0) { // ignore gene entries
+			if (!is_in_reserved_path((*name)+1)) { // ignore gene, experiment, ... entries
+// 			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) != 0) { // ignore gene entries
 				awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
 			}
         }
@@ -144,7 +154,8 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
 
     for (name = names; *name; name++) {
         if ( (1<<(**name)) & bitfilter ) {		// look if already exists
-			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) == 0) {
+// 			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) == 0) {
+			if (is_in_GENE_path((*name)+1)) {
 				awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
 			}
         }
@@ -154,6 +165,27 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GB_pop_transaction(gb_main);
 }
 
+void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
+    GB_push_transaction(gb_main);
+    char **names;
+    char **name;
+    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+
+    names = GBT_scan_db(gb_species_data);
+
+    awt_add_new_experiment_changekey(gb_main,"name", GB_STRING);
+
+    for (name = names; *name; name++) {
+        if ( (1<<(**name)) & bitfilter ) {		// look if already exists
+			if (is_in_EXPERIMENT_path((*name)+1)) {
+				awt_add_new_experiment_changekey(gb_main,(*name)+1+EXPERIMENT_DATA_PATH_LEN,(int)*name[0]);
+			}
+        }
+    }
+
+    GBT_free_names(names);
+    GB_pop_transaction(gb_main);
+}
 
 void awt_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
 {
@@ -165,6 +197,12 @@ void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, l
 {
     AWUSE(dummy);
     awt_gene_field_selection_list_rescan(gb_main,bitfilter);
+}
+
+void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
+{
+    AWUSE(dummy);
+    awt_experiment_field_selection_list_rescan(gb_main,bitfilter);
 }
 
 AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter,
@@ -638,7 +676,7 @@ refresh_again:
         }
     }
 
-    if (last_max_name_width != max_name_width) {
+    if (last_max_name_width < max_name_width) {
         last_max_name_width = max_name_width;
         goto refresh_again;
     }

@@ -44,6 +44,7 @@
 #include <probe_design.hxx>
 #include <primer_design.hxx>
 #include <GEN.hxx>
+#include <EXP.hxx>
 #include <awt_input_mask.hxx>
 
 
@@ -164,6 +165,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 	awr->awar_string( AWAR_SPECIES_NAME, "" ,	gb_main);
 
     GEN_create_awars(awr, def);
+    EXP_create_awars(awr, def);
 
 	awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 
@@ -546,7 +548,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"registration.hlp");
 	aws->create_button("HELP","HELP","H");
 
-	aw_root->awar_string("/tmp/nt/register/mail","arb@mikro.biologie.tu-muenchen.de");
+	aw_root->awar_string("/tmp/nt/register/mail","arb@arb-home.de");
 	aws->at("mail");
 	aws->create_input_field("/tmp/nt/register/mail");
 
@@ -556,9 +558,9 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 	    aw_root->awar_string("/tmp/nt/register/text",
                              "******* Registration *******\n"
                              "\n"
-                             "Name			:\n"
-                             "Department		:\n"
-                             "How many users	:\n"
+                             "Name           :\n"
+                             "Department	 :\n"
+                             "How many users :\n"
                              "Why do you want to use arb ?\n"
                              );
 	}
@@ -626,15 +628,27 @@ GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl
     return NT_create_configuration(0, ptree, 0, use_species_aside);
 }
 
+// #########################################
+// #########################################
+// ###                                   ###
+// ##          user mask section          ##
+// ###                                   ###
+// #########################################
+// #########################################
+
 //  ----------------------------------------------------------------------------
 //      class nt_item_type_species_selector : public awt_item_type_selector
 //  ----------------------------------------------------------------------------
 class nt_item_type_species_selector : public awt_item_type_selector {
 public:
+    nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
     virtual ~nt_item_type_species_selector() {}
 
     virtual const char *get_self_awar() const {
         return AWAR_SPECIES_NAME;
+    }
+    virtual size_t get_self_awar_content_length() const {
+        return 12; // should be enough for "nnaammee.999"
     }
     virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
@@ -648,6 +662,7 @@ public:
             gb_species = GBT_find_species(gb_main,species_name);
         }
 
+        free(species_name);
         return gb_species;
     }
     virtual const char *getKeyPath() const { // give the keypath for items
@@ -663,56 +678,30 @@ static nt_item_type_species_selector item_type_species;
 static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-
-// #if defined(DEBUG)
-//     printf("NT_open_mask_window id=%i\n", id);
-// #endif // DEBUG
-
     assert(descriptor);
-    if (descriptor) {
-        AWT_initialize_input_mask(aww->get_root(), gb_main,
-                                  &item_type_species, descriptor->get_maskname());
-    }
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_maskname());
 }
 
 //  ----------------------------------------------------------------------
 //      static void NT_create_mask_submenu(AW_window_menu_modes *awm)
 //  ----------------------------------------------------------------------
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
-    bool found = false;
-
-    for (int id = 0; ;++id) {
-        const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-        if (!descriptor) break;
-
-        awt_item_type item_type = AWT_getItemType(descriptor->get_itemtypename());
-
-        if (item_type == AWT_IT_SPECIES) {
-            if (!found) awm->insert_sub_menu(0, "User Masks", "");
-
-            found               = true;
-            char *macroname2key = GBS_string_2_key(descriptor->get_maskname());
-#if defined(DEBUG)
-            printf("found species user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
-#endif // DEBUG
-            awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, NT_open_mask_window, (AW_CL)id, (AW_CL)0);
-            free(macroname2key);
-        }
-        else if (item_type == AWT_IT_UNKNOWN) {
-            aw_message(GBS_global_string("Unkown User-Mask '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_maskname()));
-        }
-    }
-
-    if (found) awm->close_sub_menu();
+    AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window);
 }
-
-
 //  -----------------------------------------------
 //      void NT_test_input_mask(AW_root *root)
 //  -----------------------------------------------
 void NT_test_input_mask(AW_root *root) {
     AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask");
 }
+
+// ##########################################
+// ##########################################
+// ###                                    ###
+// ##          create main window          ##
+// ###                                    ###
+// ##########################################
+// ##########################################
 
 #define AWMIMT awm->insert_menu_topic
 //  --------------------------------------------------------------------
@@ -771,6 +760,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         AWMIMT( "close", "Close",					"C",0,		AWM_ALL, (AW_CB)AW_POPDOWN, 	0, 0 );
 
     }else{
+        bool is_genom_db = false; //  is this a genome database ?
+        {
+            GB_transaction  dummy(gb_main);
+            GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
+        }
+
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
             //	AWMIMT("save_whole_db",	"Save Whole Database",		       	"S","save.hlp",	F_ALL, (AW_CB)NT_save_cb, 	0, 	0);
@@ -829,8 +825,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_menu(0,"Species","p","species.hlp",	AWM_ALL);
         {
             AWMIMT( "species_info",		"Info (Copy Delete Rename Modify) ...", "I",	"sp_info.hlp",		AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,	0);
-            NT_create_mask_submenu(awm);
             AWMIMT( "species_search",	"Search and Query",			"Q",	"sp_search.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,	0 );
+            NT_create_mask_submenu(awm);
+            awm->insert_separator();
             awm->insert_sub_menu(0, "Species Database Fields Admin","F");
             {
                 ad_spec_create_field_items(awm);
@@ -870,18 +867,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
 
         }
-        //  -------------
-        //      Genes
-        //  -------------
+        //  --------------------------
+        //      Genes + Experiment
+        //  --------------------------
 
-        bool is_genom_db = false;
-        {
-            GB_transaction  dummy(gb_main);
-            GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
+        if (is_genom_db) {
+            GEN_create_genes_submenu(awm, true);
+            EXP_create_experiments_submenu(awm, true);
         }
-
-        if (is_genom_db) GEN_create_genes_submenu(awm, true);
 
         // --------------------------------------------------------------------------------
         //     Sequence

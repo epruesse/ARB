@@ -28,6 +28,10 @@
 #define AWAR_GENE_POS1 "tmp/gene/pos1"
 #define AWAR_GENE_POS2 "tmp/gene/pos2"
 
+// contains the path to the gene:  "organism_name;gene_name"
+// writing this awar has no effect
+#define AWAR_COMBINED_GENE_NAME "tmp/gene/combined_name"
+
 // to extract genes to pseudo-species:
 #define AWAR_GENE_EXTRACT_ALI "tmp/gene/extract/ali"
 
