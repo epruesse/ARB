@@ -325,6 +325,11 @@ void aw_clear_message_cb(AW_window *aww)
     awr->awar("tmp/Message")->write_string("" );
 }
 
+void aw_clear_and_hide_message_cb(AW_window *aww) {
+    aw_clear_message_cb(aww);
+    AW_POPDOWN(aww);
+}
+
 void aw_initstatus( void )
 {
     int	error;
@@ -399,6 +404,10 @@ void aw_initstatus( void )
         awm->at("Clear");
         awm->callback(aw_clear_message_cb);
         awm->create_button("CLEAR", "CLEAR","C");
+
+        awm->at("HideNClear");
+        awm->callback(aw_clear_and_hide_message_cb);
+        awm->create_button("HIDE_CLEAR", "OK","O");
 
         aw_stg.awm = (AW_window *)awm;
 
