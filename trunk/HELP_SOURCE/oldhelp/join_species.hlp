@@ -8,27 +8,31 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Standard help file form
+TITLE           Join species
 
 OCCURRENCE	ARB_NT/Species/Destroy Species/Join Marked Species
 
 DESCRIPTION	This function allows to join to set of species.
+
 		For example you have a 23s and a 16s database and you want
 		to append the 16s to the 23s sequences than you have to do:
-			- merge the 16s to the 23s sequences.
-			- create a field 'species_name' which holds the
-				real name of the species.
-				That means the species_name of the 16s sequence
-				should be the same as of the 23s seq.
-				Do not use the 'names' field because it is
-				used as a UNIQUE id to the database.
-			- ARB_NT/Species/Destroy Species/Join Marked Species
-				and use the field 'species_name'.
 
-NOTES		None	
+			- merge the 16s to the 23s sequences.
+
+			- create a field 'species_name' which holds the
+                          real name of the species.
+                          That means the species_name of the 16s sequence
+                          should be the same as of the 23s seq.
+                          Do not use the 'names' field because it is
+                          used as a UNIQUE id to the database.
+
+			- ARB_NT/Species/Destroy Species/Join Marked Species
+                          and use the field 'species_name'.
+
+NOTES		None
 
 EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Time will show
+BUGS		No bugs known

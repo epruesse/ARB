@@ -11,14 +11,15 @@ SUB	commands.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Standard help file form
+TITLE		ARB WWW Queries
 
-OCCURRENCE	ARB_NT
+OCCURRENCE	ARB_NT/Properties/WWW
 
 DESCRIPTION	The WWW-Interface can be used to search the Web for information
 		taken from the ARB-Database.
 
-NOTES		None
+                Select a species and press the WWW button in the ARB_NTREE top area
+                or choose the WWW mode and click on a species.
 
 EXAMPLES	Here are some search examples (URL-Entries):
 
@@ -26,14 +27,23 @@ EXAMPLES	Here are some search examples (URL-Entries):
 			"http://www.ebi.ac.uk/cgi-bin/emblfetch?";readdb(acc)
 
 		Search Medline for related information:
-			"http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?uid=";readdb(medline_id);"&form=6&db=m&Dopt=b"			
+			"http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?uid=";readdb(medline_id);"&form=6&db=m&Dopt=b"
 
-		Search the Web for full-name:
-			"http://search.metacrawler.com/crawler?general=%22";readdb(full_name)|srt(" =+");"%22&method=0&format=1&region=0&rpp=20&timeout=15&hpe=10"
+		Search the Web for full-name using google:
+                       "http://www.google.com/search?q=";readdb(full_name);"&ie=ISO-8859-1&hl=de&btnG=Google-Suche&meta="|srt(": =+")
 
-			
-WARNINGS	Look at the bottom line of the WWW configuration window
-		and check out whether the command line there calls your 
+
+NOTES           Look at the bottom line of the WWW configuration window
+		and check out whether the command line there calls your
 		preferred internet browser.
+
+                Netscape User:
+
+                         (netscape -remote 'openURL($(URL))' || netscape '$(URL)') &
+
+
+
+WARNINGS        We are not responsible for any content you retrieve by using
+                this function. Only use this at your own responsibility.
 
 BUGS		No bugs known
