@@ -6,8 +6,6 @@
 const int maxErrorStringLength = 4000;
 typedef int Boolean;
 class SeerInterfaceData;
-typedef struct gbs_hash_struct GB_HASH;
-typedef struct gb_data_base_type GBDATA;
 
 int aw_message( const char *msg, char *buttons );
 void aw_message(const char *msg);
