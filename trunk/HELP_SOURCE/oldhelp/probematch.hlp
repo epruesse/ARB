@@ -4,7 +4,7 @@ UP	glossary.hlp
 UP	pt_server.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	pd_spec_param.hlp
+#SUB	pd_spec_param.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

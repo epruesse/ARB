@@ -3,7 +3,7 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	commands.hlp
+#SUB	commands.hlp
 SUB	regexpr.hlp
 
 TITLE	Search and Replace Tool (SRT)

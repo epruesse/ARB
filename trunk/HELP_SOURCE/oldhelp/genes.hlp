@@ -7,7 +7,7 @@ UP	species.hlp
 SUB	mark_genes.hlp
 SUB	selected_gene.hlp
 SUB	gene_species.hlp
-SUB	gene_info.hlp
+# SUB	gene_info.hlp
 SUB	organisms.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}

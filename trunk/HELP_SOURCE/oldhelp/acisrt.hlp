@@ -1,11 +1,11 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
-UP	glossary.hlp
+#UP	glossary.hlp
 UP	props_nds.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	parser.hlp
-SUB	commands.hlp
+#SUB	parser.hlp
+#SUB	commands.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

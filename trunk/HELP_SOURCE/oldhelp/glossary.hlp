@@ -10,9 +10,9 @@ SUB	pt_server.hlp
 SUB	extended.hlp
 SUB	species.hlp
 SUB	selected.hlp
-SUB	mark.hlp
-SUB	alignment.hlp
-SUB	commands.hlp
+#SUB	mark.hlp
+#SUB	alignment.hlp
+#SUB	commands.hlp
 SUB	parser.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}

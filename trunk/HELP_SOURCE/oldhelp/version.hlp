@@ -2,7 +2,7 @@
 UP	arb.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	changes.hlp
+#SUB	changes.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
