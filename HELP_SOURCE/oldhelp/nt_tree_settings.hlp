@@ -13,19 +13,34 @@ TITLE		 Tree Settings
 
 OCCURRENCE	ARB_NT/Properties/Tree Settings
 
-DESCRIPTION	Defines line width of the branches and vertical distance of the
-		terminal nodes (dendrogram).
+DESCRIPTION     Various tree display settings are available:
 
-		Type values to the respective subwindows.
+                - 'Base line width' defines the thickness of branches
+
+                - 'Relative vertical distance' allows to stretch the tree in
+                  vertical direction (dendrogram only)
+
+                - 'Auto Jump' does the same as the JUMP button in the main window
+                  each time the selected species is changed (e.g. from search tool).
+
+                - 'Show bootstrap circles' toggles the display of bootstrap circles (only
+                  available if the tree contains bootstrap values).
+
+                - If 'Use ellipse' is active, ellipses instead of circles are drawn in
+                  dendrogram tree.
+
+                - 'Bootstrap circle zoom factor' allows to increase/reduce the size
+                  of the boostrap circles/ellipse
+
+                - 'Boostrap radius limit' allows to limit the max. bootstrap circle/ellipse size.
+
+                - 'Grey Level of Groups%' (for printing/Xfig only)
 
 		The changes can be saved to files 'arb_prop*' located in the
 		users home directory by choosing the "Save Defaults'.
 
-		@@@ Einzelne Werte 
-
-
 NOTES		The line width of individual branches can be changed
-		independently using the 'LINE WIDTH MODE'.	
+		independently using the 'LINE WIDTH MODE'.
 
 EXAMPLES	None
 
