@@ -1,6 +1,9 @@
 #ifndef PS_BITMAP_HXX
 #define PS_BITMAP_HXX
 
+#ifndef __MAP__
+#include <map>
+#endif
 #ifndef PS_BITSET_HXX
 #include "ps_bitset.hxx"
 #endif
@@ -40,6 +43,7 @@ public:
     virtual void xor( const PS_BitMap *_other_map );
 
     virtual void print();
+    virtual void printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file );
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
@@ -147,6 +151,7 @@ public:
     virtual void setFalse( const long _row, const long _col );
 
     virtual void print();
+    virtual void printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
     virtual bool reserve( const long _capacity );
@@ -274,7 +279,7 @@ void PS_BitMap::invert() {
 
 
 // ************************************************************
-// * PS_BitMap::xor( _other_map )
+// * PS_BitMap::xor( const PS_BitMap *_other_map )
 // ************************************************************
 void PS_BitMap::xor( const PS_BitMap *_other_map ) {
     for (long i = 0; i <= max_row; ++i) {
@@ -288,10 +293,37 @@ void PS_BitMap::xor( const PS_BitMap *_other_map ) {
 // ************************************************************
 void PS_BitMap::print() {
     printf( "PS_BitMap : bias(%1i) max_row(%6li) capacity(%6li)\n", bias, max_row, capacity );
-    for (long i = 0; i <= max_row; ++i) {
+    for (long i = 0; i < capacity; ++i) {
         printf( "[%5li] ",i);
         data[i]->print( true, i );
     }
+}
+
+
+// ************************************************************
+// * PS_BitMap::printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file )
+// ************************************************************
+void PS_BitMap::printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file ) {
+    // write title
+    long size;
+    size = sprintf( _buffer, "# %s\n#PS_BitMap : bias(%1i) max_row(%li) capacity(%li)\n#col row\n", _title, bias, max_row, capacity );
+    _file->put( _buffer, size );
+
+    // write indices of trues per row
+    PS_BitSet::IndexSet trues;
+    for ( long row = 0;
+          row < capacity;
+          ++row ) {
+        data[ row ]->getTrueIndices( trues );
+        for ( PS_BitSet::IndexSet::iterator col = trues.begin();
+              col != trues.end();
+              ++col ) {
+            size = sprintf( _buffer, "%li %li\n", *col, row );
+            _file->put( _buffer, size );
+        }
+    }
+
+    _file->flush();
 }
 
 
@@ -521,10 +553,61 @@ bool PS_BitMap_Counted::reserve( const long _capacity ) {
 // ************************************************************
 void PS_BitMap_Counted::print() {
     printf( "PS_BitMap_Counted : bias(%1i) max_row(%6li) capacity(%6li)\n", bias, max_row, capacity );
-    for (long i = 0; i <= max_row; ++i) {
+    for (long i = 0; i < capacity; ++i) {
         printf( "[%5li] %6li ", i, count_true_per_index[i] );
         data[i]->print( false );
     }
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file )
+// ************************************************************
+void PS_BitMap_Counted::printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file ) {
+    // write title and header of bitmap
+    long size;
+    size = sprintf( _buffer, "# %s\n#PS_BitMap_Counted : bias(%1i) max_row(%li) capacity(%li)\n#col row - index of a true\n", _title, bias, max_row, capacity );
+    _file->put( _buffer, size );
+
+    // write indices of trues per row
+    PS_BitSet::IndexSet trues;
+    for ( long row = 0;
+          row < capacity;
+          ++row ) {
+        data[ row ]->getTrueIndices( trues );
+        for ( PS_BitSet::IndexSet::iterator col = trues.begin();
+              col != trues.end();
+              ++col ) {
+            size = sprintf( _buffer, "%li %li\n", *col, row );
+            _file->put( _buffer, size );
+        }
+    }
+
+    // write dataset seperator and header of counters
+    size = sprintf( _buffer, "\n\n# speciesID count (of trues)\n" );
+    _file->put( _buffer, size );
+
+    // write counters per species
+    map<long,long> species_per_count;
+    for ( long row = 0;
+          row < capacity;
+          ++row ) {
+        size = sprintf( _buffer, "%li %li\n", row, count_true_per_index[ row ] );
+        _file->put( _buffer, size );
+        ++species_per_count[ count_true_per_index[ row ] ];
+    }
+
+    // write dataset seperator and header of counters
+    size = sprintf( _buffer, "\n\n# count (of trues) count (of species)\n" );
+    _file->put( _buffer, size );
+    for ( map<long,long>::iterator count = species_per_count.begin();
+          count != species_per_count.end();
+          ++count ) {
+        size = sprintf( _buffer, "%li %li\n", count->first, count->second );
+        _file->put( _buffer, size );
+    }
+
+    _file->flush();
 }
 
 
