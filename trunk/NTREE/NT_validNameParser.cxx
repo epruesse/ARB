@@ -27,9 +27,10 @@ namespace validNames{
   TokLPtr tokenize(const string& description, TokLPtr tokenLP)
   {
     //   TokLPtr tokenLP = new TokL;
-    int tokenEnd = 0;
-    int tokenBegin = 0;
+    unsigned tokenEnd = 0;
+    unsigned tokenBegin = 0;
     //    std::cout  <<description.size() << std::endl;
+
     while (tokenEnd != description.size()){ // CC : warning: comparison between signed and unsigned (tokenEnd sollte nicht 'int' sondern 'unsigned' sein)
     tokenEnd = description.find_first_of(' ', tokenBegin);
     //    std::cout << string("TokenBegin:\t") << tokenBegin << "\t" <<

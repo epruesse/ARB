@@ -693,9 +693,8 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
 #if defined(DEBUG) && 0
 void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
-
     GB_install_error_handler(aw_message);
-    err = GB_fix_database(gb_main);
+    //    err = GB_fix_database(gb_main);  // Lothar Hack
     if (err) aw_message(err);
 }
 #endif // DEBUG
