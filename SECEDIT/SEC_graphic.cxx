@@ -10,6 +10,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt_canvas.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
@@ -21,23 +22,12 @@
 void SEC_create_awars(AW_root *aw_root,AW_default def)
 {
     aw_root->awar_int(AWAR_SECEDIT_BASELINEWIDTH,0,def)->set_minmax(0,10);
-
-    aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/file_name", "noname.ass");
-    aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/filter", "ass");
-
     aw_root->awar_string(AWAR_FOOTER);
 
     {
-        GB_CSTR arbhome = GB_getenvARBHOME();
-        GB_CSTR sub = "/lib/secondary_structure";
-        char *buf = (char*)malloc(strlen(arbhome)+strlen(sub)+1);
-
-        strcpy(buf, arbhome);
-        strcat(buf, sub);
-
-        aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/directory", buf)->write_string(buf);
-
-        free(buf);
+        char *dir = GBS_global_string_copy("%s/lib/secondary_structure", GB_getenvARBHOME());
+        aw_create_selection_box_awars(aw_root, AWAR_SECEDIT_IMEXPORT_BASE, dir, ".ass", "noname.ass");
+        free(dir);
     }
 
     aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
