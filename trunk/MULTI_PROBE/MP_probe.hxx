@@ -1,8 +1,12 @@
-#ifndef MPPROBEHXX
-#define MPPROBEHXX
+#ifndef MP_PROBE_HXX
+#define MP_PROBE_HXX
 
-#include <MultiProbe.hxx>
+#ifndef MULTIPROBE_HXX
+#include "MultiProbe.hxx"
+#endif
+#ifndef SOTL_HXX
 #include "SoTl.hxx"
+#endif
 
 #define NO_GENETIC_ALG      1
 #define MIN(x,y)    (x>y) ? y : x
@@ -215,5 +219,7 @@ public:
     ~GenerationDuplicates();        //loescht rekursiv nach unten alles.
 };
 
+#else
+#error MP_probe.hxx included twice
 #endif
 
