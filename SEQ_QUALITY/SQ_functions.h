@@ -1,4 +1,4 @@
-void SQ_calc_sequence_structure(GBDATA *gb_main);
+void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only);
 
 void SQ_calc_average_structure(GBDATA *gb_main);
 
