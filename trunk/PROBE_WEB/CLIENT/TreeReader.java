@@ -16,7 +16,7 @@ public TreeReader(String treefile)
         try {
 
             //            File f =  new File("demo.newick");
-            File f =  new File("probetree.gz");
+            File f =  new File(treefile);
 
             //  String archiveName = new String("allProbes.jar");
             //            FileReader in = new FileReader(f);
@@ -40,8 +40,10 @@ public TreeReader(String treefile)
             System.exit(1);
         }
 
-        tree = inputTree.toString().substring(inputTree.toString().indexOf('('));
-        version = inputTree.toString().substring(0, inputTree.toString().indexOf('\n'));
+        String treeString = inputTree.toString();
+
+        tree    = treeString.substring(treeString.indexOf('('));
+        version = treeString.substring(treeString.indexOf('=')+1, treeString.indexOf('\n'));
     }
 
 public String getTreeString()
