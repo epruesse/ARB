@@ -371,22 +371,27 @@ GB_CPNTR GB_read_pntr(GBDATA *gbd){
     int type;
     type = GB_TYPE(gbd);
     data = GB_GETDATA(gbd);
-    if (!data) return 0;
-    if (gbd->flags.compressed_data) {   /* uncompressed data return pntr to
-                                           database entry   */
-        char *ca = gb_read_cache(gbd);
-        char *da;
+    if (data) {
+        if (gbd->flags.compressed_data) {   /* uncompressed data return pntr to
+                                               database entry   */
+            char *ca = gb_read_cache(gbd);
 
-        if (ca) return ca;
+            if (!ca) {
+                char *da;
+                size = GB_GETSIZE(gbd) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
+                ca = gb_alloc_cache_index(gbd,size);
+                da = gb_uncompress_data(gbd,data,size);
+                GB_MEMCPY(ca,da,size);
+            }
+            data = ca;
+        }
 
-        size = GB_GETSIZE(gbd) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
-        ca = gb_alloc_cache_index(gbd,size);
-        da = gb_uncompress_data(gbd,data,size);
-        GB_MEMCPY(ca,da,size);
-        return ca;
-    }else{
-        return data;
+#if defined(DEVEL_RALF)
+#warning test create species from consensus with this assertion
+#endif /* DEVEL_RALF */
+        gb_assert((int)strlen(data) <= GB_GETSIZE(gbd)); // seems to fail sometimes (e.g. during create species from consensus)
     }
+    return data;
 }
 
 int gb_read_nr(GBDATA *gbd){
