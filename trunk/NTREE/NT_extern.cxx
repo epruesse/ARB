@@ -630,6 +630,34 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
     }
 }
 
+static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name) {
+    if (ref_gb_node) {
+        if (GEN_is_pseudo_gene_species(ref_gb_node)) {
+            GBDATA *gb_organism = GEN_find_origin_organism(ref_gb_node);
+            if (gb_organism) {
+                GBDATA *gb_name = GB_find(gb_organism, "name", 0, down_level);
+                if (gb_name) {
+                    char *name  = GB_read_string(gb_name);
+                    free(ref_name);
+                    ref_name    = name;
+                    ref_gb_node = gb_organism;
+                }
+            }
+        }
+    }
+}
+
+void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
+    GB_transaction  dummy(gb_main);
+    AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+    if (AWT_TREE(ntw)->tree_root){
+        AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms);
+        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        ntw->refresh();
+    }
+}
+
 GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
     GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
     int        use_species_aside = int(cl_use_species_aside);
@@ -1022,6 +1050,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
             AWMIMT("mark_long_branches",	"Mark Long Branches",		"L","mark_long_branches.hlp",	AWM_EXP, 	(AW_CB)NT_mark_long_branches, 	(AW_CL)ntw, 0);
             AWMIMT("justify_branch_lengths",	"Beautify Branch_Lengths",	"R","beautify_bl.hlp",		AWM_EXP, 	(AW_CB)NT_justify_branch_lenghs, (AW_CL)ntw, 0);
+            AWMIMT("tree_pseudo_species_to_organism",	"Change pseudo species to organisms in tree",	"O","tree_pseudo.hlp",		AWM_EXP, 	(AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
         }
         awm->close_sub_menu();
     }
