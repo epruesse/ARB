@@ -1897,9 +1897,8 @@ void AWT_graphic_tree::show(AW_device *device)	{
             break;
         case AP_IRS_TREE:
             show_irs(this->tree_root_display,disp_device,fontinfo->max_letter_height);
-            //show_nds_list_rek(this->gb_main);
             break;
-        case AP_NDS_TREE:
+        case AP_NDS_TREE: // this is the list all/marked species mode (no tree)
             show_nds_list_rek(this->gb_main);
             break;
     }

@@ -70,7 +70,7 @@ void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)
 { AWUSE(cb1); AWUSE(cb2);
   char *cancel,*transformation;
 
-  if(!PHDATA::ROOT) 
+  if(!PHDATA::ROOT)
    { aw_message("data_base not opened !!");
      return;
    }
@@ -124,18 +124,18 @@ void ph_save_matrix_cb(AW_window *aww)
 AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
 	{
 	AW_window_simple *aws = new AW_window_simple;
-	aws->init( aw_root, "SAVE_MATRIX", "SAVE MATRIX TO DISC", 10, 10 );
+	aws->init( aw_root, "SAVE_MATRIX", "SAVE MATRIX TO FILE", 10, 10 );
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("save");aws->callback(ph_save_matrix_cb);
-	aws->create_button("SAVE","SAVE","S");			   
+	aws->create_button("SAVE","SAVE","S");
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel");
-	aws->create_button("CANCEL","CANCEL","C");			   
+	aws->create_button("CANCEL","CANCEL","C");
 
 	awt_create_selection_box((AW_window *)aws,base_name);
 
@@ -150,7 +150,7 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 	aws->load_xfig("phylo/cancel.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("cancel");
 	aws->create_input_field("phyl/cancel/chars",12);
@@ -166,10 +166,10 @@ AW_window *create_matrix_window(AW_root *aw_root)
   aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable", 10, 10 );
   aws->load_xfig("phylo/matrix.fig");
   aws->button_length( 10 );
-  
+
   aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-  aws->create_button("CLOSE","CLOSE","C");		     
-  
+  aws->create_button("CLOSE","CLOSE","C");
+
   aws->at("point_opts");
   aws->create_option_menu("phyl/matrix/point","'.' in column      ","0");  // "0": no shortcut
     aws->insert_option("forget pair for distancematrix","0",0);

@@ -403,7 +403,7 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
                       0);
 
     awm->create_menu(0,"File","F");
-    awm->insert_menu_topic("save_matrix",	"Save Matrix to Disc",	"S","save_matrix.hlp",	AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)"tmp/dist/save_matrix" );
+    awm->insert_menu_topic("save_matrix",	"Save Matrix to File",	"S","save_matrix.hlp",	AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)"tmp/dist/save_matrix" );
     awm->insert_menu_topic("close",		"Close",	"C",0,	AWM_ALL,	(AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
 
     awm->create_menu(0,"Props","P");
