@@ -200,12 +200,9 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
 
     for (set<SpeciesID>::const_iterator i = begin(); i != end(); ++i)
     {
-        SpeciesID id = *i;
-        char      buffer[20];
-        sprintf(buffer, "%i", id);
-
-        GBDATA *pb_num  = GB_find(pb_current_node, "num", buffer, down_2_level);
-        GBDATA *pb_node = 0;
+        SpeciesID  id      = *i;
+        GBDATA    *pb_num  = GB_find(pb_current_node, "num", (const char *)&id, down_2_level);
+        GBDATA    *pb_node = 0;
 
         if (pb_num) {
             pb_node = GB_get_father(pb_num);
@@ -214,14 +211,11 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
             if (!create) return 0; // not found
 
             pb_node = GB_create_container(pb_current_node, "node");
-#if defined(DEBUG)
-            if (!pb_node) fprintf(stderr, "Error: %s\n", GB_get_error());
-#endif // DEBUG
             pg_assert(pb_node);
 
-            pb_num = GB_create(pb_node, "num", GB_STRING);
+            pb_num = GB_create(pb_node, "num", GB_INT);
             pg_assert(pb_num);
-            GB_write_string(pb_num, buffer);
+            GB_write_int(pb_num, id);
 
             created = true;
         }
@@ -231,9 +225,9 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
 
     GBDATA *pb_group = GB_find(pb_current_node, "group", 0, down_level);
     if (!pb_group) {
-        pb_group = GB_create_container(pb_current_node, "group");
-        created  = true;
-        *numSpecies=size();
+        pb_group    = GB_create_container(pb_current_node, "group");
+        created     = true;
+        *numSpecies = size();
     }
     return pb_group;
 }
