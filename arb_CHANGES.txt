@@ -2,6 +2,7 @@ ARB change log
 
 Major changes for next Beta:
 
+ - Restore window sizes for ALL windows
  - new algorithm to add partial sequences to an existing tree
  - PROT-parsimony was completely redesigned and works now most similar to DNA/RNA-parsimony
  - Top area of ARB_NTREE may be reduced to maximize display area
