@@ -92,3 +92,12 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/inline.h merge.hxx
+MG_configs.o:  $(ARBHOME)/INCLUDE/arbdb.h
+MG_configs.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MG_configs.o: $(ARBHOME)/INCLUDE/ad_prot.h
+MG_configs.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_configs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
