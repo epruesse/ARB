@@ -48,6 +48,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
         ./SOURCE_TOOLS/valgrind2grep \
         ./SOURCE_TOOLS/mv_if_diff \
         ./PERL2ARB/ARB.xs.default \
+        ./PROBE_WEB/CLIENT/mymanifest \
         ./READSEQ/Formats \
         ./READSEQ/*.help \
         ./LIBLINK \
@@ -66,7 +67,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
     |grep -v '/lib/help/' \
     |grep -v '/lib/nas/names.dat$' \
     |grep -v '\.xvpics' \
-    |sort|uniq | tee file.lst \
+    |sort|uniq | tee arbsrc.lst \
     |cpio -oH tar |gzip - >$name
 
 # rm -f arbsrc
