@@ -1275,6 +1275,8 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
         'h' huge
 
         'R' allow corrupt file recovery + opening quicks with no master
+
+        'N' assume new database format (do not check whether to convert old->new compression)
      */
 {
     GBCONTAINER         *gbd;
