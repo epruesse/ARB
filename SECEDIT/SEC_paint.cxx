@@ -686,16 +686,14 @@ void SEC_helix_strand::print_lonely_bases(char *buffer, AW_device *device, doubl
     if(thisStrand){
 	root->paintSearchBackground(device, bgColor, thisLastAbsPos, thisLast_x, thisLast_y, print_pos_x, print_pos_y, radius,0);
 	device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), thisLastAbsPos,0 );
-	root->announce_base_position(thisLastAbsPos, thisLast_x,thisLast_y-half_font_height);
 	thisBaseColor=SEC_GC_NHELIX; thisLast_x=print_pos_x; thisLast_y=print_pos_y; thisBase[0]=buffer[0]; thisLastAbsPos=abs_pos;
     }
     else {
 	root->paintSearchBackground(device, bgColor, otherLastAbsPos, otherLast_x, otherLast_y, print_pos_x, print_pos_y, radius,1);
 	device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
-	root->announce_base_position(otherLastAbsPos, otherLast_x,otherLast_y-half_font_height);
 	otherBaseColor=SEC_GC_NHELIX; otherLast_x=print_pos_x; otherLast_y=print_pos_y; otherBase[0]=buffer[0]; otherLastAbsPos=abs_pos;
     }
-    //    root->announce_base_position(abs_pos, print_pos_x, print_pos_y-half_font_height);
+    root->announce_base_position(abs_pos, print_pos_x, print_pos_y-half_font_height);
 }
 
 void SEC_root::paint(AW_device *device) {
@@ -1046,9 +1044,8 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
             else {
 		if(i>0)root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, this_x, this_y, radius,0);
 		device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
-	        root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
 		thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
-		//	        root->announce_base_position(this_abs_pos, this_x, this_y-font_height2);
+		root->announce_base_position(this_abs_pos, this_x, this_y-font_height2);
             }
 	} 
 
@@ -1060,9 +1057,8 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
             else {
 		if(i>0)root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,1);
 		device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
-                root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
 		otherBaseColor = SEC_GC_HELIX;otherLast_x=other_x;otherLast_y=other_y; otherBase[0]=other_buffer[0];otherLastAbsPos=other_abs_pos;
-		//                root->announce_base_position(other_abs_pos, other_x, other_y-font_height2);
+		root->announce_base_position(other_abs_pos, other_x, other_y-font_height2);
             }
 	 }
 
