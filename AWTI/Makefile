@@ -58,3 +58,4 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/GenomImport.h
