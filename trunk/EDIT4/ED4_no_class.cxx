@@ -28,24 +28,25 @@
 //* Most functions are callback functions	  *
 //*************************************************
 
-void ED4_calc_terminal_extenstions(){
-    AW_font_information	*font_info;
-    font_info = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
-    int char_width = font_info->max_letter_width;
+void ED4_calc_terminal_extentions(){
+    AW_font_information	*seq_font_info   = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
+    AW_font_information	*info_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
+    int                  seq_char_width  = seq_font_info->max_letter_width;
+    int                  info_char_width = info_font_info->max_letter_width;
 
-    TERMINALHEIGHT = font_info->max_letter_height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
+    TERMINALHEIGHT = seq_font_info->max_letter_height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
     {
         int maxchars;
         int maxbrackets;
 
         ED4_get_NDS_sizes(&maxchars, &maxbrackets);
-        MAXSPECIESWIDTH = maxchars*char_width + // width defined in NDS window
-            maxbrackets*BRACKETWIDTH + // brackets defined in NDS window
-            char_width; // plus 1 char for marked-box
+        MAXSPECIESWIDTH =
+            (maxchars+1)*info_char_width + // width defined in NDS window plus 1 char for marked-box
+            maxbrackets*BRACKETWIDTH; // brackets defined in NDS window
     }
-    MAXINFOWIDTH = char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int();
-    MAXCHARWIDTH = char_width;
-    MAXLETTERDESCENT = font_info->max_letter_descent;
+    MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
+    MAXCHARWIDTH = max(seq_char_width, info_char_width); // @@@ FIXME:  check where MAXCHARWIDTH is used and set it properly here
+    MAXLETTERDESCENT = max(seq_font_info->max_letter_descent, info_font_info->max_letter_descent);
 }
 
 void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -67,14 +68,14 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     }
     else										// this case is needed every time, except the first
     {
-        ED4_calc_terminal_extenstions();
+        ED4_calc_terminal_extentions();
 
         ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
         if (cursor->owner_of_cursor) cursor->set_abs_x();
 
         ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT]	= TERMINALHEIGHT;
         ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]	= TERMINALHEIGHT;
-        ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]	= MAXINFOWIDTH; // 5 * MAXCHARWIDTH + CHARACTEROFFSET;
+        ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]	= MAXINFOWIDTH;
         ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH]	= MAXCHARWIDTH*MAXSEQUENCECHARACTERLENGTH + 100;
 
         ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
@@ -1355,7 +1356,7 @@ void ED4_load_new_config(char *string)
 
 
     ED4_ROOT->main_manager->clear_whole_background();
-    ED4_calc_terminal_extenstions();
+    ED4_calc_terminal_extentions();
 
     all_found = 0;
     species_read = 0;
