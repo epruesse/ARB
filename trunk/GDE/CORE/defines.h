@@ -13,6 +13,13 @@ All rights reserved.
 #include <xview/scrollbar.h>
 #include <xview/xview.h>
 
+#if defined(DEBUG)
+#define gde_assert(cond) do { if (!(cond)) (*(int*)0) = 0; } while(0) /* force SIGSEGV */
+#else
+#define gde_assert(cond)
+#endif /* DEBUG */
+
+
 #define TRUTH 1
 #define JUSTICE 2
 #define BEAUTY 3
@@ -291,5 +298,7 @@ struct gde_time { int yy; int mm; int dd; int hr; int mn; int sc; };
 
 
 #define getcmask(a,b) (b < ((a)->offset))?0:((a)->cmask[(b-(a)->offset)])
+
+
 
 #include "functions.h"
