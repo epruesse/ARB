@@ -643,7 +643,7 @@ public:
 // --------------------------------------------------------------------------------
 //     class ED4_species_pointer
 // --------------------------------------------------------------------------------
-class ED4_species_pointer
+class ED4_species_pointer // @@@ shall be renamed into ED4_gbdata_pointer to reflect general usage
 {
     GBDATA *species_pointer;    // points to database
 
@@ -1167,6 +1167,7 @@ public:
     //    ED4_returncode      show_all( void );
     //    ED4_returncode    resize_all_windows( void );
 
+    void announce_deletion(ED4_base *object); // before deleting an object, announce here
 
     // functions concerned with list of selected objects
     ED4_returncode  add_to_selected(  ED4_terminal *object );
@@ -1548,6 +1549,7 @@ public:
     virtual ED4_returncode      draw(int only_text=0);
 
     virtual int get_length() const = 0;
+    virtual void deleted_from_database();
 
     ED4_text_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_text_terminal();
@@ -1677,16 +1679,18 @@ public:
 // --------------------------------------------------------------------------------
 class ED4_sequence_info_terminal : public ED4_text_terminal
 {
-    GBDATA *gbdata;
+    // now handled via ED4_species_pointer // GBDATA *gbdata;
     ED4_sequence_info_terminal(const ED4_sequence_info_terminal&); // copy-constructor not allowed
 public:
-    ED4_sequence_info_terminal( const char *id, GBDATA *gbd, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
+    ED4_sequence_info_terminal( const char *id, /*GBDATA *gbd,*/ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_sequence_info_terminal();
 
     virtual ED4_returncode draw( int only_text = 0);
 
-    GBDATA *data() { return gbdata; }
-    const GBDATA *data() const { return gbdata; }
+    // GBDATA *data() { return gbdata; }
+    // const GBDATA *data() const { return gbdata; }
+    GBDATA *data() { return get_species_pointer(); }
+    const GBDATA *data() const { return get_species_pointer(); }
 
     int get_length() const { return 1+strlen(id); }
 
