@@ -11,7 +11,7 @@
 
 #include <aw_root.hxx>
 #include <aw_device.hxx>
-#include <aw_window.hxx> 
+#include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <awt_canvas.hxx>
@@ -83,7 +83,8 @@ void SEC_template_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type){
 
     if (type == GB_CB_DELETE){
         sec_root->gb_template = 0;
-    }else{
+    }
+    else if (gb_seq) {
         sec_root->template_sequence = GB_read_string(gb_seq);
         sec_root->template_length = GB_read_string_count(gb_seq);
     }
@@ -759,7 +760,7 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");    
+    aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"sec_layout.hlp");
     aws->at("help");
@@ -840,10 +841,10 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
     awm->create_mode( 0, "setroot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_SETROOT);
     awm->create_mode( 0, "rot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ROT);
-    awm->create_mode( 0, "stretch.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_STRETCH); 
+    awm->create_mode( 0, "stretch.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_STRETCH);
     awm->create_mode( 0, "info.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOD);
     awm->create_mode( 0, "sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_LINE);
-    awm->create_mode( 0, "probeInfo.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_PROINFO); 
+    awm->create_mode( 0, "probeInfo.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_PROINFO);
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
