@@ -19,7 +19,7 @@ $(MAIN): nt_date_update $(CPP_OBJECTS)
 nt_date.h: nt_date_update
 
 nt_date_update:
-	echo '#define DATE' `date '+"%y_%m_%d"'`  >  nt_date.h.tmp
+	echo '#define DATE' `date '+"%y.%m.%d"'`  >  nt_date.h.tmp
 	echo '#define DATE_YEAR' `date '+"%Y"'`   >> nt_date.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_date.h.tmp nt_date.h
 
