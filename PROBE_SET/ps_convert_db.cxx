@@ -1,48 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+
 #include <sys/times.h>
 
-#ifndef PS_DATABASE_HXX
+#include "ps_tools.hxx"
 #include "ps_database.hxx"
-#endif
-
-#ifndef PS_PG_TREE_FUNCTIONS
 #include "ps_pg_tree_functions.cxx"
-#endif
 
 //  **************************************************
 //  GLOBALS
 //  **************************************************
+
 PS_NodePtr __ROOT;
 int        __PROBE_LENGTH;
 SpeciesID  __MIN_ID;
 SpeciesID  __MAX_ID;
-
-void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
-    struct tms now;
-    times( &now );
-    if (_before) printf( "%s", _before );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    if (_after) {
-        printf( "%s", _after );
-    } else {
-        printf( "\n" );
-    }
-    fflush( stdout );
-}
-
 
 //  ----------------------------------------------------
 //      void PS_detect_probe_length( GBDATA *_ARB_node )
@@ -85,7 +57,7 @@ PS_NodePtr PS_assert_inverse_path( const int  _max_depth,
 
     // handle given path
     //printf( "        %i : PS_assert_inverse_path (%i) [ given path :", _caller_ID, _path->size() );
-    int c = 0; 
+    int c = 0;
     for (IDVectorCIter i = _path->begin(); i != _path->end(); ++i,++c) {
         current_ID   = *i;
         current_node = current_node->assertChild( current_ID );
@@ -99,7 +71,7 @@ PS_NodePtr PS_assert_inverse_path( const int  _max_depth,
     c = 0;
     for (current_ID = _caller_ID+1; current_ID <= _max_depth; ++current_ID,++c) {
         current_node = current_node->assertChild( current_ID );
-        
+
         //if ((c % 20) == 0) printf( "\n" );
         //printf( "  %3i",current_ID );
     }
@@ -123,7 +95,7 @@ PS_NodePtr PS_assert_path( const int  _caller_ID,
 
     // handle given path
     //printf( "        %i : PS_assert_path (%i) [ given path :", _caller_ID, _path->size() );
-    int c = 0; 
+    int c = 0;
     IDVectorCIter i = _path->begin();
     next_path_ID = (i == _path->end()) ? -1 : *i;
     for (SpeciesID current_ID = __MIN_ID; current_ID <= _caller_ID; ++current_ID,++c) {
@@ -190,7 +162,7 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
             buffer                = PG_read_probe( data );            // get probe string
             PS_ProbePtr new_probe(new PS_Probe);                      // make new probe
             new_probe->length     = __PROBE_LENGTH;                   // set probe length
-            new_probe->quality    = 100;                              // set probe quality    
+            new_probe->quality    = 100;                              // set probe quality
             new_probe->GC_content = 0;                                // eval probe for GC-content
             for (int i=0; i < __PROBE_LENGTH; ++i) {
                 if ((buffer[i] == 'C') || (buffer[i] == 'G')) ++(new_probe->GC_content);
@@ -267,7 +239,7 @@ int main(  int  _argc,
     }
 
     const char *DB_name  = _argv[ 1 ];
-    
+
     //
     // open and check ARB database
     //
@@ -330,7 +302,7 @@ int main(  int  _argc,
     if (suffix_pos == string::npos) {
         printf( "cannot find suffix '.arb' in database name '%s'\n", DB_name );
         printf( "output file will be named '%s'\n", output_DB_name.c_str() );
-    } 
+    }
     PS_Database *ps_db = new PS_Database( output_DB_name.c_str(), PS_Database::WRITEONLY );
 
     //
@@ -345,7 +317,7 @@ int main(  int  _argc,
     printf( "extracting probe-data...\n" );
     PS_detect_probe_length( group_tree );
     printf( "probe_length = %d\n",__PROBE_LENGTH );
-    
+
     __ROOT           = ps_db->getRootNode();
     first_level_node = PS_get_first_node( group_tree );
     unsigned int  c  = 0;

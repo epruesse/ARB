@@ -1,32 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 #include <sys/times.h>
 
-#ifndef PS_DATABASE_HXX
+#include "ps_tools.hxx"
 #include "ps_database.hxx"
-#endif
-#ifndef PS_CANDIDATE_HXX
 #include "ps_candidate.hxx"
-#endif
-
-void PS_print_time_diff( const struct tms *_since ) {
-    struct tms now;
-    times( &now );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)\n",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-}
 
 
 //  ----------------------------------------------------
@@ -85,7 +66,7 @@ void PS_get_node_paths( PS_CandidateSet                     &_leaf_candidates,
             // not found -> store nodepath
             candidate_sptr = *candidate_iter;
             candidate      = &(*candidate_sptr);
-            _paths.insert( pair<unsigned long,PS_Candidate2NodeSetPair>( candidate->depth,PS_Candidate2NodeSetPair( candidate,nodepath ) ) ); 
+            _paths.insert( pair<unsigned long,PS_Candidate2NodeSetPair>( candidate->depth,PS_Candidate2NodeSetPair( candidate,nodepath ) ) );
         }
     }
 }
