@@ -13,17 +13,16 @@ Major changes for next Beta:
  - keyboard commands for ARB_NTREE (mark/unmark/invert, collapse/expand)
  - expanded sellists
  - save/load fixed for multi probes
- - Some menu rearrangements
  - Binary SAIs are editable in ARB_EDIT4
  - Parsimony now counts multiple gaps as 1 mutation; done because
    partial sequences were misplaced with old method (PROT-parsimony
    was completely redesigned and works now most similar to DNA/RNA-parsimony)
+ - Changed Parsimony method: Multiple consecutive gaps were counted as
+   multiple mutations - now they are counted as one mutation.
  - Information windows are detachable (allows to have multiple windows showing different items)
  - Scanning for hidden/unknown database fields improved and seperated;
    possibility to remove unused fields.
  - new tabbed format in 'Export NDS' and 'Export matrix' (useful for star-calc/excel/etc.)
- - Changed Parsimony method: Multiple consecutive gaps were counted as
-   multiple mutations - now they are counted as one mutation.
  - updated fastDNAml to 1.2.2
  - added AxML (accelerated fastDNAml 1.2.2)
  - Field transfer definitions for exporting gene-species
@@ -37,6 +36,7 @@ Major changes for next Beta:
    * interactive constraint editing (stretch/compress)
    * probe info
    * editing secondary structure in XFIG now possible
+   * visualization of SAIs
  - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features; basic help
  - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )
@@ -52,7 +52,6 @@ Major changes for next Beta:
  - PCR primer-design for single genes
  - when selecting a gene, the corresponding gene-species is selected (if found)
  - save configuration for several windows (e.g. Search&Query, WWW, NDS, ...)
- - highlight search occurances in ARB_SECEDIT
  - file selection box in import window
  - mark item with double click works in all search&query windows
  - User masks: create new; 'edit enable' and 'marked' toggles (like in info window)
