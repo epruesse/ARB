@@ -81,7 +81,7 @@ void AP_sequence_parsimony::set(char *isequence)
         for (int i = 0; i<sequence_len; ++i) {
             int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
 
-            printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
+//             printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
 
             awt_assert(pos >= 0);
             awt_assert(pos<iseqlen);
@@ -206,6 +206,13 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
         }
         else {
             p[idx] = c1&c2; // store common bases for both subtrees
+        }
+
+        // do not propagate mixed gaps upwards (they cause neg. branches)
+        if (p[idx] & AP_S) {
+            if (p[idx] != AP_S) {
+                p[idx] = AP_BASES(p[idx]^AP_S);
+            }
         }
 
         awt_assert(p[idx] != 0);
