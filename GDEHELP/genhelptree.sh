@@ -12,8 +12,8 @@ MAINTITLE=$2
 HEADER=$3
 shift;shift;shift
 
-BASE=`echo $INDEXFILE | sed -e 's/^.*\///ig' | sed -e 's/.help//ig'`
-PREFIX=`echo $INDEXFILE | sed -e 's/\/[^\/]*$//ig'`
+BASE=`echo $INDEXFILE | sed -e 's/^.*\///' | sed -e 's/.help//'`
+PREFIX=`echo $INDEXFILE | sed -e 's/\/[^\/]*$//'`
 echo "BASE='$BASE' PREFIX='$PREFIX'"
 
 write_index() {
@@ -24,8 +24,8 @@ write_index() {
 #     cat $HEADER
 
     while [ \! -z "$1" ]; do
-        SUBBASE=`echo $1 | sed -e 's/^.*\///ig'`
-        ESCAPED_SUBBASE=`echo $SUBBASE | sed -e 's/\./_/ig'`
+        SUBBASE=`echo $1 | sed -e 's/^.*\///'`
+        ESCAPED_SUBBASE=`echo $SUBBASE | sed -e 's/\./_/'`
         echo "    - LINK{agde_${BASE}_sub_${ESCAPED_SUBBASE}.hlp}"
         shift
     done
@@ -34,8 +34,8 @@ write_index() {
 write_index $* > $INDEXFILE
 
 while [ \! -z "$1" ]; do
-    SUBBASE=`echo $1 | sed -e 's/^.*\///ig'`
-    ESCAPED_SUBBASE=`echo $SUBBASE | sed -e 's/\./_/ig'`
+    SUBBASE=`echo $1 | sed -e 's/^.*\///'`
+    ESCAPED_SUBBASE=`echo $SUBBASE | sed -e 's/\./_/'`
     ./genhelp.sh $PREFIX/${BASE}_sub_$ESCAPED_SUBBASE.help "$SUBBASE" $HEADER $1
     shift
 done
