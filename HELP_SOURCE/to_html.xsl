@@ -4,6 +4,7 @@
           <!ENTITY acute "&#180;">
           <!ENTITY dotwidth "20">
           <!ENTITY dotheight "16">
+          <!ENTITY br "&#xa;">
           ]>
 
 
@@ -14,7 +15,7 @@
                version="1.0"
                >
 
-  <xsl:output method="html" encoding="iso-8859-1"/>
+  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>
 
   <xsl:param name="myname"/>
   <xsl:param name="xml_location"/>
@@ -42,6 +43,8 @@
   <xsl:variable name="activeLinkColor">red</xsl:variable>
 
   <xsl:variable name="linkSectionsColor">#ccccff</xsl:variable>
+
+  <xsl:variable name="lb"><xsl:text>&br;</xsl:text></xsl:variable> <!--used to detect line-breaks in XML-->
 
   <!-- =============== -->
   <!--     warning     -->
@@ -132,7 +135,7 @@
   <!-- ============================== -->
   <xsl:template name="header" xml:space="preserve">
     <xsl:param name="title" select="'Untitled'"/>
-    <xsl:comment>Generated from XML with Sablotron -- Stylesheet by Ralf Westram (coder@reallysoft.de) </xsl:comment>
+    <xsl:comment>Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de) </xsl:comment>
     <HEAD>
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
@@ -168,13 +171,9 @@
   <!--     uplinks     -->
   <!-- =============== -->
 
-  <xsl:template match="UP" mode="uplinks">
-    <LI>
-      <xsl:call-template name="link-to-document">
+  <xsl:template match="UP" mode="uplinks"><LI><xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
-      </xsl:call-template>
-    </LI>
-  </xsl:template>
+      </xsl:call-template></LI></xsl:template>
 
   <xsl:template match="*" mode="uplinks">
   </xsl:template>
@@ -198,9 +197,7 @@
   <xsl:template match="text()" mode="reflow">
     <xsl:value-of select="."/>
   </xsl:template>
-  <xsl:template match="text()" mode="preformatted">
-    <xsl:value-of select="."/>
-  </xsl:template>
+  <xsl:template match="text()" mode="preformatted"><PRE><FONT color="navy"><xsl:value-of select="substring-after(.,$lb)"/></FONT></PRE></xsl:template>
   <xsl:template match="text()">
     <xsl:call-template name="error"><xsl:with-param name="text">Unexpected text</xsl:with-param></xsl:call-template>
   </xsl:template>
@@ -211,7 +208,7 @@
         <xsl:apply-templates mode="reflow"/>
       </xsl:when>
       <xsl:otherwise>
-        <PRE><FONT color="navy"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
+        <xsl:apply-templates mode="preformatted"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -223,42 +220,51 @@
   <xsl:template match="T">
     <xsl:choose>
       <xsl:when test="@reflow='1'">
-        <P/>
-        <BR/>
         <B><xsl:apply-templates mode="reflow"/></B>
+        <BR/>
       </xsl:when>
       <xsl:otherwise>
-        <PRE><FONT color="navy"><xsl:apply-templates mode="preformatted"/></FONT></PRE>
+        <xsl:apply-templates mode="preformatted"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
 
   <xsl:template match="ENTRY">
-    <LI><xsl:apply-templates mode="condensed"/></LI>
+    <LI>
+      <xsl:apply-templates mode="condensed"/>
+    </LI>
   </xsl:template>
 
   <xsl:template match="P">
-    <TABLE border="0" width="95%" align="center"><TR><TD>
-          <xsl:apply-templates mode="condensed"/>
-        </TD></TR></TABLE>
+    <P style="margin-left:+10pt"><xsl:apply-templates mode="condensed"/></P>
   </xsl:template>
 
   <xsl:template match="ENUM">
-    <OL><xsl:apply-templates/></OL>
+    <OL>
+      <xsl:apply-templates/>
+    </OL>
+    <BR/>
   </xsl:template>
   <xsl:template match="LIST">
-    <UL><xsl:apply-templates/></UL>
+    <UL>
+      <xsl:apply-templates/>
+    </UL>
+    <BR/>
   </xsl:template>
 
-  <xsl:template match="P|T" mode="top-level">
-    <xsl:apply-templates/>
-  </xsl:template>
+  <xsl:template match="P" mode="top-level"><P><xsl:apply-templates/></P></xsl:template>
+  <xsl:template match="T|ENUM|LIST" mode="top-level"><xsl:apply-templates select="."/></xsl:template>
 
   <xsl:template match="SECTION" mode="main">
-    <A name="{@name}"><H2><xsl:value-of select="@name"/></H2></A>
-    <xsl:apply-templates mode="top-level"/>
-    <P/><BR/>
+    <A name="{@name}"></A>
+    <H2><xsl:value-of select="@name"/></H2>
+    <TABLE width="95%" border="{$tableBorder}" align="right"><TR><TD>
+          <xsl:apply-templates mode="top-level"/>
+        </TD></TR>
+      <TR><TD>&nbsp;</TD></TR>
+      <TR><TD>&nbsp;</TD></TR>
+    </TABLE>
   </xsl:template>
 
   <xsl:template match="SECTION" mode="content">
@@ -279,7 +285,7 @@
       <xsl:call-template name="header">
         <xsl:with-param name="title" select="$title"/>
       </xsl:call-template>
-      <BODY LEFTMARGIN="100" TEXT="{$fontColor}" BGCOLOR="{$backgroundColor}" LINK="{$linkColor}" VLINK="{$visitedLinkColor}" ALINK="{$activeLinkColor}">
+      <BODY LEFTMARGIN="10" TEXT="{$fontColor}" BGCOLOR="{$backgroundColor}" LINK="{$linkColor}" VLINK="{$visitedLinkColor}" ALINK="{$activeLinkColor}">
         <P align="right"><FONT size="-1">
           This page was converted by <I>arb_help2xml</I> and may look strange.<BR/>
           If you think it's really bad, please send a
@@ -290,12 +296,10 @@
       </xsl:call-template>
           to our help keeper.
         </FONT></P>
-        <TABLE width="95%" align="center">
+        <TABLE border="{$tableBorder}" width="98%" align="center">
           <TR bgcolor="{$linkSectionsColor}">
             <TD valign="top" width="50%">Main topics:<BR/>
               <UL><xsl:apply-templates mode="uplinks"/></UL>
-<!--              rootpath=<xsl:value-of select="$rootpath"/>-->
-<!--              myname=<xsl:value-of select="$myname"/>-->
             </TD>
             <TD valign="top">Related topics:<BR/>
               <UL><xsl:apply-templates mode="sublinks"/></UL>
@@ -303,10 +307,8 @@
           </TR>
           <TR>
             <TD colspan="2">
-              <P/><BR/>
               <H1><xsl:value-of select="$title"/></H1>
               <UL><xsl:apply-templates select="SECTION" mode="content"/></UL>
-              <P/><BR/>
               <xsl:apply-templates select="SECTION" mode="main"/>
             </TD>
           </TR>

@@ -7,7 +7,7 @@
 HLP_SOURCE=oldhelp
 XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
-HLP_DEST=Newhelp
+HLP_DEST=../lib/help
 
 # choose conversion mode:
 CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (backup first)
@@ -24,7 +24,7 @@ ifeq ($(CONVERT_FROM_OLD_HELP),1)
 endif
 		$(MAKE) html
 		$(MAKE) html_index
-#		$(MAKE) help
+		$(MAKE) help
 
 dirs:
 		(test -d $(XML_LOCATION)) || mkdir $(XML_LOCATION)
@@ -42,7 +42,7 @@ HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 
-#OLD_HELP= oldhelp/probematch.hlp
+#OLD_HELP= oldhelp/export_format.hlp oldhelp/arb_pars.hlp
 OLD_HELP= $(wildcard $(HLP_SOURCE)/*.hlp $(HLP_SOURCE)/seer/*.hlp)
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
@@ -88,12 +88,24 @@ date.xsl :
 
 # --------------------------------------------------------------------------------
 
+# I use Sablotron 0.71
 XSLT = sabcmd
 VALIDATE = rxp -v -V -V
 
 DTD=arb_help.dtd
 STYLE_HTML=to_html.xsl
 STYLE_HELP=to_help.xsl
+
+# --------------------------------------------------------------------------------
+
+$(HELP) : $(STYLE_HELP) $(DTD)
+
+$(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
+		@-test -f $@ && rm $@
+		$(VALIDATE) $< >/dev/null
+		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)'
+
+# --------------------------------------------------------------------------------
 
 $(HTML) : $(STYLE_HTML) $(DTD)
 
