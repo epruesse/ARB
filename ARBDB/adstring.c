@@ -1412,35 +1412,33 @@ const unsigned long crctab[] = {
     0x2d02ef8dL
 };
 
-long GB_checksum(const char *seq, long length, int uppercase, const char *exclude) /* RALF: 02-12-96 */
+long GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) /* RALF: 02-12-96 */
      /*
- * CRC32checksum: modified from CRC-32 algorithm found in ZIP compression
- * source
- */
+      * CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
+      * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
+      */
 {
     register unsigned long c = 0xffffffffL;
     register long   n = length;
     register int	i;
     int	tab[256];
 
-    for (i=0;i<256;i++)
-        tab[i] = uppercase ? toupper(i) : i;
+    for (i=0;i<256;i++) {
+        tab[i] = ignore_case ? toupper(i) : i;
+    }
 
-    if (exclude)
-    {
-        while (1)
-        {
-            int k = *(unsigned char *)exclude++;
+    if (exclude) {
+        while (1) {
+            int k  = *(unsigned char *)exclude++;
             if (!k) break;
-            tab[k] = tab[toupper(k)] = tab[tolower(k)] = 0;
+            tab[k] = 0;
+            if (ignore_case) tab[toupper(k)] = tab[tolower(k)] = 0;
         }
     }
 
-    while (n--)
-    {
+    while (n--) {
         i = tab[*(const unsigned char *)seq++];
-        if (i)
-        {
+        if (i) {
             c = crctab[((int) c ^ i) & 0xff] ^ (c >> 8);
         }
     }
@@ -1448,9 +1446,10 @@ long GB_checksum(const char *seq, long length, int uppercase, const char *exclud
     return c;
 }
 
-long GBS_checksum(const char *seq, int uppercase, const char *exclude)
+long GBS_checksum(const char *seq, int ignore_case, const char *exclude)
+     /* if 'ignore_case' == true -> treat all characters as uppercase-chars (applies to 'exclude' too) */
 {
-    return GB_checksum(seq, strlen(seq), uppercase, exclude);
+    return GB_checksum(seq, strlen(seq), ignore_case, exclude);
 }
 
 /* extract all words in a text that:
