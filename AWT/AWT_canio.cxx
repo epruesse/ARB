@@ -288,8 +288,12 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
     if (error) aw_message(error);
     else switch(print2file) {
         case 2:{
-            GB_CSTR     gs = GB_getenvGS();
-            system(GBS_global_string("(%s %s;rm -f %s) &",gs,dest,dest));
+            GB_CSTR gs           = GB_getenvARB_GS();
+            GB_CSTR command      = GBS_global_string("(%s %s;rm -f %s) &",gs,dest,dest);
+            GB_information("executing '%s'", command);
+            if (system(command) != 0) {
+                GB_warning("error running '%s'", command);
+            }
             break;
         }
         case 1:
