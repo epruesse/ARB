@@ -2,8 +2,6 @@ void SQ_calc_sequence_structure(GBDATA *gb_main);
 
 void SQ_calc_average_structure(GBDATA *gb_main);
 
-int SQ_calc_insertations(GBDATA *gb_main);
-
 int SQ_get_value(GBDATA *gb_main, const char *option);
     /*
       "option" is variable which is passed to function "SQ_get_value()".
