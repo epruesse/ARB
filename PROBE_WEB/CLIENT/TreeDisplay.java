@@ -46,7 +46,6 @@ private int             clickTolerance = 5;
 
 public TreeDisplay(TreeNode root, int treeLevels)
     {
-
         setBackground(Color.lightGray);
         // postpone this later until tree is parsed to determined the needed space
 
@@ -76,12 +75,12 @@ public TreeDisplay(TreeNode root, int treeLevels)
 //        vs =  clipTree(root, treeLevels);
         vs = root;
             //        root.setDistance((float)0.01);
-        vs.setDistance((float)0.01);
+        vs.setDistance(0.01);
 
-        System.out.println("root name: " + vs.getNodeName());
-        System.out.println(">>>"+vs.getNodeName()+"<<<");
+//         System.out.println("root name: " + vs.getNodeName());
+//         System.out.println(">>>"+vs.getNodeName()+"<<<");
 
-        System.out.println("tree has " + vs.getNoOfLeaves() + " leaves");
+        System.out.println("Tree has " + vs.getNoOfLeaves() + " leaves.");
         leafNumber = vs.getNoOfLeaves();
         //        root.calculateTotalDist(0);
         vs.calculateTotalDist(0);
@@ -93,17 +92,10 @@ public TreeDisplay(TreeNode root, int treeLevels)
         xSize = 1000;
         ySize = yPointer + 50;
         setSize(xSize,ySize);
-        System.out.println("tree area: x: " + xSize);
-        System.out.println("maxDist  : x: " + maxDist);
-        System.out.println("tree area: y: " + ySize);
-        addMouseListener(
-                         new DisplayMouseAdapter(this)
-
-                         );
-
-
-
-
+//         System.out.println("tree area: x: " + xSize);
+//         System.out.println("maxDist  : x: " + maxDist);
+//         System.out.println("tree area: y: " + ySize);
+        addMouseListener(new DisplayMouseAdapter(this));
 
         //        setVisible(true);
     }
@@ -149,7 +141,7 @@ public void paint(Graphics g)
             }
        newLayout = false;
 
-        System.out.println("method display tree was called "+ ++displayCounter+" times");
+       // System.out.println("method display tree was called "+ ++displayCounter+" times");
     }
 
 
@@ -243,7 +235,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
 
                  if (node.testGrouped() == false) // add the node name if node is leaf
                      {
-                         g.drawString(node.getNodeName(), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +3 );
+                         g.drawString(node.getNodeInformation(), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +3 );
                      }
                  else // draws a box with number of child if node is internal
                      {
@@ -511,7 +503,7 @@ public void getLeafNames(TreeNode node)
     {
        if(node.testLeaf())
            {
-               listOfMarked.add(node.getNodeName());
+               listOfMarked.add(node.getShortName());
            }else{
                getLeafNames((TreeNode)node.getChilds().elementAt(0));
                getLeafNames((TreeNode)node.getChilds().elementAt(1));

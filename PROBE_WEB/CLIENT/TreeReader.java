@@ -59,10 +59,10 @@ public TreeReader(String treefile)
                     error = "no header";
                 }
                 else {
-                    String header = "result=ok\n"+treeString.substring(bracket_open+1, bracket_close);
+                    String header = treeString.substring(bracket_open+1, bracket_close);
                     // System.out.println("header='"+header+"'");
 
-                    ServerAnswer parsed_header = new ServerAnswer(header);
+                    ServerAnswer parsed_header = new ServerAnswer(header, false, true);
 
                     if (parsed_header.hasError()) {
                         error = parsed_header.getError();
