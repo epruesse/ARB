@@ -40,7 +40,7 @@ GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structu
 long GBT_count_nodes P_((GBT_TREE *tree));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
 void GBT_scale_bootstraps P_((GBT_TREE *tree, double scale));
-GBT_TREE *GBT_load_tree P_((char *path, int structuresize, char **commentPtr));
+GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));
 char *GBT_find_largest_tree P_((GBDATA *gb_main));
