@@ -36,8 +36,9 @@ struct _probe_match_result
 	int rev;
 	char string[255];
 } probe_match_result;
-// 
+//
 
+#warning Hallo Kai bitte verwende ../PROBE_DESIGN/probe_match_parser.hxx zum Parsen der Probe-Match-Ausgabe
 
 #if 0
 static void my_print(const char *, ...) {
@@ -831,7 +832,7 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 
 	    char toksep[2] = { 1, 0 };
 	    char *hinfo = strtok(bs.data, toksep);
-	    
+
 	    if(weightedMismatches) // weighted mismatches are used ...
 	    {
 		if(hinfo)
@@ -840,13 +841,13 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 			{
 				struct _probe_match_result pMR;
 				//char buf[64];
-				
+
 				// fetch tokens, break if unavailable
 				char *token1= strtok(NULL, toksep);
 				if(!token1) break;
 				char *token2= strtok(NULL, toksep);
 				if(!token2) break;
-				
+
 				// extract organism name from token
 				char *ptr= skipToNextWord(token2);
 
@@ -855,12 +856,12 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 				correctIllegalChars(tmp);
 				cleanEndingSpaces(tmp);
 				strcpy(pMR.name, tmp);
-				
+
 				// calc length of fullname in the hinfo string
 				char *hinfo_ptr= skipToNextWord(hinfo);
 				hinfo_ptr= skipToNextWord(hinfo_ptr);
 				int fullnamelength= (int)(skipToNextWord(hinfo_ptr) - hinfo_ptr);
-				
+
 				// extract organism fullname from token
 				ptr= skipToNextWord(ptr);
 				strncpy(tmp, ptr, fullnamelength);
@@ -868,7 +869,7 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 				correctIllegalChars(tmp);
 				cleanEndingSpaces(tmp);
 				strcpy(pMR.fullname, tmp);
-				
+
 				// wmis
 				ptr= skipToNextWord(ptr + fullnamelength);
 				ptr= skipToNextWord(ptr);
@@ -876,9 +877,9 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 				strncpy(tmp, ptr, 4);
 				tmp[4]=0;
 				pMR.wmis= atof(tmp);
-				
+
 				// other settings can be separated similar, but not needed here...
-				
+
 				// add matched organism data to probe file (output)
 				if((maxWeightedMismatches == -1) || (maxWeightedMismatches >= pMR.wmis))
 				{
@@ -909,18 +910,18 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 				strcpy(probe_match, "\tmatch= ");
 				correctIllegalChars(match_name);
 				strcat(probe_match, match_name);
-		
+
 				strcat(probe_match, ", ");
 				correctIllegalChars(match_longname);
-		
+
 				strcat(probe_match, match_longname);
 				strcat(probe_match, "\n");
 				fputs(probe_match, pFile);
 			}
 		} // end while(1)
 	    }
-	    
-	    
+
+
 	      fclose(pFile);
 	    } // end if(pFile!=NULL)
 	    else
