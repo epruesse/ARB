@@ -887,7 +887,7 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or
             break;
         }
         case GBT_ITEM_GENE: {
-            char *seq = GBT_read_gene_sequence(gb_item, GB_FALSE);
+            char *seq = GBT_read_gene_sequence(gb_item, GB_TRUE);
             error     = GB_get_error();
             gb_assert(!seq || !error);
             if (!error) (*argvout)[(*argcout)++].str = seq;

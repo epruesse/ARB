@@ -2307,14 +2307,14 @@ long gbs_scan_db_count(const char *key,long val)
 long gbs_scan_db_insert(const char *key,long val, void *v_datapath)
 {
     if (!v_datapath) {
-        gbs_scan_db_data.result[gbs_scan_db_data.count++]  = GB_STRDUP(key);        
+        gbs_scan_db_data.result[gbs_scan_db_data.count++]  = GB_STRDUP(key);
     }
     else {
         char *datapath = (char*)v_datapath;
         if (GBS_strscmp(datapath, key+1) == 0) { // datapath matches
             char *subkey = GB_STRDUP(key+strlen(datapath)); // cut off prefix
             subkey[0]    = key[0]; // copy type
-            
+
             gbs_scan_db_data.result[gbs_scan_db_data.count++] = subkey;
         }
     }
@@ -3001,11 +3001,11 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
             long        length   = pos2-pos1+1;
 
             result = (char*)malloc(length+1);
-            memcpy(result, seq_data+pos1, length);
+            memcpy(result, seq_data+pos1-1, length);
             result[length] = 0;
 
             if (complement && use_revComplement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
-            /* @@@ FIXME: sequence is wrong with reverse complement  */
+            /* @@@ FIXME: sequence is wrong with reverse complement */
 
             if (error)  {
                 free(result);
