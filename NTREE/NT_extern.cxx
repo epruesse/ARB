@@ -865,7 +865,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         //     Species
         // --------------------------------------------------------------------------------
-        awm->create_menu(0,"Species","p","species.hlp",	AWM_ALL);
+        awm->create_menu(0,"Species","c","species.hlp",	AWM_ALL);
         {
             AWMIMT( "species_info",		"Info (Copy Delete Rename Modify) ...", "I",	"sp_info.hlp",		AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,	0);
             AWMIMT( "species_search",	"Search and Query",			"Q",	"sp_search.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,	0 );
@@ -878,12 +878,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
 
 
-            AWMIMT( "species_submission", "Submission...",				"S",	"submission.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,	0 );
+            AWMIMT( "species_submission", "Submission...", "",	"submission.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,	0 );
             awm->insert_separator();
 
             NT_insert_mark_submenus(awm, ntw);
             awm->insert_separator();
-            AWMIMT( "gene_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_colorize_window, 0);
+            AWMIMT( "gene_colors",	"Colors ...", "o",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_colorize_window, 0);
             AWMIMT( "selection_admin","Selections ...", "S", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
 
             awm->insert_separator();
@@ -893,7 +893,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("join_marked",	"Join Marked Species ...",	"J","join_species.hlp",	AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,	0 );
             }
             awm->close_sub_menu();
-            awm->insert_sub_menu(0, "Sort Species",			"o");
+            awm->insert_sub_menu(0, "Sort Species",			"r");
             {
                 AWMIMT("sort_by_field",	"According Database Entries ...","D","sp_sort_fld.hlp",	AWM_EXP, AW_POPUP,				(AW_CL)NT_build_resort_window, 0 );
                 AWMIMT("sort_by_tree",	"According Phylogeny",		"P","sp_sort_phyl.hlp",	AWM_EXP, (AW_CB)NT_resort_data_by_phylogeny,	(AW_CL)&(nt.tree->tree_root), 0 );
@@ -986,6 +986,23 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 awm->close_sub_menu();
             }
         }
+
+        // --------------------------------------------------------------------------------
+        //      Probes
+        // --------------------------------------------------------------------------------
+        awm->create_menu(0,"Probes","P","probe_menu.hlp", AWM_ALL);
+        {
+            AWMIMT( "probe_design",		"Probe Design ...", "D", "probedesign.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, 0 );
+            AWMIMT( "probe_match",		"Probe Match ...",  "M", "probematch.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_probe_match_window, 0 );
+            AWMIMT( "probe_multi",		"Multi Probe ...",  "u", "multiprobe.hlp",			AWM_PRB, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw );
+            awm->insert_separator();
+            AWMIMT( "pt_server_admin",	"PT_SERVER Admin ...",  "A", "probeadmin.hlp",			AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, 0 );
+            awm->insert_separator();
+            AWMIMT( "primer_design_new",		"Primer Design ...", "P", "primer_new.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0 );
+            AWMIMT("primer_design",		"Primer Design (sequencing primers)",		"","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
+            awm->close_sub_menu();
+        }
+
     } // clone
 
     // --------------------------------------------------------------------------------
@@ -994,6 +1011,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
         if (!clone){
+            AWMIMT("reset_logical_zoom",	"Reset Logical Zoom",		"o","rst_log_zoom.hlp",		AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
+            AWMIMT("reset_physical_zoom",	"Reset Physical Zoom",		"y","rst_phys_zoom.hlp",	AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
+            awm->insert_separator();
             AWMIMT(	"nds",		"NDS ( Select Node Information ) ...",		"N","props_nds.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)gb_main );
             AWMIMT(	"tree_select",	"Select ...",					"S",0,			AWM_ALL, AW_POPUP, (AW_CL)NT_open_select_tree_window,	(AW_CL)awar_tree );
         }
@@ -1077,8 +1097,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("enable_advices", "Reactivate advices",	"","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
             awm->insert_separator();
             AWMIMT("save_props",	"Save Properties (in ~/.arb_prop/ntree.arb)",	"S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
-
-            //	AWMIMT(0,"Tree: Setup ...",		"S","nt_props_tree.hlp",NT_F_ALL, AW_POPUP, (AW_CL)NT_preset_tree_window, 0);
         }
 
         // --------------------------------------------------------------------------------
@@ -1086,29 +1104,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Etc","E","nt_etc.hlp", AWM_ALL);
         {
-            AWMIMT("reset_logical_zoom",	"Reset Logical Zoom",		"o","rst_log_zoom.hlp",		AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
-            AWMIMT("reset_physical_zoom",	"Reset Physical Zoom",		"y","rst_phys_zoom.hlp",	AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
-            awm->insert_separator();
 #if defined(DEBUG)
             AWMIMT("table_aming",		"More Data Admin ... (not finished)",		"M","tableadm.hlp",		AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
 #endif // DEBUG
-            awm->insert_sub_menu(0,"Probe Functions",		"F");
-            {
-                AWMIMT( "probe_design",		"Probe Design ...", "D", "probedesign.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, 0 );
-                AWMIMT( "probe_match",		"Probe Match ...",  "M", "probematch.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_probe_match_window, 0 );
-                AWMIMT( "probe_multi",		"Multi Probe ...", "P", "multiprobe.hlp",			AWM_PRB, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw );
-                AWMIMT( "pt_server_admin",	"PT_SERVER Admin ...",  "A", "probeadmin.hlp",			AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, 0 );
-                awm->insert_separator();
-                AWMIMT("view_probe_group_result",	"View Probe Group Result ...",	"G","",  AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw );
-            }
-            awm->close_sub_menu();
-            awm->insert_sub_menu(0,"Primer Design ...","");
-            {
-                AWMIMT( "primer_design_new",		"Primer Design ...", "P", "primer_new.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0 );
-                AWMIMT("primer_design",		"Primer Design (sequencing primers)",		"","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
-            }
-            awm->close_sub_menu();
-
             awm->insert_sub_menu( 0,   "Network", "N");
             {
                 AWMIMT("ors",	"ORS ...",		"O","ors.hlp",			AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
@@ -1128,6 +1126,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 awm->insert_sub_menu(0,"W. Ludwig Specials","L");
                 {
                     AWMIMT("chewck_gcg_list",	"Check GCG List ...",		"C","checkgcg.hlp",	AWM_TUM, AW_POPUP, (AW_CL)create_check_gcg_window, 0);
+                    AWMIMT("view_probe_group_result",	"View Probe Group Result ...",	"G","",  AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw );
                 }
                 awm->close_sub_menu();
             }
@@ -1331,46 +1330,4 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     return (AW_window *)awm;
 
 }
-
-// PJ vectorfont stuff
-AW_window *NT_preset_tree_window( AW_root *root )  {
-
-    AW_window_simple *aws = new AW_window_simple;
-    const int       tabstop = 400;
-    aws->init( root, "TREE_PROPS2", "Tree Options", 400, 300 );
-
-    aws->label_length( 25 );
-    aws->button_length( 20 );
-
-    aws->at           ( 10,10 );
-    aws->auto_space(10,10);
-    aws->callback     ( AW_POPDOWN );
-    aws->create_button( "CLOSE", "CLOSE", "C" );
-
-    aws->at_newline();
-
-    // No Help, as we usually do not know the associated help file from within presets of AW Lib
-
-    aws->create_option_menu( "vectorfont/active", "Data font type", "1" );
-    aws->insert_option        ( "Use vectorfont",     " ", (int) 1);
-    aws->insert_option        ( "Use standard font",  " ", (int) 0);
-    aws->update_option_menu();
-    aws->at_newline();
-
-    //              AW_preset_create_scale_chooser(aws,"vectorfont/userscale","VF: absolute scaling");
-    aws->at_x(tabstop);
-    aws->create_input_field( "vectorfont/userscale",6);
-    aws->at_newline();
-
-    //aws->callback( (AW_CB0) aw_xfig_font_create_filerequest);
-    //aws->create_button( "VF: select", "V" );
-    //aws->at_x(tabstop);
-    //aws->create_input_field( "vectorfont/file_name",20);
-    //aws->at_newline();
-
-    aws->window_fit();
-    return (AW_window *)aws;
-
-}
-
 
