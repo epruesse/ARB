@@ -15,8 +15,7 @@
 #include "GDE_def.h"
 #include "GDE_extglob.h"
 
-#define META "M"
-
+#define META "" // default is 'no hotkey'
 
 AW_CL agde_filtercd;
 
@@ -40,102 +39,102 @@ char GDEBLANK[] = "\0";
 #define SLIDERWIDTH 5           // input field width for numbers
 
 // enum {
-// 	SLIDERWIDTH    = 5,
-// 	TEXTFIELDWIDTH = 15
-// 	};
+//  SLIDERWIDTH    = 5,
+//  TEXTFIELDWIDTH = 15
+//  };
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i);
 
 int GDE_odd(long a)
 {
-	if(((a/2)*2)==a) return 0;
-	return 1;
+    if(((a/2)*2)==a) return 0;
+    return 1;
 }
 
 void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 {
-	AWUSE(cd);
-	AW_root *awr=aw->get_root();
-	static AW_window_simple *helpwindow=0;
+    AWUSE(cd);
+    AW_root *awr=aw->get_root();
+    static AW_window_simple *helpwindow=0;
 
-	char helpfile[1024], *help_file;
-	char *helptext=0;
+    char helpfile[1024], *help_file;
+    char *helptext=0;
 
-	help_file=AWinfo->gmenuitem->help;
-	if(!(help_file)) awr->awar("tmp/gde/helptext")->write_string("no help\0");
-	else
-	{
-		sprintf(helpfile,"%s/GDEHELP/%s",GB_getenvARBHOME(),help_file);
+    help_file=AWinfo->gmenuitem->help;
+    if(!(help_file)) awr->awar("tmp/gde/helptext")->write_string("no help\0");
+    else
+    {
+        sprintf(helpfile,"%s/GDEHELP/%s",GB_getenvARBHOME(),help_file);
 
-		helptext=GB_read_file(helpfile);
-		if(helptext)
-		{
-			awr->awar("tmp/gde/helptext")->write_string(helptext);
-			free(helptext);
-		}
-		else awr->awar("tmp/gde/helptext")->write_string("can not find help file\0");
-	}
+        helptext=GB_read_file(helpfile);
+        if(helptext)
+        {
+            awr->awar("tmp/gde/helptext")->write_string(helptext);
+            free(helptext);
+        }
+        else awr->awar("tmp/gde/helptext")->write_string("can not find help file\0");
+    }
 
-	if(helpwindow) { helpwindow->show() ; return; }
+    if(helpwindow) { helpwindow->show() ; return; }
 
-	helpwindow = new AW_window_simple;
+    helpwindow = new AW_window_simple;
     helpwindow->init(awr,"GDE_HELP", "GDE HELP",200,10);
     helpwindow->load_xfig("gde_help.fig");
 
-// 	helpwindow->button_length(10);
-// 	helpwindow->at(10,10);
- 	helpwindow->at("close");
+    //  helpwindow->button_length(10);
+    //  helpwindow->at(10,10);
+    helpwindow->at("close");
     helpwindow->callback((AW_CB0)AW_POPDOWN);
-	helpwindow->create_button("CLOSE", "CLOSE","C");
+    helpwindow->create_button("CLOSE", "CLOSE","C");
 
-	helpwindow->at("text");
-	helpwindow->create_text_field("tmp/gde/helptext",10,10);
+    helpwindow->at("text");
+    helpwindow->create_text_field("tmp/gde/helptext",10,10);
 
-// 	helpwindow->window_fit();
-	helpwindow->show();
+    //  helpwindow->window_fit();
+    helpwindow->show();
 }
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
 {
-	char name[GB_KEY_LEN_MAX*4+5];
-	char *gmenu = GBS_string_2_key(AWinfo->gmenu->label);
-	char *gmenuitem = GBS_string_2_key(AWinfo->gmenuitem->label);
-	char *arg = GBS_string_2_key(AWinfo->gmenuitem->arg[i].symbol);
+    char name[GB_KEY_LEN_MAX*4+5];
+    char *gmenu = GBS_string_2_key(AWinfo->gmenu->label);
+    char *gmenuitem = GBS_string_2_key(AWinfo->gmenuitem->label);
+    char *arg = GBS_string_2_key(AWinfo->gmenuitem->arg[i].symbol);
 
-	sprintf(name,"gde/%s/%s/%s",gmenu,gmenuitem,arg);
-	free(gmenu);
-	free(gmenuitem);
-	free(arg);
+    sprintf(name,"gde/%s/%s/%s",gmenu,gmenuitem,arg);
+    free(gmenu);
+    free(gmenuitem);
+    free(arg);
 
-	return(strdup(name));
+    return(strdup(name));
 }
 
 void GDE_decreaseawar_cb(AW_window *aws,char *awar,AW_CL cd)
 {
-	AWUSE(cd);
-	AW_root *awr=aws->get_root();
-	awr->awar(awar)->write_int(awr->awar(awar)->read_int()-1);
+    AWUSE(cd);
+    AW_root *awr=aws->get_root();
+    awr->awar(awar)->write_int(awr->awar(awar)->read_int()-1);
 }
 
 void GDE_increaseawar_cb(AW_window *aws,char *awar,AW_CL cd)
 {
-	AWUSE(cd);
-	AW_root *awr=aws->get_root();
-	awr->awar(awar)->write_int(awr->awar(awar)->read_int()+1);
+    AWUSE(cd);
+    AW_root *awr=aws->get_root();
+    awr->awar(awar)->write_int(awr->awar(awar)->read_int()+1);
 }
 
 
 void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 {
-	char *awar=strdup(newawar);
-	aws->create_input_field(newawar,(int)width);
-	if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
-	    aws->button_length(3);
-	    aws->callback((AW_CB2)GDE_decreaseawar_cb,(AW_CL)awar,0);
-	    aws->create_button(0,"-","-");
-	    aws->callback((AW_CB2)GDE_increaseawar_cb,(AW_CL)awar,0);
-	    aws->create_button(0,"+","+");
-	}
+    char *awar=strdup(newawar);
+    aws->create_input_field(newawar,(int)width);
+    if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
+        aws->button_length(3);
+        aws->callback((AW_CB2)GDE_decreaseawar_cb,(AW_CL)awar,0);
+        aws->create_button(0,"-","-");
+        aws->callback((AW_CB2)GDE_increaseawar_cb,(AW_CL)awar,0);
+        aws->create_button(0,"+","+");
+    }
 }
 
 char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
@@ -147,7 +146,7 @@ char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
     if (!gb_type) return 0;
     char *type = GB_read_char_pntr(gb_type);
     if (GBS_string_cmp( type,"PV?:*",0)) {
-	return 0;
+        return 0;
     }
 
     char *name = GBT_read_name(gb_sai);
@@ -293,7 +292,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             bool     curr_value_legal = false;
 
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            if (	(! GBS_string_cmp(itemarg.choice[0].label,"no",1)) ||
+            if (    (! GBS_string_cmp(itemarg.choice[0].label,"no",1)) ||
                     (! GBS_string_cmp(itemarg.choice[0].label,"yes",1)))
             {
                 aws->create_toggle_field(newawar,1);
@@ -382,59 +381,66 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 
 void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabel)
 {
-//	AW_root *aw_root=awm->get_root();
-	char	buffer[1024];
-	char	*help;
-	long nitem,num_items;
-	GmenuItem *menuitem;
-	for(long nmenu=0;nmenu<num_menus;nmenu++)
-	{
-		char *manuname=GBS_string_2_key(menu[nmenu].label);
-		if (menulabel){
-			if (strcmp(menulabel,manuname)) {
-				free(manuname);
-				continue;
-			}
-		}else{
-			awm->insert_sub_menu(0,manuname,META);
-		}
-		free(manuname);
-		num_items=menu[nmenu].numitems;
-		for(nitem=0;nitem<num_items;nitem++)
-		{
-			menuitem=&menu[nmenu].item[nitem];
-			if (!menuitemlabel || !GBS_string_cmp(menuitem->label,menuitemlabel,0)){
-				AWwindowinfo *AWinfo=new AWwindowinfo;
-				AWinfo->gmenu=&menu[nmenu];
-				AWinfo->gmenuitem=menuitem;
-				if (menuitem->help) {
-					sprintf(buffer,"GDEHELP/%s",menuitem->help);
-					help = strdup(buffer);
-				}else{
-					help = 0;
-				}
-				awm->insert_menu_topic(0,menuitem->label,&(menuitem->meta),
-					help,AWM_ALL,
-					AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)AWinfo );
-			}
-		}
-	//	if(!menulabel && nmenu==0)
-	//		awm->insert_menu_topic(0,"Close","C",0,(AW_active) -1, (AW_CB)AW_POPDOWN, 0, 0);
-		if (!menulabel){
-			awm->close_sub_menu();
-		}
-	}
+    //  AW_root *aw_root = awm->get_root();
+    char       buffer[1024];
+    char      *help;
+    long       nitem,num_items;
+    GmenuItem *menuitem;
+
+    for(long nmenu = 0; nmenu<num_menus; nmenu++) {
+        {
+            char *menuname = GBS_string_2_key(menu[nmenu].label);
+            if (menulabel){
+                if (strcmp(menulabel,menuname)) {
+                    free(menuname);
+                    continue;
+                }
+            }
+            else {
+                awm->insert_sub_menu(0,menuname,META);
+            }
+            free(menuname);
+        }
+
+        num_items = menu[nmenu].numitems;
+        for(nitem=0;nitem<num_items;nitem++)
+        {
+            menuitem=&menu[nmenu].item[nitem];
+            if (!menuitemlabel || !GBS_string_cmp(menuitem->label,menuitemlabel,0)){
+                AWwindowinfo *AWinfo=new AWwindowinfo;
+                AWinfo->gmenu=&menu[nmenu];
+                AWinfo->gmenuitem=menuitem;
+                if (menuitem->help) {
+                    sprintf(buffer,"GDEHELP/%s",menuitem->help);
+                    help = strdup(buffer);
+                }
+                else {
+                    help = 0;
+                }
+                char hotkey[] = "x";
+                hotkey[0]     = menuitem->meta;
+                awm->insert_menu_topic(0,menuitem->label,hotkey,
+                                       help,AWM_ALL,
+                                       AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)AWinfo );
+            }
+        }
+        //  if(!menulabel && nmenu==0)
+        //      awm->insert_menu_topic(0,"Close","C",0,(AW_active) -1, (AW_CB)AW_POPDOWN, 0, 0);
+        if (!menulabel){
+            awm->close_sub_menu();
+        }
+    }
 }
 
 struct choose_get_sequence_struct gde_cgss = { 0, CGSS_WT_DEFAULT, 0 };
 
 void create_gde_var(AW_root  *aw_root, AW_default aw_def,
-		    char *(*get_sequences)(void *THIS, GBDATA **&the_species,
-					   uchar **&the_names,
-					   uchar **&the_sequences,
-					   long &numberspecies,long &maxalignlen),
-		    gde_cgss_window_type wt,
-		    void *THIS)
+                    char *(*get_sequences)(void *THIS, GBDATA **&the_species,
+                                           uchar **&the_names,
+                                           uchar **&the_sequences,
+                                           long &numberspecies,long &maxalignlen),
+                    gde_cgss_window_type wt,
+                    void *THIS)
 {
     gde_cgss.get_sequences= get_sequences;
     gde_cgss.wt = wt;
@@ -445,23 +451,23 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 
     switch (gde_cgss.wt)
     {
-	case CGSS_WT_EDIT4:
-	    aw_root->awar_int("gde/top_area_kons",1,aw_def);
-	    aw_root->awar_int("gde/top_area_remark",1,aw_def);
-	    aw_root->awar_int("gde/middle_area_kons",1,aw_def);
-	    aw_root->awar_int("gde/middle_area_remark",1,aw_def);
-	case CGSS_WT_EDIT:
-	    aw_root->awar_int("gde/top_area",1,aw_def);
-	    aw_root->awar_int("gde/top_area_sai",1,aw_def);
-	    aw_root->awar_int("gde/top_area_helix",1,aw_def);
-	    aw_root->awar_int("gde/middle_area",1,aw_def);
-	    aw_root->awar_int("gde/middle_area_sai",1,aw_def);
-	    aw_root->awar_int("gde/middle_area_helix",1,aw_def);
-	    aw_root->awar_int("gde/bottom_area",1,aw_def);
-	    aw_root->awar_int("gde/bottom_area_sai",1,aw_def);
-	    aw_root->awar_int("gde/bottom_area_helix",1,aw_def);
-	default:
-	    break;
+        case CGSS_WT_EDIT4:
+            aw_root->awar_int("gde/top_area_kons",1,aw_def);
+            aw_root->awar_int("gde/top_area_remark",1,aw_def);
+            aw_root->awar_int("gde/middle_area_kons",1,aw_def);
+            aw_root->awar_int("gde/middle_area_remark",1,aw_def);
+        case CGSS_WT_EDIT:
+            aw_root->awar_int("gde/top_area",1,aw_def);
+            aw_root->awar_int("gde/top_area_sai",1,aw_def);
+            aw_root->awar_int("gde/top_area_helix",1,aw_def);
+            aw_root->awar_int("gde/middle_area",1,aw_def);
+            aw_root->awar_int("gde/middle_area_sai",1,aw_def);
+            aw_root->awar_int("gde/middle_area_helix",1,aw_def);
+            aw_root->awar_int("gde/bottom_area",1,aw_def);
+            aw_root->awar_int("gde/bottom_area_sai",1,aw_def);
+            aw_root->awar_int("gde/bottom_area_helix",1,aw_def);
+        default:
+            break;
     }
 
     aw_root->awar_string( "presets/use","" ,gb_main );
@@ -480,12 +486,12 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 
 AW_window *AP_open_gde_window(AW_root *aw_root)
 {
-	AW_window_menu_modes *awm = new AW_window_menu_modes;
-		awm->init(aw_root,"GDE","GDE",700,30,0,0);
-	awm->at(10,100);awm->callback((AW_CB0)AW_POPDOWN);
-	awm->create_button("CLOSE", "CLOSE","C");
+    AW_window_menu_modes *awm = new AW_window_menu_modes;
+    awm->init(aw_root,"GDE","GDE",700,30,0,0);
+    awm->at(10,100);awm->callback((AW_CB0)AW_POPDOWN);
+    awm->create_button("CLOSE", "CLOSE","C");
 
-	GDE_load_menu(awm);
+    GDE_load_menu(awm);
 
-	return (AW_window *)awm;
+    return (AW_window *)awm;
 }
