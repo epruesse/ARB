@@ -7,6 +7,7 @@ UP	species.hlp
 SUB	mark_genes.hlp
 SUB	selected_gene.hlp
 SUB	gene_species.hlp
+SUB	gene_info.hlp
 SUB	organisms.hlp
 
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
@@ -18,26 +19,18 @@ DESCRIPTION	One gene is one database entry containing subentries which
                 describe the gene. Every gene belongs to a specific
 		organism, but one organism may have many genes.
 
-                Main entries of a gene:
+                Main (reserved) entries of a gene:
 
-                     [Database field name]		[Comment]
+                     name, pos_begin, pos_end, complement,
+                     pos_joined, pos_begin1, pos_end1, pos_begin2, pos_end2, ...
+                     pos_uncertain,
+                     codon_start, transl_table
 
-                     name				Unique name for a gene
-                                                        max 8 characters long
-
-                     pos_begin                          The start position of the gene in the
-                                                        main-sequence of the organism.
-
-   		     pos_end				The end position of the gene in the
-                                                        main-sequence of the organism.
-
-                     complement                         if 1 => gene is located on the
-                                                        complementary strand.
-
+                See LINK{gene_info.hlp} for details about these fields.
 
 NOTE		The main-sequence of a organism(species) is stored in the
 		alignment 'ali_genom'. You should not change this alignment.
-
+                
 WARNINGS	The alignment 'ali_genom' should NOT contain any gaps!!!!
 
 BUGS		No known bugs

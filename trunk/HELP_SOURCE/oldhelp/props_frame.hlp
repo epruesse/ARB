@@ -18,7 +18,7 @@ OCCURRENCE	ARB_NT/Properties/Menu:
 DESCRIPTION	Setup of the window. Choose the 'Menu:' item from the
 		'Properties' menu and select colours and fonts by using the
 		respective submenus or typing in the respective
-		subwindows of the 'WINDOW_PROPERTIES' window. 
+		subwindows of the 'WINDOW_PROPERTIES' window.
 
 NOTES		The selected properties are saved to files '.arb/prop*'
 		in the users home directory by choosing the 'Save Defaults'
@@ -28,7 +28,8 @@ NOTES		The selected properties are saved to files '.arb/prop*'
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	If you choose a font different from 8x13bold all windows are resized proportionally.
+                This may lead to undesired overlapping effect (especially if a smaller font is used)
 
 BUGS		No bugs known
 
