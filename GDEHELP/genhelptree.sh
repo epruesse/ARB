@@ -36,7 +36,7 @@ write_index $* > $INDEXFILE
 while [ \! -z "$1" ]; do
     SUBBASE=`echo $1 | sed -e 's/^.*\///ig'`
     ESCAPED_SUBBASE=`echo $SUBBASE | sed -e 's/\./_/ig'`
-    genhelp.sh $PREFIX/${BASE}_sub_$ESCAPED_SUBBASE.help "$SUBBASE" $HEADER $1
+    ./genhelp.sh $PREFIX/${BASE}_sub_$ESCAPED_SUBBASE.help "$SUBBASE" $HEADER $1
     shift
 done
 
