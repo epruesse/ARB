@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jun/25/2004 17:19 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/06/2004 10:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -236,6 +236,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
 
     awtqs.gb_main             = gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
+    awtqs.tree_name           = AWAR_TREE;
     //     awtqs.query_genes  = true;
     //     awtqs.gene_name    = AWAR_GENE_NAME;
     awtqs.select_bit          = 1;
