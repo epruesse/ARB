@@ -6,6 +6,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <awt.hxx>
 #include <iostream.h>
 #include <string.h>
 
@@ -39,7 +40,7 @@ void aed_start_naligning(AW_window *aw) {
         delete species_name;
     }
 
-	
+
     GBS_strcat(strstruct,"; do arb_naligner");
 
 
@@ -54,7 +55,7 @@ void aed_start_naligning(AW_window *aw) {
         GBS_strcat(strstruct,"\"");
     }
     GBS_strcat(strstruct," \"-s$i\" ");
-	
+
     if (root->awar( "naligner/mark_profile" )->read_int() ) GBS_strcat(strstruct," -mf");
     if (root->awar( "naligner/unmark_sequence" )->read_int() ) GBS_strcat(strstruct," -us");
 
@@ -69,7 +70,7 @@ void aed_start_naligning(AW_window *aw) {
 
 
 
-	
+
     GBS_strcat(strstruct," -cm"); 	GBS_floatcat(strstruct,root->awar("naligner/det/cm")->read_float());
     GBS_strcat(strstruct," -ch"); 	GBS_floatcat(strstruct,root->awar("naligner/det/ch")->read_float());
     GBS_strcat(strstruct," -mgf"); 	GBS_floatcat(strstruct,root->awar("naligner/igap_panelty")->read_float());
@@ -94,7 +95,7 @@ void aed_start_naligning(AW_window *aw) {
         }
     }
     GBS_strcat(strstruct," || echo \"Aligner failed\";done;");
-	
+
 
     GBS_strcat(strstruct,"echo press \"(return)\" to close window;read a' &");
     buffer = GBS_strclose(strstruct,0);
@@ -216,7 +217,7 @@ AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2)
     aws->create_input_field("naligner/ag",mwidth);
     aws->at("at");
     aws->create_input_field("naligner/at",mwidth);
-	
+
     aws->at("ca");
     aws->create_input_field("naligner/ac",mwidth);
     aws->at("cc");
@@ -310,33 +311,39 @@ AW_window *create_naligner_window( AW_root *root, AW_CL cd2 ) {
     aws->label_length( 25 );
 
     aws->at( "pt_server" );
-    aws->create_option_menu( "naligner/pt_server", "PT_SERVER:" , "" );
-    {
-        int i;
-        char *server;
-        const char *file;
-        char search_for[256];
-        char choice[256];
-        char *fr;
+    aws->label("PT_SERVER:");
+    awt_create_selection_list_on_pt_servers(aws, "naligner/pt_server", AW_TRUE);
 
-        for (i=0;i<1000;i++) {
-            sprintf(search_for,"ARB_PT_SERVER%i",i);
-            server = GBS_read_arb_tcp(search_for);
-            if (!server) break;
-            fr = server;
-            file = server;				/* i got the machine name of the server */
-            if (*file) file += strlen(file)+1;	/* now i got the command string */
-            if (*file) file += strlen(file)+1;	/* now i got the file */
-            if (strrchr(file,'/')) file = strrchr(file,'/')-1;
-            static char empty[] = "";
-            if (!(server = strtok(server,":"))) server = empty;
-            sprintf(choice,"%s: %s",server,file+2);
-            aws->insert_option( choice, "", i );
-            delete fr;
-        }
-    }
-    aws->insert_default_option( "select a PT_SERVER", "d", -1);
-    aws->update_option_menu();
+
+//     aws->create_option_menu( "naligner/pt_server", "PT_SERVER:" , "" );
+//     {
+//         int i;
+//         char *server;
+//         const char *file;
+//         char search_for[256];
+//         char choice[256];
+//         char *fr;
+
+//         for (i=0;i<1000;i++) {
+//             sprintf(search_for,"ARB_PT_SERVER%i",i);
+//             // @@@ FIXME: PT_SERVER_CHOICE
+
+//             server = GBS_read_arb_tcp(search_for);
+//             if (!server) break;
+//             fr = server;
+//             file = server;				/* i got the machine name of the server */
+//             if (*file) file += strlen(file)+1;	/* now i got the command string */
+//             if (*file) file += strlen(file)+1;	/* now i got the file */
+//             if (strrchr(file,'/')) file = strrchr(file,'/')-1;
+//             static char empty[] = "";
+//             if (!(server = strtok(server,":"))) server = empty;
+//             sprintf(choice,"%s: %s",server,file+2);
+//             aws->insert_option( choice, "", i );
+//             delete fr;
+//         }
+//     }
+//     aws->insert_default_option( "select a PT_SERVER", "d", -1);
+//     aws->update_option_menu();
 
     aws->at( "mark" );
     aws->label_length(40);
