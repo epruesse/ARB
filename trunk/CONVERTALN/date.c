@@ -41,12 +41,12 @@ char	*other_date;
 	} else {
 		sprintf(temp, "Unknown date format: %s, cannot convert.\n", 				other_date);
 		warning(146, temp);
-		return(Dupstr("??-???-????"));
+		return(Dupstr("\?\?-\?\?\?-\?\?\?\?"));
 	}
 	if(day<=0||month<=0||year<=0||day>31||month>12)	{
 		sprintf(temp, "Wrong date format: %s\n", other_date);
 		warning(147, temp);
-		return(Dupstr("??-???-????"));
+		return(Dupstr("\?\?-\?\?\?-\?\?\?\?"));
 	}
 	if(day<10)
 		sprintf(temp, "0%d-%s-19%d", day, mon[month-1], year);
