@@ -13,6 +13,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_advice.hxx>
 #include <GEN.hxx>
@@ -942,13 +943,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awtcig.cd1 = cd1;
     awtcig.cd2 = cd2;
 
-    awr->awar_string(AWAR_FILE,defname);
-    awr->awar_string(AWAR_FILE_BASE"/directory","");
-    awr->awar_string(AWAR_FILE_BASE"/filter","");
-
-    awr->awar_string(AWAR_FORM"/directory","lib/import");
-    awr->awar_string(AWAR_FORM"/filter",".ift");
-    awr->awar_string(AWAR_FORM"/file_name","");
+    aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
+    aw_create_selection_box_awars(awr, AWAR_FORM, AWT_path_in_ARBHOME("lib/import"), ".ift", "*");
 
     awr->awar_string(AWAR_ALI,"ali_16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
@@ -974,10 +970,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
     aws->create_button("HELP", "HELP","H");
 
-    const char *startdir = "PWD";
-
-    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", startdir, AW_TRUE ); // select import filename
-    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", AW_FALSE ); // select import filter
+    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", AW_TRUE, AW_TRUE); // select import filename
+    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", AW_FALSE, AW_FALSE); // select import filter
 
     aws->at("auto");
     aws->callback(awtc_check_input_format);
