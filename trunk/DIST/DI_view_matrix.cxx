@@ -69,16 +69,16 @@ void PH_dmatrix::init (PHMATRIX *matrix)
                 case PH_G_STANDARD:
                 case PH_G_BELOW_DIST:
                 case PH_G_ABOVE_DIST: {
-                    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+                    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-                    width = aw_fi->max_letter_width*6; // normal cell contain 6 characters (i.e.: '0.0162')
+                    width = aw_fi->max_letter_width*6; // normal cell contain 6 characters (e.g.: '0.0162')
                     height = aw_fi->max_letter_height*2;
                     break;
                 }
                 case PH_G_NAMES: {
-                    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+                    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-                    width = aw_fi->max_letter_width*SPECIES_NAME_LEN; // normal cell contain 6 characters (i.e.: '0.0162')
+                    width = aw_fi->max_letter_width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
                     height = aw_fi->max_letter_height*2;
                     break;
                 }
@@ -118,12 +118,13 @@ PHMATRIX *PH_dmatrix::get_matrix(){
 
 void PH_dmatrix::resized(void)
 {
-    AW_rectangle squ;
-    AW_rectangle rect;
-    long horiz_paint_size,vert_paint_size;
-    AW_font_information *aw_fi=device->get_font_information(PH_G_STANDARD,0);
-    PHMATRIX *m = get_matrix();
-    long n = 0;
+    AW_rectangle               squ;
+    AW_rectangle               rect;
+    long                       horiz_paint_size,vert_paint_size;
+    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD,0);
+    PHMATRIX                  *m     = get_matrix();
+    long                       n     = 0;
+
     if (m) n = m->nentries;
     device->get_area_size(&squ);
     screen_width=squ.r-squ.l;
@@ -171,7 +172,7 @@ void PH_dmatrix::display(void)   // draw area
     xpos = 0;
 
     int name_display_width; {
-        AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
+        const AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
         name_display_width = cell_width/aw_fi->max_letter_width;
     }
     gb_assert(name_display_width<BUFLEN);

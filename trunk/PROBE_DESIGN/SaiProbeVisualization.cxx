@@ -420,9 +420,9 @@ void SAI_graphic::paint(AW_device *device) {
     double maxDescent = 0;
     // detect x/y step to use
     {
-        AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 0);
-        AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
-        AW_font_information *hlFontInfo = device->get_font_information(SAI_GC_HIGHLIGHT_FONT, 0);
+        const AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 0);
+        const AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
+        const AW_font_information *hlFontInfo = device->get_font_information(SAI_GC_HIGHLIGHT_FONT, 0);
 
         xStep      = MAX(fgFontInfo->this_letter_width,   MAX(pbFontInfo->this_letter_width,   hlFontInfo->this_letter_width  ));
         yStep      = MAX(fgFontInfo->max_letter_height,  MAX(pbFontInfo->max_letter_height,  hlFontInfo->max_letter_height ));
