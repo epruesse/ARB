@@ -218,7 +218,7 @@ void awt_pop_down_select_nds(AW_root *,AW_window *aww){
     aww->hide();
 }
 
-static void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
+void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 {
     static AW_window *win = 0;
     AW_root *aw_root = aww->get_root();
