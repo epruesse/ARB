@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Aug/14/2003 18:55 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:39 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -13,9 +13,8 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef CCTYPE
 #include <cctype>
-#endif
+#include <cstdio>
 
 #include <arbdb.h>
 #include <awt.hxx>

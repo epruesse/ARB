@@ -4,6 +4,7 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 

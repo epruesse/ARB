@@ -10,7 +10,10 @@
 #include "PRD_Pair.hxx"
 
 #include <deque>
+
+#ifndef arbdb_h_included
 #include <arbdb.h>
+#endif
 
 class PrimerDesign {
 private:

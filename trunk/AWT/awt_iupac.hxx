@@ -1,16 +1,18 @@
 #ifndef awt_iupac_included
 #define awt_iupac_included
 
+#ifndef arbdb_h_included
 #include <arbdb.h>
+#endif
 
 struct AWT_IUPAC_descriptor {
     const char *iupac;
     int count; // no of bases, that may be in this code
-};    
+};
 
 extern AWT_IUPAC_descriptor AWT_iupac_code[26][2]; // second index: [0] uses T, [1] uses U
 extern const int AWT_iupac_group[26];
-    
+
 char AWT_encode_iupac(const char bases[], GB_alignment_type aliType);
 char AWT_iupac_add(char c1, char c2, GB_alignment_type ali);
 

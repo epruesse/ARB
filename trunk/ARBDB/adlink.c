@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "adlocal.h"
-#include <arbdb.h>
+/* #include <arbdb.h> */
 
 
 GBDATA *GB_follow_link(GBDATA *gb_link){

@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Tue Dec/16/2003 14:23 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Mar/11/2004 13:28 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -15,7 +15,9 @@
 #ifndef ADGENE_H
 #define ADGENE_H
 
+#ifndef arbdb_h_included
 #include "arbdb.h"
+#endif 
 
 #ifdef __cplusplus
 extern "C" {

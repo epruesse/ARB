@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_db.cxx                                             //
 //    Purpose   : database access for experiments                        //
-//    Time-stamp: <Thu Sep/06/2001 23:18 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -13,6 +13,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include <cstdio>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>

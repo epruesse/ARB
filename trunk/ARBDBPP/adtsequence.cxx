@@ -1,7 +1,6 @@
-// #include <malloc.h>
 #include <memory.h>
 #include <string.h>
-// #include <stdio.h>
+#include <stdio.h>
 
 #include <arbdb.h>
 #include "arbdb++.hxx"

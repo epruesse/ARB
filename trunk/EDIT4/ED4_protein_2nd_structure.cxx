@@ -1,14 +1,14 @@
-
-#include "arbdb.h"
-#include "ed4_protein_2nd_structure.hxx"
-
+#include <cstdio>
 #include <iostream>
-#include <stdio.h>
 #include <fstream.h>
 #include <stdlib.h>
 #include <iomanip.h>
 #include <string.h>
 #include <stdarg.h>
+
+#include "arbdb.h"
+#include "ed4_protein_2nd_structure.hxx"
+
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>

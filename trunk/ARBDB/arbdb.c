@@ -1,4 +1,4 @@
-#include <stdio.h>
+/* #include <stdio.h> */
 #include <stdlib.h>
 #include <string.h>
 /* #include <malloc.h> */
@@ -7,7 +7,7 @@
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include "adlocal.h"
-#include "arbdb.h"
+/* #include "arbdb.h" */
 
 struct gb_local_data *gb_local = 0;
 #ifdef ARBDB_SIZEDEBUG

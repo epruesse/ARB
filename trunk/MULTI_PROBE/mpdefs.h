@@ -2,8 +2,14 @@
 #define MPDEFS
 
 //#include <mpdefs2.h>
+
+#ifndef _STDIO_H
 #include <stdio.h>
+#endif
+
+#ifndef arbdb_h_included
 #include <arbdb.h>
+#endif
 
 #include <PT_com.h>
 #include <client.h>
