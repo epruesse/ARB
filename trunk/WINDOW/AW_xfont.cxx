@@ -159,53 +159,61 @@ struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
     {"Terminal-Bold",                   -14},
 };
 
-inline bool may_have_iso(const char *template_part) {
-    return // check for non-iso-fonts: 
-        strstr(template_part, "symbol")       == 0 &&
-        strstr(template_part, "zapfdingbats") == 0;
+#define FONT_STRING_PARTS 14
+
+static const char *parseFontString(const char *fontname, int *minus_position) {
+    const char *error = 0;
+    const char *minus = strchr(fontname, '-');
+    int         count = 0;
+
+    for (; minus; minus = strchr(minus+1, '-'), ++count) {
+        if (count >= FONT_STRING_PARTS) { error = "too many '-'"; break; }
+        minus_position[count] = minus-fontname;
+    }
+    if (count != FONT_STRING_PARTS) error = "expected 14 '-'";
+
+    return error;
+}
+static char *getParsedFontPart(const char *fontname, int *minus_position, int idx) {
+    aw_assert(idx >= 0 && idx<FONT_STRING_PARTS);
+
+    int   startpos = minus_position[idx]+1;
+    int   endpos   = (idx == (FONT_STRING_PARTS-1) ? strlen(fontname) : minus_position[idx+1])-1;
+    int   length   = endpos-startpos+1;
+    char *result   = new char[length+1];
+    
+    memcpy(result, fontname+startpos, length);
+    result[length] = 0;
+
+    return result;
 }
 
 /* parse the point size of font 'name' */
 /* e.g. -adobe-courier-bold-o-normal--10-100-75-75-m-60-ISO8859-1 */
 
-static int parsesize(const char *name)
-{
-    int   s;
-    const char *np;
+static int parsesize(const char *fontname) {
+    int         pos[14];
+    int         size;
+    const char *error = parseFontString(fontname, pos);
 
-    for (np = name; *(np + 1); np++)
-        if (*np == '-' && *(np + 1) == '-')     /* look for the -- */
-            break;
-    s = 0;
-    if (*(np + 1)) {
-        np += 2;                /* point past the -- */
-        s = atoi(np);           /* get the point size */
-    }
-    else {
-        // no '--' found; search for first - followed by a number
-        s = 0;                  // return size == 0 if nothing detected
-        for (np = name; ; ++np) {
-            if (*np == '-') {
-                const char *dw;
-                for (dw = np+1; isdigit(*dw); ++dw) ;
-                if (dw>(np+1) && *dw == '-') { // only digits found
-                    s = atoi(np+1);
-                    break;
-                }
-            }
-        }
-        if (!s) fprintf(stderr, "Can't parse '%s'\n", name);
+    if (!error) {
+        char *sizeString = getParsedFontPart(fontname, pos, 6);
+        size             = atoi(sizeString);
+        delete [] sizeString;
+
+        if (size == 0) error = "zero size";
     }
 
-    return s;
+    if (error) {
+        fprintf(stderr, "Error parsing size info from '%s' (%s)\n", fontname, error);
+        return 0;
+    }
+
+    return size;
 }
 
 void aw_root_init_font(Display *tool_d)
 {
-    // int             f, count, i, p, ss;
-    // char            templat[200];
-    // char        **fname;
-
     if (appres.display) return;
 
     appres.display = tool_d;
@@ -251,21 +259,14 @@ void aw_root_init_font(Display *tool_d)
     struct found_font { const char *fn; int s; };
 
     if (!appres.SCALABLEFONTS) {
-        // struct xfont  *newfont, *nf;
-        found_font    *flist = new found_font[FONT_EXAMINE_MAX];
+        found_font *flist = new found_font[FONT_EXAMINE_MAX];
 
         for (int f = 0; f < AW_NUM_FONTS; f++) {
             char **fontlist[KNOWN_ISO_VERSIONS];
-            // int    count[KNOWN_ISO_VERSIONS];
             int    iso;
             int    found_fonts      = 0;
-            // bool   check_for_iso = may_have_iso(x_fontinfo[f].templat);
 
-            for (iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) {
-                fontlist[iso] = 0;
-                // count[iso]    = 0;
-            }
-            
+            for (iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) fontlist[iso] = 0;
 
             for (iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) {
                 char *font_template = GBS_global_string_copy("%s*-*-*-*-*-*-%s-*", x_fontinfo[f].templat, known_iso_versions[iso]);
@@ -436,23 +437,75 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
         }
         /* put the structure in the list */
         nf->fstruct = fontst;
-    } /* if (nf->fstruct == NULL) */
+    }
 
     return (nf->fstruct);
+}
+
+static char *caps(char *sentence) {
+    bool doCaps = true;
+    for (int i = 0; sentence[i]; ++i) {
+        if (isalpha(sentence[i])) {
+            if (doCaps) {
+                sentence[i] = toupper(sentence[i]);
+                doCaps      = false;
+            }
+        }
+        else {
+            doCaps = true;
+        }
+    }
+    return sentence;
 }
 
 
 const char *AW_root::font_2_ascii(AW_font font_nr)
 {
-    if (font_nr <0) return "FIXED";
-    if (font_nr >= AW_NUM_FONTS ) return 0;
-    return (ps_fontinfo[font_nr+1].name);
+    aw_assert(font_nr >= 0);
+    // if (font_nr < 0) return "FIXED";
+    if (font_nr<0 || font_nr>=AW_NUM_FONTS ) return 0;
+
+    const char        *readable_fontname = 0;
+    struct _xfstruct&  xf                = x_fontinfo[font_nr];
+
+    if (xf.xfontlist) {
+        const char *fontname = xf.xfontlist->fname;
+
+        if (strcmp(fontname, "fixed") == 0) {
+            readable_fontname = GBS_global_string("[not found: %s]", xf.templat);
+        }
+        else {
+            int         pos[14];
+            const char *error = parseFontString(fontname, pos);
+            if (error) {
+                readable_fontname = GBS_global_string("[%s - parse-error (%s)]", fontname, error);
+            }
+            else {
+                char *fndry  = caps(getParsedFontPart(fontname, pos, 0));
+                char *fmly   = caps(getParsedFontPart(fontname, pos, 1));
+                char *wght   = getParsedFontPart(fontname, pos, 2); wght[3] = 0;
+                char *slant  = getParsedFontPart(fontname, pos, 3);
+                char *rgstry = getParsedFontPart(fontname, pos, 12);
+
+                readable_fontname = GBS_global_string("%s %s %s,%s,%s",
+                                                      fndry, fmly,
+                                                      wght, slant, 
+                                                      rgstry);
+                delete [] rgstry;
+                delete [] slant;
+                delete [] wght;
+                delete [] fmly;
+                delete [] fndry;
+            }
+        }
+    }
+    return readable_fontname;
+    // return (ps_fontinfo[font_nr+1].name);
 }
 
 int AW_root::font_2_xfig(AW_font font_nr)
 {
-    if (font_nr <0) return 0;
-    if (font_nr >= AW_NUM_FONTS ) return 0;
+    if (font_nr<0 || font_nr>=AW_NUM_FONTS ) return 0;
     return (ps_fontinfo[font_nr+1].xfontnum);
 }
 
