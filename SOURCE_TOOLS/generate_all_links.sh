@@ -71,6 +71,7 @@ ln -s GENH/aisc.h               ORS_COM/ors_server.h
 # TEMPLATES directory
 
 ln -s ../TEMPLATES/smartptr.h INCLUDE/smartptr.h
+ln -s ../TEMPLATES/output.h INCLUDE/output.h
 ln -s ../TEMPLATES/inline.h INCLUDE/inline.h
 ln -s ../TEMPLATES/arbtools.h INCLUDE/arbtools.h
 
