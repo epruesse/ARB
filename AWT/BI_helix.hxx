@@ -70,8 +70,9 @@ class BI_helix {
 		// returns 1 of bases form a pair
 	char *seq_2_helix(char *sequence,char undefsymbol = ' ');
 
-#ifdef _USE_AW_WINDOW
 	char get_symbol(char left, char right, BI_PAIR_TYPE pair_type);
+
+#ifdef _USE_AW_WINDOW
 
 	int show_helix( void *device, int gc1 , char *sequence,
 		AW_pos x, AW_pos y,

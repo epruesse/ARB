@@ -373,8 +373,6 @@ int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type)
 }
 
 
-#ifdef _USE_AW_WINDOW
-
 char BI_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type){
     left = toupper(left);
     right = toupper(right);
@@ -413,6 +411,8 @@ char *BI_helix::seq_2_helix(char *sequence,char undefsymbol){
     }
     return helix;
 }
+
+#ifdef _USE_AW_WINDOW
 
 int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
                             AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
