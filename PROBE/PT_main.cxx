@@ -86,50 +86,67 @@ void PT_init_map(){
 
     char *gene_name_str;
     char *full_name_str;
+    char *arb_gene_name_str;
+    char *arb_species_name_str;
     char *temp1;
     char *temp2;
+    char *temp3;
     
     gene_struct *tempstruct;
 
-    temp1 = strtok(map_str," \n");
-    temp2 = strtok(NULL," \n");
-    temp2 = strtok(NULL," \n");
+    temp1 = strtok(map_str," /\n"); //PT interner Name
+    temp2 = strtok(NULL," /\n");    // Strichpunkt
+    temp2 = strtok(NULL," /\n");    // Speziesname
+    temp3 = strtok(NULL," /\n");    // Genname
+
 
     gene_name_str = new char[strlen(temp1)+1];
-    full_name_str = new char[strlen(temp2)+1];
+    //    full_name_str = new char[strlen(temp2)+1];
+    arb_species_name_str = new char[strlen(temp2)+1];
+    arb_gene_name_str = new char[strlen(temp3)+1];
 
     strcpy (gene_name_str,temp1);
-    strcpy (full_name_str,temp2);
+    //strcpy (full_name_str,temp2);
+    strcpy (arb_species_name_str,temp2);
+    strcpy (arb_gene_name_str,temp3);
     
     tempstruct = new gene_struct;
 
     strcpy(tempstruct->gene_name,gene_name_str);
-    strcpy(tempstruct->full_name,full_name_str);
+    //strcpy(tempstruct->full_name,full_name_str);
+    strcpy(tempstruct->arb_species_name,arb_species_name_str);
+    strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
 
     names_list.push_back(tempstruct);
 
-    temp1 = strtok(NULL," \n");
-    temp2 = strtok(NULL," \n");
-    temp2 = strtok(NULL," \n");
+    temp1 = strtok(NULL," /\n");
+    temp2 = strtok(NULL," /\n");
+    temp2 = strtok(NULL," /\n");
+    temp3 = strtok(NULL," /\n");
 
     while (temp1 != NULL)
       {
 	gene_name_str = new char[strlen(temp1)+1];
-	full_name_str = new char[strlen(temp2)+1];
+	arb_species_name_str = new char[strlen(temp2)+1];
+	arb_gene_name_str = new char[strlen(temp3)+1];
 	
 	strcpy (gene_name_str,temp1);
-	strcpy (full_name_str,temp2);
-
+	strcpy (arb_species_name_str,temp2);
+	strcpy (arb_gene_name_str,temp3);
+	
 	tempstruct = new gene_struct;
 	
 	strcpy(tempstruct->gene_name,gene_name_str);
-	strcpy(tempstruct->full_name,full_name_str);
+	strcpy(tempstruct->arb_species_name,arb_species_name_str);
+	strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
 	
 	names_list.push_back(tempstruct);
+	
+	temp1 = strtok(NULL," /\n");
+	temp2 = strtok(NULL," /\n");
+	temp2 = strtok(NULL," /\n");
+	temp3 = strtok(NULL," /\n");
 
-	temp1 = strtok(NULL," \n");
-	temp2 = strtok(NULL," \n");
-	temp2 = strtok(NULL," \n");
       }
   }
 }
