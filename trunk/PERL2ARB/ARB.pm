@@ -11,7 +11,7 @@ require DynaLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-	
+
 );
 $VERSION = '0.01';
 
@@ -27,24 +27,21 @@ __END__
 
 =head1 NAME
 
-ARB - Perl extension for blah blah blah
+ARB - Perl extension for ARB
 
 =head1 SYNOPSIS
 
   use ARB;
-  blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for ARB was created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
+The ARB perl module provides access to a ARB databases.  You may
+connect to a remote database (e.g. a running instance of ARB_NTREE) or
+open your own database.
 
 =head1 AUTHOR
 
-A. U. Thor, a.u.thor@a.galaxy.far.far.away
+ARB development, devel@arb-home.de
 
 =head1 SEE ALSO
 
