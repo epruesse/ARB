@@ -633,7 +633,7 @@ ARCHS_GENE_PROBE = \
 
 $(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
