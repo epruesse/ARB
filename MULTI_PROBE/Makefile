@@ -234,6 +234,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt.hxx

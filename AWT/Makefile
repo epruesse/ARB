@@ -296,6 +296,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
@@ -366,6 +367,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_tables.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 

@@ -288,6 +288,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx

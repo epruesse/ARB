@@ -67,6 +67,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -101,6 +101,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -39,6 +39,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
