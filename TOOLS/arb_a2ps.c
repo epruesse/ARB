@@ -75,7 +75,7 @@
 /* 36) Names of most postscript variables have been coded in order to	*/
 /*     reduce the size of the output.					*/
 /* 37) Ansi C compilers are now automatically taken into account.	*/
-/* 38) Enhanced routine for cutting long filenames			*/ 
+/* 38) Enhanced routine for cutting long filenames			*/
 /* 39) Added -q option to print files in quiet mode (no summary)	*/
 /* 40) Fixed some little bugs (counters, modification time for stdin,	*/
 /*     character separator when printing line numbers and cutting a	*/
@@ -95,7 +95,7 @@
  * Permission to modify the software is granted, but not the right to
  * distribute the modified code. Please report bugs and changes to
  * M.Santana@frgu.bull.fr
- * 
+ *
  * This software is provided "as is" without express or implied warranty.
  */
 
@@ -208,7 +208,7 @@
 #endif
 
 #endif
-    
+
 
 /*
  * Configuration values
@@ -243,7 +243,7 @@ typedef enum { BOLD, NORMAL } WEIGHT;		/* font weights */
  * Function declarations.
  */
 #ifdef __STDC__
-	/* Function prototypes */
+/* Function prototypes */
 void usage(int failure);
 void set_global_option(char *arg);
 void set_positional_option(char *arg);
@@ -272,7 +272,7 @@ int   gethostname(char *name, int namelen);
 #endif
 
 #else
-	/* Only forward declarations */
+/* Only forward declarations */
 int is_binaryfile();
 void print_standard_prologue();
 void startpage();
@@ -296,7 +296,7 @@ int folding = TRUE;		/* Line folding option */
 int restart = FALSE;		/* Don't restart page number after each file */
 int only_printable = FALSE;	/* Replace non printable char by space */
 int interpret = TRUE;		/* Interpret TAB, FF and BS chars option */
-int print_binaries = FALSE;	/* Force printing for binary files */ 
+int print_binaries = FALSE;	/* Force printing for binary files */
 int landscape = TRUE;		/* Otherwise portrait format sheets */
 int new_landscape = TRUE;	/* To scrute changes of landscape option */
 int twinpages = TRUE;		/* 2 pages per sheet if true, 1 otherwise */
@@ -311,7 +311,7 @@ WEIGHT fontweight = NORMAL;	/* Control font weight: BOLD or NORMAL */
 WEIGHT new_fontweight = NORMAL;	/* To scrute changes of bold option */
 #if defined(SYSV) || defined(BSD)
 int login_id = TRUE;		/* Print login ID at top of page */
-#endif	
+#endif
 #if LPR_PRINT
 int lpr_print = TRUE;		/* Fork a lpr process to do the printing */
 #ifdef RECTO_VERSO_PRINTING
@@ -378,7 +378,7 @@ double page_width = WIDTH;	/* Paper width */
  */
 void
 usage(failure)
-    int failure;		/* Must we exit with a failure code? */
+     int failure;		/* Must we exit with a failure code? */
 {
     fprintf(stderr,"A2ps v%s usage: %s [pos. or global options] [ f1 [ [pos. options] f2 ...] ]\n", VERSION, command);
     fprintf(stderr,"pos.   =  -#num\t\tnumber of copies to print\n");
@@ -387,9 +387,9 @@ usage(failure)
     fprintf(stderr,"          -d\t-nd\tprint (DON'T PRINT) current date at the bottom\n");
     fprintf(stderr,"          -Fnum\t\tfont size, num is a float number\n");
     fprintf(stderr,"          -Hstr\t\tuse str like header title for subsequent files\n");
-#if defined(SYSV) || defined(BSD)	
+#if defined(SYSV) || defined(BSD)
     fprintf(stderr,"          \t-nL\tdon't print login ID on top of page\n");
-#endif	
+#endif
     fprintf(stderr,"          -l\t\tprint in LANDSCAPE mode\n");
     fprintf(stderr,"          -lnum\t\tuse num lines per page\n");
     fprintf(stderr,"          -m\t\tprocess the file as a man\n");
@@ -411,7 +411,7 @@ usage(failure)
     fprintf(stderr,"          -Pprinter -nP\tSEND (don't send) directly to the printer");
 #ifdef LPR_OPT
     if (LPR_OPT != NULL && sizeof(LPR_OPT) > 0)
-	fprintf(stderr,"\n\t\t\t(with options '%s' and -Pprinter)", LPR_OPT);
+        fprintf(stderr,"\n\t\t\t(with options '%s' and -Pprinter)", LPR_OPT);
 #endif
     fprintf(stderr, "\n");
 #endif
@@ -435,149 +435,149 @@ usage(failure)
  */
 void
 set_global_option(arg)
-char *arg;
+     char *arg;
 {
     switch (arg[1]) {
-    case '?':				/* help */
-    case 'h':
-	usage(EXIT_SUCCESS);
-    case 'b':				/* print binary files */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	print_binaries = TRUE;
-	break;
-    case 'c':				/* allow two files per sheet */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	twinfiles = TRUE;
-	break;
-    case 'f':				/* fold lines too large */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	folding = TRUE;
-	break;
-    case 'I':				/* include this file as a2ps prologue */
-	if (arg[2] == NUL)
-	    usage(EXIT_FAILURE);
-	    prologue = arg+2;
-	break;
-    case 'i':				/* interpret control chars */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	interpret = TRUE;
-	break;
-    case 'n':
-	if (arg[2] == NUL)
-	    return;
-	if (arg[3] != NUL)
-	    usage(EXIT_FAILURE);
-	switch (arg[2]) {
-	case 'b':			/* don't print binaries */
-	    print_binaries = FALSE;
-	    break;
-	case 'c':			/* don't allow 2 files/sheet */
-	    twinfiles = FALSE;
-	    break;
-	case 'f':			/* cut lines too long */
-	    folding = FALSE;
-	    break;
-	case 'H':			/* don't print header */
-	    no_header = TRUE;
-	    break;
-	case 'i':			/* don't interpret ctrl chars */
-	    interpret = FALSE;
-	    break;
+        case '?':				/* help */
+        case 'h':
+            usage(EXIT_SUCCESS);
+        case 'b':				/* print binary files */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            print_binaries = TRUE;
+            break;
+        case 'c':				/* allow two files per sheet */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            twinfiles = TRUE;
+            break;
+        case 'f':				/* fold lines too large */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            folding = TRUE;
+            break;
+        case 'I':				/* include this file as a2ps prologue */
+            if (arg[2] == NUL)
+                usage(EXIT_FAILURE);
+            prologue = arg+2;
+            break;
+        case 'i':				/* interpret control chars */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            interpret = TRUE;
+            break;
+        case 'n':
+            if (arg[2] == NUL)
+                return;
+            if (arg[3] != NUL)
+                usage(EXIT_FAILURE);
+            switch (arg[2]) {
+                case 'b':			/* don't print binaries */
+                    print_binaries = FALSE;
+                    break;
+                case 'c':			/* don't allow 2 files/sheet */
+                    twinfiles = FALSE;
+                    break;
+                case 'f':			/* cut lines too long */
+                    folding = FALSE;
+                    break;
+                case 'H':			/* don't print header */
+                    no_header = TRUE;
+                    break;
+                case 'i':			/* don't interpret ctrl chars */
+                    interpret = FALSE;
+                    break;
 #if LPR_PRINT
-	case 'P':			/* don't lpr */
-	    lpr_print = FALSE;
-	    break;
+                case 'P':			/* don't lpr */
+                    lpr_print = FALSE;
+                    break;
 #endif
-	case 'r':			/* don't restart sheet number */
-	    restart = FALSE;
-	    break;
-	case 'v':			/* only printable chars */
-	    only_printable = TRUE;
-	    break;
-	case '8':			/* don't print 8-bit chars */
-	    ISOlatin1 = FALSE;
-	    break;
-	case 'B':
-	case 'd':
-	case 'L':
-	case 'm':
-	case 'n':
-	case 's':
-	case 'u':
-	    if (arg[3] != NUL)
-		usage(EXIT_FAILURE);
-	    return;
-	default:
-	    usage(EXIT_FAILURE);
-	}
-	break;
+                case 'r':			/* don't restart sheet number */
+                    restart = FALSE;
+                    break;
+                case 'v':			/* only printable chars */
+                    only_printable = TRUE;
+                    break;
+                case '8':			/* don't print 8-bit chars */
+                    ISOlatin1 = FALSE;
+                    break;
+                case 'B':
+                case 'd':
+                case 'L':
+                case 'm':
+                case 'n':
+                case 's':
+                case 'u':
+                    if (arg[3] != NUL)
+                        usage(EXIT_FAILURE);
+                    return;
+                default:
+                    usage(EXIT_FAILURE);
+            }
+            break;
 #if LPR_PRINT
-    case 'P':					/* fork a process to print */ 
-	if (arg[2] != NUL) {
-	    lpr_opt = (char *)malloc(strlen(arg)+1);
-	    strcpy(lpr_opt, arg);
-	}
-	lpr_print = TRUE;
-	break;
+        case 'P':					/* fork a process to print */
+            if (arg[2] != NUL) {
+                lpr_opt = (char *)malloc(strlen(arg)+1);
+                strcpy(lpr_opt, arg);
+            }
+            lpr_print = TRUE;
+            break;
 #endif
-    case 'q':					/* don't print a summary */
-	no_summary = TRUE;
-	break;
-    case 'r':					/* restart sheet number */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	restart = TRUE;
-	break;
-    case 's':
-	if (arg[2] == NUL)
-	    return;
+        case 'q':					/* don't print a summary */
+            no_summary = TRUE;
+            break;
+        case 'r':					/* restart sheet number */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            restart = TRUE;
+            break;
+        case 's':
+            if (arg[2] == NUL)
+                return;
 #ifdef RECTO_VERSO_PRINTING
-	if (arg[3] == NUL) {
-	    if (arg[2] == '1') {		/* one-sided printing */
-		rectoverso = FALSE;
-		break;
-	    }
-	    if (arg[2] == '2') {		/* two-sided printing */
-		rectoverso = TRUE;
-		break;
-	    }
-	}
+            if (arg[3] == NUL) {
+                if (arg[2] == '1') {		/* one-sided printing */
+                    rectoverso = FALSE;
+                    break;
+                }
+                if (arg[2] == '2') {		/* two-sided printing */
+                    rectoverso = TRUE;
+                    break;
+                }
+            }
 #endif
-	usage(EXIT_FAILURE);
-	break;
-    case 't':				/* set tab size */
-	if (arg[2] == NUL || (column_width = atoi(arg+2)) <= 0)
-	    usage(EXIT_FAILURE);
-	break;
-    case 'v':				/* print control chars */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	only_printable = FALSE;
-	break;
-    case '8':				/* print 8-bit chars */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	ISOlatin1 = TRUE;
-	break;
-    case '1':
-    case '2':
-    case 'B':
-    case 'd':
-    case 'm':
-    case 'p':
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-    case '#':
-    case 'F':
-    case 'H':
-    case 'l':
-	return;
-    default:
-	usage(EXIT_FAILURE);
+            usage(EXIT_FAILURE);
+            break;
+        case 't':				/* set tab size */
+            if (arg[2] == NUL || (column_width = atoi(arg+2)) <= 0)
+                usage(EXIT_FAILURE);
+            break;
+        case 'v':				/* print control chars */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            only_printable = FALSE;
+            break;
+        case '8':				/* print 8-bit chars */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            ISOlatin1 = TRUE;
+            break;
+        case '1':
+        case '2':
+        case 'B':
+        case 'd':
+        case 'm':
+        case 'p':
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+        case '#':
+        case 'F':
+        case 'H':
+        case 'l':
+            return;
+        default:
+            usage(EXIT_FAILURE);
     }
     arg[0] = NUL;
 }
@@ -590,121 +590,121 @@ char *arg;
  */
 void
 set_positional_option(arg)
-char *arg;
+     char *arg;
 {
     int copies;
     int lines;
     float size;
 
     switch (arg[1]) {
-    case NUL:				/* global option */
-	break;
-    case '#':				/* n copies */
-	if (sscanf(&arg[2], "%d", &copies) != 1 || copies <= 0)
-	    fprintf(stderr, "Bad number of copies: '%s'. Ignored\n", &arg[2]);
-	else
-	    copies_number = copies;
-	printf("/#copies %d def\n", copies_number);
-	break;
-    case '1':				/* 1 logical page per sheet */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	new_twinpages = FALSE;
-	break;
-    case '2':				/* twin pages */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	new_twinpages = TRUE;
-	break;
-    case 'B':
-	new_fontweight = BOLD;		/* use bold font */
-	break;
-    case 'd':				/* print current date/time */
-	printdate = TRUE;
-	break;
-    case 'F':				/* change font size */
-	if (arg[2] == NUL || sscanf(&arg[2], "%f", &size) != 1 || size == 0.0) {
-	    fprintf(stderr, "Wrong value for option -F: '%s'. Ignored\n",
-		    &arg[2]);
-	    break;
-	}
-	new_fontsize = size;
-	break;
-    case 'H':				/* header text */
-	header_text = arg+2;
-	break;
-    case 'l':
-	if (arg[2] == NUL) {		/* landscape format */
-	    new_landscape = TRUE;
-	    break;
-	}
-					/* set lines per page */
-	/* Useful with preformatted files. Scaling is automatically	*/
-	/* done when necessary.						*/
-	if (sscanf(&arg[2], "%d", &lines) != 1
-	    || lines < 0 || lines > MAX_LINES)
-	{
-	    fprintf(stderr, "Wrong value for option -l: '%s'. Ignored\n",
-		    &arg[2]);
-	    break;
-	}
-	new_linesrequest = lines;
-	break;
-    case 'm':				/* Process file as a man */
-	new_linesrequest = MAN_LINES;
-	numbering = FALSE;
-	break;
-    case 'n':				/* number file lines */
-	if (arg[2] == NUL) {
-	    numbering = TRUE;
-	    break;
-	}
-	switch (arg[2]) {
-	case 'B':			/* disable bold text */
-	    new_fontweight = NORMAL;
-	    break;
-	case 'd':			/* don't print date/time */
-	    printdate = FALSE;
-	    break;
-#if defined(SYSV) || defined(BSD)					
-	case 'L':			/* no login name in footer */
-	    login_id = FALSE;
-	    break;
-#endif					
-	case 'l':			/* portrait format */
-	    new_landscape = FALSE;
-	    break;
-	case 'm':			/* stop processing as a man */
-	    new_linesrequest = 0;
-	    break;
-	case 'n':			/* don't number lines */
-	    numbering = FALSE;
-	    break;
-	case 'p':			/* landscape format */
-	    new_landscape = TRUE;
-	    break;
-	case 's':			/* no surrounding border */
-	    no_border = TRUE;
-	    break;
-	case 'u':			/* no filename in footer */
-	    filename_footer = FALSE;
-	    break;
-	default:
-	    usage(EXIT_FAILURE);
-	}
-	break;
-    case 'p':				/* portrait format */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	new_landscape = FALSE;
-	break;
-    case 's':				/* surrounding border */
-	if (arg[2] != NUL)
-	    usage(EXIT_FAILURE);
-	no_border = FALSE;
-	break;
-    default:
-	usage(EXIT_FAILURE);
+        case NUL:				/* global option */
+            break;
+        case '#':				/* n copies */
+            if (sscanf(&arg[2], "%d", &copies) != 1 || copies <= 0)
+                fprintf(stderr, "Bad number of copies: '%s'. Ignored\n", &arg[2]);
+            else
+                copies_number = copies;
+            printf("/#copies %d def\n", copies_number);
+            break;
+        case '1':				/* 1 logical page per sheet */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            new_twinpages = FALSE;
+            break;
+        case '2':				/* twin pages */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            new_twinpages = TRUE;
+            break;
+        case 'B':
+            new_fontweight = BOLD;		/* use bold font */
+            break;
+        case 'd':				/* print current date/time */
+            printdate = TRUE;
+            break;
+        case 'F':				/* change font size */
+            if (arg[2] == NUL || sscanf(&arg[2], "%f", &size) != 1 || size == 0.0) {
+                fprintf(stderr, "Wrong value for option -F: '%s'. Ignored\n",
+                        &arg[2]);
+                break;
+            }
+            new_fontsize = size;
+            break;
+        case 'H':				/* header text */
+            header_text = arg+2;
+            break;
+        case 'l':
+            if (arg[2] == NUL) {		/* landscape format */
+                new_landscape = TRUE;
+                break;
+            }
+            /* set lines per page */
+            /* Useful with preformatted files. Scaling is automatically	*/
+            /* done when necessary.						*/
+            if (sscanf(&arg[2], "%d", &lines) != 1
+                || lines < 0 || lines > MAX_LINES)
+            {
+                fprintf(stderr, "Wrong value for option -l: '%s'. Ignored\n",
+                        &arg[2]);
+                break;
+            }
+            new_linesrequest = lines;
+            break;
+        case 'm':				/* Process file as a man */
+            new_linesrequest = MAN_LINES;
+            numbering = FALSE;
+            break;
+        case 'n':				/* number file lines */
+            if (arg[2] == NUL) {
+                numbering = TRUE;
+                break;
+            }
+            switch (arg[2]) {
+                case 'B':			/* disable bold text */
+                    new_fontweight = NORMAL;
+                    break;
+                case 'd':			/* don't print date/time */
+                    printdate = FALSE;
+                    break;
+#if defined(SYSV) || defined(BSD)
+                case 'L':			/* no login name in footer */
+                    login_id = FALSE;
+                    break;
+#endif
+                case 'l':			/* portrait format */
+                    new_landscape = FALSE;
+                    break;
+                case 'm':			/* stop processing as a man */
+                    new_linesrequest = 0;
+                    break;
+                case 'n':			/* don't number lines */
+                    numbering = FALSE;
+                    break;
+                case 'p':			/* landscape format */
+                    new_landscape = TRUE;
+                    break;
+                case 's':			/* no surrounding border */
+                    no_border = TRUE;
+                    break;
+                case 'u':			/* no filename in footer */
+                    filename_footer = FALSE;
+                    break;
+                default:
+                    usage(EXIT_FAILURE);
+            }
+            break;
+        case 'p':				/* portrait format */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            new_landscape = FALSE;
+            break;
+        case 's':				/* surrounding border */
+            if (arg[2] != NUL)
+                usage(EXIT_FAILURE);
+            no_border = FALSE;
+            break;
+        default:
+            usage(EXIT_FAILURE);
     }
 }
 
@@ -721,7 +721,7 @@ char *arg;
  */
 int
 mygetc(statusp)
-int *statusp;
+     int *statusp;
 {
 #define BUFFER_SIZE	512
     static int curr = 0;
@@ -733,28 +733,28 @@ int *statusp;
 
     /* Read a new line, if necessary */
     if (curr >= size) {
-	if (fgets((char *)buffer, BUFFER_SIZE+1, stdin) == NULL)
-	    return  EOF;
-	size = strlen((char *)buffer);
-	if (size < BUFFER_SIZE && buffer[size-1] != '\n') {
-	    buffer[size] = '\n';
-	    buffer[++size] = '\0';
-	}
-	curr = 0;
+        if (fgets((char *)buffer, BUFFER_SIZE+1, stdin) == NULL)
+            return  EOF;
+        size = strlen((char *)buffer);
+        if (size < BUFFER_SIZE && buffer[size-1] != '\n') {
+            buffer[size] = '\n';
+            buffer[++size] = '\0';
+        }
+        curr = 0;
     }
     if (buffer[curr+1] != '\b')		/* this is not a special sequence */
-	return  buffer[curr++];
+        return  buffer[curr++];
 
     /* Check if it is a bold sequence */
     c = buffer[curr++];
     if (c		== buffer[curr+1] &&
-	buffer[curr]	== buffer[curr+2] &&
-	c		== buffer[curr+3] &&
-	buffer[curr]	== buffer[curr+4] &&
-	c		== buffer[curr+5])
+        buffer[curr]	== buffer[curr+2] &&
+        c		== buffer[curr+3] &&
+        buffer[curr]	== buffer[curr+4] &&
+        c		== buffer[curr+5])
     {
-	*statusp = IS_BOLD;
-	curr += 6;
+        *statusp = IS_BOLD;
+        curr += 6;
     }
 
     /* Return the first character of the sequence */
@@ -766,14 +766,14 @@ int *statusp;
  */
 int
 is_binaryfile(name)
-char *name;
+     char *name;
 {
     if (chars > 120 || pages > 1) {
-	first_page = FALSE;
-	if (chars && !print_binaries && (nonprinting_chars*100 / chars) >= 60) {
-	    fprintf(stderr, "%s is a binary file: printing aborted\n", name);
-	    return TRUE;
-	}
+        first_page = FALSE;
+        if (chars && !print_binaries && (nonprinting_chars*100 / chars) >= 60) {
+            fprintf(stderr, "%s is a binary file: printing aborted\n", name);
+            return TRUE;
+        }
     }
     return FALSE;
 }
@@ -783,32 +783,32 @@ char *name;
  */
 void
 cut_filename(old_name, new_name)
-char *old_name, *new_name;
+     char *old_name, *new_name;
 {
     register char *p;
     register int i;
     char *separator;
 
     if ((i = strlen(old_name)) <= MAXFILENAME) {
-	strcpy(new_name, old_name);
-	return;
+        strcpy(new_name, old_name);
+        return;
     }
     p = old_name + (i-1);
     separator = NULL;
     i = 1;
     while (p >= old_name && i < MAXFILENAME) {
-	if (*p == DIR_SEP)
-	    separator = p;
-	p--;
-	i++;
+        if (*p == DIR_SEP)
+            separator = p;
+        p--;
+        i++;
     }
     if (separator != NULL)
-	p = separator;
+        p = separator;
     else if (p >= old_name)
-	while (p >= old_name && *p != DIR_SEP) p--;
+        while (p >= old_name && *p != DIR_SEP) p--;
 
     for (i = 0, p++; *p != NUL; i++)
-	*new_name++ = *p++;
+        *new_name++ = *p++;
     *new_name = NUL;
 }
 
@@ -816,40 +816,40 @@ char *old_name, *new_name;
  * Print a char in a form accepted by postscript printers.
  */
 int printchar(unsigned char c){
-    
+
     if (c >= ' ' && c < 0177) {
-	if (c == '(' || c == ')' || c == '\\')
-	    putchar('\\');
-	putchar(c);
-	return 0;
+        if (c == '(' || c == ')' || c == '\\')
+            putchar('\\');
+        putchar(c);
+        return 0;
     }
 
     if (ISOlatin1 && (c > 0177)) {
-	printf("\\%o", c);
-	return 0;
+        printf("\\%o", c);
+        return 0;
     }
 
     if (only_printable) {
-	putchar(' ');
-	return 1;
+        putchar(' ');
+        return 1;
     }
-    
+
     if (c > 0177) {
-	printf("M-");
-	c &= 0177;
+        printf("M-");
+        c &= 0177;
     }
     if (c < ' ') {
-	putchar('^');
-	if ((c = c + '@') == '(' || c == ')' || c == '\\')
-	    putchar('\\');
-	putchar(c);
+        putchar('^');
+        if ((c = c + '@') == '(' || c == ')' || c == '\\')
+            putchar('\\');
+        putchar(c);
     }
     else if (c == 0177)
-	printf("^?");
+        printf("^?");
     else {
-	if (c == '(' || c == ')' || c == '\\')
-	    putchar('\\');
-	putchar(c);
+        if (c == '(' || c == ')' || c == '\\')
+            putchar('\\');
+        putchar(c);
     }
 
     return 1;
@@ -862,10 +862,10 @@ void
 skip_page()
 {
     if (twinpages == FALSE || sheetside == 0) {
-	printf("%%%%Page: %d %d\n", sheets+1, sheets+1);
-	printf("/pagesave save def\n");
-	/* Reinitialize state variables for each new sheet */
-	print_page_prologue(0);
+        printf("%%%%Page: %d %d\n", sheets+1, sheets+1);
+        printf("/pagesave save def\n");
+        /* Reinitialize state variables for each new sheet */
+        print_page_prologue(0);
     }
     startpage();
 }
@@ -875,22 +875,22 @@ skip_page()
  */
 int
 fold_line(name)
-char *name;
+     char *name;
 {
     column = 0;
     printf(") s\n");
     if (++line >= linesperpage) {
-	endpage();
-	skip_page();
-	if (first_page && is_binaryfile(name))
-	    return FALSE;
-	line = 0;
+        endpage();
+        skip_page();
+        if (first_page && is_binaryfile(name))
+            return FALSE;
+        line = 0;
     }
     if (numbering)
-	printf("(    +");
+        printf("(    +");
     else
-	printf("( ");
-    
+        printf("( ");
+
     return TRUE;
 }
 
@@ -922,15 +922,15 @@ printpage()
     sheets++;
     printf("/sd 0 def\n");
     if (no_border == FALSE)
-	printf("%d sn\n", sheets - (restart ? old_sheets : 0));
+        printf("%d sn\n", sheets - (restart ? old_sheets : 0));
     if (printdate)
-	printf("cd\n");
+        printf("cd\n");
     if (filename_footer && landscape)
-	printf("fnf\n");
-#if defined(SYSV) || defined(BSD)	
+        printf("fnf\n");
+#if defined(SYSV) || defined(BSD)
     if (login_id)
-	printf("lg lgp\n");
-#endif	
+        printf("lg lgp\n");
+#endif
     printf("pagesave restore\n");
     printf("showpage\n");
 }
@@ -944,27 +944,27 @@ startpage()
 {
     if (sheetside == 0) {
 #ifdef RECTO_VERSO_PRINTING
-	if (rectoverso && (sheets & 0x1)) {
-	    /* Shift to left backside pages.  */
-	    printf("rm neg 0 translate\n");
-	}
+        if (rectoverso && (sheets & 0x1)) {
+            /* Shift to left backside pages.  */
+            printf("rm neg 0 translate\n");
+        }
 #endif
-	if (landscape) {
-	    printf("sw 0 translate\n");
-	    printf("90 rotate\n");
-	}
+        if (landscape) {
+            printf("sw 0 translate\n");
+            printf("90 rotate\n");
+        }
     }
     pages++;
     if (no_header == FALSE)
-	printf("%d hp\n", pages - old_pages);
+        printf("%d hp\n", pages - old_pages);
     if (no_border == FALSE) {
-	printf("border\n");
-	if (no_header == FALSE)
-	    printf("hborder\n");
+        printf("border\n");
+        if (no_header == FALSE)
+            printf("hborder\n");
     }
     printf("/x0 x %d get bm add def\n", sheetside);
     printf("/y0 y %d get bm bfs add %s add sub def\n",
-	   sheetside, no_header ? "0" : "hs");
+           sheetside, no_header ? "0" : "hs");
     printf("x0 y0 moveto\n");
     printf("bf setfont\n");
 }
@@ -976,13 +976,13 @@ void
 cleanup()
 {
     if (twinpages && sheetside == 1)
-	printpage();
+        printpage();
 #ifdef RECTO_VERSO_PRINTING
     if (!twinfiles && rectoverso && (sheets & 0x1) != 0) {
-	sheetside = 0;
-	sheets++;
-	printf("%%%%Page: %d %d\n", sheets, sheets);
-	printf("showpage\n");
+        sheetside = 0;
+        sheets++;
+        printf("%%%%Page: %d %d\n", sheets, sheets);
+        printf("showpage\n");
     }
 #endif
 }
@@ -990,16 +990,16 @@ cleanup()
 /*
  * Adds a sheet number to the page (footnote) and prints the formatted
  * page (physical impression). Activated at the end of each source page.
-*/
+ */
 void
 endpage()
 {
     if (twinpages && sheetside == 0) {
-	sheetside = 1;
-	printf("/sd 1 def\n");
+        sheetside = 1;
+        printf("/sd 1 def\n");
     }
     else
-	printpage();
+        printpage();
 }
 
 
@@ -1012,7 +1012,7 @@ endpage()
  */
 void
 init_file_printing(name, title)
-char *name, *title;
+     char *name, *title;
 {
     int new_format, new_font;
     char *string;
@@ -1022,88 +1022,88 @@ char *name, *title;
 
     /* Print last page of previous file, if necessary */
     if (pages > 0 && !twinfiles)
-	cleanup();
+        cleanup();
 
     /* Initialize variables related to the format */
     new_format = FALSE;
     if (new_landscape != landscape || new_twinpages != twinpages) {
-	landscape = new_landscape;
-	twinpages = new_twinpages;
-	new_format = TRUE;
+        landscape = new_landscape;
+        twinpages = new_twinpages;
+        new_format = TRUE;
     }
 
     /* Initialize variables related to the header */
     if (no_header && name == title)
-	header_size = 0.0;
+        header_size = 0.0;
     else {
-	if (landscape || twinpages)
-	    header_size = LANDSCAPE_HEADER * PIXELS_INCH;
-	else
-	    header_size = PORTRAIT_HEADER * PIXELS_INCH;
-	cut_filename(title, current_filename);
+        if (landscape || twinpages)
+            header_size = LANDSCAPE_HEADER * PIXELS_INCH;
+        else
+            header_size = PORTRAIT_HEADER * PIXELS_INCH;
+        cut_filename(title, current_filename);
     }
 
     /* Initialize variables related to the font size */
     new_font = FALSE;
     if (fontsize != new_fontsize || new_format ||
-	lines_requested != new_linesrequest || fontweight != new_fontweight)
+        lines_requested != new_linesrequest || fontweight != new_fontweight)
     {
-	if (new_fontsize == 0.0 || (fontsize == new_fontsize && new_format))
-	    new_fontsize = landscape ? 6.8 : twinpages ? 6.4 : 9.0;
-	if (lines_requested != new_linesrequest) {
-	    if ((lines_requested = new_linesrequest) != 0) {
-		/* Scale fontsize */
-		if (landscape)
-		    lines = (int)((page_width-header_size) / new_fontsize) - 1;
-		else if (twinpages)
-		    lines = (int)(((page_height - 2*header_size) / 2) / new_fontsize) - 2;
-		else
-		    lines = (int)((page_height-header_size) / new_fontsize) - 1;
-		new_fontsize *= (float)lines / (float)lines_requested;
-	    }
-	}
-	fontsize = new_fontsize;
-	fontweight = new_fontweight;
-	new_font = TRUE;
+        if (new_fontsize == 0.0 || (fontsize == new_fontsize && new_format))
+            new_fontsize = landscape ? 6.8 : twinpages ? 6.4 : 9.0;
+        if (lines_requested != new_linesrequest) {
+            if ((lines_requested = new_linesrequest) != 0) {
+                /* Scale fontsize */
+                if (landscape)
+                    lines = (int)((page_width-header_size) / new_fontsize) - 1;
+                else if (twinpages)
+                    lines = (int)(((page_height - 2*header_size) / 2) / new_fontsize) - 2;
+                else
+                    lines = (int)((page_height-header_size) / new_fontsize) - 1;
+                new_fontsize *= (float)lines / (float)lines_requested;
+            }
+        }
+        fontsize = new_fontsize;
+        fontweight = new_fontweight;
+        new_font = TRUE;
     }
 
     /* Initialize file printing, if there is any change */
     if (new_format || new_font) {
-	char_width = 0.6 * fontsize;
-	if (landscape) {
-	    linesperpage = (int)((page_width - header_size) / fontsize) - 1;
-	    if (! twinpages)
-		columnsperline = (int)(page_height / char_width) - 1;
-	    else
-		columnsperline = (int)((page_height / 2) / char_width) - 1;
-	}
-	else {
-	    if (!twinpages)
-		linesperpage = (int)((page_height - header_size) / fontsize) - 1;
-	    else
-		linesperpage = (int)(((page_height - 2*header_size) / 2) / fontsize)
-		    - 2;
-	    columnsperline = (int)(page_width / char_width) - 1;
-	}
-	if (lines_requested > 0)
-	    linesperpage = lines_requested;
-	if (linesperpage <= 0 || columnsperline <= 0) {
-	    fprintf(stderr, "Font %g too big !!\n", fontsize);
-	    exit(EXIT_FAILURE);
-	}
+        char_width = 0.6 * fontsize;
+        if (landscape) {
+            linesperpage = (int)((page_width - header_size) / fontsize) - 1;
+            if (! twinpages)
+                columnsperline = (int)(page_height / char_width) - 1;
+            else
+                columnsperline = (int)((page_height / 2) / char_width) - 1;
+        }
+        else {
+            if (!twinpages)
+                linesperpage = (int)((page_height - header_size) / fontsize) - 1;
+            else
+                linesperpage = (int)(((page_height - 2*header_size) / 2) / fontsize)
+                    - 2;
+            columnsperline = (int)(page_width / char_width) - 1;
+        }
+        if (lines_requested > 0)
+            linesperpage = lines_requested;
+        if (linesperpage <= 0 || columnsperline <= 0) {
+            fprintf(stderr, "Font %g too big !!\n", fontsize);
+            exit(EXIT_FAILURE);
+        }
     }
 
     /* Retrieve file modification date and hour */
     if (fstat(fileno(stdin), &statbuf) == -1) {
-	fprintf(stderr, "Error getting file modification time\n");
-	exit(EXIT_FAILURE);
+        fprintf(stderr, "Error getting file modification time\n");
+        exit(EXIT_FAILURE);
     }
     /* Do we have a pipe? */
     if (S_ISFIFO(statbuf.st_mode))
-	strcpy(filedate, currentdate);
+        strcpy(filedate, currentdate);
     else {
-	string = ctime(&statbuf.st_mtime);
-	sprintf(filedate, "%.6s %.4s %.5s", string+4, string+20, string+11);
+        string = ctime(&statbuf.st_mtime);
+        sprintf(filedate, "%.6s %.4s %.5s", string+4, string+20, string+11);
     }
 }
 
@@ -1113,7 +1113,7 @@ char *name, *title;
  */
 void
 print_page_prologue(side)
-int side;			/* Logical page to print (left/right) */
+     int side;			/* Logical page to print (left/right) */
 {
     /* General format */
     printf("/twp %s def\n", twinpages ? "true" : "false");
@@ -1125,16 +1125,16 @@ int side;			/* Logical page to print (left/right) */
     printf("/hm fnfs 0.25 mul def\n");
     /* Header size */
     if (header_size == 0.0)
-	printf("/hs 0.0 def\n");
+        printf("/hs 0.0 def\n");
     else
-	printf("/hs %g inch def\n",
-	       landscape || twinpages ? LANDSCAPE_HEADER : PORTRAIT_HEADER);
+        printf("/hs %g inch def\n",
+               landscape || twinpages ? LANDSCAPE_HEADER : PORTRAIT_HEADER);
     /* Font sizes */
     printf("/bfs %g def\n", fontsize);
     printf("/bdf /Courier-Bold bfs getfont def\n");
     printf("/bm bfs 0.7 mul def\n");
     printf("/bf %s bfs getfont def\n",
-	   fontweight == NORMAL ? "/CourierBack" : "/Courier-Bold");
+           fontweight == NORMAL ? "/CourierBack" : "/Courier-Bold");
     /* Page attributes */
     printf("/l %d def\n", linesperpage);
     printf("/c %d def\n", columnsperline);
@@ -1152,38 +1152,38 @@ int side;			/* Logical page to print (left/right) */
     printf("/tm margin twp {3} {2} ifelse div def\n");
     printf("/sd %d def\n", side);
     if (landscape) {
-	printf("/y [ rm ph add bm add\n");
-	printf("          dup ] def\n");
-	printf("/sny dfs dfs add def\n");
-	printf("/snx sh tm dfs add sub def\n");
-	printf("/dy sny def\n");
-	printf("/dx tm dfs add def\n");
-	if (twinpages) {
-	    printf("/x [ tm			%% left page\n");
-	    printf("          dup 2 mul pw add	%% right page\n");
-	    printf("        ] def\n");
-	}
-	else {
-	    printf("/x [ tm dup ] def\n");
-	}
-	printf("/scx sh 2 div def\n");
+        printf("/y [ rm ph add bm add\n");
+        printf("          dup ] def\n");
+        printf("/sny dfs dfs add def\n");
+        printf("/snx sh tm dfs add sub def\n");
+        printf("/dy sny def\n");
+        printf("/dx tm dfs add def\n");
+        if (twinpages) {
+            printf("/x [ tm			%% left page\n");
+            printf("          dup 2 mul pw add	%% right page\n");
+            printf("        ] def\n");
+        }
+        else {
+            printf("/x [ tm dup ] def\n");
+        }
+        printf("/scx sh 2 div def\n");
     }
     else {
-	printf("/x [ lm dup ] def\n");
-	printf("/sny tm dfs 2 mul sub def\n");
-	printf("/snx sw rm sub dfs sub def\n");
-	printf("/dy sny def\n");
-	printf("/dx lm def\n");
-	if (twinpages) {
-	    printf("/y [ tm ph add 2 mul %% up\n");
-	    printf("          tm ph add	 %% down\n");
-	    printf("        ] def\n");
-	}
-	else {
-	    printf("\n%% Only one logical page\n");
-	    printf("/y [ sh tm sub dup ] def\n");
-	}
-	printf("/scx sw 2 div def\n");
+        printf("/x [ lm dup ] def\n");
+        printf("/sny tm dfs 2 mul sub def\n");
+        printf("/snx sw rm sub dfs sub def\n");
+        printf("/dy sny def\n");
+        printf("/dx lm def\n");
+        if (twinpages) {
+            printf("/y [ tm ph add 2 mul %% up\n");
+            printf("          tm ph add	 %% down\n");
+            printf("        ] def\n");
+        }
+        else {
+            printf("\n%% Only one logical page\n");
+            printf("/y [ sh tm sub dup ] def\n");
+        }
+        printf("/scx sw 2 div def\n");
     }
     printf("/fny dy def\n");
     printf("/fnx scx def\n");
@@ -1198,7 +1198,7 @@ int side;			/* Logical page to print (left/right) */
  */
 void
 print_file(name, header)
-char *name, *header;
+     char *name, *header;
 {
     register int c;
     int nchars;
@@ -1212,14 +1212,14 @@ char *name, *header;
     /* If we are in compact mode and the file beginning is to be printed */
     /* in the middle of a twinpage, we have to print a new page prologue */
     if (twinfiles && sheetside == 1)
-	print_page_prologue(1);
+        print_page_prologue(1);
 
     /*
      * Boolean to indicates that previous char is \n (or interpreted \f)
      * and a new page would be started, if more text follows
      */
     start_page = FALSE;
-    
+
     /*
      * Printing binary files is not very useful. We stop printing
      * if we detect one of these files. Our heuristic to detect them:
@@ -1228,7 +1228,7 @@ char *name, *header;
      * Option -b force binary files impression.
      */
     nonprinting_chars = chars = 0;
-    
+
     /* Initialize printing variables */
     column = 0;
     line = line_number = 0;
@@ -1243,142 +1243,146 @@ char *name, *header;
     status = IS_ROMAN;
     c = mygetc(&new_status);
     while (c != EOF) {
-	/*
-	 * Preprocessing (before printing):
-	 * - TABs expansion (see interpret option)
-	 * - FF and BS interpretation
-	 * - replace non printable characters by a space or a char sequence
-	 *   like:
-	 *     ^X for ascii codes < 0x20 (X = [@, A, B, ...])
-	 *     ^? for del char
-	 *     M-c for ascii codes > 0x3f
-	 * - prefix parents and backslash ['(', ')', '\'] by backslash
-	 *   (escape character in postcript)
-	 */
-	/* Form feed */
-	if (c == '\f' && interpret) {
-	    /* Close current line */
-	    if (!start_line) {
-		printf(") s\n");
-		start_line = TRUE;
-	    }
-	    /* start a new page ? */
-	    if (start_page)
-		skip_page();
-	    /* Close current page and begin another */
-	    endpage();
-	    start_page = TRUE;
-	    /* Verification for binary files */
-	    if (first_page && is_binaryfile(name))
-		return;
-	    line = 0;
-	    column = 0;
-	    if ((c = mygetc(&new_status)) == EOF)
-		break;
-	}
-	
-	/* Start a new line ? */
-	if (start_line)	{
-	    if (start_page) {
-		/* only if there is something to print! */
-		skip_page();
-		start_page = FALSE ;
-	    }
-	    if (numbering)
-		printf("(%4d|", ++line_number);
-	    else
-		printf("( ");
-	    start_line = FALSE;
-	}
-	
-	/* Is a new font ? This feature is used only to detect bold	*/
-	/* sequences produced by nroff (man pages), in connexion with	*/
-	/* mygetc.							*/
-	if (status != new_status) {
-	    printf(")\n");
-	    printf("%s", status == IS_ROMAN ? "b" : "st");
-	    printf(" (");
-	    status = new_status;
-	}
+        /*
+         * Preprocessing (before printing):
+         * - TABs expansion (see interpret option)
+         * - FF and BS interpretation
+         * - replace non printable characters by a space or a char sequence
+         *   like:
+         *     ^X for ascii codes < 0x20 (X = [@, A, B, ...])
+         *     ^? for del char
+         *     M-c for ascii codes > 0x3f
+         * - prefix parents and backslash ['(', ')', '\'] by backslash
+         *   (escape character in postcript)
+         */
+        /* Form feed */
+        if (c == '\f' && interpret) {
+            /* Close current line */
+            if (!start_line) {
+                printf(") s\n");
+                start_line = TRUE;
+            }
+            /* start a new page ? */
+            if (start_page)
+                skip_page();
+            /* Close current page and begin another */
+            endpage();
+            start_page = TRUE;
+            /* Verification for binary files */
+            if (first_page && is_binaryfile(name))
+                return;
+            line = 0;
+            column = 0;
+            if ((c = mygetc(&new_status)) == EOF)
+                break;
+        }
 
-	/* Interpret each character */
-	switch (c) {
-	case '\b':
-	    if (!interpret)
-		goto print;
-	    /* A backspace is converted to 2 chars ('\b'). These chars	*/
-	    /* with the Courier backspace font produce correct under-	*/
-	    /* lined strings.	*/
-	    if (column)
-		column--;
-	    putchar('\\');
-	    putchar('b');
-	    break;
-	case '\n':
-	    column = 0;
-	    start_line = TRUE;
-	    printf(") s\n");
-	    if (++line >= linesperpage) {
-		endpage();
-		start_page = TRUE ;
-		if (first_page && is_binaryfile(name))
-		    return;
-		line = 0;
-	    }
-	    break;
-	case '\t':
-	    if (interpret) {
-		continue_exit = FALSE;
-		do {
-		    if (++column + prefix_width > columnsperline) {
-			if (folding) {
-			    if (fold_line(name) == FALSE)
-				return;
-			}
-			else {
-			    c = cut_line();
-			    continue_exit = TRUE;
-			    break;
-			}
-		    }
-		    putchar(' ');
-		} while (column % column_width);
-		if (continue_exit)
-		    continue;
-		break;
-	    }
-	default:
-	print:
-	    if (only_printable)
-		nchars = 1;
-	    else if (! ISOlatin1) {
-		nchars = c > 0177 ? 2 : 0;
-		nchars += (c&0177) < ' ' || (c&0177) == 0177 ? 2 : 1;
-	    }
-	    else
-		nchars = c < ' ' || (c >= 0177 && c < 144) ? 2 : 1;
-	    if (prefix_width + (column += nchars) > columnsperline) {
-		if (folding) {
-		    if (fold_line(name) == FALSE)
-			return;
-		}
-		else {
-		    c = cut_line();
-		    new_status = IS_ROMAN;
-		    continue;
-		}
-	    }
-	    nonprinting_chars += printchar(c);
-	    chars++;
-	    break;
-	}
-	c = mygetc(&new_status);
+        /* Start a new line ? */
+        if (start_line)	{
+            if (start_page) {
+                /* only if there is something to print! */
+                skip_page();
+                start_page = FALSE ;
+            }
+            if (numbering)
+                printf("(%4d|", ++line_number);
+            else
+                printf("( ");
+            start_line = FALSE;
+        }
+
+        /* Is a new font ? This feature is used only to detect bold	*/
+        /* sequences produced by nroff (man pages), in connexion with	*/
+        /* mygetc.							*/
+        if (status != new_status) {
+            printf(")\n");
+            printf("%s", status == IS_ROMAN ? "b" : "st");
+            printf(" (");
+            status = new_status;
+        }
+
+        /* Interpret each character */
+        switch (c) {
+            case '\b':
+                if (!interpret)
+                    goto print;
+                /* A backspace is converted to 2 chars ('\b'). These chars	*/
+                /* with the Courier backspace font produce correct under-	*/
+                /* lined strings.	*/
+                if (column)
+                    column--;
+                putchar('\\');
+                putchar('b');
+                break;
+            case '\n':
+                column = 0;
+                start_line = TRUE;
+                printf(") s\n");
+                if (++line >= linesperpage) {
+                    endpage();
+                    start_page = TRUE ;
+                    if (first_page && is_binaryfile(name))
+                        return;
+                    line = 0;
+                }
+                break;
+            case '\t':
+                if (interpret) {
+                    continue_exit = FALSE;
+                    do {
+                        if (++column + prefix_width > columnsperline) {
+                            if (folding) {
+                                if (fold_line(name) == FALSE)
+                                    return;
+                            }
+                            else {
+                                c = cut_line();
+                                continue_exit = TRUE;
+                                break;
+                            }
+                        }
+                        putchar(' ');
+                    } while (column % column_width);
+                    if (continue_exit)
+                        continue;
+                    break;
+                }
+            default:
+        print:
+                if (only_printable) {
+                    nchars = 1;
+                }
+                else if (! ISOlatin1) {
+                    nchars = c > 0177 ? 2 : 0;
+                    nchars += (c&0177) < ' ' || (c&0177) == 0177 ? 2 : 1;
+                }
+                else {
+                    nchars = c < ' ' || (c >= 0177 && c < 144) ? 2 : 1;
+                }
+
+                if (prefix_width + (column += nchars) > columnsperline) {
+                    if (folding) {
+                        if (fold_line(name) == FALSE) {
+                            return;
+                        }
+                    }
+                    else {
+                        c = cut_line();
+                        new_status = IS_ROMAN;
+                        continue;
+                    }
+                }
+                nonprinting_chars += printchar(c);
+                chars++;
+                break;
+        }
+        c = mygetc(&new_status);
     }
-    
+
     if (!start_line)
-	printf(") s\n");
+        printf(") s\n");
     if (!start_page)
-	endpage();
+        endpage();
 }
 
 
@@ -1408,8 +1412,8 @@ print_prologue()
     time_t date;
 
     if (time(&date) == -1) {
-	fprintf(stderr, "Error calculating time\n");
-	exit(EXIT_FAILURE);
+        fprintf(stderr, "Error calculating time\n");
+        exit(EXIT_FAILURE);
     }
     datestring = ctime(&date);
 #else
@@ -1439,32 +1443,32 @@ print_prologue()
     host = (char *)malloc(MAX_HOSTNAME);
     if (host != NULL) {
 #if defined(SYSV)
-	if ((rt = uname(&snames)) == -1 || snames.nodename[0] == NULL) {
-	    free(host);
-	    host = NULL;
-	}
-	else
-	    strcpy(host, snames.nodename);
+        if ((rt = uname(&snames)) == -1 || snames.nodename[0] == NULL) {
+            free(host);
+            host = NULL;
+        }
+        else
+            strcpy(host, snames.nodename);
 #else
-	if ((rt = gethostname(host, MAX_HOSTNAME)) == -1 || host[0] == NULL) {
-	    free(host);
-	    host = NULL;
-	}
+        if ((rt = gethostname(host, MAX_HOSTNAME)) == -1 || host[0] == NULL) {
+            free(host);
+            host = NULL;
+        }
 #endif
     }
 #endif
-    
+
     /* Print a general prologue */
     if (prologue == NULL)
-	print_standard_prologue(datestring);
+        print_standard_prologue(datestring);
     else if ((f = fopen(prologue, "r")) != NULL) {
-	/* Header file printing */
-	while ((c = getc(f)) != EOF)
-	    putchar(c);
+        /* Header file printing */
+        while ((c = getc(f)) != EOF)
+            putchar(c);
     }
     else {
-	fprintf(stderr, "Postscript header missing: %s\n", prologue);
-	exit(EXIT_FAILURE);
+        fprintf(stderr, "Postscript header missing: %s\n", prologue);
+        exit(EXIT_FAILURE);
     }
 
     /* Completes the prologue with a2ps static variables */
@@ -1480,23 +1484,23 @@ print_prologue()
 
     /* And print them */
     sprintf(currentdate, "%.6s %.4s %.5s",
-	    datestring+4, datestring+20, datestring+11);
+            datestring+4, datestring+20, datestring+11);
     printf("/td (%s) def\n", currentdate);
 
 #if defined(SYSV) || defined(BSD)
     /* Add the user's login name string to the Postscript output */
     if (logname != NULL || host != NULL) {
-	if (logname != NULL && host != NULL)
-	    printf("/lg (Printed by %s from %s) def\n", logname, host);
-	else if (logname != NULL)
-	    printf("/lg (Printed by %s) def\n", logname);
-	else
-	    printf("/lg (Printed from %s) def\n", host);
+        if (logname != NULL && host != NULL)
+            printf("/lg (Printed by %s from %s) def\n", logname, host);
+        else if (logname != NULL)
+            printf("/lg (Printed by %s) def\n", logname);
+        else
+            printf("/lg (Printed from %s) def\n", host);
     }
 
     /* If the host string was allocated via malloc, release the memory */
     if (host != NULL)
-	free(host);
+        free(host);
 #endif
 
     /* Close prolog */
@@ -1511,7 +1515,7 @@ print_prologue()
  */
 void
 print_standard_prologue(datestring)
-char *datestring;
+     char *datestring;
 {
     printf("%%!PS-Adobe-3.0\n");
     printf("%%%%Creator: A2ps version %s\n", VERSION);
@@ -1527,18 +1531,18 @@ char *datestring;
     printf("/getfont {exch findfont exch scalefont} bind def\n");
 
     if (ISOlatin1) {
-	printf("\n%% Set up ISO Latin 1 character encoding\n");
-	printf("/reencodeISO {\n");
-	printf("	dup dup findfont dup length dict begin\n");
-	printf("	{ 1 index /FID ne { def }{ pop pop } ifelse\n");
-	printf("	} forall\n");
-	printf("	/Encoding ISOLatin1Encoding def\n");
-	printf("	currentdict end definefont\n");
-	printf("} def\n");
-	printf("/Helvetica-Bold reencodeISO def\n");
-	printf("/Helvetica reencodeISO def\n");
-	printf("/Courier reencodeISO def\n");
-	printf("/Courier-Bold reencodeISO def\n");
+        printf("\n%% Set up ISO Latin 1 character encoding\n");
+        printf("/reencodeISO {\n");
+        printf("	dup dup findfont dup length dict begin\n");
+        printf("	{ 1 index /FID ne { def }{ pop pop } ifelse\n");
+        printf("	} forall\n");
+        printf("	/Encoding ISOLatin1Encoding def\n");
+        printf("	currentdict end definefont\n");
+        printf("} def\n");
+        printf("/Helvetica-Bold reencodeISO def\n");
+        printf("/Helvetica reencodeISO def\n");
+        printf("/Courier reencodeISO def\n");
+        printf("/Courier-Bold reencodeISO def\n");
     }
 
     printf("\n%% Create Courier backspace font\n");
@@ -1740,54 +1744,54 @@ char *datestring;
  */
 int
 main(argc, argv)
-int argc;
-char *argv[];
+     int argc;
+     char *argv[];
 {
     register int narg;
     register char *arg;
     int total;
 #if LPR_PRINT
     int fd[2];
-    char *lpr_args[10];
+    const char *lpr_args[10];
 #endif
-    
+
     /* Process global options  */
     command = argv[0];
     arg = argv[narg = 1];
     while (narg < argc) {
-	if (arg[0] == '-')
-	    set_global_option(arg);
-	arg = argv[++narg];
+        if (arg[0] == '-')
+            set_global_option(arg);
+        arg = argv[++narg];
     }
 
 #if LPR_PRINT
     /* Start lpr process */
     if (lpr_print) {
-	pipe(fd);
-	if (fork() == 0) {
-	    dup2(fd[0], 0);
-	    close(fd[0]); close(fd[1]);
-	    narg = 0;
-	    lpr_args[narg++] = LPR_COMMAND;
+        pipe(fd);
+        if (fork() == 0) {
+            dup2(fd[0], 0);
+            close(fd[0]); close(fd[1]);
+            narg = 0;
+            lpr_args[narg++] = LPR_COMMAND;
 #ifdef LPR_OPT
-	    lpr_args[narg++] = LPR_OPT;
+            lpr_args[narg++] = LPR_OPT;
 #endif
-	    if (lpr_opt)
-		lpr_args[narg++] = lpr_opt;
+            if (lpr_opt)
+                lpr_args[narg++] = lpr_opt;
 #ifdef RECTO_VERSO_PRINTING
-	    if (rectoverso)
-		lpr_args[narg++] = TWOSIDED;
-	    else
-		lpr_args[narg++] = ONESIDED;
+            if (rectoverso)
+                lpr_args[narg++] = TWOSIDED;
+            else
+                lpr_args[narg++] = ONESIDED;
 #endif
-	    lpr_args[narg] = (char *)0;
-	    execvp(LPR_COMMAND, lpr_args);
-	    fprintf(stderr, "Error starting lpr process \n");
-	    exit(EXIT_FAILURE);
-	}
-	dup2(fd[1],1);
-	close(fd[0]);
-	close(fd[1]);
+            lpr_args[narg] = (char *)0;
+            execvp(LPR_COMMAND, (char**)lpr_args);
+            fprintf(stderr, "Error starting lpr process \n");
+            exit(EXIT_FAILURE);
+        }
+        dup2(fd[1],1);
+        close(fd[0]);
+        close(fd[1]);
     }
 #endif
 
@@ -1796,66 +1800,66 @@ char *argv[];
     fontsize = -1.0;			/* To force fontsize switching */
     page_height = (double)(HEIGHT - MARGIN) * PIXELS_INCH;
     page_width = (double)(WIDTH - MARGIN) * PIXELS_INCH;
-    
+
     /* Postcript prologue printing */
     print_prologue();
-    
+
     /* Print files designated or standard input */
     arg = argv[narg = 1];
     while (narg < argc) {
-	if (arg[0] != NUL) {
-	    if (arg[0] == '-')
-		set_positional_option(arg);
-	    else {
-		if (freopen(arg, "r", stdin) == NULL) {
-		    fprintf(stderr, "Error opening %s\n", arg);
-		    cleanup();
-		    printf("\n%%%%Trailer\ndocsave restore end\n\4");
-		    exit(EXIT_FAILURE);
-		}
-		no_files = FALSE;
+        if (arg[0] != NUL) {
+            if (arg[0] == '-')
+                set_positional_option(arg);
+            else {
+                if (freopen(arg, "r", stdin) == NULL) {
+                    fprintf(stderr, "Error opening %s\n", arg);
+                    cleanup();
+                    printf("\n%%%%Trailer\ndocsave restore end\n\4");
+                    exit(EXIT_FAILURE);
+                }
+                no_files = FALSE;
 
-		/* Save counters values */
-		old_pages = pages;
-		if (twinfiles && twinpages)
-		    old_sheets = sheets;
-		else
-		    old_sheets = sheets + sheetside;
+                /* Save counters values */
+                old_pages = pages;
+                if (twinfiles && twinpages)
+                    old_sheets = sheets;
+                else
+                    old_sheets = sheets + sheetside;
 
-		/* Print the file */
-		print_file(arg, header_text);
+                /* Print the file */
+                print_file(arg, header_text);
 
-		/* Print the number of pages and sheets printed */
-		if (no_summary == FALSE) {
-		    total = pages - old_pages;
-		    fprintf(stderr, "[%s: %d page%s on ", arg,
-			    total, total == 1 ? "" : "s");
-		    total = sheets - old_sheets + sheetside;
+                /* Print the number of pages and sheets printed */
+                if (no_summary == FALSE) {
+                    total = pages - old_pages;
+                    fprintf(stderr, "[%s: %d page%s on ", arg,
+                            total, total == 1 ? "" : "s");
+                    total = sheets - old_sheets + sheetside;
 #ifdef RECTO_VERSO_PRINTING
-		    if (rectoverso)
-			total = (total+1) / 2;
+                    if (rectoverso)
+                        total = (total+1) / 2;
 #endif
-		    fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
-		}
+                    fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
+                }
 
-		/* Reinitialize header title */
-		header_text = NULL;
-	    }
-	}
-	arg = argv[++narg];
+                /* Reinitialize header title */
+                header_text = NULL;
+            }
+        }
+        arg = argv[++narg];
     }
     if (no_files)
-	print_file("stdin", header_text);
+        print_file((char*)"stdin", header_text);
 
     /* Print the total number of pages printed */
     if (no_summary == FALSE && pages != old_pages) {
-	fprintf(stderr, "[Total: %d page%s on ", pages, pages == 1 ? "" : "s");
-	total = sheets + sheetside;
+        fprintf(stderr, "[Total: %d page%s on ", pages, pages == 1 ? "" : "s");
+        total = sheets + sheetside;
 #ifdef RECTO_VERSO_PRINTING
-	if (rectoverso)
-	    total = (total+1) / 2;
+        if (rectoverso)
+            total = (total+1) / 2;
 #endif
-	fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
+        fprintf(stderr, "%d sheet%s]\n", total, total == 1 ? "" : "s");
     }
 
     /* And stop */
