@@ -189,6 +189,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 		awm->insert_menu_topic("save_DB1","Save Data Base I ...",		"S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
 	}
 	awm->insert_menu_topic("quit","Quit",				"Q","quit.hlp",	AWM_ALL,	  (AW_CB)MG_exit, 0, 0 );
+	awm->insert_menu_topic("save_props","Save properties (to ~/.arb_prop/ntree.arb)",				"S","savedef.hlp",	AWM_ALL,	  (AW_CB)AW_save_defaults, 0, 0 );
 
 	awm->button_length(30);
 
@@ -350,6 +351,8 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 	MG_create_extendeds_var(awr,aw_def);
 	MG_create_alignment_vars(awr,aw_def);
 	MG_create_species_var(awr,aw_def);
+    MG_create_gene_species_awars(awr, aw_def);
+
 	AWTC_create_rename_variables(awr,aw_def);
 }
 
