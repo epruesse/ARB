@@ -574,9 +574,9 @@ public class TreeDisplay extends Canvas
         }
     }
 
-    public void setMatchedNode(TreeNode clickedNode) throws Exception {
+    public void setMatchedNode(TreeNode clickedNode, String preferredProbe) throws Exception {
         AutofoldCandidate.annouce_POI(clickedNode);
-        myClient.updateNodeInformation(clickedNode);
+        myClient.updateNodeInformation(clickedNode, preferredProbe);
         lastMatchedNode = clickedNode;        
     }
 
@@ -584,7 +584,7 @@ public class TreeDisplay extends Canvas
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
             try {
-                setMatchedNode(clickedNode);
+                setMatchedNode(clickedNode, null);
             }
             catch (ClientException e) {
                 Toolkit.showError(e.getMessage());
@@ -686,12 +686,15 @@ public class TreeDisplay extends Canvas
 
     public void countMarkedSpecies () {
         if (root != null) {
-            Toolkit.showMessage("Number of marked species: " + root.countMarked());
+            int marked = root.countMarked();
+            Toolkit.showMessage("\nNumber of marked species: " + marked);
             if (visibleSubtree == root) {
                 Toolkit.showMessage("Number of species in tree: " + root.getNoOfLeaves());
             }
             else {
-                Toolkit.showMessage("Number of marked species in shown subtree: " + visibleSubtree.countMarked());
+                if (marked != 0) {
+                    Toolkit.showMessage("Number of marked species in shown subtree: " + visibleSubtree.countMarked());
+                }
                 Toolkit.showMessage("Number of species in shown subtree: " + visibleSubtree.getNoOfLeaves());
             }
         }
