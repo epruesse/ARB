@@ -273,30 +273,28 @@ extern "C" {
 void nt_build_sai_string(void *topfile, void *middlefile){
     GBDATA *gb_sai_data = GB_search(gb_main,"extended_data",GB_FIND);
     if (!gb_sai_data) return;
+
     GB_HASH *hash = GBS_create_hash(100,1);
-    GBDATA *gb_sai;
-    for (   gb_sai = GBT_first_SAI_rel_exdata(gb_sai_data);
-            gb_sai;
-            gb_sai = GBT_next_SAI(gb_sai)){
+    GBDATA  *gb_sai;
+
+    for (gb_sai = GBT_first_SAI_rel_exdata(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
         GBDATA *gb_name = GB_search(gb_sai,"name",GB_FIND);
         if (!gb_name) continue;
+
         char *name = GB_read_string(gb_name);
-        if (
-            (!strcmp(name,  "HELIX")) ||
-            (!strcmp(name,  "HELIX_NR")) ||
-            (!strcmp(name,  "ECOLI"))
-            ){
+
+        if (strcmp(name,  "HELIX") == 0  || strcmp(name,  "HELIX_NR") == 0 || strcmp(name,  "ECOLI") == 0) {
             GBS_chrcat(topfile,1);              // Seperated by 1
             GBS_strcat(topfile,"S");
             GBS_strcat(topfile,name);
-        }else{
+        }
+        else {
             GBDATA *gb_gn = GB_search(gb_sai,"sai_group",GB_FIND);
-            char *gn;
-            if (gb_gn){
-                gn = GB_read_string(gb_gn);
-            }else{
-                gn = strdup("SAI's");
-            }
+            char   *gn;
+
+            if (gb_gn)  gn = GB_read_string(gb_gn);
+            else        gn = strdup("SAI's");
+
             char *cn = new char[strlen(gn) + strlen(name) + 2];
             sprintf(cn,"%s%c%s",gn,1,name);
             GBS_write_hash(hash,cn,1);
@@ -313,7 +311,7 @@ void nt_build_sai_string(void *topfile, void *middlefile){
     nt_build_sai_last_group_name = 0;
     nt_build_sai_middle_file = middlefile;
     GBS_hash_do_sorted_loop(hash,nt_build_sai_string_by_hash,(gbs_hash_sort_func_type)nt_build_sai_sort_strings);
-    if (nt_build_sai_last_group_name){
+    if (nt_build_sai_last_group_name) {
         GBS_chrcat(middlefile,1);               // Seperated by 1
         GBS_chrcat(middlefile,'E');             // End of old group
     }

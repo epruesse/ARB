@@ -544,8 +544,8 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
 
 
             ED4_ROOT->reference = new AWT_reference(gb_main);
-
-            ED4_ROOT->database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(), area_string_top, &index, &y);
+            ED4_ROOT->database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                            area_string_top, &index, &y);
             GB_pop_transaction( gb_main );
 
             top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
@@ -591,7 +591,8 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
             index = 0;
             {
                 GB_transaction dummy(gb_main);
-                ED4_ROOT->database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(), area_string_middle, &index, &y);
+                ED4_ROOT->database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                                area_string_middle, &index, &y);
             }
 
             if (total_no_of_species > MINSPECFORSTATWIN) {
