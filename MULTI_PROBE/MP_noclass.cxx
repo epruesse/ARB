@@ -1,7 +1,10 @@
 #include "MultiProbe.hxx"
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
+
 #include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
@@ -9,7 +12,9 @@
 #include <awt_canvas.hxx>
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
-#include <math.h>
+#include <awt_tree_cb.hxx>
+
+
 
 
 BOOL 		MP_is_probe(char *seq);
@@ -54,13 +59,13 @@ void MP_close_main(AW_window *aww)
     AWT_canvas	*ntw = mp_main->get_ntw();
 
     if (mp_main->get_mp_window()->get_result_window())
-	mp_main->get_mp_window()->get_result_window()->hide();
+        mp_main->get_mp_window()->get_result_window()->hide();
 
     GB_transaction dummy(ntw->gb_main);
     AWT_TREE(ntw)->tree_root->calc_color();
 
     if (ntw->gb_main)
-	ntw->tree_disp->update(ntw->gb_main);
+        ntw->tree_disp->update(ntw->gb_main);
 
     ntw->refresh();
     
@@ -84,8 +89,8 @@ void MP_gen_quality(AW_root *awr,AW_CL cd1,AW_CL cd2)
     
     if (firsttime)
     {
-	firsttime = FALSE;
-	return;
+        firsttime = FALSE;
+        return;
     }
     
     char *probe, *new_qual, *ecol_pos;
@@ -93,11 +98,11 @@ void MP_gen_quality(AW_root *awr,AW_CL cd1,AW_CL cd2)
     AW_window *aww= mp_main->get_mp_window()->get_window();
     
     if (!selected || !selected[0])
-	return;
+        return;
 
     probe = MP_get_probes(selected);
     if (!probe || !probe[0])
-	return;
+        return;
 
     ecol_pos = MP_get_comment(3,selected);
     
@@ -128,24 +133,24 @@ void MP_modify_selected(AW_root *awr,AW_CL cd1,AW_CL cd2)	//setzt den 2.Paramete
     aww->init_list_entry_iterator(selected_list); //initialisieren
 
     while ((ptr2 = (char *)aww->get_list_entry_char_value())) {
-	aww->iterate_list_entry(1);
+        aww->iterate_list_entry(1);
 	
-	com1 =	MP_get_comment(1,ptr2);
-	com2 =	MP_get_comment(2,ptr2);
-	com3 =  MP_get_comment(3,ptr2);
-	probes =MP_get_probes(ptr2);
+        com1 =	MP_get_comment(1,ptr2);
+        com2 =	MP_get_comment(2,ptr2);
+        com3 =  MP_get_comment(3,ptr2);
+        probes =MP_get_probes(ptr2);
 
-	if (!probes || !probes[0])
-	    break;
+        if (!probes || !probes[0])
+            break;
 
-	sprintf(temp,"%1d#%1ld#%6d#%s",atoi(com1), mp_gl_awars.no_of_mismatches, atoi(com3), probes);
+        sprintf(temp,"%1d#%1ld#%6d#%s",atoi(com1), mp_gl_awars.no_of_mismatches, atoi(com3), probes);
 	
-	l->insert_as_last(strdup(temp));
+        l->insert_as_last(strdup(temp));
 	
-	delete probes;
-	delete com1;
-	delete com2;
-	delete com3;
+        delete probes;
+        delete com1;
+        delete com2;
+        delete com3;
     }
 
     aww->clear_selection_list( selected_list );
@@ -153,10 +158,10 @@ void MP_modify_selected(AW_root *awr,AW_CL cd1,AW_CL cd2)	//setzt den 2.Paramete
     ptr2 = l->get_first();
     while (ptr2)
     {
-	l->remove_first();
-	aww->insert_selection( selected_list, ptr2, ptr2 );
-	delete ptr2;
-	ptr2 = l->get_first();
+        l->remove_first();
+        aww->insert_selection( selected_list, ptr2, ptr2 );
+        delete ptr2;
+        ptr2 = l->get_first();
     }
     
     aww->insert_default_selection( selected_list, "", "" );
@@ -178,7 +183,7 @@ void MP_gen_singleprobe(AW_root *awr,AW_CL cd1,AW_CL cd2)
     AW_window *aww= mp_main->get_mp_window()->get_window();
     
     if (!selected || !selected[0])
-	return;
+        return;
 
     probe = MP_get_probes(selected);
     aww->delete_selection_from_list( selected_list, selected);
@@ -208,14 +213,14 @@ BOOL	check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit)
     char view_text[150];
 
     if (gen_cnt == 0)
-	sprintf(view_text,"Evaluating first generation");
+        sprintf(view_text,"Evaluating first generation");
     else
-	sprintf(view_text,"Gen:%d Avg:%5i Min:%5i Max:%5i",gen_cnt,int(avg_fit),int(min_fit),int(max_fit));
+        sprintf(view_text,"Gen:%d Avg:%5i Min:%5i Max:%5i",gen_cnt,int(avg_fit),int(min_fit),int(max_fit));
     
     if (aw_status(view_text) == 1)
     {
-	aw_closestatus();
-	return FALSE;					//Berechnungen abbrechen !!!!!!
+        aw_closestatus();
+        return FALSE;					//Berechnungen abbrechen !!!!!!
     }
 
     return TRUE;
@@ -224,40 +229,40 @@ BOOL	check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit)
 void init_system3_tab()
 {
     int i, j, k,
-	size_hamming_tab,
-	hamm_dist;
+        size_hamming_tab,
+        hamm_dist;
     int **dummy_int;
     int counter, wert;
     
     if (system3_tab)
     {
-	for (j=0; j< 3; j++)
-	    delete system3_tab[j];
+        for (j=0; j< 3; j++)
+            delete system3_tab[j];
 	
-	delete system3_tab;
+        delete system3_tab;
     }
     system3_tab = new int*[mp_gl_awars.no_of_probes];
     for (j=0; j<mp_gl_awars.no_of_probes; j++)
     {
-	system3_tab[j] = new int[3];
-	memset(system3_tab[j],0, sizeof(int) * 3 );
+        system3_tab[j] = new int[3];
+        memset(system3_tab[j],0, sizeof(int) * 3 );
     }
 
     for (j=0; j< mp_gl_awars.no_of_probes; j++)
     {
-	for (k=0; k<3; k++)
-	{
-	    if (!j)
-		system3_tab[j][k] = k;
-	    else
-		system3_tab[j][k] = system3_tab[j-1][k] * 3;
-	}
+        for (k=0; k<3; k++)
+        {
+            if (!j)
+                system3_tab[j][k] = k;
+            else
+                system3_tab[j][k] = system3_tab[j-1][k] * 3;
+        }
     }
 
 
     //** hamming_tab
     if (hamming_tab)
-	delete [] hamming_tab;
+        delete [] hamming_tab;
     
     size_hamming_tab = (int)pow(3.0, (double) mp_gl_awars.no_of_probes);
     hamming_tab = new unsigned char*[size_hamming_tab];
@@ -265,61 +270,61 @@ void init_system3_tab()
 
     for (i=0; i<size_hamming_tab; i++)
     {
-	hamming_tab[i] = new unsigned char[size_hamming_tab];
-	memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab );
+        hamming_tab[i] = new unsigned char[size_hamming_tab];
+        memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab );
 
-	dummy_int[i] = new int[mp_gl_awars.no_of_probes];
-	memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
+        dummy_int[i] = new int[mp_gl_awars.no_of_probes];
+        memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
     }
 
     counter = 1;
     for (i=0; i< mp_gl_awars.no_of_probes; i++)
     {
-	for (j=0; j<size_hamming_tab; j++)
-	{
-	    for (wert = 0; wert < 3; wert++)
-	    {
-		for (k=0; k<counter; k++)
-		{
-		    dummy_int[j++][i] = wert;
-		}
-	    }
-	    j--;
-	}
-	counter *= 3;
+        for (j=0; j<size_hamming_tab; j++)
+        {
+            for (wert = 0; wert < 3; wert++)
+            {
+                for (k=0; k<counter; k++)
+                {
+                    dummy_int[j++][i] = wert;
+                }
+            }
+            j--;
+        }
+        counter *= 3;
     }
 
     for (i=0; i<size_hamming_tab; i++)
     {
-	for (j=0; j<size_hamming_tab; j++)
-	{
-	    hamm_dist = 0;
-	    for (k=0; k<mp_gl_awars.no_of_probes; k++)
-	    {
-		if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
-		    (dummy_int[i][k] == 0 && dummy_int[j][k] == 2))
-		    hamm_dist++;
-	    }
-	    hamming_tab[i][j] = hamm_dist;
-	}
+        for (j=0; j<size_hamming_tab; j++)
+        {
+            hamm_dist = 0;
+            for (k=0; k<mp_gl_awars.no_of_probes; k++)
+            {
+                if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
+                    (dummy_int[i][k] == 0 && dummy_int[j][k] == 2))
+                    hamm_dist++;
+            }
+            hamming_tab[i][j] = hamm_dist;
+        }
     }
     /*   
-	 for (i=0; i<size_hamming_tab; i++)
-	 {
-	 for (j=0; j<size_hamming_tab; j++)
-	 {
-	 printf("%d ", hamming_tab[i][j]); 
-	 }
-	 printf("\n");
+         for (i=0; i<size_hamming_tab; i++)
+         {
+         for (j=0; j<size_hamming_tab; j++)
+         {
+         printf("%d ", hamming_tab[i][j]); 
+         }
+         printf("\n");
 	    
-	 }
+         }
      */
 	
-	for (i=0; i<size_hamming_tab; i++)
-	{
-	    delete dummy_int[i];
-	}
-	delete dummy_int;
+        for (i=0; i<size_hamming_tab; i++)
+        {
+            delete dummy_int[i];
+        }
+        delete dummy_int;
     
 
     
@@ -339,8 +344,8 @@ void MP_compute(AW_window *aww)
     
     if (aww->get_no_of_entries( selected_list )-1 < mp_gl_awars.no_of_probes)
     {
-	aw_message("Not enough probes selected for computation !!!");
-	return;
+        aw_message("Not enough probes selected for computation !!!");
+        return;
     }
 
     
@@ -348,9 +353,9 @@ void MP_compute(AW_window *aww)
    
     if (mp_main->get_stc())
     {
-	delete mp_main->get_stc();
-	mp_main->set_stc(NULL);
-	new_pt_server = TRUE;
+        delete mp_main->get_stc();
+        mp_main->set_stc(NULL);
+        new_pt_server = TRUE;
     }
     
     init_system3_tab();
@@ -370,19 +375,19 @@ void MP_compute(AW_window *aww)
    
     while ((ptr2 = (char *)aww->get_list_entry_char_value()))
     {
-	aww->iterate_list_entry(1);
-	ptr = MP_get_probes(ptr2);		//hier sind es einfachsonden
-	if (ptr && ptr[0] != ' ' && ptr[0] != '\t' && ptr[0] != '\0')
-	{
-	    qual 		= MP_get_comment(1,ptr2);
-	    bew_array[i] 	= atoi(qual);
-	    delete qual;
-	    qual 		= MP_get_comment(2,ptr2);	
-	    single_mismatch[i]	= atoi(qual);			//single mismatch kann zwar eingestellt werden, aber wird noch nicht 
-	    delete qual;					// uebergeben
+        aww->iterate_list_entry(1);
+        ptr = MP_get_probes(ptr2);		//hier sind es einfachsonden
+        if (ptr && ptr[0] != ' ' && ptr[0] != '\t' && ptr[0] != '\0')
+        {
+            qual 		= MP_get_comment(1,ptr2);
+            bew_array[i] 	= atoi(qual);
+            delete qual;
+            qual 		= MP_get_comment(2,ptr2);	
+            single_mismatch[i]	= atoi(qual);			//single mismatch kann zwar eingestellt werden, aber wird noch nicht 
+            delete qual;					// uebergeben
 	    
-	    probe_field[i++] 	= ptr;
-	}
+            probe_field[i++] 	= ptr;
+        }
     }
     
     p_eval = mp_main->new_probe_eval(probe_field,i,bew_array, single_mismatch);
@@ -391,7 +396,7 @@ void MP_compute(AW_window *aww)
     if (pt_server_different)
     {
     	pt_server_different = FALSE;
-	aw_message("There are species in the tree which are\nnot included in the PT-Server");
+        aw_message("There are species in the tree which are\nnot included in the PT-Server");
     }
     
     mp_main->destroy_probe_eval();
@@ -405,18 +410,18 @@ void	MP_take_manual_sequence(AW_window *aww)
 {
     AW_window_simple	*aws = mp_main->get_mp_window()->get_window();
     char		*seq = mp_gl_awars.manual_sequence,
-	*new_seq;
+        *new_seq;
 
     AWUSE(aww);
 
     if (! MP_is_probe(seq)){
-	aw_message("This is not a valid probe !!!");
-	return;
+        aw_message("This is not a valid probe !!!");
+        return;
     }
 
 
     if (glob_old_seq){
-	aww->delete_selection_from_list( selected_list, glob_old_seq );
+        aww->delete_selection_from_list( selected_list, glob_old_seq );
     }
     
     new_seq = new char[strlen(seq)+5+7];
@@ -442,7 +447,7 @@ void MP_show_probes_in_tree(AW_window *aww)
     AWT_canvas	*ntw = mp_main->get_ntw();
     char 	*sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
     char 	**probe_field = new char*[MAXMISMATCHES],
-	*mism, *mism_temp;
+        *mism, *mism_temp;
     int		*mismatches = new int[MAXMISMATCHES];
     char	*a_probe, *another_probe, *the_probe, *mism_temp2;
     int		i, how_many_probes = 0;
@@ -451,49 +456,49 @@ void MP_show_probes_in_tree(AW_window *aww)
     
     a_probe = MP_get_probes(sel);		//haelt jetzt Sondenstring	
     if (! a_probe || ! a_probe[0])
-	return;
+        return;
     
     mism_temp2 = MP_get_comment(2,sel);
     mism_temp = mism_temp2;
     
     for (i=0; i<MAXMISMATCHES; i++)
     {
-	probe_field[i] = NULL;
-	mismatches[i] = 0;
+        probe_field[i] = NULL;
+        mismatches[i] = 0;
     }
     
     another_probe = a_probe;
     for (i=0; i< MAXPROBECOMBIS; i++)		//generiert  probe_field und mismatches array
     {
-	mism = strchr(mism_temp,' ');
-	if (mism)
-	    *(mism++) = 0;
+        mism = strchr(mism_temp,' ');
+        if (mism)
+            *(mism++) = 0;
 
-	mismatches[i] = atoi(mism_temp);    
-	mism_temp = mism;
+        mismatches[i] = atoi(mism_temp);    
+        mism_temp = mism;
 
 	
-	probe_field[i] = NULL;
-	the_probe = another_probe;
-	another_probe = strchr(another_probe,' ');
-	if (another_probe)
-	{
-	    *(another_probe++) = 0;
-	    while (*another_probe == ' ' || *another_probe == '\t')
-		another_probe++;
-	}
-	else
-	{
-	    probe_field[i] = strdup(the_probe);
-	    how_many_probes ++;
-	    break;
-	}
+        probe_field[i] = NULL;
+        the_probe = another_probe;
+        another_probe = strchr(another_probe,' ');
+        if (another_probe)
+        {
+            *(another_probe++) = 0;
+            while (*another_probe == ' ' || *another_probe == '\t')
+                another_probe++;
+        }
+        else
+        {
+            probe_field[i] = strdup(the_probe);
+            how_many_probes ++;
+            break;
+        }
 
-	if (the_probe && the_probe[0])
-	{
-	    probe_field[i] = strdup(the_probe);
-	    how_many_probes ++;
-	}
+        if (the_probe && the_probe[0])
+        {
+            probe_field[i] = strdup(the_probe);
+            how_many_probes ++;
+        }
     }
 
     delete a_probe;
@@ -501,29 +506,29 @@ void MP_show_probes_in_tree(AW_window *aww)
 
     if (new_pt_server)
     {
-	new_pt_server = FALSE;
+        new_pt_server = FALSE;
 	
-	if (mp_main->get_stc())
-	    delete mp_main->get_stc();
+        if (mp_main->get_stc())
+            delete mp_main->get_stc();
 
-	mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
-	if (pt_server_different)
-	{
-	    mp_main->set_stc(NULL);
-	    new_pt_server = TRUE;
-	    aw_message("There are species in the tree which are\nnot included in the PT-Server");
-	    pt_server_different = FALSE;
-	    return;
-	}
+        mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
+        if (pt_server_different)
+        {
+            mp_main->set_stc(NULL);
+            new_pt_server = TRUE;
+            aw_message("There are species in the tree which are\nnot included in the PT-Server");
+            pt_server_different = FALSE;
+            return;
+        }
     }
 
     delete mp_main->get_stc()->sondentopf;
     mp_main->get_stc()->sondentopf = new Sondentopf(mp_main->get_stc()->Bakterienliste,mp_main->get_stc()->Auswahlliste );
     
     for (i=0; i<MAXMISMATCHES; i++){
-	if (probe_field[i]){
-	    mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i],mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
-	}
+        if (probe_field[i]){
+            mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i],mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
+        }
     }
     
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
@@ -532,12 +537,12 @@ void MP_show_probes_in_tree(AW_window *aww)
     AWT_TREE(ntw)->tree_root->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
 
     if (ntw->gb_main)
-	ntw->tree_disp->update(ntw->gb_main);
+        ntw->tree_disp->update(ntw->gb_main);
 
     ntw->refresh();
 
     for (i=0; i<MAXMISMATCHES; i++)
-	delete probe_field[i];
+        delete probe_field[i];
 
     delete probe_field;
     delete mismatches;
@@ -548,7 +553,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
     AWT_canvas	*ntw = mp_main->get_ntw();
     char 	*sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
     char 	**probe_field = new char*[MAXMISMATCHES],
-	*mism, *mism_temp;
+        *mism, *mism_temp;
     int		*mismatches = new int[MAXMISMATCHES];
     char	*a_probe, *another_probe, *the_probe, *mism_temp2;
     int		i, how_many_probes = 0;
@@ -559,49 +564,49 @@ void MP_mark_probes_in_tree(AW_window *aww)
     
     a_probe = MP_get_probes(sel);		//haelt jetzt Sondenstring	
     if (! a_probe || ! a_probe[0])
-	return;
+        return;
     
     mism_temp2 = MP_get_comment(2,sel);
     mism_temp = mism_temp2;
     
     for (i=0; i<MAXMISMATCHES; i++)
     {
-	probe_field[i] = NULL;
-	mismatches[i] = 0;
+        probe_field[i] = NULL;
+        mismatches[i] = 0;
     }
     
     another_probe = a_probe;
     for (i=0; i< MAXPROBECOMBIS; i++)		//generiert  probe_field und mismatches array
     {
-	mism = strchr(mism_temp,' ');
-	if (mism)
-	    *(mism++) = 0;
+        mism = strchr(mism_temp,' ');
+        if (mism)
+            *(mism++) = 0;
 
-	mismatches[i] = atoi(mism_temp);    
-	mism_temp = mism;
+        mismatches[i] = atoi(mism_temp);    
+        mism_temp = mism;
 
 	
-	probe_field[i] = NULL;
-	the_probe = another_probe;
-	another_probe = strchr(another_probe,' ');
-	if (another_probe)
-	{
-	    *(another_probe++) = 0;
-	    while (*another_probe == ' ' || *another_probe == '\t')
-		another_probe++;
-	}
-	else
-	{
-	    probe_field[i] = strdup(the_probe);
-	    how_many_probes ++;
-	    break;
-	}
+        probe_field[i] = NULL;
+        the_probe = another_probe;
+        another_probe = strchr(another_probe,' ');
+        if (another_probe)
+        {
+            *(another_probe++) = 0;
+            while (*another_probe == ' ' || *another_probe == '\t')
+                another_probe++;
+        }
+        else
+        {
+            probe_field[i] = strdup(the_probe);
+            how_many_probes ++;
+            break;
+        }
 
-	if (the_probe && the_probe[0])
-	{
-	    probe_field[i] = strdup(the_probe);
-	    how_many_probes ++;
-	}
+        if (the_probe && the_probe[0])
+        {
+            probe_field[i] = strdup(the_probe);
+            how_many_probes ++;
+        }
     }
 
     delete a_probe;
@@ -609,63 +614,65 @@ void MP_mark_probes_in_tree(AW_window *aww)
 
     if (new_pt_server)
     {
-	new_pt_server = FALSE;
+        new_pt_server = FALSE;
 	
-	if (mp_main->get_stc())
-	    delete mp_main->get_stc();
+        if (mp_main->get_stc())
+            delete mp_main->get_stc();
 
-	mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
-	if (pt_server_different)
-	{
-	    mp_main->set_stc(NULL);
-	    new_pt_server = TRUE;
-	    aw_message("There are species in the tree which are\nnot included in the PT-Server");
-	    pt_server_different = FALSE;
-	    return;
-	}
+        mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
+        if (pt_server_different)
+        {
+            mp_main->set_stc(NULL);
+            new_pt_server = TRUE;
+            aw_message("There are species in the tree which are\nnot included in the PT-Server");
+            pt_server_different = FALSE;
+            return;
+        }
     }
 
     delete mp_main->get_stc()->sondentopf;
     mp_main->get_stc()->sondentopf = new Sondentopf(mp_main->get_stc()->Bakterienliste,mp_main->get_stc()->Auswahlliste );
     
     for (i=0; i<MAXMISMATCHES; i++){
-	if (probe_field[i]){
-	    mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i],mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
-	}
+        if (probe_field[i]){
+            mp_main->get_stc()->sondentopf->put_Sonde(probe_field[i],mismatches[i], mismatches[i] + mp_gl_awars.outside_mismatches_difference);
+        }
     }
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     {
 
-	GB_push_transaction(ntw->gb_main);
-	GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
+        GB_push_transaction(ntw->gb_main);
+        GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
         for (   gb_species = GBT_first_species(ntw->gb_main);
-		gb_species;
-		gb_species = GBT_next_species(gb_species) ){
-	    gb_name = GB_find( gb_species, "name", 0, down_level);
-	    const char *name = GB_read_char_pntr(gb_name);				
-	    if (GBS_read_hash( col_hash, name)> AWT_GC_BLACK)
-	    {
-		GB_write_flag(gb_species,1);
-	    }else{
-		GB_write_flag(gb_species,0);
-	    }
-	}
+                gb_species;
+                gb_species = GBT_next_species(gb_species) ){
+            gb_name = GB_find( gb_species, "name", 0, down_level);
+            const char *name = GB_read_char_pntr(gb_name);				
+            if (GBS_read_hash( col_hash, name)> AWT_GC_BLACK)
+            {
+                GB_write_flag(gb_species,1);
+            }else{
+                GB_write_flag(gb_species,0);
+            }
+        }
     }
     GB_pop_transaction(ntw->gb_main);
     
     GB_transaction dummy(ntw->gb_main);   
 
     if (ntw->gb_main)
-	ntw->tree_disp->update(ntw->gb_main);
+        ntw->tree_disp->update(ntw->gb_main);
 
     ntw->refresh();
 
     for (i=0; i<MAXMISMATCHES; i++)
-	delete probe_field[i];
+        delete probe_field[i];
 
     delete probe_field;
     delete mismatches;
+    
+    MP_normal_colors_in_tree(aww);
 }
 
 void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
@@ -673,10 +680,10 @@ void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
     char 	*new_list_string;
     AW_root 	*awr = mp_main->get_aw_root();
     char	*aw_str = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string(),
-	*aw_str2= awr->awar(MP_AWAR_RESULTPROBES)->read_string();
+        *aw_str2= awr->awar(MP_AWAR_RESULTPROBES)->read_string();
     char 	*comment = ((char *) com) ? (char *) com : aw_str ;
     char 	*new_val,
-	*misms;
+        *misms;
     char 	spaces[21];
     int 	len_spaces = 0;
     char 	*ecol;
@@ -684,8 +691,8 @@ void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
     new_val = MP_get_probes(aw_str2);
     if (!new_val || !new_val[0])
     {
-	delete new_val;
-	return;
+        delete new_val;
+        return;
     }
     
     misms = MP_get_comment(2,aw_str2);
@@ -695,7 +702,7 @@ void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
     len_spaces = (strlen(comment) > 20) ? 20 : strlen(comment);
     
     for (int  i=0; i< 20 - len_spaces; i++)
-	strcat(spaces, " ");
+        strcat(spaces, " ");
 
     new_list_string = new char[21+strlen(aw_str2)+2*strlen(SEPARATOR)+1+strlen(ecol)+1];	//1 fuer 0-Zeichen
     sprintf(new_list_string,"%.20s%s%s%s%s%s%s%s",comment,spaces,SEPARATOR,misms,SEPARATOR,ecol,SEPARATOR,new_val);
@@ -714,7 +721,7 @@ void 	MP_leftright(AW_window *aww)
     char *sel = mp_main->get_aw_root()->awar(MP_AWAR_PROBELIST)->read_string();
     
     if (!sel ||  !sel[0])
-	return;
+        return;
     
     aww->insert_selection( selected_list, sel, sel );
     aww->delete_selection_from_list( probelist, sel);
@@ -730,7 +737,7 @@ void 	MP_rightleft(AW_window *aww)	// von rechts nach links
     char *sel = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     
     if (!sel ||  !sel[0])
-	return;
+        return;
     
     aww->insert_selection( probelist, sel, sel );
     aww->delete_selection_from_list( selected_list, sel);
@@ -745,20 +752,20 @@ BOOL MP_is_probe(char *seq)
 {
     BOOL 	result=TRUE;
     char	*s,
-	*seq2;
+        *seq2;
 
     if (! seq)
-	return FALSE;
+        return FALSE;
 
     seq2 = MP_get_probes(seq);
     if (!seq2 || ! seq2[0])
-	return FALSE;
+        return FALSE;
 
     s = seq2;
     while (*s && result)
     {
-	result = result && MP_probe_tab[*s];
-	s++;
+        result = result && MP_probe_tab[*s];
+        s++;
     }
     delete seq2;
     return result;
@@ -772,7 +779,7 @@ void MP_selected_chosen(AW_window *aww)
     AWUSE(aww);
      
     if (!selected || !selected[0])
-	return;
+        return;
 
     glob_old_seq = strdup(selected);
     
@@ -790,6 +797,11 @@ void MP_selected_chosen(AW_window *aww)
     delete probe;
 }
 
+void MP_group_all_except_marked(AW_window *aww) {
+    AWT_canvas	*ntw = mp_main->get_ntw();
+    NT_group_not_marked_cb(0, ntw);
+}
+
 void MP_normal_colors_in_tree(AW_window *aww)
 {
     AWT_canvas	*ntw = mp_main->get_ntw();
@@ -801,7 +813,7 @@ void MP_normal_colors_in_tree(AW_window *aww)
     AWT_TREE(ntw)->tree_root->calc_color();
     
     if (ntw->gb_main)
-	ntw->tree_disp->update(ntw->gb_main);
+        ntw->tree_disp->update(ntw->gb_main);
 
     ntw->refresh();
 }
@@ -877,12 +889,12 @@ char *MP_get_comment(int which, char *str)		//faengt bei eins an
 
     for (i=1; i<which; i++)
     {
-	first = result+1;
-	result = strchr(first,'#');
+        first = result+1;
+        result = strchr(first,'#');
     }
     
     if (!result)
-	return NULL;
+        return NULL;
 
     *result = 0;
     ret_res = strdup(first);
@@ -898,12 +910,12 @@ char *MP_remove_comment(char *old_str)
     char *ret_res;
 
     if (!result)
-	return strdup(old_str);
+        return strdup(old_str);
 
     *result = 0;
     help = old_str;
     while (*help == ' ' || *help == '\t')
-	help ++;
+        help ++;
     
     ret_res = strdup(help);
     *result = '#';
@@ -916,11 +928,11 @@ char *MP_get_probes(char *str)
     char *result = strrchr(str,'#');
     
     if (!result)
-	return strdup(str);
+        return strdup(str);
 
     result++;
     while (*result == ' ' || *result == '\t')
-	result ++;
+        result ++;
     
     return strdup(result);
 }
@@ -929,7 +941,7 @@ void MP_result_chosen(AW_window *aww)
 {
     AW_root 	*aw_root 	= mp_main->get_aw_root();
     char	*str		= aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string(),
-	*new_str;
+        *new_str;
     
     AWUSE(aww);
 
@@ -953,10 +965,10 @@ int MP_init_local_com_struct()
 
     /* @@@ use finger, date and whoami */
     if( aisc_create(mp_pd_gl.link, PT_MAIN, mp_pd_gl.com,
-		    MAIN_LOCS, PT_LOCS, &mp_pd_gl.locs,
-		    LOCS_USER, user,
-		    NULL)){
-	return 1;
+                    MAIN_LOCS, PT_LOCS, &mp_pd_gl.locs,
+                    LOCS_USER, user,
+                    NULL)){
+        return 1;
     }
     return 0;
 }
@@ -968,8 +980,8 @@ char* MP_probe_pt_look_for_server()
     GB_ERROR error;
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER,choice,0);
     if (error) {
-	aw_message((char *)error);
-	return 0;
+        aw_message((char *)error);
+        return 0;
     }
     return GBS_read_arb_tcp(choice);
 }
@@ -978,8 +990,8 @@ char* MP_probe_pt_look_for_server()
 int MP_probe_design_send_data(T_PT_PDC  pdc)
 {
     if (aisc_put(mp_pd_gl.link,PT_PDC, pdc,
-		 PDC_CLIPRESULT,	P.DESIGNCPLIPOUTPUT,
-		 0)) return 1;
+                 PDC_CLIPRESULT,	P.DESIGNCPLIPOUTPUT,
+                 0)) return 1;
     return 0;
 }
 
