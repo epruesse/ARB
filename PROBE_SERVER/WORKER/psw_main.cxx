@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Wed Sep/17/2003 10:17 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Sep/17/2003 15:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -285,12 +285,17 @@ namespace {
 
     // returns a list of species for a specific probe-group
     GB_ERROR CMD_getmembers(GBDATA *gb_main, const Arguments& args, FILE *out) {
-        const char *id;
-        GB_ERROR    error = expectArgument(args, "id", id);
-        GB_transaction dummy(gb_main);
+        const char     *id;
+        GB_ERROR        error = expectArgument(args, "id", id);
+        GB_transaction  dummy(gb_main);
 
         if (!error) {
-            GBDATA *gb_subtree = (GBDATA*)GBS_read_hash(path_cache, id);
+            GBDATA *gb_subtree = 0;
+
+            if (id[0] == 'p') {
+                gb_subtree = (GBDATA*)GBS_read_hash(path_cache, id+1);
+            }
+
             if (gb_subtree && gb_subtree != gb_is_inner_node) {
                 GBDATA             *gb_species = GB_find(gb_subtree, "species", 0, down_level);
                 list<const char *>  members;
@@ -386,7 +391,7 @@ namespace {
                         for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
                             // currently we have only 100% groups, so we can use the path as id
                             const char *probe_group_id = enc_path;
-                            fprintf(out, "probe%04i=%s,%s\n", c, *p, probe_group_id);
+                            fprintf(out, "probe%04i=%s,p%s\n", c, *p, probe_group_id);
                         }
                     }
                 }
