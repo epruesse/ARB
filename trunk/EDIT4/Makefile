@@ -350,6 +350,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/st_window.hxx
