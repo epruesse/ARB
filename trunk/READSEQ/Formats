@@ -391,7 +391,7 @@ DIMENSIONS NTAX=<number of taxa> NCHAR=<number of characters>;
         [ OPTIONS [ IGNORE={ INVAR | UNINFORM } ]
         [ MSTAXA = { UNCERTAIN | POLYMORPH | VARIABLE } ]
         [ ZAP = "<list of zapped characters>" ] ; ]
-  [ CHARLABELS <label_1> label_2> … <label_NCHAR> ; ]
+  [ CHARLABELS <label_1> <label_2> <label_NCHAR> ; ]
   [ TAXLABELS <label1_1> <label1_2> <label1_NTAX> ; ]
   [ STATELABELS <currently ignored by PAUP> ; ]
   MATRIX <data-matrix> ;
