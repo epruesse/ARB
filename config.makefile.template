@@ -1,7 +1,11 @@
 # --------------------------------------------------------------------------------
-# If this file is named config.makefile.template then rename it to config.makefile
+# If this file is named config.makefile.template then copy it to config.makefile
+# DO NOT EDIT config.makefile.template
 # --------------------------------------------------------------------------------
-#
+
+# Enter your name (upper case, no spaces) here, to enable '#ifdef DEVEL_YOURNAME #endif' sections
+DEVELOPER=ANY
+
 # Uncomment one section, depending on your machine type and compiler options
 
 DEBUG=0# build with debug information
