@@ -40,11 +40,11 @@
 
 GB_ERROR gb_check_huffmann_tree(struct gb_compress_tree *t)
 {
-	if (t->leave) 
+	if (t->leave)
 		return 0;
-	if (!t->son[0]) 
+	if (!t->son[0])
 		return GB_export_error("Database entry corrupt");
-	if (!t->son[1]) 
+	if (!t->son[1])
 		return GB_export_error("Database entry corrupt");
 	if (gb_check_huffmann_tree(t->son[0]) ) return GB_get_error();
 	return gb_check_huffmann_tree(t->son[1]);
@@ -136,7 +136,7 @@ struct gb_compress_list *gb_build_compress_list(const unsigned char *data,long s
 		}
 		if (i>maxi) maxi = i;
 	}
-	*size = maxi;	
+	*size = maxi;
 
 	list = (struct gb_compress_list *)GB_calloc(sizeof(struct gb_compress_list),(size_t)maxi+1);
 
@@ -259,7 +259,7 @@ GB_CPNTR gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
 ********************************************************************************************/
 /** runlength encoding @@@
 	source:	string
-	dest:	command data command data 
+	dest:	command data command data
 	0< command < 120 ->	command == ndata follows
 	-120 < command < 0 ->	next byte is duplicated - command times
 	-122 lowbyte highbyte	next byte is duplicated lowbyte + 256*highbyte
@@ -281,7 +281,7 @@ GB_CPNTR g_b_write_run(char *dest, int scount, int lastbyte){
         *(dest++) = lastbyte;
         return dest;
     }
-	
+
     while (scount>120){		/* 120 blocks */
         *(dest++) = 0x100 - 120;
         *(dest++) = lastbyte;
@@ -365,7 +365,7 @@ void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char 
 	hsize = source - sourcenequal;
 	source = sourcenequal;
 	GB_COPY_NONRUN(dest,source,hsize);
-	
+
 	*(dest++) = 0;			/* end of data */
 	*msize = dest-buffer;
 	if (*msize >size*9/8) printf("ssize %d, dsize %d\n",(int)size,(int)*msize);
@@ -559,7 +559,7 @@ GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
 	dest = buffer = GB_give_other_buffer((char *)source,size);
 
 	for (i=size;i;) {
-		j = *(source++);	
+		j = *(source++);
 		if (j>0) {		/* uncompressed data block */
 			if (j>i) j=i;
 			i -= j;
@@ -759,32 +759,34 @@ GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, l
     if (pre_compressed){
         last_flag = 0;
     }
-    
+
     if (max_compr & GB_COMPRESSION_SORTBYTES){
         source = gb_compress_longs(source,size,last_flag);
         last_flag = 0;
         size++;			/* @@@ OLI */
-    }else if (max_compr & GB_COMPRESSION_DICTIONARY){	
+    }else if (max_compr & GB_COMPRESSION_DICTIONARY){
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         GB_DICTIONARY *dict;
         if (!key){
             key = GB_KEY_QUARK(gbd);
         }
         dict = gb_get_dictionary(Main,key);
-        if (dict)
-        {
-            data = gb_compress_by_dictionary(dict,source,
-                                             size-(GB_TYPE(gbd)==GB_STRING),
-                                             msize,last_flag,9999,3);
-	    
-            if ( (*msize<=10 && size>10) || *msize < size*7/8){		/* successfull compression */
-                source = data;
-                size = *msize;
-                last_flag = 0;
+        if (dict) {
+            long real_size = size-(GB_TYPE(gbd)==GB_STRING); /* for strings w/o trailing zero */
+
+            if (real_size) {
+                data = gb_compress_by_dictionary(dict, source, real_size, msize,last_flag,9999,3);
+
+                if ( (*msize<=10 && size>10) || *msize < size*7/8) { /* successfull compression */
+                    source = data;
+                    size = *msize;
+                    last_flag = 0;
+                }
             }
         }
 
-    }   if (max_compr & GB_COMPRESSION_RUNLENGTH && size > GB_RUNLENGTH_MIN_SIZE){
+    }
+    if (max_compr & GB_COMPRESSION_RUNLENGTH && size > GB_RUNLENGTH_MIN_SIZE) {
         data = gb_compress_equal_bytes(source,size,msize,last_flag);
         if (*msize < size-10 && *msize < size*7/8){		/* successfull compression */
             source = data;
@@ -801,13 +803,12 @@ GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, l
             last_flag = 0;
         }
     }
-    
+
     *msize = size;
     if (last_flag) return 0;					/* no compression */
     return (char *)source;
 }
 
-#define GB_COMPRESSION_TAGS_SIZE_MAX 100
 GB_CPNTR gb_uncompress_data(GBDATA *gbd, const char *source, long size){
     int last = 0;
     int c;
@@ -824,15 +825,15 @@ GB_CPNTR gb_uncompress_data(GBDATA *gbd, const char *source, long size){
         }else if (c == GB_COMPRESSION_RUNLENGTH) {
             data = gb_uncompress_equal_bytes(data,size + GB_COMPRESSION_TAGS_SIZE_MAX);
         }else if (c == GB_COMPRESSION_DICTIONARY) {
-            data = gb_uncompress_by_dictionary(gbd, data, size + GB_COMPRESSION_TAGS_SIZE_MAX);	
+            data = gb_uncompress_by_dictionary(gbd, data, size + GB_COMPRESSION_TAGS_SIZE_MAX);
         }else if (c == GB_COMPRESSION_SEQUENCE) {
-            data = gb_uncompress_by_sequence(gbd,data,size,&error);	    
+            data = gb_uncompress_by_sequence(gbd,data,size,&error);
         }else if (c == GB_COMPRESSION_SORTBYTES) {
             data = gb_uncompress_longsnew(data,size);
         }else{
             error = GB_export_error("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
         }
-	
+
         if (error) {
             GB_internal_error(error);
             return GB_give_buffer(size);
@@ -840,4 +841,4 @@ GB_CPNTR gb_uncompress_data(GBDATA *gbd, const char *source, long size){
     }
     return data;
 }
- 
+
