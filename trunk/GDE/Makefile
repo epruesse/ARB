@@ -34,8 +34,6 @@ ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
 endif
 endif
 
-# ZUKER/ZUKER.dummy
-
 $(MAIN): $(ARCHS)
 
 depend: $(ARCHS:.dummy=.depend)
