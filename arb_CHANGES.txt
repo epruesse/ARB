@@ -2,7 +2,10 @@ ARB change log
 
 Major changes for next Beta:
 
+ - new algorithm to add partial sequences to an existing tree
+ - PROT-parsimony was completely redesigned and works now most similar to DNA/RNA-parsimony
  - Top area of ARB_NTREE may be reduced to maximize display area
+ - All arb menus may be detached (click dashed line at top of menu)
  - visualization of SAIs (as background color behind Sequences)
  - ARB_EDIT4 may save/use alignment-specific and alignment-type-specific properties
  - PT-server occupies more memory => does less passes; more diagnostic output
@@ -15,11 +18,6 @@ Major changes for next Beta:
  - expanded sellists
  - save/load fixed for multi probes
  - Binary SAIs are editable in ARB_EDIT4
- - Parsimony now counts multiple gaps as 1 mutation; done because
-   partial sequences were misplaced with old method (PROT-parsimony
-   was completely redesigned and works now most similar to DNA/RNA-parsimony)
- - Changed Parsimony method: Multiple consecutive gaps were counted as
-   multiple mutations - now they are counted as one mutation.
  - Information windows are detachable (allows to have multiple windows showing different items)
  - Scanning for hidden/unknown database fields improved and seperated;
    possibility to remove unused fields.
