@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Mon Oct/13/2003 01:02 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/04/2004 11:32 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -13,41 +13,73 @@
 //                                                                       //
 //  ==================================================================== //
 
-class Toolkit
+class Toolkit 
 {
     public static String clientName    = "arb_probe_client";
     public static String clientVersion = "0.9alpha"; // CLIENT_SERVER_VERSION -- this has to match the version in ../SERVER/getVersion.cgi
 
     private static String maintainer = "probeadmin@arb-home.de";
+    
+//     private static Client theClient = null;
+//     public static void registerClient(Client c) { theClient = c; }
+//     public static void unregisterClient() { theClient = null; }
 
-public static void AbortWithError(String error)
-    {
-        System.out.println("Error in "+clientName+": "+error);
-        System.exit(1); // error
+
+    private static void AbortWithError_Internal(String kind_of_error, String error_message) throws Exception {
+//         if (theClient == null) {
+        System.out.println(kind_of_error+": "+error_message);
+        throw new Exception(kind_of_error+": "+error_message);
+        //             if (exitcode != 0) {
+//                 System.exit(exitcode);
+//             }
+//         }
+//         else {
+//             MessageDialog popup = new MessageDialog(theClient.getDisplay(), kind_of_error, error_message);
+//             while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+//             System.exit(exitcode);
+//         }
     }
 
-public static void AbortWithConnectionProblem(String error)
+    public static void AbortWithError(String error) throws Exception
     {
-        System.out.println(clientName+" has a connection problem: "+error);
-        System.out.println("Please check whether your internet connection works.");
-        System.exit(2); // server problem
+        AbortWithError_Internal("Error in "+clientName, error);
+        //         if (theClient == null) {
+//             System.out.println("Error in "+clientName+": "+error);
+//         }
+//         else {
+//             MessageDialog popup = new MessageDialog(theClient.getDisplay(), error);
+//         }
+//         System.exit(1);         // error
     }
 
-public static void AbortWithServerProblem(String error)
+    public static void AbortWithConnectionProblem(String error) throws Exception
     {
-        System.out.println(clientName+" got error from server:\n    "+error);
-        System.out.println("Please report to "+maintainer);
-        System.exit(2); // server problem
+        AbortWithError_Internal(clientName+" has a connection problem:",
+                                error+"\nPlease check whether your internet connection works");
+//         System.out.println(clientName+" has a connection problem: "+error);
+//         System.out.println("Please check whether your internet connection works.");
+//         System.exit(2); // server problem
     }
 
-public static void InternalError(String error)
+    public static void AbortWithServerProblem(String error) throws Exception
     {
-        System.out.println("Internal error in "+clientName+" v"+clientVersion+": "+error);
-        System.out.println("(this seems to be a bug, please report to "+maintainer+")");
-        System.exit(666); // internal error
+        AbortWithError_Internal(clientName+" got error from server:",
+                                error+"\nPlease report to "+maintainer);
+//         System.out.println(clientName+" got error from server:\n    "+error);
+//         System.out.println("Please report to "+maintainer);
+//         System.exit(2);         // server problem
     }
 
-public static void ExpectNoError(String error)
+    public static void InternalError(String error) throws Exception
+    {
+        AbortWithError_Internal("Internal error in "+clientName+" v"+clientVersion,
+                                error+"\n(this seems to be a bug, please report to "+maintainer+")");
+//         System.out.println("Internal error in "+clientName+" v"+clientVersion+": "+error);
+//         System.out.println("(this seems to be a bug, please report to "+maintainer+")");
+//         System.exit(666);       // internal error
+    }
+
+    public static void ExpectNoError(String error) throws Exception 
     {
         if (error != null) {
             InternalError("Unexpected error: "+error);
