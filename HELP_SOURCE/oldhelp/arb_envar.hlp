@@ -28,7 +28,7 @@ DESCRIPTION     Arb is aware of several environment variables:
                     ARB_TEXTEDIT
 
                         The name of the editor you like to use when editing textlike files via ARB
-                        (default: textedit)
+                        (default: arb_textedit)
 
                     ARB_XTERM
 
@@ -42,26 +42,31 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                     USER
 
-                            your username (normally set by shell)
+                            your username (normally set by shell).
 
                     ARB_PID
 
                             internal PID for communication (set by the 'arb' script)
 
+                    ARBMACRO
+
+                            directory name where global ARB-macros may be provides by system administrator
+                            (default: $ARBHOME/lib/macros )
+
                     ARBMACROHOME
 
-                            directory name where your ARB-macros will be saved to/loaded from
-                            (default: $ARBHOME/lib/macros )
+                            directory name where your local ARB-macros will be saved to/loaded from
+                            (default: $HOME/.arb_prop/macros )
 
                     ARB_GS
 
                             name of postscript viewer used by ARB
-                            (default: gv)
+                            (default: 'gv' or 'ghostview')
 
                     ARB_WORKDIR
 
-                            extra directory appearing in ARB-Browser
-                            (default: $ARBHOME)
+                            extra directory appearing in ARB-File-Browsers
+                            (default: none)
 
                     ARB_DOC
 
@@ -72,12 +77,12 @@ NOTES		Short description of how to set an environment variable:
 
                         1. for bash users (add to .bashrc):
 
-                           ARB_GS='gv'
+                           ARB_GS='my_special_postscript_viewer'
                            export  ARB_GS
 
                         2. for tcsh users (add to .cshrc):
 
-                           setenv ARB_GS 'gv'
+                           setenv ARB_GS 'my_special_postscript_viewer'
 
 EXAMPLES	None
 
