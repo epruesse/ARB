@@ -302,6 +302,14 @@ public:
     GB_ERROR write_int(long aw_int);
     GB_ERROR write_float(double aw_double);
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value);};
+
+    // same as write_-versions above, but always touches the database field 
+    GB_ERROR rewrite_string(const char *aw_string);
+    GB_ERROR rewrite_as_string(const char *aw_string);
+    GB_ERROR rewrite_int(long aw_int);
+    GB_ERROR rewrite_float(double aw_double);
+    GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value);};
+
     GB_ERROR toggle_toggle();   /* switches between 1/0 */
     void     touch(void);
 
