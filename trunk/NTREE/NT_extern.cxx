@@ -48,7 +48,7 @@
 #include <EXP.hxx>
 #include <awt_input_mask.hxx>
 
-#include <nt_concatenate.hxx>
+#include "nt_concatenate.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
