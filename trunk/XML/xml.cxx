@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Fri Jun/14/2002 12:44 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Jul/03/2002 13:55 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -212,6 +212,8 @@ void XML_Tag::close(FILE *out)  {
 
 // ********************************************************************************
 
+// start of implementation of class XML_Text:
+
 //  ------------------------------
 //      XML_Text::~XML_Text()
 //  ------------------------------
@@ -231,11 +233,14 @@ void XML_Text::add_son(XML_Node *, bool) {
 void XML_Text::remove_son(XML_Node */*son_*/) {
     throw string("Can't remove son from XML_Text-Node");
 }
-//  -----------------------------------
-//      void XML_Text::open(FILE*)
-//  -----------------------------------
-void XML_Text::open(FILE*) {
+
+// ------------------------------------
+//      void XML_Text::open(FILE *)
+// ------------------------------------
+void XML_Text::open(FILE *)
+{
 }
+
 //  ----------------------------------------
 //      void XML_Text::close(FILE *out)
 //  ----------------------------------------
@@ -245,6 +250,58 @@ void XML_Text::close(FILE *out) {
 //     fputs(content.c_str(), out);
     fputs(encodeEntities(content).c_str(), out);
 }
+
+// -end- of implementation of class XML_Text.
+
+// start of implementation of class XML_Comment:
+
+// ------------------------------------
+//      XML_Comment::~XML_Comment()
+// ------------------------------------
+XML_Comment::~XML_Comment()
+{
+    FILE *out = the_XML_Document->Out();
+    close(out);
+}
+
+// -----------------------------------------------------
+//      void XML_Comment::add_son(XML_Node *, bool )
+// -----------------------------------------------------
+void XML_Comment::add_son(XML_Node *, bool )
+{
+    throw string("Can't add son to XML_Comment-Node");
+}
+
+// -------------------------------------------------
+//      void XML_Comment::remove_son(XML_Node *)
+// -------------------------------------------------
+void XML_Comment::remove_son(XML_Node *)
+{
+    throw string("Can't remove son from XML_Comment-Node");
+}
+
+// ---------------------------------------
+//      void XML_Comment::open(FILE *)
+// ---------------------------------------
+void XML_Comment::open(FILE *)
+{
+}
+
+// -------------------------------------------
+//      void XML_Comment::close(FILE *out)
+// -------------------------------------------
+void XML_Comment::close(FILE *out)
+{
+    fputc('\n', out); to_indent(out, Indent());
+    fputs("<!--", out);
+    fputs(encodeEntities(content).c_str(), out);
+    fputs("-->", out);
+}
+
+
+
+// -end- of implementation of class XML_Comment.
+
 
 // ********************************************************************************
 
@@ -273,4 +330,5 @@ XML_Document::~XML_Document() {
     xml_assert(the_XML_Document == this);
     the_XML_Document = 0;
 }
+
 

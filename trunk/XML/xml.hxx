@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Fri Jun/14/2002 12:42 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Jul/03/2002 13:54 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -40,158 +40,159 @@
 #endif /* NDEBUG */
 
 
-// namespace rs {
+/** @memo Classes used to write xml
+    @doc  In order to write xml to a stream just open an XML_Document and create and destroy the needed tags.
+*/
 
-    /** @memo Classes used to write xml
-        @doc  In order to write xml to a stream just open an XML_Document and create and destroy the needed tags.
+class                XML_Document;
+extern XML_Document *the_XML_Document; // there can only be one at a time
+
+//  ----------------------------
+//      class XML_Attribute
+//  ----------------------------
+class XML_Attribute {
+private:
+    std::string         name;
+    std::string         content;
+    XML_Attribute *next;
+
+public:
+    XML_Attribute(const std::string& name_, const std::string& content_);
+    virtual ~XML_Attribute();
+
+    XML_Attribute *append_to(XML_Attribute *queue);
+
+    void print(FILE *out) const;
+};
+
+
+//  -----------------------
+//      class XML_Node
+//  -----------------------
+class XML_Node {
+protected:
+    XML_Node *father;
+    bool      opened;
+    int       indent;
+
+public:
+    XML_Node(bool is_tag);
+    virtual ~XML_Node();
+
+    int Indent() const { return indent; }
+    bool Opened() const { return opened; }
+
+    virtual void add_son(XML_Node *son_, bool son_is_tag) = 0;
+    virtual void remove_son(XML_Node *son_)               = 0;
+    virtual void open(FILE *out)                          = 0;
+    virtual void close(FILE *out)                         = 0;
+};
+
+//  ----------------------------------------
+//      class XML_Tag : public XML_Node
+//  ----------------------------------------
+
+/// xml element
+class XML_Tag : public XML_Node {
+private:
+    std::string         name;
+    XML_Node      *son;
+    XML_Attribute *attribute;
+    int            state; // 0 = no son; 1 = only content; 2 = son-tag;
+
+public:
+    /** Create a new xml element
+        @param name_ element name
     */
+    XML_Tag(const std::string &name_);
+    virtual ~XML_Tag();
 
-//     namespace xml {
+    /** add an attribute to the XML_Tag
+        @param name_ attribute name
+        @param content_ attribute value
+    */
+    void         add_attribute(const std::string& name_, const std::string& content_);
+    void         add_attribute(const std::string& name_, int value);
+    virtual void add_son(XML_Node *son_, bool son_is_tag);
+    virtual void remove_son(XML_Node *son_);
+    virtual void open(FILE *out);
+    virtual void close(FILE *out);
+};
 
-        class                XML_Document;
-        extern XML_Document *the_XML_Document; // there can only be one at a time
+//  -----------------------------------------
+//      class XML_Text : public XML_Node
+//  -----------------------------------------
+/// a xml text node
+class XML_Text : public XML_Node {
+private:
+    std::string content;
 
-        //  ----------------------------
-        //      class XML_Attribute
-        //  ----------------------------
-        class XML_Attribute {
-        private:
-            std::string         name;
-            std::string         content;
-            XML_Attribute *next;
+public:
+    /** Create text (content) in xml
+        @param content_ the content
+    */
+    XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
+    virtual ~XML_Text();
 
-        public:
-            XML_Attribute(const std::string& name_, const std::string& content_);
-            virtual ~XML_Attribute();
+    virtual void add_son(XML_Node *son_, bool son_is_tag);
+    virtual void remove_son(XML_Node *son_);
+    virtual void open(FILE *);
+    virtual void close(FILE *out);
+};
 
-            XML_Attribute *append_to(XML_Attribute *queue);
+//  --------------------------------------------
+//      class XML_Comment : public XML_Text
+//  --------------------------------------------
 
-            void print(FILE *out) const;
-        };
+class XML_Comment : public XML_Node {
+    std::string content;
+public:
+    XML_Comment(const std::string& content_) : XML_Node(false), content(content_) {}
+    virtual ~XML_Comment();
 
+    virtual void add_son(XML_Node *son_, bool son_is_tag);
+    virtual void remove_son(XML_Node *son_);
+    virtual void open(FILE *);
+    virtual void close(FILE *out);
+};
 
-        //  -----------------------
-        //      class XML_Node
-        //  -----------------------
-        class XML_Node {
-        protected:
-            XML_Node *father;
-            bool      opened;
-            int       indent;
+//  ---------------------------
+//      class XML_Document
+//  ---------------------------
+/// an entire xml document
+class XML_Document {
+private:
+    std::string  dtd;
+    XML_Tag     *root;
+    XML_Node    *latest_son;
+    FILE        *out;
 
-        public:
-            XML_Node(bool is_tag);
-            virtual ~XML_Node();
+public:
+    /** Create and stream (at destruction) a xml document
+        @param name_ name of the root node
+        @param dtd_ filename of dtd
+        @param out_ FILE where xml document will be written to
+    */
+    XML_Document(const std::string& name_, const std::string& dtd_, FILE *out_);
+    virtual ~XML_Document();
 
-            int Indent() const { return indent; }
-            bool Opened() const { return opened; }
+    /// true -> tags w/o content or attributes are skipped (default = false)
+    bool skip_empty_tags;
 
-            virtual void add_son(XML_Node *son_, bool son_is_tag) = 0;
-            virtual void remove_son(XML_Node *son_)               = 0;
-            virtual void open(FILE *out)                          = 0;
-            virtual void close(FILE *out)                         = 0;
-        };
+    /// how many columns are used per indentation level (defaults to 1)
+    size_t indentation_per_level;
 
-        //  ----------------------------------------
-        //      class XML_Tag : public XML_Node
-        //  ----------------------------------------
+    XML_Node* LatestSon() { return latest_son; }
+    void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
 
-        /// xml element
-        class XML_Tag : public XML_Node {
-        private:
-            std::string         name;
-            XML_Node      *son;
-            XML_Attribute *attribute;
-            int            state; // 0 = no son; 1 = only content; 2 = son-tag;
+    XML_Tag& getRoot() { return *root; }
 
-        public:
-            /** Create a new xml element
-                @param name_ element name
-            */
-            XML_Tag(const std::string &name_);
-            virtual ~XML_Tag();
+    void add_attribute(const std::string& name_, const std::string& content_) {
+        getRoot().add_attribute(name_, content_);
+    }
 
-            /** add an attribute to the XML_Tag
-                @param name_ attribute name
-                @param content_ attribute value
-            */
-            void         add_attribute(const std::string& name_, const std::string& content_);
-            void         add_attribute(const std::string& name_, int value);
-            virtual void add_son(XML_Node *son_, bool son_is_tag);
-            virtual void remove_son(XML_Node *son_);
-            virtual void open(FILE *out);
-            virtual void close(FILE *out);
-        };
-
-        //  -----------------------------------------
-        //      class XML_Text : public XML_Node
-        //  -----------------------------------------
-        /// a xml text node
-        class XML_Text : public XML_Node {
-        private:
-            std::string content;
-
-        public:
-            /** Create text (content) in xml
-                @param content_ the content
-             */
-            XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
-            virtual ~XML_Text();
-
-            virtual void add_son(XML_Node *son_, bool son_is_tag);
-            virtual void remove_son(XML_Node *son_);
-            virtual void open(FILE *out);
-            virtual void close(FILE *out);
-        };
-
-        //  --------------------------------------------
-        //      class XML_Comment : public XML_Text
-        //  --------------------------------------------
-        class XML_Comment : public XML_Text {
-        public:
-            XML_Comment(const std::string& content_) : XML_Text("<!-- "+content_+" -->") {}
-            virtual ~XML_Comment() {}
-        };
-
-        //  ---------------------------
-        //      class XML_Document
-        //  ---------------------------
-        /// an entire xml document
-        class XML_Document {
-        private:
-            std::string  dtd;
-            XML_Tag     *root;
-            XML_Node    *latest_son;
-            FILE        *out;
-
-        public:
-            /** Create and stream (at destruction) a xml document
-                @param name_ name of the root node
-                @param dtd_ filename of dtd
-                @param out_ FILE where xml document will be written to
-            */
-            XML_Document(const std::string& name_, const std::string& dtd_, FILE *out_);
-            virtual ~XML_Document();
-
-            /// true -> tags w/o content or attributes are skipped (default = false)
-            bool skip_empty_tags;
-
-            /// how many columns are used per indentation level (defaults to 1)
-            size_t indentation_per_level;
-
-            XML_Node* LatestSon() { return latest_son; }
-            void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
-
-            XML_Tag& getRoot() { return *root; }
-
-            void add_attribute(const std::string& name_, const std::string& content_) {
-                getRoot().add_attribute(name_, content_);
-            }
-
-            FILE *Out() { return out; }
-        };
-//     };                          // end of namespace xml
-// };                              // end of namespace rs
+    FILE *Out() { return out; }
+};
 
 #else
 #error xml.hxx included twice
