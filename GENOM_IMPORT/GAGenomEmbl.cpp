@@ -572,7 +572,7 @@ void gellisary::GAGenomEmbl::parseSequence(string * source_str)
 //    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&target_str,' ',false);
 //    target_str = GAGenomUtilities::toOneString(&tmp_vector,false);
 	//target_str = ost.str();
-	cout << "Bla :-" << target_str << "-" << i << std::endl;
+	//cout << "Bla :-" << target_str << "-" << i << std::endl;
 	//source_str->erase();
     *source_str = target_str;
 }

@@ -103,6 +103,9 @@ void gellisary::GAGenomFeatureTableDDBJ::parse()
     bool source_open = false;
     bool gene_open = false;
     int tmp_num = 0;
+    string qu;
+    string quv1;
+    string quv2;
     GAGenomGeneDDBJ *tmp_gene;
     for(int i = 0; i < (int) row_lines.size();i++)
     {
@@ -115,7 +118,19 @@ void gellisary::GAGenomFeatureTableDDBJ::parse()
                 tmp_gene->setGeneNumber(number_of_genes++);
                 tmp_gene->parse();
                 tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
-                t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
+                qu = "gene";
+                quv1 = *(tmp_gene->getQualifierValue(&qu));
+                if(quv1.empty())
+                {
+                	quv1 = "nix";
+                }
+                qu = "product";
+                quv2 = *(tmp_gene->getQualifierValue(&qu));
+                if(quv2.empty())
+                {
+                	quv2 = "nix";
+                }
+                t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType(),&quv2,&quv1);
                 tmp_gene->setNameOfGene(&t_str);
                 number_of_features[tmp_num]++;
                 tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
