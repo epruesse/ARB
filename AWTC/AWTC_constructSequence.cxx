@@ -23,7 +23,7 @@
 
 #define SAME_SEQUENCE (-1),(-1)
 
-static inline int min(int i1, int i2) 			{return i1<i2 ? i1 : i2;}
+static inline int min(int i1, int i2)           {return i1<i2 ? i1 : i2;}
 
 static inline int basesMatch(char c1, char c2)
 {
@@ -35,13 +35,13 @@ static inline int inversBasesMatch(char c1, char c2)
     c2 = toupper(c2);
 
     switch (c1) {
-	case 'A': return c2=='T' || c2=='U';
-	case 'C': return c2=='G';
-	case 'G': return c2=='C';
-	case 'T':
-	case 'U': return c2=='A';
-	case 'N': return 1;
-	default: awtc_assert(0);
+        case 'A': return c2=='T' || c2=='U';
+        case 'C': return c2=='G';
+        case 'G': return c2=='C';
+        case 'T':
+        case 'U': return c2=='A';
+        case 'N': return 1;
+        default: awtc_assert(0);
     }
 
     return c1==c2;
@@ -69,7 +69,7 @@ static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
 {
     printf("[%02i] ",num);
 
-    #define SHOWLEN 40
+#define SHOWLEN 40
 
     const char *text = comp->text();
     int len = comp->length();
@@ -78,12 +78,12 @@ static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
 
     if (len<=SHOWLEN)
     {
-	printf("'%s'\n", lstr(text,len));
+        printf("'%s'\n", lstr(text,len));
     }
     else
     {
-	printf("'%s...", lstr(text, SHOWLEN));
-	printf("%s'\n", lstr(text+len-SHOWLEN, SHOWLEN));
+        printf("'%s...", lstr(text, SHOWLEN));
+        printf("%s'\n", lstr(text+len-SHOWLEN, SHOWLEN));
     }
 }
 #else
@@ -102,23 +102,23 @@ static inline void dumpPart(int, const AWTC_CompactedSubSequence *) {}
 
 class Way
 {
-    int *my_way; 		// 1..n for normal parts -1..-n for reverse parts
+    int *my_way;        // 1..n for normal parts -1..-n for reverse parts
     int my_length;
     int my_score;
     int my_maxlength;
 
 public:
 
-    Way(int maxlength) : my_length(0), my_score(0), my_maxlength(maxlength)	{my_way = new int[maxlength];}
-    ~Way() 									{delete [] my_way;}
+    Way(int maxlength) : my_length(0), my_score(0), my_maxlength(maxlength) {my_way = new int[maxlength];}
+    ~Way()                                  {delete [] my_way;}
 
     Way(const Way& w)
     {
-        my_maxlength 	= w.my_maxlength;
-        my_length 	= w.my_length;
-        my_score 	= w.my_score;
+        my_maxlength    = w.my_maxlength;
+        my_length   = w.my_length;
+        my_score    = w.my_score;
 
-        my_way 		= new int[my_maxlength];
+        my_way      = new int[my_maxlength];
 
         memcpy(my_way, w.my_way, sizeof(my_way[0])*my_length);
     }
@@ -133,9 +133,9 @@ public:
                 my_way = new int[w.my_maxlength];
             }
 
-            my_maxlength 	= w.my_maxlength;
-            my_length 		= w.my_length;
-            my_score 		= w.my_score;
+            my_maxlength    = w.my_maxlength;
+            my_length       = w.my_length;
+            my_score        = w.my_score;
 
             memcpy(my_way, w.my_way, sizeof(my_way[0])*my_length);
         }
@@ -145,7 +145,7 @@ public:
 
     void add(int partNum, int reverse, int score) {
         awtc_assert(my_length<my_maxlength);
-        partNum++;	// recode cause partNum==0 cannot be negative
+        partNum++;  // recode cause partNum==0 cannot be negative
         my_way[my_length++] = reverse ? -partNum : partNum;
         my_score += score;
     }
@@ -154,8 +154,8 @@ public:
         my_score -= score;
     }
 
-    int score() const 		{return my_score; /*my_length ? my_score/my_length : 0;*/}
-    int length() const 		{return my_length;}
+    int score() const       {return my_score; /*my_length ? my_score/my_length : 0;*/}
+    int length() const      {return my_length;}
     int way(int num, int& reverse) const {reverse = my_way[num]<0; return abs(my_way[num])-1;}
 
     void dump() const {
@@ -177,16 +177,16 @@ public:
 // class Overlap
 // -------------
 
-class Overlap			// matrix which stores overlap data
+class Overlap           // matrix which stores overlap data
 {
-    int parts;			// no of parts
-    int *ol;			// how much the both sequence parts overlap
-    int *sc;			// which score we calculated for this overlap
+    int parts;          // no of parts
+    int *ol;            // how much the both sequence parts overlap
+    int *sc;            // which score we calculated for this overlap
 
     int offset(int f,int fReverse, int t, int tReverse) const
     {
-	int off = parts*2 * (t*2 + tReverse)  +  (f*2 + fReverse);
-	return off;
+        int off = parts*2 * (t*2 + tReverse)  +  (f*2 + fReverse);
+        return off;
     }
 
     void findWayFrom(Way *w, Way *best, int partNum, int reverse, int *used, int minMatchingBases) const;
@@ -195,45 +195,45 @@ public:
 
     Overlap(int Parts)
     {
-	parts = Parts;
-	int sizeq = parts*2*parts*2;
-	ol = new int[sizeq];
-	sc = new int[sizeq];
+        parts = Parts;
+        int sizeq = parts*2*parts*2;
+        ol = new int[sizeq];
+        sc = new int[sizeq];
 
 #ifdef TEST_UNIQUE_SET
-	int off;
-	for (off=0; off<sizeq; off++)
-	{
-	    ol[off] = UNIQUE_VALUE;
-	    sc[off] = UNIQUE_VALUE;
-	}
+        int off;
+        for (off=0; off<sizeq; off++)
+        {
+            ol[off] = UNIQUE_VALUE;
+            sc[off] = UNIQUE_VALUE;
+        }
 #endif
     }
 
     ~Overlap() { delete [] ol; delete [] sc; }
 
-    int overlap(int f, int fReverse, int t, int tReverse) const				{return ol[offset(f,fReverse,t,tReverse)];}
-    int score(int f, int fReverse, int t, int tReverse) const				{return sc[offset(f,fReverse,t,tReverse)];}
+    int overlap(int f, int fReverse, int t, int tReverse) const             {return ol[offset(f,fReverse,t,tReverse)];}
+    int score(int f, int fReverse, int t, int tReverse) const               {return sc[offset(f,fReverse,t,tReverse)];}
 
     void set(int off, int theOverlap, int theScore)
     {
 #ifdef TEST_UNIQUE_SET
-	awtc_assert(ol[off]==UNIQUE_VALUE);
-	awtc_assert(sc[off]==UNIQUE_VALUE);
+        awtc_assert(ol[off]==UNIQUE_VALUE);
+        awtc_assert(sc[off]==UNIQUE_VALUE);
 #endif
-	ol[off] = theOverlap;
-	sc[off] = theScore;
+        ol[off] = theOverlap;
+        sc[off] = theScore;
     }
-    void set(int f,int fReverse, int t, int tReverse, int theOverlap, int theScore) 	{set(offset(f,fReverse,t,tReverse), theOverlap, theScore);}
+    void set(int f,int fReverse, int t, int tReverse, int theOverlap, int theScore)     {set(offset(f,fReverse,t,tReverse), theOverlap, theScore);}
 
     void setall(int f, int t, int theOverlap, int theScore)
     {
-	int off = offset(f,0,t,0);
+        int off = offset(f,0,t,0);
 
-	set(off, 		theOverlap, theScore);
-	set(off+1, 		theOverlap, theScore);
-	set(off+parts*2, 	theOverlap, theScore);
-	set(off+parts*2+1, 	theOverlap, theScore);
+        set(off,        theOverlap, theScore);
+        set(off+1,      theOverlap, theScore);
+        set(off+parts*2,    theOverlap, theScore);
+        set(off+parts*2+1,  theOverlap, theScore);
     }
 
     Way findWay(int minMatchingBases) const;
@@ -248,28 +248,28 @@ void Overlap::findWayFrom(Way *w, Way *best, int partNum, int reverse, int *used
 
     for (l=0; l<parts; l++)
     {
-	if (!used[l])
-	{
-	    int rev;
+        if (!used[l])
+        {
+            int rev;
 
-	    for (rev=0; rev<2; rev++)
-	    {
-		int scoreForPartialWay = score(partNum, reverse, l, rev);
+            for (rev=0; rev<2; rev++)
+            {
+                int scoreForPartialWay = score(partNum, reverse, l, rev);
 
-		if (scoreForPartialWay>=minMatchingBases)
-		{
-		    w->add(l, rev, scoreForPartialWay);
-		    if (w->score() > best->score()) {
-			*best = *w;
-			printf("new best ");
-			best->dump();
-		    }
+                if (scoreForPartialWay>=minMatchingBases)
+                {
+                    w->add(l, rev, scoreForPartialWay);
+                    if (w->score() > best->score()) {
+                        *best = *w;
+                        printf("new best ");
+                        best->dump();
+                    }
 
-		    findWayFrom(w, best, l, rev, used, minMatchingBases);
-		    w->shorten(scoreForPartialWay);
-		}
-	    }
-	}
+                    findWayFrom(w, best, l, rev, used, minMatchingBases);
+                    w->shorten(scoreForPartialWay);
+                }
+            }
+        }
     }
 
     used[partNum] = 0;
@@ -283,16 +283,16 @@ Way Overlap::findWay(int minMatchingBases) const
     Way best(parts);
 
     for (l=0; l<parts; l++) {
-	used[l] = 0;
+        used[l] = 0;
     }
 
     for (l=0; l<parts; l++) {
-	int rev;
-	for (rev=0; rev<2; rev++) {
-	    w.add(l,rev,0);
-	    findWayFrom(&w, &best, l, rev, used, minMatchingBases);
-	    w.shorten(0);
-	}
+        int rev;
+        for (rev=0; rev<2; rev++) {
+            w.add(l,rev,0);
+            findWayFrom(&w, &best, l, rev, used, minMatchingBases);
+            w.shorten(0);
+        }
     }
 
     delete [] used;
@@ -304,19 +304,19 @@ void Overlap::dump() const
 #ifdef DEBUG
     printf("-------------------------------\n");
     for (int y=-1; y<parts; y++) {
-	for (int yR=0; yR<2; yR++) {
-	    for (int x=-1; x<parts; x++) {
-		for (int xR=0; xR<2; xR++) {
-		    if (x==-1 || y==-1) {
-			if (!xR && !yR) 	printf("%4i   ", x==-1 ? y : x);
-			else 		printf("       ");
-		    } else {
-			printf("%3i|%-3i", overlap(x,xR,y,yR), score(x,xR,y,yR));
-		    }
-		}
-	    }
-	    printf("\n");
-	}
+        for (int yR=0; yR<2; yR++) {
+            for (int x=-1; x<parts; x++) {
+                for (int xR=0; xR<2; xR++) {
+                    if (x==-1 || y==-1) {
+                        if (!xR && !yR)     printf("%4i   ", x==-1 ? y : x);
+                        else        printf("       ");
+                    } else {
+                        printf("%3i|%-3i", overlap(x,xR,y,yR), score(x,xR,y,yR));
+                    }
+                }
+            }
+            printf("\n");
+        }
     }
     printf("-------------------------------\n");
 #endif
@@ -338,110 +338,110 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
 
     if (reverse1)
     {
-	if (reverse2)	// both are reversed -> compare reverse start of comp1 with reverse end of comp2
-	{
-	    const char *start1 = comp1->text();
-	    const char *end2 = comp2->text(comp2->length());
+        if (reverse2)   // both are reversed -> compare reverse start of comp1 with reverse end of comp2
+        {
+            const char *start1 = comp1->text();
+            const char *end2 = comp2->text(comp2->length());
 
-	    while (len<=maxcmp)
-	    {
-		int l;
-		int mismatches = 0;
+            while (len<=maxcmp)
+            {
+                int l;
+                int mismatches = 0;
 
-		for (l=0; l<len; l++) {
-		    if (!basesMatch(start1[-l], end2[-l])) {
-			mismatches++;
-		    }
-		}
+                for (l=0; l<len; l++) {
+                    if (!basesMatch(start1[-l], end2[-l])) {
+                        mismatches++;
+                    }
+                }
 
-		int score = calcScore(len, mismatches);
-		if (score>=bestScore) {
-		    bestOverlap = len;
-		    bestScore   = score;
-		}
+                int score = calcScore(len, mismatches);
+                if (score>=bestScore) {
+                    bestOverlap = len;
+                    bestScore   = score;
+                }
 
-		len++;
-		start1++;
-	    }
-	}
-	else	// comp1 is reversed -> compare reverse start of comp1 with start of comp2
-	{
-	    const char *start1 = comp1->text();
-	    const char *start2 = comp2->text();
+                len++;
+                start1++;
+            }
+        }
+        else    // comp1 is reversed -> compare reverse start of comp1 with start of comp2
+        {
+            const char *start1 = comp1->text();
+            const char *start2 = comp2->text();
 
-	    while (len<=maxcmp)
-	    {
-		int l;
-		int mismatches = 0;
+            while (len<=maxcmp)
+            {
+                int l;
+                int mismatches = 0;
 
-		for (l=0; l<len; l++) {
-		    if (!inversBasesMatch(start1[-l], start2[l])) {
-			mismatches++;
-		    }
-		}
+                for (l=0; l<len; l++) {
+                    if (!inversBasesMatch(start1[-l], start2[l])) {
+                        mismatches++;
+                    }
+                }
 
-		int score = calcScore(len, mismatches);
-		if (score>=bestScore) {
-		    bestOverlap = len;
-		    bestScore   = score;
-		}
+                int score = calcScore(len, mismatches);
+                if (score>=bestScore) {
+                    bestOverlap = len;
+                    bestScore   = score;
+                }
 
-		len++;
-		start1++;
-	    }
-	}
+                len++;
+                start1++;
+            }
+        }
     }
-    else if (reverse2) 	// comp2 is reversed -> compare end of comp1 with reverse end of comp2
+    else if (reverse2)  // comp2 is reversed -> compare end of comp1 with reverse end of comp2
     {
-	const char *end1 = comp1->text(comp1->length()-1);
-	const char *end2 = comp2->text(comp2->length()-1);
+        const char *end1 = comp1->text(comp1->length()-1);
+        const char *end2 = comp2->text(comp2->length()-1);
 
-	while (len<=maxcmp)
-	{
-	    int l;
-	    int mismatches = 0;
+        while (len<=maxcmp)
+        {
+            int l;
+            int mismatches = 0;
 
-	    for (l=0; l<len; l++) {
-		if (!inversBasesMatch(end1[l],end2[-l])) {
-		    mismatches++;
-		}
-	    }
+            for (l=0; l<len; l++) {
+                if (!inversBasesMatch(end1[l],end2[-l])) {
+                    mismatches++;
+                }
+            }
 
-	    int score = calcScore(len, mismatches);
-	    if (score>=bestScore) {
-		bestOverlap = len;
-		bestScore   = score;
-	    }
+            int score = calcScore(len, mismatches);
+            if (score>=bestScore) {
+                bestOverlap = len;
+                bestScore   = score;
+            }
 
-	    len++;
-	    end1--;
-	}
+            len++;
+            end1--;
+        }
     }
-    else 	// both normal -> compare end of comp1 whith start of comp2
+    else    // both normal -> compare end of comp1 whith start of comp2
     {
-	const char *end1 = comp1->text(comp1->length()-1);
-	const char *start2 = comp2->text();
+        const char *end1 = comp1->text(comp1->length()-1);
+        const char *start2 = comp2->text();
 
-	while (len<=maxcmp)
-	{
-	    int l;
-	    int mismatches = 0;
+        while (len<=maxcmp)
+        {
+            int l;
+            int mismatches = 0;
 
-	    for (l=0; l<len; l++) {
-		if (!basesMatch(end1[l], start2[l])) {
-		    mismatches++;
-		}
-	    }
+            for (l=0; l<len; l++) {
+                if (!basesMatch(end1[l], start2[l])) {
+                    mismatches++;
+                }
+            }
 
-	    int score = calcScore(len, mismatches);
-	    if (score>=bestScore) {
-		bestOverlap = len;
-		bestScore   = score;
-	    }
+            int score = calcScore(len, mismatches);
+            if (score>=bestScore) {
+                bestOverlap = len;
+                bestScore   = score;
+            }
 
-	    len++;
-	    end1--;
-	}
+            len++;
+            end1--;
+        }
     }
 }
 
@@ -463,7 +463,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 
     for (s=0; s<parts; s++) {
         dumpPart(s,comp[s]);
-        lap.setall(s,s,SAME_SEQUENCE); 	// set diagonal entries to SAME_SEQUENCE (= "a sequence can't overlap with itself")
+        lap.setall(s,s,SAME_SEQUENCE);  // set diagonal entries to SAME_SEQUENCE (= "a sequence can't overlap with itself")
         for (int s2=s+1; s2<parts; s2++) {
             awtc_assert(s!=s2);
             for (int sR=0; sR<2; sR++) {
@@ -491,7 +491,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
     // concatenate parts
 
     int sequenceLength = 0;
-    for (s=0; s<w.length(); s++)	// calculate length
+    for (s=0; s<w.length(); s++)    // calculate length
     {
         int rev2;
         int part2 = w.way(s,rev2);
@@ -511,7 +511,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
     *refSeq = new char[sequenceLength+1];
     int off = 0;
 
-    for (s=0; s<w.length(); s++)	// construct sequence
+    for (s=0; s<w.length(); s++)    // construct sequence
     {
         int rev2;
         int part2 = w.way(s,rev2);
@@ -548,8 +548,8 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 typedef const char *cstr;
 typedef char *str;
 
-#define PARTS 			10
-#define OVERLAPPING_BASES	100
+#define PARTS           10
+#define OVERLAPPING_BASES   100
 
 static inline int startOf(int len, int partNum)
 {
@@ -573,15 +573,15 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     char *compressed = strdup(testWithSequence);
 
     {
-	const char *s = testWithSequence;
-	while(*s)
-	{
-	    if (*s!='-' && *s!='.')
-	    {
-		compressed[basesInSeq++] = *s;
-	    }
-	    s++;
-	}
+        const char *s = testWithSequence;
+        while(*s)
+        {
+            if (*s!='-' && *s!='.')
+            {
+                compressed[basesInSeq++] = *s;
+            }
+            s++;
+        }
     }
 
     int parts = PARTS;
@@ -591,8 +591,8 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     printf("AWTC_testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);
 
     long randSeed = time(NULL);
-//    randSeed = 22061965;
-//    randSeed = 860485236;
+    //    randSeed = 22061965;
+    //    randSeed = 860485236;
     printf("randSeed=%li\n", randSeed);
     srand(randSeed);
 
@@ -600,88 +600,88 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
     for (p=0; p<parts; p++)
     {
-	int start = p==0 ? 0 : last_end - (25+(rand()*75)/RAND_MAX);
-	if (start<0) 			start = 0;
-	else if (start>=basesInSeq) 	start = basesInSeq-1;
+        int start = p==0 ? 0 : last_end - (25+(rand()*75)/RAND_MAX);
+        if (start<0)            start = 0;
+        else if (start>=basesInSeq)     start = basesInSeq-1;
 
-	int llen = p<PARTS-1 ? (rand()*(basesInSeq/parts+200))/RAND_MAX : basesInSeq-start;
-	if (start+llen > basesInSeq) 	llen = basesInSeq-start;
+        int llen = p<PARTS-1 ? (rand()*(basesInSeq/parts+200))/RAND_MAX : basesInSeq-start;
+        if (start+llen > basesInSeq)    llen = basesInSeq-start;
 
-	int end = start+llen-1;
-	awtc_assert(end<basesInSeq);
+        int end = start+llen-1;
+        awtc_assert(end<basesInSeq);
 
-	int overlap = last_end-start+1;
-	awtc_assert(overlap>0 || p==0);
+        int overlap = last_end-start+1;
+        awtc_assert(overlap>0 || p==0);
 
-	int count = 0;
-	int l;
-	for (l=0; l<overlap; l++)
-	{
-	    if (strchr("-.",compressed[last_end+l])==NULL)
-		count++;
-	}
+        int count = 0;
+        int l;
+        for (l=0; l<overlap; l++)
+        {
+            if (strchr("-.",compressed[last_end+l])==NULL)
+                count++;
+        }
 
-	printf("[%02i] start=%-5i llen=%-5i end=%-5i overlap=%-5i basesInOverlap=%-5i", p, start, llen, end, overlap, count);
-	last_end = end;
-	awtc_assert(start+llen<=basesInSeq);
-	part[p] = strndup(compressed+start, llen);
-	if (rand()%2)
-	{
-	    GBT_reverseComplementNucSequence(part[p], llen, GB_AT_RNA);
-	    printf(" (reverted)");
-	}
-	printf("\n");
+        printf("[%02i] start=%-5i llen=%-5i end=%-5i overlap=%-5i basesInOverlap=%-5i", p, start, llen, end, overlap, count);
+        last_end = end;
+        awtc_assert(start+llen<=basesInSeq);
+        part[p] = strndup(compressed+start, llen);
+        if (rand()%2)
+        {
+            GBT_reverseComplementNucSequence(part[p], llen, GB_AT_RNA);
+            printf(" (reverted)");
+        }
+        printf("\n");
     }
 
     for (p=0; p<parts; p++)
     {
-	int l;
-	int llen = strlen(part[p]);
-	str s = part[p];
+        int l;
+        int llen = strlen(part[p]);
+        str s = part[p];
 
-	for (l=0; l<llen; l++)
-	{
-	    if (s[l]!='-' && s[l]!='.')
-	    {
-		break;
-	    }
-	}
+        for (l=0; l<llen; l++)
+        {
+            if (s[l]!='-' && s[l]!='.')
+            {
+                break;
+            }
+        }
 
-	if (l==llen)	// seq is empty
-	{
-	    int q;
+        if (l==llen)    // seq is empty
+        {
+            int q;
 
-	    for (q=p+1; q<parts; q++)
-	    {
-		part[q-1] = part[q];
-	    }
-	    parts--;	// skip it
-	    p--;
-	}
+            for (q=p+1; q<parts; q++)
+            {
+                part[q-1] = part[q];
+            }
+            parts--;    // skip it
+            p--;
+        }
 
-	part[p] = s;
+        part[p] = s;
     }
 
     if (parts<PARTS) printf("deleted %i empty parts\n", PARTS-parts);
 
-    for (p=0; p<parts; p++)	// insert some errors into sequences
+    for (p=0; p<parts; p++) // insert some errors into sequences
     {
-	int changes = 0;
-	str s = part[p];
+        int changes = 0;
+        str s = part[p];
 
-	while (*s)
-	{
-	    if (strchr("-.", *s)==NULL)
-	    {
-		if ((double(rand())/double(RAND_MAX)) < 0.05 )		// error-probability
-		{
-		    *s = "ACGT"[rand()%4];
-		    changes++;
-		}
-	    }
-	    s++;
-	}
-	printf("[%02i] base-errors = %i\n", p, changes);
+        while (*s)
+        {
+            if (strchr("-.", *s)==NULL)
+            {
+                if ((double(rand())/double(RAND_MAX)) < 0.05 )      // error-probability
+                {
+                    *s = "ACGT"[rand()%4];
+                    changes++;
+                }
+            }
+            s++;
+        }
+        printf("[%02i] base-errors = %i\n", p, changes);
     }
 
     char *neu = AWTC_constructSequence(parts, (cstr*)part, 10, NULL);
