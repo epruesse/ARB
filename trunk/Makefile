@@ -22,6 +22,7 @@ include config.makefile
 # DEVEL_$(DEVELOPER)	developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
+# OPENGL=0/1		whether OPENGL is available
 #
 
 #********************* Default set and gcc static enviroments *****************
@@ -43,7 +44,6 @@ endif
 #---------------------- developer specific settings
 
 DEVEL_DEF=-DDEVEL_$(DEVELOPER)
-OPENGL=0 # open gl tools are experimental yet
 
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
 DEVEL_DEF=
@@ -51,15 +51,14 @@ endif
 
 ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
 DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS -DDEVEL_ARTEM
-OPENGL=1
 endif
 
 ifeq ($(DEVELOPER),HARALDX) # special settings for HARALDX
 DEVEL_DEF=-DDEVEL_HARALD -DDEVEL_ARTEM
 endif
 
-ifeq ($(DEVELOPER),YADHU) # special settings for YADHU
-OPENGL=1
+ifeq ($(OPENGL),1) # activate OPENGL code
+DEVEL_DEF=$(DEVEL_DEF) -DARB_OPENGL
 endif
 
 #----------------------
@@ -568,7 +567,8 @@ $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
-ARCHS_EDIT4 = \
+
+ARCHS_EDIT4_GENERAL = \
 		NAMES_COM/client.a \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
@@ -578,33 +578,22 @@ ARCHS_EDIT4 = \
 		ARB_GDE/ARB_GDE.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		XML/XML.a \
+
+ifeq ($(OPENGL),0)
+ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL)
+LIBS_EDIT4 =
+else
+ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL) \
+		RNA3D/RNA3D.a \
+		RNA3D/OPENGL/OPENGL.a \
+LIBS_EDIT4 = $(GLLIBS)
+endif
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  \
-		)
-
-EDIT4GL = bin/arb_edit4_gl
-ARCHS_EDIT4GL = \
-		NAMES_COM/client.a \
-		AWTC/AWTC.a \
-		EDIT4/EDIT4.a \
-		SECEDIT/SECEDIT.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-		STAT/STAT.a \
-		ARB_GDE/ARB_GDE.a \
-		ISLAND_HOPPING/ISLAND_HOPPING.a \
-		XML/XML.a \
-		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
-
-$(EDIT4GL): $(ARCHS_EDIT4GL:.a=.dummy) shared_libs
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4GL) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4GL) $(GUI_LIBS) $(GLLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4GL) $(GUI_LIBS)  $(GLLIBS)  \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
 		)
 
 #***********************************	arb_wetc **************************************
@@ -906,6 +895,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"CLEAN_BEFORE_MAKE  = $(CLEAN_BEFORE_MAKE)" \
+		"OPENGL  = $(OPENGL)" \
 		"MAIN = $(@F:.dummy=.a)"
 
 
@@ -1040,7 +1030,6 @@ test:	$(TEST)
 demo:	$(AWDEMO)
 
 e4:	$(EDIT4)
-e4gl:	$(EDIT4GL)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 we:	$(WETC)
 eb:	$(EDITDB)
@@ -1270,13 +1259,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-ifeq ($(OPENGL),1) # build opengl tools?
-OPENGL_TARGETS=3d e4gl
-else
-OPENGL_TARGETS=
-endif
-
-arbxtras: tg ps pc pst chip # $(OPENGL_TARGETS)
+arbxtras: tg ps pc pst chip
 
 tryxtras:
 		@echo $(SEP)
