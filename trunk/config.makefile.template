@@ -1,3 +1,7 @@
+# --------------------------------------------------------------------------------
+# If this file is named config.makefile.template then rename it to config.makefile 
+# --------------------------------------------------------------------------------
+#
 # Uncomment one section, depending on your machine type and compiler options
 
 DEBUG = 1# don't set to 0 (comment out instead!)
