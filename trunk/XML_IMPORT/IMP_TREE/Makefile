@@ -2,10 +2,10 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = MySAXHandler.o \
-			  testParser.o \
+CPP_OBJECTS = sax2Handler.o \
+			  xmlParser.o \
 
-TARGET=$(ARBHOME)/bin/arb_xml_parser
+TARGET=$(ARBHOME)/bin/xml2newick
 
 $(MAIN): $(TARGET)
 

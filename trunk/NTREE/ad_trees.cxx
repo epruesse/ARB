@@ -81,7 +81,7 @@ void tree_import_callback(AW_root *aw_root) {
         treename_nopath = treename;
     }
 
-    char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1",0);
+    char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1",0);
     aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
     free(fname);
@@ -168,6 +168,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( AWAR_TREE_IMPORT "/file_name", "treefile",aw_def);
     aw_root->awar_string( AWAR_TREE_IMPORT "/directory", "",    aw_def);
     aw_root->awar_string( AWAR_TREE_IMPORT "/filter", "tree",   aw_def);
+
     aw_root->awar_string( AWAR_TREE_IMPORT "/tree_name", "tree_",   aw_def) ->set_srt( GBT_TREE_AWAR_SRT);
 
     aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback( tree_import_callback);
@@ -374,23 +375,75 @@ AW_window *create_tree_export_window(AW_root *root)
     return (AW_window *)aws;
 }
 
+char *readXmlTree(char *fname) {
+    //create a temp file
+    char tempFile[]  = "newickXXXXXX";
+    int createTempFile = mkstemp(tempFile);
+    
+    if(createTempFile) {
+        char *tmpFname = strdup(fname); char *tmp = 0;
+        void *buf  = GBS_stropen(strlen(fname));
+
+        // extract path from fname inorder to place a copy of dtd file required to validate xml file
+        for (char *tok = strtok(tmpFname,"/"); tok; ) {
+            tmp = tok;
+            tok = strtok(0,"/");            
+            if (tok) {
+                GBS_strcat(buf,"/");
+                GBS_strcat(buf,tmp);
+            }
+        }
+        char *path = GBS_strclose(buf,0);        
+
+        // copying arb_tree.dtd file to the Path from where xml file is loaded
+        char *command = GBS_global_string_copy("cp %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
+        GB_xcmd(command,false, true); 
+
+        //execute xml2newick to convert xml format tree to newick format tree
+        command = GBS_global_string_copy("xml2newick %s %s", fname, tempFile);
+        GB_xcmd(command,false, true);
+
+        // removing arb_tree.dtd file after xml file has validated 
+        command = GBS_global_string_copy("rm -f %s/arb_tree.dtd", path);
+        GB_xcmd(command,false, true); 
+
+        free(command);
+        free(path); 
+
+        // return newick format tree file
+        return strdup(tempFile);
+    }
+    else {
+        printf("Failed to create Temporary File to Parse xml file!\n");
+        return 0;
+    }
+}
+
 void tree_load_cb(AW_window *aww){
     AW_root  *aw_root      = aww->get_root();
     GB_ERROR  error        = 0;
     char     *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
     char     *tree_name    = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
     char     *tree_comment = 0;
-    GBT_TREE *tree         = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1);
+    char     *pcTreeFormat = aw_root->awar(AWAR_TREE_IMPORT "/filter")->read_string();
+    GBT_TREE *tree;
 
-    //  long fuzzy = aw_root->awar( AWAR_TREE_IMPORT "/fuzzy")->read_int();
+    if(strcmp(pcTreeFormat,"xml")==0) {
+        char *tempFname = readXmlTree(fname); 
+        tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1);
+        char *command = GBS_global_string_copy("rm %s", tempFname); 
+        system(command); //deleting the temporary file
+        free(command); 
+        free(tempFname);
+    }
+    else {
+        tree = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1);
+    }
 
     if (!tree) error = GB_get_error();
-    else{
+    else {
         GB_transaction dummy(gb_main);
-        //      if (fuzzy) {
-        //          error = GBT_fuzzy_link_tree(tree,gb_main);
-        //      }
-        if (!error) error = GBT_write_tree(gb_main,0,tree_name,tree);
+        if (!error)                  error = GBT_write_tree(gb_main,0,tree_name,tree);
         if (!error && tree_comment) error = GBT_write_tree_rem(gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
         GBT_delete_tree(tree);
     }
@@ -400,8 +453,10 @@ void tree_load_cb(AW_window *aww){
         aww->hide();
         aw_root->awar(AWAR_TREE)->write_string(tree_name);  // show new tree
     }
+    
     free(fname);
     free(tree_name);
+    free(pcTreeFormat);
 }
 
 AW_window *create_tree_import_window(AW_root *root)
@@ -413,6 +468,13 @@ AW_window *create_tree_import_window(AW_root *root)
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("format");
+    aws->label("Tree Format :");
+    aws->create_option_menu(AWAR_TREE_IMPORT "/filter");
+    aws->insert_default_option("Newick","t","tree");
+    aws->insert_option("XML","x","xml");
+    aws->update_option_menu();
 
     aws->at("user");
     aws->label("tree_name:");

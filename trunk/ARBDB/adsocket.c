@@ -783,8 +783,12 @@ void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
         }
     }
     else {
-        gb_assert(!wait_only_if_error); // makes no sense if background == false
-        GBS_strcat(strstruct, " )' ) ");
+        if (wait_only_if_error) {
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
+        }
+        else { // no wait
+            GBS_strcat(strstruct, " )' ) ");
+        }
     }
     sys = GBS_strclose(strstruct,0);
     system(sys);
