@@ -108,4 +108,7 @@ $htmlcontent =~ s{HREF="}{HREF="http://www.dsmz.de}igm;
 $htmlcontent =~ s{HREF=[^"]}{HREF=http://www.dsmz.de/}igm; ##"
 
 print OUTPUT $htmlcontent ;
-print "$htmlcontent\n";
+
+exec ('netscape', '/tmp/arbdsmz.html');
+
+##print "$htmlcontent\n";
