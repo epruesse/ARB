@@ -95,12 +95,16 @@ SECTION COMMANDLIST
                 swap(N1,N2)             swaps two input streams
                                         (w/o parameters: swaps last two streams)
 
-                toback(X)               moves the Xth input stream to the end of output streams
-                tofront(X)              moves the Xth input stream to the start of output streams
+                toback(X)               moves the Xth input stream
+                                        to the end of output streams
 
-                merge([sep])            merges all input streams into one output stream. If 'sep'
-                                        is specified, it's inserted between them.
-                                        if no input streams are given, it returns 1 empty input stream.
+                tofront(X)              moves the Xth input stream
+                                        to the start of output streams
+
+                merge([sep])            merges all input streams into one output stream.
+                                        If 'sep' is specified, it's inserted between them.
+                                        If no input streams are given, it returns 1 empty
+                                        input stream.
 
 	STRING
 
@@ -182,8 +186,10 @@ SECTION COMMANDLIST
 
                compare(a,b)             return -1 if a<b, 0 if a=b, 1 if a>b
                equals(a,b)              return 1 if a=b, 0 otherwise
-               contains(a,b)            return 1 if a contains b, 0 otherwise
-               partof(a,b)              return 1 if a is part of b, 0 otherwise
+               contains(a,b)            if a contains b, this returns the position of
+                                        b inside a (1..N) and 0 otherwise.
+               partof(a,b)              if a is part of b, this returns the position of
+                                        a inside b (1..N) and 0 otherwise.
 
                The above functions are binary operators (see below).
                For each of them a case-insensitive alternative exists (icompare, iequals, ...).
@@ -224,10 +230,21 @@ SECTION COMMANDLIST
                     - has 1 argument, it accepts one to many input streams. The operator
                       is applied to each input stream together with the argument.
                       For each input stream one output stream is generated.
-                    - has 2 arguments, it is applied to these. Input streams are ignored and one
-                      output stream is generated. In this case the arguments are not interpreted as
-                      strings, but as escaped ACI commands.
+                    - has 2 arguments, it is applied to these. The arguments are interpreted as
+                      escaped ACI commands and are applied for each input stream. The results of
+                      the commands are passed as arguments to the binary operator. For each input
+                      stream one output stream is generated.
 
+        CONDITIONAL
+
+                select(a,b,c,...)       each input stream is converted into a number
+                                        (non-numeric text converts to zero). That number is
+                                        used to select one of the given arguments:
+                                             0 selects 'a',
+                                             1 selects 'b',
+                                             2 selects 'c' and so on.
+                                        The selected argument is interpreted as ACI command
+                                        and is applied to an empty input stream.
 
 	DATABASE AND SEQUENCE
 
@@ -376,5 +393,17 @@ EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE_";dd
 
                                 shows for each species how their taxonomy
                                 changed between "tree_other" and current tree
+
+                equals(readdb(tmp),readdb(acc))|select(echo("tmp and acc differ"),)
+
+                                returns 'tmp and acc differ' if the content of
+                                the database fields 'tmp' and 'acc' differs. empty result
+                                otherwise.
+
+                readdb(full_name)|icontains(bacillus)|compare(0)|select(echo(..),readdb(full_name))
+
+                                returns the content of the 'full_name' database entry if it contains
+                                the substring 'bacillus'. Otherwise returns '..'
+
 
 BUGS            The output of taxonomy() is not always instantly refreshed.
