@@ -447,6 +447,9 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
             aw_assert(!fontst);
             for (int iso = 0; !fontst && iso<KNOWN_ISO_VERSIONS; ++iso) {
                 sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
+#if defined(DUMP_FONT_LOOKUP)
+                fprintf(stderr, "Cheking for '%s' (x_fontinfo[%i].templat='%s')\n", fn, f, x_fontinfo[f].templat);
+#endif
                 fontst = XLoadQueryFont(tool_d, fn);
             }
         }
@@ -455,10 +458,10 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
     } /* scalable */
 
     if (nf->fstruct == NULL) {
-        if (appres.debug) fprintf(stderr, "Loading font %s\n", fn);
+        if (appres.debug) fprintf(stderr, "Loading font '%s'\n", fn);
         fontst = XLoadQueryFont(tool_d, fn);
         if (fontst == NULL) {
-            fprintf(stderr, "ARB fontpackage: Can't load font %s ?!, using %s\n", fn, NORMAL_FONT);
+            fprintf(stderr, "ARB fontpackage: Can't load font '%s' ?!, using '%s' (f=%i, s=%i)\n", fn, NORMAL_FONT, f, s);
             fontst = XLoadQueryFont(tool_d, NORMAL_FONT);
             nf->fname = strdup(NORMAL_FONT);    /* keep actual name */
         }
