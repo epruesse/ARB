@@ -1,4 +1,9 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenom.h"
+#include "GAGenomUtilities.h"
 
 using namespace std;
 
@@ -6,6 +11,7 @@ gellisary::GAGenom::GAGenom(string * fname)
 {
 	prepared = false;
 	file_name = *fname;
+	complete_file = false;
 }
 
 string * gellisary::GAGenom::getIdentification()
@@ -32,7 +38,17 @@ string * gellisary::GAGenom::getOrganismClassificationAsOneString()
 	{
 		parseFlatFile();
 	}
+	organism_classification_as_one_string = GAGenomUtilities::toOneString(&organism_classification,true);
 	return &organism_classification_as_one_string;
+}
+
+bool gellisary::GAGenom::isFileComplete()
+{
+	if(!prepared)
+	{
+		parseFlatFile();
+	}
+	return complete_file;;
 }
 
 string * gellisary::GAGenom::getSequenceVersion()
@@ -95,6 +111,7 @@ string * gellisary::GAGenom::getKeyWordsAsString()
 	{
 		parseFlatFile();
 	}
+	key_words_as_string = GAGenomUtilities::toOneString(&key_words,true);
 	return &key_words_as_string;
 }
 
@@ -104,7 +121,8 @@ string * gellisary::GAGenom::getCommentAsOneString()
 	{
 		parseFlatFile();
 	}
-	return &free_text_commnt_as_one_string;
+	free_text_comment_as_one_string = GAGenomUtilities::toOneString(&free_text_comment,true);
+	return &free_text_comment_as_one_string;
 }
 
 vector<string> * gellisary::GAGenom::getKeyWords()

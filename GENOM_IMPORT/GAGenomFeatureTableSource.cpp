@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomFeatureTableSource.h"
 
 using namespace std;
@@ -36,6 +40,11 @@ string * gellisary::GAGenomFeatureTableSource::getNameOfQualifier()
 	{
 		return NULL;
 	}
+}
+
+void gellisary::GAGenomFeatureTableSource::setIterator()
+{
+	iter = qualifiers.begin();
 }
 
 string * gellisary::GAGenomFeatureTableSource::getValueOfQualifier(string * source_str)

@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMFEATURETABLESOURCEEMBL_H
 #define GAGENOMFEATURETABLESOURCEEMBL_H
 

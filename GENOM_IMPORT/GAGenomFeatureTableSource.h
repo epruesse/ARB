@@ -1,13 +1,17 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMFEATURETABLESOURCE_H
 #define GAGENOMFEATURETABLESOURCE_H
 
 #include "GAParser.h"
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
 
@@ -33,6 +37,7 @@ public:
 	int getEnd();
 	std::string * getNameOfQualifier();
 	std::string * getValueOfQualifier(std::string *);
+	void setIterator();
 };
 
 };

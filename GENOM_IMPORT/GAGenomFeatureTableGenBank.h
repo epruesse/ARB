@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMFEATURETABLEGENBANK_H
 #define GAGENOMFEATURETABLEGENBANK_H
 
@@ -37,6 +41,7 @@ public:
 	GAGenomFeatureTableSourceGenBank * getFeatureTableSource();
 	std::string * getGeneName();
 	GAGenomGeneGenBank * getGeneByName(std::string *);
+	void setIterator();
 };
 
 };

@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomGenBank.h"
 #include "GAGenomUtilities.h"
 
@@ -53,7 +57,7 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 	flatfile.getline(tmp_line,128);
 	tmp_str = tmp_line;
 	tmp_str2 = tmp_str.substr(0,12);
-	if(tmp_str2[4] != ' ')
+	if(tmp_str2[3] != ' ')
 	{
 		switch(tmp_str[0])
 		{
@@ -77,89 +81,64 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_species = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(con)
 			{
@@ -209,86 +188,61 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -341,86 +295,47 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -435,6 +350,20 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				}
 				tmp_lines_vector.clear();
 				con = false;
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(fe)
 			{
@@ -473,86 +402,47 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -567,6 +457,20 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				}
 				tmp_lines_vector.clear();
 				con = false;
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(fe)
 			{
@@ -584,7 +488,7 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				del_str = "BASE COUNT";
 				GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
 				tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',true);
-				for(int i = 1; i < 13; i = i + 2)
+				for(int i = 0; i < (int) tmp_vector.size(); i = i + 2)
 				{
 					t_str = tmp_vector[i];
 					sequence_header.push_back(GAGenomUtilities::stringToInteger(&t_str));
@@ -611,89 +515,64 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(con)
 			{
@@ -743,86 +622,47 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -837,6 +677,20 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				}
 				tmp_lines_vector.clear();
 				con = false;
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(fe)
 			{
@@ -877,90 +731,33 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				ke = false;
 			}
-			if(so)
+			if(re)
 			{
-				if(!tmp_lines_vector.empty())
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
 				{
-					vector<string> t4_vec;
-					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
-					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
-						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
-					}
-					if(!t4_vec.empty())
-					{
-						if(org)
-						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
-						}
-					}
-					t4_vec.clear();
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
 				}
-				so = false;
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
 				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -987,10 +784,12 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				sequence += tmp_str;
 				ori = false;
 			}
+			
 			if(tmp_str[1] == 'O')
 			{
 				tmp_lines_vector.push_back(tmp_str);
 				so = true;
+				org = false;
 			}
 			break;
 		case 'R':
@@ -1013,86 +812,47 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -1132,9 +892,9 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 						}
 						tmp_reference->parse();
 						references.push_back(*tmp_reference);
-						tmp_lines_vector.clear();
 						delete(tmp_reference);
 					}
+					tmp_lines_vector.clear();
 					tmp_lines_vector.push_back(tmp_str);
 				}
 				else
@@ -1164,86 +924,61 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -1302,86 +1037,61 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -1434,86 +1144,61 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					vector<string> t4_vec;
 					del_str = "\r";
-					for(int k = 0; k < (int)tmp_lines_vector.size(); k++)
+					t2_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+					GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
+					if(t2_str[0] == ' ')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::replaceByWhiteSpaceCleanly(&t2_str,&del_str);
 						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
-						if(t2_vector[0] == "SOURCE")
-						{
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = false;
-						}
-						else if(t2_vector[0] == "ORGANISM")
-						{
-							if(!t4_vec.empty())
-							{
-								t_str = GAGenomUtilities::toOneString(&t4_vec,true);
-								GAGenomUtilities::trimString(&t_str);
-								GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-								organism_classification_as_one_string = t_str;
-								t4_vec.clear();
-							}
-							for(int l = 1; l < (int) t2_vector.size(); l++)
-							{
-								t4_vec.push_back(t2_vector[l]);
-							}
-							org = true;
-						}
-						else
-						{
-							if(org)
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-							}
-							else
-							{
-								for(int l = 0; l < (int) t2_vector.size(); l++)
-								{
-									t4_vec.push_back(t2_vector[l]);
-								}
-								org = false;
-							}
-						}
 					}
-					if(!t4_vec.empty())
+					GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
+					t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,' ',false);
+					if(t2_vector[0] == "ORGANISM")
 					{
-						if(org)
+						for(int l = 1; l < (int) t2_vector.size(); l++)
 						{
-							t2_str = GAGenomUtilities::toOneString(&t4_vec,false);
-							GAGenomUtilities::trimString(&t2_str);
-//							GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-							t4_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t2_str,';',false);
-							for(int m = 0; m < (int) t4_vec.size(); m++)
-							{
-								organism_classification.push_back(t4_vec[m]);
-							}
+							organism_classification.push_back(t2_vector[l]);
 						}
 					}
-					t4_vec.clear();
+					else
+					{
+						for(int l = 0; l < (int) t2_vector.size(); l++)
+						{
+							organism_classification.push_back(t2_vector[l]);
+						}
+					}
 				}
 				so = false;
+				org = false;
 				tmp_lines_vector.clear();
+			}
+			if(re)
+			{
+				tmp_reference = new GAGenomReferenceGenBank;
+				for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+				{
+					t3_str = tmp_lines_vector[m];
+					tmp_reference->update(&t3_str);
+				}
+				tmp_reference->parse();
+				references.push_back(*tmp_reference);
+				delete(tmp_reference);
+				tmp_lines_vector.clear();
+				re = false;
 			}
 			if(com)
 			{
 				if(!tmp_lines_vector.empty())
 				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					del_str = "\r";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					GAGenomUtilities::trimString(&t_str);
+					free_text_comment.push_back(t_str);
 				}
 				tmp_lines_vector.clear();
 				com = false;
@@ -1547,7 +1232,12 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			}
 			break;
 		case '/':
+			if(ori)
+			{
+				ori = false;
+			}
 			flatfile.close();
+			complete_file = true;
 			break;
 		case ' ':
 			if(de)
@@ -1565,90 +1255,54 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 			{
 				ke = false;
 			}
+			if(fe)
+			{
+				feature_table.update(&tmp_str);
+			}
 			if(so)
 			{
-				tmp_lines_vector.push_back(tmp_str);
-				/*
-				if(!tmp_lines_vector.empty())
+				if(org)
 				{
-					for(int k = 0; k < (int) tmp_lines_vector.size(); k++)
+					tmp_lines_vector.push_back(tmp_str);
+				}
+				else
+				{
+					if(tmp_str[2] == 'O')
 					{
-						t2_str = tmp_lines_vector[k];
-						GAGenomUtilities::trimString(&t2_str);
-						GAGenomUtilities::onlyOneDelimerChar(&t2_str,' ');
-						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(t2_str,' ',true);
-						if(t2_vector.parseSequence() > 0)
+						vector<string> t3_vec;
+						string t3_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+						GAGenomUtilities::onlyOneDelimerChar(&t3_str,' ');
+						if(t3_str[0] == ' ')
 						{
-							if(t2_vector[0] == "SOURCE")
-							{
-								del_str = "SOURCE";
-								t3_str = GAGenomUtilities::toOneString(&t2_vector,true);
-								GAGenomUtilities::replaceByWhiteSpaceCleanly(&t3_str,&del_str);
-								t3_vector.push_back(t3_str);
-							}
-							else if(t2_vector[0] == "ORGANISM")
-							{
-								del_str = "ORGANISM";
-								t3_str = GAGenomUtilities::toOneString(&t2_vector,true);
-								GAGenomUtilities::replaceByWhiteSpaceCleanly(&t3_str,&del_str);
-								organism_classification.push_back(t3_str);
-								org = true;
-							}
-							else
-							{
-								if(org)
-								{
-									t3_str = GAGenomUtilities::toOneString(&t2_vector,true);
-									t3_vector.push_back(t3_str);
-								}
-								else
-								{
-									t3_vector.push_back(t2_str);
-								}
-							}
+							GAGenomUtilities::trimString(&t3_str);
 						}
+						t2_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t3_str,' ',true);
+						if(t2_vector[0] == "SOURCE")
+						{
+							for(int i = 1; i < (int)t2_vector.size(); i++)
+							{
+								t3_vec.push_back(t2_vector[i]);
+							}
+							t3_str = GAGenomUtilities::toOneString(&t3_vec,true);
+							organism_species = t3_str;
+						}
+						org = true;
+						tmp_lines_vector.clear();
+						tmp_lines_vector.push_back(tmp_str);
 					}
-					
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
-					string t2_str;
-					del_str = "SOURCE";
-					GAGenomUtilities::preparePropertyString(&t_str,&del_str,&t2_str);
-					
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
-				}
-				oc = false;
-				tmp_lines_vector.clear();*/
-			}
-			/*if(re)
-			{
-				if(!tmp_lines_vector.empty())
-				{
-					tmp_reference = new GAGenomReferenceGenBank;
-					for(int m = 0; m < (int)tmp_lines_vector.size(); m++)
+					else
 					{
-						tmp_reference->update(&(tmp_lines_vector[m]));
+						tmp_lines_vector.push_back(tmp_str);
 					}
-					tmp_reference->parse();
-					references.push_back(*tmp_reference);
-					delete(tmp_reference);
 				}
-				tmp_lines_vector.clear();
-				re = false;
-			}*/
+			}
+			if(re)
+			{
+				tmp_lines_vector.push_back(tmp_str);
+			}
 			if(com)
 			{
-				if(!tmp_lines_vector.empty())
-				{
-					t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
-					del_str = "COMMENT";
-					GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',true);
-					free_text_comment.push_back(GAGenomUtilities::toOneString(&tmp_vector,true));
-				}
-				tmp_lines_vector.clear();
-				com = false;
+				tmp_lines_vector.push_back(tmp_str);
 			}
 			if(con)
 			{
@@ -1672,6 +1326,17 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 				sequence += tmp_str;
 			}
 			break;
+		}
+	}
+	else
+	{
+		if(fe)
+		{
+			feature_table.update(&tmp_str);
+		}
+		else
+		{
+			tmp_lines_vector.push_back(tmp_str);
 		}
 	}
 	}

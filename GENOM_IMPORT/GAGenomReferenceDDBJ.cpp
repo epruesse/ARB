@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomReferenceDDBJ.h"
 #include "GAGenomUtilities.h"
 
@@ -8,6 +12,7 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 {
 	string tmp_str;
 	string tmp_str2;
+	string tmp_str3;
 	string del_str;
 	string rep_str;
 	vector<string> tmp_vector;
@@ -18,34 +23,47 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 	bool rx = false;
 	bool rl = false;
 	bool rc = false;
-//	bool rg = false;
 	for(int i = 0; i < (int) row_lines.size(); i++)
 	{
 		tmp_str = row_lines[i];
 		tmp_str2 = tmp_str.substr(0,12);
+		tmp_str3 = tmp_str.substr(12);
 		if(tmp_str2[4] != ' ')
 		{
-			GAGenomUtilities::trimString(&tmp_str2);
-			
-			if((tmp_str2 == "REFERENCE") || (tmp_str2 == "reference"))
+			if(tmp_str2[0] == ' ')
+			{
+				GAGenomUtilities::trimString(&tmp_str2);
+			}
+			else
+			{
+				GAGenomUtilities::trimString2(&tmp_str2);
+			}
+			if(tmp_str3[0] == ' ')
+			{
+				GAGenomUtilities::trimString(&tmp_str3);
+			}
+			else
+			{
+				GAGenomUtilities::trimString2(&tmp_str3);
+			}
+			if(tmp_str2 == "REFERENCE")
 			{
 				if(rl)
 				{
 					rep_str = " ";
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
-					string ttt_str;
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						ttt_str.append(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_location = ttt_str;
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_location = t_str;
 					tmp_lines_vector.clear();
 					rl = false;
 				}
@@ -55,23 +73,20 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
 					del_str = "\"";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					vector<string> tt_vector;
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						tt_vector.push_back(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_title = GAGenomUtilities::toOneString(&tt_vector,true);
-					tmp_vector.clear();
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_title = t_str;
 					tmp_lines_vector.clear();
 					rt = false;
 				}
@@ -81,17 +96,29 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					del_str = ".";
-					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_cross_reference.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -101,16 +128,32 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				if(ra)
 				{
 					rep_str = " ";
-					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						del_str = ",";
+						GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_authors.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -118,24 +161,31 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					ra = false;
 				}
 				bool hasPosition = false;
-				for(int l = 0; l < (int) tmp_str.size(); l++)
+				for(int l = 0; l < (int) tmp_str3.size(); l++)
 				{
-					if(tmp_str[l] == '(')
+					if(tmp_str3[l] == '(')
 					{
 						hasPosition = true;
 					}
 				}
 				del_str = "\r";
 				rep_str = " ";
-				GAGenomUtilities::replaceByString(&tmp_str,&del_str,&rep_str);
-				GAGenomUtilities::trimString(&tmp_str);
+				GAGenomUtilities::replaceByString(&tmp_str3,&del_str,&rep_str);
+				if(tmp_str[0] == ' ')
+				{
+					GAGenomUtilities::trimString(&tmp_str3);
+				}
+				else
+				{
+					GAGenomUtilities::trimString2(&tmp_str3);
+				}
 				if(hasPosition)
 				{
-					GAGenomUtilities::onlyOneDelimerChar(&tmp_str,' ');
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',false);
+					GAGenomUtilities::onlyOneDelimerChar(&tmp_str3,' ');
+					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str3,' ',false);
 					if(tmp_vector.size() > 0)
 					{
-						t_str = tmp_vector[2];
+						t_str = tmp_vector[1];
 						del_str = "(";
 						rep_str = " ";
 						GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
@@ -149,7 +199,14 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 						rep_str = " ";
 						GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 						GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-						GAGenomUtilities::trimString(&t_str);
+						if(t_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&t_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&t_str);
+						}
 						vector<string> t_vec = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 						if(t_vec.size() > 0)
 						{
@@ -158,21 +215,16 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 							t_str = t_vec[1];
 							reference_position_end.push_back(GAGenomUtilities::stringToInteger(&t_str));
 						}
+						t_str = tmp_vector[0];
+						reference_number = GAGenomUtilities::stringToInteger(&t_str);
 					}
 				}
 				else
 				{
-					GAGenomUtilities::onlyOneDelimerChar(&tmp_str,' ');
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',false);
-					if(tmp_vector.size() > 0)
-					{
-						t_str = tmp_vector[1];
-						reference_number = GAGenomUtilities::stringToInteger(&t_str);
-					}
-					tmp_vector.clear();
+					reference_number = GAGenomUtilities::stringToInteger(&tmp_str3);
 				}
 			}
-			else if((tmp_str2 == "JOURNAL") || (tmp_str2 == "journal"))
+			else if(tmp_str2 == "JOURNAL")
 			{
 				if(rt)
 				{
@@ -180,23 +232,20 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
 					del_str = "\"";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					vector<string> tt_vector;
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						tt_vector.push_back(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_title = GAGenomUtilities::toOneString(&tt_vector,true);
-					tmp_vector.clear();
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_title = t_str;
 					tmp_lines_vector.clear();
 					rt = false;
 				}
@@ -206,17 +255,29 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					del_str = ".";
-					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_cross_reference.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -249,16 +310,32 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				if(ra)
 				{
 					rep_str = " ";
-					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						del_str = ",";
+						GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_authors.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -289,27 +366,26 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					rc = false;
 				}
 				rl = true;
-				tmp_lines_vector.push_back(tmp_str);
+				tmp_lines_vector.push_back(tmp_str3);
 			}
-			else if((tmp_str2 == "AUTHORS") || (tmp_str2 == "authors"))
+			else if(tmp_str2 == "AUTHORS")
 			{
 				if(rl)
 				{
 					rep_str = " ";
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
-					string ttt_str;
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						ttt_str.append(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_location = ttt_str;
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_location = t_str;
 					tmp_lines_vector.clear();
 					rl = false;
 				}
@@ -342,23 +418,20 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
 					del_str = "\"";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					vector<string> tt_vector;
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						tt_vector.push_back(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_title = GAGenomUtilities::toOneString(&tt_vector,true);
-					tmp_vector.clear();
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_title = t_str;
 					tmp_lines_vector.clear();
 					rt = false;
 				}
@@ -368,17 +441,29 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					del_str = ".";
-					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_cross_reference.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -409,30 +494,30 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					rc = false;
 				}
 				ra = true;
-				tmp_lines_vector.push_back(tmp_str);
+				tmp_lines_vector.push_back(tmp_str3);
 			}
-			else if((tmp_str2 == "TITLE") || (tmp_str2 == "title"))
+			else if(tmp_str2 == "TITLE")
 			{
 				if(rl)
 				{
 					rep_str = " ";
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
-					string ttt_str;
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						ttt_str.append(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_location = ttt_str;
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_location = t_str;
 					tmp_lines_vector.clear();
 					rl = false;
-				}/*
+				}
+				/*
 				if(rg)
 				{
 					del_str = "RG";
@@ -462,17 +547,29 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					del_str = ".";
-					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_cross_reference.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -482,16 +579,32 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				if(ra)
 				{
 					rep_str = " ";
-					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						del_str = ",";
+						GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_authors.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -522,13 +635,13 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					rc = false;
 				}
 				rt = true;
-				tmp_lines_vector.push_back(tmp_str);
+				tmp_lines_vector.push_back(tmp_str3);
 			}
-			else if((tmp_str2 == "CONSRTM") || (tmp_str2 == "consrtm"))
+			else if(tmp_str2 == "CONSRTM")
 			{
 				
 			}
-			else if((tmp_str2 == "PUBMED") || (tmp_str2 == "pubmed") || (tmp_str2 == "MEDLINE") || (tmp_str2 == "medline"))
+			else if((tmp_str2 == "PUBMED") || (tmp_str2 == "MEDLINE"))
 			{
 				if(rt)
 				{
@@ -536,23 +649,20 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
 					del_str = "\"";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					vector<string> tt_vector;
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						tt_vector.push_back(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_title = GAGenomUtilities::toOneString(&tt_vector,true);
-					tmp_vector.clear();
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_title = t_str;
 					tmp_lines_vector.clear();
 					rt = false;
 				}
@@ -584,18 +694,17 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					rep_str = " ";
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
-					string ttt_str;
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						ttt_str.append(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_location = ttt_str;
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_location = t_str;
 					tmp_lines_vector.clear();
 					rl = false;
 				}
@@ -625,16 +734,32 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				if(ra)
 				{
 					rep_str = " ";
-					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						del_str = ",";
+						GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_authors.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -649,16 +774,32 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				if(ra)
 				{
 					rep_str = " ";
-					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						del_str = ",";
+						GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_authors.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -670,18 +811,17 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					rep_str = " ";
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
-					string ttt_str;
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						ttt_str.append(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_location = ttt_str;
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_location = t_str;
 					tmp_lines_vector.clear();
 					rl = false;
 				}
@@ -691,23 +831,20 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
 					del_str = "\"";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					GAGenomUtilities::trimString(&t_str);
-					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
-					vector<string> tt_vector;
-					for(int j = 1; j < (int)tmp_vector.size(); j++)
+					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+					if(t_str[0] == ' ')
 					{
-						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
-						tt_vector.push_back(tt_str);
+						GAGenomUtilities::trimString(&t_str);
 					}
-					reference_title = GAGenomUtilities::toOneString(&tt_vector,true);
-					tmp_vector.clear();
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					reference_title = t_str;
 					tmp_lines_vector.clear();
 					rt = false;
 				}
@@ -717,17 +854,29 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 					string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
 					del_str = "\r";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-					del_str = ".";
-					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					del_str = ";";
 					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
 					GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
-					GAGenomUtilities::trimString(&t_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
 					tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
 					for(int j = 0; j < (int)tmp_vector.size(); j++)
 					{
 						string tt_str = tmp_vector[j];
-						GAGenomUtilities::trimString(&tt_str);
+						if(tt_str[0] == ' ')
+						{
+							GAGenomUtilities::trimString(&tt_str);
+						}
+						else
+						{
+							GAGenomUtilities::trimString2(&tt_str);
+						}
 						reference_cross_reference.push_back(tt_str);
 					}
 					tmp_vector.clear();
@@ -736,6 +885,122 @@ void gellisary::GAGenomReferenceDDBJ::parse()
 				}
 			}
 		}
+		else
+		{
+			tmp_lines_vector.push_back(tmp_str3);
+		}
+	}
+	if(ra)
+	{
+		rep_str = " ";
+		string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,false);
+		del_str = "\r";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+		if(t_str[0] == ' ')
+		{
+			GAGenomUtilities::trimString(&t_str);
+		}
+		else
+		{
+			GAGenomUtilities::trimString2(&t_str);
+		}
+		tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
+		for(int j = 0; j < (int)tmp_vector.size(); j++)
+		{
+			string tt_str = tmp_vector[j];
+			del_str = ",";
+			GAGenomUtilities::replaceByString(&tt_str,&del_str,&rep_str);
+			if(tt_str[0] == ' ')
+			{
+				GAGenomUtilities::trimString(&tt_str);
+			}
+			else
+			{
+				GAGenomUtilities::trimString2(&tt_str);
+			}
+			reference_authors.push_back(tt_str);
+		}
+		tmp_vector.clear();
+		tmp_lines_vector.clear();
+		ra = false;
+	}
+	if(rl)
+	{
+		rep_str = " ";
+		string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+		del_str = "\r";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+		if(t_str[0] == ' ')
+		{
+			GAGenomUtilities::trimString(&t_str);
+		}
+		else
+		{
+			GAGenomUtilities::trimString2(&t_str);
+		}
+		reference_location = t_str;
+		tmp_lines_vector.clear();
+		rl = false;
+	}
+	if(rt)
+	{
+		rep_str = " ";
+		string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+		del_str = "\r";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		del_str = "\"";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		del_str = ";";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+		if(t_str[0] == ' ')
+		{
+			GAGenomUtilities::trimString(&t_str);
+		}
+		else
+		{
+			GAGenomUtilities::trimString2(&t_str);
+		}
+		reference_title = t_str;
+		tmp_lines_vector.clear();
+		rt = false;
+	}
+	if(rx)
+	{
+		rep_str = " ";
+		string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+		del_str = "\r";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		del_str = ";";
+		GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+		GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+		if(t_str[0] == ' ')
+		{
+			GAGenomUtilities::trimString(&t_str);
+		}
+		else
+		{
+			GAGenomUtilities::trimString2(&t_str);
+		}
+		tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
+		for(int j = 0; j < (int)tmp_vector.size(); j++)
+		{
+			string tt_str = tmp_vector[j];
+			if(tt_str[0] == ' ')
+			{
+				GAGenomUtilities::trimString(&tt_str);
+			}
+			else
+			{
+				GAGenomUtilities::trimString2(&tt_str);
+			}
+			reference_cross_reference.push_back(tt_str);
+		}
+		tmp_vector.clear();
+		tmp_lines_vector.clear();
+		rx = false;
 	}
 	prepared = true;
 }

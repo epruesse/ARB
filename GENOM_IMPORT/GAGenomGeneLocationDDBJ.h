@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENELOCATIONDDBJ_H
 #define GAGENOMGENELOCATIONDDBJ_H
 
@@ -12,12 +16,13 @@ private:
 	std::vector<GAGenomGeneLocationDDBJ> locations;
 	int current_value;
 	std::vector<std::string> getParts(std::string *, int *);
+//	gellisary::GAGenomGeneLocationDDBJ tmp_loc;
 	
 public:
 
-	GAGenomGeneLocationDDBJ();
+	GAGenomGeneLocationDDBJ(std::string *);
+	GAGenomGeneLocationDDBJ(){}
 	virtual ~GAGenomGeneLocationDDBJ(){}
-	virtual void parse(std::string *);
 	virtual void parse();
 	bool isReference();
 	void setReference(std::string *);
@@ -25,6 +30,7 @@ public:
 	bool hasMoreValues();
 	GAGenomGeneLocationDDBJ * getNextValue();
 	void setValue(GAGenomGeneLocationDDBJ *);
+	std::vector<GAGenomGeneLocationDDBJ> * getLocations();
 };
 
 };

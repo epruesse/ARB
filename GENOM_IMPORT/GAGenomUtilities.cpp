@@ -1,37 +1,66 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomUtilities.h"
 #include <cstdio>
 
-// #ifndef _CPP_CMATH
-// #include <cmath>
-// #endif
-
 using namespace std;
 using namespace gellisary;
+
+/*
+ * Diese Funktion sucht in 'source_str' nach einem 'delimer_str' und ersetzt ihn durch 'replacing_str'
+ * Das ergebnis wird in 'source_str' reingeschrieben.
+ */
 
 void gellisary::GAGenomUtilities::replaceByString(string * source_str, string * delimer_str, string * replacing_str)
 {
 	int delimer_str_pos = 0;
 	string target_str;
+	string tmp_str;
 	for(int i = 0; i < (int) source_str->size(); i++)
 	{
-		if((source_str->c_str())[i] == (delimer_str->c_str())[delimer_str_pos++])
+		if((source_str->c_str())[i] == (delimer_str->c_str())[delimer_str_pos])
 		{
+			delimer_str_pos++;
 			if(delimer_str_pos == (int) delimer_str->size())
 			{
 				delimer_str_pos = 0;
+				if(tmp_str.size() > 0)
+				{
+					tmp_str = "";
+				}
 				for(int j = 0; j < (int) replacing_str->size(); j++)
 				{
 					target_str += (replacing_str->c_str())[j];
 				}
 			}
+			else
+			{
+				tmp_str += (*source_str)[i];
+			}
 		}
 		else
 		{
+			delimer_str_pos = 0;
+			if(tmp_str.size() > 0)
+			{
+				for(int j = 0; j < (int) tmp_str.size(); j++)
+				{
+					target_str += tmp_str[j];
+				}
+				tmp_str = "";
+			}
 			target_str += (source_str->c_str())[i];
 		}
 	}
 	*source_str = target_str;
 }
+
+/*
+ * Diese Funktionen suchen in 'source_str' nach einem 'delimer_str' und nach einem '\r' und ersetzen ihn durch ' '
+ * (Leerzeichen). Das ergebnis wird in 'target_str' reingeschrieben.
+ */
 
 void gellisary::GAGenomUtilities::preparePropertyString(string * source_str, string * delimer_str, string * target_str)
 {
@@ -114,22 +143,37 @@ void gellisary::GAGenomUtilities::eliminateSign(std::string * source_str, char d
 	*source_str = char_source_str;
 }
 
+/*
+ * Diese Funktion macht aus einem String-Vector einen string und gibt ihn zurück.
+ * withSpace - wenn true, dann wird zwischen strings ein Leerzeichen reigeschoben.
+ * Ansonsten ohne.
+ */
+
 string gellisary::GAGenomUtilities::toOneString(vector<string> * source_vector, bool withSpace)
 {
 	string target_str;
-	for(int i = 0; i < (int) source_vector->size(); i++)
+	vector<string> tmp_vector;
+	tmp_vector = *source_vector;
+	int vector_size = (int)tmp_vector.size();
+	for(int i = 0; i < vector_size; i++)
 	{
 		if(i != 0)
 		{
 			if(withSpace)
 			{
-				target_str += " ";
+				target_str.append(" ");
 			}
 		}
-		target_str += source_vector->operator [] (i);
+		target_str.append(tmp_vector[i]);
 	}
 	return target_str;
 }
+
+/*
+ * Diese Funktion sucht in 'source_str' nach einem 'delimer_char' und ersetzt beliebige Anzahl an 'delimer_char'
+ * durch ein 'delimer_char'.
+ * Das ergebnis wird in 'source_str' reingeschrieben.
+ */
 
 void gellisary::GAGenomUtilities::onlyOneDelimerChar(string * source_str, char delimer_char)
 {
@@ -141,32 +185,41 @@ void gellisary::GAGenomUtilities::onlyOneDelimerChar(string * source_str, char d
 		{
 			if(i == 0)
 			{
+				target += delimer_char;
 				current_stat = true;
 			}
 			else
 			{
 				if(!current_stat)
 				{
+					target += delimer_char;
 					current_stat = true;
 				}
 			}
 		}
 		else
 		{
-			if(current_stat)
+			/*if(current_stat)
 			{
 				current_stat = false;
 				target += ' ';
 				target += (source_str->c_str())[i];
 			}
 			else
-			{
-				target += (source_str->c_str())[i];
-			}
+			{*/
+			target += (source_str->c_str())[i];
+			current_stat = false;
+			//}
 		}
 	}
 	*source_str = target;
 }
+
+/*
+ * Diese Funktion spaltet 'source_str' anhand eines 'delimer_char' und gibt das Ergebnis als String-Vector zurück.
+ * withInnerSpace - wenn true, dann werden strings innerhalb der Doppelhochkommas nicht durchsucht, sondern als
+ * ein String behandelt.
+ */
 
 vector<string> gellisary::GAGenomUtilities::findAndSeparateWordsByChar(string * source_str, char sep_char, bool withInnerString)
 {
@@ -241,6 +294,12 @@ vector<string> gellisary::GAGenomUtilities::findAndSeparateWordsByChar(string * 
 	}
 	return target_vector;
 }
+
+/*
+ * Diese Funktion spaltet 'source_str' anhand eines 'delimer_sep_str' und gibt das Ergebnis als String-Vector zurück.
+ * withInnerSpace - wenn true, dann werden strings innerhalb der Doppelhochkommas nicht durchsucht, sondern als
+ * ein String behandelt.
+ */
 
 vector<string> gellisary::GAGenomUtilities::findAndSeparateWordsByString(string * source_str, string * sep_str, bool withInnerString)
 {
@@ -367,10 +426,104 @@ vector<string> gellisary::GAGenomUtilities::findAndSeparateWordsByString(string 
 	return target_vector;
 }
 
+/*
+ * Diese Funktion eliminiert in 'source_str' alle Leerzeichen am Anfang und am Ende.
+ * Das Ergebnis wird in 'source_str' reingeschrieben.
+ */
+
+void gellisary::GAGenomUtilities::trimString2(string * source_str)
+{
+	GAGenomUtilities::trimStringByChar2(source_str, ' ');
+}
+
+/*
+ * Diese Funktion eliminiert in 'source_str' alle Leerzeichen am Anfang und am Ende.
+ * Das Ergebnis wird in 'source_str' reingeschrieben.
+ */
+
 void gellisary::GAGenomUtilities::trimString(string * source_str)
 {
 	GAGenomUtilities::trimStringByChar(source_str, ' ');
 }
+/*
+void gellisary::GAGenomUtilities::trimStringByChar(string * source_str, char trim_char)
+{
+	string source = *source_str;
+	int begin = -1;
+	int end = -1;
+	char tmp_char;
+	int source_size = source.size();
+	int pos[source_size];
+	int current_pos = -1;
+	bool other_char = false;
+	
+	for(int i = 0; i < source_size; i++)
+	{
+		tmp_char = source[i];
+		if(tmp_char == trim_char)
+		{
+			current_pos++;
+			pos[current_pos] = i;
+		}
+		else
+		{
+			other_char = true;
+		}
+	}
+	if(!other_char)
+	{
+		*source_str = "";
+	}
+	else if(current_pos > -1)
+	{
+		if(pos[0] == 0) // soll vom Anfang 'getrimt' werden
+		{
+			begin = 0;
+			for(int j = 1; j <= current_pos; j++)
+			{
+				if((pos[j] - begin) == 1)
+				{
+					begin = pos[j];
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		if(pos[current_pos] == (source_size-1)) // soll vom Ende 'getrimt' werden
+		{
+			end = pos[current_pos];
+			
+			for(int k = current_pos; k >= 0; k--)
+			{
+				if((end - pos[k]) == 1)
+				{
+					end = pos[k];
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		*source_str = source.substr(begin,(end-begin-1));
+	}
+}*/
+
+/*
+ * Unterscheid zwischen trimStringByChar2() und trimStringByChar():
+ * Leider sind beider Funktionen fehlerhaft:
+ * trimStringByChar(): wenn ein String nicht mit 'trim_char' beginnt, dann wird das erste Zeichen trotzdem
+ * gelöscht, ungeachtet dessen, ob es dem 'trim_char' gleicht oder nicht.
+ * trimStringByChar2(): löst das Problem von trimStringByChar(), aber sie belässt ein 'trim_char' irgendwo
+ * ein 'trim_char'
+ */
+
+/*
+ * Diese Funktion eliminiert in 'source_str' alle 'trim_char' am Anfang und am Ende.
+ * Das Ergebnis wird in 'source_str' reingeschrieben.
+ */
 
 void gellisary::GAGenomUtilities::trimStringByChar(string * source_str, char trim_char)
 {
@@ -413,6 +566,57 @@ void gellisary::GAGenomUtilities::trimStringByChar(string * source_str, char tri
 	}
 	*source_str = target;
 }
+
+/*
+ * Diese Funktion eliminiert in 'source_str' alle 'trim_char' am Anfang und am Ende.
+ * Das Ergebnis wird in 'source_str' reingeschrieben.
+ */
+
+void gellisary::GAGenomUtilities::trimStringByChar2(string * source_str, char trim_char)
+{
+	string target;
+	int begin = -1;
+	int end = -1;
+	for(int i = 0; i < (int) source_str->size(); i++)
+	{
+		if((source_str->c_str())[i] == trim_char)
+		{
+			begin = i;
+		}
+		else
+		{
+			break;
+		}
+	}
+	for(int j = (((int) source_str->size())-1); j >= 0; j--)
+	{
+		if((source_str->c_str())[j] == trim_char)
+		{
+			end = j;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if(begin == -1)
+	{
+		begin = 0;
+	}
+	if(end == -1)
+	{
+		end = (int) source_str->size();
+	}
+	for(int k = begin; k < end; k++)
+	{
+		target.push_back((source_str->c_str())[k]);
+	}
+	*source_str = target;
+}
+
+/*
+ * Diese Funktion konvertiert ein 'sosurce_str' in ein integer.
+ */
 
 int gellisary::GAGenomUtilities::stringToInteger(string * source_str)
 {
@@ -462,6 +666,10 @@ int gellisary::GAGenomUtilities::stringToInteger(string * source_str)
 // 	return target_int;
 }
 
+/*
+ * Diese Funktion konvertiert ein integer in ein string.
+ */
+
 string gellisary::GAGenomUtilities::integerToString(int source_int)
 {
     char buffer[50];
@@ -489,6 +697,10 @@ string gellisary::GAGenomUtilities::integerToString(int source_int)
 // 	}
 // 	return target_str;
 }
+
+/*
+ * Diese Funktion generiert aus einem 'source_str' und einem 'gene_type' eine ID für Genes
+ */
 
 string gellisary::GAGenomUtilities::generateGeneID(string * source_str, int gene_type)
 {
@@ -604,6 +816,11 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, int gene
 	return target_str;
 }
 
+/*
+ * Diese Funktion parst 'location'-Angabe von source aus feature table.
+ * Und gibt alle integer-werte in einem Ineger-Vector zurück.
+ */
+
 vector<int> gellisary::GAGenomUtilities::parseSourceLocation(string * source_str)
 {
 	vector<int> target_vector;
@@ -637,30 +854,51 @@ vector<int> gellisary::GAGenomUtilities::parseSourceLocation(string * source_str
 	return target_vector;
 }
 
+/*
+ * Diese Funktion prüft, ob der 'source_str' ein neuer Gene ist.
+ */
+
 bool gellisary::GAGenomUtilities::isNewGene(string * source_str)
 {
-	string tmp_str = source_str->substr(3,20);
+	string tmp_str = source_str->substr(4,16);
 	GAGenomUtilities::trimString(&tmp_str);
+	if(tmp_str.size() > 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	/*
 	if(tmp_str[0] == ' ')
 	{
-		if(tmp_str[1] == ' ')
+		std::cout << "New Gene 003" << std::endl;
+		if(tmp_str[2] == ' ')
 		{
+			std::cout << "New Gene 004 Falsch" << std::endl;
 			return false;
 		}
 		else
 		{
+			std::cout << "New Gene 005 Wahr" << std::endl;
 			return true;
 		}
 	}
 	else
 	{
+		std::cout << "New Gene 006 Wahr" << std::endl;
 		return true;
-	}
+	}*/
 }
+
+/*
+ * Diese Funktion prüft, ob der 'source_str' 'source' feature von feature Table ist.
+ */
 
 bool gellisary::GAGenomUtilities::isSource(string * source_str)
 {
-	string tmp_str = source_str->substr(3,20);
+	string tmp_str = source_str->substr(4,16);
 	GAGenomUtilities::trimString(&tmp_str);
 	if(tmp_str.find("source") != string::npos)
 	{

@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMREFERENCEGENBANK_H
 #define GAGENOMREFERENCEGENBANK_H
 

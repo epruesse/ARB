@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENEDDBJ_H
 #define GAGENOMGENEDDBJ_H
 
@@ -12,7 +16,7 @@ private:
 	
 public:
 
-//	GAGenomGeneDDBJ();
+	GAGenomGeneDDBJ(){}
 	virtual ~GAGenomGeneDDBJ(){}
 	virtual void parse();
 	GAGenomGeneLocationDDBJ * getLocation();

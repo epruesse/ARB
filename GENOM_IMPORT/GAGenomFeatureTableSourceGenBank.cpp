@@ -1,12 +1,12 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomFeatureTableSourceGenBank.h"
-
-#ifndef GAGENOMUTILITIES_H
 #include "GAGenomUtilities.h"
-#endif
 
 using namespace std;
 using namespace gellisary;
-
 
 void gellisary::GAGenomFeatureTableSourceGenBank::parse()
 {
@@ -80,6 +80,5 @@ void gellisary::GAGenomFeatureTableSourceGenBank::parse()
 			}
 		}
 	}
-	iter = qualifiers.begin();
 	prepared = true;
 }

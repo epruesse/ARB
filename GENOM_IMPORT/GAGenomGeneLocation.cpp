@@ -1,6 +1,10 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomGeneLocation.h"
 
-gellisary::GAGenomGeneLocation::GAGenomGeneLocation()
+gellisary::GAGenomGeneLocation::GAGenomGeneLocation(string * new_location_string)
 {
 	range = false;
 	complement = false;
@@ -15,6 +19,7 @@ gellisary::GAGenomGeneLocation::GAGenomGeneLocation()
 	bigger_begin = false;
 	bigger_end = false;
 	value = -1;
+	location_as_string = *new_location_string;
 }
 
 bool gellisary::GAGenomGeneLocation::isSingleValue()

@@ -1,28 +1,27 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomGeneLocationEmbl.h"
-
-#ifndef GAGENOMUTILITIES_H
 #include "GAGenomUtilities.h"
-#endif
 
 using namespace std;
 using namespace gellisary;
 
-gellisary::GAGenomGeneLocationEmbl::GAGenomGeneLocationEmbl()
+gellisary::GAGenomGeneLocationEmbl::GAGenomGeneLocationEmbl(string * new_location_string):GAGenomGeneLocation(new_location_string)
 {
 	pointer = false;
 	current_value = -1;
 }
-
-void gellisary::GAGenomGeneLocationEmbl::parse(){}
 
 /*
  * Momntan belasse ich diese Methode so wie sie ist, ich habe sie fuer die Version 1 
  * der Input-Routine entwickelt. Sie funktioniert einwandfrei. Spaeter zum Ende des Projekts werde ich sie
  * 'optimieren'.
  */
-void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
+void gellisary::GAGenomGeneLocationEmbl::parse()
 {
-	int ls = location->size();
+	int ls = location_as_string.size();
 	int my_stack[ls];
 	int levels[ls];
 	int level_pointer = -1;
@@ -41,14 +40,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 	bool has_bs_atall = false;
 	bool has_comma = false;
 	string t2_str;
-	int commas[location->size()];
+	int commas[location_as_string.size()];
 	commas[0] = 0;
 	vector<string> tvector;
 	string substring;
 
 	for(int i = 0; i < ls; i++)
 	{
-		t = location->operator[](i);
+		t = location_as_string[i];
 		switch(t)
 		{
 			case '(':
@@ -73,7 +72,7 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 	count_levels = (level_pointer+1) / 2;
 	for(int h = 0; h < ls; h++)
 	{
-		t = location->operator[](h);
+		t = location_as_string[h];
 		if(t == ',')
 		{
 			if(count_levels > 0)
@@ -96,14 +95,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 
 	if(has_comma)
 	{
-		tvector = getParts(location,commas);
+		tvector = getParts(&location_as_string,commas);
 		single_value = false;
 		collection = true;
 		for(int k = 0; k < (int)tvector.size(); k++)
 		{
-			tmp_location = new GAGenomGeneLocationEmbl;
 			t2_str = tvector[k];
-			tmp_location->parse(&t2_str);
+			tmp_location = new GAGenomGeneLocationEmbl(&t2_str);
+			tmp_location->parse();
 			locations.push_back(*tmp_location);
 			delete(tmp_location);
 		}
@@ -116,7 +115,7 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 		int current_level = -1;
 		while(fore)
 		{
-			t = location->operator[](char_pointer);
+			t = location_as_string[char_pointer];
 			if(count_levels > 0)
 			{
 				if((char_pointer == levels[1]) && (t == ')'))
@@ -130,53 +129,55 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 					order = true;
 					single_value = false;
 					char_pointer += 5;
-					tmp_location = new GAGenomGeneLocationEmbl;
 					current_level = -1;
 					for(int j = 0; j < count_levels; j++)
 					{
 						if(levels[j*2] == char_pointer)
 						{
-							substring = location->substr((char_pointer+1),(levels[j*2+1]-char_pointer-1));
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(levels[j*2+1]-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
+							delete(tmp_location);
 							current_level = j;
 						}
 					}
-					delete(tmp_location);
 					fore = false;
 					break;
 				case 'j':
 					join = true;
 					single_value = false;
 					char_pointer += 4;
-					tmp_location = new GAGenomGeneLocationEmbl;
 					for(int l = 0; l < count_levels; l++)
 					{
 						if(levels[l*2] == char_pointer)
 						{
-							substring = location->substr((char_pointer+1),(levels[l*2+1]-char_pointer-1));
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(levels[l*2+1]-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
+							delete(tmp_location);
 						}
 					}
-					delete(tmp_location);
 					fore = false;
 					break;
 				case 'c':
 					complement = true;
 					single_value = false;
 					char_pointer += 10;
-					tmp_location = new GAGenomGeneLocationEmbl;
+					
 					for(int k = 0; k < count_levels; k++)
 					{
 						if(levels[k*2] == char_pointer)
 						{
-							substring = location->substr((char_pointer+1),(levels[k*2+1]-char_pointer-1));
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(levels[k*2+1]-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
+							delete(tmp_location);
 						}
 					}
-					delete(tmp_location);
+					
 					fore = false;
 					break;
 				case '.':
@@ -186,14 +187,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 						{
 							range = true;
 							single_value = false;
-							substring = location->substr(0,(char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(0,(char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
-							substring = location->substr((char_pointer+1),(ls-char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							fore = false;
@@ -203,15 +204,15 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 							pointer = true;
 							range = true;
 							single_value = false;
-							substring = location->substr(0,ref_pointer);
+							substring = location_as_string.substr(0,ref_pointer);
 							reference = substring;
-							substring = location->substr((ref_pointer+1),(char_pointer-ref_pointer-2));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((ref_pointer+1),(char_pointer-ref_pointer-2));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
-							substring = location->substr((char_pointer+1),(ls-char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							has_ref = false;
@@ -230,14 +231,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 					{
 						roof = true;
 						single_value = false;
-						substring = location->substr(0,char_pointer);
-						tmp_location = new GAGenomGeneLocationEmbl;
-						tmp_location->parse(&substring);
+						substring = location_as_string.substr(0,char_pointer);
+						tmp_location = new GAGenomGeneLocationEmbl(&substring);
+						tmp_location->parse();
 						locations.push_back(*tmp_location);
 						delete(tmp_location);
-						substring = location->substr((char_pointer+1),(ls-char_pointer-1));
-						tmp_location = new GAGenomGeneLocationEmbl;
-						tmp_location->parse(&substring);
+						substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
+						tmp_location = new GAGenomGeneLocationEmbl(&substring);
+						tmp_location->parse();
 						locations.push_back(*tmp_location);
 						delete(tmp_location);
 						fore = false;
@@ -247,16 +248,16 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 						pointer = true;
 						roof = true;
 						single_value = false;
-						substring = location->substr(0,ref_pointer);
+						substring = location_as_string.substr(0,ref_pointer);
 						reference = substring;
-						substring = location->substr((ref_pointer+1),(char_pointer-ref_pointer-1));
-						tmp_location = new GAGenomGeneLocationEmbl;
-						tmp_location->parse(&substring);
+						substring = location_as_string.substr((ref_pointer+1),(char_pointer-ref_pointer-1));
+						tmp_location = new GAGenomGeneLocationEmbl(&substring);
+						tmp_location->parse();
 						locations.push_back(*tmp_location);
 						delete(tmp_location);
-						substring = location->substr((char_pointer+1),(ls-char_pointer-1));
-						tmp_location = new GAGenomGeneLocationEmbl;
-						tmp_location->parse(&substring);
+						substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
+						tmp_location = new GAGenomGeneLocationEmbl(&substring);
+						tmp_location->parse();
 						locations.push_back(*tmp_location);
 						delete(tmp_location);
 						has_ref = false;
@@ -270,14 +271,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 						if(until)
 						{
 							point = true;
-							substring = location->substr(0,(char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(0,(char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
-							substring = location->substr(char_pointer,(ls-char_pointer));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(char_pointer,(ls-char_pointer));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							until = false;
@@ -288,14 +289,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 							if(char_pointer == 0)
 							{
 								smaller_begin = true;
-								substring = location->substr((char_pointer+1),(ls-char_pointer-1));
+								substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
 								value = GAGenomUtilities::stringToInteger(&substring);
 								fore = false;
 							}
 							else if(char_pointer == end_pointer)
 							{
 								smaller_end = true;
-								substring = location->substr(0,char_pointer);
+								substring = location_as_string.substr(0,char_pointer);
 								value = GAGenomUtilities::stringToInteger(&substring);
 								fore = false;
 							}
@@ -309,14 +310,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 						if(until)
 						{
 							point = true;
-							substring = location->substr(0,(char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(0,(char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
-							substring = location->substr(char_pointer,(ls-char_pointer));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(char_pointer,(ls-char_pointer));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							until = false;
@@ -327,14 +328,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 							if(char_pointer == 0)
 							{
 								bigger_begin = true;
-								substring = location->substr((char_pointer+1),(ls-char_pointer-1));
+								substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
 								value = GAGenomUtilities::stringToInteger(&substring);
 								fore = false;
 							}
 							else if(char_pointer == end_pointer)
 							{
 								bigger_end = true;
-								substring = location->substr(0,char_pointer);
+								substring = location_as_string.substr(0,char_pointer);
 								value = GAGenomUtilities::stringToInteger(&substring);
 								fore = false;
 							}
@@ -358,14 +359,14 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 							point = true;
 							value = false;
 							single_value = false;
-							substring = location->substr(0,(char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(0,(char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
-							substring = location->substr(char_pointer,(ls-char_pointer));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr(char_pointer,(ls-char_pointer));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							fore = false;
@@ -376,16 +377,16 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 							value = false;
 							single_value = false;
 							pointer = true;
-							substring = location->substr(0,ref_pointer);
+							substring = location_as_string.substr(0,ref_pointer);
 							reference = substring;
-							substring = location->substr((ref_pointer+1),(char_pointer-ref_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((ref_pointer+1),(char_pointer-ref_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
-							substring = location->substr((char_pointer+1),(ls-char_pointer-1));
-							tmp_location = new GAGenomGeneLocationEmbl;
-							tmp_location->parse(&substring);
+							substring = location_as_string.substr((char_pointer+1),(ls-char_pointer-1));
+							tmp_location = new GAGenomGeneLocationEmbl(&substring);
+							tmp_location->parse();
 							locations.push_back(*tmp_location);
 							delete(tmp_location);
 							has_ref = false;
@@ -396,7 +397,7 @@ void gellisary::GAGenomGeneLocationEmbl::parse(string * location)
 					if(!has_ref_atall && !has_sep_atall && !has_bs_atall)
 					{
 						single_value = true;
-						substring = location->substr(char_pointer,ls);
+						substring = location_as_string.substr(char_pointer,ls);
 						value = GAGenomUtilities::stringToInteger(&substring);
 						fore = false;
 					}
@@ -473,13 +474,23 @@ vector<string> gellisary::GAGenomGeneLocationEmbl::getParts(string * beginning, 
 	return tmp_vector;
 }
 
-GAGenomGeneLocationEmbl * gellisary::GAGenomGeneLocationEmbl::getNextValue()
+/*GAGenomGeneLocationEmbl * gellisary::GAGenomGeneLocationEmbl::getNextValue()
 {
 	if(!prepared)
 	{
 		parse();
 	}
-	return &(locations[current_value++]);
+	tmp_location = locations[current_value++];
+	return &tmp_location;
+}*/
+
+vector<GAGenomGeneLocationEmbl> * gellisary::GAGenomGeneLocationEmbl::getLocations()
+{
+	if(!prepared)
+	{
+		parse();
+	}
+	return &locations;
 }
 
 void gellisary::GAGenomGeneLocationEmbl::setValue(GAGenomGeneLocationEmbl * new_value)

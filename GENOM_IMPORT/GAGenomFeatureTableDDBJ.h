@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMFEATURETABLEDDBJ_H
 #define GAGENOMFEATURETABLEDDBJ_H
 
@@ -17,7 +21,7 @@
 #include <map>
 #endif
 
-namespace gellisary {
+namespace gellisary{
 
 class GAGenomFeatureTableDDBJ : public GAGenomFeatureTable{
 private:
@@ -28,15 +32,16 @@ private:
 	std::map<std::string,GAGenomGeneDDBJ>::iterator iter;
 	
 	int nameToNumberOfFeature(std::string *);
-	
+
 public:
 
 	GAGenomFeatureTableDDBJ();
-//	virtual ~GAGenomFeatureTableDDBJ(){}
+	virtual ~GAGenomFeatureTableDDBJ(){}
 	virtual void parse();
 	GAGenomFeatureTableSourceDDBJ * getFeatureTableSource();
 	std::string * getGeneName();
 	GAGenomGeneDDBJ * getGeneByName(std::string *);
+	void setIterator();
 };
 
 };

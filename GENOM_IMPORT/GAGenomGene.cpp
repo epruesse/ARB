@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomGene.h"
 
 using namespace std;
@@ -47,6 +51,11 @@ string * gellisary::GAGenomGene::getQualifierName()
 	}
 }
 
+void gellisary::GAGenomGene::setIterator()
+{
+	iter = qualifiers.begin();
+}
+
 string * gellisary::GAGenomGene::getLocationAsString()
 {
 	if(!prepared)
@@ -62,7 +71,8 @@ string * gellisary::GAGenomGene::getQualifierValue(string * source_str)
 	{
 		parse();
 	}
-	return &(qualifiers[*source_str]);
+	tmp_value = qualifiers[*source_str];
+	return &tmp_value;
 }
 
 void gellisary::GAGenomGene::setGeneNumber(int source_int)

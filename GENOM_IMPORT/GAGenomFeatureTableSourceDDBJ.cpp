@@ -1,12 +1,12 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomFeatureTableSourceDDBJ.h"
-
-#ifndef GAGENOMUTILITIES_H
 #include "GAGenomUtilities.h"
-#endif
 
 using namespace std;
 using namespace gellisary;
-
 
 void gellisary::GAGenomFeatureTableSourceDDBJ::parse()
 {
@@ -80,6 +80,5 @@ void gellisary::GAGenomFeatureTableSourceDDBJ::parse()
 			}
 		}
 	}
-	iter = qualifiers.begin();
 	prepared = true;
 }

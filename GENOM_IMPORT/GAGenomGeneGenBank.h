@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENEGENBANK_H
 #define GAGENOMGENEGENBANK_H
 
@@ -12,7 +16,7 @@ private:
 
 public:
 
-//	GAGenomGeneGenBank();
+	GAGenomGeneGenBank(){}
 	virtual ~GAGenomGeneGenBank(){}
 	virtual void parse();
 	GAGenomGeneLocationGenBank * getLocation();

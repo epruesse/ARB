@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOM_H
 #define GAGENOM_H
 
@@ -62,10 +66,11 @@ protected:
 //	std::vector<std::string> database_cross_reference;	// embl:DR	genbank,ddgj:?
 	std::string contig;									// embl:CO	genbank:?	ddgj:CONTIG
 	std::vector<std::string> free_text_comment;			// embl:CC	genbank,ddgj:COMMENT
-	std::string free_text_commnt_as_one_string;
+	std::string free_text_comment_as_one_string;
 //	std::vector<int> sequence_header;					// embl:SQ	genbank,ddgj:BASE COUNT
 	std::string sequence;								// embl:..	genbank,ddgj:ORIGIN
 	std::string file_name;
+	bool complete_file;
 	bool prepared;
 
 public:
@@ -87,6 +92,7 @@ public:
 	std::string * getOrganismClassificationAsOneString();
 	std::vector<std::string> * getOrganismClassification();
 	virtual void parseSequence(std::string *)=0;
+	bool isFileComplete();
 };
 
 };
