@@ -691,12 +691,18 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     aws->create_menu(       0,   "FIELDS",     "F", "gene_fields.hlp",  AD_F_ALL );
     GEN_create_field_items(aws);
 
-    Awar_Callback_Info *cb_info = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid); // do not delete!
-    cb_info->add_callback();
+    {
+        Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid); // do not delete!
+        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+        
+        cb_info->add_callback();
 
-    aws->at("detach");
-    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
-    aws->create_button("DETACH", "DETACH", "D");
+        aws->at("detach");
+        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+        aws->create_button("DETACH", "DETACH", "D");
+
+        detach_info->set_detach_button(aws->get_last_button_widget());
+    }
 
     //     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
 

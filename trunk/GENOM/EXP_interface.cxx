@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu May/27/2004 11:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jun/25/2004 17:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -552,12 +552,17 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws->create_menu(       0,   "FIELDS",     "F", "experiment_fields.hlp",  AD_F_ALL );
     EXP_create_field_items(aws);
 
-    Awar_Callback_Info *cb_info = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, scannerid); // do not delete!
-    cb_info->add_callback();
+    {
+        Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, scannerid); // do not delete!
+        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+        cb_info->add_callback();
 
-    aws->at("detach");
-    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
-    aws->create_button("DETACH", "DETACH", "D");
+        aws->at("detach");
+        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+        aws->create_button("DETACH", "DETACH", "D");
+
+        detach_info->set_detach_button(aws->get_last_button_widget());
+    }
 
     //     aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
 
