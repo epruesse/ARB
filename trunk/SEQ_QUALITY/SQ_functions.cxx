@@ -117,7 +117,10 @@ void SQ_calc_sequence_structure(GBDATA *gb_main) {
 	}
     }
 
+#if defined(DEVEL_JUERGEN)
     GB_save_as(gb_main, path, savetype);
+#endif // DEVEL_JUERGEN
+
     GB_pop_transaction(gb_main);
 
 }
@@ -204,7 +207,10 @@ void SQ_calc_average_structure(GBDATA *gb_main) {
 	}
     }
 
+#if defined(DEVEL_JUERGEN)
     GB_save_as(gb_main, path, savetype);
+#endif // DEVEL_JUERGEN
+
     GB_pop_transaction(gb_main);
 
 }
@@ -321,7 +327,10 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 	}
     }
 
+#if defined(DEVEL_JUERGEN)
     GB_save_as(gb_main, path, savetype);
+#endif // DEVEL_JUERGEN
+
     GB_pop_transaction(gb_main);
 
 }
@@ -349,10 +358,10 @@ void SQ_calc_helix_conformance(GBDATA *gb_main) {
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
-   
+
     BI_helix my_helix;
     my_helix.init(gb_main, alignment_name);
-    
+
 
 
     if (true /*marked_only*/) {
