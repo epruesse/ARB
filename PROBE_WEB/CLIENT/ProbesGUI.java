@@ -25,9 +25,9 @@ private ProbesGUIActionListener al;
 //     }
 
 
-public ProbesGUI( TreeNode root, int levels)
+public ProbesGUI( TreeNode root, int levels, String title)
   {
-    super("ALL ARB PROBES");
+    super(title);
     setBackground(Color.lightGray);
 
     setLayout(new BorderLayout());
@@ -57,22 +57,20 @@ public ProbesGUI( TreeNode root, int levels)
 
 //     td = new Canvas();
 //     td.setSize(600,400);
-//     td.setBackground(Color.red);    
+//     td.setBackground(Color.red);
 //     add(td, BorderLayout.CENTER);
 
     sc = new ScrollPane();
-        if (root == null) 
-            {
-                System.out.println("in ProbesGUI(): no valid node given to display");
-                                System.exit(1);
-            }
+        if (root == null) {
+            Toolkit.InternalError("in ProbesGUI: can't display invalid tree node");
+        }
 
 
     sc.add(td);
     sc.getVAdjustable().setUnitIncrement(1);
     sc.getHAdjustable().setUnitIncrement(1);
     sc.setSize(600,400);
-    sc.setBackground(Color.red);    
+    sc.setBackground(Color.red);
     add(sc, BorderLayout.CENTER);
 
     //    add(new Button("second"));
