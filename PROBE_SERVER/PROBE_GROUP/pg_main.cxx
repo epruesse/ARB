@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Wed Oct/08/2003 20:49 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/10/2003 11:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -426,7 +426,7 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
     return error;
 }
 
-static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter, int probeGroupCounter, int probeSubtreeCounter) {
+static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter, int exactProbeGroupCounter, int probeSubtreeCounter) {
     GB_ERROR error = 0;
     GB_transaction dummy(pba_main);
 
@@ -437,8 +437,8 @@ static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter,
     }
 
     if (!error) {
-        GBDATA *stCounter    = GB_search(pba_main,"probe_group_counter",GB_INT);
-        if (stCounter) error = GB_write_int(stCounter,probeGroupCounter);
+        GBDATA *stCounter    = GB_search(pba_main,"exact_probe_group_counter",GB_INT);
+        if (stCounter) error = GB_write_int(stCounter,exactProbeGroupCounter);
         else    error        = GB_get_error();
     }
 
@@ -446,6 +446,37 @@ static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter,
         GBDATA *stProbeCounter    = GB_search(pba_main,"subtree_with_probe_counter",GB_INT);
         if (stProbeCounter) error = GB_write_int(stProbeCounter,probeSubtreeCounter);
         else    error             = GB_get_error();
+    }
+
+    return error;
+}
+
+static GB_ERROR probeDatabaseFinalizeCounters(GBDATA *pba_main, int better_covering_groups_counter, int less_mishit_groups_counter) {
+    GB_ERROR error = 0;
+    GB_transaction dummy(pba_main);
+
+    {
+        GBDATA *stCounter    = GB_search(pba_main,"coverage_group_counter",GB_INT);
+        if (stCounter) error = GB_write_int(stCounter,better_covering_groups_counter);
+        else    error        = GB_get_error();
+    }
+
+    if (!error) {
+        GBDATA *stCounter    = GB_search(pba_main,"mishit_group_counter",GB_INT);
+        if (stCounter) error = GB_write_int(stCounter,less_mishit_groups_counter);
+        else    error        = GB_get_error();
+    }
+
+    if (!error) {
+        GBDATA *exactCounter = GB_search(pba_main,"exact_probe_group_counter",GB_FIND);
+        if (exactCounter) {
+            int probe_group_counter = better_covering_groups_counter + less_mishit_groups_counter + GB_read_int(exactCounter);
+
+            GBDATA *stCounter    = GB_search(pba_main,"probe_group_counter",GB_INT); // overall group number!
+            if (stCounter) error = GB_write_int(stCounter, probe_group_counter);
+            else    error        = GB_get_error();
+        }
+        else error = GB_get_error();
     }
 
     return error;
@@ -511,6 +542,11 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
     if (!error) {
         const char *probe;
         while ((probe = PG_find_next_probe(error)) && !error) {
+#if defined(DEBUG)
+            if (strcmp("CCCUGGGGUCCGGGA", probe) == 0 || strcmp("UCCCGGACCCCAGGG", probe) == 0) {
+                fprintf(stderr, "probe %s occurred\n", probe);
+            }
+#endif // DEBUG
             probe_count++;
         }
         PG_exit_find_probes();
@@ -638,14 +674,14 @@ static void PG_get_probes(GBDATA *pg_group, deque<string>& probes) {
 }
 
 static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *pba_main, GBDATA *pbb_main) {
-    GB_ERROR      error               = 0;
+    GB_ERROR      error                  = 0;
     TreeTraversal tt(gbt_tree, TS_LINKED_TO_SPECIES);
-    int           statistic_size      = PG_NumberSpecies();
+    int           statistic_size         = PG_NumberSpecies();
     int           statistic[statistic_size];
-    int           count               = 1;
-    int           probeSubtreeCounter = 0;
-    int           probeGroupCounter   = 0;
-    unsigned      depth               = 0;
+    int           count                  = 1;
+    int           probeSubtreeCounter    = 0;
+    int           exactProbeGroupCounter = 0;
+    unsigned      depth                  = 0;
 
     out.put("Extracting groups for subtrees:");
     indent i(out);
@@ -730,7 +766,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
                 statistic[species.size()-1]++;
 
                 probeSubtreeCounter++;
-                probeGroupCounter++;
+                exactProbeGroupCounter++;
                 out.point();
 
                 // create a probe group for the subtree
@@ -755,7 +791,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         }
     } // end of traversal
 
-    if (!error) error = probeDatabaseWriteCounters(pba_main, subtreeCounter, probeGroupCounter, probeSubtreeCounter);
+    if (!error) error = probeDatabaseWriteCounters(pba_main, subtreeCounter, exactProbeGroupCounter, probeSubtreeCounter);
     if (!error) error = pathMappingWriteGlobals(pm_main, depth);
     if (!error) error = storeProbeGroupStatistic(pba_main, statistic, statistic_size);
 
@@ -1060,6 +1096,8 @@ static GB_ERROR getSpeciesInGroup(GBDATA *pb_group_or_node, SpeciesBag& species)
     return error;
 }
 
+static int independent_group_counter = 0; // counter
+
 static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pba_probe_groups, GB_ERROR &error) {
     typedef map<GBDATA*, string> GroupMap;
 
@@ -1068,8 +1106,8 @@ static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pb
 
     GroupMap::iterator found = independent_group.find(pb_group);
 
-    if (found != independent_group.end()) { // pb_group is already known
-        return found->second;
+    if (found != independent_group.end()) {
+        return found->second; // pb_group is an already known group
     }
 
     string new_group_name       = GBS_global_string("g%i_%i", para.pb_length, groupCounter);
@@ -1082,6 +1120,8 @@ static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pb
     PG_get_probes(pb_group, probes);
 
     pg_assert(probes.size());
+
+    independent_group_counter++; // count independent groups
 
     GBDATA *st_group    = GB_create_container(pba_probe_groups, "probe_group");
     GBDATA *st_group_id = GB_search(st_group, "id", GB_STRING);
@@ -1135,21 +1175,29 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
                         int                old_coverage = GB_read_int(pb_coverage);
                         int                subtree_size = species.size();
 
+#if defined(DUMP_COVERAGE_SEARCH)
                         out.put("searching better coverage (current=%i of %i):", old_coverage, subtree_size);
+#endif // DUMP_COVERAGE_SEARCH
                         indent i(out);
+#if defined(DUMP_COVERAGE_SEARCH)
                         out.put("members of subtree: %s", PG_SpeciesBag_Content(species).c_str());
+#endif // DUMP_COVERAGE_SEARCH
 
                         int     group_size;
                         GBDATA *pb_group = PG_find_best_covering_probe_group_for_species(pb_tree, species, 1, subtree_size-old_coverage-1, group_size);
 
                         if (pb_group) {
+#if defined(DUMP_COVERAGE_SEARCH)
                             out.put("Found better coverage: %i", group_size);
+#endif // DUMP_COVERAGE_SEARCH
 
                             string new_group_id = add_or_find_subtree_independent_group(pb_group, pba_probe_groups, error);
                             if (!error) error = setSubtreeCoverage(node, group_size, new_group_id.c_str());
                         }
                         else {  // no group found
+#if defined(DUMP_COVERAGE_SEARCH)
                             out.put("No better covering group found.");
+#endif // DUMP_COVERAGE_SEARCH
                             GB_write_int(pb_comb, 0); // mark subtree as complete
                         }
                     }
@@ -1157,7 +1205,9 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
                         if (comb<min_non_searched_comb) {
                             min_non_searched_comb = comb; // remember for next pass
                         }
+#if defined(DUMP_COVERAGE_SEARCH)
                         out.put("skipping subtree (%i > %i)", comb, max_comb);
+#endif // DUMP_COVERAGE_SEARCH
                     }
                 }
             }
@@ -1184,12 +1234,19 @@ static GB_ERROR searchBetterCoverage_repeated(GBT_TREE *tree, GBDATA *pb_main, G
             }
             else {
                 max_comb = min_non_searched_comb+comb_offset;
+#if defined(DUMP_COVERAGE_SEARCH)
                 out.put("Re-starting coverage search with max_comb=%i", max_comb);
+#endif // DUMP_COVERAGE_SEARCH
             }
         }
     }
 
     return error;
+}
+
+GB_ERROR searchLeastMishitGroups() {
+    out.put("[searchLeastMishitGroups not implemented]");
+    return 0;
 }
 
 int main(int argc,char *argv[]) {
@@ -1204,18 +1261,6 @@ int main(int argc,char *argv[]) {
     }
 
     if (!error) error = scanArguments(argc, argv);
-
-#if defined(DEBUG) && 0
-    {
-        indent i(out);
-        for (int from = 1; from<50; ++from) {
-            for (int take = 1; take <= from; ++take) {
-                out.put("combinations(%i, %i)=%i", take, from, combinations(take, from));
-            }
-        }
-    }
-
-#endif // DEBUG
 
     {
         indent i(out);
@@ -1253,7 +1298,22 @@ int main(int argc,char *argv[]) {
                     error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
                 }
             }
+
             if (!error) error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
+            if (!error) {
+                GB_transaction dummy(gb_main);
+                GB_transaction dummy2(pba_main);
+
+                char              *ali_name = GBT_get_default_alignment(gb_main);
+                GB_alignment_type  ali_type = GBT_get_alignment_type(gb_main, ali_name);
+
+                GBDATA *pba_ali_name = GB_search(pba_main, "alignment", GB_STRING);
+                GBDATA *pba_ali_type = GB_search(pba_main, "alignment_type", GB_INT);
+                GB_write_string(pba_ali_name, ali_name);
+                GB_write_int(pba_ali_type, long(ali_type));
+
+                free(ali_name);
+            }
 
             if (!error) {
                 GB_transaction dummy(pba_main);
@@ -1270,7 +1330,22 @@ int main(int argc,char *argv[]) {
                 }
 
                 if (!error) {
+                    out.put("Searching better groups for non-exact subtrees ..");
+                    indent i(out);
+
                     error = searchBetterCoverage_repeated(gbt_tree, pb_main, pba_main);
+                    if (!error) {
+                        int better_covering_groups = independent_group_counter;
+                        out.put("Better covering groups found: %i", better_covering_groups);
+
+                        error = searchLeastMishitGroups();
+                        if (!error) {
+                            int less_mishit_groups = independent_group_counter-better_covering_groups;
+                            out.put("Less mishit groups found: %i", less_mishit_groups);
+
+                            error = probeDatabaseFinalizeCounters(pba_main, better_covering_groups, less_mishit_groups);
+                        }
+                    }
                 }
             }
 
