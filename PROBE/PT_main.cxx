@@ -20,20 +20,21 @@ char *pt_error_buffer = new char[1024];
 ulong physical_memory = 0;
 
 /*****************************************************************************
-		Communication
+        Communication
 *******************************************************************************/
 char *pt_init_main_struct(PT_main *main, char *filename)
 {
-    main = main;
+    main               = main;
     probe_read_data_base(filename);
     GB_begin_transaction(psg.gb_main);
     psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
     GB_commit_transaction(psg.gb_main);
+    printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
     probe_read_alignments();
     PT_build_species_hash();
     return 0;
 }
-PT_main *aisc_main;	/* muss so heissen */
+PT_main *aisc_main; /* muss so heissen */
 
 extern "C" int server_shutdown(PT_main *pm,aisc_string passwd){
     /** passwdcheck **/
@@ -74,12 +75,12 @@ int main(int argc, char **argv)
     char *aname,*tname;
     const char *suffix;
     struct stat s_source,s_dest;
-    int	build_flag;
+    int build_flag;
     struct arb_params *params;
-    char	*command_flag;
+    char    *command_flag;
     params = arb_trace_argv(&argc,argv);
     PT_init_psg();
-    GB_install_pid(0);		/* not arb_clean able */
+    GB_install_pid(0);      /* not arb_clean able */
     aisc_core_on_error = 0;
     physical_memory = GB_get_physical_memory();
     /***** try to open com with any other pb server ******/
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
     suffix = ".pt";
     tname = (char *)calloc(sizeof(char),strlen(aname)+strlen(suffix)+1);
     sprintf(tname,"%s%s",aname,suffix);
-    if (!strcmp(command_flag, "-build")) {	/* build command */
+    if (!strcmp(command_flag, "-build")) {  /* build command */
         if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
@@ -125,14 +126,14 @@ int main(int argc, char **argv)
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
             exit(0);
         }
-        enter_stage_3_load_tree(aisc_main,tname);			/* now stage 3 */
+        enter_stage_3_load_tree(aisc_main,tname);           /* now stage 3 */
         PT_debug_tree();
         exit(0);
     }
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
     if (psg.link) {
         if (!strcmp(command_flag, "-look"))
-            exit(0);	/* already another serther */
+            exit(0);    /* already another serther */
         printf("There is another activ server. I try to kill him...\n");
         aisc_nput(psg.link, PT_MAIN, psg.main,
                   MAIN_SHUTDOWN, "47@#34543df43%&3667gh",
@@ -189,5 +190,5 @@ int main(int argc, char **argv)
     aisc_accept_calls(so);
     aisc_server_shutdown(so);
 
-    return 0;		// never reached
+    return 0;       // never reached
 }
