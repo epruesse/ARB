@@ -4,14 +4,16 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-void error_msg(char **argv){
-    printf("syntax: %s [-consense #ofTrees] tree_name treefile [comment]\n",argv[0]);
+void abort_with_usage(GBDATA *gb_main){
+    printf("syntax: arb_read_tree [-consense #ofTrees] tree_name treefile [comment]\n"); // arb_read_tree (hit grep!)
+    GBT_message(gb_main, "Error running arb_read_tree (see console)");
     exit(-1);
 }
 
 void show_error(GBDATA *gb_main) {
     GBT_message(gb_main, GB_get_error());
     GB_print_error();
+    GB_clear_error();
 }
 
 // add_bootstrap interprets the length of the branches as bootstrap value
@@ -55,29 +57,28 @@ int main(int argc,char **argv)
     int consense         = 0;
     int calculated_trees = 0;
 
-    if (argc == 1) error_msg(argv);
-
     GBDATA *gb_main = GB_open(":","r");
     if (!gb_main){
-        printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
+        printf("arb_read_tree: Error: you have to start an arbdb server first\n");
         return -1;
     }
-    GBT_message(gb_main, "Reading tree...");
+
+    if (argc == 1) abort_with_usage(gb_main);
 
     if (!strcmp("-consense",argv[arg])){
         consense = 1;
         arg++;
-
         calculated_trees = atoi(argv[arg++]);
-        GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
     }
 
-    if (argc!= arg+2 && argc!= arg+3) error_msg(argv);
+    if (argc!= arg+2 && argc!= arg+3) abort_with_usage(gb_main);
 
     const char *filename              = argv[arg+1];
     const char *comment               = 0;
     if (argc==arg+3) comment          = argv[arg+2];
     char       *comment_from_treefile = 0;
+
+    GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
 
     GBT_TREE *tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, consense ? 0 : 1);
     if (!tree) {
@@ -92,6 +93,7 @@ int main(int argc,char **argv)
             GB_close(gb_main);
             return -1;
         }
+        GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
         add_bootstrap(tree, calculated_trees);
     }
 
