@@ -14,7 +14,9 @@ public class TreeDisplay extends Canvas
     private String   treeString;
     private TreeNode root;
     private TreeNode visibleSubtree;        // visible subtree
-    private TreeNode prevNode;
+    // private TreeNode prevNode;
+    private TreeNode lastFoldedNode; // last node folded/unfolded by hand 
+    private TreeNode lastMatchedNode; // last node probe has been ran for
 
     // if lockedPositionNode is set to a node
     // -> next repaint tries to keep that node at the same position
@@ -53,8 +55,11 @@ public class TreeDisplay extends Canvas
     private static Color dc;    // normal display color
     private static Color mc   = Color.yellow; // marked display color
     private static Color pmc  = Color.white; // partly marked display color
-    private Color        nic1 = Color.blue; // node info color 1 (not used for species name etc.)
-    private Color        nic2 = Color.magenta; // node info color 2 (not used for group name)
+    private static Color afc  = Color.cyan; // autofold color (text only)
+    private static Color lfnc = Color.green; // lastFoldedNode color
+    private static Color lmnc = Color.orange; // lastMatchedNode color
+    private static Color nic1 = Color.blue; // node info color 1 (not used for species name etc.)
+    private static Color nic2 = Color.magenta; // node info color 2 (not used for group name)
 
     private int group_box_size = 3; // size of group box (real size = group_box_size*2+1)
     private int clickTolerance = 5;
@@ -120,17 +125,37 @@ public class TreeDisplay extends Canvas
                    drawy+50); // a bit space below tree
     }
 
+    private void recalcLayoutSize() {
+        xPointer = (int)(visibleSubtree.calculateTotalDist(0)*xSpreading+0.5);
+        yPointer = 0;
+        calculateYValues(visibleSubtree);
+        System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
+    }
+
     private void recalcLayout() {
         rootLines.clear();
         branchLines.clear();
         rootSet.clear();
         branchSet.clear();
 
-        xPointer = (int)(visibleSubtree.calculateTotalDist(0)*xSpreading+0.5);
-        yPointer = 0;
-        calculateYValues(visibleSubtree);
+        recalcLayoutSize();
 
-        System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
+
+        // avoid tree displays >= 32768 by autofolding the tree
+
+        int max_display_ysize    = 32768-1;
+        // int max_display_ysize = 3000; // for testing
+        int max_loop             = 20;
+        while (yPointer>max_display_ysize && max_loop>0) {
+            max_loop--;
+            visibleSubtree.autofold(yPointer-max_display_ysize);
+            // System.out.println("autofolded!");
+            recalcLayoutSize();
+            // if (yPointer>max_display_ysize) {
+                // System.out.println("autofolding failed (display_ysize = "+yPointer+")");
+            // }
+        }
+
         setNewDrawSize(xPointer, yPointer);
 
         Dimension scrollPaneSize = getParent().getSize();
@@ -155,9 +180,25 @@ public class TreeDisplay extends Canvas
 
     public void setVisibleSubtree(TreeNode vis) {
         lockedPositionNode = visibleSubtree;
-        moveToPositionNode = vis;
+
         visibleSubtree     = vis;
+        moveToPositionNode = visibleSubtree;
         newLayout          = true;
+
+        if (visibleSubtree != null) {
+            AutofoldCandidate.annouce_POI(visibleSubtree);
+            if (lockedPositionNode != null) {
+                //                 System.out.println("visibleSubtree="+visibleSubtree);
+                //                 try {
+                //                     Toolkit.AbortWithError("Test");
+                //                 }
+                //                 catch (Exception e) {
+                //                     Toolkit.showError(e.getMessage());
+                //                     e.printStackTrace();
+                //                 }
+                visibleSubtree.autounfold();
+            }
+        }
     }
 
     public void setRootNode(TreeNode root) throws Exception {
@@ -269,7 +310,7 @@ public class TreeDisplay extends Canvas
 
             {
                 // show scale bar
-                
+
                 int ysize  = 5; // "half" height of scale bar
 //                 int yspace = 2*ysize; // "half" space used by scalebar
 
@@ -314,7 +355,7 @@ public class TreeDisplay extends Canvas
             node.setYOffset( yPointer + leafOffset);
             yPointer = yPointer + leafSpace;
         }
-        else if (node.isFolded()) {
+        else if (node.isFoldedGroup()) {
             node.setYOffset( yPointer + groupOffset);
             yPointer = yPointer + groupSpace;
         }
@@ -344,7 +385,7 @@ public class TreeDisplay extends Canvas
         boolean draw_node_info = true;
 
         //         if ((node.isLeaf() == true) || (depth == 0)) {
-        if (node.isLeaf() || node.isFolded()) {
+        if (node.isLeaf() || node.isFoldedGroup()) {
 
             // horizontal line to leaf/folded_subtree
 
@@ -379,17 +420,16 @@ public class TreeDisplay extends Canvas
                 }
                 draw_node_info = false;
             }
-            else // draws a box with number of child if node is internal
+            else // draws a box with number of childs and group name
             {
                 g.drawRect((int)(node.getTotalDist() * xSpreading), (int)(node.getYOffset() - (groupOffset/2)),
                            group_text_size , groupOffset);
 
                 String groupText = node.getGroupName()+" ["+node.getNoOfLeaves()+"]";
+                if (node.isAutofolded()) g.setColor(afc);
                 g.drawString(groupText, (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +4 );
                 // g.drawString(Integer.toString(node.getNoOfLeaves()), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +4 );
             }
-
-
         }
         else {
             line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
@@ -441,6 +481,27 @@ public class TreeDisplay extends Canvas
             displayTreeGraph (g, downChild);
         }
 
+        // lastFoldedNode indicator
+        if (node == lastFoldedNode) {
+            int box_size = group_box_size; // same size ok, because it always is a group 
+            
+            line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
+            line[1] = node.getYOffset();
+
+            g.setColor(lfnc);
+            g.fillRect(line[0]-box_size, line[1]-box_size, 2*box_size+1, 2*box_size+1);
+        }
+        
+        // lastMatchedNode indicator
+        if (node == lastMatchedNode) {
+            int box_size = group_box_size-(node.isGroup() ? 1 : 0);
+
+            line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
+            line[1] = node.getYOffset();
+            g.setColor(lmnc);
+            g.fillRect(line[0]-box_size, line[1]-box_size, 2*box_size+1, 2*box_size+1);
+        }
+
         // draw inner node information
         // (this is done AFTER drawing childs to ensure it's on top)
         if (draw_node_info) {
@@ -476,18 +537,24 @@ public class TreeDisplay extends Canvas
         if ( clickedNode != null) {
             boolean goto_node = true;
 
+            AutofoldCandidate.annouce_POI(clickedNode);
+
             if (clickedNode.isGroup()) {
-                if (clickedNode.isFolded()) {
+                if (clickedNode.isFoldedGroup()) {
                     clickedNode.unfold();
+                    clickedNode.autounfold();
+
                     goto_node          = false;
                     lockedPositionNode = clickedNode;
+                    lastFoldedNode    = clickedNode;
                 }
                 else {
                     TreeNode foldGroupNode = getBoxClickedNode(x, y);
                     if (foldGroupNode == clickedNode) { // if small box has been clicked -> fold group
                         clickedNode.fold();
-                        goto_node = false;
+                        goto_node          = false;
                         lockedPositionNode = clickedNode;
+                        lastFoldedNode    = clickedNode;
                     }
                 }
             }
@@ -507,7 +574,9 @@ public class TreeDisplay extends Canvas
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
             try {
+                AutofoldCandidate.annouce_POI(clickedNode);
                 myClient.updateNodeInformation(clickedNode);
+                lastMatchedNode = clickedNode;
             }
             catch (ClientException e) {
                 Toolkit.showError(e.getMessage());
@@ -528,7 +597,7 @@ public class TreeDisplay extends Canvas
         if (visibleSubtree != dest && dest != null) {
             if (visibleSubtree != null) history.push(visibleSubtree);
             setVisibleSubtree(dest);
-            if (dest.isFolded()) dest.unfold();
+            if (dest.isFoldedGroup()) dest.unfold();
             repaint();
         }
     }
@@ -685,4 +754,9 @@ public class TreeDisplay extends Canvas
     }
 
     public void setClient(Client client) { myClient = client; }
+
+    public void clearMatches() {
+        lastMatchedNode = null;
+        unmarkNodes();
+    }
 }
