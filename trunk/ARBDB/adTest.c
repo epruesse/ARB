@@ -239,7 +239,6 @@ void GB_dump(GBDATA *gbd) {
     }
 }
 
-#ifdef DEBUG
 char *GB_ralfs_test(GBDATA *gb_main)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
@@ -256,7 +255,6 @@ char *GB_ralfs_menupoint(GBDATA *main_data)
 {
     return GB_ralfs_test(main_data);
 }
-#endif
 
 /* -------------------------------------------------------------------------------- */
 /* Fix database                                                                     */

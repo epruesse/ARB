@@ -84,9 +84,7 @@ int main(int argc, char **argv)
 	GB_set_next_main_idx(nidx);
 
  	if (test){
-#ifdef DEBUG
  	    GB_ralfs_test(gb_main);
-#endif
  	}
 
 	error = GB_save(gb_main,out,wtype);
