@@ -191,7 +191,8 @@ else
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 endif
 
-   GLLIBS = -L$(XHOME)/lib -lGLEW -lGLw -lGL -lglut -lglpng
+   GLPNGLIBS = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
+   GLLIBS = -L$(XHOME)/lib -lGLEW -lGLw -lGL -lglut $(GLPNGLIBS) 
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
@@ -447,6 +448,7 @@ ARCHS = \
 			GDE/GDE.a \
 			GENOM/GENOM.a \
 			GENOM_IMPORT/GENOM_IMPORT.a \
+			GL/GL.a \
 			ISLAND_HOPPING/ISLAND_HOPPING.a \
 			MERGE/MERGE.a \
 			MULTI_PROBE/MULTI_PROBE.a \
@@ -533,7 +535,7 @@ ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
 		RNA3D/OPENGL/OPENGL.a \
 
-$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
+$(RNA3D): gl $(ARCHS_RNA3D:.a=.dummy) shared_libs 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
 		echo Link $@ ; \
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
@@ -977,41 +979,40 @@ mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
-nt:		menus $(NTREE)
-ed:		$(EDIT)
+nt:	menus $(NTREE)
+ed:	$(EDIT)
 
-al:		$(ALIGNER)
+al:	$(ALIGNER)
 nal:	$(NALIGNER)
-a3:		$(ALIV3)
+a3:	$(ALIV3)
 
-di:		$(DIST)
-ph:		$(PHYLO)
-pa:		$(PARSIMONY)
-tg:		$(TREEGEN)
+di:	$(DIST)
+ph:	$(PHYLO)
+pa:	$(PARSIMONY)
+tg:	$(TREEGEN)
 
-3d: 	$(RNA3D)
-# se: 	$(SECEDIT)
-# acc:	$(ACORR)
+3d:	$(RNA3D)
+gl:	GL/GL.dummy
 
-ds:		$(DBSERVER)
-pt:		$(PROBE)
-ps:		PROBE_SERVER/PROBE_SERVER.dummy
-pc:		PROBE_WEB/PROBE_WEB.dummy
+ds:	$(DBSERVER)
+pt:	$(PROBE)
+ps:	PROBE_SERVER/PROBE_SERVER.dummy
+pc:	PROBE_WEB/PROBE_WEB.dummy
 pst:	PROBE_SET/PROBE_SET.dummy
-pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
-na:		$(NAMES)
-os:		$(ORS_SERVER)
-oc:		$(ORS_CGI)
+pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
+na:	$(NAMES)
+os:	$(ORS_SERVER)
+oc:	$(ORS_CGI)
 
-ac:		$(ARBDB_COMPRESS) # unused? does not compile
+ac:	$(ARBDB_COMPRESS) # unused? does not compile
 
 test:	$(TEST)
 demo:	$(AWDEMO)
 
-e4:		$(EDIT4)
-gi:		GENOM_IMPORT/GENOM_IMPORT.dummy
-we:		$(WETC)
-eb:		$(EDITDB)
+e4:	$(EDIT4)
+gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
+we:	$(WETC)
+eb:	$(EDITDB)
 
 xml:	XML/XML.dummy
 
