@@ -1738,8 +1738,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args)
         }
         case GBT_ITEM_GENE: {
             char *seq = GBT_read_gene_sequence(args->gb_ref, GB_TRUE);
-            error     = GB_get_error();
-            gb_assert(!seq || !error);
+            if (!seq) error = GB_get_error();
             if (!error) (*args->voutput)[(*args->coutput)++].str = seq;
 
             break;
