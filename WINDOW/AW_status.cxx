@@ -902,7 +902,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
         GBS_write_hash(hash_windows,hindex,(long)aw_msg);
         int counter = 0;
 
-        aw_msg->init( root, "QUESTION BOX");
+        aw_msg->init( root, "QUESTION BOX", false);
         aw_msg->recalc_size_at_show = 1; // force size recalc (ignores user size)
 
         aw_msg->label_length( 10 );
@@ -1016,12 +1016,12 @@ void aw_error(const char *text,const char *text2){
 /***********************************************************************/
 /*****************      AW_INPUT         *******************/
 /***********************************************************************/
-char  *aw_input_cb_result = 0;
 
-static int aw_string_selected_button = -1;
+char       *aw_input_cb_result        = 0;
+static int  aw_string_selected_button = -2;
 
 int aw_string_selection_button() {
-    aw_assert(aw_string_selected_button != -1);
+    aw_assert(aw_string_selected_button != -2);
     return aw_string_selected_button;
 }
 
@@ -1029,10 +1029,17 @@ int aw_string_selection_button() {
 #define AW_INPUT_TITLE_AWAR "tmp/input/title"
 
 void input_cb( AW_window *aw, AW_CL cd1 ) {
+    // any previous contents were passed to client (who is responsible to free the resources)
+    // so DONT free aw_input_cb_result here
+
     aw_input_cb_result        = 0;
     aw_string_selected_button = int(cd1);
-    if (cd1<0) return;
-    aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
+    
+    if (cd1<0) return; // cancel button -> no result
+
+    // create heap-copy of result -> client will get the owner
+    aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string(); 
+
     return;
 }
 
@@ -1056,7 +1063,7 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
         // @@@ FIXME: tried to attach input field and title button to right border
         // but it's not working at all
 
-        aw_msg->init( root, title);
+        aw_msg->init( root, title, false);
 //         aw_msg->at_set_min_size(600, 300);
 
         aw_msg->label_length( 0 );
@@ -1103,9 +1110,8 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
     root->disable_callbacks = AW_FALSE;
     aw_msg->hide();
 
-    if (awar_value){
-        root->awar_string(AW_INPUT_AWAR)->unmap();
-    }
+    if (awar_value) root->awar_string(AW_INPUT_AWAR)->unmap();
+
     return aw_input_cb_result;
 }
 
@@ -1125,6 +1131,7 @@ char *aw_input( const char *prompt, const char *awar_value, const char *default_
 //      awar_name       name of awar to use for inputfield (if NULL => internal awar)
 //      default_value   default value (if NULL => ""). Not used in case of awar_name != NULL
 //      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
+//      buttons         Existing selections (seperated by ';' ; if NULL => uses aw_input)
 //      check_fun       function to correct input (or 0 for no check). The function may return 0 to indicate no correction
 //
 // returns the value of the inputfield
@@ -1151,7 +1158,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
 
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, title );
+        aw_msg->init( root, title, true);
 
         aw_msg->label_length( 0 );
         aw_msg->button_length(width);
@@ -1169,6 +1176,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
         aw_msg->update_selection_list(sel);
 
         aw_msg->at_newline();
+        // aw_msg->at_attach(AW_FALSE, AW_TRUE); // attach buttons to Y (at_attach does not work)
 
         if (buttons)  {
             char *but    = GB_strdup(buttons);
@@ -1194,6 +1202,10 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
             aw_msg->create_button( "CANCEL", "CANCEL", "C" );
         }
 
+        aw_msg->window_fit();
+    }
+    else {
+        aw_msg->set_window_title(title);
         aw_msg->window_fit();
     }
 
@@ -1240,6 +1252,11 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
             this_input = 0;
         }
         free(this_input);
+
+        if (aw_msg->get_show() == AW_FALSE) { // somebody minimized the window
+            input_cb(aw_msg, (AW_CL)-1); // CANCEL
+            break;
+        }
     }
 
     free(last_input);
@@ -1278,7 +1295,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "ENTER A STRING");
+        aw_msg->init( root, "ENTER A STRING", false);
 
         aw_msg->label_length( 0 );
         aw_msg->button_length( 30 );
