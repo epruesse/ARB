@@ -330,6 +330,8 @@ void awt_search_equal_entries(AW_window *dummy,struct adaqbsstruct *cbs,int toke
 long awt_count_queried_species(struct adaqbsstruct *cbs);
 void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
 
+AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
+
 /**************************************************************************
 *********************	Simple Awar Controll Procs	*******************
 ***************************************************************************/
