@@ -567,8 +567,8 @@ typedef struct gbl_command_arguments_struct {
     const char *default_tree_name; /* if we have a default tree, its name is specified here (0 otherwise) */
     const char *command;        /* the name of the current command */
 
-    int cinput; const GBL *vinput; /* input streams */
-    int cparam; const GBL *vparam; /* parameter "streams" */
+    int  cinput; const GBL *vinput; /* input streams */
+    int  cparam; const GBL *vparam; /* parameter "streams" */
     int *coutput; GBL **voutput; /* the output streams */
 
 } GBL_command_arguments;
