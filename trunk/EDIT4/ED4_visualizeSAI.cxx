@@ -295,7 +295,7 @@ int checkSai(const char *species_name) {
 
 const char *getSaiColorString(int start, int end) {
 
-    // @@@ FIXME:  if 'start' and 'end' have the same values as last time
+    // @@@ FIXME:  if 'start' and 'end' have the same values as last time (and no settings were changed)
     // -> do not calculate again
 
     e4_assert(start<=end);
