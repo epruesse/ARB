@@ -18,6 +18,10 @@
 #include "ed4_class.hxx"
 #include "ed4_tools.hxx"
 
+static int result_counter      = 0;
+static int max_allowed_results = 10000;
+static int ignore_more_results = false;
+
 const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
 {
     "User1", "User2",
@@ -589,7 +593,7 @@ void SearchTree::findMatches(GB_CSTR seq, int len, reportMatch report)
             SearchTreeNode::set_report(report, uni2real);
             SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
 
-            for (off=0; off<new_len; off++,useq++) {
+            for (off=0; off<new_len && !ignore_more_results; off++,useq++) {
                 SearchTreeNode::set_start_offset(off);
                 root->findMatches(off, useq, new_len-off, 0, mismatch_list);
             }
@@ -660,6 +664,9 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
 {
     ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
     enum search_params_changed_action action = (enum search_params_changed_action)cl_action;
+
+    result_counter      = 0;
+    ignore_more_results = false;
 
     // check awar values
 
@@ -821,35 +828,63 @@ ED4_SearchPosition::ED4_SearchPosition(const ED4_SearchPosition& other) {
 
 ED4_SearchPosition *ED4_SearchPosition::insert(ED4_SearchPosition *toAdd)
 {
-    if (toAdd->cmp(*this)<=0) {
-        toAdd->next = this;
-        return toAdd;
+    ED4_SearchPosition *head = this;
+    ED4_SearchPosition *self = this;
+    ED4_SearchPosition *last = 0;
+
+    while (1) {
+        if (toAdd->cmp(*self)<=0) { // add before self
+            toAdd->next          = self;
+            if (last) last->next = toAdd;
+            else head            = toAdd;
+            break;
+        }
+        if (!self->next) { // add to end of list
+            self->next = toAdd;
+            break;
+        }
+        last = self;
+        self = self->next;
     }
 
-    if (next) {
-        next = next->insert(toAdd);
-    }
-    else {
-        next = toAdd;
-    }
-
-    return this;
+    return head;
 }
 ED4_SearchPosition *ED4_SearchPosition::remove(ED4_SearchPositionType typeToRemove)
 {
-    if (whatsFound==typeToRemove) {
-        ED4_SearchPosition *rest = next ? next->remove(typeToRemove) : 0;
+    ED4_SearchPosition *head = this;
+    ED4_SearchPosition *self = this;
+    ED4_SearchPosition *last = 0;
 
-        next = 0;
-        delete this;
+    while (self) {
+        if (self->whatsFound == typeToRemove) { // remove self
+            ED4_SearchPosition **ptrToMe = last ? &(last->next) : &head;
 
-        return rest;
+            *ptrToMe   = self->next;
+            self->next = 0;
+            delete self;
+            self       = *ptrToMe;
+        }
+        else { // do not remove
+            last = self;
+            self = self->next;
+        }
     }
 
-    if (next) {
-        next = next->remove(typeToRemove);
-    }
-    return this;
+    return head;
+
+//     if (whatsFound==typeToRemove) {
+//         ED4_SearchPosition *rest = next ? next->remove(typeToRemove) : 0;
+
+//         next = 0;
+//         delete this;
+
+//         return rest;
+//     }
+
+//     if (next) {
+//         next = next->remove(typeToRemove);
+//     }
+//     return this;
 }
 
 #ifdef TEST_SEARCH_POSITION
@@ -883,13 +918,23 @@ GB_CSTR ED4_SearchPosition::get_comment() const
 
 ED4_SearchPosition *ED4_SearchPosition::get_next_at(int pos) const
 {
-    if (!next || next->start_pos>pos) {
-        return 0;
+    ED4_SearchPosition *self = this->next;
+
+    while (self) {
+        if (self->start_pos > pos) break; // none found
+        if (self->containsPos(pos)) return self;
+        self = self->next;
     }
-    if (next->containsPos(pos)) {
-        return next;
-    }
-    return next->get_next_at(pos);
+    return 0;
+
+
+//     if (!next || next->start_pos>pos) {
+//         return 0;
+//     }
+//     if (next->containsPos(pos)) {
+//         return next;
+//     }
+//     return next->get_next_at(pos);
 }
 
 // --------------------------------------------------------------------------------
@@ -918,9 +963,9 @@ ED4_SearchResults::ED4_SearchResults()
         initialized = 1;
     }
 
-    arraySize = 0; // list-format
-    array = 0;
-    first = 0;
+    arraySize = 0;              // list-format
+    array     = 0;
+    first     = 0;
     int i;
     for (i=0; i<SEARCH_PATTERNS; i++) {
         timeOf[i] = 0;
@@ -942,8 +987,21 @@ static void reportSearchPosition(int start, int end, GB_CSTR comment, int mismat
 
 void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos)
 {
+    if (ignore_more_results) return;
+
     if (is_array()) {
         to_list();
+    }
+
+    ++result_counter;
+    if (result_counter >= max_allowed_results) {
+        if (aw_message(GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
+            max_allowed_results = max_allowed_results*2;
+        }
+        else {
+            ignore_more_results = true;
+            return;
+        }
     }
 
     if (first) {
