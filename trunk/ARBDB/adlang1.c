@@ -9,6 +9,8 @@
 #include "arbdbt.h"
 #include "adGene.h"
 
+#define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
+
 /********************************************************************************************
                                         Parameter Functions
 ********************************************************************************************/
@@ -327,7 +329,7 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
             {
                 GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
                 int     i;
-                
+
                 for (i = 0; i<args->cinput; ++i) {
                     char *result1       = GB_command_interpreter(gb_main, args->vinput[i].str, args->vparam[0].str, args->gb_ref, args->default_tree_name);
                     if (!result1) error = GB_get_error();
@@ -1215,9 +1217,9 @@ static GB_ERROR gbl_select(GBL_command_arguments *args) {
     int       i;
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
-    
+
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
-    
+
     for (i=0;i<args->cinput && !error;i++) { /* go through all in streams */
         int value = atoi(args->vinput[i].str);
         if (value<0 || value >= args->cparam) {
@@ -1361,7 +1363,8 @@ static GB_HASH *cached_taxonomies = 0;
 
 
 static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
-    /* this cb is bound to "/tree_data/tree_xxx".
+    /* this cb is bound all tree db members below "/tree_data/tree_xxx" which
+     * may have an effect on the displayed taxonomy
      * it invalidates cached taxonomies for that tree (when changed or deleted)
      */
 
@@ -1408,6 +1411,19 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     }
 
     error = GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, cd_ct);
+
+    if (found && !error) {
+        GB_MAIN_TYPE *Main            = GB_MAIN(gbd);
+        GBDATA       *gb_main         = (GBDATA*)Main->data;
+        GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
+        if (!gb_tree_refresh) {
+            error = GBS_global_string("%s (while trying to force refresh)", GB_get_error());
+        }
+        else {
+            GB_touch(gb_tree_refresh); /* Note : force tree update */
+        }
+    }
+
     if (error) {
         fprintf(stderr, "Error in flush_taxonomy_cb: %s\n", error);
     }
@@ -1446,7 +1462,25 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 cached = (long)ct;
                 GBS_write_hash(cached_taxonomies, tree_name, (long)ct);
 
-                GB_add_priority_callback(gb_tree, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct, 4);
+                {
+                    GBDATA *gb_tree_entry = GB_find(gb_tree, "tree", 0, down_level);
+                    GBDATA *gb_group_node;
+
+                    if (gb_tree_entry) {
+                        GB_add_callback(gb_tree_entry, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
+                    }
+
+                    /* add callbacks for all node/group_name subentries */
+                    for (gb_group_node = GB_find(gb_tree, "node", 0, down_level);
+                         gb_group_node;
+                         gb_group_node = GB_find(gb_group_node, "node", 0, this_level|search_next))
+                    {
+                        GBDATA *gb_group_name = GB_find(gb_group_node, "group_name", 0, down_level);
+                        if (gb_group_name) { /* group with id = 0 has no name */
+                            GB_add_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
+                        }
+                    }
+                }
 #if defined(DEBUG)
                 fprintf(stderr, "Created taxonomy hash for '%s' (ct=%p)\n", tree_name, ct);
 #endif /* DEBUG */
