@@ -311,7 +311,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     if (cbs->show_dir) {
         if (is_wildcard) {
             if (cbs->leave_wildcards) {
-                cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);                
+                cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
                 cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("  ALL '%s' below '%s'", name_only, fulldir), name);
@@ -365,7 +365,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
 
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
-            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, cbs->aws, cbs->id);            
+            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, cbs->aws, cbs->id);
         }
         else {
             awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, cbs->aws, cbs->id);
@@ -378,7 +378,7 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     }
 
     cbs->aws->insert_default_selection( cbs->id, "", "" );
-    cbs->aws->sort_selection_list(cbs->id, 0);
+    cbs->aws->sort_selection_list(cbs->id, 0, 1);
     cbs->aws->update_selection_list( cbs->id );
 
     free(name);
