@@ -30,42 +30,44 @@
 
 AW_HEADER_MAIN
 
-ED4_root 	 *ED4_ROOT;
-GBDATA 		 *gb_main = NULL;
+ED4_root     *ED4_ROOT;
+GBDATA       *gb_main = NULL;
 ED4_database *main_db;
 
 long global_width = 100;
-int  TERMINALHEIGHT;	        // this variable replaces the define
-int	 MAXLETTERDESCENT;	        // Important for drawing text on the screen
-int	 MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
-int	 MAXSPECIESWIDTH;
-int	 MAXINFOWIDTH;		        // # of pixels used to display sequence info ("CONS", "4data", etc.)
-int	 MAXCHARWIDTH;              // # of pixels of broadest sequence character
-int	 MARGIN;			        // sets margin for cursor moves in characters
+int  TERMINALHEIGHT;            // this variable replaces the define
+int  MAXLETTERDESCENT;          // Important for drawing text on the screen
+int  MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+int  MAXSPECIESWIDTH;
+int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int  MAXCHARWIDTH;              // # of pixels of broadest sequence character
+int  MARGIN;                    // sets margin for cursor moves in characters
 
-long		  ED4_counter = 0;
-long		  all_found;		// nr of species which haven't been found
-long		  species_read;		// nr of species read; important during loading
-void 		 *not_found_message;
-long		  max_seq_terminal_length; // global maximum of sequence terminal length
+long          ED4_counter = 0;
+long          all_found;        // nr of species which haven't been found
+long          species_read;     // nr of species read; important during loading
+void         *not_found_message;
+long          max_seq_terminal_length; // global maximum of sequence terminal length
 ED4_EDITMODI  awar_edit_modus;
-long		  awar_edit_direction;
-bool		  move_cursor;		// only needed for editing in consensus
-bool		  DRAW;
-bool		  last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
-double		  status_add_count;	// only needed for loading configuration
-double		  status_total_count;
-bool		  loading;
-//long 			last_used_timestamp;
+long          awar_edit_direction;
+bool          move_cursor;      // only needed for editing in consensus
+bool          DRAW;
+bool          last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+double        status_add_count; // only needed for loading configuration
+double        status_total_count;
+bool          loading;
+//long          last_used_timestamp;
 
 
-int ED4_font_info::max_width = 0;
-int ED4_font_info::max_height = 0;
-int ED4_font_info::max_ascent = 0;
+int ED4_font_info::max_width   = 0;
+int ED4_font_info::max_height  = 0;
+int ED4_font_info::max_ascent  = 0;
 int ED4_font_info::max_descent = 0;
 
 void ED4_config_change_cb(AW_root *)
 {
+
+    // @@@ FIXME: ok to be empty ? check!
 }
 
 inline void replaceChars(char *s, char o, char n)
@@ -326,9 +328,11 @@ void ED4_create_global_awars(AW_root *root) {
     ED4_create_search_awars(root);
 }
 
-void ED4_create_awars(AW_root *root, const char *config_name) { // cursor awars are created in window constructor
+void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor awars are created in window constructor
 
     ED4_create_global_awars(root);
+    ARB_init_global_awars(root, AW_ROOT_DEFAULT, gb_main);
+
     create_naligner_variables(root, AW_ROOT_DEFAULT);
 
     root->awar_int(ED4_AWAR_SPECIES_NAME_WIDTH,20) ->add_target_var(&global_width) ->set_minmax(10,50) ->add_callback(ED4_config_change_cb);
@@ -447,13 +451,13 @@ int main(int argc,char **argv)
 
     ED4_ROOT = new ED4_root();
 
-    ED4_ROOT->db = ED4_ROOT->aw_root->open_default( ".arb_prop/edit4.arb" );	// open default-database
-    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db);				// pass defaults
-    ED4_ROOT->aw_root->init( "ARB_EDIT4" );					// initialize window-system
+    ED4_ROOT->db = ED4_ROOT->aw_root->open_default( ".arb_prop/edit4.arb" );    // open default-database
+    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db);               // pass defaults
+    ED4_ROOT->aw_root->init( "ARB_EDIT4" );                 // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
-    ED4_create_awars(ED4_ROOT->aw_root, config_name);
+    ED4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = new_ST_ML(gb_main);
     ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database,(int)ED4_G_SEQUENCES, ED4_refresh_window, 0,0);
@@ -485,7 +489,7 @@ int main(int argc,char **argv)
                 GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
                 GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
                 char *config_data_middle = GB_read_as_string(gb_middle_area);
-                char *config_data_top	= GB_read_as_string(gb_top_area);
+                char *config_data_top   = GB_read_as_string(gb_top_area);
 
                 ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
                 free(config_data_middle);
