@@ -135,15 +135,17 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     {
         AW_pos world_x, world_y;
 
-        printf("this=%p\n", this);
+        // #if defined(DEBUG)
+        //         printf("this=%p\n", this);
+        // #endif // DEBUG
         calc_world_coords( &world_x, &world_y );
-#if defined(DEBUG)
-        printf("species_name='%s' world_x=%f world_y=%f\n", species_name, world_x, world_y);
-#endif // DEBUG
+        // #if defined(DEBUG)
+        //         printf("species_name='%s' world_x=%f world_y=%f\n", species_name, world_x, world_y);
+        // #endif // DEBUG
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
-#if defined(DEBUG)
-        printf("win_x=%f win_y=%f\n", world_x, world_y);
-#endif // DEBUG
+        // #if defined(DEBUG)
+        //         printf("win_x=%f win_y=%f\n", world_x, world_y);
+        // #endif // DEBUG
 
         text_x = world_x + CHARACTEROFFSET;							// don't change
         text_y = world_y + height - MAXLETTERDESCENT - ED4_ROOT->helix_spacing;

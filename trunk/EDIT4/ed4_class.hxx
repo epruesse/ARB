@@ -733,9 +733,9 @@ public:
         if (!cache_up_to_date) {
             update_world_coords_cache();
         }
-#if defined(DEBUG)
-        printf("this=%p x=%f y=%f %s\n", this, lastXpos, lastYpos, cache_up_to_date ? "" : "(cache updated)");
-#endif // DEBUG
+        // #if defined(DEBUG)
+        // printf("this=%p x=%f y=%f %s\n", this, lastXpos, lastYpos, cache_up_to_date ? "" : "(cache updated)");
+        // #endif // DEBUG
         *x = lastXpos;
         *y = lastYpos;
     }
