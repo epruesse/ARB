@@ -197,7 +197,11 @@ GLLIBS=
 
 ifeq ($(OPENGL),1)
 GL:=gl # this is the name of the OPENGL base target
+ifdef DEBIAN
+GL_LIB:=-lGL -lpthread
+else
 GL_LIB:=-lGL
+endif
 GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
 GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw -lglut $(GL_PNGLIBS)
 endif
