@@ -105,6 +105,7 @@ char **GBT_scan_db P_((GBDATA *gbd, const char *datapath));
 GB_ERROR GBT_message P_((GBDATA *gb_main, const char *msg));
 GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ncase));
 GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));
 GB_ERROR GBT_begin_rename_session P_((GBDATA *gb_main, int all_flag));
 GB_ERROR GBT_rename_species P_((const char *oldname, const char *newname));
 GB_ERROR GBT_abort_rename_session P_((void));

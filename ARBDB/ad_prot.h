@@ -300,6 +300,7 @@ void GBS_free_hash_entries_free_pointer P_((GB_HASH *hs));
 void GBS_free_hash_free_pointer P_((GB_HASH *hs));
 void GBS_hash_do_loop P_((GB_HASH *hs, gb_hash_loop_type func));
 void GBS_hash_do_loop2 P_((GB_HASH *hs, gb_hash_loop_type2 func, void *parameter));
+long GBS_hash_count_elems P_((GB_HASH *hs));
 void GBS_hash_next_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_first_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter));
