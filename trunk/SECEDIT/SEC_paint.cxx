@@ -631,56 +631,6 @@ void paint_box(SEC_root *root, SEC_Base *base, double x, double y, double radius
     device->line(SEC_GC_DEFAULT, x1, y1, x1, y0, root->loop_filter, (AW_CL)base, 0 );
 }
 
-
-// void SEC_segment::paint_cursor(double cursor_x, double cursor_y, AW_device *device) {
-//     double radius = loop->get_radius();
-
-//     double center_cursor_v[2] = { (cursor_x-x), (cursor_y-y) };
-//     double length_of_vector = sqrt( (center_cursor_v[0]*center_cursor_v[0]) + (center_cursor_v[1]*center_cursor_v[1]) );
-//     center_cursor_v[0] = center_cursor_v[0] / length_of_vector;
-//     center_cursor_v[1] = center_cursor_v[1] / length_of_vector;
-
-// #define CURSORSIZE 0.3
-
-//     double start_x = x + center_cursor_v[0]*((1.0-CURSORSIZE)*radius);
-//     double start_y = y + center_cursor_v[1]*((1.0-CURSORSIZE)*radius);
-//     double end_x   = x + center_cursor_v[0]*((1.0+CURSORSIZE)*radius);
-//     double end_y   = y + center_cursor_v[1]*((1.0+CURSORSIZE)*radius);
-
-// #undef CURSORSIZE
-
-//     device->set_line_attributes(SEC_GC_CURSOR, 3, AW_SOLID);
-//     device->line(SEC_GC_CURSOR, start_x, start_y, end_x, end_y, root->segment_filter, (AW_CL)((SEC_Base *)this), 0 );
-//     root->set_last_drawed_cursor_position(start_x, start_y, end_x, end_y);
-// }
-
-// void SEC_helix_strand::paint_cursor(double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double cursor_x, double cursor_y, AW_device *device) {
-//     double length = 0.5 * root->get_distance_between_strands();
-//     double start_cursor_v[2] = {(attachpB_x-attachpA_x), (attachpB_y-attachpA_y) };
-
-//     double tmp = start_cursor_v[0];
-//     start_cursor_v[0] = start_cursor_v[1];
-//     start_cursor_v[1] = (-1)*tmp;
-
-//     double length_of_v = sqrt( (start_cursor_v[0]*start_cursor_v[0]) + (start_cursor_v[1]*start_cursor_v[1]) );
-//     start_cursor_v[0] = start_cursor_v[0]/length_of_v;
-//     start_cursor_v[1] = start_cursor_v[1]/length_of_v;
-
-// #define CURSORSIZE 0.5
-
-//     double start_x = cursor_x + start_cursor_v[0]*(CURSORSIZE*length);
-//     double start_y = cursor_y + start_cursor_v[1]*(CURSORSIZE*length);
-//     double end_x   = cursor_x - start_cursor_v[0]*(CURSORSIZE*length);
-//     double end_y   = cursor_y - start_cursor_v[1]*(CURSORSIZE*length);
-
-// #undef CURSORSIZE
-
-//     device->set_line_attributes(SEC_GC_CURSOR, 2, AW_SOLID);
-//     device->line(SEC_GC_CURSOR, start_x, start_y, end_x, end_y, root->helix_filter, (AW_CL)((SEC_Base *)this), 0 );
-//     root->set_last_drawed_cursor_position(start_x, start_y, end_x, end_y);
-// }
-
-
 void SEC_segment::print_ecoli_pos(long ecoli_pos, double base_x, double base_y, AW_device *device) {
     //    double radius = loop->get_radius();
     double center_base_v[2] = { (base_x-x), (base_y-y) };
@@ -818,7 +768,6 @@ void SEC_root::paint(AW_device *device) {
     }
 }
 
-
 void SEC_segment::prepare_paint(SEC_helix_strand *previous_strand_pointer, double &gamma, double &eta, double &radius, int &base_count, double &angle_step /* const char* &bgColor*/ ) {
     //get attachpoint_1 of previous strand
     double attachp1_x = previous_strand_pointer->get_attachp1_x();
@@ -905,6 +854,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     int seqStart = region.get_sequence_start();
     int seqEnd   = region.get_sequence_end();
 
+    int tempAbsPos = -1;
     const char *bgColor = 0;//, *bgColorLastSeg = 0;
 
     if(seqStart<seqEnd)  bgColor = root->getSearchResults(seqStart-1, seqEnd);
@@ -916,8 +866,10 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     
     int lastSearchColor = 0; 
     if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]) lastSearchColor = bgColor[seqStart-1] - COLORLINK;
-    char startBase[2]; 
-    startBase[0]=startBase[1]=0;
+
+    char helixStartBase[2], helixEndBase[2]; 
+    helixStartBase[0] = helixStartBase[1] = 0;
+    helixEndBase[0]   = helixEndBase[1]   = 0;
 
     for (i = 0; i<base_count; i++) {
         gamma += angle_step; nextGamma = gamma; nextGamma += angle_step;
@@ -932,20 +884,29 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
         }
         root->announce_base_position(abs_pos, next_x, next_y-font_height2);
 
-        if ( (abs_pos < root->sequence_length)) {
+        if ((abs_pos < root->sequence_length)) {
             buffer[0] = root->sequence[abs_pos];
         } else {
             buffer[0] = '.';
         }
 
-	if (abs_pos < root->sequence_length) if(i==0) startBase[0] = root->sequence[abs_pos-1];
-	
+	if (abs_pos<root->sequence_length && i==0){
+	    tempAbsPos = abs_pos;
+	    do{
+		tempAbsPos--;
+		if (root->sequence[tempAbsPos] != '-' && root->sequence[tempAbsPos] != '.')
+		    helixEndBase[0] = root->sequence[tempAbsPos];  //getting the last base of helix region
+	    }while(root->sequence[tempAbsPos] == '-'|| root->sequence[tempAbsPos] == '.');
+	}
+
+	// this repaints the start base of the loop infact the end base of helix and paints the search background 
 	if(lastSearchColor){
 	    root->paintSearchBackground(device, bgColor, abs_pos,start_x,start_y,next_x, next_y, circleRadius,1);
-	    device->text(SEC_GC_HELIX, startBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)(previous_strand_pointer)),0 );
+	    device->text(SEC_GC_HELIX, helixEndBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)(previous_strand_pointer)),0 );
 	    lastSearchColor = 0;
 	}
 	
+	// this paints the actual bases in the loop
 	root->paintSearchBackground(device, bgColor, abs_pos,next_x, next_y, nextCircle_x, nextCircle_y, circleRadius,0);
 	device->text(SEC_GC_LOOP, buffer, next_x, next_y, 0.5, root->segment_filter, (AW_CL)((SEC_Base *)this), 0 );
 
@@ -956,11 +917,12 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
             }
         }
         last_abs_pos = abs_pos;
-	if (abs_pos < root->sequence_length) startBase[0] = root->sequence[last_abs_pos+1];
-	else startBase[0]=0;
+	if (abs_pos < root->sequence_length) helixStartBase[0] = root->sequence[last_abs_pos+1];
+	else helixStartBase[0]=0;
     }
-
-    if(startBase[0]!='-')device->text(SEC_GC_HELIX, startBase, nextCircle_x, nextCircle_y, 0.5,-1,root->helix_filter, (AW_CL)((SEC_Base *)(previous_strand_pointer)), 0 );
+    //this paints the first base of helix if search pattern is found
+    if(bgColor && bgColor[last_abs_pos+1] && helixStartBase[0]!='-')
+	device->text(SEC_GC_HELIX, helixStartBase, nextCircle_x, nextCircle_y, 0.5,-1,root->helix_filter, (AW_CL)((SEC_Base *)(previous_strand_pointer)), 0 );
 }
 
 void SEC_helix_strand::paint_constraints(AW_device *device, double *v, double &length_of_v) {
@@ -975,11 +937,6 @@ void SEC_helix_strand::paint_constraints(AW_device *device, double *v, double &l
 
     device->text(SEC_GC_DEFAULT, buffer, text_x, text_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), 0);
 }
-//excluded bcoz it is included in ed4_defs.hxx
-/*static inline int max(int i1, int i2) {
-    return i1>i2 ? i1 : i2;
-    }*/
-
 
 void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &length_of_v)
 {
@@ -1073,7 +1030,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 	    otherBaseColor = SEC_GC_HELIX; otherLastAbsPos = other_abs_pos; otherBase[0] = other_buffer[0]; otherLast_x = other_x; otherLast_y = other_y;
 	}
 
-        // paint search background and draw base characters
+        // paint search background and draw base characters - always paints the last base and the search background from last base to current base postion
 
         if (this_legal) {
 	    if (root->helix && root->helix->entries[this_abs_pos].pair_type==HELIX_NONE) {

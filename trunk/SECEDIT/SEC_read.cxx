@@ -219,7 +219,7 @@ void SEC_helix_strand::read(SEC_loop *loop_, istream & in) {
     }
 }
 
-GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in) {
+GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current_ali_len) {
     istrstream in(input_string);
 
     int n = 0;
@@ -248,6 +248,9 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in) {
     double tmp_max_index;
     SEC_make_numbers(&tmp_max_index, NULL, string_buffer);
     max_index = (int) tmp_max_index;
+    if (max_index < current_ali_len) {
+	max_index = current_ali_len;
+    }
 
     string_buffer = SEC_read_line(in);
     if(strncmp(string_buffer, "LOOP={", 6)) {
