@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : NodeProbes.java                                        // 
 //    Purpose   : Contains probes for one node                           // 
-//    Time-stamp: <Tue Mar/09/2004 15:31 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/13/2004 19:49 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -65,6 +65,18 @@ public class NodeProbes
     Probe getProbe(int index) {
         if (index < 0 || index >= sorted_probes.size()) return null;
         return (Probe)sorted_probes.get(index);
+    }
+    int getSortedIndexOf(Probe p) {
+        return sorted_probes.indexOf(p);
+    }
+    int getSortedIndexOf(String probeString) {
+        for (int i = 0; i<sorted_probes.size(); ++i) {
+            Probe p = (Probe)sorted_probes.get(i);
+            if (p.sequence().equals(probeString)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     int size() {
