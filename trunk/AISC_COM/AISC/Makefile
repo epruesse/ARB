@@ -57,13 +57,13 @@ O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
 	$(CLIENTCOMPILER) -Wno-unused -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
-GENH/%.h: AISC/%.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
+GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
 	@echo "----------------------------------------"
 	@echo "1 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
 	ldd $(AISC)
 	$(AISC) $< $(MAIN_SOURCE) $@
 
-GENC/%.c: AISC/%.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN)
+GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN)
 	@echo "----------------------------------------"
 	@echo "2 - LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)"
 	ldd $(AISC)
