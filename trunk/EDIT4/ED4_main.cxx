@@ -326,7 +326,7 @@ static void ED4_edit_direction_changed(AW_root */*awr*/) {
     ED4_ROOT->temp_ed4w->cursor.redraw();
         
 }
-static void ED4_do_expose(AW_root *awr) {
+static void ED4_do_expose(AW_root */*awr*/) {
     ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
 }
 
