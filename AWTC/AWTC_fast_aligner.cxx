@@ -1410,11 +1410,19 @@ static GB_ERROR alignToGroupConsensus(GBDATA *gb_toAlign, GB_CSTR alignment,
                                       int max_seq_length, int temporary,
                                       int firstColumn, int lastColumn, int showGapsMessages)
 {
-    GB_ERROR error = 0;
-    char *species_name = AWTC_read_name(gb_toAlign);
-    char *consensus = get_consensus(species_name, firstColumn, lastColumn);
+    GB_ERROR  error        = 0;
+    char     *species_name = AWTC_read_name(gb_toAlign);
+    char     *consensus    = get_consensus(species_name, firstColumn, lastColumn);
+    size_t    cons_len     = strlen(consensus);
 
-    AWTC_CompactedSubSequence compacted(consensus, strlen(consensus), "group consensus");
+    for (size_t i = 0; i<cons_len; ++i) { // translate consensus to be accepted by aligner
+        switch (consensus[i]) {
+            case '=': consensus[i] = '-'; break;
+            default : break;
+        }
+    }
+
+    AWTC_CompactedSubSequence compacted(consensus, cons_len, "group consensus");
 
     {
         AWTC_FastSearchSequence fast(compacted);
@@ -2401,15 +2409,16 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_float(FA_AWAR_GAP_C,		7.0,  	db1);
 }
 
-void AWTC_awar_set_actual_sequence(AW_root *root, AW_default db1)
+void AWTC_awar_set_current_sequence(AW_root *root, AW_default db1)
 {
     root->awar_int(FA_AWAR_TO_ALIGN, 0, db1);
 }
 
-static void copy_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
+// sets the aligner reference species to current species
+void AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
 {
-    AW_root *root = (AW_root*)cl_AW_root;
-    char *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
+    AW_root *root     = (AW_root*)cl_AW_root;
+    char    *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
 
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
@@ -2562,7 +2571,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
 
     aws->at("copy");
-    aws->callback(copy_species_name, (AW_CL)root);
+    aws->callback(AWTC_set_reference_species_name, (AW_CL)root);
     aws->create_button("Copy", "Copy", "");
 
     aws->label_length(0);
