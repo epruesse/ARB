@@ -383,10 +383,12 @@ SearchTree::SearchTree(const SearchSettings *s)
 
 
     {
-        char *pattern = strdup(sett->get_pattern());
-        const char *trenner = "\n,";
-        char *tok = strtok(pattern, trenner);
-        char *comment;
+        char       *pattern      = strdup(sett->get_pattern());
+        const char *trenner      = "\n,";
+        char       *tok          = strtok(pattern, trenner);
+        char       *comment;
+        char        T_or_U;
+        GB_ERROR    T_or_U_error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
 
         while (tok) {
             splitTokComment(&tok, &comment);
@@ -394,8 +396,8 @@ SearchTree::SearchTree(const SearchSettings *s)
             char *uni_tok = unify_pattern(tok, &uni_tok_len);
 
             if (uni_tok[0]) {
-                int s_exact = sett->get_exact();
-                int s_reverse = sett->get_reverse();
+                int s_exact      = sett->get_exact();
+                int s_reverse    = sett->get_reverse();
                 int s_complement = sett->get_complement();
 
                 if (uni_tok_len<shortestPattern) {
@@ -416,16 +418,23 @@ SearchTree::SearchTree(const SearchSettings *s)
                     }
                     if (s_complement) {
                         e4_assert(IS_NUCLEOTIDE);
-                        char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
+                        // char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
+                        if (T_or_U) {
+                            char *revcomp = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
+                            char *revcompComment = appendComment(comment, commentLen, "(reverse complement)");
 
-                        char *revcomp = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
-                        char *revcompComment = appendComment(comment, commentLen, "(reverse complement)");
-
-                        if (!s_exact || (s_reverse && s_complement)) {
-                            ROOT(revcomp, revcompComment);
+                            if (!s_exact || (s_reverse && s_complement)) {
+                                ROOT(revcomp, revcompComment);
+                            }
+                            free(revcompComment);
+                            free(revcomp);
                         }
-                        free(revcompComment);
-                        free(revcomp);
+                        else {
+                            if (T_or_U_error) {
+                                aw_message(T_or_U_error);
+                                T_or_U_error = 0; // only once
+                            }
+                        }
                     }
 
                     free(reverseComment);
@@ -434,18 +443,26 @@ SearchTree::SearchTree(const SearchSettings *s)
                 else if (s_complement) {
                     GB_transaction dummy(gb_main);
 
-                    GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-                    e4_assert(ali_type==GB_AT_DNA || ali_type==GB_AT_RNA);
-                    char T_or_U = ali_type==GB_AT_DNA ? 'T' : 'U';
+//                     GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+//                     e4_assert(ali_type==GB_AT_DNA || ali_type==GB_AT_RNA);
+//                     char              T_or_U   = ali_type==GB_AT_DNA ? 'T' : 'U';
 
-                    char *complement = GBT_complementNucSequence(uni_tok, uni_tok_len, T_or_U);
-                    char *complementComment = appendComment(comment, commentLen, "(complement)");
+                    if (T_or_U) {
+                        char *complement        = GBT_complementNucSequence(uni_tok, uni_tok_len, T_or_U);
+                        char *complementComment = appendComment(comment, commentLen, "(complement)");
 
-                    if (!s_exact || (!s_reverse && s_complement)) {
-                        ROOT(complement, complementComment);
+                        if (!s_exact || (!s_reverse && s_complement)) {
+                            ROOT(complement, complementComment);
+                        }
+                        free(complementComment);
+                        free(complement);
                     }
-                    free(complementComment);
-                    free(complement);
+                    else {
+                        if (T_or_U_error) {
+                            aw_message(T_or_U_error);
+                            T_or_U_error = 0; // only once
+                        }
+                    }
                 }
 
             }
