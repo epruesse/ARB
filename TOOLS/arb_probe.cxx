@@ -91,7 +91,7 @@ int probe_design_send_data(T_PT_PDC  pdc) {
     return 0;
 }
 
-void probe_design_event() {
+void AP_probe_design_event() {
     char *servername;
     //    char	buffer[256];
     T_PT_PDC  pdc;
@@ -194,7 +194,7 @@ void probe_design_event() {
     return;
 }
 
-void probe_match_event()
+void AP_probe_match_event()
 {
     char	       *servername;
     //    char	buffer[256];
@@ -376,9 +376,9 @@ int main(int argc,char ** argv){
     if (helpflag) return 0;
 
     if (*P.DESINGNAMES || P.sequence){
-        probe_design_event();
+        AP_probe_design_event();
     }else{
-        probe_match_event();
+        AP_probe_match_event();
     }
     return 0;
 }
