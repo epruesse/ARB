@@ -184,6 +184,10 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     awm->load_xfig("merge/main.fig");
 
     awm->create_menu(       0,   "File",     "F", "merge_file.hlp",  AWM_ALL );
+#if defined(DEBUG)
+    awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+    awm->insert_separator();
+#endif // DEBUG
     if (mg_save_enabled && GB_read_clients(gb_merge)>=0) {
         awm->insert_menu_topic("save_DB1","Save Data Base I ...",       "S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
     }
@@ -255,41 +259,47 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 void MG_start_cb(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
+    GB_ERROR error = 0;
+    {
+        char *merge = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
+        if (!strlen(merge) || (strcmp(merge,":") && GB_size_of_file(merge)<=0)) {
+            error = "Cannot find database I file";
+        }
+        else {
+            char *main = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
+            if (!strlen(main) || (strcmp(main,":") && GB_size_of_file(main)<=0 )) {
+                error = "Cannot find main file -> creating empty database";
+            }
+            else {
+                aw_openstatus("Loading databases");
+                
+                aw_status("DATABASE I");
+                gb_merge = GBT_open(merge,"rw","$(ARBHOME)/lib/pts/*");
+                if (!gb_merge) {
+                    error = GB_get_error();
+                }
+                else {
+                    AWT_announce_db_to_browser(gb_merge, GBS_global_string("Database I (source; %s)", merge));
 
-    char *merge = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
-    if (!strlen(merge) || (strcmp(merge,":") && GB_size_of_file(merge)<=0)) {
-        aw_message("Cannot find database I file");
-        delete merge;
-        return;
+                    aw_status("DATABASE II");
+                    gb_dest = GBT_open(main,"rwc","$(ARBHOME)/lib/pts/*");
+
+                    if (!gb_dest) {
+                        error = GB_get_error();
+                    }
+                    else {
+                        AWT_announce_db_to_browser(gb_dest, GBS_global_string("Database II (destination; %s)", main));
+                    }
+                }
+                aw_closestatus();
+            }
+            free(main);
+        }
+        free(merge);
     }
 
-    char *main = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
-    if (!strlen(main) || (strcmp(merge,":") && GB_size_of_file(main)<=0 )) {
-        aw_message("Cannot find main file -> creating empty database");
-    }
-    aw_openstatus("Loading databases");
-
-    aw_status("DATABASE I");
-    gb_merge = GBT_open(merge,"rw","$(ARBHOME)/lib/pts/*");
-    if (!gb_merge) {
-        aw_message(GB_get_error());
-        delete merge;
-        delete main;
-        aw_closestatus();
-        return;
-    }
-
-    aw_status("DATABASE II");
-    gb_dest = GBT_open(main,"rwc","$(ARBHOME)/lib/pts/*");
-    aw_closestatus();
-    delete main;
-    delete merge;
-
-    if (!gb_dest) {
-        aw_message(GB_get_error());
-        return;
-    }
-    MG_start_cb2(aww,aww->get_root());
+    if (error) aw_message(error);
+    else MG_start_cb2(aww, awr);
 }
 
 
@@ -356,7 +366,8 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
     MG_create_species_var(awr,aw_def);
     MG_create_gene_species_awars(awr, aw_def);
 
-    AWTC_create_rename_variables(awr,aw_def);
+    AWTC_create_rename_variables(awr, aw_def);
+    AWT_create_db_browser_awars(awr, aw_def);
 }
 
 AW_window *create_MG_main_window(AW_root *aw_root)
