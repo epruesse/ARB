@@ -257,9 +257,18 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
 
         for (name = names; *name; name++) {
             if ( (1<<(**name)) & bitfilter ) {		// look if already exists
-                if (is_in_GENE_path((*name)+1)) {
-                    awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
-                }
+#if defined(DEBUG)
+		if (strcmp(GB_getenvUSER(), "westram") == 0) {
+		    awt_assert(0); //check below
+		}
+#endif
+#if 0 // von harald
+		awt_add_new_gene_changekey(gb_main,(*name)+1,(int)*name[0]);
+#else
+		if (is_in_GENE_path((*name)+1)) {
+		    awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
+                }	
+#endif
             }
         }
     }
