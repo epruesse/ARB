@@ -159,9 +159,12 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
     }
 
     if (!error) {
-        /* char *ali_name       = GB_read_string(gbd); */
+        long    security_write = -1;
+        long    stored_ali_len = -1;
+        long    found_ali_len  = -1;
+        long    aligned        = 1;
+        GBDATA *gb_ali_len     = 0;
 
-        long security_write = -1;
         {
             GBDATA *gb_ali_wsec = GB_find(preset_alignment,"alignment_write_security",0,down_level);
             if (!gb_ali_wsec) {
@@ -172,11 +175,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
             }
         }
 
-        long    stored_ali_len = -1;
-        long    found_ali_len  = -1;
-        long    aligned        = 1;
-        GBDATA *gb_ali_len     = 0;
-        
+
         if (!error) {
             gb_ali_len = GB_find(preset_alignment,"alignment_len",0,down_level);
             if (!gb_ali_len) {
@@ -196,6 +195,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                 GBDATA     *gb_name        = GB_find(gb_species,"name",0,down_level);
                 const char *name           = 0;
                 int         alignment_seen = 0;
+                GBDATA     *gb_ali         = 0;
 
                 if (gb_name) {
                     name = GB_read_char_pntr(gb_name);
@@ -214,7 +214,7 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                 GB_write_security_delete(gb_name,7);
                 GB_write_security_write(gb_name,6);
 
-                GBDATA *gb_ali = GB_find(gb_species, ali_name, 0, down_level);
+                gb_ali = GB_find(gb_species, ali_name, 0, down_level);
                 if (gb_ali) {
                     /* GB_write_security_delete(ali,security_write); */
                     GBDATA *gb_data = GB_find(gb_ali, "data", 0, down_level);
@@ -258,11 +258,13 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                  gb_sai = GBT_next_SAI(gb_sai) )
             {
                 GBDATA *gb_sai_name = GB_find(gb_sai, "name", 0, down_level);
-                if (!gb_sai_name) continue; 
-            
+                GBDATA *gb_ali;
+
+                if (!gb_sai_name) continue;
+
                 GB_write_security_delete(gb_sai_name,7);
 
-                GBDATA *gb_ali = GB_find(gb_sai, ali_name, 0, down_level);
+                gb_ali = GB_find(gb_sai, ali_name, 0, down_level);
                 if (gb_ali) {
                     GBDATA *gb_sai_data;
                     for (gb_sai_data = GB_find(gb_ali, 0, 0, down_level) ;
@@ -270,14 +272,15 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                          gb_sai_data = GB_find(gb_sai_data, 0, 0, this_level|search_next))
                     {
                         long type = GB_read_type(gb_sai_data);
-                    
+                        long data_len;
+
                         if (type == GB_DB || type < GB_BITS) continue;
                         if (GB_read_key_pntr(gb_sai_data)[0] == '_') continue; // e.g. _STRUCT (of secondary structure)
 
-                        long data_len = GB_read_count(gb_sai_data);
+                        data_len = GB_read_count(gb_sai_data);
 
                         if (found_ali_len != data_len) {
-                            if (found_ali_len>0)        aligned       = 0; 
+                            if (found_ali_len>0)        aligned       = 0;
                             if (found_ali_len<data_len) found_ali_len = data_len;
                         }
                     }
@@ -289,10 +292,12 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
             error = GB_write_int(gb_ali_len, found_ali_len);
             if (error) return error;
         }
-        GBDATA *gb_aligned = GB_search(preset_alignment, "aligned", GB_INT);
-        if (GB_read_int(gb_aligned) != aligned) {
-            error = GB_write_int(gb_aligned, aligned);
-            if (error) return error;
+        {
+            GBDATA *gb_aligned = GB_search(preset_alignment, "aligned", GB_INT);
+            if (GB_read_int(gb_aligned) != aligned) {
+                error = GB_write_int(gb_aligned, aligned);
+                if (error) return error;
+            }
         }
 
         if (error) {
@@ -423,10 +428,11 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
  * otherwise check only one alignment
  */
 {
-    GB_ERROR  error      = 0;
-    GBDATA   *gb_sd      = GBT_find_or_create(Main,"species_data",7);
-    GBDATA   *gb_presets = GBT_find_or_create(Main,"presets",7);
-    
+    GB_ERROR  error             = 0;
+    GBDATA   *gb_sd             = GBT_find_or_create(Main,"species_data",7);
+    GBDATA   *gb_presets        = GBT_find_or_create(Main,"presets",7);
+    GB_HASH  *species_name_hash = 0;
+
     GBT_find_or_create(Main,"extended_data",7);
     GBT_find_or_create(Main,"tree_data",7);
 
@@ -443,24 +449,22 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         if (!gb_use) {
             // if we have no default alignment -> look for any alignment
             GBDATA *gb_ali_name = GB_find(gb_presets,"alignment_name",alignment_name,down_2_level);
-            
+
             if (gb_ali_name) {
                 // use first alignment found
                 GBDATA *gb_ali = GB_get_father(gb_ali_name);
                 gb_ali_name    = GB_find(gb_ali,"alignment_name",0,down_level);
-                
+
                 gb_use = GB_create(gb_presets,"use",GB_STRING);
                 GB_write_string(gb_use, GB_read_char_pntr(gb_ali_name));
             }
         }
     }
 
-    GB_HASH *species_name_hash = 0; 
-
     if (!alignment_name && !error) {
         // if all alignments are checked -> use species_name_hash to detect duplicated species and species w/o data
-        species_name_hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE, 1);
         GBDATA *gb_species;
+        species_name_hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE, 1);
 
         for (gb_species = GBT_first_species_rel_species_data(gb_sd);
              gb_species;
@@ -497,7 +501,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
             GB_warning("Found %li species without alignment data (only some were listed)", counter);
         }
     }
-    
+
     if (species_name_hash) GBS_free_hash(species_name_hash);
 
     return error;
@@ -2689,19 +2693,21 @@ static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_
     GBUSE(cbt);
 
     if (!avoid_deadlock) {
+        GBDATA *gb_msg;
+
         avoid_deadlock++;
         GB_push_transaction(gb_pending_messages);
 
-        GBDATA *gb_msg;
         for (gb_msg = GB_find(gb_pending_messages, "msg", 0, down_level); gb_msg;) {
             {
                 const char *msg = GB_read_char_pntr(gb_msg);
                 GB_warning("%s", msg);
             }
-
-            GBDATA *gb_next_msg = GB_find(gb_msg, "msg", 0, this_level|search_next);
-            GB_delete(gb_msg);
-            gb_msg              = gb_next_msg;
+            {
+                GBDATA *gb_next_msg = GB_find(gb_msg, "msg", 0, this_level|search_next);
+                GB_delete(gb_msg);
+                gb_msg              = gb_next_msg;
+            }
         }
 
         GB_pop_transaction(gb_pending_messages);
@@ -2710,8 +2716,10 @@ static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_
 }
 
 void GBT_install_message_handler(GBDATA *gb_main) {
+    GBDATA *gb_pending_messages;
+
     GB_push_transaction(gb_main);
-    GBDATA *gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
+    gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
     GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, new_gbt_message_created_cb, 0);
     GB_pop_transaction(gb_main);
 
@@ -2723,13 +2731,15 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 void GBT_message(GBDATA *gb_main, const char *msg) {
     // when called in client(or server) this always causes the DB server to show the message (as GB_warning)
-    
+    GBDATA *gb_pending_messages;
+    GBDATA *gb_msg;
+
     gb_assert(msg);
 
     GB_push_transaction(gb_main);
-    
-    GBDATA *gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
-    GBDATA *gb_msg              = GB_create(gb_pending_messages, "msg", GB_STRING);
+
+    gb_pending_messages = GB_search(gb_main, AWAR_ERROR_CONTAINER, GB_CREATE_CONTAINER);
+    gb_msg              = GB_create(gb_pending_messages, "msg", GB_STRING);
 
     GB_write_string(gb_msg, msg);
 
