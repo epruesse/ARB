@@ -14,21 +14,33 @@ public class ProbesGUI extends Frame
     // private int         probeListWidth = 200;
     private ProbeMenu   pm;
     private Client      client;
+    
+    boolean                 fakeScrollPaneSize = true;
+    private Dimension       estimatedScrollPaneSize;
+    private final Dimension wantedScrollPaneSize;
 
 
-    public ProbesGUI(int levels, String title, Client cl, Point origin, Dimension size, int textWidth) throws Exception
+    // public ProbesGUI(int levels, String title, Client cl, Point origin, Dimension size, int textWidth) throws Exception
+    public ProbesGUI(int levels, String title, Client cl, Rectangle frame_bounds, Dimension wantedScrollPaneSize_, int textWidth) throws Exception
     {
         super(title);
-        setVisible(true);
+
+        wantedScrollPaneSize    = wantedScrollPaneSize_;
+        estimatedScrollPaneSize = new Dimension(frame_bounds.width, frame_bounds.height);
+        client                  = cl;
 
         Color backgroundColor = new Color(160, 180, 255);
 
+        setVisible(false);
         setBackground(Color.lightGray);
         setLayout(new BorderLayout());
-        // setLocation(10, 10);
-        setLocation(origin);
 
-        client = cl;
+        // if (wantedScrollPaneSize == null) {
+            setBounds(frame_bounds);
+        // }
+        // else {
+        // setLocation(frame_bounds.x, frame_bounds.y);
+        // }
 
         td = new TreeDisplay( null, levels, backgroundColor);
         if (td == null) Toolkit.AbortWithError("constructor/ProbesGUI: no TreeDisplay received");
@@ -36,51 +48,55 @@ public class ProbesGUI extends Frame
 
         setMenuBar(pm = new ProbeMenu(this)); // menus
 
-        // sum up dimension outside of ScrollPane 
-        int xtraWidth  = 0;
-        int xtraHeight = 0;
 
-        ProbeToolbar tb = new ProbeToolbar(this);
-        
         {
-            Color panelColor = Color.white;
-            Panel panel      = new Panel();
-            panel.setLayout(new BorderLayout());
+            Color rightPanelColor = Color.white;
+            Panel rightPanel      = new Panel();
+            rightPanel.setLayout(new BorderLayout());
 
-            probe_list = new ProbeList(this, panelColor);
+            probe_list = new ProbeList(this, rightPanelColor);
             showHelp();
-            panel.add(probe_list, BorderLayout.CENTER);
+            rightPanel.add(probe_list, BorderLayout.CENTER);
 
-            panel.add(tb, BorderLayout.NORTH);
+            rightPanel.add(new ProbeToolbar(this), BorderLayout.NORTH);
             details = new TextArea("Detail information", 20, textWidth, TextArea.SCROLLBARS_BOTH);
-            details.setBackground(panelColor);
-            panel.add(details, BorderLayout.SOUTH);
+            details.setBackground(rightPanelColor);
+            rightPanel.add(details, BorderLayout.SOUTH);
 
-            add(panel, BorderLayout.EAST);
+            add(rightPanel, BorderLayout.EAST);
 
-            Dimension pdim = panel.getPreferredSize();
-            System.out.println("pdim = "+pdim.width+"/"+pdim.height);
-            xtraWidth += pdim.width;
+            rightPanel.validate();
+            Dimension rightPanelDim           = rightPanel.getPreferredSize();
+            // Dimension rightPanelDim        = rightPanel.getSize();
+            // estimatedScrollPaneSize.width -= rightPanelDim.width;
+            // System.out.println("rightPanelDim="+rightPanelDim.width+"/"+rightPanelDim.height+" (wrong)");
+            estimatedScrollPaneSize.width    -= 300;
         }
 
         {
             Panel treePanel = new Panel();
             treePanel.setLayout(new BorderLayout());
 
-            treePanel.add(new TreeToolbar(this), BorderLayout.NORTH);
+            TreeToolbar ttb = new TreeToolbar(this);
+            treePanel.add(ttb, BorderLayout.NORTH);
 
             sc = new ScrollPane() {
+
                     public Dimension getPreferredSize() {
-                        System.out.println("ScrollPane::getPreferredSize called");
-                        return getSize(); // ignores size of contained canvas!
-                    }
-                    public Dimension getMaximumSize() {
-                        System.out.println("ScrollPane::getMaximumSize called");
-                        return getSize(); // ignores size of contained canvas!
-                    }
-                    public Dimension getMinimumSize() {
-                        System.out.println("ScrollPane::getMinimumSize called");
-                        return getSize(); // ignores size of contained canvas!
+                        Dimension result = null;
+                        if (fakeScrollPaneSize == false) {
+                            System.out.println("Returning real size:");
+                            result = getSize(); // ignores size of contained canvas!
+                        }
+                        else {
+                            result = estimatedScrollPaneSize;
+                            if (wantedScrollPaneSize != null) {
+                                result = wantedScrollPaneSize;
+                                System.out.println("I know the exact size:");
+                            }
+                        }
+                        System.out.println("ScrollPane::getPreferredSize returns "+result.width+"/"+result.height);
+                        return result;
                     }
                 };
 
@@ -88,54 +104,51 @@ public class ProbesGUI extends Frame
             sc.getVAdjustable().setUnitIncrement(1);
             sc.getHAdjustable().setUnitIncrement(1);
 
-            System.out.println("xtraWidth="+xtraWidth+" xtraHeight="+xtraHeight);
-            System.out.println("wanted frame size = "+size.width+"/"+size.height);
-            size.width  -= xtraWidth;
-            System.out.println("calc. sc size = "+size.width+"/"+size.height);
+            // sc.setSize(estimatedPaneSize); // need to set this here (allows to calc. correct size for 'ttb'
 
-            sc.setSize(size);
-
-            Dimension scdim = sc.getSize();
-            System.out.println("resulting sc size = "+scdim.width+"/"+scdim.height);
-            //sc.setSize(640-20,480-20);
             // sc.setWheelScrollingEnabled(true); // later - needs java 1.4 :(
-
             treePanel.add(sc, BorderLayout.CENTER);
-
             add(treePanel);
+
+            Dimension ttbdim                = ttb.getPreferredSize();
+            estimatedScrollPaneSize.height -= ttbdim.height;
+            System.out.println("ttbdim="+ttbdim.width+"/"+ttbdim.height+"");
+
+
+            estimatedScrollPaneSize.height -= 40+50; // for menubar
+
+            // sc.setSize(sc.getPreferredSize());
+            // sc.setSize(estimatedPaneSize);
         }
 
-        addWindowListener(new WindowClosingAdapter(true));
+        // pack();
+        // setVisible(true);
+        // setBounds(origin.x, origin.y, size.width, size.height);
+        // System.out.println("setBounds= "+origin.x+"/"+origin.y+" w/h="+size.width+"/"+size.height);
 
-        Dimension    tbdim  = tb.getPreferredSize();
-        System.out.println("tbdim = "+tbdim.width+"/"+tbdim.height);
-        xtraHeight         += tbdim.height;
-
-        // Dimension    pmdim  = pm.getSize();
-        // System.out.println("pmdim = "+pmdim.width+"/"+pmdim.height);
-        xtraHeight         += 40; // for menubar
-        
-        size.height -= xtraHeight;
-        System.out.println("calc. sc size = "+size.width+"/"+size.height+" (2nd correction)");
-
-        sc.setSize(size);
-
-
-        // setSize(size);
+        // System.out.println("call invalidate");
         // invalidate();
-        Dimension scdim = sc.getSize();
-        System.out.println("scdim = "+scdim.width+"/"+scdim.height);
-        System.out.println("packing ProbesGUI Frame");
+
+        System.out.println("call pack");
+        validate();
         pack();
+        System.out.println("call pack done");
+        fakeScrollPaneSize = false;
+        setVisible(true);
+        // setBounds(frame_bounds);
+        // Client.showRect(frame_bounds, "setBounds(frame_bounds) after pack");
 
 
-        // setSize(scdim);
-        scdim = sc.getSize();
-        System.out.println("final scdim = "+scdim.width+"/"+scdim.height);
+        // setLocation(frame_bounds.x, frame_bounds.y);
+        // fakeScrollPaneSize = false;
+        // validate();
+        // pack();
 
-        Dimension pgdim = getSize();
-        System.out.println("final pgdim = "+pgdim.width+"/"+pgdim.height);
+        // invalidate();
+        // doLayout();
+        // pack();
 
+        addWindowListener(new WindowClosingAdapter(true));
     }
 
     public void toggleOverlap() throws Exception {
@@ -159,7 +172,7 @@ public class ProbesGUI extends Frame
     }
 
     public void showHelp() {
-        probe_list.clear();
+        probe_list.removeAll();
         probe_list.add("Left click a branch to unfold or step.");
         probe_list.add("Right click a branch to display probes.");
     }
@@ -168,7 +181,8 @@ public class ProbesGUI extends Frame
         td.setRootNode(root);
     }
 
-    public Dimension getScrollPaneSize() { return sc.getViewportSize(); }
+    public Dimension getPreferredScrollPaneSize() { return sc.getPreferredSize(); }
+    public Dimension getScrollPaneViewportSize() { return sc.getViewportSize(); }
     public TreeDisplay getTreeDisplay() { return td; }
     public ProbeList getProbeList() { return probe_list; }
     public Client getClient() { return client; }
