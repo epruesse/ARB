@@ -177,6 +177,7 @@ static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
     awr->awar(AWAR_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)ntw);
 }
 
 static const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo) {
@@ -376,6 +377,7 @@ static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, 
 
 char *GetDisplayInfo(AW_root *root, const char *speciesName, int displayWidth)
 {
+    char ERROR[] = "ERROR";
     char *aciCommand  = root->awar_string(AWAR_ACI_COMMAND)->read_string();
     char *dbFieldName = root->awar_string(AWAR_DB_FIELD_NAME)->read_string();
 
@@ -383,6 +385,10 @@ char *GetDisplayInfo(AW_root *root, const char *speciesName, int displayWidth)
 
     GBDATA *gb_SpeciesData = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     GBDATA *gb_Species     = GBT_find_species_rel_species_data(gb_SpeciesData, speciesName);
+    if (!gb_Species)  {
+        cout<<"DATABASE ERROR : GBT_find_species_rel_species_data Failed!!!"<<endl;
+        return strdup(ERROR);
+    }
 
     char dbQueryCommand[50];
     char displayInfo[displayWidth+1];
@@ -413,14 +419,11 @@ void SAI_graphic::paint(AW_device *device) {
     {
         AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 0);
         AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
+        AW_font_information *hlFontInfo = device->get_font_information(SAI_GC_HIGHLIGHT_FONT, 0);
 
-        xStep      = fgFontInfo->max_letter_width ;
-        yStep      = fgFontInfo->max_letter_height;
-        maxDescent = fgFontInfo->max_letter_descent;
-
-        if (pbFontInfo->max_letter_width  > xStep)       xStep      = pbFontInfo->max_letter_width;
-        if (pbFontInfo->max_letter_height > yStep)       yStep      = pbFontInfo->max_letter_height;
-        if (pbFontInfo->max_letter_descent > maxDescent) maxDescent = pbFontInfo->max_letter_descent;
+        xStep      = MAX(fgFontInfo->this_letter_width,   MAX(pbFontInfo->this_letter_width,   hlFontInfo->this_letter_width  ));
+        yStep      = MAX(fgFontInfo->max_letter_height,  MAX(pbFontInfo->max_letter_height,  hlFontInfo->max_letter_height ));
+        maxDescent = MAX(fgFontInfo->max_letter_descent, MAX(pbFontInfo->max_letter_descent, hlFontInfo->max_letter_descent));
     }
 
     AW_pos fgX,fgY,pbRgX1,pbRgX2,pbY,pbX,lineXpos;
@@ -444,26 +447,26 @@ void SAI_graphic::paint(AW_device *device) {
     double yLineStep = dispSai ? yStep*2 : yStep;
 
     if (g_pbdata) {
-        device->text(SAI_GC_PROBE,  "Species INFO",0,10, 0, 1, 0, 0, 0);
+        device->text(SAI_GC_PROBE,  "Species INFO",0,8, 0, 1, 0, 0, 0);
         if (!g_pbdata->probeSpecies.empty()) {
             for ( size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j ) {
                 const char *name = g_pbdata->probeSpecies[j];
                 const char *displayInfo = GetDisplayInfo(aw_root, name, displayWidth);
                 const char *selectedProbe = aw_root->awar(AWAR_SELECTED_PROBE)->read_string();
                 if (strcmp(selectedProbe,name) == 0) {
-                    device->box(SAI_GC_FOREGROUND, fgX, (fgY - (yStep * 0.8)), (displayWidth * xStep * 0.8), yStep, -1, 0,0);
-                    device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
+                    device->box(SAI_GC_FOREGROUND, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep), yStep, -1, 0,0);
+                    device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
                 }
                 else {
                     device->text(SAI_GC_FOREGROUND, displayInfo, fgX, fgY, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
                 }
-                fgY       += yLineStep;
+                fgY += yLineStep;
             }
         }
 
         double spacer = 4.0;
 
-        pbRgX1 = (displayWidth * xStep * 0.8) ; 
+        pbRgX1 = (displayWidth * xStep) + spacer;
         pbX    = pbRgX1 + (9 * xStep) + spacer;
         pbRgX2 = pbX + (g_pbdata->getProbeTargetLen() * xStep) + spacer;
 
