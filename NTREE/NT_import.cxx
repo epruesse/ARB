@@ -17,14 +17,14 @@
 #define nt_assert(bed) arb_assert(bed)
 
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
-	gb_dest = gb_main;
-	AW_window *aww = ad_create_query_window(awr);
-	ad_unquery_all();
-	GB_ERROR   error = MG_simple_merge(awr);
-	ad_query_update_list();
-	if (!error){
-	    aww->show();
-	}
+    gb_dest = gb_main;
+    AW_window *aww = ad_create_query_window(awr);
+    ad_unquery_all();
+    GB_ERROR   error = MG_simple_merge(awr);
+    ad_query_update_list();
+    if (!error){
+        aww->show();
+    }
 }
 
 
@@ -32,25 +32,37 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
  * Opens the "Import Sequences" dialog from the
  * ARB main window (arb_ntree)
  *
- * O-Ton Harald: "Saugehaecke" Ralf: "Wieso ?"
+ * O-Ton Harald: "Saugehaecke"
 */
 void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
-	if (gb_merge){
-		GB_close(gb_merge);
-	}
+    if (gb_merge){
+        GB_close(gb_merge);
+    }
 
     AW_root *awr = aww->get_root();
+
     awr->awar_int(AWAR_READ_GENOM_DB, 0); // only default
 
-	gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
+    gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
 
-    // change awar value (import window just opened!)
+    // change awar values (import window just opened!)
     int gb_main_is_genom_db  = GEN_is_genom_db(gb_main, 0);
     int gb_merge_is_genom_db = GEN_is_genom_db(gb_merge, gb_main_is_genom_db);
 
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? 0 : 2);
+
+    if (!gb_main_is_genom_db) { // normal database -> set default to current alignment
+        GB_transaction dummy(gb_main);
+        char *ali_name = GBT_get_default_alignment(gb_main);
+        char *ali_type = GBT_get_alignment_type_string(gb_main, ali_name);
+
+        AWTC_import_set_ali_and_type(awr, ali_name, ali_type);
+
+        free(ali_type);
+        free(ali_name);
+    }
 }
 
