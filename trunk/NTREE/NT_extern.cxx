@@ -1014,17 +1014,18 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
 
             AWMIMT("del_marked",    "Delete Marked Species",    "D","sp_del_mrkd.hlp",  AWM_EXP, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0 );
-            awm->insert_sub_menu(0, "Merge Species",      "g");
-            {
-                AWMIMT("merge_species", "Create merged species from similar species",  "m", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
-                AWMIMT("join_marked",   "Join Marked Species",    "J","join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,   0 );
-            }
-            awm->close_sub_menu();
 
             awm->insert_sub_menu(0, "Sort Species",         "r");
             {
                 AWMIMT("sort_by_field", "According to Database Entries","D","sp_sort_fld.hlp", AWM_EXP, AW_POPUP,              (AW_CL)NT_build_resort_window, 0 );
                 AWMIMT("sort_by_tree",  "According to Phylogeny",      "P","sp_sort_phyl.hlp", AWM_EXP, (AW_CB)NT_resort_data_by_phylogeny,    (AW_CL)&(nt.tree->tree_root), 0 );
+            }
+            awm->close_sub_menu();
+
+            awm->insert_sub_menu(0, "Merge Species",      "g");
+            {
+                AWMIMT("merge_species", "Create merged species from similar species",  "m", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
+                AWMIMT("join_marked",   "Join Marked Species",    "J","join_species.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_species_join_window,   0 );
             }
             awm->close_sub_menu();
 
@@ -1093,8 +1094,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT("dna_2_pro", "Perform translation",  "t","translate_dna_2_pro.hlp",  AWM_PRO,    AW_POPUP, (AW_CL)create_dna_2_pro_window, 0 );
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix",   "D", "dist.hlp",        AWM_SEQ,    (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
-            SEP________________________SEP();
-
             SEP________________________SEP();
 
             GDE_load_menu(awm,"pretty_print");
@@ -1274,15 +1273,18 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("xterm",         "Start XTERM",             "X",0   ,       AWM_EXP, (AW_CB)GB_xterm, (AW_CL)0, 0 );
             }
             if (GBS_do_core()){
-                AWMIMT("debug_arbdb",   "Print debug information", "d",0   ,       AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)gb_main, 0 );
-                AWMIMT("test_compr",    "Test compression",        "c",0   ,       AWM_ALL, (AW_CB)GBT_compression_test, (AW_CL)gb_main, 0 );
             }
-#if defined(DEBUG)
-            SEP________________________SEP();
-            AWMIMT("table_admin",       "Table Admin (not finished)",  "T","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
-            AWMIMT("fix_db",            "Fix database",                "F", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
-#endif // DEBUG
         }
+#if defined(DEBUG)
+        awm->create_menu(0,"Debugging","D","", AWM_ALL);
+        {
+            AWMIMT("fix_db",          "Fix database",            "F", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
+            AWMIMT("debug_arbdb",     "Print debug information", "d",0   ,       AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)gb_main, 0 );
+            AWMIMT("test_compr",      "Test compression",        "c",0   ,       AWM_ALL, (AW_CB)GBT_compression_test, (AW_CL)gb_main, 0 );
+            SEP________________________SEP();
+            AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "T","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
+        }
+#endif // DEBUG
 
         // --------------------------------------------------------------------------------
         //     Properties
