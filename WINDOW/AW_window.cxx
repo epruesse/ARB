@@ -2643,6 +2643,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                                         xmRowColumnWidgetClass,
                                                         shell,
                                                         XmNrowColumnType, XmMENU_PULLDOWN,
+                                                        XmNtearOffModel, XmTEAR_OFF_ENABLED,
                                                         NULL );
 
     // create label in menu bar
