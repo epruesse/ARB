@@ -16,17 +16,9 @@ private int                     treeLevels;
 private TreeDisplay             td;
 private TreeNode                root;
 private ProbeMenu               pm;
-    private ProbesGUIActionListener al;
-    private ProbeListActionListener  ll;
-    private Client                  boss;
-
-// public static void main(String[] args)
-//     {
-//         ProbesGUI wnd = new ProbesGUI();
-//         wnd.setLocation(200,200);
-//         wnd.setVisible(true);
-//     }
-
+private ProbesGUIActionListener al;
+private ProbeListActionListener ll;
+private Client                  boss;
 
 public ProbesGUI( TreeNode root, int levels, String title, Client b)
   {
@@ -34,8 +26,7 @@ public ProbesGUI( TreeNode root, int levels, String title, Client b)
     setBackground(Color.lightGray);
 
     setLayout(new BorderLayout());
-    //    add(new Button("first"));
-    System.out.println("reference to ProbesGUI: " + this);
+    // System.out.println("reference to ProbesGUI: " + this);
     boss = b;
     td = new TreeDisplay( root, levels);
 
@@ -54,14 +45,10 @@ public ProbesGUI( TreeNode root, int levels, String title, Client b)
 
     probe_list = new ProbeList(probeListWidth, tree_height);
     ll = new ProbeListActionListener(this);
-    probe_list.addActionListener(ll);
+    probe_list.addItemListener(ll);
     probe_list.add("Right click a node");
     probe_list.add("to display probes.");
-    //    probe_list.setSize(100, tree_height);
-
-
     add(probe_list, BorderLayout.EAST);
-
 
     sc = new ScrollPane();
     if (root == null) {
@@ -82,45 +69,23 @@ public ProbesGUI( TreeNode root, int levels, String title, Client b)
     pack();
   }
 
-
-// public    void    paint (Graphics g){
-//         details.paint(g);
-//         probe_list.paint(g);
-//         td.paint(g);
-//     }
-
-
-
 public TreeDisplay getTreeDisplay()
     {
-        if (td == null)
-        {
+        if (td == null) {
             System.out.println("ProbesGUI/getTreeDisplay: TreeDisplay not defined");
         }
 
         return td;
     }
 
-// public java.awt.List getProbeList()
-//     {
-//         if (probe_list == null) {
-//             System.out.println("ProbesGUI/getProbeList: probe list not defined");
-//         }
-//         return probe_list;
-//     }
-
 public ProbeList getProbeList()
     {
         return probe_list;
     }
-// public void setProbeListContents(ServerAnswer parsed)
-//     {
-//         probe_list.setContents(parsed);
-//     }
 
-    public Client getClient()
+public Client getClient()
     {
-	return boss;
+        return boss;
     }
 
 }
