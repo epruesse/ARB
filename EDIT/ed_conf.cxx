@@ -198,7 +198,7 @@ void aed_config_window_expose(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     device = aedw->config_window->get_device (AW_MIDDLE_AREA  );
     device->set_filter(AED_F_ALL);
 
-    device->clear(  );
+    device->clear(AED_F_ALL);
     show_config_window_draw_area( device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                   aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
 
@@ -262,7 +262,7 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
             left_side_hit->is_selected = AW_TRUE;
             aedw->selected_entry_of_dlist_left_side = left_side_hit;
 
-            device->clear(  );
+            device->clear(AED_F_ALL);
             show_config_window_draw_area( device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                           aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
         }
@@ -327,7 +327,7 @@ void aed_config_window_input(AW_window *aw, AW_CL cd1, AW_CL cd2) {
                 aedw->config_window->tell_scrolled_picture_size( size_information );
                 aedw->config_window->calculate_scrollbars();
 
-                device->clear(  );
+                device->clear(AED_F_ALL);
                 show_config_window_draw_area( device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                               aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
                 aed_resize( (AW_window *)aedw->aww, (AW_CL)aedw, (AW_CL)0 );
@@ -406,7 +406,7 @@ void aed_config_window_horizontal_scroll(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     device = aedw->config_window->get_device (AW_MIDDLE_AREA  );
     device->set_filter(AED_F_ALL);
 
-    device->clear(  );
+    device->clear(AED_F_ALL);
     show_config_window_draw_area( device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                   aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
 }
@@ -420,7 +420,7 @@ void aed_config_window_vertical_scroll(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     device = aedw->config_window->get_device (AW_MIDDLE_AREA  );
     device->set_filter(AED_F_ALL);
 
-    device->clear(  );
+    device->clear(AED_F_ALL);
     show_config_window_draw_area( device, aedw, aedw->config_window->slider_pos_horizontal, aedw->config_window->slider_pos_vertical,
                                   aedw->config_window->picture->l, aedw->config_window->top_indent_of_vertical_scrollbar );
 }
@@ -433,7 +433,7 @@ void aed_config_window_expose_info_area(AW_window *aw, AW_CL cd1, AW_CL cd2) {
 
     info_device = aedw->config_window->get_device (AW_INFO_AREA  );
     info_device->set_filter(AED_F_ALL);
-    info_device->clear(  );
+    info_device->clear(AED_F_ALL);
     info_device->shift_y( 0 );
     info_device->shift_x( 0 );
     info_device->text( 1, "Anleitung 1", 4, 20, 0.0, AED_F_INFO, (AW_CL)0, (AW_CL)0 );

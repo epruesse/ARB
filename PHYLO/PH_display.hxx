@@ -31,7 +31,7 @@ public:
           void initialize(display_type);
           void display(void);                  // display data (according to display type: matrix ...)
           display_type displayed(void) { return display_what; };
-          void clear_window(void) { if(device) device->clear(); };
+          void clear_window(void) { if(device) device->clear(-1); };
           void resized(void);                  // call after resize main window
           void monitor_vertical_scroll_cb(AW_window *);    // vertical and horizontal
           void monitor_horizontal_scroll_cb(AW_window *);  // scrollbar movements

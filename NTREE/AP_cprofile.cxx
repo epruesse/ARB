@@ -939,7 +939,7 @@ void CPRO_drawstatistic (AW_device *device,unsigned char which_statistic)
     AW_rectangle rect;
     device->get_area_size(&rect);
     device->reset();
-    device->clear();
+    device->clear(-1);
 
     topfirst=39.0;
     leftfirst=20.0;
