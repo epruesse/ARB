@@ -26,7 +26,9 @@ include config.makefile
 # DEBUG					compiles the DEBUG sections
 # NDEBUG				doesnt compile the DEBUG sections
 # DEBUG_GRAPHICS		all X-graphics are flushed immediately (for debugging)
-# DEVEL_$(DEVELOPER)	developer-dependent flag (you may comment out sections to avoid confusion of other developers; see config.makefile)
+# DEVEL_$(DEVELOPER)	developer-dependent flag (enables you to have private sections in code)
+#                       DEVELOPER='ANY' (default setting) will be ignored
+#                       configurable in config.makefile
 #
 
 #********************* Default set and gcc static enviroments *****************
@@ -45,6 +47,14 @@ enumequiv = -fenum-int-equiv
 havebool =
 endif
 
+#---------------------- developer specific settings
+
+ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
+DEVEL_DEF=
+else
+DEVEL_DEF=-DDEVEL_$(DEVELOPER)
+endif
+
 #----------------------
 
 ifeq ($(DEBUG),1)
@@ -53,7 +63,8 @@ ifeq ($(DEBUG_GRAPHICS),1)
 else
 		dflags = -DDEBUG
 endif
-		cflags = $(dflag1) $(dflags) -DDEVEL_$(DEVELOPER)
+
+		cflags = $(dflag1) $(dflags) $(DEVEL_DEF)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
 		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
@@ -61,7 +72,7 @@ endif
 else
 ifeq ($(DEBUG),0)
 		dflags = -DNDEBUG
-		cflags = -O $(dflags)
+		cflags = -O $(dflags) $(DEVEL_DEF)
 		lflags = -O
 		fflags = -O
 		extended_warnings =
