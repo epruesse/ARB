@@ -49,7 +49,18 @@ static IslandHopping *island_hopper = 0;
 #define FA_AWAR_ISLAND_HOPPING_ROOT "island_hopping/"
 
 #define FA_AWAR_USE_ISLAND_HOPPING (FA_AWAR_ISLAND_HOPPING_ROOT "use")
+#define FA_AWAR_ESTIMATE_BASE_FREQ (FA_AWAR_ISLAND_HOPPING_ROOT "estimate_base_freq")
+#define FA_AWAR_BASE_FREQ_A        (FA_AWAR_ISLAND_HOPPING_ROOT "base_freq_a")
+#define FA_AWAR_BASE_FREQ_C        (FA_AWAR_ISLAND_HOPPING_ROOT "base_freq_c")
+#define FA_AWAR_BASE_FREQ_G        (FA_AWAR_ISLAND_HOPPING_ROOT "base_freq_g")
+#define FA_AWAR_BASE_FREQ_T        (FA_AWAR_ISLAND_HOPPING_ROOT "base_freq_t")
 
+#define FA_AWAR_SUBST_PARA_AC (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_ac")
+#define FA_AWAR_SUBST_PARA_AG (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_ag")
+#define FA_AWAR_SUBST_PARA_AT (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_at")
+#define FA_AWAR_SUBST_PARA_CG (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_cg")
+#define FA_AWAR_SUBST_PARA_CT (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_ct")
+#define FA_AWAR_SUBST_PARA_GT (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_gt")
 
 // --------------------------------------------------------------------------------
 
@@ -2327,7 +2338,24 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(	AWAR_PT_SERVER, 			-1, 	db1);
     root->awar_int(	FA_AWAR_NEXT_RELATIVES,			1, 	db1)->set_minmax(1,100);
 
+    // island hopping:
+
     root->awar_int(	FA_AWAR_USE_ISLAND_HOPPING,		0, 	db1);
+
+    root->awar_int(	FA_AWAR_ESTIMATE_BASE_FREQ,		1,  	db1);
+
+    root->awar_float( FA_AWAR_BASE_FREQ_A,		0.25,  	db1);
+    root->awar_float( FA_AWAR_BASE_FREQ_C,		0.25,  	db1);
+    root->awar_float( FA_AWAR_BASE_FREQ_G,		0.25,  	db1);
+    root->awar_float( FA_AWAR_BASE_FREQ_T,		0.25,  	db1);
+
+    root->awar_float(FA_AWAR_SUBST_PARA_AC,		1.0,  	db1);
+    root->awar_float(FA_AWAR_SUBST_PARA_AG,		4.0,  	db1);
+    root->awar_float(FA_AWAR_SUBST_PARA_AT,		1.0,  	db1);
+    root->awar_float(FA_AWAR_SUBST_PARA_CG,		1.0,  	db1);
+    root->awar_float(FA_AWAR_SUBST_PARA_CT,		4.0,  	db1);
+    root->awar_float(FA_AWAR_SUBST_PARA_GT,		1.0,  	db1);
+
 }
 
 void AWTC_awar_set_actual_sequence(AW_root *root, AW_default db1)
@@ -2342,6 +2370,65 @@ static void copy_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
 
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
+}
+
+AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    aws->init( root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping", 10, 10 );
+    aws->load_xfig("awtc/islandhopping.fig");
+
+    aws->at( "close" );
+    aws->callback     ( (AW_CB0)AW_POPDOWN  );
+    aws->create_button( "CLOSE", "CLOSE", "O" );
+
+    aws->at( "help" );
+    aws->callback     ( AW_POPUP_HELP, (AW_CL) "islandhopping.hlp"  );
+    aws->create_button( "HELP", "HELP" );
+
+    aws->at("estimate");
+    aws->create_toggle_field(FA_AWAR_ESTIMATE_BASE_FREQ,"Base freq.","B");
+    aws->insert_default_toggle("Estimate","E",1);
+    aws->insert_toggle("Define here: ","D",0);
+    aws->update_toggle_field();
+
+    aws->at("freq_a"); aws->label("A:"); aws->create_input_field(FA_AWAR_BASE_FREQ_A, 4);
+    aws->at("freq_c"); aws->label("C:"); aws->create_input_field(FA_AWAR_BASE_FREQ_C, 4);
+    aws->at("freq_g"); aws->label("G:"); aws->create_input_field(FA_AWAR_BASE_FREQ_G, 4);
+    aws->at("freq_t"); aws->label("T:"); aws->create_input_field(FA_AWAR_BASE_FREQ_T, 4);
+
+    int xpos[4], ypos[4];
+    {
+        aws->button_length(1);
+
+        int dummy;
+        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button("A","A");
+        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button("C","C");
+        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button("G","G");
+        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button("T","T");
+
+        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0] ); aws->create_button("A","A");
+        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1] ); aws->create_button("C","C");
+        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2] ); aws->create_button("G","G");
+        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3] ); aws->create_button("T","T");
+    }
+
+    aws->at("subst"); aws->create_button("subst_para", "Substitution rate parameters:");
+
+#define XOFF -25
+#define YOFF 0
+
+    aws->at(xpos[1]+XOFF, ypos[0]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_AC, 4);
+    aws->at(xpos[2]+XOFF, ypos[0]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_AG, 4);
+    aws->at(xpos[3]+XOFF, ypos[0]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_AT, 4);
+    aws->at(xpos[2]+XOFF, ypos[1]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_CG, 4);
+    aws->at(xpos[3]+XOFF, ypos[1]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_CT, 4);
+    aws->at(xpos[3]+XOFF, ypos[2]+YOFF); aws->create_input_field(FA_AWAR_SUBST_PARA_GT, 4);
+
+#undef XOFF
+#undef YOFF
+
+    return (AW_window *)aws;
 }
 
 AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
@@ -2362,12 +2449,25 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->callback     ( AW_POPUP_HELP, (AW_CL) "faligner.hlp"  );
     aws->create_button( "HELP", "HELP" );
 
+    aws->at("aligner");
+    aws->create_toggle_field(FA_AWAR_USE_ISLAND_HOPPING,"Aligner","A");
+    aws->insert_default_toggle("Fast aligner","F",0);
+    aws->insert_toggle("Island Hopping","I",1);
+    aws->update_toggle_field();
+
+    aws->button_length(12);
+    aws->at("island_para");
+    aws->callback(AW_POPUP, (AW_CL)AWTC_create_island_hopping_window, (AW_CL)0);
+    aws->create_button("island_para", "Parameters", "");
+
+    aws->button_length(10);
+
     aws->at( "rev_compl" );
     aws->callback(AWTC_build_reverse_complement, cd2);
     aws->create_button( "reverse_complement", "Turn now!", "");
 
     aws->at("what");
-    aws->create_toggle_field(FA_AWAR_TO_ALIGN,"Align","A");
+    aws->create_toggle_field(FA_AWAR_TO_ALIGN,"Align what?","A");
     aws->insert_toggle("Current Species:","A",0);
     aws->insert_default_toggle("Marked Species", "M",1);
     aws->insert_toggle("Selected Species","S",2);
@@ -2468,9 +2568,6 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->at("gaps");
     aws->create_toggle(FA_AWAR_SHOW_GAPS_MESSAGES);
-
-    aws->at("ihop");
-    aws->create_toggle(FA_AWAR_USE_ISLAND_HOPPING);
 
     aws->at( "align" );
     aws->callback     ( AWTC_start_faligning, cd2);
