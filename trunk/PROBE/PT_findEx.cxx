@@ -85,7 +85,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
         case PT_NT_CHAIN:
         case PT_NT_LEAF:  {
             // species list or single species reached
-            fprintf(stdout, "Reached chain or leaf in findNextProbe() (restlen=%i)\n", restlen);
+            // fprintf(stdout, "Reached chain or leaf in findNextProbe() (restlen=%i)\n", restlen);
             return false;
         }
         default : pt_assert(0); break; // oops
