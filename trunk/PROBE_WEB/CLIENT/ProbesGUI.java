@@ -20,7 +20,8 @@ private ProbesGUIActionListener al;
 private ProbeListActionListener ll;
 private Client                  boss;
 
-public ProbesGUI(TreeNode root, int levels, String title, Client b)
+// public ProbesGUI(TreeNode root, int levels, String title, Client b)
+public ProbesGUI(int levels, String title, Client b) throws Exception
     {
         super(title);
         setVisible(true);
@@ -31,7 +32,7 @@ public ProbesGUI(TreeNode root, int levels, String title, Client b)
 
         boss = b;
 
-        td = new TreeDisplay( root, levels);
+        td = new TreeDisplay( null, levels);
         if (td == null) Toolkit.AbortWithError("constructor/ProbesGUI: no TreeDisplay received");
         td.setBoss(b);
 
@@ -51,9 +52,9 @@ public ProbesGUI(TreeNode root, int levels, String title, Client b)
         add(probe_list, BorderLayout.EAST);
 
         sc = new ScrollPane();
-        if (root == null) {
-            Toolkit.InternalError("in ProbesGUI: can't display invalid tree node");
-        }
+//         if (root == null) {
+//             Toolkit.InternalError("in ProbesGUI: can't display invalid tree node");
+//         }
 
         sc.add(td);
         sc.getVAdjustable().setUnitIncrement(1);
@@ -69,7 +70,11 @@ public ProbesGUI(TreeNode root, int levels, String title, Client b)
         pack();
     }
 
-public Dimension getScrollPaneSize()
+    public void initTreeDisplay(TreeNode root)  throws Exception {
+        td.setRootNode(root);
+    }
+
+    public Dimension getScrollPaneSize()
     {
         return sc.getViewportSize();
     }
