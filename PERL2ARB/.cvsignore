@@ -4,4 +4,5 @@ ARB.bs
 ARB.c
 ARB.xs
 proto.h
+debug.h
 pm_to_blib
