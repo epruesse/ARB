@@ -1784,7 +1784,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
         // Automatically start:
         // --------------------
 
-        AW_window *win = AWTC_create_island_hopping_window(aw_root, 0); win->show();
+//         AW_window *win = AWTC_create_island_hopping_window(aw_root, 0); win->show();
 
 
     }
