@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : mapping.cxx                                            //
 //    Purpose   : simple species mapping                                 //
-//    Time-stamp: <Mon Oct/06/2003 17:17 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/07/2003 14:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -70,12 +70,28 @@ GB_ERROR PM_initSpeciesMaps(GBDATA *pb_main) {
     return error;
 }
 
-SpeciesID PM_name2ID(const string& name) {
+SpeciesID PM_name2ID(const string& name, GB_ERROR& error) {
     pm_assert(PM_species_maps_initialized);
-    return PM_species2num_map[name];
+
+    map<string, SpeciesID>::const_iterator found = PM_species2num_map.find(name);
+    if (found != PM_species2num_map.end()) {
+        return found->second;
+    }
+
+    error = GBS_global_string("Unknown species '%s'", name.c_str());
+    return -1;
 }
-const string& PM_ID2name(SpeciesID id) {
+
+const string& PM_ID2name(SpeciesID id, GB_ERROR& error) {
     pm_assert(PM_species_maps_initialized);
-    return PM_num2species_map[id];
+
+    map<SpeciesID, string>::const_iterator found = PM_num2species_map.find(id);
+    if (found != PM_num2species_map.end()) {
+        return found->second;
+    }
+
+    error = GBS_global_string("Unknown SpeciesID %i", id);
+    static string illegal = "<illegal>";
+    return illegal;
 }
 
