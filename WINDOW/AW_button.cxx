@@ -28,9 +28,9 @@
 
 #include <inline.h>
 
-#if defined(DEVEL_RALF)
+#if defined(DEBUG)
 // #define DUMP_BUTTON_CREATION
-#endif // DEVEL_RALF
+#endif // DEBUG
 
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
@@ -338,8 +338,8 @@ static char *pixmapPath(const char *pixmapName) {
 
 
 #define MAX_LINE_LENGTH 200
-static const char *detect_bitmap_size(const char *pixmapname, int *width, int *height) {
-    const char *err = 0;
+static GB_ERROR detect_bitmap_size(const char *pixmapname, int *width, int *height) {
+    GB_ERROR err = 0;
 
     *width  = 0;
     *height = 0;
@@ -352,7 +352,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
         {
             char *dot       = strrchr(name, '.');
             if (dot) dot[0] = 0;
-            else  err       = GBS_global_string("expected '.' in '%s'", pixmapname);
+            else  err       = "'.' expected";
         }
         int  namelen = strlen(name);
         char buffer[MAX_LINE_LENGTH];
@@ -361,7 +361,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
         while (!done && !err) {
             fgets(buffer, MAX_LINE_LENGTH, in);
             if (strchr(buffer, 0)[-1] != '\n') {
-                err = GBS_global_string("Line to long (%s)", buffer);
+                err = GBS_global_string("Line too long ('%s')", buffer); // increase MAX_LINE_LENGTH above
             }
             else if (strncmp(buffer, "#define", 7) != 0) {
                 done = true;
@@ -384,12 +384,9 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
                 *width = atoi(temp);
                 temp = strtok(NULL,  " ");
                 *height = atoi(temp);
-#ifdef DEBUG
-                printf("XPM file successfully parsed %d x %d !\n",*width, *height);
-#endif
             }
             else {
-                err = "size detection failed";
+                err = "can't detect size";
             }
         }
 
@@ -397,18 +394,17 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
         fclose(in);
     }
     else {
-        err = GBS_global_string("Non-existing pixmap in detect_bitmap_size ('%s')\n", path);
+        err = "no such file";
     }
 
-#if defined(DEBUG)
     if (err) {
-        printf("Error in detect_bitmap_size('%s'): %s\n", pixmapname, err);
-        aw_assert(0);
+        err = GBS_global_string("%s: %s", pixmapname, err);
     }
+
 #if defined(DUMP_BUTTON_CREATION)
-    printf("Bitmap '%s' has size %i / %i\n", pixmapname, *width, *height);
+    printf("Bitmap '%s' has size %i/%i\n", pixmapname, *width, *height);
 #endif // DUMP_BUTTON_CREATION
-#endif // DEBUG
+
     free(path);
     return err;
 }
@@ -554,8 +550,9 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     int width_of_label_and_spacer = _at->label_for_inputfield ? width_of_label+SPACE_BEHIND_LABEL : 0;
 
     if (is_graphical_button) {
-        int         width, height;
-        const char *err = detect_bitmap_size(buttonlabel+1, &width, &height);
+        int      width, height;
+        GB_ERROR err = detect_bitmap_size(buttonlabel+1, &width, &height);
+        
         if (!err) {
             if (width_of_button == 0) {
                 width_of_button = width + BUTTON_GRAPHIC_PADDING;
