@@ -286,6 +286,9 @@ ifdef SGI
    XLIBS = -lXm -lXt -lX11 $(SYSLIBS)
 endif
 
+
+#********************* End of user defined Section *******************
+
 #********************* Main dependences *******************
 ifndef ARCPPLIB
 	ARCPPLIB = $(ARLIB)
@@ -293,8 +296,8 @@ endif
 
 SEP=--------------------------------------------------------------------------------
 
-dummy:
-		$(MAKE) tests
+first_target:
+		$(MAKE) checks
 		@echo $(SEP)
 		@echo 'Main targets:'
 		@echo ''
@@ -318,6 +321,7 @@ dummy:
 		@echo ' XXX/.depend - create dependencies for dir XXX   (recommended for ARB developers)'
 		@echo ' tags        - create tags for xemacs'
 		@echo ' rmbak       - remove all "*%" and cores'
+		@echo ' show        - show available shortcuts (aka subtargets)'
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
@@ -326,26 +330,29 @@ dummy:
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
 		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
-ifeq ($(USER),westram)
+ifeq ($(DEVELOPER),'RALF')
 		@echo ' export      - make tarfile and export to homepage'
 endif
 		@echo ''
 		@echo $(SEP)
 		@echo ''
 
-#********************* End of user defined Section *******************
+# check if everything is configured correctly
 
-test_DEBUG:
-ifndef dflags
-		@echo DEBUG has to be defined. Valid values are 0 and 1
-		@echo Please check your config.makefile
+check_DEVELOPER:
+ifndef DEVELOPER
+		@echo DEVELOPER not defined -- check your config.makefile
 		@false
-else
-		@true
 endif
 
-tests: test_DEBUG
-		@echo Tests successful
+check_DEBUG:
+ifndef dflags
+		@echo DEBUG has to be defined. Valid values are 0 and 1 -- check your config.makefile
+		@false
+endif
+
+checks: check_DEBUG check_DEVELOPER
+		@echo Your setup seems to be ok.
 
 # end test section
 
@@ -793,6 +800,54 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 #			Short aliases to make targets
 #***************************************************************************************
 
+show:
+		@echo $(SEP)
+		@echo 'Aliases for often needed targets:'
+		@echo ''
+		@echo ' executables:'
+		@echo ''
+		@echo '  nt     arb_ntree'
+		@echo '  e4     arb_edit4 (includes secedit)'
+		@echo '  di     arb_dist'
+		@echo '  ph     arb_phylo'
+		@echo '  pa     arb_parsimony'
+		@echo '  tg     arb_treegen'
+		@echo '  tg     arb_treegen'
+		@echo '  ds     arb_dbserver'
+		@echo '  pr     arb_pt_server'
+		@echo '  pg     arb_probe_group'
+		@echo '  na     arb_name_server'
+		@echo ''
+		@echo ' libraries:'
+		@echo ''
+		@echo '  com    communication libraries'
+		@echo '  dball  ARB database (all versions: db dbs and db2)'
+		@echo '  aw     GUI lib'
+		@echo '  awt    GUI toolkit'
+		@echo '  awtc   general purpose library'
+		@echo '  awti   import/export library'
+		@echo '  mp     multi probe library'
+		@echo '  ge     genome library'
+		@echo '  pd     probe design lib'
+		@echo '  prd    primer design lib'
+		@echo '  ih     island hopper'
+		@echo ''
+		@echo ' other targets:'
+		@echo ''
+		@echo '  help   recompile help files'
+		@echo '  test   test arbdb (needs fix)'
+		@echo '  demo   GUI demo (needs fix)'
+		@echo '  tools  make small tools used by arb'
+		@echo ''
+		@echo ' foreign targets:'
+		@echo ''
+		@echo '  gde    GDE'
+		@echo '  agde   ARB_GDE'
+		@echo ''
+		@echo 'for other targets inspect $(ARBHOME)/Makefile'
+		@echo ''
+		@echo $(SEP)
+
 mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
@@ -809,7 +864,7 @@ awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
 
-island_hopping:	ISLAND_HOPPING/ISLAND_HOPPING.dummy
+ih:		ISLAND_HOPPING/ISLAND_HOPPING.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 ge: 	GENOM/GENOM.dummy
@@ -826,8 +881,8 @@ di:		$(DIST)
 ph:		$(PHYLO)
 pa:		$(PARSIMONY)
 tg:		$(TREEGEN)
-#se:		$(SECEDIT)
-acc:	$(ACORR)
+# se:		$(SECEDIT)
+# acc:	$(ACORR)
 
 ds:		$(DBSERVER)
 pr:		$(PROBE)
@@ -838,11 +893,10 @@ na:		$(NAMES)
 os:		$(ORS_SERVER)
 oc:		$(ORS_CGI)
 
-ac:		$(ARBDB_COMPRESS)
+ac:		$(ARBDB_COMPRESS) # unused? does not compile
 
-te:		$(TEST)
-#sec:	$(SECEDIT)
-de:		$(AWDEMO)
+test:	$(TEST)
+demo:	$(AWDEMO)
 
 e4:		$(EDIT4)
 we:		$(WETC)
@@ -923,7 +977,7 @@ export:	tarfile sourcetarfile
 binlink:
 	(cd bin; $(MAKE) all);
 
-all: tests arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all: checks arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 		@echo -----------------------------------
 		@echo 'make all' has been done successful
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
