@@ -782,7 +782,8 @@ public:
 
     int				is_child_of(ED4_manager *parent);
     ED4_group_manager 		*is_in_folded_group() const;
-    virtual char		*resolve_pointer_to_string(int *str_len = 0) const;
+    virtual char		*resolve_pointer_to_string_copy(int *str_len = 0) const;
+    virtual const char		*resolve_pointer_to_char_pntr(int *str_len = 0) const;
     virtual ED4_ERROR		*write_sequence(const char *seq, int seq_len);
     char			*get_name_of_species();					// go from terminal to name of species
 
@@ -1015,9 +1016,10 @@ public:
     virtual ED4_returncode  	kill_object();
 
     //general purpose functions
-    virtual ED4_base		*search_ID(const char *id);
-    virtual char 		*resolve_pointer_to_string(int *str_len = 0) const;				// concerning terminal and database
-    virtual ED4_ERROR		*write_sequence(const char *seq, int seq_len);
+    virtual ED4_base  *search_ID(const char *id);
+    virtual char *resolve_pointer_to_string_copy(int *str_len = 0) const; // concerning terminal and database
+    virtual const char 		*resolve_pointer_to_char_pntr(int *str_len = 0) const; // concerning terminal and database
+    virtual ED4_ERROR *write_sequence(const char *seq, int seq_len);
     virtual ED4_returncode 	remove_callbacks();
 
     inline int 			setCursorTo(ED4_cursor *cursor, int pos, int unfoldGroups);
@@ -1591,7 +1593,7 @@ public:
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
-    int get_length() const { int len; resolve_pointer_to_string(&len); return len; }
+    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
     void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
     void calc_update_intervall(long *left_index, long *right_index );
@@ -1698,7 +1700,7 @@ public:
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_pure_text_terminal();
 
-    int get_length() const { int len; resolve_pointer_to_string(&len); return len; }
+    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
