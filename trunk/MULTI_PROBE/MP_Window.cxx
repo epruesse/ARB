@@ -1,5 +1,3 @@
-#include "MultiProbe.hxx"
-//#include <MP_externs.hxx>
 #include <string.h>
 #include <stdlib.h>
 #include <aw_root.hxx>
@@ -7,22 +5,15 @@
 #include <aw_awars.hxx>
 #include <awt.hxx>
 
+#include "MultiProbe.hxx"
+#include <mp_proto.hxx>
 
 struct mp_gl_struct mp_pd_gl;
-void		MP_Comment(AW_window *aww, AW_CL com);
-extern		void MP_gen_quality(AW_root *awr,AW_CL cd1,AW_CL cd2);
-extern void	MP_new_sequence(AW_window *aww);
-extern BOOL 	MP_is_probe(char *seq);
-extern void MP_cache_sonden(AW_window *aww);
-extern void MP_mark_probes_in_tree(AW_window *aww);
 
-//********** Funktionen aus anderen, nicht von MP stammenden Modulen *******
-    //********** nicht in anderen Headern deklariert ***************************
-    extern char *pd_ptid_to_choice(int i);
 
 //**************************************************************************
 
-    AW_selection_list *selected_list;	//globale id's fuer
+AW_selection_list *selected_list;	//globale id's fuer
 AW_selection_list *probelist;		//Identifizierung der Listen
 AW_selection_list *result_probes_list;
 
@@ -334,7 +325,7 @@ void MP_Window::build_pt_server_list()
 
     for (i=0; i<1000; i++)
     {
-        choice = pd_ptid_to_choice(i);
+        choice = GBS_ptserver_id_to_choice(i);
 
         if (! choice)
             break;
@@ -552,7 +543,13 @@ MP_Window::MP_Window(AW_root *aw_root)
     }
 
     aws->update_option_menu();
-    build_pt_server_list();
+
+    aws->at("PTServer");
+    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, AW_TRUE);
+
+    aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
+
+//     build_pt_server_list();
 }
 
 
