@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Thu Feb/19/2004 18:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Mar/30/2004 17:11 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -1026,6 +1026,7 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
     if (node->is_leaf){
 	if (node->gb_node) {
 	    SQ_pass1(data, gb_main, node);
+            seq_assert(data->getSize()>0);
 	}
     }
 
@@ -1034,8 +1035,10 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 	GBT_TREE *node2 = node->rightson;
 
 	SQ_calc_and_apply_group_data(node1, gb_main, data); //Note: data is not used yet!
+        seq_assert(data->getSize()>0);
 	SQ_GroupData *rightData = data->clone();
 	SQ_calc_and_apply_group_data(node2, gb_main, rightData);
+        seq_assert(rightData->getSize()>0);
 	data->SQ_add(*rightData);
 	delete rightData;
 
