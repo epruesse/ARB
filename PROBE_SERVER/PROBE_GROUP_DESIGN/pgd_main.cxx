@@ -191,10 +191,8 @@ static void PG_exit_pt_server(void) {
 
 static int init_local_com_struct(struct gl_struct& pd_gl)
 {
-    const char *user;
-    if (!(user = getenv("USER"))) user = "unknown user";
+    const char *user = GB_getenvUSER();
 
-    /* @@@ use finger, date and whoami */
     if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
                     MAIN_LOCS, PT_LOCS, &pd_gl.locs,
                     LOCS_USER, user,
