@@ -100,35 +100,35 @@ void AWT_seq_colors::reload(){
     int elem;
     int s2;
     for (elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS; elem++){
-	sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
-	unsigned char *sc = (unsigned char *)GBT_read_string2(gb_def,buf,GBS_global_string("%c%c",'a'+elem,'A'+elem));
-	if (!cbexists){
-	    GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
-	    GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
-	    for (s2=0;s2 <  AWT_SEQ_COLORS_MAX_SET; s2++){
-		sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
-		GBT_read_string2(gb_def,buf,"=0");
-		gb_ne = GB_search(gb_def,buf,GB_STRING);
-		GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
-	    }
-	}
-	sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
-	char *val = GBT_read_string2(gb_def,buf,"AA");
-	if (strlen(val) != 2 || val[1] >'9' || val[1] < '0'){
-	    aw_message(GB_export_error(
-		"Error in Color Lookup Table '%s' is not of type X#",val));
-	    delete val;
-	    delete sc;
-	    continue;
-	}
-	for (i=0;sc[i];i++){
-	    char_2_gc[sc[i]] = val[1]-'0' + base_gc;
-	    if (val[0] != '='){
-		char_2_char[sc[i]] = val[0];
-	    }
-	}
-	delete val;
-	delete sc;
+        sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
+        unsigned char *sc = (unsigned char *)GBT_read_string2(gb_def,buf,GBS_global_string("%c%c",'a'+elem,'A'+elem));
+        if (!cbexists){
+            GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
+            GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+            for (s2=0;s2 <  AWT_SEQ_COLORS_MAX_SET; s2++){
+                sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
+                GBT_read_string2(gb_def,buf,"=0");
+                gb_ne = GB_search(gb_def,buf,GB_STRING);
+                GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+            }
+        }
+        sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
+        char *val = GBT_read_string2(gb_def,buf,"AA");
+        if (strlen(val) != 2 || val[1] >'9' || val[1] < '0'){
+            aw_message(GB_export_error(
+                                       "Error in Color Lookup Table '%s' is not of type X#",val));
+            delete val;
+            delete sc;
+            continue;
+        }
+        for (i=0;sc[i];i++){
+            char_2_gc[sc[i]] = val[1]-'0' + base_gc;
+            if (val[0] != '='){
+                char_2_char[sc[i]] = val[0];
+            }
+        }
+        delete val;
+        delete sc;
     }
     cbexists = 1;
     run_cb();
