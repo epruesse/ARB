@@ -16,13 +16,10 @@
 
 using namespace std;
 
-AW_window_menu_modes_opengl *awm;
-
-extern GBDATA *gb_main;
-
-XtAppContext appContext;
-XtWorkProcId workId   = 0;
-GLboolean    Spinning = GL_FALSE;
+static AW_window_menu_modes_opengl *awm;
+static XtAppContext                 appContext;
+static XtWorkProcId                 workId   = 0;
+static GLboolean                    Spinning = GL_FALSE;
 
 //========= SpinMolecule(XtPointer ...) : The Actual WorkProc Routine ============//
 // => Sets the Rotation speed to 0.05 : default speed in Rotation Mode.
@@ -34,7 +31,7 @@ GLboolean    Spinning = GL_FALSE;
 
 Boolean SpinMolecule(XtPointer clientData) {
     AWUSE(clientData);
-    GLOBAL->ROTATION_SPEED = 0.05;
+    RNA3D->ROTATION_SPEED = 0.05;
     RefreshOpenGLDisplay();
     return false; /* leave work proc active */
 }
@@ -51,11 +48,11 @@ static void RotateMoleculeStateChanged(void) {
     if(Spinning) {
         XtRemoveWorkProc(workId);
         Spinning = GL_FALSE; 
-        GLOBAL->bAutoRotate = false;
+        RNA3D->bAutoRotate = false;
     } else {
         workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
         Spinning = GL_TRUE; 
-        GLOBAL->bAutoRotate = true;
+        RNA3D->bAutoRotate = true;
     }
 }
 
@@ -76,7 +73,7 @@ void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
 	XConfigureEvent *evt;
 	evt = (XConfigureEvent*) event;
 	
-	if ( GLOBAL->OpenGLEngineState == NOT_CREATED ) {
+	if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
 		return;
 	}
 	
@@ -98,16 +95,16 @@ void KeyReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, cha
 
     switch(keysym) {
     case XK_Up:
-        GLOBAL->bRotateMolecule = false;   
+        RNA3D->bRotateMolecule = false;   
         break;
     case XK_Down:
-        GLOBAL->bRotateMolecule = false;   
+        RNA3D->bRotateMolecule = false;   
         break;
     case XK_Left:
-        GLOBAL->bRotateMolecule = false;   
+        RNA3D->bRotateMolecule = false;   
         break;
     case XK_Right:
-        GLOBAL->bRotateMolecule = false;   
+        RNA3D->bRotateMolecule = false;   
         break;
     }
 
@@ -123,38 +120,38 @@ void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
     int    count;
     float fRotationFactor = 2.0f;
 
-    GLOBAL->saved_x = evt->x;
-    GLOBAL->saved_y = evt->y;
+    RNA3D->saved_x = evt->x;
+    RNA3D->saved_y = evt->y;
 
     // Converting keycode to keysym
     count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
 
     switch(keysym) {
     case XK_space:
-        GLOBAL->iRotateMolecule = !GLOBAL->iRotateMolecule;
-        GLOBAL->root->awar(AWAR_3D_MOL_ROTATE)->write_int(GLOBAL->iRotateMolecule);
+        RNA3D->iRotateMolecule = !RNA3D->iRotateMolecule;
+        RNA3D->root->awar(AWAR_3D_MOL_ROTATE)->write_int(RNA3D->iRotateMolecule);
         break;
     case XK_Escape:
         exit(0); 
         break;
     case XK_Up:
-        GLOBAL->bRotateMolecule = true;   
-        GLOBAL->saved_y += fRotationFactor;
+        RNA3D->bRotateMolecule = true;   
+        RNA3D->saved_y += fRotationFactor;
         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Down:
-        GLOBAL->bRotateMolecule = true;   
-        GLOBAL->saved_y -= fRotationFactor;
+        RNA3D->bRotateMolecule = true;   
+        RNA3D->saved_y -= fRotationFactor;
         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Left:
-        GLOBAL->bRotateMolecule = true;   
-        GLOBAL->saved_x += fRotationFactor;
+        RNA3D->bRotateMolecule = true;   
+        RNA3D->saved_x += fRotationFactor;
         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Right:
-        GLOBAL->bRotateMolecule = true;   
-        GLOBAL->saved_x -= fRotationFactor;
+        RNA3D->bRotateMolecule = true;   
+        RNA3D->saved_x -= fRotationFactor;
         ComputeRotationXY(evt->x, evt->y);
         break;
     }
@@ -169,7 +166,7 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
     switch(xr->button) 
         {
         case LEFT_BUTTON:
-            GLOBAL->bRotateMolecule = false;   
+            RNA3D->bRotateMolecule = false;   
             break;
             
         case MIDDLE_BUTTON:
@@ -190,24 +187,24 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
     switch(xp->button) 
         {
         case LEFT_BUTTON:
-            GLOBAL->bRotateMolecule = true;   
-            GLOBAL->saved_x = xp->x;
-            GLOBAL->saved_y = xp->y;
+            RNA3D->bRotateMolecule = true;   
+            RNA3D->saved_x = xp->x;
+            RNA3D->saved_y = xp->y;
             break;
 
         case MIDDLE_BUTTON:
-            GLOBAL->gl_Canvas->set_mode(AWT_MODE_NONE);
+            RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE);
             break;
 
         case RIGHT_BUTTON:
             break;
 
         case WHEEL_UP:
-            GLOBAL->scale += ZOOM_FACTOR;
+            RNA3D->scale += ZOOM_FACTOR;
             break;
 
         case WHEEL_DOWN:
-            GLOBAL->scale -= ZOOM_FACTOR;
+            RNA3D->scale -= ZOOM_FACTOR;
             break;
 	}
     
@@ -219,11 +216,11 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
 	XMotionEvent *xp;
 	xp = (XMotionEvent*) event;
 	
-    if (!GLOBAL->bAutoRotate) {
-        GLOBAL->ROTATION_SPEED = 0.5;
+    if (!RNA3D->bAutoRotate) {
+        RNA3D->ROTATION_SPEED = 0.5;
     }
 
-    if(GLOBAL->bRotateMolecule) {
+    if(RNA3D->bRotateMolecule) {
         // ComputeRotationXY : computes new rotation X and Y based on the mouse movement
         ComputeRotationXY(xp->x, xp->y);
     }
@@ -234,9 +231,9 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
 void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
     static bool ok = false;
 
-	if ( GLOBAL->OpenGLEngineState == NOT_CREATED ) {
-		extern GBDATA* OpenGL_gb_main;
-		OpenGL_gb_main = gb_main;
+	if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
+		// extern GBDATA* OpenGL_gb_main;
+		// OpenGL_gb_main = gb_main;
 		
 		InitializeOpenGLWindow( w );
 
@@ -260,8 +257,8 @@ void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
 
 void RefreshOpenGLDisplay() {
     
-	if ( GLOBAL->OpenGLEngineState == CREATED ) {
-        RenderOpenGLScene(GLOBAL->glw);
+	if ( RNA3D->OpenGLEngineState == CREATED ) {
+        RenderOpenGLScene(RNA3D->glw);
     }
 }
 
@@ -327,12 +324,12 @@ static void RefreshMappingDisplay(AW_window *aw) {
     // 1.Changes made to SAI related settings in EDIT4 and not updated automatically 
     // 2.Colors related to SAI Display changed in RNA3D Application
 
-    MapSaiToEcoliTemplateChanged_CB(GLOBAL->root);
+    MapSaiToEcoliTemplateChanged_CB(RNA3D->root);
 
     // Refreshes the Search Strings Display if 
     // Colors related to Search Strings changed in RNA3D Application 
     // and not updated automatically
-    MapSearchStringsToEcoliTemplateChanged_CB(GLOBAL->root);
+    MapSearchStringsToEcoliTemplateChanged_CB(RNA3D->root);
 }
 
 static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
@@ -549,17 +546,19 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
 
     awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
 
+    RNA3D_init_global_data();
+    
     awm = new AW_window_menu_modes_opengl();
     awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
     AW_gc_manager aw_gc_manager;
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,gb_main);
 
-    GLOBAL->gl_Canvas = new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
+    RNA3D->gl_Canvas = new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
 
-    GLOBAL->gl_Canvas->recalc_size();
-    GLOBAL->gl_Canvas->refresh();
-    GLOBAL->gl_Canvas->set_mode(AWT_MODE_NONE); 
+    RNA3D->gl_Canvas->recalc_size();
+    RNA3D->gl_Canvas->refresh();
+    RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE); 
 
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
@@ -624,33 +623,33 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     }
 
     AddCallBacks(awr);
-    GLOBAL->root = awr;
+    RNA3D->root = awr;
 
     appContext = awr->prvt->context;
 
-    GLOBAL->OpenGLEngineState = NOT_CREATED;
+    RNA3D->OpenGLEngineState = NOT_CREATED;
 		
     /** Add event handlers */
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        StructureNotifyMask , 0, (XtEventHandler) ResizeOpenGLWindow, (XtPointer) 0 );
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ExposureMask, 0, (XtEventHandler) ExposeOpenGLWindow, (XtPointer) 0 );
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        KeyPressMask, 0, (XtEventHandler) KeyPressEventHandler, (XtPointer) 0 );
 
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        KeyReleaseMask, 0, (XtEventHandler) KeyReleaseEventHandler, (XtPointer) 0 );
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ButtonPressMask, 0, (XtEventHandler) ButtonPressEventHandler, (XtPointer) 0 );
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ButtonReleaseMask, 0, (XtEventHandler) ButtonReleaseEventHandler, (XtPointer) 0 );
 		
-    XtAddEventHandler( GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+    XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        PointerMotionMask, 0, (XtEventHandler) MouseMoveEventHandler, (XtPointer) 0 );
 
 #ifdef DEBUG
