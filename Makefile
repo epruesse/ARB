@@ -479,10 +479,6 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 		>$(@D)/Makefile.2 && \
 		mv $(@D)/Makefile.2 $(@D)/Makefile || echo nop
 
-
-%.links: 
-	@$(GMAKE) -C $(@D) -r links || echo '********* Ignoring Errors !!!!! ********';
-
 %.dummy:
 	@echo -------------------------------------------------------------------------------- Making $(@F:.dummy=.a) in $(@D)
 	@$(GMAKE) -C $(@D) -r \
@@ -561,8 +557,12 @@ tags:
 	$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 tags2:
 	$(CTAGS) `find . -follow -name '*.[ch]xx' -type f` ARBDB/*.[ch]
-links:	ARBDB2/libARBDB.links ARBDBS/libARBDB.links
 
+links: SOURCE_TOOLS/generate_all_links.stamp
+
+SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links
+	SOURCE_TOOLS/generate_all_links
+	touch SOURCE_TOOLS/generate_all_links.stamp
 
 bin/fig2dev:
 	cd fig2dev/dev;$(XMKMF)
@@ -686,7 +686,7 @@ realclean: clean
 	rm -f AISC_MKPTPS/aisc_mkpt
 
 #*** basic arb libraries
-arbbasic: mbin com
+arbbasic: links mbin com
 
 #*** New arb programs (Version 2.0) (Motif)
 arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs
