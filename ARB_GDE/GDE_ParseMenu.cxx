@@ -29,9 +29,8 @@
   Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
   All rights reserved.
 
+  Changed to fit into ARB by ARB development team.
 */
-
-
 
 void ParseMenu()
 {
@@ -70,9 +69,10 @@ void ParseMenu()
         /*
          *  menu: chooses menu to use
          */
-        if(in_line[0] == '#' || (in_line[0] && in_line[1] == '#')){
-            ;
-        }else if(Find(in_line,"menu:"))
+        if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
+            ; // skip line
+        }
+        else if(Find(in_line,"menu:"))
         {
             crop(in_line,head,temp);
             curmenu = -1;
@@ -222,7 +222,7 @@ void ParseMenu()
                 if (temp[arglen] == 0) thisarg->textwidth = TEXTFIELDWIDTH; // only 'text'
                 else {
                     if (temp[arglen] != '(' || temp[strlen(temp)-1] != ')') {
-                        sprintf(head, "Unknown argtype '%s' -- syntax: text(width) i.e. text(20)", temp);
+                        sprintf(head, "Unknown argtype '%s' -- syntax: text(width) e.g. text(20)", temp);
                         Error(head);
                     }
                     thisarg->textwidth = atoi(temp+arglen+1);
