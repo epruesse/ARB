@@ -585,7 +585,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     }
 
     int    parts = PARTS;
-    char **part  = new (char*)[PARTS];
+    char **part  = new char*[PARTS];
     int    p;
 
     printf("AWTC_testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);

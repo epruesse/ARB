@@ -54,7 +54,7 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
                 make_node_text_init(gb_main);
 
                 // create all NDS strings
-                char **nds_results = new (char*)[nentries];
+                char **nds_results = new char*[nentries];
                 for (col=0; col<size_t(nentries); col++) {
                     const char *buf        = entries[col]->name;
                     GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data,buf);
