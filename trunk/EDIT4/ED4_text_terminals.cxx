@@ -229,12 +229,14 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
             }
 
-        const char *saiColors = 0; int isSai;
-        if(species_name && ED4_ROOT->visualizeSAI && !(isSai = checkSai(this->species_name))) {
-            if (is_marked)
-                saiColors = getSaiColorString(seq_start, seq_end);
-            else if (ED4_ROOT->visualizeSAI_allSpecies)
-                saiColors = getSaiColorString(seq_start, seq_end);
+        const char *saiColors = 0;
+
+        if (species_name                                     &&
+            ED4_ROOT->visualizeSAI                           &&
+            !spec_man->flag.is_SAI                           &&
+            (is_marked || ED4_ROOT->visualizeSAI_allSpecies))
+        {
+            saiColors = getSaiColorString(ED4_ROOT->aw_root, seq_start, seq_end);
         }
 
         if (colors || searchColors || is_marked || is_selected || color_group || saiColors) {
@@ -304,21 +306,21 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
     // output helix
     if (ED4_ROOT->helix->size)
-        {   // should do a remap
-            int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
-            if (right< screen_length) {
-                screen_length = right;
-            }
-            if (screen_length) {
-                char *db_pointer = resolve_pointer_to_string_copy();
-                device->text_overlay( ED4_G_HELIX,
-                                      (char *)db_pointer, screen_length,
-                                      text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-                                      (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
-                                      1.0,1.0, ED4_show_helix_on_device);
-                free(db_pointer);
-            }
+    {   // should do a remap
+        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
+        if (right< screen_length) {
+            screen_length = right;
         }
+        if (screen_length) {
+            char *db_pointer = resolve_pointer_to_string_copy();
+            device->text_overlay( ED4_G_HELIX,
+                                  (char *)db_pointer, screen_length,
+                                  text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
+                                  (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
+                                  1.0,1.0, ED4_show_helix_on_device);
+            free(db_pointer);
+        }
+    }
     // output strings
     {
         int gc;
