@@ -184,8 +184,7 @@ NT_mark_tree_cb(void *dummy, AWT_canvas *ntw)
     ntw->refresh();
 }
 
-void
-NT_group_tree_cb(void *dummy, AWT_canvas *ntw)
+void NT_group_tree_cb(void *dummy, AWT_canvas *ntw)
 {
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
@@ -196,8 +195,7 @@ NT_group_tree_cb(void *dummy, AWT_canvas *ntw)
     ntw->refresh();
 }
 
-void
-NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw)
+void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw)
 {
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
