@@ -737,6 +737,13 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
     GB_pop_transaction(ntw->gb_main);
 }
 
+void NT_recompute_cb(AW_window *,AWT_canvas *ntw, AW_CL cl2) {
+    AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->tree_disp);
+    awt_assert(gt);
+
+    gt->tree_root->compute_tree(ntw->gb_main);
+    AWT_expose_cb (ntw->aww, ntw, cl2 );
+}
 
 void NT_remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
     if (!tree) return;
