@@ -44,12 +44,12 @@ public static void main(String[] args)
         // here goes the web access code
 
         // tree to display
-        TreeReader tr = new TreeReader("probetree.gz");
+        TreeReader tr = new TreeReader("/pserverdata/probetree.gz");
    
 
         //        cl.webAccess.conductRequest("/demo.newick");
         // inlude version number in tree
-        String currentVersion = cl.webAccess.conductRequest("/cgi/getTreeVersion.cgi");
+        String currentVersion = cl.webAccess.conductRequest("/pservercgi/getTreeVersion.cgi");
         System.out.println("server version: " + ">>>" + currentVersion + "<<<");
         //        String localVersion = new String("[CURRENTVERSION_16S_27081969]");
         // access local jar file;
