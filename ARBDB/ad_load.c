@@ -882,7 +882,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         }else{
             map_path = gb_mapfile_name(Main->path);
         }
-        merror = gb_is_valid_mapfile(map_path,&mheader);
+        merror = gb_is_valid_mapfile(map_path,&mheader, 0);
         if (merror>0)
         {
             if (gb_main_array[mheader.main_idx]==NULL)
