@@ -278,7 +278,7 @@ void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
     device->set_right_clip_border(right_border);
 
     device->clear_part(left_border,top_border,right_border-left_border,
-                       bottom_border-top_border);
+                       bottom_border-top_border, -1);
 
     GB_transaction dummy(ntw->gb_main);
 
@@ -313,7 +313,7 @@ void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL){
 void AWT_canvas::refresh( void )
 {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
-    device->clear();
+    device->clear(-1);
     AWT_clip_expose(this->aww, this, this->rect.l, this->rect.r,
                     this->rect.t, this->rect.b,0,0);
 }

@@ -641,7 +641,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
             if ( display_struct.clear ) {
                 width  = strlen( left_text ) * font_information->max_letter.width + 4;
                 height = font_information->max_letter.height + 2;
-                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_NAME);
             }
             device->text( AED_GC_NAME, left_text,
                           4, *y, 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
@@ -653,7 +653,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
             height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp  = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -688,7 +688,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
         device->clear_part((display_struct.picture_l + display_struct.slider_pos_horizontal),
                            *y - font_information->max_letter.ascent - 1,
                            width+1,
-                           height+1);
+                           height+1, AED_F_ALL);
     }
     if (area_entry->adt_sequence) {
 
@@ -791,7 +791,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
             if ( display_struct.clear ) {
                 width  = strlen( left_text ) * font_information->max_letter.width + 4;
                 height = font_information->max_letter.height + 2;
-                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_NAME);
             }
             device->text( AED_GC_NAME, left_text, 4, *y, 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
         }
@@ -802,7 +802,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
             height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME ))  ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -838,7 +838,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
         width  = screen.r;
         height = font_information->max_letter.height+AED_LINE_SPACING+AED_TOP_LINE;
 
-        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
     }
 
     if (area_entry->adt_sequence) {
@@ -923,7 +923,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
             if ( display_struct.clear ) {
                 width = strlen( left_text ) * font_information->max_letter.width + 4;
                 height = font_information->max_letter.height + 2;
-                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_NAME);
             }
             device->text( AED_GC_NAME, left_text, 4, *y , 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
         }
@@ -934,7 +934,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
             height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -965,7 +965,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
     if ( display_struct.clear ) {
         width = screen.r;
         height = font_information->max_letter.height+AED_LINE_SPACING+AED_TOP_LINE ;
-        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1 );
+        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
     }
     if (area_entry->adt_sequence) {
 
@@ -1027,7 +1027,7 @@ void AED_window::expose( AW_window *awmm ) {
     device = awmm->get_device (AW_MIDDLE_AREA  );
     device->reset();
     device->set_filter(AED_F_ALL);
-    device->clear(  );
+    device->clear(AED_F_ALL);
     this->show_data( device, awmm, AW_TRUE );
 
     if ( this->cursor_is_managed ) {
@@ -1140,7 +1140,7 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
             aedw->quickdraw_right_indent = awmm->left_indent_of_horizontal_scrollbar - awmm->slider_pos_horizontal + aedw->last_slider_position + 10;
             device->shift_x( 0 );
             device->shift_y( 0 );
-            device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, aedw->last_slider_position - (AW_pos)awmm->slider_pos_horizontal, screen.b  );
+            device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, aedw->last_slider_position - (AW_pos)awmm->slider_pos_horizontal, screen.b, AED_F_ALL);
             aedw->show_data( device, awmm, AW_TRUE );
             aedw->quickdraw = AW_FALSE;
         }
@@ -1149,7 +1149,7 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
         aedw->quickdraw = AW_TRUE;
         device->shift_x( 0 );
         device->shift_y( 0 );
-        device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, screen.r - awmm->left_indent_of_horizontal_scrollbar, screen.b  );
+        device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, screen.r - awmm->left_indent_of_horizontal_scrollbar, screen.b, AED_F_ALL);
         aedw->quickdraw_left_indent = awmm->left_indent_of_horizontal_scrollbar;
         aedw->quickdraw_right_indent = screen.r;
         aedw->show_data( device, awmm, AW_TRUE );
@@ -1192,7 +1192,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     device->shift_y( 0 );
 
     device->clear_part( 0, awmm->top_indent_of_vertical_scrollbar,
-                        screen.r, screen.b - awmm->top_indent_of_vertical_scrollbar - awmm->bottom_indent_of_vertical_scrollbar );
+                        screen.r, screen.b - awmm->top_indent_of_vertical_scrollbar - awmm->bottom_indent_of_vertical_scrollbar, AED_F_ALL);
 
     AED_area_display_struct display_struct;
     display_struct.clear                        = AW_FALSE;
@@ -1911,7 +1911,7 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
             aedw->owntimestamp = aedw->root->ad_main->time_stamp();
             aedw->root->ad_main->commit_transaction();
             device = awmm->get_device (AW_MIDDLE_AREA  );
-            device->clear(  );
+            device->clear(AED_F_ALL);
             device = awmm->get_device (AW_INFO_AREA  );
             aed_expose((AW_window *)cd2,cd1,0);
         }

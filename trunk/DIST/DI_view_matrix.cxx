@@ -149,7 +149,7 @@ void PH_dmatrix::resized(void)
     vert_last_view_start  = 0;
 
     device->reset();            // clip_size == device_size
-    device->clear();
+    device->clear(-1);
     device->set_right_clip_border((int)(off_dx+cell_width*horiz_page_size));
     device->reset();            // reset shift_x and shift_y
     awm->set_vertical_scrollbar_position(0);
@@ -274,17 +274,17 @@ void PH_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
      device->move_region(0,off_dy,
                          screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
      device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                        screen_width,cell_height);
+                        screen_width,cell_height, -1);
 
      device->push_clip_scale();
      device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
  }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
      device->move_region(0,off_dy-cell_height,screen_width,
                          (vert_page_size-1)*cell_height+1,0,off_dy);
-     device->clear_part(0,off_dy-cell_height,screen_width,cell_height);
+     device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
      device->push_clip_scale();
      device->set_bottom_clip_border((int)off_dy);
- }else  device->clear();
+ }else  device->clear(-1);
 
  vert_last_view_start=aww->slider_pos_vertical;
  vert_page_start=aww->slider_pos_vertical/cell_height;
@@ -304,7 +304,7 @@ void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
                        horiz_page_size*cell_width,screen_height,
                        off_dx,0);
 
- device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height);
+     device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
 
 
  device->push_clip_scale();
@@ -313,11 +313,11 @@ void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
  else if(diff==-1) // scroll one position right ( < arrow pressed)
  { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
                        0);
- device->clear_part(off_dx,0,cell_width,screen_height);
+     device->clear_part(off_dx,0,cell_width,screen_height, -1);
  device->push_clip_scale();
  device->set_right_clip_border((int)(off_dx+cell_width));
  }
- else device->clear();
+ else device->clear(-1);
 
  horiz_last_view_start=aww->slider_pos_horizontal;
  horiz_page_start=aww->slider_pos_horizontal/cell_width;
