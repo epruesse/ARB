@@ -24,10 +24,7 @@ public class TreeDisplay extends Canvas
     private TreeNode moveToPositionNode = null; 
 
     private Stack   history;
-    private TreeSet listOfMarked;
 
-    // private int xSize = 800;
-    // private int ySize = 1000;
     private int xSize = 0;
     private int ySize = 0;
 
@@ -47,8 +44,6 @@ public class TreeDisplay extends Canvas
     private int xPointer = 0;   // serves as pointer to the x-space already used up (w/o leaf text)
     private int yPointer = 0;   // serves as pointer to the y-space already used up
 
-    //     private int             treeLevels;
-
     private boolean         newLayout = true;
     private LineAreaFactory laf;
     private Set             rootSet;
@@ -57,22 +52,17 @@ public class TreeDisplay extends Canvas
     private static Color dc;    // normal display color
     private static Color mc   = Color.yellow; // marked display color
     private static Color pmc  = Color.white; // partly marked display color
-    private Color nic1 = Color.blue; // node info color 1 (not used for species name etc.)
-    private Color nic2 = Color.magenta; // node info color 2 (not used for group name)
+    private Color        nic1 = Color.blue; // node info color 1 (not used for species name etc.)
+    private Color        nic2 = Color.magenta; // node info color 2 (not used for group name)
 
     private int group_box_size = 3; // size of group box (real size = group_box_size*2+1)
     private int clickTolerance = 5;
-//     private int yOffset        = 10; // space used for leaf/group
     private int xSpreading     = 1000;
-
-    //     public float maxDist        = 0;
+    private int min_xSpreading = 100;
 
     public TreeDisplay(TreeNode root, int treeLevels, Color backgroundColor) throws Exception
     {
         setBackground(Color.lightGray);
-        // postpone this later until tree is parsed to determined the needed space
-
-        //        setVisible(true);
 
         displayCounter = 0;
 
@@ -81,23 +71,18 @@ public class TreeDisplay extends Canvas
         rootSet      = new HashSet();
         branchSet    = new HashSet();
         history      = new Stack();
-        listOfMarked = new TreeSet();
         laf          = new LineAreaFactory(6);
 
-//         this.treeLevels = treeLevels;
         if (root != null) {
             setRootNode(root);
         }
 
-        //         xSize = 2000;
-        //         ySize = 2000;
-        //         setSize(xSize,ySize);
         setNewSize(400, 600);
         setBackground(backgroundColor);
     }
 
     static private boolean first_validation_error = true;
-    
+
     private void setNewSize(int minx, int miny) {
         Container parent = getParent();
         if (parent == null) {
@@ -142,8 +127,6 @@ public class TreeDisplay extends Canvas
 
         xPointer = (int)(visibleSubtree.calculateTotalDist(0)*xSpreading+0.5);
         yPointer = 0;
-//         calculateYValues4Leaves(vs);
-//         calculateYValues4internal(vs);
         calculateYValues(visibleSubtree);
 
         // System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
@@ -151,27 +134,23 @@ public class TreeDisplay extends Canvas
 
         Dimension scrollPaneSize = getParent().getSize();
         int       tolerance      = 30;
+        int       old_xSpreading = xSpreading;
 
         if ((xPointer+leaf_text_size) < (scrollPaneSize.width-tolerance)) {
-            // System.out.println("old xSpreading="+xSpreading);
             xSpreading *= scrollPaneSize.width/(double)(xPointer+leaf_text_size);
-            // System.out.println("new xSpreading="+xSpreading);
-            recalcLayout();
         }
         else if ((xPointer+leaf_text_size) > (scrollPaneSize.width+tolerance)) {
-            // System.out.println("old xSpreading="+xSpreading);
             xSpreading *= scrollPaneSize.width/(double)(xPointer+leaf_text_size);
-            // System.out.println("new xSpreading="+xSpreading);
+        }
+
+        if (xSpreading<min_xSpreading) xSpreading = min_xSpreading;
+        
+        if (xSpreading != old_xSpreading) {
+            System.out.println("old xSpreading="+old_xSpreading);
+            System.out.println("new xSpreading="+xSpreading);
             recalcLayout();
         }
     }
-
-//     public Dimension getSize() {
-//         System.out.println("TreeDisplay::getSize called");
-//         // newLayout = true;
-//         // return new Dimension(xSize, ySize);
-//         return super.getSize();
-//     }
 
     public void setVisibleSubtree(TreeNode vis) {
         lockedPositionNode = visibleSubtree;
@@ -188,7 +167,7 @@ public class TreeDisplay extends Canvas
         setVisibleSubtree(root);
         visibleSubtree.setDistance(0.01);
         leafNumber = visibleSubtree.getNoOfLeaves();
-        myClient.showMessage("Tree has " + leafNumber + " leaves.");
+        Toolkit.showMessage("Tree has " + leafNumber + " leaves.");
 
         //         recalcLayout(); // done inside repaint
 
@@ -292,10 +271,10 @@ public class TreeDisplay extends Canvas
 
         }
         catch (ClientException e) {
-            myClient.showError(e.getMessage());
+            Toolkit.showError(e.getMessage());
         }
         catch (Exception e) {
-            myClient.showError("while painting tree: "+e.getMessage());
+            Toolkit.showError("while painting tree: "+e.getMessage());
             e.printStackTrace();
         }
         // new lines are registered in displayTreeGraph()
@@ -310,58 +289,6 @@ public class TreeDisplay extends Canvas
         // System.out.println("method display tree was called "+ ++displayCounter+" times");
     }
 
-
-
-// //     public void calculateYValues4Leaves(TreeNode node, int depth)
-// //     {
-// //         if ((node.isLeaf() == true) || (depth == 0))
-// //         {
-
-// //             node.setYOffset( yPointer + yOffset);
-// //             yPointer = yPointer + leafSpace;
-// //             if (node.isLeaf() == false && depth == 0 )
-// //             {
-// //                 node.setGrouped(true);
-// //             }
-// //         }
-// //         else
-// //         {
-// //             node.setGrouped(false);
-// //             calculateYValues4Leaves((TreeNode)(node.getChilds().elementAt(0)), depth -1 );
-// //             calculateYValues4Leaves((TreeNode)(node.getChilds().elementAt(1)), depth -1 );
-// //         }
-// //     }
-//     public void calculateYValues4Leaves(TreeNode node)
-//     {
-//         if (node.isLeaf() || node.isFolded()) {
-//             node.setYOffset( yPointer + yOffset);
-//             yPointer = yPointer + leafSpace;
-//         }
-//         else
-//         {
-//             calculateYValues4Leaves((TreeNode)(node.getChilds().elementAt(0)));
-//             calculateYValues4Leaves((TreeNode)(node.getChilds().elementAt(1)));
-//         }
-//     }
-
-
-
-// //     public int calculateYValues4internal(TreeNode node, int depth)
-// //     {
-// //         return  (node.isLeaf() || depth == 0 )?  node.getYOffset()
-// //             :  node.setYOffset((calculateYValues4internal((TreeNode)(node.getChilds().elementAt(0) ), depth -1 )
-// //                                 + calculateYValues4internal((TreeNode)(node.getChilds().elementAt(1) ), depth -1 )) /2 );
-
-// //     }
-//     public int calculateYValues4internal(TreeNode node)
-//     {
-//         return  node.isLeaf() || node.isFolded()
-//                  ?  node.getYOffset()
-//                  :  node.setYOffset((calculateYValues4internal((TreeNode)(node.getChilds().elementAt(0) )) +
-//                                      calculateYValues4internal((TreeNode)(node.getChilds().elementAt(1) ))) / 2 );
-
-//     }
-
     public int calculateYValues(TreeNode node) {
         if (node.isLeaf()) {
             node.setYOffset( yPointer + leafOffset);
@@ -372,9 +299,6 @@ public class TreeDisplay extends Canvas
             yPointer = yPointer + groupSpace;
         }
         else {
-            //             int y1 = calculateYValues((TreeNode)(node.getChilds().elementAt(0)));
-            //             int y2 = calculateYValues((TreeNode)(node.getChilds().elementAt(1)));
-
             int y1 = calculateYValues(node.upperSon());
             int y2 = calculateYValues(node.lowerSon());
             node.setYOffset((y1+y2)/2);
@@ -448,12 +372,6 @@ public class TreeDisplay extends Canvas
 
         }
         else {
-//             if (depth <= 0) { // rather obsolete
-//                 Toolkit.InternalError("displayTreeGraph: unexpected node reached");
-//             }
-
-//             int[] line = new int[4];
-
             line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
             line[1] = node.getYOffset();
             line[2] = (int)(node.getTotalDist()*xSpreading);
@@ -472,7 +390,6 @@ public class TreeDisplay extends Canvas
 
             // draw upper child
 
-            //             TreeNode upChild = (TreeNode)(node.getChilds().elementAt(0));
             TreeNode upChild = node.upperSon();
             int[] upline     = new int[4];
 
@@ -485,12 +402,10 @@ public class TreeDisplay extends Canvas
             g.drawLine( upline[0], upline[1], upline[2], upline[3]);
             if (newLayout == true) branchLines.put(laf.getLAObject(upline), upChild);
 
-//             displayTreeGraph (g, upChild, depth -1);
             displayTreeGraph (g, upChild);
 
             // draw lower child
 
-            // TreeNode downChild = (TreeNode)(node.getChilds().elementAt(1));
             TreeNode downChild = node.lowerSon();
             int[] downline     = new int[4];
 
@@ -503,9 +418,7 @@ public class TreeDisplay extends Canvas
             g.drawLine( downline[0], downline[1], downline[2], downline[3]);
             if (newLayout == true) branchLines.put(laf.getLAObject(downline), downChild);
 
-//             displayTreeGraph (g, downChild, depth -1);
             displayTreeGraph (g, downChild);
-
         }
 
         // draw inner node information
@@ -538,53 +451,7 @@ public class TreeDisplay extends Canvas
         }
     }
 
-
-    // public void handleMouseClick(int x, int y)
-    //     {
-    //         System.out.println("handleMouseCLick() was called");
-    //         System.out.println("coordinates " + x + "\t" + y );
-    //         for (Iterator it = rootSet.iterator(); it.hasNext();)
-    //             {
-    //                 LineArea la = (LineArea) it.next();
-    //                 if (la.isInside(x,y))
-    //                     {
-    //                         if(((TreeNode) rootLines.get(la)).equals(vs))
-    //                             {
-    //                                 vs = ((TreeNode) rootLines.get(la)).getFather();
-    //                             }
-    //                         else
-    //                             {
-    //                                 vs = (TreeNode) rootLines.get(la);
-    //                             }
-
-    //                         newLayout = true;
-    //                         //      la.getBorder();
-    //                         repaint();
-    //                     }
-
-    //             }
-
-    //         for (Iterator it = branchSet.iterator(); it.hasNext();)
-    //             {
-    //                 LineArea la = (LineArea) it.next();
-    //                 if (la.isInside(x,y))
-    //                     {
-    //                         vs = (TreeNode) branchLines.get(la);
-    //                         newLayout = true;
-    //                         // la.getBorder();
-    //                         repaint();
-    //                     }
-
-    //             }
-
-    //     }
-
-
-    public void handleLeftMouseClick(int x, int y)
-    {
-        //         System.out.println("handleLeftMouseCLick() was called");
-        //         System.out.println("coordinates " + x + "\t" + y );
-
+    public void handleLeftMouseClick(int x, int y) {
         TreeNode clickedNode = getClickedNode(x, y);
         if ( clickedNode != null) {
             boolean goto_node = true;
@@ -592,7 +459,6 @@ public class TreeDisplay extends Canvas
             if (clickedNode.isGroup()) {
                 if (clickedNode.isFolded()) {
                     clickedNode.unfold();
-//                     System.out.println("unfold");
                     goto_node          = false;
                     lockedPositionNode = clickedNode;
                 }
@@ -600,7 +466,6 @@ public class TreeDisplay extends Canvas
                     TreeNode foldGroupNode = getBoxClickedNode(x, y);
                     if (foldGroupNode == clickedNode) { // if small box has been clicked -> fold group
                         clickedNode.fold();
-//                         System.out.println("fold");
                         goto_node = false;
                         lockedPositionNode = clickedNode;
                     }
@@ -608,7 +473,6 @@ public class TreeDisplay extends Canvas
             }
 
             if (goto_node) {
-                //                 System.out.println("goto");
                 history.push(visibleSubtree);
                 setVisibleSubtree(clickedNode.equals(visibleSubtree) ? clickedNode.getFather() : clickedNode);
             }
@@ -619,77 +483,49 @@ public class TreeDisplay extends Canvas
     }
 
 
-    public void handleRightMouseClick(int x, int y)
-    {
-        // System.out.println("right mouse button clicked");
+    public void handleRightMouseClick(int x, int y) {
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
-            // System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
             try {
-//                 String codedPath = clickedNode.getCodedPath();
-                // System.out.println("path to clicked node: " + codedPath);
-//                 myClient.updateNodeInformation(codedPath, clickedNode.getExactMatches()>0);
                 myClient.updateNodeInformation(clickedNode);
             }
             catch (ClientException e) {
-                myClient.showError(e.getMessage());
+                Toolkit.showError(e.getMessage());
             }
             catch (Exception e) {
-                myClient.showError("in handleRightMouseClick: "+e.getMessage());
+                Toolkit.showError("in handleRightMouseClick: "+e.getMessage());
                 e.printStackTrace();
             }
-            //             System.out.println("returned node information: " + myClient.getNodeInformation(clickedNode.getCodedPath()));
-            //             boolean state = clickedNode.markedState() != 0;
-            //             clickedNode.markSubtree(!state);
-            //             updateListOfMarked();
-            //             repaint();
         }
     }
 
 
     // methods offer by pull down menus
 
-    public void unmarkNodes()
-    {
-        if (root != null) {
-            root.unmarkSubtree();
-            repaint();
-        }
-    }
+    // 1. tree movement
 
-    public void gotoRootOfMarked() {
-        TreeNode root_of_marked = root.getRootOfMarked();
-        if (visibleSubtree != root_of_marked) {
-            history.push(visibleSubtree);
-            setVisibleSubtree(root_of_marked);
-            repaint();            
+    private void goAndUnfold(TreeNode dest) {
+        if (visibleSubtree != dest && dest != null) {
+            if (visibleSubtree != null) history.push(visibleSubtree);
+            setVisibleSubtree(dest);
+            if (dest.isFolded()) dest.unfold();
+            repaint();
         }
     }
 
     public void goUp() {
-        if (visibleSubtree != null && visibleSubtree != root) {
-            history.push(visibleSubtree);
-            setVisibleSubtree(visibleSubtree.getFather());
-            repaint();
-        }
+        if (visibleSubtree != null)
+            goAndUnfold(visibleSubtree.getFather());
     }
 
     public void enterUBr() {
-        if (visibleSubtree != null && !visibleSubtree.isLeaf()) {
-            history.push(visibleSubtree);
-            // setVisibleSubtree((TreeNode)visibleSubtree.getChilds().elementAt(0));
-            setVisibleSubtree(visibleSubtree.upperSon());
-            repaint();
-        }
+        if (visibleSubtree != null && !visibleSubtree.isLeaf())
+            goAndUnfold(visibleSubtree.upperSon());
     }
 
     public void enterLBr() {
-        if (visibleSubtree != null && !visibleSubtree.isLeaf()) {
-            history.push(visibleSubtree);
-            // setVisibleSubtree((TreeNode)visibleSubtree.getChilds().elementAt(1));
-            setVisibleSubtree(visibleSubtree.lowerSon());
-            repaint();
-        }
+        if (visibleSubtree != null && !visibleSubtree.isLeaf())
+            goAndUnfold(visibleSubtree.lowerSon());
     }
 
     public void resetRoot() {
@@ -706,35 +542,74 @@ public class TreeDisplay extends Canvas
             repaint();
         }
         else {
-            myClient.showMessage("History is empty");
+            Toolkit.showMessage("History is empty");
+        }
+    }
+
+    // 2. marking species
+
+    public void unmarkNodes() {
+        if (root != null) {
+            root.unmarkSubtree();
+            repaint();
+        }
+    }
+
+    public void gotoRootOfMarked() {
+        TreeNode root_of_marked = root.getRootOfMarked();
+        if (visibleSubtree != root_of_marked) {
+            if (root_of_marked != null) {
+                history.push(visibleSubtree);
+                setVisibleSubtree(root_of_marked);
+                repaint();
+            }
+            else {
+                Toolkit.showError("Nothing marked.");
+            }
+        }
+    }
+
+    public void searchAndMark(String text) {
+        if (root != null) {
+            if (text == null || text.length() == 0) {
+                root.unmarkSubtree();
+            }
+            else {
+                String lowerText = text.toLowerCase();
+                if (lowerText.equals(text)) {
+                    root.searchAndMark(text, true); // case-insensitive
+                }
+                else {
+                    root.searchAndMark(text, false); // case-sensitive
+                }
+            }
+            repaint();
         }
     }
 
     public void countMarkedSpecies () {
         if (root != null) {
-            myClient.showMessage("Number of marked species: " + root.countMarked());
-            if (visibleSubtree != root) {
-                myClient.showMessage("Number of marked species in shown subtree: " + visibleSubtree.countMarked());
+            Toolkit.showMessage("Number of marked species: " + root.countMarked());
+            if (visibleSubtree == root) {
+                Toolkit.showMessage("Number of species in tree: " + root.getNoOfLeaves());
+            }
+            else {
+                Toolkit.showMessage("Number of marked species in shown subtree: " + visibleSubtree.countMarked());
+                Toolkit.showMessage("Number of species in shown subtree: " + visibleSubtree.getNoOfLeaves());
             }
         }
         else {
-            myClient.showMessage("You have no tree");
+            Toolkit.showMessage("You have no tree");
         }
     }
 
-//     public int countMarkedRecursive(TreeNode node) {
-//         // @@@ FIXME: should be member of class TreeNode
-//         return !node.isLeaf()
-//             ? countMarkedRecursive( (TreeNode)node.getChilds().elementAt(0)) +  countMarkedRecursive ((TreeNode)node.getChilds().elementAt(1))
-//             : (node.markedState() == 2 ? 1 : 0);
-
-//     }
+    // 3. folding
 
     public void unfoldAll            (){ visibleSubtree.unfoldAll            (true); newLayout = true; repaint(); }
     public void unfoldUnmarked       (){ visibleSubtree.unfoldUnmarked       (true); newLayout = true; repaint(); }
     public void unfoldCompleteMarked (){ visibleSubtree.unfoldCompleteMarked (true); newLayout = true; repaint(); }
     public void unfoldPartiallyMarked(){ visibleSubtree.unfoldPartiallyMarked(true); newLayout = true; repaint(); }
-    
+
     public void foldAll              (){ visibleSubtree.foldAll              (true); newLayout = true; repaint(); }
     public void foldUnmarked         (){ visibleSubtree.foldUnmarked         (true); newLayout = true; repaint(); }
     public void foldCompleteMarked   (){ visibleSubtree.foldCompleteMarked   (true); newLayout = true; repaint(); }
@@ -743,27 +618,19 @@ public class TreeDisplay extends Canvas
     public void smartUnfold(){ visibleSubtree.smartUnfold(); newLayout = true; repaint(); }
     public void smartFold  (){ visibleSubtree.smartFold  (); newLayout = true; repaint(); }
 
-
-    public void updateListOfMarked()
-    {
-        listOfMarked.clear();
-        getLeafNames(root);
+    public boolean unfoldMarkedFoldRest() {
+        boolean unfolded = visibleSubtree.unfoldPartiallyMarked(true) || visibleSubtree.unfoldCompleteMarked(true);
+        boolean folded   = visibleSubtree.foldUnmarked(true);
+        if (unfolded || folded) {
+            newLayout = true;
+            repaint();
+            return true;
+        }
+        return false;
     }
 
-    public void getLeafNames(TreeNode node)
-    {
-        if(node.isLeaf()) {
-            listOfMarked.add(node.getShortName());
-        }
-        else {
-            //             getLeafNames((TreeNode)node.getChilds().elementAt(0));
-            //             getLeafNames((TreeNode)node.getChilds().elementAt(1));
-            getLeafNames(node.upperSon());
-            getLeafNames(node.lowerSon());
-        }
-    }
+    // transform coordinates -> TreeNode
 
-    // transform coordinates in TreeNode
     private TreeNode getClickedNode(int x, int y)
     {
         for (Iterator it = rootSet.iterator(); it.hasNext();) {
