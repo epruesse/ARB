@@ -1403,7 +1403,7 @@ GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_d
 
     gbt_tree = GBT_read_tree(gb_main,tree_name,-sizeof(GBT_TREE));
     if (!gbt_tree) {
-        return (char *)GB_get_error();
+        return GB_get_error();
     }
 
     gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
