@@ -375,8 +375,9 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
     GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source);           if (!gb_source) return "Please select a valid source alignment";
     GBDATA *gb_dest = GBT_get_alignment(gbmain,ali_dest);           if (!gb_dest) return "Please select a valid destination alignment";
 
-    long ali_len = GBT_get_alignment_len(gbmain,ali_dest);
-    GB_ERROR error = 0;
+    long     ali_len            = GBT_get_alignment_len(gbmain,ali_dest);
+    long     max_wanted_ali_len = 0;
+    GB_ERROR error              = 0;
 
     aw_openstatus("Re-aligner");
     int no_of_marked_species = GBT_count_marked_species(gbmain);
@@ -422,11 +423,14 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
         int failed = 0;
         const char *fail_reason = 0;
 
-        char *buffer = (char*)malloc(ali_len+1);
-        if (ali_len<source_len*3) {
-            failed = 1;
-            fail_reason = GBS_global_string("Alignment '%s' is too short (increase its length at ARB_NT/Sequence/Admin to %li)", ali_dest, source_len*3L);
+        long  wanted_ali_len = source_len*3L;
+        char *buffer         = (char*)malloc(ali_len+1);
+        if (ali_len<wanted_ali_len) {
+            failed          = 1;
+            fail_reason     = GBS_global_string("Alignment '%s' is too short (increase its length to %li)", ali_dest, wanted_ali_len);
             ignore_fail_pos = 1;
+
+            if (wanted_ali_len>max_wanted_ali_len) max_wanted_ali_len = wanted_ali_len;
         }
 
         AWT_allowedCode allowed_code;
@@ -653,6 +657,7 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                 free(dup_fail_reason);
                 free(name);
             }
+
         }
         else {
             nt_assert(strlen(buffer)==(unsigned)ali_len);
@@ -668,7 +673,17 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
         GB_status(double(no_of_realigned_species)/double(no_of_marked_species));
     }
     aw_closestatus();
-    if (error) return error;
+
+#if defined(DEBUG)
+    if (max_wanted_ali_len>0) {
+        if (aw_message(GBS_global_string("Increase length of '%s' to %li?", ali_dest, max_wanted_ali_len), "Yes,No") == 0) {
+            GBT_set_alignment_len(gb_main, ali_dest, max_wanted_ali_len); // @@@ has no effect ? ? why ?
+        }
+    }
+#endif // DEBUG
+    if (error) {
+        return error;
+    }
 
     GBT_check_data(gbmain,ali_dest);
 
