@@ -12,6 +12,7 @@
 #include <awt_csp.hxx>
 #include "st_ml.hxx"
 
+#define st_assert(bed) arb_assert(bed)
 
 AWT_dna_table awt_dna_table;
 
@@ -225,6 +226,11 @@ void ST_sequence_ml::set_sequence(){
 AP_FLOAT ST_sequence_ml::combine(const AP_sequence* ,const AP_sequence *){
     return 0.0;
 }
+
+void ST_sequence_ml::partial_match(const AP_sequence* /*part*/, long */*overlap*/, long */*penalty*/) const {
+    st_assert(0); // should be unused
+}
+
 
 GB_INLINE void ST_base_vector::check_overflow(){
     double sum = 0.0;
