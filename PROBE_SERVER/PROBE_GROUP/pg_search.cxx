@@ -144,7 +144,7 @@ void PG_exit_pt_server(void) {
 struct FindProbesData {
     struct gl_struct gl;
     T_PT_PEP pep;
-    int length, numget, restart;
+//     int length, numget, restart;
 };
 
 static struct FindProbesData fpd;
@@ -173,14 +173,14 @@ bool PG_init_find_probes(int length, GB_ERROR& error) {
     else {
         aisc_create(fpd.gl.link, PT_LOCS, fpd.gl.locs, LOCS_PROBE_FIND_CONFIG, PT_PEP, &fpd.pep, 0);
 
-        fpd.length = length;
-        fpd.numget = 30;
-        fpd.restart = 1;
+//         fpd.length = length;
+//         fpd.numget = 30;
+//         fpd.restart = 1;
 
         bool ok = aisc_put(fpd.gl.link, PT_PEP, fpd.pep,
-                           PEP_PLENGTH, length, // length of wanted probes
-                           PEP_NUMGET, 10, // no of probes in result
-                           PEP_RESTART, 1, // find from beginning
+                           PEP_PLENGTH, long(length), // length of wanted probes
+                           PEP_NUMGET, long(40), // no of probes in result
+                           PEP_RESTART, long(1), // find from beginning
                            0)==0;
 
         if (!ok) error = connection_lost;
@@ -211,7 +211,7 @@ static const char *PG_find_next_probe_internal(GB_ERROR& error) {
     bool    ok = aisc_put(fpd.gl.link, PT_PEP, fpd.pep, PEP_FIND_PROBES, 0, 0) == 0;
 
     if (ok) {
-        fpd.restart = 0;
+//         fpd.restart = 0;
 
         static char *result;
 
@@ -257,6 +257,7 @@ const char *PG_find_next_probe(GB_ERROR& error) {
 
     if (!result) {
         result = PG_find_next_probe_internal(error);
+        // printf("result='%s'\n", result);
         result_ptr = result;
 
         if (!result) return 0; // got all probes
