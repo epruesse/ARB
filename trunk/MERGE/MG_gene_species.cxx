@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Jul/11/2002 14:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/24/2002 13:18 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -26,6 +26,7 @@
 #include <arbdbt.h>
 
 #include <adGene.h>
+#include <inline.h>
 
 #include "merge.hxx"
 
@@ -68,7 +69,7 @@ void MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_MERGE_GENE_SPECIES_SOURCE, "", aw_def);
 
     aw_root->awar_int(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS, 0, aw_def);
-    aw_root->awar_string(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, ";name;full_name;", aw_def);
+    aw_root->awar_string(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, ";", aw_def);
     aw_root->awar_string(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE, "", aw_def);
 
     MG_props = aw_def;
@@ -292,6 +293,19 @@ static void MG_update_example(AW_root *aw_root) {
 
     free(result);
 }
+// -----------------------------------------------------------------------
+//      static void check_and_correct_current_field(char*& cur_field)
+// -----------------------------------------------------------------------
+static void check_and_correct_current_field(char*& cur_field) {
+    if (ARB_stricmp(cur_field, "name") == 0 || ARB_stricmp(cur_field, "acc") == 0) {
+        aw_message("rules writing to 'name' or 'acc' are not allowed.");
+
+        char *new_cur_field = new char[strlen(cur_field)+3];
+        sprintf(new_cur_field, "%s_2", cur_field);
+        free(cur_field);
+        cur_field           = new_cur_field;
+    }
+}
 
 
 static bool allow_callbacks = true;
@@ -300,41 +314,44 @@ static bool allow_callbacks = true;
 //      static void MG_current_field_def_changed_cb(AW_root *aw_root)
 // -----------------------------------------------------------------------
 static void MG_current_field_def_changed_cb(AW_root *aw_root) {
-    char *cur_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string();
-//     create_awars_for_field(aw_root, cur_field);
+    if (allow_callbacks) {
+        allow_callbacks = false;
 
-    allow_callbacks = false;
+        char *cur_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->read_string();
+        check_and_correct_current_field(cur_field);
 
-    aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->write_string(cur_field);
+        aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(cur_field);
+        aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->write_string(cur_field);
 
-    if (cur_field[0]) {
-        const char *awar_name = field_awar(cur_field, "source");
+        if (cur_field[0]) {
+            const char *awar_name = field_awar(cur_field, "source");
 
-        // read stored source field (if undef default to new value of destination field)
-        char *source_field = aw_root->awar_string(awar_name, cur_field, MG_props)->read_string();
-        aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->write_string(source_field);
-        free(source_field);
+            // read stored source field (if undef default to new value of destination field)
+            char *source_field = aw_root->awar_string(awar_name, cur_field, MG_props)->read_string();
+            aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->write_string(source_field);
+            free(source_field);
 
-        // read stored method (if undef then default to currently visible method)
-        awar_name      = field_awar(cur_field, "method");
-        int def_method = aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->read_int();
-        int method     = aw_root->awar_int(awar_name, def_method, MG_props)->read_int();
-        aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->write_int(method);
+            // read stored method (if undef then default to currently visible method)
+            awar_name      = field_awar(cur_field, "method");
+            int def_method = aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->read_int();
+            int method     = aw_root->awar_int(awar_name, def_method, MG_props)->read_int();
+            aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->write_int(method);
 
-        // read stored aci (if undef then default to currently visible aci )
-        awar_name      = field_awar(cur_field, "aci");
-        char *curr_aci = aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->read_string();
-        char *aci      = aw_root->awar_string(awar_name, curr_aci, MG_props)->read_string();
-        aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->write_string(aci);
-        free(aci);
-        free(curr_aci);
+            // read stored aci (if undef then default to currently visible aci )
+            awar_name      = field_awar(cur_field, "aci");
+            char *curr_aci = aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->read_string();
+            char *aci      = aw_root->awar_string(awar_name, curr_aci, MG_props)->read_string();
+            aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->write_string(aci);
+            free(aci);
+            free(curr_aci);
 
-        MG_update_example(aw_root);
+            MG_update_example(aw_root);
+        }
+
+        free(cur_field);
+
+        allow_callbacks = true;
     }
-
-    free(cur_field);
-
-    allow_callbacks = true;
 }
 
 // ------------------------------------------------------------------
@@ -365,7 +382,9 @@ static void MG_source_field_changed_cb(AW_root *aw_root) {
 static void MG_dest_field_changed_cb(AW_root *aw_root) {
     if (allow_callbacks) {
         // if this is changed -> a new definition will be generated
-        char       *dest_field           = aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->read_string();
+        char *dest_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->read_string();
+        check_and_correct_current_field(dest_field);
+
         const char *search               = GBS_global_string(";%s;", dest_field);
         char       *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
 
