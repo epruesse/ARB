@@ -906,7 +906,7 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
     sss1 = sout.str();
     
   	int rest = 29 - (int)sss1.size() - (int) sss.size();
-   	if(tstring3 != "nix" && !ziffer)
+   	if(tstring3 != "nix" && (ziffer || tstring4 != "nix"))
    	{
    		if(rest < (int)tstring3.size())
 	   	{

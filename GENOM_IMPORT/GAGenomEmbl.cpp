@@ -111,7 +111,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                         for(int i = 1; i < (int)tmp_vector.size(); i = i + 2)
                         {
                             t_str = tmp_vector[i];
-                            cout << t_str << endl;
+                            //cout << t_str << endl;
                             tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
                             if(i == 1)
                             {
@@ -313,7 +313,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 }
                 break;
             case '/':
-            cout << seq_len << "=" << (int) sequence.size() << endl;
+            //cout << seq_len << "=" << (int) sequence.size() << endl;
             	if(seq_len == (int) sequence.size())
             	{
             		complete_file = true;
