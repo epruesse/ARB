@@ -2,10 +2,10 @@
 //                                                                       //
 //    File      : SQ_helix.h                                             //
 //    Purpose   : Class used for calculation of helix layout             //
-//    Time-stamp: <Mon Oct/06/2003 11:12 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/03/2004 14:34 MET  Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - October 2003                        //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -45,9 +45,9 @@ private:
 
 SQ_helix::SQ_helix(int size){
     this->size = size;
-    count_strong_helix      = 0;
-    count_weak_helix = 0;
-    count_no_helix   = 0;
+    count_strong_helix = 0;
+    count_weak_helix   = 0;
+    count_no_helix     = 0;
 }
 
 
@@ -97,6 +97,11 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char 
 	    }
 	}
     }
+
+    if (count_strong_helix != 0) count_strong_helix = count_strong_helix / 2;
+    if (count_weak_helix   != 0) count_weak_helix = count_weak_helix / 2;
+    if (count_no_helix     != 0) count_no_helix = count_no_helix / 2;
+
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_no_helix);
