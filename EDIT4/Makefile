@@ -373,7 +373,6 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 
-ED4_visualizeSAI.o: ../NTREE/ad_ext.hxx
 ED4_visualizeSAI.o: ed4_class.hxx
 ED4_visualizeSAI.o: ed4_defs.hxx
 ED4_visualizeSAI.o: ed4_search.hxx

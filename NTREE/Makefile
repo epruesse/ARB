@@ -58,7 +58,6 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
 
-ad_ext.o: ad_ext.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -198,6 +197,7 @@ ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 NT_cb.o: ad_trees.hxx
+NT_cb.o: nt_internal.h
 NT_cb.o: ntree.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -253,8 +253,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
-NT_extern.o: ad_ali.hxx
-NT_extern.o: ad_ext.hxx
 NT_extern.o: ad_spec.hxx
 NT_extern.o: ad_trees.hxx
 NT_extern.o: ap_consensus.hxx
