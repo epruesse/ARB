@@ -442,15 +442,26 @@ void MP_cache_sonden(AW_window *){
     new_pt_server = TRUE;
 }
 
+void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
+    bool               backward           = bool(cl_backward);
+    AW_selection_list *result_probes_list = (AW_selection_list*)cl_result_probes_list;
+
+//     aw_message(GBS_global_string("backward='%i'", int(backward)));
+
+    aww->move_selection(result_probes_list, mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES), backward ? -1 : 1);
+
+    MP_show_probes_in_tree(aww);
+}
+
 void MP_show_probes_in_tree(AW_window *aww)
 {
-    AWT_canvas	*ntw = mp_main->get_ntw();
-    char 	*sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
-    char 	**probe_field = new char*[MAXMISMATCHES],
+    AWT_canvas	*ntw                = mp_main->get_ntw();
+    char 	    *sel                = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
+    char 	   **probe_field        = new char*[MAXMISMATCHES],
         *mism, *mism_temp;
-    int		*mismatches = new int[MAXMISMATCHES];
-    char	*a_probe, *another_probe, *the_probe, *mism_temp2;
-    int		i, how_many_probes = 0;
+    int		    *mismatches         = new int[MAXMISMATCHES];
+    char	    *a_probe, *another_probe, *the_probe, *mism_temp2;
+    int		     i, how_many_probes = 0;
 
     AWUSE(aww);
 
@@ -677,16 +688,25 @@ void MP_mark_probes_in_tree(AW_window *aww)
 
 void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
 {
-    char 	*new_list_string;
-    AW_root 	*awr = mp_main->get_aw_root();
-    char	*aw_str = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string(),
-        *aw_str2= awr->awar(MP_AWAR_RESULTPROBES)->read_string();
-    char 	*comment = ((char *) com) ? (char *) com : aw_str ;
-    char 	*new_val,
-        *misms;
-    char 	spaces[21];
-    int 	len_spaces = 0;
-    char 	*ecol;
+    char 	   *new_list_string;
+    AW_root    *awr             = mp_main->get_aw_root();
+    char	   *aw_str          = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string();
+    char       *aw_str2         = awr->awar(MP_AWAR_RESULTPROBES)->read_string();
+    char 	   *comment         = ((char *) com) ? (char *) com : aw_str ;
+    char 	   *new_val;
+    char       *misms;
+    char 	    spaces[21];
+    int 	    len_spaces      = 0;
+    char 	   *ecol;
+    const char *successor_value = aww->get_element_of_index(result_probes_list,
+                                                            aww->get_index_of_element(result_probes_list, aw_str2)+1);
+
+    // remove all '#' from new comment
+    for (char *aw_str3 = aw_str; aw_str3[0]; ++aw_str3) {
+        if (aw_str3[0] == SEPARATOR[0]) {
+            aw_str3[0] = '|';
+        }
+    }
 
     new_val = MP_get_probes(aw_str2);
     if (!new_val || !new_val[0])
@@ -713,6 +733,12 @@ void MP_Comment(AW_window *aww, AW_CL com)		//Comment fuer Auswahl eintragen
     aww->delete_selection_from_list( result_probes_list, aw_str2 );
     aww->insert_selection( result_probes_list, new_list_string, new_list_string );
     aww->update_selection_list( result_probes_list );
+    if (awr->awar(MP_AWAR_AUTOADVANCE)->read_int() && successor_value) {
+        awr->awar(MP_AWAR_RESULTPROBES)->write_string(successor_value);
+    }
+    else {
+        awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
+    }
     delete new_list_string;
 }
 
