@@ -23,7 +23,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     if (result_window) return result_window;
 
     result_window = new AW_window_simple;
-    result_window->init( aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results", 0, 0);
+    result_window->init( aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results");
     result_window->load_xfig("mp_results.fig");
 
     result_window->button_length(8);
@@ -298,7 +298,7 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aw_root->awar_string( filter, "list");
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD", "Load", 10, 10 );
+    aws->init( aw_root, "LOAD", "Load");
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("close");
@@ -345,7 +345,7 @@ MP_Window::MP_Window(AW_root *aw_root)
     result_window = NULL;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MULTI_PROBE", "MULTI_PROBE", 200, 200 );
+    aws->init( aw_root, "MULTI_PROBE", "MULTI_PROBE");
     aws->load_xfig("multiprobe.fig");
 
     aws->at("close");
