@@ -1359,6 +1359,39 @@ char *GBS_eval_env(const char *p){
 }
 
 /********************************************************************************************
+            Create an entry representing pt-server 'i'
+            (reads from arb_tcp.dat)
+********************************************************************************************/
+
+char *GBS_ptserver_id_to_choice(int i) {
+    char  search_for[256];
+    char  choice[256];
+    char *fr;
+    char *file;
+    char *server;
+    char empty[] = "";
+
+    sprintf(search_for,"ARB_PT_SERVER%i",i);
+
+    server = GBS_read_arb_tcp(search_for);
+    if (!server) return 0;
+
+    fr               = server;
+    file             = server;  /* i got the machine name of the server */
+    if (*file) file += strlen(file)+1; /* now i got the command string */
+    if (*file) file += strlen(file)+1; /* now i got the file */
+
+    if (strrchr(file,'/'))              file   = strrchr(file,'/')-1;
+    if (!(server = strtok(server,":"))) server = empty;
+
+    sprintf(choice,"%-8s: %s",server,file+2);
+    free(fr);
+
+    return strdup(choice);
+}
+
+
+/********************************************************************************************
             Find an entry in the $ARBHOME/lib/arb_tcp.dat file
 ********************************************************************************************/
 

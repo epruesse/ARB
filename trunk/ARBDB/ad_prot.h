@@ -60,6 +60,7 @@ void GBS_intcat P_((void *strstruct, long val));
 void GBS_floatcat P_((void *strstruct, double val));
 char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
 char *GBS_eval_env P_((const char *p));
+char *GBS_ptserver_id_to_choice P_((int i));
 char *GBS_read_arb_tcp P_((const char *env));
 char *GBS_find_lib_file P_((const char *filename, const char *libprefix));
 char **GBS_read_dir P_((const char *dir, const char *filter));
