@@ -1,4 +1,5 @@
 #include "GAGenomUtilities.h"
+#include <cstdio>
 
 // #ifndef _CPP_CMATH
 // #include <cmath>
