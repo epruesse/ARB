@@ -2,12 +2,6 @@
 UP	arb.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB FAQS.hlp
-SUB bootstrap.hlp
-SUB dist.hlp
-SUB fastdnaml.hlp
-SUB pa_bootstrap.hlp
-SUB version.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -18,7 +12,7 @@ TITLE		ARB_HELP_SEARCH
 OCCURRENCE	anywhere in ARB-Help
 
 DESCRIPTION	The subtopics contain all helpfiles in which the specified
-            word was found in.
+                word was found in.
 
 EXAMPLES	None
 
