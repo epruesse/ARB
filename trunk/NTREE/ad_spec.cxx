@@ -265,9 +265,9 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 
     if (ad_global_scannerroot) {
         ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
-        if (type != ADMVT_SELECT) {
-//             awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-        }
+        // if (type != ADMVT_SELECT) {
+        //             awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
+        // }
     }
     else {                      // no active scanner -> write global awar
         if (ad_global_default_awroot) {
