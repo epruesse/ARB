@@ -158,8 +158,9 @@ int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
-    getFirst = GBT_first_species;
-    getNext = GBT_next_species;
+    /*marked_only*/
+    getFirst = GBT_first_marked_species;
+    getNext = GBT_next_marked_species;
 
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
@@ -238,64 +239,72 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 
+		//evaluate the percentage of bases the actual sequence consists of
 		GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);
 		bases = GB_read_int(gb_result1);
-		if (bases < 6) result = 1;
+		if (bases < 5) result = 0;
 		else {
-	  	    if (bases < 9) result = 2;
-		    else { result = 3;}
+	  	    if (bases < 8) result = 1;
+		    else { result = 2;}
 		}
 		result = result * weight_bases;
 		value += result;
 
+		//evaluate the difference in number of bases from sequence to group
 		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		dfa = GB_read_int(gb_result2);
-		if (abs(dfa) < 2) result = 3;
+		if (abs(dfa) < 2) result = 2;
 		else {
-	  	    if (abs(dfa) < 4) result = 2;
-		    else { result = 1;}
+	  	    if (abs(dfa) < 4) result = 1;
+		    else { result = 0;}
 		}
 		result = result * weight_diff_from_average;
 		value += result;
 
+		//evaluate the number of positions where no helix can be built
 		GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
 		noh = GB_read_int(gb_result3);
-		if (noh < 900) result = 3;
+		if (noh < 900) result = 2;
 		else {
-	  	    if (noh < 1100) result = 2;
-		    else { result = 1;}
+	  	    if (noh < 1100) result = 1;
+		    else { result = 0;}
 		}
 		result = result * weight_helix;
 		value += result;
 
+		//evaluate the consensus
  		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
  		cos = GB_read_int(gb_result4);
 		result = cos;
 		result = result * weight_consensus;
 		value += result;
 
+		//evaluate the number of iupacs in a sequence
 		GBDATA *gb_result5 = GB_search(gb_quality, "iupac_value", GB_INT);
 		iupv = GB_read_int(gb_result5);
-		if (iupv < 1) result = 3;
+		if (iupv < 1) result = 2;
 		else {
-	  	    if (iupv < 20) result = 2;
-		    else { result = 1;}
+	  	    if (iupv < 20) result = 1;
+		    else { result = 0;}
 		}
 		result = result * weight_iupac;
 		value += result;
 
+		//evaluate the difference in the GC proportion from sequence to group
 		GBDATA *gb_result6 = GB_search(gb_quality, "GC_difference", GB_INT);
 		gcprop = GB_read_int(gb_result6);
-		if (abs(gcprop) < 6) result = 3;
+		if (abs(gcprop) < 6) result = 2;
 		else {
-		    if (abs(gcprop) < 12) result = 2;
-		    else { result = 1;}
+		    if (abs(gcprop) < 12) result = 1;
+		    else { result = 0;}
 		}
 		result = result * weight_gc;
 		value += result;
 
 		/*write the final value of the evaluation*/
-		if (value !=0 )	value = value / 6;
+		if (value !=0 )	{
+		    value = value / 2;
+		}
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value);
@@ -595,12 +604,13 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    seq_assert(gb_result7);
 		    GB_write_int(gb_result7, diff_percent);
 
-
-		    /* get groupnames of visited groups
+		    /* 
+		       get groupnames of visited groups
 		       search for name in group dictionary
-		       evaluate sequence with group consensus */
-
+		       evaluate sequence with group consensus
+		    */
 		    GBT_TREE *backup = node; //needed?
+		    int whilecounter = 0;
 		    while (backup->father) {
 			if(backup->name) {
 			    SQ_GroupDataDictionary::iterator GDI = group_dict.find(backup->name);
@@ -630,6 +640,22 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 				sprintf(temp,"%i",value3);
 				strcat(cons_dev, temp);
 				strcat(cons_dev, ">");
+
+				//if you parse the upper two values in the evaluate() function cut the following out
+				//for time reasons i do the evaluation here, as i still have the upper two values
+				//-------------cut this-----------------
+				if (value1 > 0.95) evaluation += 2;
+				else {
+				    if (value1 > 0.5) evaluation += 1;
+				    else { evaluation += 0;}
+				}
+				if (value2 > 0.6) evaluation += 0;
+				else {
+				    if (value2 > 0.4) evaluation += 1;
+				    else { evaluation += 2;}
+				}
+				whilecounter++;
+				//---------to this and scroll down--------
 			    }
 			}
 			backup = backup->father;
@@ -644,24 +670,14 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    seq_assert(gb_result4);
 		    GB_write_string(gb_result4, cons_dev);
 
-		    //if you parse the upper two values in the evaluate() function cut the following out
-		    //for time reasons i do the evaluation here, as i still have the upper two values
-		    //---------cut this-----------
-		    if (value1 < 0.01) evaluation += 1;
-		    else {
-		      if (value1 < 0.02) evaluation += 2;
-		      else { evaluation += 3;}
+		    //--------also cut this------
+		    if (evaluation != 0) {
+			evaluation = evaluation / (2 * whilecounter);
 		    }
-		    if (value2 < 0.0001) evaluation += 1;
-		    else {
-		      if (value2 < 0.001) evaluation += 2;
-		      else { evaluation += 3;}
-		    }
-		    evaluation = evaluation / 2;
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
 		    seq_assert(gb_result5);
 		    GB_write_int(gb_result5, evaluation);
-		    //---------end cut this-------
+		    //--------end cut this-------
 
 		}
 	    }
@@ -766,8 +782,8 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
+// counts number of named groups in subtree
 int SQ_count_nr_of_groups(GBT_TREE *node) {
-    // counts number of named groups in subtree
 
     if (node->is_leaf) return 0;
 
@@ -778,6 +794,7 @@ int SQ_count_nr_of_groups(GBT_TREE *node) {
 }
 
 
+// counts number of species
 GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main) {
 
 
@@ -800,7 +817,6 @@ GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main) {
     getNext  = GBT_next_species;
 
 
-    /*second pass operations*/
     for (gb_species = getFirst(gb_main);
 	 gb_species && !error;
 	 gb_species = getNext(gb_species) ){

@@ -36,11 +36,12 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
     double value     = 0;
     int current[7];
 
-    for (int i = 0; i < 7; i++) {
-	current[i] = 0;
-    }
 
     for (int i = 0; i < size; i++ ){
+
+	for (int k = 0; k < 7; k++) {
+	    current[k] = 0;
+	}
 	//fill up current with decoded iupac values
 	switch(toupper(sequence[i])) {
             case 'A':
@@ -129,29 +130,30 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
 
 	for (int j = 0; j < 7; j++) {
 	    consensus[i].i[j] -= current[j];  //subtract actual value from consensus
-	    if (consensus[i].i[j] <= 0 && !(current[j]<=0)) {
+	    if ((consensus[i].i[j] <= 0) && (current[j] > 0)) {
 		deviation += current[j];
 	    }
 	    consensus[i].i[j] += current[j];  //restore consensus
 	}
 
     }
-    deviation = (10000*size) / deviation;  //set deviation in relation to sequencelength and percent
+
+    deviation = deviation / size;  //set deviation in relation to sequencelength and percent
     return deviation;
 }
 
 
 double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) {
-    double conformity = 0;
     double value = 0;
     int sum = 0;
     int current[7];
 
-    for (int i = 0; i < 7; i++) {
-	current[i] = 0;
-    }
 
     for (int i = 0; i < size; i++ ){
+
+	for (int k = 0; k < 7; k++) {
+	    current[k] = 0;
+	}
 	//fill up current with decoded iupac values
 	switch(toupper(sequence[i])) {
             case 'A':
@@ -241,18 +243,19 @@ double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) {
 	for (int j = 0; j < 7; j++) {
 	    consensus[i].i[j] -= current[j];  //subtract actual value from consensus
 	    sum += consensus[i].i[j];
-	    if (consensus[i].i[j] > 0 && !(current[j]>0)) {
-		conformity += consensus[i].i[j];
-	    }
-	    consensus[i].i[j] += current[j];  //restore consensus
-	    if (conformity !=0) {
-		value += sum / conformity;
-	    }
-	    sum = 0;
-	    conformity = 0;
 	}
 
+	for (int j = 0; j < 7; j++) {
+	    if ((consensus[i].i[j] > 0) && (current[j] > 0)) {
+		value += consensus[i].i[j] / sum;
+	    }
+	    consensus[i].i[j] += current[j];  //restore consensus
+	}
+
+	sum = 0;
+
     }
+
     value = value / size;  //set conformity in relation to sequencelength
     return value;
 }
