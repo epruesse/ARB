@@ -52,7 +52,7 @@ GB_ERROR IslandHopping::do_align() {
 
     if (!para) {
 //         para = new IslandHoppingParameter(0, 0.25, 0.25, 0.25, 0.25, 0, 4.0, 1.0, 1.0, 1.0, 1.0, 4.0, 0.3, 0.5, 10.0, 0.005);
-        para = new IslandHoppingParameter(0, 0.25, 0.25, 0.25, 0.25, 0, 4.0, 1.0, 1.0, 1.0, 1.0, 4.0, 0.3, 0.5, 10.0, 0.001);
+        para = new IslandHoppingParameter(0, 0.25, 0.25, 0.25, 0.25, 0, 4.0, 1.0, 1.0, 1.0, 1.0, 4.0, 0.3, 0.5, 10.0, 0.003);
     }
 
     int   nX;
