@@ -121,10 +121,10 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	if(tree==0){
 	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
 	    SQ_count_nr_of_species(gb_main);
-	    aw_openstatus("Calculating pass 1of2 ...");
+	    aw_openstatus("Calculating pass 1 of 2 ...");
 	    SQ_pass1_no_tree(globalData, gb_main);
 	    aw_closestatus();
-	    aw_openstatus("Calculating pass 2of2 ...");
+	    aw_openstatus("Calculating pass 2 of 2 ...");
 	    SQ_pass2_no_tree(globalData, gb_main);
 	    aw_closestatus();
 	    int value = SQ_get_value_no_tree(gb_main, option);
