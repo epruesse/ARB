@@ -310,8 +310,7 @@ void AWT_canvas::refresh( void )
 				this->rect.t, this->rect.b,0,0);
 }
 
-void
-AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2)
+void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2)
 {
 	AWUSE(dummy);
 	ntw->zoom_reset(  );
@@ -320,8 +319,7 @@ AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2)
 
 
 
-void
-AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
+void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
 	AWUSE(dummy);
 	if (!ntw->gb_main) return;
 	ntw->tree_disp->push_transaction(ntw->gb_main);
@@ -334,11 +332,7 @@ AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
 	ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
-
-
-
-void
-AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
+void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 {
 	AWUSE(cd2);
 	AW_event event;
@@ -353,62 +347,68 @@ AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 	if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
 
 	ntw->tree_disp->check_update(ntw->gb_main);
+
+	int screenwidth,screenheight;
+
 	/*** here appear all modes which must be handled right here ***/
 
 	switch(ntw->mode){
-//     	case AWT_MODE_NONE:
-//             switch(event.button){
-//                 case AWT_M_LEFT:
-//                 case AWT_M_RIGHT:
-//                     if(event.type==AW_Mouse_Press){
-//                         aw_message("Please select a mode, first!");
-//                     }
-//                     break;
-//             }
-//             break;
+	case AWT_MODE_ZOOM:
+		switch(event.button){
+		case AWT_M_LEFT:
+			if(event.type==AW_Mouse_Press){
+				ntw->drag = 1;
+				ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
+				ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
+			}else{
+				/* delete last box */
+				nt_draw_zoom_box(device, ntw->drag_gc,
+								 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+								 ntw->zoom_drag_ex, ntw->zoom_drag_ey);
+				ntw->drag = 0;
+				screenwidth  = ntw->rect.r-ntw->rect.l;
+				screenheight = ntw->rect.b-ntw->rect.t;
+				if(ntw->zoom_drag_sx!=event.x){
+					ntw->tree_zoom(device, ntw->zoom_drag_sx, ntw->zoom_drag_sy, event.x, event.y);
+				}else{
+					ntw->tree_zoom(device, AWT_ZOOM_OUT_STEP, AWT_ZOOM_OUT_STEP, 
+								   screenwidth  - AWT_ZOOM_OUT_STEP,
+								   screenheight - AWT_ZOOM_OUT_STEP);
+				}	
+				AWT_expose_cb(aww,ntw,0);
+			}
+			break;
+		case AWT_M_RIGHT:
+			if(event.type==AW_Mouse_Press){
+				ntw->drag = 1;
+				ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
+				ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
+			}else{
+				screenwidth  = ntw->rect.r-ntw->rect.l;
+				screenheight = ntw->rect.b-ntw->rect.t;
+				nt_draw_zoom_box(device, ntw->drag_gc, ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+								 ntw->zoom_drag_ex, ntw->zoom_drag_ey);
+				ntw->drag = 0;
+				if(ntw->zoom_drag_sx!=event.x){
+					ntw->tree_zoom(device, -(ntw->zoom_drag_sx*2), -(ntw->zoom_drag_sy*2), 
+								   ((screenwidth-event.x) + screenwidth)*2, 
+								   ((screenheight-event.y)+ screenheight)*2);
+				}
+				else{
+					ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP, 
+								   screenwidth  + AWT_ZOOM_OUT_STEP,
+								   screenheight + AWT_ZOOM_OUT_STEP);
+				}
+				AWT_expose_cb(aww,ntw,0);
+			}
+			break;
+		}
+		break;
+	
+		/*** here appear all modes, which are to be handled by the object's command methods ***/
 
-        case AWT_MODE_ZOOM:
-            switch(event.button){
-                case AWT_M_LEFT:
-                    if(event.type==AW_Mouse_Press){
-                        ntw->drag = 1;
-                        ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
-                        ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
-                    }else{
-                        /* delete last box */
-                        nt_draw_zoom_box(device, ntw->drag_gc,
-                                         ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                         ntw->zoom_drag_ex, ntw->zoom_drag_ey);
-                        ntw->drag = 0;
-                        ntw->tree_zoom(device, ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                       event.x, event.y);
-                        AWT_expose_cb(aww,ntw,0);
-                    }
-                    break;
-
-                case AWT_M_RIGHT:
-                    if(event.type==AW_Mouse_Press){
-                        int screenwidth = ntw->rect.r-ntw->rect.l;
-                        int screenheight = ntw->rect.b-ntw->rect.t;
-
-                        ntw->tree_zoom(device,
-                                       -AWT_ZOOM_OUT_STEP,
-                                       -AWT_ZOOM_OUT_STEP,
-                                       screenwidth+AWT_ZOOM_OUT_STEP,
-                                       screenheight+AWT_ZOOM_OUT_STEP);
-                        AWT_expose_cb(aww,ntw,0);
-                    }
-                    break;
-
-            }
-            break;
-
-
-            /*** here appear all modes, which are to be handled by the
-                 object's command methods ***/
-
-        default:
-            goto shit_default;	// hurray I found a bug in SGI CC compiler
+	default:
+		goto shit_default;	// hurray I found a bug in SGI CC compiler
 	}
 	goto shit_no_default;
  shit_default:
@@ -458,15 +458,7 @@ AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 	}
 }
 
-
-
-
-
-
-
-
-void
-AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 {
 	AWUSE(cd2);
 	AW_event event;
@@ -479,68 +471,80 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 
 	if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
 	aww->get_event( &event );
+
 	switch(event.button){
-
-        case AWT_M_LEFT:
-            if(ntw->mode == AWT_MODE_ZOOM){
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-                ntw->zoom_drag_ex = event.x;
-                ntw->zoom_drag_ey = event.y;
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-            } else {
-                ntw->init_device(device);
-                switch(ntw->mode) {
-                    case AWT_MODE_MOVE:
-                    case AWT_MODE_SWAP2:
-                        click_device = aww->get_click_device (AW_MIDDLE_AREA,
-                                                              event.x, event.y, AWT_CATCH_LINE,
-                                                              AWT_CATCH_TEXT, 0);
-                        click_device->set_filter(AW_CLICK_DRAG);
-                        ntw->init_device(click_device);
-                        ntw->tree_disp->show(click_device);
-                        click_device->get_clicked_line(&ntw->clicked_line);
-                        click_device->get_clicked_text(&ntw->clicked_text);
-                    default:
-                        ntw->tree_disp->command(device, ntw->mode,
-                                                event.button, AW_Mouse_Drag, event.x,
-                                                event.y, &ntw->clicked_line,
-                                                &ntw->clicked_text );
-                        if (ntw->gb_main) {
-                            ntw->tree_disp->update(ntw->gb_main);
-                        }
-                }
-            }
-            break;
-
-        case AWT_M_RIGHT:
-            ntw->init_device(device);
-            switch(ntw->mode) {
-                case AWT_MODE_MOVE:
-                    click_device = aww->get_click_device (AW_MIDDLE_AREA,
-                                                          event.x, event.y, AWT_CATCH_LINE,
-                                                          AWT_CATCH_TEXT, 0);
-                    click_device->set_filter(AW_CLICK_DRAG);
-                    ntw->init_device(click_device);
-                    ntw->tree_disp->show(click_device);
-                    click_device->get_clicked_line(&ntw->clicked_line);
-                    click_device->get_clicked_text(&ntw->clicked_text);
-                default:
-                    ntw->tree_disp->command(device, ntw->mode,
-                                            event.button, AW_Mouse_Drag, event.x,
-                                            event.y, &ntw->clicked_line,
-                                            &ntw->clicked_text );
-                    if (ntw->gb_main) {
-                        ntw->tree_disp->update(ntw->gb_main);
-                    }
-                    break;
-            }
-            break;
-
-        case AWT_M_MIDDLE:
+	case AWT_M_LEFT:
+		if(ntw->mode == AWT_MODE_ZOOM){
+			nt_draw_zoom_box(device, ntw->drag_gc,
+							 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+							 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+			ntw->zoom_drag_ex = event.x;
+			ntw->zoom_drag_ey = event.y;
+			nt_draw_zoom_box(device, ntw->drag_gc,
+							 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+							 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+		} else {
+			ntw->init_device(device);
+			switch(ntw->mode) {
+			case AWT_MODE_MOVE:
+			case AWT_MODE_SWAP2:
+				click_device = aww->get_click_device (AW_MIDDLE_AREA,
+													  event.x, event.y, AWT_CATCH_LINE,
+													  AWT_CATCH_TEXT, 0);
+					click_device->set_filter(AW_CLICK_DRAG);
+					ntw->init_device(click_device);
+					ntw->tree_disp->show(click_device);
+					click_device->get_clicked_line(&ntw->clicked_line);
+					click_device->get_clicked_text(&ntw->clicked_text);
+			default:
+				ntw->tree_disp->command(device, ntw->mode,
+											event.button, AW_Mouse_Drag, event.x,
+										event.y, &ntw->clicked_line,
+										&ntw->clicked_text );
+				if (ntw->gb_main) {
+					ntw->tree_disp->update(ntw->gb_main);
+				}
+			}
+			break;
+		}
+		break;
+		
+	case AWT_M_RIGHT:
+		if(ntw->mode == AWT_MODE_ZOOM){
+			nt_draw_zoom_box(device, ntw->drag_gc,
+							 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+							 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+			ntw->zoom_drag_ex = event.x;
+			ntw->zoom_drag_ey = event.y;
+			nt_draw_zoom_box(device, ntw->drag_gc,
+							 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+							 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+		} else {
+			ntw->init_device(device);
+			switch(ntw->mode) {
+			case AWT_MODE_MOVE:
+				click_device = aww->get_click_device (AW_MIDDLE_AREA,
+													  event.x, event.y, AWT_CATCH_LINE,
+													  AWT_CATCH_TEXT, 0);
+				click_device->set_filter(AW_CLICK_DRAG);
+				ntw->init_device(click_device);
+				ntw->tree_disp->show(click_device);
+				click_device->get_clicked_line(&ntw->clicked_line);
+				click_device->get_clicked_text(&ntw->clicked_text);
+			default:
+				ntw->tree_disp->command(device, ntw->mode,
+										event.button, AW_Mouse_Drag, event.x,
+										event.y, &ntw->clicked_line,
+										&ntw->clicked_text );
+				if (ntw->gb_main) {
+					ntw->tree_disp->update(ntw->gb_main);
+				}
+				break;
+			}
+		}
+		break;
+		
+	case AWT_M_MIDDLE:
             /** in most modes the user shall be able to
                 shift the display by dragging MM */
             switch(ntw->mode){
