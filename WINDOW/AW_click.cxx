@@ -6,8 +6,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
-
-#define _AW_COMMON_INCLUDED
 #include <aw_root.hxx>
 #include "aw_device.hxx"
 #include "aw_commn.hxx"

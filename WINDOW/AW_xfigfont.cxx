@@ -37,8 +37,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:17  westram
- * Initial revision
+ * Revision 1.2  2005/01/05 11:45:48  westram
+ * - removed _AW_COMMON_INCLUDED define
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:17  westram
+ * Erster Import
  *
  * Revision 1.10  1995/03/13  15:22:48  jakobi
  * *** empty log message ***
@@ -85,7 +88,6 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#define _AW_COMMON_INCLUDED
 #include "aw_root.hxx"
 #include "aw_device.hxx"
 #include "aw_commn.hxx"
