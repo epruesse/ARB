@@ -275,7 +275,7 @@ void awt_aps_go(AW_window *aww){
         case AWT_APRINT_DEST_PREVIEW:
             scall = GBS_global_string("rm -f %s;%s >%s;(%s %s;rm -f %s %s)&",tmp_file2,
                                       a2ps_call,tmp_file2,
-                                      GB_getenvGS(),tmp_file2,
+                                      GB_getenvARB_GS(),tmp_file2,
                                       tmp_file,tmp_file2);
             break;
         default:
@@ -283,7 +283,7 @@ void awt_aps_go(AW_window *aww){
             break;
     }
     if (scall){
-        printf("%s\n",scall);
+        GB_information("executing '%s'", scall);
         if (system(scall)){
             aw_message(GB_export_error("Error while calling '%s'",scall));
         }
