@@ -251,15 +251,15 @@ void SEC_center_cb(AW_window *aw, AWT_canvas *ntw, AW_CL)
 
 /* TO FIT THE STRUCTURE IN TO WINDOW SIZE */
 
-void SEC_fit_window_cb(AW_window *aw, AWT_canvas *ntw, AW_CL){
+void SEC_fit_window_cb(AW_window */*aw*/, AWT_canvas *ntw, AW_CL){
 
 //     AW_device *device = aw->get_device(AW_MIDDLE_AREA);
 //     AW_rectangle screen;
 //     device->get_area_size(&screen);
 
-//     double windowWidth  = screen.b; 
+//     double windowWidth  = screen.b;
 //     double windowHeight = screen.r;
-    
+
 //     ntw->tree_zoom(device, 0, 0,windowWidth,windowHeight);
     ntw->zoom_reset();
     ntw->refresh();
@@ -285,7 +285,7 @@ void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
         delete ali_name;
     }
 
-    sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal 
+    sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal
 
     SEC_sequence_changed_cb( sec_root->gb_sequence, ntw, GB_CB_CHANGED);
 
@@ -603,7 +603,7 @@ static void export_structure_to_file(AW_window *, AW_CL /*cl_ntw*/)
 
         fprintf(out, "no of helices=%i\nlength of xstring=%i\nxstring_rel_helix=%s\n", no_of_helices, xlength, xstring_rel_helix);
         free(xstring_rel_helix);
-	
+
         fputs(ASS_EOF, out);
         fclose(out);
     }

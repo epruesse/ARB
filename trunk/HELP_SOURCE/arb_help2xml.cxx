@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Fri Aug/23/2002 21:51 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Oct/09/2002 14:37 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -642,8 +642,10 @@ private:
                     bool   is_header    = last != string::npos && text[last] == ':';
 
                     if (!is_header && rest_indent == (first_indent+8)) {
+#if defined(DEBUG)
                         size_t textstart = text.find_first_not_of(" \n");
                         h2x_assert(textstart != string::npos);
+#endif // DEBUG
 
                         // text = string("\n")+string(rest_indent, ' ')
                         // + text.substr(textstart, reststart-textstart)+rest;
@@ -1029,16 +1031,23 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
 
         ParagraphTree::embeddedCounter = 0;
 
-        size_t textnodes  = ptree->countTextNodes();
-        ptree             = ptree->format_enums();
+#if defined(DEBUG)
+        size_t textnodes = ptree->countTextNodes();
+#endif // DEBUG
+
+        ptree = ptree->format_enums();
+
+#if defined(DEBUG)
         size_t textnodes2 = ptree->countTextNodes();
-
         h2x_assert(textnodes2 == (textnodes+ParagraphTree::embeddedCounter)); // if this occurs format_enums has an error
+#endif // DEBUG
 
-        ptree             = ptree->format_indentations();
+        ptree = ptree->format_indentations();
+
+#if defined(DEBUG)
         size_t textnodes3 = ptree->countTextNodes();
-
         h2x_assert(textnodes3 == textnodes2); // if this occurs format_indentations has an error
+#endif // DEBUG
 
         ptree->xml_write();
 
