@@ -25,9 +25,6 @@ ln -s ../WINDOW/libAW.so LIBLINK/libAW.so
 ln -s ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0
 
 # Motif stuff
-ln -s ../Motif/libXm.a LIBLINK/libXm.a
-ln -s ../Motif/libXm.so.1.1 LIBLINK/libXm.so.1.1
-ln -s ../Motif/libXm.so.1.2 LIBLINK/libXm.so.1.2
 ln -s ../Motif/libXm.so.2 LIBLINK/libXm.so.2
 ln -s /usr/lib/Motif1.2/libXm.1 LIBLINK/libXm.sl
 
