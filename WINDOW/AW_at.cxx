@@ -250,6 +250,14 @@ void AW_window::get_at_position( int *x, int *y ) {
 	*y = _at->y_for_next_button;
 }
 
+void AW_window::store_at_size_and_attach( AW_at_size *at_size ) {
+    at_size->store(_at);
+}
+
+void AW_window::restore_at_size_and_attach( const AW_at_size *at_size ) {
+    at_size->restore(_at);
+}
+
 void AW_window::unset_at_commands( void ) {
 
 	delete _at->id_for_next_button;
@@ -342,5 +350,34 @@ char *help_label;
 	help_label[columns] = '\0';
 
 	return help_label;
+}
+
+/*******************************************************************************************************/
+/*******************************************************************************************************/
+/*******************************************************************************************************/
+
+void AW_at_size::store(const AW_at *at) {
+    to_position_exists = at->to_position_exists;
+    if (to_position_exists) {
+        to_offset_x = at->to_position_x - at->x_for_next_button;
+        to_offset_y = at->to_position_y - at->y_for_next_button;
+    }
+    attach_x   = at->attach_x;
+    attach_y   = at->attach_y;
+    attach_lx  = at->attach_lx;
+    attach_ly  = at->attach_ly;
+    attach_any = at->attach_any;
+}
+void AW_at_size::restore(AW_at *at) const {
+    at->to_position_exists = to_position_exists;
+    if (to_position_exists) {
+        at->to_position_x = at->x_for_next_button + to_offset_x;
+        at->to_position_y = at->y_for_next_button + to_offset_y;
+    }
+    at->attach_x   = attach_x;
+    at->attach_y   = attach_y;
+    at->attach_lx  = attach_lx;
+    at->attach_ly  = attach_ly;
+    at->attach_any = attach_any;
 }
 
