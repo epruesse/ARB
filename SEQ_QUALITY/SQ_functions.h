@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.h                                         //
 //    Purpose   : Functions used for calculation of alignment quality    //
-//    Time-stamp: <Thu Feb/05/2004 09:22 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 17:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -30,7 +30,7 @@
 #endif
 
 typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
-typedef map<string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
+typedef std::map<std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
 
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
@@ -80,8 +80,6 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights);
   So, with the "weight_..."  -values one can customise how important a value stored in a contaier becomes
   for the final result.
 */
-
-int round(double value);
 
 GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition);
 
