@@ -1,13 +1,12 @@
 #ifndef PRIMER_DESIGN_HXX
 #define PRIMER_DESIGN_HXX
 
-#define AWAR_PRIMER_DESIGN_POS_LEFT_MIN           "primer_design/position/left_min"
-#define AWAR_PRIMER_DESIGN_POS_LEFT_MAX           "primer_design/position/left_max"
-#define AWAR_PRIMER_DESIGN_POS_RIGHT_MIN          "primer_design/position/right_min"
-#define AWAR_PRIMER_DESIGN_POS_RIGHT_MAX          "primer_design/position/right_max"
+#define AWAR_PRIMER_DESIGN_LEFT_POS               "primer_design/position/left_pos"
+#define AWAR_PRIMER_DESIGN_LEFT_LENGTH            "primer_design/position/left_length"
+#define AWAR_PRIMER_DESIGN_RIGHT_POS              "primer_design/position/right_pos"
+#define AWAR_PRIMER_DESIGN_RIGHT_LENGTH           "primer_design/position/right_length"
 #define AWAR_PRIMER_DESIGN_LENGTH_MIN             "primer_design/length/min"
 #define AWAR_PRIMER_DESIGN_LENGTH_MAX             "primer_design/length/max"
-#define AWAR_PRIMER_DESIGN_DIST_USE               "primer_design/distance/use"
 #define AWAR_PRIMER_DESIGN_DIST_MIN               "primer_design/distance/min"
 #define AWAR_PRIMER_DESIGN_DIST_MAX               "primer_design/distance/max"
 #define AWAR_PRIMER_DESIGN_GCRATIO_MIN            "primer_design/gcratio/min"
@@ -20,9 +19,13 @@
 #define AWAR_PRIMER_DESIGN_GC_FACTOR              "primer_design/GC_factor"
 #define AWAR_PRIMER_DESIGN_TEMP_FACTOR            "primer_design/temp_factor"
 
-AW_window *create_primer_design_window( AW_root *root,AW_default def);
 void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global);
-
+void       create_primer_design_result_window(AW_window *aww);
+AW_window *create_primer_design_window( AW_root *root,AW_default def);
+void       primer_design_event_go(AW_window *aww);
+void       primer_design_event_check_temp_factor(AW_window *aww);
+void       primer_design_event_check_gc_factor(AW_window *aww);
+void       primer_design_event_init(AW_window *aww);
 
 #else
 #error primer_design.hxx included twice
