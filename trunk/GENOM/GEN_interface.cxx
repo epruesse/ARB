@@ -5,8 +5,7 @@
 #include <arbdbt.h>
 
 #include "GEN_db.hxx"
-#define AD_F_ALL (AW_active)(-1)
-#define AWAR_GENE_DEST "tmp/edit/gene_name_dest"
+
 
 static GBDATA *get_current_gene(AW_root *root) {
     GB_transaction dummy(gb_main);
@@ -26,6 +25,7 @@ static GBDATA *get_current_gene(AW_root *root) {
 
 static AW_CL ad_global_scannerid = 0;
 static AW_root *ad_global_scannerroot = 0;
+AW_CL ad_query_global_cbs = 0;
 
 //create_species_window
 //ad_create_query_window
@@ -212,37 +212,6 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 //     delete species_name;
 }
 
-// AW_window *create_ad_list_reorder(AW_root *root)
-// {
-//     static AW_window_simple *aws = 0;
-//     if (aws) return (AW_window *)aws;
-//     aws = new AW_window_simple;
-//     aws->init( root, "REORDER_FIELDS", "REORDER FIELDS",600, 200 );
-//     aws->load_xfig("ad_kreo.fig");
-
-//     aws->callback( (AW_CB0)AW_POPDOWN);
-//     aws->at("close");
-//     aws->create_button("CLOSE","CLOSE","C");			   
-
-//     aws->at("doit");
-//     aws->button_length(0);
-//     aws->callback(ad_list_reorder_cb);
-//     aws->help_text("spaf_reorder.hlp");
-//     aws->create_button("MOVE_TO_NEW_POSITION",
-//                        "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
-
-//     awt_create_selection_list_on_scandb(gb_main,
-//                                         (AW_window*)aws,AWAR_FIELD_REORDER_SOURCE,
-//                                         AWT_NDS_FILTER,
-//                                         "source",0);
-//     awt_create_selection_list_on_scandb(gb_main,
-//                                         (AW_window*)aws,AWAR_FIELD_REORDER_DEST,
-//                                         AWT_NDS_FILTER,
-//                                         "dest",0);
-
-//     return (AW_window *)aws;
-// }
-
 void GEN_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...",	"r","spaf_reorder.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_list_reorder, 0 );
     aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...","D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_field_delete, 0 );
@@ -300,11 +269,141 @@ static AW_window_simple_menu *aws = 0;
 
 
 
+
+
+
+
+
+AW_window *GEN_gene_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
+   //  static AW_window_simple *aws = 0;
+//     if (aws){
+//         return (AW_window *)aws;
+//     }
+//     aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
+//     aw_root->awar_int("next_neighbours/max_hits",20);
+	
+//     aws = new AW_window_simple;
+//     aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours", 600, 0 );
+//     aws->load_xfig("ad_spec_nn.fig");
+	
+//     aws->at("close");
+//     aws->callback( (AW_CB0)AW_POPDOWN);
+//     aws->create_button("CLOSE","CLOSE","C");			   
+
+//     aws->at("help");
+//     aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
+//     aws->create_button("HELP","HELP","H");			   
+
+//     aws->at("pt_server");
+//     probe_design_build_pt_server_choices(aws,AWAR_PROBE_ADMIN_PT_SERVER,AW_FALSE);
+
+//     aws->at("max_hit");
+//     aws->create_input_field("next_neighbours/max_hits",5);
+	
+//     aws->at("hits");
+//     AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
+//     aws->insert_default_selection(id,"No hits found","");
+//     aws->update_selection_list(id);
+
+//     aws->at("go");
+//     aws->callback(awtc_nn_search,(AW_CL)id);
+//     aws->create_button("SEARCH","SEARCH");			   
+
+//     aws->at("move");
+//     aws->callback(awtc_move_hits,(AW_CL)id,cbs);
+//     aws->create_button("MOVE_TO_HITLIST","MOVE TO HITLIST");			   
+	
+//     return (AW_window *)aws;
+}
+
+AW_window *GEN_gene_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
+    // static AW_window_simple *aws = 0;
+//     if (aws){
+//         return (AW_window *)aws;
+//     }
+//     aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
+//     aw_root->awar_string("next_neighbours/dest_field","tmp");
+	
+//     aws = new AW_window_simple;
+//     aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed", 600, 0 );
+//     aws->load_xfig("ad_spec_nnm.fig");
+	
+//     aws->at("close");
+//     aws->callback( (AW_CB0)AW_POPDOWN);
+//     aws->create_button("CLOSE","CLOSE","C");			   
+
+//     aws->at("help");
+//     aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_marked.hlp");
+//     aws->create_button("HELP","HELP","H");			   
+
+//     aws->at("pt_server");
+//     probe_design_build_pt_server_choices(aws,AWAR_PROBE_ADMIN_PT_SERVER,AW_FALSE);
+
+
+	
+//     aws->at("field");
+//     awt_create_selection_list_on_scandb(gb_main,aws,"next_neighbours/dest_field",
+//                                         (1<<GB_INT) | (1<<GB_STRING), "field",0);
+
+
+//     aws->at("go");
+//     aws->callback(awtc_nn_search_all_listed,cbs);
+//     aws->create_button("SEARCH","SEARCH");			   
+	
+//     return (AW_window *)aws;
+}
+
 AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
 
+ static AW_window_simple_menu *aws = 0;
+    if (aws){
+        return (AW_window *)aws;
+    }
+    aws = new AW_window_simple_menu;
+    aws->init( aw_root, "GEN_QUERY", "SEARCH and QUERY", 0,0,500, 0 );
+    aws->create_menu(0,"MORE_FUNCTIONS","F");
+    aws->load_xfig("ad_query.fig");
 
 
+    awt_query_struct awtqs;
 
+    awtqs.gb_main		= gb_main;
+    awtqs.gene_name	= AWAR_GENE_NAME;
+    awtqs.select_bit	= 1;
+    awtqs.use_menu		= 1;
+    awtqs.ere_pos_fig	= "ere";
+    awtqs.by_pos_fig	= "by";
+    awtqs.qbox_pos_fig	= "qbox";
+    awtqs.rescan_pos_fig	= 0;
+    awtqs.key_pos_fig	= 0;
+    awtqs.query_pos_fig	= "content";
+    awtqs.result_pos_fig	= "result";
+    awtqs.count_pos_fig	= "count";
+    awtqs.do_query_pos_fig	= "doquery";
+    awtqs.do_mark_pos_fig	= "domark";
+    awtqs.do_unmark_pos_fig	= "dounmark";
+    awtqs.do_delete_pos_fig	= "dodelete";
+    awtqs.do_set_pos_fig	= "doset";
+    awtqs.do_refresh_pos_fig= "dorefresh";
+    awtqs.open_parser_pos_fig= "openparser";
+    awtqs.create_view_window= (AW_CL)GEN_create_gene_window;
+    AW_CL cbs = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
+    ad_query_global_cbs = cbs;
+    aws->create_menu(       0,   "MORE_SEARCH",     "S" );
+    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
+    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
+    aws->insert_menu_topic( "search_next_relativ_of_sel",	"Search Next Relatives of SELECTED Gene in PT_Server ...",	"R",0,	-1, (AW_CB)AW_POPUP, 	(AW_CL)GEN_gene_next_neighbours_create, cbs );
+    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Gene in PT_Server ...",		"M",0,	-1, (AW_CB)AW_POPUP, 	(AW_CL)GEN_gene_next_neighbours_listed_create, cbs );
 
+    aws->button_length(7);
+
+    aws->at("close");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+    aws->at("help");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"gene_search.hlp");
+    aws->create_button("HELP","HELP","H");			   
+
+    return (AW_window *)aws;
 
 }
