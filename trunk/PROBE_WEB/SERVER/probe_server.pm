@@ -17,7 +17,8 @@ BEGIN {
   @ISA       = qw(Exporter);
   @EXPORT    = qw( &print_header
                    &wait_answer
-                   &send_result
+                   &send_std_result
+                   &write_std_request
                  );
   @EXPORT_OK = qw( $q %params $requestdir );
 }
@@ -46,12 +47,24 @@ BEGIN {
   set_message(\&handle_errors);
 }
 
+sub write_std_request($$) {
+  my ($request_name,$command) = @_;
+
+  if (not open(REQUEST,">$request_name")) { return "Can't write '$request_name'"; }
+  print REQUEST "command=$command\n"; # write command
+  for (keys %probe_server::params) { # forward all parameters to request file
+    print REQUEST "$_=$probe_server::params{$_}\n";
+  }
+  close REQUEST;
+  return;
+}
+
 sub wait_answer($) {
   my ($result_name) = @_;
   while (not -f $result_name) { sleep 1; }
 }
 
-sub send_result($) {
+sub send_std_result($) {
   my ($result_name) = @_;
   my $count         = 0;
 
@@ -59,7 +72,7 @@ sub send_result($) {
   foreach (<RESULT>) { print $_; ++$count; }
   close RESULT;
   if ($count==0) { return "got empty result file from server"; }
-#  unlink $result_name;    # remove the result file
+  unlink $result_name;    # remove the result file
   return;
 }
 
