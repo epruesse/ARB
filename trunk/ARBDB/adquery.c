@@ -51,7 +51,7 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
 GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBDATA *after){
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
-       if (val) search only for strings with the value 'val'
+       if (val) search only for strings with the value 'val' (case-insensitive!!!)
        if key_quark <0 search everything */
 
     register int end, index;
@@ -182,6 +182,10 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
 
 
 GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_search_types*/ gbs)
+     /* searches from 'gdb' for the first entry 'key'
+      * if 'str' != 0 then we search for the first entry 'key' that is equal to 'str' (case-insensitive!!)
+      *
+      */
 {
     GBCONTAINER *gbc;
     GBQUARK key_quark;
