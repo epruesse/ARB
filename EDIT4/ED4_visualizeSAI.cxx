@@ -186,9 +186,36 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
             char    *clrTabDef      = clrTabDef_awar->read_string();
 
             if (clrTabDef[0]) {
-                int i = 0;
-                for (char *tok = strtok(clrTabDef,";"); tok; tok = strtok(0,";"),i++) {
-                    awr->awar(getAwarName(i))->write_string(tok);
+                int  i           = 0;
+                int  si          = 0;
+                int  tokStart    = 0;
+                bool have_escape = false;
+
+                while (clrTabDef[si]) {
+                    if (clrTabDef[si] == '\\') {
+                        ...
+                    }
+                    else if (clrTabDef[si] == ';') {
+                        if (si>0 && clrTabDef[si-1] == '\\') { // escaped ; ('\;')
+
+                        }
+                        else {
+                            if (tokStart != si) {
+                                int toklen                 = si-tokStart;
+                                e4_assert(toklen > 0);
+                                e4_assert(clrTabDef[tokStart+toklen] == ';');
+                                clrTabDef[tokStart+toklen] = 0;
+                                awr->awar(getAwarName(i))->write_string(clrTabDef+tokStart);
+                                clrTabDef[tokStart+toklen] = ';';
+                            }
+                            else {
+                                awr->awar(getAwarName(i))->write_string("");
+                            }
+                            ++i;
+                            tokStart = si+1;
+                        }
+                    }
+                    ++si;
                 }
             }
             free(clrTabDef);
@@ -599,6 +626,27 @@ static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ /
     return (AW_window *)aws;
 }
 
+static void reverseColorTranslationTable(AW_window *aww) {
+    AW_root *aw_root = aww->get_root();
+
+    int j = AWAR_SAI_CLR_COUNT-1;
+    for (int i = 0; i<AWAR_SAI_CLR_COUNT/2+1; ++i, --j) {
+        if (i<j) {
+            AW_awar *aw_i = aw_root->awar(getAwarName(i));
+            AW_awar *aw_j = aw_root->awar(getAwarName(j));
+
+            char *ci = aw_i->read_string();
+            char *cj = aw_j->read_string();
+
+            aw_i->write_string(cj);
+            aw_j->write_string(ci);
+
+            free(ci);
+            free(cj);
+        }
+    }
+}
+
 static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  // creates edit color tranlation table window
     static AW_window_simple *aws = 0;
     if(aws) return (AW_window *)aws;
@@ -619,6 +667,10 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
     aws->at("close");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("reverse");
+    aws->callback(reverseColorTranslationTable);
+    aws->create_button("REVERSE", "Reverse", "R");
 
     return (AW_window *)aws;
 }
