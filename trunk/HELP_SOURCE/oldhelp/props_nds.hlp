@@ -37,10 +37,9 @@ DESCRIPTION	Extracts data from the database entries of every species and
 
 		Enable field extraction:
 
-			Press the corresponding 'SHOW' checkbox to display the
-			'field' entry at the nodes of the tree shown in the tree
-			display area of the 'ARB_NT' window.
-
+			Press the 'LEAF' and/or 'GRP.' checkbox to activate the display of
+                        the corresponding 'field' entry at leafs and/or groups
+                        of the tree shown in the tree display area of the 'ARB_NT' window.
 
 		Select 'FIELD':
 
@@ -48,37 +47,30 @@ DESCRIPTION	Extracts data from the database entries of every species and
 			(from left to right) corresponds to that in the 'NDS'
 			window (top to bottom). To select a 'field' enter the field name
 			by hand or press the respective <S> button and select it
-			from the pop upped list. (Press <RESCAN> to display all
-			fields if fields had been deleted from the list
-			[ARB_NT/Species/Info/Delete Fields in List])
+			from the popup-list.
 
-		Show field entries assigned to internal nodes: (see LINK{glossary.hlp})
-
-			Press the 'INH.' (Inherit) checkbox to display information
-			assigned to internal nodes of the tree ('ARB_NT/INFO
-			MODE') at all terminal nodes of the subtree defined by
-			the internal node. This function only works when using NDS
-			with a tree.
+                        Press <RESCAN> there to display all fields, if fields have been deleted
+                        from the list by 'Species Information/Delete hide fields'.
 
 		Define number of characters:
 
 			Type the number of characters (including blanks) to be
 			displayed to the 'WIDTH' subwindow.
 
-		Display predefined SRT/ACI:
+		Display SRT/ACI:
 
 			The 'Search and replace Tool (SRT)' and the 'ARB Command
 			Interpreter (ACI)' in combination with 'Nodes Display
-			Setup (NDS)' allow information to be extracted and/or modified
-			from the 'Field' entries and displayed at the nodes.
+			Setup (NDS)' allows information to be extracted and/or modified
+			from the 'Field' entries, before being displayed at the tree nodes.
 
 			Press the corresponding <SRT> button to display the
-                        'SRT_ACI_SELECT' window and select a procedure
+                        'SRT_ACI_SELECT' window and select a predefined procedure
                         (see LINK{acisrt.hlp}).
+
                         The corresponding syntax (see LINK{parser.hlp}
-                        and LINK{commands.hlp})
-                        is displayed in the 'ACI SRT
-                        PROGRAM' subwindow. The displayed strings can be
+                        and LINK{commands.hlp}) is displayed in
+                        the 'ACI SRT PROGRAM' subwindow. The displayed strings can be
                         modified by typing to the subwindows.
 
 		Generate new program:
@@ -88,12 +80,16 @@ DESCRIPTION	Extracts data from the database entries of every species and
 			PROGRAM' subwindow
 
 
-NOTES		!!! Strings generated using 'SRT' or 'ACI' and displayed at the
-		nodes cannot be stored in the database!!!
+NOTES		Strings generated using 'SRT' or 'ACI' and displayed at the
+		nodes are not stored in the database. You can use
+                the 'Modify fields of listed species'-menuentry in the
+                'Search & Query' window to do this.
 
-EXAMPLES	@@@@@ Beispiele !!!!!!
+                The width of the output is limited to 4000 characters.
+
+EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		The width of the output is limited to 4000 characters.
+BUGS		None
 
