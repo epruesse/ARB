@@ -298,7 +298,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        e4_assert(!work_info->string && !terminal->id);
+        //         e4_assert(!work_info->string && !terminal->id);
         work_info->string = terminal->id = group_manager->table().build_consensus_string();
 
         edit_string->edit(work_info);

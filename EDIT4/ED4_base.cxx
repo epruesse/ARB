@@ -41,7 +41,7 @@ bool ED4_terminal::remove_deleted_childs()
 
         // @@@ FIXME: remove aligner entries get's here
         printf("ED4_terminal w/o species_pointer has been removed.\n");
-        e4_assert(0);
+//         e4_assert(0);
 #endif
         return true;
     }

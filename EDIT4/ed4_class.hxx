@@ -1677,7 +1677,7 @@ class ED4_sequence_info_terminal : public ED4_text_terminal
     ED4_sequence_info_terminal(const ED4_sequence_info_terminal&); // copy-constructor not allowed
 public:
     ED4_sequence_info_terminal( const char *id, GBDATA *gbd, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
-    ~ED4_sequence_info_terminal();
+    virtual ~ED4_sequence_info_terminal();
 
     virtual ED4_returncode draw( int only_text = 0);
 
