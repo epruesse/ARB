@@ -597,8 +597,10 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
 
 char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size)
 {
-    GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
-    GB_BOOL        append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+    GB_DICTIONARY *dict = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
+    GB_BOOL append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+
+    gb_assert(dict);
 
     return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero);
 }
