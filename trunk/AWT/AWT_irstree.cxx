@@ -198,13 +198,8 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
         if (left_y < irs_gl.max_y){ // clip y on top border
             if (node->leftson->remark_branch ) {
                 AWT_show_remark_branch(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter, (AW_CL)node->leftson, 0);
-
-                //                 disp_device->text(AWT_GC_BRANCH_REMARK, node->leftson->remark_branch , // @@@ print bootstrap
-                //                                   (AW_pos) left_x,(AW_pos) left_y,
-                //                                   (AW_pos) 1 , text_filter,
-                //                                   (AW_CL) node->leftson , (AW_CL) 0 );
             }
-            irs_gl.device->line(node->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0);
+            irs_gl.device->line(node->leftson->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0); //  ***
         }
     }else{
         left_y = irs_gl.min_y;
@@ -214,15 +209,12 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) {
         if (node->rightson->remark_branch ) {
             AWT_show_remark_branch(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
-            //             disp_device->text(AWT_GC_BRANCH_REMARK, node->rightson->remark_branch , // @@@ print bootstrap
-            //                               (AW_pos) right_x,(AW_pos) right_y,
-            //                               (AW_pos) 1 , text_filter,
-            //                               (AW_CL) node->rightson , (AW_CL) 0 );
         }
-        irs_gl.device->line(node->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
+        irs_gl.device->line(node->rightson->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
     }
 
-    irs_gl.device->line(node->gr.gc,x_offset,left_y,x_offset,   right_y, -1, (AW_CL)node,0);
+    irs_gl.device->line(node->leftson->gr.gc, x_offset,y_center,x_offset, left_y,  -1, (AW_CL)node,0);
+    irs_gl.device->line(node->rightson->gr.gc,x_offset,y_center,x_offset, right_y, -1, (AW_CL)node,0);
 
     if (node_string != 0) {		//  A node name should be displayed
         irs_gl.y+=irs_gl.step_y /2;
