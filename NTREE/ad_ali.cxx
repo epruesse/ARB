@@ -15,7 +15,7 @@ extern GBDATA *gb_main;
 
 
 void alignment_vars_callback(AW_root *aw_root)
-    {
+{
     GB_push_transaction(gb_main);
     char    *use = aw_root->awar("presets/use")->read_string();
     GBDATA *ali_cont = GBT_get_alignment(gb_main,use);
@@ -28,33 +28,33 @@ void alignment_vars_callback(AW_root *aw_root)
         aw_root->awar("presets/security")->unmap();
     }else{
 
-    GBDATA *ali_name =  GB_search(ali_cont,"alignment_name",    GB_STRING);
-    GBDATA *ali_len =   GB_search(ali_cont,"alignment_len", GB_INT);
-    GBDATA *ali_aligned =   GB_search(ali_cont,"aligned",       GB_INT);
-    GBDATA *ali_type =  GB_search(ali_cont,"alignment_type",    GB_STRING);
-    GBDATA *ali_security =  GB_search(ali_cont,"alignment_write_security",GB_INT);
-    GBDATA *ali_rem =   GB_search(ali_cont,"alignment_rem", GB_STRING);
+        GBDATA *ali_name =  GB_search(ali_cont,"alignment_name",    GB_STRING);
+        GBDATA *ali_len =   GB_search(ali_cont,"alignment_len", GB_INT);
+        GBDATA *ali_aligned =   GB_search(ali_cont,"aligned",       GB_INT);
+        GBDATA *ali_type =  GB_search(ali_cont,"alignment_type",    GB_STRING);
+        GBDATA *ali_security =  GB_search(ali_cont,"alignment_write_security",GB_INT);
+        GBDATA *ali_rem =   GB_search(ali_cont,"alignment_rem", GB_STRING);
 
-    aw_root->awar("presets/alignment_name")->map((void*)ali_name);
-    aw_root->awar("presets/alignment_type")->map((void*)ali_type);
-    aw_root->awar("presets/alignment_len")->map((void*)ali_len);
-    aw_root->awar("presets/alignment_rem")->map((void*)ali_rem);
-    aw_root->awar("presets/aligned")->map((void*)ali_aligned);
-    aw_root->awar("presets/security")->map((void*)ali_security);
+        aw_root->awar("presets/alignment_name")->map((void*)ali_name);
+        aw_root->awar("presets/alignment_type")->map((void*)ali_type);
+        aw_root->awar("presets/alignment_len")->map((void*)ali_len);
+        aw_root->awar("presets/alignment_rem")->map((void*)ali_rem);
+        aw_root->awar("presets/aligned")->map((void*)ali_aligned);
+        aw_root->awar("presets/security")->map((void*)ali_security);
     }
     GB_pop_transaction(gb_main);
     free(use);
 }
 
 void create_alignment_vars(AW_root *aw_root,AW_default aw_def)
-    {
+{
     aw_root->awar_string( "presets/use", "" ,   aw_def);
     GB_push_transaction(gb_main);
     GBDATA *use = GB_search(gb_main,"presets/use",GB_STRING);
     aw_root->awar("presets/use")->map( use);
 
     aw_root->awar_string( "presets/alignment_name", "" ,    aw_def)
-            ->set_srt( GBT_ALI_AWAR_SRT);
+        ->set_srt( GBT_ALI_AWAR_SRT);
 
     aw_root->awar_string( "presets/alignment_dest", "" ,    aw_def)
         ->set_srt( GBT_ALI_AWAR_SRT);
@@ -70,7 +70,7 @@ void create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 }
 
 void ad_al_delete_cb(AW_window *aww)
-    {
+{
     if (aw_message("Are you sure to delete all data belonging to this alignment","OK,CANCEL"))return;
 
     GB_ERROR error = 0;
@@ -84,27 +84,27 @@ void ad_al_delete_cb(AW_window *aww)
     else    GB_abort_transaction(gb_main);
 
     if (error) aw_message(error);
-    delete source;
+    free(source);
 }
 
 
 void ed_al_check_len_cb(AW_window *aww)
-    {
+{
     char *error = 0;
     char *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(gb_main);
     if (!error) error = (char *)GBT_check_data(gb_main,use);
     GB_commit_transaction(gb_main);
     if (error) aw_message(error);
-    delete use;
+    free(use);
 }
 void ed_al_export_sec_cb(AW_window *aww)
-    {
+{
     aw_message("This Function is not implemented,\nPlease press 'CHECK' to do this");
     AWUSE(aww);
 }
 void ed_al_align_cb(AW_window *aww)
-    {
+{
     char *error = 0;
     char *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(gb_main);
@@ -113,11 +113,11 @@ void ed_al_align_cb(AW_window *aww)
     if (!error) error = (char *)GBT_check_data(gb_main,use);
     GB_commit_transaction(gb_main);
     if (error) aw_message(error);
-    delete use;
+    free(use);
 }
 
 void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
-    {
+{
     GB_ERROR error = 0;
     char *source = aww->get_root()->awar("presets/use")->read_string();
     char *dest = aww->get_root()->awar("presets/alignment_dest")->read_string();
@@ -129,19 +129,19 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
     if (!error){
         char *nfield = GBS_global_string_copy("%s/data",dest);
         awt_add_new_changekey( gb_main,nfield,GB_STRING);
-        delete nfield;
+        free(nfield);
         GB_commit_transaction(gb_main);
     }else{
         GB_abort_transaction(gb_main);
     }
     if (error) aw_message(error);
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
     aww->hide();
 }
 
 AW_window *create_alignment_copy_window(AW_root *root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "COPY_ALIGNMENT", "ALIGNMENT COPY", 100, 100 );
     aws->load_xfig("ad_al_si.fig");
@@ -163,7 +163,7 @@ AW_window *create_alignment_copy_window(AW_root *root)
     return (AW_window *)aws;
 }
 AW_window *create_alignment_rename_window(AW_root *root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME", 100, 100 );
     aws->load_xfig("ad_al_si.fig");
@@ -186,7 +186,7 @@ AW_window *create_alignment_rename_window(AW_root *root)
 }
 
 void aa_create_alignment(AW_window *aww)
-    {
+{
     GB_ERROR error = 0;
     GBDATA *gb_alignment;
     char *name = aww->get_root()->awar("presets/alignment_dest")->read_string();
@@ -208,7 +208,7 @@ void aa_create_alignment(AW_window *aww)
 }
 
 AW_window *create_alignment_create_window(AW_root *root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE", 100, 100 );
     aws->load_xfig("ad_al_si.fig");
@@ -231,7 +231,7 @@ AW_window *create_alignment_create_window(AW_root *root)
 }
 
 AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
-    {
+{
     AWUSE(aw_def);
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION", 100, 0 );
