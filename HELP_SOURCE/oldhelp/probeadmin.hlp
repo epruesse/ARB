@@ -25,9 +25,9 @@ DESCRIPTION	Allows to start and kill 'PT_SERVER' and to update 'PT_SERVER'
 		Press the 'UPDATE SERVER' button to export the current database
                 to the selected 'PT_SERVER' database.
 
-                In Genome Databases you may alternatively press 'Update GeneSrv' to
+                In Genome Databases you may check the 'Gene server' toggle to
                 build a PT-Server which is based on the sequences of the single
-                genes of all organisms.
+                genes (and introns) of all organisms.
 
                 Such a PT-Server allows to perform similarity searches and probe
                 design/match for single genes (in opposite to whole genomes with
