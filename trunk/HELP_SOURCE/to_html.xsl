@@ -309,16 +309,43 @@
         <xsl:with-param name="title" select="$title"/>
       </xsl:call-template>
       <BODY LEFTMARGIN="10" TEXT="{$fontColor}" BGCOLOR="{$backgroundColor}" LINK="{$linkColor}" VLINK="{$visitedLinkColor}" ALINK="{$activeLinkColor}">
-        <P align="right"><FONT size="-1">
-          This page was converted by <I>arb_help2xml</I> and may have a strange layout.<BR/>
-          If you think it&acute;s really bad, please send a mail to our
-      <xsl:call-template name="insert-email-link">
-        <xsl:with-param name="linktext">help keeper</xsl:with-param>
-        <xsl:with-param name="address">helpfeedback</xsl:with-param>
-        <xsl:with-param name="subject" select="concat('Helppage ',$myname,' looks weird')"/>
-      </xsl:call-template>
-          .
-        </FONT></P>
+        <TABLE width="95%">
+          <TR>
+            <TD>
+              <!-- Search Google -->
+              <CENTER>
+                <FORM method="GET" action="http://www.google.com/search" name="google">
+                  <TABLE bgcolor="#FFFFFF">
+                    <TR>
+                      <TD>
+                        <A HREF="http://www.google.com"><IMG SRC="Logo_25wht.gif" border="0" ALT="Google" align="absmiddle"/></A>
+                        <INPUT TYPE="text" name="q" size="31" maxlength="255" value=""/>
+                        <INPUT TYPE="hidden" name="hl" value="en"/>
+                        <INPUT TYPE="hidden" name="as_sitesearch" value="www2.mikro.biologie.tu-muenchen.de"/>
+                        <INPUT type="submit" name="btnG" VALUE="Search ARB site using google"/>
+<!--                        onclick="google.q.value=google.q.value+' site:www2.mikro.biologie.tu-muenchen.de';return true"-->
+                      </TD>
+                    </TR>
+                  </TABLE>
+                </FORM>
+              </CENTER>
+              <!-- Search Google -->
+
+            </TD>
+            <TD align="right">
+              <FONT size="-1">
+                This page was converted by <I>arb_help2xml</I> and may have a strange layout.<BR/>
+                If you think it&acute;s really bad, please send a mail to our
+                <xsl:call-template name="insert-email-link">
+                  <xsl:with-param name="linktext">help keeper</xsl:with-param>
+                  <xsl:with-param name="address">helpfeedback</xsl:with-param>
+                  <xsl:with-param name="subject" select="concat('Helppage ',$myname,' looks weird')"/>
+                </xsl:call-template>
+                .
+              </FONT>
+            </TD>
+          </TR>
+        </TABLE>
         <TABLE border="{$tableBorder}" width="98%" align="center">
           <TR bgcolor="{$linkSectionsColor}">
             <TD valign="top" width="50%">Main topics:<BR/>
