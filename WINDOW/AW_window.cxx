@@ -1511,6 +1511,10 @@ void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
 /*********************************************************************************************/
 
 
+void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
+    aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
+}
+
 void aw_window_destroy_cb(Widget w, AW_window *aww, XmAnyCallbackStruct *cbs)
 {
     AWUSE(cbs);AWUSE(w);
@@ -1561,11 +1565,9 @@ void aw_update_awar_window_geometrie(AW_root *awr){
     GBS_hash_do_loop(awr->hash_for_windows,(gb_hash_loop_type)aw_loop_get_window_geometrie);
 }
 
-Widget aw_create_shell(
-                       AW_window *aww,
-                       AW_BOOL  allow_resize,
-                       int width, int height,
-                       int posx, int posy)  {
+Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close,
+                       int width, int height, int posx, int posy)
+{
     AW_root *root = aww->get_root();
     Widget   shell;
 
@@ -1668,9 +1670,6 @@ Widget aw_create_shell(
     }
     XtAddEventHandler(shell, EnterWindowMask, FALSE, (XtEventHandler)AW_root_focusCB,  (XtPointer)  aww->get_root());
 
-    Atom WM_DELETE_WINDOW;
-    WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell),(char*)"WM_DELETE_WINDOW",False);
-
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
         p_global->main_aww = aww;
@@ -1680,9 +1679,14 @@ Widget aw_create_shell(
             p_global->main_aww = aww;
         }
     }
-    if (!p_global->no_exit) {
-        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW,
-                                (XtCallbackProc)aw_window_destroy_cb,(caddr_t)aww);
+
+    Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell),(char*)"WM_DELETE_WINDOW",False);
+
+    if (allow_close == AW_FALSE)  {
+        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,(caddr_t)aww);
+    }
+    else if (!p_global->no_exit) {
+        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,(caddr_t)aww);
     }
     return shell;
 }
@@ -1776,7 +1780,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget( "mainWindow1",
                                            xmMainWindowWidgetClass,
@@ -1999,7 +2003,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     int posx = 50;
     int posy = 50;
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget( "mainWindow1",
                                            xmMainWindowWidgetClass,
@@ -2198,7 +2202,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_TRUE,width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, AW_TRUE, width, height, posx, posy);
     Widget form1 = XtVaCreateManagedWidget( "forms",
                                             xmFormWidgetClass,
                                             p_w->shell,
@@ -2238,7 +2242,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     int posx   = 50;
     int posy   = 50;
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, AW_TRUE, width, height, posx, posy);
 
     Widget main_window;
     Widget help_popup;
@@ -2327,7 +2331,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname) {
 
     // create shell for message box
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, AW_FALSE, width, height, posx, posy);
 
     p_w->areas[AW_INFO_AREA] =
         new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
