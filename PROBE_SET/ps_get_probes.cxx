@@ -20,24 +20,6 @@ GBDATA   *__ARB_DB         = 0;
 GBDATA   *__ARB_GROUP_TREE = 0;
 GB_ERROR  __ARB_ERROR      = 0;
 
-void PS_print_time_diff( const struct tms *_since ) {
-    struct tms now;
-    times( &now );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)\n",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-}
-
 
 //  ----------------------------------------------------
 //      bool PS_get_probe_for_path( IDSet        &_path,

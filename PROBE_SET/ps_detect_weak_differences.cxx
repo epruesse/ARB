@@ -9,6 +9,7 @@
 #ifndef PS_BITMAP_HXX
 #include "ps_bitmap.hxx"
 #endif
+#include "ps_tools.hxx"
 
 // common globals
 SpeciesID          __MAX_ID;
@@ -25,32 +26,6 @@ IDSet             *__PATHSET;
 IDID2IDSetMap     *__PAIR2PATH;
 SpeciesID          __ONEMATCH_MIN_ID;
 SpeciesID          __ONEMATCH_MAX_ID;
-
-void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
-    struct tms now;
-    times( &now );
-    if (_before) printf( "%s", _before );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    if (_after) {
-        printf( "%s", _after );
-    } else {
-        printf( "\n" );
-    }
-    fflush( stdout );
-}
-
 
 //  ----------------------------------------------------
 //      void PS_print_path()
@@ -93,7 +68,7 @@ void PS_print_inverse_path() {
 void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
                                           const SpeciesID  _parent_ID,
                                           const long       _depth ) {
-    
+
     SpeciesID id = _ps_node->getNum();
     if (_depth < 60) {
         printf( "%s", __NODES_LEFT );
@@ -278,7 +253,7 @@ void PS_find_probes_for_pairs( const PS_NodePtr  _ps_node,
             // look for pair-IDs in the path
             bool found_first  = __PATHSET->find( pair->first  ) != __PATHSET->end();
             bool found_second = __PATHSET->find( pair->second ) != __PATHSET->end();
-            if (found_first ^ found_second) { // ^ = XOR
+            if (found_first ^ found_second) { // ^ is XOR
                 printf( "found path for (%i,%i) at %p ", pair->first, pair->second,&(*_ps_node) );
                 _ps_node->printOnlyMe();
                 (*__PAIR2PATH)[ *pair ] = *__PATHSET;   // store path
