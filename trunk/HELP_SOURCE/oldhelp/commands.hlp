@@ -252,6 +252,30 @@ SECTION COMMANDLIST
                         In escapedCommand you have to escape '\' and '"' by
                         preceeding a '\'. If you nest calls you have to use multiple escapes.
 
+                eval(escapedCommand)
+
+                        the 'escapedCommand' is evaluated (using an empty string as input)
+                        and the result is interpreted as command and gets applied to all
+                        input streams.
+
+                        Example: Said you have two numeric positions stored in database fields
+                                 'pos1' and 'pos2' for each species. Then the following command
+                                 extracts the sequence data from pos1 to pos2:
+
+                        sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")
+
+                        How the example works:
+
+                                The argument to eval is the escaped version of the command
+                                 '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
+                                 If pos1 contains '10' and pos2 contains '20' that command
+                                 evaluates to 'mid(10;20)'.
+
+                                 The resulting ACI for the example species
+                                 is 'sequence|eval("mid(10;20)")' which is equivalent
+                                 to 'sequence|mid(10;20)'.
+
+
                 origin_organism(escapedCommand)
                 origin_gene(escapedCommand)
 
