@@ -861,7 +861,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (counter) *counter = mcount;
 
     delete bs.data;
+#if defined(DEVEL_IDP)
     free(gene_str);
+#endif // DEVEL_IDP
     if (gb_main) GB_pop_transaction(gb_main);
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -1622,15 +1624,15 @@ void pd_query_pt_server(AW_window *aww)
 
 void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
 {
-    int       server_type = (int)cl_server_type;
+    int server_type = (int)cl_server_type;
     AW_root  *awr = aww->get_root();
     char      pt_server[256];
     char     *server;
     char     *file;
     GB_ERROR  error;
 #ifdef DEVEL_IDP
-    char *tempfile;
-    char command[1024];
+    char     *tempfile;
+    char      command[1024];
 #endif
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     if (aw_message(
