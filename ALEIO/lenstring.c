@@ -42,7 +42,7 @@ display_clipped_lenstring (lenstring *string, int field, FILE *stream)
 
       {
 	int pad = field - string->len;
-    
+
 	while (pad-- > 0)
 	  putc (' ', stream);
       }
@@ -65,10 +65,7 @@ display_clipped_lenstring (lenstring *string, int field, FILE *stream)
    If the string was non-empty and terminated by EOF, return 1.
    If an error occurred reading the string, print an error message
    and exit.  */
-int
-read_delimited_lenstring (lenstring *string,
-			  char *delimiter,
-			  FILE *stream)
+int read_delimited_lenstring (lenstring *string, const char *delimiter, FILE *stream)
 {
   size_t delimiter_len = strlen (delimiter);
   char delimiter_last_char;
@@ -100,7 +97,7 @@ read_delimited_lenstring (lenstring *string,
         }
 
       buf[i++] = c;
-      
+
       /* Have we read the delimiter?  We check to see if we just
          stored delim_last_char; this is a quick, false-positive test.
          Then we check for the whole string; this is a slow but
@@ -153,20 +150,20 @@ search_lenstring (lenstring *string,
 {
   /* Based on the memmem implementation in the GNU C library.
      This implementation's copyright is:
-     
+
      Copyright (C) 1991, 1992 Free Software Foundation, Inc.
      This file is part of the GNU C Library.
-     
+
      The GNU C Library is free software; you can redistribute it and/or
      modify it under the terms of the GNU Library General Public License as
      published by the Free Software Foundation; either version 2 of the
      License, or (at your option) any later version.
-     
+
      The GNU C Library is distributed in the hope that it will be useful,
      but WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Library General Public License for more details.
-     
+
      You should have received a copy of the GNU Library General Public
      License along with the GNU C Library; see the file COPYING.LIB.  If
      not, write to the Free Software Foundation, Inc., 675 Mass Ave,
