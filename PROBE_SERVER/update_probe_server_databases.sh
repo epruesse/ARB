@@ -75,10 +75,21 @@ create_group_db() {
     echo "Generating probe_groups for length=$1"
     ./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1
 }
+
+TREEFLAG=-c # 1st: create (see below)
+TREENAME=$DEST_DIR/current.tree
+TREEVERSIONFILE=$DEST_DIR/current.tree.version
+ZIPPEDTREENAME=${TREENAME}.gz
+
+# generate the tree version
+touch $TREEVERSIONFILE
+TREEVERSION=`stat --format=%Y $TREEVERSIONFILE`
+
 create_group_design_db() {
     echo "------------------------------------------------------------"
     echo "Designing probes for length=$1"
-    ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1
+    ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREEFLAG $TREENAME $TREEVERSION
+    TREEFLAG=-x # from 2nd -> expand
 }
 
 create_db() {
@@ -87,10 +98,39 @@ create_db() {
         mv $OUT$1_design.arb $DEST_DIR
 }
 
+if [ -f $TREENAME ]; then
+    rm $TREENAME
+fi
+
 create_db 15
 # create_db 16
 # create_db 17
 # create_db 18
 # create_db 19
 # create_db 20
+
+# prepare zipped tree
+if [ -f $TREENAME ]; then
+    echo Zipping $TREENAME ..
+    if [ -f $ZIPPEDTREENAME ]; then
+        rm $ZIPPEDTREENAME
+    fi
+    gzip -c $TREENAME > $ZIPPEDTREENAME
+    touch -r $TREEVERSIONFILE $ZIPPEDTREENAME
+    rm $TREENAME $TREEVERSIONFILE
+else
+    echo "Error: $TREENAME was not generated"
+    exit 1;
+fi
+
+CLIENTBASENAME=probe_library.jar
+CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTBASENAME
+CLIENTZIP=$DEST_DIR/$CLIENTBASENAME.gz
+
+if [ -f $CLIENTSOURCE ]; then
+    gzip -c $CLIENTSOURCE > $CLIENTZIP
+    ls -al $CLIENTZIP
+else
+    echo "Could not update client version (file not found '$CLIENTSOURCE')"
+fi
 
