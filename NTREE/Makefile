@@ -16,8 +16,6 @@ CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
 $(MAIN): nt_date_update $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 
-$(CPP_OBJECTS) : nt_date.h
-
 nt_date.h: nt_date_update
 
 nt_date_update:
