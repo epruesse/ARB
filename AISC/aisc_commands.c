@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 /* #include <malloc.h> */
@@ -15,6 +16,30 @@ int print_error(const char *err) {
     fprintf(stderr, "%s:%i: Error: %s\n", gl->pc->path, gl->pc->linenr, err);
     return 1;
 }
+
+#define ERRBUFSIZE 200
+
+int printf_error(const char *format, ...) {
+    static char *errbuf = 0;
+    if (!errbuf) { errbuf = (char*)malloc(ERRBUFSIZE+1); }
+
+    va_list argPtr;
+    va_start(argPtr, format);
+    int     chars = vsprintf(errbuf, format, argPtr);
+    if (chars>ERRBUFSIZE) {
+        fprintf(stderr, "%s:%i: Error buffer overflow!\n", __FILE__, __LINE__);
+        vfprintf(stderr, format, argPtr);
+        fputc('\n', stderr);
+        
+        va_end(argPtr);
+        exit(EXIT_FAILURE);
+    }
+    va_end(argPtr);
+
+    return print_error(errbuf);
+}
+
+#undef ERRBUFSIZE
 
 void memcopy(char *dest, const char *source, int len)
 {
@@ -127,11 +152,28 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
         if (!strncmp(p, "#FILE", 5)) {
             for (path = p + 5; gl->s2_tab[(unsigned)(path[0])]; path++);
             fi = read_aisc_file(path);
-            gl->line_path = strdup(path);
-            if (!fi)
-                return 0;
-        }else{
-            fprintf(stderr, "ERROR unknown Var_Command %s in line %i of file %s\n", p, gl->pc->linenr, gl->pc->path);
+            if (!fi) return 0;
+
+            {
+                int         file_len      = strlen(fi);
+                const char *previous_file = gl->line_path ? gl->line_path : "unknown.file";
+                int         previous_line = gl->line_path ? gl->line_cnt : 0;
+                int         buflen        = file_len+strlen(path)+strlen(previous_file)+100;
+                char       *buffer        = (char *)malloc(buflen);
+
+                /* Inject code to restore correct code file and line (needed for proper error messages) */
+                int printed = sprintf(buffer, "@SETSOURCE %s,%i@%s@SETSOURCE %s,%i@", path, 1, fi, previous_file, previous_line);
+
+                if (printed >= buflen) {
+                    fprintf(stderr, "%s:%i: Error: buffer overflow\n", __FILE__, __LINE__);
+                }
+
+                free(fi);
+                fi = buffer;
+            }
+        }
+        else {
+            printf_error("unknown Var_Command '%s'", p);
             return 0;
         }
     } else {
@@ -141,7 +183,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
         lenf = strlen(fi);
         len = strlen(br);
         if (len + lenf > size) {
-            fprintf(stderr, "ERROR bufsize exceeded in line %i of file %s\n", gl->pc->linenr, gl->pc->path);
+            print_error("bufsize exceeded");
             return 0;
         }
         memcopy(str + lenf, br, len + 1);
@@ -156,7 +198,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
         return str+lenf;
     }
     if (gl->pc->command != IF) {
-        fprintf(stderr, "ERROR unknown Var_Reference %s in line %i of file %s\n", p, gl->pc->linenr, gl->pc->path);
+        printf_error("unknown Var_Reference '%s'", p);
     }
     return 0;
 }
@@ -260,8 +302,7 @@ do_com_data(char *str)
 {
     char           *in;
     if (strlen(str) < 2) {
-        fprintf(stderr, "ERROR in File %s line %i , no Parameter %s\n",
-                gl->pc->path, gl->pc->linenr, gl->pc->str);
+        printf_error("no parameter '%s'", gl->pc->str);
         return 1;
     }
     in = str;
@@ -270,8 +311,7 @@ do_com_data(char *str)
     gl->line_path = gl->pc->path;
     gl->root = read_aisc(&in);
     if (!gl->root) {
-        fprintf(stderr, "ERROR in File %s line %i , SET Error %s\n",
-                gl->pc->path, gl->pc->linenr, gl->pc->str);
+        printf_error("occurred in following script-part: '%s'", gl->pc->str);
         return 1;
     }
     return 0;
@@ -332,6 +372,19 @@ do_com_write(FILE * out, char *str)
             } else {
                 putc(c, out);
                 gl->tabpos = 0;
+            }
+        } else if (c == '@') {
+            if (strncmp(p, "SETSOURCE", 9) == 0) { /* skip '@SETSOURCE file, line@' */
+                p = strchr(p, '@');
+                if (!p) {
+                    printf_error("expected '@' after '@SETSOURCE' (injected code)");
+                    return 1;
+                }
+                p++;
+            }
+            else {
+                putc(c, out);
+                gl->tabpos++;
             }
         } else {
             putc(c, out);
@@ -987,8 +1040,7 @@ run_prg(void)
             COMMAND(gl->linebuf,"EXIT",4,do_com_exit)
             COMMAND(gl->linebuf,"DATA",4,do_com_data)
             COMMAND(gl->linebuf,"DBG",3,do_com_dbg)
-            fprintf(stderr, "ERROR in File %s line %i , Unknown Command %s\n",
-                    gl->pc->path, gl->pc->linenr, gl->pc->str);
+            printf_error("Unknown Command '%s'", gl->pc->str);
         return -1;
     }
     return 0;
