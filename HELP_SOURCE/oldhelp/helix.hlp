@@ -13,7 +13,7 @@ TITLE		Helix
 
 OCCURRENCE	ARB_EDIT/ETC/Reload Helix
 
-DESCRIPTION	The 'SAI' (see 'HELP: Glossary') entry 'HELIX_NR' contains
+DESCRIPTION	The 'SAI' (see LINK{glossary.hlp}) entry 'HELIX_NR' contains
 		numbering of potential higher order structure elements. The
 		paired 5' and 3' helix halves are indicated by identical
 		numbers. The SAI entry 'HELIX' contains symbols ([<( and )>])
@@ -37,7 +37,7 @@ SECTION FORMAT OF HELIX/HELIX_NR:
                    helix number.
 
 			eg. 	.........1a.........23b.........
-				.........|||||||||||............
+			.	.........|||||||||||............
 
                    The '|' symbols indicate the positions for '1a'
 

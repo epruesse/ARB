@@ -12,7 +12,7 @@ SUB	exec_bug.hlp
 
 #************* Title of helpfile !! and start of real helpfile ********
 
-TITLE		ACI     ARB Command Interpreter
+TITLE		ARB Command Interpreter (ACI)
 
 OCCURRENCE	NDS
 		[ export db ]
@@ -112,6 +112,7 @@ SECTION COMMANDLIST
 					of 'str'
 
 		srt("orig=dest",...)	replace command, invokes SRT
+                                        (see LINK{parser.hlp})
 
 		tab(n)			append n-len(input) spaces
 
@@ -124,10 +125,9 @@ SECTION COMMANDLIST
                 caps                    capitalizes string
 
 		checksum(options)	calculates a CRC checksum
-
-			option
-			"exclude=chrs"	remove 'chrs' before calculation
-			toupper		make everything uppercase first
+                                        options:
+                                        "exclude=chrs"    remove 'chrs' before calculation
+                                        "toupper"         make everything uppercase first
 
 		gcgchecksum		a gcg compatible checksum
 
@@ -177,8 +177,8 @@ SECTION COMMANDLIST
                         executes escapedCommand with
 
                                  - ACI,
-                                 - SRT (if starts with ':') or
-                                 - as REG (if starts with '/').
+                                 - SRT (if starts with ':') (see LINK{parser.hlp})
+                                 - or as REG (if starts with '/') (see LINK{regexpr.hlp}).
 
                         In escapedCommand you have to escape '\' and '"' by
                         preceeding a '\'. If you nest calls you have to use multiple escapes.
@@ -247,10 +247,10 @@ SECTION COMMANDLIST
                         percantage of characters of a word that mach a character in 'chars'
                         before word is taken. All words will be seperated by white space.
 
-EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE  ";dd
+EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE_";dd
 
 				fetches the default sequence, formats it,
-				and prepends 'SEQUENCE  '.
+				and prepends 'SEQUENCE_'.
 
 		sequence|remove(".-")|format_sequence
 

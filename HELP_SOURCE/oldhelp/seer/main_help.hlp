@@ -16,9 +16,6 @@ OCCURRENCE	ARB_NT
 DESCRIPTION	Controls data flow from and to seer database.
 
 
-
-    HELP:	This file
-
     CREATE SKELETON SPECIES:	In some cases the tree contains more species
 				than the database. So there are unresolved
 				links at the tree tips. Pressing this button

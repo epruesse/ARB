@@ -26,7 +26,7 @@ DESCRIPTION	Searches for a (set of) species (not SAIs)
 
 		The database is scanned for 'species' (see 'HELP')
 		which contain (or do not contain) the search string within the
-		specified 'field' (see 'HELP: Glossary'). The corresponding
+		specified 'field' (see LINK{glossary.hlp}). The corresponding
 		species and the respective 'field' entries are listed in the
 		'HIT LIST' subwindow. The number of hits is displayed after the
 		'Hits:' prompt.

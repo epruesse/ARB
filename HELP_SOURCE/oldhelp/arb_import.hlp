@@ -22,25 +22,34 @@ SUB	importift.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Import Foreign Data(bases)
 
-OCCURRENCE	ARB_INTRO <Create and Import>  / <ARB_NT/File/Import>
+OCCURRENCE	ARB_INTRO <Create and Import>,
+                ARB_NT/File/Import
 
 DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 		and imports the foreign data. A selection of commonly used
 		foreign formats can be automatically identified. Data can be
 		imported from single or multiple files.
 
-		Type	a source file name to the 'Enter file name of foreign
-			database' subwindow. Use * and ? as multiple and single
-			character wild carts to load a set of files, respectively.
+		Type a source file name to the 'Enter file name of foreign
+                database' subwindow. Use * and ? as multiple and single
+                character wild carts to load a set of files, respectively.
+                Alternatively you may select a file from the directories and
+                files subwindow.
 
-		Select	the file format from the 'Select foreign database
-			'format' subwindow or press the 'AUTO DETECT' button.
+                Make a selection whether you want to import
 
-		If 	your file type is not in the list and you are only 
-			interested in the sequence, try 'universal'. 
+                     - a full genome flatfile (in GENBANK or EMBL format) or
+                     - normal sequence files.
 
-		Enter	an 'alignment' name. This allows you to distinguish between
-			different alignments in the same datebase later.
+		In the second case select the file format from the
+                'Select foreign database format' subwindow
+                or press the 'AUTO DETECT' button.
+
+		If your file type is not in the list and you are only
+                interested in the sequence, try 'universal'.
+
+		Enter an 'alignment' name. This allows you to distinguish between
+                different alignments in the same datebase later.
 
 		Press the 'GO' button.
 

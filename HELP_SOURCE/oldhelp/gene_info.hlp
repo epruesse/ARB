@@ -25,9 +25,9 @@ OCCURRENCE	ARB_GENEMAP/<INFO> button (on the left side)
 		ARB_GENEMAP/Genes/Info
 		ARB_GENEMAP/Genes/Search
 
-DESCRIPTION	Displays gene information stored within the 'fields' (see
-		'HELP: Glossary'). The particular 'gene' (see 'HELP:
-		Glossary') can be 'marked' or 'unmarked' (see 'HELP: Glossary')
+DESCRIPTION	Displays gene information stored within the 'fields' (see LINK{glossary.hlp}).
+                The particular 'gene' (see LINK{glossary.hlp})
+                can be 'marked' or 'unmarked' (see LINK{glossary.hlp})
 		by pressing the checkbox after the 'Marked?' prompt.
 		Editing of 'field' entries is enabled or prevented by
 		pressing the 'Edit enabled?' checkbox.

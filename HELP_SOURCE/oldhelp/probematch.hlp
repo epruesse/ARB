@@ -27,20 +27,17 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 			menu.
 
 		Press the 'Use weighted mismatches' button to use or not the
-			weights defined in the 'PD SPECIAL' window (see 'HELP:
-			Weighing of Base Pairings').
+			weights defined in the 'PD SPECIAL' window (see LINK{pd_spec_param.hlp}).
 
 		Define whether the species which contain the target or probe
-			(or similar) sequence should be marked (see 'HELP:
-			MARKED SPECIES') by pressing the 'Mark in database'
-			button.
+			(or similar) sequence should be marked (see LINK{mark.hlp})
+                        by pressing the 'Mark in database' button.
 
 		Define whether probe and/or target sequence should be searched
 			by pressing the 'Check complement too' button.
 
 		Press the 'EXPERT' button to display the 'PD SPECIAL' window if
-			base pairings should be individually weighed (see 'HELP:
-			Weighing of Base Pairings').
+			base pairings should be individually weighed (see LINK{pd_spec_param.hlp}).
 
 		Press the 'MATCH' button to perform the search.
 

@@ -19,19 +19,18 @@ DESCRIPTION	To save the entire database, choose 'Save Whole Database'
 		functions.
 
                         'Save Changes' saves all changes to the database
-                        'data.arb' to a file 'data.aXX' where X is a number
-                        between 0 and 99 starting with 1. {**huh? Between 1 and 99?**}
+                        'data.arb' to a file 'data.aXX' where XX is a numbered from
+                        01 to 99 and 00 (means 100).
 
                         This is normally much faster than saving the entire database and
                         results in much less disc consumption.
 
                         Each time you save your changes, X is increased by one.
-                        The last 5 old data.aXX are not deleted and allow you to
+                        The last 10 old data.aXX are not deleted and allow you to
                         step to an old state.
 
-                        All data.aXX are independent and you may
-                        delete old changes files without losing data (as long as the
-                        latest is unchanged)
+                        All data.aXX are independent and you may delete old changes
+                        files without losing data (as long as the latest is unchanged)
 
 		When you start arb you can choose among the different files:
 
@@ -39,12 +38,12 @@ DESCRIPTION	To save the entire database, choose 'Save Whole Database'
 
                          enter 'arb filename.aXX' to load a user-defined version.
 
-
-NOTES		None
+NOTES		Loading a specific quick save is also possible from the ARB INTRO window.
 
 WARNINGS	None
 
 BUGS		Not all changes to the database can be saved into a small file -
 		especially, changing the order of database entries disables
 		a quick save.
+
 		Hopefully no real bugs.

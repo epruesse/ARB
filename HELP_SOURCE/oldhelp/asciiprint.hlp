@@ -15,11 +15,11 @@ OCCURRENCE	ARB_NT
 DESCRIPTION	Sends ascii files to postscript printer. Allows scaling
 		and splitting of text to fit a given number of
 		pages. You may set any parameter and all the others
-		will be  updated to fit your choice.
+		will be updated to fit your choice.
 
 NOTES		Use preview to check output
 
-EXAMPLES	Set coloumns of pages to 1.0 to get the biggest font which
+EXAMPLES	Set columns of pages to 1.0 to get the biggest font which
 		fits on one page.
 
 		Set rows of pages to 2.0 if you want exactly two pages

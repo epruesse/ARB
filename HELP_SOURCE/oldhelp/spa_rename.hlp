@@ -15,7 +15,7 @@ TITLE		Rename Species/Gene
 OCCURRENCE	ARB_NT/Species/Info/SPECIES/Rename
 	        ARB_NT/Genes/Info/SPECIES/Rename
 
-DESCRIPTION	Renames a 'species/gene' (see 'HELP: Glossary) entry.
+DESCRIPTION	Renames a 'species/gene' (see LINK{glossary.hlp}) entry.
 
 		Choose the 'Rename' item from the 'SPECIES/GENE' menu to display the
 		'SPECIES/GENE RENAME' window. Type a name to this window and press

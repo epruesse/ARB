@@ -14,14 +14,14 @@ TITLE		Predefined SRT/ACI
 
 OCCURRENCE	ARB_NT/Tree/NDS/SRT
 
-DESCRIPTION	Allows to choose predefined SRT or ACI (see 'HELP: Glossary)
+DESCRIPTION	Allows to choose predefined SRT or ACI (see LINK{glossary.hlp})
 
 		Choose a program from the 'List of SRT/ACI' subwindow.
 
 NOTES		The syntax is displayed in the 'The program:' subwindow and
 		synchronously within the 'ACI SRT PROGRAM' subwindow of the
-		'NDS' window. It can be modified in both subwindows (see 'HELP:
-		Search and Replace Tool' and 'HELP: ARB Command	Interpreter')	
+		'NDS' window. It can be modified in both subwindows
+                (see LINK{parser.hlp} and LINK{commands.hlp})
 
 EXAMPLES	None
 

@@ -8,6 +8,8 @@ UP	ecoliref.hlp
 UP	configuration.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
+SUB	man_arb_edit4.hlp
+SUB	arb_edit4.hlp
 SUB 	e4_search.hlp
 SUB	e4_replace.hlp
 SUB 	e4_block.hlp
@@ -18,7 +20,7 @@ SUB	helixsym.hlp
 
 #************* Title of helpfile !! and start of real helpfile ********
 
-TITLE		ARB_EDIT4 - Sequence and Secondary Structure Editor
+TITLE		ARB_EDIT4 - Sequence primary and secondary structure editor
 
 OCCURRENCE	ARB_NT/Sequence/Edit marked sequences
 

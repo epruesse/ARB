@@ -12,7 +12,7 @@ OCCURRENCE	ARB_INTRO
 
 DESCRIPTION	Allows to merge two databases. Complete 'ARB' databases,
 		selected 'species', 'fields' and/or 'field' entries, 'SAI'
-		entries, and trees (see 'HELP: Glossary') can be transferred
+		entries, and trees (see LINK{glossary.hlp}) can be transferred
 		from the database specified as 'Database I' to that specified as
 		'Database II'.
 

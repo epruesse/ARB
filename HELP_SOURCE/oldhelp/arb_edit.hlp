@@ -25,13 +25,12 @@ SUB	ne_pretty.hlp
 
 #************* Title of helpfile !! and start of real helpfile ********
 
-TITLE		Sequence and Secondary Structure Editor
+TITLE		Old Sequence Editor
 
-OCCURRENCE	ARB_NT/Sequence/Edit marked sequences
-		ARB_NT<3rd small rectangular button in top area>
+OCCURRENCE	ARB_NT/Sequence/Other sequence editors/Edit marked sequences (ARB)
 
 DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
-		species' (see 'HELP: Glossary') and 'SAI' (sequence associated
+		species' (see LINK{glossary.hlp}) and 'SAI' (sequence associated
 		information) data stored in the data base, and to insert
 		new data. Potential scondary structure is automatically checked
 		and the information can be displayed with the primary structure.

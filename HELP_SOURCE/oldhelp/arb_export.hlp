@@ -14,9 +14,9 @@ TITLE		Export Selected Species and Sequences
 
 OCCURRENCE	ARB_NT/File/Export Foreign Format
 
-DESCRIPTION 
-		The marked 'species' (see 'HELP: Glossary') of the selected
-		'alignment' (see 'HELP: Glossary') and the corresponding
+DESCRIPTION
+		The marked 'species' (see LINK{glossary.hlp}) of the selected
+		'alignment' (see LINK{glossary.hlp}) and the corresponding
 		sequences are exported in various formats.
 
 		Choose the 'EXPORT FOREIGN FORMAT' option from the 'File' menu
@@ -38,19 +38,19 @@ DESCRIPTION
 			separated by underscores (filename_species name).
 
 		Press the <GO> button
-		
+
 
 	EXPERT:
+
 		The program reads the selected format
 		(formats is $ARBHOME/lib/export/*.eft) and replaces
 		all references to species information by the value of
 		the reference.
-		See 'Export File Formats' for more information.
+		See LINK{export_format.hlp} for more information.
 
 NOTES		Filters and/or compression not available.
 
-		The formates can be customized (see 'HELP: EXPORT FILE
-		FORMATES')
+		The formates can be customized (see LINK{export_format.hlp})
 
 EXAMPLES	None
 

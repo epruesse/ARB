@@ -22,7 +22,7 @@ DESCRIPTION	The main idea of ARB is to manage database access via a tree.
 
 		Align the sequence data:
 
-			1. Mark all 'species' (see 'HELP: Glossary')
+			1. Mark all 'species' (see LINK{glossary.hlp})
 				Choose the item 'Mark all Species'
 				from the menu 'Species'
 				of the 'ARB_NT' main window (this program)
@@ -30,11 +30,11 @@ DESCRIPTION	The main idea of ARB is to manage database access via a tree.
 
 			2. Select an alignment:
 				<ARB_NT/3rd big Button in top area>
-				(see online help)
+				(see LINK{nt_align_select.hlp})
 
 			3. Start the editor:
 				<ARB_NT/Sequence/Edit marked Sequences>
-				(see online help)
+				(see LINK{arb_edit4.hlp})
 
 			4. Align the data (by hand)
 

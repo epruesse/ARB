@@ -39,7 +39,7 @@ SECTION GENERAL NOTES ABOUT PROPERTIES
 
     Nevertheless some setting are not stored anywhere (some intentionally, some by mistake).
 
-    Please notify arb@arb-home.de if you think
+    Please notify LINK{arb@arb-home.de} if you think
 
       - a setting should be saved in properties (instead of always setting
         the same useless default value)

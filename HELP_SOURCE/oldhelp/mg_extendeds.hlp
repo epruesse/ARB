@@ -12,7 +12,7 @@ TITLE		Transfer SAI Entries
 
 OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer SAIs>
 
-DESCRIPTION	Transferres 'SAI' entries (see 'HELP: Glossary') from database I
+DESCRIPTION	Transferres 'SAI' entries (see LINK{glossary.hlp}) from database I
 		to database II.
 
 		Press the 'Transfer SAIs' button of the 'ARB_MERGE' window to

@@ -17,14 +17,17 @@ DESCRIPTION	Sends data back to seers
 
 		You may only save changes made back to SEER:
 
-		Jesus Christ's birth: 	Send the whole database, don't
-					check for update stamps
-		last full arb file:	Send all recently changes +
-					all changes that are in the
-					delta arb files (xxx.axx)
-					(see help file saving the database)
-		Login			Send only changes during this
-					seer session
+		Jesus Christ's birth:
+
+                      Send the whole database, don't check for update stamps
+
+		last full arb file:
+
+                     Send all recently changes + all changes that are in the delta arb files (xxx.axx) (see LINK{save.hlp})
+
+		Login
+
+                    Send only changes during this seer session.
 
 
 BUGS		does not keep track of already uploaded data.

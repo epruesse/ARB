@@ -13,9 +13,9 @@ TITLE		Group All
 
 OCCURRENCE	ARB_NT/Tree/Group All
 
-DESCRIPTION	Shows the ranking subtrees (groups of species; see 'HELP: GROUPE
-		MODE') of the currently displayed tree as triangles (radial
-		tree) or rectangles (dendrogram). 
+DESCRIPTION	Shows the ranking subtrees (groups of species; see LINK{mode_group.hlp})
+                of the currently displayed tree as triangles (radial
+		tree) or rectangles (dendrogram).
 
 NOTES		The lengths of the sides connected by the internal node reflect
 		the longest and shortest overall branch lengths within the

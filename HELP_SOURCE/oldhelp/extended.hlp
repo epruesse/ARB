@@ -13,11 +13,11 @@ TITLE		SAI Sequence Associated Information
 
 DESCRIPTION	The main database devides all sequences into two groups:
 
-		I.	Species sequences.			->Species
-		II.	All other sequences			->SAI
-			( masks, filters, profiles )
+                    1. Species sequences -> Species
+                    2. All other sequences -> SAI ( masks, filters, profiles )
 
 		You should keep the number of SAI's small for you cannot:
+
 			- search SAI's
 			- select a subset of SAI's
 			- exclude SAI's from the ARB_EDITor
@@ -25,17 +25,22 @@ DESCRIPTION	The main database devides all sequences into two groups:
 
 SECTION         IMPLEMENTED SAI's
 
-		ECOLI		A copy of the E.coli sequence. It is used
-				to convert the absolute alignment position into
-				an E.coli-based position and vice versa.
+		ECOLI
 
-		HELIX_NR	Helix Numbering
-		HELIX		and Helix template
-				Note: Read the respective help file
+                        A copy of the E.coli sequence. It is used to convert
+                        the absolute alignment position into
+                        an E.coli-based position and vice versa.
+                        (Note: you may use any other sequence instead of ECOLI. The
+                        name displayed in the EDITOR can be modified using Properties/NDS)
+
+		HELIX_NR
+
+                        Helix Numbering
+
+		HELIX
+
+                        and Helix template
+
+NOTE Read LINK{helix.hlp}
 
 
-
-SECTION         FUTURE SAI's
-
-		COLORMASK	a global colormask
-		INSERTS		memory of all global alignment inserts

@@ -30,7 +30,7 @@ DESCRIPTION
 		binary:
 
                                 (+)  very fast
-				(+)  small (compression rate 3-15)
+				(+)  small (compression rate: 60%-95%)
 				=> for normal operation
 
 		ASCII:
@@ -49,26 +49,22 @@ DESCRIPTION
 
 
 
-NOTES		ASCII format
+NOTES ASCII format
 
-        *******************************************
-        *************** DATA  FORMAT **************
-        *******************************************
+    DATA FORMAT
 
-                Notes:
-        		[xxx]	means xxx is optional
-        		[xxx]*	means xxx is optional and can occur many times
-        		xxx|yyy means xxx or yyy
-        		//	means comment
+             [xxx]	means xxx is optional
+             [xxx]*	means xxx is optional and can occur many times
+             xxx|yyy    means xxx or yyy
+             //         means comment
 
-        	ARB DB is a hierarchical data base system, so
+    ARBDB HIERARCHY
 
-        *******************************************
-        ************* ARBDB  HIRARCHY  ************
-        *******************************************
+        ARB DB is a hierarchical data base system, so here's a short description
+        of the hierarchy:
 
-        ARBDB ::=	species_data		// all species
-        		presets			// alignment header
+        ARBDB ::=	species_data		// container containing all species
+        		presets			// global alignment and db field information
         		[extended_data]		// all SAIs
         		[tmp]			// temporary data
         		[tree_data]		// all trees
@@ -78,16 +74,21 @@ NOTES		ASCII format
 
         extended_data::=  [extended]*
 
+        gene_data::=      [gene]*               // container for genes (species local)
+
 
         species::=	'name'			// species identifier
         		['full_name']
         		...			// (end) user defined fields
-        		[ali_xxx]			// the alignment container
+        		[ali_xxx]               // the alignment container(s)
+                        [gene_data]             // container containing genes
 
-        extended::=	// see species::=
+        extended::=                             // analoguous to species
+
+        gene::=                                 // analoguous to species
 
         ali_xxx::=	'data'			// the sequence
-        		'xxx'			// additional sequence information
+        		...			// additional sequence information
 
         presets::=	'use'			// default alignment
         		[alignment]*

@@ -31,10 +31,10 @@ OCCURRENCE	ARB_NT/<INFO> button: left area, fifth from top
 		ARB_NT/Species/Search
 
 DESCRIPTION	Displays species information stored within the 'fields' (see
-		'HELP: Glossary').
+		LINK{glossary.hlp}).
 
-                The particular 'species' (see 'HELP:
-		Glossary') can be 'marked' or 'unmarked' (see 'HELP: Glossary')
+                The particular 'species' (see LINK{glossary.hlp})
+                can be 'marked' or 'unmarked' (see LINK{glossary.hlp})
 		by pressing the checkbox after the 'Marked?' prompt.
 
 		Editing of 'field' entries is enabled or prevented by

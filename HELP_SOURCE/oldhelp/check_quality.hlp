@@ -15,16 +15,16 @@ OCCURRENCE	ARB_NT
 DESCRIPTION	Takes sequences, a tree and a coloumn statistic as input,
 		and generates a short sequence quality output string, which
 		will be stored into the database under a user defined key.
-		
+
 		First the sequences are split into different subsequences:
-			2 pieces:	front and back half
-			5 equally sized pieces: 
-			user defined sized pieces.
+
+			2 pieces:                 front and back half
+			5 equally sized pieces:   user defined sized pieces.
 
 		The programs sums up the weighted mutations for each sequence
 		part using a maximum likelihood technique.
-		
-		
+
+
 
 NOTES		this feature is still under construction.
 		Only sequences which are in the tree are used.

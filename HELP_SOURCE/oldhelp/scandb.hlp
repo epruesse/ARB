@@ -28,7 +28,7 @@ DESCRIPTION     Each function scans the database to detect all existing fields.
 		some external programs generate new and yet unknown fields
                 or if the ARB programmers forgot to mark a field as known.
 
-                In the latter case please write to devel@arb-home.de and describe which
+                In the latter case please write to LINK{devel@arb-home.de} and describe which
                 fields was created by doing what.
 
 NOTES		None

@@ -27,9 +27,9 @@ DESCRIPTION	Allows 	# database searching,
 		use the left or right part of the 'TRANSFER SPECIES' window for
 		database I (source) and database II (destination), respectively.
 
-		The database is scanned for 'species' (see 'HELP: Glossary')
+		The database is scanned for 'species' (see LINK{glossary.hlp})
 		which contain (or do not contain) the search string within the
-		specified 'field' (see 'HELP: Glossary'). The corresponding
+		specified 'field' (see LINK{glossary.hlp}). The corresponding
 		'species' and the respective 'field' entries are listed in the
 		'HIT LIST' subwindow. The number of hits is displayed after the
 		'Hits:' prompt.
@@ -83,8 +83,7 @@ DESCRIPTION	Allows 	# database searching,
 NOTES		None
 
 
-EXAMPLES	For examples for database searching see 'HELP: Search Database
-		for Species'.
+EXAMPLES	For examples for database searching see LINK{sp_search.hlp}.
 
 
 WARNINGS	The data will always be transferred from 'Database I' to
