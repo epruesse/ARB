@@ -1870,6 +1870,7 @@ int AWT_graphic_tree::check_update(GBDATA *gbdummy)
 void AWT_graphic_tree::update(GBDATA *gbdummy){
     AWUSE(gbdummy);
     if (!this->tree_static) return;
+    if (!this->tree_root) return;
     GB_transaction dummy(gb_main);
     this->tree_root->update();
 }
