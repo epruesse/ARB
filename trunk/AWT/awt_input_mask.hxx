@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Sun Dec/09/2001 13:48 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/22/2002 19:15 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -638,11 +638,11 @@ public:
 //      casts :
 //  ----------------
 
-    inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); awt_assert(!fail || linked); return linked; }
-    inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); awt_assert(!fail || linked); return linked; }
+inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
+inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
 
-inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
-inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
+inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
+inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
 
 // inline const awt_input_handler *awt_mask_item::to_input_handler(bool fail) const { const awt_input_handler *handler = dynamic_cast<const awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
 // inline awt_input_handler *awt_mask_item::to_input_handler(bool fail)  { awt_input_handler *handler = dynamic_cast<awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
