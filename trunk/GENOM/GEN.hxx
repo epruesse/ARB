@@ -22,7 +22,6 @@ bool GEN_is_genome_db(GBDATA *gb_main, int default_value = -1);
 // awars:
 
 #define AWAR_GENE_NAME  "tmp/gene/name"
-#define GENOM_ALIGNMENT "ali_genom"
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
 
