@@ -14,12 +14,17 @@
 #define SAICOLORS (ED4_G_CBACK_0 - RNA3D_GC_CBACK_0)
 
 using namespace std;
-extern GBDATA *gb_main;
 
-inline float _min(float a, float b) { return (a>b)? b:a; }
-inline float _max(float a, float b) { return (a<b)? b:a; }
-
-OpenGLGraphics *GRAPHICS = new OpenGLGraphics();
+static Struct3Dinfo   *start3D                 = NULL;
+static Struct2Dinfo   *start2D                 = NULL;
+static Struct2Dplus3D *start2D3D               = NULL;
+static HelixNrInfo    *start                   = NULL;
+static CurrSpecies    *startSp                 = NULL;
+static bool            bOldSpecesDataExists    = false;
+static Insertions     *startIns                = NULL;
+static bool            bOldInsertionDataExists = false;
+static bool            bStartPosStored         = false;
+static bool            bEndPosStored           = false;
 
 static char *find_data_file(const char *name) {
     char *fname = GBS_find_lib_file(name, "rna3d/", 0);
@@ -33,22 +38,24 @@ static void throw_IO_error(const char *filename) {
 }
 
 Structure3D::Structure3D(void) {
-    strCen = new Vector3(0.0, 0.0, 0.0);
+    strCen          = new Vector3(0.0, 0.0, 0.0);
+    GRAPHICS        = new OpenGLGraphics();
     ED4_SeqTerminal = 0;
-    iInterval = 25;
-    iMapSAI = 0;
-    iMapSearch = 0;
-    iMapEnable = 0;
-    iEColiStartPos = 0;
-    iEColiEndPos = 0;
-    iStartPos = 0;
-    iEndPos   = 0;
+    iInterval       = 25;
+    iMapSAI         = 0;
+    iMapSearch      = 0;
+    iMapEnable      = 0;
+    iEColiStartPos  = 0;
+    iEColiEndPos    = 0;
+    iStartPos       = 0;
+    iEndPos         = 0;
 }
 
 Structure3D::~Structure3D(void) {
+    delete GRAPHICS;
+    delete strCen;
 }
 
-Struct3Dinfo *start3D = NULL;
 
 void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigned int pos){
     Struct3Dinfo *data, *temp;
@@ -127,7 +134,6 @@ void Structure3D::ReadCoOrdinateFile() {
     free(DataFile);
 }
 
-Struct2Dinfo  *start2D = NULL;
 
 void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
     Struct2Dinfo *data, *temp;
@@ -202,8 +208,6 @@ void Structure3D::GetSecondaryStructureInfo(void) {
     free(DataFile);
 }
 
-Struct2Dplus3D *start2D3D = NULL;
-
 void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     Struct2Dplus3D *data, *temp;
     data = new Struct2Dplus3D;
@@ -247,7 +251,7 @@ void Structure3D::Combine2Dand3DstructureInfo(void) {
 
 void Structure3D::PointsToQuads(float x, float y, float z) {
 
-    if (GLOBAL->bPointSpritesSupported) {
+    if (RNA3D->bPointSpritesSupported) {
         glVertex3f(x, y, z);
     }
     else {
@@ -298,7 +302,7 @@ void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
 
     glNewList(listID, GL_COMPILE);
     {   
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
         for(int i = 0; i < len; i++) 
@@ -313,7 +317,7 @@ void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
                     t = t->next;
                 }
             }
-        if (GLOBAL->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported){
             glEnd();
         }
     }
@@ -504,8 +508,6 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
 
 //==============================================================================
 
-HelixNrInfo *start = NULL;
-
 void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
     HelixNrInfo *data, *temp;
     data = new HelixNrInfo;
@@ -609,7 +611,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
 
     glNewList(HELIX_NUMBERS_POINTS, GL_COMPILE);
     {
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
         for(int i = startHx; i <= endHx; i++) {
@@ -621,7 +623,7 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
                 t = t->next;
             }
         }
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glEnd();
         }
     }
@@ -848,9 +850,6 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     }
 }
 
-CurrSpecies *startSp = NULL;
-bool bOldSpecesDataExists = false;
-
 void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
     Struct2Dplus3D *st;
     st = start2D3D;
@@ -942,7 +941,7 @@ void Structure3D::BuildDisplayList(int listID, int *pos, int len){
 
     glNewList(listID, GL_COMPILE);
     {   
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
         for(int i = 0; i < len; i++) 
@@ -957,7 +956,7 @@ void Structure3D::BuildDisplayList(int listID, int *pos, int len){
                     t = t->next;
                 }
             }
-        if (GLOBAL->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported){
             glEnd();
         }
     }
@@ -969,7 +968,7 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
 
     glNewList(MAP_SPECIES_BASE_DIFFERENCE, GL_COMPILE);
     {   
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
         t = startSp;
@@ -977,7 +976,7 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
             PointsToQuads(t->x, t->y, t->z);
             t = t->next;
         }
-        if (GLOBAL->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported){
             glEnd();
         }
     }
@@ -1011,9 +1010,6 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
         GenerateBaseDifferencePositionDisplayList();
     }
 }
-
-Insertions *startIns         = NULL;
-bool bOldInsertionDataExists = false;
 
 void Structure3D::StoreInsertions(char base, int pos){
     Insertions *data, *temp;
@@ -1098,7 +1094,7 @@ void Structure3D::GenerateInsertionDisplayList(){
 
     glNewList(MAP_SPECIES_INSERTION_POINTS, GL_COMPILE);
     {   
-        if (GLOBAL->bPointSpritesSupported) {
+        if (RNA3D->bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
         for(str = start3D; str != NULL; str = str->next) 
@@ -1111,15 +1107,12 @@ void Structure3D::GenerateInsertionDisplayList(){
                     }
                 }
         }
-        if (GLOBAL->bPointSpritesSupported){
+        if (RNA3D->bPointSpritesSupported){
             glEnd();
         }
     }
     glEndList();
 }
-
-bool bStartPosStored = false;
-bool bEndPosStored   = false;
 
 void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
 
@@ -1146,10 +1139,10 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                 else {
                     const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
 
-                    if(!GLOBAL->bEColiRefInitialised) {
+                    if(!RNA3D->bEColiRefInitialised) {
                         EColiRef = new BI_ecoli_ref();
                         EColiRef->init(gb_main);
-                        GLOBAL->bEColiRefInitialised = true;
+                        RNA3D->bEColiRefInitialised = true;
                     }
 
                     char buf[100];
@@ -1250,15 +1243,15 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
         
         if(pSearchColResults) {
             int iColor = 0;
-            extern OpenGLGraphics *cGraphics;
+            // extern OpenGLGraphics *cGraphics;
 
             glNewList(MAP_SEARCH_STRINGS_TO_STRUCTURE, GL_COMPILE);
             {
-                if (GLOBAL->bPointSpritesSupported) {
+                if (RNA3D->bPointSpritesSupported) {
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(GLOBAL->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialised) {
                         long absPos = (long) i;
                         long EColiPos, dummy;
                         EColiRef->abs_2_rel(absPos, EColiPos, dummy);
@@ -1270,7 +1263,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
                                         iColor = pSearchColResults[i] - COLORLINK;
 
                                         if(ValidateSearchColor(iColor, SEARCH)) {
-                                            cGraphics->SetColor(iColor);
+                                            RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }
                                         break;
@@ -1278,7 +1271,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
                             }
                     }
                 }
-                if (GLOBAL->bPointSpritesSupported) {
+                if (RNA3D->bPointSpritesSupported) {
                     glEnd();
                 }
             }
@@ -1289,7 +1282,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
                 int iLastClr = 0; int iLastPos = 0; Vector3 vLastPt;
                 glBegin(GL_LINES);
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(GLOBAL->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialised) {
                         long absPos = (long) i;
                         long EColiPos, dummy;
                         EColiRef->abs_2_rel(absPos, EColiPos, dummy);
@@ -1302,7 +1295,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
 
                                         if(ValidateSearchColor(iColor, SEARCH)) {
                                             if ((iLastClr == iColor) && (iLastPos == EColiPos-1)) {
-                                                cGraphics->SetColor(iColor);
+                                                RNA3D->cGraphics->SetColor(iColor);
                                                 glVertex3f(vLastPt.x, vLastPt.y, vLastPt.z);
                                                 glVertex3f(t->x, t->y, t->z);
                                             }
@@ -1319,7 +1312,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
             }
             glEndList();
 
-            GLOBAL->bMapSearchStringsDispListCreated = true;
+            RNA3D->bMapSearchStringsDispListCreated = true;
         }
         else cout<<"BuildColorString did not get the colors : SAI cannot be Visualized!"<<endl;                                                     
     }
@@ -1337,15 +1330,15 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
 
         if(pSearchColResults) {
             int iColor = 0;
-            extern OpenGLGraphics *cGraphics;
+            // extern OpenGLGraphics *cGraphics;
 
             glNewList(MAP_SAI_TO_STRUCTURE, GL_COMPILE);
             {
-                if (GLOBAL->bPointSpritesSupported) {
+                if (RNA3D->bPointSpritesSupported) {
                     glBegin(GL_POINTS);
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
-                    if(GLOBAL->bEColiRefInitialised) {
+                    if(RNA3D->bEColiRefInitialised) {
                         long absPos = (long) i;
                         long EColiPos, dummy;
                         EColiRef->abs_2_rel(absPos, EColiPos, dummy);
@@ -1357,7 +1350,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                                         iColor = pSearchColResults[i] - SAICOLORS;
 
                                         if(ValidateSearchColor(iColor, SAI)) {
-                                            cGraphics->SetColor(iColor);
+                                            RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }
                                         break;
@@ -1365,13 +1358,13 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                             }
                     }
                 }
-                if (GLOBAL->bPointSpritesSupported) {
+                if (RNA3D->bPointSpritesSupported) {
                     glEnd();
                 }
             }
             glEndList();
 
-            GLOBAL->bMapSaiDispListCreated = true;
+            RNA3D->bMapSaiDispListCreated = true;
         }
         else cout<<"getSaiColorString did not get the colors : SAI cannot be Visualized!"<<endl;                                                     
     }
