@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : Probe.java                                             // 
 //    Purpose   : Object holding one probe                               // 
-//    Time-stamp: <Sat Mar/13/2004 19:41 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Tue Mar/16/2004 16:13 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -138,12 +138,26 @@ public class Probe implements Comparable
     private static String stripeOut(String what, int from, int len) {
         if ((from+len) > what.length()) {
             System.out.println("Illegal parameters to stripeOut: what='"+what+"' what.length()="+what.length()+" from="+from+" len="+len);
+            return what; // no error simply dont stripe
         }
 
         return what.substring(0, from) +
             stripes.substring(0, len) +
             what.substring(from+len);
     }
+
+//     private static int countStripes(String s) {
+//         int len     = s.length();
+//         int stripes = 0;
+//         for (int i = 0; i<len; ++i) {
+//             switch (s.charAt(i)) {
+//                 case '=': ++stripes; break;
+//                 // case '-': stripes += 2; break;
+//                 default: break;
+//             }
+//         }
+//         return stripes;
+//     }
 
     private String getStripedProbeString() {
         if (stripedProbeStringTime<overlapProbeTime) { // selected probe changed (or not initialized yet)
@@ -156,37 +170,58 @@ public class Probe implements Comparable
             else {
                 String sel_probe = overlapProbe.probeString;
                 int    found     = probeString.indexOf(sel_probe);
+                int    probe_len = probeString.length();
 
                 if (found == -1) { // check for partial match
-                    int     probe_len     = probeString.length();
-                    int     sel_probe_len = sel_probe.length();
+                    int sel_probe_len = sel_probe.length();
 
-                    stripedProbeString = null;
+                    stripedProbeString = probeString;
                     overlapCount       = 0;
 
+                    int start_stripes = 0;
+                    int end_stripes   = 0;
+
                     for (int i = probe_len; i>2; --i) {
-                        if (probeString.regionMatches(false, 0, sel_probe, sel_probe_len-i, i)) { // end of selected probe matches at start of probe
-                            stripedProbeString  = stripeOut(probeString, 0, i);
+                        if (probeString.regionMatches(false, 0, sel_probe, sel_probe_len-i, i)) {
+                            // end of selected probe matches at start of probe
+                            stripedProbeString  = stripeOut(stripedProbeString, 0, i);
                             overlapCount       += i;
+                            start_stripes       = i;
                             break;
                         }
                     }
                     for (int i = probe_len; i>2; --i) {
-                        if (probeString.regionMatches(false, probe_len-i, sel_probe, 0, i)) { // start of selected probe matches at end of probe
-                            stripedProbeString  = stripeOut(stripedProbeString == null ? probeString : stripedProbeString, probe_len-i, i);
+                        if (probeString.regionMatches(false, probe_len-i, sel_probe, 0, i)) {
+                            // start of selected probe matches at end of probe
+                            stripedProbeString  = stripeOut(stripedProbeString, probe_len-i, i);
                             overlapCount       += i;
+                            end_stripes         = i;
                             break;
+                        }
+                    }
+
+                    if (probe_len <= sel_probe_len) {
+                        int contained = sel_probe.indexOf(probeString);
+                        if (contained != -1) {
+                            System.out.println("complete match (probe is part of sel.probe)");
+                            stripedProbeString = stripeOut(stripedProbeString, 0, probe_len);
+                            overlapCount       = probe_len;
                         }
                     }
                 }
                 else {          // complete match
-                    overlapCount       = overlapProbe.length();
+                    System.out.println("complete match (sel.probe is part of probe)");
+                    overlapCount           = sel_probe.length();
+                    if (found+overlapCount > probe_len) {
+                        System.out.println("Oops - sel.probe goes past end of probe");
+                    }
                     stripedProbeString = stripeOut(probeString, found, overlapCount);
                 }
             }
-            stripedProbeStringTime = overlapProbeTime;
 
+            stripedProbeStringTime = overlapProbeTime;
         }
+
         return stripedProbeString == null ? probeString : stripedProbeString;
     }
 
@@ -227,7 +262,17 @@ public class Probe implements Comparable
         return groupCache.getError();
     }
 
+    public static void removeCompareOrder(int cmp_mode) {
+        // removes cmp_mode from compareOrder
+        if (compareOrder != null) {
+            Integer icmp_mode = new Integer(cmp_mode);
+            compareOrder.remove(icmp_mode);
+        }
+    }
+
     public static void setCompareOrder(int cmp_mode) {
+        // sets cmp_mode as primary sort order
+
         Integer icmp_mode = new Integer(cmp_mode);
 
         if (compareOrder == null) {
