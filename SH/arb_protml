@@ -1,0 +1,21 @@
+#!/bin/bash -x
+# usage: arb_protml opt1 opt2 phylip_input [no_of_bootstrap_trees]
+# 'opt1' and 'opt2' are options to protml
+# renames output to 'treefile'
+
+if [ -z "$3" ]; then
+    echo "Wrong arguments for arb_protml"
+else
+    if [ -z "$4" ]; then
+        # normal tree generation with protml
+        protml $1 $2 -v -I $3
+        if [ \! -f protml.tre ]; then
+            echo "Error running protml: protml.tre not generated"
+        else
+            mv protml.tre treefile
+        fi
+    else
+        protml $1 $2 -v -I $3
+    fi
+fi
+
