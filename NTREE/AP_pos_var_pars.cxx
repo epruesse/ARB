@@ -13,21 +13,22 @@
 #include <awt.hxx>
 #include <awt_tree.hxx>
 
-
 #include "ap_pos_var_pars.hxx"
+
+#define ap_assert(cond) arb_assert(cond)
 
 extern GBDATA *gb_main;
 
 
-AP_pos_var::AP_pos_var(GBDATA *gb_maini,char *ali_namei, long ali_leni, int isdna,
-                       char *tree_namei) {
+AP_pos_var::AP_pos_var(GBDATA *gb_maini,char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
     memset((char  *)this, 0, sizeof(AP_pos_var) ) ;
-    this->gb_main = gb_maini;
-    this->ali_name = strdup(ali_namei);
-    this->is_dna = isdna;
-    this->ali_len  = ali_leni;
+    this->gb_main   = gb_maini;
+    this->ali_name  = strdup(ali_namei);
+    this->is_dna    = isdna;
+    this->ali_len   = ali_leni;
     this->tree_name = strdup(tree_namei);
 }
+
 AP_pos_var::~AP_pos_var() {
     free(ali_name);
     free(tree_name);
@@ -50,18 +51,22 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
     register long l,r;
 
     if (tree->is_leaf) {
-        char *sequence;
-        long seq_len = ali_len;
-        if (!tree->gb_node) return 0;   // zombie
+        unsigned char *sequence;
+        long           seq_len = ali_len;
+        if (!tree->gb_node) return 0; // zombie
+
         GBDATA *gb_data = GBT_read_sequence(tree->gb_node,ali_name);
-        if (!gb_data) return 0;     // no sequence
+        if (!gb_data) return 0; // no sequence
         if (GB_read_string_count(gb_data) < seq_len)
-            seq_len = GB_read_string_count(gb_data);
-        sequence = GB_read_char_pntr(gb_data);
+            seq_len     = GB_read_string_count(gb_data);
+        sequence        = (unsigned char*)GB_read_char_pntr(gb_data);
 
         for (i = 0; i< seq_len; i++ ) {
             l = char_2_freq[sequence[i]];
-            if (l) frequencies[l][i]++;
+            if (l) {
+                ap_assert(frequencies[l]);
+                frequencies[l][i]++;
+            }
         }
 
         if (bases){
@@ -117,8 +122,8 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
     int i;
 
     if (is_dna) {
-        long base;
-        char *char_2_bitstring;
+        long           base;
+        unsigned char *char_2_bitstring;
         char_2_freq['a'] = 'A';
         char_2_freq['A'] = 'A';
         char_2_freq['c'] = 'C';
@@ -129,8 +134,8 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
         char_2_freq['T'] = 'U';
         char_2_freq['u'] = 'U';
         char_2_freq['U'] = 'U';
-        char_2_bitstring = (char *)AP_create_dna_to_ap_bases();
-        for (i=0;i<256;i++){
+        char_2_bitstring = (unsigned char *)AP_create_dna_to_ap_bases();
+        for (i=0;i<256;i++) {
             int j;
             if (i=='-') j = '.'; else j = i;
             base = char_2_transition[i] = char_2_bitstring[j];
@@ -139,7 +144,8 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
             if (base & (AP_C | AP_T) ) char_2_transversion[i] |= 2;
         }
         delete [] char_2_bitstring;
-    }else{
+    }
+    else {
         long base;
         awt_pro_a_nucs_convert_init(gb_main);
         long *char_2_bitstring = awt_pro_a_nucs->pro_2_bitset;
@@ -265,10 +271,12 @@ char *AP_pos_var::save_sai( char *sai_name ){
 }
 
 // Calculate the positional variability: window interface
-void AP_calc_pos_var_pars(AW_window *aww){
-    AW_root *root = aww->get_root();
-    GB_transaction dummy(gb_main);
-    char *tree_name;
+void AP_calc_pos_var_pars(AW_window *aww) {
+    AW_root        *root  = aww->get_root();
+    GB_transaction  dummy(gb_main);
+    char           *tree_name;
+    GB_ERROR        error = 0;
+
     aw_openstatus("Calculating positional variability");
     aw_status("Loading Tree");
     GBT_TREE *tree;
@@ -276,48 +284,43 @@ void AP_calc_pos_var_pars(AW_window *aww){
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
         tree = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) {
-            free(tree_name);
-            aw_message("Please select a valid tree");
-            return;
+            error = "Please select a valid tree";
         }
-        GBT_link_tree(tree,gb_main, GB_TRUE);
+        else {
+            GBT_link_tree(tree,gb_main, GB_TRUE);
+        }
     }
-    aw_status("Counting Mutations");
 
-    char *ali_name = GBT_get_default_alignment(gb_main);
-    long ali_len = GBT_get_alignment_len(gb_main,ali_name);
-    if (ali_len <=0) {
+    if (!error) {
+        aw_status("Counting Mutations");
+
+        char *ali_name = GBT_get_default_alignment(gb_main);
+        long  ali_len  = GBT_get_alignment_len(gb_main,ali_name);
+
+        if (ali_len <=0) {
+            error = "Please select a valid alignment";
+        }
+        else {
+            GB_alignment_type  at       = GBT_get_alignment_type(gb_main, ali_name);
+            int                isdna    = at==GB_AT_DNA || at==GB_AT_RNA;
+            char              *sai_name = root->awar(AWAR_PVP_SAI)->read_string();
+            AP_pos_var         pv(gb_main, ali_name, ali_len, isdna, tree_name);
+
+            error             = pv.delete_old_sai(sai_name);
+            if (!error) error = pv.retrieve( tree);
+            if (!error) error = pv.save_sai(sai_name);
+
+            free(sai_name);
+        }
         free(ali_name);
-        free(tree_name);
-        GBT_delete_tree(tree);
-        aw_message("Please select a valid alignment");
-        return;
-
     }
-    int isdna;
-    {
-        //  char *ali_type = GBT_get_alignment_type(gb_main,ali_name);
-        //  if ( !strcmp(ali_type,"dna") || ! strcmp(ali_type,"rna"))
-        //      isdna = 1;
-        //  delete ali_type;
 
-        GB_alignment_type at = GBT_get_alignment_type(gb_main, ali_name);
-        isdna = at==GB_AT_DNA || at==GB_AT_RNA;
-    }
-    char *sai_name = root->awar(AWAR_PVP_SAI)->read_string();
-    AP_pos_var pv(gb_main, ali_name, ali_len, isdna, tree_name);
-    GB_ERROR error = 0;
-    if (!error) error = pv.delete_old_sai(sai_name);
-    if (!error) error = pv.retrieve( tree);
-    if (!error) error = pv.save_sai(sai_name);
-    free(sai_name);
+    if (tree) GBT_delete_tree(tree);
+    free(tree_name);
+
     aw_closestatus();
 
     if (error) aw_message(error);
-
-    GBT_delete_tree(tree);
-    free(tree_name);
-    free(ali_name);
     return;
 }
 
