@@ -57,7 +57,7 @@ int	AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_
 	AWUSE(clientdata1);AWUSE(clientdata2);
 	AWUSE(gc);
 	AW_pos X0,Y0,X1,Y1;							// Transformed pos
-	
+
 	if(filteri & filter) {
 		this->transform(x0,y0,X0,Y0);
 		this->transform(x1,y1,X1,Y1);
@@ -81,18 +81,20 @@ int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos ali
 
 	if(filteri & filter) {
 		this->transform(x,y,X0,Y0);
-		l_ascent = xfs->max_bounds.ascent;
+		l_ascent  = xfs->max_bounds.ascent;
 		l_descent = xfs->max_bounds.descent;
-		l_width = this->get_string_size(gc,str,opt_strlen);
-		X0 = common->x_alignment(X0,l_width,alignment);
+		l_width   = this->get_string_size(gc,str,opt_strlen);
+		X0        = common->x_alignment(X0,l_width,alignment);
 
-		if( !this->drawn || size_information.l > X0 ) size_information.l = X0;
-		if( !this->drawn || size_information.r < X0 + l_width ) size_information.r = X0 + l_width;
-		if( !this->drawn || size_information.t > Y0 - l_ascent ) size_information.t = Y0 - l_ascent;
-		if( !this->drawn || size_information.b < Y0 + l_descent ) size_information.b = Y0 + l_descent;
-		this->drawn 					= AW_TRUE;
+        if( !drawn || size_information.l > X0 )                 size_information.l = X0;
+        if( !drawn || size_information.r < X0 + l_width )       size_information.r = X0 + l_width;
+        if( !drawn || size_information.t > Y0 - l_ascent )      size_information.t = Y0 - l_ascent;
+        if( !drawn || size_information.b < Y0 + l_descent )     size_information.b = Y0 + l_descent;
+
+        drawn = AW_TRUE;
 		return 1;
-	}else{
+	}
+    else {
 		return 0;
 	}
 }
