@@ -1,6 +1,10 @@
 #ifndef arbdb_h_included
 #define arbdb_h_included
 
+#ifndef _STDIO_H
+#error "arbdb.h needs stdio.h included"
+#endif
+
 #define NOT4PERL
 /* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
 
@@ -303,7 +307,6 @@ extern "C" {
 
 # define P_(s) s
 
-#include <stdio.h>
 #include <ad_prot.h>
 #ifdef GBL_INCLUDED
 #include <ad_lpro.h>
@@ -337,4 +340,6 @@ int GB_info(struct gb_data_base_type2 *gbd);
 # endif /*NO_INLINE*/
 #endif /*__cplusplus*/
 
+#else
+#error "arbdb.h included twice"
 #endif /*arbdb_h_included*/
