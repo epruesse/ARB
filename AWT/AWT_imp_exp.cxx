@@ -116,19 +116,31 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
 
     return error;
 }
-// -----------------------------------------------------------------------------------------------------------------------------------------
-//      static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, int deep, double my_length, AW_BOOL use_NDS)
-// -----------------------------------------------------------------------------------------------------------------------------------------
-static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS) {
+// --------------------------------------------------------------------------------------
+//      inline string buildNodeIdentifier(const string& parent_id, int& son_counter)
+// --------------------------------------------------------------------------------------
+inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
+    ++son_counter;
+    if (parent_id.empty()) return GBS_global_string("n_%i", son_counter);
+    return GBS_global_string("%s.%i", parent_id.c_str(), son_counter);
+}
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, const string& parent_id, int& parent_son_counter)
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
     if (tree->is_leaf) {
-        XML_Tag species_tag("SPECIES");
+        XML_Tag item_tag("ITEM");
 
-        if (use_NDS) species_tag.add_attribute("name", make_node_text_nds(gb_main, tree->gb_node, 0, tree));
-        else         species_tag.add_attribute("name", tree->name);
+        item_tag.add_attribute("name", buildNodeIdentifier(parent_id, parent_son_counter));
 
-        species_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
+        item_tag.add_attribute("itemname",
+                                  use_NDS
+                                  ? make_node_text_nds(gb_main, tree->gb_node, 0, tree)
+                                  : tree->name);
+
+        item_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
     }
     else {
         char *groupname = 0;
@@ -156,36 +168,42 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
         }
 
         if (my_length || bootstrap || groupname ) {
-            XML_Tag node_tag("NODE");
+            XML_Tag branch_tag("BRANCH");
+            string  my_id = buildNodeIdentifier(parent_id, parent_son_counter);
 
-            if (my_length) node_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
+            branch_tag.add_attribute("name", my_id);
+
+            if (my_length) {
+                branch_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
+            }
             if (bootstrap) {
-                node_tag.add_attribute("bootstrap", bootstrap);
+                branch_tag.add_attribute("bootstrap", bootstrap);
                 free(bootstrap);
                 bootstrap = 0;
             }
             if (groupname) {
-                node_tag.add_attribute("groupname", groupname);
+                branch_tag.add_attribute("groupname", groupname);
                 free(groupname);
                 groupname = 0;
             }
 
-            error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS);
-            error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS);
+            int my_son_counter = 0;
+            if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, my_id, my_son_counter);
+            if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, my_id, my_son_counter);
         }
         else {
-            error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS);
-            error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS);
+            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, parent_id, parent_son_counter);
+            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, parent_id, parent_son_counter);
         }
     }
 
     return error;
 }
 
-// -----------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *tree_name, AW_BOOL use_NDS, const char *path)
-// -----------------------------------------------------------------------------------------------------------------
-GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *tree_name, AW_BOOL use_NDS, const char *path) {
+// --------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path)
+// --------------------------------------------------------------------------------------------------------------------------------------
+GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path) {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
@@ -207,17 +225,19 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *tree_name, AW_BOOL use
 
                 XML_Document xml_doc("ARB_TREE", "arb_tree.dtd", output);
 
-                {
-                    char *remark            = 0;
-                    if (tree_remark) remark = GB_read_string(tree_remark);
-                    else  remark            = GB_strdup(GBS_global_string("ARB-tree '%s'", tree_name));
+                xml_doc.add_attribute("database", db_name);
+                xml_doc.add_attribute("treename", tree_name);
+                xml_doc.add_attribute("export_date", "heute");
 
+                if (tree_remark) {
+                    char *remark = GB_read_string(tree_remark);
                     XML_Tag  remark_tag("COMMENT");
                     XML_Text remark_text(remark);
                     free(remark);
                 }
 
-                error = awt_export_tree_node_print_xml(gb_main,tree,0.0, use_NDS);
+                int my_son_counter = 0;
+                error              = awt_export_tree_node_print_xml(gb_main,tree,0.0, use_NDS, "", my_son_counter);
             }
         }
         fclose(output);
