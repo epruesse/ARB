@@ -20,7 +20,14 @@
 #define pgd_assert(cond) arb_assert(cond)
 
 #include "../global_defs.h"
+
+#define NEED_decodeTreeNode
+#define NEED_encodeTreeNode
+#define NEED_getDatabaseState
+#define NEED_setDatabaseState
+#define NEED_saveProbeContainerToString
 #include "../common.h"
+
 #include "../mapping.h"
 #include "../path_code.h"
 #include "../read_config.h"
@@ -768,6 +775,33 @@ public:
     GB_ERROR getError() const { return error; }
 };
 
+static GB_ERROR loadProbeSetFromString(std::set<Probes>& probes, GBDATA *gb_father,
+                                       const char *entry_name, bool error_if_missing)
+{
+    GB_ERROR  error    = 0;
+    GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+
+    if (gb_entry) {
+        char *probe_string = GB_read_string(gb_entry);
+        if (!probe_string) {
+            error = GB_get_error();
+            pgd_assert(error);
+        }
+        else {
+            for (const char *tok = strtok(probe_string, ",");
+                 tok;
+                 tok = strtok(0, ","))
+            {
+                probes.insert(tok);
+            }
+        }
+    }
+    else if (error_if_missing) {
+        error = GBS_global_string("no such entry '%s'", entry_name);
+    }
+
+    return error;
+}
 
 static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
     {
@@ -792,10 +826,58 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
 
     if (!error && species.empty()) error = "No species detected for probe group.";
     if (!error) {
-        std::set<Probes>      probe; //set of probes from the design
-        error = PGD_probe_design_event(&species, &probe, use); // call probe_design
+        std::set<Probes> designedProbes; //set of probes from the design
+        error = PGD_probe_design_event(&species, &designedProbes, use); // call probe_design
 
-        if (!error && !probe.empty()) {
+        size_t both_count = 0;
+        
+        if (!error && !designedProbes.empty()) {
+            std::set<Probes> matchedProbes;
+            error = loadProbeSetFromString(matchedProbes, pd_probe_group, "matched_probes", true);
+
+
+            if (!error) {
+                std::set<Probes> commonProbes;
+
+                for (set<Probes>::iterator i=designedProbes.begin(); i != designedProbes.end(); ) {
+                    set<Probes>::const_iterator found = matchedProbes.find(*i);
+                    if (found != matchedProbes.end()) {
+                        // probe was found by probe-design and probe-match
+                        commonProbes.insert(*i);
+                        matchedProbes.erase(found);
+                        designedProbes.erase(i++);
+                    }
+                    else {
+                        // probe was only found by probe-design
+                        ++i;
+                    }
+                }
+
+                // write designed-only, matched-only and common probe sets
+
+                if (!designedProbes.empty()) {
+                    error = saveProbeContainerToString<set<Probes> >(pd_probe_group, "designed_probes", false, designedProbes.begin(), designedProbes.end());
+                }
+
+                if (!error) {
+                    if (matchedProbes.empty()) {
+                        GBDATA *gb_matched_probes = GB_find(pd_probe_group, "matched_probes", 0, down_level);
+                        if (gb_matched_probes) {
+                            error = GB_delete(gb_matched_probes);
+                        }
+                    }
+                    else {
+                        error = saveProbeContainerToString<set<Probes> >(pd_probe_group, "matched_probes", true, matchedProbes.begin(), matchedProbes.end());
+                    }
+                }
+
+                if (!commonProbes.empty()) {
+                    both_count = commonProbes.size();
+                    error      = saveProbeContainerToString<set<Probes> >(pd_probe_group, "common_probes", false, commonProbes.begin(), commonProbes.end());
+                }
+            }
+
+#if 0
             // store the result
 
             GBDATA *pd_design_only = 0;
@@ -837,39 +919,41 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
                     }
                 }
             }
-
-            if (!error) {
-                GBDATA *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
-                if (pd_group_id) {
-                    const char *group_id     = GB_read_char_pntr(pd_group_id);
-                    if (group_id[0] == 'p') { // if this is a subtree-group -> update number of found probes
-                        const char *encoded_path = group_id+1;
-                        GBDATA     *pd_subtree   = (GBDATA*)GBS_read_hash(path2subtree, encoded_path);
-
-                        if (pd_subtree) {
-                            GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
-                            if (!both_count) {
-                                if (pd_exact) error = GB_delete(pd_exact);
-                            }
-                            else {
-                                if (!pd_exact) pd_exact = GB_create(pd_subtree, "exact", GB_INT);
-                                if (!error) error       = GB_write_int(pd_exact, both_count);
-                            }
-                        }
-                        else {
-                            error = GBS_global_string("couldn't update number of exact matches (subtree '%s' not found)", encoded_path);
-                        }
-                    }
-                }
-            }
-
+            
             if (!error) {
                 // remove empty 'probe_matches' container
                 GBDATA *pd_has_match = GB_find(pd_match_only, 0, 0, down_level);
                 if (!pd_has_match) error = GB_delete(pd_match_only);
             }
-
+#endif
         }
+
+        // update 'exact' entry for real subtrees
+        if (!error) {
+            GBDATA *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
+            if (pd_group_id) {
+                const char *group_id     = GB_read_char_pntr(pd_group_id);
+                if (group_id[0] == 'p') { // if this is a subtree-group -> update number of found probes
+                    const char *encoded_path = group_id+1;
+                    GBDATA     *pd_subtree   = (GBDATA*)GBS_read_hash(path2subtree, encoded_path);
+
+                    if (pd_subtree) {
+                        GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+                        if (!both_count) {
+                            if (pd_exact) error = GB_delete(pd_exact);
+                        }
+                        else {
+                            if (!pd_exact) pd_exact = GB_create(pd_subtree, "exact", GB_INT);
+                            if (!error) error       = GB_write_int(pd_exact, both_count);
+                        }
+                    }
+                    else {
+                        error = GBS_global_string("couldn't update number of exact matches (subtree '%s' not found)", encoded_path);
+                    }
+                }
+            }
+        }
+
     }
 
     return error;
