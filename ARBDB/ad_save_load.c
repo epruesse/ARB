@@ -113,13 +113,13 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
 
     ext = gb_findExtension(oname);
 
-    if (ext)
-    {
-        ad_assert(strlen(ext)<=4);
-        ext[strlen(ext)-1] = '~';
+    if (ext) { // replace last character of extension with '~'
+        int extlen = strlen(ext);
+
+        ad_assert(extlen <= 4);
+        ext[extlen-1] = '~';
     }
-    else
-    {
+    else { // append '~' to filenames w/o extension
         int len = strlen(oname);
         oname[len] = '~';
         oname[len+1] = 0;
@@ -980,8 +980,9 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     }
     else if ((out = fopen(sec_path, "w")) == NULL)
     {
-        printf(" file %s could not be opened for writing \n", sec_path);
-        GB_export_error("ARBDB ERROR: Cannot save file to '%s'",sec_path);
+        GB_export_IO_error("saving",sec_path);
+/*         printf(" file %s could not be opened for writing \n", sec_path); */
+/*         GB_export_error("ARBDB ERROR: Cannot save file to '%s'",sec_path); */
         goto error;
     }
 
@@ -1043,8 +1044,9 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     erg |= fclose(out);
 
     if (erg) {
-        GB_export_error("ARBDB: Write Error, system errno = '%i', see console", errno);
-        perror("Write Error");
+        GB_export_IO_error("writing", sec_path);
+/*         GB_export_error("ARBDB: Write Error, system errno = '%i', see console", errno); */
+/*         perror("Write Error"); */
         goto error;
     }
 
@@ -1322,6 +1324,10 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
         GB_print_error();
         return GB_get_error();
     }
+    if (strchr(path,':')){
+        return GB_export_error( "Your database name must not contain a ':' character\n"
+                                "   Choose a different name");
+    }
 
     fullpath = gb_full_path(path);
     if (Main->disabled_path && !strchr(flags,'f') ) {
@@ -1332,7 +1338,25 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
                                    "    Please select 'save as' and save your data to a different location");
         }
     }
+
+    // check whether destination directory exists
+    {
+        char *lslash = strrchr(fullpath, '/');
+        if (lslash) {
+            GB_ERROR err = 0;
+
+            lslash[0] = 0;
+            if (!GB_is_directory(fullpath)) {
+                err = GB_export_error("Directory '%s' doesn't exist", fullpath);
+            }
+            lslash[0] = '/';
+
+            if (err) return err;
+        }
+    }
+
     free(fullpath);
+
     if ( !strchr(flags,'q')){
         mode = GB_mode_of_link(path);
         if (mode >=0 && !(mode & S_IWUSR)){ /* no write access -> lookes like a master file */
@@ -1343,10 +1367,6 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
                                    "    If you want to save it nevertheless, delete it first !!!",
                                    path);
         }
-    }
-    if (strchr(path,':')){
-        return GB_export_error( "Your database name must not contain a ':' charactar\n"
-                                "   choose a new name");
     }
     if ( strchr(flags,'n')){
         if (GB_time_of_file(path)){
