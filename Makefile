@@ -567,21 +567,6 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 	-SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
-bin/fig2dev:
-	cd fig2dev/dev;$(XMKMF)
-	cd fig2dev;$(XMKMF)
-	cd fig2dev;$(MAKE)
-	cd fig2dev/dev;$(MAKE)
-	cp fig2dev/fig2dev bin
-#	cd fig2dev/dev;make
-#	cd fig2dev;make fig2dev
-#	cp fig2dev/fig2dev bin
-
-figclean:
-	rm -f bin/fig2dev
-	cd fig2dev/dev;$(MAKE) clean
-	-(cd fig2dev;$(MAKE) clean)
-
 gde:		GDE/GDE.dummy
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
@@ -590,7 +575,6 @@ trs:		TRS/TRS.dummy
 convert:	CONVERTALN/CONVERTALN.dummy
 readseq:	READSEQ/READSEQ.dummy
 aleio:		ALEIO/.dummy
-fig2dev:	bin/fig2dev
 
 
 #***************************************************************************************
@@ -614,7 +598,7 @@ export:	tarfile
 binlink:
 	(cd bin; make all);
 
-all:	arb libs gde tools readseq convert fig2dev openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
@@ -685,7 +669,7 @@ bclean:		#binary clean
 	rm -f bin/arb_*
 	cd bin;make all
 
-clean:	rmbak figclean
+clean:	rmbak
 	rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
 	rm -f *_COM/GENH/*.h
 	rm -f *_COM/GENC/*.c
