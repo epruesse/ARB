@@ -135,7 +135,7 @@ void PS_FileBuffer::peek( void *_data, int _length ) {
 void PS_FileBuffer::flush() {
     ssize_t written = write( file_handle, buffer, size );
     if (written != size) {
-        fprintf( stderr, "failed to write %i bytes to file %s\n",size,file_name );
+        fprintf( stderr, "failed to write %i bytes to file %s (total_write = %lu)\n",size,file_name,total_write );
         *(int *)0 = 0;
     }
     total_write += written;
@@ -153,6 +153,10 @@ void PS_FileBuffer::refill() {
     memcpy( buffer, &buffer[position], unread );
     // read data from file
     ssize_t readen = read( file_handle, &buffer[size-position], BUFFER_SIZE-unread );
+    if (readen < 1) {
+        fprintf( stderr, "failed to refill buffer from file %s (total_read = %lu)\n",file_name,total_read );
+        *(int *)0 = 0;
+    }
     total_read += readen;
     size        = unread+readen;
     position    = 0;
@@ -179,7 +183,11 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     }
     file_handle = open( file_name, file_flags, file_mode );
     if (file_handle == -1) {
-        fprintf( stderr, "failed to open file %s\n",file_name );
+        if (_readonly) {
+            fprintf( stderr, "failed to open file '%s' for reading\n",file_name );
+        } else {
+            fprintf( stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n",file_name );
+        }
         *(int *)0 = 0;
     }    
 
@@ -207,7 +215,11 @@ PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
     }
     file_handle = open( file_name, file_flags, file_mode );
     if (file_handle == -1) {
-        fprintf( stderr, "failed to open file %s\n",file_name );
+        if (_readonly) {
+            fprintf( stderr, "failed to open file '%s' for reading\n",file_name );
+        } else {
+            fprintf( stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n",file_name );
+        }
         *(int *)0 = 0;
     }
 

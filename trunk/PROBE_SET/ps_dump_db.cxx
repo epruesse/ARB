@@ -226,12 +226,14 @@ int main( int argc,  char *argv[] ) {
     printf( "init Species <-> ID - Map\n" );
     PG_initSpeciesMaps(pb_main);
     int species_count = PG_NumberSpecies();
-    printf( "%i species in the map ", species_count );
+    printf( "%i species in the map ", species_count+1 );
     if (species_count >= 10) {
-        printf( "\nhere are the first 10 :\n" );
-        int count = 0;
-        for (Int2StringIter i=num2species_map.begin(); count<10; ++i,++count) {
-            printf( "[ %2i ] %s\n", i->first, i->second.c_str() );
+        printf( "\nhere are the first 10 and the last 10 :\n" );
+        int             count    = 0;
+        Int2StringIter  forward  = num2species_map.begin();
+        Int2StringRIter backward = num2species_map.rbegin();
+        for ( ; count<10; ++backward,++forward,++count) {
+            printf( "[ %2i ] '%s'  \t[ %5i ] '%s'\n", forward->first, forward->second.c_str(), backward->first, backward->second.c_str() );
         }
     }
     printf( "(enter to continue)\n" );
@@ -275,35 +277,7 @@ int main( int argc,  char *argv[] ) {
 
     if (argc >= 3) { // output filenames given => extract probe-data and save to file
         //
-        // stage 1 : write ID<->Name Map
-        //
-        if (argc > 3) {
-            printf( "writing map file %s\n", argv[3] );
-            int fdMap = open( argv[3], O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
-            if (fdMap == -1) {
-                printf( "error : %s already exists or can't be created\n",argv[3] );
-            } else {
-                ssize_t written;
-                int     size;
-                for (Int2StringIter i = num2species_map.begin(); i != num2species_map.end(); ++i) {
-                    // write id
-                    written = write( fdMap, &(i->first), sizeof(SpeciesID) );
-                    if (written != sizeof(SpeciesID)) exit(1);
-                    // write length of name
-                    size = i->second.size();
-                    written = write( fdMap, &size, sizeof(size) );
-                    if (written != sizeof(size)) exit(1);
-                    // write name
-                    written = write( fdMap, i->second.c_str(), size);
-                    if (written != size) exit(1);
-                }
-            }
-            close( fdMap );
-            printf( "(enter to continue)\n" );
-            //        getchar();
-        }
-        //
-        // stage 2 : extract data
+        // stage 1 : extract data
         //
         printf( "extracting probe-data...\n" );
         int      probe_length = PS_detect_probe_length( group_tree );
@@ -311,11 +285,11 @@ int main( int argc,  char *argv[] ) {
     
         PS_NodePtr  root = new PS_Node(-1);
         first_level_node = PS_get_first_node( group_tree );
-        unsigned int first_level_node_counter = 0;
+        unsigned int first_level_node_counter = 1;
         unsigned long int double_probes   = 0;
         unsigned long int double_children = 0;
         do {
-            if (first_level_node_counter % 200 == 0) printf( "1st level node #%u\n", first_level_node_counter );
+            if ((first_level_node_counter-1) % 200 == 0) printf( "1st level node #%u\n", first_level_node_counter );
             PairUL doubles   = PS_extract_probe_data( first_level_node, probe_length, root );
             double_probes   += doubles.first;
             double_children += doubles.second;
@@ -328,10 +302,36 @@ int main( int argc,  char *argv[] ) {
 //        getchar();
 
         //
+        // stage 2 : write ID<->Name Map
+        //
+        PS_FileBuffer *fb = 0;
+        if (argc > 3) {
+            printf( "writing map file %s\n", argv[3] );
+            fb = new PS_FileBuffer( argv[3], PS_FileBuffer::WRITEONLY );
+            // write size of map
+            fb->put_uint( num2species_map.size() );
+            // write contents of map
+            for (Int2StringIter i = num2species_map.begin(); i != num2species_map.end(); ++i) {
+                // write id
+                fb->put_int( i->first );
+                // write length of name
+                fb->put_uint( i->second.size() );
+                // write name
+                fb->put( i->second.c_str(),i->second.size() );
+            }
+            printf( "(enter to continue)\n" );
+            //        getchar();
+        }
+
+        //
         // stage 3 : write tree to file
         //
         printf( "writing probe-data to %s\n",argv[2] );
-        PS_FileBuffer *fb = new PS_FileBuffer( argv[2], PS_FileBuffer::WRITEONLY );
+        if (fb) {
+            fb->reinit( argv[2], PS_FileBuffer::WRITEONLY );
+        } else {
+            fb = new PS_FileBuffer( argv[2], PS_FileBuffer::WRITEONLY );
+        }
         root->save( fb );
         delete fb;
 

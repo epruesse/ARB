@@ -14,8 +14,10 @@ using namespace std;
 
 typedef map<string, int>           String2Int;
 typedef String2Int::const_iterator String2IntIter;
+typedef String2Int::const_reverse_iterator String2IntRIter;
 typedef map<int,string>            Int2String;
 typedef Int2String::const_iterator Int2StringIter;
+typedef Int2String::const_reverse_iterator Int2StringRIter;
 
 static String2Int species2num_map;
 static Int2String num2species_map;

@@ -15,11 +15,15 @@ private:
     long size;
     long capacity;
     bool bias;
+    bool is_triangular;
 
     PS_BitMap();
     PS_BitMap( const PS_BitMap& );
 
 public:
+
+    static const bool NORMAL     = false;
+    static const bool TRIANGULAR = true;
 
     bool get( const long _x, const long _y );
     void set( const long _x, const long _y, const bool _value );
@@ -33,10 +37,47 @@ public:
 
     void print();
 
+    explicit PS_BitMap( bool _bias, long _capacity, bool _triangular ) {
+        size          = 0;
+        capacity      = _capacity+1;
+        bias          = _bias;
+        is_triangular = _triangular;
+        // init data
+        data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*)*capacity);
+        if (_triangular) {
+            //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
+            for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
+                data[i] = new PS_BitSet( bias,i );                   // init field
+                if (data[i] == 0) *(int *)0 = 0;                     // check success
+            }
+        } else {
+            //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
+            for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
+                data[i] = new PS_BitSet( bias,capacity );            // init field
+                if (data[i] == 0) *(int *)0 = 0;                     // check success
+            }
+        }
+    }
+
+    explicit PS_BitMap( bool _bias, long _capacity ) {
+        size          = 0;
+        capacity      = _capacity+1;
+        bias          = _bias;
+        is_triangular = false;
+        // init data
+        data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*)*8);
+        //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
+        for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
+            data[i] = new PS_BitSet( bias );                     // init field
+            if (data[i] == 0) *(int *)0 = 0;                     // check success
+        }
+    }
+
     explicit PS_BitMap( bool _bias ) {
-        size     = 0;
-        capacity = 1;
-        bias     = _bias;
+        size          = 0;
+        capacity      = 1;
+        bias          = _bias;
+        is_triangular = false;
         data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*));
         //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
         data[0]  = new PS_BitSet( bias );
