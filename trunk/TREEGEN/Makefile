@@ -1,9 +1,10 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .c .cxx .o .h
+.SUFFIXES: .c .cxx .o .h .depend
 
 CPP_OBJECTS =
 C_OBJECTS = base.o defines.o frand.o readcfg.o rns.o sim.o simcfg.o spreadin.o
+OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
 $(MAIN): $(CPP_OBJECTS) $(C_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS) $(C_OBJECTS)
@@ -15,23 +16,32 @@ $(MAIN): $(CPP_OBJECTS) $(C_OBJECTS)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	@-rm $(CPP_OBJECTS) $(C_OBJECTS)
+	@-rm $(OBJECTS)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx) $(C_OBJECTS:.o=.c)
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
-
-#tg: $(OBJECTS)
-#	gcc -o $@ $(OBJECTS)
-
-#.c.o:
-#	gcc -g -c -o $@ $<
 # DO NOT DELETE
 
 base.o: base.h
+
 defines.o: defines.h
+
 frand.o: frand.h
+
 readcfg.o: readcfg.h
-rns.o: rns.h spreadin.h  
+
+rns.o: rns.h spreadin.h
+
 simcfg.o: simcfg.h
+
 spreadin.o: spreadin.h

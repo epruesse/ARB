@@ -41,7 +41,7 @@ static void scanKeywords(struct S_cfgLine line[], int *lineanz, int *maxlen)
 /* ------------------------------------------------------ 18.05.95 02.23 ---- */
 static void cfgReadWarning(cstr fname, int lineno)
 {
-    warningf("Fehler in Zeile %i von '%s'", lineno, fname);
+    warningf("Error in line %i of '%s'", lineno, fname);
 }
 /* -------------------------------------------------------------------------- */
 /*      int readCfg(cstr fname, struct S_cfgLine line[]) */
@@ -60,10 +60,10 @@ int readCfg(cstr fname, struct S_cfgLine line[])
 
         if (out)
         {
-            fprintf(out, ";\n; CFG-Datei '%s'\n;\n\n", fname);
+            fprintf(out, ";\n; arb_treegen CFG-File '%s'\n;\n\n", fname);
             fclose(out);
 
-            warningf("'%s' wurde erzeugt.", fname);
+            warningf("'%s' has been generated.", fname);
 
             in = fopen(fname, "r");
             ok = in!=NULL;
@@ -116,7 +116,7 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                         {
                             cfgReadWarning(fname, lineno);
                             if (error_message) warning(error_message);
-                            else               warningf("Angabe bei '%s' kann nicht interpretiert werden.", line[search].keyword);
+                            else               warningf("Can't interpret '%s'", line[search].keyword);
                             ok = 0;
                         }
                         else
@@ -126,7 +126,7 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                                 if (decoded!=2)            /* mehrfache Verwendung erlaubt? */
                                 {
                                     cfgReadWarning(fname, lineno);
-                                    warningf("Schluesselwort '%s' doppelt definiert (Erste Definition in Zeile %i)", firstWord, wordRead[search]);
+                                    warningf("Keyword '%s' duplicated (already specified in line %i)", firstWord, wordRead[search]);
                                     ok = 0;
                                 }
                             }
@@ -144,7 +144,7 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                 if (search==keywords)                      /* keyword nicht gefunden! */
                 {
                     cfgReadWarning(fname, lineno);
-                    warningf("Unbekanntes Schluesselwort '%s'", firstWord);
+                    warningf("Unknown Keyword '%s'", firstWord);
                     ok = 0;
                 }
             }
@@ -178,7 +178,7 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                 }
 
                 fclose(out);
-                warningf("Fehlende Keywords an '%s' angeh„ngt.", fname);
+                warningf("Missing keywords appended to '%s'.", fname);
             }
 
             ok = 0;

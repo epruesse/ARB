@@ -70,7 +70,7 @@ __PROTOTYPEN__
 
     RNS  createOriginRNS (void);
     void freeRNS         (RNS rns);
-    void splitRNS        (RNS origin, double age, int steps, int depth);
+    void splitRNS        (int no_of_father, RNS origin, double age, int steps, int depth);
 
     void dumpDepths      (void);
 

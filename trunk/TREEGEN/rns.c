@@ -174,8 +174,10 @@ static RNS allocRNS(int len)
 
     if (!rns) outOfMemory();
 
-    rns->bases = orgLen;
-    rns->base  = malloc(sizeof(*(rns->base))*orgLen);
+/*     rns->bases = orgLen; */
+/*     rns->base  = malloc(sizeof(*(rns->base))*orgLen); */
+    rns->bases = len;
+    rns->base  = malloc(sizeof(*(rns->base))*len);
 
     if (!rns->base) outOfMemory();
 
@@ -193,6 +195,8 @@ RNS createOriginRNS(void)
     int helixLen = orgLen*orgHelixPart,
         l;
     str base     = rns->base;
+
+    printf("Generating origin species..\n");
 
     initBaseSpecificProbs(orgLen);
 
@@ -502,7 +506,7 @@ static int calcPairTrials(double pairProb, double actPairPart)
 /* */
 /*  'steps'     Anzahl noch zu durchlaufender Zeitschritte */
 /* */
-static void mutateRNS(RNS rns, int steps, int depth)
+static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
 {
     int    splitInSteps,
            s;
@@ -645,7 +649,7 @@ static void mutateRNS(RNS rns, int steps, int depth)
         }
     }
 
-    splitRNS(rns, mutationTime, steps-splitInSteps, depth+1);
+    splitRNS(no_of_father, rns, mutationTime, steps-splitInSteps, depth+1);
 }
 /* -------------------------------------------------------------------------- */
 /*      void splitRNS(RNS origin, double age, int steps, int depth) */
@@ -653,7 +657,7 @@ static void mutateRNS(RNS rns, int steps, int depth)
 /* */
 /*  Spaltet eine RNS in zwei Species auf */
 /* */
-void splitRNS(RNS origin, double age, int steps, int depth)
+void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
 {
     int x;
 
@@ -663,7 +667,13 @@ void splitRNS(RNS origin, double age, int steps, int depth)
     /* |  Sequenz schreiben  | */
     /* \---------------------/ */
 
-    fprintf(seq, ">no%i\n", origin->laufNr);
+    if (no_of_father != -1) {
+        fprintf(seq, ">no%i son of no%i\n", origin->laufNr, no_of_father);
+    }
+    else {
+        fprintf(seq, ">no%i father of all species\n", origin->laufNr);
+    }
+    no_of_father = origin->laufNr; /* now i'm the father */
     for (x = 0; x<(origin->bases); x++) fputc(origin->base[x], seq);
     fputc('\n', seq);
 
@@ -680,7 +690,7 @@ void splitRNS(RNS origin, double age, int steps, int depth)
         {
             RNS left = dupRNS(origin);                     /* linker Sohn */
 
-            mutateRNS(left, steps, depth);
+            mutateRNS(no_of_father, left, steps, depth);
             freeRNS(left);
         }
 
@@ -694,7 +704,7 @@ void splitRNS(RNS origin, double age, int steps, int depth)
         {
             RNS right = dupRNS(origin);                    /* rechter Sohn */
 
-            mutateRNS(right, steps, depth);
+            mutateRNS(no_of_father, right, steps, depth);
             freeRNS(right);
         }
 
@@ -707,6 +717,10 @@ void splitRNS(RNS origin, double age, int steps, int depth)
 
 /*        indent(depth); */
         fprintf(topo, "no%i:%f", origin->laufNr, age);
+
+        if ((origin->laufNr%100) == 0) {
+            printf("generated Species: %i\n", origin->laufNr);
+        }
     }
 
     if (age==0.0) dumpRNS(NULL);
