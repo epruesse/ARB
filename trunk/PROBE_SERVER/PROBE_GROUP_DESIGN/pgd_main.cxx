@@ -743,6 +743,8 @@ int main(int argc,char *argv[]) {
                             GBDATA *pd_both        = 0;
                             GBDATA *pd_match_only  = GB_find(pd_probe_group, "probe_matches", 0, down_level);
 
+                            int both_count = 0;
+
                             if (!pd_match_only) error = "probe group w/o 'probe_matches' container";
 
                             for (set<Probes>::const_iterator i=probe.begin(); i != probe.end() && !error; ++i) {
@@ -759,7 +761,10 @@ int main(int argc,char *argv[]) {
                                         GBDATA *pd_probe = GB_create(pd_both, "probe", GB_STRING);
                                         error            = GB_write_string(pd_probe, probe_string);
 
-                                        if (!error) error = GB_delete(pd_did_match);
+                                        if (!error) {
+                                            error = GB_delete(pd_did_match);
+                                            both_count++; // count common probes
+                                        }
                                     }
                                 }
                                 else { // probe was not found yet -> put into 'probe_group_design'
@@ -770,6 +775,29 @@ int main(int argc,char *argv[]) {
                                     if (!error) {
                                         GBDATA *pd_probe = GB_create(pd_design_only, "probe", GB_STRING);
                                         error            = GB_write_string(pd_probe, probe_string);
+                                    }
+                                }
+                            }
+
+                            if (!error) {
+                                // if this is a subtree-group -> update number of found probes
+                                GBDATA *pd_subtreepath = GB_find(pd_probe_group, "subtreepath", 0, down_level);
+                                if (pd_subtreepath) {
+                                    const char *path       = GB_read_char_pntr(pd_subtreepath);
+                                    GBDATA     *pd_subtree = (GBDATA*)GBS_read_hash(path2subtree, path);
+
+                                    if (pd_subtree) {
+                                        GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+                                        if (!both_count) {
+                                            if (pd_exact) error = GB_delete(pd_exact);
+                                        }
+                                        else {
+                                            if (!pd_exact) pd_exact = GB_create(pd_subtree, "exact", GB_INT);
+                                            if (!error) error       = GB_write_int(pd_exact, both_count);
+                                        }
+                                    }
+                                    else {
+                                        error = GBS_global_string("couldn't update number of exact matches (subtree '%s' not found)", path);
                                     }
                                 }
                             }
@@ -851,104 +879,6 @@ int main(int argc,char *argv[]) {
                     }
 
 
-                    /*
-                    if (error) fputc('\n', stdout);
-                    else {
-                        printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
-                        printf("\nMarking common probes..\n");
-
-                        // check whether probes common in probe_group and probe_group_design
-                        count           = 0;
-                        for (GBDATA *pd_probe_group = GB_find(pd_probegroup_cont,"probe_group",0,down_level);
-                             pd_probe_group && !error;
-                             pd_probe_group = GB_find(pd_probe_group,"probe_group",0,this_level|search_next))
-                        {
-                            ++count;
-                            if (count%60) fputc('.', stdout);
-                            else printf(". %i%%\n", int((double(count)/probe_group_counter)*100+0.5));
-
-                            GBDATA *pd_probe_matches      = GB_find(pd_probe_group, "probe_matches", 0, down_level);
-                            GBDATA *pd_probe_group_design = GB_find(pd_probe_group, "probe_group_design", 0, down_level);
-                            GBDATA *pd_probe_group_common = 0;
-
-                            if (pd_probe_matches && pd_probe_group_design) {
-                                int probes_found = 0;
-
-                                for (GBDATA *pd_probe1 = GB_find(pd_probe_matches, "probe", 0, down_level);
-                                     pd_probe1; )
-                                {
-                                    GBDATA     *pd_next_probe1 = GB_find(pd_probe1, "probe", 0, this_level|search_next);
-                                    const char *probe_string   = GB_read_char_pntr(pd_probe1);
-                                    GBDATA     *pd_probe2      = GB_find(pd_probe_group_design, 0, probe_string, down_level);
-
-                                    if (pd_probe2) { // 'probe_group_design' also contains the probe
-                                        // -> put the common probe into 'probe_group_common'
-                                        if (!pd_probe_group_common) {
-                                            pd_probe_group_common = GB_search(pd_probe_group, "probe_group_common", GB_CREATE_CONTAINER);
-                                            if (!pd_probe_group_common) error = GB_get_error();
-                                        }
-
-                                        if (!error) {
-                                            GBDATA *pd_common1     = GB_create(pd_probe_group_common, "probe", GB_STRING);
-                                            if (!pd_common1) error = GB_get_error();
-                                            else    error          = GB_write_string(pd_common1, probe_string);
-
-                                            probes_found++;
-
-                                            // and delete probe from 'probe_group' and 'probe_group_design'
-                                            if (!error) error = GB_delete(pd_probe2);
-                                            if (!error) error = GB_delete(pd_probe1);
-                                        }
-                                    }
-
-                                    pd_probe1 = pd_next_probe1;
-                                }
-
-                                // add number of found probes to nodename
-                                if (probes_found && !error) {
-                                    GBDATA     *pd_path      = GB_find(pd_probe_group, "path", 0, down_level);
-                                    const char *path         = GB_read_char_pntr(pd_path);
-                                    GBT_TREE   *current_node = PGD_find_subtree_by_path(tree, path);
-
-                                    if (!current_node) {
-                                        error = GBS_global_string("Can't find current node (%s)", path);
-                                    }
-                                    else {
-                                        if (current_node->name) {
-                                            char *newName      = GBS_global_string_copy("%s,em=%i", current_node->name, probes_found);
-                                            free(current_node->name);
-                                            current_node->name = newName;
-                                        }
-                                        else {
-                                            current_node->name = GBS_global_string_copy("em=%i", probes_found);
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-#if defined(DEBUG)
-                                GBDATA     *pd_path = GB_find(pd_probe_group, "path", 0, down_level);
-                                const char *path    = GB_read_char_pntr(pd_path);
-                                const char *error_message;
-
-                                if (pd_probe_matches) {
-                                    error_message = "Container 'probe_group_design' not found";
-                                }
-                                else {
-                                    if (pd_probe_group_design) error_message = "Container 'probe_matches' not found";
-                                    else error_message                       = "Containers 'probe_matches' and 'probe_group_design' not found";
-                                }
-
-                                fprintf(stderr, "\n%s (in subtree '%s')\n", error_message, path);
-#endif // DEBUG
-                            }
-                        }
-
-                        if (error) fputc('\n', stdout);
-                        else printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
-
-                    }
-                    */
                 }
 
                 // clean up pt-server connection
