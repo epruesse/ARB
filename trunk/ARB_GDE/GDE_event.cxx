@@ -45,16 +45,16 @@ void GDE_free(void **p)
 }
 
 /*void GDE_freemask(GMask *mask)
-{
-	if(mask==0) return;
-	GDE_free((void**)&mask->name);
-	for(long i=0;i<mask->listlen;i++)
-	{
-		NumList numl=mask->list[i];
-		GDE_free((void**)&numl.valu);
-	}
-	GDE_free((void**)&mask->list);
-}*/
+  {
+  if(mask==0) return;
+  GDE_free((void**)&mask->name);
+  for(long i=0;i<mask->listlen;i++)
+  {
+  NumList numl=mask->list[i];
+  GDE_free((void**)&numl.valu);
+  }
+  GDE_free((void**)&mask->list);
+  }*/
 
 char *ReplaceFile(char *Action,GfileFormat file)
 {
@@ -108,7 +108,7 @@ void GDE_freesequ(NA_Sequence *sequ)
 {
     if(sequ==0) return;
     GDE_free((void**)&sequ->comments);
-    /* GDE_free((void**)&sequ->col_lut); 	OLIVER STRUNK		*/
+    /* GDE_free((void**)&sequ->col_lut);    OLIVER STRUNK       */
     GDE_free((void**)&sequ->cmask);
     /*GDE_freemask(sequ->mask);*/
     GDE_free((void**)&sequ->baggage);
@@ -139,7 +139,7 @@ void GDE_freeali(NA_Alignment *dataset)
     // **maybe not correct:
     //NA_Sequence **group=dataset->group;
     //for(long i=0;i<dataset->numgroups;i++)
-    //	GDE_freesequ(dataset->group[i]);
+    //  GDE_freesequ(dataset->group[i]);
     //GDE_free((void**)&dataset->group);
     // **correction: this was not correct
 
@@ -152,7 +152,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
     GB_begin_transaction(gb_main);
     long maxalignlen=GBT_get_alignment_len(gb_main,align);
     long isdefaultalign=0;
-    int	load_all = 0;
+    int load_all = 0;
     if(maxalignlen<=0)
     {
         align=GBT_get_default_alignment(gb_main);
@@ -161,11 +161,11 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 
     maxalignlen=GBT_get_alignment_len(gb_main,align);
     long lotyp=0;
-    // 	char *type=GBT_get_alignment_type(gb_main,align);
-    // 	if(strcmp(type,"dna")==0) lotyp=DNA;
-    // 	if(strcmp(type,"rna")==0) lotyp=RNA;
-    // 	if(strcmp(type,"ami")==0) lotyp=PROTEIN;
-    // 	if(strcmp(type,"pro")==0) lotyp=PROTEIN;
+    //  char *type=GBT_get_alignment_type(gb_main,align);
+    //  if(strcmp(type,"dna")==0) lotyp=DNA;
+    //  if(strcmp(type,"rna")==0) lotyp=RNA;
+    //  if(strcmp(type,"ami")==0) lotyp=PROTEIN;
+    //  if(strcmp(type,"pro")==0) lotyp=PROTEIN;
 
     {
         GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
@@ -201,7 +201,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         if(!issame)  /* save as extended */
         {
 
-            GBDATA *gb_extended =	GBT_create_SAI(gb_main,savename);
+            GBDATA *gb_extended =   GBT_create_SAI(gb_main,savename);
             sequ->gb_species=gb_extended;
             GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
@@ -212,16 +212,16 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
             GB_push_my_security(gb_main);
 
-            if (gb_species) {	/* new element that already exists !!!!*/
+            if (gb_species) {   /* new element that already exists !!!!*/
                 int select_mode;
                 const char *msg = GBS_global_string(
                                                     "You importet a species '%s' which already exists\n"
-                                                    "	You may:\n"
-                                                    "		- delete old species\n"
-                                                    "		- overwrite sequence of old species\n"
-                                                    "		- not change this species\n"
-                                                    "		- overwrite sequence of all species\n"
-                                                    "	Remember: There is still an undo button",
+                                                    "   You may:\n"
+                                                    "       - delete old species\n"
+                                                    "       - overwrite sequence of old species\n"
+                                                    "       - not change this species\n"
+                                                    "       - overwrite sequence of all species\n"
+                                                    "   Remember: There is still an undo button",
                                                     savename);
                 if (!load_all){
                     select_mode = aw_message(msg,
@@ -238,14 +238,14 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
                     case 0:
                         GB_delete(gb_species);
                     case 1:
-                        gb_species =	GBT_create_species_rel_species_data(gb_species_data, savename);
+                        gb_species =    GBT_create_species_rel_species_data(gb_species_data, savename);
                         break;
                     case 2:
                         gb_species = 0;
                         continue;
                     case 3:
                         load_all = 1;
-                        gb_species =	GBT_create_species_rel_species_data(gb_species_data, savename);
+                        gb_species =    GBT_create_species_rel_species_data(gb_species_data, savename);
                         break;
                 }
             }else{
@@ -258,7 +258,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             GB_pop_my_security(gb_main);
 
         }
-        delete savename;
+        free(savename);
     }
 
     /* colormasks */
@@ -303,7 +303,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         *resstring='\0';
 
 
-        GBDATA *gb_extended =	GBT_create_SAI(gb_main,"COLMASK");
+        GBDATA *gb_extended =   GBT_create_SAI(gb_main,"COLMASK");
         gb_color = GBT_add_data(gb_extended, align,"colmask", GB_BYTES);
         error = GB_write_bytes(gb_color,dummy,maxalignlen);
 
@@ -395,7 +395,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     }
 
     /*
-     *	Create the command line for external the function call
+     *  Create the command line for external the function call
      */
     Action = (char*)strdup(current_item->method);
     if(Action == NULL) Error("DO(): Error in duplicating method string");
@@ -417,7 +417,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     Action = ReplaceString(Action,"$FILTER",filter_name);
 
     /*
-     *	call and go...
+     *  call and go...
      */
 
     aw_status("calling external program");
@@ -494,21 +494,21 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
 
-//     aw->hide();
+    //     aw->hide();
 }
 
 /*
-ReplaceArgs():
-	Replace all command line arguements with the appropriate values
-stored for the chosen menu item.
+  ReplaceArgs():
+  Replace all command line arguements with the appropriate values
+  stored for the chosen menu item.
 
-Copyright (c) 1989-1990, University of Illinois board of trustees.  All
-rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
-Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
-Carl Woese.
+  Copyright (c) 1989-1990, University of Illinois board of trustees.  All
+  rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
+  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
+  Carl Woese.
 
-Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
-All rights reserved.
+  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
+  All rights reserved.
 
 */
 
@@ -517,42 +517,42 @@ All rights reserved.
 char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
 {
     /*
-     *	The basic idea is to replace all of the symbols in the method
-     *	string with the values picked in the dialog box.  The method
-     *	is the general command line structure.  All arguements have three
-     *	parts, a label, a method, and a value.  The method never changes, and
-     *	is used to represent '-flag's for a given function.  Values are the
-     *	associated arguements that some flags require.  All symbols that
-     *	require argvalue replacement should have a '$' infront of the symbol
-     *	name in the itemmethod definition.  All symbols without the '$' will
-     *	be replaced by their argmethod.  There is currently no way to do a label
-     *	replacement, as the label is considered to be for use in the dialog
-     *	box only.  An example command line replacement would be:
-*
-*		itemmethod=> 		"lpr arg1 $arg1 $arg2"
-*
-*		arglabel arg1=>		"To printer?"
-*		argmethod arg1=>	"-P"
-*		argvalue arg1=>		"lw"
-*
-*		arglabel arg2=>		"File name?"
-*		argvalue arg2=>		"foobar"
-*		argmethod arg2=>	""
-*
-*	final command line:
-*
-*		lpr -P lw foobar
-*
-*	At this point, the chooser dialog type only supports the arglabel and
-*	argmethod field.  So if an argument is of type chooser, and
-*	its symbol is "this", then "$this" has no real meaning in the
-*	itemmethod definition.  Its format in the .GDEmenu file is slighty
-*	different as well.  A choice from a chooser field looks like:
-*
-*		argchoice:Argument_label:Argument_method
-*
-*
-*/
+     *  The basic idea is to replace all of the symbols in the method
+     *  string with the values picked in the dialog box.  The method
+     *  is the general command line structure.  All arguements have three
+     *  parts, a label, a method, and a value.  The method never changes, and
+     *  is used to represent '-flag's for a given function.  Values are the
+     *  associated arguements that some flags require.  All symbols that
+     *  require argvalue replacement should have a '$' infront of the symbol
+     *  name in the itemmethod definition.  All symbols without the '$' will
+     *  be replaced by their argmethod.  There is currently no way to do a label
+     *  replacement, as the label is considered to be for use in the dialog
+     *  box only.  An example command line replacement would be:
+     *
+     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
+     *
+     *       arglabel arg1=>     "To printer?"
+     *       argmethod arg1=>    "-P"
+     *       argvalue arg1=>     "lw"
+     *
+     *       arglabel arg2=>     "File name?"
+     *       argvalue arg2=>     "foobar"
+     *       argmethod arg2=>    ""
+     *
+     *   final command line:
+     *
+     *       lpr -P lw foobar
+     *
+     *   At this point, the chooser dialog type only supports the arglabel and
+     *   argmethod field.  So if an argument is of type chooser, and
+     *   its symbol is "this", then "$this" has no real meaning in the
+     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
+     *   different as well.  A choice from a chooser field looks like:
+     *
+     *       argchoice:Argument_label:Argument_method
+     *
+     *
+     */
     const char *symbol=0;
     char *method=0;
     char *textvalue=0;
@@ -564,11 +564,11 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
     type = AWinfo->gmenuitem->arg[number].type;
     if( (type == SLIDER) )
     {
-        char *awarname=GDE_makeawarname(AWinfo,number);
-        textvalue = new(char[GBUFSIZ]);
-        char *awalue=awr->awar(awarname)->read_as_string();
+        char *awarname = GDE_makeawarname(AWinfo,number);
+        textvalue      = (char*)malloc(GBUFSIZ);
+        char *awalue   = awr->awar(awarname)->read_as_string();
         sprintf(textvalue,"%s",awalue);
-        delete awalue;
+        free(awalue);
     }
     else if((type == CHOOSER) ||
             (type == CHOICE_TREE) ||
@@ -583,9 +583,9 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
         textvalue=awr->awar(awarname)->read_string();
     }
 
-    if(textvalue == NULL) 	textvalue=(char *)calloc(1,sizeof(char));
-    if(method == NULL) 		method=(char *)calloc(1,sizeof(char));
-    if(symbol == NULL) 		symbol="";
+    if(textvalue == NULL)   textvalue=(char *)calloc(1,sizeof(char));
+    if(method == NULL)      method=(char *)calloc(1,sizeof(char));
+    if(symbol == NULL)      symbol="";
 
     int j = 0;
     for(; (i=Find2(Action+j,symbol)) != -1;)
