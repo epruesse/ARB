@@ -107,7 +107,10 @@ GB_ERROR awtc_read_import_format(char *file)
     if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
     ifo = awtcig.ifo = new input_format_struct;
 
+    int lineNumber = 0;
+
     while (!awtc_read_string_pair(in,s1,s2)){
+        lineNumber++;
         if (!s1) {
             continue;
         }else if (!strcmp(s1,"AUTODETECT")) {
@@ -143,10 +146,11 @@ GB_ERROR awtc_read_import_format(char *file)
         }else if (!strcmp(s1,"DONT_GEN_NAMES")) {
             ifo->noautonames = 1;
         }else if (!strcmp(s1,"MATCH")) {
-            pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
-            pl->next = ifo->pl;
-            ifo->pl = pl;
-            pl->match = GBS_remove_escape(s2); free(s2); s2 = 0;
+            pl             = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
+            pl->start_line = lineNumber;
+            pl->next       = ifo->pl;
+            ifo->pl        = pl;
+            pl->match      = GBS_remove_escape(s2); free(s2); s2 = 0;
         }else if (pl && !strcmp(s1,"SRT")) {
             pl->srt = s2;s2= 0;
         }else if (pl && !strcmp(s1,"ACI")) {
@@ -169,7 +173,8 @@ GB_ERROR awtc_read_import_format(char *file)
         }else{
             char *fullfile = AWT_unfold_path(file,"ARBHOME");
 
-            aw_message(GBS_global_string("Unknown command in import format file '%s'  command '%s'\n",fullfile,s1));
+            aw_message(GBS_global_string("Unknown%s command in import format file '%s'  command '%s'\n",
+                                         (pl ? "" : " (or wrong placed)"), fullfile, s1));
             free(fullfile);
         }
     }
@@ -495,13 +500,11 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
 
 typedef map<char, string> SetVariables;
 
-//  ---------------------------------------------------------------------------------------------------
-//      static const char *expandSetVariables(const SetVariables& variables, const string& source)
-//  ---------------------------------------------------------------------------------------------------
-static string expandSetVariables(const SetVariables& variables, const string& source) {
-    string dest;
+static string expandSetVariables(const SetVariables& variables, const string& source, bool& error_occurred) {
+    string                 dest;
     string::const_iterator norm_start = source.begin();
     string::const_iterator p          = norm_start;
+    error_occurred                    = false;
 
     while (p != source.end()) {
         if (*p == '$') {
@@ -512,8 +515,12 @@ static string expandSetVariables(const SetVariables& variables, const string& so
             else { // real variable
                 SetVariables::const_iterator var = variables.find(*p);
                 if (var == variables.end()) {
-                    GB_export_error("Undefined variable %c", *p);
-                    return "<error>";
+                    char *error    = GBS_global_string_copy("Undefined variable '$%c'", *p);
+                    dest.append(GBS_global_string("<%s>", error));
+                    GB_export_error(error);
+                    free(error);
+                    error_occurred = true;
+                    // return "<error>";
                 }
                 else {
                     dest.append(var->second);
@@ -590,64 +597,85 @@ GB_ERROR awtc_read_data(char *ali_name)
                         break;
                 }
             }
+            GB_ERROR    error      = 0;
             if (strlen(p) > ifo->tab){
-                for (pl = ifo->pl; pl; pl=pl->next) {
+                for (pl = ifo->pl; !error && pl; pl=pl->next) {
+                    const char *what_error = 0;
                     if (!GBS_string_cmp(p,pl->match,0)){
                         char *dup = p+ifo->tab;
                         while (*dup == ' ' || *dup == '\t') dup++;
 
-                        char *s = 0;
-                        char *dele = 0;
+                        char *s              = 0;
+                        char *dele           = 0;
+
                         if (pl->srt){
-                            string expanded = expandSetVariables(variables, pl->srt);
-                            dele            = s = GBS_string_eval(dup,expanded.c_str(),gb_species);
-                            if (!s) return GB_get_error();
-                        }else{
+                            bool   err_flag;
+                            string expanded = expandSetVariables(variables, pl->srt, err_flag);
+                            if (err_flag) error = GB_get_error();
+                            else {
+                                dele           = s = GBS_string_eval(dup,expanded.c_str(),gb_species);
+                                if (!s) error  = GB_get_error();
+                            }
+                            if (error) what_error = "SRT";
+                        }
+                        else {
                             s = dup;
                         }
 
-                        if (pl->aci){
-                            string expanded = expandSetVariables(variables, pl->aci);
-                            dup = dele;
-                            dele = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species);
-                            free(dup);
-                            if (!s) return GB_get_error();
+                        if (!error && pl->aci){
+                            bool   err_flag;
+                            string expanded = expandSetVariables(variables, pl->aci, err_flag);
+                            if (err_flag) error = GB_get_error();
+                            else {
+                                dup           = dele;
+                                dele          = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species);
+                                if (!s) error = GB_get_error();
+                                free(dup);
+                            }
+                            if (error) what_error = "ACI";
                         }
 
-                        if (pl->append || pl->write) {
+                        if (!error && (pl->append || pl->write)) {
                             char *field = 0;
                             char *tag   = 0;
 
                             {
-                                string expanded_field = expandSetVariables(variables, string(pl->append ? pl->append : pl->write));
-                                field                 = GBS_string_2_key(expanded_field.c_str());;
+                                bool   err_flag;
+                                string expanded_field = expandSetVariables(variables, string(pl->append ? pl->append : pl->write), err_flag);
+                                if (err_flag) error   = GB_get_error();
+                                else   field          = GBS_string_2_key(expanded_field.c_str());
+                                if (error) what_error = "APPEND or WRITE";
                             }
 
-                            if (pl->tag) {
-                                string expanded_tag = expandSetVariables(variables, string(pl->tag));
-                                tag                 = GBS_string_2_key(expanded_tag.c_str());
+                            if (!error && pl->tag) {
+                                bool   err_flag;
+                                string expanded_tag = expandSetVariables(variables, string(pl->tag), err_flag);
+                                if (err_flag) error = GB_get_error();
+                                else   tag          = GBS_string_2_key(expanded_tag.c_str());
+                                if (error) what_error = "TAG";
                             }
 
-                            awtc_write_entry(gb_species, field, s, tag, pl->append != 0);
+                            if (!error) {
+                                awtc_write_entry(gb_species, field, s, tag, pl->append != 0);
+                            }
                             free(tag);
                             free(field);
                         }
-                        //                         if (pl->append) {
-                        //                             string expanded = expandSetVariables(variables, pl->append);
-                        //                             string expanded_tag = expandSetVariables(variables, pl->tag);
-                        //                             awtc_write_entry(gb_species,expanded.c_str(),s,expanded_tag.c_str(),1);
-                        //                         }else if (pl->write) {
-                        //                             string expanded = expandSetVariables(variables, pl->write);
-                        //                             string expanded_tag = expandSetVariables(variables, pl->tag);
-                        //                             awtc_write_entry(gb_species,expanded.c_str(),s,expanded_tag.c_str(),0);
-                        //                         }
 
-                        if (pl->setvar) {
+                        if (!error && pl->setvar) {
                             variables[pl->setvar[0]]  = s;
                         }
                         free(dele);
                     }
+
+                    if (error) {
+                        error =  GBS_global_string("'%s' in %s of MATCH at #%i", error, what_error, pl->start_line);
+                    }
                 }
+            }
+
+            if (error) {
+                return GBS_global_string("\"%s\" at line #%i of species #%i", error, line, counter);
             }
 
             if (!GBS_string_cmp(p,ifo->sequencestart,0)) goto read_sequence;
@@ -655,7 +683,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             p = awtc_read_line(ifo->tab,ifo->sequencestart,ifo->sequenceend);
             if (!p) break;
         }
-        return GB_export_error("No Start of Sequence found (%i lines read)", MAX_COMMENT_LINES);
+        return GB_export_error("No Start of Sequence found (%i lines read)", max_line);
 
     read_sequence:
         {
