@@ -371,6 +371,19 @@ void gbs_uppercase(char *str)
     }
 }
 
+int gbs_stricmp(const char *s1, const char *s2) {
+    int c1, c2, cmp;
+
+    do {
+        c1  = *s1++;
+        c2  = *s2++;
+        cmp = toupper(c1)-toupper(c2);
+    }
+    while (cmp == 0 && c1 != 0);
+
+    return cmp;
+}
+
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     register long    i;
