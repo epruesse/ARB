@@ -27,8 +27,9 @@ GBDATA *GBT_create_alignment P_((GBDATA *gbd, const char *name, long len, long a
 GB_ERROR GBT_check_alignment P_((GBDATA *Main, GBDATA *preset_alignment));
 GB_ERROR GBT_rename_alignment P_((GBDATA *gbd, const char *source, const char *dest, int copy, int dele));
 GBDATA *GBT_find_or_create P_((GBDATA *Main, const char *key, long delete_level));
-GB_ERROR GBT_check_data P_((GBDATA *Main, char *alignment_name));
+GB_ERROR GBT_check_data P_((GBDATA *Main, const char *alignment_name));
 GB_ERROR GBT_check_lengths P_((GBDATA *Main, const char *alignment_name));
+GB_ERROR GBT_format_alignment P_((GBDATA *Main, const char *alignment_name));
 GB_ERROR GBT_insert_character P_((GBDATA *Main, char *alignment_name, long pos, long count, char *char_delete));
 GB_ERROR GBT_delete_tree P_((GBT_TREE *tree));
 GB_ERROR GBT_write_group_name P_((GBDATA *gb_group_name, const char *new_group_name));
