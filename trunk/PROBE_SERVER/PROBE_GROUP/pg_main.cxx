@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Tue Sep/30/2003 19:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 15:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -32,6 +32,7 @@
 #define SKIP_GETDATABASESTATE
 #define SKIP_DECODETREENODE
 #include "../common.h"
+#include "../path_code.h"
 
 // #define SAVE_AFTER_XXX_NEW_GROUPS 10000
 
@@ -650,6 +651,13 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         const SpeciesBag& species = tt.getSpecies();
 //         out.put("subtree '%s' = %s", tt.getPath().c_str(), PG_SpeciesBag_Content(species).c_str());
 
+
+        const char *encodedPath = 0;
+        {
+            const string& path = tt.getPath();
+            encodedPath        = encodePath(path.c_str(), path.length(), error);
+        }
+
         if (current->is_leaf) { // leaf
             // path mapping stuff:
             GBDATA *pm_species = GB_create_container(pm_main,"species");
@@ -658,7 +666,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
 
             if (!error) {
                 GBDATA *pm_path = GB_search(pm_species,"path",GB_STRING);
-                error           = GB_write_string(pm_path,tt.getPath().c_str());
+                error           = GB_write_string(pm_path,encodedPath);
 
                 size_t path_len           = tt.getPath().length();
                 if (path_len>depth) depth = path_len;
@@ -681,7 +689,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
             // create 'subtree' for all nodes
             GBDATA *st_subtree = GB_create_container(subtree_cont,"subtree");
             GBDATA *st_path    = GB_search(st_subtree,"path",GB_STRING);
-            error              = GB_write_string(st_path,tt.getPath().c_str());
+            error              = GB_write_string(st_path,encodedPath);
 
             if (current->is_leaf) {
                 GBDATA *st_member = GB_search(st_subtree, "member", GB_INT);
@@ -704,10 +712,12 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
                 out.point();
 
                 // create a probe group for the subtree
-                GBDATA *st_group   = GB_create_container(probe_group_cont, "probe_group");
-                GBDATA *st_members = GB_search(st_group, "subtreepath", GB_STRING);
+                GBDATA *st_group = GB_create_container(probe_group_cont, "probe_group");
 
-                error = GB_write_string(st_members, tt.getPath().c_str());
+                GBDATA     *st_group_id = GB_search(st_group, "id", GB_STRING);
+                const char *group_id    = GBS_global_string("p%s", encodedPath);
+                error                   = GB_write_string(st_group_id, group_id);
+
                 if (!error) {
                     GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
                     for (deque<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
@@ -797,17 +807,21 @@ static GB_ERROR linkTreeToSubtrees(GBT_TREE *tree, GBDATA *pba_main) {
                 error = "cannot find 'path'";
             }
             else {
-                const char *path = GB_read_char_pntr(pba_path);
-                GBT_TREE   *node = PG_find_subtree_by_path(tree, path);
-                if (!node) {
-                    error = GB_get_error();
-                }
-                else {
-                    if (node->gb_node) {
-                        error = GBS_global_string("duplicated subtree '%s'", path);
+                const char *encoded_path = GB_read_char_pntr(pba_path);
+                const char *path         = decodePath(encoded_path, error);
+
+                if (!error) {
+                    GBT_TREE *node = PG_find_subtree_by_path(tree, path);
+                    if (!node) {
+                        error = GB_get_error();
                     }
                     else {
-                        node->gb_node = pba_subtree; // link to subtree
+                        if (node->gb_node) {
+                            error = GBS_global_string("duplicated subtree '%s'", path);
+                        }
+                        else {
+                            node->gb_node = pba_subtree; // link to subtree
+                        }
                     }
                 }
             }
@@ -1055,6 +1069,7 @@ int main(int argc,char *argv[]) {
         if (!error) {
             GB_install_status(PG_status); // to show progress of tree linking etc.
             PG_initSpeciesMaps(gb_main, pb_main);
+            initDecodeTable();
 
             GBT_TREE *gbt_tree   = readAndLinkTree(gb_main, error);
             // GB_HASH  *gb_hash = 0;
