@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/14/2003 23:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu May/27/2004 11:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -229,7 +229,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "EXPERIMENT_QUERY", "Experiment SEARCH and QUERY");
-    aws->create_menu(0,"More functions","F");
+    aws->create_menu(0,"More functions","f");
     aws->load_xfig("ad_query.fig");
 
     awt_query_struct awtqs;
@@ -263,7 +263,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
     AW_CL cbs                   = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     experiment_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "More search",     "S" );
+    aws->create_menu(       0,   "More search",     "s" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
 
