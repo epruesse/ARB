@@ -23,7 +23,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 		aw_message();
 		return AW_ERROR_BUFFER;
 	}
-	
+
 	long what = awr->awar(AWAR_PRINT_TREE_2_FILE_WHAT)->read_int();
 	long handles = awr->awar(AWAR_PRINT_TREE_2_FILE_HANDLES)->read_int();
 
@@ -65,7 +65,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 			device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
 		}else{
 			device->set_filter(AW_PRINTER);
-		}	
+		}
 		ntw->tree_disp->show(device);
 		device->close();
 		awr->awar(AWAR_PRINT_TREE_2_FILE_DIR)->touch();	// reload dir !!!
@@ -134,7 +134,7 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
 		aws->insert_toggle("#print/nohandles.bitmap","S",0);
 		aws->insert_toggle("#print/handles.bitmap","A",1);
 		aws->update_toggle_field();
-	
+
 
 
 	aws->at("xfig");aws->callback((AW_CB1)AWT_print_tree_to_file_xfig,(AW_CL)ntw);
@@ -181,7 +181,8 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
         }
 		else {
 			fclose(out);
-			sprintf(sys,"fig2dev -L ps -P -m %f %s %s %s", magnification,orientation, xfig, dest);	
+// 			sprintf(sys,"fig2dev -L ps -P -m %f %s %s %s", magnification,orientation, xfig, dest);
+			sprintf(sys,"fig2dev -L ps -m %f %s %s %s", magnification, orientation, xfig, dest);
 		}
 	}
 
@@ -224,7 +225,7 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
 			device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
 		}else{
 			device->set_filter(AW_PRINTER);
-		}	
+		}
 		ntw->tree_disp->show(device);
 		device->close();
 		aw_status("Converting to Postscript");
@@ -400,7 +401,7 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 		aws->insert_toggle("#print/portrait.bitmap","P","");
 		aws->update_toggle_field();
 	aws->label_length(15);
-	
+
 	aws->at("magnification");
 	aws->create_input_field(AWAR_PRINT_TREE_2_FILE_MAGNIFICATION,4);
 
@@ -418,12 +419,12 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 		aws->insert_toggle("#print/handles.bitmap","A",1);
 		aws->update_toggle_field();
 
-	aws->button_length(7);	
+	aws->button_length(7);
 	aws->at("gsizex");
 		aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizex");
 	aws->at("gsizey");
 		aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizey");
-	aws->button_length(8);	
+	aws->button_length(8);
 
 	aws->at("psizex");
 		aws->create_input_field(AWAR_PRINT_TREE_PRINT "psizex",4);

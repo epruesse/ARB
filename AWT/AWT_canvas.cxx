@@ -481,109 +481,109 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 	aww->get_event( &event );
 	switch(event.button){
 
-	case AWT_M_LEFT:
-		if(ntw->mode == AWT_MODE_ZOOM){
-			nt_draw_zoom_box(device, ntw->drag_gc,
-				ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-				ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-			ntw->zoom_drag_ex = event.x;
-			ntw->zoom_drag_ey = event.y;
-			nt_draw_zoom_box(device, ntw->drag_gc,
-				ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-				ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-		} else {
-			ntw->init_device(device);
-			switch(ntw->mode) {
-   			   case AWT_MODE_MOVE:
-   			   case AWT_MODE_SWAP2:
-				click_device = aww->get_click_device (AW_MIDDLE_AREA,
-					event.x, event.y, AWT_CATCH_LINE,
-					AWT_CATCH_TEXT, 0);
-				click_device->set_filter(AW_CLICK_DRAG);
-				ntw->init_device(click_device);
-				ntw->tree_disp->show(click_device);
-				click_device->get_clicked_line(&ntw->clicked_line);
-				click_device->get_clicked_text(&ntw->clicked_text);
-			   default:
-				ntw->tree_disp->command(device, ntw->mode,
-					event.button, AW_Mouse_Drag, event.x,
-					event.y, &ntw->clicked_line,
-					&ntw->clicked_text );
-				if (ntw->gb_main) {
-					ntw->tree_disp->update(ntw->gb_main);
-				}
-			}
-		}
-		break;
+        case AWT_M_LEFT:
+            if(ntw->mode == AWT_MODE_ZOOM){
+                nt_draw_zoom_box(device, ntw->drag_gc,
+                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+                ntw->zoom_drag_ex = event.x;
+                ntw->zoom_drag_ey = event.y;
+                nt_draw_zoom_box(device, ntw->drag_gc,
+                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
+            } else {
+                ntw->init_device(device);
+                switch(ntw->mode) {
+                    case AWT_MODE_MOVE:
+                    case AWT_MODE_SWAP2:
+                        click_device = aww->get_click_device (AW_MIDDLE_AREA,
+                                                              event.x, event.y, AWT_CATCH_LINE,
+                                                              AWT_CATCH_TEXT, 0);
+                        click_device->set_filter(AW_CLICK_DRAG);
+                        ntw->init_device(click_device);
+                        ntw->tree_disp->show(click_device);
+                        click_device->get_clicked_line(&ntw->clicked_line);
+                        click_device->get_clicked_text(&ntw->clicked_text);
+                    default:
+                        ntw->tree_disp->command(device, ntw->mode,
+                                                event.button, AW_Mouse_Drag, event.x,
+                                                event.y, &ntw->clicked_line,
+                                                &ntw->clicked_text );
+                        if (ntw->gb_main) {
+                            ntw->tree_disp->update(ntw->gb_main);
+                        }
+                }
+            }
+            break;
 
-	case AWT_M_RIGHT:
-		ntw->init_device(device);
-		switch(ntw->mode) {
-		      case AWT_MODE_MOVE:
-			click_device = aww->get_click_device (AW_MIDDLE_AREA,
-				event.x, event.y, AWT_CATCH_LINE,
-				AWT_CATCH_TEXT, 0);
-			click_device->set_filter(AW_CLICK_DRAG);
-			ntw->init_device(click_device);
-			ntw->tree_disp->show(click_device);
-			click_device->get_clicked_line(&ntw->clicked_line);
-			click_device->get_clicked_text(&ntw->clicked_text);
-		   default:
-			ntw->tree_disp->command(device, ntw->mode,
-				event.button, AW_Mouse_Drag, event.x,
-				event.y, &ntw->clicked_line,
-				&ntw->clicked_text );
-			if (ntw->gb_main) {
-				ntw->tree_disp->update(ntw->gb_main);
-			}
-			break;
-		}
-		break;
+        case AWT_M_RIGHT:
+            ntw->init_device(device);
+            switch(ntw->mode) {
+                case AWT_MODE_MOVE:
+                    click_device = aww->get_click_device (AW_MIDDLE_AREA,
+                                                          event.x, event.y, AWT_CATCH_LINE,
+                                                          AWT_CATCH_TEXT, 0);
+                    click_device->set_filter(AW_CLICK_DRAG);
+                    ntw->init_device(click_device);
+                    ntw->tree_disp->show(click_device);
+                    click_device->get_clicked_line(&ntw->clicked_line);
+                    click_device->get_clicked_text(&ntw->clicked_text);
+                default:
+                    ntw->tree_disp->command(device, ntw->mode,
+                                            event.button, AW_Mouse_Drag, event.x,
+                                            event.y, &ntw->clicked_line,
+                                            &ntw->clicked_text );
+                    if (ntw->gb_main) {
+                        ntw->tree_disp->update(ntw->gb_main);
+                    }
+                    break;
+            }
+            break;
 
-	case AWT_M_MIDDLE:
-		/** in most modes the user shall be able to
-		    shift the display by dragging MM */
-		switch(ntw->mode){
-		case AWT_MODE_NONE:
-		case AWT_MODE_MARK:
-		case AWT_MODE_GROUP:
-		case AWT_MODE_ZOOM:
-		case AWT_MODE_LZOOM:
-		case AWT_MODE_MOD:
-		case AWT_MODE_WWW:
-		case AWT_MODE_LINE:
-		case AWT_MODE_ROT:
-		case AWT_MODE_SPREAD:
-		case AWT_MODE_SWAP:
-		case AWT_MODE_SWAP2:
-		case AWT_MODE_LENGTH:
-		case AWT_MODE_MOVE:
-		case AWT_MODE_SETROOT:
-		case AWT_MODE_RESET:
-		case AWT_MODE_KERNINGHAN:
-		case AWT_MODE_NNI:
-		case AWT_MODE_OPTIMIZE:
+        case AWT_M_MIDDLE:
+            /** in most modes the user shall be able to
+                shift the display by dragging MM */
+            switch(ntw->mode){
+                case AWT_MODE_NONE:
+                case AWT_MODE_MARK:
+                case AWT_MODE_GROUP:
+                case AWT_MODE_ZOOM:
+                case AWT_MODE_LZOOM:
+                case AWT_MODE_MOD:
+                case AWT_MODE_WWW:
+                case AWT_MODE_LINE:
+                case AWT_MODE_ROT:
+                case AWT_MODE_SPREAD:
+                case AWT_MODE_SWAP:
+                case AWT_MODE_SWAP2:
+                case AWT_MODE_LENGTH:
+                case AWT_MODE_MOVE:
+                case AWT_MODE_SETROOT:
+                case AWT_MODE_RESET:
+                case AWT_MODE_KERNINGHAN:
+                case AWT_MODE_NNI:
+                case AWT_MODE_OPTIMIZE:
 
-			dx = event.x - ntw->zoom_drag_ex;
-			dy = event.y - ntw->zoom_drag_ey;
+                    dx = event.x - ntw->zoom_drag_ex;
+                    dy = event.y - ntw->zoom_drag_ey;
 
-			ntw->zoom_drag_ex = event.x;
-			ntw->zoom_drag_ey = event.y;
-
-
-			/* display */
-			ntw->scroll(aww, -dx *3, -dy *3);
-
-			break;
-
-		default:
-			break;
-		}
-		break;
+                    ntw->zoom_drag_ex = event.x;
+                    ntw->zoom_drag_ey = event.y;
 
 
-	default:
-		break;
+                    /* display */
+                    ntw->scroll(aww, -dx *3, -dy *3);
+
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+
+        default:
+            break;
 	} /* switch event_action(event) */
 
 	if (ntw->tree_disp->exports.zoom_reset) {
