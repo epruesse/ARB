@@ -1178,16 +1178,22 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                         // creates an error, cause the path is a fake path
 
                         if (strchr(opent, 'd')) pre = "";
-                        else pre                    = "arb_default/";
-                        free_path                   = GBS_find_lib_file(path,pre);
+                        else                    pre = "arb_default/";
+
+                        free_path = GBS_find_lib_file(path,pre, 0);
                         if (!free_path) {
                             fprintf(stderr,"file %s not found\n", path);
-                            fprintf(stderr,"Looking for default file %s, but not found in $ARBHOME/lib/%s\n",path,pre);
+                            /* fprintf(stderr,"Looking for default file %s, but not found in $ARBHOME/lib/%s\n",path,pre); */
                             fprintf(stderr," database %s created\n", path);
                             GB_commit_transaction((GBDATA *)gbd);
                             return (GBDATA *)gbd;
                         }
-                        path = free_path;
+                        else {
+#if defined(DEBUG)
+                            fprintf(stderr, "Using properties from %s\n", free_path);
+#endif /* DEBUG */
+                        }
+                        path  = free_path;
                         input = fopen(path, "r");
                     }else{
                         printf(" database %s created\n", path);
