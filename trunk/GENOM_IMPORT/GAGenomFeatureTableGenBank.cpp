@@ -102,6 +102,9 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
     bool newgene = true;
     bool source_open = false;
     bool gene_open = false;
+    string qu;
+    string quv1;
+    string quv2;
     int tmp_num = 0;
     GAGenomGeneGenBank *tmp_gene;
     number_of_genes = 0;
@@ -117,7 +120,19 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
                 tmp_gene->setGeneNumber(number_of_genes);
                 tmp_gene->parse();
                 tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
-                t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
+	            qu = "gene";
+                quv1 = *(tmp_gene->getQualifierValue(&qu));
+                if(quv1.empty())
+                {
+                	quv1 = "nix";
+                }
+                qu = "product";
+                quv2 = *(tmp_gene->getQualifierValue(&qu));
+                if(quv2.empty())
+                {
+                	quv2 = "nix";
+                }
+                t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType(),&quv2,&quv1);
                 tmp_gene->setNameOfGene(&t_str);
                 number_of_features[tmp_num]++;
                 tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
@@ -175,7 +190,19 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
         tmp_gene->setGeneNumber(number_of_genes++);
         tmp_gene->parse();
         tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
-        t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
+		qu = "gene";
+        quv1 = *(tmp_gene->getQualifierValue(&qu));
+        if(quv1.empty())
+        {
+        	quv1 = "nix";
+        }
+        qu = "product";
+        quv2 = *(tmp_gene->getQualifierValue(&qu));
+        if(quv2.empty())
+        {
+        	quv2 = "nix";
+        }
+        t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType(),&quv2,&quv1);
         tmp_gene->setNameOfGene(&t_str);
         number_of_features[tmp_num]++;
         tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);

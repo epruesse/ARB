@@ -837,19 +837,30 @@ string gellisary::GAGenomUtilities::generateGeneID2(string * source_str, int gen
  * Diese Funktion generiert aus einem 'source_str' und einem 'gene_type' eine ID für Genes
  */
 
-string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string * gene_type)
+string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string * gene_type, string * product_name, string * gene_name)
 {
     string target_str;
     bool next = true;
     int pointer = 0;
     bool point = false;
     std::ostringstream sout;
+    std::ostringstream sout1;
     std::string tstring1 = *source_str;
     std::string tstring2 = *gene_type;
+    std::string tstring3 = *product_name;
+    std::string tstring4 = *gene_name;
+    std::string sss;
     bool drin = false;
     sout << tstring2;
     sout << '_';
     int i = 0;
+    
+    if(tstring4 != "nix")
+    {
+    	sout << tstring4;
+	    sout << '_';
+    }
+    
     
     
     while(next)
@@ -861,7 +872,7 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
 		    {
 		    	drin = true;
 		    }
-		    sout << (char)i;
+		    sout1 << (char)i;
         } 
         else if(drin)
         {
@@ -873,6 +884,26 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
             break;
         }
     }
+    sss = sout1.str();
+    
+  	int rest = 30 - (int)sout.str().size() - (int) sss.size() - 1;
+   	if(tstring3 != "nix")
+   	{
+   		if(rest > (int)tstring3.size())
+	   	{
+	   		tstring3.resize(rest);
+	   		sout << tstring3;
+		    sout << '_';
+	   	}
+	   	else
+	   	{
+	   		sout << tstring3;
+		    sout << '_';
+		}
+   	}
+
+   	sout << sss;
+    
     target_str = sout.str();
     return target_str;
 }

@@ -37,7 +37,7 @@ namespace gellisary{
         static bool isNewGene(std::string *);
         static bool isSource(std::string *);
         static std::string generateGeneID2(std::string *, int);
-        static std::string generateGeneID(std::string *, std::string *);
+        static std::string generateGeneID(std::string *, std::string *,std::string *, std::string *);
         static void replaceByWhiteSpaceCleanly(std::string *, std::string *);
         static void preparePropertyString(std::string *, std::string *, std::string *);
     };
