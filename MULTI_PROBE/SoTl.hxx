@@ -1,5 +1,7 @@
-#ifndef SOTL
-#define SOTL		// SOTL = SelfOrganising TemplateList
+#ifndef SOTL_HXX
+#define SOTL_HXX
+
+// SOTL = SelfOrganising TemplateList
 
 /*
   Copyright by Andrej Konkow 1996
@@ -1087,5 +1089,6 @@ template <class Type> inline BOOL List<Type>::remove_pos_from_list( positiontype
 Ende List
 **************************/
 
-
+#else
+#error SoTl.hxx included twice
 #endif
