@@ -48,7 +48,7 @@ return 0;
 
 sub getOptions{
   foreach my $option (@ARGV) {
-    $option =~ m /-([a-z]{2,4})=(.*)/ or die " Maus::getOptions: unknown option detected\n";
+    $option =~ m /-([a-z]{2,5})=(.*)/ or die " Maus::getOptions: unknown option detected\n";
 #    print "key:  >>>$1<<<\n";
 #    print "value:>>>$2<<<\n";
     if ( not isInList([ keys(%options)], $1)){die " Maus::getOptions: unknown option detected\n";}
