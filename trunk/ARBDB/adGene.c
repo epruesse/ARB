@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Nov/11/2004 12:59 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Nov/18/2004 19:21 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -23,8 +23,20 @@
 //      genes:
 //  --------------
 
-GBDATA* GEN_get_gene_data(GBDATA *gb_species) {
-    return GB_search(gb_species, "gene_data", GB_CREATE_CONTAINER);
+GBDATA* GEN_findOrCreate_gene_data(GBDATA *gb_species) {
+    GBDATA *gb_gene_data = GB_search(gb_species, "gene_data", GB_CREATE_CONTAINER);
+    gb_assert(gb_gene_data);
+    return gb_gene_data;
+}
+
+GBDATA* GEN_find_gene_data(GBDATA *gb_species) {
+    return GB_search(gb_species, "gene_data", GB_FIND);
+}
+
+GBDATA* GEN_expect_gene_data(GBDATA *gb_species) {
+    GBDATA *gb_gene_data = GB_search(gb_species, "gene_data", GB_FIND);
+    gb_assert(gb_gene_data);
+    return gb_gene_data;
 }
 
 GBDATA* GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
@@ -35,13 +47,14 @@ GBDATA* GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
 }
 
 GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name) {
-    // find existing gene
-    return GEN_find_gene_rel_gene_data(GEN_get_gene_data(gb_species), name);
+    // find existing gene. returns 0 if it does not exist.
+    GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
+    return gb_gene_data ? GEN_find_gene_rel_gene_data(gb_gene_data, name) : 0;
 }
 
 GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
     GBDATA *gb_gene = 0;
-    
+
     /* Search for a gene, when gene does not exist create it */
     if (!name || !name[0]) {
         GB_export_error("Missing gene name");
@@ -59,11 +72,11 @@ GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
 }
 
 GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name) {
-    return GEN_create_gene_rel_gene_data(GEN_get_gene_data(gb_species), name);
+    return GEN_create_gene_rel_gene_data(GEN_findOrCreate_gene_data(gb_species), name);
 }
 
 GBDATA* GEN_first_gene(GBDATA *gb_species) {
-    return GB_find(GEN_get_gene_data(gb_species), "gene", 0, down_level);
+    return GB_find(GEN_expect_gene_data(gb_species), "gene", 0, down_level);
 }
 
 GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data) {
@@ -75,7 +88,7 @@ GBDATA* GEN_next_gene(GBDATA *gb_gene) {
 }
 
 GBDATA *GEN_first_marked_gene(GBDATA *gb_species) {
-    return GB_first_marked(GEN_get_gene_data(gb_species), "gene");
+    return GB_first_marked(GEN_expect_gene_data(gb_species), "gene");
 }
 GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
     return GB_next_marked(gb_gene,"gene");
@@ -147,6 +160,8 @@ GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, cons
 }
 
 GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo) {
+    gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
+    
     const char *origin_species_name = GEN_origin_organism(gb_pseudo);
     return origin_species_name
         ? GBT_find_species_rel_species_data(GB_get_father(gb_pseudo), origin_species_name)
@@ -154,6 +169,8 @@ GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo) {
 }
 
 GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo) {
+    gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
+
     const char *origin_gene_name = GEN_origin_gene(gb_pseudo);
     GBDATA     *gb_organism      = 0;
     if (!origin_gene_name) return 0;
@@ -217,7 +234,7 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
 GB_BOOL GEN_is_organism(GBDATA *gb_species) {
     return
         !GEN_is_pseudo_gene_species(gb_species) &&
-        GEN_get_gene_data(gb_species) != 0; // has gene_data
+        GEN_find_gene_data(gb_species) != 0; // has gene_data
 }
 
 GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name) {
