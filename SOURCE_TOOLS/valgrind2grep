@@ -35,6 +35,7 @@ open(SOURCELIST,"<$sourcelist") || die "can't open $sourcelist";
 my %fileIndex = {};
 foreach (<SOURCELIST>) {
   chomp;
+  $fileIndex{$_} = $_;
   if (/\/([^\/]+)\/([^\/]+)$/) {
     my $last_dir = $1;
     my $fname    = $2;
@@ -100,17 +101,21 @@ while (not $in->eof) {
         else {
           my $replace = $fileIndex{$1};
           if ($replace) {
-            $_ = "$replace:$2: $reason ($content)\n";
-            if ($reason eq $called_from) { # its a caller
-              $caller_count++;
-              if ($caller_count gt $callers) {
-                $_ = $unmark_callers.$_;
-              }                 # hide this caller
+            if (not -f $replace) {
+              $_ = "$sourcelist:1: might be outdated ($replace does not exist)\n";
             }
             else {
-              $caller_count = 0;
+              $_ = "$replace:$2: $reason ($content)\n";
+              if ($reason eq $called_from) { # its a caller
+                $caller_count++;
+                if ($caller_count gt $callers) {
+                  $_ = $unmark_callers.$_;
+                }               # hide this caller
+              } else {
+                $caller_count = 0;
+              }
+              $reason = $called_from;
             }
-            $reason = $called_from;
           }
           else {              # location in unavailable file (i.e. in library)
             $_ = $prefix.$reason." $content (in unavailable file $1 line $2)\n";
