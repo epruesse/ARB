@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	primer_parameters.hlp
+SUB     iupac-codes.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Primer Design
+
+OCCURRENCE	ARB_NT/ETC/Primer Design
+
+DESCRIPTION     Searches for pairs
+                within the given physical and biological ranges
+
+                1. select a species (ARB_NT <INFO button>)
+                2. choose ARB_NT/Etc/Primer Design...
+                3. specify searchparameters
+                4. mark a result, it will be displayed in ARB_EDIT
+
+NOTES		written by Wolfram Foerster 2001
+
+EXAMPLES	None
+
+WARNINGS	ARB will crash if you use Primer Design without taking care
+		about the estimated memory needed (lower right corner).
+
+BUGS		No bugs known

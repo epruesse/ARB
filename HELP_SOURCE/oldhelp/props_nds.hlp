@@ -1,0 +1,99 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	sp_info.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	parser.hlp
+SUB	commands.hlp
+SUB	acisrt.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Node Display Setup (NDS)
+
+OCCURRENCE	ARB_NT/Tree/NDS
+		ARB_GENE_MAP/Properties/NDS
+
+NOTES           Read this text carefully. You won't need this function, but
+		it offers many many new possibilities.
+
+DESCRIPTION	Extracts data from the database entries of every species and
+		builds a user-readable string from that data.
+
+		This string can be used in many different functions, especially
+		to show the species information at the tips of the tree or
+		to show gene information at the tips of the genes in the
+		gene map.
+
+		It allows you to show part of the sequences, the full_name,
+		the accession numbers right in the tree. You may even
+		generate tables with all kinds of useful information, like
+		probe match results for a set of oligo probes.
+
+		Choose the 'NDS' item from the 'ARB_NT/Tree' menu to
+		display the 'NDS' window.
+
+		Enable field extraction:
+
+			Press the corresponding 'SHOW' checkbox to display the
+			'field' entry at the nodes of the tree shown in the tree
+			display area of the 'ARB_NT' window.
+
+
+		Select 'FIELD':
+
+			The order of the data shown at the tree nodes
+			(from left to right) corresponds to that in the 'NDS'
+			window (top to bottom). To select a 'field' enter the field name
+			by hand or press the respective <S> button and select it
+			from the pop upped list. (Press <RESCAN> to display all
+			fields if fields had been deleted from the list
+			[ARB_NT/Species/Info/Delete Fields in List])
+
+		Show field entries assigned to internal nodes: (see 'HELP: Glossary')
+
+			Press the 'INH.' (Inherit) checkbox to display information
+			assigned to internal nodes of the tree ('ARB_NT/INFO
+			MODE') at all terminal nodes of the subtree defined by
+			the internal node. This function only works when using NDS
+			with a tree.
+
+		Define number of characters:
+
+			Type the number of characters (including blanks) to be
+			displayed to the 'WIDTH' subwindow.
+
+		Display predefined SRT/ACI:
+
+			The 'Search and replace Tool (SRT)' and the 'ARB Command
+			Interpreter (ACI)' in combination with 'Nodes Display
+			Setup (NDS)' allow information to be extracted and/or modified
+			from the 'Field' entries and displayed at the nodes.
+
+			Press the corresponding <SRT> button to display the
+                        'SRT_ACI_SELECT' window and select a procedure
+                        (see 'HELP: Predefined SRT/ACI).
+                        The corresponding syntax (see 'HELP: Search and
+                        Replace Tool' and 'HELP: ARB Command
+                        Interpreter') is displayed in the 'ACI SRT
+                        PROGRAM' subwindow. The displayed strings can be
+                        modified by typing to the subwindows.
+
+		Generate new program:
+
+			Type syntax (see 'HELP: Search and Replace Tool' and
+			'HELP: ARB Command Interpreter') to the 'ACI SRT
+			PROGRAM' subwindow
+
+
+NOTES		!!! Strings generated using 'SRT' or 'ACI' and displayed at the
+		nodes cannot be stored in the database!!!
+
+EXAMPLES	@@@@@ Beispiele !!!!!!
+
+WARNINGS	None
+
+BUGS		The width of the output is limited to 4000 characters.
+

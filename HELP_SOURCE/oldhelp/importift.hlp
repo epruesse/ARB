@@ -1,0 +1,84 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	parser.hlp
+SUB	commands.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		How to define new import formats
+
+OCCURRENCE	ARB_NT
+
+SECTION         BRIEF DESCRIPTION
+
+        	All description files of import formats are located in
+		the directory '$ARBHOME/lib/import'.
+		Each of these files describe how to analyze the input files.
+		A basic import description file (.ift) looks like this:
+
+		[AUTODETECT	"Matchpattern"]
+		BEGIN		"Matchpattern"
+		[KEYWIDTH	#Columnnumber]
+		[MATCH		"Matchpattern"
+			[SRT	"SRT_STRING"]
+			[ACI	"ACI_STRING"]
+			[WRTIE	"DB_FIELD_NAME"]
+			[APPEND "DB_FIELD_NAME"]]*
+		SEQUENCESTART	"Matchpattern"
+		SEQUENCECOLUMN	#Columnnumber
+		[SEQUENCESRT	"SRT_STRING"]
+		[SEQUENCEACI	"ACI_STRING"]
+		SEQUENCEEND	"STRING"
+		[CREATE_ACC_FROM_SEQUENCE]
+		[DONT_GEN_NAMES]
+		END		"STRING"
+
+		or it can pipe the data through any external program PROGRAM to
+		convert it to an already existing format 'exformat'
+		using the following basic design:
+
+		[AUTODETECT	"Matchpattern"]
+		SYSTEM		"PROGRAM $< $>"
+		NEW_FORMAT      "lib/import/exformat.ift"
+
+		$< will be replaced by the input file name
+		$> will ve replaced by the intermediate file name
+
+DESCRIPTION	First of all the converter appends all import files maching
+		the filepattern into one file. The files are seperated by the
+		string defined with the keyword  SEQUENCEEND.
+		1.	Search	the first line matching the pattern defined
+			by BEGIN
+		2.	Try to match all MATCH_patterns.
+			for all lines that match do:
+			2.1 append all following lines, which start after
+				column KEYWIDTH;
+			2.2 if an SRT_command is defined, start the
+				string replace tool.
+			2.3 if an ACI_command is set, run the Arb
+				command interpreter
+			2.4 Write the result into the database using the
+				fieldname 'WRTIE' or append it to a database
+				field with the name 'APPEND'
+		3.	If the line matches SEQUENCESTART_pattern, assume that
+			all following lines to and except the line
+			matching SEQUENCEEND_pattern.
+		4. GOTO 1
+
+		Postprocesses:
+		CREATE_ACC_FROM_SEQUENCE:	Generate a checksum for
+					all sequences with no accession
+					entry ('acc' -field) and write
+					it as the accession number;
+		DONT_GEN_NAMES:			Do not try to generate
+					unique short names for the species
+					using the full_name field.
+
+
+EXAMPLES	Look at the files in '$ARBHOME/lib/import'
+
+WARNINGS	Format detection does not always work

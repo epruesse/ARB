@@ -1,0 +1,55 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+#UP	filter.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	sel_fil.hlp
+#SUB	phyl.hlp
+#SUB	phylo.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE		ARB Parsimony
+
+OCCURRENCE	ARB_NT/Tree/Parsimony
+
+DESCRIPTION	In this release, 'ARB Parsimony' cannot be used to reconstruct
+		new trees.
+
+		Existing trees can be optimized at different levels (depths)
+		according to maximum parsimony criteria.
+
+		New sequences (species) can be placed rapidly into an existing
+		tree. This can be done without changing that tree or allowing
+		optimization at different levels according to maximum parsimony
+		criteria including the new information for calculation.
+
+		Filters for the in- or exclusion of alignment columns
+		('ARB_NT/SAI; ARB_NT/Tree/Dist Matrix) can be seleted.
+
+
+	     	Choose the 'Parsimony' option from the 'Tree' menu to display
+		the 'SET PARSIMONY OPTIONS' window.
+
+		Select a tree (to be modified) from the 'Tree:' subwindow.
+
+		Select an 'alignment' (see 'HELP: Glossary') from the
+			'alignment:' subwindow.
+
+		To select a filter display the 'Select Filter' window pressing
+			the button after the 'Filter:' prompt (see 'HELP: Select
+			Filter').
+
+		Press the <GO> button to display the 'ARB_PARSIMONY' window.
+
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

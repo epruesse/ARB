@@ -1,0 +1,39 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	parser.hlp
+SUB	commands.hlp
+#SUB	acisrt.hlp
+
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Standard help file form
+
+OCCURRENCE	ARB_NT
+
+DESCRIPTION	The WWW-Interface can be used to search the Web for information
+		taken from the ARB-Database.
+
+NOTES		None
+
+EXAMPLES	Here are some search examples (URL-Entries):
+
+		Retrieve from EMBL-Database:
+			"http://www.ebi.ac.uk/cgi-bin/emblfetch?";readdb(acc)
+
+		Search Medline for related information:
+			"http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?uid=";readdb(medline_id);"&form=6&db=m&Dopt=b"			
+
+		Search the Web for full-name:
+			"http://search.metacrawler.com/crawler?general=%22";readdb(full_name)|srt(" =+");"%22&method=0&format=1&region=0&rpp=20&timeout=15&hpe=10"
+
+			
+WARNINGS	Look at the bottom line of the WWW configuration window
+		and check out whether the command line there calls your 
+		preferred internet browser.
+
+BUGS		No bugs known

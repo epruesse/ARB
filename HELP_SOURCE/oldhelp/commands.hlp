@@ -1,0 +1,229 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB	parser.hlp
+SUB	regexpr.hlp
+SUB	exec_bug.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE		ACI     ARB Command Interpreter
+
+OCCURRENCE	NDS
+		[ export db ]
+		[ ARB_NT/Species/search/parse_fields ]
+
+DESCRIPTION	The command interpreter is a simple interpreter.
+		All commands take the data from the input streams,
+		modify it and write it to the output
+		(which may be the input of the next command). The first
+		input stream is normally the value of a database field
+		(see NDS for more information).
+		e.g. count("a") counts every 'a' in each input stream and
+		generates an output stream (== the sum of 'a') for every
+		input.
+		Many commands have command modifiers which are appended to
+		the command.
+
+		different commands can be separated by:
+
+		';'	all !!! commands take all !!!  the input streams and
+			each command generates its own output streams
+		'|'	the output of the left commands are used as the input
+			of the right.
+
+		e.g.
+		count("A");count("AG")		creates two streams:
+						1. how many A's
+						2. and how many A's and G's
+		count("A");count("G")|per_cent	div is a command that divides
+						two numbers ->
+						number of 'A's / number of 'G's
+
+		finally all output streams are concatenated and
+			NDS:			printed at the tips of the tree
+			MODIFY DATABASE FIELD:	stored in the destination field
+
+
+
+DESCRIPTION
+
+        eg: count("A");count("G")|"a/g = "; per_cent
+
+	input --> count("A") -->| ----->  "a/g = "  -->	| \
+	"AGG" \ 		| \ /			|  --> 'a/g = 50'
+	       \ 		|  \		     	|  -->
+	        \ 	       	| /  -->  per_cent  -->	| /
+	         ->count("G")-->| ----->		|
+
+
+
+
+SECTION COMMANDLIST
+
+		If not otherwise mentioned every command creates one
+		output stream for each input stream ;
+
+	BASIC
+		echo(x1;x2;x3...)	creates an output stream for each
+					parameter 'x' and writes 'x' onto it.
+
+		"text"			== echo("text")
+
+		dd			copies input to output
+
+	STRING
+		head(n)			the first n characters
+
+		tail(n)			the last n characters
+
+		len			the length of the input
+
+		len("chr")		the length of the input excluding the
+					characters in 'chr'
+
+		mid(x,y)		the string from x to y
+					y < 0 means a position relative to the
+					end
+
+		remove("str");		removes all characters of 'str'
+					e.g. remove(" ") removes all blanks
+
+		keep("str");		the opposite of remove:
+					remove all chars that are not a member
+					of 'str'
+
+		srt("orig=dest",...)	replace command, invokes SRT
+
+		tab(n)			append n-len(input) spaces
+
+		cut(n1,n2,n3)		copies the nth input stream
+
+		checksum(options)	calculates a CRC checksum
+
+			option
+			"exclude=chrs"	remove 'chrs' before calculation
+			toupper		make everything uppercase first
+
+		gcgchecksum		a gcg compatible checksum
+
+
+	DATABASE (works only if command is first)
+
+		sequence		the default sequence.
+					For genes only the corresponding part
+					of the sequence.
+				 	If the field complement = 1 then the
+					result is the reverse-complement.
+
+		readdb(field_name)	the contents of the field 'field_name'
+
+	SPECIALS
+
+		format(options) takes a long string  and
+					breaks it into several lines
+
+			option (default)
+
+			width=#	   (50)	line width
+			firsttab=# (10)	first line left indent
+			tab=#	   (10)	left indent (not first line)
+			"nl=chrs" (" ")	list of characters that specify
+					the point of a line break;
+					This character is deleted !
+
+		extract_words("chars",val) Search for all words (seperated
+					by ',' ';' ':' ' ' or 'tab') that
+					contain more characters of type
+					chars than val, sort them alpha-
+					betically and write them
+					seperated by ' ' to the output
+
+
+		exec(command,var1,...)	Execute external (unix) command
+					WARNING !!!!!!
+					You should not use this command for NDS !!!
+					because any slow command will disable
+					all editing -> You never can remove this
+					command from the NDS. Even arb_panic
+					will not easily help you.
+
+		command(escapedCommand) executes escapedCommand with ACI, SRT
+					(if starts with ':') or as REG (if
+					starts with '/'). In escapedCommand
+					you have to escape '\' and '"' by
+					preceeding a '\'. If you nest calls
+					you have to use multiple escapes.
+
+	CALCULATOR
+		plus			takes exactly the first two input
+					numbers and
+					creates one output with the sum
+		minus			"			difference
+		mult			"			product
+		div			"			quotient
+		per_cent		"		quotient * 100
+
+	SEQUENCE SPECIALS
+		sequence		the default sequence
+					(in case of genes this is only the
+					 corresponding part of the sequence)
+	 	sequence_type 		the default sequence's type(rna/dna..)
+		sequence_name		the default sequence name(ali_16s,..)
+
+		format_sequence(options) takes a long string ( sequence ) and
+					breaks it into several lines
+
+			option (default)
+
+			width=#	   (50)	sequence line width
+			firsttab=# (10)	first line left indent
+			tab=#	   (10)	left indent (not first line)
+			numleft    (NO)	numbers on the left side
+			gap=#	   (10)	insert a gap every # seq. characters.
+
+		statistic		creates a character statistic of the
+					sequence
+					(not implemented yet)
+
+		filter(options)
+			exclude=#   	characters in filter sequence which
+					exclude the coloumn
+		or	include=# 	vice versa
+			SAI=#	   	SAI of filter sequence
+		or	species=   	species of filter sequence
+
+		diff(options)		show differences to default alignment
+					of another species
+			SAI=#
+			species=#
+			[equal=.]
+
+		extract_sequence("chars",rel_len)
+					like extract_words, but do not sort
+					words, but rel_len is the minimum
+					percantage of characters of a word
+					that mach a character in 'chars'
+			 		before word is taken. All words will be
+					seperated by white space.
+
+EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE  ";dd
+
+				fetches the default sequence, formats it,
+				and prepends 'SEQUENCE  '.
+
+		sequence|remove(".-")|format_sequence
+				get the default sequence, remove all '.-' and
+				format it
+
+		sequence|remove(".-")|len
+
+				the number of non '.-' symbols (
+					sequence length )
+
+		sequence|statistic

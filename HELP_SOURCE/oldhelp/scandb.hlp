@@ -1,0 +1,28 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	sp_info.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Scan Database for all Fields
+
+OCCURRENCE	ARB_NT/Species/Info/FIELDS/Scan Database for all fields
+	        ARB_NT/Genes/Info/FIELDS/Scan Database for all fields
+
+DESCRIPTION	This function scans the database for all existing fields
+		in the species/genes database.
+		Normally it is not necessary to run this procedure unless
+		some external programs generate new and yet unknown fields.
+
+NOTES		May take a long time.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

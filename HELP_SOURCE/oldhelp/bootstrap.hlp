@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	dist.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		IMPORTANT BOOTSTRAP NOTES
+
+OCCURRENCE	ARB_DIST
+
+DESCRIPTION	Read Notes also !!!!!
+		Calculates a great number of trees based on a partial set of
+		columns and shows the consensus tree. The branches in the
+		final tree are marked by a percentage.
+		The higher the percentage (best > 99%) the more likely that
+		the branch is correct.
+
+NOTES		****************** IMPORTANT NOTES *********************
+		This program will NEVER end unless you stop it by pressing
+		kill.If you get a question whether to wait or kill after
+		pressing the kill button, press wait !!!!
+		There is no bootstrap counter limit, just press kill
+		if you think enough samples have been calculated.
+
+		****************** MORE IMPORTANT NOTES *********************
+		The output tree is a consensus partial tree. Species and
+		subgroups which wander around in the input trees
+		are not shown in the output tree.
+
+WARNINGS	Species that cannot be placed properly are removed from
+		the final tree.
+
+BUGS		See Warnings.
