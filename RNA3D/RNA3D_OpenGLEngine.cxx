@@ -45,7 +45,7 @@ Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 
 bool rotateMolecule = false;
 bool autoRotate     = false;
-bool enableZoom     = true;
+bool bPointSpritesSupported = false;
 float scale = 0.01;
 
 using namespace std;
@@ -55,6 +55,37 @@ void ShowVendorInformation(){
 	vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
 	vendor = glGetString(GL_RENDERER); cout<<"Rederer : "<<vendor<<endl;
 	vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
+}
+
+void initExtensions() {
+    // check mandatory for extensions
+	char missingExtensions[500]="";
+	if (!GLEW_VERSION_1_2) {
+        strcat(missingExtensions,"\nOpenGL Version 1.2");	
+    }
+	if (strlen(missingExtensions) > 0) {
+		printf("ERROR: Some needed extensions are not present:%s\n",missingExtensions);
+		char dummy;		scanf( "%c",&dummy);		exit(-1);
+	} else {		
+#ifdef DEBUG
+			printf("DEBUG: All mandatory extensions seem to be ok.\n");
+#endif // DEBUG
+	}
+
+	// the following code checks if point sprites could be used and activates them if possible
+	missingExtensions[0] = 0;
+	if (!GLEW_EXT_point_parameters) strcat(missingExtensions,"\nGL_EXT_point_parameters");
+	if (!GLEW_ARB_point_sprite)		strcat(missingExtensions,"\nGL_ARB_point_sprite");	
+	if (strlen(missingExtensions) > 0) {
+		printf("Some extra extensions are not present:%s\n",missingExtensions);
+		printf("Molecule Display: Quality of Rendering is LOW!!\n");
+		bPointSpritesSupported = false;
+	} else {		
+		#ifdef _DEBUG
+			printf("DEBUG: All extra extensions seem to be ok as well.\n");
+		#endif // _DEBUG
+		bPointSpritesSupported = true ;
+	}
 }
 
 void ReshapeOpenGLWindow( GLint width, GLint height ) {
@@ -81,6 +112,8 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+
+    initExtensions();
 
     // Prepare the structure Data  and Generate Display Lists  
 
@@ -211,31 +244,40 @@ void DrawStructure(){
     cRenderer->DisplayMolecule();
     glPopMatrix();
 
-    glPushMatrix();
-    cRenderer->BeginTexturizer();
-    cRenderer->TexturizeStructure(cTexture);
-    cRenderer->EndTexturizer();
-    glPopMatrix();
-
-    glPushMatrix();
-    cRenderer->BeginTexturizer();
-    {
-        glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
-        glPointSize(24);
-        glColor4f(1,1,1,1);
-        glBegin(GL_POINTS);
-        glTexCoord2f(0,0);
-        glVertex3f(sCen.x, sCen.y, sCen.z);
-        glTexCoord2f(1,0);
-        glVertex3f(sCen.x + 0.1, sCen.y, sCen.z);
-        glTexCoord2f(1,1);
-        glVertex3f(sCen.x + 0.1, sCen.y+0.1, sCen.z);
-        glTexCoord2f(0,1);
-        glVertex3f(sCen.x, sCen.y+0.1, sCen.z);
-        glEnd();
+    // Texture Mapping
+    if(bPointSpritesSupported){
+        cRenderer->BeginTexturizer();
+        cRenderer->TexturizeStructure(cTexture);
+        cRenderer->EndTexturizer();
     }
-    cRenderer->EndTexturizer();
-    glPopMatrix();
+
+    if(!bPointSpritesSupported)
+        {
+            glDisable(GL_CULL_FACE);
+            glDisable(GL_LIGHTING);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_TEXTURE_2D);
+            glPushMatrix();
+            
+            glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
+
+            glColor4f(1,0,0,1);
+            glBegin(GL_QUADS);
+            glTexCoord2f(0,0);
+            glVertex3f(sCen.x, sCen.y, sCen.z);
+            glTexCoord2f(1,0);
+            glVertex3f(sCen.x + 2, sCen.y, sCen.z);
+            glTexCoord2f(1,1);
+            glVertex3f(sCen.x + 2, sCen.y + 2, sCen.z);
+            glTexCoord2f(0,1);
+            glVertex3f(sCen.x, sCen.y + 2, sCen.z);
+            glEnd();
+
+            glPopMatrix();
+            glDisable(GL_TEXTURE_2D);
+            glDisable(GL_BLEND);
+        }
 	
 //     glPushMatrix();
 //     glLineWidth(cRenderer->ObjectSize/2);
