@@ -54,6 +54,15 @@ void AW_window::auto_off( void ) {
     _at->do_auto_increment = AW_FALSE;
 }
 
+void AW_window::at_set_min_size(int xmin, int ymin) {
+    if (xmin > _at->max_x_size) _at->max_x_size = xmin; // this looks wrong, but its right!
+    if (ymin > _at->max_y_size) _at->max_y_size = ymin;
+
+    if (recalc_size_at_show) {
+        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+    }
+}
+
 
 /*******************************************************************************************************/
 /*******************************************************************************************************/
@@ -230,15 +239,9 @@ void AW_window::at( const char *id ) {
 // use negative offsets to set offset from right/lower border to to-position
 
 void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff) {
-    aw_assert(attach_x || attach_y); // use at_unset_to() to un-attach
+//     aw_assert(attach_x || attach_y); // use at_unset_to() to un-attach
 
-//     if ( !xfig_data ) {
-//         AW_ERROR( "no xfig file loaded " );
-//         return;
-//     }
-//     AW_xfig *xfig = (AW_xfig *)xfig_data;
-
-    _at->attach_any = AW_TRUE;
+    _at->attach_any = attach_x || attach_y;
     _at->attach_x   = attach_x;
     _at->attach_y   = attach_y;
 
@@ -249,11 +252,14 @@ void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff
     if (_at->to_position_x > _at->max_x_size) _at->max_x_size = _at->to_position_x;
     if (_at->to_position_y > _at->max_y_size) _at->max_y_size = _at->to_position_y;
 
-    _at->correct_for_at_center = xoff <= 0 ? 0 : 2; // justify left (=0) or right (=2)
+    _at->correct_for_at_center = 0;
+
+//     _at->correct_for_at_center = xoff <= 0 ? 0 : 2; // justify left (=0) or right (=2)
 }
 
 void AW_window::at_unset_to() {
-    _at->attach_any = _at->attach_x = _at->attach_y = _at->to_position_exists = AW_FALSE;
+    _at->attach_x   = _at->attach_y = _at->to_position_exists = AW_FALSE;
+    _at->attach_any = _at->attach_lx || _at->attach_ly;
 }
 
 AW_BOOL AW_window::at_ifdef(const  char *id) {
@@ -420,4 +426,16 @@ void AW_at_size::restore(AW_at *at) const {
     at->attach_ly  = attach_ly;
     at->attach_any = attach_any;
 }
+
+
+void AW_at_maxsize::store(const AW_at *at) {
+    maxx = at->max_x_size;
+    maxy = at->max_y_size;
+}
+void AW_at_maxsize::restore(AW_at *at) const {
+    at->max_x_size = maxx;
+    at->max_y_size = maxy;
+}
+
+
 
