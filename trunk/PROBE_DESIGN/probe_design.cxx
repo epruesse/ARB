@@ -141,6 +141,45 @@ char *pd_get_the_names(bytestring &bs, bytestring &checksum){
     return 0;
 }
 
+#ifdef DEVEL_IDP
+char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
+    GBDATA *gb_species;
+    GBDATA *gb_name;
+    GBDATA  *gb_data;
+    long    len;
+
+    void *names = GBS_stropen(1024);
+    void *checksums = GBS_stropen(1024);
+
+    GB_begin_transaction(gb_main);
+    char *use = GBT_get_default_alignment(gb_main);
+
+    len = 0;
+    for (gb_species = GBT_first_marked_gene(gb_main);
+         gb_species;
+         gb_species = GBT_next_marked_gene(gb_species) ){
+        gb_name = GB_find(gb_species, "name", 0, down_level);
+        if (!gb_name) continue;
+        gb_data = GBT_read_sequence(gb_species, use);
+        if(!gb_data){
+            return (char *)GB_export_error("Gene '%s' has no sequence '%s'", GB_read_char_pntr(gb_name), use);
+        }
+        GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
+        GBS_strcat(names, GB_read_char_pntr(gb_name));
+        GBS_chrcat(checksums, '#');
+        GBS_chrcat(names, '#');
+    }
+    bs.data = GBS_strclose(names, 0);
+    bs.size = strlen(bs.data)+1;
+
+    checksum.data = GBS_strclose(checksums, 0);
+    checksum.size = strlen(checksum.data)+1;
+
+    GB_commit_transaction(gb_main);
+    return 0;
+}
+#endif
+
 int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 {
     int i;
@@ -216,7 +255,17 @@ void probe_design_event(AW_window *aww)
     }
 
     if (!error){
-        error = pd_get_the_names(bs,check);
+#ifdef DEVEL_IDP
+      int flag = root->awar("probe_design/gene")->read_int();
+      if(flag) {//Wenn toggle gesetzt
+	error = pd_get_the_gene_names(bs,check);
+      }
+      else {
+#endif
+	error = pd_get_the_names(bs,check);
+#ifdef DEVEL_IDP
+      }
+#endif
     }
 
     if (error){
@@ -739,7 +788,9 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar("probe_design/MINTARGETS")->set_minmax(0,1000);
 
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
-
+#ifdef DEVEL_IDP
+    root->awar_int( "probe_design/gene", 1, db1);
+#endif
 
     root->awar_int( "probe_match/mark_hits", 1, db1);
     root->awar_int( "probe_match/sort_by", 0  ,    db1);
@@ -918,6 +969,13 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     aws->create_input_field( "probe_design/MINGC" , 5);
     aws->at("maxgc");
     aws->create_input_field( "probe_design/MAXGC" , 5);
+
+#ifdef DEVEL_IDP
+
+    aws->at( "gene" );
+    aws->create_toggle( "probe_design/gene" );
+
+#endif
 
 
     return aws;

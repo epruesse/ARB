@@ -66,6 +66,11 @@ int GBT_is_partial P_((GBDATA *gb_species, int default_value, int define_if_unde
 GBDATA *GBT_get_species_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_marked_species P_((GBDATA *gb_main));
+#ifdef DEVEL_IDP
+GBDATA *GBT_first_marked_gene P_((GBDATA *gb_main));
+GBDATA *GBT_next_marked_gene P_((GBDATA *gb_species));
+GBDATA *GBT_get_gene_data P_((GBDATA *gb_main));
+#endif
 GBDATA *GBT_next_marked_species P_((GBDATA *gb_species));
 GBDATA *GBT_first_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_species P_((GBDATA *gb_main));

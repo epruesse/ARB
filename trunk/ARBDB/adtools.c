@@ -1961,6 +1961,26 @@ GBDATA *GBT_first_marked_species(GBDATA *gb_main)
 {
     return GB_first_marked(GBT_get_species_data(gb_main), "species");
 }
+#ifdef DEVEL_IDP
+GBDATA *GBT_get_gene_data(GBDATA *gb_main) {
+  GBDATA* temp;
+  temp = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+  temp = GB_search(temp,"species",GB_CREATE_CONTAINER);
+  return GB_search(temp,"gene_data",GB_CREATE_CONTAINER);
+  //  temp = GB_search(temp,"gene",GB_CREATE_CONTAINER);
+  
+}
+
+GBDATA *GBT_first_marked_gene(GBDATA *gb_main)
+{
+    return GB_first_marked(GBT_get_gene_data(gb_main), "gene");
+}
+
+GBDATA *GBT_next_marked_gene(GBDATA *gb_species)
+{
+    return GB_next_marked(gb_species,"gene");
+}
+#endif
 
 GBDATA *GBT_next_marked_species(GBDATA *gb_species)
 {
