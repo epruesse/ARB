@@ -3193,43 +3193,55 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     GBDATA *gb_pos1       = GB_find(gb_gene, "pos_begin", 0, down_level);
     GBDATA *gb_pos2       = GB_find(gb_gene, "pos_end", 0, down_level);
     GBDATA *gb_complement = GB_find(gb_gene, "complement", 0, down_level);
+    GBDATA *gb_species    = GB_get_father(GB_get_father(gb_gene));
 
-    long pos1       = gb_pos1 ? GB_read_int(gb_pos1) : -1;
-    long pos2       = gb_pos2 ? GB_read_int(gb_pos2) : -1;
-    int  complement = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
-
-    GBDATA *gb_species   = GB_get_father(GB_get_father(gb_gene));
-
-    if (pos1<1 || pos2<1 || pos2<pos1) {
-        error = "Illegal gene positions";
+    if (!gb_pos1) {
+        if (!gb_pos2) {
+            error = "no pos_begin/pos_end entries found";
+        }
+        else {
+            error = "no pos_begin entry found";
+        }
+    }
+    else if (!gb_pos2) {
+        error = "no pos_end entry found";
     }
     else {
-        GBDATA *gb_seq    = GBT_read_sequence(gb_species, "ali_genom");
-        GBDATA *gb_joined = GB_find(gb_gene, "pos_joined", 0, down_level);
-        int     parts     = gb_joined ? GB_read_int(gb_joined) : 1;
+        long pos1       = gb_pos1 ? GB_read_int(gb_pos1) : -1;
+        long pos2       = gb_pos2 ? GB_read_int(gb_pos2) : -1;
+        int  complement = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
 
-        if (parts>1) {
-            error = "Using sequence of joined genes not supported yet!"; /* @@@ */
+        if (pos1<1 || pos2<1 || pos2<pos1) {
+            error = "Illegal gene positions";
         }
+        else {
+            GBDATA *gb_seq    = GBT_read_sequence(gb_species, "ali_genom");
+            GBDATA *gb_joined = GB_find(gb_gene, "pos_joined", 0, down_level);
+            int     parts     = gb_joined ? GB_read_int(gb_joined) : 1;
 
-        if (!error) {
-            const char *seq_data = GB_read_char_pntr(gb_seq);
-            long        length   = pos2-pos1+1;
-
-            result = (char*)malloc(length+1);
-            memcpy(result, seq_data+pos1-1, length);
-            result[length] = 0;
-
-            if (complement && use_revComplement) {
-                char T_or_U;
-                error = GBT_determine_T_or_U(GB_AT_DNA, &T_or_U, "reverse-complement");
-                if (!error) GBT_reverseComplementNucSequence(result, length, T_or_U);
+            if (parts>1) {
+                error = "Using sequence of joined genes not supported yet!"; /* @@@ */
             }
-            /* @@@ FIXME: sequence is wrong with reverse complement */
 
-            if (error)  {
-                free(result);
-                result = 0;
+            if (!error) {
+                const char *seq_data = GB_read_char_pntr(gb_seq);
+                long        length   = pos2-pos1+1;
+
+                result = (char*)malloc(length+1);
+                memcpy(result, seq_data+pos1-1, length);
+                result[length] = 0;
+
+                if (complement && use_revComplement) {
+                    char T_or_U;
+                    error = GBT_determine_T_or_U(GB_AT_DNA, &T_or_U, "reverse-complement");
+                    if (!error) GBT_reverseComplementNucSequence(result, length, T_or_U);
+                }
+                /* @@@ FIXME: sequence is wrong with reverse complement */
+
+                if (error)  {
+                    free(result);
+                    result = 0;
+                }
             }
         }
     }
