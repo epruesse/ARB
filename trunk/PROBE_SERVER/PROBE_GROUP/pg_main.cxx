@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Sat Oct/11/2003 11:58 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/12/2004 15:53 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -31,8 +31,9 @@
 
 // #include "../global_defs.h"
 
-#define SKIP_GETDATABASESTATE
-#define SKIP_DECODETREENODE
+#define NEED_encodeTreeNode 
+#define NEED_saveProbeContainerToString 
+#define NEED_setDatabaseState
 #include "../common.h"
 #include "../path_code.h"
 #include "../read_config.h"
@@ -382,6 +383,9 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
             error = GB_get_error();
             if (!error) error = GB_export_error("Can't open database '%s'", name);
         }
+        else {
+            error = GB_request_undo_type(gb_main, GB_UNDO_NONE); // disable arbdb builtin undo
+        }
     }
 
     // open probe-group-database:
@@ -393,6 +397,9 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
         if (!pb_main) {
             error             = GB_get_error();
             if (!error) error = GB_export_error("Can't open database '%s'", name);
+        }
+        else {
+            error = GB_request_undo_type(pb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         }
         if (!error) error = setDatabaseState(pb_main, "probe_group_db", "empty");
     }
@@ -407,6 +414,9 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'..",name);
         }
+        else {
+            error = GB_request_undo_type(pbb_main, GB_UNDO_NONE); // disable arbdb builtin undo
+        }
         if (!error) error = setDatabaseState(pbb_main, "probe_group_mapping_db", "empty");
     }
 
@@ -419,6 +429,9 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
         if (!pba_main){
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'",name);
+        }
+        else {
+            error = GB_request_undo_type(pba_main, GB_UNDO_NONE); // disable arbdb builtin undo
         }
         if (!error) error = setDatabaseState(pba_main, "probe_group_subtree_db", "empty");
     }
@@ -783,11 +796,16 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
                 error                   = GB_write_string(st_group_id, group_id);
 
                 if (!error) {
+
+#ifdef PG_UNCOMPRESSED
                     GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
                     for (deque<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
                         GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
                         error            = GB_write_string(st_probe, j->c_str());
                     }
+#else
+                    error = saveProbeContainerToString<deque<string> >(st_group, "matched_probes", false, probes.begin(), probes.end());
+#endif // PG_UNCOMPRESSED
                 }
 
 
@@ -1134,11 +1152,15 @@ static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pb
     error               = GB_write_string(st_group_id, new_group_name.c_str());
 
     if (!error) {
+#if defined(PG_UNCOMPRESSED)
         GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
         for (deque<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
             GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
             error            = GB_write_string(st_probe, j->c_str());
         }
+#else
+        error = saveProbeContainerToString<deque<string> >(st_group, "matched_probes", false, probes.begin(), probes.end());
+#endif // PG_UNCOMPRESSED
     }
 
     if (!error) {
