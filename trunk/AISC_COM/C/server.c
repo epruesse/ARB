@@ -1181,13 +1181,22 @@ int aisc_talking(int con)
             return AISC_SERVER_FAULT;
         }
         size = buf[0];
-        len = aisc_s_read(con, (char *)buf, (int)(size * sizeof(long)));
-        if (len != size * sizeof(long)) {
-            printf(" ERROR in AISC_SERVER:\n");
-            return AISC_SERVER_OK;
+
+        {
+            long expect = size*sizeof(long);
+            aisc_assert(expect >= 0);
+            aisc_assert(expect <= INT_MAX);
+
+            len = aisc_s_read(con, (char *)buf, (int)expect);
+            aisc_assert(len <= LONG_MAX);
+
+            if ((long)len != expect) {
+                printf(" ERROR in AISC_SERVER: Expected to get %li bytes from client (got %lu)\n", expect, len);
+                return AISC_SERVER_OK;
+            }
         }
         magic_number &= ~AISC_MAGIC_NUMBER_FILTER;
-        size = (aisc_talking_functions[magic_number])
+        size          = (aisc_talking_functions[magic_number])
             (buf, (int)size, out_buf + 2, AISC_MESSAGE_BUFFER_LEN - 2);
         if (size >= 0) {
             out_buf[1] = AISC_CCOM_OK;
