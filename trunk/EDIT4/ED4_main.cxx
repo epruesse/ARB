@@ -449,6 +449,20 @@ static void openProperties() {
     ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
 }
 
+static char *ED4_find_protein_structure_SAI(GBDATA *gb_main, const char *alignment_name) {
+    GB_transaction dummy(gb_main);
+	GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_protstruct    = GBT_find_SAI_rel_exdata(gb_extended_data, "protstruct");
+
+    if (gb_protstruct) {
+        GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
+        if (gb_data) {
+            return GB_read_string(gb_data);
+        }
+    }
+    return 0;
+}
+
 int main(int argc,char **argv)
 {
     const char *data_path = ":";
@@ -515,14 +529,34 @@ int main(int argc,char **argv)
 
     ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window();// create first editor window
 
-    ED4_ROOT->helix = new BI_helix(ED4_ROOT->aw_root);
-
     if (err){
         aw_message(err);
         err = 0;
     }
 
-    err = ED4_ROOT->helix->init(gb_main);
+    ED4_ROOT->helix = new BI_helix(ED4_ROOT->aw_root);
+
+    switch (ED4_ROOT->alignment_type) {
+        case GB_AT_RNA:
+        case GB_AT_DNA:
+            err = ED4_ROOT->helix->init(gb_main);
+            break;
+
+        case GB_AT_AMI:
+            ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(gb_main, ED4_ROOT->alignment_name);
+            if (ED4_ROOT->protstruct) {
+                ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
+            }
+            else {
+                fprintf(stderr, "No SAI \"protstruct\" found. Protein structure information will not be displayed.\n");
+            }
+            break;
+
+        default :
+            e4_assert(0);
+            break;
+    }
+
     if (err) aw_message(err);
 
     {

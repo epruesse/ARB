@@ -1131,6 +1131,8 @@ public:
     ST_ML                   *st_ml;
     BI_helix                *helix;
     long                     helix_spacing;
+    char                    *protstruct; // protein structure summary
+    long                     protstruct_len; // protein structure summary
     ed_key                  *edk;
     ED4_Edit_String         *edit_string;
     int                      column_stat_activated;

@@ -25,6 +25,7 @@
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_visualizeSAI.hxx"
+#include "ed4_protein_2nd_structure.hxx"
 
 ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -124,26 +125,29 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
 
+struct show_summary_parameters {
+    const char *global_protstruct;
+    const char *protstruct;
+};
+
+
 int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
 									 AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
-									 AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2){
+									 AW_CL cd_summary_paramters, AW_CL real_sequence_length, AW_CL cd2){
     AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
-    BI_helix *THIS = (BI_helix *)cduser;
-    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
-    char *buffer = GB_give_buffer(size+1);
-    register long i,j,k;
+    show_summary_parameters *ssp    = (show_summary_parameters*)cd_summary_paramters;
+    const ED4_remap         *rm     = ED4_ROOT->root_group_man->remap();
+    char                    *buffer = GB_give_buffer(size+1);
+    long                     i,j,k;
 
     for (k=0; size_t(k)<size; k++) {
         i = rm->screen_to_sequence(k+start);
-        if ( size_t(i)<THIS->size && THIS->entries[i].pair_type) {
-            j = THIS->entries[i].pair_pos;
-            char pairing_character = '.';
-            if (j < real_sequence_length){
-                pairing_character = opt_string[j];
-            }
-            buffer[k] = THIS->get_symbol(opt_string[i],pairing_character, THIS->entries[i].pair_type);
-        }else{
+
+        if (ssp->protstruct[i] == ssp->global_protstruct[i]) {
             buffer[k] = ' ';
+        }
+        else {
+            buffer[k] = '#';
         }
     }
     buffer[size] = 0;
@@ -346,6 +350,34 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                                   (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
                                   1.0,1.0, ED4_show_helix_on_device);
             free(db_pointer);
+        }
+    }
+
+    // output protein structure match
+    if (ED4_ROOT->protstruct)
+    {   // should do a remap
+        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
+        if (right< screen_length) {
+            screen_length = right;
+        }
+        if (screen_length) {
+            char *db_pointer = resolve_pointer_to_string_copy();
+
+            show_summary_parameters ssp;
+            char *predicted_summary = (char*)GB_calloc(max_seq_len+1, 1); // @@@ FIXME: cache predicted_summary in terminal
+            ED4_predict_summary(db_pointer, predicted_summary, max_seq_len);
+
+            ssp.global_protstruct = ED4_ROOT->protstruct;
+            ssp.protstruct        = predicted_summary;
+
+            device->text_overlay( ED4_G_HELIX,
+                                  (char *)db_pointer, screen_length,
+                                  text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
+                                  (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
+                                  1.0,1.0, ED4_show_summary_match_on_device);
+
+            free(db_pointer);
+            free(predicted_summary);
         }
     }
 
