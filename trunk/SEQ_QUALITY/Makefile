@@ -27,7 +27,13 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
-SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h seq_quality.h SQ_functions.h
+SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx seq_quality.h
+SQ_main.o: SQ_functions.h
 
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
