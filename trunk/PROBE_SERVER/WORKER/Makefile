@@ -38,4 +38,6 @@ depend.init:
 
 psw_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 psw_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
-psw_main.o: $(ARBHOME)/INCLUDE/ad_prot.h ../global_defs.h ../common.h
+psw_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+psw_main.o: $(ARBHOME)/INCLUDE/smartptr.h ../global_defs.h ../common.h
+psw_main.o: ../mapping.h
