@@ -1787,7 +1787,7 @@ extern 		ST_ML *st_ml;
 
 void 		ED4_expose_cb			(AW_window *aww,AW_CL cd1, AW_CL cd2);
 
-void		ED4_calc_terminal_extenstions();
+void		ED4_calc_terminal_extentions();
 
 void 		ED4_input_cb			(AW_window *aww,AW_CL cd1, AW_CL cd2);
 void 		ED4_resize_cb			(AW_window *aww,AW_CL cd1, AW_CL cd2);
