@@ -218,7 +218,7 @@ typedef enum
     GB_AT_RNA,      /* Nucleotide sequence (U) */
     GB_AT_DNA,      /* Nucleotide sequence (T) */
     GB_AT_AMI,      /* AminoAcid */
-    GB_AT_PRO       /* Protein */
+    GB_AT_PRO       /* Protein (@@@ senseless - remove) */
 
 } GB_alignment_type;
 
