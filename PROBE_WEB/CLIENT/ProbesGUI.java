@@ -54,7 +54,7 @@ public ProbesGUI( TreeNode root, int levels, String title)
     probe_list.add("to display probes.");
 
     add(probe_list, BorderLayout.EAST);
-    probe_list.resize(40, tree_height);
+//     probe_list.resize(40, tree_height);
 
     sc = new ScrollPane();
     if (root == null) {
@@ -102,9 +102,13 @@ public TreeDisplay getTreeDisplay()
 //         return probe_list;
 //     }
 
-public void setProbeListContents(ServerAnswer parsed)
+public ProbeList getProbeList()
     {
-        probe_list.setContents(parsed);
+        return probe_list;
     }
+// public void setProbeListContents(ServerAnswer parsed)
+//     {
+//         probe_list.setContents(parsed);
+//     }
 
 }
