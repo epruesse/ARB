@@ -6,9 +6,20 @@ Major changes for next version:
    * separated menus for fast and slow alignment
    * most parameters accessible from inside ARB now
  - upgraded to PHYLIP 3.6 (adds PROML)
+ - external programs may be called parallel (e.g. several treeing programs)  
  - fixed bugs in protml and integration of protml
  - rewrote ASCII database import
  - arb_repair (script for database repair)
+ - fixed bug in data compression
+ - increased internal cache size (alignments up to 400.000bp possible)
+ - GDE menus cleanup
+ - translation/re-alignment tweaked
+ - unalign right (EDIT4)
+ - visualization of SAIs in Probe Match Results
+ - Sequence quality check
+ - PT server for genes
+ - fixed NEXUS export format
+ - import XML tree files
 
 Major changes in Beta 2003_08_22:
 
