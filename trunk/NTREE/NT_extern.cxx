@@ -1105,7 +1105,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
 
 #if defined(DEVEL_RALF) || defined(DEVEL_JUERGEN)
-            AWMIMT("seq_quality", "Calc Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
+            AWMIMT("seq_quality", "Calc Alignment Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
 #endif //
 
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
