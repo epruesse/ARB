@@ -105,8 +105,8 @@ void ED4_terminal::changed_by_database(void)
                     ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
 
                     multiman->check_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
-//                     set_refresh(1);
-//                     parent->refresh_requested_by_child();
+                    set_refresh(1);
+                    parent->refresh_requested_by_child();
 //                     ED4_ROOT->main_manager->Show();
                 }
 
@@ -871,7 +871,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)	//cre
             sub_group->create_consensus(sub_group);
             e4_assert(sub_group!=upper_group_manager);
             upper_group_manager->table().add(sub_group->table());
-#ifndef NDEBUG
+#ifdef DEBUG
             if (!sub_group->table().empty() && !sub_group->table().is_ignored()) {
                 e4_assert(!upper_group_manager->table().empty());
             }
