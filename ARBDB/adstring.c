@@ -1120,9 +1120,7 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                                     }
                                     break;
                                 case '|':
-                                    h = GB_command_interpreter(
-                                                               GB_get_root(gb_container),
-                                                               entry,psym+1,gb_container);
+                                    h = GB_command_interpreter(GB_get_root(gb_container), entry,psym+1,gb_container, 0);
                                     if (h){
                                         GBS_strcat(strstruct,h);
                                         free(h);
@@ -2209,7 +2207,7 @@ GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, c
         if (srt) {
             value = to_free = GBS_string_eval(value,srt,gbd);
         }else if (aci){
-            value = to_free = GB_command_interpreter(gb_main,value,aci,gbd);
+            value = to_free = GB_command_interpreter(gb_main,value,aci,gbd, 0);
         }
         if (!value) return GB_get_error();
     }
