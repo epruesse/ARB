@@ -30,3 +30,6 @@ clean:
 
 depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+# DO NOT DELETE
+
+PRD_design.o: PRD_design.hxx

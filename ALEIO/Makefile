@@ -24,8 +24,8 @@ io_arbdb.o:
 io_arbdb.o:  $(ARBHOME)/INCLUDE/arbdb.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h
-io_arbdb.o: xmalloc.h  
+io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h xmalloc.h
+io_arbdb.o:  
 io_arbdb.o:  
 io_arbdb.o:  
 io_arbdb.o:  

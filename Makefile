@@ -300,8 +300,7 @@ ARCHS = \
 			SECEDIT/SECEDIT.a ALEIO/.a \
 			TEST/TEST.a WETC/WETC.a CAT/CAT.a TRS/TRS.a \
 			EDIT4/EDIT4.a MULTI_PROBE/MULTI_PROBE.a EISPACK/EISPACK.a \
-			GENOM/GENOM.a
-
+			GENOM/GENOM.a XML/XML.a
 
 ARCHS_CLIENTACC = PROBE_COM/client.a
 ARCHS_CLIENTCPP = NAMES_COM/client.a
@@ -558,7 +557,7 @@ tags:
 	$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
 	$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 tags2:
-	$(CTAGS) `find . -follow -name '*.[ch]xx' -type f` ARBDB/*.[ch]
+	ctags -e `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f`
 
 links: SOURCE_TOOLS/generate_all_links.stamp
 
@@ -569,8 +568,8 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links
 bin/fig2dev:
 	cd fig2dev/dev;$(XMKMF)
 	cd fig2dev;$(XMKMF)
-	cd fig2dev/dev;$(MAKE)
 	cd fig2dev;$(MAKE)
+	cd fig2dev/dev;$(MAKE)
 	cp fig2dev/fig2dev bin
 #	cd fig2dev/dev;make
 #	cd fig2dev;make fig2dev

@@ -28,10 +28,8 @@ a3.o:
 a3.o:  
 a3.o:  
 a3.o:  
-a3.o:  a3_arbdb.hxx
-a3.o: $(ARBHOME)/INCLUDE/arbdb.h
-a3.o: $(ARBHOME)/INCLUDE/ad_prot.h
-a3.o: $(ARBHOME)/INCLUDE/arbdbt.h
+a3.o:  a3_arbdb.hxx $(ARBHOME)/INCLUDE/arbdb.h
+a3.o: $(ARBHOME)/INCLUDE/ad_prot.h $(ARBHOME)/INCLUDE/arbdbt.h
 a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h a3_bihelix.hxx a3_ali.hxx
 a3.o: a3_ptree.hxx a3_seq.hxx  a3_types.h a3_helix.hxx
 a3.o: a3_darray.hxx

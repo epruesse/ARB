@@ -83,8 +83,8 @@ AWTC_seq_search.o:
 AWTC_seq_search.o: 
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTC_seq_search.o: ./awtc_seq_search.hxx awtc_assert.hxx
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h ./awtc_seq_search.hxx
+AWTC_seq_search.o: awtc_assert.hxx
 AWTC_fast_aligner.o:  
 AWTC_fast_aligner.o:  
 AWTC_fast_aligner.o:  
@@ -127,8 +127,8 @@ AWTC_ClustalV.o:
 AWTC_ClustalV.o: 
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTC_ClustalV.o: awtc_ClustalV.hxx ./awtc_seq_search.hxx awtc_assert.hxx
+AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx awtc_ClustalV.hxx
+AWTC_ClustalV.o: ./awtc_seq_search.hxx awtc_assert.hxx
 AWTC_constructSequence.o:  
 AWTC_constructSequence.o:  
 AWTC_constructSequence.o:  

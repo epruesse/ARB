@@ -154,7 +154,7 @@ void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 		awt_create_selection_list_on_scandb((GBDATA *)cgb_main,
                                             (AW_window*)aws,"tmp/viewkey/key_text",
                                             AWT_NDS_FILTER,
-                                            "scandb","rescandb", CHANGE_KEY_PATH);
+                                            "scandb","rescandb", &AWT_species_selector);
 		//aw_root->awar(key_text)->add_callback((AW_RCB1)awt_pop_down_select_nds,(AW_CL)aws);
 
 		win =  (AW_window*)aws;

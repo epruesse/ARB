@@ -36,8 +36,7 @@ MP_main.o: MultiProbe.hxx ./mpdefs.h
 MP_main.o:  
 MP_main.o:  
 MP_main.o:  
-MP_main.o: 
-MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_main.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_main.o: $(ARBHOME)/INCLUDE/client.h
@@ -53,8 +52,7 @@ MP_Window.o: MultiProbe.hxx ./mpdefs.h
 MP_Window.o:  
 MP_Window.o:  
 MP_Window.o:  
-MP_Window.o: 
-MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_Window.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Window.o: $(ARBHOME)/INCLUDE/client.h
@@ -74,8 +72,7 @@ MP_noclass.o: MultiProbe.hxx ./mpdefs.h
 MP_noclass.o:  
 MP_noclass.o:  
 MP_noclass.o:  
-MP_noclass.o: 
-MP_noclass.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_noclass.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
@@ -104,8 +101,7 @@ MP_sonde.o: MultiProbe.hxx ./mpdefs.h
 MP_sonde.o:  
 MP_sonde.o:  
 MP_sonde.o:  
-MP_sonde.o: 
-MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_sonde.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
@@ -121,9 +117,9 @@ MP_sonde.o:  $(ARBHOME)/INCLUDE/arbdbt.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-MP_sonde.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+MP_sonde.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx 
 MP_sonde.o:  
-MP_sonde.o:  
+MP_sonde.o: 
 MP_sondentopf.o: MultiProbe.hxx ./mpdefs.h 
 MP_sondentopf.o:  
 MP_sondentopf.o:  
@@ -133,22 +129,21 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/client.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/servercntrl.h
-MP_sondentopf.o: ./MP_externs.hxx ./SoTl.hxx 
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/servercntrl.h ./MP_externs.hxx
+MP_sondentopf.o: ./SoTl.hxx 
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx ./MP_probe.hxx
 MP_sondentopf.o:  
 MP_sondentopf.o:  
 MP_sondentopf.o:  
 MP_sondentopf.o:  
 MP_sondentopf.o:  
-MP_sondentopf.o: 
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MP_sondentopf.o:  $(ARBHOME)/INCLUDE/arbdbt.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/aw_root.hxx 
 MP_sondentopf.o:  
-MP_sondentopf.o:  
+MP_sondentopf.o: 
 MP_mo_liste.o: MultiProbe.hxx ./mpdefs.h 
 MP_mo_liste.o:  
 MP_mo_liste.o:  
@@ -173,8 +168,7 @@ MP_probe.o: ./MP_probe.hxx MultiProbe.hxx ./mpdefs.h
 MP_probe.o:  
 MP_probe.o:  
 MP_probe.o:  
-MP_probe.o: 
-MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_probe.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe.o: $(ARBHOME)/INCLUDE/client.h
@@ -183,12 +177,12 @@ MP_probe.o: ./SoTl.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_device.hxx 
 MP_probe.o:  
 MP_probe.o:  
 MP_probe.o:  
 MP_probe.o:  
-MP_probe.o:  
+MP_probe.o: 
 MP_GenerationDuplicates.o: MultiProbe.hxx ./mpdefs.h 
 MP_GenerationDuplicates.o:  
 MP_GenerationDuplicates.o:  
@@ -211,8 +205,8 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/client.h
-MP_Generation.o: $(ARBHOME)/INCLUDE/servercntrl.h
-MP_Generation.o: ./MP_externs.hxx ./SoTl.hxx 
+MP_Generation.o: $(ARBHOME)/INCLUDE/servercntrl.h ./MP_externs.hxx
+MP_Generation.o: ./SoTl.hxx 
 MP_Generation.o: $(ARBHOME)/INCLUDE/aw_awars.hxx ./MP_probe.hxx
 MP_Generation.o:  
 MP_Generation.o:  
@@ -242,8 +236,8 @@ MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/client.h
-MP_probe_tabs.o: $(ARBHOME)/INCLUDE/servercntrl.h
-MP_probe_tabs.o: ./MP_externs.hxx ./SoTl.hxx 
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/servercntrl.h ./MP_externs.hxx
+MP_probe_tabs.o: ./SoTl.hxx 
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awars.hxx ./MP_probe.hxx
 MP_probe_tabs.o:  
 MP_probe_tabs.o:  
@@ -251,8 +245,7 @@ MP_permute.o: MultiProbe.hxx ./mpdefs.h
 MP_permute.o:  
 MP_permute.o:  
 MP_permute.o:  
-MP_permute.o: 
-MP_permute.o: $(ARBHOME)/INCLUDE/arbdb.h
+MP_permute.o:  $(ARBHOME)/INCLUDE/arbdb.h
 MP_permute.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_permute.o: $(ARBHOME)/INCLUDE/client.h

@@ -41,8 +41,8 @@ PH_data.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx
-PH_data.o: phwin.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx phwin.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 PH_root.o: include.hxx  
 PH_root.o:  
 PH_root.o:  
@@ -67,8 +67,8 @@ PH_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_root.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx
-PH_root.o: phwin.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
+PH_root.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx phwin.hxx
+PH_root.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 PH_main.o: include.hxx  
 PH_main.o:  
 PH_main.o:  
@@ -93,9 +93,8 @@ PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx
-PH_main.o: phwin.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
-PH_main.o: PH_display.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx phwin.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx PH_display.hxx
 PH_filt.o: include.hxx  
 PH_filt.o:  
 PH_filt.o:  
@@ -120,8 +119,8 @@ PH_filt.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx
-PH_filt.o: phwin.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx phwin.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 PH_display.o: include.hxx  
 PH_display.o:  
 PH_display.o:  
@@ -174,5 +173,5 @@ PH_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx
-PH_matr.o: phwin.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx phylo.hxx phwin.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx

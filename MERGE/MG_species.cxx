@@ -662,7 +662,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
 	awt_create_selection_list_on_scandb(gb_merge,
 		(AW_window*)aws,AWAR_FIELD1,
 		AWT_NDS_FILTER,
-		"scandb","rescandb", CHANGE_KEY_PATH);
+		"scandb","rescandb", &AWT_species_selector);
 
 	return (AW_window*)aws;
 }
@@ -777,7 +777,7 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
 	awt_create_selection_list_on_scandb(gb_merge,
 		(AW_window*)aws,AWAR_FIELD1,
 		AWT_NDS_FILTER,
-		"scandb","rescandb", CHANGE_KEY_PATH);
+		"scandb","rescandb", &AWT_species_selector);
 
 	return (AW_window*)aws;
 }
@@ -912,8 +912,8 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1,5);
 
-    awt_create_selection_list_on_scandb(gb_merge, (AW_window*)aws,AWAR_FIELD1,AWT_NDS_FILTER,"fields1",0, CHANGE_KEY_PATH);
-    awt_create_selection_list_on_scandb(gb_dest, (AW_window*)aws,AWAR_FIELD2,AWT_NDS_FILTER,"fields2",0, CHANGE_KEY_PATH);
+    awt_create_selection_list_on_scandb(gb_merge, (AW_window*)aws,AWAR_FIELD1,AWT_NDS_FILTER,"fields1",0, &AWT_species_selector);
+    awt_create_selection_list_on_scandb(gb_dest, (AW_window*)aws,AWAR_FIELD2,AWT_NDS_FILTER,"fields2",0, &AWT_species_selector);
 
     return (AW_window*)aws;
 }
@@ -1136,7 +1136,8 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     awt_create_query_box((AW_window*)aws,&awtqs);
 
-    AW_CL scannerid=awt_create_arbdb_scanner(gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, CHANGE_KEY_PATH);
+    awtqs.selector       = &AWT_species_selector;
+    AW_CL scannerid      = awt_create_arbdb_scanner(gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
 
@@ -1166,7 +1167,8 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awt_create_query_box((AW_window*)aws,&awtqs);
 
 
-    scannerid=awt_create_arbdb_scanner(gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, CHANGE_KEY_PATH);
+    awtqs.selector       = &AWT_species_selector;
+    scannerid            = awt_create_arbdb_scanner(gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
 

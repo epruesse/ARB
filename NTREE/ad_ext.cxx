@@ -259,7 +259,7 @@ AW_window *create_extendeds_window(AW_root *aw_root)
 	aws->at("list");
 	awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_EX_NAME);
 
-	AW_CL scannerid=awt_create_arbdb_scanner(gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, CHANGE_KEY_PATH);
+	AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
 	aws->get_root()->awar(AWAR_EX_NAME)->add_callback(AD_map_extended,scannerid);
 	return (AW_window *)aws;
 }

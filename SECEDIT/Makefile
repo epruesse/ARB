@@ -86,8 +86,8 @@ SEC_read.o:
 SEC_read.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-SEC_read.o:   secedit.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx 
+SEC_read.o:  secedit.hxx
 SEC_split.o:  
 SEC_split.o:  
 SEC_split.o:  
@@ -116,8 +116,7 @@ SEC_paint.o:
 SEC_paint.o:  
 SEC_paint.o:  
 SEC_paint.o:  
-SEC_paint.o: 
-SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
+SEC_paint.o:  $(ARBHOME)/INCLUDE/arbdb.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
