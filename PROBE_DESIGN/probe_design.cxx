@@ -571,6 +571,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     int gene_flag = 0;
     char *gene_str;
     char *temp_gene_str;
+    char **ptrptr;
 #endif
     int show_status = 0;
     int extras = 1; // mark species, write to temp fields,
@@ -653,7 +654,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (show_status) aw_status("Unmark all species");
             for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
                 GB_write_flag(gb_species,0);
-
+#ifdef DEVEL_IDP
+		for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+		  GB_write_flag(gb_gene,0);
+		}
+#endif
             }
         }
         if (write_2_tmp){
@@ -707,8 +712,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	if (gene_flag) {
 	  temp_gene_str = new char[strlen(match_info)+1];
 	  strcpy(temp_gene_str,match_info);
-	  gene_str = strtok(temp_gene_str," ");
-	  gene_str = strtok(NULL," ");
+	  gene_str = strtok_r(temp_gene_str," ",ptrptr);
+	  gene_str = strtok_r(NULL," ",ptrptr);
 	}
 #endif
 	char flag  = 'x';
@@ -1637,7 +1642,9 @@ static void pg_result_selected(AW_window */*aww*/) {
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
-
+#ifdef DEVEL_IDP
+	printf("\n\n!!!!!PG_RESULT_SELECTED!!!\n\n");
+#endif
         for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
             if (i==position) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
