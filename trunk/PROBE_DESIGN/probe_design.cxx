@@ -259,14 +259,6 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
     len = 0;
     for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
-      //<<<<<<< probe_design.cxx
-      /*      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
-	gb_name = GB_find(gb_gene, "name", 0, down_level);
-	if (!gb_name) continue;
-	GBS_strcat(names, GB_read_char_pntr(gb_name));
-	GBS_chrcat(checksums, '#');
-	GBS_chrcat(names, '#');
-	=======*/
       for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
 	gb_name = GB_find(gb_gene, "name", 0, down_level);
 	if (!gb_name) continue;
@@ -289,7 +281,6 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 	GBS_strcat(names, GB_read_char_pntr(gb_name));
 	GBS_chrcat(checksums, '#');
 	GBS_chrcat(names, '#');
-	//>>>>>>> 1.37
       }
     }
     bs.data = GBS_strclose(names, 0);
@@ -381,11 +372,11 @@ void probe_design_event(AW_window *aww)
 #ifdef DEVEL_IDP
       int flag = root->awar("probe_design/gene")->read_int();
       if(flag) {//Wenn toggle gesetzt
-    error = pd_get_the_gene_names(bs,check);
+	error = pd_get_the_gene_names(bs,check);
       }
       else {
 #endif
-    error = pd_get_the_names(bs,check);
+	error = pd_get_the_names(bs,check);
 #ifdef DEVEL_IDP
       }
 #endif
@@ -614,8 +605,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     GBDATA *gb_gene;
     int     gene_flag       = 0;
     char   *gene_str        = 0;
-
-//     char *ptrptr = 0;
+    char *ptrptr = 0;
     char *gene_match_name;
 #endif
     int show_status = 0;
@@ -776,15 +766,21 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         match_info = strtok(0,toksep);
         if (!match_info) break;
 #ifdef DEVEL_IDP
-        if (gene_flag) {
-            char *temp_gene_str = new char[strlen(match_info)+1];
-            strcpy(temp_gene_str,match_info);
-            gene_str      = strtok(temp_gene_str," ");
-            gene_str      = strtok(NULL," ");
-
-            if (gene_str) gene_str = strdup(gene_str);
-            delete [] temp_gene_str;
-        }
+	if (gene_flag) {
+	  char *temp_gene_str = new char[strlen(match_info)+1];
+	  strcpy(temp_gene_str,match_info);
+	  temp_gene_str[strlen(temp_gene_str)] = '\0';
+	  gene_str      = strtok_r(temp_gene_str," ",&ptrptr);
+	  gene_str      = strtok_r(NULL," ",&ptrptr);
+	  
+	  //an dieser Stelle muss strtok_r verwendet werden, da strtok immer nur auf einer 
+	  //Zeichenkette arbeiten kann und bei Verwendung für eine 2. Zeichenkette der Zeiger auf die erste verloren geht. 
+	  //Bei strtok_r kann der Zeiger gespeichert werden (hier ptrptr).
+	  //strtok würde match_name verlieren
+	  
+	  //if (gene_str) gene_str = strdup(gene_str);   
+	  delete [] temp_gene_str;
+        } 
 #endif
         char flag  = 'x';
         if (gb_main){
