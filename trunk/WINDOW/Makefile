@@ -1,11 +1,18 @@
 .SUFFIXES: .o .c .cxx .depend
 
-OBJECTS =	AW_xkey.o AW_xfont.o AW_nawar.o AW_button.o \
-			AW_at.o AW_print.o AW_window.o \
-			AW_device.o AW_Xm.o AW_click.o AW_size.o \
-			AW_xfig.o AW_xfigfont.o AW_status.o AW_preset.o \
-			AW_question.o AW_global_awars.o \
-			GLwMDrawA.o GLwDrawA.o 
+STD_OBJECTS =	AW_xkey.o AW_xfont.o AW_nawar.o AW_button.o \
+		AW_at.o AW_print.o AW_window.o \
+		AW_device.o AW_Xm.o AW_click.o AW_size.o \
+		AW_xfig.o AW_xfigfont.o AW_status.o AW_preset.o \
+		AW_question.o AW_global_awars.o \
+
+OPENGL_OBJECTS = GLwMDrawA.o GLwDrawA.o
+
+ifeq ($(OPENGL),1)
+OBJECTS=$(STD_OBJECTS) $(OPENGL_OBJECTS)
+else
+OBJECTS=$(STD_OBJECTS)
+endif
 
 $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
