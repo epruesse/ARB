@@ -1850,13 +1850,89 @@ long GBT_count_species(GBDATA *gb_main) /* does not work in clients like ARB_EDI
 
 long GBT_recount_species(GBDATA *gb_main) /* workaround for GBT_count_species (use this in clients) */
 {
-    long cnt = 0;
+    long    cnt     = 0;
     GBDATA *gb_species_data;
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    cnt = GB_rescan_number_of_subentries(gb_species_data);
+    cnt             = GB_rescan_number_of_subentries(gb_species_data);
     GB_pop_transaction(gb_main);
     return cnt;
+}
+
+char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
+{
+    /* stores the currently marked species in a string
+       if (unmark_all != 0) then unmark them too
+    */
+
+    void   *out   = GBS_stropen(10000);
+    GBDATA *gb_species;
+    int     first = 1;
+
+    for (gb_species = GBT_first_marked_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        GBDATA  *gb_name = GB_find(gb_species, "name", 0, down_level);
+        GB_CSTR  name    = GB_read_char_pntr(gb_name);
+
+        if (first) {
+            first = 0;
+        }
+        else {
+            GBS_chrcat(out, ';');
+        }
+        GBS_strcat(out, name);
+        if (unmark_all) GB_write_flag(gb_species, 0);
+    }
+
+    return GBS_strclose(out, 1);
+}
+
+GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, GB_ERROR (*doit)(GBDATA *gb_species, int *clientdata), int *clientdata) {
+    /* call function 'doit' with all species stored in 'stored' */
+
+#define MAX_NAME_LEN 20
+    char     name[MAX_NAME_LEN+1];
+    GB_ERROR error = 0;
+
+    while (!error) {
+        char   *p   = strchr(stored, ';');
+        int     len = p ? (p-stored) : strlen(stored);
+        GBDATA *gb_species;
+
+        gb_assert(len <= MAX_NAME_LEN);
+        memcpy(name, stored, len);
+        name[len] = 0;
+
+        gb_species = GBT_find_species(gb_main, name);
+        if (gb_species) {
+            error = doit(gb_species, clientdata);
+        }
+        else {
+            error = "Some stored species where not found.";
+        }
+
+        if (!p) break;
+        stored = p+1;
+    }
+#undef MAX_NAME_LEN
+    return error;
+}
+
+static GB_ERROR restore_mark(GBDATA *gb_species, int *clientdata) {
+    GBUSE(clientdata);
+    GB_write_flag(gb_species, 1);
+    return 0;
+}
+
+GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) {
+    /* restores the species-marks to a state currently saved
+       into 'stored_marked' by GBT_store_marked_species
+    */
+
+    GBT_mark_all(gb_main, 0);   /* unmark all species */
+    return GBT_with_stored_species(gb_main, stored_marked, restore_mark, 0);
 }
 
 /********************************************************************************************

@@ -161,13 +161,69 @@ GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
 					String Functions
 ********************************************************************************************/
 
+static char *unEscapeString(const char *escapedString) {
+    // replaces all \x by x
+    char *result = GBS_strdup(escapedString);
+    char *to     = result;
+    char *from   = result;
+
+    while (1) {
+        char c = *from++;
+        if (!c) break;
+
+        if (c=='\\') {
+            *to++ = *from++;
+        }
+        else {
+            *to++ = c;
+        }
+    }
+    *to = 0;
+    return result;
+}
+
+
+GB_ERROR gbl_command(GBDATA *gb_species, char *com,
+                     int     argcinput, GBL *argvinput,
+                     int     argcparam,GBL *argvparam,
+                     int    *argcout, GBL **argvout)
+{
+    GBDATA *gb_main = gb_species;
+    int     i;
+    char   *command;
+    GBUSE(com);
+
+    while (1) {
+        GBDATA *gb_father      = (GBDATA*)GB_FATHER(gb_main);
+        GBDATA *gb_grandfather = (GBDATA*)GB_FATHER(gb_father);
+        if (!gb_grandfather) break;
+
+        gb_main = gb_father;
+    }
+
+    if (argcparam!=1) return "command syntax: command(\"escaped command\")";
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+
+    command = unEscapeString(argvparam[0].str);
+
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species);
+        if (!result) return GB_get_error();
+
+        (*argvout)[(*argcout)++].str = result;
+        /* export result string */
+    }
+    return 0;
+}
+
 GB_ERROR gbl_count(GBDATA *gb_species, char *com,
-                   int argcinput, GBL *argvinput,
-                   int argcparam,GBL *argvparam,
-                   int *argcout, GBL **argvout)	{
-    int i;
-    char tab[256];				/* if tab[char] count 'char' */
-    char result[100];
+                   int     argcinput, GBL *argvinput,
+                   int     argcparam,GBL *argvparam,
+                   int    *argcout, GBL **argvout)	{
+    int                    i;
+    char                   tab[256];				/* if tab[char] count 'char' */
+    char                   result[100];
     GBUSE(gb_species);GBUSE(com);
 
     if (argcparam!=1) return "count syntax: count(\"characters to count\")";
@@ -1095,37 +1151,38 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 
 
 struct GBL_command_table gbl_command_table[] = {
+    {"change", gbl_change_gc },
+    {"checksum", gbl_check } ,
+    {"command", gbl_command } ,
+    {"count", gbl_count } ,
+    {"cut", gbl_cut } ,
     {"dd", gbl_dd } ,
+    {"diff", gbl_diff },
+    {"div", gbl_calculator } ,
+    {"echo", gbl_echo } ,
+    {"exec", gbl_exec } ,
+    {"extract_sequence", gbl_extract_sequence } ,
+    {"extract_words", gbl_extract_words } ,
+    {"filter", gbl_filter },
+    {"format", gbl_format_sequence } ,
+    {"format_sequence", gbl_format_sequence } ,
+    {"gcgchecksum", gbl_gcgcheck } ,
     {"head", gbl_head } ,
-    {"tail", gbl_tail } ,
+    {"keep", gbl_keep } ,
+    {"len", gbl_len } ,
     {"mid", gbl_mid } ,
     {"mid0", gbl_mid0 } ,
-    {"echo", gbl_echo } ,
-    {"count", gbl_count } ,
-    {"tab", gbl_tab } ,
-    {"len", gbl_len } ,
-    {"cut", gbl_cut } ,
-    {"remove", gbl_remove } ,
-    {"keep", gbl_keep } ,
-    {"plus", gbl_calculator } ,
     {"minus", gbl_calculator } ,
     {"mult", gbl_calculator } ,
-    {"div", gbl_calculator } ,
     {"per_cent", gbl_calculator } ,
+    {"plus", gbl_calculator } ,
     {"readdb", gbl_readdb } ,
+    {"remove", gbl_remove } ,
     {"sequence", gbl_sequence } ,
-    {"format_sequence", gbl_format_sequence } ,
-    {"format", gbl_format_sequence } ,
     {"sequence_type", gbl_sequence_type } ,
-    {"extract_sequence", gbl_extract_sequence } ,
-    {"checksum", gbl_check } ,
-    {"gcgchecksum", gbl_gcgcheck } ,
-    {"extract_words", gbl_extract_words } ,
-    {"exec", gbl_exec } ,
-    {"filter", gbl_filter },
-    {"change", gbl_change_gc },
-    {"diff", gbl_diff },
     {"srt", gbl_srt },
+    {"tab", gbl_tab } ,
+    {"tail", gbl_tail } ,
     {0,0}
 
 };

@@ -334,7 +334,8 @@ static char *makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
 //      char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data)
 //  ------------------------------------------------------------------------------------
 char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
-    // generates a unique species name from prefix (will be shortened down to first char)
+    // generates a unique species name from prefix
+    // (prefix will be fillup with '_00..' and the shortened down to first char)
     // returns 0 if fails
 
     int  len = strlen(prefix);
@@ -342,6 +343,11 @@ char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
 
     char p[9];
     strcpy(p, prefix);
+
+    if (len <= 6) p[len++] = '_';
+    while (len<8) p[len++] = '0';
+
+    p[len] = 0;
 
     char *result = 0;
 
