@@ -714,10 +714,9 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
 
         aw_msg->callback     ( input_cb, -1 );
         aw_msg->create_button( "CANCEL", "CANCEL", "C" );
-
-        aw_msg->window_fit();
     }
 
+    aw_msg->window_fit();
     aw_msg->show_grabbed();
     char dummy[] = "";
     aw_input_cb_result = dummy;
