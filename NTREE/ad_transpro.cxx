@@ -238,10 +238,10 @@ void transpro_event(AW_window *aww){
 #endif
     awt_pro_a_nucs_convert_init(gb_main);
 
-    const char *ali_source = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    const char *ali_dest   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    const char *mode       = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
-    int         startpos   = (int)aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
+    char *ali_source = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    char *ali_dest   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    char *mode       = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
+    int   startpos   = (int)aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
 
     error = arb_r2a(gb_main, strcmp(mode, "fields") == 0, startpos, ali_source, ali_dest);
     if (error) {
@@ -252,8 +252,9 @@ void transpro_event(AW_window *aww){
         GB_commit_transaction(gb_main);
     }
 
-    delete ali_source;
-    delete ali_dest;
+    free(mode);
+    free(ali_dest);
+    free(ali_source);
 }
 
 void nt_trans_cursorpos_changed(AW_root *awr) {
