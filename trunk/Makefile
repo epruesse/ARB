@@ -84,7 +84,7 @@ endif
 # supported compiler versions:
 
 ALLOWED_GCC_295_VERSIONS=2.95.3
-# 2.95.4 is supposed to work, but not known to be tested yet 
+# 2.95.4 is supposed to work, but not known to be tested yet
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.3 3.3.4 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS)
 
@@ -262,7 +262,7 @@ first_target:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' release     - make tarfile + make save
+		@echo ' release     - make tarfile + make save'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
@@ -410,7 +410,7 @@ MAKEDEPENDFLAGS = -- $(cflags) -I. -Y$(DIR)/INCLUDE --
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
 # (it does a cast from class AP_tree to struct GBT_TREE). In order to
-# work around that hack properly, we define FAKE_VTAB_PTR 
+# work around that hack properly, we define FAKE_VTAB_PTR
 # if the vtable is located at the beginning of class.
 # We are really sorry for that hack.
 cflags:=$(cflags) -DFAKE_VTAB_PTR=char
