@@ -2,6 +2,9 @@ ARB change log
 
 Major changes for next Beta:
 
+ - new tabbed format in 'Export NDS' and 'Export matrix' (useful for star-calc/excel/etc.)
+ - Changed Parsimony method: Multiple consecutive gaps were counted as
+   multiple mutations - now they are counted as one mutation.
  - updated fastDNAml to 1.2.2
  - added AxML (accelerated fastDNAml 1.2.2)
  - Field transfer definitions for exporting gene-species
@@ -14,7 +17,7 @@ Major changes for next Beta:
    (i.e. highlighting of search (i.e for probes) like in EDIT4,
    interactive constraint editing (stretch/compress), probe info)
  - import reads Unix, DOS, and MAC linefeeds
- - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
+ - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features; basic help
  - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )
    (reloading of these XML files is planned for the future)
  - fixed problems with phylip-tree import/export (bootstrap values,comments,...)

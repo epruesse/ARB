@@ -99,11 +99,13 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
         return;
     }
     make_node_text_init(gb_main);
+    int tabbed = aww->get_root()->awar(AWAR_EXPORT_NDS"/tabbed")->read_int();
 
     for (gb_species = GBT_first_marked_species(gb_main);
          gb_species;
-         gb_species = GBT_next_marked_species(gb_species)){
-        buf = make_node_text_nds(gb_main, gb_species,1,0);
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        buf = make_node_text_nds(gb_main, gb_species,(tabbed ? 2 : 1),0);
         fprintf(out,"%s\n",buf);
     }
     awt_refresh_selection_box(aww->get_root(), AWAR_EXPORT_NDS);
@@ -127,7 +129,6 @@ AW_window *create_nds_export_window(AW_root *root){
 	aws->at("help");
 	aws->create_button("HELP","HELP","H");
 
-
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel");
 	aws->create_button("CLOSE","CANCEL","C");
@@ -140,6 +141,9 @@ AW_window *create_nds_export_window(AW_root *root){
 	aws->callback(export_nds_cb,1);
 	aws->create_button("PRINT","PRINT","P");
 
+	aws->at("toggle1");
+    aws->label("Use TABs for columns");
+    aws->create_toggle(AWAR_EXPORT_NDS"/tabbed");
 
 	awt_create_selection_box((AW_window *)aws,AWAR_EXPORT_NDS);
 
@@ -151,6 +155,7 @@ void create_export_nds_awars(AW_root *awr, AW_default def)
     awr->awar_string( AWAR_EXPORT_NDS"/file_name", "export.nds", def);
     awr->awar_string( AWAR_EXPORT_NDS"/directory", "", def);
     awr->awar_string( AWAR_EXPORT_NDS"/filter", "nds", def);
+    awr->awar_int( AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
 void create_all_awars(AW_root *awr, AW_default def)
@@ -812,7 +817,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     }else{
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
-            AWMIMT("save_changes",	"Save Changes",			"S","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
+            AWMIMT("save_changes",	"Quicksave Changes",			"Q","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
             AWMIMT("save_all_as",	"Save Whole Database As ...",		"W","save.hlp",	AWM_ALL, AW_POPUP, 	(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             awm->insert_separator();
 
@@ -1160,38 +1165,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode( 0, "modify.bitmap", "mode_info.hlp", AWM_ALL, (AW_CB)NT_modify_cb, (AW_CL)ntw, (AW_CL)AWT_MODE_MOD);
     awm->create_mode( 0, "www_mode.bitmap", "mode_www.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw,(AW_CL)AWT_MODE_WWW);
 
-    awm->create_mode( 0, "line.bitmap", "mode_width.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_LINE
-                      );
-    awm->create_mode( 0, "rot.bitmap", "mode_rotate.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_ROT
-                      );
-    awm->create_mode( 0, "spread.bitmap", "mode_angle.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SPREAD
-                      );
-    awm->create_mode( 0, "swap.bitmap", "mode_swap.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SWAP
-                      );
-    awm->create_mode( 0, "length.bitmap", "mode_length.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_LENGTH
-                      );
-    awm->create_mode( 0, "move.bitmap", "mode_move.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_MOVE
-                      );
-    awm->create_mode( 0, "setroot.bitmap", "mode_set_root.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SETROOT
-                      );
-    awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_TREE, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_RESET
-                      );
+    awm->create_mode( 0, "line.bitmap", "mode_width.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LINE);
+    awm->create_mode( 0, "rot.bitmap", "mode_rotate.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ROT);
+    awm->create_mode( 0, "spread.bitmap", "mode_angle.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SPREAD);
+    awm->create_mode( 0, "swap.bitmap", "mode_swap.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode( 0, "length.bitmap", "mode_length.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LENGTH);
+    awm->create_mode( 0, "move.bitmap", "mode_move.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
+    awm->create_mode( 0, "setroot.bitmap", "mode_set_root.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_TREE, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);

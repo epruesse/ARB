@@ -68,7 +68,7 @@ static long ed_submit_info_event_sequence(void *strstruct,char *alignment,long m
 		c = alignment[i];
 		if (c == '.') continue;
 		if (c == '-') continue;
-	
+
 		if (c==':') c = ';';
 		if (c=='=') c = '-';
 		if ( !(seq_len%modu) ) {
@@ -224,7 +224,7 @@ static void ed_submit_gen_event(AW_window *aww)
 	sprintf(buffer,"%s.submit",name);
 	free(name);
 	aw_root->awar("submission/file")->write_string(buffer);
-}	
+}
 
 
 AW_window *AWTC_create_submission_window(AW_root *root)
@@ -250,11 +250,11 @@ AW_window *AWTC_create_submission_window(AW_root *root)
 
 	aws->at( "parsed" );
 	aws->create_text_field( AWAR_PARSED, 80,13 );
-	
+
 	aws->at( "species" );
 	aws->label( "Species Name:");
 	aws->create_input_field( AWAR_SPECIES_NAME, 12 );
-	
+
 	aws->at( "submission" );
 	char **submits = GBS_read_dir(0,"submit/*");
 	if (submits) {
@@ -264,7 +264,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
 		}
 		aws->insert_default_option("default","d","default");
 		aws->update_option_menu();
-	
+
 		GBS_free_names(submits);
 	}
 
@@ -287,7 +287,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
 
 	aws->at( "write" );
 	aws->callback( (AW_CB)ed_save_var_to_file,(AW_CL)AWAR_PARSED,(AW_CL)"submission/file");
-	aws->create_button("SAVE", "SAVE TO DISC","S");
+	aws->create_button("SAVE", "SAVE TO FILE","S");
 
 	aws->button_length( 20 );
 	aws->at( "edit" );
