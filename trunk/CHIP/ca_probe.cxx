@@ -27,6 +27,20 @@ static void my_print(const char *, ...) {
     chip_assert(0); // PG_init_pt_server should install another handler
 }
 // ================================================================================
+// KAI  -  added 30.04.2003
+
+void correctIllegalChars(char *str)
+{
+    char *s= str;
+    while(*s)
+    {
+	if((*s < 32) || (*s > 126)) *s= '?';
+	s++;
+    }
+}
+
+
+// ================================================================================
 
 static bool 	 server_initialized  		   = false;;
 static char 	*current_server_name 		   = 0;
@@ -695,20 +709,27 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	   pFile = fopen(fn, "a");
 	 if (pFile!=NULL)
 	  { 
-	    
-	  fputs("\nprobe\n", pFile);
+	    char tmp[256];
+
+	    fputs("\nprobe\n", pFile);
 	    char probe_name[255];
-	    strcpy (probe_name, "\tname = ");
-	    strcat (probe_name, pD.name);
-	    strcat (probe_name, "\n");
+	    strcpy(probe_name, "\tname= ");
+	    strcpy(tmp, pD.name);
+	    correctIllegalChars(tmp);
+	    strcat(probe_name, tmp);
+	    strcat(probe_name, "\n");
 	    fputs(probe_name, pFile);
+
 	    char probe_longname[255];
-	    strcpy(probe_longname, "\tlongname = ");
-	    strcat(probe_longname, pD.longname);
+	    strcpy(probe_longname, "\tlongname= ");
+	    strcpy(tmp, pD.longname);
+	    correctIllegalChars(tmp);
+	    strcat(probe_longname, tmp);
 	    strcat(probe_longname, "\n");
-	     fputs(probe_longname, pFile);
+	    fputs(probe_longname, pFile);
+
 	    char probe_sequence[255];
-	    strcpy(probe_sequence, "\tsequence = ");
+	    strcpy(probe_sequence, "\tsequence= ");
 	    strcat(probe_sequence, pD.sequence);
 	    strcat(probe_sequence, "\n");
 	    fputs(probe_sequence, pFile);
@@ -723,7 +744,8 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 		    if (!match_info) break;
 		    char *match_longname = parse_match_info(match_info);
 		    char probe_match[255];
-		    strcpy(probe_match, "\tmatch = ");
+		    strcpy(probe_match, "\tmatch= ");
+		    correctIllegalChars(match_name);
 		    strcat(probe_match, match_name);
 		    strcat(probe_match, ", ");  
 		    strcat(probe_match, match_longname);
