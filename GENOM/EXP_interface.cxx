@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Sep/28/2004 13:34 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/12/2004 18:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -63,10 +63,8 @@ static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const c
     }
     free(name);
 }
-//  ------------------------------------------------------------------------------------------------------------------
-//      static char *EXP_experiment_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_experiment)
-//  ------------------------------------------------------------------------------------------------------------------
-static char *EXP_experiment_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_experiment) {
+
+static char *EXP_get_experiment_id(GBDATA */*gb_main*/, GBDATA *gb_experiment) {
     GBDATA *gb_name = GB_find(gb_experiment, "name", 0, down_level);
     if (!gb_name) return 0;     // experiment  w/o name -> skip
 
@@ -86,6 +84,23 @@ static char *EXP_experiment_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*
     free(species_name);
 
     return result;
+}
+
+static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {
+    char   *organism = GB_strdup(id);
+    char   *exp     = strchr(organism, '/');
+    GBDATA *result   = 0;
+
+    if (exp) {
+        *exp++ = 0;
+        GBDATA *gb_organism = GEN_find_organism(gb_main, organism);
+        if (gb_organism) {
+            result = EXP_find_experiment(gb_organism, exp);
+        }
+    }
+
+    free(organism);
+    return result;    
 }
 
 static char *old_species_marks = 0; // configuration storing marked species
@@ -184,7 +199,8 @@ struct ad_item_selector EXP_item_selector =
     {
         AWT_QUERY_ITEM_EXPERIMENTS,
         EXP_select_experiment,
-        EXP_experiment_result_name,
+        EXP_get_experiment_id,
+        EXP_find_experiment_by_id,
         (AW_CB)awt_experiment_field_selection_list_update_cb,
         25,
         CHANGE_KEY_PATH_EXPERIMENTS,
