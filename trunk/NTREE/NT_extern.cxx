@@ -52,7 +52,6 @@
 #include "nt_concatenate.hxx"
 #include "nt_validNames.hxx"
 #include "nt_validManual.hxx"
-#include "nt_tipsAndTricks.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -1390,11 +1389,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at_newline();
     int third_linex, third_liney;
     awm->get_at_position(&third_linex, &third_liney);
-
-    awm->button_length(19);
-    awm->at(db_pathx, third_liney);
-    awm->callback((AW_CB2)AW_POPUP,(AW_CL)createTipsAndTricks_window, (AW_CL)0);
-    awm->create_button("TIPS_AND_TRICKS","Tips and Tricks");
 
     // tree buttons:
 
