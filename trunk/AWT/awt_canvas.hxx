@@ -43,6 +43,7 @@ public:
     unsigned int dont_fit_larger:1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
     unsigned int dont_scroll:1;
 
+    void init(void); // like clear, but resets fit/scroll state
     void clear(void);
 
     short left_offset;
