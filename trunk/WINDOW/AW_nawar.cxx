@@ -103,58 +103,40 @@ void AW_awar::get( float *p_float ) {
     *p_float =  read_float( );
 }
 
-
-GB_ERROR AW_awar::write_string(const char *aw_string) {
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
-    GB_push_transaction(gb_var);
 #if defined(DUMP_AWAR_CHANGES)
-    fprintf(stderr, "change awar '%s' write_string(%s)\n", awar_name, aw_string);
-#endif // DUMP_AWAR_CHANGES
-    if ( GB_write_string( gb_var, aw_string ) ) {
-        GB_pop_transaction(gb_var);
-        return GB_get_error();
-    }
-    GB_pop_transaction(gb_var);
-    return 0;
+#define AWAR_CHANGE_DUMP(name, where, format) fprintf(stderr, "change awar '%s' " where "(" format ")", name, para)
+#else
+#define AWAR_CHANGE_DUMP(name, where, format)
+#endif // DEBUG
+
+#define concat(x, y) x##y
+
+#define WRITE_SKELETON(self, type, format, func)        \
+GB_ERROR AW_awar::self(type para) {                     \
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
+    GB_transaction ta(gb_var);                          \
+    AWAR_CHANGE_DUMP(awar_name, self, format);          \
+    if ( func(gb_var, para)) return GB_get_error();     \
+    return 0;                                           \
+}                                                       \
+GB_ERROR AW_awar::concat(re, self)(type para) {         \
+    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
+    GB_transaction ta(gb_var);                          \
+    AWAR_CHANGE_DUMP(awar_name, self, format);          \
+    if (func(gb_var, para)) return GB_get_error();      \
+    GB_touch(gb_var);                                   \
+    return 0;                                           \
 }
 
-GB_ERROR AW_awar::write_as_string(const char *aw_value) {
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
-    GB_transaction dummy(gb_var);
-#if defined(DUMP_AWAR_CHANGES)
-    fprintf(stderr, "change awar '%s' write_as_string(%s)\n", awar_name, aw_value);
-#endif // DUMP_AWAR_CHANGES
-    if ( GB_write_as_string( gb_var, aw_value ) ) {
-        return GB_get_error();
-    }
-    return 0;
-}
+WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
+    WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
+    WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
+    WRITE_SKELETON(write_as_string, const char *, "%s", GB_write_as_string) // defines rewrite_as_string
 
+#undef WRITE_SKELETON
+#undef concat
+#undef AWAR_CHANGE_DUMP
 
-GB_ERROR AW_awar::write_int( long aw_int ) {
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
-    GB_transaction dummy(gb_var);
-#if defined(DUMP_AWAR_CHANGES)
-    fprintf(stderr, "change awar '%s' write_int(%li)\n", awar_name, aw_int);
-#endif // DUMP_AWAR_CHANGES
-    if ( GB_write_int( gb_var, aw_int ) ) {
-        return GB_get_error();
-    }
-    return 0;
-}
-
-
-GB_ERROR AW_awar::write_float( double aw_double ) {
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
-    GB_transaction dummy(gb_var);
-#if defined(DUMP_AWAR_CHANGES)
-    fprintf(stderr, "change awar '%s' write_float(%f)\n", awar_name, aw_double);
-#endif // DUMP_AWAR_CHANGES
-    if ( GB_write_float( gb_var, aw_double ) ) {
-        return GB_get_error();
-    }
-    return 0;
-}
 
 void AW_awar::touch( void ) {
     if (!gb_var) {
@@ -549,7 +531,7 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
         fprintf(stderr, "Error loading properties '%s'\n", shown_name);
-        
+
         exit(EXIT_FAILURE);
     }
     return (AW_default) gb_default;
