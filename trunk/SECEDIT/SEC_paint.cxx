@@ -16,10 +16,10 @@
 #include "sec_graphic.hxx"
 #include "../EDIT4/ed4_class.hxx"
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
-#include "../EDIT4/ed4_visualizeSAI.hxx" 
+#include "../EDIT4/ed4_visualizeSAI.hxx"
 
 #define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
-#define SAICOLORS (ED4_G_CBACK_0 - SEC_GC_CBACK_0) 
+#define SAICOLORS (ED4_G_CBACK_0 - SEC_GC_CBACK_0)
 
 int SEC_font_info::max_width;
 int SEC_font_info::max_height;
@@ -85,9 +85,9 @@ const char *SEC_root::getSearchResults(int startPos,int endPos){                
     //seqTerminal is a pointer to ED4_sequence_terminal declared in SEC_root
 
     if (seqTerminal) {                                                                        //if seqTerminal is initialised and selected
-        const char *searchColResults = 0; 
-        
-        if(display_sai && ED4_ROOT->visualizeSAI) 
+        const char *searchColResults = 0;
+
+        if(display_sai && ED4_ROOT->visualizeSAI)
             searchColResults = getSaiColorString(startPos, endPos);
         else
             searchColResults = seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);  // buildColorString builds the background color of each base
@@ -872,14 +872,14 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 
     char thisBgColor_buf[seqEnd-seqStart+1];
     {
-    const char *thisBgColor_tmp = root->getSearchResults(seqStart, seqEnd);
-    if (thisBgColor_tmp) {
-        memcpy(thisBgColor_buf,thisBgColor_tmp+seqStart,seqEnd-seqStart+1);
-        thisBgColor=thisBgColor_buf-seqStart;
-    }
-    else {
-        thisBgColor=0;
-    }
+        const char *thisBgColor_tmp = root->getSearchResults(seqStart, seqEnd);
+        if (thisBgColor_tmp) {
+            memcpy(thisBgColor_buf,thisBgColor_tmp+seqStart,seqEnd-seqStart+1);
+            thisBgColor=thisBgColor_buf-seqStart;
+        }
+        else {
+            thisBgColor=0;
+        }
     }
 
     otherBgColor = root->getSearchResults(otherSeqStart, otherSeqEnd);
@@ -938,59 +938,62 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
             if (root->helix && root->helix->entries[this_abs_pos].pair_type==HELIX_NONE) {
                 print_lonely_bases(this_buffer,  device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y,
                                    this_x,  this_y, this_abs_pos,  font_height2,thisBgColor,1);
-        thisLonelyBaseClrTag =1;
+                thisLonelyBaseClrTag =1;
             }
             else {
-        if(thisLonelyBaseClrTag && root->show_strSkeleton) {
-            device->line(SEC_SKELE_NHELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
-            thisLonelyBaseClrTag = 0;
-        }
-        else {
-          if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
-        }
-        if(thisValid) root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, this_x, this_y, radius,lineWidth,0);
-        if(!root->hide_bases)  device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
-        root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
-        //paints the Helix Numbers
-        if(!thisHelixNrTag && i%(this_base_count/2)==0){
-            printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
-            thisHelixNrTag = 1;
-        }
-        thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
+                if(thisLonelyBaseClrTag && root->show_strSkeleton) {
+                    device->line(SEC_SKELE_NHELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
+                    thisLonelyBaseClrTag = 0;
+                }
+                else {
+                    if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
+                }
+                if(thisValid) root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, this_x, this_y, radius,lineWidth,0);
+                if(!root->hide_bases)  device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
+                root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
+                //paints the Helix Numbers
+                if(!thisHelixNrTag && i%(this_base_count/2)==0){
+                    printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
+                    thisHelixNrTag = 1;
+                }
+                thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
             }
         }
 
         if (other_legal && i>0) {
             if (root->helix && root->helix->entries[other_abs_pos].pair_type==HELIX_NONE) {
                 print_lonely_bases(other_buffer, device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y,
-                   other_x, other_y, other_abs_pos, font_height2,otherBgColor,0);
-        otherLonelyBaseClrTag = 1;
+                                   other_x, other_y, other_abs_pos, font_height2,otherBgColor,0);
+                otherLonelyBaseClrTag = 1;
             }
             else {
-        if(otherLonelyBaseClrTag  && root->show_strSkeleton){
-            device->line(SEC_SKELE_NHELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
-            otherLonelyBaseClrTag = 0;
-        }
-        else {
-            if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
-        }
-        if(otherValid) root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
-        if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
-        root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
-        //paints the Helix Numbers
-        if(!otherHelixNrTag && j%(other_base_count/2)==0){
-            printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
-            otherHelixNrTag = 1;
-        }
-        otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
+                if(otherLonelyBaseClrTag  && root->show_strSkeleton){
+                    device->line(SEC_SKELE_NHELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
+                    otherLonelyBaseClrTag = 0;
+                }
+                else {
+                    if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
+                }
+                if(otherValid) root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
+                if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
+                root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
+                //paints the Helix Numbers
+                if(!otherHelixNrTag &&
+                   other_base_count >= 2 && // avoid "devide by zero"
+                   j%(other_base_count/2) == 0)
+                {
+                    printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
+                    otherHelixNrTag = 1;
+                }
+                otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
             }
         }
 
         // draw bonds:
         if (this_legal && other_legal) {
-        paintLastBase = 1; //if it is valid strand set to true for painting last base of each strand
-        if(!root->hide_bonds)
-        SEC_GRAPHIC->bond.paint(device, root, this_buffer[0], other_buffer[0], this_x, this_y-font_height2, other_x, other_y-font_height2, this_db, font_size);
+            paintLastBase = 1; //if it is valid strand set to true for painting last base of each strand
+            if(!root->hide_bonds)
+                SEC_GRAPHIC->bond.paint(device, root, this_buffer[0], other_buffer[0], this_x, this_y-font_height2, other_x, other_y-font_height2, this_db, font_size);
         }
 
         // draw ecoli positions:
@@ -1015,10 +1018,10 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     //this paints the last base of both the helix strands
     if(paintLastBase){
         root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, 0, 0, radius,lineWidth,0);
-    if(!root->hide_bases) device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos,0 );
+        if(!root->hide_bases) device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos,0 );
         root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
         root->paintSearchBackground(device, otherBgColor, otherLastAbsPos, otherLast_x, otherLast_y, 0, 0, radius,lineWidth,1);
-    if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
+        if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
         root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
         paintLastBase = 0;
     }
