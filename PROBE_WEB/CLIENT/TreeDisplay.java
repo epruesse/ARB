@@ -25,15 +25,16 @@ public class TreeDisplay extends Canvas
 
     private Stack   history;
 
-    private int xSize = 0;
-    private int ySize = 0;
+    private int xSize     = 0;
+    private int ySize     = 0;
+    private int scaleBarY = -1;
 
     private int leafNumber;
 
     private HashMap branchLines; // vertical lines
     private HashMap rootLines;  // horizontal lines
     private Client  myClient;
-    
+
     private int leafSpace   = 15;
     private int leafOffset  = 10;
     private int groupSpace  = 30;
@@ -129,7 +130,7 @@ public class TreeDisplay extends Canvas
         yPointer = 0;
         calculateYValues(visibleSubtree);
 
-        // System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
+        System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
         setNewDrawSize(xPointer, yPointer);
 
         Dimension scrollPaneSize = getParent().getSize();
@@ -144,7 +145,7 @@ public class TreeDisplay extends Canvas
         }
 
         if (xSpreading<min_xSpreading) xSpreading = min_xSpreading;
-        
+
         if (xSpreading != old_xSpreading) {
 //             System.out.println("old xSpreading="+old_xSpreading);
 //             System.out.println("new xSpreading="+xSpreading);
@@ -266,9 +267,28 @@ public class TreeDisplay extends Canvas
             //                 System.out.println("");
             //             }
 
-            // show scale bar
+            {
+                // show scale bar
+                
+                int ysize  = 5; // "half" height of scale bar
+//                 int yspace = 2*ysize; // "half" space used by scalebar
 
+                if (newLayout == true) {
+                    scaleBarY = yPointer + 6*ysize;
+                    yPointer  = scaleBarY + 2*ysize;
+                }
 
+                int x1 = 10;
+                int x2 = x1 + (int)(0.1*xSpreading + 0.5);
+                int y  = scaleBarY;
+
+                g.setColor(pmc);
+                g.drawLine(x1, y, x2, y);
+                g.drawLine(x1, y-ysize, x1, y+ysize);
+                g.drawLine(x2, y-ysize, x2, y+ysize);
+                g.setColor(dc);
+                g.drawString("0.1", x1+(x2-x1)/2-10, y-2);
+            }
         }
         catch (ClientException e) {
             Toolkit.showError(e.getMessage());
@@ -314,7 +334,7 @@ public class TreeDisplay extends Canvas
         }
     }
 
-    public void displayTreeGraph(Graphics g, TreeNode node /*, int depth*/) throws Exception
+    public void displayTreeGraph(Graphics g, TreeNode node) throws Exception
     {
         if (node == null) {
             Toolkit.AbortWithError("no valid node given to display");
