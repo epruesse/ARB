@@ -45,6 +45,7 @@ class Sonde;
 #define MP_AWAR_GREYZONE		"mp/greyzone"
 #define MP_AWAR_EMPHASIS		"mp/emphasis"
 #define MP_AWAR_ECOLIPOS		"mp/ecolipos"
+#define MP_AWAR_AUTOADVANCE		"mp/auto_advance"
 
 #define MINQUALITY	1.0		// schlechteste Qualitaet einer Sonde
 #define MAXQUALITY	5.0		// beste Qualitaet einer Sonde
@@ -133,8 +134,8 @@ private:
 private:
     void 	create_awars();
 
-    
-    
+
+
 public:
     MP_Window	*get_mp_window()	{ return mp_window; };
     AW_root	*get_aw_root()		{ return aw_root; };
@@ -145,7 +146,7 @@ public:
     void	set_p_eval (ProbeValuation *y) { p_eval = y; };
     ProbeValuation 	*new_probe_eval(char **field, int size, int* array, int *mismatches);
     void		destroy_probe_eval();
-    
+
     MP_Main(AW_root *awr,AWT_canvas *ntwt);
     ~MP_Main();
 };
@@ -157,18 +158,18 @@ class MP_Window
 private:
     AW_window_simple *aws;
     AW_window_simple *result_window;
-    
+
 private:
     void		build_pt_server_list();
     										//zeigt auf naechstes Zeichen
-    
+
 public:
     AW_window_simple	*get_window()		{ return aws; };
     AW_window_simple	*get_result_window() 	{ return result_window; };
 
-    AW_window_simple	*create_result_window(AW_root *aw_root);
-    char		*load_selection_list(  AW_window *aww, int selection_list, char *filename);		//modifiziert von AW_window
-    
+    AW_window_simple *create_result_window(AW_root *aw_root);
+//     char		     *load_selection_list(  AW_window *aww, int selection_list, char *filename); //modifiziert von AW_window
+
     MP_Window(AW_root *aw_root);
     ~MP_Window();
 };
@@ -195,7 +196,7 @@ class MP_list
 
                 MP_list();
                 ~MP_list();
-}; 
+};
 
 
 
@@ -212,7 +213,7 @@ public:
     long		inc_hit_flag() { return(++hit_flag);};
     long		get_hit_flag() { return(hit_flag);};
     void		kill_flag() { hit_flag = 0; };
-    
+
     Bakt_Info(char* n);
     ~Bakt_Info();
 };
@@ -229,7 +230,7 @@ public:
     long	get_baktid() 	{ return baktid; };
     void	set_mismatch_at_pos(int pos, double mm) { mismatch[pos] = mm; };
     double	get_mismatch_at_pos(int pos) { return mismatch[pos]; };
-    
+
     Hit(long baktnummer);
     ~Hit();
 };
@@ -244,7 +245,7 @@ private:
     GB_HASH		*color_hash;
     MO_Liste 		*BaktList;
     MO_Liste		*Auswahllist;
-    
+
 public:
     probe_tabs*		fill_Stat_Arrays();
     double** 		gen_Mergefeld();
@@ -252,13 +253,13 @@ public:
     long		get_length_hitliste();
     void 		gen_color_hash(positiontype anz_sonden);
     GB_HASH 		*get_color_hash() { return color_hash;};
-    
+
     Sondentopf(MO_Liste *BL, MO_Liste *AL);
     ~Sondentopf();
 };
 //##################################### Sonde #####################################
 class Sonde
-{ 
+{
 private:
     char*		kennung;		// Nukleinsaeuren, z.B. "atgatgatg"
     Bitvector*		bitkennung;		// Sonde 1 Platz eins, ...zwei..., ... Analog zum Aufbau der Listenliste
@@ -306,7 +307,7 @@ public:
 					     MO_Liste *convert,
 					     long *number_of_species);
     int 		gen_Hitliste(MO_Liste *Bakterienliste);
-   
+
     Sonde(char* bezeichner, int allowed_mis, double outside_mis);
     ~Sonde();
 };
@@ -346,7 +347,7 @@ private:
     long	laenge;
     long	current;		//zeigt auf den ersten freien eintrag
     GB_HASH* 	hashptr;
-	
+
 
 public:
     positiontype	fill_marked_bakts();
@@ -385,7 +386,7 @@ public:
     int		get_len() { return len;};
 
     void	set_vector(char* back) { vector = back; };
-    
+
     Bitvector(int bits);
     ~Bitvector();
 };
