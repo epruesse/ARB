@@ -1,5 +1,6 @@
 #include <vector.h>
 
+#define MAX(x,y)  (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_PROBE_LIST "tmp/probe_design/probe_list"
