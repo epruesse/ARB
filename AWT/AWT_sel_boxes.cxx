@@ -339,7 +339,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 			if (res) {
 				char *name = GB_read_char_pntr(gb_name);
 				cbs->aws->insert_selection( cbs->id, res, name );
-				delete res;
+				free(res);
 			}
 		}else{
 			char *name = GB_read_char_pntr(gb_name);

@@ -111,10 +111,10 @@ void st_check_cb(AW_window *aww,GBDATA *gb_main,AWT_csp *awt_csp){
 						  awt_csp,bucket_size,
 						  marked_only,report,
 						  filter_string,dest_field);
-    delete filter_string;
-    delete dest_field;
-    delete alignment_name;
-    delete tree_name;
+    free(filter_string);
+    free(dest_field);
+    free(alignment_name);
+    free(tree_name);
     if (error){
 	aw_message(error);
 	GB_abort_transaction(gb_main);

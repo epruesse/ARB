@@ -30,9 +30,9 @@ st_cq_stat::st_cq_stat(int isize){
 }
 
 st_cq_stat::~st_cq_stat(){
-    delete square_liks;
-    delete likelihoods;
-    delete n_elems;
+    delete [] square_liks;
+    delete [] likelihoods;
+    delete [] n_elems;
 }
 
 void st_cq_stat::add(int pos,double lik){
@@ -152,8 +152,8 @@ void st_ml_add_quality_string_to_species(GBDATA *gb_main,
         char *s5 = info->ss5.generate_string();
         char *su = info->ssu.generate_string();
         sprintf(buffer,"a%s b%s c%s",s2,s5,su);
-        delete s2;
-        delete s5;
+        delete [] s2;
+        delete [] s5;
         error = GB_write_string(gb_dest,buffer);
 
         if (!error && report){
@@ -172,7 +172,7 @@ void st_ml_add_quality_string_to_species(GBDATA *gb_main,
                 delete rp;
             }
         }
-        delete su;
+        delete [] su;
     }
     if (error){
         aw_message(error);
@@ -230,7 +230,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main,
                                             report,dest_field);
     }
     aw_closestatus();
-    delete snames;
+    free(snames);
     GBS_free_hash(species_to_info_hash);
     return NULL;
 }

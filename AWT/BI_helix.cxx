@@ -132,10 +132,10 @@ BI_helix::~BI_helix(void){
         GB_warning("Internal Programm Error: You cannot delete BI_helix !!");
     }
     int i;
-    for (i=0;i<HELIX_MAX; i++)	delete pairs[i];
-    for (i=0;i<HELIX_MAX; i++) 	delete char_bind[i];
+    for (i=0;i<HELIX_MAX; i++)	free(pairs[i]);
+    for (i=0;i<HELIX_MAX; i++) 	free(char_bind[i]);
 
-    delete entries;
+    free(entries);
 }
 
 extern "C" long BI_helix_check_error(const char *key, long val)
