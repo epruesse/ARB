@@ -1,6 +1,7 @@
-#include <assert.h>
 #include <iostream.h>
 #include <limits.h>
+
+#define ap_assert(x) arb_assert(x)
 
 class       AP_tree_nlen;
 extern long global_combineCount;
@@ -200,7 +201,7 @@ public:
     // access methods:
 
     int isConnectedTo(const AP_tree_nlen *n) const 		{ return node[0]==n || node[1]==n; }
-    int	indexOf(const AP_tree_nlen *n) const 			{ assert(isConnectedTo(n)); return node[1] == n; }
+    int	indexOf(const AP_tree_nlen *n) const 			{ ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const 	{ return node[1-indexOf(n)]; }
     AP_tree_nlen* sonNode() const				{ return node[0]->Father() == node[1] ? node[0] : node[1]; }
     AP_tree_edge* Next() const 					{ return next; }
@@ -228,7 +229,7 @@ public:
     int dumpChain() const;
     void testChain(int deep);
 
-    int Distance() const { assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
+    int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
     int distanceToBorder(int maxsearch=INT_MAX,AP_tree_nlen *skip=NULL) const;	// obsolete
 
     static int dumpNNI;		    // should NNI dump its values?
