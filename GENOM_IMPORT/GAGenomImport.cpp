@@ -20,6 +20,25 @@
 #include "GAGenomGeneEmbl.h"
 #include "GAGenomGeneLocationEmbl.h"
 
+
+namespace gellisary {
+#warning Die class GAGenomImport ist ueberfluessig - definiere einfach alle Funktionen non-static direkt im namespace
+    class GAGenomImport{
+    public:
+        static GB_ERROR executeQuery(GBDATA *, const char *,const char *);
+        static void writeReferenceEmbl(GBDATA *, gellisary::GAGenomReferenceEmbl *);
+        static void writeFeatureTableEmbl(GBDATA *, gellisary::GAGenomFeatureTableEmbl *);
+        static void writeGeneEmbl(GBDATA *, gellisary::GAGenomGeneEmbl *);
+        static bool writeLocationEmbl(GBDATA *, gellisary::GAGenomGeneLocationEmbl *, std::vector<int> *);
+        static void writeByte(GBDATA *, std::string *, int);
+        static void writeSourceEmbl(GBDATA *, gellisary::GAGenomFeatureTableSourceEmbl *);
+        static void writeString(GBDATA *, std::string *, std::string *);
+        static void writeInteger(GBDATA *, std::string *, int);
+        static void writeGenomSequence(GBDATA *, std::string *, const char *);
+    };
+
+};
+
 using namespace std;
 
 /*bool gellisary::GAGenomImport::setFileName(std::string * source_str)
@@ -407,9 +426,9 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 		{
 			gellisary::GAGenomImport::writeString(gb_species,&field,tmp_string_pnt);
 		}
-		
+
 		gellisary::GAGenomImport::writeGenomSequence(gb_species,genomembl.getSequence(),ali_name);
-		
+
 		tmp_int_vector = *(genomembl.getSequenceHeader());
 		tmp_str_vector.clear();
 		tmp_str_vector.push_back("sequence_lenght");
@@ -428,9 +447,9 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 				gellisary::GAGenomImport::writeInteger(gb_species,&field,tmp_int);
 			}
 		}
-		
+
 		gellisary::GAGenomImport::writeFeatureTableEmbl(gb_species,genomembl.getFeatureTable());
-		
+
 		GAGenomReferenceEmbl * tmp_reference;
 		while((tmp_reference = genomembl.getReference()) != NULL)
 		{
@@ -440,11 +459,17 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 	}
 	else if(extension == "gbk")
 	{
-	
+
 	}
 	else if(extension == "ff")
 	{
-	
+
 	}
 	return error;
 }
+
+
+GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const char * ali_name) {
+    return gellisary::GAGenomImport::executeQuery(gb_main, file_name, ali_name);
+}
+
