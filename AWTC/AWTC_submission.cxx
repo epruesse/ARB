@@ -151,7 +151,7 @@ static void ed_submit_info_event(AW_window *aww)
                                          ,gb_species);
         if (seq_info) {
             GBS_strcat(strstruct, seq_info);
-            delete seq_info;
+            free(seq_info);
         }else{
             aw_message(GB_get_error());
         }
