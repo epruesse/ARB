@@ -27,15 +27,15 @@ extern GBDATA *gb_main;
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
-    //	aw_root->awar_string( AWAR_SPECIES_NAME, "" ,	gb_main);
-    aw_root->awar_string( AWAR_SPECIES_DEST, "" ,	aw_def);
-    aw_root->awar_string( AWAR_SPECIES_INFO, "" ,	aw_def);
-    aw_root->awar_string( AWAR_SPECIES_KEY, "" ,	aw_def);
-    aw_root->awar_string( AWAR_FIELD_REORDER_SOURCE, "" ,	aw_def);
-    aw_root->awar_string( AWAR_FIELD_REORDER_DEST, "" ,	aw_def);
-    aw_root->awar_string( AWAR_FIELD_CREATE_NAME, "" ,	aw_def);
-    aw_root->awar_int( AWAR_FIELD_CREATE_TYPE, GB_STRING, 	aw_def );
-    aw_root->awar_string( AWAR_FIELD_DELETE, "" ,	aw_def);
+    //  aw_root->awar_string( AWAR_SPECIES_NAME, "" ,   gb_main);
+    aw_root->awar_string( AWAR_SPECIES_DEST, "" ,   aw_def);
+    aw_root->awar_string( AWAR_SPECIES_INFO, "" ,   aw_def);
+    aw_root->awar_string( AWAR_SPECIES_KEY, "" ,    aw_def);
+    aw_root->awar_string( AWAR_FIELD_REORDER_SOURCE, "" ,   aw_def);
+    aw_root->awar_string( AWAR_FIELD_REORDER_DEST, "" , aw_def);
+    aw_root->awar_string( AWAR_FIELD_CREATE_NAME, "" ,  aw_def);
+    aw_root->awar_int( AWAR_FIELD_CREATE_TYPE, GB_STRING,   aw_def );
+    aw_root->awar_string( AWAR_FIELD_DELETE, "" ,   aw_def);
 
 }
 
@@ -49,7 +49,7 @@ void species_rename_cb(AW_window *aww){
         aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
     }
     if (!error) GBT_commit_rename_session(0);
-    else	GBT_abort_rename_session();
+    else    GBT_abort_rename_session();
     if (error) aw_message(error);
     free(source);
     free(dest);
@@ -60,12 +60,12 @@ void species_copy_cb(AW_window *aww){
     char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
     GB_begin_transaction(gb_main);
-    GBDATA *gb_species_data =	GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species =		GBT_find_species_rel_species_data(gb_species_data,source);
-    GBDATA *gb_dest =		GBT_find_species_rel_species_data(gb_species_data,dest);
+    GBDATA *gb_species_data =   GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species =        GBT_find_species_rel_species_data(gb_species_data,source);
+    GBDATA *gb_dest =       GBT_find_species_rel_species_data(gb_species_data,dest);
     if (gb_dest) {
         error = "Sorry: species already exists";
-    }else 	if (gb_species) {
+    }else   if (gb_species) {
         gb_dest = GB_create_container(gb_species_data,"species");
         error = GB_copy(gb_dest,gb_species);
         if (!error) {
@@ -100,7 +100,7 @@ void move_species_to_extended(AW_window *aww){
     GBDATA *gb_dest = GBT_find_SAI_rel_exdata(gb_extended_data,source);
     if (gb_dest) {
         error = "Sorry: SAI already exists";
-    }else 	if (gb_species) {
+    }else   if (gb_species) {
         gb_dest = GB_create_container(gb_extended_data,"extended");
         error = GB_copy(gb_dest,gb_species);
         if (!error) {
@@ -114,7 +114,7 @@ void move_species_to_extended(AW_window *aww){
     }
 
     if (!error) GB_commit_transaction(gb_main);
-    else	GB_abort_transaction(gb_main);
+    else    GB_abort_transaction(gb_main);
     if (error) aw_message(error);
     free(source);
 }
@@ -136,7 +136,7 @@ void species_create_cb(AW_window *aww){
         }
     }
     if (!error) GB_commit_transaction(gb_main);
-    else	GB_abort_transaction(gb_main);
+    else    GB_abort_transaction(gb_main);
     if (error) aw_message(error);
     free(dest);
 }
@@ -218,10 +218,10 @@ void ad_species_delete_cb(AW_window *aww){
     GBDATA *gb_species = GBT_find_species(gb_main,source);
 
     if (gb_species) error = GB_delete(gb_species);
-    else		error = "Please select a species first";
+    else        error = "Please select a species first";
 
     if (!error) GB_commit_transaction(gb_main);
-    else	GB_abort_transaction(gb_main);
+    else    GB_abort_transaction(gb_main);
 
     if (error) aw_message(error);
     free(source);
@@ -323,14 +323,14 @@ void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
         GBDATA **new_order;
         int nitems = 0;
         GBDATA *gb_cnt;
-        for (	gb_cnt	= GB_find(gb_key_data,0,0,down_level);
+        for (   gb_cnt  = GB_find(gb_key_data,0,0,down_level);
                 gb_cnt;
                 gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
             nitems++;
         }
         new_order = new GBDATA *[nitems];
         nitems = 0;
-        for (	gb_cnt	= GB_find(gb_key_data,0,0,down_level);
+        for (   gb_cnt  = GB_find(gb_key_data,0,0,down_level);
                 gb_cnt;
                 gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next))
         {
@@ -519,7 +519,7 @@ void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
     GB_ERROR error2 = GB_check_hkey(name);
     if (error && !error2) {
         aw_message("Warning: Your key contain a '/' character,\n"
-                   "	that means it is a hierarchical key");
+                   "    that means it is a hierarchical key");
         error = 0;
     }
 
@@ -559,11 +559,11 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 
     aws->at("type");
     aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE,"FIELD TYPE","F");
-    aws->insert_toggle("Ascii Text","S",		(int)GB_STRING);
-    aws->insert_toggle("Link","L",			(int)GB_LINK);
-    aws->insert_toggle("Rounded Numerical","N",	(int)GB_INT);
-    aws->insert_toggle("Numerical","R",		(int)GB_FLOAT);
-    aws->insert_toggle("MASK = 01 Text","0",	(int)GB_BITS);
+    aws->insert_toggle("Ascii Text","S",        (int)GB_STRING);
+    aws->insert_toggle("Link","L",          (int)GB_LINK);
+    aws->insert_toggle("Rounded Numerical","N", (int)GB_INT);
+    aws->insert_toggle("Numerical","R",     (int)GB_FLOAT);
+    aws->insert_toggle("MASK = 01 Text","0",    (int)GB_BITS);
     aws->update_toggle_field();
 
     aws->at("ok");
@@ -575,15 +575,15 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 
 void ad_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("reorder_fields", "Reorder    Fields ...",       "r", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector );
-    aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...",    "D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector );
-    aws->insert_menu_topic("create_field",		"Create Field ...",	        "C","spaf_create.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector );
+    aws->insert_menu_topic("delete_field",      "Delete/Hide Field ...",    "D","spaf_delete.hlp",  AD_F_ALL,   AW_POPUP,   (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector );
+    aws->insert_menu_topic("create_field",      "Create Field ...",         "C","spaf_create.hlp",  AD_F_ALL,   AW_POPUP,   (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector );
     aws->insert_separator();
     aws->insert_menu_topic("unhide_fields", "Show all hidden fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
     aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields","U","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
     aws->insert_menu_topic("del_unused_fields", "Remove unused fields","e","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-//     aws->insert_menu_topic("unhide_fields",		"Unhide all fields",        "U","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+//     aws->insert_menu_topic("unhide_fields",      "Unhide all fields",        "U","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 //     aws->insert_menu_topic("delete_unused_fields", "Delete unused fields",  "e","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-//     aws->insert_menu_topic("rebuild_fields",		"Rebuild fields",       "B","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rebuild_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+//     aws->insert_menu_topic("rebuild_fields",     "Rebuild fields",       "B","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rebuild_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 #include <probe_design.hxx>
@@ -620,7 +620,7 @@ void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
         if (!IS_QUERIED(gb_species,cbs)) continue;
         count ++;
         GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-        if (!gb_data)	continue;
+        if (!gb_data)   continue;
         if (count %10 == 0){
             GBDATA *gb_name = GB_search(gb_species,"name",GB_STRING);
             aw_status(GBS_global_string("Species '%s' (%i:%i)",
@@ -666,8 +666,8 @@ void awtc_nn_search(AW_window *aww,AW_CL id ){
     int max_hits = aww->get_root()->awar("next_neighbours/max_hits")->read_int();
     char *sequence = 0;
     {
-        char *sel_species = 	aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA *gb_species =	GBT_find_species(gb_main,sel_species);
+        char *sel_species =     aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
+        GBDATA *gb_species =    GBT_find_species(gb_main,sel_species);
 
         if (!gb_species){
             delete sel_species;
@@ -854,11 +854,11 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     ad_global_scannerroot = aws->get_root();
 
     aws->create_menu(       0,   "SPECIES",     "E", "spa_species.hlp",  AD_F_ALL );
-    aws->insert_menu_topic("species_delete",	"Delete",	"D","spa_delete.hlp",	AD_F_ALL,	(AW_CB)ad_species_delete_cb, 0, 0);
-    aws->insert_menu_topic("species_rename",	"Rename ...",	"R","spa_rename.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_species_rename_window, 0);
-    aws->insert_menu_topic("species_copy",		"Copy ...",	"C","spa_copy.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_species_copy_window, 0);
-    aws->insert_menu_topic("species_create",	"Create ...",	"R","spa_create.hlp",	AD_F_ALL, 	AW_POPUP, (AW_CL)create_species_create_window, 0);
-    aws->insert_menu_topic("species_convert_2_sai",	"Convert to SAI","E","sp_sp_2_ext.hlp",AD_F_ALL, 	(AW_CB)move_species_to_extended, 0, 0);
+    aws->insert_menu_topic("species_delete",    "Delete",   "D","spa_delete.hlp",   AD_F_ALL,   (AW_CB)ad_species_delete_cb, 0, 0);
+    aws->insert_menu_topic("species_rename",    "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_rename_window, 0);
+    aws->insert_menu_topic("species_copy",      "Copy ...", "C","spa_copy.hlp", AD_F_ALL,   AW_POPUP, (AW_CL)create_species_copy_window, 0);
+    aws->insert_menu_topic("species_create",    "Create ...",   "R","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","E","sp_sp_2_ext.hlp",AD_F_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
     aws->create_menu(       0,   "FIELDS",     "I", "spa_fields.hlp",  AD_F_ALL );
@@ -910,24 +910,24 @@ AW_window *ad_create_query_window(AW_root *aw_root)
 
     awt_query_struct awtqs;
 
-    awtqs.gb_main		      = gb_main;
-    awtqs.species_name	      = AWAR_SPECIES_NAME;
-    awtqs.select_bit	      = 1;
-    awtqs.use_menu		      = 1;
-    awtqs.ere_pos_fig	      = "ere2";
-    awtqs.by_pos_fig	      = "by2";
-    awtqs.qbox_pos_fig	      = "qbox";
-    awtqs.rescan_pos_fig	  = 0;
-    awtqs.key_pos_fig	      = 0;
-    awtqs.query_pos_fig	      = "content";
-    awtqs.result_pos_fig	  = "result";
-    awtqs.count_pos_fig	      = "count";
-    awtqs.do_query_pos_fig	  = "doquery";
-    awtqs.config_pos_fig	  = "doconfig";
-    awtqs.do_mark_pos_fig	  = "domark";
-    awtqs.do_unmark_pos_fig	  = "dounmark";
-    awtqs.do_delete_pos_fig	  = "dodelete";
-    awtqs.do_set_pos_fig	  = "doset";
+    awtqs.gb_main             = gb_main;
+    awtqs.species_name        = AWAR_SPECIES_NAME;
+    awtqs.select_bit          = 1;
+    awtqs.use_menu            = 1;
+    awtqs.ere_pos_fig         = "ere2";
+    awtqs.by_pos_fig          = "by2";
+    awtqs.qbox_pos_fig        = "qbox";
+    awtqs.rescan_pos_fig      = 0;
+    awtqs.key_pos_fig         = 0;
+    awtqs.query_pos_fig       = "content";
+    awtqs.result_pos_fig      = "result";
+    awtqs.count_pos_fig       = "count";
+    awtqs.do_query_pos_fig    = "doquery";
+    awtqs.config_pos_fig      = "doconfig";
+    awtqs.do_mark_pos_fig     = "domark";
+    awtqs.do_unmark_pos_fig   = "dounmark";
+    awtqs.do_delete_pos_fig   = "dodelete";
+    awtqs.do_set_pos_fig      = "doset";
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
     awtqs.create_view_window  = (AW_CL)NT_create_species_window;
@@ -937,10 +937,10 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     ad_query_global_cbs = cbs;
 
     aws->create_menu(       0,   "More search",     "S" );
-    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
-    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
-    aws->insert_menu_topic( "search_next_relativ_of_sel",	"Search Next Relatives of SELECTED Species in PT_Server ...",	"R",0,	-1, (AW_CB)AW_POPUP, 	(AW_CL)ad_spec_next_neighbours_create, cbs );
-    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",		"M",0,	-1, (AW_CB)AW_POPUP, 	(AW_CL)ad_spec_next_neighbours_listed_create, cbs );
+    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
+    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
+    aws->insert_menu_topic( "search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...",   "R",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_create, cbs );
+    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",     "M",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_listed_create, cbs );
 
     aws->button_length(7);
 

@@ -22,7 +22,7 @@ void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE){
 AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     char buf[256];
 	static AW_window_simple *aws = 0;
-	if (aws) return aws;
+    if (aws) return aws;
 	aws = new AW_window_simple;
 	aws->init( awr, "SEQUENCE_COLOR_MAPPING", "SEQUENCE COLORS",  100, 100 );
 

@@ -38,7 +38,7 @@
 #include "aw_keysym.hxx"
 #include "aw_at.hxx"
 #include "aw_window.hxx"
-#include "aw_awar.hxx"
+#include "aw_awar.hxx" 
 #include "aw_xfig.hxx"
 #include "aw_xfigfont.hxx"
 /* hier die Motif abhaengigen Teile */
@@ -66,17 +66,17 @@ AW_cb_struct::AW_cb_struct( AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), A
 
 AW_variable_update_struct::AW_variable_update_struct( Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi ) {
 
-    widget		= widgeti;
-    widget_type	= widget_typei;
-    awar		= awari;
+    widget      = widgeti;
+    widget_type = widget_typei;
+    awar        = awari;
     if (var_s_i){
         variable_value = strdup( var_s_i );
     }else{
         variable_value = 0;
     }
-    variable_int_value	 = var_i_i; // used for toggles and selection menus
+    variable_int_value   = var_i_i; // used for toggles and selection menus
     variable_float_value = var_f_i;
-    cbs			         = cbsi;
+    cbs                  = cbsi;
 
 }
 
@@ -128,28 +128,28 @@ AW_option_struct::AW_option_struct( const char *variable_valuei, Widget choice_w
 
     variable_value = strdup( variable_valuei );
     choice_widget  = choice_widgeti;
-    next		   = NULL;
+    next           = NULL;
 
 }
 AW_option_struct::AW_option_struct( int variable_valuei, Widget choice_widgeti ) {
 
     variable_int_value = variable_valuei;
-    choice_widget	   = choice_widgeti;
-    next			   = NULL;
+    choice_widget      = choice_widgeti;
+    next               = NULL;
 
 }
 AW_option_struct::AW_option_struct( float variable_valuei, Widget choice_widgeti ) {
 
     variable_float_value = variable_valuei;
-    choice_widget		 = choice_widgeti;
-    next				 = NULL;
+    choice_widget        = choice_widgeti;
+    next                 = NULL;
 
 }
 
 AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, AW_pos xi, AW_pos yi, int correct) {
     option_menu_number = numberi;
     if (unique_option_menu_namei) {
-        unique_option_menu_name	= strdup( unique_option_menu_namei );
+        unique_option_menu_name = strdup( unique_option_menu_namei );
     }else{
         unique_option_menu_name = 0;
     }
@@ -157,9 +157,9 @@ AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_op
     variable_type                = variable_typei;
     label_widget                 = label_widgeti;
     first_choice                 = NULL;
-    last_choice	                 = NULL;
+    last_choice                  = NULL;
     default_choice               = NULL;
-    next		                 = NULL;
+    next                         = NULL;
     x                            = xi;
     y                            = yi;
     correct_for_at_center_intern = correct;
@@ -170,35 +170,35 @@ AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_op
 
 AW_toggle_field_struct::AW_toggle_field_struct( int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, int correct) {
 
-    toggle_field_number	         = toggle_field_numberi;
-    variable_name		         = strdup( variable_namei );
-    variable_type		         = variable_typei;
-    label_widget		         = label_widgeti;
-    first_toggle		         = NULL;
-    last_toggle			         = NULL;
-    default_toggle		         = NULL;
-    next				         = NULL;
+    toggle_field_number          = toggle_field_numberi;
+    variable_name                = strdup( variable_namei );
+    variable_type                = variable_typei;
+    label_widget                 = label_widgeti;
+    first_toggle                 = NULL;
+    last_toggle                  = NULL;
+    default_toggle               = NULL;
+    next                         = NULL;
     correct_for_at_center_intern = correct;
 }
 AW_toggle_struct::AW_toggle_struct( const char *variable_valuei, Widget toggle_widgeti ) {
 
     variable_value = strdup( variable_valuei );
     toggle_widget  = toggle_widgeti;
-    next		   = NULL;
+    next           = NULL;
 
 }
 AW_toggle_struct::AW_toggle_struct( int variable_valuei, Widget toggle_widgeti ) {
 
     variable_int_value = variable_valuei;
-    toggle_widget	   = toggle_widgeti;
-    next			   = NULL;
+    toggle_widget      = toggle_widgeti;
+    next               = NULL;
 
 }
 AW_toggle_struct::AW_toggle_struct( float variable_valuei, Widget toggle_widgeti ) {
 
     variable_float_value = variable_valuei;
-    toggle_widget		 = toggle_widgeti;
-    next				 = NULL;
+    toggle_widget        = toggle_widgeti;
+    next                 = NULL;
 
 }
 char *AW_select_table_struct::copy_string(const char *str)
@@ -236,12 +236,12 @@ AW_select_table_struct::~AW_select_table_struct( void ) {
 
 AW_selection_list::AW_selection_list( const char *variable_namei, int variable_typei, Widget select_list_widgeti ) {
     memset((char *)this,0,sizeof(AW_selection_list));
-    variable_name	    = GB_strdup( variable_namei );
-    variable_type	    = (AW_VARIABLE_TYPE)variable_typei;
+    variable_name       = GB_strdup( variable_namei );
+    variable_type       = (AW_VARIABLE_TYPE)variable_typei;
     select_list_widget  = select_list_widgeti;
-    list_table		    = NULL;
+    list_table          = NULL;
     last_of_list_table  = NULL;
-    default_select	    = NULL;
+    default_select      = NULL;
     value_equal_display = false;
 }
 
@@ -264,12 +264,12 @@ AW_window_Motif::AW_window_Motif()
 
 AW_window::AW_window(void) {
     memset((char *)this,0,sizeof(AW_window));
-    p_w					= new AW_window_Motif;
-    _at					= new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture					= new AW_rectangle;
+    p_w                 = new AW_window_Motif;
+    _at                 = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
+    picture                 = new AW_rectangle;
     reset_scrolled_picture_size();
-    slider_pos_vertical			= 0;
-    slider_pos_horizontal			= 0;
+    slider_pos_vertical         = 0;
+    slider_pos_horizontal           = 0;
 
 }
 
@@ -455,7 +455,7 @@ void AW_window::calculate_scrollbars(void) {
 
 
 
-    vertical = horizontal = AW_TRUE;		// es gibt verticalen & horizontalen scrollbar
+    vertical = horizontal = AW_TRUE;        // es gibt verticalen & horizontalen scrollbar
 
     this->_get_area_size(AW_MIDDLE_AREA,&screen);
 
@@ -467,11 +467,11 @@ void AW_window::calculate_scrollbars(void) {
     }
 
     slider_size_horizontal = (int)( (screen.r-left_indent_of_horizontal_scrollbar));
-    if(slider_size_horizontal < 1) slider_size_horizontal = 1;		// ist der slider zu klein (<1) ?
-    if(slider_size_horizontal > slider_max) {				// Schirm groesser als Bild
-        slider_size_horizontal = slider_max;				// slider nimmt ganze laenge ein
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, 0, NULL);	// slider ganz links setzen
-        horizontal = AW_FALSE;						// kein horizontaler slider mehr
+    if(slider_size_horizontal < 1) slider_size_horizontal = 1;      // ist der slider zu klein (<1) ?
+    if(slider_size_horizontal > slider_max) {               // Schirm groesser als Bild
+        slider_size_horizontal = slider_max;                // slider nimmt ganze laenge ein
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, 0, NULL);   // slider ganz links setzen
+        horizontal = AW_FALSE;                      // kein horizontaler slider mehr
     }
 
     // check wether XmNValue is to big
@@ -486,7 +486,7 @@ void AW_window::calculate_scrollbars(void) {
         if(horizontal == AW_TRUE)
             slider_pos_horizontal = (int)(get_scrolled_picture_width() - (screen.r-left_indent_of_horizontal_scrollbar) );
         else
-            slider_pos_horizontal = 0;	//slider nach ganz oben, da alles sichtbar
+            slider_pos_horizontal = 0;  //slider nach ganz oben, da alles sichtbar
     }
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNsliderSize, 1, NULL);
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNmaximum, slider_max, NULL);
@@ -532,7 +532,7 @@ void AW_window::calculate_scrollbars(void) {
         if(vertical == AW_TRUE)
             slider_pos_vertical = (int)(get_scrolled_picture_height() - (screen.b-top_indent_of_vertical_scrollbar-bottom_indent_of_vertical_scrollbar));
         else
-            slider_pos_vertical = 0;	//slider nach ganz oben, da alles sichtbar
+            slider_pos_vertical = 0;    //slider nach ganz oben, da alles sichtbar
     }
     XtVaSetValues(p_w->scroll_bar_vertical, XmNsliderSize, 1, NULL);
     XtVaSetValues(p_w->scroll_bar_vertical, XmNmaximum, slider_max, NULL);
@@ -572,12 +572,12 @@ void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     AW_root *root = tcbs->ar;
     if (root->disable_callbacks && (tcbs->f != aw_message_timer_listen_event)) {
         XtAppAddTimeOut(p_global->context,
-                        (unsigned long)25,	// wait 25 msec = 1/40 sec
+                        (unsigned long)25,  // wait 25 msec = 1/40 sec
                         (XtTimerCallbackProc)AW_timer_callback,
                         aw_timer_cb_struct );
     }else{
         tcbs->f(root,tcbs->cd1,tcbs->cd2);
-        delete tcbs;		// timer only once
+        delete tcbs;        // timer only once
     }
 }
 
@@ -596,19 +596,19 @@ void AW_POPDOWN(AW_window *aww){
 
 void aw_calculate_WM_offsets(AW_window *aww)
 {
-    if (p_aww(aww)->WM_top_offset != -1000) return;	// very bad hack continued
+    if (p_aww(aww)->WM_top_offset != -1000) return; // very bad hack continued
     AW_root *root = aww->get_root();
     char temp[256];
     short posy,posx;
-    int	oposy,oposx;
+    int oposy,oposx;
 
     sprintf(temp,"window/windows/%s/posy",aww->window_defaults_name);
     oposy = (int)root->awar(temp)->read_int();
     sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
     oposx = (int)root->awar(temp)->read_int();
     XtVaGetValues( p_aww(aww)->shell ,
-                   XmNx,	&posx,
-                   XmNy,	&posy,
+                   XmNx,    &posx,
+                   XmNy,    &posy,
                    NULL );
     p_aww(aww)->WM_top_offset = posy-oposy;
     p_aww(aww)->WM_left_offset = posx-oposx;
@@ -616,7 +616,7 @@ void aw_calculate_WM_offsets(AW_window *aww)
 
 /************** standard callback server *********************/
 
-void	AW_cb_struct::run_callback(void){
+void    AW_cb_struct::run_callback(void){
     AW_PPP g;
     if (this->next) this->next->run_callback(); // callback the whole list
 
@@ -624,10 +624,10 @@ void	AW_cb_struct::run_callback(void){
     if (!this->f) return;
 
     if (root->disable_callbacks) {
-        if(	(this->f != (AW_CB)message_cb) &&
+        if( (this->f != (AW_CB)message_cb) &&
             (this->f != (AW_CB)macro_message_cb) &&
             (this->f != (AW_CB)input_cb) &&
-            (this->f != (AW_CB)aw_calculate_WM_offsets)	)
+            (this->f != (AW_CB)aw_calculate_WM_offsets) )
         {
             return;
         }
@@ -653,7 +653,7 @@ void	AW_cb_struct::run_callback(void){
     }
 }
 
-void 	AW_root_Motif::set_cursor(Display *d, Window w, Cursor c)
+void    AW_root_Motif::set_cursor(Display *d, Window w, Cursor c)
 {
     XSetWindowAttributes attrs;
     old_cursor_display = d;
@@ -675,7 +675,7 @@ void AW_root_Motif::normal_cursor(void)
 }
 
 
-void	AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+void    AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);AWUSE(call_data);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
@@ -711,7 +711,7 @@ void	AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
                              p_global->clock_cursor);
         cbs->run_callback();
 
-        XEvent event;			// destroy all old events !!!
+        XEvent event;           // destroy all old events !!!
         while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
                                ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
                                KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)){
@@ -771,13 +771,13 @@ void AW_window::set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1,
                       (XtPointer)  new AW_cb_struct(this, f, cd1, cd2, 0) );
 }
 
-/*******************************	expose 	****************************************/
+/*******************************    expose  ****************************************/
 
 void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent *ev = call_data->event;
     AWUSE(wgt);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    if (ev->xexpose.count == 0){	// last expose cb
+    if (ev->xexpose.count == 0){    // last expose cb
         if (aram->expose_cb)
             aram->expose_cb->run_callback();
     }
@@ -824,11 +824,11 @@ void AW_window::window_fit(void){
 }
 
 
-/*******************************	resize 	****************************************/
+/*******************************    resize  ****************************************/
 void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);AWUSE(call_data);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    if (aram->resize_cb)	aram->resize_cb->run_callback();
+    if (aram->resize_cb)    aram->resize_cb->run_callback();
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -869,10 +869,10 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
     }
 
     if(ev->xbutton.type == ButtonPress) {
-        aww->event.type	       = AW_Mouse_Press;
+        aww->event.type        = AW_Mouse_Press;
         aww->event.button      = ev->xbutton.button;
-        aww->event.x	       = ev->xbutton.x;
-        aww->event.y	       = ev->xbutton.y;
+        aww->event.x           = ev->xbutton.x;
+        aww->event.y           = ev->xbutton.y;
         aww->event.keycode     = AW_KEY_NONE;
         aww->event.keymodifier = AW_KEYMODE_NONE;
         aww->event.character   = '\0';
@@ -883,22 +883,22 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
             }else {
                 run_callback = AW_TRUE;
             }
-            area->click_time		= ev->xbutton.time;
+            area->click_time        = ev->xbutton.time;
         }else {
             run_callback = AW_TRUE;
         }
 
-        aww->event.time		= ev->xbutton.time;
+        aww->event.time     = ev->xbutton.time;
     }
     else if (ev->xbutton.type == ButtonRelease) {
-        aww->event.type	       = AW_Mouse_Release;
-        aww->event.button	   = ev->xbutton.button;
-        aww->event.x	       = ev->xbutton.x;
-        aww->event.y	       = ev->xbutton.y;
-        aww->event.keycode	   = AW_KEY_NONE;
+        aww->event.type        = AW_Mouse_Release;
+        aww->event.button      = ev->xbutton.button;
+        aww->event.x           = ev->xbutton.x;
+        aww->event.y           = ev->xbutton.y;
+        aww->event.keycode     = AW_KEY_NONE;
         aww->event.keymodifier = AW_KEYMODE_NONE;
         aww->event.character   = '\0';
-        //	aww->event.time		use old time
+        //  aww->event.time     use old time
 
         run_callback = AW_TRUE;
     }
@@ -995,11 +995,11 @@ void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev) {
     AWUSE(w);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
-    cbs->aw->event.type	= AW_Mouse_Drag;
-    //	cbs->aw->event.button	= cbs->aw->event.button;
-    cbs->aw->event.x	= ev->xmotion.x;
-    cbs->aw->event.y	= ev->xmotion.y;
-    cbs->aw->event.keycode	= AW_KEY_NONE;
+    cbs->aw->event.type = AW_Mouse_Drag;
+    //  cbs->aw->event.button   = cbs->aw->event.button;
+    cbs->aw->event.x    = ev->xmotion.x;
+    cbs->aw->event.y    = ev->xmotion.y;
+    cbs->aw->event.keycode  = AW_KEY_NONE;
 
     cbs->run_callback();
 }
@@ -1024,7 +1024,7 @@ struct fallbacks {
 };
 
 struct fallbacks aw_fb[] = {
-    // fallback	awarname	init
+    // fallback awarname    init
 
     { "FontList", "window/font", "8x13bold" }
     , { "background", "window/background", "grey" }
@@ -1119,7 +1119,7 @@ void aw_root_create_color_map(AW_root *root)
         }
         p_global->foreground= BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
         XtVaGetValues(p_global->toplevel_widget,XmNbackground,
-                      &p_global->background,	0);
+                      &p_global->background,    0);
     }
     // AW_WINDOW_DRAG see init_devices
 
@@ -1140,7 +1140,7 @@ int aw_status_dummy2(const char *val){
 void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     // Initialisiert eine gesamte X-Anwendung
     int a = 0;
-    int	i;
+    int i;
     XFontStruct *fontstruct;
     char buffer[256];
     String fallback_resources[100];
@@ -1382,9 +1382,9 @@ void AW_window::create_devices(void)
     }
 }
 
-void 	activate_question(AW_root *root,AW_window *aww){
+void    activate_question(AW_root *root,AW_window *aww){
     p_global->help_active = 1;
-    p_global->set_cursor(	XtDisplay(p_global->toplevel_widget),
+    p_global->set_cursor(   XtDisplay(p_global->toplevel_widget),
                             XtWindow(p_aww(aww)->shell),
                             p_global->question_cursor);
 }
@@ -1485,12 +1485,12 @@ long aw_loop_get_window_geometrie(const char *key, long val){
     AW_root *root = aww->get_root();
     unsigned short width,height,borderwidth;
 
-    XtVaGetValues( p_aww(aww)->shell ,	// bad hack
+    XtVaGetValues( p_aww(aww)->shell ,  // bad hack
                    XmNborderWidth, &borderwidth,
                    XmNwidth, &width,
                    XmNheight, &height,
-                   XmNx,	&posx,
-                   XmNy,	&posy,
+                   XmNx,    &posx,
+                   XmNy,    &posy,
                    NULL );
     if ( p_aww(aww)->WM_top_offset != -1000) {
         posy -= p_aww(aww)->WM_top_offset;
@@ -1526,9 +1526,9 @@ void aw_update_awar_window_geometrie(AW_root *awr){
 
 Widget aw_create_shell(
                        AW_window *aww,
-                       AW_BOOL	allow_resize,
+                       AW_BOOL  allow_resize,
                        int width, int height,
-                       int posx, int posy)	{
+                       int posx, int posy)  {
     AW_root *root = aww->get_root();
     Widget shell;
 
@@ -1538,11 +1538,11 @@ Widget aw_create_shell(
 
         sprintf(temp,"window/windows/%s/width",aww->window_defaults_name);
         root->awar_int(temp,width);
-        if (allow_resize)	width = (int)root->awar(temp)->read_int();
+        if (allow_resize)   width = (int)root->awar(temp)->read_int();
 
         sprintf(temp,"window/windows/%s/height",aww->window_defaults_name);
         root->awar_int(temp,height);
-        if (allow_resize)	height = (int)root->awar(temp)->read_int();
+        if (allow_resize)   height = (int)root->awar(temp)->read_int();
 
         sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
         root->awar_int(temp,posx)->set_minmax(0,1000);
@@ -1592,7 +1592,7 @@ Widget aw_create_shell(
         p_global->main_widget = shell;
         p_global->main_aww = aww;
     }else{
-        if ( !p_global->main_aww->get_show()) {		// now i am the root window
+        if ( !p_global->main_aww->get_show()) {     // now i am the root window
             p_global->main_widget = shell;
             p_global->main_aww = aww;
         }
@@ -1623,7 +1623,7 @@ void AW_window::set_icon(const char *icon, const char *default_icon)
     const char *arbhome = GB_getenvARBHOME();
     sprintf( &path[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, icon );
     sprintf( &path2[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, default_icon );
-    XtVaGetValues(w,XmNforeground, &p_global->foreground,	0);
+    XtVaGetValues(w,XmNforeground, &p_global->foreground,   0);
 
     Pixmap pixmap = XmGetPixmap(XtScreen(w), path, p_global->foreground, p_global->background);
     if (pixmap  == XmUNSPECIFIED_PIXMAP){
@@ -1641,7 +1641,7 @@ void AW_window::set_icon(const char *icon, const char *default_icon)
 
     if ( !window) {
         attr.background_pixmap = pixmap;
-        if (	!XGetGeometry(dpy, pixmap, &wroot, &xpos, &ypos, &xsize, &ysize, &borderwidth, &depth) ||
+        if (    !XGetGeometry(dpy, pixmap, &wroot, &xpos, &ypos, &xsize, &ysize, &borderwidth, &depth) ||
                 (window = XCreateWindow(dpy, wroot, 0, 0, xsize, ysize, 0, depth, CopyFromParent, CopyFromParent, CWBackPixmap, &attr)) == 0) {
             XtVaSetValues(w, XmNiconPixmap, pixmap, NULL);
             XmDestroyPixmap(XtScreen(w),pixmap);
@@ -1739,11 +1739,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     form1 = XtVaCreateManagedWidget( "form1",
                                      xmFormWidgetClass,
                                      main_window,
-                                     //	XmNwidth, width,
-                                     //	XmNheight, height,
+                                     // XmNwidth, width,
+                                     // XmNheight, height,
                                      XmNresizePolicy, XmRESIZE_NONE,
-                                     //	XmNx, 0,
-                                     //	XmNy, 0,
+                                     // XmNx, 0,
+                                     // XmNy, 0,
                                      NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget( "mode area",
@@ -1962,11 +1962,11 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     form1 = XtVaCreateManagedWidget( "form1",
                                      xmFormWidgetClass,
                                      main_window,
-                                     //	XmNwidth, width,
-                                     //	XmNheight, height,
+                                     // XmNwidth, width,
+                                     // XmNheight, height,
                                      XmNresizePolicy, XmRESIZE_NONE,
-                                     //	XmNx, 0,
-                                     //	XmNy, 0,
+                                     // XmNx, 0,
+                                     // XmNy, 0,
                                      NULL);
 
     p_w->mode_area = XtVaCreateManagedWidget( "mode area",
@@ -2139,7 +2139,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
 void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname,
                                  int width, int height,
                                  int posx, int posy) {
-    //	Arg args[10];
+    //  Arg args[10];
 
     root = root_in; // for makro
 
@@ -2225,7 +2225,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
 
 
 void AW_window_message::init(AW_root *root_in, const char *windowname, int width, int height, int posx, int posy) {
-    //	Arg args[10];
+    //  Arg args[10];
 
     root = root_in; // for makro
 
@@ -2248,7 +2248,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, int width
                                                                          NULL));
 
     aw_realize_widget(this );
-    //	create_devices();
+    //  create_devices();
     set_icon("message");
 }
 
@@ -2325,8 +2325,8 @@ void AW_window::select_mode(int mode){
     Widget oldwidget = p_w->modes_widgets[p_w->selected_mode];
     p_w->selected_mode = mode;
     Widget widget = p_w->modes_widgets[p_w->selected_mode];
-    XtVaSetValues(oldwidget,XmNbackground, p_global->background,	0);
-    XtVaSetValues(widget,	XmNbackground, p_global->foreground,	0);
+    XtVaSetValues(oldwidget,XmNbackground, p_global->background,    0);
+    XtVaSetValues(widget,   XmNbackground, p_global->foreground,    0);
 }
 
 void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs){
@@ -2350,10 +2350,10 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
                                       XmNshadowThickness, 1,
                                       NULL);
     XtVaSetValues( button, RES_CONVERT( XmNlabelPixmap, path ), NULL );
-    XtVaGetValues(button,XmNforeground, &p_global->foreground,	0);
+    XtVaGetValues(button,XmNforeground, &p_global->foreground,  0);
 
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
-    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback,	(AW_CL)p_w->number_of_modes, (AW_CL)cbs, help_text, cbs);
+    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, help_text, cbs);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cb2);
@@ -2375,8 +2375,8 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
 
 #ifdef DEBUG
 
-#define MAX_DEEP_TO_TEST 	 10
-#define MAX_MENU_ITEMS_TO_TEST 	 50
+#define MAX_DEEP_TO_TEST     10
+#define MAX_MENU_ITEMS_TO_TEST   50
 
 static char *TD_menu_name = 0;
 static char TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
@@ -2658,7 +2658,7 @@ void AW_window::show(void) {
     }
     XtPopup(p_w->shell,XtGrabNone);
     XtVaSetValues(p_w->shell, XmNiconic, False ,0);
-    if (p_w->WM_top_offset == -1000) {		// very bad hack
+    if (p_w->WM_top_offset == -1000) {      // very bad hack
         this->set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
     }
 }
@@ -2670,7 +2670,7 @@ void AW_window::show_grabbed(void) {
         window_is_shown = AW_TRUE;
     }
     XtPopup(p_w->shell,XtGrabExclusive);
-    if (p_w->WM_top_offset == -1000) {		// very bad hack
+    if (p_w->WM_top_offset == -1000) {      // very bad hack
         this->set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
     }
 }
@@ -2779,7 +2779,7 @@ void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
     AW_device *device = aww->get_device ( AW_INFO_AREA );
     device->reset();
-    if (aww->get_root()->color_mode == 0) {		// mono colr
+    if (aww->get_root()->color_mode == 0) {     // mono colr
         device->clear();
     }
     device->shift_x(-xfig->minx);
@@ -2845,7 +2845,7 @@ void AW_window::_set_activate_callback(void *widget)
                       (XtCallbackProc) AW_server_callback,
                       (XtPointer) _callback );
     }
-    _callback			= NULL;
+    _callback           = NULL;
 }
 
 
@@ -2853,7 +2853,7 @@ void AW_window::_set_activate_callback(void *widget)
 
 
 /***********************************************************************/
-/*****************		AW_MACRO_MESSAGE     *******************/
+/*****************      AW_MACRO_MESSAGE     *******************/
 /***********************************************************************/
 
 #define AW_MESSAGE_AWAR "tmp/message/string"
@@ -2888,7 +2888,7 @@ void aw_macro_message( const char *templat, ... )
     AW_root *root = AW_root::THIS;
     char buffer[10000];
     {
-        va_list	parg;
+        va_list parg;
         va_start(parg,templat);
         vsprintf(buffer,templat,parg);
     }
@@ -2990,16 +2990,16 @@ GB_ERROR AW_root::execute_macro(const char *file){
     return 0;
 }
 
-void	AW_root::stop_execute_macro(){
+void    AW_root::stop_execute_macro(){
 
 }
 
 
-/*	Macro Main Loop, replaces Window Mainloop
+/*  Macro Main Loop, replaces Window Mainloop
  *
  */
 #if 0
-GB_ERROR	AW_root::enable_execute_macro(FILE *mfile,const char *mname){
+GB_ERROR    AW_root::enable_execute_macro(FILE *mfile,const char *mname){
     char *com = 0;
     char *awar = 0;
     char *act = 0;
@@ -3027,7 +3027,7 @@ GB_ERROR	AW_root::enable_execute_macro(FILE *mfile,const char *mname){
             AW_awar *aw = this->awar(awar);
             if (aw){
                 error = aw->write_as_string(value);
-                if (error) 	    break;
+                if (error)      break;
             }else{
                 error = GB_export_error("Error in Macro: AWAR '%s' not found in macro '%s'",awar,mname);
                 break;
@@ -3045,10 +3045,10 @@ GB_ERROR	AW_root::enable_execute_macro(FILE *mfile,const char *mname){
 
 GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_base){
     GBDATA *gb_main = (GBDATA *)gb_maind;
-    char awar_action[1024];	sprintf(awar_action,"%s/action",rm_base);
-    char awar_value[1024];	sprintf(awar_value,"%s/value",rm_base);
-    char awar_awar[1024];	sprintf(awar_awar,"%s/awar",rm_base);
-    char awar_result[1024];	sprintf(awar_result,"%s/result",rm_base);
+    char awar_action[1024]; sprintf(awar_action,"%s/action",rm_base);
+    char awar_value[1024];  sprintf(awar_value,"%s/value",rm_base);
+    char awar_awar[1024];   sprintf(awar_awar,"%s/awar",rm_base);
+    char awar_result[1024]; sprintf(awar_result,"%s/result",rm_base);
     GB_push_transaction(gb_main);
     char *action = GBT_read_string2(gb_main,awar_action,"");
     char *value = GBT_read_string2(gb_main,awar_value,"");

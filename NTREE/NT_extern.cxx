@@ -164,6 +164,19 @@ void create_export_nds_awars(AW_root *awr, AW_default def)
     awr->awar_int( AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
+static void AWAR_SEARCH_BUTTON_TEXT_change_cb(AW_root *awr) {
+    char *value  = awr->awar(AWAR_SPECIES_NAME)->read_string();
+
+    if (strcmp(value,"")==0) {
+        awr->awar(AWAR_SEARCH_BUTTON_TEXT)->write_string("Species Information");
+    }
+    else {
+        awr->awar(AWAR_SEARCH_BUTTON_TEXT)->write_string(value);
+    }
+
+    free(value);
+}
+
 void create_all_awars(AW_root *awr, AW_default def)
 {
     GB_transaction dummy(gb_main);
@@ -178,6 +191,9 @@ void create_all_awars(AW_root *awr, AW_default def)
     awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
     awr->awar_string( AWAR_SPECIES_NAME, "" ,   gb_main);
     awr->awar_string( AWAR_MARKED_SPECIES_COUNTER, "unknown" ,  gb_main);
+    awr->awar_string( AWAR_SEARCH_BUTTON_TEXT, "Species Information" ,  gb_main);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_SEARCH_BUTTON_TEXT_change_cb);
+    awr->awar_int( AWAR_NTREE_TITLE_MODE, 1);
 
     GEN_create_awars(awr, def);
     EXP_create_awars(awr, def);
@@ -214,7 +230,6 @@ void create_all_awars(AW_root *awr, AW_default def)
         awr->awar("tmp/message")->add_callback( NT_show_message);
     }
 }
-
 
 
 void
@@ -830,6 +845,21 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
+//--------------------------------------- to increase the area of display --------------------
+static int windowHeight = 0;
+static void title_mode_changed(AW_root *aw_root, AW_window *aww)
+{
+    int title_mode = aw_root->awar(AWAR_NTREE_TITLE_MODE)->read_int();
+
+    if (title_mode==0) {
+        aww->set_info_area_height(25);
+    }
+    else {
+        aww->set_info_area_height(windowHeight);
+    }
+}
+//--------------------------------------------------------------------------------------------------
+
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -1024,11 +1054,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
-            AWMIMT("seq_admin", "Sequence/Alignment Admin ",            "","ad_align.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)create_alignment_window,   0 );
+            AWMIMT("seq_admin", "Sequence/Alignment Admin ",           "A","ad_align.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)create_alignment_window,   0 );
             AWMIMT("seq_quality",   "Check Sequence Quality ",       "Q", "check_quality.hlp",   AWM_SEQ2,   AW_POPUP,(AW_CL)st_create_quality_check_window, (AW_CL)gb_main );
             awm->insert_separator();
 
-            awm->insert_sub_menu(0, "Align Sequences",  "A");
+            awm->insert_sub_menu(0, "Align Sequences",  "S");
             {
                 AWMIMT("arb_align", "Align Sequence into an Existing Alignment ","a","align.hlp",        AWM_ALL,    (AW_CB) AW_POPUP_HELP,(AW_CL)"align.hlp",0);
                 AWMIMT("realign_dna",   "Realign Nucleic Acid according to Aligned Protein ","r","realign_dna.hlp",  AWM_ALL,    AW_POPUP, (AW_CL)create_realign_dna_window, 0 );
@@ -1038,7 +1068,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("seq_concat","Concatenate Sequences/Alignments", "C","concatenate_align.hlp", AWM_EXP,    AW_POPUP, (AW_CL)NT_createConcatenationWindow, (AW_CL)ntw );
             awm->insert_separator();
 
-            awm->insert_sub_menu(0, "Edit Marked Sequences","M");
+            awm->insert_sub_menu(0, "Edit Sequences","E");
             {
               AWMIMT("new_arb_edit4", "Using Selected Species and Tree ",    "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0 );
               AWMIMT("new2_arb_edit4","Using Sequences Aside ", "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), -1);
@@ -1266,6 +1296,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
     } // clone
 
+
+
     awm->insert_help_topic("help_how",      "How to use Help",      "H","help.hlp",         AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
     awm->insert_help_topic("help_arb",      "ARB Help",         "A","arb.hlp",          AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
     awm->insert_help_topic("help_arb_nt",   "ARB_NT Help",          "N","arb_ntree.hlp",        AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
@@ -1299,14 +1331,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     int db_pathx;
     awm->get_at_position( &db_pathx, &first_liney);
     awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb");
-    awm->button_length(20);
+    awm->button_length(19);
     awm->help_text("saveas.hlp");
     awm->create_button("SAVE_AS",AWAR_DB_NAME);
 
     int db_treex;
     awm->get_at_position( &db_treex, &first_liney);
     awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
-    awm->button_length(20);
+    awm->button_length(19);
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
@@ -1318,9 +1350,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     int db_searchx;
     awm->get_at_position(&db_searchx, &first_liney);
-    awm->callback(AW_POPUP,   (AW_CL)ad_create_query_window, 0 );
+    awm->callback(AW_POPUP,   (AW_CL)create_speciesOrganismWindow/*ad_create_query_window*/, 0 );
+    awm->button_length(20);
     awm->help_text("sp_search.hlp");
-    awm->create_button("SEARCH_SPECIES", "SEARCH DataBase");//AWAR_SPECIES_NAME);
+    awm->create_button("SEARCH_SPECIES",  AWAR_SEARCH_BUTTON_TEXT);
 
     int behind_buttonsx; // after first row of buttons
     awm->get_at_position( &behind_buttonsx, &first_liney );
@@ -1335,7 +1368,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->auto_space(-2,-2);
 
-    awm->button_length(0);
+    awm->button_length(9);
     awm->at_x(db_pathx);
     awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_UNDO,(AW_CL)ntw);
     awm->help_text("undo.hlp");
@@ -1345,9 +1378,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("undo.hlp");
     awm->create_button("REDO", "#redo.bitmap",0);
 
+
+
     // tree buttons:
 
-    awm->button_length(7);
+    awm->button_length(9);
     awm->at(db_treex, second_liney);
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_RADIAL_TREE);
     awm->help_text("tr_type_radial.hlp");
@@ -1392,8 +1427,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
     }
 
-    awm->button_length(9);
+    awm->button_length(0);
     awm->at(db_searchx, second_liney);
+
+    awm->callback(AW_POPUP,   (AW_CL)ad_create_query_window, 0 );
+    awm->create_button("SEARCH", "#search.bitmap",0);
+
     awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "#pjump.bitmap",0);
@@ -1426,9 +1465,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->callback( AW_help_entry_pressed );
     awm->create_button("?","?");
 
+    // expand and collapse display icons
+
+    awr->awar_int(AWAR_NTREE_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awm);
+    awm->create_toggle(AWAR_NTREE_TITLE_MODE, "#more.bitmap", "#less.bitmap");
+
     // protect:
 
-    awm->at(behind_buttonsx, second_liney+10);
+    awm->at(behind_buttonsx, second_liney+3);
     if (!GB_NOVICE){
         awm->label("Protect");
         awm->create_option_menu(AWAR_SECURITY_LEVEL);
@@ -1444,7 +1488,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->get_root()->awar(AWAR_SECURITY_LEVEL)->write_int(6);
     }
 
-    awm->set_info_area_height( last_liney+6 );
+    awm->set_info_area_height( last_liney+4 ); windowHeight = last_liney+4;
     awm->set_bottom_area_height( 0 );
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
