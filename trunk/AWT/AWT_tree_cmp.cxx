@@ -177,7 +177,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
         ss->node->remark_branch = 0;
         if (mismatches){
             char remark[20];
-            sprintf(remark,"# %i",mismatches); // # is important (otherwise AWT_export_tree will not work correctly)
+            sprintf(remark,"# %i",mismatches); // the #-sign is important (otherwise AWT_export_tree will not work correctly)
             ss->node->remark_branch = strdup(remark);
         }
     }else{

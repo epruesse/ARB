@@ -46,8 +46,12 @@ DESCRIPTION	Writes a tree to file in Newick format
 
         ORS TANSFER BINARY FORMAT
 
-        		Special format used by our database administrators.
-                        You need a special program to use it.
+            Special format used by our database administrators.
+            You need a special program to use it.
+
+        ARB_XML TREE FORMAT
+
+            Simple XML Format (can't load yet)
 
 
 NOTES           If you select both 'Save groupnames' and 'Save bootstraps', other programs may be
