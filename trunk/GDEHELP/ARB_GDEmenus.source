@@ -2,51 +2,51 @@
 #define RM_LOCAL_FILES(in1)		/bin/rm -f in1 infile outfile treefile arb_read_tree_args
 #define RUN_IN_WINDOW(cmd)	${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait''
 
-#include <warning.menu>
+#include <warning.genmenu>
 
 lmenu:export
 item:Export sequences only to foreign format (using Readseq: slow) ...
 itemmeta: R
-#include <export.menu>
+#include <export.genmenu>
 
 lmenu:pretty_print
 item:Pretty print sequences (slow) ...
 itemmeta: P
-#include <pretty_print.menu>
+#include <pretty_print.genmenu>
 
 lmenu:import
 item:Import sequences in foreign format (using Readseq: slow) ...
 itemmeta: R
-#include <import.menu>
+#include <import.genmenu>
 
 menu:align
-#include <align.menu>
+#include <align.genmenu>
 
 menu:user
-#include <start_arb.menu>
+#include <start_arb.genmenu>
 
 menu:DNA/RNA
-#include <dna_rna.menu>
-#include <blast.menu>
+#include <dna_rna.genmenu>
+#include <blast.genmenu>
 
 menu:Protein
-#include <protein.menu>
-#include <blastp.menu>
+#include <protein.genmenu>
+#include <blastp.genmenu>
 
 menu:Seq management
-#include <seq_management.menu>
+#include <seq_management.genmenu>
 
 menu:SAI
-#include <dnamlrates.menu>
+#include <dnamlrates.genmenu>
 
 menu:Incremental phylogeny
-#include <inc_fastdnaml.menu>
+#include <inc_fastdnaml.genmenu>
 
 menu:Phylogeny
-#include <desoete.menu>
-#include <phylip_dist_org.menu>
-#include <phylip_dist.menu>
-#include <phylip_pars.menu>
-#include <fastdnaml.menu>
-#include <puzzle.menu>
-#include <molphy.menu>
+#include <desoete.genmenu>
+#include <phylip_dist_org.genmenu>
+#include <phylip_dist.genmenu>
+#include <phylip_pars.genmenu>
+#include <fastdnaml.genmenu>
+#include <puzzle.genmenu>
+#include <molphy.genmenu>
