@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Jan/08/2003 10:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Jun/03/2004 16:51 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -122,53 +122,57 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     bool               reopen           = false;
     char              *title            = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
-    char *result = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CLOSE,HELP", correct_key_name);
-    int   button = aw_string_selection_button();
+    const char *buttons = "RESTORE,STORE,DELETE,CLOSE,HELP";
+    char       *result  = aw_string_selection(title, "Enter a new or select an existing config",
+                                              config->get_awar_name("current").c_str(), 0, existing_configs.c_str(),
+                                              buttons, correct_key_name);
+    int         button  = aw_string_selection_button();
 
-    if (button >= 0 && button <= 2 && (!result || !result[0])) { // expected config name,  but none given
-        aw_message("Please enter or select a config");
-    }
-    else {
-        string awar_name = string("cfg_")+result;
+    if (button >= 0 && button <= 2) { // RESTORE, STORE and DELETE
+        if (!result || !result[0]) { // did user specify a config-name ?
+            aw_message("Please enter or select a config");
+        }
+        else {
+            string awar_name = string("cfg_")+result;
+            
+            switch (button) {
+                case 0: {           // RESTORE
+                    config->Restore(config->get_awar_value(awar_name));
+                    config->set_awar_value("current", result);
+                    break;
+                }
+                case 1: {               // STORE
+                    remove_from_configs(result, existing_configs); // remove existing config
 
-        switch (button) {
-            case 0: {           // RESTORE
-                config->Restore(config->get_awar_value(awar_name));
-                config->set_awar_value("current", result);
-                break;
-            }
-            case 1: {               // STORE
-                remove_from_configs(result, existing_configs); // remove existing config
+                    if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
+                    else existing_configs                           = result;
 
-                if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
-                else existing_configs                           = result;
+                    char *config_string = config->Store();
+                    config->set_awar_value(awar_name, config_string);
+                    free(config_string);
+                    config->set_awar_value("current", result);
+                    config->set_awar_value("existing", existing_configs);
+                    reopen = true;
+                    break;
+                }
+                case 2: {               // DELETE
+                    remove_from_configs(result, existing_configs); // remove existing config
+                    config->set_awar_value("current", "");
+                    config->set_awar_value("existing", existing_configs);
 
-                char *config_string = config->Store();
-                config->set_awar_value(awar_name, config_string);
-                free(config_string);
-                config->set_awar_value("current", result);
-                config->set_awar_value("existing", existing_configs);
-                reopen = true;
-                break;
-            }
-            case 2: {               // DELETE
-                remove_from_configs(result, existing_configs); // remove existing config
-                config->set_awar_value("current", "");
-                config->set_awar_value("existing", existing_configs);
-
-                // config is not really deleted from properties
-                reopen = true;
-                break;
-            }
-            case 3:  {              // CLOSE
-                break;
-            }
-            case 4:  {              // HELP
-                AW_POPUP_HELP(aww, (AW_CL)"configurations.hlp");
-                break;
+                    // config is not really deleted from properties
+                    reopen = true;
+                    break;
+                }
             }
         }
     }
+    else {
+        if (button == 4) { // HELP
+            AW_POPUP_HELP(aww, (AW_CL)"configurations.hlp");
+        }
+    }
+
     free(title);
     free(result);
 
@@ -184,7 +188,7 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     AWT_configuration *config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
     // config will not be freed!!!
 
-    aww->button_length(0);
+    aww->button_length(0); // -> autodetect size by size of graphic 
     aww->callback(AWT_start_config_manager, (AW_CL)config);
     aww->create_button("SAVELOAD_CONFIG", "#disk.bitmap", 0);
 }
