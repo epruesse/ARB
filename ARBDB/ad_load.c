@@ -29,6 +29,22 @@ typedef struct reading_buffer_S {
 
 static ReadingBuffer unused_reading_buffers = 0;
 
+#if defined(DEBUG)
+/* #define CHECK_RELEASED_BUFFERS */
+#endif /* DEBUG */
+
+#if defined(CHECK_RELEASED_BUFFERS)
+static int is_a_unused_reading_buffer(ReadingBuffer rb) {
+    if (unused_reading_buffers) {
+        ReadingBuffer check = unused_reading_buffers;
+        for (; check; check = check->next) {
+            if (check == rb) return 1;
+        }
+    }
+    return 0;
+}
+#endif /* CHECK_RELEASED_BUFFERS */
+
 static ReadingBuffer allocate_ReadingBuffer() {
     ReadingBuffer rb = malloc(sizeof(*rb)+READING_BUFFER_SIZE);
     rb->data         = ((char*)rb)+sizeof(*rb);
@@ -36,10 +52,19 @@ static ReadingBuffer allocate_ReadingBuffer() {
     rb->read_bytes   = 0;
     return rb;
 }
+
 static void release_ReadingBuffers(ReadingBuffer rb) {
     ReadingBuffer last = rb;
 
-    while (last->next) last = last->next;
+#if defined(CHECK_RELEASED_BUFFERS)
+    gb_assert(!is_a_unused_reading_buffer(rb));
+#endif /* CHECK_RELEASED_BUFFERS */
+    while (last->next) {
+        last = last->next;
+#if defined(CHECK_RELEASED_BUFFERS)
+        gb_assert(!is_a_unused_reading_buffer(last));
+#endif /* CHECK_RELEASED_BUFFERS */
+    }
     gb_assert(last && !last->next);
     last->next              = unused_reading_buffers;
     unused_reading_buffers  = rb;
@@ -94,6 +119,8 @@ typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer
 static Reader openReader(FILE *in) {
     Reader r = malloc(sizeof(*r));
 
+    gb_assert(unused_reading_buffers == 0);
+
     r->in    = in;
     r->error = 0;
     r->first = read_another_block(r->in);
@@ -120,6 +147,8 @@ static GB_ERROR closeReader(Reader r) {
 
     free_ReadingBuffer(r->first);
     free_ReadingBuffer(unused_reading_buffers);
+    unused_reading_buffers = 0;
+
     freeCurrentLine(r);
     free(r);
 
@@ -1264,14 +1293,12 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
         'w' write (w/o 'r' it overwrites existing database)
         'c' create (if not found)
         's'     read only ???
-        'd' look for default (if create)
-        in $ARBHOME/lib
-        (any leading '.' is removed )
-        'D' look for default (if create)
-        in $ARBHOME/lib/arb_default
-        (any leading '.' is removed )
+        'd' look for default (if create) in $ARBHOME/lib (any leading '.' is removed )
+        'D' look for default (if create) in $ARBHOME/lib/arb_default (any leading '.' is removed )
+
         't' small memory usage
         'm' medium
+        'b' big
         'h' huge
 
         'R' allow corrupt file recovery + opening quicks with no master
