@@ -61,7 +61,7 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 
 		Properties:	Customize display of windows, trees and data.
 				To save the settings choose the 'Save Defaults'
-				item from the 'File' menu.				
+				item from the 'File' menu.
 
 		ETC:		A collection of different functions
 				Reset tree display;
@@ -118,6 +118,6 @@ EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Report any bugs: send bug report plus your database to
+BUGS		Report any bugs:
 
-			arb@mikro.biologie.tu-muenchen.de
+                       send bug report to arb@arb-home.de
