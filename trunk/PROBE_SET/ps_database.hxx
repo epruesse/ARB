@@ -86,6 +86,9 @@ public:
     PS_NodePtr getRootNode() {
         return db_rootnode;
     }
+    const PS_NodePtr getConstRootNode() {
+        return db_rootnode;
+    }
 
     //
     // access mappings
