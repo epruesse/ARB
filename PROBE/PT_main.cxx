@@ -20,9 +20,14 @@ char                       *pt_error_buffer = new char[1024];
 ulong                       physical_memory = 0;
 
 // globals of gene-pt-server
-int                  gene_flag = 0;
-list<gene_struct *>  names_list_idp;
-GBDATA              *map_ptr_idp;
+int gene_flag = 0;
+
+gene_struct_list           all_gene_structs; // stores all gene_structs
+gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb speces+gene name
+gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
+
+// list<gene_struct *>  names_list_idp;
+// GBDATA *map_ptr_idp;
 
 /*****************************************************************************
         Communication
@@ -76,6 +81,8 @@ void PT_get_names (const char **fullstring, char *first, char *second, char *thi
     const char *third_ptr;
     int         flag = 0;
 
+    pt_assert(fullstring && *fullstring);
+
     first_ptr = *fullstring;
     second_ptr = strchr(first_ptr,';'); // Get first ';'
     if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(1);}
@@ -91,66 +98,85 @@ void PT_get_names (const char **fullstring, char *first, char *second, char *thi
 
     third_ptr++;  // Point after the ';'
 
-    first_ptr = strchr(third_ptr,';');  // Get next ';'
-    if(first_ptr+1 == 0) {
+    first_ptr = strchr(third_ptr,';'); // Get next ';'
+    pt_assert(first_ptr);
+    if (first_ptr[1] == 0) {
         flag = 1;
     } // Get last String
     strncpy(third,third_ptr,first_ptr-third_ptr); // Copy second String
     third[first_ptr-third_ptr] = 0;
 
-    if (!flag) first_ptr++; //  Point to next Pair
-    if (flag) *fullstring=NULL;
-    else *fullstring = first_ptr;  // Return Pointer to next Pair
+    if (flag) {
+        *fullstring = 0;
+    }
+    else {
+        ++first_ptr; //  Point to next Pair
+        *fullstring = first_ptr; // Return Pointer to next Pair
+    }
 }
 
 void PT_init_map(){
-    GB_begin_transaction(psg.gb_main);
-    map_ptr_idp = NULL;
-    map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
+    GB_push_transaction(psg.gb_main);
+    GBDATA *map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
 
     if (map_ptr_idp != NULL) {
         gene_flag               = 1;
         GBDATA *    map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
         const char *map_str;
-        //     map_str              = new char[GB_read_count(map_ptr_str)+1];
-        //     strcpy (map_str,GB_read_char_pntr(map_ptr_str));
         map_str                 = GB_read_char_pntr(map_ptr_str);
 
-        //     char *gene_name_str;
-        //     char *full_name_str;
-        //     char *arb_gene_name_str;
-        //     char *arb_species_name_str;
-        char  temp1[128];
-        char  temp2[128];
-        char  temp3[128];
+        char temp1[128];        // internal name
+        char temp2[128];        // arb species name
+        char temp3[128];        // arb gene name
 
-        gene_struct *tempstruct;
-
-        PT_get_names(&map_str,temp1,temp2,temp3);
-
-        tempstruct = new gene_struct;
-
-        strcpy(tempstruct->gene_name,temp1);
-        strcpy(tempstruct->arb_species_name,temp2);
-        strcpy(tempstruct->arb_gene_name,temp3);
-
-        names_list_idp.push_back(tempstruct);
-
-        while (map_str != NULL && *map_str != 0)
-        {
-
+        do {
             PT_get_names(&map_str,temp1,temp2,temp3);
+            all_gene_structs.push_back(gene_struct(temp1, temp2, temp3));
+        }
+        while (map_str != NULL && *map_str != 0);
 
-            tempstruct = new gene_struct;
+        // build indices :
+        gene_struct_list::const_iterator end = all_gene_structs.end();
 
-            strcpy(tempstruct->gene_name,temp1);
-            strcpy(tempstruct->arb_species_name,temp2);
-            strcpy(tempstruct->arb_gene_name,temp3);
+        for (gene_struct_list::const_iterator gs = all_gene_structs.begin(); gs != end; ++gs) {
+            if (gene_struct_internal2arb.find(&*gs) != gene_struct_internal2arb.end()) {
+                fprintf(stderr, "  Duplicated internal entry for '%s'\n", gs->get_internal_gene_name());
+            }
+            gene_struct_internal2arb.insert(&*gs);
+            if (gene_struct_arb2internal.find(&*gs) != gene_struct_arb2internal.end()) {
+                fprintf(stderr, "  Duplicated entry for '%s/%s'\n", gs->get_arb_species_name(), gs->get_arb_gene_name());
+            }
+            gene_struct_arb2internal.insert(&*gs);
+        }
 
-            names_list_idp.push_back(tempstruct);
-
+        size_t list_size = all_gene_structs.size();
+        bool   err       = false;
+        if (list_size == 0) {
+            fprintf(stderr, "Internal error - empty name map.\n");
+            err = true;
+        }
+        else {
+            fprintf(stderr, "Name map size = %u\n", list_size);
+        }
+        if (gene_struct_arb2internal.size() != list_size) {
+            fprintf(stderr, "Internal error - detected %i duplicated 'species/gene' combinations in name mapping.\n",
+                    list_size-gene_struct_arb2internal.size());
+            err = true;
+        }
+        if (gene_struct_internal2arb.size() != list_size) {
+            fprintf(stderr, "Internal error - detected %i duplicated internal gene name in name mapping.\n",
+                    list_size-gene_struct_internal2arb.size());
+            err = true;
+        }
+        if (err) {
+            fprintf(stderr, "Sorry - PT server cannot start.\n");
+            exit(1);
         }
     }
+    else {
+        gene_flag = 0;
+    }
+    GB_pop_transaction(psg.gb_main);
 }
 
 extern int aisc_core_on_error;
@@ -281,9 +307,9 @@ int main(int argc, char **argv)
         exit(0);
     }
     enter_stage_3_load_tree(aisc_main,tname);
-    
+
     PT_init_map();
-    
+
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
     aisc_server_shutdown(so);
