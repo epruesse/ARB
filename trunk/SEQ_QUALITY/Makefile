@@ -39,7 +39,12 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h SQ_GroupData.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx SQ_GroupData.h
 SQ_functions.o: SQ_ambiguities.h $(ARBHOME)/INCLUDE/awt_iupac.hxx
 SQ_functions.o: SQ_helix.h $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: SQ_physical_layout.h

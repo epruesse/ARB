@@ -4,7 +4,6 @@
 
 CPP_OBJECTS =   \
 	GEN_read.o \
-	GEN_db.o \
 	GEN_interface.o \
 	GEN_map.o \
 	GEN_graphic.o \
@@ -59,16 +58,6 @@ GEN_read.o: $(ARBHOME)/INCLUDE/inline.h GEN_local.hxx GEN.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/adGene.h
-
-GEN_db.o: $(ARBHOME)/INCLUDE/arbdb.h
-GEN_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GEN_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GEN_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GEN_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h GEN_local.hxx GEN.hxx
-GEN_db.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_db.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_db.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GEN_db.o: $(ARBHOME)/INCLUDE/adGene.h
 
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
