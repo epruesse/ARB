@@ -10,88 +10,64 @@ Texture2D::Texture2D(void){
 Texture2D::~Texture2D(void){
 }
 
-char* Texture2D::GetImageFile(int ImageId){
-    char Path[10] = "images"; //@@FIX PATH ??? - yadhuGL
-    char ImageFileName[50];
+static char* GetImageFile(int ImageId){
+    const char *imageName = 0;
 
-    switch (ImageId)
-     {
-     case CIRCLE:
-         sprintf(ImageFileName, "%s/Circle.png",Path);
-         break;
-     case DIAMOND:
-         sprintf(ImageFileName, "%s/Diamond.png",Path);
-         break;
-     case POLYGON:
-         sprintf(ImageFileName, "%s/Polygon.png",Path);
-         break;
-     case STAR:
-         sprintf(ImageFileName, "%s/Star.png",Path);
-         break;
-     case RECTANGLE:
-         sprintf(ImageFileName, "%s/Rectangle.png",Path);
-         break;
-     case RECTANGLE_ROUND:
-         sprintf(ImageFileName, "%s/RectangleRound.png",Path);
-         break;
-     case STAR_SMOOTH:
-         sprintf(ImageFileName, "%s/StarSmooth.png",Path);
-         break;
-     case CONE_UP:
-         sprintf(ImageFileName, "%s/ConeUp.png",Path);
-         break;
-     case CONE_DOWN:
-         sprintf(ImageFileName, "%s/ConeDown.png",Path);
-         break;
-     case CROSS:
-         sprintf(ImageFileName, "%s/Cross.png",Path);
-         break;
-     case QUESTION:
-         sprintf(ImageFileName, "%s/Question.png",Path);
-         break;
-     case DANGER:
-         sprintf(ImageFileName, "%s/Danger.png",Path);
-         break;
-     case HEXAGON:
-         sprintf(ImageFileName, "%s/Hexagon.png",Path);
-         break;
-     case LETTER_A:
-         sprintf(ImageFileName, "%s/LetterA.png",Path);
-         break;
-     case LETTER_G:
-         sprintf(ImageFileName, "%s/LetterG.png",Path);
-         break;
-     case LETTER_C:
-         sprintf(ImageFileName, "%s/LetterC.png",Path);
-         break;
-     case LETTER_U:
-         sprintf(ImageFileName, "%s/LetterU.png",Path);
-         break;
-     }
-    return strdup(ImageFileName);
+    switch (ImageId) {
+        case CIRCLE:          imageName = "Circle.png"; break;
+        case DIAMOND:         imageName = "Diamond.png"; break;
+        case POLYGON:         imageName = "Polygon.png"; break;
+        case STAR:            imageName = "Star.png"; break;
+        case RECTANGLE:       imageName = "Rectangle.png"; break;
+        case RECTANGLE_ROUND: imageName = "RectangleRound.png"; break;
+        case STAR_SMOOTH:     imageName = "StarSmooth.png"; break;
+        case CONE_UP:         imageName = "ConeUp.png"; break;
+        case CONE_DOWN:       imageName = "ConeDown.png"; break;
+        case CROSS:           imageName = "Cross.png"; break;
+        case QUESTION:        imageName = "Question.png"; break;
+        case DANGER:          imageName = "Danger.png"; break;
+        case HEXAGON:         imageName = "Hexagon.png"; break;
+        case LETTER_A:        imageName = "LetterA.png"; break;
+        case LETTER_G:        imageName = "LetterG.png"; break;
+        case LETTER_C:        imageName = "LetterC.png"; break;
+        case LETTER_U:        imageName = "LetterU.png"; break;
+    }
+
+    if (!imageName) {
+        throw string(GBS_global_string("Illegal image id %i", ImageId));
+    }
+
+    char *fname = GBS_find_lib_file(imageName, "rna3d/images/", 0);
+    if (!fname) {
+        throw string("File not found: ")+imageName;
+    }
+    return fname;
 }
 
 // Load Bitmaps And Convert To Textures
 void Texture2D::LoadGLTextures(void) {	
-    
-    for (int i = 0; i < SHAPE_MAX; i++) 
-        {
-            const char *ImageFile = GetImageFile(i);
-            pngInfo info;
 
-            // Using pngLoadAndBind to set texture parameters automatically.
-            texture[i] = pngBind(ImageFile, PNG_NOMIPMAP, PNG_ALPHA, &info, GL_CLAMP, GL_NEAREST, GL_NEAREST);
-             
-            if (texture[i] == 0) {
-                cout<<"Error loading file : "<<ImageFile<<" !!!"<<endl;
-                exit(0);
-            }
+    for (int i = 0; i < SHAPE_MAX; i++)
+    {
+        char    *ImageFile = GetImageFile(i);
+        pngInfo  info;
+
+        // Using pngLoadAndBind to set texture parameters automatically.
+        texture[i] = pngBind(ImageFile, PNG_NOMIPMAP, PNG_ALPHA, &info, GL_CLAMP, GL_NEAREST, GL_NEAREST);
+
+        if (texture[i] == 0) {
+            throw string(GBS_global_string("Error loading %s", ImageFile));
+            // cout<<"Error loading file : "<<ImageFile<<" !!!"<<endl;
+            // exit(0);
+        }
 
 #ifdef DEBUG
-            cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
-                <<info.Depth<<", Alpha = "<<info.Alpha<<endl;
-        }
+        cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
+            <<info.Depth<<", Alpha = "<<info.Alpha<<endl;
 #endif
+
+        free(ImageFile);
+    }
 
 }
 
