@@ -573,8 +573,6 @@ ARCHS_EDIT4 = \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
-		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
@@ -584,8 +582,29 @@ ARCHS_EDIT4 = \
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(GLLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  $(GLLIBS)  \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  \
+		)
+
+EDIT4GL = bin/arb_edit4_gl
+ARCHS_EDIT4GL = \
+		NAMES_COM/client.a \
+		AWTC/AWTC.a \
+		EDIT4/EDIT4.a \
+		SECEDIT/SECEDIT.a \
+		SERVERCNTRL/SERVERCNTRL.a \
+		STAT/STAT.a \
+		ARB_GDE/ARB_GDE.a \
+		ISLAND_HOPPING/ISLAND_HOPPING.a \
+		XML/XML.a \
+		RNA3D/RNA3D.a \
+		RNA3D/OPENGL/OPENGL.a \
+
+$(EDIT4GL): $(ARCHS_EDIT4GL:.a=.dummy) shared_libs
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4GL) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4GL) $(GUI_LIBS) $(GLLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4GL) $(GUI_LIBS)  $(GLLIBS)  \
 		)
 
 #***********************************	arb_wetc **************************************
@@ -1021,6 +1040,7 @@ test:	$(TEST)
 demo:	$(AWDEMO)
 
 e4:	$(EDIT4)
+e4gl:	$(EDIT4GL)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 we:	$(WETC)
 eb:	$(EDITDB)
@@ -1251,7 +1271,7 @@ arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
 ifeq ($(OPENGL),1) # build opengl tools?
-OPENGL_TARGETS=3d
+OPENGL_TARGETS=3d e4gl
 else
 OPENGL_TARGETS=
 endif
