@@ -15,8 +15,20 @@ struct data_format
 };
 
 
+ErrorOut(code,string)
+int code;
+char *string;
+{
+        if (code == 0)
+        {
+                fprintf(stderr,"Error:%s\n",string);
+                exit(1);
+        }
+        return;
+}
+
 char *Calloc2(count,size)
-int count,size;
+     int count,size;
 {
         char *temp;
 
@@ -57,7 +69,7 @@ int maxseqs;
 	char Inline[1025];
 
 	if(file == NULL)
-		Errorout("Cannot open data file");
+            ErrorOut(0, "Cannot open data file");
 
 	for(;fgets(Inline,1024,file) != NULL;)
 	{
@@ -90,13 +102,13 @@ int maxseqs;
 
 				count++;
 				if(count > maxseqs)
-				     Errorout("Sorry, alignment is too large");
+                                    ErrorOut(0, "Sorry, alignment is too large");
 
 				align[count].nuc = Calloc2(maxlen,sizeof(char));
 				align[count].type = Inline[0];
 				align[count].offset = offset;
 				if( align[count].nuc == NULL)
-					Errorout("Calloc problem");
+                                    ErrorOut(0, "Calloc problem");
 
 				sscanf((char*)(Inline+1),"%s",
 					align[count].name);
@@ -155,14 +167,3 @@ int count;
 }
 
 
-ErrorOut(code,string)
-int code;
-char *string;
-{
-        if (code == 0)
-        {
-                fprintf(stderr,"Error:%s\n",string);
-                exit(1);
-        }
-        return;
-}
