@@ -1,0 +1,65 @@
+                                                                                        -*- outline -*-
+ToDo for arb_probe_library:
+===========================
+
+* ../PROBE_WEB/CLIENT/ToDo
+
+------------------------------------------------------------
+* General:
+
+** Hide the RESERVED pt-server in ARB selection lists
+
+------------------------------------------------------------
+* cgis:
+
+** all scripts that wait for server answer
+   should do a timeout (maybe check whether server is running)
+
+** when merging probes from multiple servers: it may happen, that one server
+   knows about a group and the other doesn't -> don't show error
+
+------------------------------------------------------------
+* Database-Format:
+
+** remove 'comb' entries
+
+------------------------------------------------------------
+* PROBE_GROUP:
+
+** probe_match ignores 'use_weighted_mismatches' (this is not in config yet)
+   and temperature, gccontent and ecoli_pos
+   (this is most likely the reason why design and match give different results)
+
+** for all subtrees w/o exact probes:
+*** search for non-group-hit probe groups
+
+** propagate groups upwards if they are equal to best group
+  (currently only propagated if better)
+  => store multiple groups in 'coverage_id'
+
+** some nodes have no probes [bug]
+*** one cause was: probe_match had result, probe_design not
+    'exact' entry was not deleted in that case [FIXED]
+
+** extract probe ecoli-position from pt-server result and
+   store together with probe
+
+** not only collect probes for subtrees, but also for inverse of
+   subtree (aka rest of tree)
+
+------------------------------------------------------------
+* PROBE_GROUP_DESIGN:
+
+** store probe ecoli-position (not possible, if design is not performed)
+
+------------------------------------------------------------
+* TREE_MERGE:
+
+** use best coverage value (+coverage group name)
+
+------------------------------------------------------------
+* WORKER:
+
+** transfer probe ecoli-position
+
+------------------------------------------------------------
