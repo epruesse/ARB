@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Nov/22/2001 16:58 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/22/2001 18:06 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
