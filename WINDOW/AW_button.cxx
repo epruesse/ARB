@@ -35,7 +35,7 @@
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
-void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetlist){
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetlist){
     if (widgetlist->widget == (int *)root->changer_of_variable){
         root->changer_of_variable = 0;
         root->value_changed = AW_FALSE;
@@ -62,7 +62,7 @@ void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetli
                 widgetlist->aw->update_label( widgetlist->widget, var_value );
                 break;
             case AW_WIDGET_CHOICE_MENU:
-                widgetlist->aw->update_option_menu( (int)widgetlist->cd );
+                widgetlist->aw->update_option_menu( (AW_option_menu_struct*)widgetlist->cd );
                 break;
             case AW_WIDGET_TOGGLE_FIELD:
                 widgetlist->aw->update_toggle_field( (int)widgetlist->cd );
@@ -92,6 +92,9 @@ AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1
 void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, XtPointer call_data ) {
     AWUSE(wgt);AWUSE(call_data);
     AW_variable_update_struct *vus   = (AW_variable_update_struct *) variable_update_struct;
+
+    aw_assert(vus);
+    
     char                      *tmp   = 0;
     long                       h_int;
     float                      h_float;
@@ -654,7 +657,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                          NULL );
 
         if (_at->attach_any) aw_attach_widget(label,_at);
-        AW_LABEL_IN_AWAR_LIST(this,label,_at->label_for_inputfield);
+        AW_label_in_awar_list(this,label,_at->label_for_inputfield);
     }
 
     _at->x_for_next_button = x_button;
@@ -753,7 +756,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                               color_switch, bg_color,
                                               NULL );
         }
-        AW_LABEL_IN_AWAR_LIST(this,button,buttonlabel);
+        AW_label_in_awar_list(this,button,buttonlabel);
         AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, button );
     }
     else { // Simple text or AWAR button
@@ -783,7 +786,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
 
         if (_at->attach_any) aw_attach_widget(button,_at);
         AW_JUSTIFY_LABEL(button,_at->correct_for_at_center);
-        AW_LABEL_IN_AWAR_LIST(this,button,buttonlabel);
+        AW_label_in_awar_list(this,button,buttonlabel);
     }
 
     short height = 0;
@@ -2076,7 +2079,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
 //  Options-Menu
 // --------------------------------------------------------------------------------
 
-void AW_window::create_option_menu( const char *var_name, AW_label label, const char *mnemonic ) {
+AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_label label, const char *mnemonic ) {
     Widget optionMenu_shell;
     Widget optionMenu;
     Widget optionMenu1;
@@ -2183,33 +2186,68 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
         }
     }
 
-
-
-    p_w->option_menu = optionMenu;
-    free(p_w->option_menu_var_name);
-    p_w->option_menu_var_name = strdup( var_name );
-    p_w->option_menu_var_type = vs->variable_type;
-
     get_root()->number_of_option_menues++;
 
-    if ( p_global->option_menu_list ) {
-        p_global->last_option_menu->next =
-            new AW_option_menu_struct(get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1, _at->x_for_next_button - 7, _at->y_for_next_button, _at->correct_for_at_center);
-        p_global->last_option_menu = p_global->last_option_menu->next;
-    }
-    else {
-        p_global->last_option_menu = p_global->option_menu_list =
-            new AW_option_menu_struct( get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1,  _at->x_for_next_button - 7, _at->y_for_next_button, _at->correct_for_at_center);
+    {
+        AW_option_menu_struct *next =
+            new AW_option_menu_struct(get_root()->number_of_option_menues,
+                                      _at->id_for_next_button,
+                                      var_name,
+                                      vs->variable_type,
+                                      optionMenu1,
+                                      optionMenu,
+                                      _at->x_for_next_button - 7,
+                                      _at->y_for_next_button,
+                                      _at->correct_for_at_center);
+
+        if ( p_global->option_menu_list ) {
+            p_global->last_option_menu->next = next;
+            p_global->last_option_menu = p_global->last_option_menu->next;
+        }
+        else {
+            p_global->last_option_menu = p_global->option_menu_list = next;
+        }
     }
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_option_menues, optionMenu, AW_WIDGET_CHOICE_MENU, this);
+    p_global->current_option_menu = p_global->last_option_menu;
+
+    AW_INSERT_BUTTON_IN_AWAR_LIST( vs,(AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
     AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, optionMenu1 );
+
+    return p_global->current_option_menu;
 }
 
-void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color ){
+static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
+    bool removed = AW_remove_button_from_sens_list(aw_root, os->choice_widget);
+    aw_assert(removed);
+    // XtRemoveAllCallbacks(os->choice_widget, XmNactivateCallback);
+    XtDestroyWidget(os->choice_widget);
+}
+
+void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
+    p_global->current_option_menu = oms; // define as current (for subsequent inserts)
+
+    AW_option_struct *next_os;
+    for (AW_option_struct *os = oms->first_choice; os; os = next_os) {
+        next_os  = os->next;
+        os->next = 0;
+        remove_option_from_option_menu(root, os);
+        delete os;
+    }
+
+    remove_option_from_option_menu(root, oms->default_choice);
+
+    oms->default_choice = 0;
+    oms->first_choice   = 0;
+    oms->last_choice    = 0;
+}
+
+void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color) {
     AWUSE(mnemonic);
-    Widget entry;
-    if ( p_w->option_menu_var_type != type ) {
+    Widget                 entry;
+    AW_option_menu_struct *oms = p_global->current_option_menu;
+
+    if ( oms->variable_type != type ) {
         AW_ERROR("Option menu not defined for this type");
     }
     Pixel bg_color = 0;
@@ -2228,261 +2266,130 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
 
     entry = XtVaCreateManagedWidget( "optionMenu_entry",
                                      xmPushButtonWidgetClass,
-                                     p_w->option_menu,
+                                     oms->menu_widget,
                                      RES_LABEL_CONVERT(((char *)name)),
                                      XmNfontList, p_global->fontlist,
                                      color_switch, bg_color,
                                      NULL );
-    AW_LABEL_IN_AWAR_LIST(this,entry,name);
+    AW_label_in_awar_list(this,entry,name);
     return (void *)entry;
 }
 
-
-// for string
-void AW_window::insert_option( AW_label option_name, const char *mnemonic, const char *var_value,const char *name_of_color ) {
-    Widget      entry;
-    AW_cb_struct    *cbs;
-    if (p_w->option_menu_var_type != AW_STRING){
-        AW_ERROR("insert_option(..,..,string) used for non string awar");
-        return;
-    }
-
-    entry = (Widget)_create_option_entry(AW_STRING,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct(
-                                                             NULL, AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name),
-                                                             var_value, 0, 0, cbs ) );
-
-
-    if ( p_global->last_option_menu->first_choice ) {
-        p_global->last_option_menu->last_choice->next = new AW_option_struct( var_value, entry );
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->last_choice->next;
+inline void option_menu_add_option(AW_option_menu_struct *oms, AW_option_struct *os, bool default_option) {
+    if (default_option) {
+        oms->default_choice = os;
     }
     else {
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->first_choice = new AW_option_struct( var_value, entry );
-    }
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
+        if ( oms->first_choice ) {
+            oms->last_choice->next = os;
+            oms->last_choice       = oms->last_choice->next;
+        }
+        else {
+            oms->last_choice = oms->first_choice = os;
+        }
+    }    
 }
 
-// for string
-void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, const char *var_value,const char *name_of_color ) {
-    Widget          entry;
-    AW_cb_struct    *cbs;
-    if (p_w->option_menu_var_type != AW_STRING){
-        AW_ERROR("insert_option(..,..,string) used for non string awar");
-        return;
-    }
+// for string :
 
-    entry = (Widget)_create_option_entry(AW_STRING,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct( NULL, AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name), var_value, 0, 0, cbs ) );
-
-
-    p_global->last_option_menu->default_choice = new AW_option_struct( var_value, entry );
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
-}
-
-
-// for int
-void AW_window::insert_option( AW_label option_name, const char *mnemonic, int var_value,const char *name_of_color ) {
-    Widget          entry;
-    AW_cb_struct    *cbs;
-    if (p_w->option_menu_var_type != AW_INT){
-        AW_ERROR("insert_option(..,..,string) used for non int awar");
-        return;
-    }
-
-    entry = (Widget)_create_option_entry(AW_INT,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct(
-                                                             NULL, AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name),
-                                                             0, var_value, 0, cbs ) );
-
-
-    if ( p_global->last_option_menu->first_choice ) {
-        p_global->last_option_menu->last_choice->next = new AW_option_struct( var_value, entry );
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->last_choice->next;
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, const char *var_value, const char *name_of_color, bool default_option) {
+    AW_option_menu_struct *oms = p_global->current_option_menu;
+    if (oms->variable_type != AW_STRING){
+        AW_ERROR("insert_option(..string..) used for non-string awar");
     }
     else {
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->first_choice = new AW_option_struct( var_value, entry );
+        Widget        entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
+        AW_cb_struct *cbs   = _callback; // user-own callback
+        
+        // callback for new choice
+        XtAddCallback(entry, XmNactivateCallback,
+                      (XtCallbackProc) AW_variable_update_callback,
+                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, 0, 0, cbs));
+
+        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        this->unset_at_commands();
     }
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
 }
-
-// for int
-void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, int var_value,const char *name_of_color ) {
-    Widget          entry;
-    AW_cb_struct    *cbs;
-    if (p_w->option_menu_var_type != AW_INT){
-        AW_ERROR("insert_option(..,..,string) used for non int awar");
-        return;
-    }
-
-    entry = (Widget)_create_option_entry(AW_INT,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct( NULL, AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name), 0, var_value, 0, cbs ) );
-
-    p_global->last_option_menu->default_choice = new AW_option_struct( var_value, entry );
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
-}
-
-
-
-// for float
-void AW_window::insert_option( AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color ) {
-    Widget          entry;
-    AW_cb_struct    *cbs;
-    if (p_w->option_menu_var_type != AW_FLOAT){
-        AW_ERROR("insert_option(..,..,string) used for non float awar");
-        return;
-    }
-
-    entry = (Widget)_create_option_entry(AW_FLOAT,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct( NULL, AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name), 0, 0, var_value, cbs ) );
-
-
-    if ( p_global->last_option_menu->first_choice ) {
-        p_global->last_option_menu->last_choice->next = new AW_option_struct( var_value, entry );
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->last_choice->next;
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, int var_value, const char *name_of_color, bool default_option) {
+    AW_option_menu_struct *oms = p_global->current_option_menu;
+    
+    if (oms->variable_type != AW_INT){
+        AW_ERROR("insert_option(..int..) used for non-int awar");
     }
     else {
-        p_global->last_option_menu->last_choice = p_global->last_option_menu->first_choice = new AW_option_struct( var_value, entry );
+        Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
+        AW_cb_struct *cbs   = _callback; // user-own callback
+        
+        // callback for new choice
+        XtAddCallback(entry, XmNactivateCallback,
+                      (XtCallbackProc) AW_variable_update_callback,
+                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, var_value, 0, cbs));
+
+        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        this->unset_at_commands();
     }
+}
+void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color, bool default_option) {
+    AW_option_menu_struct *oms = p_global->current_option_menu;
+    
+    if (oms->variable_type != AW_FLOAT){
+        AW_ERROR("insert_option(..float..) used for non-float awar");
+    }
+    else {
+        Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
+        AW_cb_struct *cbs   = _callback; // user-own callback
+        
+        // callback for new choice
+        XtAddCallback(entry, XmNactivateCallback,
+                      (XtCallbackProc) AW_variable_update_callback,
+                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, 0, var_value, cbs));
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
+        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        AW_INSERT_BUTTON_IN_SENS_LIST(root, _at->id_for_next_button, _at->mask_for_next_button, entry);
+        this->unset_at_commands();
+    }
 }
 
-// for float
-void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color ) {
-    Widget          entry;
-    AW_cb_struct    *cbs;
-
-    if (p_w->option_menu_var_type != AW_FLOAT){
-        AW_ERROR("insert_option(..,..,string) used for non float awar");
-        return;
-    }
-    entry = (Widget)_create_option_entry(AW_FLOAT,option_name,mnemonic,name_of_color);
-
-    // user-own callback
-    cbs = _callback;
-
-    // callback for new choice
-    XtAddCallback( entry, XmNactivateCallback,
-                   (XtCallbackProc) AW_variable_update_callback,
-                   (XtPointer) new AW_variable_update_struct( NULL,
-                                                              AW_WIDGET_CHOICE_MENU, root->awar(p_w->option_menu_var_name),
-                                                              0, 0, var_value, cbs ) );
-
-
-    p_global->last_option_menu->default_choice = new AW_option_struct( var_value, entry );
-
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, entry );
-
-    this->unset_at_commands();
-
-}
+void AW_window::insert_option        (AW_label on, const char *mn, const char *vv, const char *noc ) { insert_option_internal(on, mn, vv, noc, false); }
+void AW_window::insert_default_option(AW_label on, const char *mn, const char *vv, const char *noc ) { insert_option_internal(on, mn, vv, noc, true); }
+void AW_window::insert_option        (AW_label on, const char *mn, int vv,         const char *noc ) { insert_option_internal(on, mn, vv, noc, false); }
+void AW_window::insert_default_option(AW_label on, const char *mn, int vv,         const char *noc ) { insert_option_internal(on, mn, vv, noc, true); }
+void AW_window::insert_option        (AW_label on, const char *mn, float vv,       const char *noc ) { insert_option_internal(on, mn, vv, noc, false); }
+void AW_window::insert_default_option(AW_label on, const char *mn, float vv,       const char *noc ) { insert_option_internal(on, mn, vv, noc, true); }
+// (see insert_option_internal for longer parameter names)
 
 void AW_window::update_option_menu( void ) {
-
-    this->update_option_menu( get_root()->number_of_option_menues );
+    this->update_option_menu( p_global->current_option_menu );
 }
 
+void AW_window::update_option_menu(AW_option_menu_struct *oms) {
+    AW_option_struct *menu_choice_list;
+    AW_BOOL           cont;
+    char             *global_var_value       = NULL;
+    long              global_var_int_value   = 0;
+    float             global_var_float_value = 0;
+    int               width_of_last_widget;
+    int               height_of_last_widget;
+    char             *var_name               = oms->variable_name;
 
-void AW_window::update_option_menu( int option_menu_number ) {
-    AW_option_menu_struct *option_menu_list;
-    AW_option_struct      *menu_choice_list;
-    AW_BOOL                cont;
-    char                  *global_var_value       = NULL;
-    long                   global_var_int_value   = 0;
-    float                  global_var_float_value = 0;
-    int                    width_of_last_widget;
-    int                    height_of_last_widget;
-
-
-    for (   option_menu_list = p_global->option_menu_list;
-            option_menu_list;
-            option_menu_list = option_menu_list->next)
-    {
-        if ( option_menu_number == option_menu_list->option_menu_number ) {
-            break;
-        }
-    }
-    if ( !option_menu_list ){
-        AW_ERROR("option menu does not exist");
-        return;
-    }
-    char *var_name = option_menu_list->variable_name;
-
-    if ( get_root()->changer_of_variable == (long)option_menu_list->label_widget ) {
+    if ( get_root()->changer_of_variable == (long)oms->label_widget ) {
         return;
     }
 
     cont = AW_TRUE;
 
-    switch ( option_menu_list->variable_type ) {
-        case AW_STRING: global_var_value = root->awar( var_name )->read_string();
-            break;
-        case AW_INT:    global_var_int_value = root->awar( var_name )->read_int();
-            break;
-        case AW_FLOAT:  global_var_float_value = root->awar( var_name )->read_float();
-            break;
-        default:
-            break;
+    switch ( oms->variable_type ) {
+        case AW_STRING: global_var_value       = root->awar( var_name )->read_string(); break;
+        case AW_INT:    global_var_int_value   = root->awar( var_name )->read_int(); break;
+        case AW_FLOAT:  global_var_float_value = root->awar( var_name )->read_float(); break;
+        default: break;
     }
 
-    menu_choice_list = option_menu_list->first_choice;
+    menu_choice_list = oms->first_choice;
     while ( menu_choice_list && cont ) {
-        switch ( option_menu_list->variable_type ) {
+        switch ( oms->variable_type ) {
             case AW_STRING: if ( (strcmp( global_var_value, menu_choice_list->variable_value ) == 0) ) {
                 cont = AW_FALSE;
             }
@@ -2506,19 +2413,18 @@ void AW_window::update_option_menu( int option_menu_number ) {
 
 
     if (  menu_choice_list ) {
-        XtVaSetValues( option_menu_list->label_widget, XmNmenuHistory, menu_choice_list->choice_widget, NULL );
+        XtVaSetValues( oms->label_widget, XmNmenuHistory, menu_choice_list->choice_widget, NULL );
     }else {
-        if ( option_menu_list->default_choice ) {
-            XtVaSetValues( option_menu_list->label_widget, XmNmenuHistory,
-                           option_menu_list->default_choice->choice_widget, NULL );
+        if ( oms->default_choice ) {
+            XtVaSetValues( oms->label_widget, XmNmenuHistory, oms->default_choice->choice_widget, NULL );
 #if 0
         }else {
             char *error = 0;
-            menu_choice_list = option_menu_list->first_choice;
-            switch ( option_menu_list->variable_type ) {
+            menu_choice_list = oms->first_choice;
+            switch ( oms->variable_type ) {
                 case AW_STRING:
                     error = root->awar(var_name)->write_string(menu_choice_list->variable_value);
-                    error = root->awar(option_menu_list->variable_name)->write_string(menu_choice_list->variable_float_value);
+                    error = root->awar(oms->variable_name)->write_string(menu_choice_list->variable_float_value);
                     break;
                 case AW_INT:
                     error = root->awar(var_name)->write_int(menu_choice_list->variable_int_value);
@@ -2539,17 +2445,17 @@ void AW_window::update_option_menu( int option_menu_number ) {
 
     short length;
     short height;
-    XtVaGetValues( option_menu_list->label_widget ,XmNwidth ,&length ,XmNheight, &height, NULL );
+    XtVaGetValues( oms->label_widget ,XmNwidth ,&length ,XmNheight, &height, NULL );
     width_of_last_widget              = length;
     height_of_last_widget             = height;
 
-    if ( option_menu_list->correct_for_at_center_intern ) {
-        if ( option_menu_list->correct_for_at_center_intern == 1 ) { // middle centered
-            XtVaSetValues( option_menu_list->label_widget, XmNx,(short)((short)_at->saved_x - (short)(length/2)), NULL );
+    if ( oms->correct_for_at_center_intern ) {
+        if ( oms->correct_for_at_center_intern == 1 ) { // middle centered
+            XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - (short)(length/2)), NULL );
             width_of_last_widget = width_of_last_widget / 2;
         }
-        if ( option_menu_list->correct_for_at_center_intern == 2 ) { // right centered
-            XtVaSetValues( option_menu_list->label_widget, XmNx,(short)((short)_at->saved_x - length) + 7, NULL );
+        if ( oms->correct_for_at_center_intern == 2 ) { // right centered
+            XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - length) + 7, NULL );
             width_of_last_widget = 0;
         }
 //         _at->correct_for_at_center_intern = 0;
