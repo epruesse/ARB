@@ -25,8 +25,7 @@ ST_Container::ST_Container(int anz_sonden)		// ist ein define das auf 1000 steht
 
     Bakterienliste->get_all_species();
 
-    if (pt_server_different)
-        return;
+    if (pt_server_different) return;
     laenge_markierte = Auswahlliste->fill_marked_bakts();
 
     anz_elem_unmarked = Bakterienliste->debug_get_current()-1 - laenge_markierte;

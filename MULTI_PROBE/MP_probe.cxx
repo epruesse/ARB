@@ -41,7 +41,7 @@ void ProbeValuation::evolution()
 
         if (avg_fit == 0 && !Stop_evaluation)
         {
-            aw_message("Please choose better Probes !!!!");
+            aw_message("Please choose better Probes!");
             return;
         }
 
