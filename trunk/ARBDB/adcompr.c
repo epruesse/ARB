@@ -756,7 +756,7 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key){
 
 
 
-/********************** Overall Compression Algorythms **************************/
+/********************** Overall Compression Algorithms **************************/
 /**** Compresses a data string, returns 0 if no compression makes sense ****/
 
 GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed){
