@@ -14,7 +14,7 @@ inmask:
 
 arg:CORR
 arglabel:Dist. correction?
-argtype:chooser
+argtype:choice_menu
 argchoice:Olsen:-c=olsen
 argchoice:Jukes/Cantor:-c=jukes
 argchoice:None:-c=none
@@ -34,7 +34,7 @@ argmax:65535
 argvalue:12345
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:View tree using
 argchoice:ARB ('tree_desoete'):arb_read_tree tree_desoete_$$ in1.out "PRG=DeSoete CORR=$CORR FILTER=$FILTER"
 argchoice:TextEdit:arb_textedit in1.out &

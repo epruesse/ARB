@@ -83,13 +83,13 @@ argmax:10
 argvalue:4
 
 arg:PWDNAMATRIX_
-argtype:chooser
+argtype:choice_menu
 arglabel:Weighting matrix (pairwise)
 argchoice:CLUSTALW:CLUSTALW
 argchoice:IUB:IUB
 
 arg:DNAMATRIX_
-argtype:chooser
+argtype:choice_menu
 arglabel:Weighting matrix (multiple)
 argchoice:CLUSTALW:CLUSTALW
 argchoice:IUB:IUB
@@ -144,7 +144,7 @@ argmax:10
 argvalue:4
 
 arg:PWMATRIX_
-argtype:chooser
+argtype:choice_menu
 arglabel:Weighting matrix (pairwise)
 argchoice:BLOSUM:BLOSUM
 argchoice:PAM:PAM
@@ -152,7 +152,7 @@ argchoice:GONNET:GONNET
 argchoice:ID:ID
 
 arg:MATRIX_
-argtype:chooser
+argtype:choice_menu
 arglabel:Weighting matrix (multiple)
 argchoice:BLOSUM:BLOSUM
 argchoice:PAM:PAM

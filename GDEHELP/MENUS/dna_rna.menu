@@ -3,7 +3,7 @@ itemmeta: T
 itemmethod:Translate -tbl $TBL -frame $FRAME -min_frame $MNFRM $LTRCODE $NOSEP in1 > out1
 
 arg:FRAME
-argtype:chooser
+argtype:choice_menu
 arglabel:Which reading frame?
 argchoice:First:1
 argchoice:Second:2
@@ -18,20 +18,20 @@ argmax:500
 argvalue:20
 
 arg:LTRCODE
-argtype:chooser
+argtype:choice_menu
 arglabel:Translate to:
 argchoice:Single letter codes:
 argchoice:Triple letter codes:-3
 
 arg:NOSEP
-argtype:chooser
+argtype:choice_menu
 arglabel: Seperate?
 argchoice:No:
 argchoice:Yes:-sep
 
 arg:TBL
 arglabel:Codon table?
-argtype:chooser
+argtype:choice_menu
 argchoice:mycoplasma:2
 argchoice:universal:1
 argchoice:yeast:3
@@ -78,7 +78,7 @@ argmax:10
 argvalue:4
 
 arg:Trans
-argtype:chooser
+argtype:choice_menu
 arglabel:Transitions weighted?
 argchoice:Yes:/TRANSIT
 argchoice:No:
@@ -112,7 +112,7 @@ itemmeta: V
 itemmethod:varpos $REV < in1 > out1
 
 arg:REV
-argtype:chooser
+argtype:choice_menu
 arglabel:Highlight (darken)
 argchoice:Conserved positions:
 argchoice:variable positions:-rev
@@ -142,7 +142,7 @@ informat:genbank
 insave:
 
 arg:METHOD
-argtype:chooser
+argtype:choice_menu
 arglabel:RNA type
 argchoice:Fold Linear RNA:lrna
 argchoice:Fold Circular RNA:crna
@@ -159,7 +159,7 @@ itemmethod:(LoopTool $TEMPLATE in1 ; /bin/rm -f in1) &
 itemhelp:LoopTool.help
 
 arg:TEMPLATE
-argtype:chooser
+argtype:choice_menu
 arglabel:Use template file ./loop.temp?
 argchoice:No:
 argchoice:Yes:-t loop.temp
