@@ -17,7 +17,7 @@
                version="1.0"
                >
 
-  <xsl:output method="text" encoding="iso-8859-1"/>
+  <xsl:output method="text" encoding="ISO-8859-1"/>
 
   <xsl:param name="myname"/>
   <xsl:param name="xml_location"/>

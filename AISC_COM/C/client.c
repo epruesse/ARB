@@ -25,14 +25,20 @@
 #	include <bstring.h>
 #endif
 
-#if defined(SUN4) || defined(SUN5)
-# ifndef __cplusplus
-#  define SIG_PF void (*)()
-# else
-#  include <sysent.h>	/* c++ only for sun (used for shutdown) */
-# endif
-#else
-# define SIG_PF void (*)(int )
+#include "SIG_PF.h"
+#if 0
+/* #if defined(SUN5_ECGS) */
+/* #else */
+/* # if defined(SUN4) || defined(SUN5) */
+/* #  ifndef __cplusplus */
+/* #   define SIG_PF void (*)() */
+/* #  else */
+/* #   include <sysent.h>	/* c++ only for sun (used for shutdown) */ */
+/* #  endif */
+/* # else */
+/* #  define SIG_PF void (*)(int ) */
+/* # endif */
+/* #endif */
 #endif
 
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
@@ -350,7 +356,7 @@ const char *aisc_client_open_socket(char *path, int delay, int do_connect, int *
                 fclose(test);
                 if (!stat(path, &stt)){
                     if (S_ISREG(stt.st_mode)){
-                        fprintf(stderr,"%X\n",stt.st_mode);
+                        fprintf(stderr,"%X\n",(unsigned int)stt.st_mode);
                         return "Socket already exists as a file";
                     }
                 }

@@ -22,52 +22,53 @@ clean:
 	mv doc/doc.pub .
 	rm -f doc/*
 	mv doc.pub doc
+
 proto:
 	rm -f aisc_proto.h
 	../AISC_MKPTPS/aisc_mkpt -C *.c >aisc_proto.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-aisc.o:   
-aisc.o:  
-aisc.o:  
-aisc.o:  
-aisc.o:   
-aisc.o:  
-aisc.o:  
-aisc.o:  
+aisc.o:
+aisc.o:
+aisc.o:
+aisc.o:
+aisc.o:
+aisc.o:
+aisc.o:
+aisc.o:
 aisc.o:   aisc.h aisc_proto.h
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
-aisc_commands.o:  
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
+aisc_commands.o:
 aisc_commands.o:  aisc.h aisc_proto.h
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
-aisc_var_ref.o:  
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
+aisc_var_ref.o:
 aisc_var_ref.o:   aisc.h
 aisc_var_ref.o: aisc_proto.h
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
+aisc_mix.o:
 aisc_mix.o:   aisc.h aisc_proto.h
