@@ -91,7 +91,7 @@ public:
         exact          = root->awar(awarList->exact)->read_int();
 
         if (complement) {
-            if (IS_AMINO) {
+            if (IS_AMINO()) {
                 complement = 0;
                 root->awar(awarList->complement)->write_int(0);
                 aw_message(GBS_global_string("Search for complement is not supported for this alignment type"), "Disable");
@@ -418,7 +418,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                         ROOT(reverse, reverseComment);
                     }
                     if (s_complement) {
-                        e4_assert(IS_NUCLEOTIDE);
+                        e4_assert(IS_NUCLEOTIDE());
                         // char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
                         if (T_or_U) {
                             char *revcomp = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
