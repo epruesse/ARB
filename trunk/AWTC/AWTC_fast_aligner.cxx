@@ -1558,7 +1558,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
     long       chksum;
     int        restart         = 1;
     int        relativesToTest = maxNextRelatives*2; // get more relatives from pt-server (needed when use_different_pt_server_alignment == true)
-    char     **nearestRelative = new (char*)[relativesToTest+1];
+    char     **nearestRelative = new char*[relativesToTest+1];
     long      *relativeScore   = new long[relativesToTest+1];
     int        next_relatives;
     int        i;

@@ -114,8 +114,7 @@ PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(AP_FLOAT **m, long isize)
     dist_list = new PH_NEIGHBOUR_DIST[dist_list_size];// the roots, no elems
     dist_list_corr = (dist_list_size-2.0)/get_max_di(m);
 
-//     dist_matrix = (PH_NEIGHBOUR_DIST **)calloc(sizeof(PH_NEIGHBOUR_DIST *),(size_t)size);
-    dist_matrix = new (PH_NEIGHBOUR_DIST*)[size];
+    dist_matrix = new PH_NEIGHBOUR_DIST*[size];
     for (i=0;i<size;i++) {
         dist_matrix[i] = new PH_NEIGHBOUR_DIST[i];
         for (j=0;j<i;j++){
