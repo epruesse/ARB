@@ -26,6 +26,13 @@ void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
     bottom_font_overlap = 0;
     left_font_overlap = 0;
     right_font_overlap = 0;
+
+    if (allow_oversize) { // added 21.6.02 --ralf
+        if (clip_rect.t < common->screen.t) set_top_font_overlap(true);
+        if (clip_rect.b > common->screen.b) set_bottom_font_overlap(true);
+        if (clip_rect.l < common->screen.l) set_left_font_overlap(true);
+        if (clip_rect.r > common->screen.r) set_right_font_overlap(true);
+    }
 }
 
 void AW_clip::reduceClipBorders(int top, int bottom, int left, int right) {
@@ -44,6 +51,9 @@ void AW_clip::set_top_clip_border(int top, AW_BOOL allow_oversize) {
     if (!allow_oversize){
         if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
     }
+    else {
+        set_top_font_overlap(true); // added 21.6.02 --ralf
+    }
 }
 
 void AW_clip::reduce_bottom_clip_border(int bottom) {
@@ -55,12 +65,18 @@ void AW_clip::set_bottom_clip_border(int bottom, AW_BOOL allow_oversize) {
     if (!allow_oversize){
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
     }
+    else {
+        set_bottom_font_overlap(true); // added 21.6.02 --ralf
+    }
 }
 
 void AW_clip::set_bottom_clip_margin(int bottom,AW_BOOL allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize){
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+    }
+    else {
+        set_bottom_font_overlap(true); // added 21.6.02 --ralf
     }
 }
 void AW_clip::reduce_left_clip_border(int left) {
@@ -70,6 +86,9 @@ void AW_clip::set_left_clip_border(int left, AW_BOOL allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize){
         if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
+    }
+    else {
+        set_left_font_overlap(true); // added 21.6.02 --ralf
     }
 }
 
@@ -81,6 +100,9 @@ void AW_clip::set_right_clip_border(int right, AW_BOOL allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize){
         if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
+    }
+    else {
+        set_right_font_overlap(true); // added to correct problem with last char skipped (added 21.6.02 --ralf)
     }
 }
 
@@ -676,11 +698,12 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
 
     if (!(filter & filteri)) return 0;
 
-    if (left_font_overlap || clip_rect.l == 0) {
+    if (left_font_overlap || common->screen.l == clip_rect.l) { // was : clip_rect.l == 0
         inside_clipping_left = AW_FALSE;
     }
 
-    if (right_font_overlap || clip_rect.r == common->screen.r) {
+    if (right_font_overlap || clip_rect.r == common->screen.r) { // was : clip_rect.r == common->screen.r
+
         inside_clipping_right = AW_FALSE;
     }
 
@@ -770,7 +793,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
             l -= size_per_char[opt_str[h]];
         }
         textlen = h - start;
-        if (inside_clipping_right && textlen  > 0 ) {
+        if (l <= 0 && inside_clipping_right && textlen  > 0 ) {
             textlen -= 1;
         }
 
