@@ -135,7 +135,7 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
     ED4_work_info *work_info = (ED4_work_info*)(*work_info_ptr);
     ED4_work_info new_work_info;
     ED4_base	*species_manager = NULL;
-    ED4_manager	*temp_parent;
+//     ED4_manager	*temp_parent;
     GB_TYPES	gb_type;
 
     if (((char **) error)[0] || !object->is_terminal())
@@ -158,17 +158,18 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
         !species_manager->flag.is_consensus &&
         (object->dynamic_prop & ED4_P_CONSENSUS_RELEVANT))
     {
-        new_work_info.event 		    = work_info->event;
-        new_work_info.char_position 	= work_info->char_position;
-        new_work_info.out_seq_position  = work_info->out_seq_position;
-        new_work_info.refresh_needed 	= false;
-        new_work_info.center_cursor 	= false;
-        new_work_info.out_string 	    = NULL;
-        new_work_info.error	 	        = NULL;
-        new_work_info.mode 		        = work_info->mode;
-        new_work_info.direction 	    = work_info->direction;
-        new_work_info.cannot_handle	    = false;
-        new_work_info.is_sequence 	    = work_info->is_sequence;
+        new_work_info.event 		   = work_info->event;
+        new_work_info.char_position    = work_info->char_position;
+        new_work_info.out_seq_position = work_info->out_seq_position;
+        new_work_info.refresh_needed   = false;
+        new_work_info.center_cursor    = false;
+        new_work_info.out_string 	   = NULL;
+        new_work_info.error	 	       = NULL;
+        new_work_info.mode 		       = work_info->mode;
+        new_work_info.direction 	   = work_info->direction;
+        new_work_info.cannot_handle	   = false;
+        new_work_info.is_sequence 	   = work_info->is_sequence;
+        new_work_info.working_terminal = object->to_terminal();
 
         if (object->get_species_pointer()) {
             new_work_info.gb_data  	= object->get_species_pointer();
@@ -184,17 +185,17 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
         ED4_ROOT->edit_string->init_edit(  );
         ED4_ROOT->edit_string->edit( &new_work_info );
 
-        if (ED4_ROOT->edit_string->old_seq)
-        {
-            temp_parent = species_manager->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
+//         if (ED4_ROOT->edit_string->old_seq)
+//         {
+//             temp_parent = species_manager->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
 
-            ((ED4_terminal *)object)->actual_timestamp = GB_read_clock(gb_main);
+//             ((ED4_terminal *)object)->actual_timestamp = GB_read_clock(gb_main);
 
-            char *seq = ED4_ROOT->edit_string->old_seq;
-            int seq_len = ED4_ROOT->edit_string->old_seq_len;
+//             char *seq = ED4_ROOT->edit_string->old_seq;
+//             int seq_len = ED4_ROOT->edit_string->old_seq_len;
 
-            temp_parent->check_bases(seq, seq_len, species_manager);
-        }
+//             temp_parent->check_bases(seq, seq_len, species_manager);
+//         }
 
         if (new_work_info.error) {
             ((char **) (error))[0] = new_work_info.error;
@@ -256,17 +257,19 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
     e4_assert(terminal->is_text_terminal());
 
+    work_info->working_terminal = terminal;
+
     if (terminal->is_sequence_terminal()) {
-        work_info->mode = awar_edit_modus;
-        work_info->direction = aww->get_root()->awar(AWAR_EDIT_DIRECTION)->read_int();
+        work_info->mode        = awar_edit_modus;
+        work_info->direction   = aww->get_root()->awar(AWAR_EDIT_DIRECTION)->read_int();
         work_info->is_sequence = 1;
     }
     else {
-        work_info->direction = 1;
+        work_info->direction   = 1;
         work_info->is_sequence = 0;
 
         if (terminal->is_pure_text_terminal()) {
-            work_info->mode = AD_INSERT;
+            work_info->mode = awar_edit_modus;  // AD_INSERT; // why is AD_INSERT forced here ?
         }
         else if (terminal->is_columnStat_terminal()) {
             work_info->mode = AD_NOWRITE;
@@ -289,9 +292,9 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         work_info->string = terminal->id;
     }
 
-    ED4_Edit_String *edit_string = new ED4_Edit_String;
+    ED4_Edit_String     *edit_string     = new ED4_Edit_String;
     ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-    char *error = NULL;
+    char                *error           = NULL;
 
     GB_push_transaction(gb_main);
 
@@ -322,16 +325,16 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     else {
         edit_string->edit( work_info );
 
-        if ((terminal->dynamic_prop & ED4_P_CONSENSUS_RELEVANT) && edit_string->old_seq) { // only check out, if user has been editing sequences
-            ED4_manager *temp_parent = terminal->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
-            ED4_species_manager	*temp_species_manager = terminal->get_parent( ED4_L_SPECIES )->to_species_manager();
+//         if ((terminal->dynamic_prop & ED4_P_CONSENSUS_RELEVANT) && edit_string->old_seq) { // only check out, if user has been editing sequences
+//             ED4_manager *temp_parent = terminal->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
+//             ED4_species_manager	*temp_species_manager = terminal->get_parent( ED4_L_SPECIES )->to_species_manager();
 
-            terminal->actual_timestamp = GB_read_clock(gb_main);
+//             terminal->actual_timestamp = GB_read_clock(gb_main);
 
-            char *seq = edit_string->old_seq;
-            int seq_len = edit_string->old_seq_len;
-            temp_parent->check_bases_and_rebuild_consensi(seq, seq_len, temp_species_manager, ED4_U_UP);
-        }
+//             char *seq = edit_string->old_seq;
+//             int seq_len = edit_string->old_seq_len;
+//             temp_parent->check_bases_and_rebuild_consensi(seq, seq_len, temp_species_manager, ED4_U_UP); // bases_check
+//         }
 
         ED4_ROOT->main_manager->Show();
 
@@ -806,10 +809,8 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
             ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
             int len;
 
-            seq_term->resolve_pointer_to_string(&len);
-            if (pos>len) {
-                pos = len;
-            }
+            seq_term->resolve_pointer_to_char_pntr(&len);
+            if (pos>len) pos = len;
 
             int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(pos);
             cursor->jump_centered_cursor(aww, scr_pos);
@@ -829,7 +830,7 @@ void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
             return;
         }
         int len;
-        char *seq = cursor->owner_of_cursor->resolve_pointer_to_string(&len);
+        char *seq = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&len);
         int seq_pos = cursor->get_sequence_pos();
 
         e4_assert(seq);
@@ -841,6 +842,8 @@ void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
             seq[seq_pos] = new_char;
             cursor->owner_of_cursor->write_sequence(seq, len);
         }
+
+        free(seq);
     }
 }
 
@@ -961,12 +964,13 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
             }
             else if (manager->parent->flag.is_SAI) {
                 char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
-                int datalen;
-                char *data = terminal->resolve_pointer_to_string(&datalen);
+                int   datalen;
+                char *data = terminal->resolve_pointer_to_string_copy(&datalen);
 
                 ED4_ROOT->reference->init(name, data, datalen);
-                //		free(data);
-                delete name;
+
+                free(data);
+                free(name);
             }
             else {
                 char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
@@ -1879,10 +1883,10 @@ typedef struct S_SpeciesMergeList *SpeciesMergeList;
 static ED4_returncode add_species_to_merge_list(void **SpeciesMergeListPtr, void **GBDATAPtr, ED4_base *base)
 {
     if (base->is_species_name_terminal()) {
-        ED4_species_name_terminal *name_term = base->to_species_name_terminal();
-        char *species_name = name_term->resolve_pointer_to_string();
-        GBDATA *gb_species_data = (GBDATA*)GBDATAPtr;
-        GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, species_name);
+        ED4_species_name_terminal *name_term       = base->to_species_name_terminal();
+        char                      *species_name    = name_term->resolve_pointer_to_string_copy();
+        GBDATA                    *gb_species_data = (GBDATA*)GBDATAPtr;
+        GBDATA                    *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
         if (gb_species) {
             SpeciesMergeList *smlp = (SpeciesMergeList*)SpeciesMergeListPtr;
@@ -1892,6 +1896,8 @@ static ED4_returncode add_species_to_merge_list(void **SpeciesMergeListPtr, void
             sml->next = *smlp;
             *smlp = sml;
         }
+
+        free(species_name);
     }
     return ED4_R_OK;
 }
@@ -1964,10 +1970,10 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
             if (creation_mode==COPY_SPECIES || (creation_mode==CREATE_FROM_CONSENSUS && dataSource==COPY_FIELDS)) {
                 if (where_we_are==ON_SPECIES) {
-                    ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
-                    char *source_name = spec_name->resolve_pointer_to_string();
-                    GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
-                    GBDATA *gb_acc = GB_search(gb_source, "acc", GB_FIND);
+                    ED4_species_name_terminal *spec_name   = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
+                    const char                *source_name = spec_name->resolve_pointer_to_char_pntr();
+                    GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
+                    GBDATA                    *gb_acc      = GB_search(gb_source, "acc", GB_FIND);
 
                     if (gb_acc) { // if has accession
                         acc = GB_read_string(gb_acc);
@@ -2258,9 +2264,9 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 else { // copy species or create from consensus (copy fields from one species)
                     e4_assert(where_we_are==ON_SPECIES);
 
-                    ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
-                    char *source_name = spec_name->resolve_pointer_to_string();
-                    GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
+                    ED4_species_name_terminal *spec_name   = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
+                    const char                *source_name = spec_name->resolve_pointer_to_char_pntr();
+                    GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
 
                     if (gb_source) {
                         gb_new_species = GB_create_container(gb_species_data, "species");
