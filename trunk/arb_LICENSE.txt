@@ -1,59 +1,98 @@
-Some selected copyright notices
+Copyrights
 
-ARB
+ARB copyright and license information
 
-    The ARB software and documentation are not in the public domain.
-    External functions used by ARB are the property of their authors. This
-    release of the ARB program and documentation may not be sold, or
-    incorporated into a commercial product, in whole or in part, without
-    the expressed written consent of the Technical University of Munich and
-    of its supervisors Oliver Strunk, Ralf Westram & Wolfgang Ludwig.
+    COPYRIGHTS
 
-    All interested parties may redistribute the ARB as
-    long as all copies are accompanied by this
-    documentation,  and all copyright notices remain
-    intact.  Parties interested in redistribution must do
-    so on a non-profit basis, charging only for cost of
-    media.
+        The ARB software and documentation are not in the public
+        domain.
 
-    External programs used by ARB are copyrighted by and are
-    the property of their respective authors unless
-    otherwise stated.
+        External programs distributed together with ARB are
+        copyrighted by and are the property of their respective
+        authors unless otherwise stated.
+
+        All other copyrights are owned by Lehrstuhl fuer
+        Mikrobiologie, TU Muenchen.
+
+    USAGE LICENSE
+
+        You have the right to use this version of ARB for free.
+        Please read as well the attached copyright notices below
+        whether you may or may not install this package.
+
+    REDISTRIBUTION LICENSE
+
+        This release of the ARB program and documentation may not be
+        sold or incorporated into a commercial product, in whole or in
+        part, without the expressed written consent of the Technical
+        University of Munich and of its supervisors Oliver Strunk,
+        Ralf Westram & Wolfgang Ludwig.
+
+        All interested parties may redistribute and modify ARB as long
+        as all copies are accompanied by this license information and
+        all copyright notices remain intact.  Parties redistributing
+        ARB must do so on a non-profit basis, charging only for cost
+        of media.
+
+        If you modify parts of ARB and redistribute these changes the
+        'Lehrstuhl fuer Mikrobiologie' gains the right to incorporate
+        these changes into ARB and to redistribute them with future
+        versions of ARB.
+
+    Disclaimer
+
+        THE TU MUENCHEN AND THE VARIOUS AUTHORS OF ARB GIVE NO
+        WARRANTIES, EXPRESSED OR IMPLIED FOR THE SOFTWARE AND
+        DOCUMENTATION PROVIDED, INCLUDING, BUT NOT LIMITED TO WARRANTY
+        OF MERCHANTABILITY AND WARRANTY OF FITNESS FOR A PARTICULAR
+        PURPOSE.  User understands the software is a research tool for
+        which no warranties as to capabilities or accuracy are made,
+        and user accepts the software "as is." User assumes the entire
+        risk as to the results and performance of the software and
+        documentation. The above parties cannot be held liable for any
+        direct, indirect, consequential or incidental damages with
+        respect to any claim by user or any third party on account of,
+        or arising from the use of software and associated
+        materials. This disclaimer covers both the ARB core
+        applications and all external programs used by ARB.
 
 
-GDE
+Copyright notices for programs distributes together with ARB
 
-    The Genetic Data Environment (GDE) software and documentation are not
-    in the public domain. Portions of this code are owned and copyrighted
-    by the The Board of Trustees of the University of Illinois and by
-    Steven Smith. External functions used by GDE are the property of their
-    authors. This release of the GDE program and documentation may not be
-    sold, or incorporated into a commercial product, in whole or in part
-    without the expressed written consent of the University of Illinois and
-    of its author, Steven Smith.
+    GDE
 
-    All interested parties may redistribute the GDE as
-    long as all copies are accompanied by this
-    documentation,  and all copyright notices remain
-    intact.  Parties interested in redistribution must do
-    so on a non-profit basis, charging only for cost of
-    media.  Modifications to the GDE core editor should
-    be forwarded to the author Steven Smith.  External
-    programs used by the GDE are copyrighted by, and are
-    the property of their respective authors unless
-    otherwise stated.
+        The Genetic Data Environment (GDE) software and documentation
+        are not in the public domain. Portions of this code are owned
+        and copyrighted by the The Board of Trustees of the University
+        of Illinois and by Steven Smith. External functions used by
+        GDE are the property of their authors. This release of the GDE
+        program and documentation may not be sold, or incorporated
+        into a commercial product, in whole or in part without the
+        expressed written consent of the University of Illinois and of
+        its author, Steven Smith.
+
+        All interested parties may redistribute the GDE as long as all
+        copies are accompanied by this documentation, and all
+        copyright notices remain intact.  Parties interested in
+        redistribution must do so on a non-profit basis, charging only
+        for cost of media.  Modifications to the GDE core editor
+        should be forwarded to the author Steven Smith.  External
+        programs used by the GDE are copyrighted by, and are the
+        property of their respective authors unless otherwise stated.
 
 
 
-PHYLIP
+    PHYLIP
 
-    (c) Copyright 1986-1993 by Joseph Felsenstein and the University of
-    Washington. Permission is granted to copy this document provided that
-    no fee is charged for it and that this copyright notice is not removed.
+        (c) Copyright 1986-1993 by Joseph Felsenstein and the
+        University of Washington. Permission is granted to copy this
+        document provided that no fee is charged for it and that this
+        copyright notice is not removed.
 
-    *************** LSADT ****************
-           LEAST SQUARES ALGORITHM FOR FITTING ADDITIVE TREES TO
-           PROXIMITY DATA
+    LSADT
+
+        LEAST SQUARES ALGORITHM FOR FITTING ADDITIVE TREES TO
+        PROXIMITY DATA
 
         GEERT DE SOETE  --  VERSION 1.01 - FEB. 1983
                             VERSION 1.02 - JUNE 1983
@@ -92,100 +131,102 @@ PHYLIP
            AUTHOR DISCLAIMS ANY RESPONSABILITY FOR POSSIBLE
            ERRORS.
 
+    BLAST
 
+        /* ===========================================================================
+        *
+        *                            PUBLIC DOMAIN NOTICE
+        *               National Center for Biotechnology Information
+        *
+        *  This software/database is a "United States Government Work" under the
+        *  terms of the United States Copyright Act.  It was written as part of
+        *  the author´s official duties as a United States Government employee and
+        *  thus cannot be copyrighted.  This software/database is freely available
+        *  to the public for use. The National Library of Medicine and the U.S.
+        *  Government have not placed any restriction on its use or reproduction.
+        *
+        *  Although all reasonable efforts have been taken to ensure the accuracy
+        *  and reliability of the software and data, the NLM and the U.S.
+        *  Government do not and cannot warrant the performance or results that
+        *  may be obtained by using this software or data. The NLM and the U.S.
+        *  Government disclaim all warranties, express or implied, including
+        *  warranties of performance, merchantability or fitness for any particular
+        *  purpose.
+        *
+        *  Please cite the author in any work or product based on this material.
+        *
+        * ===========================================================================*/
+        Warren Gish
+        NCBI/NLM
 
-BLAST
+    CONVERT_ALN
 
-    /* ===========================================================================
-    *
-    *                            PUBLIC DOMAIN NOTICE
-    *               National Center for Biotechnology Information
-    *
-    *  This software/database is a "United States Government Work" under the
-    *  terms of the United States Copyright Act.  It was written as part of
-    *  the author´s official duties as a United States Government employee and
-    *  thus cannot be copyrighted.  This software/database is freely available
-    *  to the public for use. The National Library of Medicine and the U.S.
-    *  Government have not placed any restriction on its use or reproduction.
-    *
-    *  Although all reasonable efforts have been taken to ensure the accuracy
-    *  and reliability of the software and data, the NLM and the U.S.
-    *  Government do not and cannot warrant the performance or results that
-    *  may be obtained by using this software or data. The NLM and the U.S.
-    *  Government disclaim all warranties, express or implied, including
-    *  warranties of performance, merchantability or fitness for any particular
-    *  purpose.
-    *
-    *  Please cite the author in any work or product based on this material.
-    *
-    * ===========================================================================*/
-    Warren Gish
-    NCBI/NLM
-
-
-
-CONVERT_ALN
-
-    convert_aln --  an alignment(or sequence) converter written by Wen-Min Kuan
-                    for the Ribsomal Database Project(RDP), April 28, 1992.
+        convert_aln --  an alignment(or sequence) converter written by Wen-Min Kuan
+                        for the Ribsomal Database Project(RDP), April 28, 1992.
 
 
 
-TREETOOL
+    TREETOOL
 
-    Written by Mike Maciukenas, at the RDP, with design and implementation
-    guidance by Gary Olsen, Niels Larsen, Carl Woese.
+        Written by Mike Maciukenas, at the RDP, with design and
+        implementation guidance by Gary Olsen, Niels Larsen, Carl
+        Woese.
 
-    Copyright (c) 1991, University of Illinois board of trustess. All
-    rights reserved.
+        Copyright (c) 1991, University of Illinois board of
+        trustess. All rights reserved.
 
-    Treetool is a copyrighted program, not in the public domain. It is
-    provided free of charge, and permission is granted to copy and
-    dirstribute, provided that it is not done for profit, and that all
-    copyright messages remain present and intact.
+        Treetool is a copyrighted program, not in the public
+        domain. It is provided free of charge, and permission is
+        granted to copy and dirstribute, provided that it is not done
+        for profit, and that all copyright messages remain present and
+        intact.
 
 
-fastdnaml
+    fastdnaml
 
-    fastDNAml, a program for estimation of phylogenetic trees from
-    sequences. Copyright (C) 1998, 1999, 2000 by Gary J. Olsen
+        fastDNAml, a program for estimation of phylogenetic trees from
+        sequences. Copyright (C) 1998, 1999, 2000 by Gary J. Olsen
 
-    This program is free software; you may redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+        This program is free software; you may redistribute it and/or
+        modify it under the terms of the GNU General Public License as
+        published by the Free Software Foundation; either version 2 of
+        the License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
+        This program is distributed in the hope that it will be
+        useful, but WITHOUT ANY WARRANTY; without even the implied
+        warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+        PURPOSE.  See the GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+        You should have received a copy of the GNU General Public License along
+        with this program; if not, write to the Free Software Foundation, Inc.,
+        59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-    For any other enquiries write to Gary J. Olsen, Department of Microbiology,
-    University of Illinois, Urbana, IL  61801, USA
+        For any other enquiries write to Gary J. Olsen, Department of
+        Microbiology, University of Illinois, Urbana, IL 61801, USA
 
-    Or send E-mail to gary@phylo.life.uiuc.edu
+        Or send E-mail to gary@phylo.life.uiuc.edu
 
-    fastDNAml is based in part on the program dnaml by Joseph Felsenstein.
+        fastDNAml is based in part on the program dnaml by Joseph Felsenstein.
 
-    Copyright notice from dnaml:
+        Copyright notice from dnaml:
 
-        version 3.3. (c) Copyright 1986, 1990 by the University of Washington
-        and Joseph Felsenstein.  Written by Joseph Felsenstein.  Permission is
-        granted to copy and use this program provided no fee is charged for it
-        and provided that this copyright notice is not removed.
+            version 3.3. (c) Copyright 1986, 1990 by the University of
+            Washington and Joseph Felsenstein.  Written by Joseph
+            Felsenstein.  Permission is granted to copy and use this
+            program provided no fee is charged for it and provided
+            that this copyright notice is not removed.
 
-    When publishing work that based on results from fastDNAml please cite:
+        When publishing work that based on results from fastDNAml please cite:
 
-        Felsenstein, J.  1981.  Evolutionary trees from DNA sequences:
-        A maximum likelihood approach.  J. Mol. Evol. 17: 368-376.
+            Felsenstein, J.  1981.  Evolutionary trees from DNA
+            sequences: A maximum likelihood approach.
+            J. Mol. Evol. 17: 368-376.
 
-    and
+            and
 
-        Olsen, G. J., Matsuda, H., Hagstrom, R., and Overbeek, R.  1994.
-        fastDNAml:  A tool for construction of phylogenetic trees of DNA
-        sequences using maximum likelihood.  Comput. Appl. Biosci. 10: 41-48.
+            Olsen, G. J., Matsuda, H., Hagstrom, R., and Overbeek, R.
+            1994.  fastDNAml: A tool for construction of phylogenetic
+            trees of DNA sequences using maximum likelihood.
+            Comput. Appl. Biosci. 10: 41-48.
+
 
