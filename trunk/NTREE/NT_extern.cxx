@@ -1004,6 +1004,20 @@ void NT_test_AWT(AW_window *aww) {
 }
 #endif // DEVEL_RALF
 
+
+void NT_dump_gcs(AW_window *aww, AW_CL, AW_CL) {
+    for (int gc = int(AWT_GC_CURSOR); gc <= AWT_GC_MAX;  ++gc) {
+        int   r, g, b;
+        const char *err = aww->GC_to_RGB(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
+        if (err) {
+            printf("Error retrieving RGB values for GC #%i: %s\n", gc, err);
+        }
+        else {
+            printf("GC #%i RGB values: r=%i g=%i b=%i\n", gc, r, g, b);
+        }
+    }
+}
+
 #endif // DEBUG
 
 //--------------------------------------------------------------------------------------------------
@@ -1090,6 +1104,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
 #if defined(DEBUG)
             AWMIMT("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+            AWMIMT("debug", "Dump GCs", "", "", AWM_ALL, NT_dump_gcs, 0, 0);
             SEP________________________SEP();
 #endif // DEBUG
             AWMIMT("save_changes",  "Quicksave changes",            "s","save.hlp", AWM_ALL, (AW_CB)NT_save_quick_cb, 0,    0);
