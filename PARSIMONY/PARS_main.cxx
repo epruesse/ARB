@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 // #include <malloc.h>
-#include <iostream.h>
+#include <iostream>
 #include <limits.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -29,6 +29,8 @@
 #include "pars_dtree.hxx"
 
 #include <list>
+
+using namespace std;
 
 AW_HEADER_MAIN
 GBDATA *gb_main;
@@ -1853,13 +1855,13 @@ int main(int argc, char **argv)
 
     aw_initstatus();
 
-    aw_root = new AW_root;    
+    aw_root = new AW_root;
     aw_default = aw_root->open_default(".arb_prop/pars.arb");
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_PARS");
 
     AD_map_viewer_aw_root = aw_root;
-    
+
     ap_main = new AP_main;
 
     nt = (NT_global *)calloc(sizeof(NT_global),1);
