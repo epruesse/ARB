@@ -83,7 +83,9 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             break;
     }
 
-    ntw->awr->awar("tmp/LeftFooter")->write_string( text);
+    awt_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
+
+    ntw->awr->awar(AWAR_FOOTER)->write_string( text);
     ntw->set_mode(mode);
 }
 
