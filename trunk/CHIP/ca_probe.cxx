@@ -24,7 +24,7 @@
 using namespace std;
 
 static void my_print(const char *, ...) {
-    chip_assert(0); // PG_init_pt_server should install another handler
+    chip_assert(0); // CHIP_init_pt_server should install another handler
 }
 // ================================================================================
 // KAI  -  added 30.04.2003
@@ -50,8 +50,8 @@ static GB_ERROR connection_lost      = "connection to pt-server lost";
 static GB_ERROR cant_contact_unknown = "can't contact pt-server (unknown reason)";
 static GB_ERROR cant_contact_refused = "can't contact pt-server (connection refused)";
 
-static GB_ERROR PG_init_pt_server_not_called 	 = "programmers error: pt-server not contacted (PG_init_pt_server not called)";
-static GB_ERROR PG_init_find_probes_called_twice = "programmers error: PG_init_find_probes called twice";
+static GB_ERROR CHIP_init_pt_server_not_called 	 = "programmers error: pt-server not contacted (CHIP_init_pt_server not called)";
+// static GB_ERROR CHIP_init_find_probes_called_twice = "programmers error: CHIP_init_find_probes called twice";
 
 // Hier werden die eingelesenen Daten des input-probefiles gehalten
 vector<probe_data> probeData;
@@ -172,9 +172,9 @@ int main(int argc,char **argv)
      else
        numMismatches = 0;
      }
-   
-   
-   
+
+
+
   if (args_help && !args_err)
     {
       printf("Usage: %s  input_probefile result_probefile pt-servername [numberOfMismatches] [Option]\n\n", argv[0]);
@@ -211,7 +211,7 @@ int main(int argc,char **argv)
 
 
  // Versuche, den pt-server zu initialisieren
-      error =  PG_init_pt_server(gb_main, arg_ptserver);
+      error =  CHIP_init_pt_server(gb_main, arg_ptserver);
          if (error)
 	   {
 	     printf("%s\n", error);
@@ -222,7 +222,7 @@ int main(int argc,char **argv)
 
 	GB_begin_transaction(gb_main);
 
-	struct PG_probe_match_para my_para;
+	struct CHIP_probe_match_para my_para;
 	my_para.split = 0.5;
 	my_para.dtedge = 0.5;
 	my_para.dt = 0.5;
@@ -244,11 +244,11 @@ int main(int argc,char **argv)
 		  return -1;
 	  }
 
-	// Gehe probeData durch, und rufe fuer jeden Eintrag PG_probe_match auf
+	// Gehe probeData durch, und rufe fuer jeden Eintrag CHIP_probe_match auf
 	for (uint j=0; j<probeData.size(); j++)
 	{
 	  //printf("j=%d and probename=%s\n", j, probeData[j].name);
-	  error =  PG_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches);
+	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches);
 	}
 
 	// Testdaten !!
@@ -257,7 +257,7 @@ int main(int argc,char **argv)
 	strcpy(my_pd.name, "WtzKmRs");
 	strcpy(my_pd.longname, "Staffilokokkus Minimus");
 	strcpy(my_pd.sequence, "acggcgca");
-	error =  PG_probe_match(my_pd , my_para, arg_result_file);
+	error =  CHIP_probe_match(my_pd , my_para, arg_result_file);
 	*/
 	// Ende Testdaten
 
@@ -291,7 +291,7 @@ GB_ERROR read_input_file(char *fn)
     char tmpsequence[255];
     ifstream iS;
     bool gotProbe = false;
-  
+
     iS.open(fn);
     if(iS)
     {
@@ -451,7 +451,7 @@ GB_ERROR read_input_file(char *fn)
 	} // end sequence
 
 	else if(!line[0])
-	  {	    
+	  {
 	    if(gotProbe)
 	    {
 	      probe_data pD;
@@ -481,8 +481,8 @@ GB_ERROR read_input_file(char *fn)
     }
     else
       error = ("Could not open input-file.\n");
- 
-   
+
+
     return error;
 }
 
@@ -572,7 +572,7 @@ public:
         memset(&my_pd_gl, 0, sizeof(my_pd_gl));
 
 	if (!server_initialized) {
-	    error = PG_init_pt_server_not_called;
+	    error = CHIP_init_pt_server_not_called;
 	}
 	else {
 	    my_pd_gl.link = (aisc_com *)aisc_open(current_server_name, &my_pd_gl.com,AISC_MAGIC_NUMBER);
@@ -601,23 +601,23 @@ public:
 // ================================================================================
 
 //  -----------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...))
+//      GB_ERROR CHIP_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...))
 //  -----------------------------------------------------------------------------------------------------------------------------
-GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
+GB_ERROR CHIP_init_pt_server(GBDATA *gb_main, const char *servername) {
     if (server_initialized) return "pt-server is already initialized";
 
     GB_ERROR 	error = 0;
 
    current_server_name = (char *)probe_pt_look_for_server(gb_main, servername, error);
-    // pg_assert(error || current_server_name);
+    // chip_assert(error || current_server_name);
     server_initialized 	= true;;
     return error;
 }
 
 //  -------------------------------------
-//      void PG_exit_pt_server(void)
+//      void CHIP_exit_pt_server(void)
 //  -------------------------------------
-void PG_exit_pt_server(void) {
+void CHIP_exit_pt_server(void) {
     free(current_server_name);
     current_server_name = 0;
     server_initialized 	= false;
@@ -628,9 +628,9 @@ void PG_exit_pt_server(void) {
 // ================================================================================
 
 //  ----------------------------------------------------------------------------------------------------------------
-//      static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para)
+//      static bool chip_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const CHIP_probe_match_para& para)
 //  ----------------------------------------------------------------------------------------------------------------
-static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para) {
+static bool chip_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const CHIP_probe_match_para& para) {
     int 	i;
     char 	buffer[256];
 
@@ -653,19 +653,19 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_
 
 
 //  -----------------------------------------------------------------------------------------------------
-//      GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn, int numMismatches)
+//      GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches)
 //  -----------------------------------------------------------------------------------------------------
 //  calls probe-match for the sequence contained in pD  and appends all matching species to the result-probefile fn
 
-GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn, int numMismatches ) {
+GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches ) {
 
-  //  printf("PG_probe_match\n");
+  //  printf("CHIP_probe_match\n");
 
   static PT_server_connection *my_server = 0;
     GB_ERROR 			 error 	   = 0;
 
     if (!my_server) {
-      // GB_ERROR tmp_error =  PG_init_pt_server(gb_main, "localhost: SSU_rRNA.arb");
+      // GB_ERROR tmp_error =  CHIP_init_pt_server(gb_main, "localhost: SSU_rRNA.arb");
         my_server = new PT_server_connection();
 	//printf("new PT-connection\n");
         error 	  = my_server->get_error();
@@ -673,7 +673,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	  printf("Error: %s\n", error);
 
         if (!error &&
-            !pg_init_probe_match(my_server->get_pdc(), my_server->get_pd_gl(), para)) {
+            !chip_init_probe_match(my_server->get_pdc(), my_server->get_pd_gl(), para)) {
             error = connection_lost;
 	    printf("connection lost\n");
         }
@@ -702,7 +702,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
                   LOCS_MATCH_REVERSED,		1,
                   LOCS_MATCH_SORT_BY,		0,
                   LOCS_MATCH_COMPLEMENT, 	0,
-                  LOCS_MATCH_MAX_MISMATCHES,	numMismatches, 
+                  LOCS_MATCH_MAX_MISMATCHES,	numMismatches,
                   LOCS_MATCH_MAX_SPECIES, 	MAX_SPECIES,
                   LOCS_SEARCHMATCH,		pD.sequence,
                   0))
@@ -741,7 +741,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	   pFile = fopen(fn, "a");
 	 if (pFile!=NULL)
 
-	  { 
+	  {
 	    char tmp[256];
 
 	    fputs("\nprobe\n", pFile);
@@ -782,7 +782,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 		    correctIllegalChars(match_name);
 		    strcat(probe_match, match_name);
 
-		    strcat(probe_match, ", ");  
+		    strcat(probe_match, ", ");
 		    correctIllegalChars(match_longname);
 
 		    strcat(probe_match, match_longname);
@@ -817,8 +817,7 @@ char *parse_match_info(const char *match_info)
       i++;
       j++;
     }
-  char return_str[strlen(buf)];
-  strcpy(return_str, buf);
-  return return_str;
+
+  return GB_strdup(buf);
 }
 
