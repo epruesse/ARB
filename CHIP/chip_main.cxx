@@ -196,7 +196,8 @@ int readprobe(char *fn) {
 	  // rechte spaces entfernen
 	  do {
 	    buf_count--;
-	  } while((buf[buf_count]==' ' || buf[buf_count]== '\t') && buf_count);
+	  } while((buf[buf_count]==' ' || buf[buf_count]== '\t'
+		   || buf[buf_count]== '\n' || buf[buf_count]== '\r') && buf_count);
 	  buf[buf_count+1]= 0;
 
 	  i++; // muss hier stehen um ':' zu ueberspringen
@@ -427,16 +428,16 @@ int main(int argc, char **argv) {
   if((gen_ret == ret_unref) && !ignore_unref) {
     // Konnte Verknuepfungen nicht erstellen ...
     cout << argv[0] << ": unreferenced probes. Please check your probedata.";
-    cout << "\nUse \'-h\' or \'--help\' for further information.\n";
+    cout << "\nUse \'-h\' for further information or \'-i\' to ignore.\n";
     return ret_err;
   }
 
   formula();
 
   for(unsigned int u= 0; u < resultData.size(); u++) {
-    cout << resultData[u].sMO << endl;
-    for(int q= 0; q < (resultData[u].grey / 4); q++) cout << "#";
-    cout << " " << resultData[u].pval << endl << endl;
+    cout << resultData[u].lMO << " (" << resultData[u].sMO << ")" <<endl << "|";
+    for(int q= 0; q < (resultData[u].grey / 4); q++) cout << "=";
+    cout << "| " << resultData[u].pval << endl << endl;
   }
 
   // ###DEBUG
