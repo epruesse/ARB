@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Fri Oct/01/2004 19:50 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Wed Nov/10/2004 17:22 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -17,7 +17,9 @@
 
 #ifndef ARBDB_H
 #include "arbdb.h"
-#endif 
+#endif
+
+#define GENOM_ALIGNMENT "ali_genom"
 
 #ifdef __cplusplus
 extern "C" {
