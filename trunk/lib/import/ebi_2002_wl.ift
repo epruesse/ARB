@@ -1,20 +1,20 @@
-AUTODETECT	"<pre>ID   *\nSQ*"
+AUTODETECT	"ID   *\nSQ*"
 	#Global settings:
 #KEYWIDTH	0
 FILETAG		"EBI"
 
-BEGIN	"<pre>ID*"
+BEGIN	"ID*"
 
-MATCH	"<pre>ID *"
+MATCH	"ID *"
 	SRT "ID   * *=*1"
 	WRITE "name"
 
-MATCH	"<pre>ID *"
+MATCH	"ID *"
 	SRT "ID   * *=*1"
 	TAG	"EBI"
 	WRITE "id"
 
-MATCH	"<pre>ID *"
+MATCH	"ID *"
 	SRT "*;*;*; * BP.=*4"
 	TAG	"EBI"
 	WRITE "db_nuc"
