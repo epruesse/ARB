@@ -110,8 +110,8 @@ void GEN_gene_container_cb_installer(bool install, AWT_canvas *ntw) {
 void GEN_jump_cb(AW_window */*dummy*/, AWT_canvas *ntw) {
     // @@@ Center on selected gene
     // analog NT_jump_cb
-//     GEN_GRAPHIC->change_flag = 1;
-//     ntw->refresh();
+    GEN_GRAPHIC->change_flag = 1;
+    ntw->refresh();
 }
 
 //  --------------------------------------------------------------
@@ -904,7 +904,7 @@ static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     gen_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_maskname());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 //  -----------------------------------------------------------------------
