@@ -690,6 +690,14 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
     }
 }
 
+void NT_fix_database(AW_window *) {
+    GB_ERROR err = 0;
+
+    GB_install_error_handler(aw_message);
+    err = GB_fix_database(gb_main);
+    if (err) aw_message(err);
+}
+
 static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name) {
     if (ref_gb_node) {
         if (GEN_is_pseudo_gene_species(ref_gb_node)) {
@@ -980,36 +988,29 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
             AWMIMT( "merge_species",    "Merge Similar Species",    "eb", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
             awm->insert_separator();
-            AWMIMT( "new_names",    "Generate New Names",   "G", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
-
-            awm->insert_separator();
 
             AWMIMT( "species_submission", "Submit Species", "",  "submission.hlp",   AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0 );
 
+            awm->insert_separator();
+
+            AWMIMT( "new_names",    "Generate New Names",   "G", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
+
 #ifdef DEBUG
 
-// 	    AWMIMT("validNames",	"Import Valid Names",		"v","import_valid_names.hlp",	AWM_EXP, NT_importValidNames,	0, 0 );
-//             awm->insert_separator();
-// 	    AWMIMT("validNames",	"Valid names only",		"v","valid_names.hlp",	AWM_EXP, NT_insertValidNames,	0, 0 );            
-//             awm->insert_separator();
-// 	    AWMIMT("validNames",	"Delete Valid Names",		"v","delet_valid_names.hlp",	AWM_EXP, NT_deleteValidNames,	0, 0 );
-            awm->insert_sub_menu(0, "Valid Names ... (lothar working)",		"");
+            // AWMIMT("validNames",    "Import Valid Names",       "v","import_valid_names.hlp",   AWM_EXP, NT_importValidNames,   0, 0 );
+            // awm->insert_separator();
+            // AWMIMT("validNames",    "Valid names only",     "v","valid_names.hlp",  AWM_EXP, NT_insertValidNames,   0, 0 );
+            // awm->insert_separator();
+            // AWMIMT("validNames",    "Delete Valid Names",       "v","delet_valid_names.hlp",    AWM_EXP, NT_deleteValidNames,   0, 0 );
+
+            awm->insert_sub_menu(0, "Valid Names ... (lothar working)",     "");
             {
-                AWMIMT("imp_names",	"Import Names from File",	"","imp_val_nam.hlp",	AWM_EXP,NT_importValidNames,		0, 0 );
-                AWMIMT("del_names",	"Delete Names from DB",	"","delete_names.hlp",	AWM_EXP,NT_deleteValidNames , 0,	0 );
-		AWMIMT("sug_names",	"Suggest Valid Names",	"","suggest_names.hlp",	AWM_EXP,NT_suggestValidNames , 0,	0 );
+                AWMIMT("imp_names", "Import Names from File",   "","imp_val_nam.hlp",   AWM_EXP,NT_importValidNames,        0, 0 );
+                AWMIMT("del_names", "Delete Names from DB", "","delete_names.hlp",  AWM_EXP,NT_deleteValidNames , 0,    0 );
+                AWMIMT("sug_names", "Suggest Valid Names",  "","suggest_names.hlp", AWM_EXP,NT_suggestValidNames , 0,   0 );
            }
             awm->close_sub_menu();
-            awm->insert_separator();
 #endif
-
-
-            awm->insert_sub_menu(0, "Etc",				"E");
-            {
-                AWMIMT( "new_names",	"Generate New Names ...",	"G", "sp_rename.hlp",	AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window, 		(AW_CL)gb_main );
-            }
-            awm->close_sub_menu();
-
         }
         //  --------------------------
         //      Genes + Experiment
@@ -1203,24 +1204,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Tools ","o","nt_etc.hlp", AWM_ALL);
         {
-            AWMIMT("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
-            AWMIMT("props_tree",	"Tree: Colors and Fonts ...",	"C","nt_props_data.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-            AWMIMT("props_tree2",	"Tree Settings ...",		"T","nt_tree_settings.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
-            AWMIMT("props_www",	"WWW  ...",			"W","props_www.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
-            awm->insert_separator();
-            AWMIMT("enable_advices", "Reactivate advices",	"","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
-            awm->insert_separator();
-            AWMIMT("save_props",	"Save Properties (in ~/.arb_prop/ntree.arb)",	"S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
-        }
-
-        // --------------------------------------------------------------------------------
-        //     Etc
-        // --------------------------------------------------------------------------------
-        awm->create_menu(0,"Etc","E","nt_etc.hlp", AWM_ALL);
-        {
-#if defined(DEBUG)
-            AWMIMT("table_aming",       "More Data Admin (not finished)",       "M","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
-#endif // DEBUG
+            AWMIMT("fix_db",            "Fix database",          "", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
             AWMIMT("names_admin",       "Name Server Admin ",    "S","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)create_awtc_names_admin_window, 0 );
             awm->insert_sub_menu( 0,   "Network", "N");
             {
@@ -1253,6 +1237,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("debug_arbdb",   "Print Debug Information ",      "D",0   ,       AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)gb_main, 0 );
                 AWMIMT("test_compr",    "Test Compression ",       "C",0   ,       AWM_ALL, (AW_CB)GBT_compression_test, (AW_CL)gb_main, 0 );
             }
+#if defined(DEBUG)
+            awm->insert_separator();
+            AWMIMT("table_admin",       "Table Admin (not finished)",       "M","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
+#endif // DEBUG
         }
 
         // --------------------------------------------------------------------------------
