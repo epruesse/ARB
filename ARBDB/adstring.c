@@ -1490,9 +1490,9 @@ GBS_find_lib_file(const char *filename,const char *libprefix)
                     some simple find procedures
 ********************************************************************************************/
 
-char **GBS_read_dir(const char *dir,const  char *filter)
+char **GBS_read_dir(const char *dir, const char *filter)
      /* read the content of the directory,
-        if dir == NULL then set dir to $ARBHOME/lib
+        if dir        == NULL then set dir to $ARBHOME/lib
     */
 {
     char    dirbuffer[1024];
@@ -1519,12 +1519,21 @@ char **GBS_read_dir(const char *dir,const  char *filter)
                sin[0] = 0,
                fscanf(ls,"%s\n",sin),
                sin[0]
-               ){
-            if (resultptr>=resultsize-1){
-                resultsize*=2;
-                result = (char **)realloc((MALLOC_T)result,(size_t)(sizeof(char *)*resultsize));
+               )
+        {
+            int len = strlen(sin);
+            if (len>0) {
+                if (sin[len-1] == ':') { // stop at first subdirectory
+                    break;
+                }
+                else {
+                    if (resultptr>=resultsize-1){
+                        resultsize*=2;
+                        result = (char **)realloc((MALLOC_T)result,(size_t)(sizeof(char *)*resultsize));
+                    }
+                    result[resultptr++] = GB_STRDUP(sin);
+                }
             }
-            result[resultptr++] = GB_STRDUP(sin);
         }
         result[resultptr] = 0;
         fclose(ls);
