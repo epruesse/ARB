@@ -1,17 +1,6 @@
 #ifndef awt_hxx_included
 #define awt_hxx_included
 
-const char * AWT_date_string(void);
-
-char *AWT_fold_path(char *path, const char *pwd = "PWD");
-char *AWT_unfold_path(const char *path, const char *pwd = "PWD");
-const char *AWT_valid_path(const char *path);
-
-int   AWT_is_dir(const char *path);
-int   AWT_is_file(const char *path);
-int   AWT_is_link(const char *path);
-char *AWT_extract_directory(const char *path);
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -23,6 +12,28 @@ char *AWT_extract_directory(const char *path);
 #ifndef arbdb_h_included
 #include <arbdb.h>
 #endif
+
+const char * AWT_date_string(void);
+
+// ------------------------------------------------------------
+// filename related functions:
+
+char       *AWT_fold_path(char *path, const char *pwd = "PWD");
+char       *AWT_unfold_path(const char *path, const char *pwd = "PWD");
+const char *AWT_valid_path(const char *path);
+
+int   AWT_is_dir(const char *path);
+int   AWT_is_file(const char *path);
+int   AWT_is_link(const char *path);
+char *AWT_extract_directory(const char *path);
+
+GB_CSTR AWT_concat_full_path(const char *anypath_left, const char *anypath_right);
+GB_CSTR AWT_path_in_ARBHOME(const char *relative_path);
+
+GB_CSTR AWT_get_suffix(const char *fullpath);
+GB_CSTR AWT_append_suffix(const char *name, const char *suffix);
+
+// ------------------------------------------------------------
 
 // holds all stuff needed to make ad_.. functions work with species _and_ genes (and more..)
 
@@ -72,16 +83,18 @@ extern ad_item_selector AWT_organism_selector;
  *********************       File Selection Boxes    *******************
  ***************************************************************************/
 
-void  awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", AW_BOOL show_dir = AW_TRUE );
+void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", AW_BOOL show_dir = AW_TRUE, AW_BOOL allow_wildcards = AW_FALSE);
 /* Create a file selection box, this box needs 3 AWARS:
 
 1. "$awar_prefix/filter"
 2. "$awar_prefix/directory"
 3. "$awar_prefix/file_name"
 
-the "$awar_prefix/file_name" contains the full filename
-Use awt_get_selected_fullname() to read it.
+(Note: The function aw_create_selection_box_awars can be used to create them)
+*/
 
+/* the "$awar_prefix/file_name" contains the full filename
+   Use awt_get_selected_fullname() to read it.
 
 The items are placed at
 
@@ -95,9 +108,11 @@ else only files
 pwd is a 'shell enviroment variable' which indicates the base directory
 ( mainly PWD or ARBHOME ) */
 
-    char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
+char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
 
 void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix);
+
+// -------------------------------
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
 AW_window *create_load_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
@@ -405,7 +420,7 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 
 // AW_window *AWT_create_window_input_mask_new(AW_root *awr); // create new user mask (interactively)
 
 
-// database browser : 
+// database browser :
 void       AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def);
 void       AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
 AW_window *AWT_create_db_browser(AW_root *aw_root);
