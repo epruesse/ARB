@@ -161,6 +161,8 @@ public:
 
     virtual long getTrueIndicesFor(  const long _index, PS_BitSet::IndexSet &_index_set );
     virtual long getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set );
+            long getTrueIndicesForRow(  const long _row, PS_BitSet::IndexSet &_index_set );
+            long getFalseIndicesForRow( const long _row, PS_BitSet::IndexSet &_index_set );
     virtual long getCountOfTrues();
 
     virtual bool get( const long _row, const long _col );
@@ -571,6 +573,26 @@ long PS_BitMap_Counted::getFalseIndicesFor( const long _index, PS_BitSet::IndexS
 
 
 // ************************************************************
+// * PS_BitMap_Counted::getTrueIndicesForRow( _row, _index_set )
+// ************************************************************
+long PS_BitMap_Counted::getTrueIndicesForRow( const long _row, PS_BitSet::IndexSet &_index_set ) {
+    // get trues in the row
+    data[ _row ]->getTrueIndices( _index_set, _row );
+    return _index_set.size();
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::getFalseIndicesForRow( _row, _index_set )
+// ************************************************************
+long PS_BitMap_Counted::getFalseIndicesForRow( const long _row, PS_BitSet::IndexSet &_index_set ) {
+    // get falses in the row
+    data[ _row ]->getFalseIndices( _index_set, _row );
+    return _index_set.size();
+}
+
+
+// ************************************************************
 // * PS_BitMap_Counted::getCountOfTrues()
 // ************************************************************
 long PS_BitMap_Counted::getCountOfTrues() {
@@ -587,7 +609,7 @@ long PS_BitMap_Counted::getCountOfTrues() {
 // * PS_BitMap_Counted::set( _row,_col,_value )
 // ************************************************************
 bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value ) {
-    if (_col >= _row) printf( "PS_BitMap_Counted::set( %li,%li,%1i ) not allowed\n", _row, _col, _value );
+    if (_col > _row) printf( "PS_BitMap_Counted::set( %li,%li,%1i ) not allowed\n", _row, _col, _value );
     if (_row > max_row) max_row = _row;
     bool previous_value = data[_row]->set( _col, _value );
     if (_value && !previous_value) {
@@ -605,7 +627,7 @@ bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value
 // * PS_BitMap_Counted::get( _row,_col )
 // ************************************************************
 inline bool PS_BitMap_Counted::get( const long _row, const long _col ) {
-    if (_col >= _row) printf( "PS_BitMap_Counted::get( %li,%li ) not allowed\n", _row, _col );
+    if (_col > _row) printf( "PS_BitMap_Counted::get( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     return data[_row]->get( _col );
 }
@@ -615,7 +637,7 @@ inline bool PS_BitMap_Counted::get( const long _row, const long _col ) {
 // * PS_BitMap_Counted::setTrue( _row, _col )
 // ************************************************************
 inline void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
-    if (_col >= _row) printf( "PS_BitMap_Counted::setTrue( %li,%li ) not allowed\n", _row, _col );
+    if (_col > _row) printf( "PS_BitMap_Counted::setTrue( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     data[_row]->setTrue( _col );
 }
@@ -625,7 +647,7 @@ inline void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
 // * PS_BitMap_Counted::setFalse( _row, _col )
 // ************************************************************
 inline void PS_BitMap_Counted::setFalse( const long _row, const long _col ) {
-    if (_col >= _row) printf( "PS_BitMap_Counted::setFalse( %li,%li ) not allowed\n", _row, _col );
+    if (_col > _row) printf( "PS_BitMap_Counted::setFalse( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     data[_row]->setFalse( _col );
 }
@@ -800,11 +822,11 @@ void PS_BitMap_Counted::recalcCounters() {
     memset( count_true_per_index, 0, capacity * sizeof(long) );
     for (long row = 0; row <= max_row; ++row) {
         PS_BitSet *row_data = data[row];
-        if (row_data->getMaxUsedIndex() >= row) printf( "row %4li 0..%li ??\n", row, row_data->getMaxUsedIndex() );
+        if (row_data->getMaxUsedIndex() > row) printf( "row %4li 0..%li ??\n", row, row_data->getMaxUsedIndex() );
         for (long col = 0; col <= row_data->getMaxUsedIndex(); ++col) {
             if (row_data->get(col)) {
                 ++count_true_per_index[ col ];
-                ++count_true_per_index[ row ];
+                if (row != col) ++count_true_per_index[ row ]; // dont count diagonal trues twice
             }
         }
     }
