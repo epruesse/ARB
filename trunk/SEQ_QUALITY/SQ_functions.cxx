@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Mar/30/2004 17:11 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 17:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -31,16 +31,7 @@
 #include "SQ_physical_layout.h"
 #include "SQ_functions.h"
 
-#ifndef __MAP__
-#include <map>
-#endif
-
-#ifndef SMARTPTR_H
-#include <smartptr.h>
-#endif
-
-typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
-typedef map<string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
+using namespace std;
 
 static SQ_GroupDataDictionary group_dict;
 static int globalcounter  = -1;
@@ -65,7 +56,7 @@ static GB_ERROR no_data_error(GBDATA *gb_species, const char *ali_name) {
 }
 
 
-int round(double value) {
+static int sq_round(double value) {
     int x;
 
     value += 0.5;
@@ -348,7 +339,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights) {
 		value += result;
 
 		/*write the final value of the evaluation*/
-		value2 = round(value);
+		value2 = sq_round(value);
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value2);
@@ -621,7 +612,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *nod
 		    if (avg_bases !=0) {
 			diff = bases - avg_bases;
 			diff = (100*diff) / avg_bases;
-			diff_percent = round(diff);
+			diff_percent = sq_round(diff);
 		    }
 
 		    GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
@@ -639,7 +630,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *nod
 		    if (avg_gc !=0) {
 			diff = gcp - avg_gc;
 			diff = (100*diff) / avg_gc;
-			diff_percent = round(diff);
+			diff_percent = sq_round(diff);
 		    }
 
 		    GBDATA *gb_result7 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
@@ -726,7 +717,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *nod
 		    //--------also cut this------
 		    if (eval != 0) {
 			eval = eval / whilecounter;
-			evaluation = round(eval);
+			evaluation = sq_round(eval);
 		    }
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
 		    seq_assert(gb_result5);
@@ -822,7 +813,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 		    if (avg_bases !=0) {
 			diff = bases - avg_bases;
 			diff = (100*diff) / avg_bases;
-			diff_percent = round(diff);
+			diff_percent = sq_round(diff);
 		    }
 
 		    GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
@@ -840,7 +831,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 		    if (avg_gc !=0) {
 			diff = gcp - avg_gc;
 			diff = (100*diff) / avg_gc;
-			diff_percent = round(diff);
+			diff_percent = sq_round(diff);
 		    }
 
 		    GBDATA *gb_result7 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
@@ -916,7 +907,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 
 		    //--------also cut this------
 		    if (eval != 0) {
-			evaluation = round(eval);
+			evaluation = sq_round(eval);
 		    }
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
 		    seq_assert(gb_result5);
