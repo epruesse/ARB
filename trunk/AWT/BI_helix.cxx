@@ -23,9 +23,9 @@ char BI_helix::error[256];
 
 struct helix_stack {
     struct helix_stack *next;
-    long	pos;
+    long    pos;
     BI_PAIR_TYPE type;
-    char	c;
+    char    c;
 };
 
 struct {
@@ -132,8 +132,8 @@ BI_helix::~BI_helix(void){
         GB_warning("Internal Programm Error: You cannot delete BI_helix !!");
     }
     int i;
-    for (i=0;i<HELIX_MAX; i++)	free(pairs[i]);
-    for (i=0;i<HELIX_MAX; i++) 	free(char_bind[i]);
+    for (i=0;i<HELIX_MAX; i++)  free(pairs[i]);
+    for (i=0;i<HELIX_MAX; i++)  free(char_bind[i]);
 
     free(entries);
 }
@@ -163,9 +163,9 @@ extern "C" long BI_helix_free_hash(const char *key, long val)
 }
 
 const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
-    /* helix_nr	string of helix identifiers
-   helix	helix
-   size		alignment len
+    /* helix_nr string of helix identifiers
+   helix    helix
+   size     alignment len
 */
 {
     GB_HASH *hash = GBS_create_hash(256,1);
@@ -219,7 +219,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             }
         }
         c = helix[pos];
-        if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){	// push
+        if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){ // push
             laststack = (struct helix_stack *)GBS_read_hash(hash,ident);
             stack = new helix_stack;
             stack->next = laststack;
@@ -227,7 +227,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             stack->c = c;
             GBS_write_hash(hash,ident,(long)stack);
         }
-        else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){	// pop
+        else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){   // pop
             stack = (struct helix_stack *)GBS_read_hash(hash,ident);
             if (!stack) {
                 sprintf(error,"Too many '%c' in Helix '%s' pos %i",c,ident,pos);
@@ -326,7 +326,7 @@ const char *BI_helix::init(GBDATA *gb_main)
     char *helix = GBT_get_default_helix(gb_main);
     char *helix_nr = GBT_get_default_helix_nr(gb_main);
     char *use = GBT_get_default_alignment(gb_main);
-    err = 	init(gb_main,use,helix_nr,helix);
+    err =   init(gb_main,use,helix_nr,helix);
     GB_pop_transaction(gb_main);
     free(helix);
     free(helix_nr);
@@ -353,18 +353,18 @@ int BI_helix::_check_pair(char left, char right, BI_PAIR_TYPE pair_type)
 }
 
 int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type)
-    // returns 2 helix 1 weak helix 0 no helix	-1 nothing
+    // returns 2 helix 1 weak helix 0 no helix  -1 nothing
 {
     left = toupper(left);
     right = toupper(right);
     switch(pair_type) {
         case HELIX_PAIR:
-            if (	_check_pair(left,right,HELIX_STRONG_PAIR) ||
+            if (    _check_pair(left,right,HELIX_STRONG_PAIR) ||
                     _check_pair(left,right,HELIX_PAIR) ) return 2;
-            if (	_check_pair(left,right,HELIX_WEAK_PAIR) ) return 1;
+            if (    _check_pair(left,right,HELIX_WEAK_PAIR) ) return 1;
             return 0;
         case HELIX_NO_PAIR:
-            if (	_check_pair(left,right,HELIX_STRONG_PAIR) ||
+            if (    _check_pair(left,right,HELIX_STRONG_PAIR) ||
                     _check_pair(left,right,HELIX_PAIR) ) return 0;
             return 1;
         default:
@@ -372,6 +372,7 @@ int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type)
     }
 }
 
+#ifdef _USE_AW_WINDOW
 
 char BI_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type){
     left = toupper(left);
@@ -411,8 +412,6 @@ char *BI_helix::seq_2_helix(char *sequence,char undefsymbol){
     }
     return helix;
 }
-
-#ifdef _USE_AW_WINDOW
 
 int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
                             AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
@@ -496,7 +495,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
 #endif
 
 /***************************************************************************************
-*******			Reference to abs pos					********
+*******         Reference to abs pos                    ********
 ****************************************************************************************/
 void BI_ecoli_ref::exit(void){
     delete [] _abs_2_rel1;
@@ -574,7 +573,7 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main)
     GB_transaction dummy(gb_main);
     char *ref = GBT_get_default_ref(gb_main);
     char *use = GBT_get_default_alignment(gb_main);
-    err = 	init(gb_main,use,ref);
+    err =   init(gb_main,use,ref);
     free(ref);
     free(use);
 
