@@ -7,7 +7,7 @@
 	class AW_common { void *dummy;};
 #endif
 
-#ifdef DEBUG
+#if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
 #define AUTO_FLUSH(device) (device)->flush()
 //#define AUTO_FLUSH(device)
