@@ -150,6 +150,7 @@ ln -s ../SECEDIT/sec_graphic.hxx INCLUDE/sec_graphic.hxx
 ln -s ../SECEDIT/secedit.hxx INCLUDE/secedit.hxx
 ln -s ../SEER/seer.hxx INCLUDE/seer.hxx
 ln -s ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h
+ln -s ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h
 ln -s ../STAT/st_window.hxx INCLUDE/st_window.hxx
 ln -s ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx
 ln -s ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx
