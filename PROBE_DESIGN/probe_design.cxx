@@ -1489,7 +1489,7 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
     char     *file;
     GB_ERROR  error;
 #ifdef DEVEL_IDP
-
+    char *tempfile;
     char command[1024];
 #endif
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
@@ -1511,7 +1511,7 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
 #ifdef DEVEL_IDP
         printf ("\n\nGENSERVER: %i\n\n",server_type);
         if (server_type == 1) {
-            char *tempfile = (char*) malloc((strlen(file)+5));
+            tempfile = (char*) malloc((strlen(file)+5));
             strcpy (tempfile,file);
             char *rslash = strrchr(tempfile, '/');
             pd_assert(rslash);
