@@ -189,7 +189,7 @@ void AP_sequence_protein::set(char *isequence)
             else if (c == '*')              p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
-                awt_assert(0);
+                aw_message(GBS_global_string("Illegal sequence character '%c' replaced by gap", c));
                 p = APP_GAP;
             }
 
