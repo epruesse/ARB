@@ -137,8 +137,10 @@ positiontype MO_Liste::fill_marked_bakts()
     laenge = GBT_count_marked_species(gb_main);		// laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
     // die Bakterien mit Sequenz zurueckliefert.
 
-    if (!laenge)
+    if (!laenge) {
+        aw_message("Please mark some species!");
         laenge = 1;
+    }
     mo_liste = new Bakt_Info*[laenge+2];
 
     while (j<laenge+2)
@@ -150,12 +152,14 @@ positiontype MO_Liste::fill_marked_bakts()
 
     hashptr = GBS_create_hash(laenge,1);
 
+
     for ( gb_species = GBT_first_marked_species(gb_main);
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
 	    put_entry(GBT_read_name(gb_species));
     }
+
     GB_pop_transaction(gb_main);
 
     anz_elem_marked = laenge;
