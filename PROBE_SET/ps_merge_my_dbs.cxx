@@ -70,47 +70,76 @@ void PS_make_stats( PS_NodePtr ps_node, unsigned long int depth ) {
 //
 typedef vector<SpeciesID> IDvector;
 
-void PS_detect_weak_differences_stepdown( const PS_NodePtr ps_node, PS_BitMap &theMap, IDvector &upper, IDvector &lower, SpeciesID &maxID ) {
+void PS_detect_weak_differences_stepdown( const PS_NodePtr ps_node, PS_BitMap *the_map, IDvector &upper_nodes, SpeciesID &max_ID ) {
     
+    //
     // store maximum SpeciesID
-    if (ps_node->getNum() > maxID) maxID = ps_node->getNum();
+    //
+    SpeciesID nodeNum = ps_node->getNum();
+    if (nodeNum > max_ID) max_ID = nodeNum;
 
-    // append node to upper-list
-    upper.push_back( ps_node->getNum() );
+    //
+    // append node to upper-nodes-list
+    //
+    if (!ps_node->hasProbes()) nodeNum = -nodeNum;               // negative nodeNums indicate an empty probes-list in a node
+    upper_nodes.push_back( nodeNum );
 
+    //
     // step down the children
+    //
     for (PS_NodeMapConstIterator i = ps_node->getChildrenBegin(); i != ps_node->getChildrenEnd(); ++i) {
-        PS_detect_weak_differences_stepdown( i->second, theMap, upper, lower, maxID );
+        PS_detect_weak_differences_stepdown( i->second, the_map, upper_nodes, max_ID );
     }
 
-    // move node from upper to lower
-    upper.pop_back();
-    lower.push_back( ps_node->getNum() );
+    //
+    // remove node from upper
+    //
+    upper_nodes.pop_back();
 
-    // set value in the map if node has probes : true for all upper-lower pairs
-    if (ps_node->hasProbes()) {
-        for (IDvector::iterator upper_it = upper.begin(); upper_it != upper.end(); ++upper_it) {
-            for (IDvector::iterator lower_it = lower.begin(); lower_it != lower.end(); ++lower_it) {
-                theMap.triangle_set(*upper_it,*lower_it,true);
-            }
-        }
+    //
+    // set value in the map : true for all (upper-nodes-id,nodeNum) pairs
+    //
+    // rbegin() <-> walk from end to start
+    IDvector::reverse_iterator upperIndex = upper_nodes.rbegin();
+    // skip empty nodes at the end of the upper_nodes - list
+    // because they have no probe to distinguish them from us
+    for ( ; upperIndex != upper_nodes.rend(); ++upperIndex ) {
+        if (*upperIndex >= 0) break;
     }
+    // continue with the rest of the list
+    if (nodeNum < 0) nodeNum = -nodeNum;
+    for ( ; upperIndex != upper_nodes.rend(); ++upperIndex) {
+        the_map->triangle_set( nodeNum, abs(*upperIndex), true );
+        //printf( "(%i|%i) ", nodeNum, *upperIndex );
+    }
+    //if (nodeNum % 200 == 0) printf( "%i\n",nodeNum );
 }
 
 void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
-    PS_BitMap theMap( false );
-    IDvector  upper;
-    IDvector  lower;
-    SpeciesID maxID = 0;
+    PS_BitMap *theMap = new PS_BitMap( false );
+    SpeciesID  maxID  = 0;
+    IDvector   upperNodes;
     
     for (PS_NodeMapConstIterator i = ps_root_node->getChildrenBegin(); i != ps_root_node->getChildrenEnd(); ++i ) {
-        PS_detect_weak_differences_stepdown( i->second, theMap, upper, lower, maxID );
-        upper.clear();
-        lower.clear();
+        printf( "PS_detect_weak_differences_stepdown( %i, theMap, upperNodes, %i )\n",i->first,maxID );
+        PS_detect_weak_differences_stepdown( i->second, theMap, upperNodes, maxID );
+        if (!upperNodes.empty()) {
+            printf( "unclean ids :" );
+            for (IDvector::iterator id = upperNodes.begin(); id != upperNodes.end(); ++id ) {
+                printf( " %i",*id );
+            }
+            printf( "\n" );
+            upperNodes.clear();
+        }
     }
-    printf( "max ID = %i\n (enter to continue)",maxID );
+    printf( "max ID = %i\n(enter to continue)",maxID );
     getchar();
-    theMap.print();
+
+    theMap->print();
+    printf( "(enter to continue)\n" );
+    getchar();
+
+    delete theMap;
     printf( "(enter to continue)\n" );
     getchar();
 }

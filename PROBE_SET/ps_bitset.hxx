@@ -41,6 +41,7 @@ public:
     }
 
     ~PS_BitSet() {
+        //if (data) fprintf( stderr, "~PS_BitSet(%p)   free(%p(%lu))\n", this, data, capacity/8 );
         if (data) free( data );
     }
 };
@@ -94,11 +95,14 @@ bool PS_BitSet::reserve( const long _capacity ) {
     if (capacity > 0) {
         if (_capacity_bytes <= capacity_bytes) return true;      // smaller or same size requested ?
     }
+    _capacity_bytes = ((_capacity_bytes / 128)+1)*128;           // adjust requested size to bigger chunks
     new_data = (unsigned char *)malloc( _capacity_bytes );       // get new memory
     if (new_data == 0) return false;
-    memset( new_data,bias ? 0xFF : 0,_capacity );                // set memory to bias value
-    memcpy( new_data,data,capacity );                            // copy old values
-    free( data );                                                // free old memory
+    //fprintf( stderr, "PS_BitSet(%p) malloc(%lu) = %p\n", this, _capacity_bytes, new_data );
+    memset( new_data,bias ? 0xFF : 0,_capacity_bytes );          // set memory to bias value
+    if (capacity > 0) memcpy( new_data,data,capacity_bytes );    // copy old values
+    //if (data) fprintf( stderr, "PS_BitSet(%p)   free(%p(%lu))\n", this, data, capacity_bytes );
+    if (data) free( data );                                      // free old memory
     data = new_data;                                             // store new pointer
     capacity = _capacity_bytes*8;                                // store new capacity
     return true;
@@ -109,11 +113,11 @@ bool PS_BitSet::reserve( const long _capacity ) {
 // * print()
 // ************************************************************
 void PS_BitSet::print() {
-    printf( "PS_BitSet : size(%li) capacity(%li) ",size,capacity );
+    printf( "PS_BitSet : size(%li) capacity(%li)\n",size,capacity );
     for (long i = 0; i <= size; ++i) {
         printf( get(i) ? "+" : "_" );
     }
-    printf( "\n" );
+    if (size >= 0) printf( "\n" );
 }
 
 #else
