@@ -83,15 +83,27 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     }
     if (strchr(file,'/')) file = strchr(file,'/');
     if (GB_size_of_file(file) <= 0) {
-        return GB_export_error("Sorry there is no database for your template '%s' yet\n"
-                               "	To create such a database and it's index file:\n"
-                               "	1. Start ARB on the whole database you want to use for\n"
-                               "		probe match / design\n"
-                               "	2. Go to ARB_NT/etc/Probe_Functions/PT_SERVER Admin\n"
-                               "	3. Select '%s' and press UPDATE SERVER\n"
-                               "	4. Wait ( few hours )\n"
-                               "	5. Meanwhile read the help file: PT_SERVER: What Why and How",
-                               file, file);
+        if (strcmp(arb_tcp_env, "ARB_NAME_SERVER") == 0) {
+            const char *copy_cmd       = GBS_global_string("cp %s.template %s", file, file);
+            system(copy_cmd);
+            if (GB_size_of_file(file) <= 0) {
+                return GB_export_error("Cannot copy nameserver template (%s.template missing?)", file);
+            }
+        }
+        else if (strncmp(arb_tcp_env, "ARB_PT_SERVER", 13) == 0) {
+            return GB_export_error("Sorry there is no database for your template '%s' yet\n"
+                                   "	To create such a database and it's index file:\n"
+                                   "	1. Start ARB on the whole database you want to use for\n"
+                                   "		probe match / design\n"
+                                   "	2. Go to ARB_NT/etc/Probe_Functions/PT_SERVER Admin\n"
+                                   "	3. Select '%s' and press UPDATE SERVER\n"
+                                   "	4. Wait ( few hours )\n"
+                                   "	5. Meanwhile read the help file: PT_SERVER: What Why and How",
+                                   file, file);
+        }
+        else {
+            return GB_export_error("The file '%s' is missing. \nUnable to start %s", file, arb_tcp_env);
+        }
     }
 
     for (glservercntrl.link = 0, mytry = 0; (!glservercntrl.link) && (mytry <= TRIES); mytry++) {
