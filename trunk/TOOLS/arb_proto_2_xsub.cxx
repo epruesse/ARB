@@ -21,14 +21,15 @@ int main(int argc, char **argv)
        and put all existing functions to exclude hash */
 
     char *head = GB_read_file(argv[2]);
-    printf("%s",head);
+    printf("%s",head); /* inserting the *.xs.default in the output *.xs file*/
 	
-    GB_HASH *exclude_hash = GBS_create_hash(1024,0);
+    GB_HASH *exclude_hash = GBS_create_hash(1024,0); /*prepare list for excluded functions from xs header*/
     {
 	char *tok;
+	/*   initializer            cond  updater                */
 	for (tok = strtok(head,"\n");tok;tok = strtok(NULL,"\n")){
 	    if ( !strncmp(tok,"P2A_",4)
-		 ||  !strncmp(tok,"P2AT_",5)){
+		 ||  !strncmp(tok,"P2AT_",5)){  /* looks like the if-branch is entered for every token*/
 		char *fn = GBS_string_eval(tok,"(*=",0);
 		GBS_write_hash(exclude_hash,fn,1);
 		delete fn;
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
 	}
     }
 
-    
+    /*parsing of proto.h and replacing substrings*/
     data = GBS_string_eval(data,
 			   "\nchar=\nschar"	// strdupped char
 			   ":const ="
@@ -92,15 +93,17 @@ int main(int argc, char **argv)
 	char *sp = strchr(tok,' ');
 	const char *type = 0;
 	{
-	    if (!sp) {
+	  if (!sp) {  // is the expected declaration format "type name(..)" ??
 	      fprintf(stderr, "Space expected in '%s'\n",tok);
 	      exit(EXIT_FAILURE);
 	    }
-	    if (sp[1] == '*') sp++;	// function type
-	    int c = sp[1];
-	    sp[1] = 0;
-	    type = strdup(tok);
-	    sp[1] = c;
+	  if (sp[1] == '*') sp++;	// function type
+	  int c = sp[1];                // what the hell is this for ??????
+	  sp[1] = 0;
+	  type = strdup(tok);
+	  sp[1] = c;
+	  
+
 	}
 	    
 	/* check type */
