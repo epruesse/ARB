@@ -48,6 +48,7 @@
 #include "aw_print.hxx"
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
+#include "aw_global.hxx"
 
 AW_root *AW_root::THIS = NULL;
 
@@ -1105,7 +1106,7 @@ void AW_root::init_variables( AW_default database ) {
         if (aw_fb[i].awar == 0) break;
         awar_string( aw_fb[i].awar, aw_fb[i].init , application_database);
     }
-    //PJ temporary site for vectorfont stuff
+    // PJ temporary site for vectorfont stuff
     vectorfont_lines        =NULL;                        // font data not yet loaded
 
     awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
@@ -1114,9 +1115,7 @@ void AW_root::init_variables( AW_default database ) {
     awar_int("vectorfont/active", 1,application_database); // zoomtext-calls: call text or use vectorfont (1)
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    awar_string("vectorfont/directory", "lib/pictures", application_database);
-    awar_string("vectorfont/filter", ".vfont", application_database);
-    awar_string("vectorfont/file_name", vectorfont_name, application_database);
+    aw_create_selection_box_awars(this, "vectorfont", GBS_global_string("%s/lib/pictures", GB_getenvARBHOME()), ".vfont", vectorfont_name, application_database);
     awar("vectorfont/file_name")->add_callback( (AW_RCB0)   aw_xfig_font_changefont_cb);
 }
 
@@ -1630,7 +1629,7 @@ static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allo
         }
 
         if (has_user_geometry) {
-#if defined(DEBUG) 
+#if defined(DEBUG)
             // printf("User geometry detected for window '%s'\n", aww->window_defaults_name);
 #endif // DEBUG
             aww->recalc_size_at_show = 2; // keep user geometry (only if user size is smaller than default size, the latter is used)

@@ -1,4 +1,5 @@
 #include "include.hxx"
+#include "aw_global.hxx"
 
 extern void ph_view_matrix_cb(AW_window *);
 
@@ -37,9 +38,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
     aw_root->awar("phyl/filter/alignment")->map("phyl/alignment");
     aw_root->awar("phyl/weights/alignment")->map("phyl/alignment");
 
-    aw_root->awar_string( "tmp/phyl/save_matrix/file_name", "infile", def);
-    aw_root->awar_string( "tmp/phyl/save_matrix/directory", ".", def);
-    aw_root->awar_string( "tmp/phyl/save_matrix/filter", "", def);
+    aw_create_selection_box_awars(aw_root, "tmp/phyl/save_matrix", ".", "", "infile", def);
 
     aw_root->awar_string( "phyl/tree/tree_name","tree_temp",def);
 
