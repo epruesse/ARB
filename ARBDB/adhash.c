@@ -413,7 +413,7 @@ long GBS_write_hash(GB_HASH *hs,const char *key,long val)
 
 long GBS_write_hash_no_strdup(GB_HASH *hs,char *key,long val)
      /* does no GB_STRDUP, but the string is freed later in GBS_free_hash,
-    so the user have to 'malloc' the string and give control to the hash functions !!!! */
+    so the user has to 'malloc' the string and give control to the hash functions !!!! */
 {
     struct gbs_hash_entry *e;
     long i2;
