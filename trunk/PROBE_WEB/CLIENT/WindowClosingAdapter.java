@@ -18,8 +18,16 @@ public WindowClosingAdapter()
     }
 public void windowClosing(WindowEvent event)
     {
-        event.getWindow().setVisible(false);
-        event.getWindow().dispose();
+        System.out.println("in WindowClosingAdapter::windowClosing");
+
+        ProbesGUI mainFrame = (ProbesGUI)event.getWindow();
+
+        mainFrame.getClient().saveConfig();
+        mainFrame.setVisible(false);
+        mainFrame.dispose();
+
+//         event.getWindow().setVisible(false);
+//         event.getWindow().dispose();
         if(exitSystem) {
             System.exit(0);
         }
