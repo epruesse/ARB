@@ -378,16 +378,21 @@ void make_node_text_init(GBDATA *gb_main){
 
 enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
 
+#if defined(DEBUG)
+// #define QUOTE_NDS_STRING
+#endif // DEBUG
+
 char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species)
 {
-    // mode == 0 compress info (no tabbing)
-    // mode == 1 format info (using spaces)
-    // mode == 2 format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+    // mode == MNTN_COMPRESSED      compress info (no tabbing, seperate single fields by komma)
+    // mode == MNTN_SPACED          format info (using spaces)
+    // mode == MNTN_TABBED          format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
 
     char     *bp, *p;
     GBDATA   *gbe;
     long      i, j;
     GBT_TREE *father;
+    bool      field_was_printed = false;
 
     bp = awt_nds_ms->buf;
     if (!gbd) {
@@ -397,7 +402,9 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
         return awt_nds_ms->buf;
     }
 
-#define IS_FIRST() (i == 0)
+#if defined(QUOTE_NDS_STRING)
+    *bp++ = '\'';
+#endif // QUOTE_NDS_STRING
 
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {		/* hierarchical key */
@@ -418,13 +425,14 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
 
         switch (mode) {
             case MNTN_COMPRESSED:
-                if (!IS_FIRST())  *bp++ = ','; // seperate single fields by komma in compressed mode
+                if (!field_was_printed) break; // no komma no space if nothing printed yet
+                *bp++ = ','; // seperate single fields by komma in compressed mode
                 // no break here!!!
             case MNTN_SPACED:
                 *bp++ = ' ';    // print at least one space if not using tabs
                 break;
             case MNTN_TABBED:
-                if (!IS_FIRST()) *bp++ = '\t'; // tabbed output for star-calc/excel/...
+                if (i != 0) *bp++ = '\t'; // tabbed output for star-calc/excel/...
                 break;
             default :
                 awt_assert(0);
@@ -436,6 +444,8 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
 //         first++;
 
         if (gbe) {
+            field_was_printed = true;
+
             switch (GB_read_type(gbe)) {
                 case GB_INT:
                     if (mode == MNTN_SPACED) {
@@ -527,11 +537,17 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
             for (; j > 0; j--)	*(bp++) = ' ';
         }
     }
+#if defined(QUOTE_NDS_STRING)
+    *bp++ = '\'';
+#endif // QUOTE_NDS_STRING
     *bp = 0;
+
+//     if (mode == MNTN_COMPRESSED) { // remove leading and trailing commas in compressed mode
+//
+//     }
+
     return awt_nds_ms->buf;
 }
-
-#undef IS_FIRST
 
 char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
