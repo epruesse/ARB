@@ -41,6 +41,7 @@ our @EXPORT_OK;
 
 my $header_printed;
 my $root_dir;
+my @running_servers;
 
 sub print_header() {
   print $probe_server::q->header(-type=>'text/plain');
@@ -80,13 +81,47 @@ BEGIN {
   $q              = new CGI;
   %params         = $q->Vars();
 
-  # $root_dir='/home/westram/ARB/PROBE_SERVER';
-  $root_dir='/trance1/ARB/source/ARB/PROBE_SERVER';
+  $admin      = 'probeadmin@arb-home.de';
+  set_message(\&handle_errors);
+
+  my $config = 'arb_probe_server.config';
+
+  if (not open(CONFIG, "<$config")) {
+    die "$config not found -- the server is not configured yet. There's a template for that file in the cgi directory."
+  }
+
+  foreach (<CONFIG>) {
+    chomp;
+    if (not /\#/ and /=/) {
+      my $key = $`;
+      my $value = $';
+
+      if ($key eq 'root_dir') {
+        $root_dir = $value;
+        if (not -d $root_dir) {
+          die "in $config: root_dir must point to a valid directory (normally \$ARBHOME/PROBE_SERVER)";
+        }
+      } elsif ($key eq 'running_servers') {
+        my $count=0;
+        while ($value =~ /,/) {
+          $running_servers[$count++] = $`;
+          $value                     = $';
+        }
+        $running_servers[$count++] = $value;
+      } else {
+        die "in $config: Unknown entry '$key'";
+      }
+    }
+  }
+
+  close(CONFIG);
 
   $requestdir = $root_dir.'/ps_workerdir';
   $datadir    = $root_dir.'/ps_serverdata';
-  $admin      = 'probeadmin@arb-home.de';
-  set_message(\&handle_errors);
+
+  if (not -d $requestdir or not -d $datadir) {
+    die "in $config: Incorrect entry root_dir";
+  }
 }
 
 sub generate_filenames ($$) {
@@ -170,8 +205,9 @@ sub clientbasename() { return 'arb_probe_library.jar'; }
 sub clientfilename() { return $datadir.'/'.&clientbasename(); }
 
 sub available_servers() { # needed for testing only to reduce # of available_servers
-#  return (15,16);
-   return (15,16,17,18,19,20);
+  return @running_servers;
+   #return (15,16);
+   #return (15,16,17,18,19,20);
 }
 
 END { }                         # module clean-up code here (global destructor)
