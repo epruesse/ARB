@@ -91,12 +91,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
         tag->add_attribute("name", key_name+4);
     }
     else {
-        {
-            char *upkey = strdup(key_name);
-            ARB_strupper(upkey);
-            tag         = new XML_Tag(upkey);
-            free(upkey);
-        }
+        tag = new XML_Tag(key_name);
 
         GBDATA *gb_name = GB_find(gbd, "name", 0, down_level);
         if (gb_name) {
