@@ -315,7 +315,7 @@ double calc_position_wmis(int pos, int seq_len, double y1, double y2)
 }
 
 void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence){
-    delete psg.pos_to_weight;
+    delete [] psg.pos_to_weight;
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];
     int p;
@@ -338,7 +338,7 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     char          *rev_pro;
     if (locs->pm_sequence) free(locs->pm_sequence);
     locs->pm_sequence       = psg.main_probe = strdup(probestring);
-    compress_data(probestring);    
+    compress_data(probestring);
     while ((ml = locs->pm)) destroy_PT_probematch(ml);
     locs->matches_truncated = 0;
 
@@ -640,7 +640,8 @@ extern "C" bytestring *match_string(PT_local *locs) {
     static bytestring bs = {0,0};
     void          *memfile;
     PT_probematch *ml;
-    delete bs.data;
+
+    free(bs.data);
 
     char empty[] = "";
     bs.data      = empty;

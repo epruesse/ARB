@@ -182,7 +182,7 @@ void probe_read_alignments()
     /* count all data */
     char *def_ref = GBT_get_default_ref(psg.gb_main);
     gb_species    = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
-    delete def_ref;
+    free(def_ref);
     psg.ecoli     = 0;
     if (gb_species) {
         gb_data = GBT_read_sequence(gb_species,psg.alignment_name);
@@ -211,9 +211,9 @@ void probe_read_alignments()
     {
         gb_name = GB_find(gb_species,"name",0,down_level);
         if (!gb_name) continue;
-        
+
         psg.data[count].name = GB_read_string(gb_name);
-        
+
         gb_name = GB_find(gb_species,"full_name",0,down_level);
         if (gb_name) {
             psg.data[count].fullname = GB_read_string(gb_name);
