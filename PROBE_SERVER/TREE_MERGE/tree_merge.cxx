@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : tree_merge.cxx                                         //
 //    Purpose   : merges multiple trees saved by arb_probe_group_design  //
-//    Time-stamp: <Tue Oct/07/2003 02:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/12/2004 15:23 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <list>
 
 #include <stdio.h>
 #include <arb_assert.h>
@@ -26,8 +27,8 @@
 #include <arbdbt.h>
 #include <smartptr.h>
 
-#define SKIP_SETDATABASESTATE
-#define SKIP_GETDATABASESTATE
+#define NEED_decodeTreeNode
+#define NEED_encodeTreeNode
 #include "../common.h"
 
 using namespace std;
@@ -190,35 +191,47 @@ static string mergeNodeInfos(deque<string>& infos, GB_ERROR& error) {
             if (testEqualIfExists("n", tok1, tok2, error)) { // name
                 testExistAndEqual("f", tok1, tok2, error); // full_name
                 testExistAndEqual("a", tok1, tok2, error); // acc (aka accession number)
-                is_leaf = true;
+                if (!error) {
+                    is_leaf = true;
+//                     fprintf(stderr, "merging leaf '%s'\n", tok1.find("f")->second.c_str());
+                }
             }
 
             // some tokens have to be equal IF they exist
             testEqualIfExists("g", tok1, tok2, error); // group name
 
-            TokMap::iterator em1        = tok1.find("em");
-            TokMap::iterator em2        = tok2.find("em");
-            bool             have_exact = true;
+            if (!error) {
+                TokMap::iterator em1        = tok1.find("em");
+                TokMap::iterator em2        = tok2.find("em");
+                bool             have_exact = true;
 
-            if (em1 == tok1.end()) {
-                if (em2 == tok2.end()) {
-                    // we do NOT have exact probes
-                    have_exact = false;
+                if (em1 == tok1.end()) {
+                    if (em2 == tok2.end()) {
+                        // we do NOT have exact probes
+                        have_exact = false;
+                    }
+                    else {
+                        // only in 2nd tree -> copy to first tree
+                        tok1["em"] = em2->second;
+                    }
                 }
                 else {
-                    // only in 2nd tree -> copy to first tree
-                    tok1["em"] = em2->second;
-                }
-            }
-            else {
-                if (em2 != tok2.end()) { // exact matches in both trees -> sum up
-                    int em      = atoi(em1->second.c_str())+atoi(em2->second.c_str());
-                    em1->second = GBS_global_string("%i", em);
-                }
-            }
+                    if (em2 != tok2.end()) { // exact matches in both trees -> sum up
+                        int m1 = atoi(em1->second.c_str());
+                        int m2 = atoi(em2->second.c_str());
+                        int em = m1+m2;
 
-            if (have_exact) {   // erase other probe info
-                eraseTok("mc", tok1);
+//                         if (!is_leaf) {
+//                             fprintf(stderr, "merging non-leaf (m1=%i m2=%i em=%i)\n", m1, m2, em);
+//                         }
+
+                        em1->second = GBS_global_string("%i", em);
+                    }
+                }
+
+                if (have_exact) {   // erase other (non-exact) probe info
+                    eraseTok("mc", tok1);
+                }
             }
         }
     }
@@ -234,12 +247,12 @@ static string mergeNodeInfos(deque<string>& infos, GB_ERROR& error) {
     return result;
 }
 
-static string mergeDifferingLines(set<string>& lines, GB_ERROR& error) {
+static string mergeLines(list<string>& lines, GB_ERROR& error) {
     deque< deque<string> > nodeInfos(lines.size());
     string format;
     int    idx = 0;
 
-    for (set<string>::iterator l = lines.begin(); l != lines.end() && !error; ++l, ++idx) {
+    for (list<string>::iterator l = lines.begin(); l != lines.end() && !error; ++l, ++idx) {
         string format2 = extractNodeInfos(*l, nodeInfos[idx], error);
         if (error) break;
         if (format.length()) {
@@ -310,7 +323,7 @@ static GB_ERROR mergeTrees(deque<ifstreamPtr>& in, ofstream& out) {
     bool        headerdone = false;
 
     while (!error && !done) {
-        set<string> lines;
+        list<string> lines;
         int         eofs = 0;
 
         for (deque<ifstreamPtr>::iterator i = in.begin(); i != in.end() && !error; ++i) {
@@ -324,7 +337,7 @@ static GB_ERROR mergeTrees(deque<ifstreamPtr>& in, ofstream& out) {
                     if (!ip->eof() && !ip->good()) {
                         error = "error reading input";
                     }
-                    lines.insert(linebuffer);
+                    lines.push_back(linebuffer);
                 }
             }
             else {
@@ -344,30 +357,51 @@ static GB_ERROR mergeTrees(deque<ifstreamPtr>& in, ofstream& out) {
         if (!error && !done) {
             ++linenumber;
 
-            if (lines.size() == 1) { // all lines are equal
+            if (!headerdone) {
                 string line = *(lines.begin());
-                if (!headerdone && line.find(']') != string::npos) {
-                    headerdone = true;
-                }
-                else {
-                    if (headerdone) {
-                        size_t empty_node;
-                        while ((empty_node = line.find("''")) != string::npos) {
-                            line.erase(empty_node, 2);
-                        }
+
+                for (list<string>::const_iterator i = lines.begin(); i != lines.end() && !error; ++i) {
+                    if (*i != line) {
+                        error = "headers are not identical";
                     }
                 }
-                out << line << '\n';
-            }
-            else { // lines differ
-                if (headerdone) {
-                    string merged = mergeDifferingLines(lines, error);
-                    if (!error) out << merged << "\n";
-                }
-                else {
-                    error = "headers are not identical";
+
+                if (!error) {
+                    if (line.find(']') != string::npos) {
+                        headerdone = true;
+                    }
+                    out << line << '\n';
                 }
             }
+            else {
+                string merged = mergeLines(lines, error);
+                if (!error) out << merged << "\n";
+            }
+
+//             if (lines.size() == 1) { // all lines are equal
+//                 string line = *(lines.begin());
+//                 if (!headerdone && line.find(']') != string::npos) {
+//                     headerdone = true;
+//                 }
+//                 else {
+//                     if (headerdone) {
+//                         size_t empty_node;
+//                         while ((empty_node = line.find("''")) != string::npos) {
+//                             line.erase(empty_node, 2);
+//                         }
+//                     }
+//                 }
+//                 out << line << '\n';
+//             }
+//             else { // lines differ
+//                 if (headerdone) {
+//                     string merged = mergeLines(lines, error);
+//                     if (!error) out << merged << "\n";
+//                 }
+//                 else {
+//                     error = "headers are not identical";
+//                 }
+//             }
         }
     }
 
