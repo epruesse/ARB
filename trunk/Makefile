@@ -453,6 +453,8 @@ ARCHS = \
 			NAMES/NAMES.a \
 			NAMES_COM/server.a \
 			NTREE/NTREE.a \
+			RNA3D/RNA3D.a \
+			RNA3D/OPENGL/OPENGL.a \
 			ORS_CGI/ORS_CGI.a \
 			ORS_COM/server.a \
 			ORS_SERVER/ORS_SERVER.a \
@@ -522,6 +524,19 @@ $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 		echo Link $@ ; \
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
 		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
+		)
+
+#*********************************** arb_rna3d **************************************
+RNA3D = bin/arb_rna3d
+ARCHS_RNA3D = \
+		RNA3D/RNA3D.a \
+		RNA3D/OPENGL/OPENGL.a \
+
+$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) -lGLEW -lGL -lglut -lglpng ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) -lGLEW -lGL -lglut -lglpng ; \
 		)
 
 #***********************************	arb_edit **************************************
@@ -846,7 +861,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	@echo $(SEP) Make everything in $(@D)
 	@$(GMAKE) -C $(@D) -r \
 		"GMAKE = $(GMAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
+		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(subst /,_,$(@D))" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
 		"F77 = $(F77)" "f77_flags = $(f77_flags)" "F77LIB = $(F77LIB)" \
 		"CPP = $(CPP)" "ACC = $(ACC)" \
@@ -972,7 +987,9 @@ di:		$(DIST)
 ph:		$(PHYLO)
 pa:		$(PARSIMONY)
 tg:		$(TREEGEN)
-# se:		$(SECEDIT)
+
+3d: 	$(RNA3D)
+# se: 	$(SECEDIT)
 # acc:	$(ACORR)
 
 ds:		$(DBSERVER)
@@ -1220,7 +1237,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip
+arbxtras: tg ps pc pst chip 
 
 tryxtras:
 		@echo $(SEP)
