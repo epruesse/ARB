@@ -969,7 +969,7 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
             if (error || function == "") break;
 
             if (function == "complement") complement = true;
-            else if (function == "join") several_parts = true;
+            else if (function == "join" || (function == "order")) several_parts = true;
             else  {
                 error = file.lineError((string("Unknown function '")+function+"'").c_str());
                 break;
