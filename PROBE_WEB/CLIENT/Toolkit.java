@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Thu Mar/11/2004 23:45 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Mar/15/2004 11:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -110,5 +110,91 @@ class Toolkit
     }
     public static void clickOK(String title, String text) {
         clickButton(title, text, "OK");
+    }
+
+    // -------------------------------------------------------------------
+    // NOTE: if you change encodePath()/decodePath() please keep encodePath/decodePath()
+    //       in ./PROBE_SERVER/WORKER/psw_main.cxx up-to-date
+
+    private static final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+    private static final int bitmask[] = { 8, 4, 2, 1 };
+
+    public static String encodePath(String path) {
+        StringBuffer coded      = new StringBuffer();
+        int          pathLength = path.length();
+
+        // transform length into two byte hex format
+        for (int digit = 0; digit < 4; digit ++) {
+            int remain = pathLength%16;
+            pathLength = pathLength/16;
+            coded.insert(0,hexToken[remain]);
+        }
+        
+        int value = 0;
+        int position;
+        for (position = 0; position < path.length(); position++ ) {
+            if (path.charAt(position) == '1') {
+                value += bitmask[position%4];
+                
+//                 switch (position%4) {
+//                     case 0: value += 8; break;
+//                     case 1: value += 4; break;
+//                     case 2: value += 2; break;
+//                     case 3: value += 1; break;
+//                     default:
+//                         Toolkit.InternalError("logical error in encodePath");
+//                 }
+            }
+            if ((position%4) == 3) {
+                coded.append(hexToken[value]);
+                value = 0;
+            }
+        }
+
+        if ((position%4) != 0) {
+            coded.append(hexToken[value]);
+        }
+        return coded.toString();
+    }
+
+    public static int deHex(char c) throws Exception {
+        if (c >= '0' && c <= '9') return (int)(c-'0');
+        if (c >= 'A' && c <= 'F') return (int)(c-'A')+10;
+        if (c >= 'a' && c <= 'f') return (int)(c-'a')+10;
+        throw new ClientException("hex decode error", "Cannot decode '"+c+"'", 1);
+    }
+
+    public static String decodePath(String coded) throws Exception {
+        int pathLength = 0;
+        for (int digit = 0; digit < 4; ++digit) {
+            pathLength = pathLength*16 + deHex(coded.charAt(digit));
+        }
+
+        StringBuffer buf = new StringBuffer(pathLength);
+
+        int coded_position = 4;
+        int coded_bits     = 0;
+        int coded_value    = -1;
+
+        for (int position = 0; position<pathLength; ++position) {
+            if (coded_bits == 0) {
+                coded_bits  = 4;
+                coded_value = deHex(coded.charAt(coded_position++));
+            }
+
+            buf.append((coded_value & bitmask[4-coded_bits]) == 0 ? '0' : '1');
+            coded_bits--;
+        }
+
+        return buf.toString();
+    }
+
+    // Bitstring (e.g. "000101100") compression
+
+    public static String compressString(String s) {
+        return encodePath(s);
+    }
+    public static String uncompressString(String s) throws Exception {
+        return decodePath(s);
     }
 }
