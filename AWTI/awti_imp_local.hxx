@@ -8,13 +8,15 @@
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
 struct input_format_per_line {
-    char    *match;
-    char    *aci;
-    char    *srt;
-    char    *tag;
-    char    *append;
-    char    *write;
-    char    *setvar;
+    char *match;
+    char *aci;
+    char *srt;
+    char *tag;
+    char *append;
+    char *write;
+    char *setvar;
+
+    int start_line; //  linenumber in filter where this MATCH starts
 
     struct input_format_per_line *next;
 };
