@@ -290,42 +290,21 @@ void GB_clear_error() {         /* clears the error buffer */
 
 /* -------------------------------------------------------------------------------- */
 
-/* GB_CSTR GB_strf(const char *templat, ...)  */
-/* { */
-/*     char buffer[GBS_GLOBAL_STRING_SIZE]; */
-/*     char *p = buffer; */
-/*     va_list  parg; */
-/*     memset(buffer,0,1000); */
-/*     va_start(parg,templat);   */
+#define GLOBAL_STRING_BUFFERS 4
 
-/*     int psize = vsprintf(p,templat,parg);     */
-/*     if (psize>=GBS_GLOBAL_STRING_SIZE) { */
-/*  gb_assert(0); */
-/*  GB_CORE; */
-/*     } */
-
-/*     if (GB_error_buffer) free(GB_error_buffer); */
-/*     GB_error_buffer = GB_STRDUP(buffer); */
-/*     return GB_error_buffer; */
-/* } */
-
-/* static char *gb_global_string = 0; */
-
-
-
-
-static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg)
+static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
 {
-    static char buffer[2][GBS_GLOBAL_STRING_SIZE+2]; // two buffers - used alternately
-    static int  idx = 0;
-
-    int psize;
-    idx = 1-idx; // use other buffer
+    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // two buffers - used alternately
+    static int  idx    = 0;
+    int         my_idx = (idx+1)%GLOBAL_STRING_BUFFERS; // use next buffer
+    int         psize;
+    
+    ad_assert(my_idx >= 0 && my_idx<GLOBAL_STRING_BUFFERS);
 
 #ifdef LINUX
-    psize = vsnprintf(buffer[idx],GBS_GLOBAL_STRING_SIZE,templat,parg);
+    psize = vsnprintf(buffer[my_idx],GBS_GLOBAL_STRING_SIZE,templat,parg);
 #else
-    psize = vsprintf(buffer[idx],templat,parg);
+    psize = vsprintf(buffer[my_idx],templat,parg);
 #endif
 
     if (psize == -1 || psize >= GBS_GLOBAL_STRING_SIZE) {
@@ -333,11 +312,9 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg)
         GB_CORE;
     }
 
-    return buffer[idx];
+    if (!allow_reuse) idx = my_idx;
 
-/*     if (gb_global_string) free(gb_global_string); */
-/*     gb_global_string = GB_STRDUP(buffer); */
-/*     return gb_global_string; */
+    return buffer[my_idx];
 }
 
 GB_CSTR GBS_global_string(const char *templat, ...) {
@@ -347,7 +324,7 @@ GB_CSTR GBS_global_string(const char *templat, ...) {
     GB_CSTR result;
 
     va_start(parg,templat);
-    result = gbs_vglobal_string(templat, parg);
+    result = gbs_vglobal_string(templat, parg, 0);
     va_end(parg);
 
     return result;
@@ -360,8 +337,7 @@ char *GBS_global_string_copy(const char *templat, ...) {
     GB_CSTR result;
 
     va_start(parg,templat);
-    result = gbs_vglobal_string(templat, parg);
-    result = gbs_vglobal_string(templat, parg);
+    result = gbs_vglobal_string(templat, parg, 1);
     va_end(parg);
 
     return GB_STRDUP(result);
@@ -1772,15 +1748,15 @@ int GBS_do_core(void)
 extern "C" {
 #endif
 
-    void gb_fprintf_stderr(const char *msg){
-        fprintf(stderr,"******************\n%s\n***************\n",msg);
+    void gb_error_to_stderr(const char *msg) {
+        fprintf(stderr, "%s\n", msg);
     }
 
 #ifdef __cplusplus
 }
 #endif
 
-gb_error_handler_type gb_error_handler = gb_fprintf_stderr;
+gb_error_handler_type gb_error_handler = gb_error_to_stderr;
 
 NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler){
     gb_error_handler = aw_message_handler;
@@ -1790,19 +1766,28 @@ void GB_internal_error(const char *templat, ...) {
     /* goes to header: __attribute__((format(printf, 1, 2)))  */
 
     va_list parg;
+    GB_CSTR message;
+    GB_CSTR full_message;
 
-    fprintf(stderr,"*********** Internal ARB Error: ***************\n");
+    va_start(parg, templat);
+    message = gbs_vglobal_string(templat, parg, 0);
+    va_end(parg);
 
-    va_start(parg,templat);
-    vfprintf(stderr,templat,parg);
+    full_message = GBS_global_string("Internal ARB Error: %s", message);
+    gb_error_handler(full_message);
+    gb_error_handler("  ARB may be unstable now (due to this error).\n"
+                     "  Consider saving your database (maybe under a different name),\n"
+                     "  try to fix the error and restart ARB.");
 
-    fprintf(stderr,"\n\n");
     if (GBS_do_core()) {
         GB_CORE;
-    }else{
+    }
+#if defined(DEBUG)
+    else {        
         fprintf(stderr,"Debug file %s not found -> continuing operation \n",
                 "$(ARBHOME)/do_core");
     }
+#endif /* DEBUG */
 }
 
 void GB_warning( const char *templat, ...) {    /* max 4000 characters */
