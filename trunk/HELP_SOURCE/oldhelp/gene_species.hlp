@@ -8,7 +8,7 @@ SUB	gene_species_mark.hlp
 SUB	organisms.hlp
 SUB	gene_species_field_transfer.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		What are Gene-species?

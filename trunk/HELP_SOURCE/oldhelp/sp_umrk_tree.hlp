@@ -7,7 +7,7 @@ UP	glossary.hlp
 SUB	mode_mark.hlp
 SUB	sp_info.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Unmark Species in Tree

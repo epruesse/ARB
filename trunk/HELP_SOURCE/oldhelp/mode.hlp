@@ -20,7 +20,7 @@ SUB	mode_move.hlp
 SUB	mode_set_root.hlp
 SUB	mode_reset.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		MODES

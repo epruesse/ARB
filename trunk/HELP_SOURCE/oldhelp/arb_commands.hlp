@@ -7,7 +7,7 @@ SUB	arb_gde.hlp
 SUB	arb_db.hlp
 SUB	arb_envar.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real strunk ********
 TITLE		ARB: Basic ARB-Shell Commands
