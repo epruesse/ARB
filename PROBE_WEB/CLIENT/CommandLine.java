@@ -74,7 +74,7 @@ public void showHelp()
             Object o = it.next();
             if (o != null) {
                 String key = (String)o;
-                System.out.println("    "+key+knownOptions.get(key)+"\n");
+                System.out.println("    "+key+knownOptions.get(key));
             }
         }
     }
