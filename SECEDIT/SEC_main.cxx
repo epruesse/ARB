@@ -21,7 +21,9 @@
 #include <sec_graphic.hxx>
 #include "secedit.hxx"
 
+#ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
+#endif
 
 // to get search results from primary editor window
 #include "../EDIT4/ed4_defs.hxx"

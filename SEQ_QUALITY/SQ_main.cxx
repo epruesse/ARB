@@ -8,15 +8,14 @@
 
 
 GB_ERROR SQ_calc_seq_quality(GBDATA *gb_main, const char *tree_name) {
-    
-
-    char *option = "value_of_evaluation";
+    const char *option = "value_of_evaluation";
+    // char *option = "value_of_evaluation"; // illegal! Bitte Warnungen NICHT ignorieren!
 
     /*
       "option" is variable which is passed to function "SQ_get_value()".
       SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
       Right now the options you have are:
-      
+
       number_of_bases
       number_of_spaces
       number_of_dots
