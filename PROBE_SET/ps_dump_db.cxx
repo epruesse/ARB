@@ -4,7 +4,7 @@
 
 #include <arbdb.h>
 #include <map>
-#include "pg_search.hxx"
+#include "../PROBE_GROUP/pg_search.hxx"
 #include <smartptr.h>
 
 using namespace std;
