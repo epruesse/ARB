@@ -174,10 +174,8 @@ void probe_design_create_result_window(AW_window *aww)
 
 int init_local_com_struct()
 {
-    const char *user;
-    if (!(user = getenv("USER"))) user = "unknown user";
+    const char *user = GB_getenvUSER();
 
-    /* @@@ use finger, date and whoami */
     if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
                     MAIN_LOCS, PT_LOCS, &pd_gl.locs,
                     LOCS_USER, user,

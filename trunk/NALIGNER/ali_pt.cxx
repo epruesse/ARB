@@ -15,12 +15,11 @@
  */
 int ALI_PT::init_communication(void)
 {
-    const char *user;
-    if (!(user = (char *)getenv("USER"))) user = "unknown user";
+    const char *user = GB_getenvUSER();
 
-/*** create and init local com structure ***/
+    /*** create and init local com structure ***/
     if( aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)){
-	return 1;
+        return 1;
     }
     return 0;
 }

@@ -41,17 +41,15 @@ struct result_struct {
 *************************************/
 int init_pt_local_struct()
 {
-	char *user;
-	if (!(user = (char *)getenv("USER"))) user = "unknown user";
+    const char *user = GB_getenvUSER();
 
-	/* @@@ use finger, date and whoami */
-	if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
-		MAIN_LOCS, PT_LOCS, &pd_gl.locs,
-		LOCS_USER, user,
-		NULL)){
-		return 1;
-	}
-	return 0;
+    if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
+                    MAIN_LOCS, PT_LOCS, &pd_gl.locs,
+                    LOCS_USER, user,
+                    NULL)){
+        return 1;
+    }
+    return 0;
 }
 
 /****************************

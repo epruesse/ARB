@@ -86,17 +86,15 @@ void OC_server_error_if_not_empty(char *locs_error) {
 ************************/
 int init_local_com_struct()
 {
-	char *user;
-	if (!(user = (char *)getenv("USER"))) user = "unknown user";
+    const char *user = GB_getenvUSER();
 
-	/* @@@ use finger, date and whoami */
-	if( aisc_create(ors_gl.link, ORS_MAIN, ors_gl.com,
-		MAIN_LOCAL, ORS_LOCAL, &ors_gl.locs,
-		LOCAL_WHOAMI, user,
-		NULL)){
-		return 1;
-	}
-	return 0;
+    if( aisc_create(ors_gl.link, ORS_MAIN, ors_gl.com,
+                    MAIN_LOCAL, ORS_LOCAL, &ors_gl.locs,
+                    LOCAL_WHOAMI, user,
+                    NULL)){
+        return 1;
+    }
+    return 0;
 }
 
 /*********************
