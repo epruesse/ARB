@@ -766,14 +766,23 @@ struct {
     char	*history;
 }	aw_help_global;
 
-//  -----------------------------------------------------------------------------
-//      static char *get_full_qualified_help_file_name(const char *helpfile)
-//  -----------------------------------------------------------------------------
-static char *get_full_qualified_help_file_name(const char *helpfile) {
+//  ---------------------------------------------------------------------------------------------------------
+//      static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false)
+//  ---------------------------------------------------------------------------------------------------------
+static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR result = 0;
 
-    if (helpfile[0]=='/') result = GBS_global_string("%s", helpfile);
-    else result = GBS_global_string("%s/lib/help/%s",GB_getenvARBHOME(),helpfile);
+    if (helpfile[0]=='/') {
+        result = GBS_global_string("%s", helpfile);
+    }
+    else {
+        if (path_for_edit) {
+            result = GBS_global_string("%s/HELP_SOURCE/oldhelp/%s", GB_getenvARBHOME(), helpfile);
+        }
+        else {
+            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), helpfile);
+        }
+    }
 
     //printf("Helpfile='%s'\n", result);
 
@@ -797,7 +806,7 @@ void aw_help_edit_help(AW_window *aww)
     char *helpfile = get_full_qualified_help_file_name(aww->get_root());
 
     if (GB_size_of_file(helpfile)<=0){
-        sprintf(buffer,"cp  %s/lib/help/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
+        sprintf(buffer,"cp %s/HELP_SOURCE/oldhelp/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
         printf("%s\n",buffer);
         system(buffer);
     }
@@ -885,8 +894,6 @@ void aw_help_new_helpfile(AW_root *awr){
             aw_help_global.history = strdup(help_file);
         }
 
-
-        //sprintf(helpfile,"%s/lib/help/%s",GB_getenvARBHOME(),help_file);
         char *helptext=GB_read_file(help_file);
         if(helptext) {
             char *ptr;
@@ -981,8 +988,8 @@ void aw_help_search(AW_window *aww) {
             helpfilename = strdup(buffer);
 
             sprintf(buffer,
-                    "cd %s/lib/help;grep -i '%s' `find . -name \"*.hlp\"` | sed -e \"s/:.*//g\" -e \"s/^\\.\\///g\" | uniq > %s",
-                    GB_getenvARBHOME(), searchtext, helpfilename);
+                    "cd %s;grep -i '%s' `find . -name \"*.hlp\"` | sed -e \"s/:.*//g\" -e \"s/^\\.\\///g\" | uniq > %s",
+                    GB_getenvDOCPATH(), searchtext, helpfilename);
 
             printf("%s\n", buffer);
             system(buffer);
