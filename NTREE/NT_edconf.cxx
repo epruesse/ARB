@@ -451,7 +451,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 
 	if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(gb_main);
-        conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0);
+        conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0, 0);
         free(existing_configs);
     }
 	if (!conf_name) return GB_export_error("no config name");
