@@ -15,8 +15,8 @@
 #include "dist.hxx"
 #include <BI_helix.hxx>
 
-#include <ph_matr.hxx>
-#include <ph_view_matrix.hxx>
+#include <di_matr.hxx>
+#include <di_view_matrix.hxx>
 
 /* 	returns 1 only if groupname != null and there are species for that group */
 int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, PHENTRY **groups){
@@ -30,7 +30,7 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
 	    phentry->group_nr = *groupcnt;
 	    return 1;
 	}
-	return 0;		
+	return 0;
     }
     char *myname;
     if (groupname) {
@@ -41,13 +41,13 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
 	if (node->gb_node && node->name){		// but we are a group
 	    GBDATA *gb_grouped = GB_find(node->gb_node, "grouped",0,down_level);
 	    if (gb_grouped && GB_read_byte(gb_grouped)) {
-		myname = node->name;	
+		myname = node->name;
 	    }
 	}
     }
     int erg = search_group(node->leftson,hash,groupcnt,myname,groups) +
 	search_group(node->rightson,hash,groupcnt,myname,groups);
-    
+
     if (!groupname){		// we are not a sub group
 	if (myname){		// but we are a group
 	    if (erg>0) {			// it is used
@@ -73,19 +73,19 @@ char *PHMATRIX::compress(GBT_TREE *tree){
 	entries[i]->group_nr = -1;
     }
 
-    long groupcnt = 0;		
-    PHENTRY **groups = new PHENTRY *[nentries]; 
-    search_group(tree,hash,&groupcnt,0,groups);	// search a group for all species and create groups 
-    
+    long groupcnt = 0;
+    PHENTRY **groups = new PHENTRY *[nentries];
+    search_group(tree,hash,&groupcnt,0,groups);	// search a group for all species and create groups
+
     PHENTRY **found_groups = 0;
-    
+
     if (groupcnt) { // if we found groups => make copy of group array
 	found_groups = new PHENTRY *[groupcnt];
-	memcpy(found_groups, groups, groupcnt*sizeof(*groups)); 
+	memcpy(found_groups, groups, groupcnt*sizeof(*groups));
     }
-    
+
     int nongroupcnt = 0; // count # of species NOT in groups and copy then to 'groups'
-    for (i=0;i<nentries;i++) { 
+    for (i=0;i<nentries;i++) {
 	if (entries[i]->name && entries[i]->group_nr == -1) { // species not in groups
 	    groups[nongroupcnt] = new PHENTRY(entries[i]->name,this);
 	    entries[i]->group_nr = nongroupcnt++;
@@ -93,23 +93,23 @@ char *PHMATRIX::compress(GBT_TREE *tree){
 	else { // species is in group => add nentries to group_nr
 	    entries[i]->group_nr = entries[i]->group_nr + nentries;
 	}
-    } 
-    
+    }
+
     // append groups to end of 'groups'
     if (groupcnt) {
 	memcpy(groups+nongroupcnt, found_groups, groupcnt*sizeof(*groups)); // copy groups to end of 'groups'
 	delete [] found_groups;
 	found_groups = 0;
-	
+
 	for (i=0; i<nentries; i++) {
 	    if (entries[i]->name && entries[i]->group_nr>=nentries) {
 		entries[i]->group_nr = entries[i]->group_nr - nentries + nongroupcnt; // correct group_nr's for species in groups
 	    }
 	}
     }
-    
+
     groupcnt += nongroupcnt; // now groupcnt is # of groups + # of non-group-species
-    
+
     AP_smatrix count(groupcnt);
     AP_smatrix *sum = new AP_smatrix(groupcnt);
 
@@ -123,7 +123,7 @@ char *PHMATRIX::compress(GBT_TREE *tree){
 	    sum->set(x,y,sum->get(x,y)+matrix->get(i,j));
 	}
     }
-    
+
     for (i=0;i<groupcnt;i++){		// get the arithmetic average
 	for (j=0;j<=i;j++) {
 	    AP_FLOAT c = count.get(i,j);
