@@ -9,7 +9,7 @@ ARBHOME = `pwd`
 
 
 
-#	disable all lib dirs 
+#	disable all lib dirs
 LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
 
 # get the machine type
@@ -23,12 +23,12 @@ FORCEMASK = umask 002
 
 ifdef ECGS
 dflag1 = -ggdb3
-enumequiv = 
+enumequiv =
 havebool = -DHAVE_BOOL
 else
 dflag1 = -g
 enumequiv = -fenum-int-equiv
-havebool = 
+havebool =
 endif
 
 #----------------------
@@ -100,7 +100,7 @@ endif
 
 ifdef SUN4
    SITE_DEPENDEND_TARGETS = perl
-   ARLIB =	ld -assert pure-text -o 
+   ARLIB =	ld -assert pure-text -o
    CPP = CC -D$(MACH) -DNO_REGEXPR
    PP = CC -D$(MACH) -E
    ACC = acc -D$(MACH) -DNO_REGEXPR
@@ -139,15 +139,15 @@ ifdef SUN_WS_50
    AR = ld -r -o#
    ARLIB = CC -G -o#
 else
-   SUN_ACC_FLAGS = 
+   SUN_ACC_FLAGS =
    SUN_CPP_FLAGS = +w2
 endif
 
    ACC = $(FORCEMASK);cc -D$(MACH) $(SUN_ACC_FLAGS)
    CPP = $(FORCEMASK);CC -D$(MACH) $(SUN_CPP_FLAGS)
    PP = $(FORCEMASK);CC -D$(MACH) -E
-   CCLIB = cc -D$(MACH) $(SUN_ACC_FLAGS) -Kpic 
-   CCPLIB = CC -D$(MACH) $(SUN_CPP_FLAGS) -PIC 
+   CCLIB = cc -D$(MACH) $(SUN_ACC_FLAGS) -Kpic
+   CCPLIB = CC -D$(MACH) $(SUN_CPP_FLAGS) -PIC
 
    XHOME = /usr/dt
    XMKMF = 	/usr/openwin/bin/xmkmf
@@ -185,7 +185,7 @@ ifdef HPCC
    CCPLIB = $(CPP) +z
    CCLIB = $(ACC) +z
 
-   SYSLIBS = -codelibs -lm 
+   SYSLIBS = -codelibs -lm
    SHARED_LIB_SUFFIX = sl
 
    XINCLUDES = -I/usr/include/X11R5 -I/usr/include/Motif1.2
@@ -204,13 +204,13 @@ ifdef DIGITAL
    CCLIB = $(ACC)
 
    SHARED_LIB_SUFFIX = so
-   SYSLIBS = 
+   SYSLIBS =
 
    STATIC = -non_shared
    DYNAMIC =
 
-   XINCLUDES = 
-   SYSLIBS = -lm 
+   XINCLUDES =
+   SYSLIBS = -lm
    XLIBS =  -lXm -lXt -lX11 $(SYSLIBS)
 endif
 
@@ -225,7 +225,7 @@ ifdef SGI
    CCPLIB = $(CPP)
    CCLIB = $(ACC)
    XINCLUDES =
-   SYSLIBS = -lm 
+   SYSLIBS = -lm
    XLIBS = -lXm -lXt -lX11 $(SYSLIBS)
 endif
 
@@ -296,7 +296,7 @@ ARCHS = \
 			AWTC/AWTC.a AWDEMO/AWDEMO.a NTREE/NTREE.a \
 			ARB_GDE/ARB_GDE.a  ALIV3/ALIV3.a \
 			PARSIMONY/PARSIMONY.a TOOLS/TOOLS.a READSEQ/READSEQ.a \
-			SECONDARY/SECONDARY.a SECEDIT/SECEDIT.a ALEIO/.a \
+			SECEDIT/SECEDIT.a ALEIO/.a \
 			TEST/TEST.a WETC/WETC.a CAT/CAT.a TRS/TRS.a \
 			EDIT4/EDIT4.a MULTI_PROBE/MULTI_PROBE.a EISPACK/EISPACK.a
 
@@ -304,7 +304,7 @@ ARCHS = \
 ARCHS_CLIENTACC = PROBE_COM/client.a
 ARCHS_CLIENTCPP = NAMES_COM/client.a
 ARCHS_CLIENT = $(ARCHS_CLIENTCPP)
-ARCHS_MAKEBIN =		AISC_MKPTPS/dummy.a AISC/dummy.a 
+ARCHS_MAKEBIN =		AISC_MKPTPS/dummy.a AISC/dummy.a
 
 ARCHS_COMMUNICATION =	NAMES_COM/server.a\
 			PROBE_COM/server.a\
@@ -319,23 +319,23 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a\
 NTREE = bin/arb_ntree
 ARCHS_NTREE = NAMES_COM/server.a $(ARCHS_CLIENTACC) NTREE/NTREE.a STAT/STAT.a MULTI_PROBE/MULTI_PROBE.a \
 	ARB_GDE/ARB_GDE.a PROBE_DESIGN/PROBE_DESIGN.a \
-	AWTC/AWTC.a SERVERCNTRL/SERVERCNTRL.a MERGE/MERGE.a CAT/CAT.a $(SEERLIB) 
-$(NTREE): $(ARCHS_NTREE) aw db 
+	AWTC/AWTC.a SERVERCNTRL/SERVERCNTRL.a MERGE/MERGE.a CAT/CAT.a $(SEERLIB)
+$(NTREE): $(ARCHS_NTREE) aw db
 	$(CPP) $(lflags) -o $@ $(LIBPATH) \
 		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
 		AWTC/AWTC.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) \
 		$(ARCHS_CLIENTACC) -lAWT $(LIBS)
 
 #***********************************	arb_edit **************************************
-EDIT = bin/arb_edit 
-ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a 
+EDIT = bin/arb_edit
+ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a
 $(EDIT): $(ARCHS_EDIT)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lAWT -lARBDBPP $(LIBS)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 ARCHS_EDIT4 = NAMES_COM/client.a AWTC/AWTC.a EDIT4/EDIT4.a SECEDIT/SECEDIT.a \
-	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a 
+	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a
 $(EDIT4): $(ARCHS_EDIT4) aw db
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) -lAWT $(LIBS)
 
@@ -355,7 +355,7 @@ $(DIST): $(ARCHS_DIST)
 
 #***********************************	arb_pars **************************************
 PARSIMONY =		bin/arb_pars
-ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a 
+ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a
 $(PARSIMONY): $(ARCHS_PARSIMONY)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) -lAWT $(LIBS)
 
@@ -367,17 +367,11 @@ $(NALIGNER): $(ARCHS_NALIGNER)
 	cp NALIGNER/NALIGNER.com $@
 # no LIB_NALIGNER defined: see NALIGNER/Makefile
 
-#***********************************	arb_secondary **************************************
-SECONDARY = bin/arb_secondary
-ARCHS_SECONDARY = SECONDARY/SECONDARY.a
-$(SECONDARY):	$(ARCHS_SECONDARY)
-	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECONDARY) -lAWT $(LIBS)	
-
 #***********************************	arb_secedit **************************************
 SECEDIT = bin/arb_secedit
 ARCHS_SECEDIT = SECEDIT/SECEDIT.a
 $(SECEDIT):	$(ARCHS_SECEDIT)
-	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)	
+	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
 
 #***********************************	arb_probe_group **************************************
@@ -408,7 +402,7 @@ PROBE = bin/arb_pt_server
 ARCHS_PROBE = PROBE_COM/server.a PROBE/PROBE.a SERVERCNTRL/SERVERCNTRL.a
 $(PROBE): $(ARCHS_PROBE)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) PROBE/PROBE.a PROBE_COM/server.a \
-			SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS) 
+			SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS)
 
 #***********************************	arb_name_server **************************************
 NAMES = bin/arb_name_server
@@ -418,7 +412,7 @@ $(NAMES): $(ARCHS_NAMES)
 
 #***********************************	ors **************************************
 ORS_SERVER = tb/ors_server
-ARCHS_ORS_SERVER = ORS_COM/server.a ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a 
+ARCHS_ORS_SERVER = ORS_COM/server.a ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a
 $(ORS_SERVER): $(ARCHS_ORS_SERVER)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/server.a ORS_COM/client.a $(STATIC) -lARBDB $(DYNAMIC) $(SYSLIBS) $(CCPLIBS) $(CRYPTLIB)
 
@@ -435,7 +429,7 @@ $(EDITDB): $(ARCHS_EDITDB)
 
 
 #***********************************	TEST SECTION  **************************************
-AWDEMO = tb/awdemo 
+AWDEMO = tb/awdemo
 ARCHS_AWDEMO = AWDEMO/AWDEMO.a
 $(AWDEMO): $(ARCHS_AWDEMO)
 	$(CPP) $(lflags) -o $@ $(ARCHS_AWDEMO) $(LIBS)
@@ -468,7 +462,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 #			Rekursiv calls to submakefiles
 #***************************************************************************************
 :
-%.depend: 
+%.depend:
 	@$(GMAKE) -C $(@D) -r \
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
@@ -495,7 +489,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"CLEAN_BEFORE_MAKE  = $(CLEAN_BEFORE_MAKE)" \
-		"MAIN = $(@F:.dummy=.a)" 
+		"MAIN = $(@F:.dummy=.a)"
 
 
 #***************************************************************************************
@@ -540,11 +534,10 @@ oc:		$(ARCHS_ORS_CGI:.a=.dummy)	$(ORS_CGI)
 ac:		$(ARCHS_ARBDB_COMPRESS:.a=.dummy)	$(ARBDB_COMPRESS)
 
 te:		$(ARCHS_TEST:.a=.dummy)	$(TEST)
-#sec:	$(ARCHS_SECONDARY:.a=.dummy)	$(SECONDARY)
-sec:	$(ARCHS_SECEDIT:.a=.dummy)	$(SECONDARY)
+sec:	$(ARCHS_SECEDIT:.a=.dummy)
 de:		$(ARCHS_AWDEMO:.a=.dummy)	$(AWDEMO)
 
-e4:		$(ARCHS_EDIT4:.a=.dummy)	$(EDIT4)
+e4:		$(ARCHS_EDIT4:.a=.dummy) $(EDIT4)
 we:		$(ARCHS_WETC:.a=.dummy)		$(WETC)
 eb:		$(ARCHS_EDITDB:.a=.dummy)	$(EDITDB)
 
@@ -553,10 +546,10 @@ eb:		$(ARCHS_EDITDB:.a=.dummy)	$(EDITDB)
 depend: $(ARCHS:.a=.depend)
 tags:
 # first search class definitions
-	$(CTAGS)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`  
-	$(CTAGS) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`  
+	$(CTAGS)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+	$(CTAGS) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-	$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`  
+	$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
 	$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 tags2:
 	$(CTAGS) `find . -follow -name '*.[ch]xx' -type f` ARBDB/*.[ch]
@@ -631,7 +624,7 @@ bin/%:	DEPOT2/%
 
 
 ifdef OPENWINHOME
-openwinprogs:	gde	$(DEST_BIN)/arb_gde 
+openwinprogs:	gde	$(DEST_BIN)/arb_gde
 else
 openwinprogs:
 endif
