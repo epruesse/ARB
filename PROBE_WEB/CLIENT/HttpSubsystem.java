@@ -8,31 +8,39 @@ public class HttpSubsystem
     // old version variables
 
 private String host;
-private int port;
-private Socket probeSocket;
-private String treeName;
-private String cgiName;
+private String path;
+private int    port;
+
+private Socket            probeSocket;
+private String            treeName;
+private String            cgiName;
 private byte[] byteBuffer;
-private PrintWriter toServer;
-private InputStream fromServer;
+private PrintWriter       toServer;
+private InputStream       fromServer;
 private InputStreamReader charReader;
 private char[] textInput;
 
     // new version variables
-private URL hostUrl;
+private URL    hostUrl;
 private String currentVersion;
 private String localVersion;
 
+private String error;
+
 public HttpSubsystem(String name)
     {
-        // check URL  
+        // check URL
       try{
             hostUrl = new URL(name);
-            host = hostUrl.getHost();
+            host    = hostUrl.getHost();
+            path    = hostUrl.getPath();
+            System.out.println("path: " + path);
 
-            port = hostUrl.getPort();
+            port                            = hostUrl.getPort();
             System.out.println("port: " + port);
             if ((port = hostUrl.getPort()) == -1) port = 80;
+
+            error = "";
 
         }catch (Exception e)
             {
@@ -60,8 +68,8 @@ public HttpSubsystem(String name)
 
         // check tree version number
         // server version
-        currentVersion = conductRequest("/pservercgi/getTreeVersion.cgi");
-        System.out.println("server version: " + ">>>" + currentVersion + "<<<");
+//         currentVersion = conductRequest("getTreeVersion.cgi");
+//         System.out.println("server version: " + ">>>" + currentVersion + "<<<");
         //        String localVersion = new String("[CURRENTVERSION_16S_27081969]");
 
 
@@ -89,7 +97,7 @@ public HttpSubsystem(String name)
             //            FileReader in = new FileReader(f);
 //         JarFile archive = new JarFile(archiveName, false);
 //         Manifest locMan = archive.getManifest();
-//         System.out.println("Manifest: >>>" + locMan.getMainAttributes().getValue("LOCALVERSION") + "<<<");  
+//         System.out.println("Manifest: >>>" + locMan.getMainAttributes().getValue("LOCALVERSION") + "<<<");
 
 //           InputStreamReader in = new InputStreamReader(archive.getInputStream(archive.getEntry("demo.newick")));
 
@@ -103,7 +111,7 @@ public HttpSubsystem(String name)
 //                     inputTree.append(s);
 //                 }
 
-            }        
+            }
         catch (Exception e) {
             System.out.println("Couldn't find treefile or was not able to download");
             System.exit(1);
@@ -127,7 +135,7 @@ public HttpSubsystem(String name)
 
         //        byteBuffer = new byte[4096];
         //        textInput = new char[4096];
-        toServer.print("GET " + filename + "\n\n");
+        toServer.print("GET " + path + filename + "\n\n");
         System.out.println("Request:\nGET " + filename + "\n\n");
         toServer.flush();
         StringBuffer strb = new StringBuffer();
@@ -140,7 +148,7 @@ public HttpSubsystem(String name)
                 PrintWriter testOutput = new PrintWriter(System.out);
                 testOutput.write(textInput, 0, charsRead);
                 strb.append(textInput, 0, charsRead);
-                
+
             }
 
         // maybe not necessary but seems safer
@@ -152,25 +160,25 @@ public HttpSubsystem(String name)
         //probeSocket.close();
         //            System.out.close();
         return strb.toString();
-        
+
         }catch (Exception e)
             {
                 System.err.println(e);
                 return new String("no successful retrieve");
             }
-        
-        
+
+
      }
 
 public String retrieveNodeInformation(String nodePath)
     {
-     return   conductRequest("/pservercgi/getProbes.cgi?" + nodePath);
+     return   conductRequest("getProbes.cgi?" + nodePath);
 
-        //        NodeInformation goes here 
+        //        NodeInformation goes here
 
     }
 
-    
+
 public String getCurrentVersion()
     {
         return currentVersion;
@@ -192,8 +200,9 @@ public void downloadZippedTree(String fileName)
             toServer = new PrintWriter(probeSocket.getOutputStream());
             FileOutputStream outstream = new FileOutputStream(fileName);
             byteBuffer = new byte[4096];
-            toServer.print("GET /pserverdata/" + fileName + "\n\n");
-            System.out.println("Request:\nGET /pserverdata/" + fileName + "\n\n");
+            toServer.print("GET " + path + "getTree.cgi\n\n");
+//             toServer.print("GET /pserverdata/" + fileName + "\n\n");
+//             System.out.println("Request:\nGET /pserverdata/" + fileName + "\n\n");
             toServer.flush();
             int bytesRead;
             while((bytesRead = fromServer.read(byteBuffer)) != -1)
@@ -214,7 +223,7 @@ public void downloadZippedTree(String fileName)
                 System.out.println("Program terminates now!");
                 System.exit(1);
             }
-        
-        
+
+
     }
 }

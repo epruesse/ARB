@@ -9,7 +9,7 @@ update:
 	jar -uf allProbes.jar *.class
 
 test:
-	java -jar allProbes.jar
+	( mkdir -p testdir; cd testdir; java -jar ../allProbes.jar; ls -al -rt )
 
 clean:
 	rm *.class
