@@ -10,7 +10,7 @@ import java.awt.event.*;
 class Client
 {
 
-private ProbesGUI    display;
+private ProbesGUI     display;
 private TreeDisplay   tree;
 private TreeNode      root;
 private String        treeString;
@@ -145,9 +145,18 @@ public ProbesGUI getDisplay()
         return display;
     }
 
-public String getNodeInformation(String nodePath)
+public void updateNodeInformation(String encodedPath)
     {
-        return webAccess.retrieveNodeInformation(nodePath);
+        String       answer       = webAccess.retrieveNodeInformation(encodedPath);
+        ServerAnswer parsedAnswer = new ServerAnswer(answer, true, true);
+
+        if (parsedAnswer.hasError()) {
+            String error = parsedAnswer.getError();
+            System.out.println("Error while retrieving probe information: "+error);
+        }
+        else {
+            display.setProbeListContents(parsedAnswer);
+        }
     }
 }
 
