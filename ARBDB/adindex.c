@@ -354,23 +354,23 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
 
                 }else{
                     gb_save_extern_data_in_ts(gbd); /* check out and free string */
-                    gb_assert(ue->d.ts);
-                    
-                    gbd->flags              = ue->d.ts->flags;
-                    gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
-                    GB_MEMCPY(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
-                    if (type >= GB_BITS) {
-                        if (gbd->flags2.extern_data){
-                            SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); /* set relative pointers correctly */
+                    if (ue->d.ts) { // nothing to undo (e.g. if undoing GB_touch)
+                        gbd->flags              = ue->d.ts->flags;
+                        gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
+
+                        GB_MEMCPY(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
+                        if (type >= GB_BITS) {
+                            if (gbd->flags2.extern_data){
+                                SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); /* set relative pointers correctly */
+                            }
+
+                            gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
+                            ue->d.ts = 0;
+
+                            GB_INDEX_CHECK_IN(gbd);
                         }
-
-                        gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
-                        ue->d.ts = 0;
-
-                        GB_INDEX_CHECK_IN(gbd);
                     }
-
                 }
                 {
                     struct gb_header_flags *pflags = &GB_ARRAY_FLAGS(gbd);
