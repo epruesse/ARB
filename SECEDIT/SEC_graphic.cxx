@@ -502,7 +502,9 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                                 break;
                             }
                             default: {
+#if defined(DEBUG)
                                 sec_assert(0);
+#endif // DEBUG
                                 break;
                             }
                         }
@@ -538,7 +540,9 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
         }
         /* ******************************************************** */
         default: {
+#if defined(DEBUG)
             sec_assert(0);
+#endif // DEBUG
             break;
         }
     }
@@ -667,7 +671,9 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
         }
 
         if (create_default) {
+#if defined(DEBUG)
             sec_assert(reason);
+#endif // DEBUG
             int len = strlen(reason)+100;
             char *msg = (char*)malloc(len);
             /*int printed = */ sprintf(msg, "Due to %s\nyou can choose between..", reason);
@@ -684,7 +690,9 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
             free(reason);
         }
         else {
+#if defined(DEBUG)
             sec_assert(!reason);
+#endif // DEBUG
         }
     }
 
@@ -790,7 +798,9 @@ int SEC_bond_def::get_index(char base) const
 
     if (!found) return -1;
     int idx = int(found-allowed);
+#if defined(DEBUG)
     sec_assert(idx>=0 && idx<SEC_BOND_BASE_CHARS);
+#endif // DEBUG
     return idx;
 }
 
@@ -951,8 +961,8 @@ void SEC_bond_def::paint(AW_device *device, SEC_root *root, char base1, char bas
         default: {
 #if defined(DEBUG) && 1
             printf("Illegal bond-char '%c' (=%i) for %c/%c\n", Bond, Bond, base1, base2);
-#endif
             sec_assert(0);
+#endif
             break;
         }
     }
