@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.6  2005/01/28 14:32:04  westram
+ * - fixed set_font() call
+ *
  * Revision 1.5  2003/08/13 11:24:35  westram
  * - Text elements may be X/Y attached
  *
@@ -596,7 +599,7 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
         if ( !(xtext->gc = (int)GBS_read_hash(gchash,fontstring)) ) {
             device->new_gc( gc );
             device->set_line_attributes( gc, 0.3, AW_SOLID );
-            device->set_font( gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale));
+            device->set_font( gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
             //device->set_font( gc, xtext->font, (int)(scale * xtext->fontsize) );
             device->set_foreground_color( gc, AW_WINDOW_FG );
             if (depth<=1) device->set_function( gc,AW_XOR);
