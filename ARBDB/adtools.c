@@ -815,12 +815,12 @@ GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, lon
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree)
 {
     /* writes a tree to the database.
-       If tree is loaded by function GBT_read_tree(..) than tree_name should be zero !!!!!!
-       else gb_tree should be set to zero.
 
+    If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be zero !!!!!!
+    else 'gb_tree' should be set to zero.
 
-       to copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
-       or set set recursively all tree->gb_node variables to zero (that unlinks the tree),
+    to copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
+    or set recursively all tree->gb_node variables to zero (that unlinks the tree),
 
 	*/
     GBDATA *gb_node,	*gb_tree_data;
@@ -1090,27 +1090,49 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
 /********************************************************************************************
 					load a tree from file system
 ********************************************************************************************/
-#define gbt_read_char(io,c)                                     \
-for (c=' '; (c==' ') || (c=='\n') || (c=='\t')|| (c=='[') ;){   \
-    c=getc(io);                                                 \
-    if (c == '\n' ) gbt_line_cnt++;                             \
-    if (c == '[') {                                             \
-        for (;(c!=']')&&(c!=EOF);c=getc(io) );                  \
-        c=' ';                                                  \
-    }                                                           \
-}                                                               \
+
+#define MAX_COMMENT_SIZE 1024
+
+#define GBT_READ_CHAR(io,c)                                                     \
+for (c=' '; (c==' ') || (c=='\n') || (c=='\t')|| (c=='[') ;){                   \
+    c=getc(io);                                                                 \
+    if (c == '\n' ) gbt_line_cnt++;                                             \
+    if (c == '[') {                                                             \
+        if (gbt_tree_comment_size && gbt_tree_comment_size<MAX_COMMENT_SIZE){   \
+            gbt_tree_comment[gbt_tree_comment_size++] = '\n';                   \
+        }                                                                       \
+        c = getc(io);                                                           \
+        for (; (c!=']') && (c!=EOF); c = getc(io)) {                            \
+            if (gbt_tree_comment_size<MAX_COMMENT_SIZE) {                       \
+                gbt_tree_comment[gbt_tree_comment_size++] = c;                  \
+            }                                                                   \
+        }                                                                       \
+        c                                     = ' ';                            \
+    }                                                                           \
+}                                                                               \
 gbt_last_character = c;
 
-#define gbt_get_char(io,c)                      \
+#define GBT_GET_CHAR(io,c)                      \
 c = getc(io);                                   \
 if (c == '\n' ) gbt_line_cnt++;                 \
 gbt_last_character = c;
 
-int gbt_last_character = 0;
-int gbt_line_cnt = 0;
+static int  gbt_last_character    = 0;
+static int  gbt_line_cnt          = 0;
+static char gbt_tree_comment[MAX_COMMENT_SIZE+1]; // all comments from a tree file are collected here
+static int  gbt_tree_comment_size = 0; // all comments from a tree file are collected here
 
-double
-gbt_read_number(FILE * input)
+/* ----------------------------------------------- */
+/*      static void clear_tree_comment(void)       */
+/* ----------------------------------------------- */
+static void clear_tree_comment(void) {
+    gbt_tree_comment_size = 0;
+}
+
+/* ---------------------------------------------- */
+/*      double gbt_read_number(FILE * input)      */
+/* ---------------------------------------------- */
+double gbt_read_number(FILE * input)
 {
     char            strng[256];
     char           *s;
@@ -1132,49 +1154,78 @@ gbt_read_number(FILE * input)
     return fl;
 }
 
-/** Read in a quoted string, double quotes ('') are replaced by (') */
+/** Read in a quoted or unquoted string. in quoted strings double quotes ('') are replaced by (') */
 char *gbt_read_quoted_string(FILE *input){
     char buffer[1024];
     int	c;
     char *s;
-    s = &(buffer[0]);
+    s = buffer;
     c = gbt_last_character;
     if ( c == '\'' ) {
-        gbt_get_char(input,c);
+        GBT_GET_CHAR(input,c);
         while ( (c!= EOF) && (c!='\'') ) {
         gbt_lt_double_quot:
             *(s++) = c;
-            if ( ( ((long)s)-(long)&(buffer[0])) > 1000 ) {
+            if ((s-buffer) > 1000) {
                 *s = 0;
                 GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
                 return 0;
             }
-            gbt_get_char(input,c);
+            GBT_GET_CHAR(input,c);
         }
         if (c == '\'') {
-            gbt_read_char(input,c);
+            GBT_READ_CHAR(input,c);
             if (c == '\'') goto gbt_lt_double_quot;
         }
     }else{
-        while ( c== '_') gbt_read_char(input,c);
-        while ( c== ' ') gbt_read_char(input,c);
+        while ( c== '_') GBT_READ_CHAR(input,c);
+        while ( c== ' ') GBT_READ_CHAR(input,c);
         while ( (c != ':') && (c!= EOF) && (c!=',') &&
-                (c!=';') && (c!= ')') ) {
+                (c!=';') && (c!= ')') )
+        {
             *(s++) = c;
-            if ( ( ((long)s)-(long)&(buffer[0])) > 1000 ) {
+            if ((s-buffer) > 1000) {
                 *s = 0;
                 GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
                 return 0;
             }
-            gbt_read_char(input,c);
+            GBT_READ_CHAR(input,c);
         }
     }
     *s = 0;
     return GB_STRDUP(buffer);
 }
 
+/* ---------------------------------------------------------------- */
+/*      static void setBranchName(GBT_TREE *node, char *name)       */
+/* ---------------------------------------------------------------- */
+/* detect bootstrap values */
+/* name has to be stored in node or must be free'ed */
 
-GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
+static double max_found_bootstrap = -1;
+
+static void setBranchName(GBT_TREE *node, char *name) {
+    char   *end       = 0;
+    double  bootstrap = strtod(name, &end);
+
+    if (end == name) {          // no digits -> no bootstrap
+        node->name = name;
+    }
+    else {
+        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0
+        if (bootstrap>max_found_bootstrap) {
+            max_found_bootstrap = bootstrap;
+        }
+        node->remark_branch = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
+        if (end[0] != 0) {      // sth behind bootstrap value
+            if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
+            node->name = GB_strdup(end);
+        }
+        free(name);
+    }
+}
+
+static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tree_file_name)
 {
     int             c;
     GB_BOOL		loop_flag;
@@ -1183,8 +1234,8 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
     if ( gbt_last_character == '(' ) {	/* make node */
 
         nod = (GBT_TREE *)GB_calloc(structuresize,1);
-        gbt_read_char(input,c);
-        left = gbt_load_tree_rek(input,structuresize);
+        GBT_READ_CHAR(input,c);
+        left = gbt_load_tree_rek(input,structuresize, tree_file_name);
         if (!left ) return 0;
         nod->leftson = left;
         left->father = nod;
@@ -1195,12 +1246,14 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
                 ) {
             char *str = gbt_read_quoted_string(input);
             if (!str) return 0;
-            left->name = str;
+
+            setBranchName(left, str);
+            /* left->name = str; */
         }
         if (gbt_last_character !=  ':') {
             nod->leftlen = DEFAULT_LENGTH;
         }else{
-            gbt_read_char(input,c);
+            GBT_READ_CHAR(input,c);
             nod->leftlen = gbt_read_number(input);
         }
         if ( gbt_last_character == ')' ) {	/* only a single node !!!!, skip this node */
@@ -1209,8 +1262,10 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
             return left;
         }
         if ( gbt_last_character != ',' ) {
-            GB_export_error ( "error in *.tree file:  ',' expected '%c' found; line %i",
-                              gbt_last_character, gbt_line_cnt);
+            GB_export_error ( "error in '%s':  ',' expected '%c' found; line %i",
+                              tree_file_name,
+                              gbt_last_character,
+                              gbt_line_cnt);
             return NULL;
         }
         loop_flag = GB_FALSE;
@@ -1223,8 +1278,8 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
             }else{
                 loop_flag = GB_TRUE;
             }
-            gbt_read_char(input, c);
-            right = gbt_load_tree_rek(input,structuresize);
+            GBT_READ_CHAR(input, c);
+            right = gbt_load_tree_rek(input,structuresize, tree_file_name);
             if (right == NULL) return NULL;
             nod->rightson = right;
             right->father = nod;
@@ -1235,21 +1290,23 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
                     ) {
                 char *str = gbt_read_quoted_string(input);
                 if (!str) return 0;
-                right->name = str;
+                setBranchName(right, str);
+                /* right->name = str; */
             }
             if (gbt_last_character != ':') {
                 nod->rightlen = DEFAULT_LENGTH;
             }else{
-                gbt_read_char(input, c);
+                GBT_READ_CHAR(input, c);
                 nod->rightlen = gbt_read_number(input);
             }
         }
         if ( gbt_last_character != ')' ) {
-            GB_export_error ( "error in .tree file:  ')' expected '%c' found: line %i ",
+            GB_export_error ( "error in '%s':  ')' expected '%c' found: line %i ",
+                              tree_file_name,
                               gbt_last_character,gbt_line_cnt);
             return NULL;
         }
-        gbt_read_char(input,c);		/* remove the ')' */
+        GBT_READ_CHAR(input,c);		/* remove the ')' */
 
     }else{
         char *str = gbt_read_quoted_string(input);
@@ -1261,10 +1318,25 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
     }
     return nod;
 }
+/* ------------------------------------------------------------------ */
+/*      void GBT_scale_bootstraps(GBT_TREE *tree, double scale)       */
+/* ------------------------------------------------------------------ */
+void GBT_scale_bootstraps(GBT_TREE *tree, double scale) {
+    if (tree->leftson) GBT_scale_bootstraps(tree->leftson, scale);
+    if (tree->rightson) GBT_scale_bootstraps(tree->rightson, scale);
+    if (tree->remark_branch) {
+        double bootstrap    = strtod(tree->remark_branch, 0);
+        bootstrap           = bootstrap*scale+0.5;
+        free(tree->remark_branch);
+        tree->remark_branch = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
+    }
+}
 
 /* Load a newick compatible tree from file int GBT_TREE, structure size should be >0, see
- GBT_read_tree for more information */
-GBT_TREE *GBT_load_tree(char *path, int structuresize)
+   GBT_read_tree for more information
+   if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
+*/
+GBT_TREE *GBT_load_tree(char *path, int structuresize, char **commentPtr)
 {
     FILE		*input;
     GBT_TREE	*tree;
@@ -1273,10 +1345,30 @@ GBT_TREE *GBT_load_tree(char *path, int structuresize)
         GB_export_error("Import tree: file '%s' not found", path);
         return 0;
     }
-    gbt_read_char(input,c);
+
+    clear_tree_comment();
+
+    GBT_READ_CHAR(input,c);
     gbt_line_cnt = 1;
-    tree = gbt_load_tree_rek(input,structuresize);
+    {
+        const char *name_only = strrchr(path, '/');
+        if (name_only) ++name_only;
+        else name_only = path;
+
+        max_found_bootstrap = -1;
+        tree                = gbt_load_tree_rek(input,structuresize, name_only);
+
+        if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
+            GBT_scale_bootstraps(tree, 0.01);
+        }
+    }
     fclose(input);
+
+    if (commentPtr) {
+        assert(*commentPtr == 0);
+        if (gbt_tree_comment_size) *commentPtr = GB_STRDUP(gbt_tree_comment);
+    }
+
     return tree;
 }
 
@@ -1600,7 +1692,7 @@ GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_T
     }
     gb_gb             = GB_find(species,ali_name,0,down_level);
     if (!gb_gb) gb_gb = GB_create_container(species,ali_name);
-    
+
     if (type == GB_STRING) {
         gb_data = GB_search(gb_gb, key, GB_FIND);
         if (!gb_data){
