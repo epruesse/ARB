@@ -413,31 +413,34 @@ class Client
             root.setPath("");
             display.initTreeDisplay(root);
 
-            TreeDisplay td          = display.getTreeDisplay();
-            boolean     needRefresh = false;
-            if (config.hasKey("Folding")) { // restore saved folding
-                try {
-                    td.setFolding(config.getValue("Folding"));
+            if (config != null) {
+                TreeDisplay td      = display.getTreeDisplay();
+                boolean     needRefresh = false;
+
+                if (config.hasKey("Folding")) { // restore saved folding
+                    try {
+                        td.setFolding(config.getValue("Folding"));
+                        needRefresh = true;
+                    }
+                    catch (Exception e) {
+                        Toolkit.showMessage("Error restoring folding state:\n  "+e.getMessage());
+                    }
+                }
+                if (config.hasKey("VisibleSubtree")) { // restore visible subtree
+                    td.setVisibleSubtree(td.findNodeByCodedPath(config.getValue("VisibleSubtree")));
                     needRefresh = true;
                 }
-                catch (Exception e) {
-                    Toolkit.showMessage("Error restoring folding state:\n  "+e.getMessage());
+                if (config.hasKey("LastMatchedSubtree")) { // restore last matched subtree
+                    String preferredProbe = null;
+                    if (config.hasKey("SelectedProbe")) {
+                        preferredProbe = config.getValue("SelectedProbe");
+                    }
+                    td.setMatchedNode(td.findNodeByCodedPath(config.getValue("LastMatchedSubtree")), preferredProbe);
+                    needRefresh = true;
                 }
-            }
-            if (config.hasKey("VisibleSubtree")) { // restore visible subtree
-                td.setVisibleSubtree(td.findNodeByCodedPath(config.getValue("VisibleSubtree")));
-                needRefresh = true;
-            }
-            if (config.hasKey("LastMatchedSubtree")) { // restore last matched subtree
-                String preferredProbe = null;
-                if (config.hasKey("SelectedProbe")) {
-                    preferredProbe = config.getValue("SelectedProbe");
-                }
-                td.setMatchedNode(td.findNodeByCodedPath(config.getValue("LastMatchedSubtree")), preferredProbe);
-                needRefresh = true;
-            }
 
-            if (needRefresh) td.refresh();
+                if (needRefresh) td.refresh();
+            }
         }
         catch (ClientException e) {
             Toolkit.showError(e.getMessage());
