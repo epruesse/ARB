@@ -1140,7 +1140,9 @@ PERLDEPS= \
 	ARBDB/ad_t_prot.h \
 	ARBDB/arbdb.h \
 	ARBDB/arbdbt.h \
+	ARBDB/adGene.h \
 	ARBDB/arb_assert.h \
+	bin/arb_proto_2_xsub \
 	PERL2ARB/ARB.xs.default \
 	PERL2ARB/${MACH}.PL \
 
@@ -1158,7 +1160,7 @@ else
 endif
 	rm -f PERL2ARB/ARB.xs
 	rm -f PERL2ARB/proto.h
-	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
+	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h ARBDB/adGene.h >PERL2ARB/proto.h
 	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK; \
 		export LD_LIBRARY_PATH; \
 		echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH; \
@@ -1175,7 +1177,7 @@ endif
 		export PATH; \
 		cd PERL2ARB; \
 		echo calling perl ${MACH}.PL; \
-		perl -I ../lib/perl5 ${MACH}.PL; \
+		perl ${MACH}.PL; \
 		echo -------- calling MakeMaker makefile; \
 		make "dflags=${dflags}"
 	echo -------- end of MakeMaker-Makefile
