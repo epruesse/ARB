@@ -830,7 +830,7 @@ static char *search_executable(GB_CSTR exe_name) {
 
     while (!found && start) {
         const char *colon = strchr(start, ':');
-        int         len   = colon ? (colon-start) : strlen(start);
+        int         len   = colon ? (colon-start) : (int)strlen(start);
 
         memcpy(buffer, start, len);
         buffer[len] = '/';

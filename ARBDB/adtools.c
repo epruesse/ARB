@@ -2224,7 +2224,7 @@ NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, s
 
     while (!error) {
         char   *p   = strchr(stored, ';');
-        int     len = p ? (p-stored) : strlen(stored);
+        int     len = p ? (p-stored) : (int)strlen(stored);
         GBDATA *gb_species;
 
         gb_assert(len <= MAX_NAME_LEN);
