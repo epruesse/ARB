@@ -38,8 +38,8 @@ void AWTC_Points::append(AWTC_Points *neu)
 {
     if (!my_next)
     {
-	my_next = neu;
-	return;
+        my_next = neu;
+        return;
     }
 
     my_next->append(neu);
@@ -65,51 +65,51 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     long lastBase = length-1;
 
     for (xPos=0; xPos<length; xPos++) {		// convert point gaps at beginning to dash gaps
-	char c = text[xPos];
-	if (!AWTC_is_gap(c)) {
-	    firstBase = xPos;
-	    break;
-	}
+        char c = text[xPos];
+        if (!AWTC_is_gap(c)) {
+            firstBase = xPos;
+            break;
+        }
     }
 
     for (xPos=length-1; xPos>=0; xPos--) 	// same for end of sequence
     {
-	char c = text[xPos];
-	if (!AWTC_is_gap(c)) {
-	    lastBase = xPos;
-	    break;
-	}
+        char c = text[xPos];
+        if (!AWTC_is_gap(c)) {
+            lastBase = xPos;
+            break;
+        }
     }
 
     for (xPos=0; xPos<length; xPos++) {
-	char c = toupper(text[xPos]);
+        char c = toupper(text[xPos]);
 
-	if (AWTC_is_gap(c)) {
-	    if (c=='-' || xPos<firstBase || xPos>lastBase) {
-		compPositionTab[xPos] = -1; 			// a illegal index
-		lastWasPoint = 0;
-	    }
-	    else {
-		awtc_assert(c=='.');
+        if (AWTC_is_gap(c)) {
+            if (c=='-' || xPos<firstBase || xPos>lastBase) {
+                compPositionTab[xPos] = -1; 			// a illegal index
+                lastWasPoint = 0;
+            }
+            else {
+                awtc_assert(c=='.');
 
-		if (!lastWasPoint) {
-		    lastWasPoint = 1;
-		    storePoints(myLength);
-		}
+                if (!lastWasPoint) {
+                    lastWasPoint = 1;
+                    storePoints(myLength);
+                }
 
-		compPositionTab[xPos] = -1;
-	    }
+                compPositionTab[xPos] = -1;
+            }
 
-	}
-	else {
-	    compPositionTab[xPos] = myLength++;
-	    lastWasPoint = 0;
-	}
+        }
+        else {
+            compPositionTab[xPos] = myLength++;
+            lastWasPoint = 0;
+        }
     }
 
-//    if (lastWasPoint) {
-//	storePoints(myLength+1);
-//    }
+    //    if (lastWasPoint) {
+    //	storePoints(myLength+1);
+    //    }
 
     //awtc_assert(myLength);	// otherwise text does only contain gaps
 
@@ -122,17 +122,17 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     gapsBeforePosition = new int[myLength+1];
 
     for (xPos=0; xPos<length; xPos++) {
-	cPos = compPositionTab[xPos];
-	awtc_assert(cPos<myLength);
+        cPos = compPositionTab[xPos];
+        awtc_assert(cPos<myLength);
 
-	if (cPos>=0) {
-	    myText[cPos] = toupper(text[xPos]);
-	    expdPositionTab[cPos] = xPos;
-	    gapsBeforePosition[cPos] =
-		cPos
-		? xPos-expdPositionTab[cPos-1]-1
-		: xPos;
-	}
+        if (cPos>=0) {
+            myText[cPos] = toupper(text[xPos]);
+            expdPositionTab[cPos] = xPos;
+            gapsBeforePosition[cPos] =
+                cPos
+                ? xPos-expdPositionTab[cPos-1]-1
+                : xPos;
+        }
     }
 
     gapsBeforePosition[myLength] = length - expdPositionTab[myLength-1];	// gaps before end of sequence
@@ -148,7 +148,7 @@ AWTC_CompactedSequence::~AWTC_CompactedSequence()
 
     delete[] expdPositionTab;
     if (points) delete points;
-//    delete[] compPositionTab;
+    //    delete[] compPositionTab;
 
     free(myName);
 }
@@ -156,22 +156,22 @@ AWTC_CompactedSequence::~AWTC_CompactedSequence()
 int AWTC_CompactedSequence::compPosition(int xPos) const
 {
     int l = 0,
-	h = length();
+        h = length();
 
     while (l<h) {
-	int m = (l+h)/2;
-	int cmp = xPos-expdPosition(m);
+        int m = (l+h)/2;
+        int cmp = xPos-expdPosition(m);
 
-	if (cmp==0) {
-	    return m; // found!
-	}
+        if (cmp==0) {
+            return m; // found!
+        }
 
-	if (cmp<0) { // xPos < expdPosition(m)
-	    h = m-1;
-	}
-	else { // xPos > expdPosition(m)
-	    l = m+1;
-	}
+        if (cmp<0) { // xPos < expdPosition(m)
+            h = m-1;
+        }
+        else { // xPos > expdPosition(m)
+            l = m+1;
+        }
     }
 
     awtc_assert(l==h);
@@ -192,11 +192,11 @@ AWTC_FastSearchSequence::AWTC_FastSearchSequence(const AWTC_CompactedSubSequence
 
     while (triple.rightOf()>=3)	// enough text for triple?
     {
-	int tidx = triple_index(triple.text());
-	AWTC_TripleOffset *top = new AWTC_TripleOffset(triple.leftOf(), myOffset[tidx]);
+        int tidx = triple_index(triple.text());
+        AWTC_TripleOffset *top = new AWTC_TripleOffset(triple.leftOf(), myOffset[tidx]);
 
-	myOffset[tidx] = top;
-	++triple;
+        myOffset[tidx] = top;
+        ++triple;
     }
 }
 
@@ -207,44 +207,43 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
 
     while (rest)
     {
-	char *found = (char*)memchr(myQuality+off, '?', rest);	// search for next '?' in myQuality
-	if (!found || (found-myQuality)>=rest) break;
+        char *found = (char*)memchr(myQuality+off, '?', rest);	// search for next '?' in myQuality
+        if (!found || (found-myQuality)>=rest) break;
 
-	long cnt;
-	for (cnt=0; found[cnt]=='?'; cnt++) found[cnt]='+';	// count # of unaligned positions and change them to '+'
-	long from  = found-myQuality;
-	long b_off = from-1;					// position before unaligned positions
-	long a_off = from+cnt;					// positions after unaligned positions
+        long cnt;
+        for (cnt=0; found[cnt]=='?'; cnt++) found[cnt]='+';	// count # of unaligned positions and change them to '+'
+        long from  = found-myQuality;
+        long b_off = from-1;					// position before unaligned positions
+        long a_off = from+cnt;					// positions after unaligned positions
 
-	long before,
-	    after;
-	for (before=0; b_off>=0 && isGlobalGap(b_off); before++,b_off--) ;		// count free positions before unaligned positions
-	for (after=0; a_off<used && isGlobalGap(a_off); after++,a_off++) ;		// count free positions after unaligned positions
+        long before, after;
+        for (before=0; b_off>=0 && isGlobalGap(b_off); before++,b_off--) ;		// count free positions before unaligned positions
+        for (after=0; a_off<used && isGlobalGap(a_off); after++,a_off++) ;		// count free positions after unaligned positions
 
-	if (b_off<=0) before = LONG_MAX;
-	if (a_off>=used) after = LONG_MAX;
+        if (b_off<=0) before = LONG_MAX;
+        if (a_off>=used) after = LONG_MAX;
 
-	if (before<after)		// move to the left
-	{
-	    if (before)
-	    {
-		long to = from-before;
-		while (cnt--) moveUnaligned(from++,to++);
-	    }
-	}
-	else if (after!=LONG_MAX) 	// move to the right
-	{
-	    if (after)
-	    {
-		from += cnt-1;		// copy from right to left!
-		long to = from+after;
+        if (before<after)		// move to the left
+        {
+            if (before)
+            {
+                long to = from-before;
+                while (cnt--) moveUnaligned(from++,to++);
+            }
+        }
+        else if (after!=LONG_MAX) 	// move to the right
+        {
+            if (after)
+            {
+                from += cnt-1;		// copy from right to left!
+                long to = from+after;
 
-		while (cnt--) moveUnaligned(from--,to--);
-	    }
-	}
+                while (cnt--) moveUnaligned(from--,to--);
+            }
+        }
 
-	rest -= (a_off-off);
-	off = a_off;
+        rest -= (a_off-off);
+        off = a_off;
     }
 }
 
@@ -257,26 +256,26 @@ void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
 
     while (nextPoint!=-1 && rest)
     {
-	unsigned char gap = myBuffer[off];
-	if (gap=='-' || gap=='.') {
-	    if (nextPoint==count) {
-		myBuffer[off] = '.';
-	    }
-	}
-	else
-	{
-	    count++;
-	    if (nextPoint==count) {
-		AWTC_message("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
-			     off, slaveSequence.name());
-	    }
-	    if (nextPoint<count) {
-		nextPoint = slaveSequence.nextPointPosition();
-	    }
-	}
+        unsigned char gap = myBuffer[off];
+        if (gap=='-' || gap=='.') {
+            if (nextPoint==count) {
+                myBuffer[off] = '.';
+            }
+        }
+        else
+        {
+            count++;
+            if (nextPoint==count) {
+                AWTC_message("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
+                             off, slaveSequence.name());
+            }
+            if (nextPoint<count) {
+                nextPoint = slaveSequence.nextPointPosition();
+            }
+        }
 
-	off++;
-	rest--;
+        off++;
+        rest--;
     }
 }
 
@@ -285,11 +284,11 @@ void AWTC_alignBuffer::point_ends_of()
     int i;
 
     for (i=0; (myBuffer[i]=='.' || myBuffer[i]=='-') && i<used; i++) {
-	myBuffer[i] = '.';
+        myBuffer[i] = '.';
     }
 
     for (i=used-1; (myBuffer[i]=='.' || myBuffer[i]=='-') && i>=0; i--) {
-	myBuffer[i] = '.';
+        myBuffer[i] = '.';
     }
 }
 
