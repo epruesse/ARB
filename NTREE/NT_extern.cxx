@@ -791,6 +791,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GBDATA *gb_arb_presets =	GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
 
+    bool is_genom_db = false; //  is this a genome database ?
+    {
+        GB_transaction  dummy(gb_main);
+        GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+        if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
+    }
+
     // --------------------------------------------------------------------------------
     //     File
     // --------------------------------------------------------------------------------
@@ -799,13 +806,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         AWMIMT( "close", "Close",					"C",0,		AWM_ALL, (AW_CB)AW_POPDOWN, 	0, 0 );
 
     }else{
-        bool is_genom_db = false; //  is this a genome database ?
-        {
-            GB_transaction  dummy(gb_main);
-            GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
-        }
-
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
             AWMIMT("save_changes",	"Save Changes",			"S","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
@@ -1266,7 +1266,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     int last_linex, last_liney;
     awm->get_at_position( &last_linex,&last_liney );
 
-    // edit, jump & web buttons (+help buttons):
+    // edit, gene-map, jump & web buttons (+help buttons):
 
     awm->button_length(9);
     awm->at(db_alignx, second_liney);
@@ -1274,6 +1274,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", "#edit.bitmap",0);
 
+    if (is_genom_db) {
+        awm->button_length(4);
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map, 0);
+        awm->help_text("gene_map.hlp");
+        awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
+    }
+
+    awm->button_length(9);
     awm->at(db_searchx, second_liney);
     awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
     awm->help_text("tr_jump.hlp");
