@@ -75,25 +75,6 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
     string                 tmpString;
     StrL                   fileContent;
 
-//         Hi Lothar,
-//
-//         folgendes Codestueck enthaelt einen boesen Bug:
-//
-//         - getenv liefert einen Zeiger in das Environment
-//         - dort haengst Du '/lib/unixnames.txt' an, d.h.
-//           1. aenderst Du ARBHOME
-//           2. zerstoerst Du die dahinterliegende Environmentvariable
-//
-//         Ich hab das durch den Einzeiler unterhalb ersetzt.
-
-    //     char* fileName = getenv("ARBHOME");
-    //     printf ("fileName is now: %s\n", fileName);
-    //     if (fileName == 0){
-    //         aw_message(GBS_global_string("$ARBHOME is not set"));
-    //     }
-    //     fileName = strcat(fileName, "/lib/unixnames.txt");
-    //     printf ("fileName has changed to: %s\n", fileName);
-
     char *fileName = GBS_global_string_copy("%s/lib/unixnames.txt", GB_getenvARBHOME());
 
     DescList myDescs;
