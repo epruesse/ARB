@@ -4,6 +4,8 @@
  */
 #include "GAGenomGeneLocation.h"
 
+using namespace std;
+
 gellisary::GAGenomGeneLocation::GAGenomGeneLocation(string * new_location_string)
 {
 	range = false;
