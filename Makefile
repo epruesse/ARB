@@ -1,15 +1,9 @@
 
 #********************* Start of user defined Section
 
-# To setup your computer, change file config.makefile first
-
-#	set ARBHOME to this directory
-# ARBHOME = `pwd`
-
-#	disable all lib dirs
-# LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
-
 # get the machine type
+# (first call make all once to generate this file)
+
 include config.makefile
 
 # ********************************************************************************
@@ -86,7 +80,7 @@ endif
    GMAKE = gmake -r
    CPP = g++ -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
    PP = cpp
-   ACC = gcc -Wall -fenum-int-equiv -D$(MACH) -pipe#				# Ansi C
+   ACC = gcc -W -Wall -fenum-int-equiv -D$(MACH) -pipe#				# Ansi C
    CCLIB = $(ACC)#			# Ansii C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
    AR = ld -r -o#			# Archive Linker
@@ -364,6 +358,29 @@ endif
 		@echo $(SEP)
 		@echo ''
 
+
+# auto-generate config.makefile:
+
+CONFIG_MAKEFILE_FOUND=$(wildcard config.makefile)
+
+config.makefile : config.makefile.template
+		@echo --------------------------------------------------------------------------------
+ifeq ($(strip $(CONFIG_MAKEFILE_FOUND)),)
+		@cp $< $@
+		@echo '$@ has been generated.'
+		@echo 'Please edit $@ to configure your system!'
+		@echo '(not needed for linux systems - simply type "make all")'
+else
+		@echo $< is more recent than $@
+		@ls -al config.makefile*
+		@echo "you may either:"
+		@echo "- ignore it and touch $@"
+		@echo "- merge difference between $@ and $< (recommended)"
+		@echo "- remove $@, run make again and edit the freshly generated $@"
+endif
+		@echo --------------------------------------------------------------------------------
+		@false
+
 # check if everything is configured correctly
 
 check_DEVELOPER:
@@ -400,10 +417,43 @@ else
 		@echo "gcc version check skipped (should be gcc 2.95.3 if gcc is used on your machine)"
 endif
 
-checks: check_DEBUG check_DEVELOPER check_GCC_VERSION
+#---------------------- check ARBHOME
+
+# use arb_INSTALL.txt to determine whether ARBHOME points to correct directory
+ARB_INSTALL_FOUND=$(wildcard $(ARBHOME)/arb_INSTALL.txt)
+
+check_ARBHOME:
+ifeq ($(strip $(ARB_INSTALL_FOUND)),)
+		@echo ------------------------------------------------------------
+		@echo "ARBHOME is set to '$(ARBHOME)'"
+		@echo "The environment variable ARBHOME has to point to the top arb source directory."
+		@echo "If you use bash enter:"
+		@echo "          export ARBHOME='`pwd`'"
+		@echo ------------------------------------------------------------
+		@false
+endif
+
+ARB_PATH_SET=$(findstring $(ARBHOME)/bin,$(PATH))
+
+check_PATH: check_ARBHOME
+ifeq ($(strip $(ARB_PATH_SET)),)
+		@echo ------------------------------------------------------------
+		@echo "The environment variable PATH has to contain $(ARBHOME)/bin"
+		@echo "If you use bash enter:"
+		@echo '			export PATH=$$ARBHOME/bin:$$PATH'
+		@echo ------------------------------------------------------------
+		@false
+endif
+
+check_ENVIRONMENT : check_PATH
+
+# ---------------------
+
+checks: check_ENVIRONMENT check_DEBUG check_DEVELOPER check_GCC_VERSION
 		@echo Your setup seems to be ok.
 
-# end test section
+
+# end test section ------------------------------
 
 DIR = $(ARBHOME)
 LIBS = -lARBDB
@@ -791,19 +841,19 @@ shared_libs: db aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
-ifndef DEBIAN
-libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
-	lib/libAW.$(SHARED_LIB_SUFFIX) \
-	lib/libAWT.$(SHARED_LIB_SUFFIX) \
-	lib/$(MOTIF_LIBNAME)
-else
+ifdef DEBIAN
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
+else
+libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
+	lib/libAW.$(SHARED_LIB_SUFFIX) \
+	lib/libAWT.$(SHARED_LIB_SUFFIX) \
+#	lib/$(MOTIF_LIBNAME)
 endif
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
@@ -1043,6 +1093,7 @@ binlink:
 all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
 		@echo -----------------------------------
 		@echo 'make all' has been done successful
+		@echo to start arb enter 'arb'
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 bin/arb_%:	DEPOT2/%
