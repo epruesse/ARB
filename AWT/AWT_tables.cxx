@@ -12,6 +12,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
@@ -538,15 +539,11 @@ void create_tables_var(GBDATA *gb_main, AW_root *aw_root){
     aw_root->awar_string( AWAR_TABLE_NAME );
     aw_root->awar_string( AWAR_TABLE_DEST );
     aw_root->awar_string( AWAR_TABLE_REM,"no rem" );
+    
+    aw_create_selection_box_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
 
-    aw_root->awar_string( AWAR_TABLE_EXPORT "/file_name", "tablefile");
-    aw_root->awar_string( AWAR_TABLE_EXPORT "/directory", "");
-    aw_root->awar_string( AWAR_TABLE_EXPORT "/filter", "table");
-
-    aw_root->awar_string( AWAR_TABLE_IMPORT "/file_name", "tablefile");
-    aw_root->awar_string( AWAR_TABLE_IMPORT "/directory", "");
-    aw_root->awar_string( AWAR_TABLE_IMPORT "/filter", "table");
-    aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_");//->set_srt( GBT_TABLE_AWAR_SRT);
+    aw_create_selection_box_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_"); //->set_srt( GBT_TABLE_AWAR_SRT);
 
     aw_root->awar(AWAR_TABLE_NAME)->add_callback( (AW_RCB1)table_vars_callback,(AW_CL)gb_main);
     table_vars_callback(aw_root,gb_main);
