@@ -149,6 +149,8 @@ public void matchProbes(String probeInfo) {
     boolean needUpdate = false;
     String  error      = null;
 
+    clearDetails();
+
     if (probeInfo == null) {
         root.unmarkSubtree();   // unmark all
         needUpdate = true;
@@ -224,13 +226,22 @@ public void updateNodeInformation(String encodedPath)
         }
     }
 
+
+    // rest should be grouped in separate class later on
+
+public void clearDetails()
+    {
+        TextArea ta = display.getDetails();
+        ta.setText("");
+    }
+
 public void showError(String error)
     {
         TextArea ta = display.getDetails();
         ta.setText(error);
+        ta.setCaretPosition(0);
     }
 
-    // should be grouped in separate class later on
 public void updateDetails (String probeInfo, String shortNames)
     {
         TextArea ta = display.getDetails();
@@ -303,6 +314,7 @@ public void updateDetails (String probeInfo, String shortNames)
 
 
             }
+        ta.setCaretPosition(0);
     }
 
 
