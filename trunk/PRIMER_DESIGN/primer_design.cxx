@@ -15,6 +15,38 @@
 
 extern GBDATA *gb_main;
 
+//  ---------------------------------------------
+//      static double get_estimated_memory()
+//  ---------------------------------------------
+static double get_estimated_memory(AW_root *root) {
+    int    bases  = root->awar( AWAR_PRIMER_DESIGN_LEFT_LENGTH )->read_int() + root->awar( AWAR_PRIMER_DESIGN_RIGHT_LENGTH )->read_int();
+    int    length = root->awar( AWAR_PRIMER_DESIGN_LENGTH_MAX )->read_int();
+    double mem    = bases*length*0.9*(sizeof(Node)+16);
+    return mem;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_update_memory
+//
+//
+
+void primer_design_event_update_memory( AW_window *aww ) {
+    AW_root *root = aww->get_root();
+    double   mem  = get_estimated_memory(root);
+
+    if (mem > 1073741824) {
+      mem = mem / 1073741824;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f TB",mem));
+    } else if (mem > 1048576) {
+      mem = mem / 1048576;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f MB",mem));
+    } else if (mem > 1024) {
+      mem = mem / 1024;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f KB",mem));
+    } else {
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.0f bytes",mem));
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////// create_primer_design_variables
 //
 //
@@ -151,6 +183,12 @@ void primer_design_event_go(AW_window *aww) {
     char     *sequence = 0;
     long int  length   = 0;
 
+    if ((get_estimated_memory(root)/1024.0) > GB_get_physical_memory()) {
+        if (aw_message("ARB may crash due to memory problems.", "Continue, Abort") == 1) {
+            return;
+        }
+    }
+
     {
         GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
@@ -251,30 +289,6 @@ void primer_design_event_go(AW_window *aww) {
     aw_closestatus();
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_update_memory
-//
-//
-void primer_design_event_update_memory( AW_window *aww ) {
-    AW_root *root = aww->get_root();
-
-    int bases  = root->awar( AWAR_PRIMER_DESIGN_LEFT_LENGTH )->read_int() + root->awar( AWAR_PRIMER_DESIGN_RIGHT_LENGTH )->read_int();
-    int length = root->awar( AWAR_PRIMER_DESIGN_LENGTH_MAX )->read_int();
-    double mem = bases*length*0.9*(sizeof(Node)+16);
-
-    if (mem > 1073741824) {
-      mem = mem / 1073741824;
-      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f TB",mem));
-    } else if (mem > 1048576) {
-      mem = mem / 1048576;
-      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f MB",mem));
-    } else if (mem > 1024) {
-      mem = mem / 1024;
-      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f KB",mem));
-    } else {
-      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.0f bytes",mem));
-    }
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_check_temp_factor
 //
