@@ -531,5 +531,16 @@ public:
 
 typedef void* AW_gc_manager;
 
+class AW_detach_information {
+    Awar_Callback_Info *cb_info;
+    Widget              detach_button;
+public:
+    AW_detach_information(Awar_Callback_Info *cb_info_)
+        : cb_info(cb_info_) , detach_button(0) { }
+
+    Awar_Callback_Info *get_cb_info() { return cb_info; }
+    Widget get_detach_button() { aw_assert(detach_button); return detach_button; }
+    void set_detach_button(Widget w) { detach_button = w; }
+};
 
 #endif
