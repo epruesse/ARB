@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -102,8 +103,12 @@ void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
     GB_pop_transaction(ntw->gb_main);
 
     char buf[256];
-    if (count == 1) strcpy(buf, "There is 1 marked species");
-    else sprintf(buf,"There are %li marked species", count);
+    switch (count) {
+        case 0: strcpy(buf, "There are NO marked species"); break;
+        case 1: strcpy(buf, "There is 1 marked species"); break;
+        default: sprintf(buf, "There are %li marked species", count); break;
+    }
+    strcat(buf, ". (The number of species is displayed in the top area as well)");
     aw_message(buf);
 }
 
@@ -132,7 +137,7 @@ void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
 //     AWUSE(dummy);
 //     GB_push_transaction(ntw->gb_main);
 //     GBDATA *gb_species;
-//     for (	gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+//     for (    gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
 //         long flag = GB_read_flag(gb_species);
 //         GB_write_flag(gb_species,1-flag);
 //     }
@@ -243,19 +248,19 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
 }
 
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw) {
-    awm->insert_menu_topic("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
+    awm->insert_menu_topic("count_marked",  "Count Marked Species",     "C","sp_count_mrk.hlp", AWM_ALL, (AW_CB)NT_count_mark_all_cb,       (AW_CL)ntw, 0 );
     awm->insert_separator();
-    awm->insert_menu_topic("mark_all",	    "Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, (AW_CL)1 );
-    awm->insert_menu_topic("mark_tree",	    "Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)1 );
-//     NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);       done by colorize
-//     awm->insert_separator();
-    awm->insert_menu_topic("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, 0 );
-    awm->insert_menu_topic("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)0 );
-//     NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
-//     awm->insert_separator();
-    awm->insert_menu_topic("swap_marked",	"Swap marks of all Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, (AW_CL)2 );
-    awm->insert_menu_topic("swap_marked",	"Swap marks of Species in Tree",		"p","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)2 );
-//     NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
+    awm->insert_menu_topic("mark_all",      "Mark all Species",     "M","sp_mrk_all.hlp",   AWM_ALL, (AW_CB)NT_mark_all_cb,         (AW_CL)ntw, (AW_CL)1 );
+    awm->insert_menu_topic("mark_tree",     "Mark Species in Tree",     "T","sp_mrk_tree.hlp",  AWM_EXP, (AW_CB)NT_mark_tree_cb,        (AW_CL)ntw, (AW_CL)1 );
+    //     NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);       done by colorize
+    //     awm->insert_separator();
+    awm->insert_menu_topic("unmark_all",    "Unmark all Species",       "U","sp_umrk_all.hlp",  AWM_ALL, (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, 0 );
+    awm->insert_menu_topic("unmark_tree",   "Unmark Species in Tree",   "n","sp_umrk_tree.hlp", AWM_EXP, (AW_CB)NT_mark_tree_cb,        (AW_CL)ntw, (AW_CL)0 );
+    //     NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
+    //     awm->insert_separator();
+    awm->insert_menu_topic("swap_marked",   "Swap marks of all Species",        "w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)2 );
+    awm->insert_menu_topic("swap_marked",   "Swap marks of Species in Tree",        "p","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,        (AW_CL)ntw, (AW_CL)2 );
+    //     NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
 }
 
 // ---------------------------------------
@@ -336,17 +341,17 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
     for (int i = 0; i <= AW_COLOR_GROUPS; ++i) {
         sprintf(label_buf, "tree_group_not_color_%i", i);
 
+        hotkey[0]                       = hotkeys[i];
+        if (hotkey[0] == ' ') hotkey[0] = 0;
+
         if (i) {
             char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
-            sprintf(entry_buf, "group '%s'", color_group_name);
+            sprintf(entry_buf, "%s group '%s'", hotkey, color_group_name);
             free(color_group_name);
         }
         else {
             strcpy(entry_buf, "No color group");
         }
-
-        hotkey[0]                       = hotkeys[i];
-        if (hotkey[0] == ' ') hotkey[0] = 0;
 
         awm->insert_menu_topic(label_buf, entry_buf, hotkey, "tgroupcolor.hlp", AWM_ALL, NT_group_not_color_cb, (AW_CL)ntree_canvas, (AW_CL)i);
     }
@@ -368,8 +373,8 @@ void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw,int type)
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     int stype;
     switch(type){
-        case 0:	stype = 0; break;
-        case 1:	stype = 2; break;
+        case 0: stype = 0; break;
+        case 1: stype = 2; break;
         default:stype = 1; break;
     }
     AWT_TREE(ntw)->resort_tree(stype);
@@ -500,31 +505,31 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
             }
             case AP_NDS_TREE:
                 {
-                AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
-                device->set_filter(AW_SIZE);
-                device->reset();
-                ntw->init_device(device);
-                ntw->tree_disp->show(device);
-                AW_rectangle    screen;
-                device->get_area_size(&screen);
-                AW_pos          ys = AWT_TREE(ntw)->y_cursor;
-                AW_pos          xs = 0;
-                if (AWT_TREE(ntw)->x_cursor != 0.0 || ys != 0.0) {
-                    AW_pos          x, y;
-                    device->transform(xs, ys, x, y);
-                    if (y < 0.0) {
-                        ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                    } else if (y > screen.b) {
-                        ntw->scroll(aww, 0, (int) (y - screen.b * .5));
+                    AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
+                    device->set_filter(AW_SIZE);
+                    device->reset();
+                    ntw->init_device(device);
+                    ntw->tree_disp->show(device);
+                    AW_rectangle    screen;
+                    device->get_area_size(&screen);
+                    AW_pos          ys = AWT_TREE(ntw)->y_cursor;
+                    AW_pos          xs = 0;
+                    if (AWT_TREE(ntw)->x_cursor != 0.0 || ys != 0.0) {
+                        AW_pos          x, y;
+                        device->transform(xs, ys, x, y);
+                        if (y < 0.0) {
+                            ntw->scroll(aww, 0, (int) (y - screen.b * .5));
+                        } else if (y > screen.b) {
+                            ntw->scroll(aww, 0, (int) (y - screen.b * .5));
+                        }
+                    }else{
+                        if (auto_expand_groups){
+                            aw_message(GBS_global_string("Sorry, your species '%s' is not marked and therefore not in this list", name));
+                        }
                     }
-                }else{
-                    if (auto_expand_groups){
-                        aw_message(GBS_global_string("Sorry, your species '%s' is not marked and therefore not in this list", name));
-                    }
+                    ntw->refresh();
+                    break;
                 }
-                ntw->refresh();
-                break;
-            }
             case AP_RADIAL_TREE:{
                 AWT_TREE(ntw)->tree_root_display = 0;
                 AWT_TREE(ntw)->jump(AWT_TREE(ntw)->tree_root, name);
@@ -542,7 +547,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
     free(name);
 }
 
-void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){	// jump only if auto jump is set
+void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){    // jump only if auto jump is set
     if (AWT_TREE(ntw)->tree_sort == AP_LIST_TREE || AWT_TREE(ntw)->tree_sort == AP_NDS_TREE) {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
             NT_jump_cb(dummy,ntw,0);
@@ -558,7 +563,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
     GB_push_transaction(ntw->gb_main);
     char *tree_name = awr->awar(ntw->user_awar)->read_string();
 
-    GB_ERROR error = ntw->tree_disp->load(ntw->gb_main, tree_name,1,set_delete_cbs);	// linked
+    GB_ERROR error = ntw->tree_disp->load(ntw->gb_main, tree_name,1,set_delete_cbs);    // linked
     if (error) {
         aw_message(error);
     }
