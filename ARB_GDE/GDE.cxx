@@ -109,20 +109,27 @@ char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
     return(strdup(name));
 }
 
-void GDE_decreaseawar_cb(AW_window *aws,char *awar,AW_CL cd)
+void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
-    AWUSE(cd);
-    AW_root *awr=aws->get_root();
-    awr->awar(awar)->write_int(awr->awar(awar)->read_int()-1);
-}
+    int      diff = (int)cd_diff;
+    AW_awar *awar = aws->get_root()->awar((const char *)cl_awar_name);
 
-void GDE_increaseawar_cb(AW_window *aws,char *awar,AW_CL cd)
+    awar->write_int(awar->read_int()+diff);
+}
+void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
-    AWUSE(cd);
-    AW_root *awr=aws->get_root();
-    awr->awar(awar)->write_int(awr->awar(awar)->read_int()+1);
-}
+    double   diff    = *(double*)cd_diff;
+    AW_awar *awar    = aws->get_root()->awar((const char *)cl_awar_name);
+    double   new_val = awar->read_float()+diff;
 
+    if (fabs(new_val) < 0.0001) new_val = 0.0;
+    awar->write_float(new_val);
+
+    // do it again (otherwise internal awar-range correction sometimes leads to 1+eXX values)
+    new_val = awar->read_float();
+    if (fabs(new_val) < 0.0001) new_val = 0.0;
+    awar->write_float(new_val);
+}
 
 void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 {
@@ -130,9 +137,16 @@ void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
     aws->create_input_field(newawar,(int)width);
     if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
         aws->button_length(3);
-        aws->callback((AW_CB2)GDE_decreaseawar_cb,(AW_CL)awar,0);
+        aws->callback(GDE_slide_awar_int_cb,(AW_CL)awar,-1);
         aws->create_button(0,"-","-");
-        aws->callback((AW_CB2)GDE_increaseawar_cb,(AW_CL)awar,0);
+        aws->callback(GDE_slide_awar_int_cb,(AW_CL)awar,+1);
+        aws->create_button(0,"+","+");
+    }
+    else if (aws->get_root()->awar(newawar)->get_type() == AW_FLOAT) {
+        aws->button_length(3);
+        aws->callback(GDE_slide_awar_float_cb,(AW_CL)awar,(AW_CL)new double(-0.1));
+        aws->create_button(0,"-","-");
+        aws->callback(GDE_slide_awar_float_cb,(AW_CL)awar,(AW_CL)new double(+0.1));
         aws->create_button(0,"+","+");
     }
 }
