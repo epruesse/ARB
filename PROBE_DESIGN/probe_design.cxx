@@ -290,7 +290,7 @@ void probe_design_event(AW_window *aww)
             }
             GBDATA *data = GBT_read_sequence(gb_species,ali_name);
             if (!data) {
-                aw_message( GB_export_error("Species has no sequence belonging to alignment %s",
+                aw_message( GB_export_error("Species '%s' has no sequence belonging to alignment %s",
                                             GB_read_char_pntr(GB_search(gb_species,"name",GB_STRING)),
                                             ali_name));
                 goto end;
