@@ -323,8 +323,6 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 
 // Realign a dna alignment with a given protein source
 
-#if 1
-
 static int synchronizeCodons(const char *proteins, const char *dna, int minCatchUp, int maxCatchUp, int *foundCatchUp,
                              const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
 
@@ -359,9 +357,6 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *neededLength)
 {
     AWT_initialize_codon_tables();
-#if defined(DEBUG) && 0
-    AWT_dump_codons();
-#endif
 
     GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source);           if (!gb_source) return "Please select a valid source alignment";
     GBDATA *gb_dest = GBT_get_alignment(gbmain,ali_dest);           if (!gb_dest) return "Please select a valid destination alignment";
@@ -679,111 +674,6 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
 }
 
 #undef SYNC_LENGTH
-
-
-#else
-// old version:
-GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
-{
-    GBDATA *gb_source;
-    GBDATA *gb_dest;
-    GBDATA  *gb_species;
-    GBDATA  *gb_source_data;
-    GBDATA  *gb_dest_data;
-    GB_ERROR error;
-    char    *source;
-    char    *dest;
-    char    *buffer;
-
-    gb_source = GBT_get_alignment(gbmain,ali_source);
-    if (!gb_source) return "Please select a valid source alignment";
-    gb_dest = GBT_get_alignment(gbmain,ali_dest);
-    if (!gb_dest) return "Please select a valid destination alignment";
-    long dest_len = GBT_get_alignment_len(gbmain,ali_dest);
-
-    for (gb_species = GBT_first_marked_species(gbmain);
-         gb_species;
-         gb_species = GBT_next_marked_species(gb_species) ){
-
-        gb_source = GB_find(gb_species,ali_source,0,down_level);    if (!gb_source) continue;
-        gb_source_data = GB_find(gb_source,"data",0,down_level);    if (!gb_source_data) continue;
-        gb_dest = GB_find(gb_species,ali_dest,0,down_level);        if (!gb_dest) continue;
-        gb_dest_data = GB_find(gb_dest,"data",0,down_level);        if (!gb_dest_data) continue;
-
-        source = GB_read_string(gb_source_data);            if (!source) { GB_print_error(); continue; }
-        dest = GB_read_string(gb_dest_data);                if (!dest) { GB_print_error(); continue; }
-
-        buffer = (char *)calloc(sizeof(char), (size_t)(GB_read_string_count(gb_source_data)*3 + GB_read_string_count(gb_dest_data) + dest_len ) );
-
-        char *p = buffer;
-        char *s = source;
-        char *d = dest;
-
-        char *lastDNA = 0; // pointer to buffer
-
-        for (; *s; s++){        /* source is pro */
-            /* insert triple '.' for every '.'
-               insert triple '-' for every -
-               insert triple for rest */
-            switch (*s){
-                case '.':
-                case '-':
-                    p[0] = p[1] = p[2] = s[0];
-                    p += 3;
-                    break;
-
-                default:
-                    while (*d && (*d=='.' || *d =='-')) d++;
-                    if(!*d) break;
-
-                    lastDNA = p;
-                    *(p++) = *(d++);    /* copy dna to dna */
-
-                    while (*d && (*d=='.' || *d =='-')) d++;
-                    if(!*d) break;
-
-                    lastDNA = p;
-                    *(p++) = *(d++);    /* copy dna to dna */
-
-                    while (*d && (*d=='.' || *d =='-')) d++;
-                    if(!*d) break;
-
-                    lastDNA = p;
-                    *(p++) = *(d++);    /* copy dna to dna */
-
-                    break;
-            }
-        }
-
-        p = lastDNA+1;
-        while (*d) {
-            if (*d == '.' || *d == '-') {
-                d++;
-            }else{
-                *(p++) = *(d++);    // append rest characters
-            }
-        }
-
-        while ((p-buffer)<dest_len) *(p++) = '.';   // append .
-        *p = 0;
-
-        nt_assert(strlen(buffer)==dest_len);
-
-        error = GB_write_string(gb_dest_data,buffer);
-
-        free(source);
-        free(dest);
-        free(buffer);
-
-        if (error) return error;
-    }
-
-    GBT_check_data(gbmain,ali_dest);
-
-    return 0;
-}
-
-#endif
 
 
 void transdna_event(AW_window *aww)
