@@ -615,9 +615,13 @@ libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
-	lib/libAWT.$(SHARED_LIB_SUFFIX)
+	lib/libAWT.$(SHARED_LIB_SUFFIX) \
+	lib/libXm.so.2
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
+	cp $< $@
+
+lib/libXm.so.2:  LIBLINK/libXm.so.2
 	cp $< $@
 
 bin/arb_%:	DEPOT2/%
