@@ -11,11 +11,12 @@ CLIENTCOMPILER = $(CPP) $(cflags)
 
 # DONT CHANGE THE NEXT LINES
 server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(MAKE) -r $(makeflags) -f AISC/Makefile \
-		"MAIN_SOURCE=$(MAIN_SOURCE)" \
-		"PRIVATE_SERVER_OBJECTS = $(PRIVATE_SERVER_OBJECTS)" \
-		"AISC_SAVE = $(AISC_SAVE)" "COMPILER = $(COMPILER)" \
-		"CLIENTCOMPILER = $(CLIENTCOMPILER)" "AR = $(AR)"
+		-mkdir O
+		$(MAKE) -r $(makeflags) -f AISC/Makefile \
+				"MAIN_SOURCE=$(MAIN_SOURCE)" \
+				"PRIVATE_SERVER_OBJECTS = $(PRIVATE_SERVER_OBJECTS)" \
+				"AISC_SAVE = $(AISC_SAVE)" "COMPILER = $(COMPILER)" \
+				"CLIENTCOMPILER = $(CLIENTCOMPILER)" "AR = $(AR)"
 
 depend:
 	@echo "MGR COM no automatic dependencies"
