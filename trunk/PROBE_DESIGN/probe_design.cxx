@@ -324,7 +324,7 @@ void probe_design_event(AW_window *aww)
         if (*locs_error) {
             aw_message(locs_error);
         }
-        delete locs_error;
+        free(locs_error);
     }
 
     aisc_get( pd_gl.link, PT_PDC, pdc,
