@@ -86,8 +86,9 @@ public static void main(String[] args)
             cl.baseurl = cmdline.getOptionValue("server");
         }
         else {
-            // cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/"); // final server URL (not working yet)
-            cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
+//             cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL (DNS not propagated yet)
+            cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL  
+//             cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
         }
 
         cl.webAccess = new HttpSubsystem(cl.baseurl);
