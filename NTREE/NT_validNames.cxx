@@ -13,6 +13,9 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <awt.hxx>
+
 
 #include <fstream>
 #include <iostream>
@@ -381,3 +384,38 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
         GB_commit_transaction(gb_main);
     }
 }
+/*
+void NT_createNameList_Awars(AW_root *aw_root, AW_default 0) {
+    aw_root->awar_string( AWAR_SAI_SELECT,                   "Name not selected" , 0);
+}
+
+
+AW_window *NT_searchManuallyNames(AW_root *aw_root, AW_CL)
+{
+
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually", 50,10 );
+    aws->load_xfig("ad_selManNam.fig");
+
+    aws->at("close");
+    aws->callback( (AW_CB0)AW_POPDOWN); // arb specific close callback, like a constant
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("nameList");
+    //    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_SELECT);
+
+
+    //   aws->at("label");
+    //    aws->create_button(0,"Please enter the name\nfor the Color Translation Table");
+
+    //    aws->at("input");
+    //    aws->create_input_field(AWAR_SAI_COLOR_TRANS_TABLE_CREATE,15);
+
+    //    aws->at("ok");
+    //    aws->callback(createColorTranslationTable,0);
+    //    aws->create_button("GO","GO","G");
+
+    return (AW_window *)aws;
+
+}
+*/
