@@ -271,7 +271,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 }
                 else if (saiColors) {
                     color = saiColors[new_pos];
-                    if (color > ED4_G_CBACK_9)  color = ED4_G_STANDARD; 
+                    if (color < ED4_G_CBACK_0 || color > ED4_G_CBACK_9)  color = ED4_G_STANDARD; 
                 }
                 else if (is_marked) {
                     color = ED4_G_MARKED;

@@ -1,7 +1,7 @@
 /*ARBDB ASCII*/
 window			%% (%
-	font			"8x13bold"
-	background		"#C0C5C0"
+	font			"7x13bold"
+	background		"#F0F0F0"
 	foreground		"Black"
 	color_1			"red"
 	color_2			"green"
@@ -29,10 +29,10 @@ window			%% (%
 			%) /*COLORS_AND_FONTS*/
 
 		QUESTION_BOX		%% (%
-			width			%i 707
-			height			%i 91
-			posx			%i 280
-			posy			%i 196
+			width			%i 447
+			height			%i 65
+			posx			%i 271
+			posy			%i 129
 			%) /*QUESTION_BOX*/
 
 		HELIX_PROPERTIES		%% (%
