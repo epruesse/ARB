@@ -79,7 +79,9 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
     }
 
     /*calculate layout in percent*/
-    GC_proportion = (100 * count_bases) / GC; //this is a hack, as ARB can't save real values
+    if (GC!=0) {
+      GC_proportion = (100 * count_bases) / GC; //this is a hack, as ARB can't save real values
+    }
     percent_scores = (100 * count_scores) / size;
     percent_dots   = (100 * count_dots) / size;
     percent_bases  = 100 - (percent_scores + percent_dots);
