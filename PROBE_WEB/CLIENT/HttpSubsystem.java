@@ -7,27 +7,30 @@ public class HttpSubsystem
 {
     // old version variables
 
-private String host;
-private String path;
-private int    port;
+    private String host;
+    private String path;
+    private int    port;
 
-private Socket            probeSocket;
-private String            treeName;
-private String            cgiName;
-private byte[] byteBuffer;
-private PrintWriter       toServer;
-private InputStream       fromServer;
-private InputStreamReader charReader;
-private char[] textInput;
+    private Socket probeSocket;
+    private String treeName;
+    private String cgiName;
+    
+    private byte[] byteBuffer;
+    
+    private PrintWriter       toServer;
+    private InputStream       fromServer;
+    private InputStreamReader charReader;
+    
+    private char[] textInput;
 
     // new version variables
-private URL    hostUrl;
-private String neededClientVersion;
-private String neededTreeVersion;
+    private URL    hostUrl;
+    private String neededClientVersion;
+    private String neededTreeVersion;
 
-private String error;
+    private String error;
 
-public HttpSubsystem(String name) throws Exception
+    public HttpSubsystem(String name) throws Exception
     {
         // check URL
         try {
@@ -57,14 +60,14 @@ public HttpSubsystem(String name) throws Exception
         error     = "";
     }
 
-private String lastRequestError = null;
+    private String lastRequestError = null;
 
-public String getLastRequestError()
+    public String getLastRequestError()
     {
         return lastRequestError;
     }
 
-public String conductRequest(String url_rest)
+    public String conductRequest(String url_rest)
     {
         try{
             lastRequestError = null;
@@ -75,9 +78,8 @@ public String conductRequest(String url_rest)
 
             String request = "GET " + path + url_rest;
 
-            //toServer.print(request + "\n\n");
             toServer.print(request + "\n");
-            System.out.println("Request: '" + request + "'\n");
+            System.out.println("Request: '" + request + "'");
             toServer.flush();
 
             StringBuffer strb = new StringBuffer();
@@ -105,7 +107,7 @@ public String conductRequest(String url_rest)
         }
     }
 
-public String retrieveNodeInformation(String nodePath, boolean onlyExact)
+    public String retrieveNodeInformation(String nodePath, boolean onlyExact)
     {
         String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all&exact="+(onlyExact ? "1" : "0"));
         if (probes == null) {
@@ -114,7 +116,7 @@ public String retrieveNodeInformation(String nodePath, boolean onlyExact)
         return probes;
     }
 
-public String retrieveGroupMembers(String groupId, int plength)
+    public String retrieveGroupMembers(String groupId, int plength)
     {
         String members = conductRequest("getMembers.cgi?id=" + groupId + "&plength=" + plength);
         if (members == null) {
@@ -123,7 +125,7 @@ public String retrieveGroupMembers(String groupId, int plength)
         return members;
     }
 
-public void retrieveVersionInformation() throws Exception
+    public void retrieveVersionInformation() throws Exception
     {
         String versionInfo = conductRequest("getVersion.cgi");
         if (versionInfo == null) {
@@ -141,19 +143,19 @@ public void retrieveVersionInformation() throws Exception
         if (neededTreeVersion == null) Toolkit.AbortWithServerProblem("no tree version info  ("+parsedVersionInfo.getError()+")");
     }
 
-public String getNeededClientVersion()
+    public String getNeededClientVersion()
     {
         return neededClientVersion;
     }
 
-public String getNeededTreeVersion()
+    public String getNeededTreeVersion()
     {
         return neededTreeVersion;
     }
 
 
 
-public String downloadZippedTree(String fileName)
+    public String downloadZippedTree(String fileName)
     {
         try {
             probeSocket = new Socket(host, port);
@@ -164,18 +166,12 @@ public String downloadZippedTree(String fileName)
 
             String request = "GET " + path + "getTree.cgi";
 
-            //toServer.print(request + "\n\n");
             toServer.print(request + "\n");
-            System.out.println("Request: '" + request + "'\n");
+            System.out.println("Request: '" + request + "'");
             toServer.flush();
 
-//            System.out.print("GET " + path + "getTree.cgi\n\n");
-//            toServer.print("GET " + path + "getTree.cgi\n\n");
-//            toServer.flush();
-
             int bytesRead;
-            while((bytesRead = fromServer.read(byteBuffer)) != -1)
-            {
+            while((bytesRead = fromServer.read(byteBuffer)) != -1) {
                 outstream.write(byteBuffer, 0, bytesRead);
             }
 
