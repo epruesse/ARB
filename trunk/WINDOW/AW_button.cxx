@@ -1141,8 +1141,8 @@ int AW_window::get_index_of_current_element(AW_selection_list *selection_list, c
 }
 
 void AW_window::select_index(AW_selection_list *selection_list, const char *awar_name, int wanted_index) {
-    AW_root    *aw_root      = get_root();
-    const char *wanted_value = get_element_of_index(selection_list, wanted_index);
+    AW_root *aw_root      = get_root();
+    char    *wanted_value = get_element_of_index(selection_list, wanted_index);
 
 #if defined(DEBUG) && 0
     printf("select_index : wanted_index=%i wanted_value='%s'\n", wanted_index, wanted_value);
@@ -1150,6 +1150,7 @@ void AW_window::select_index(AW_selection_list *selection_list, const char *awar
 
     if (wanted_value) {
         aw_root->awar(awar_name)->write_string(wanted_value);
+        free(wanted_value);
     }
     else {
         aw_root->awar(awar_name)->write_string("");
