@@ -106,7 +106,6 @@ char *gb_compress_by_dictionary P_((GB_DICTIONARY *dict, GB_CSTR s_source, long 
 GB_ERROR gb_create_dictionaries P_((GB_MAIN_TYPE *Main, long maxmem));
 
 /* adsystem.c */
-GB_ERROR gb_save_dictionary_data P_((GBDATA *gb_main, const char *key, const char *dict, int size));
 const char *gb_read_dict_data P_((GBDATA *gb_dict, long *size));
 GB_ERROR gb_load_dictionary_data P_((GBDATA *gb_main, const char *key, char **dict_data, long *size));
 GB_DICTIONARY *gb_create_dict P_((GBDATA *gb_dict));
@@ -114,6 +113,7 @@ void delete_gb_dictionary P_((GB_DICTIONARY *dict));
 void gb_system_key_changed_cb P_((GBDATA *gbd, int *cl, GB_CB_TYPE type));
 void gb_system_master_changed_cb P_((GBDATA *gbd, int *cl, GB_CB_TYPE type));
 void gb_load_single_key_data P_((GBDATA *gb_main, GBQUARK q));
+GB_ERROR gb_save_dictionary_data P_((GBDATA *gb_main, const char *key, const char *dict, int size));
 GB_ERROR gb_load_key_data_and_dictionaries P_((GBDATA *gb_main));
 
 /* adindex.c */

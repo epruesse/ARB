@@ -187,6 +187,7 @@ GB_ERROR GB_commit_transaction P_((GBDATA *gbd));
 GB_ERROR GB_update_server P_((GBDATA *gbd));
 void *GB_read_old_value P_((void));
 long GB_read_old_size P_((void));
+char *GB_get_callback_info P_((GBDATA *gbd));
 GB_ERROR GB_add_priority_callback P_((GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, int priority));
 GB_ERROR GB_add_callback P_((GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata));
 GB_ERROR GB_remove_callback P_((GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata));
