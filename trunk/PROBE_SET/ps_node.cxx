@@ -11,85 +11,127 @@
 //  =============================================================== //
 
 #include "ps_node.hxx"
+#include <unistd.h>
 
 using namespace std;
 
-//
-// *** disk input **
-//
-bool PS_Node::load( int fd ) {
-    unsigned int size;
-    ssize_t      readen;
-    //
-    // read num
-    //
-    readen = read( fd, &num, sizeof(num) );
-
-    if (readen != sizeof(num)) return false;
-    //
-    // read probes
-    //
-    readen         = read( fd, &size, sizeof(size) );
-    if (readen != sizeof(size)) return false;
-    if (size) {               // does node have probes ?
-	probes     = new PS_ProbeSet; // make new probeset
-	for (unsigned int i=0; i<size; ++i) {
-	    PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
-	    readen = read( fd, &(*new_probe), sizeof(PS_Probe) ); // read new probe
-	    if (readen != sizeof(PS_Probe)) return false;         // check for read error
-	    probes->insert( new_probe );                          // append new probe to probeset
-	}
-    } else {
-	probes = 0;                                             // unset probeset
-    }
-    //
-    // read children
-    //
-    readen = read( fd, &size, sizeof(size) );
-    if (readen != sizeof(size)) return false;
-    for (unsigned int i=0; i<size; ++i) {
-	PS_NodePtr new_child(new PS_Node(-1));                  // make new child
-	if (!new_child->load( fd )) return false;               // read new child
-	children[new_child->getNum()] = new_child;              // insert new child to childmap
-    }
-    // return true to signal success
-    return true;
-}
 
 //
 // *** disk output **
 //
-bool PS_Node::save( int fd ) {
+bool PS_Node::save( PS_FileBuffer* _fb ) {
     unsigned int size;
-    ssize_t written;
     //
     // write num
     //
-    written = write( fd, &num, sizeof(num) );
-    if (written != sizeof(num)) return false;
+    _fb->put( &num,sizeof(num) );
     //
     // write probes
     //
     size = (probes == 0) ? 0 : probes->size();
-    written = write( fd, &size, sizeof(size) );
-    if (written != sizeof(size)) return false;
+    _fb->put( &size, sizeof(size) );
     if (size) {
 	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
-	    written = write( fd, (PS_Probe *)&(*i), sizeof(PS_Probe) );
-	    if (written != sizeof(PS_Probe)) return false;
+	    _fb->put( (PS_Probe *)&(*i), sizeof(PS_Probe) );
 	}
     }
     //
     // write children
     //
     size = children.size();
-    written = write( fd, &size, sizeof(size) );
-    if (written != sizeof(size)) return false;
+    _fb->put( &size, sizeof(size) );
     for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
-	if (!i->second->save( fd )) return false;
+	i->second->save( _fb );
     }
     //
     // return true to signal success
     //
+    return true;
+}
+
+
+//
+// *** disk input **
+//
+bool PS_Node::load( PS_FileBuffer* _fb ) {
+    unsigned int size;
+    //
+    // read num
+    //
+    _fb->get( &num, sizeof(num) );
+    //
+    // read probes
+    //
+    _fb->get( &size, sizeof(size) );
+    if (size) {               // does node have probes ?
+	probes = new PS_ProbeSet;                                 // make new probeset
+	for (unsigned int i=0; i<size; ++i) {
+	    PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
+	    _fb->get( &(*new_probe), sizeof(PS_Probe) );          // read new probe
+	    probes->insert( new_probe );                          // append new probe to probeset
+	}
+    } else {
+	probes = 0;                                               // unset probeset
+    }
+    //
+    // read children
+    //
+    _fb->get( &size, sizeof(size) );
+    for (unsigned int i=0; i<size; ++i) {
+	PS_NodePtr new_child(new PS_Node(-1));                    // make new child
+	new_child->load( _fb );                                   // read new child
+	children[new_child->getNum()] = new_child;                // insert new child to childmap
+    }
+    // return true to signal success
+    return true;
+}
+
+
+//
+// *** disk input appending **
+//
+bool PS_Node::append( PS_FileBuffer* _fb ) {
+    unsigned int size;
+    //
+    // read num if root
+    //
+    if (num == -1) {
+        _fb->get( &num, sizeof(num) );
+    }
+    //
+    // read probes
+    //
+    _fb->get( &size, sizeof(size) );
+    if (size) {               // does node have probes ?
+	probes = new PS_ProbeSet;                                 // make new probeset
+	for (unsigned int i=0; i<size; ++i) {
+	    PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
+	    _fb->get( &(*new_probe), sizeof(PS_Probe) );          // read new probe
+	    probes->insert( new_probe );                          // append new probe to probeset
+	}
+    }
+    //
+    // read children
+    //
+    _fb->get( &size, sizeof(size) );
+    for (unsigned int i=0; i<size; ++i) {
+        //
+        // read num of child
+        //
+        SpeciesID childNum;
+        _fb->get( &childNum, sizeof(childNum) );
+        //
+        // test if child already exists
+        //
+        PS_NodeMapIterator it = children.find( childNum );
+        if (it != children.end()) {
+            it->second->append( _fb );                           // 'update' child
+        } else {
+            PS_NodePtr newChild(new PS_Node(childNum));          // make new child
+            newChild->append( _fb );                             // read new child
+            children[childNum] = newChild;                       // insert new child to childmap
+        }
+    }
+    // return true to signal success
     return true;
 }

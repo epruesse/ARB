@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 
 #include <arbdb.h>
 #include <map>
+#ifndef PS_NODE_HXX
 #include "ps_node.hxx"
+#endif
+#ifndef PS_FILEBUFFER_HXX
+#include "ps_filebuffer.hxx"
+#endif
+#ifndef PS_PG_TREE_FUNCTIONS
 #include "ps_pg_tree_functions.cxx"
+#endif
 
 //  ----------------------------------------------------
 //      void print_indented_str( int depth, int newline, int id, const char *str )
@@ -216,7 +221,7 @@ int main( int argc,  char *argv[] ) {
         }
     }
     printf( "loaded database (enter to continue)\n" );
-    getchar();
+//    getchar();
 
     printf( "init Species <-> ID - Map\n" );
     PG_initSpeciesMaps(pb_main);
@@ -230,7 +235,7 @@ int main( int argc,  char *argv[] ) {
         }
     }
     printf( "(enter to continue)\n" );
-    getchar();
+//    getchar();
 
     GB_transaction dummy(pb_main);
     GBDATA *group_tree = GB_find( pb_main, "group_tree", 0, down_level );
@@ -268,34 +273,35 @@ int main( int argc,  char *argv[] ) {
         getchar();
     }
 
-    if (argc == 4) { // output filenames given => extract probe-data and save to file
+    if (argc >= 3) { // output filenames given => extract probe-data and save to file
         //
         // stage 1 : write ID<->Name Map
         //
-        printf( "writing map file %s\n", argv[3] );
-        int fdMap = open( argv[3], O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
-        if (fdMap == -1) {
-            printf( "error : %s already exists or can't be created\n",argv[3] );
-        } else {
-            ssize_t written;
-            int     size;
-            for (Int2StringIter i = num2species_map.begin(); i != num2species_map.end(); ++i) {
-                // write id
-                written = write( fdMap, &(i->first), sizeof(SpeciesID) );
-                if (written != sizeof(SpeciesID)) exit(1);
-                // write length of name
-                size = i->second.size();
-                written = write( fdMap, &size, sizeof(size) );
-                if (written != sizeof(size)) exit(1);
-                // write name
-                written = write( fdMap, i->second.c_str(), size);
-                if (written != size) exit(1);
+        if (argc > 3) {
+            printf( "writing map file %s\n", argv[3] );
+            int fdMap = open( argv[3], O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
+            if (fdMap == -1) {
+                printf( "error : %s already exists or can't be created\n",argv[3] );
+            } else {
+                ssize_t written;
+                int     size;
+                for (Int2StringIter i = num2species_map.begin(); i != num2species_map.end(); ++i) {
+                    // write id
+                    written = write( fdMap, &(i->first), sizeof(SpeciesID) );
+                    if (written != sizeof(SpeciesID)) exit(1);
+                    // write length of name
+                    size = i->second.size();
+                    written = write( fdMap, &size, sizeof(size) );
+                    if (written != sizeof(size)) exit(1);
+                    // write name
+                    written = write( fdMap, i->second.c_str(), size);
+                    if (written != size) exit(1);
+                }
             }
+            close( fdMap );
+            printf( "(enter to continue)\n" );
+            //        getchar();
         }
-        close( fdMap );
-        printf( "(enter to continue)\n" );
-        getchar();
-
         //
         // stage 2 : extract data
         //
@@ -319,21 +325,17 @@ int main( int argc,  char *argv[] ) {
         printf( "done after %u 1st level nodes\n",first_level_node_counter );
         printf( "there have been %lu probes and %lu children inserted double\n", double_probes, double_children );
         printf( "(enter to continue)\n" );
-        getchar();
+//        getchar();
 
         //
         // stage 3 : write tree to file
         //
         printf( "writing probe-data to %s\n",argv[2] );
-        int fdDB = open( argv[2], O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
-        if (fdDB == -1) {
-            printf( "error : %s already exists or can't be created\n",argv[2] );
-        } else {
-            root->save( fdDB );
-        }
-        close( fdDB );
+        PS_FileBuffer *fb = new PS_FileBuffer( argv[2], PS_FileBuffer::WRITEONLY );
+        root->save( fb );
+        delete fb;
         printf( "(enter to continue)\n" );
-        getchar();
+//        getchar();
 
         root.SetNull();
     }
@@ -355,7 +357,7 @@ int main( int argc,  char *argv[] ) {
 
     printf( "root should be destroyed now\n" );
     printf( "(enter to continue)\n" );
-    getchar();
+//    getchar();
     return 0;
 }
 

@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/stat.h>
+//#include <string.h>
 
 #include <set>
+#ifndef PS_NODE_HXX
 #include "ps_node.hxx"
+#endif
+#ifndef PS_FILEBUFFER_HXX
+#include "ps_filebuffer.hxx"
+#endif
 
 
 
@@ -24,11 +27,7 @@ int main( int argc,  char *argv[] ) {
     const char     *output_DB_name = argv[3];
 
     printf( "creating probe-set-database '%s'..", output_DB_name );
-    int ps_db = open( output_DB_name, O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
-    if (ps_db == -1) {
-        printf( "error : %s already exists or can't be created\n",output_DB_name );
-        exit(1);
-    }
+    PS_FileBuffer *ps_db_fb = new PS_FileBuffer( output_DB_name, false );
     printf( "done\n" );
 
     // create sample tree
@@ -80,10 +79,10 @@ int main( int argc,  char *argv[] ) {
     }
 
     // write sample tree
-    root->save( ps_db );
-    close( ps_db );
+    root->save( ps_db_fb );
 
     // clean up
+    delete ps_db_fb;
     root.SetNull();
     printf( "root should be destroyed now (enter to continue)\n" );
     getchar();
