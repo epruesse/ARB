@@ -1,10 +1,9 @@
-#include "MultiProbe.hxx"
-
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
 
+#include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
@@ -13,6 +12,9 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
+
+#include "MultiProbe.hxx"
+#include "mp_proto.hxx"
 
 BOOL 		MP_is_probe(char *seq);
 extern AW_selection_list*	result_probes_list;
@@ -438,9 +440,8 @@ void	MP_take_manual_sequence(AW_window *aww)
 }
 
 
-void MP_cache_sonden(AW_window *){
-    new_pt_server = TRUE;
-}
+void MP_cache_sonden(AW_window *) { new_pt_server = TRUE; }
+void MP_cache_sonden2(AW_root *) { new_pt_server = TRUE; }
 
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
     bool               backward           = bool(cl_backward);
