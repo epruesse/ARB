@@ -1,9 +1,10 @@
 #ifndef AW_XFONT_HXX
 #define AW_XFONT_HXX
 
-#define         NORMAL_FONT     "fixed"
-#define         BOLD_FONT       "8x13bold"
-#define         BUTTON_FONT     "6x13"
+#ifndef AW_DEF_HXX
+#include "aw_def.hxx"
+#endif
+
 
 struct xfont {
     int           size;         /* size in points */
@@ -31,9 +32,7 @@ typedef struct _appres {
 }               appresStruct, *appresPtr;
 extern appresStruct appres;
 
-#define DEFAULT               (-1)
-#define DEF_FONTSIZE 12
-#define NORMAL_FONT     "fixed"
+#define DEFAULT      (-1)
 
 #else
 #error aw_xfont.hxx included twice
