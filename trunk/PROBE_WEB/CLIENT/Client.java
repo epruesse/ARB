@@ -111,14 +111,26 @@ public static void main(String[] args)
         cl.root.setPath("");
         cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion, cl);
 
-        cl.display.getTreeDisplay().setBoss(cl); // obtain reference to Treedisplay first !
+        // cl.display.getTreeDisplay().setBoss(cl); // obtain reference to Treedisplay first !
         // cl.display.setLocation(200, 200); // this seems to cause display problems with fvwm
-        cl.display.setVisible(true);
+        // cl.display.setVisible(true);
+        // cl.display.setLocation(200, 200);
     }
 
 public Client()
     {
         groupCache = new GroupCache();
+    }
+
+public void saveConfig() // called at shutdown
+    {
+        Point     location = display.getLocationOnScreen();
+        Dimension size     = display.getScrollPaneSize();
+
+        System.out.println("Current location on screen: x="+location.x+" y="+location.y);
+        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height);
+
+        System.out.println("Saving config to ... [not implemented yet]");
     }
 
 public ProbesGUI getDisplay()
