@@ -106,15 +106,20 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
 
-    char *diru = aw_root->awar(cbs->def_dir)->read_string();
-    char *dir = AWT_fold_path(diru,cbs->pwd);
-    char *fulldir = AWT_unfold_path(dir,cbs->pwd);
-    char *filter = 	aw_root->awar(cbs->def_filter)->read_string();
+    char       *diru    = aw_root->awar(cbs->def_dir)->read_string();
+    char       *dir     = AWT_fold_path(diru,cbs->pwd);
+    char       *fulldir = AWT_unfold_path(dir,cbs->pwd);
+    char       *filter  = aw_root->awar(cbs->def_filter)->read_string();
     const char *cwd;
+
     if (!strcmp(cbs->pwd,"PWD"))	cwd = GB_getcwd();
-    else cwd = GB_getenv(cbs->pwd);
-    const char *home = GB_getenvHOME();
-    const char *arbhome = GB_getenvARBHOME();
+    else cwd                            = GB_getenv(cbs->pwd);
+
+    const char *home            = GB_getenvHOME();
+    const char *arbhome         = GB_getenvARBHOME();
+    const char *workingdir      = GB_getenv("ARB_WORKDIR");
+    if (!workingdir) workingdir = home; // if no working dir -> use home dir
+
     char buffer[GB_PATH_MAX];	memset(buffer,0,GB_PATH_MAX);
     char buffer2[GB_PATH_MAX];	memset(buffer2,0,GB_PATH_MAX);
     char directory[GB_PATH_MAX];	memset(directory,0,GB_PATH_MAX);
@@ -137,6 +142,10 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         if (strcmp(home,fulldir)){
             sprintf(buffer,"D \'$HOME\'           (%s)",home);
             cbs->aws->insert_selection( cbs->id, buffer, home );
+        }
+        if (strcmp(workingdir,fulldir)){
+            sprintf(buffer,"D \'$ARB_WORKDIR\'    (%s)",workingdir);
+            cbs->aws->insert_selection( cbs->id, buffer, workingdir );
         }
         sprintf(buffer2,"%s/lib/pts",arbhome);
         if (strcmp(buffer2,fulldir)){
