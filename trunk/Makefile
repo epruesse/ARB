@@ -77,14 +77,27 @@ ifeq ($(DEBUG),0)
 endif
 endif
 
+ifdef DEBIAN
+   GCC=gcc-2.95
+   GPP=g++-2.95
+   CPPreal=cpp-2.95
+   GCCVERSIONOK=2.95.4
+   XHOME = /usr/X11R6
+else
+   GCC=gcc
+   GPP=g++
+   CPPreal=cpp
+   GCCVERSIONOK=2.95.3
+   XHOME = /usr/X11
+endif
+
    PREFIX =
    LIBDIR = /usr/lib
-   XHOME = /usr/X11
 
    GMAKE = gmake -r
-   CPP = g++ -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
-   PP = cpp
-   ACC = gcc -W -Wall $(enumequiv) -D$(MACH) -pipe#				# Ansi C
+   CPP = $(GPP) -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
+   PP = $(CPPreal)
+   ACC = $(GCC) -W -Wall $(enumequiv) -D$(MACH) -pipe#				# Ansi C
    CCLIB = $(ACC)#			# Ansii C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
    AR = ld -r -o#			# Archive Linker
@@ -148,8 +161,8 @@ ifdef LINUX
    f77_flags = $(fflags) -W -N9 -e
    F77LIB = -lU77
 
-   ARCPPLIB = g++ -Wall -shared $(LINUX_SPECIALS) -o
-   ARLIB = gcc -Wall -shared $(LINUX_SPECIALS) -o
+   ARCPPLIB = $(GPP) -Wall -shared $(LINUX_SPECIALS) -o
+   ARLIB = $(GCC) -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
 
@@ -214,14 +227,14 @@ ifdef ECGS
    # gcc on solaris:
    SUN5_ECGS_SPECIALS=-DNO_REGEXPR
 
-   CPP = g++ -W -Wall $(enumequiv) -D$(MACH)_ECGS $(havebool) -pipe $(SUN5_ECGS_SPECIALS)#		# C++ Compiler /Linker
-   ACC = gcc -Wall $(enumequiv) -D$(MACH)_ECGS -pipe $(SUN5_ECGS_SPECIALS)#				# Ansi C
+   CPP = $(GPP) -W -Wall $(enumequiv) -D$(MACH)_ECGS $(havebool) -pipe $(SUN5_ECGS_SPECIALS)#		# C++ Compiler /Linker
+   ACC = $(GCC) -Wall $(enumequiv) -D$(MACH)_ECGS -pipe $(SUN5_ECGS_SPECIALS)#				# Ansi C
 
    CCLIB = $(ACC) -fPIC
    CCPLIB = $(CPP) -fPIC#			# Same for c++
 
-   ARCPPLIB = g++ -Wall -shared $(SUN5_ECGS_SPECIALS) -o
-   ARLIB = gcc -Wall -shared $(SUN5_ECGS_SPECIALS) -o
+   ARCPPLIB = $(GPP) -Wall -shared $(SUN5_ECGS_SPECIALS) -o
+   ARLIB = $(GCC) -Wall -shared $(SUN5_ECGS_SPECIALS) -o
 
    XAR = $(AR)# 			# Linker for archives containing templates
 
@@ -433,17 +446,17 @@ endif
 # ---------------------------------------- check gcc version
 
 ifdef LINUX
-GCC_VERSION=$(shell gcc --version | head -1)
+GCC_VERSION=$(shell $(GCC) --version | head -1)
 endif
 
 check_GCC_VERSION:
 ifdef LINUX
-ifeq ('2.95.3','$(GCC_VERSION)')
+ifeq ('$(GCCVERSIONOK)','$(GCC_VERSION)')
 		@echo "gcc version $(GCC_VERSION) used -- fine!"
 		@echo ''
 else
 		@echo ''
-		@echo "You'll need gcc 2.95.3 to compile ARB [your gcc version is '$(GCC_VERSION)']"
+		@echo "You'll need gcc $(GCCVERSIONOK) to compile ARB [your gcc version is '$(GCC_VERSION)']"
 		@echo 'More information can be found in arb_README_gcc3.2.txt'
 		@echo ''
 		@/bin/false
@@ -1158,8 +1171,9 @@ tags2:
 ifndef DEBIAN
 links: SOURCE_TOOLS/generate_all_links.stamp
 else
-links:
-	@echo ARB authors do some stuff with symlinks here.  This is not necessary with Debian.
+links: SOURCE_TOOLS/generate_all_links.stamp
+# @echo ARB authors do some stuff with symlinks here.  This is not necessary with Debian.
+# We try to stick to the default compile procedure at first place
 endif
 
 SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
