@@ -358,16 +358,6 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 
 GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *neededLength)
 {
-    //     GBDATA *gb_source;
-    //     GBDATA *gb_dest;
-    //     GBDATA *gb_species;
-    //     GBDATA *gb_source_data;
-    //     GBDATA *gb_dest_data;
-    //     GB_ERROR error;
-    //     char *source;
-    //     char *dest;
-    //     char *buffer;
-
     AWT_initialize_codon_tables();
 #if defined(DEBUG) && 0
     AWT_dump_codons();
