@@ -1020,8 +1020,8 @@ static void pars_start_cb(AW_window *aww)
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(awr,"ARB_PARRSIMONY", "ARB_PARSIMONY", 800,600,10,10);
 
-    AW_gc_manager aw_gc_manager;
-    nt->tree = (AWT_graphic_tree*)PARS_generate_tree(awr);
+    AW_gc_manager aw_gc_manager = 0;
+    nt->tree                    = (AWT_graphic_tree*)PARS_generate_tree(awr);
 
     AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
     {
