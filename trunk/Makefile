@@ -889,7 +889,8 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" "CCPLIBS = $(CCPLIBS)" \
 		"AR = $(AR)" "XAR = $(XAR)" "ARLIB = $(ARLIB)" "ARCPPLIB = $(ARCPPLIB)" \
 		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"XHOME = $(XHOME)" "STATIC = $(STATIC)"\
+		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
+		"STATIC = $(STATIC)"\
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"CLEAN_BEFORE_MAKE  = $(CLEAN_BEFORE_MAKE)" \
@@ -1207,7 +1208,7 @@ arbbasic2: mbin menus com nas ${MAKE_RTC}
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
+arbapplications: nt pa ed e4 we pt na al nal di ph ds trs gp
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg ps pc pst chip
