@@ -599,7 +599,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     int gene_flag = 0;
     char *gene_str;
     char *temp_gene_str;
-    char **ptrptr;
+    char *ptrptr = 0;
     char *gene_match_name;
 #endif
     int show_status = 0;
@@ -743,8 +743,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	  strcpy(temp_gene_str,match_info);
 	  temp_gene_str[strlen(temp_gene_str)] = '\0';
 	  //@@@ IDP: mit strtok wird match_info zerlegt. Mit strtok_r wird temp_gene_str zerlegt: Wird Benötigt um den Gennamen zu extrahieren. HIER PASSIERT DER FEHLER
-	  gene_str = strtok_r(temp_gene_str," ",ptrptr);
-	  gene_str = strtok_r(NULL," ",ptrptr);
+	  gene_str = strtok_r(temp_gene_str," ",&ptrptr);
+	  gene_str = strtok_r(NULL," ",&ptrptr);
 	}
 #endif
 	char flag  = 'x';
