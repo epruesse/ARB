@@ -31,7 +31,7 @@ void create_filter_text()
     strcpy(filter_text[4],"use like uppercase character (ACGTU)              ");
 }
 
-void startup_sequence_cb(AW_window *aww,void *cd1)
+void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
 {
     PHDATA *phd;
     char *use,*load_what;
@@ -57,6 +57,7 @@ void startup_sequence_cb(AW_window *aww,void *cd1)
     aw_root->awar("phyl/filter/startcol")->set_minmax(0,len);
     aw_root->awar("phyl/filter/stopcol")->set_minmax(0,len);
 
+    ((AW_window*)cl_aww)->show(); // pop up main window
     ph_view_species_cb(0,0,0);
 }
 
@@ -190,7 +191,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                 }
             }
 
-            data[x] = c; 
+            data[x] = c;
         }
         data[len] = 0; fclose(saveResults); //YK
 
@@ -455,7 +456,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
 }
 
 
-AW_window *create_select_alignment_window(AW_root *aw_root)
+AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
 {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -464,7 +465,7 @@ AW_window *create_select_alignment_window(AW_root *aw_root)
     aws->button_length(10);
 
     aws->at("done");
-    aws->callback((AW_CB1)startup_sequence_cb,(AW_CL) aw_root);
+    aws->callback(startup_sequence_cb,(AW_CL) aw_root, cl_aww);
     aws->create_button("DONE","DONE","D");
 
     aws->at("which_alignment");
@@ -523,9 +524,17 @@ main(int argc, char **argv)
     ARB_init_global_awars(aw_root, aw_default, gb_main);
 
     create_filter_text();
+
+    // create main window :
+
     puw->phylo_main_window = create_phyl_main_window(aw_root, apmain, 0);
-    puw->phylo_main_window->show();
     puw->windowList        = puw;
+
+    // exposing the main window is now done from inside startup_sequence_cb()
+    // (otherwise it crashes during resize because the resize callback gets
+    // called before startup_sequence_cb initialized the necessary data)
+    //
+    // puw->phylo_main_window->show();
 
     apd->apdisplay = apd;
 
@@ -535,12 +544,12 @@ main(int argc, char **argv)
 
     for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++);
     if (num_alignments > 1) {
-        AW_window *sel_ali_aww = create_select_alignment_window(aw_root);
+        AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
         sel_ali_aww->show();
     }
     else {
         aw_root->awar("phyl/alignment")->write_string( alignment_names[0]);
-        startup_sequence_cb(0, aw_root);
+        startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
     }
     GBT_free_names(alignment_names);
     GB_pop_transaction(gb_main);
