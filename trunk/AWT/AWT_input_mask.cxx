@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Jun/28/2002 19:14 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/22/2002 19:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1562,12 +1562,12 @@ inline MaskCommand findCommand(const string& cmd_name) {
 static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, const string& command,
                             awt_mask_item_ptr& handler1, awt_mask_item_ptr& handler2, awt_input_mask_global *global) {
     string         label, data_path;
-    int            default_position, orientation;
+    int            default_position = -1, orientation = -1;
     vector<string> buttons;
     vector<string> values;
-    bool           allow_edit    = false;
-    int            width;
-    int            edit_position = -1;
+    bool           allow_edit       = false;
+    int            width            = -1;
+    int            edit_position    = -1;
 
     label                        = scan_string_parameter(line, scan_pos, error);
     if (!error) data_path        = scan_string_parameter(line, scan_pos, error);
@@ -1945,7 +1945,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
                                 if (cmd == CMD_TEXTFIELD) {
                                     string label, data_path;
-                                    long   width;
+                                    long   width          = -1;
                                     label                 = scan_string_parameter(line, scan_pos, error);
                                     if (!error) data_path = scan_string_parameter(line, scan_pos, error);
                                     if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
@@ -1955,7 +1955,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                 }
                                 else if (cmd == CMD_NUMFIELD) {
                                     string label, data_path;
-                                    long    width;
+                                    long   width = -1;
 
                                     long min = LONG_MIN;
                                     long max = LONG_MAX;
@@ -2042,8 +2042,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                 }
                                 else if (cmd == CMD_SHOW) {
                                     string         label, id;
-                                    long           width;
-                                    awt_mask_item *item = 0;
+                                    long           width = -1;
+                                    awt_mask_item *item  = 0;
 
                                     label             = scan_string_parameter(line, scan_pos, error);
                                     if (!error) id    = scan_identifier(line, scan_pos, error);
@@ -2641,7 +2641,7 @@ static void create_new_mask_cb(AW_window *aww) {
 
     if (!error && openMask) {
         int           mask_id;
-        awt_item_type item_type;
+        awt_item_type item_type = AWT_IT_UNKNOWN;
 
         for (mask_id = 0; ; ++mask_id) {
             const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(mask_id);
