@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Set Protection Level of Field of Listed Species
 
-OCCURRENCE	<ARB_NT/Species/Search/Do On Listed/Set Protection ...>
+OCCURRENCE	<ARB_NT/Species/Search&Query/More functions/Set Protection ...>
 
 DESCRIPTION	Set the protection level of one field of listed species.
 

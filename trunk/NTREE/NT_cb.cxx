@@ -72,7 +72,7 @@ void NT_select_last_tree(AW_window *aww,char *awar_tree){
     char *ltree = GBT_find_latest_tree(gb_main);
     if (ltree){
         aww->get_root()->awar(awar_tree)->write_string(ltree);
-        delete ltree;
+        free(ltree);
     }
 }
 

@@ -322,7 +322,7 @@ const char *AW_get_color_group_name_awarname(int color_group) {
     return 0;
 }
 
-const char *AW_get_color_group_name(AW_root *awr, int color_group) {
+char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(color_groups_initialized);
     aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
     return awr->awar(AW_get_color_group_name_awarname(color_group))->read_string();
@@ -673,7 +673,9 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
             if (is_color_group) {
                 aw_assert(color_group > 0);
-                aws->label(AW_get_color_group_name(aw_root, color_group));
+                char *color_group_name = AW_get_color_group_name(aw_root, color_group);
+                aws->label(color_group_name);
+                free(color_group_name);
             }
             else {
                 aws->label(id);

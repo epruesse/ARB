@@ -82,7 +82,7 @@ GB_ERROR AP_filter::init(long size)
 
 AP_filter::~AP_filter(void){
     delete bootstrap;
-    delete filter_mask;
+    delete [] filter_mask;
     delete filterpos_2_seqpos;
 }
 

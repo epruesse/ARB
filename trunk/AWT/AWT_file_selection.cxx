@@ -257,7 +257,7 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, cbs->aws, cbs->id);
     }
     else {
-        char *mask = strdup(GBS_global_string("*%s", filter));
+        char *mask = GBS_global_string_copy("*%s", filter);
         awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir, cbs->aws, cbs->id);
         free(mask);
     }

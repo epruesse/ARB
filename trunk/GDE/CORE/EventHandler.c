@@ -35,10 +35,10 @@ Menu m;
 Menu_item mi;
 {
 
-	int i,j,k,curmenu,curitem;
+	int i,j,/*k,*/curmenu,curitem;
 	Gmenu *thismenu;
 	GmenuItem *thisitem;
-	Panel choice;
+/* 	Panel choice; */
 	char *label1;
 
 

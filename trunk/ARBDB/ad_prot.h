@@ -22,6 +22,7 @@ GB_ERROR GB_print_error P_((void));
 GB_ERROR GB_get_error P_((void));
 void GB_clear_error P_((void));
 GB_CSTR GBS_global_string P_((const char *templat, ...));
+char *GBS_global_string_copy P_((const char *templat, ...));
 char *GBS_string_2_key_with_exclusions P_((const char *str, const char *additional));
 char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key));

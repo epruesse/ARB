@@ -75,18 +75,18 @@ GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, int startpos, const char *ali
     if (!gb_source) return "Please select a valid source alignment";
     gb_dest = GBT_get_alignment(gbmain,ali_dest);
     if (!gb_dest) {
-        char *msg = strdup(GBS_global_string("You have not selected a destination alingment\n"
-                                             "May I create one ('%s_pro') for you?",ali_source));
+        char *msg = GBS_global_string_copy("You have not selected a destination alingment\n"
+                                             "May I create one ('%s_pro') for you?",ali_source);
         if (aw_message(msg,"CREATE,CANCEL")){
             delete msg;
             return "Cancelled";
         }
         long slen = GBT_get_alignment_len(gbmain,ali_source);
         delete msg;
-        ali_dest = strdup(GBS_global_string("%s_pro",ali_source));
+        ali_dest = GBS_global_string_copy("%s_pro",ali_source);
         gb_dest = GBT_create_alignment(gbmain,ali_dest,slen/3+1,0,1,"ami");
         {
-            char *fname = strdup(GBS_global_string("%s/data",ali_dest));
+            char *fname = GBS_global_string_copy("%s/data",ali_dest);
             awt_add_new_changekey( 	gbmain,fname,GB_STRING);
             delete fname;
         }

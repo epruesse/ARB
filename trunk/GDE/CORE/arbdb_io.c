@@ -9,7 +9,7 @@
 #include "defines.h"
 	extern Frame frame;
 
-int 
+int
 Arbdb_get_curelem(NA_Alignment *dataset)
 {
 	int             curelem;
@@ -29,7 +29,7 @@ Arbdb_get_curelem(NA_Alignment *dataset)
 
 extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
-ReadArbdb(filename,dataset,type)
+void ReadArbdb(filename,dataset,type)
 char *filename;
 NA_Alignment *dataset;
 int type;
@@ -77,19 +77,19 @@ int type;
 
 
 		gbd = GB_find(gb_species,"author",0,down_level);
-		if (gbd) 
+		if (gbd)
 			strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
 		gbd = GB_find(gb_species,"full_name",0,down_level);
-		if (gbd) 
+		if (gbd)
 			strncpy(this_elem->seq_name,GB_read_char_pntr(gbd),79);
 		gbd = GB_find(gb_species,"acc",0,down_level);
-		if (gbd) 
+		if (gbd)
 			strncpy(this_elem->id,GB_read_char_pntr(gbd),79);
 		AppendNA((NA_Base *)GB_read_char_pntr(gb_data),
 				GB_read_string_count(gb_data),
 				this_elem);
 		this_elem->comments = strdup("no comments");
-		this_elem->comments_maxlen = 1 + 
+		this_elem->comments_maxlen = 1 +
 		(this_elem->comments_len = strlen("no comments"));
 
 		if (this_elem->rmatrix &&
@@ -119,14 +119,14 @@ int type;
 }
 
 WriteArbdb(aln,filename,method,maskable)
-NA_Alignment *aln;
-char *filename;
-int method,maskable;
+     NA_Alignment *aln;
+     char         *filename;
+     int           method,maskable;
 {
 	int	j,k;
-	GBDATA *gb_ali;
+/* 	GBDATA *gb_ali; */
 	GBDATA *gb_data;
-	GBDATA *gb_name;
+/* 	GBDATA *gb_name; */
 	GBDATA *gb_species_data;
 	GBDATA	*gbd;
 	long	clock;
@@ -170,7 +170,7 @@ int method,maskable;
 					break;
 				case 2:
 					this_elem->gb_species = 0;
-					continue;				
+					continue;
 				}
 			}else{
 				int select_mode = notice_prompt(frame,NULL,NOTICE_MESSAGE_STRINGS,
@@ -190,8 +190,8 @@ int method,maskable;
 					break;
 				default:
 					continue;
-				}				
-			}					
+				}
+			}
 		}else if (this_elem->gb_species != gb_species) {	/* a copied species */
 			if (gb_species) {
 				int select_mode = notice_prompt(frame,NULL,NOTICE_MESSAGE_STRINGS,
@@ -212,7 +212,7 @@ int method,maskable;
 					break;
 				default:
 					continue;
-				}	
+				}
 			}else{
 				int select_mode = notice_prompt(frame,NULL,NOTICE_MESSAGE_STRINGS,
 					GBS_global_string(
@@ -232,7 +232,7 @@ int method,maskable;
 					break;
 				default:
 					continue;
-				}	
+				}
 			}
 		}
 
@@ -284,7 +284,7 @@ int method,maskable;
 	return 0;
 }
 
-Updata_Arbdb(item,event)
+void Updata_Arbdb(item,event)
 Panel_item item;
 Event *event;
 {

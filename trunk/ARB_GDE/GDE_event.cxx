@@ -345,7 +345,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         GB_begin_transaction(DataSet->gb_main);
         delete DataSet->alignment_name;
         DataSet->alignment_name = GBT_get_default_alignment(DataSet->gb_main);
-        delete alignment_name;
+        free(alignment_name);
         alignment_name = strdup(DataSet->alignment_name);
 
         aw_status("reading database");
@@ -484,12 +484,12 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 
  startaction_end:
     aw_closestatus();
-    delete alignment_name;
+    free(alignment_name);
     delete filter2;
-    delete filter_name;
+    free(filter_name);
 
     GDE_freeali(DataSet);
-    delete DataSet;
+    free(DataSet);
     DataSet=0;
     DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
@@ -624,8 +624,8 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
             //             Action = temp;
         }
     }
-    delete textvalue;
-    delete method;
+    free(textvalue);
+    free(method);
     return(Action);
 }
 

@@ -405,7 +405,7 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
             gen_assert(ask_about_existing_gene_species);
             gen_assert(ask_to_overwrite_alignment);
 
-            char *question = strdup(GBS_global_string("Already have a gene-species for %s/%s ('%s')", species_name, gene_name, existing_name));
+            char *question = GBS_global_string_copy("Already have a gene-species for %s/%s ('%s')", species_name, gene_name, existing_name);
             int   answer   = ask_about_existing_gene_species->get_answer(question, "Overwrite species,Insert new alignment,Skip,Create new", "all", true);
 
             create_new_gene_species = false;
@@ -420,7 +420,7 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
                 case 1: {     // Insert new alignment or overwrite alignment
                     GBDATA *gb_ali = GB_find(gb_exist_geneSpec, ali, 0, down_level);
                     if (gb_ali) { // the alignment already exists
-                        char *question2        = strdup(GBS_global_string("Gene-species '%s' already has data in '%s'", existing_name, ali));
+                        char *question2        = GBS_global_string_copy("Gene-species '%s' already has data in '%s'", existing_name, ali);
                         int   overwrite_answer = ask_to_overwrite_alignment->get_answer(question2, "Overwrite data,Skip", "all", true);
 
                         if (overwrite_answer == 1) error      = GBS_global_string("Skipped gene-species '%s' (already had data in alignment)", existing_name); // Skip

@@ -118,9 +118,9 @@ All rights reserved.
 #define IS_ORIG_5_TO_3	0x200	/* Original sequence was 5_to_3 */
 #define IS_ORIG_3_TO_5	0x400	/* Original sequence was 3_to_5 */
 
-#ifdef HGL 
+#ifdef HGL
 #define DEFAULT_X_ATTR  0
-#else 
+#else
 #define DEFAULT_X_ATTR  IS_5_TO_3+IS_PRIMARY;
 #endif
 
@@ -243,7 +243,7 @@ typedef struct
 	int numgroups;			/* number of groups */
 	NA_Sequence **group;		/* link to array of pointers into
 					   each group */
-	char *na_ddata;			/* display data */ 
+	char *na_ddata;			/* display data */
 	int format;			/* default file format */
 	char *selection_mask;		/* Sub sequence selection mask */
 	int selection_mask_len;		/* Sub selection mask length */
@@ -285,6 +285,8 @@ typedef struct
 	int use_repeat;			/* Number keys set repeat count*/
 
 } NA_DisplayData;
+
+struct gde_time { int yy; int mm; int dd; int hr; int mn; int sc; };
 
 
 #define getcmask(a,b) (b < ((a)->offset))?0:((a)->cmask[(b-(a)->offset)])

@@ -215,7 +215,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             fprintf(root->prvt->recording_macro_file,",");
             char *value = vus->awar->read_as_string();
             GBS_fwrite_string(value,root->prvt->recording_macro_file);
-            delete value;
+            free(value);
             fprintf(root->prvt->recording_macro_file,");\n");
         }
         if (vus->cbs) vus->cbs->run_callback();
@@ -322,7 +322,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     if (_callback && ((long)_callback!= 1) )
     {
         if (macro_name){
-            _callback->id = strdup(GBS_global_string("%s/%s",this->window_defaults_name,macro_name));
+            _callback->id = GBS_global_string_copy("%s/%s",this->window_defaults_name,macro_name);
             GBS_write_hash(this->get_root()->prvt->action_hash,_callback->id,(long)_callback);
         }else{
             _callback->id = 0;
@@ -514,9 +514,9 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
     char **bitmaps = (char**)cd;
     char *path;
     if (var[0] == '0' || var[0] == 'n') {
-        path = strdup(GBS_global_string("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[0]+1));
+        path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[0]+1);
     }else{
-        path = strdup(GBS_global_string("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[1]+1));
+        path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[1]+1);
     }
     XtVaSetValues( (Widget)wgt, RES_CONVERT( XmNlabelPixmap, path ), NULL );
     free(path);
@@ -640,7 +640,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
         XtAddCallback(textField, XmNactivateCallback,
                       (XtCallbackProc) AW_server_callback,
                       (XtPointer) _d_callback );
-        _d_callback->id = strdup(GBS_global_string("INPUT:%s",var_name));
+        _d_callback->id = GBS_global_string_copy("INPUT:%s",var_name);
         GBS_write_hash(this->get_root()->prvt->action_hash,_d_callback->id,(long)_d_callback);
     }
 
@@ -1126,27 +1126,60 @@ int AW_window::get_no_of_entries( AW_selection_list *selection_list )
     return count;
 }
 
-int AW_window::move_selection(AW_selection_list *selection_list, AW_awar *list_awar, int offset) {
-    int curr_idx;
-    {
-        char *curr_value = list_awar->read_string();
+int AW_window::get_index_of_current_element(AW_selection_list *selection_list, const char *awar_name) {
+    // returns -1 if no entry is selected
+    AW_root *aw_root    = get_root();
+    char    *curr_value = aw_root->awar(awar_name)->read_string();
+    int      index      = get_index_of_element(selection_list, curr_value);
 
-        curr_idx = get_index_of_element(selection_list, curr_value);
-        free(curr_value);
-    }
+#if defined(DEBUG) && 0
+    printf("get_index_of_current_element: curr_value='%s' index=%i\n", curr_value, index);
+#endif // DEBUG
 
-    if (curr_idx == -1) {
-        curr_idx = 0;
+    free(curr_value);
+    return index;
+}
+
+void AW_window::select_index(AW_selection_list *selection_list, const char *awar_name, int wanted_index) {
+    AW_root    *aw_root      = get_root();
+    const char *wanted_value = get_element_of_index(selection_list, wanted_index);
+
+#if defined(DEBUG) && 0
+    printf("select_index : wanted_index=%i wanted_value='%s'\n", wanted_index, wanted_value);
+#endif // DEBUG
+
+    if (wanted_value) {
+        aw_root->awar(awar_name)->write_string(wanted_value);
     }
     else {
-        curr_idx += offset;
+        aw_root->awar(awar_name)->write_string("");
     }
+}
 
-    const char *new_value = get_element_of_index(selection_list, curr_idx);
-    if (new_value) {
-        list_awar->write_string(new_value);
-    }
-    return 0;
+void AW_window::move_selection(AW_selection_list *selection_list, const char *awar_name, int offset) {
+    int index = get_index_of_current_element(selection_list, awar_name);
+    select_index(selection_list, awar_name, index+offset);
+
+    //     int curr_idx;
+    //     {
+    //         char *curr_value = list_awar->read_string();
+
+    //         curr_idx = get_index_of_element(selection_list, curr_value);
+    //         free(curr_value);
+    //     }
+
+    //     if (curr_idx == -1) {
+    //         curr_idx = 0;
+    //     }
+    //     else {
+    //         curr_idx += offset;
+    //     }
+
+    //     const char *new_value = get_element_of_index(selection_list, curr_idx);
+    //     if (new_value) {
+    //         list_awar->write_string(new_value);
+    //     }
+    //     return 0;
 }
 
 /*-------------------- function to get index of an entry in the selection lists -------------------- */
@@ -1157,7 +1190,7 @@ int AW_window::get_index_of_element(AW_selection_list *selection_list, const cha
     const char *listEntry     = selection_list->first_element();
 
     while (listEntry) {
-        if (GBS_strscmp(listEntry, searched_value) == 0) {
+        if (strcmp(listEntry, searched_value) == 0) {
             found_index = element_index;
             break;              // found
         }
@@ -1634,7 +1667,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
 
             if (ko[0] && pl[0] != '#') this->insert_selection(selection_list,pl,ko);
         }
-        delete data;
+        free(data);
     }
     GBS_free_names(fnames);
 

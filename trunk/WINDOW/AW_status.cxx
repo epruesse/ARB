@@ -807,6 +807,8 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
                 aw_msg->callback(input_cb, result);
                 aw_msg->create_button(word, word, "");
             }
+
+            free(but);
         }
         else {
             aw_msg->button_length( 0 );
@@ -866,6 +868,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
         free(this_input);
     }
 
+    free(last_input);
 
     root->disable_callbacks = AW_FALSE;
     aw_msg->hide();
@@ -958,7 +961,7 @@ struct {
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR  result             = 0;
     char    *user_doc_path      = strdup(GB_getenvDOCPATH());
-    char    *devel_doc_path     = strdup(GBS_global_string("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME()));
+    char    *devel_doc_path     = GBS_global_string_copy("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME());
     size_t   user_doc_path_len  = strlen(user_doc_path);
     size_t   devel_doc_path_len = strlen(devel_doc_path);
 
@@ -1026,7 +1029,7 @@ char *aw_ref_to_title(char *ref){
     if (!ref) return 0;
 
     if (!GBS_string_cmp(ref,"*.ps",0) ){	// Postscript file
-        return strdup(GBS_global_string("Postscript: %s",ref));
+        return GBS_global_string_copy("Postscript: %s",ref);
     }
 
     char *result = 0;
@@ -1068,7 +1071,7 @@ void aw_help_new_helpfile(AW_root *awr){
             sprintf(sys,"%s %s &",GB_getenvGS(), help_file);
         }
         else {
-            char *compressed = strdup(GBS_global_string("%s.gz", help_file));
+            char *compressed = GBS_global_string_copy("%s.gz", help_file);
 
             if (stat(compressed, &st) == 0) { // *.ps.gz exists
                 sprintf(sys,"(gunzip <%s | %s -) &", compressed, GB_getenvGS());

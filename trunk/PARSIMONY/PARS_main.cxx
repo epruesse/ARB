@@ -427,11 +427,11 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
         brother->remove();
         leaf->remove();
         isits.currentspecies--;
-        char *label = strdup(GBS_global_string("2:%s",leaf->name));
+        char *label = GBS_global_string_copy("2:%s",leaf->name);
         insert_species_in_tree(label,leaf);	// reinsert species
         delete label;
         isits.currentspecies--;
-        label = strdup(GBS_global_string("shortseq:%s",brother->name));
+        label = GBS_global_string_copy("shortseq:%s",brother->name);
         insert_species_in_tree(label,brother);	// reinsert short sequence
         delete label;
     }

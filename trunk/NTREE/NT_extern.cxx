@@ -117,7 +117,7 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
     if (print_flag){
         GB_textprint(name);
     }
-    delete name;
+    free(name);
 }
 
 AW_window *create_nds_export_window(AW_root *root){
@@ -529,17 +529,22 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 }
 
-void NT_submit_mail(AW_window *aww){
-    char *address = aww->get_root()->awar("/tmp/nt/register/mail")->read_string();
+void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
+    char *awar_base = (char*)cl_awar_base;
+    char *address   = aww->get_root()->awar(GBS_global_string("%s/address", awar_base))->read_string();
+    char *text      = aww->get_root()->awar(GBS_global_string("%s/text", awar_base))->read_string();
     char *plainaddress = GBS_string_eval(address,"\"=:'=\\=",0); // Remove all dangerous symbols
-    char *text = aww->get_root()->awar("/tmp/nt/register/text")->read_string();
+
     char buffer[256];
     sprintf(buffer,"/tmp/arb_bugreport_%s",GB_getenvUSER());
+
     FILE *mail = fopen(buffer,"w");
     if (!mail){
         aw_message(GB_export_error("Cannot write file %s",buffer));
-    }else{
+    }
+    else{
         fprintf(mail,"%s\n",text);
+        fprintf(mail,"------------------------------\n");
         fprintf(mail,"VERSION		:" DATE "\n");
         fprintf(mail,"SYSTEMINFO	:\n");
         fclose(mail);
@@ -547,53 +552,88 @@ void NT_submit_mail(AW_window *aww){
         system(GBS_global_string("uname -a >>%s",buffer));
         system(GBS_global_string("date  >>%s",buffer));
         const char *command = GBS_global_string("mail '%s' <%s",plainaddress,buffer);
-        system(command);
         printf("%s\n",command);
-        GB_unlink(buffer);
+        system(command);
+        // GB_unlink(buffer);
         aww->hide();
     }
-    delete text;
-    delete address;
-    delete plainaddress;
+
+    free(plainaddress);
+    free(text);
+    free(address);
 }
 
 AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
-	static AW_window_simple *aws = 0;
-	if (aws) return (AW_window *)aws;
+	static AW_window_simple *awss[2] = { 0, 0 };
+	if (awss[bug_report]) return (AW_window *)awss[bug_report];
 
-	aws = new AW_window_simple;
-	aws->init( aw_root, "SUBMIT_BUG", "SUBMIT INFO", 10, 10 );
+	AW_window_simple *aws = new AW_window_simple;
+    if (bug_report) {
+        aws->init( aw_root, "SUBMIT_BUG", "Submit a bug", 10, 10 );
+    }
+    else {
+        aws->init( aw_root, "SUBMIT_REG", "Submit registration", 10, 10 );
+    }
 	aws->load_xfig("bug_report.fig");
 
-	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+	aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
 	aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"registration.hlp");
+	aws->at("help");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"registration.hlp");
 	aws->create_button("HELP","HELP","H");
 
-	aw_root->awar_string("/tmp/nt/register/mail","arb@arb-home.de");
-	aws->at("mail");
-	aws->create_input_field("/tmp/nt/register/mail");
+    aws->at("what");
+    aws->create_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
 
-	if (bug_report){
-	    aw_root->awar_string("/tmp/nt/register/text","Enter your bug report here:\n");
-	}else{
-	    aw_root->awar_string("/tmp/nt/register/text",
-                             "******* Registration *******\n"
-                             "\n"
-                             "Name           :\n"
-                             "Department	 :\n"
-                             "How many users :\n"
-                             "Why do you want to use arb ?\n"
-                             );
-	}
-	aws->at("box");
-	aws->create_text_field("/tmp/nt/register/text");
+    char *awar_name_start = GBS_global_string_copy("/tmp/nt/feedback/%s", bug_report ? "bugreport" : "registration");
 
+    {
+        const char *awar_name_address = GBS_global_string("%s/address", awar_name_start);
+        aw_root->awar_string(awar_name_address, "arb@arb-home.de");
+
+        aws->at("mail");
+        aws->create_input_field(awar_name_address);
+    }
+
+    {
+        const char *awar_name_text = GBS_global_string("%s/text", awar_name_start);
+
+        if (bug_report){
+            aw_root->awar_string(awar_name_text,
+                                 "Bug occurred in: [which part of ARB?]\n"
+                                 "The bug [ ] is reproducable\n"
+                                 "        [ ] occurs randomly\n"
+                                 "        [ ] occurs with specific data\n"
+                                 "\n"
+                                 "Detailed description:\n"
+                                 "\n"
+                                 );
+        }
+        else {
+            aw_root->awar_string(awar_name_text,
+                                 GBS_global_string("******* Registration *******\n"
+                                                   "\n"
+                                                   "Name           : %s\n"
+                                                   "Department     :\n"
+                                                   "How many users :\n"
+                                                   "\n"
+                                                   "Why do you want to use arb ?\n"
+                                                   "\n",
+                                                   GB_getenvUSER())
+                                 );
+        }
+
+        aws->at("box");
+        aws->create_text_field(awar_name_text);
+    }
 
 	aws->at("go");
-	aws->callback(NT_submit_mail);
+	aws->callback(NT_submit_mail, (AW_CL)awar_name_start); // do not free awar_name_start
 	aws->create_button("SEND","SEND");
+
+    awss[bug_report] = aws; // store for further use
 
 	return aws;
 }
@@ -781,7 +821,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->button_length(5);
 
-    AW_init_color_group_defaults("arb_ntree");
+    if (!clone) AW_init_color_group_defaults("arb_ntree");
 
     nt.tree         = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
     AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;

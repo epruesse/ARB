@@ -251,11 +251,8 @@ void awt_aps_go(AW_window *aww){
                 break;
         }
         char *header = awr->awar(AWAR_APRINT_TITLE)->read_string();
-        a2ps_call = strdup(GBS_global_string("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
-                                             header,
-                                             oristring,
-                                             default_lpp,
-                                             tmp_file));
+        a2ps_call = GBS_global_string_copy("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
+                                           header, oristring, default_lpp, tmp_file);
         delete header;
     }
 

@@ -210,7 +210,7 @@ void set_cgi_var(char *name, char *content) {
 char *OC_cgi_var_2_filename(char *cv, char *lib_file, char *kontext) {
 	char *seek_name = cgi_var(cv);
 	if (!*seek_name) quit_with_error(ORS_export_error("cgi_var '%s' missing at %s",cv,kontext));
-	char *result=ORS_read_a_line_in_a_file(strdup(GBS_global_string(ORS_LIB_PATH "%s",lib_file)) ,seek_name);
+	char *result=ORS_read_a_line_in_a_file(GBS_global_string_copy(ORS_LIB_PATH "%s",lib_file) ,seek_name);
 	if (!*result) quit_with_error(ORS_export_error("'%s' not found in " ORS_LIB_PATH "%s at %s",seek_name,lib_file,kontext));
 	return result;
 }
@@ -585,7 +585,7 @@ int main(int /*argc*/, char **/*argv*/) {
 			sprintf(tmpfile,ORS_TMP_PATH "ovp_%s",ffile);
 			delete ffile;
 			char *bin_tree_file = OC_cgi_var_2_filename("bt","tree_names","BIN_TREE");
-			char *bin_tree_path = strdup(GBS_global_string(ORS_LIB_PATH "%s",bin_tree_file));
+			char *bin_tree_path = GBS_global_string_copy(ORS_LIB_PATH "%s",bin_tree_file);
 
 			output_java_match_result(tmpfile,bin_tree_path);
 			OC_output_html_page("look_java");

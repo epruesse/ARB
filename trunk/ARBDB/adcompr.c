@@ -558,9 +558,16 @@ GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
 
 	dest = buffer = GB_give_other_buffer((char *)source,size);
 
+#if defined(DEBUG)
+    printf("gb_uncompress_equal_bytes(size=%li):\n", size);
+#endif /* DEBUG */
+
 	for (i=size;i;) {
 		j = *(source++);
-		if (j>0) {		/* uncompressed data block */
+#if defined(DEBUG)
+        printf("size=%li (code=%i)\n", i, (int)j);
+#endif /* DEBUG */
+		if (j>0) {		        /* uncompressed data block */
 			if (j>i) j=i;
 			i -= j;
 			for (;j;j--) {

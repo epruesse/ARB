@@ -172,7 +172,7 @@ void awt_pre_to_view(AW_root *aw_root){
 	}else{
 		aw_root->awar(AWAR_SELECT_ACISRT)->write_string(str);
 	}
-	delete str;
+	free(str);
 }
 void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar_short)
 	{
@@ -201,7 +201,7 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
 		AW_selection_list*  id = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
 		char *filename = AWT_unfold_path("lib/sellists/srt_aci*.sellst","ARBHOME");
 		GB_ERROR error = aws->load_selection_list(id,filename);
-		delete filename;
+		free(filename);
 		if (error) aw_message(error);
 
 		aws->at("field");

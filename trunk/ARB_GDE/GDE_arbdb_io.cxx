@@ -44,7 +44,7 @@ int Arbdb_get_curelem(NA_Alignment *dataset)
 		(dataset->maxnumelements) *= 2;
 		dataset->element = (NA_Sequence *)
 			Realloc((char *)dataset->element,
-			     dataset->maxnumelements * sizeof(NA_Sequence));
+                    dataset->maxnumelements * sizeof(NA_Sequence));
 	}
 	return curelem;
 }
@@ -52,7 +52,7 @@ int Arbdb_get_curelem(NA_Alignment *dataset)
 extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
 int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,unsigned char **the_sequences,
-		    unsigned long numberspecies,unsigned long maxalignlen,AP_filter *filter, long compress)
+                    unsigned long numberspecies,unsigned long maxalignlen,AP_filter *filter, long compress)
 {
     GBDATA *gb_name;
     GBDATA *gb_species;
@@ -64,200 +64,201 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 
     if(filter==0)
     {
-	filter = new AP_filter;
-	filter->init(maxalignlen);
-	newfiltercreated=1;
+        filter = new AP_filter;
+        filter->init(maxalignlen);
+        newfiltercreated=1;
     }else{
-	size_t fl = filter->filter_len;
-	if (fl < maxalignlen){
-	    aw_message("Warning Your filter is shorter than the alignment len");
-	    maxalignlen = fl;
-	}
+        size_t fl = filter->filter_len;
+        if (fl < maxalignlen){
+            aw_message("Warning Your filter is shorter than the alignment len");
+            maxalignlen = fl;
+        }
     }
 
     size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies,sizeof(size_t));
     // sequences may have different length
     {
-	unsigned long i;
-	for(i=0;i<numberspecies;i++){
-	    seqlen[i] = strlen((char *)the_sequences[i]);
-	}
+        unsigned long i;
+        for(i=0;i<numberspecies;i++){
+            seqlen[i] = strlen((char *)the_sequences[i]);
+        }
     }
 
 
     uchar **sequfilt=(uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
     if(compress==2)  // compress all gaps and filter positions
     {
-	long len=filter->real_len;
-	unsigned long i;
-	for(i=0;i<numberspecies;i++)
-	{
-	    sequfilt[i]=(uchar*)calloc((unsigned int)len+1,sizeof(uchar));
-	    char c;
-	    long newcount=0;
-	    for(unsigned long col=0;(col<maxalignlen);col++)	{
-		if(!(c=the_sequences[i][col]))	break;
-		if ( (filter->filter_mask[col]) && (c!='-') && (c!='.') )
-		    sequfilt[i][newcount++]=the_sequences[i][col];
-	    }
-	}
+        long len=filter->real_len;
+        unsigned long i;
+        for(i=0;i<numberspecies;i++)
+        {
+            sequfilt[i]=(uchar*)calloc((unsigned int)len+1,sizeof(uchar));
+            char c;
+            long newcount=0;
+            for(unsigned long col=0;(col<maxalignlen);col++)	{
+                if(!(c=the_sequences[i][col]))	break;
+                if ( (filter->filter_mask[col]) && (c!='-') && (c!='.') )
+                    sequfilt[i][newcount++]=the_sequences[i][col];
+            }
+        }
     }else{
-	if(compress==1){  // compress vertical gaps (and '.')
-	    long allaregaps;
-	    unsigned long i;
-	    for(i=0;i<maxalignlen;i++)	{
-		if (filter->filter_mask[i]) {
-		    allaregaps=1;
-		    for(size_t n=0;n<numberspecies;n++){
-			if(i >= seqlen[n]) continue; // end of sequence exceeded
-			char c=the_sequences[n][i];
-			if((c!='-')&&(c!='.')){
-			    allaregaps=0;
-			    break;
-			}
-		    }
-		    if(allaregaps){
-			filter->filter_mask[i]=0;
-			filter->real_len--;
-		    }
-		}
-	    }
-	}
-	long len=filter->real_len;
-	size_t i;
-	for(i=0;i<numberspecies;i++)
-	{
-	    int c;
-	    long newcount=0;
-	    sequfilt[i]=(uchar*)malloc((unsigned int)len+1);
-	    sequfilt[i][len] = 0;
-	    memset(sequfilt[i],'.',len);		// Generate empty sequences
+        if(compress==1){  // compress vertical gaps (and '.')
+            long allaregaps;
+            unsigned long i;
+            for(i=0;i<maxalignlen;i++)	{
+                if (filter->filter_mask[i]) {
+                    allaregaps=1;
+                    for(size_t n=0;n<numberspecies;n++){
+                        if(i >= seqlen[n]) continue; // end of sequence exceeded
+                        char c=the_sequences[n][i];
+                        if((c!='-')&&(c!='.')){
+                            allaregaps=0;
+                            break;
+                        }
+                    }
+                    if(allaregaps){
+                        filter->filter_mask[i]=0;
+                        filter->real_len--;
+                    }
+                }
+            }
+        }
+        long len=filter->real_len;
+        size_t i;
+        for(i=0;i<numberspecies;i++)
+        {
+            int c;
+            long newcount=0;
+            sequfilt[i]=(uchar*)malloc((unsigned int)len+1);
+            sequfilt[i][len] = 0;
+            memset(sequfilt[i],'.',len);		// Generate empty sequences
 
-	    size_t col;
-	    for(col=0;(col<maxalignlen)&&(c=the_sequences[i][col]);col++){
-		if ( filter->filter_mask[col] )
-		    sequfilt[i][newcount++]=filter->simplify[c];
-	    }
-	}
+            size_t col;
+            for(col=0;(col<maxalignlen)&&(c=the_sequences[i][col]);col++){
+                if ( filter->filter_mask[col] )
+                    sequfilt[i][newcount++]=filter->simplify[c];
+            }
+        }
     }
 
     {
-	GBDATA *gb_filter;
-	GB_transaction dummy(gb_main);
-	gb_filter = GB_search(gb_main,AWAR_GDE_EXPORT_FILTER,GB_STRING);
-	char *string = filter->to_string();
-	GB_write_string(gb_filter,string);
-	delete string;
+        GBDATA *gb_filter;
+        GB_transaction dummy(gb_main);
+        gb_filter = GB_search(gb_main,AWAR_GDE_EXPORT_FILTER,GB_STRING);
+        char *string = filter->to_string();
+        GB_write_string(gb_filter,string);
+        delete [] string;
     }
 
-    delete seqlen;
+    free(seqlen);
 
     long number=0;
     int	curelem;
 
     if (the_species) {
-	for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number] ) {
-	    if((number/10)*10==number)
-		if(aw_status((double)number/(double)numberspecies))
-		{
-		    return(1);
-		}
-	    gb_name = GB_find(gb_species,"name",0,down_level);
+        for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number] ) {
+            if((number/10)*10==number)
+                if(aw_status((double)number/(double)numberspecies))
+                {
+                    return(1);
+                }
+            gb_name = GB_find(gb_species,"name",0,down_level);
 
-	    curelem = Arbdb_get_curelem(dataset);
-	    this_elem = &(dataset->element[curelem]);
-	    InitNASeq(this_elem,RNA);
-	    this_elem->attr = DEFAULT_X_ATTR;
-	    this_elem->gb_species = gb_species;
+            curelem = Arbdb_get_curelem(dataset);
+            this_elem = &(dataset->element[curelem]);
+            InitNASeq(this_elem,RNA);
+            this_elem->attr = DEFAULT_X_ATTR;
+            this_elem->gb_species = gb_species;
 
-	    strncpy(this_elem->short_name,GB_read_char_pntr(gb_name),31);
+            strncpy(this_elem->short_name,GB_read_char_pntr(gb_name),31);
 
-	    gbd = GB_find(gb_species,"author",0,down_level);
-	    if (gbd)	strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
-	    gbd = GB_find(gb_species,"full_name",0,down_level);
-	    if (gbd)	strncpy(this_elem->seq_name,GB_read_char_pntr(gbd),79);
-	    gbd = GB_find(gb_species,"acc",0,down_level);
-	    if (gbd){
-		strncpy(this_elem->id,GB_read_char_pntr(gbd),79);
-	    }
-	    {
-		AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
-		delete sequfilt[number]; sequfilt[number] = 0;
-	    }
+            gbd = GB_find(gb_species,"author",0,down_level);
+            if (gbd)	strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
+            gbd = GB_find(gb_species,"full_name",0,down_level);
+            if (gbd)	strncpy(this_elem->seq_name,GB_read_char_pntr(gbd),79);
+            gbd = GB_find(gb_species,"acc",0,down_level);
+            if (gbd){
+                strncpy(this_elem->id,GB_read_char_pntr(gbd),79);
+            }
+            {
+                AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
+                free(sequfilt[number]);
+                sequfilt[number] = 0;
+            }
 
-	    this_elem->comments = strdup("no comments");
-	    this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
+            this_elem->comments = strdup("no comments");
+            this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
-//		if (this_elem->rmatrix &&
-//		    IS_REALLY_AA == AW_FALSE) {
-//			if (IS_REALLY_AA == AW_FALSE)
-//				Ascii2NA((char *)this_elem->sequence,
-//					 this_elem->seqlen,
-//					 this_elem->rmatrix);
-//			else
-	    /*
-	     * Force the sequence to be AA
-	     */
-	    {
-		this_elem->elementtype = TEXT;
-		this_elem->rmatrix = NULL;
-		this_elem->tmatrix = NULL;
-		this_elem->col_lut = Default_PROColor_LKUP;
-	    }
-//		}
-	}
+            //		if (this_elem->rmatrix &&
+            //		    IS_REALLY_AA == AW_FALSE) {
+            //			if (IS_REALLY_AA == AW_FALSE)
+            //				Ascii2NA((char *)this_elem->sequence,
+            //					 this_elem->seqlen,
+            //					 this_elem->rmatrix);
+            //			else
+            /*
+             * Force the sequence to be AA
+             */
+            {
+                this_elem->elementtype = TEXT;
+                this_elem->rmatrix = NULL;
+                this_elem->tmatrix = NULL;
+                this_elem->col_lut = Default_PROColor_LKUP;
+            }
+            //		}
+        }
     }
     else {	// use the_names
-	unsigned char *species_name;
+        unsigned char *species_name;
 
-	for (species_name=the_names[number]; species_name; species_name=the_names[++number]) {
-	    if ((number/10)*10==number) {
-		if (aw_status((double)number/(double)numberspecies)) {
-		    return 1;
-		}
-	    }
+        for (species_name=the_names[number]; species_name; species_name=the_names[++number]) {
+            if ((number/10)*10==number) {
+                if (aw_status((double)number/(double)numberspecies)) {
+                    return 1;
+                }
+            }
 
-	    curelem = Arbdb_get_curelem(dataset);
-	    this_elem = &(dataset->element[curelem]);
-	    InitNASeq(this_elem, RNA);
-	    this_elem->attr = DEFAULT_X_ATTR;
-	    this_elem->gb_species = 0;
+            curelem = Arbdb_get_curelem(dataset);
+            this_elem = &(dataset->element[curelem]);
+            InitNASeq(this_elem, RNA);
+            this_elem->attr = DEFAULT_X_ATTR;
+            this_elem->gb_species = 0;
 
-	    strncpy((char*)this_elem->short_name, (char*)species_name, 31);
-	    this_elem->authority[0] = 0;
-	    this_elem->seq_name[0] = 0;
-	    this_elem->id[0] = 0;
+            strncpy((char*)this_elem->short_name, (char*)species_name, 31);
+            this_elem->authority[0] = 0;
+            this_elem->seq_name[0] = 0;
+            this_elem->id[0] = 0;
 
-	    {
-		AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
-		delete sequfilt[number]; sequfilt[number] = 0;
-	    }
+            {
+                AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
+                delete sequfilt[number]; sequfilt[number] = 0;
+            }
 
-	    this_elem->comments = strdup("no comments");
-	    this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
+            this_elem->comments = strdup("no comments");
+            this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
-	    {
-		this_elem->elementtype = TEXT;
-		this_elem->rmatrix = NULL;
-		this_elem->tmatrix = NULL;
-		this_elem->col_lut = Default_PROColor_LKUP;
-	    }
-	}
+            {
+                this_elem->elementtype = TEXT;
+                this_elem->rmatrix = NULL;
+                this_elem->tmatrix = NULL;
+                this_elem->col_lut = Default_PROColor_LKUP;
+            }
+        }
     }
 
     {
-	unsigned long i;
-	for(i=0;i<dataset->numelements;i++)
-	    dataset->maxlen = MAX(dataset->maxlen,
-				  dataset->element[i].seqlen+dataset->element[i].offset);
+        unsigned long i;
+        for(i=0;i<dataset->numelements;i++)
+            dataset->maxlen = MAX(dataset->maxlen,
+                                  dataset->element[i].seqlen+dataset->element[i].offset);
     }
     {
-	unsigned long i;
-	for(i=0;i<numberspecies;i++)
-	{
-	    delete sequfilt[i];
-	}
-	delete sequfilt;
+        unsigned long i;
+        for(i=0;i<numberspecies;i++)
+        {
+            delete sequfilt[i];
+        }
+        free(sequfilt);
     }
     if(newfiltercreated) delete filter;
     return(0);
@@ -278,8 +279,8 @@ int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
 	uchar **the_sequences;
 	uchar **the_names;
 	char *error = gde_cgss.get_sequences(gde_cgss.THIS,
-					     the_species, the_names, the_sequences,
-					     numberspecies, maxalignlen);
+                                         the_species, the_names, the_sequences,
+                                         numberspecies, maxalignlen);
 
 	gde_assert((the_species==0) != (the_names==0));
 
@@ -365,13 +366,12 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress)
 		//printf("%s \n",the_sequences[i]);
 	}
 	InsertDatainGDE(dataset,the_species,0,(unsigned char **)the_sequences,
-		numberspecies,maxalignlen,filter,compress);
-	for(i=0;i<numberspecies;i++)
-	{
-		delete the_sequences[i];
+                    numberspecies,maxalignlen,filter,compress);
+	for(i=0;i<numberspecies;i++) {
+		free(the_sequences[i]);
 	}
-	delete the_sequences;
-	delete the_species;
+	free(the_sequences);
+	free(the_species);
 
 	return 0;
 }
@@ -406,12 +406,12 @@ int WriteArbdb(NA_Alignment *aln,char *filename,int method,int maskable)
 			} else {
 				this_elem->gb_species =
 					GBT_create_species_rel_species_data(gb_species_data,
-						     this_elem->short_name);
+                                                        this_elem->short_name);
 			}
 		}
 		gb_data = GBT_add_data(this_elem->gb_species,aln->alignment_name, "data", GB_STRING);
 		buffer = (char *) calloc(sizeof(char),
-				     this_elem->seqlen + this_elem->offset+1);
+                                 this_elem->seqlen + this_elem->offset+1);
 		for (k = 0; k < this_elem->seqlen + this_elem->offset; k++) {
 			buffer[k] = this_elem->tmatrix[getelem(this_elem, k)];
 		}
@@ -431,10 +431,10 @@ int WriteArbdb(NA_Alignment *aln,char *filename,int method,int maskable)
 }
 
 /*void Updata_Arbdb(Panel_item item,Event *event)
-{
-	extern NA_Alignment *DataSet;
-	WriteArbdb(DataSet,0,ALL,AW_FALSE);
-}*/
+  {
+  extern NA_Alignment *DataSet;
+  WriteArbdb(DataSet,0,ALL,AW_FALSE);
+  }*/
 
 
 int getelem(NA_Sequence *a,int b)
@@ -444,16 +444,16 @@ int getelem(NA_Sequence *a,int b)
 	if(b<a->offset || (b>a->offset+a->seqlen))
 		switch(a->elementtype)
 		{
-		case DNA:
-		case RNA:
-			return(0);
-		case PROTEIN:
-		case TEXT:
-			return('~');
-		case MASK:
-			return('0');
-		default:
-			return('-');
+            case DNA:
+            case RNA:
+                return(0);
+            case PROTEIN:
+            case TEXT:
+                return('~');
+            case MASK:
+                return('0');
+            default:
+                return('-');
 		}
 	else
 		return(a->sequence[b-a->offset]);
@@ -504,30 +504,30 @@ void putelem(NA_Sequence *a,int b,NA_Base c)
 	else
 	{
 		temp =(NA_Base*)Calloc(a->seqmaxlen+a->offset-b,
-		    sizeof(NA_Base));
+                               sizeof(NA_Base));
 		switch (a->elementtype)
 		{
 			/*
-*	Pad out with gap characters fron the point of insertion to the offset
-*/
-		case MASK:
-			for(j=b;j<a->offset;j++)
-				temp[j-b]='0';
-			break;
-		case DNA:
-		case RNA:
-			for(j=b;j<a->offset;j++)
-				temp[j-b]='\0';
-			break;
-		case PROTEIN:
-			for(j=b;j<a->offset;j++)
-				temp[j-b]='-';
-			break;
-		case TEXT:
-		default:
-			for(j=b;j<a->offset;j++)
-				temp[j-b]=' ';
-			break;
+             *	Pad out with gap characters fron the point of insertion to the offset
+             */
+            case MASK:
+                for(j=b;j<a->offset;j++)
+                    temp[j-b]='0';
+                break;
+            case DNA:
+            case RNA:
+                for(j=b;j<a->offset;j++)
+                    temp[j-b]='\0';
+                break;
+            case PROTEIN:
+                for(j=b;j<a->offset;j++)
+                    temp[j-b]='-';
+                break;
+            case TEXT:
+            default:
+                for(j=b;j<a->offset;j++)
+                    temp[j-b]=' ';
+                break;
 		}
 
 		for(j=0;j<a->seqmaxlen;j++)

@@ -21,7 +21,7 @@
 	extern Gmenu menu[];
 	extern int num_menus;
 
-Panel menubar = NULL;
+Panel menubar = 0;
 
 /*
 BasicDisplay():
@@ -37,7 +37,7 @@ All rights reserved.
 */
 	extern Frame frame;
 
-QuitGDE()
+int QuitGDE()
 {
 	extern Frame    frame;
 	if (notice_prompt(frame, NULL, NOTICE_MESSAGE_STRINGS,
@@ -51,18 +51,19 @@ QuitGDE()
 		return (XV_OK);
 }
 
-QuitGDE_update(Panel_item item, Event *event)
+int QuitGDE_update(Panel_item item, Event *event)
 {
 	Updata_Arbdb(item,event);
-	QuitGDE();
+	return QuitGDE();
 }
 
 Panel BasicDisplay(DataSet)
 NA_Alignment *DataSet;
 {
-	int i,j,k;
+/* 	int i,j,k; */
+	int j;
 
-	if(menubar == NULL)
+	if (!menubar)
 	{
 		menubar = xv_create(frame,PANEL,
 		    0);
@@ -85,7 +86,7 @@ NA_Alignment *DataSet;
 *	current view of the data set.
 */
 	MakeNAADisplay();
-	return;
+	return menubar;
 }
 
 
@@ -125,11 +126,11 @@ Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
 All rights reserved.
 */
 
-GenMenu(type)
+void GenMenu(type)
 int type;
 {
-	int i,j,k;
-	int curmenu,curitem,curarg,curinput,curoutput,curchoice;
+/* 	int i,j,k; */
+	int curmenu,curitem/*,curarg,curinput,curoutput,curchoice*/;
 	extern Gmenu menu[];
 	extern Frame frame;
 	extern int num_menus;
@@ -141,7 +142,7 @@ int type;
 	for(curmenu = 0;curmenu<num_menus;curmenu++)
 	{
 		thismenu = &(menu[curmenu]);
-		thismenu->X = xv_create(NULL,MENU,0);
+		thismenu->X = xv_create(0,MENU,0);
 		if(strcmp(thismenu->label,"File")==0)
 		{
 			if (DataSet && DataSet->gb_main) {
@@ -300,13 +301,13 @@ Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
 All rights reserved.
 */
 
-MakeNAADisplay()
+void MakeNAADisplay()
 {
 	extern Panel menubar;
 	extern Canvas EditNameCan;
 	extern Frame frame;
 	extern Canvas EditCan;
-	extern NA_Alignment *DataSet;
+/* 	extern NA_Alignment *DataSet; */
 	extern Xv_singlecolor Default_Colors[];
 	Scrollbar hscroll,vscroll;
 
@@ -420,8 +421,8 @@ MakeNAADisplay()
 		    0);
 
 
-		if(colmap == NULL)
-			colmap = (Cms)xv_create(NULL,CMS,
+		if(colmap == 0)
+			colmap = (Cms)xv_create(0,CMS,
 			    CMS_TYPE,XV_STATIC_CMS,
 			    CMS_SIZE,16,
 			    CMS_COLORS,Default_Colors,
@@ -465,7 +466,7 @@ MakeNAADisplay()
 
 	gcv.font = (Font)xv_get(font,XV_XID);
 
-	if(gcv.font != NULL)
+	if(gcv.font != 0)
 		XChangeGC(dpy,gc,GCFont,&gcv);
 
 	for(j=0;j<16;j++)
@@ -505,8 +506,8 @@ Canvas Can,NamCan;
 	int j;
 
 	extern Frame frame;
-	extern int Default_Color_LKUP[];
-	extern DisplayAttr;
+/* 	extern int Default_Color_LKUP[]; */
+/* 	extern DisplayAttr; */
 
 	int reset_all;
 
@@ -602,27 +603,27 @@ Canvas Can,NamCan;
 }
 
 
-DummyRepaint(can,win,dpy,xwin,area)
-Canvas can;
-Xv_window win;
-Display *dpy;
-Window xwin;
-Xv_xrectlist *area;
+int DummyRepaint(can,win,dpy,xwin,area)
+     Canvas        can;
+     Xv_window     win;
+     Display      *dpy;
+     Window        xwin;
+     Xv_xrectlist *area;
 {
 	DrawNANames(dpy,xwin);
 	return XV_OK;
 }
 
-DrawNANames(dpy,xwin)
-Display *dpy;
-Window xwin;
+int DrawNANames(dpy,xwin)
+     Display *dpy;
+     Window   xwin;
 {
 	extern NA_Alignment *DataSet;
 	extern Canvas EditCan,EditNameCan;
 	NA_DisplayData *NAdd;
 	NA_Alignment *aln;
 	NA_Sequence *element;
-	int maxseq,minseq,maxnoseq,i,j;
+	int maxseq,minseq,maxnoseq,/*i,*/j;
 	unsigned long *pixels;
 	char buffer[GBUFSIZ];
 	int scrn = DefaultScreen(dpy);
@@ -676,12 +677,12 @@ Window xwin;
 }
 
 
-RepaintNACan(can,win,dpy,xwin,area)
-Canvas can;
-Xv_window win;
-Display *dpy;
-Window xwin;
-Xv_xrectlist *area;
+int RepaintNACan(can,win,dpy,xwin,area)
+     Canvas        can;
+     Xv_window     win;
+     Display      *dpy;
+     Window        xwin;
+     Xv_xrectlist *area;
 {
 	extern NA_Alignment *DataSet;
 	extern Canvas EditCan,EditNameCan;
@@ -696,12 +697,12 @@ Xv_xrectlist *area;
 	int scrn = DefaultScreen(dpy);
 	gc = DefaultGC(dpy,scrn);
 
-	if(DataSet == NULL || can == NULL)
-		return XV_OK;
+	if(DataSet == 0 || can == 0)
+        return XV_OK;
 
 	NAdd = (NA_DisplayData*)(DataSet)->na_ddata;
 	if(NAdd == NULL)
-		return XV_OK;
+        return XV_OK;
 	for(;xv_get(can,CANVAS_RETAINED)==TRUE;)
 		xv_set(can,CANVAS_RETAINED,FALSE,0);
 
@@ -794,21 +795,21 @@ Xv_xrectlist *area;
 	(void)window_fit(EditCan);
 	(void)window_fit(EditNameCan);
 	(void)window_fit(frame);
-	return;
+	return XV_OK;
 }
 
 	extern NA_Alignment *DataSet;
 
-SetNACursor(NAdd,can,win,xwin,dpy,gc)
-NA_DisplayData *NAdd;
-Canvas can;
-Xv_window win;
-Window xwin;
-Display *dpy;
-GC gc;
+void SetNACursor(NAdd,can,win,xwin,dpy,gc)
+     NA_DisplayData *NAdd;
+     Canvas          can;
+     Xv_window       win;
+     Window          xwin;
+     Display        *dpy;
+     GC              gc;
 {
-	extern int repeat_cnt,EditMode,SCALE;
-	extern Panel_item left_foot,right_foot;
+	extern int repeat_cnt,EditMode/*,SCALE*/;
+	extern Panel_item left_foot/*,right_foot*/;
 	extern Frame frame;
 
 	Scrollbar hscroll,vscroll;
@@ -867,19 +868,19 @@ GC gc;
 }
 
 
-UnsetNACursor(NAdd,can,win,xwin,dpy,gc)
-NA_DisplayData *NAdd;
-Canvas can;
-Xv_window win;
-Window xwin;
-Display *dpy;
-GC gc;
+void UnsetNACursor(NAdd,can,win,xwin,dpy,gc)
+     NA_DisplayData *NAdd;
+     Canvas          can;
+     Xv_window       win;
+     Window          xwin;
+     Display        *dpy;
+     GC              gc;
 {
-	NA_DisplayData *ddata;
+/* 	NA_DisplayData *ddata; */
 	NA_Alignment *aln;
-	Scrollbar vscroll=NULL,hscroll=NULL;
+	Scrollbar vscroll=0,hscroll=0;
 	Xv_window view;
-	extern int SCALE;
+/* 	extern int SCALE; */
 	int x,y,xx,yy,j;
 
 	if(DataSet == NULL)
@@ -910,9 +911,9 @@ GC gc;
 
 
 
-ResizeNACan(canvas,wd,ht)
-Canvas canvas;
-int wd,ht;
+int ResizeNACan(canvas,wd,ht)
+     Canvas canvas;
+     int    wd,ht;
 {
 	int dy;
 	if(DataSet == NULL)

@@ -42,9 +42,9 @@ void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 		if (!*str){
 			cbs->aws->insert_selection( cbs->id, alignment_name, alignment_name );
 		}
-		delete str;
-		delete alignment_type;
-		delete alignment_name;
+		free(str);
+		free(alignment_type);
+		free(alignment_name);
 	}
 	cbs->aws->insert_default_selection( cbs->id, "????", "????" );
 	cbs->aws->update_selection_list( cbs->id );
@@ -674,7 +674,7 @@ void awt_start_macro_cb(AW_window *aww,const char *application_name_for_macros){
     GB_ERROR  error;
 
     if (!toggle){
-        char *sac = strdup(GBS_global_string("%s/%s",aww->window_defaults_name,AWAR_MACRO_RECORDING_MACRO_TEXT));
+        char *sac = GBS_global_string_copy("%s/%s",aww->window_defaults_name,AWAR_MACRO_RECORDING_MACRO_TEXT);
         char *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
         error     = awr->start_macro_recording(mn,application_name_for_macros,sac);
         free(mn);
@@ -707,7 +707,7 @@ void awt_edit_macro_cb(AW_window *aww){
 //     if (mn[0] == '/'){
 //         path = strdup(mn);
 //     }else{
-//         path = strdup(GBS_global_string("%s/%s",GB_getenvARBMACROHOME(),mn));
+//         path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),mn);
 //     }
     char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     GB_edit(path);

@@ -477,21 +477,28 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
     AWUSE(dummy);
     char *value = cbs->aws->get_root()->awar(cbs->def_dest)->read_string();
     int vlen = strlen(value);
-    while (value[vlen-1] == '\n') vlen--;		// remove trailing newlines
+    while (vlen>0 && value[vlen-1] == '\n') vlen--;		// remove trailing newlines
     value[vlen] = 0;
     // read the value from the window
     GBDATA *gbd = awt_get_arbdb_scanner_gbd_and_begin_trans((AW_CL)cbs);
     GB_ERROR error = 0;
     if (!gbd) {
-        aw_message("Sorry, cannot perform your operation, please redo it\n(Hint: Select an item first or 'enable edit'");
-    }else if (!cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {	// edit disabled
-        if (strlen(value)){
-            aw_message("Write disabled");
+        error = "Sorry, cannot perform your operation, please redo it\n(Hint: No item or fields selected or 'enable edit' is unchecked)";
+        if (!cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {	// edit disabled
             cbs->aws->get_root()->awar(cbs->def_dest)->write_string("");
         }
-    }else{
+    }
+//     else if (!cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {	// edit disabled
+//         if (strlen(value)){
+//             error = "Write disabled";
+//             cbs->aws->get_root()->awar(cbs->def_dest)->write_string("");
+//         }
+//     }
+    else {
+        awt_assert(cbs->aws->get_root()->awar(cbs->def_filter)->read_int() != 0); // edit is enabled (disabled causes gdb to be 0)
+
         GBDATA *gb_key_name;
-        char *key_name = 0;
+        char   *key_name = 0;
         if (awt_check_scanner_key_data(cbs,gbd)) {		// not exist, create new element
             gb_key_name = GB_find(gbd,CHANGEKEY_NAME,0,down_level);
             key_name = GB_read_string(gb_key_name);
@@ -509,20 +516,23 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
             }
         } else {		// change old element
             key_name = GB_read_key(gbd);
-            if (GB_get_father(gbd) == cbs->gb_user &&!strcmp(key_name, "name")) {		// This is a real rename !!!
-                GBT_begin_rename_session(cbs->gb_main,0);
-                GBDATA *gb_name = GB_find(cbs->gb_user,"name",0,down_level);
-                if (gb_name) {
-                    char *name = GB_read_string(gb_name);
-                    error = GBT_rename_species( name,value);
-                    delete name;
-                }else{
-                    error = GB_export_error("harmless internal error: Please try again");
-                }
-                if (error) {
-                    GBT_abort_rename_session();
-                }else{
-                    GBT_commit_rename_session(0);
+            if (GB_get_father(gbd) == cbs->gb_user &&!strcmp(key_name, "name")) { // This is a real rename !!!
+                int answer = aw_message("Changing the 'name' field may harm your database! Really continue?", "Yes,No", true);
+                if (answer == 0) {
+                    GBT_begin_rename_session(cbs->gb_main,0);
+                    GBDATA *gb_name = GB_find(cbs->gb_user,"name",0,down_level);
+                    if (gb_name) {
+                        char *name = GB_read_string(gb_name);
+                        error = GBT_rename_species( name,value);
+                        free(name);
+                    }else{
+                        error = GB_export_error("harmless internal error: Please try again");
+                    }
+                    if (error) {
+                        GBT_abort_rename_session();
+                    }else{
+                        GBT_commit_rename_session(0);
+                    }
                 }
             }else{
                 if (strlen(value)) {
@@ -548,7 +558,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
         GB_touch(cbs->gb_user);	// change of linked object does not change source of link, so do it by hand
         GB_commit_transaction(cbs->gb_main);
     }
-    delete value;
+    free(value);
 }
 /********************* get the container of a species key description ***************/
 
@@ -827,7 +837,7 @@ refresh_again:
                         if (ssize > rest) ssize = rest;
                         memcpy(p,data,ssize);
                         p[ssize] = 0;
-                        delete data;
+                        free(data);
                     }
                     cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
                 }

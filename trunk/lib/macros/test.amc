@@ -9,5 +9,6 @@ if (! $gb_main ) {
     exit 0;
 }
 
-BIO::remote_action($gb_main,"ARB_NT","ARB_NT/new_arb_edit4");
+BIO::remote_action($gb_main,"ARB_NT","probe_match");
+BIO::remote_action($gb_main,"ARB_NT","probe_design");
 ARB::close($gb_main);

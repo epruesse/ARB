@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jul/05/2002 15:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/03/2002 03:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -90,7 +90,7 @@ static bool advice_disabled(const char* id, AW_awar *var = 0) {
     if (!var) var       = get_disabled_advices();
     char *disabled_list = var->read_string();
     bool  is_disabled   = strstr(disabled_list, GBS_global_string(";%s;", id)) != 0;
-    delete disabled_list;
+    free(disabled_list);
     return is_disabled;
 }
 static void disable_advice(const char* id) {

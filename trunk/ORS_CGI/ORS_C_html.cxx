@@ -1,10 +1,10 @@
-/* 
+/*
 #################################
 #                               #
 #    ORS_CLIENT:  HTML          #
 #    html output functions      #
 #                               #
-################################# 
+#################################
 
 there are comments in this file, which are used for automatic documentation generating!
 they look like: //! that's the comment
@@ -74,7 +74,7 @@ char * a2html(char *text) {
   print header for html transport
 ***********************************/
 void print_header(void) {
-	if (JAVA) 
+	if (JAVA)
 		printf("Content-type: text/plain\n\n");
 	else
 		printf("Content-type: text/html\n\n");
@@ -116,8 +116,8 @@ void output_list_as_html_options_special(char *list, char *selected, int public_
 		for (i=1; i<from; i++) {
 			end=strchr(read,1);
 			if (!end) end=strchr(read,0);
-			if (!end) break;	
-			read=end+1;	
+			if (!end) break;
+			read=end+1;
 		}
 
 	while (1) {
@@ -129,7 +129,7 @@ void output_list_as_html_options_special(char *list, char *selected, int public_
 		fwrite(read,end - read,1,stdout);  // output to end marker position
 		putchar('"');
 
-		if (selected && 
+		if (selected &&
 		    !ORS_strncmp(read,selected) &&
 		    strlen(selected) == end-read) printf(" SELECTED");
 		putchar('>');
@@ -150,16 +150,16 @@ void output_list_as_html_options_special(char *list, char *selected, int public_
 		}
 
 		printf("\n");
-		if (!*end) break;	
-		read=end+1;	
+		if (!*end) break;
+		read=end+1;
 
 		// jump over "every" fields
 		if (every > 1)
 		for (i=0; i<every-1; i++) {
 			end=strchr(read,1);
 			if (!end) end=strchr(read,0);
-			if (!end || !*end) break;	
-			read=end+1;	
+			if (!end || !*end) break;
+			read=end+1;
 		}
 	}
 }
@@ -234,9 +234,9 @@ void OC_output_html_table::output(char *list, int fields, char *header, char *he
 					buffer[end - start] = 0;
 					delete content[column];
 					content[column] = strdup(buffer);
-				} 
+				}
 				else break;	// EOList
-				
+
 				list_col++;
 				columns++;
 			}
@@ -252,7 +252,7 @@ void OC_output_html_table::output(char *list, int fields, char *header, char *he
 			// output HEADER if available
 			if (header) {
 				char *start, *end;
-	
+
 				start = header; end = 0;
 				printf("<TR ALIGN=");
 				if (align_mode == TABLE_ALIGN_RIGHT) printf("RIGHT>");
@@ -279,7 +279,7 @@ void OC_output_html_table::output(char *list, int fields, char *header, char *he
 			if (is_header[column])	printf("<th>");
 			else			printf("<td>");
 
-			if (f_set[column]) 
+			if (f_set[column])
 				f[column](content[other_col[column]], col_mode[column], col_param[column], row, column); 	// start column function
 
 			// output content - mapped or raw
@@ -307,15 +307,15 @@ void OC_output_html_table::output(char *list, int fields, char *header, char *he
 	// mode		= 1: <a href=www_home>content</a>
 	//		  2: <a href=www_home>full name</a>
 	//		  3: <a href=www_home>param</a>
-	// param	= 
+	// param	=
 void OC_html_www_home(char *content, int mode, char *param, int row, int col) {
-	
+
 		if (!content || !*content) {
 			printf("(empty)");
 			return;
 		}
 		printf("<A HREF=\"http://%s\">",OC_read_user_field_if_userpath_set(content, "www_home"));
-	
+
 		if (mode == 1) {
 			printf("%s",content);
 		} else if (mode == 2) {
@@ -325,17 +325,17 @@ void OC_html_www_home(char *content, int mode, char *param, int row, int col) {
 		}
 		else printf("unknown mode %i for www_home",mode);
 		printf("</A>");
-	
+
 		row = row; 	col = col;	// not needed
 	};
-	
+
 	/*****************************************************************************
 	  HTML: PROBE_ID LINK
 	*****************************************************************************/
 	// content 	= probe_id
 	// param	= e.g. "EDIT", "CLONE"
 void OC_html_probe_id_link(char *content, int mode, char *param, int row, int col) {
-	
+
 		if (!param) param = "(no param)";
 		if (!ORS_strcmp(param, "CLONE")) {
 			printf("<A HREF=\"http:new_html?html=probe_clone&cloned_probe_id=%s\">%s</A> ", content, param);
@@ -356,7 +356,7 @@ void OC_html_probe_id_link(char *content, int mode, char *param, int row, int co
 	// param	= "INFO"
 	void OC_html_userpath_link(char *content, int mode, char *param, int row, int col) {
 		char *new_html;
-	
+
 		if (!content || !*content) {
 			printf("(empty)");
 			return;
@@ -397,10 +397,10 @@ void output_2_lists_as_text_table(char *list1, int width1, char *between, char *
 		printf("%s",eol);
 
 
-		if (!*end1) break;	
-		if (!*end2) break;	
-		read1=end1+1;	
-		read2=end2+1;	
+		if (!*end1) break;
+		if (!*end2) break;
+		read1=end1+1;
+		read2=end2+1;
 	}
 }
 
@@ -410,7 +410,7 @@ void output_2_lists_as_text_table(char *list1, int width1, char *between, char *
 			and end-of-line characters
 ********************************************************************************/
 void output_list_as_2_col_table(char *list1, int width1, char *between, char *eol) {
-	
+
 	char *read=list1,  *end;
 	if (!list1) return;
 
@@ -424,8 +424,8 @@ void output_list_as_2_col_table(char *list1, int width1, char *between, char *eo
 		for (i=0; i < width1 - (end - read); i++) putchar(' ');	// reach tabzone
 		printf("%s",between);
 
-		if (!*end) break;	
-		read=end+1;	
+		if (!*end) break;
+		read=end+1;
 
 		end=strchr(read,1);
 		if (!end) end=strchr(read,0);
@@ -434,8 +434,8 @@ void output_list_as_2_col_table(char *list1, int width1, char *between, char *eo
 
 		printf("%s",eol);
 
-		if (!*end) break;	
-		read=end+1;	
+		if (!*end) break;
+		read=end+1;
 	}
 }
 
@@ -461,10 +461,10 @@ void OC_output_pdb_list(OC_pdb_list *list, char *select, char *how) {
 //}
 
 	owner_elem = OS_find_pdb_list_elem_by_name(ors_gl.pdb_list, "", "p_owner");
-	if (owner_elem && owner_elem->content && *(owner_elem->content)) main_owner = owner_elem->content; 
+	if (owner_elem && owner_elem->content && *(owner_elem->content)) main_owner = owner_elem->content;
 	else {
 		owner_elem = OS_find_pdb_list_elem_by_name(ors_gl.pdb_list, "", "p_author");
-		if (owner_elem && owner_elem->content && *(owner_elem->content)) main_owner = owner_elem->content; 
+		if (owner_elem && owner_elem->content && *(owner_elem->content)) main_owner = owner_elem->content;
 		else {
 			if (!strcmp(select,"create")) 	main_owner = ors_gl.userpath;
 			else 				main_owner = "/";
@@ -529,7 +529,7 @@ void OC_output_pdb_list(OC_pdb_list *list, char *select, char *how) {
 
 			// get owner of this section (or use owner of main section)
 			owner_elem = OS_find_pdb_list_elem_by_name(ors_gl.pdb_list, pointer->section, "p_owner");
-			if (owner_elem && owner_elem->content && *(owner_elem->content)) owner = owner_elem->content; 
+			if (owner_elem && owner_elem->content && *(owner_elem->content)) owner = owner_elem->content;
 										    else owner = main_owner;
 			if (table) printf("</table>");
 
@@ -540,19 +540,19 @@ void OC_output_pdb_list(OC_pdb_list *list, char *select, char *how) {
 				found=0;
 				for (temp = pointer; temp; temp=OC_next_pdb_list_elem(list, temp)) {
 					if (ORS_strcmp(temp->section, section_memo)) break;   // end of section
-					if (temp->content && *temp->content 
+					if (temp->content && *temp->content
 							  && ORS_strcmp(temp->name,"p_owner")
 							  && ORS_strcmp(temp->name,"p_last_mod") ) {found=1; break; } // content found
 				}
-				if (!found) { 
+				if (!found) {
 					if (temp) {
 						pointer = temp->prev;	// jump over this section
 						continue;
-					} 
+					}
 					else break;
 				}
 			}
-			
+
 			// not empty -> output next section
 			printf("<A NAME=\"%s\"></A>",pointer->section);	// href on same page
 			printf("<HR>");
@@ -604,7 +604,7 @@ void OC_output_pdb_list_elem(OC_pdb_list *elem, char *select, char *how, char *o
 		else if (!strcmp(elem->init,"target_seq")) 	content=strdup(cgi_var("p_target_seq"));
 
 		else if (strchr(elem->rights,'V'))		content=elem->content;
-	}	
+	}
 	else if (!strcmp(select,"show")) {
 		content=elem->content;
 		update=0;
@@ -615,13 +615,13 @@ void OC_output_pdb_list_elem(OC_pdb_list *elem, char *select, char *how, char *o
 	}
 	else {	// use existing values from environment
 		delete content;
-		if (elem->content && !select_owner) 	
+		if (elem->content && !select_owner)
 			content = strdup(elem->content);
-		else 
-			content = strdup("");	
+		else
+			content = strdup("");
 	}
 
-	if (update && !search && !create && !(ORS_is_parent_or_equal(ors_gl.userpath, owner) || 
+	if (update && !search && !create && !(ORS_is_parent_or_equal(ors_gl.userpath, owner) ||
 		!strcmp(owner,"")) ) update = 0;	// special case: old data may have "" as owner
 
 	if (table) {
@@ -657,9 +657,9 @@ void OC_output_pdb_list_elem(OC_pdb_list *elem, char *select, char *how, char *o
 
 			if (update) {
 				printf("\">");
-				if (www_home) 
+				if (www_home)
 					printf(" <A HREF=\"http://%s\">homepage</A>",OC_read_user_field_if_userpath_set(content,"www_home"));
-				if (info_link && content) 
+				if (info_link && content)
 					printf(" <A HREF=\"http:sel_user_info?sel_userpath=%s\">infopage</A>",content);
 			} else if (strcmp(select,"show")) {
 				// transport data hidden if contents are only shown
@@ -686,15 +686,15 @@ void OC_output_pdb_list_elem(OC_pdb_list *elem, char *select, char *how, char *o
 			if (search) printf("<OPTION VALUE=\"\" SELECTED>\n");	// empty value for search mode
 
 			if (!strcmp(elem->init,"pub_exist_def")) {
-				if (create)	output_list_as_html_options(list_of_pub_parents(ors_gl.pub_exist_max, ors_gl.userpath), 
+				if (create)	output_list_as_html_options(list_of_pub_parents(ors_gl.pub_exist_max, ors_gl.userpath),
 												ors_gl.pub_exist_def, 1);
-				else 		output_list_as_html_options(list_of_pub_parents(ors_gl.pub_exist_max, ors_gl.userpath), 
+				else 		output_list_as_html_options(list_of_pub_parents(ors_gl.pub_exist_max, ors_gl.userpath),
 												elem->content, 1);
 			}
 			else if (!strcmp(elem->init,"pub_content_def")) {
-				if (create)	output_list_as_html_options(list_of_pub_parents(ors_gl.pub_content_max, ors_gl.userpath), 
+				if (create)	output_list_as_html_options(list_of_pub_parents(ors_gl.pub_content_max, ors_gl.userpath),
 												ors_gl.pub_content_def, 1);
-				else 		output_list_as_html_options(list_of_pub_parents(ors_gl.pub_content_max, ors_gl.userpath), 
+				else 		output_list_as_html_options(list_of_pub_parents(ors_gl.pub_content_max, ors_gl.userpath),
 												elem->content, 1);
 			}
 			else if (!strcmp(elem->init,"section_type"))	{
@@ -708,7 +708,7 @@ void OC_output_pdb_list_elem(OC_pdb_list *elem, char *select, char *how, char *o
 				if (create)	OC_output_html_buffer("##OPTION_TARGET_GENE##", 0);
 				else	output_list_as_html_options(OC_read_file_into_list(
 								ORS_LIB_PATH "target_genes"), //! possible target gene names for main section
-								elem->content, 0); 
+								elem->content, 0);
 			}
 			printf("</SELECT>");
 		} else {
@@ -786,7 +786,7 @@ char *list_of_pub_parents(char *highest, char *lowest) {
 
 	if (strlen(highest) < strlen(lowest)) {
 		if (!strncmp(highest, lowest, strlen(highest))) {
-			hi=highest; 
+			hi=highest;
 			lo=lowest;
 		}
 		else return ""; // hi is not father of lo
@@ -810,7 +810,7 @@ char *list_of_pub_parents(char *highest, char *lowest) {
 
 	char *pos1=lo+strlen(hi);
 	char *pos2=lo+strlen(lo);
-	
+
 	while(1) {
 		pos2=strchr(pos1,'/');
 		if (!pos2) {
@@ -835,9 +835,8 @@ char *OC_build_sel_userpath(char *dad, char *me)  {
 		if (!me) return strdup("");
 		return strdup(me);
 	}
-	if (!strcmp(dad,"/")) 
-		return strdup(GBS_global_string("/%s", me));
-	return strdup(GBS_global_string("%s/%s", dad, me));
+	if (!strcmp(dad,"/")) return GBS_global_string_copy("/%s", me);
+	return GBS_global_string_copy("%s/%s", dad, me);
 }
 
 /*****************************************************************************

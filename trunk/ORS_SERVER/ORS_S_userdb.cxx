@@ -1,4 +1,4 @@
-/* 
+/*
 #################################
 #                               #
 #    ORS_SERVER:  USERDB        #
@@ -22,11 +22,11 @@
 
 GBDATA *gb_userdb;
 
-// class functions 
+// class functions
 //void ugl_struct::clear(void){
 //	memset((char *)this,0,sizeof(ugl_struct));
 //}
-// contructor 
+// contructor
 //ugl_struct::ugl_struct(void){
 //	clear();
 //}
@@ -38,7 +38,7 @@ GBDATA *gb_userdb;
 /*************************************************************************************
   open the user database
 *************************************************************************************/
-GB_ERROR OS_open_userdb(void){	
+GB_ERROR OS_open_userdb(void){
 
 	char *name = ORS_read_a_line_in_a_file(ORS_LIB_PATH "CONFIG","USER_DB"); //arb.user.db
 	if (!name) ORS_export_error("Missing 'USER_DB' in '" ORS_LIB_PATH "CONFIG'");
@@ -208,7 +208,7 @@ char * OS_update_user(ORS_local *locs ) {
 	delete empty_pw;
 	empty_pw = ORS_crypt("");
 
-	if (locs->password 	  && *locs->password && ORS_strcmp(locs->password, empty_pw)) 		
+	if (locs->password 	  && *locs->password && ORS_strcmp(locs->password, empty_pw))
 								OS_write_gb_user_info_string(gb_user,"password",	locs->password);
 	if (locs->username  	  && *locs->username)  		OS_write_gb_user_info_string(gb_user,"username", 	locs->username);
 	if (locs->user_own_info   && *locs->user_own_info)	OS_write_gb_user_info_string(gb_user,"user_own_info",	locs->user_own_info);
@@ -241,7 +241,7 @@ char * OS_update_sel_user(ORS_local *locs ) {
 
 	gb_field = GB_find(gb_user,"ta_id",0,down_level);
 	int read_ta_id = GB_read_int(gb_field);
-	if (read_ta_id != locs->sel_user_ta_id) 
+	if (read_ta_id != locs->sel_user_ta_id)
 		return strdup("User data has been changed in the meantime. Please reload your update page.");
 
 	// parent was changed
@@ -268,7 +268,7 @@ char * OS_update_sel_user(ORS_local *locs ) {
 	static char *read_data = 0;
 	delete read_data;
 
-	if (locs->sel_password 	  && *locs->sel_password && ORS_strcmp(locs->sel_password, empty_pw)) 		
+	if (locs->sel_password 	  && *locs->sel_password && ORS_strcmp(locs->sel_password, empty_pw))
 									OS_write_gb_user_info_string(gb_user,"password",	locs->sel_password);
 	if (locs->sel_username  	&& *locs->sel_username)  	OS_write_gb_user_info_string(gb_user,"username", 	locs->sel_username);
 	if (locs->sel_user_info 	&& *locs->sel_user_info)	OS_write_gb_user_info_string(gb_user,"user_info",	locs->sel_user_info);
@@ -369,7 +369,7 @@ char * OS_read_user_info_string(char *userpath, char *fieldname){
 *************************************************************************************/
 char * OS_find_user_and_password(char *user, char *password){
 	GB_transaction dummy(gb_userdb);  // keep transaction open until var scope ends
-	
+
 	//char *userpath=0;
 	GBDATA *gb_userpath;
 	GBDATA *gb_user;
@@ -405,7 +405,7 @@ char * OS_find_user_and_password(char *user, char *password){
 /*************************************************************************************
   WRITE USER FIELD INFORMATION into user database
 	a non existing field is being created
-							return error message or NULL 
+							return error message or NULL
 							no authorisation here!
 *************************************************************************************/
 GB_ERROR OS_write_user_info_string(char *userpath, char *fieldname, char *content){
@@ -422,7 +422,7 @@ GB_ERROR OS_write_user_info_string(char *userpath, char *fieldname, char *conten
 /*************************************************************************************
   WRITE USER FIELD INFORMATION (INTEGER) into user database
 	a non existing field is being created
-							return error message or NULL 
+							return error message or NULL
 							no authorisation here!
 *************************************************************************************/
 GB_ERROR OS_write_user_info_int(char *userpath, char *fieldname, int content){
@@ -439,7 +439,7 @@ GB_ERROR OS_write_user_info_int(char *userpath, char *fieldname, int content){
 /*************************************************************************************
   WRITE USER FIELD INFORMATION into user database WITH EXISTING GB_USER
 	a non existing field is being created
-							return error message or NULL 
+							return error message or NULL
 							no authorisation here!
 *************************************************************************************/
 GB_ERROR OS_write_gb_user_info_string(GBDATA *gb_user, char *fieldname, char *content){
@@ -453,7 +453,7 @@ GB_ERROR OS_write_gb_user_info_string(GBDATA *gb_user, char *fieldname, char *co
 /*************************************************************************************
   WRITE USER FIELD INFORMATION INT into user database WITH EXISTING GB_USER
 	a non existing field is being created
-							return error message or NULL 
+							return error message or NULL
 							no authorisation here!
 *************************************************************************************/
 GB_ERROR OS_write_gb_user_info_int(GBDATA *gb_user, char *fieldname, int content){
@@ -477,7 +477,7 @@ char * OS_read_dailypw_info(char *dailypw, char *fieldname){
 	GBDATA *gb_date = GB_find(gb_user,"dailypw_date",0,down_level);
 	if (!gb_date) return ORS_export_error("Dailypw_date does not exist");
 	GB_read_string(gb_date);
-	// TODO: if (gb_date < today) 
+	// TODO: if (gb_date < today)
 
 	GBDATA *gb_field = GB_find(gb_user,fieldname,0,down_level);
 	if (!gb_field) return 0;
@@ -486,7 +486,7 @@ char * OS_read_dailypw_info(char *dailypw, char *fieldname){
 
 /*****************************************************************************
   RETURN LIST OF SUBUSERS of a userpath
-		"levels" levels down, excluding "exclude", 
+		"levels" levels down, excluding "exclude",
 				      excluding all down from "exclude_from"
   			list has format as follows:	name 1 name 1 ... 0
 *****************************************************************************/
@@ -498,10 +498,10 @@ char *OS_list_of_subusers(char *userpath, int levels, char *exclude, char *exclu
 
 	char *users[500];
 	int num_users=0;
-	GBDATA *subuser; 
+	GBDATA *subuser;
 	GBDATA *subuser_name;
 	char *newpath, *read_data;
-	int my_level_count = ORS_str_char_count(userpath,'/'), 
+	int my_level_count = ORS_str_char_count(userpath,'/'),
 	    level_count,
 	    exclude_from_len;
 
@@ -509,7 +509,7 @@ char *OS_list_of_subusers(char *userpath, int levels, char *exclude, char *exclu
 	else {
 		newpath = GBS_string_eval(userpath,"*=*1/\\*",0);
 		if (!exclude || strcmp(userpath,exclude))
-			users[num_users++]=strdup(userpath);  // can't GB_find userpath 
+			users[num_users++]=strdup(userpath);  // can't GB_find userpath
 	}
 
 	// search all users matching "userpath/*"
@@ -522,10 +522,10 @@ char *OS_list_of_subusers(char *userpath, int levels, char *exclude, char *exclu
 
 		read_data=GB_read_string(subuser_name);
 		level_count=ORS_str_char_count(read_data,'/');
-		// exclude 
-		if (level_count <= my_level_count + levels 
-			&& (!exclude || strcmp(read_data,exclude)) 
-			&& (!exclude_from || strncmp(read_data,exclude_from,exclude_from_len)) 
+		// exclude
+		if (level_count <= my_level_count + levels
+			&& (!exclude || strcmp(read_data,exclude))
+			&& (!exclude_from || strncmp(read_data,exclude_from,exclude_from_len))
 			) {
 			users[num_users++]=read_data;
 		}
@@ -550,7 +550,7 @@ char *OS_list_of_subusers(char *userpath, int levels, char *exclude, char *exclu
 		write+=strlen(users[i])+1;
 		if (i<num_users-1) *(write-1)=1;
 	}
-	
+
 	return result;
 }
 
@@ -559,7 +559,7 @@ char *OS_list_of_subusers(char *userpath, int levels, char *exclude, char *exclu
   set dailypw for user
 ***********************/
 char *OS_set_dailypw(char */*userpath*/, char */*dailypw*/) {
-	
+
 	return "not implemented: set dailypw for user";
 }
 
@@ -599,7 +599,7 @@ char * OS_allowed_to_create_user(char *userpath, char *new_son) {
 		curr_users     = OS_read_user_info_int(userpath,"curr_users");
 		max_user_depth = OS_read_user_info_int(userpath,"max_user_depth");
 		if (max_users <= curr_users) return ORS_export_error("Your parent user %s is not allowed to create more users.", userpath);
-		if (new_depth > max_user_depth) 
+		if (new_depth > max_user_depth)
 			return ORS_export_error("Your parent user %s is not allowed to have users down to that hierarchie depth.", userpath);
 	}
 	return 0;
@@ -608,12 +608,12 @@ char * OS_allowed_to_create_user(char *userpath, char *new_son) {
 /*****************************************************************************
   CONSTRUCT SEL_USERPATH
 	add a parent path and a name
-							return strdup 
+							return strdup
 *****************************************************************************/
 char *OS_construct_sel_userpath(char *sel_par_userpath, char *sel_user) {
-	if (!strcmp(sel_par_userpath,"/")) 
-		return strdup(GBS_global_string("/%s",sel_user));
-	return strdup(GBS_global_string("%s/%s", sel_par_userpath, sel_user));
+	if (!strcmp(sel_par_userpath,"/"))
+		return GBS_global_string_copy("/%s",sel_user);
+	return GBS_global_string_copy("%s/%s", sel_par_userpath, sel_user);
 }
 
 /*****************************************************************************
@@ -657,7 +657,7 @@ long OS_who_loop(const char */*key*/, long val, int mode) {	// mode = 0 : all,  
 			GBS_chrcat(who_file, 1);
 		}
 	}
-	
+
 	return val; // do NOT remove item from list!
 }
 
@@ -667,7 +667,7 @@ char * OS_who(ORS_local *locs, char *userpath) {
 	who_pm = (ORS_main *)locs->mh.parent->parent;
 	who_file=GBS_stropen(10000);  // open memory file
 	if (userpath) {
-		if (ORS_str_char_count(userpath, '/') >= 2) 
+		if (ORS_str_char_count(userpath, '/') >= 2)
 			who_userpath = ORS_get_parent_of(userpath);
 		else	who_userpath = strdup(userpath);
 		GBS_hash_do_loop((GB_HASH*)who_pm->pwds, OS_who_loop_user);
@@ -686,7 +686,7 @@ char * OS_who(ORS_local *locs, char *userpath) {
 *****************************************************************************/
 int OS_user_has_sub_users(char *userpath) {
 	GB_transaction dummy(gb_userdb);  // keep transaction open until var scope ends
-	
+
 	char *user_pattern = ORS_sprintf("%s/*",userpath);
 	GBDATA *sub_userpath = GB_find(gb_userdb,"userpath",user_pattern,down_2_level);
 	delete user_pattern;

@@ -294,11 +294,11 @@ public:
     void get_last_drawed_cursor_position(double &x1, double &y1, double &x2, double &y2) const { x1 = cursor_x1; y1 = cursor_y1; x2 = cursor_x2; y2 = cursor_y2; }
     void clear_last_drawed_cursor_position() { set_last_drawed_cursor_position(0, 0, 0, 0); }
 
-    void setRootAngle(double rtAngle) { 
-	while(rtAngle >= (2*M_PI)){
-	    rtAngle -= (2*M_PI);
-	}
-	rootAngle = rtAngle; 
+    void setRootAngle(double rtAngle) {
+        while(rtAngle >= (2*M_PI)){
+            rtAngle -= (2*M_PI);
+        }
+        rootAngle = rtAngle;
     }
     double getRootAngle()             { return rootAngle;    }
 };
@@ -482,7 +482,7 @@ private:
     double length;
 
     double delta;
-    double deltaIn; 
+    double deltaIn;
     double max_length, min_length; // constraints
 
 public:
@@ -501,7 +501,7 @@ public:
     double get_length() 		{ return length; }
 
     double get_delta () 		{ return delta; }
-    double get_deltaIn () 		{ return deltaIn;} 
+    double get_deltaIn () 		{ return deltaIn;}
 
     double& get_max_length_ref() 	{ return max_length; }
     double& get_min_length_ref() 	{ return min_length; }
@@ -519,8 +519,8 @@ public:
 	while(deltaIn_ >= (2*M_PI)) {
 	    deltaIn_ -= (2*M_PI);
 	}
-	deltaIn = deltaIn_; 
-    } 
+	deltaIn = deltaIn_;
+    }
 };
 
 SEC_root *create_test_root();

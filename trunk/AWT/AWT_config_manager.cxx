@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Nov/07/2002 19:55 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/03/2002 19:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -101,7 +101,14 @@ void remove_from_configs(const string& config, string& existing_configs) {
 //      static char *correct_key_name(const char *name)
 // ---------------------------------------------------------
 static char *correct_key_name(const char *name) {
-    return GBS_string_2_key(name);
+    char *corrected = GBS_string_2_key(name);
+
+    if (strcmp(corrected, "__") == 0) {
+        free(corrected);
+        corrected = strdup("");
+    }
+
+    return corrected;
 }
 
 //  ------------------------------------------------------------------------------
@@ -113,9 +120,9 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     string             existing_configs = config->get_awar_value("existing");
     config->get_awar_value("current"); // create!
     bool               reopen           = false;
-    char              *title            = strdup(GBS_global_string("Configurations for '%s'", aww->window_name));
+    char              *title            = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
-    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CANCEL,HELP", correct_key_name);
+    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CLOSE,HELP", correct_key_name);
     int     button    = aw_string_selection_button();
     string  awar_name = string("cfg_")+result;
 
@@ -131,9 +138,12 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
             if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
             else existing_configs                           = result;
 
-            config->set_awar_value(awar_name, config->Store());
+            char *config_string = config->Store();
+            config->set_awar_value(awar_name, config_string);
+            free(config_string);
             config->set_awar_value("current", result);
             config->set_awar_value("existing", existing_configs);
+            reopen = true;
             break;
         }
         case 2: {               // DELETE
@@ -145,7 +155,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
             reopen = true;
             break;
         }
-        case 3:  {              // CANCEL
+        case 3:  {              // CLOSE
             break;
         }
         case 4:  {              // HELP

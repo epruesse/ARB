@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -112,8 +113,8 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         delete canc;
         delete data;
     }
-    delete to_free_target;
-    delete use;
+    free(to_free_target);
+    free(use);
     GB_pop_transaction(cbs->gb_main);
 }
 
@@ -143,9 +144,9 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
         if (type == GB_BITS || type == GB_STRING) {
             char *str;
             if (count){
-                str  = strdup(GBS_global_string("%s%-20s SEQ_%i   %s",	pre,name,count+1,TYPE));
+                str  = GBS_global_string_copy("%s%-20s SEQ_%i   %s",	pre,name,count+1,TYPE);
             }else{
-                str = strdup(GBS_global_string("%s%-20s     %s",	pre,name,TYPE));
+                str = GBS_global_string_copy("%s%-20s     %s",	pre,name,TYPE);
             }
             char *target = (char *)GBS_global_string("%c%s%c%s",tpre,GB_read_key_pntr(gb_data),1,name);
             cbs->aws->insert_selection( cbs->id,(char *)str, target );
@@ -187,7 +188,7 @@ void awt_create_select_filter_window_gb_cb(void *dummy,struct adfiltercbstruct *
     }
     awt_create_select_filter_window_aw_cb(0,cbs);
     GB_pop_transaction(cbs->gb_main);
-    delete use;
+    free(use);
 }
 
 
@@ -239,7 +240,7 @@ AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *def_
     {
         char *fname = aw_root->awar(acbs->def_name)->read_string();
         const char *fsname = GBS_global_string(" data%c%s",1,fname);
-        delete fname;
+        free(fname);
         aw_root->awar(acbs->def_subname)->write_string(fsname);		// cause an callback
     }
 
@@ -287,14 +288,14 @@ AW_window *awt_create_2_filter_window(AW_root *aw_root,AW_CL res_of_create_selec
 }
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
-    char *combined_name = strdup(aw_root->awar(GBS_global_string("%s/filter/name", prefix))->read_string()); // "gde/filter/name"
-    const char *awar_prefix = "tmp/gde/filter";
+    char       *combined_name = aw_root->awar(GBS_global_string("%s/filter/name", prefix))->read_string(); // "gde/filter/name"
+    const char *awar_prefix   = "tmp/gde/filter";
     const char *awar_repeated = "/2filter";
-    const char *awar_postfix = "/name";
-    int prefix_len = strlen(awar_prefix);
-    int repeated_len = strlen(awar_repeated);
-    int postfix_len = strlen(awar_postfix);
-    int count;
+    const char *awar_postfix  = "/name";
+    int         prefix_len    = strlen(awar_prefix);
+    int         repeated_len  = strlen(awar_repeated);
+    int         postfix_len   = strlen(awar_postfix);
+    int         count;
 
     for (count = 1; ; ++count) {
         char *awar_name = new char[prefix_len + count*repeated_len + postfix_len + 1];
@@ -304,15 +305,15 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
         strcat(awar_name, awar_postfix);
 
         AW_awar *awar_found = aw_root->awar_no_error(awar_name);
-        delete awar_name;
+        delete [] awar_name;
 
         if (!awar_found) break; // no more filters defined
         char *content = awar_found->read_string();
 
         if (strstr(content, "none")==0) { // don't add filters named 'none'
-            char *new_combined_name = new char[strlen(combined_name)+1+strlen(content)+1];
+            char *new_combined_name = (char*)malloc(strlen(combined_name)+1+strlen(content)+1);
             sprintf(new_combined_name, "%s/%s", combined_name, content);
-            delete combined_name;
+            free(combined_name);
             combined_name = new_combined_name;
         }
     }
@@ -387,12 +388,12 @@ AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter)
     long len = 0;
     char *use = aw_root->awar(acbs->def_alignment)->read_string();
     len = GBT_get_alignment_len(acbs->gb_main,use);
-    delete use;
+    free(use);
     filter->init(filter_string,"0",len);
 
     int sim = aw_root->awar(acbs->def_simplify)->read_int();
     filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
-    delete filter_string;
+    free(filter_string);
 
     GB_pop_transaction(acbs->gb_main);
     return filter;

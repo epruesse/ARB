@@ -27,7 +27,7 @@ All rights reserved.
 	extern Canvas EditCan,EditNameCan;
 	extern char FileName[];
 
-LoadData(filename)
+void LoadData(filename)
 char *filename;
 {
 	FILE *file;
@@ -110,10 +110,10 @@ Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
 All rights reserved.
 */
 
-LoadFile(filename,dataset,type,format)
-char *filename;
-NA_Alignment *dataset;
-int type,format;
+void LoadFile(filename,dataset,type,format)
+     char         *filename;
+     NA_Alignment *dataset;
+     int           type,format;
 {
 	extern int DataType;
 
@@ -156,11 +156,11 @@ Handle the overwrite/create/merge dialog here.
 
 
 /*
-*	Print error message, and die
-*/
-ErrorOut(code,string)
-int code;
-char *string;
+ *	Print error message, and die
+ */
+void ErrorOut(code,string)
+     int   code;
+     const char *string;
 {
 	if (code == 0)
 	{
@@ -177,14 +177,14 @@ char *string;
 char *Calloc(count,size)
 int count,size;
 {
-	char *temp;
+	char       *temp;
 #ifdef SeeAlloc
-	extern int TotalCalloc;
+	extern int  TotalCalloc;
 	TotalCalloc += count*size;
 	fprintf(stderr,"Calloc %d %d\n",count*size,TotalCalloc);
 #endif
-	temp = calloc(count,size);
-	ErrorOut(temp,"Cannot allocate memory");
+	temp         = calloc(count,size);
+	ErrorOut(temp == 0,"Cannot allocate memory");
 	return(temp);
 }
 
@@ -192,27 +192,22 @@ char *Realloc(block,size)
 char *block;
 int size;
 {
-	char *temp;
+	char       *temp;
 #ifdef SeeAlloc
-	extern int TotalRealloc;
+	extern int  TotalRealloc;
 	TotalRealloc += size;
 	fprintf(stderr,"Realloc %d\n",TotalRealloc);
 #endif
-	temp=realloc(block,size);
-	ErrorOut(temp,"Cannot change memory size");
+	temp          = realloc(block,size);
+	ErrorOut(temp == 0,"Cannot change memory size");
 	return(temp);
 }
 
-Cfree(block)
+void Cfree(block)
 char* block;
 {
-	if (block)
-	{
-		cfree(block);
-	}
-	else
-		Warning("Error in Cfree, NULL block");
-	return;
+	if (block) cfree(block);
+	else Warning("Error in Cfree, NULL block");
 }
 
 
@@ -231,7 +226,7 @@ char *string;
 }
 
 
-FindType(name,dtype,ftype)
+int FindType(name,dtype,ftype)
 char *name;
 int *dtype,*ftype;
 {
@@ -302,13 +297,13 @@ int *dtype,*ftype;
 	return(0);
 }
 
-AppendNA(buffer,len,seq)
+void AppendNA(buffer,len,seq)
 NA_Base *buffer;
 int len;
 NA_Sequence *seq;
 {
 	int curlen=0,j;
-	NA_Base *temp;
+/* 	NA_Base *temp; */
 
 	if(seq->seqlen+len >= seq->seqmaxlen)
 	{
@@ -332,16 +327,16 @@ NA_Sequence *seq;
 	return;
 }
 
-Ascii2NA(buffer,len,matrix)
-char *buffer;
-int len;
-int matrix[16];
+void Ascii2NA(buffer,len,matrix)
+     char *buffer;
+     int   len;
+     int   matrix[16];
 {
 	/*
 *	if the translation matrix exists, use it to
 *	encode the buffer.
 */
-	register i;
+	register int i;
 	if(matrix != NULL)
 		for(i=0;i<len;i++)
 			buffer[i] = matrix[buffer[i]];
@@ -349,9 +344,9 @@ int matrix[16];
 }
 
 WriteNA_Flat(aln,filename,method,maskable)
-NA_Alignment *aln;
-char *filename;
-int method,maskable;
+     NA_Alignment *aln;
+     char         *filename;
+     int           method,maskable;
 {
 	int j,kk,mask = -1,k,offset,min_offset= -999999;
 	char offset_str[100],buf[100];
@@ -503,8 +498,8 @@ int method,maskable;
 }
 
 
-Warning(s)
-char *s;
+void Warning(s)
+     const char *s;
 {
 	extern Frame frame;
 	extern Panel_item left_foot,right_foot;

@@ -16,12 +16,25 @@ if [ -z $1 ] ; then
     echo ''
     echo '    Updates the source file list (needed to create correct error message)'
     echo ''
+    echo 'Environment:'
+    echo ''
+    echo '      $ARBHOME     a directory which has to contain a subdirectory SOURCE_TOOLS.'
+    echo '                   SOURCE_TOOLS has to contain valgrind2grep and has to be writeable for the user'
+    echo ''
+    echo '      $ARB_VALGRIND_SOURCE_ROOT       down from here the script scans for sources'
+    echo '                                      (defaults to $ARBHOME if empty)'
+    echo ''
     echo 'Note: I use this from inside emacs as follows:'
     echo '          M-x compile'
     echo '      with:'
     echo '          (cd $ARBHOME;make nt) && arb_valgrind arb_ntree ~/ARB/demo.arb'
     echo ''
+
 else
+    if [ -z $ARB_VALGRIND_SOURCE_ROOT ] ; then
+        ARB_VALGRIND_SOURCE_ROOT=$ARBHOME
+    fi
+
     DIR=$ARBHOME/SOURCE_TOOLS
     LIST=$DIR/valgrind2grep.lst
 
@@ -48,15 +61,15 @@ else
     fi
 
     if [ $UPDATE = 1 ] ; then
-        echo 'Creating source file list...'
-        find $ARBHOME -name "*.[ch]" -o -name "*.[ch]xx" > $LIST
+        echo "Creating list of source files starting in $ARB_VALGRIND_SOURCE_ROOT ..."
+        find $ARB_VALGRIND_SOURCE_ROOT -name "*.[ch]" -o -name "*.[ch]xx" -o -name "*.[ch]pp" > $LIST
         echo 'done.'
     fi
     if [ $RUN = 1 ] ; then
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
-        valgrind --leak-check=yes --num-callers=10 $* 2>&1 >/dev/null | $DIR/valgrind2grep $CALLERS "$FILTER"
+        valgrind --leak-check=yes --num-callers=10 $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
         echo 'valgrind done.'
     fi
 fi

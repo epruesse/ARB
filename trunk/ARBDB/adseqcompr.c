@@ -334,12 +334,12 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
         g_b_counter_of_sequences_to_compress = 0;
         seqs = (GB_Sequence *)GB_calloc(sizeof(GB_Sequence),leafcount);
         masters = (GB_Master **)GB_calloc(sizeof(void *),leafcount);
-        masterfoldername = strdup(GBS_global_string("%s/@master_data/@%s",GB_SYSTEM_FOLDER,ali_name));
+        masterfoldername = GBS_global_string_copy("%s/@master_data/@%s",GB_SYSTEM_FOLDER,ali_name);
         old_gb_master_ali = GB_search( gb_main, masterfoldername,GB_FIND);
         free(masterfoldername);
         {
-            char *master_data_name = strdup(GBS_global_string("%s/@master_data",GB_SYSTEM_FOLDER));
-            char *master_name = strdup(GBS_global_string("@%s",ali_name));
+            char *master_data_name = GBS_global_string_copy("%s/@master_data",GB_SYSTEM_FOLDER);
+            char *master_name = GBS_global_string_copy("@%s",ali_name);
             GBDATA *gb_master_data = gb_search( gb_main, master_data_name,GB_CREATE_CONTAINER,1);
             gb_master_ali = gb_create_container( gb_master_data, master_name);		 /* create a master container always,
                                                                                         the old is deleted as soon as all sequences are

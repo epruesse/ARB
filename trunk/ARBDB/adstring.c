@@ -306,30 +306,59 @@ void GB_clear_error() {         /* clears the error buffer */
 /*     return GB_error_buffer; */
 /* } */
 
-static char *gb_global_string = 0;
+/* static char *gb_global_string = 0; */
+
+
+
+
+static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg)
+{
+    static char buffer[2][GBS_GLOBAL_STRING_SIZE+2]; // two buffers - used alternately
+    static int  idx = 0;
+
+    int psize;
+    idx = 1-idx; // use other buffer
+
+#ifdef LINUX
+    psize = vsnprintf(buffer[idx],GBS_GLOBAL_STRING_SIZE,templat,parg);
+#else
+    psize = vsprintf(buffer[idx],templat,parg);
+#endif
+
+    if (psize == -1 || psize >= GBS_GLOBAL_STRING_SIZE) {
+        ad_assert(0);              // buffer overflow (increase GBS_GLOBAL_STRING_SIZE or use your own buffer)
+        GB_CORE;
+    }
+
+    return buffer[idx];
+
+/*     if (gb_global_string) free(gb_global_string); */
+/*     gb_global_string = GB_STRDUP(buffer); */
+/*     return gb_global_string; */
+}
 
 GB_CSTR GBS_global_string(const char *templat, ...)
 {
-    char buffer[GBS_GLOBAL_STRING_SIZE+2];
-#ifndef LINUX
-    int psize;
-#endif
     va_list	parg;
+    GB_CSTR result;
+
     va_start(parg,templat);
+    result = gbs_vglobal_string(templat, parg);
+    va_end(parg);
 
-#ifdef LINUX
-    vsnprintf(buffer,GBS_GLOBAL_STRING_SIZE,templat,parg);
-#else
-    psize = vsprintf(buffer,templat,parg);
-    if (psize>=GBS_GLOBAL_STRING_SIZE) {
-        gb_assert(0);
-        GB_CORE;
-    }
-#endif
+    return result;
+}
 
-    if (gb_global_string) free(gb_global_string);
-    gb_global_string = GB_STRDUP(buffer);
-    return gb_global_string;
+char *GBS_global_string_copy(const char *templat, ...) {
+    va_list	parg;
+    GB_CSTR result;
+
+    va_start(parg,templat);
+    result = gbs_vglobal_string(templat, parg);
+    result = gbs_vglobal_string(templat, parg);
+    va_end(parg);
+
+    return GB_STRDUP(result);
 }
 
 
@@ -901,16 +930,25 @@ void GBS_strncat(void *strstruct,const char *ptr,long len)	/* this function adds
 
 void GBS_strnprintf(void *strstruct, long len, const char *templat, ...){
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    char *buffer;
+    char                 *buffer;
+    int                   psize;
+
     va_list	parg;
     va_start(parg,templat);
     gbs_strensure_mem(strstruct,len+2);
+
     buffer = strstr->GBS_strcat_data+strstr->GBS_strcat_pos;
+
 #ifdef LINUX
-    vsnprintf(buffer,len,templat,parg);
+    psize = vsnprintf(buffer,len,templat,parg);
 #else
-    vsprintf(buffer,templat,parg);
+    psize = vsprintf(buffer,templat,parg);
 #endif
+    if (psize == -1 || psize>len) {
+        ad_assert(0);
+        GB_CORE;
+    }
+
     strstr->GBS_strcat_pos += strlen(buffer);
 }
 

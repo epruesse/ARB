@@ -826,7 +826,7 @@ di:		$(DIST)
 ph:		$(PHYLO)
 pa:		$(PARSIMONY)
 tg:		$(TREEGEN)
-se:		$(SECEDIT)
+#se:		$(SECEDIT)
 acc:	$(ACORR)
 
 ds:		$(DBSERVER)
@@ -841,7 +841,7 @@ oc:		$(ORS_CGI)
 ac:		$(ARBDB_COMPRESS)
 
 te:		$(TEST)
-sec:	$(SECEDIT)
+#sec:	$(SECEDIT)
 de:		$(AWDEMO)
 
 e4:		$(EDIT4)
