@@ -278,6 +278,7 @@ public:
 
     // ************** Control window size  *********
 	void set_window_size( int width, int height );
+	void get_window_size( int& width, int& height );
 	void window_fit(void);		// Recalculate the size of a window with buttons
 
     // ************** ********************************************************************  *********
@@ -286,13 +287,15 @@ public:
 
     // *** global modifier: ****
 	void load_xfig(const char *file, AW_BOOL resize=AW_TRUE); // Loads the background graphic
-	void label_length( int length );		// Justifies all following labels
-	void button_length( int length );		// Sets the width of all following buttons
-	void highlight( void );				// Creates a frame around the button
-	void auto_increment( int dx, int dy );		// enable automatic placement of buttons
+    void draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL resize); // draws a line on the background
+
+	void label_length( int length ); // Justifies all following labels
+	void button_length( int length ); // Sets the width of all following buttons
+	void highlight( void );		// Creates a frame around the button
+	void auto_increment( int dx, int dy ); // enable automatic placement of buttons
     // dx is the horizontal distance between the left
     // borders of two buttons
-	void auto_space( int xspace, int yspace );	// enable automatic placement of buttons
+	void auto_space( int xspace, int yspace ); // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
 	void auto_off( void );				// disable auto_xxxxx
