@@ -25,7 +25,8 @@ public class HttpSubsystem
 
     // new version variables
     private URL    hostUrl;
-    private String neededClientVersion;
+    private String neededInterfaceVersion;
+    private String availableClientVersion;
     private String neededTreeVersion;
 
     private String error;
@@ -136,25 +137,24 @@ public class HttpSubsystem
             Toolkit.AbortWithServerProblem(parsedVersionInfo.getError());
         }
 
-        neededClientVersion = parsedVersionInfo.getValue("client_version");
-        neededTreeVersion   = parsedVersionInfo.getValue("tree_version");
+        availableClientVersion = parsedVersionInfo.getValue("client_version");
+        neededInterfaceVersion = parsedVersionInfo.getValue("interface_version");
+        neededTreeVersion      = parsedVersionInfo.getValue("tree_version");
 
-        if (neededClientVersion == null) Toolkit.AbortWithServerProblem("no client version info ("+parsedVersionInfo.getError()+")");
-        if (neededTreeVersion == null) Toolkit.AbortWithServerProblem("no tree version info  ("+parsedVersionInfo.getError()+")");
+        String missing                                   = null;
+        if (availableClientVersion == null) missing      = "client";
+        else if (neededInterfaceVersion == null) missing = "interface";
+        else if (neededTreeVersion == null) missing      = "tree";
+
+        if (missing != null) {
+            Toolkit.AbortWithServerProblem("no "+missing+" version info ("+parsedVersionInfo.getError()+")");
+        }
     }
 
-    public String getNeededClientVersion()
-    {
-        return neededClientVersion;
-    }
-
-    public String getNeededTreeVersion()
-    {
-        return neededTreeVersion;
-    }
-
-
-
+    public String getAvailableClientVersion() { return availableClientVersion; }
+    public String getNeededInterfaceVersion() { return neededInterfaceVersion; }
+    public String getNeededTreeVersion() { return neededTreeVersion; }
+    
     public String downloadZippedTree(String fileName)
     {
         try {
