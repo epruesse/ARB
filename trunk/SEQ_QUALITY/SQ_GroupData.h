@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : We will see!                                           //
-//    Time-stamp: <Sun Nov/23/2003 13:35 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Nov/23/2003 14:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -31,6 +31,8 @@ class SQ_GroupData {
 public:
     SQ_GroupData();
     virtual ~SQ_GroupData();
+
+    virtual SQ_GroupData *clone() const = 0;
 
     void    SQ_set_avg_bases(int bases) { avg_bases = bases; }
     int     SQ_get_avg_bases() const { return avg_bases; }
@@ -98,6 +100,8 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<7> {
 public:
     SQ_GroupData_RNA() {}
 
+    SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
+
     double SQ_test_against_consensus(const char *sequence);
     void SQ_add_sequence(const char *sequence);
 };
@@ -109,8 +113,10 @@ class SQ_GroupData_PRO: public SQ_GroupData_Impl<20> {
 public:
     SQ_GroupData_PRO() {}
 
+    SQ_GroupData_PRO *clone() const { return new SQ_GroupData_PRO; }
+
     double SQ_test_against_consensus(const char *sequence);
-    void SQ_add_sequence(const char *sequence);
+    void   SQ_add_sequence(const char *sequence);
 };
 
 
