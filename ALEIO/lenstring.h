@@ -21,8 +21,8 @@ extern size_t write_lenstring (lenstring *STRING, FILE *STREAM);
 /* Write STRING to STREAM, left-justified in a field of FIELD spaces.
    If STRING is longer than FIELD, truncate it.  */
 extern void display_clipped_lenstring (lenstring *string,
-				       int field,
-				       FILE *stream);
+                       int field,
+                       FILE *stream);
 
 /* Read text from SOURCE until we find DELIMITER, or hit EOF.
    Set *STRING to the text we read; the delimiting string or EOF is
@@ -39,16 +39,14 @@ extern void display_clipped_lenstring (lenstring *string,
    If the string was non-empty and terminated by EOF, return 1.
    If an error occurred reading the string, print an error message
    and exit.  */
-extern int read_delimited_lenstring (lenstring *STRING,
-				     char *DELIMITER,
-				     FILE *STREAM);
+extern int read_delimited_lenstring (lenstring *string, const char *delimiter, FILE *stream);
 
 /* Search STRING for an occurrence of SUBSTRING starting not before
    START, and return its starting position, or -1 if SUBSTRING is not
    a substring of STRING.  */
 extern size_t search_lenstring (lenstring *STRING,
-				const char *SUBSTRING,
-				size_t START);
+                const char *SUBSTRING,
+                size_t START);
 
 
 /* Strip newlines from IN, leaving the result in OUT.
