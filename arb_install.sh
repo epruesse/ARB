@@ -2,7 +2,7 @@
 
 # error message function
 err() {
-	echo 
+	echo
 	echo "********************************* ERROR ***********************" 1>&2
 	echo "`basename $0`: $@" 1>&2
 	echo "***************************** END OF ERROR ********************" 1>&2
@@ -133,7 +133,7 @@ if test -d lib/pictures; then
 			echo "updating ARB"
 			untar arb.tgz;;
 	esac
-else	
+else
 	untar arb.tgz;
 fi
 
@@ -151,7 +151,7 @@ if test -f $cwd/arb_ale.tgz; then
 				echo "updating ARB_ALE"
 				untar arb_ale.tgz;;
 		esac
-	else	
+	else
 		untar arb_ale.tgz;
 	fi
 fi
@@ -182,11 +182,12 @@ echo
 case "$pt_dir" in
 	"")
 		echo "installing the pt_server data in $ARBHOME/lib/pts"
-		if test -h lib/pts; then
+		if test -L                 echo "Are you sure to delete "
+${ARBHOME}/lib/pts; then
 			echo ">>> pt_server files at non default location:"
 			ls -ld ${ARBHOME}/lib/pts
 		else
-			if test -d lib/pts; then
+			if test -d ${ARBHOME}/lib/pts; then
 				echo ">>> pt_server files at default location: unchanged"
 			else
 				(cd lib;rm -f pts;mkdir pts;)
@@ -194,11 +195,11 @@ case "$pt_dir" in
 		fi;;
 	*)
 		echo "changing your pt_server file location"
-		if test -h lib/pts; then
+		if test -L ${ARBHOME}/lib/pts; then
 			echo ">>> non default location found: removing old link"
 			rm lib/pts
 		else
-			if test -d lib/pts; then
+			if test -d ${ARBHOME}/lib/pts; then
 				echo ">>> data in default location found: removing old data"
 				rm	-r lib/pts
 			fi
