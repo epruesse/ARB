@@ -20,6 +20,8 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
+#include <awt_config_manager.hxx>
+#include <awt_canvas.hxx>
 
 #include <PT_com.h>
 #include <client.h>
@@ -28,15 +30,13 @@
 
 // for visualization of SAIs and Probes
 #include "SaiProbeVisualization.hxx"
-
-#include <awt_canvas.hxx>
 #include <GEN.hxx>
 
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
 
 // general awars
 
-#define AWAR_PROBE_USE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
+#define AWAR_PROBE_CREATE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
 
 // probe match awars
 
@@ -67,6 +67,8 @@ void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is 
 #define AWAR_PD_DESIGN_MAX_GC       "probe_design/MAXGC" // GC content (max)
 #define AWAR_PD_DESIGN_MIN_ECOLIPOS "probe_design/MINPOS" // ecolipos (min)
 #define AWAR_PD_DESIGN_MAX_ECOLIPOS "probe_design/MAXPOS" // ecolipos (max)
+
+#define AWAR_PD_DESIGN_GENE "probe_design/gene" // generate probes for genes ? 
 
 // probe design/match (expert window)
 #define AWAR_PD_DESIGN_EXP_BONDS  "probe_design/bonds/pos" // prefix for bonds
@@ -411,8 +413,8 @@ void probe_design_event(AW_window *aww)
     }
 
     if (!error){
-        int flag = root->awar("probe_design/gene")->read_int();
-        if(flag) { // design probes for genes
+        bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main);
+        if (design_gene_probes) { // design probes for genes
             error = pd_get_the_gene_names(bs,check);
         }
         else {
@@ -1076,7 +1078,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int  (AWAR_PD_DESIGN_MAX_ECOLIPOS, 100000, db1)->set_minmax(0,  1000000);
 
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
-    root->awar_int( "probe_design/gene", 0, db1);
+    root->awar_int( AWAR_PD_DESIGN_GENE, 0, db1);
 
     root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
     root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1   );
@@ -1093,7 +1095,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
     root->awar_int( AWAR_PROBE_ADMIN_PT_SERVER, 0  ,    db1);
-    root->awar_int( AWAR_PROBE_USE_GENE_SERVER, 0  ,    db1);
+    root->awar_int( AWAR_PROBE_CREATE_GENE_SERVER, 0  ,    db1);
     root->awar_string(AWAR_SAI_2_PROBE, "", global); // probe and sai visualization
     // root->awar_string(AWAR_SAI_COLOR_STR, "", global);
     // for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
@@ -1186,6 +1188,40 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
     return aws;
 }
 
+static void probe_design_init_config(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+    AWT_reset_configDefinition(awr);
+
+    AWT_add_configDefinition(AWAR_PD_DESIGN_CLIPRESULT,   "clip"     );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MISHIT,       "mishit"   );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MAXBOND,      "maxbond"  );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MINTARGETS,   "mintarget");
+    AWT_add_configDefinition(AWAR_PD_DESIGN_PROBELENGTH,  "probelen" );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_TEMP,     "mintemp"  );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp"  );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_GC,       "mingc"    );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_GC,       "maxgc"    );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_GENE,         "gene"     );
+
+    for (int i = 0; i<16; ++i) {
+        AWT_add_configDefinition(GBS_global_string(AWAR_PD_DESIGN_EXP_BONDS "%i", i), "bond", i);
+    }
+
+    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_SPLIT,  "split" );
+    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_DTEDGE, "dtedge");
+    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_DT,     "dt"    );
+}
+
+static char *probe_design_store_config(AW_window *aww, AW_CL, AW_CL) {
+    probe_design_init_config(aww);
+    return AWT_store_configDefinition();
+}
+static void probe_design_restore_config(AW_window *aww, const char *stored_string, AW_CL, AW_CL) {
+    probe_design_init_config(aww);
+    AWT_restore_configDefinition(stored_string);
+}
 
 void probe_design_save_default(AW_window *aw,AW_default aw_def)
 {
@@ -1194,8 +1230,10 @@ void probe_design_save_default(AW_window *aw,AW_default aw_def)
 }
 
 
-AW_window *create_probe_design_window( AW_root *root, AW_default)  {
-    AW_window_simple *aws = new AW_window_simple;
+AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
+    AW_window_simple *aws         = new AW_window_simple;
+    int               is_genom_db = (int)cl_genome_db;
+
     aws->init( root, "PROBE_DESIGN","PROBE DESIGN");
 
     aws->load_xfig("pd_main.fig");
@@ -1230,6 +1268,7 @@ AW_window *create_probe_design_window( AW_root *root, AW_default)  {
     aws->create_button("EXPERT","EXPERT","S");
 
     aws->at( "pt_server" );
+    aws->label("PT-Server:");
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at("lenout");
@@ -1256,8 +1295,14 @@ AW_window *create_probe_design_window( AW_root *root, AW_default)  {
     aws->at("maxpos");
     aws->create_input_field( AWAR_PD_DESIGN_MAX_ECOLIPOS , 5);
 
-    aws->at( "gene" );
-    aws->create_toggle( "probe_design/gene" );
+    if (is_genom_db) {
+        aws->at("gene");
+        aws->label("Gene probes?");
+        aws->create_toggle(AWAR_PD_DESIGN_GENE);
+    }
+
+    aws->at("save");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", probe_design_store_config, probe_design_restore_config, 0, 0);
 
     return aws;
 }
@@ -1670,15 +1715,15 @@ void pd_query_pt_server(AW_window *aww)
 
 void pd_export_pt_server(AW_window *aww)
 {
-    AW_root  *awr         = aww->get_root();
-    int       server_type = awr->awar(AWAR_PROBE_USE_GENE_SERVER)->read_int();
+    AW_root  *awr                = aww->get_root();
+    bool      create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int() && GEN_is_genome_db(gb_main);
     char      pt_server[256];
     char     *server;
     char     *file;
-    GB_ERROR  error       = 0;
+    GB_ERROR  error              = 0;
 
     // check alignment first
-    if (server_type == 1) {     // gene pt server
+    if (create_gene_server) {
         GB_transaction dummy(gb_main);
         GBDATA *gb_ali = GBT_get_alignment(gb_main, "ali_genom");
         if (!gb_ali) {
@@ -1716,7 +1761,7 @@ void pd_export_pt_server(AW_window *aww)
         {
             const char *mode = "bfm"; // save PT-server database with Fastload file
 
-            if (server_type == 1) { // gene pt server
+            if (create_gene_server) { 
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
                 error = GB_save_as(gb_main, temp_server_name, mode);
 
@@ -1780,40 +1825,38 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->at( "pt_server" );
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_FALSE);
 
-    aws->at( "kill" );
-    aws->callback(pd_kill_pt_server,0);
-    aws->create_button("KILL_SERVER","Kill server");
-
-    aws->at( "kill_all" );
-    aws->callback(pd_kill_pt_server,1);
-    aws->create_button("KILL_ALL_SERVERS","Kill all servers");
-
     aws->at( "start" );
     aws->callback(pd_start_pt_server);
     aws->create_button("START_SERVER","Start server");
 
-    aws->at( "export" );
-    aws->callback(pd_export_pt_server);
-    aws->create_button("UPDATE_SERVER","Update server");
+    aws->at( "kill" );
+    aws->callback(pd_kill_pt_server,0);
+    aws->create_button("KILL_SERVER","Kill server");
 
     aws->at( "query" );
     aws->callback(pd_query_pt_server);
     aws->create_button("CHECK_SERVER","Check server");
 
+    aws->at( "kill_all" );
+    aws->callback(pd_kill_pt_server,1);
+    aws->create_button("KILL_ALL_SERVERS","Kill all servers");
+
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp);
     aws->create_button("CREATE_TEMPLATE","Configure");
+
+    aws->at( "export" );
+    aws->callback(pd_export_pt_server);
+    aws->create_button("UPDATE_SERVER","Update server");
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
 #warning re-activate the toggle when gene pt-server is fixed
 #endif // DEVEL_RALF
     if (is_genom_db) {
-        aws->at( "gene_label" );
-        aws->label("Gene server?");
-
         aws->at( "gene_server" );
-        aws->create_toggle(AWAR_PROBE_USE_GENE_SERVER);
+        aws->label("Gene server?");
+        aws->create_toggle(AWAR_PROBE_CREATE_GENE_SERVER);
     }
 #endif // DEBUG
 
