@@ -1174,9 +1174,11 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
         if (!error) {
             awtc_assert(island_hopper->was_aligned());
 
+#if defined(DEBUG)
             printf("Island-Hopper returns:\n");
             printf("maligned = '%s'\n", lstr(island_hopper->get_result_ref(), island_hopper->get_result_length()));
             printf("saligned = '%s'\n", lstr(island_hopper->get_result(), island_hopper->get_result_length()));
+#endif // DEBUG
 
             AWTC_SequencePosition masterPos(alignTo->sequence(), 0);
             AWTC_SequencePosition slavePos(*toAlignSequence, 0);
