@@ -1520,7 +1520,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     ____________________________SEP;
     awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
     awmm->insert_menu_topic("fast_align_set_ref", "Set Aligner Reference [Ctrl-R]","","faligner.hlp",AWM_ALL, (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
-    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "2","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
+    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
     ____________________________SEP;
     awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, 0, 0);
@@ -1571,8 +1571,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     ____________________________SEP;
     awmm->insert_menu_topic( "enable_col_stat", "Activate column statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
     awmm->insert_menu_topic( "disable_col_stat", "Disable column statistics", "i", "st_ml.hlp",AWM_ALL,disable_col_stat, 0, 0);
-    awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "x", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
-    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "x", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
+    awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "c", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
+    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     ____________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0);
 

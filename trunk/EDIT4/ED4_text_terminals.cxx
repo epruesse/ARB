@@ -24,6 +24,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
+#include "ed4_visualizeSAI.hxx"
 
 ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -129,9 +130,9 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     AW_pos        height                 = extension.size[HEIGHT] - 1;
     AW_pos        text_x, text_y;
     int           max_seq_len            = 0;
-    static int	  color_is_used[ED4_G_DRAG];
-    static char	**colored_strings        = 0;
-    static int	  len_of_colored_strings = 0;
+    static int    color_is_used[ED4_G_DRAG];
+    static char **colored_strings        = 0;
+    static int    len_of_colored_strings = 0;
     AW_device    *device                 = ED4_ROOT->temp_device;
 
     resolve_pointer_to_char_pntr(&max_seq_len);
@@ -142,7 +143,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         calc_world_coords( &world_x, &world_y );
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
 
-        text_x = world_x + CHARACTEROFFSET;							// don't change
+        text_x = world_x + CHARACTEROFFSET;                         // don't change
         text_y = world_y + height - MAXLETTERDESCENT - ED4_ROOT->helix_spacing;
     }
 
@@ -220,13 +221,19 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int                  selection_col1, selection_col2;
         int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
         int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
-
+        
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
             (st_ml_node || (st_ml_node = st_ml_convert_species_name_to_node(ED4_ROOT->st_ml,this->species_name))))
-        {
-            colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
+            {
+                colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
+            }
+       
+        char *saiColors = 0; int isSai;
+        if(species_name && ED4_ROOT->visualizeSAI && !(isSai = checkSai(this->species_name))) {
+            saiColors = getSaiColorString(seq_start, seq_end);
         }
+
 
         if (colors || searchColors || is_marked || is_selected || color_group) {
             int i;
@@ -260,6 +267,10 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                     color = colors[new_pos] + ED4_G_CBACK_0;
                     if (color > ED4_G_CBACK_9) color = ED4_G_CBACK_9;
                 }
+                else if (saiColors) {
+                    color = saiColors[new_pos] + ED4_G_CBACK_0;
+                    if (color > ED4_G_CBACK_9) color = ED4_G_CBACK_0;
+                }
                 else if (is_marked) {
                     color = ED4_G_MARKED;
                 }
@@ -270,7 +281,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                     color = ED4_G_STANDARD;
                 }
 
-                if (color != old_color) {	// draw till oldcolor
+                if (color != old_color) {   // draw till oldcolor
                     if (x2>old_x){
                         if (old_color!=ED4_G_STANDARD) {
                             device->box(old_color,old_x, y2, x2-old_x, height, -1, 0,0); // paints the search pattern background
@@ -291,21 +302,21 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
     // output helix
     if (ED4_ROOT->helix->size)
-    {	// should do a remap
-        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
-        if (right< screen_length) {
-            screen_length = right;
+        {   // should do a remap
+            int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
+            if (right< screen_length) {
+                screen_length = right;
+            }
+            if (screen_length) {
+                char *db_pointer = resolve_pointer_to_string_copy();
+                device->text_overlay( ED4_G_HELIX,
+                                      (char *)db_pointer, screen_length,
+                                      text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
+                                      (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
+                                      1.0,1.0, ED4_show_helix_on_device);
+                free(db_pointer);
+            }
         }
-        if (screen_length) {
-            char *db_pointer = resolve_pointer_to_string_copy();
-            device->text_overlay( ED4_G_HELIX,
-                                  (char *)db_pointer, screen_length,
-                                  text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-                                  (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
-                                  1.0,1.0, ED4_show_helix_on_device);
-            free(db_pointer);
-        }
-    }
     // output strings
     {
         int gc;
@@ -321,13 +332,13 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
 ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 {
-    AW_pos	x, y,
-        //	width  = extension.size[WIDTH] - 1,
+    AW_pos  x, y,
+        //  width  = extension.size[WIDTH] - 1,
         height = extension.size[HEIGHT] - 1;
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
-    AW_pos		text_x, text_y;
-    text_x = x + CHARACTEROFFSET;							// don't change
+    AW_pos      text_x, text_y;
+    text_x = x + CHARACTEROFFSET;                           // don't change
     text_y = y + height - MAXLETTERDESCENT;
     char buffer[10];
     if (gbdata){
@@ -345,7 +356,7 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 }
 
 // --------------------------------------------------------------------------------
-//	ED4_text_terminal
+//  ED4_text_terminal
 // --------------------------------------------------------------------------------
 
 ED4_returncode ED4_text_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
@@ -364,7 +375,7 @@ ED4_returncode ED4_text_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared
         ED4_ROOT->temp_device->push_clip_scale();
         cursor->ShowCursor(0, ED4_C_NONE, 0);
         ED4_ROOT->temp_device->pop_clip_scale();
-        //	cursor->calc_cursor_pos_box(/*ED4_G_DRAG,*/ this);
+        //  cursor->calc_cursor_pos_box(/*ED4_G_DRAG,*/ this);
     }
 
     return ED4_R_OK;
@@ -374,14 +385,14 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
 {
     //ED4_index help = 0;
     AW_pos x, y,
-        //	width  = extension.size[WIDTH] - 1,
+        //  width  = extension.size[WIDTH] - 1,
         height = extension.size[HEIGHT] - 1;
     AW_pos text_x, text_y;
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
-    text_x = x + CHARACTEROFFSET;							// don't change
+    text_x = x + CHARACTEROFFSET;                           // don't change
     text_y = y + height - MAXLETTERDESCENT;
 
     if (is_species_name_terminal()) {
