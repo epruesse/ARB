@@ -676,34 +676,34 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 
     if (!strcmp(key,"name")){
         switch (cbs->selector->type)  {
-        case AWT_QUERY_ITEM_SPECIES: {
-            if (aw_message("WARNING WARNING WARNING!!! You now try to rename the species\n"
-                           "    The name is used to link database entries and trees\n"
-                           "    ->   ALL TREES WILL BE LOST\n"
-                           "    ->  The new names MUST be UNIQUE"
-                           "        if not you may corrupt the database" ,
-                           "Let's Go,Cancel")) return;
-            break;
-        }
-        case AWT_QUERY_ITEM_GENES: {
-            if (aw_message("WARNING! You now try to rename the gene\n"
-                           "    ->  Pseudo-species will loose their link to the gene"
-                           "    ->  The new names MUST be UNIQUE"
-                           "        if not you may corrupt the database" ,
-                           "Let's Go,Cancel")) return;
-            break;
-        }
-        case AWT_QUERY_ITEM_EXPERIMENTS: {
-            if (aw_message("WARNING! You now try to rename the experiment\n"
-                           "    ->  The new names MUST be UNIQUE"
-                           "        if not you may corrupt the database" ,
-                           "Let's Go,Cancel")) return;
-            break;
-        }
-        default: {
-            awt_assert(0);
-            return;
-        }
+            case AWT_QUERY_ITEM_SPECIES: {
+                if (aw_message("WARNING WARNING WARNING!!! You now try to rename the species\n"
+                               "    The name is used to link database entries and trees\n"
+                               "    ->  ALL TREES WILL BE LOST\n"
+                               "    ->  The new name MUST be UNIQUE"
+                               "        if not you will corrupt the database!" ,
+                               "Let's Go,Cancel")) return;
+                break;
+            }
+            case AWT_QUERY_ITEM_GENES: {
+                if (aw_message("WARNING! You now try to rename the gene\n"
+                               "    ->  Pseudo-species will loose their link to the gene"
+                               "    ->  The new name MUST be UNIQUE"
+                               "        if not you will corrupt the database!" ,
+                               "Let's Go,Cancel")) return;
+                break;
+            }
+            case AWT_QUERY_ITEM_EXPERIMENTS: {
+                if (aw_message("WARNING! You now try to rename the experiment\n"
+                               "    ->  The new name MUST be UNIQUE"
+                               "        if not you will corrupt the database!" ,
+                               "Let's Go,Cancel")) return;
+                break;
+            }
+            default: {
+                awt_assert(0);
+                return;
+            }
         }
     }
 
@@ -798,12 +798,12 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                             if (double_pars){
                                 char *com2 = 0;
                                 parsed = 0;
-                                com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_item);
+                                com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
                                 if (com2){
                                     if (tag){
                                         parsed = GBS_string_eval_tagged_string(cbs->gb_main, "",deftag,tag,0,com2,gb_item);
                                     }else{
-                                        parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_item);
+                                        parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_item, cbs->tree_name);
                                     }
                                 }
                                 delete com2;
@@ -811,7 +811,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                 if (tag){
                                     parsed = GBS_string_eval_tagged_string(cbs->gb_main, str,deftag,tag,0,command,gb_item);
                                 }else{
-                                    parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_item);
+                                    parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
                                 }
                             }
                             if (!parsed) {
@@ -1677,6 +1677,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     cbs->look_in_ref_list = awtqs->look_in_ref_list;
     cbs->select_bit       = awtqs->select_bit;
     cbs->species_name     = strdup(awtqs->species_name);
+    cbs->tree_name        = aw_root->awar(awtqs->tree_name)->read_string();
     cbs->selector         = awtqs->selector;
 
     GB_push_transaction(gb_main);
