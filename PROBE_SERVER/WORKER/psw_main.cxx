@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Wed Sep/17/2003 15:13 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Sep/17/2003 15:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -391,7 +391,7 @@ namespace {
                         for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
                             // currently we have only 100% groups, so we can use the path as id
                             const char *probe_group_id = enc_path;
-                            fprintf(out, "probe%04i=%s,p%s\n", c, *p, probe_group_id);
+                            fprintf(out, "probe%04i=%s,%c,p%s\n", c, *p, "FCN"[random()%3], probe_group_id);
                         }
                     }
                 }
@@ -658,6 +658,7 @@ namespace {
 int main(int argc, char *argv[])
 {
     printf("arb_probe_group_worker v1.0 -- (C) 2003 by Ralf Westram\n");
+    srand(time(0));
 
     GB_ERROR error = scanArguments(argc, argv);
 
