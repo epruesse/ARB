@@ -20,10 +20,14 @@ typedef void (*AW_CB1)(AW_window*,AW_CL);
 typedef void (*AW_CB2)(AW_window*,AW_CL,AW_CL);
 typedef AW_window *(*AW_Window_Creator)(AW_root*,AW_CL);
 
-#ifdef DEVEL_YADHU
-#warning description missing
-#endif
-extern bool AW_alpha_Size_Supported; // please add description here
+//--------------------------------------------------------------------------------
+// For Applications Using OpenGL Windows 
+// Variable "AW_alpha_Size_Supported" says whether the hardware (Graphics Card) 
+// supports alpha channel or not. Alpha channel is used for shading/ multi textures 
+// in OpenGL applications.
+
+extern bool AW_alpha_Size_Supported;
+//--------------------------------------------------------------------------------
 
 #define AW_POPUP  ((AW_CB)(-1))
 // AW_POPDOWN is defined later in this section
