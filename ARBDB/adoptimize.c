@@ -9,6 +9,10 @@
 /*#include "arbdb.h"*/
 #include "arbdbt.h"
 
+#if defined(DEBUG)
+#define TEST_DICT
+#endif /* DEBUG */
+
 typedef unsigned char unsigned_char;
 typedef unsigned char *u_str;
 typedef const unsigned char *cu_str;
@@ -360,7 +364,8 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
 long uncompressedBlocks[64];
 long compressedBlocks[MAX_LONGLEN];
 
-/*
+
+#if defined(TEST_DICT)
 static void clearChunkCounters(void) {
     int i;
 
@@ -376,8 +381,8 @@ static void dumpChunkCounters(void) {
     printf("------------------------------\n" "Words used:\n");
     for (i=0; i<MAX_LONGLEN; i++) if (compressedBlocks[i]) printf("  size=%i used=%li\n", i, compressedBlocks[i]);
     printf("------------------------------\n");
-    }
-*/
+}
+#endif /* TEST_DICT */
 
 static cu_str lstr(cu_str s, int len) {
 #define BUFLEN 10000
@@ -755,7 +760,7 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 }
 
 
-#if 0
+#if defined(TEST_DICT)
 
 static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSum, long *compSum)
 {
@@ -869,7 +874,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
     *compSum += compressed_sum+dict_size;
 }
 
-#endif
+#endif /* TEST_DICT */
 
 
 /******************** Build dictionary *******************/
@@ -2416,8 +2421,10 @@ static void readAndWrite(O_gbdByKey *gbkp) {
 
 GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
     GB_ERROR error = NULL;
-    /* long uncompressed_sum = 0;*/
-    /* long compressed_sum = 0;*/
+#if defined(TEST_DICT)
+    long uncompressed_sum = 0;
+    long compressed_sum = 0;
+#endif /* TEST_DICT */
 
     /*error = GB_begin_transaction((GBDATA*)Main->data);*/
 
@@ -2518,7 +2525,9 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                 printf("  Compressing all with new dictionary ...\n");
                 readAndWrite(&gbk[idx]);
 
-                /*test_dictionary(dict,&(gbk[idx]), &uncompressed_sum, &compressed_sum);*/
+#if defined(TEST_DICT)
+                test_dictionary(dict,&(gbk[idx]), &uncompressed_sum, &compressed_sum);
+#endif /* TEST_DICT */
             }
         }
 
