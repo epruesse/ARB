@@ -431,6 +431,7 @@ ARCHS = \
 			DIST/DIST.a \
 			EDIT/EDIT.a \
 			EDIT4/EDIT4.a \
+			GENE_PROBE/GENE_PROBE.a \
 			EISPACK/EISPACK.a \
 			GDE/GDE.a \
 			GENOM/GENOM.a \
@@ -624,6 +625,15 @@ ARCHS_PROBE_GROUP_DESIGN = \
 
 $(PROBE_GROUP_DESIGN):	$(ARCHS_PROBE_GROUP_DESIGN:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS)
+
+#*********************************** gene_probe **************************************
+GENE_PROBE = bin/gene_probe
+ARCHS_GENE_PROBE = \
+		GENE_PROBE/GENE_PROBE.a \
+
+$(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
+	@echo $(SEP) Link $@
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
@@ -953,6 +963,7 @@ test:	$(TEST)
 demo:	$(AWDEMO)
 
 e4:		$(EDIT4)
+gp: 		$(GENE_PROBE)
 we:		$(WETC)
 eb:		$(EDITDB)
 
