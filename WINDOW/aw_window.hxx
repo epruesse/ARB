@@ -494,6 +494,27 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
+/// Extended by Daniel Koitzsch & Christian Becker 19-05-04
+class AW_window_menu_modes_opengl : public AW_window_menu_modes {
+private:
+    void    *AW_window_menu_modes_private;    // Do not use !!!
+public:
+    AW_window_menu_modes_opengl(void);
+    ~AW_window_menu_modes_opengl(void);
+    virtual void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
+	//void create_window_variables( void ) {
+	//}
+
+    /*void calculate_scrollbars(void) {}
+    void set_vertical_scrollbar_position(int position) {}
+    void set_horizontal_scrollbar_position(int position) {}
+    void set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {}
+    void set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {}
+    void set_horizontal_scrollbar_left_indent(int indent) {}
+    void set_vertical_scrollbar_top_indent(int indent){}
+    void set_vertical_scrollbar_bottom_indent(int indent) {}*/
+};
+
 
 class AW_window_menu : public AW_window {
 private:
