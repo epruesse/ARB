@@ -543,7 +543,7 @@ int main(int argc,char **argv)
             err = ED4_ROOT->helix->init(gb_main);
             break;
 
-        case GB_AT_AMI:
+        case GB_AT_AA:
             ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(gb_main, ED4_ROOT->alignment_name);
             if (ED4_ROOT->protstruct) {
                 ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);

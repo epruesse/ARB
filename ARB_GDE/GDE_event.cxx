@@ -164,12 +164,6 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 
     maxalignlen=GBT_get_alignment_len(gb_main,align);
     long lotyp=0;
-    //  char *type=GBT_get_alignment_type(gb_main,align);
-    //  if(strcmp(type,"dna")==0) lotyp=DNA;
-    //  if(strcmp(type,"rna")==0) lotyp=RNA;
-    //  if(strcmp(type,"ami")==0) lotyp=PROTEIN;
-    //  if(strcmp(type,"pro")==0) lotyp=PROTEIN;
-
     {
         GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
 
@@ -177,8 +171,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         {
             case GB_AT_DNA: lotyp = DNA; break;
             case GB_AT_RNA: lotyp = RNA; break;
-            case GB_AT_AMI:
-            case GB_AT_PRO: lotyp = PROTEIN; break;
+            case GB_AT_AA:  lotyp = PROTEIN; break;
             case GB_AT_UNKNOWN: lotyp = DNA; break;
         }
     }

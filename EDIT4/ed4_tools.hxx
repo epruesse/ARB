@@ -1,7 +1,7 @@
 
 #define IUPAC_EMPTY 	" "
 #define IS_NUCLEOTIDE	(ED4_ROOT->alignment_type==GB_AT_RNA || ED4_ROOT->alignment_type==GB_AT_DNA)
-#define IS_AMINO 	(ED4_ROOT->alignment_type==GB_AT_AMI || ED4_ROOT->alignment_type==GB_AT_PRO)
+#define IS_AMINO 	(ED4_ROOT->alignment_type==GB_AT_AA)
 #define IUPAC_GROUPS 	6
 
 extern int ED4_iupac_group[26];

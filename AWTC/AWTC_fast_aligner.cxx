@@ -689,10 +689,7 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
             switch (global_alignmentType) {
                 case GB_AT_RNA:
                 case GB_AT_DNA: is_dna = 1; break;
-
-                case GB_AT_PRO:
-                case GB_AT_AMI: is_dna = 0; break;
-
+                case GB_AT_AA:  is_dna = 0; break;
                 default: error = GB_export_error("Unknown alignment type - aligner aborted"); break;
             }
 
