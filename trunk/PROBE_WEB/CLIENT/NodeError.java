@@ -15,7 +15,6 @@ public NodeError(TreeNode tn)
         System.out.println("NodeError:max. coverage       : " + tn.getMaxCoverage() );
         System.out.println("NodeError:node distance       : " + tn.getDistance() );
         System.out.println("NodeError:father node         : " + tn.getFather() );
-//         System.out.println("NodeError:child node container: " + tn.getChilds() );
         System.out.println("NodeError:leaf status         : " + tn.isLeaf() );
         System.out.println("NodeError:level               : " + tn.level );
         System.out.println("NodeError:node serial         : " + tn.nodeSerial );
