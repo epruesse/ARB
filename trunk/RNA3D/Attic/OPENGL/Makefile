@@ -28,13 +28,11 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-OpenGLGraphics.o: ../Globals.hxx
 OpenGLGraphics.o: GlobalHeader.hxx
 OpenGLGraphics.o: Globals.hxx
 OpenGLGraphics.o: OpenGLGraphics.hxx
 OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
-Renderer.o: ../Globals.hxx
 Renderer.o: GlobalHeader.hxx
 Renderer.o: Globals.hxx
 Renderer.o: OpenGLGraphics.hxx
@@ -42,7 +40,6 @@ Renderer.o: Renderer.hxx
 Renderer.o: TextureMapping.hxx
 Renderer.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
-TextureMapping.o: ../Globals.hxx
 TextureMapping.o: GlobalHeader.hxx
 TextureMapping.o: Globals.hxx
 TextureMapping.o: TextureMapping.hxx
