@@ -15,7 +15,7 @@ class Client
     private String        treeString = null;
     private String        baseurl    = null;
     private HttpSubsystem webAccess  = null;
-    private IOManager iom = null;    
+    private IOManager     iom        = null;    
 
 
 
@@ -382,6 +382,18 @@ class Client
 
     public HashMap getShortNameHash() { return shortNameHash; }
 
+    
+//     public IOManager getIOManager(){
+// 	if (iom == null){
+// 	    System.out.println("Cannot return IOManager");
+// 	    System.exit(2);
+// 	}
+
+// 	return iom;
+//    }
+
+
+
     public static void main(String[] args)
     {
         Client cl          = new Client();
@@ -403,7 +415,8 @@ class Client
             cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
 
 	    cl.iom = new IOManager(cl.display, ""); // no config file name given, using default
-
+	    if (cl.iom == null){System.out.println("Cannot initialize IOManager");System.exit(2);}
+	    cl.display.setIOManager(cl.iom);
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
                 NodeProbes.webAccess = cl.webAccess;

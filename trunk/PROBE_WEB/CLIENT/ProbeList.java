@@ -101,4 +101,21 @@ class ProbeList
     //     }
 
 
+    public String getProbesAsString(){
+	StringBuffer pstrb = new StringBuffer();
+            for (int i = 0; i<count; i++) {
+                Probe probe = getProbe(i);
+
+                if (probe != null) {
+                    pstrb.append(probe.getDisplayString() + "\n");
+                }
+                else {
+                    pstrb.append("--- Error: No probe! ---" + "\n");
+                }
+	    }
+	    return pstrb.toString();
+
+    }
+
+
 }

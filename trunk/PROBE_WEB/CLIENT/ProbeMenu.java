@@ -10,6 +10,8 @@ public class ProbeMenu extends MenuBar
     private Vector menu;        // corresponding menus
     private Vector hotkeys;     // corresponding hotkeys
 
+
+
     private TreeDisplay tree_display() { return gui.getTreeDisplay(); }
 
     private void add_menu_entry(String m, String me, MenuShortcut hk) {
@@ -30,6 +32,10 @@ public class ProbeMenu extends MenuBar
         // add_menu_entry("File", "Dump Tree", null);
 
         add_menu_entry("File", "Quit",                  KeyEvent.VK_Q);
+	add_menu_entry("File", "Save Probes as",         0);
+	add_menu_entry("File", "Save Probes",            0);
+	add_menu_entry("File", "Save Details as",        0);
+	add_menu_entry("File", "Save Details",           0);
 
         add_menu_entry("Mark", "Unmark nodes",          KeyEvent.VK_U);
         add_menu_entry("Mark", "Count marked species",  KeyEvent.VK_M);
@@ -61,6 +67,37 @@ public class ProbeMenu extends MenuBar
             gui.getClient().saveConfig();
             System.exit(0);
         }
+
+
+	// save section
+        else if (cmd.equals("Save Probes as")){
+	    //	    	    System.out.println("Not implemented yet");
+	    boolean success = gui.getIOManager().saveResultsAs("probe list", gui.getProbeList().getProbesAsString());
+	    if (!success){System.out.println("was not able to write probe list");}
+
+
+	}
+        else if (cmd.equals("Save Probes")) {
+	    //	    System.out.println("Not implemented yet");
+	    boolean success = gui.getIOManager().saveResults("probe list", gui.getProbeList().getProbesAsString());
+	    if (!success){System.out.println("was not able to write probe list");}
+
+	}
+        else if (cmd.equals("Save Details as")) {
+	    //	        System.out.println("Save Details as: Not implemented yet");
+	    boolean success = gui.getIOManager().saveResultsAs("details", gui.getDetails().getText());
+	    if (!success){System.out.println("was not able to write details");}
+
+
+	}
+	
+        else if (cmd.equals("Save Details")) {
+	    //	    System.out.println("Save Details:Not implemented yet");
+	    boolean success = gui.getIOManager().saveResults("details", gui.getDetails().getText());
+	    if (!success){System.out.println("was not able to write details");}
+	}
+	
+
 
         else if (cmd.equals("Unmark nodes"))            tree_display().unmarkNodes();
         else if (cmd.equals("Count marked species"))    tree_display().countMarkedSpecies();
@@ -123,15 +160,21 @@ public class ProbeMenu extends MenuBar
         hotkeys     = null;
     }
 
+
     public ProbeMenu(ProbesGUI gui) {
         this.gui = gui;
         init_menus();
-
         build_menus(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     String cmdName = e.getActionCommand();
                     performCommand(cmdName);
                 }
             });
+
+	if (gui == null) {System.out.println("no gui in ProbeMenu found");System.exit(1);}
+	if (gui.getClient() == null) {System.out.println("no client retieved from gui");System.exit(1);}
+
+
+
     }
 }
