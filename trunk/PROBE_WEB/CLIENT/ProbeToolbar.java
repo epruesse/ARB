@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : ProbeToolbar.java                                      // 
 //    Purpose   : Toolbar for application                                // 
-//    Time-stamp: <Wed Mar/10/2004 13:04 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Thu Mar/11/2004 00:40 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -36,7 +36,7 @@ class ProbeToolbar extends Panel {
                         Button b   = (Button)event.getSource();
                         String cmd = b.getLabel();
 
-                        if (cmd.equals("Clear"))                { probe_list().clearContents(); tree_display().unmarkNodes(); }
+                        if (cmd.equals("Clear"))                client().clearMatches();
                         else if (cmd.equals("Save"))            client().saveProbes(true);
                         else if (cmd.equals("Overlap"))         gui().toggleOverlap();
                         
