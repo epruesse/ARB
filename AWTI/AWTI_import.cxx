@@ -914,14 +914,14 @@ void AWTC_import_go_cb(AW_window *aww)
 //  ------------------------------------------------------
 static void genom_flag_changed(AW_root *awr) {
     if (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2) {
-        awr->awar(AWAR_ALI)->write_string("genom");
+        awr->awar(AWAR_ALI)->write_string("ali_genom");
         awr->awar(AWAR_ALI_TYPE)->write_string("dna");
         awr->awar_string(AWAR_FORM"/filter",".fit");        // *hack* to hide normal import filters
     }
     else {
         char *ali = awr->awar(AWAR_ALI)->read_string();
 
-        if (strcmp(ali, "genom") == 0) {
+        if (strstr(ali, "genom") != 0) { // contains 'genom'
             awr->awar(AWAR_ALI)->write_string("ali_16s");
             awr->awar(AWAR_ALI_TYPE)->write_string("rna");
         }
@@ -930,6 +930,12 @@ static void genom_flag_changed(AW_root *awr) {
         free(ali);
     }
 }
+
+void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type) {
+    awr->awar(AWAR_ALI)->write_string(ali_name);
+    awr->awar(AWAR_ALI_TYPE)->write_string(ali_type);
+}
+
 
 GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
 {
@@ -948,7 +954,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awr->awar_string(AWAR_FORM"/filter",".ift");
     awr->awar_string(AWAR_FORM"/file_name","");
 
-    awr->awar_string(AWAR_ALI,"16s");
+    awr->awar_string(AWAR_ALI,"ali_16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
@@ -972,14 +978,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
     aws->create_button("HELP", "HELP","H");
 
-    //     aws->at("pattern");
-    //     aws->create_input_field(AWAR_FILE,4);
-
-    //     aws->at("browser");
-    //     aws->callback(awt_create_import_selection_window);
-    //     aws->create_button("BROWSE", "BROWSE", "B");
-
-    const char *startdir = "PWD"; // was ARBHOME
+    const char *startdir = "PWD";
 
     awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", startdir, AW_TRUE ); // select import filename
     awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", AW_FALSE ); // select import filter
