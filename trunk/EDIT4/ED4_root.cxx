@@ -1384,7 +1384,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     AW_window_menu_modes *awmm;
     AW_gc_manager         aw_gc_manager; //every window has its own gc_manager
     char                  buf[25];
-    ED4_window           *ed4w = ED4_ROOT->first_window;
+    ED4_window           *ed4w = first_window;
 
     while (ed4w)                                        // before creating a window look for a hidden window
     {
@@ -1410,7 +1410,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->init( aw_root, buf,buf, 800,600,20, 20 );                 //create window
     *device = awmm->get_device(AW_MIDDLE_AREA);                     //Points to Middle Area device
 
-    *new_window = first_window->insert_window( awmm );              //append to window list
+    //     ED4_window *test = first_window->insert_window( awmm ); //append to window list
+    *new_window = ED4_window::insert_window( awmm ); //append to window list
 
     if (ED4_window::no_of_windows >= 1)                         // this is the first window
     {
@@ -1777,18 +1778,6 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->create_mode( 0, "edit/mark.bitmap",  "mark.hlp",   ((AW_active)-1), (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
 
     AWTC_create_faligner_variables(awmm->get_root(), ED4_ROOT->db);
-
-#if defined(DEBUG)
-    if (strcmp(GB_getenvUSER(), "westram") == 0) {
-        // Automatically start:
-        // --------------------
-
-//         AW_window *win = AWTC_create_island_hopping_window(aw_root, 0); win->show();
-
-
-    }
-#endif // DEBUG
-
 
     return ( ED4_R_OK );
 }

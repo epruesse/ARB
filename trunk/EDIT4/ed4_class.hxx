@@ -380,7 +380,8 @@ public:
     ED4_cursor cursor;
 
     //ED4_window controlling functions
-    ED4_window *insert_window(AW_window *new_aww); //append to window list
+    static ED4_window *insert_window(AW_window *new_aww); //append to window list
+
     void        delete_window( ED4_window *window); //delete from window list
     void        reset_all_for_new_config(); //reset structures for loading new config
     ED4_window *get_matching_ed4w( AW_window *aww );
@@ -1133,8 +1134,8 @@ public:
     ED4_Edit_String         *edit_string;
     int                      column_stat_activated;
     int                      column_stat_initialized;
-    int                      visualizeSAI;     
-    int                      visualizeSAI_allSpecies;     
+    int                      visualizeSAI;
+    int                      visualizeSAI_allSpecies;
 
     // temporary Variables changing during runtime
     ED4_window    *temp_ed4w;
