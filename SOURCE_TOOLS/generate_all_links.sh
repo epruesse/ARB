@@ -1,7 +1,7 @@
 #!/bin/bash
 
 symlink() {
-    ln -sf $1 $2 || exit 1
+    test -h $2 || (ln -sf $1 $2 || exit 1)
 }
 makedir() {
     mkdir -p $1 || exit 1
@@ -30,30 +30,30 @@ test -d lib/pts || makedir lib/pts
 
 # Liblink
 
-symlink ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl
+# symlink ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl
 symlink ../ARBDB/libARBDB.so LIBLINK/libARBDB.so
 symlink ../ARBDB/libARBDB.so.2.0 LIBLINK/libARBDB.so.2.0
 symlink ../ARBDB2/libARBDB.a LIBLINK/libARBDO.a
-symlink ../ARBDB2/libARBDB.sl LIBLINK/libARBDO.sl
+# symlink ../ARBDB2/libARBDB.sl LIBLINK/libARBDO.sl
 symlink ../ARBDB2/libARBDB.so LIBLINK/libARBDO.so
 symlink ../ARBDB2/libARBDB.so.2.0 LIBLINK/libARBDO.so.2.0
 symlink ../ARBDBPP/libARBDBPP.a LIBLINK/libARBDBPP.a
-symlink ../ARBDBPP/libARBDBPP.sl LIBLINK/libARBDBPP.sl
+# symlink ../ARBDBPP/libARBDBPP.sl LIBLINK/libARBDBPP.sl
 symlink ../ARBDBPP/libARBDBPP.so LIBLINK/libARBDBPP.so
 symlink ../ARBDBPP/libARBDBPP.so.2.0 LIBLINK/libARBDBPP.so.2.0
 symlink ../ARBDBS/libARBDB.a LIBLINK/libARBDB.a
 symlink ../AWT/libAWT.a LIBLINK/libAWT.a
-symlink ../AWT/libAWT.sl LIBLINK/libAWT.sl
+# symlink ../AWT/libAWT.sl LIBLINK/libAWT.sl
 symlink ../AWT/libAWT.so LIBLINK/libAWT.so
 symlink ../AWT/libAWT.so.2.0 LIBLINK/libAWT.so.2.0
 symlink ../WINDOW/libAW.a LIBLINK/libAW.a
-symlink ../WINDOW/libAW.sl LIBLINK/libAW.sl
+# symlink ../WINDOW/libAW.sl LIBLINK/libAW.sl
 symlink ../WINDOW/libAW.so LIBLINK/libAW.so
 symlink ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0
 
 # Motif stuff
 symlink $MOTIF_LIBPATH LIBLINK/libXm.so.3
-symlink $LIBDIR/libXm.1.dylib LIBLINK/libXm.sl
+# symlink $LIBDIR/libXm.1.dylib LIBLINK/libXm.sl
 
 # Links in bin directory
 cd bin
