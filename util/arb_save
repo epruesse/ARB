@@ -23,6 +23,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
             -o -name "*.html" -o -name "*.gif" \
             -o -name "*.dtd" -o -name "*.xsl" \
             -o -name "*.footer" -o -name "*.header" \
+            -o -name "*.java" \
             -o -name "typemap" \
     \) \! -type l -print; \
     find \
