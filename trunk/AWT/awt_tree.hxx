@@ -375,8 +375,9 @@ public:
     int get_branch_flag(void) { return (!father->father) ? father->leftson->br.touched : this->br.touched; } ;
 
     GB_ERROR move_group_info(AP_tree *new_group);
-    void mark_long_branches(GBDATA *gb_main,double diff);
-    void justify_branch_lenghs(GBDATA *gb_main);
+    void     mark_long_branches(GBDATA *gb_main,double diff);
+    void     justify_branch_lenghs(GBDATA *gb_main);
+    void     relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name));
 };
 
 long AP_timer(void);

@@ -1657,7 +1657,26 @@ double ap_just_tree_rek(AP_tree *at){
 
 void AP_tree::justify_branch_lenghs(GBDATA *gb_main){
     // shift branches to create a symmetric looking tree
-    //    double max_deep = 	gr.tree_depth;
+    //    double max_deep = gr.tree_depth;
     GB_transaction dummy(gb_main);
     ap_just_tree_rek(this);
+}
+
+static void relink_tree_rek(AP_tree *node, GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name)) {
+    if (node->is_leaf) {
+        relinker(node->gb_node, node->name);
+    }
+    else {
+        relink_tree_rek(node->leftson, gb_main, relinker);
+        relink_tree_rek(node->rightson, gb_main, relinker);
+    }
+}
+
+void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name)) {
+    // relinks the tree using a relinker-function
+    // every node in tree is passed to relinker, relinker might modify
+    // these values (ref_gb_node and ref_name) and the modified values are written back into tree
+
+    GB_transaction dummy(gb_main);
+    relink_tree_rek(this, gb_main, relinker);
 }
