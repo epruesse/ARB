@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Thu Sep/25/2003 18:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Oct/02/2003 18:36 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -145,7 +145,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		    /*calculate physical layout of sequence*/
 		    SQ_physical_layout ps_chan;
 		    ps_chan.SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
-		    i = ps_chan.SQ_get_number_of_bases();	
+		    i = ps_chan.SQ_get_number_of_bases();
 		    avg_bases = avg_bases + i;
 
 		    /*get values for  ambiguities*/
@@ -157,8 +157,8 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		    heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
 
 		    /*calculate consensus sequence*/
-		    SQ_consensus consens;
-		    consens.SQ_init_consensus(sequenceLength);
+		    SQ_consensus consens(sequenceLength);
+// 		    consens.SQ_init_consensus(sequenceLength);
 
 
  		    int *pa;
@@ -406,7 +406,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		//printf("\n debug info:%i %i %i %e \n", bases, dfa, noh, gcprop );
 
 		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * noh) + (weight_consensus * coc) + (weight_iupac * iupv);
-		result = result * gc_proportion;
+		result = result * gc_proportion; // @@@ runden ?
 
 		/*write the final value of the evaluation*/
 		GBDATA *gb_result7 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
@@ -444,7 +444,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 //     else {
 // 	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
 // 	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
-	
+
 // 	if (!leftData) return rightData;
 // 	if (!rightData) return leftData;
 
@@ -452,7 +452,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 // 	SQ_GroupData *data = new SQ_GroupData(*leftData, *rightData);
 // 	delete leftData;
 // 	delete rightData;
-	    
+
 // 	if (node->name) { //  gruppe!
 // 	    SQ_applyGroupData();
 // 	}
