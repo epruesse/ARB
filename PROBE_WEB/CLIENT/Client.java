@@ -124,7 +124,7 @@ public static void main(String[] args)
             }
 
         cl.root.setPath("");
-        cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion);
+        cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion, cl);
         //        ProbesGUIActionListener al = new ProbesGUIActionListener(cl.display);
         //        cl.display.setMenuBar(new ProbeMenu(al));
         //
@@ -176,7 +176,7 @@ public void matchProbes(String probeInfo) {
 public void updateNodeInformation(String encodedPath)
     {
         ProbeList list = display.getProbeList();
-        list.clear();
+        list.removeAll();
         list.add("wait..");
 
         String       answer       = webAccess.retrieveNodeInformation(encodedPath);

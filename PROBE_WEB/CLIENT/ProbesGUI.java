@@ -16,7 +16,9 @@ private int                     treeLevels;
 private TreeDisplay             td;
 private TreeNode                root;
 private ProbeMenu               pm;
-private ProbesGUIActionListener al;
+    private ProbesGUIActionListener al;
+    private ProbeListActionListener  ll;
+    private Client                  boss;
 
 // public static void main(String[] args)
 //     {
@@ -26,7 +28,7 @@ private ProbesGUIActionListener al;
 //     }
 
 
-public ProbesGUI( TreeNode root, int levels, String title)
+public ProbesGUI( TreeNode root, int levels, String title, Client b)
   {
     super(title);
     setBackground(Color.lightGray);
@@ -34,7 +36,7 @@ public ProbesGUI( TreeNode root, int levels, String title)
     setLayout(new BorderLayout());
     //    add(new Button("first"));
     System.out.println("reference to ProbesGUI: " + this);
-
+    boss = b;
     td = new TreeDisplay( root, levels);
 
     // debug code
@@ -51,6 +53,8 @@ public ProbesGUI( TreeNode root, int levels, String title)
     add(details, BorderLayout.SOUTH);
 
     probe_list = new ProbeList(probeListWidth, tree_height);
+    ll = new ProbeListActionListener(this);
+    probe_list.addActionListener(ll);
     probe_list.add("Right click a node");
     probe_list.add("to display probes.");
     //    probe_list.setSize(100, tree_height);
@@ -113,5 +117,10 @@ public ProbeList getProbeList()
 //     {
 //         probe_list.setContents(parsed);
 //     }
+
+    public Client getClient()
+    {
+	return boss;
+    }
 
 }
