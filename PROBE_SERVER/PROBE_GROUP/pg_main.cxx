@@ -21,7 +21,7 @@
 #define SKIP_DECODETREENODE
 #include "../common.h"
 
-#define SAVE_AFTER_XXX_NEW_GROUPS 10000
+// #define SAVE_AFTER_XXX_NEW_GROUPS 10000
 
 
 // bond values used:
@@ -283,15 +283,14 @@ int PG_status(double) {
     return 0;
 }
 
-// ------------------------------------------------------------------
-//      static GB_ERROR save(GBDATA *pb_main, const char *state)
-// ------------------------------------------------------------------
-static GB_ERROR save(GBDATA *pb_main, const char *state) {
+// ---------------------------------------------------------------------------------------
+//      static GB_ERROR save(GBDATA *pb_main, const string& nameS, const char *state)
+// ---------------------------------------------------------------------------------------
+static GB_ERROR save(GBDATA *pb_main, const string& nameS, const char *state) {
     GB_ERROR error = setDatabaseState(pb_main, 0, state);
 
     if (!error) {
-        const char *name = para.db_out_name.c_str();
-
+        const char *name = nameS.c_str();
         out.put("Saving %s ...", name);
         error = GB_save(pb_main, name, SAVE_MODE); // was "a"
     }
@@ -362,25 +361,11 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
     return 0;
 }
 
-//  ------------------------------------------
-//      Int Main(Int Argc,  Char *Argv[])
-//  ------------------------------------------
-int main(int argc,char *argv[]) {
-
-    GBDATA  *gb_main = 0;
-    GBDATA  *pb_main = 0;
-    GBDATA      *pba_main = 0;
-    GBDATA      *pbb_main = 0;
-    GBDATA      *gb_status = 0;
-    GBDATA      *gb_probesMatched = 0;
-
-    out.put();
-    out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
-
-    GB_ERROR error = scanArguments(argc, argv);
+static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_main, GBDATA*& pbb_main) {
+    GB_ERROR error = 0;
 
     // open arb-database:
-    if (!error) {
+    {
         const char *name = para.db_name.c_str();
 
         out.put("Opening ARB-database '%s'..", name);
@@ -430,329 +415,330 @@ int main(int argc,char *argv[]) {
         if (!error) error = setDatabaseState(pba_main, "probe_group_subtree_db", "empty");
     }
 
+    return error;
+}
+
+static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter, int probeGroupCounter, int probeSubtreeCounter) {
+    GB_ERROR error = 0;
+    GB_transaction dummy(pba_main);
+
+    {
+        GBDATA *stCounter    = GB_create(pba_main,"subtree_counter",GB_INT);
+        if (stCounter) error = GB_write_int(stCounter,subtreeCounter);
+        else    error        = GB_get_error();
+    }
+
     if (!error) {
-        GB_install_status(PG_status);
-        PG_initSpeciesMaps(gb_main, pb_main);
+        GBDATA *stCounter    = GB_create(pba_main,"probe_group_counter",GB_INT);
+        if (stCounter) error = GB_write_int(stCounter,probeGroupCounter);
+        else    error        = GB_get_error();
+    }
 
-        int statistic[PG_NumberSpecies()];
-        for(int i=0;i<PG_NumberSpecies();i++)
-            statistic[i] = 0;
+    if (!error) {
+        GBDATA *stProbeCounter    = GB_create(pba_main,"subtree_with_probe_counter",GB_INT);
+        if (stProbeCounter) error = GB_write_int(stProbeCounter,probeSubtreeCounter);
+        else    error             = GB_get_error();
+    }
 
-        bool status=false;
+    return error;
+}
 
-        {
-            GB_transaction dummy(pb_main);
-            gb_status = GB_find(pb_main,"status",0,down_level);
-            if (gb_status) {
-                gb_probesMatched=GB_find(gb_status,"probes_matched",0,down_level);
-                status = (GB_read_int(gb_probesMatched) == 1);
-            }
+static GB_ERROR pathMappingWriteGlobals(GBDATA *pm_main, int depth) {
+    GB_ERROR error = 0;
+    {
+        GBDATA *pm_num    = GB_create(pm_main,"species_number",GB_INT);
+        if (pm_num) error = GB_write_int(pm_num,PG_NumberSpecies());
+        else    error     = GB_get_error();
+    }
+
+    if (!error) {
+        GBDATA *pm_depth    = GB_create(pm_main,"depth",GB_INT);
+        if (pm_depth) error = GB_write_int(pm_depth,depth);
+        else    error       = GB_get_error();
+    }
+
+    return error;
+}
+
+static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
+    GB_transaction dummy(gb_main);
+
+    out.put("Reading tree '%s'..", para.tree_name.c_str());
+    GBT_TREE *gbt_tree = GBT_read_tree(gb_main,para.tree_name.c_str(),sizeof(GBT_TREE));
+
+    if (!gbt_tree) {
+        error = GB_export_error("Tree '%s' not found.", para.tree_name.c_str());
+    }
+    else {
+        out.put("Linking tree..");
+        GBT_link_tree(gbt_tree,gb_main,true);
+    }
+
+    return gbt_tree;
+}
+
+static GB_ERROR collectProbes(GBDATA *pb_main) {
+    GB_ERROR error = 0;
+    string pt_server_name = "localhost: "+para.pt_server_name;
+    PG_init_pt_server(gb_main, pt_server_name.c_str(), my_output);
+
+    out.put("Here we go:");
+
+    indent i0(2, out);
+    size_t group_count = 0;
+
+    int length=para.pb_length;
+    out.put("Searching probes with length %i ..", length);
+    indent i1(2, out);
+
+    size_t probe_count = 0;
+    PG_init_find_probes(length, error);
+    if (!error) {
+        const char *probe;
+        while ((probe = PG_find_next_probe(error)) && !error) {
+            probe_count++;
         }
+        PG_exit_find_probes();
+    }
 
-        GBT_TREE *gbt_tree = 0;
-        GB_HASH  *gb_hash  = 0;
+    if (!error) {
+        out.put("Probes found: %i", probe_count);
+        out.put("Calculating probe-matches for found probes:");
+        indent i2(2, out);
 
-        {
-            GB_transaction dummy(gb_main);
+        PG_init_find_probes(length, error);
+        if (!error) {
+            const char *probe;
+            size_t probe_count2 = 0;
+            PG_probe_match_para pm_para =
+                {
+                    // bonds:
+                    { AA, AC, AG, AU, CA, CC, CG, CU, GA, GC, GG, GU, UA, UC, UG, UU},
+                    0.5, 0.5, 0.5
+                };
 
-            out.put("Reading tree '%s'..", para.tree_name.c_str());
-            gbt_tree=GBT_read_tree(gb_main,para.tree_name.c_str(),sizeof(GBT_TREE));
+            while ((probe = PG_find_next_probe(error)) && !error) {
+                probe_count2++;
+                PG_Group group;
+                error = PG_probe_match(group, pm_para, probe);
 
-            if (!gbt_tree) {
-                error = GB_export_error("Tree '%s' not found.", para.tree_name.c_str());
-            }
-            else {
-                out.put("Linking tree..");
-                GBT_link_tree(gbt_tree,gb_main,true);
-                gb_hash = generate_GBT_TREE_hash(gbt_tree);
-            }
-        }
-
-        if (!status &&!error) {
-            {
-                GB_transaction dummy(gb_main);
-                GB_begin_transaction(pb_main);
-                error = GBT_write_tree(gb_main,pb_main,0,gbt_tree);
-                if (error) GB_abort_transaction(pb_main);
-                else GB_commit_transaction(pb_main);
-            }
-
-            if (!error) {
-                string pt_server_name = "localhost: "+para.pt_server_name;
-                PG_init_pt_server(gb_main, pt_server_name.c_str(), my_output);
-
-                out.put("Here we go:");
-
-                indent i0(2, out);
-                size_t group_count = 0;
-                size_t last_save_group_count = 0;
-
-                //             for (int length = 15; !error && length <= 20; ++length) {
-                int length=para.pb_length;
-                out.put("Searching probes with length %i ..", length);
-                indent i1(2, out);
-
-                size_t probe_count = 0;
-                PG_init_find_probes(length, error);
                 if (!error) {
-                    const char *probe;
-                    while ((probe = PG_find_next_probe(error)) && !error) {
-                        probe_count++;
+                    if (group.empty()) {
+                        static bool warned = false;
+                        if (!warned) {
+                            out.put("Warning: pt-server seems to be out-of-date");
+                            warned = true;
+                        }
                     }
-                    PG_exit_find_probes();
-                }
+                    else {
+                        if (group.size()>0) {
+                            GB_transaction  pb_dummy(pb_main);
+                            bool            created;
+                            int             numSpecies;
+                            GBDATA         *pb_group = group.groupEntry(pb_main, true, created, &numSpecies);
 
-                if (!error) {
-                    out.put("Probes found: %i", probe_count);
-                    out.put("Calculating probe-matches for found probes:");
-                    indent i2(2, out);
+                            PG_add_probe(pb_group, probe);
 
-                    PG_init_find_probes(length, error);
-                    if (!error) {
-                        const char *probe;
-                        size_t probe_count2 = 0;
-                        PG_probe_match_para pm_para =
-                            {
-                                // bonds:
-                                { AA, AC, AG, AU, CA, CC, CG, CU, GA, GC, GG, GU, UA, UC, UG, UU},
-                                0.5, 0.5, 0.5
-                            };
-
-                        while ((probe = PG_find_next_probe(error)) && !error) {
-                            probe_count2++;
-                            PG_Group group;
-                            error = PG_probe_match(group, pm_para, probe);
-
-                            if (!error) {
-                                if (group.empty()) {
-                                    static bool warned = false;
-                                    if (!warned) {
-                                        out.put("Warning: pt-server seems to be out-of-date");
-                                        warned = true;
-                                    }
-                                }
-                                else {
-                                    if (group.size()>0) {
-                                        GB_transaction  pb_dummy(pb_main);
-                                        bool created;
-                                        int numSpecies;
-                                        GBDATA *pb_group = group.groupEntry(pb_main, true, created, &numSpecies);
-                                        //if(numSpecies>0)
-                                        //statistic[numSpecies-1]++;
-                                        /*GBDATA *pb_probe = */ PG_add_probe(pb_group, probe);
-
-                                        if (created) {
-                                            out.point();
-                                            //out.put("New group matched by %-10s (matches: %4i)", probe, group.size());
-                                            ++group_count;
-                                            size_t since_last_save = group_count-last_save_group_count;
-
-                                            if (since_last_save >= SAVE_AFTER_XXX_NEW_GROUPS)  {
-                                                out.put("Groups found: %6i  Probes matched: %6i  (%i%% of probes with length %i)",
-                                                        group_count,
-                                                        probe_count2,
-                                                        percent(probe_count2, probe_count),
-                                                        length);
-
-                                                last_save_group_count = group_count;
-                                                error = save(pb_main, "autosave");
-                                            }
-                                        }
-                                    }
-                                }
+                            if (created) {
+                                out.point();
+                                ++group_count;
                             }
                         }
-
-                        PG_exit_find_probes();
                     }
                 }
-                //             }
-
-                GB_begin_transaction(pb_main);
-                gb_status = GB_search(pb_main,"status",GB_CREATE_CONTAINER);
-                gb_probesMatched = GB_search(gb_status,"probes_matched",GB_INT);
-                error = GB_write_int(gb_probesMatched,1);
-                if (error) GB_abort_transaction(pb_main);
-                else GB_commit_transaction(pb_main);
-
-                PG_exit_pt_server();
-                out.put("Overall groups found: %i", group_count);
             }
 
-            // save last state:
-            if (!error) error = save(pb_main, "complete");
+            PG_exit_find_probes();
+        }
+    }
+
+//     GB_begin_transaction(pb_main);
+//     gb_status = GB_search(pb_main,"status",GB_CREATE_CONTAINER);
+//     GBDATA *gb_probesMatched = GB_search(gb_status,"probes_matched",GB_INT);
+//     error = GB_write_int(gb_probesMatched,1);
+//     if (error) GB_abort_transaction(pb_main);
+//     else GB_commit_transaction(pb_main);
+
+    PG_exit_pt_server();
+    out.put("Overall groups found: %i", group_count);
+
+    return error;
+}
+
+static GB_ERROR storeProbeGroupStatistic(GBDATA *pba_main, int *statistic, int stat_size) {
+    GB_ERROR  error    = 0;
+    GBDATA   *pba_stat = GB_create(pba_main,"probe_group_vs_species",GB_STRING);
+
+    if (!pba_stat) {
+        error = GB_get_error();
+    }
+    else {
+        string data;
+        for(int i=0; i<stat_size; i++){
+            if (statistic[i]) {
+                char buffer[20];
+                sprintf(buffer,"%i,%i;",i+1,statistic[i]);
+                data += buffer;
+            }
+        }
+        error = GB_write_string(pba_stat,data.c_str());
+    }
+
+    return error;
+}
+
+static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *pba_main, GBDATA *pbb_main) {
+    GB_ERROR       error               = 0;
+    TreeTraversal  tt(gbt_tree);
+    int            statistic_size      = PG_NumberSpecies();
+    int            statistic[statistic_size];
+    GBT_TREE      *current;
+    int            count               = 1;
+    int            subtreeCounter      = 0;
+    int            probeSubtreeCounter = 0;
+    int            probeGroupCounter   = 0;
+    unsigned       depth               = 0;
+
+    for (int i=0; i<statistic_size; ++i) statistic[i] = 0;
+
+    GB_transaction dummya(pba_main);
+    GB_transaction dummyb(pbb_main);
+
+    GBDATA *subtree_cont     = GB_search(pba_main,"subtrees",GB_CREATE_CONTAINER);
+    GBDATA *probe_group_cont = GB_search(pba_main,"probe_groups",GB_CREATE_CONTAINER);
+    GBDATA *pm_main          = GB_search(pbb_main,"path_mapping",GB_CREATE_CONTAINER);
+
+    while ((current=tt.getNextSubTree()) && !error) {
+        subtreeCounter++;
+        //                 out.put("%i %s %s",count,tt.path.c_str(),current->name);
+        count++;
+        tt.species.erase(tt.species.begin(),tt.species.end());
+        tt.getSpeciesNumber(current);
+
+        if (current->is_leaf) { // leaf
+            // path mapping stuff:
+            GBDATA *pm_species = GB_create_container(pm_main,"species");
+            GBDATA *pm_name    = GB_create(pm_species,"name",GB_STRING);
+            error              = GB_write_string(pm_name,PG_SpeciesID2SpeciesName(*tt.species.begin()).c_str());
+
+            if (!error) {
+                GBDATA *pm_path = GB_create(pm_species,"path",GB_STRING);
+                error           = GB_write_string(pm_path,tt.path.c_str());
+
+                if (tt.path.length()>depth) depth = tt.path.length();
+            }
         }
 
         if (!error) {
-            // Building a tree with probes
-
-            TreeTraversal tt(gbt_tree);
-
-            GBT_TREE *current;
-            int       count               = 1;
-            int       subtreeCounter      = 0;
-            int       probeSubtreeCounter = 0;
-            int       probeGroupCounter   = 0;
-            unsigned  depth               = 0;
-
-            GB_begin_transaction(pba_main);
-            GB_begin_transaction(pbb_main);
-
-            GBDATA *subtree_cont     = GB_search(pba_main,"subtrees",GB_CREATE_CONTAINER);
-            GBDATA *probe_group_cont = GB_search(pba_main,"probe_groups",GB_CREATE_CONTAINER);
-            GBDATA *pm_main          = GB_search(pbb_main,"path_mapping",GB_CREATE_CONTAINER);
-
-            while ((current=tt.getNextSubTree()) && !error) {
-                subtreeCounter++;
-                //                 out.put("%i %s %s",count,tt.path.c_str(),current->name);
-                count++;
-                tt.species.erase(tt.species.begin(),tt.species.end());
-                tt.getSpeciesNumber(current);
-
-                if (current->is_leaf) { // leaf
-                    // path mapping stuff:
-                    GBDATA *pm_species = GB_create_container(pm_main,"species");
-                    GBDATA *pm_name    = GB_create(pm_species,"name",GB_STRING);
-                    error              = GB_write_string(pm_name,PG_SpeciesID2SpeciesName(*tt.species.begin()).c_str());
-
-                    if (!error) {
-                        GBDATA *pm_path = GB_create(pm_species,"path",GB_STRING);
-                        error           = GB_write_string(pm_path,tt.path.c_str());
-                    }
-
-                    if(error) GB_abort_transaction(pbb_main);
-                    if(tt.path.length()>depth) depth = tt.path.length();
-                }
-
-                std::set<string> probes;
-                {
-                    GB_transaction  dummy(pb_main);
-                    GBDATA         *pbtree = GB_search(pb_main,"group_tree",GB_FIND);
-                    GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
-                    PG_find_probe_for_subtree(pbnode,tt.species,&probes);
-                }
-
-                // create 'subtree' for all nodes
-                GBDATA *st_subtree = GB_create_container(subtree_cont,"subtree");
-                GBDATA *st_path    = GB_search(st_subtree,"path",GB_STRING);
-                error              = GB_write_string(st_path,tt.path.c_str());
-
-                if (current->is_leaf) {
-                    GBDATA *st_member = GB_search(st_subtree, "member", GB_INT);
-                    error             = GB_write_int(st_member, *tt.species.begin());
-                }
-
-                if (!error && !probes.empty()) {
-                    statistic[tt.species.size()-1]++;
-
-                    probeSubtreeCounter++;
-                    probeGroupCounter++;
-
-                    // create a probe group for the subtree
-                    GBDATA *st_group   = GB_create_container(probe_group_cont, "probe_group");
-                    GBDATA *st_members = GB_search(st_group, "subtreepath", GB_STRING);
-
-                    error = GB_write_string(st_members, tt.path.c_str());
-                    if (!error) {
-                        GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
-                        for (set<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
-                            GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
-                            error            = GB_write_string(st_probe,(*j).c_str());
-                        }
-                    }
-
-
-                    GBDATA *st_exact = GB_search(st_subtree, "exact", GB_INT);
-                    GB_write_int(st_exact, probes.size());
-                }
-            }                   // end of getNextSubTree
-
-            // globals for path mapping db:
-            if (!error) {
-                GBDATA *pm_num    = GB_create(pm_main,"species_number",GB_INT);
-                if (pm_num) error = GB_write_int(pm_num,PG_NumberSpecies());
-                else    error     = GB_get_error();
+            std::set<string> probes;
+            {
+                GB_transaction  dummy(pb_main);
+                GBDATA         *pbtree = GB_search(pb_main,"group_tree",GB_FIND);
+                GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
+                PG_find_probe_for_subtree(pbnode,tt.species,&probes);
             }
 
-            if (!error) {
-                GBDATA *pm_depth    = GB_create(pm_main,"depth",GB_INT);
-                if (pm_depth) error = GB_write_int(pm_depth,depth);
-                else    error       = GB_get_error();
+            // create 'subtree' for all nodes
+            GBDATA *st_subtree = GB_create_container(subtree_cont,"subtree");
+            GBDATA *st_path    = GB_search(st_subtree,"path",GB_STRING);
+            error              = GB_write_string(st_path,tt.path.c_str());
+
+            if (current->is_leaf) {
+                GBDATA *st_member = GB_search(st_subtree, "member", GB_INT);
+                error             = GB_write_int(st_member, *tt.species.begin());
             }
 
-            if (error) GB_abort_transaction(pbb_main);
-            else GB_commit_transaction(pbb_main);
+            if (!error && !probes.empty()) {
+                statistic[tt.species.size()-1]++;
 
-            // globals for probe database:
-            if (!error) {
-                GBDATA *stCounter    = GB_create(pba_main,"subtree_counter",GB_INT);
-                if (stCounter) error = GB_write_int(stCounter,subtreeCounter);
-                else    error        = GB_get_error();
-            }
+                probeSubtreeCounter++;
+                probeGroupCounter++;
 
-            if (!error) {
-                GBDATA *stCounter    = GB_create(pba_main,"probe_group_counter",GB_INT);
-                if (stCounter) error = GB_write_int(stCounter,probeGroupCounter);
-                else    error        = GB_get_error();
-            }
+                // create a probe group for the subtree
+                GBDATA *st_group   = GB_create_container(probe_group_cont, "probe_group");
+                GBDATA *st_members = GB_search(st_group, "subtreepath", GB_STRING);
 
-            if (!error) {
-                GBDATA *stProbeCounter    = GB_create(pba_main,"subtree_with_probe_counter",GB_INT);
-                if (stProbeCounter) error = GB_write_int(stProbeCounter,probeSubtreeCounter);
-                else    error             = GB_get_error();
-            }
-
-            if (!error) {
-                GBDATA *stat = GB_create(pba_main,"probe_group_vs_species",GB_STRING);
-                string  data;
-                for(int i=0; i<PG_NumberSpecies(); i++){
-                    if (statistic[i]) {
-                        char buffer[20];
-                        sprintf(buffer,"%i,%i;",i+1,statistic[i]);
-                        data += buffer;
-                    }
-                }
-                error = GB_write_string(stat,data.c_str());
-            }
-
-            if (!error) {
-                GB_push_transaction(gb_main);
-                error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
-                GB_pop_transaction(gb_main);
-
+                error = GB_write_string(st_members, tt.path.c_str());
                 if (!error) {
-                    error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
+                    GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
+                    for (set<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
+                        GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
+                        error            = GB_write_string(st_probe,(*j).c_str());
+                    }
                 }
 
-                if (!error) {
-                    error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
-                }
-            }
 
-            if (!error) {
-                error = setDatabaseState(pba_main, 0, "complete"); // set the state of the database
-                error = setDatabaseState(pbb_main, 0, "complete"); // set the state of the database
-            }
-
-            if (error) GB_abort_transaction(pba_main);
-            else GB_commit_transaction(pba_main);
-
-            if (!error) {
-                out.put("Saving %s ...",para.db_out_alt_name.c_str());
-                error = GB_save(pba_main,para.db_out_alt_name.c_str(), SAVE_MODE); // was "a"
-
-                out.put("Saving %s ...",para.db_out_alt_name2.c_str());
-                error = GB_save(pbb_main,para.db_out_alt_name2.c_str(), SAVE_MODE); // was "a"
+                GBDATA *st_exact = GB_search(st_subtree, "exact", GB_INT);
+                GB_write_int(st_exact, probes.size());
             }
         }
-        if (gb_hash) GBS_free_hash(gb_hash);
+    }                           // end of getNextSubTree
+
+    if (!error) error = probeDatabaseWriteCounters(pba_main, subtreeCounter, probeGroupCounter, probeSubtreeCounter);
+    if (!error) error = pathMappingWriteGlobals(pm_main, depth);
+    if (!error) error = storeProbeGroupStatistic(pba_main, statistic, statistic_size);
+
+    return error;
+}
+
+int main(int argc,char *argv[]) {
+    out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
+
+    GB_ERROR  error    = scanArguments(argc, argv);
+    GBDATA   *gb_main  = 0;
+    GBDATA   *pb_main  = 0;
+    GBDATA   *pba_main = 0;
+    GBDATA   *pbb_main = 0;
+
+    if (!error) error = openDatabases(gb_main, pb_main, pba_main, pbb_main);
+
+    if (!error) {
+        GB_install_status(PG_status); // to show progress of tree linking etc.
+        PG_initSpeciesMaps(gb_main, pb_main);
+
+        GBT_TREE *gbt_tree = readAndLinkTree(gb_main, error);
+//         GB_HASH  *gb_hash  = 0;
+//         if (!error) {
+//             GB_transaction dummy(gb_main);
+//             gb_hash = generate_GBT_TREE_hash(gbt_tree);
+//         }
+        if (!error) {
+            GB_transaction dummy(pb_main);
+            error = GBT_write_plain_tree(pb_main, pb_main, 0, gbt_tree);
+        }
+
+        if (!error) error = collectProbes(pb_main);
+        if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);
+
+        if (!error) {
+            {
+                GB_transaction dummy(gb_main);
+                error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
+            }
+            if (!error) {
+                GB_transaction dummy(pba_main);
+                error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
+            }
+            if (!error) {
+                error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
+            }
+        }
+
+//         if (gb_hash) GBS_free_hash(gb_hash);
         if (gbt_tree) GBT_delete_tree(gbt_tree);
     }
 
+    // save databases
+
+    if (!error) error = save(pb_main, para.db_out_name, "complete");
+    if (!error) error = save(pba_main, para.db_out_alt_name, "complete");
+    if (!error) error = save(pbb_main, para.db_out_alt_name2, "complete");
+
     if (error) {
-        fprintf(stderr, "Error: %s\n", error);
+        fprintf(stderr, "Error in arb_probe_group: %s\n", error);
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
 }
+
