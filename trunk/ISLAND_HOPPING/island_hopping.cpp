@@ -10,6 +10,19 @@ extern "C" {
 #include "memory.h"
 }
 
+#ifndef NDEBUG
+# define ih_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
+# ifndef DEBUG
+#  error DEBUG is NOT defined - but it has to!
+# endif
+#else
+# ifdef DEBUG
+#  error DEBUG is defined - but it should not!
+# endif
+# define ih_assert(bed)
+#endif
+
+
 IslandHoppingParameter *IslandHopping::para = 0;
 
 IslandHoppingParameter::IslandHoppingParameter(bool    use_user_freqs_,
@@ -65,7 +78,7 @@ GB_ERROR IslandHopping::do_align() {
     char *XX=NULL;
     char *YY=NULL;
 
-    int i,j,k,J,K,L;
+    int i,j,k,J,K,LJ, LK;
 
     Error = 0;
 
@@ -83,28 +96,65 @@ GB_ERROR IslandHopping::do_align() {
 
     // @@@ helix?
 
-    j = 0; J=0;
-    k = 0; K=0; L=0;
+    j = 0; J=0; LJ = 0;
+    k = 0; K=0; LK=0;
+
+#if defined(DEBUG)
+    printf("ref_helix     = '%s'\n", ref_helix);
+    printf("toAlign_helix = '%s'\n", toAlign_helix);
+#endif // DEBUG
 
     for(i=0;i<alignment_length;i++) {
+
+
         if(ref_sequence[i]!='-' && ref_sequence[i]!='.') {
             X[j] = ref_sequence[i];
-            switch(ref_helix[j]) {
-             case '-': case '.':                     if(L!=0) J++; L=0; break;
-             case '[': case '<': case '(': case '{': if(L!=1) J++; L=1; break;
-             case ']': case '>': case ')': case '}': if(L!=2) J++; L=2; break;
-            } 
-            secX[j]=L?J:0;
+            if (ref_helix) {
+                switch(ref_helix[i]) {
+                    case '-': case '.':
+                        if(LJ!=0) J++;
+                        LJ = 0;
+                        break;
+                    case '[': case '<': case '(': case '{':
+                        if(LJ!=1) J++;
+                        LJ = 1;
+                        break;
+                    case ']': case '>': case ')': case '}':
+                        if(LJ!=2) J++;
+                        LJ = 2;
+                        break;
+                    default:
+                        printf("Unknown '%c'\n", ref_helix[j]);
+                        ih_assert(0);
+                        break;
+                }
+            }
+            secX[j]=LJ?J:0;
             j++;
         }
         if(toAlign_sequence[i]!='-' && toAlign_sequence[i]!='.') {
             Y[k] = toAlign_sequence[i];
-            switch(toAlign_helix[k]) {
-             case '-': case '.':                     if(L!=0) K++; L=0; break;
-             case '[': case '<': case '(': case '{': if(L!=1) K++; L=1; break;
-             case ']': case '>': case ')': case '}': if(L!=2) K++; L=2; break;
-            }   
-            secY[k]=L?K:0;
+            if (toAlign_helix) {
+                switch(toAlign_helix[i]) {
+                    case '-': case '.':
+                        if(LK!=0) K++;
+                        LK=0;
+                        break;
+                    case '[': case '<': case '(': case '{':
+                        if(LK!=1) K++;
+                        LK=1;
+                        break;
+                    case ']': case '>': case ')': case '}':
+                        if(LK!=2) K++;
+                        LK=2;
+                        break;
+                    default:
+                        printf("Unknown '%c'\n", ref_helix[j]);
+                        ih_assert(0);
+                        break;
+                }
+            }
+            secY[k]=LK?K:0;
             k++;
         }
     }
