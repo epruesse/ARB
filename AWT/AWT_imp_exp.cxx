@@ -88,7 +88,7 @@ static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TR
 
         if (tree->remark_branch && save_bootstraps) {
             const char *boot = tree->remark_branch;
-            if (boot[strlen(boot)-1] == '%') {
+            if (boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
                 awt_assert(end[0] == '%'); // otherwise sth strange is contained in remark_branch
@@ -136,7 +136,7 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
 
         if (tree->remark_branch) {
             const char *boot = tree->remark_branch;
-            if (boot[0] && boot[strlen(boot)-1] == '%') {
+            if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
                 awt_assert(end[0] == '%'); // otherwise sth strange is contained in remark_branch
