@@ -28,7 +28,7 @@ using namespace std;
 /****************************************************************************/
 
 // just display the usage of this program
-void print_usage(char *name)
+void print_usage(const char *name)
 {
     printf("\nUsage: %s SPECIES_FILE\n\n"
 	   "This program is used to (un)mark all listed species in the given\n"
@@ -69,7 +69,7 @@ int parse_species_file(char *filename)
        while(iS.getline(buffer, 255)) // while there is unread data, do...
         {
 	    //buffer[0]= 0;
-	    
+
 	    // read a line to:  char *buffer
 	    //iS.getline(buffer, 255);
 
@@ -79,7 +79,7 @@ int parse_species_file(char *filename)
 	    name= buffer; // first entry equals name
 	    flag= 0;
 	    comment= 0;
-	    
+
 	    if(name)
 	    {
 		flag= strchr(buffer, ':'); // find dividing caracter
@@ -98,20 +98,20 @@ int parse_species_file(char *filename)
 		    }
 		}
 	    }
-	    
+
 	    //
 	    if(name && flag) // if the parsing worked, do...
 	    {
 
 		GBDATA *species = GB_find(GBT_get_species_data(gb_main), "species", 0, down_level);
-		
+
 		while(species)
 		{
 		    GBDATA *gb_name = GB_find(species, "name", 0, down_level);
 		    char *species_name = GB_read_string(gb_name);
-		    
+
 		    if(!strcmp(species_name, name))
-		    {	    
+		    {
 			if (flag[0] == '1')
 			{
 			    GB_write_flag(species, 1);
@@ -146,7 +146,7 @@ int parse_species_file(char *filename)
 	print_usage("ca_mark");
 	return -1;
     }
-    
+
     iS.close();
 
     GB_commit_transaction(gb_main);
@@ -174,6 +174,6 @@ int main(int argc,char **argv)
 
     // call return parse_species_file here...
     int retval= parse_species_file(argv[1]);
-    
+
     return retval;
 }
