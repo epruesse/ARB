@@ -14,6 +14,9 @@
 #include <servercntrl.h>
 #include <struct_man.h>
 
+#if defined(DEBUG)
+#define DUMP_NAME_CREATION
+#endif // DEBUG
 
 #define UPPERCASE(c) if ( (c>='a') && (c<='z')) c+= 'A'-'a'
 
@@ -96,6 +99,9 @@ AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
 */
 char *nas_string_2_key(const char *str)	/* converts any string to a valid key */
 {
+#if defined(DUMP_NAME_CREATION)
+    const char *org_str = str;
+#endif // DUMP_NAME_CREATION
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
@@ -108,12 +114,15 @@ char *nas_string_2_key(const char *str)	/* converts any string to a valid key */
     for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '_';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
-    printf("nas_string_2_key('%s') = '%s'\n", str, buf);
+    printf("nas_string_2_key('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
     return strdup(buf);
 }
 
 char *nas_remove_small_vocals(const char *str) {
+#if defined(DUMP_NAME_CREATION)
+    const char *org_str = str;
+#endif // DUMP_NAME_CREATION
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
@@ -128,7 +137,7 @@ char *nas_remove_small_vocals(const char *str) {
     for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '_';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
-    printf("nas_remove_small_vocals('%s') = '%s'\n", str, buf);
+    printf("nas_remove_small_vocals('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
     return strdup(buf);
 }
@@ -157,6 +166,8 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
     //     int	end_pos;
     //     char	*p;
 
+    gb_assert(full);
+
     if (full[0]==0) {
         return strdup("Xxx");
     }
@@ -170,7 +181,7 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
     char *full3 = 0;
     char shrt[10];
     int len2, len3;
-    int p1, p2;
+    int p1, p2, p3;
 
     // try first three letters:
 
@@ -185,12 +196,12 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
         goto insert_shrt;
     }
 
-    // generate names from consonants:
+    // generate names from first char + consonants:
 
     full3 = nas_remove_small_vocals(full2);
     len3 = strlen(full3);
 
-    for (p1=3; p1<(len3-1); p1++) {
+    for (p1=1; p1<(len3-1); p1++) {
         shrt[1] = full3[p1];
         for (p2=p1+1; p2<len3; p2++) {
             shrt[2] = full3[p2];
@@ -202,10 +213,10 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
         }
     }
 
-    // generate names from all characters:
+    // generate names from first char + all characters:
 
     len2 = strlen(full2);
-    for (p1=3; p1<(len2-1); p1++) {
+    for (p1=1; p1<(len2-1); p1++) {
         shrt[1] = full2[p1];
         for (p2=p1+1; p2<len2; p2++) {
             shrt[2] = full2[p2];
@@ -217,9 +228,9 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
         }
     }
 
-    // generate names containing two characters and one digit:
+    // generate names containing first char + characters from name + one digit:
 
-    for (p1=2; p1<len2; p1++) {
+    for (p1=1; p1<len2; p1++) {
         shrt[1] = full2[p1];
         for (p2=0; p2<=9; p2++) {
             shrt[2] = '0'+p2;
@@ -231,9 +242,9 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
         }
     }
 
-    // generate names containing one characters and two digits:
+    // generate names containing first char + two digits:
 
-    for (p1=0; p1<=99; p1++) {
+    for (p1=1; p1<=99; p1++) {
         shrt[1] = '0'+(p1/10);
         shrt[2] = '0'+(p1%10);
         look = an_find_shrt(shorts, shrt);
@@ -242,6 +253,57 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
             goto insert_shrt;
         }
     }
+
+    // generate names containing 1 random character + 2 digits:
+
+    for (p1='A'; p1<='Z'; p1++) {
+        shrt[0] = p1;
+        for (p2=0; p2<=99; p2++) {
+            shrt[1] = '0'+(p2/10);
+            shrt[2] = '0'+(p2%10);
+            look = an_find_shrt(shorts, shrt);
+            if (!look) {
+                an_complete_shrt(shrt, full2);
+                goto insert_shrt;
+            }
+        }
+    }
+
+    // generate names containing 2 random characters + 1 digit:
+
+    for (p1='A'; p1<='Z'; p1++) {
+        shrt[0] = p1;
+        for (p2='a'; p2<='z'; p2++) {
+            shrt[1] = p2;
+            for (p3=0; p3<=9; p3++) {
+                shrt[2] = '0'+p3;
+                look = an_find_shrt(shorts, shrt);
+                if (!look) {
+                    an_complete_shrt(shrt, full2);
+                    goto insert_shrt;
+                }
+            }
+        }
+    }
+
+    // generate names containing 3 random characters:
+
+    for (p1='A'; p1<='Z'; p1++) {
+        shrt[0] = p1;
+        for (p2='a'; p2<='z'; p2++) {
+            shrt[1] = p2;
+            for (p3='a'; p3<='z'; p3++) {
+                shrt[2] = p3;
+                look = an_find_shrt(shorts, shrt);
+                if (!look) {
+                    an_complete_shrt(shrt, full2);
+                    goto insert_shrt;
+                }
+            }
+        }
+    }
+
+    printf("arb_name_server: Failed to make a short-name for '%s'\n", full);
 
     free(full3);
     free(full2);
@@ -348,10 +410,16 @@ extern "C" aisc_string get_short(AN_local *locs)
         char *first_short;
 
         if (strlen(first)) {
+#if defined(DEBUG)
+            if (strcmp(first, "Phycus")==0) {
+                printf("Phycus\n");
+            }
+#endif // DEBUG
             first_short = an_get_short(	aisc_main->shorts1, &(aisc_main->pshorts1),first);
         }else{
             first_short = strdup(first_advice);
         }
+        gb_assert(first_short);
         first_short = (char *)realloc(first_short,strlen(first_short)+3);
         if (!strlen(first_short)) sprintf(first_short,"Xxx");
 
