@@ -33,7 +33,6 @@
 #include <arbdbt.h>
 
 /* Eigene Klassendefinition */
-#define _AW_COMMON_INCLUDED
 #include "aw_root.hxx"
 #include "aw_device.hxx"
 #include "aw_commn.hxx"
@@ -3086,7 +3085,7 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/){
     XEvent  xevent;
     Boolean result = XtAppPeekEvent(p_r->context,&xevent);
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     printf("peek_key_event\n");
 #endif // DEBUG
 
