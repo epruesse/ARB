@@ -591,16 +591,18 @@ void AWTC_import_go_cb(AW_window *aww)
     {
         bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
 
-        {
-            GB_transaction dummy(GB_MAIN);
+//         {
+//             GB_transaction dummy(GB_MAIN);
 
-            GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
-            if (!gb_genom_db) {
-                gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
-                GB_write_int(gb_genom_db, read_genom_db);
-            }
-            is_genom_db = GB_read_int(gb_genom_db) != 0;
-        }
+//             GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
+//             if (!gb_genom_db) {
+//                 gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
+//                 GB_write_int(gb_genom_db, read_genom_db);
+//             }
+//             is_genom_db = GB_read_int(gb_genom_db) != 0;
+//         }
+
+        is_genom_db = GEN_is_genom_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
