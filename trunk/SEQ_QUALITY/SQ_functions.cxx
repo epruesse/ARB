@@ -512,8 +512,12 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		/*real calculations start here*/
 		if (read_sequence) {
 		    int sequenceLength      = 0;
+		    char temp[10];
+		    char cons_dev[1000]         = "|";
+		    char cons_conf[1000]        = "|";
 		    const char *rawSequence = 0;
-		    double value            = 0;
+		    double value1           = 0;
+		    double value2           = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
@@ -552,14 +556,35 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			    SQ_GroupDataDictionary::iterator GDI = group_dict.find(backup->name);
 			    if( GDI != group_dict.end() ) {
 			        SQ_GroupDataPtr GD_ptr = GDI->second;
-				value = GD_ptr->SQ_calc_consensus_conformity(rawSequence);
-				value = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
-				//printf("\n%f dev :",value);
+				value1 = GD_ptr->SQ_calc_consensus_conformity(rawSequence);
+				value2 = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
+
+				strcat(cons_conf, "<");
+				strcat(cons_conf, backup->name);
+				strcat(cons_conf, ":");
+				sprintf(temp,"%f",value1);
+				strcat(cons_conf, temp);
+				strcat(cons_conf, ">");
+
+				strcat(cons_dev, "<");
+				strcat(cons_dev, backup->name);
+				strcat(cons_dev, ":");
+				sprintf(temp,"%f",value2);
+				strcat(cons_dev, temp);
+				strcat(cons_dev, ">");
 			    }
 			}
 			backup = backup->father;
 		    }
+		    strcat(cons_conf, "|"); //eof character
+		    strcat(cons_dev, "|");
 
+		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
+		    seq_assert(gb_result3);
+		    GB_write_string(gb_result3, cons_conf);
+		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
+		    seq_assert(gb_result4);
+		    GB_write_string(gb_result4, cons_dev);
 
 		}
 	    }
