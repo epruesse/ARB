@@ -523,41 +523,32 @@ void nt_store_configuration(AW_window */*aww*/, AW_CL cl_GBT_TREE_ptr) {
 void nt_rename_configuration(AW_window *aww) {
     AW_awar  *awar_curr_cfg = aww->get_root()->awar(AWAR_CONFIGURATION);
     char     *old_name      = awar_curr_cfg->read_string();
-    char     *new_name      = GB_strdup(old_name);
-    bool      done          = false;
     GB_ERROR  err           = 0;
 
     GB_transaction dummy(gb_main);
 
-    while (!done) {
-        char *answer = aw_input("Rename selection", "Enter the new name of the selection", 0, new_name);
-        if (!answer) break;
-
-        free(new_name);
-        new_name = answer;
-
+    char *new_name = aw_input("Rename selection", "Enter the new name of the selection", 0, old_name);
+    if (new_name) {
         GBDATA *gb_existing_cfg = GBT_find_configuration(gb_main, new_name);
         if (gb_existing_cfg) {
-            aw_message(GBS_global_string("There is already a selection named '%s'", new_name));
+            err = GBS_global_string("There is already a selection named '%s'", new_name);
         }
         else {
-            done = true;
+            GBDATA *gb_old_cfg = GBT_find_configuration(gb_main, old_name);
+            if (gb_old_cfg) {
+                GBDATA *gb_name = GB_find(gb_old_cfg, "name", 0, down_level);
+                if (gb_name) {
+                    err = GB_write_string(gb_name, new_name);
+                    if (!err) awar_curr_cfg->write_string(new_name);
+                }
+                else {
+                    err = "Selection has no name";
+                }
+            }
+            else {
+                err = "Can't find that selection";
+            }
         }
-    }
-
-    GBDATA *gb_old_cfg = GBT_find_configuration(gb_main, old_name);
-    if (gb_old_cfg) {
-        GBDATA *gb_name = GB_find(gb_old_cfg, "name", 0, down_level);
-        if (gb_name) {
-            err = GB_write_string(gb_name, new_name);
-            if (!err) awar_curr_cfg->write_string(new_name);
-        }
-        else {
-            err = "Selection has no name";
-        }
-    }
-    else {
-        err = "Can't find that selection";
     }
 
     if (err) aw_message(err);
