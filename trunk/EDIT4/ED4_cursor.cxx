@@ -261,7 +261,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
    ED4_cursor
    -------------------------------------------------------------------------------- */
 
-ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y, /*ED4_gc gc,*/ED4_base *target_terminal)
+ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
 {
     if (cursor_shape) {
         delete cursor_shape;
@@ -1058,7 +1058,12 @@ void ED4_cursor::jump_left_right_cursor_to_seq_pos(AW_window *aww, int new_curso
 void ED4_cursor::jump_centered_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos) {
     int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(new_cursor_seq_pos);
 
-    jump_centered_cursor(aww,screen_pos);
+    if (!awar_edit_direction) { // reverse editing (5'<-3')
+        screen_pos++;
+        new_cursor_seq_pos = -1; // uninitialized
+    }
+
+    jump_centered_cursor(aww, screen_pos);
     last_seq_position = new_cursor_seq_pos;
 }
 
@@ -1092,7 +1097,6 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
 {
     AW_pos x, y, x_screen, y_screen, target_x, target_y, scroll_diff;
     ED4_base *temp_parent, *target_terminal = NULL;
-    AW_event target_event;
     ED4_AREA_LEVEL area_level;
 
     temp_parent = owner_of_cursor->parent;
@@ -1131,8 +1135,6 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
             if (target_terminal) {
                 target_terminal->calc_world_coords( &target_x, &target_y );
                 scroll_diff = target_y - y;
-                target_event.x = (int) cursor_abs_x;
-                target_event.y = (int) target_y;
 
                 if (! (target_terminal->is_visible( 0, target_y, ED4_D_VERTICAL )) && ED4_ROOT->temp_aww->slider_pos_vertical > 0) {
                     if (ED4_ROOT->temp_aww->slider_pos_vertical + scroll_diff < 0) {
@@ -1144,7 +1146,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
                     ED4_vertical_change_cb( ED4_ROOT->temp_aww, 0, 0 );
                     DRAW = 0;
                 }
-                show_clicked_cursor( &target_event, target_terminal );
+                show_cursor_at(target_terminal, screen_position);
             }
             break;
         }
@@ -1167,8 +1169,6 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
             if (target_terminal) {
                 target_terminal->calc_world_coords( &target_x, &target_y );
                 scroll_diff = target_y - y;
-                target_event.x = (int)ED4_ROOT->temp_ed4w->cursor.cursor_abs_x;
-                target_event.y = (int)target_y;
 
                 if (! target_terminal->is_visible( 0, target_y, ED4_D_VERTICAL_ALL ) && area_level == ED4_A_MIDDLE_AREA) {
                     ED4_ROOT->temp_aww->set_vertical_scrollbar_position ((int)(ED4_ROOT->temp_aww->slider_pos_vertical + scroll_diff));
@@ -1176,7 +1176,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
                     DRAW = 0;
                 }
 
-                show_clicked_cursor( &target_event, target_terminal );
+                show_cursor_at(target_terminal, screen_position);
             }
             break;
         }
@@ -1194,31 +1194,6 @@ void ED4_cursor::set_abs_x()
     AW_pos x, y;
     owner_of_cursor->calc_world_coords( &x, &y );
     cursor_abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
-}
-
-void ED4_cursor::calc_cursor_position(AW_pos x, AW_pos *corrected_x_Ptr, ED4_index *scr_pos_Ptr) // x is pixelposition in terminal (relative to start of terminal)
-{
-    int       length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-    ED4_index scr_pos        = (int)((x-CHARACTEROFFSET)/length_of_char);
-
-    int sub = 0; // subtract that many char-widths from corrected position
-
-    if (!awar_edit_direction) { // reverse
-        scr_pos++;              // set behind clicked base
-        sub--; // 
-    }
-
-    int max_scrpos = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
-
-    if (scr_pos>max_scrpos) {
-        sub += (scr_pos-max_scrpos);
-        scr_pos = max_scrpos;
-    }
-
-    AW_pos corrected_x = (AW_pos) ((((int)((x-CHARACTEROFFSET)/length_of_char)-sub) * length_of_char) + CHARACTEROFFSET); //CHARACTEROFFSET is drawing offset of text
-
-    if (corrected_x_Ptr) *corrected_x_Ptr = corrected_x;
-    if (scr_pos_Ptr) *scr_pos_Ptr = scr_pos;
 }
 
 
@@ -1250,9 +1225,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
 
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x_help, &y_help );
 
-    if (allowed_to_draw) {
-        draw_cursor(x_help, y_help, owner_of_cursor);
-    }
+    if (allowed_to_draw) draw_cursor(x_help, y_help);
 
     cursor_abs_x += offset_x;
 
@@ -1359,7 +1332,7 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
     cursor_abs_x = (long int)world_x;
     owner_of_cursor = terminal;
 
-    draw_cursor(win_x, win_y, terminal);
+    draw_cursor(win_x, win_y);
 
     GB_transaction gb_dummy(gb_main);
     updateAwars();
@@ -1367,7 +1340,7 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_cursor::show_clicked_cursor( AW_event *event, ED4_base *target_terminal )
+ED4_returncode ED4_cursor::show_cursor_at( ED4_base *target_terminal, ED4_index scr_pos)
 {
     if (owner_of_cursor) {
         if (is_partly_visible()) {
@@ -1384,23 +1357,22 @@ ED4_returncode ED4_cursor::show_clicked_cursor( AW_event *event, ED4_base *targe
     AW_pos termw_x, termw_y;
     target_terminal->calc_world_coords( &termw_x, &termw_y );
 
-    AW_pos seqrel_x;
-    ED4_index scr_pos;
-    calc_cursor_position(event->x-termw_x, &seqrel_x, &scr_pos);
-    screen_position = scr_pos;
+    screen_position   = scr_pos;
     last_seq_position = ED4_ROOT->root_group_man->remap()->screen_to_sequence(screen_position);
 
-    AW_pos world_x  = seqrel_x + termw_x;
-    AW_pos world_y  = termw_y;
+    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+    
+    AW_pos world_x = termw_x + length_of_char*screen_position + CHARACTEROFFSET;
+    AW_pos world_y = termw_y;
 
     AW_pos win_x = world_x;
     AW_pos win_y = world_y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &win_x, &win_y );
-
+    
     cursor_abs_x = (long int)world_x;
     owner_of_cursor = target_terminal;
 
-    draw_cursor(win_x, win_y, target_terminal);
+    draw_cursor(win_x, win_y);
 
     GB_transaction gb_dummy(gb_main);
     updateAwars();
@@ -1408,12 +1380,24 @@ ED4_returncode ED4_cursor::show_clicked_cursor( AW_event *event, ED4_base *targe
     return ED4_R_OK;
 }
 
-ED4_returncode	ED4_cursor::get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal) )
+ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_base *target_terminal)
 {
-    AW_pos		x, y, y_area;
-    int 		i;
-    ED4_AREA_LEVEL	level;
-    ED4_multi_species_manager	*middle_area_mult_spec = NULL;
+    AW_pos termw_x, termw_y;
+    target_terminal->calc_world_coords( &termw_x, &termw_y );
+
+    ED4_index scr_pos = ED4_ROOT->pixel2pos(click_xpos - termw_x);
+
+    if (!awar_edit_direction) scr_pos++; // reverse editing -> set behind clicked base
+
+    return show_cursor_at(target_terminal, scr_pos);
+}
+
+ED4_returncode  ED4_cursor::get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal) )
+{
+    AW_pos                     x, y, y_area;
+    int                        i;
+    ED4_AREA_LEVEL             level;
+    ED4_multi_species_manager *middle_area_mult_spec = NULL;
 
     for (i=0; i < starting_point->children->members(); i++) {
         ED4_base *member = starting_point->children->member(i);
