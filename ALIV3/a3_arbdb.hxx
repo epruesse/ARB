@@ -38,7 +38,7 @@ class A3Arbdb
 
     void commit_transaction(void) {GB_commit_transaction(gb_main);};
 
-        char   *get_sequence_string ( char *name,
+        char   *get_sequence_string ( const char *name,
                                       int   and_mark = 0 );
 
         int     put_sequence_string ( char *name,

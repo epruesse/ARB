@@ -52,7 +52,7 @@
 }
 
 // -----------------------------------------------------------------------------
-    char *A3Arbdb::get_sequence_string ( char *name,
+    char *A3Arbdb::get_sequence_string ( const char *name,
                                          int     and_mark )
 // -----------------------------------------------------------------------------
 {
@@ -118,7 +118,7 @@
             {
                 gb_mark = GB_search(gb_ali,"mark",GB_BITS);
 
-                GB_write_bits(gb_mark,info,sequence_len,'.');
+                GB_write_bits(gb_mark,info,sequence_len,".");
             }
         }
     }

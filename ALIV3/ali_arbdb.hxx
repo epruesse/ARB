@@ -32,7 +32,7 @@ public:
         GB_commit_transaction(gb_main);
     }
 
-    char *get_sequence_string(char *name, int and_mark = 0);
+    char *get_sequence_string(const char *name, int and_mark = 0);
     ALI_SEQUENCE *get_sequence(char *name, int and_mark = 0);
     char *get_extended(char *name);
     int put_sequence_string(char *name, char *sequence, char *info = 0);
