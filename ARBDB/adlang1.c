@@ -1424,7 +1424,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
         else {
             /* #if defined(DEBUG) */
             /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
-            /* #endif /* DEBUG */ */
+            /* #endif */ /* DEBUG */ 
             GB_touch(gb_tree_refresh); /* Note : force tree update */ 
         }
     }
