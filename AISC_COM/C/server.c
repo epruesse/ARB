@@ -15,30 +15,14 @@
 #include <limits.h>
 
 #ifdef SGI
-#	include <bstring.h>
-#endif
-
-#include "SIG_PF.h"
-#if 0
-/* #if defined(SUN4) || defined(SUN5) */
-/* # ifndef __cplusplus */
-/* #  define SIG_PF void (*)() */
-/* # else */
-/* #  include <sysent.h>	/ * c++ only for sun * / */
-/* # endif */
-/* #else */
-/* # if defined(HP) || defined(LINUX) || defined(DIGITAL) || defined(DARWIN) */
-/* #  define SIG_PF void (*)(int) */
-/* # endif */
-/* #endif */
+# include <bstring.h>
 #endif
 
 #if defined(SUN4) || defined(SUN5) || defined(SGI)
-#	include <sys/filio.h>
+# include <sys/filio.h>
 #endif
 
-
-#	define FD_SET_TYPE
+#define FD_SET_TYPE
 
 
 #include <signal.h>
@@ -47,6 +31,11 @@
 
 #include "aisc_com.h"
 #include "server.h"
+/* #include <SIG_PF.h> */
+
+#include "../INCLUDE/SIG_PF.h"
+#include "../INCLUDE/arb_assert.h"
+#define aisc_assert(cond) arb_assert(cond)
 
 #define AISC_SERVER_OK 1
 #define AISC_SERVER_FAULT 0
