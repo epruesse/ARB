@@ -27,7 +27,7 @@ public:
     SQ_GroupData();
     ~SQ_GroupData();
     //SQ_GroupData(const SQ_GroupData& g1, const SQ_GroupData& g2) {}
-    int  SQ_get_avg_bases();
+    int  SQ_get_avg_bases() const;
     void SQ_set_avg_bases(int bases);
     void SQ_init_consensus(int size);
     void SQ_add_consensus(int value, int row, int col);
@@ -36,10 +36,11 @@ public:
     bool SQ_is_initialised();
     double SQ_test_against_consensus(const char *sequence);
 
-private: // !
+private:
     int    size;
     int    avg_bases;
     Int7   *consensus;
+//    int**  consensus;
     bool   initialised;
 };
 

@@ -5,7 +5,6 @@ using namespace std;
 
 
 
-
 SQ_GroupData::SQ_GroupData(){
     size        = 0;
     avg_bases   = 0;
@@ -14,6 +13,9 @@ SQ_GroupData::SQ_GroupData(){
 
 
 SQ_GroupData::~SQ_GroupData(){
+//     for (int i=0; i<size; i++) {
+// 	delete [] consensus[i];
+//     }
     delete [] consensus;
 }
 
@@ -23,7 +25,7 @@ void SQ_GroupData::SQ_set_avg_bases(int bases){
 }
 
 
-int SQ_GroupData::SQ_get_avg_bases(){
+int SQ_GroupData::SQ_get_avg_bases() const{
     return avg_bases;
 }
 
@@ -32,7 +34,6 @@ void SQ_GroupData::SQ_init_consensus(int size){
     this->size = size;
 
     // two dimensional array
-
     consensus = new Int7[size];
 
 //     consensus = new int *[size];
@@ -50,9 +51,8 @@ void SQ_GroupData::SQ_init_consensus(int size){
 
 void SQ_GroupData::SQ_add_consensus(int value, int row, int col) {
 
-
     consensus[col].i[row] = consensus[col].i[row] + value; 
-//  consensus[row][col] = consensus[row][col] + value;
+//    consensus[row][col] = consensus[row][col] + value;
 
 }
 
