@@ -10,7 +10,8 @@ sub run_request() {
   my @requested_lengths = ();
   if ($plength eq 'all') { @requested_lengths = probe_server::available_servers(); }
   else {
-    if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed 15..20)"; }
+    $plength = int($plength);
+    if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed '15' .. '20' or 'all')"; }
     $requested_lengths[0] = $plength;
   }
 
