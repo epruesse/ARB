@@ -461,6 +461,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
     memset((char *)this,0,sizeof(AW_awar));
     GB_transaction dummy((GBDATA *)default_file);
 
+    aw_assert(var_name && var_name[0] != 0);
+
 #if defined(DEBUG)
     GB_ERROR err = GB_check_hkey(var_name);
     aw_assert(!err);
