@@ -79,6 +79,10 @@ int main(int argc, char **argv)
     struct arb_params *params;
     char              *command_flag;
 
+#ifdef DEVEL_IDP
+    ....
+#endif
+
     params             = arb_trace_argv(&argc,argv);
     PT_init_psg();
     GB_install_pid(0);          /* not arb_clean able */
