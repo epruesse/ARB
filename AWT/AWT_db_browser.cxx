@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Fri Aug/27/2004 23:21 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Wed Sep/29/2004 17:57 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -653,14 +653,22 @@ static void child_changed_cb(AW_root *aw_root) {
                 info += "Node does not exist.\n";
             }
             else {
-                info += "Node has been found.\n";
+                info += GBS_global_string("Node exists [address=%p]\n", gb_selected_node);
 
                 if (GB_read_type(gb_selected_node) == GB_DB) {
-                    info += "Node is a container.\n";
+                    info += "Node type: container\n";
 
                     aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
                     aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
                 }
+                else {
+                    info += GBS_global_string("Node type: data [type=%s]\n", GB_get_type_name(gb_selected_node));
+                }
+
+                info += GBS_global_string("Security: read=%i write=%i delete=%i\n",
+                                          GB_read_security_read(gb_selected_node),
+                                          GB_read_security_write(gb_selected_node),
+                                          GB_read_security_delete(gb_selected_node));
 
                 char *callback_info = GB_get_callback_info(gb_selected_node);
                 if (callback_info) {
