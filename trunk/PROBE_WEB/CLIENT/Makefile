@@ -66,20 +66,28 @@ rebuild: clean all
 updatejar: $(JAR)
 	test \! -d $(ARBHOME)/PROBE_SERVER/ps_serverdata || cp -p $(JAR) $(ARBHOME)/PROBE_SERVER/ps_serverdata/
 
-test: all
-	(	mkdir -p $(TESTDIR)/debug ;\
-	        cd $(TESTDIR)/debug ;\
-		echo "----------------------------------------" ;\
-		echo "OOOOOOOOOOOOPS - incorrect server address!!!" ;\
-		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/ ;\
-		echo "----------------------------------------" ;\
-	        ls -al -rt )
+#test: all
+#	(	mkdir -p $(TESTDIR)/debug ;\
+#	        cd $(TESTDIR)/debug ;\
+#		echo "----------------------------------------" ;\
+#		echo "OOOOOOOOOOOOPS - incorrect server address!!!" ;\
+#		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/ ;\
+#		echo "----------------------------------------" ;\
+#	        ls -al -rt )
 
 testmaster: all
 	(	mkdir -p $(TESTDIR)/master ;\
 		cd $(TESTDIR)/master ;\
 		echo "----------------------------------------" ;\
-		java -jar $(BASE)/$(JAR)  ;\
+		java -jar $(BASE)/$(JAR) ;\
+		echo "----------------------------------------" ;\
+		ls -al -rt )
+
+testmasterdebug: all
+	(	mkdir -p $(TESTDIR)/master ;\
+		cd $(TESTDIR)/master ;\
+		echo "----------------------------------------" ;\
+		java -jar $(BASE)/$(JAR) debug=1 ;\
 		echo "----------------------------------------" ;\
 		ls -al -rt )
 
@@ -87,15 +95,31 @@ testmasterproxy127: all
 	(	mkdir -p $(TESTDIR)/master ;\
 		cd $(TESTDIR)/master ;\
 		echo "----------------------------------------" ;\
-		java -DproxySet=true -DproxyHost=hi.er -jar $(BASE)/$(JAR)  ;\
+		java -DproxySet=true -DproxyHost=hi.er -jar $(BASE)/$(JAR) debug=1 ;\
 		echo "----------------------------------------" ;\
 		ls -al -rt )
 
-testrs: all
+testmasterproxytrance: all
+	(	mkdir -p $(TESTDIR)/master ;\
+		cd $(TESTDIR)/master ;\
+		echo "----------------------------------------" ;\
+		java -DproxySet=true -DproxyHost=trance -jar $(BASE)/$(JAR) debug=1 ;\
+		echo "----------------------------------------" ;\
+		ls -al -rt )
+
+rstest: all
 	(	mkdir -p $(TESTDIR)/local ;\
 		cd $(TESTDIR)/local ;\
 		echo "----------------------------------------" ;\
-		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ ;\
+		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ debug=1 ;\
+		echo "----------------------------------------" ;\
+		ls -al -rt )
+
+rstestproxy: all
+	(	mkdir -p $(TESTDIR)/local ;\
+		cd $(TESTDIR)/local ;\
+		echo "----------------------------------------" ;\
+		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ debug=1 proxy=127.0.0.1 ;\
 		echo "----------------------------------------" ;\
 		ls -al -rt )
 
