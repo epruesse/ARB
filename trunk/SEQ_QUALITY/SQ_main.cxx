@@ -27,7 +27,9 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_WEIGHT_CONSENSUS AWAR_SQ_PERM "weight_consensus"
 #define AWAR_SQ_WEIGHT_IUPAC     AWAR_SQ_PERM "weight_iupac"
 #define AWAR_SQ_WEIGHT_GC        AWAR_SQ_PERM "weight_gc"
-#define AWAR_SQ_MARK             AWAR_SQ_PERM "mark"
+
+#define AWAR_SQ_MARK_FLAG  AWAR_SQ_PERM "mark_flag"
+#define AWAR_SQ_MARK_BELOW AWAR_SQ_PERM "mark_below"
 
 
 void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
@@ -42,7 +44,8 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK, 36, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 36, aw_def);
 }
 
 // --------------------------------------------------------------------------------
@@ -97,13 +100,15 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	  evaluation
         */
 
-        int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-        int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
-	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
-	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
- 	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
- 	int weight_gc                   = aw_root->awar(AWAR_SQ_WEIGHT_GC)->read_int();
-	int mark                        = aw_root->awar(AWAR_SQ_MARK)->read_int();
+        int weight_bases             = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
+        int weight_diff_from_average = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+	int weight_helix             = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
+	int weight_consensus         = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
+ 	int weight_iupac             = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
+ 	int weight_gc                = aw_root->awar(AWAR_SQ_WEIGHT_GC)->read_int();
+        
+	int mark_flag  = aw_root->awar(AWAR_SQ_MARK_FLAG)->read_int();
+	int mark_below = aw_root->awar(AWAR_SQ_MARK_BELOW)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -140,11 +145,13 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac, weight_gc);
 	    aw_closestatus();
 	    SQ_reset_counters(tree);
-	    aw_openstatus("Marking Sequences...");
-	    SQ_count_nr_of_species(gb_main);
-	    SQ_mark_species(gb_main, mark);
-	    aw_closestatus();
-	    delete globalData;
+            if (mark_flag) {
+                aw_openstatus("Marking Sequences...");
+                SQ_count_nr_of_species(gb_main);
+                SQ_mark_species(gb_main, mark_below);
+                aw_closestatus();
+            }
+            delete globalData;
 	}
 
     }
@@ -188,7 +195,10 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
     aws->create_input_field(AWAR_SQ_WEIGHT_GC, 3);
 
     aws->at("mark");
-    aws->create_input_field(AWAR_SQ_MARK, 3);
+    aws->create_toggle(AWAR_SQ_MARK_FLAG);
+
+    aws->at("mark_below");
+    aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
 
     aws->at("tree");
     awt_create_selection_list_on_trees(gb_main,(AW_window *)aws, AWAR_SQ_TREE);
