@@ -12,6 +12,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <awt_www.hxx>
 
 #if defined(SUN4) || defined(SUN5)
 # ifndef __cplusplus
@@ -997,9 +998,6 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
     return strdup(result);
 }
 
-//  ------------------------------------------------------------------------
-//      static GB_CSTR get_full_qualified_help_file_name(AW_root *root)
-//  ------------------------------------------------------------------------
 static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit = false) {
     char *helpfile = awr->awar("tmp/aw_window/helpfile")->read_string();
     char *qualified = get_full_qualified_help_file_name(helpfile, path_for_edit);
@@ -1007,9 +1005,37 @@ static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit 
     return qualified;
 }
 
+static char *get_local_help_url(AW_root *awr) {
+    char   *helpfile          = get_full_qualified_help_file_name(awr, false);
+    char   *user_doc_path     = strdup(GB_getenvDOCPATH());
+    char   *user_htmldoc_path = strdup(GB_getenvHTMLDOCPATH());
+    size_t  user_doc_path_len = strlen(user_doc_path);
+    char   *result            = 0;
+
+    if (strncmp(helpfile, user_doc_path, user_doc_path_len) == 0) {
+        result            = GBS_global_string_copy("%s%s_", user_htmldoc_path, helpfile+user_doc_path_len);
+        size_t result_len = strlen(result);
+
+        aw_assert(result_len > 5);
+
+        if (strcmp(result+result_len-5, ".hlp_") == 0) {
+            strcpy(result+result_len-5, ".html");
+        }
+        else {
+            free(result);
+            result = 0;
+        }
+    }
+
+    free(user_htmldoc_path);
+    free(user_doc_path);
+    free(helpfile);
+
+    return result;
+}
+
 void aw_help_edit_help(AW_window *aww)
 {
-    AWUSE(aww);
     char buffer[1024];
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
@@ -1168,9 +1194,12 @@ void aw_help_back(AW_window *aww)
 
 }
 
-//  --------------------------------------------
-//      void aw_help_search(AW_window *aww)
-//  --------------------------------------------
+void aw_help_browse(AW_window *aww) {
+    char *help_url = get_local_help_url(aww->get_root());
+    awt_openURL(aww->get_root(), 0, help_url);
+    free(help_url);
+}
+
 void aw_help_search(AW_window *aww) {
     char *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
 
@@ -1281,10 +1310,6 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
         helpwindow->callback((AW_CB0)AW_POPDOWN);
         helpwindow->create_button("CLOSE", "CLOSE","C");
 
-        helpwindow->at("edit");
-        helpwindow->callback(aw_help_edit_help);
-        helpwindow->create_button("EDIT", "EDIT","E");
-
         helpwindow->at("back");
         helpwindow->callback(aw_help_back);
         helpwindow->create_button("BACK", "BACK","B");
@@ -1305,12 +1330,21 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
         helpwindow->at("text");
         helpwindow->create_text_field("tmp/aw_window/helptext",3,3);
 
+        helpwindow->at("browse");
+        helpwindow->callback(aw_help_browse);
+        helpwindow->create_button("BROWSE", "BROWSE", "B");
+
         helpwindow->at("expression");
         helpwindow->create_input_field("tmp/aw_window/search_expression");
 
         helpwindow->at("search");
         helpwindow->callback(aw_help_search);
         helpwindow->create_button("SEARCH", "SEARCH", "S");
+
+        helpwindow->at("edit");
+        helpwindow->callback(aw_help_edit_help);
+        helpwindow->create_button("EDIT", "EDIT","E");
+
     }
     free(aw_help_global.history);
     aw_help_global.history = 0;
