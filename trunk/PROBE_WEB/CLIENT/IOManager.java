@@ -3,7 +3,7 @@
 //    File      : IOManager.java                                         // 
 //    Purpose   : encapsulates modal file dialogs for reading            // 
 //                and saving of configuration settings and result        // 
-//    Time-stamp: <Wed Mar/10/2004 13:09 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/13/2004 17:40 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Lothar Richter + Ralf Westram in March 2004                 // 
@@ -39,6 +39,7 @@ public class IOManager{
         }
     }
 
+
     private String get_default_name(String content_type) {
         String default_name = (String)defaultName4Type.get(content_type);
 
@@ -72,5 +73,6 @@ public class IOManager{
     public void saveAs(String content_type, String content, String filename) throws Exception {
         save_internal(content_type, content, filename);
     }
+
 
 }
