@@ -326,15 +326,17 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           AW_BOOL                 add_all_fields_pseudo_field,
                                           AW_BOOL                 include_hidden_fields)
 {
-    AW_selection_list*  id              = 0;
-    GBDATA	           *gb_key_data;
-    AW_window          *win_for_sellist = aws;
+    AW_selection_list *id              = 0;
+    GBDATA            *gb_key_data;
+    AW_window         *win_for_sellist = aws;
 
     GB_push_transaction(gb_main);
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
     if (popup_list_in_window) {
+        
+        // create HIDDEN popup window containing the selection list
         {
             AW_window_simple *aw_popup = new AW_window_simple;
             aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
@@ -378,9 +380,16 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     cbs->include_hidden_fields       = include_hidden_fields;
 
     if (rescan_xfig_label) {
+        int x, y;
+        aws->get_at_position(&x, &y);
+
         aws->at(rescan_xfig_label);
         aws->callback(selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
         aws->create_button("RESCAN_DB", "RESCAN","R");
+
+        if (popup_list_in_window) {
+            aws->at(x, y);          // restore 'at' position if popup_list_in_window
+        }
     }
 
     awt_create_selection_list_on_scandb_cb(0,cbs);
