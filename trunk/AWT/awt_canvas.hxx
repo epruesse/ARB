@@ -107,54 +107,56 @@ enum {
 
 
 class AWT_canvas {
-	private:
+private:
 
-	public:
-	/** too many callbacks -> public **/
-	/** in fact: private		 **/
+public:
+    /** too many callbacks -> public **/
+    /** in fact: private		 **/
     char *user_awar;
-	void init_device(AW_device *device);
-	AW_pos trans_to_fit;
-	AW_pos shift_x_to_fit;
-	AW_pos shift_y_to_fit;
+    void init_device(AW_device *device);
+    AW_pos trans_to_fit;
+    AW_pos shift_x_to_fit;
+    AW_pos shift_y_to_fit;
 
-	int old_hor_scroll_pos;
-	int old_vert_scroll_pos;
-	AW_rectangle rect;	// screen coordinates
-	AW_world worldinfo; // real coordinates without transform.
-	AW_world worldsize;
-	int zoom_drag_sx;
-	int zoom_drag_sy;
-	int zoom_drag_ex;
-	int zoom_drag_ey;
-	int	drag;
-	AW_clicked_line clicked_line;
-	AW_clicked_text clicked_text;
+    int old_hor_scroll_pos;
+    int old_vert_scroll_pos;
+    AW_rectangle rect;	// screen coordinates
+    AW_world worldinfo; // real coordinates without transform.
+    AW_world worldsize;
+    int zoom_drag_sx;
+    int zoom_drag_sy;
+    int zoom_drag_ex;
+    int zoom_drag_ey;
+    int	drag;
+    AW_clicked_line clicked_line;
+    AW_clicked_text clicked_text;
 
-	void	set_scrollbars();
+    void	set_scrollbars();
 
-	void set_horizontal_scrollbar_position(AW_window *aww, int pos);
-	void set_vertical_scrollbar_position(AW_window *aww, int pos);
+    void set_horizontal_scrollbar_position(AW_window *aww, int pos);
+    void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
 
-	/*************	Read only public section : ************/
-	int drag_gc;
-	GBDATA	*gb_main;
-	AW_window *aww;
-	AW_root *awr;
-	AWT_COMMAND_MODE mode;
-/** the real public section **/
+    /*************	Read only public section : ************/
+    int               drag_gc;
+    GBDATA           *gb_main;
+    AW_window        *aww;
+    AW_root          *awr;
+    AWT_COMMAND_MODE  mode;
+    AW_gc_manager     gc_manager;
 
-	AWT_canvas(GBDATA *gb_main, AW_window *aww,AWT_graphic *awd, AW_gc_manager &gc_manager,const char *user_awar);
-		// gc_manager is the preset window
-	AWT_graphic *tree_disp;
-	void	refresh();
-	void	recalc_size();		// Calculate the size of the sb
-	void	zoom_reset();		// Calculate all
-	void	tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos ey);
-	void 	scroll( AW_window *aww, int delta_x, int delta_y,
+    /** the real public section **/
+
+    AWT_canvas(GBDATA *gb_main, AW_window *aww,AWT_graphic *awd, AW_gc_manager &gc_manager,const char *user_awar);
+    // gc_manager is the preset window
+    AWT_graphic *tree_disp;
+    void	refresh();
+    void	recalc_size();		// Calculate the size of the sb
+    void	zoom_reset();		// Calculate all
+    void	tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos ey);
+    void 	scroll( AW_window *aww, int delta_x, int delta_y,
 			AW_BOOL dont_update_scrollbars = AW_FALSE);
-	void	set_mode(AWT_COMMAND_MODE mo);
+    void	set_mode(AWT_COMMAND_MODE mo);
 };
 
 
