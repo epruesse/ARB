@@ -1480,6 +1480,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 
     awmm->create_menu(0, "Create", "C", 0, AWM_ALL);
 
+
+
     awmm->insert_menu_topic("create_species", "Create new species", "C", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
     awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)1);
     awmm->insert_menu_topic("copy_species", "Copy current species", "", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)2);
@@ -1578,6 +1580,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     ____________________________SEP;
 
     awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "", 0, AWM_ALL, ED4_SECEDIT_start, 0, 0);
+
+
 
     // ------------------------------
     // 	Block
