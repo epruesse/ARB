@@ -1229,7 +1229,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Tools ","o","nt_etc.hlp", AWM_ALL);
         {
-            AWMIMT("fix_db",            "Fix database",          "", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
             AWMIMT("names_admin",       "Name Server Admin ",    "S","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)create_awtc_names_admin_window, 0 );
             awm->insert_sub_menu( 0,   "Network", "N");
             {
@@ -1265,6 +1264,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 #if defined(DEBUG)
             awm->insert_separator();
             AWMIMT("table_admin",       "Table Admin (not finished)",       "M","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
+            AWMIMT("fix_db",            "Fix database",          "", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
 #endif // DEBUG
         }
 
