@@ -2351,7 +2351,7 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the FULL_NAME\nof the new species");
+    aws->create_autosize_button(0,"Please enter the FULL_NAME\nof the new species");
 
     aws->at("input");
     aws->create_input_field(ED4_AWAR_SPECIES_TO_CREATE, 30);
