@@ -441,9 +441,9 @@ public:
     void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int members_ok() const;
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     ED4_members(ED4_manager *the_owner);
      ~ED4_members();
@@ -535,9 +535,9 @@ public:
     void change_table_length(int new_length, int default_entry);
 
 
-#ifdef DEBUG
+#ifdef ASSERTION_USED
     int empty() const;
-#endif
+#endif // ASSERTION_USED
 };
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
@@ -587,13 +587,14 @@ class ED4_char_table
 
 public:
 
-#if defined(TEST_CHAR_TABLE_INTEGRITY)
-    //static void set_validity(bool valid) { tables_are_valid = valid; }
-    bool empty() const;
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
     bool ok() const;
+    bool empty() const;
+#endif
+
+#if defined(TEST_CHAR_TABLE_INTEGRITY)
     void test() const; // test if table is valid (dumps core if invalid)
 #else
-    //static void set_validity(bool /*valid*/) { }
     void test() const { }
 #endif
 

@@ -22,9 +22,9 @@ void AWTC_message(const char *format, ...)
 
     va_start(argp, format);
 #ifndef SUN4
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int chars =
-#endif // DEBUG
+#endif // ASSERTION_USED
         vsprintf(buffer, format, argp);
     awtc_assert(chars<AWTC_MESSAGE_BUFFERSIZE);
 #else
@@ -52,7 +52,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     long *compPositionTab = new long[length];
     myLength = 0;
     int lastWasPoint = 0;
-    
+
     myStartOffset = start_offset;
     myEndOffset = start_offset+length-1;
 
@@ -60,10 +60,10 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 
     points = NULL;
     myName = strdup(name);
-    
+
     long firstBase = 0;
     long lastBase = length-1;
-    
+
     for (xPos=0; xPos<length; xPos++) {		// convert point gaps at beginning to dash gaps
 	char c = text[xPos];
 	if (!AWTC_is_gap(c)) {
@@ -71,7 +71,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 	    break;
 	}
     }
-    
+
     for (xPos=length-1; xPos>=0; xPos--) 	// same for end of sequence
     {
 	char c = text[xPos];
@@ -80,10 +80,10 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 	    break;
 	}
     }
-    
+
     for (xPos=0; xPos<length; xPos++) {
 	char c = toupper(text[xPos]);
-	
+
 	if (AWTC_is_gap(c)) {
 	    if (c=='-' || xPos<firstBase || xPos>lastBase) {
 		compPositionTab[xPos] = -1; 			// a illegal index
@@ -96,10 +96,10 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 		    lastWasPoint = 1;
 		    storePoints(myLength);
 		}
-		
+
 		compPositionTab[xPos] = -1;
 	    }
-		
+
 	}
 	else {
 	    compPositionTab[xPos] = myLength++;
@@ -115,10 +115,10 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 
     myText = new char[myLength+1];
     myText[myLength] = 0;
-    
+
     expdPositionTab = new int[myLength+1];	// plus one extra element
     expdPositionTab[myLength] = length;		// which is the original length
-    
+
     gapsBeforePosition = new int[myLength+1];
 
     for (xPos=0; xPos<length; xPos++) {
@@ -136,7 +136,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     }
 
     gapsBeforePosition[myLength] = length - expdPositionTab[myLength-1];	// gaps before end of sequence
-	
+
     referred = 1;
 
     delete [] compPositionTab;
@@ -145,7 +145,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 AWTC_CompactedSequence::~AWTC_CompactedSequence()
 {
     awtc_assert(referred==0);
-    
+
     delete[] expdPositionTab;
     if (points) delete points;
 //    delete[] compPositionTab;
@@ -156,16 +156,16 @@ AWTC_CompactedSequence::~AWTC_CompactedSequence()
 int AWTC_CompactedSequence::compPosition(int xPos) const
 {
     int l = 0,
-	h = length(); 
-    
+	h = length();
+
     while (l<h) {
 	int m = (l+h)/2;
 	int cmp = xPos-expdPosition(m);
-	
+
 	if (cmp==0) {
 	    return m; // found!
 	}
-	
+
 	if (cmp<0) { // xPos < expdPosition(m)
 	    h = m-1;
 	}
@@ -173,7 +173,7 @@ int AWTC_CompactedSequence::compPosition(int xPos) const
 	    l = m+1;
 	}
     }
-    
+
     awtc_assert(l==h);
     return l;
 }
@@ -194,17 +194,17 @@ AWTC_FastSearchSequence::AWTC_FastSearchSequence(const AWTC_CompactedSubSequence
     {
 	int tidx = triple_index(triple.text());
 	AWTC_TripleOffset *top = new AWTC_TripleOffset(triple.leftOf(), myOffset[tidx]);
-	
+
 	myOffset[tidx] = top;
 	++triple;
     }
 }
 
-void AWTC_alignBuffer::correctUnalignedPositions(void) 
+void AWTC_alignBuffer::correctUnalignedPositions(void)
 {
     long off = 0;
     long rest = used;
-    
+
     while (rest)
     {
 	char *found = (char*)memchr(myQuality+off, '?', rest);	// search for next '?' in myQuality
@@ -223,10 +223,10 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
 
 	if (b_off<=0) before = LONG_MAX;
 	if (a_off>=used) after = LONG_MAX;
-	
+
 	if (before<after)		// move to the left
 	{
-	    if (before)		
+	    if (before)
 	    {
 		long to = from-before;
 		while (cnt--) moveUnaligned(from++,to++);
@@ -250,11 +250,11 @@ void AWTC_alignBuffer::correctUnalignedPositions(void)
 
 void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
 {
-    long rest = used;		
+    long rest = used;
     long off = 0;		// real position in sequence
     long count = 0; 		// # of bases left of this position
     long nextPoint = slaveSequence.firstPointPosition();
-    
+
     while (nextPoint!=-1 && rest)
     {
 	unsigned char gap = myBuffer[off];
@@ -274,7 +274,7 @@ void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
 		nextPoint = slaveSequence.nextPointPosition();
 	    }
 	}
-	
+
 	off++;
 	rest--;
     }
@@ -283,11 +283,11 @@ void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
 void AWTC_alignBuffer::point_ends_of()
 {
     int i;
-    
+
     for (i=0; (myBuffer[i]=='.' || myBuffer[i]=='-') && i<used; i++) {
 	myBuffer[i] = '.';
     }
-    
+
     for (i=used-1; (myBuffer[i]=='.' || myBuffer[i]=='-') && i>=0; i--) {
 	myBuffer[i] = '.';
     }

@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Tue Aug/06/2002 13:14 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/23/2002 22:09 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -82,9 +82,9 @@ void MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------
 inline const char *field_awar_base(const char *field_name) {
     static char buffer[BUFSIZE];
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int         printed =
-#endif // DEBUG
+#endif // ASSERTION_USED
         sprintf(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_%s/", field_name);
     mg_assert(printed<BUFSIZE);
 
@@ -96,9 +96,9 @@ inline const char *field_awar_base(const char *field_name) {
 // -------------------------------------------------------------------------------------
 inline const char *field_awar(const char *field_name, const char *subfield) {
     static char buffer[BUFSIZE];
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int printed =
-#endif // DEBUG
+#endif // ASSERTION_USED
         sprintf(buffer, "%s%s", field_awar_base(field_name), subfield);
     mg_assert(printed<BUFSIZE);
 

@@ -2,7 +2,7 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Fri Aug/23/2002 19:02 MET Coder@ReallySoft.de>
+    Time-stamp: <Fri Aug/23/2002 23:07 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002
@@ -58,6 +58,9 @@
 
 /* ------------------------------------------------------------ */
 
+/* use ASSERTION_USED for code needed for assertions */
+#define ASSERTION_USED
+
 #ifdef ASSERT_CRASH
 /* this assigns zero to zero-pointer (-> SIGSEGV) */
 # define arb_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
@@ -72,6 +75,7 @@
 #endif
 
 #ifdef ASSERT_NONE
+# undef ASSERTION_USED
 # define arb_assert(bed)
 #endif
 

@@ -16,20 +16,20 @@
                                            when writing pointer-arrays */
 #endif
 
-#define ALIGN(size)		(((((size)-1)>>ALIGN_BITS)+1)<<ALIGN_BITS) 
+#define ALIGN(size)		(((((size)-1)>>ALIGN_BITS)+1)<<ALIGN_BITS)
 #define PTR_DIFF(p1,p2)		((char*)(p1)-(char*)(p2))
 struct gbdata_offset
-{ 	
+{
     GBDATA *gbd;
     long	index;		/* new index */
-    long 	offset;		/* offset in mapfile (initialized with -1) */	
+    long 	offset;		/* offset in mapfile (initialized with -1) */
 };
 
 typedef struct S_gbdByKey	/* one for each diff. keyQuark */
 {
-    int 			cnt;	
+    int 			cnt;
     struct gbdata_offset 	*gbdoff;	/* gbdoff */
-    
+
 } *gbdByKey;
 
 static gbdByKey gb_gbk = NULL;
@@ -42,7 +42,7 @@ long MAKEREL(long rel_to, long offset)
 {
     ad_assert(rel_to);
     return offset ? offset-rel_to : 0;
-}	
+}
 #endif
 
 /* ********************************************************
@@ -64,26 +64,26 @@ static void downheap(struct gbdata_offset *heap, int idx, int num)
     register int idx2 = idx<<1;
     register int idx21 = idx2+1;
     ad_assert(idx>=1);
-    
+
     if (idx2>num)
         return;						/* no lson -> done */
-  
+
     if (cmp(heap[idx2],heap[idx])>0)			/* lson is bigger than actual */
-    {	
+    {
         if (idx21 <= num && 		  	/* rson exists */
             cmp(heap[idx2],heap[idx21])<0) 	/* lson is smaller than rson */
-        {	
-            swap(heap[idx],heap[idx21]);	
+        {
+            swap(heap[idx],heap[idx21]);
             downheap(heap,idx21,num);
         }
         else
-        {	
+        {
             swap(heap[idx],heap[idx2]);
             downheap(heap,idx2,num);
-        }	
+        }
     }else if (idx21 <= num &&  	     		/* rson exists */
               cmp(heap[idx],heap[idx21])<0) 		/* rson is bigger than actual */
-    {	
+    {
         swap(heap[idx],heap[idx21]);
         downheap(heap,idx21,num);
     }
@@ -96,23 +96,23 @@ static void sort_gbdata_offsets(struct gbdata_offset *gbdo, int num)
 #if defined(DEBUG)
     int onum = num;
 #endif // DEBUG
-	
-    ad_assert(gbdo!=NULL);	
+
+    ad_assert(gbdo!=NULL);
     ad_assert(num>=1);
-     
+
     for (i=num/2; i>=1; i--)
         downheap(heap,i,num); /* make heap */
-	
+
     while(num>1) 	/* sort heap */
     {
         struct gbdata_offset big = heap[1];
-	  
+
         heap[1] = heap[num];
         downheap(heap,1,num-1);
         heap[num] = big;
         num--;
     }
-     
+
 #ifdef DEBUG
     for (i=1; i<onum; i++) { /* test if sorted */
         ad_assert(cmp(heap[i],heap[i+1])<0);
@@ -151,12 +151,12 @@ static struct gbdata_offset *find_gbdata_offset(int quark, GBDATA *gbd){
 
 static long getrel_GBDATA(long rel_to, GBDATA *gbd)
      /*
- * calcs offset of 'gbd' in mapfile _relative_ to offset 'rel_to' 	
- */	
+ * calcs offset of 'gbd' in mapfile _relative_ to offset 'rel_to'
+ */
 {
     /* printf("search %x\n", (long)gbd); */
 
-    if (gbd)	
+    if (gbd)
     {
         unsigned int quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; /* cause Main->data->father==NULL !! */
         struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
@@ -178,7 +178,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
                 return MAKEREL(rel_to,gbdo[m].offset);
             }else{
                 if (l==h) break;
-	
+
                 if (cmpres < 0) h = m;
                 else		l = m+1;
             }
@@ -255,10 +255,10 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
 
         /* write index entries an calc absolute offsets */
 
-        for (idx=0; idx<ifs->hash_table_size; idx++)	
+        for (idx=0; idx<ifs->hash_table_size; idx++)
         {
             iecopy[idx] = (GB_REL_IFES) write_IE(GB_ENTRIES_ENTRY(ie,idx),out,offset);
-        }	
+        }
 
         /* convert to relative offsets and write them */
 
@@ -266,11 +266,11 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         for (idx=0; idx<ifs->hash_table_size; idx++)
         {
             iecopy[idx] = (GB_REL_IFES)MAKEREL(entriesoffset,(long)iecopy[idx]);
-        }	
+        }
 
         if (out) ftwrite(iecopy,iesize,out);
         *offset += iesize;
-	
+
         GB_FREE(iecopy);
     }
 
@@ -298,7 +298,7 @@ static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2
     flags->user_flags = 0;
     ad_assert(flags->temporary==0);
     flags->saved_flags = 0;
-	
+
     flags2->last_updated = 0;
     flags2->usr_ref = 0;
     flags2->folded_container = 0;
@@ -307,16 +307,16 @@ static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2
 
     /*	if (flags3)
         {
-		
+
         }
 	*/
 }
 
 static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, long *offset,GB_MAIN_IDX main_idx)
-     /* 
-	if out==NULL -> only calculate size 
+     /*
+	if out==NULL -> only calculate size
 
-	changes		'offset' according to size of written data 
+	changes		'offset' according to size of written data
 	returns 	offset of GBDATA in mapfile
 */
 {
@@ -335,8 +335,8 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
         /* header */
 
         {
-            struct gb_header_list_struct *header, 	
-                *headercopy; 
+            struct gb_header_list_struct *header,
+                *headercopy;
             long headermemsize = ALIGN(gbc->d.headermemsize*sizeof(*header));
             int item,
                 nitems = gbc->d.nheader;
@@ -353,14 +353,14 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
                     headercopy = (struct gb_header_list_struct*) malloc(headermemsize);
                     ad_assert(sizeof(*headercopy)==ALIGN(sizeof(*headercopy)));
                     GB_MEMSET(headercopy,0x0,headermemsize);
-				
+
                     for (item=0; item<nitems; item++)
                     {
                         GBDATA *gbd2 = GB_HEADER_LIST_GBD(header[item]);
                         long hs_offset;
 
                         if (!gbd2 || gbd2->flags.temporary) continue;
-		    
+
                         hs_offset = headeroffset + PTR_DIFF(&(headercopy[valid]), &(headercopy[0]));
 
                         headercopy[valid].flags = header[item].flags;
@@ -368,21 +368,21 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
                         headercopy[valid].flags.changed = 0;
                         headercopy[valid].flags.ever_changed = 0;
                         headercopy[valid].rel_hl_gbd = (GB_REL_GBDATA)getrel_GBDATA(hs_offset, gbd2);
-	
-                        /* printf("header[%i->%i].rel_hl_gbd = %li\n", item,valid, 
+
+                        /* printf("header[%i->%i].rel_hl_gbd = %li\n", item,valid,
                            headercopy[valid].rel_hl_gbd); */
 
                         ad_assert(headercopy[valid].rel_hl_gbd != 0);
                         valid++;
                     }
 
-		    
+
                     gbccopy.d.size = gbccopy.d.nheader = valid;
                     gbccopy.d.headermemsize = valid;
                     headermemsize = ALIGN(valid * sizeof(*header));
                     ftwrite(headercopy,(size_t)headermemsize,out);
                     GB_FREE(headercopy);
-		
+
                 }else{		/* Calc new indizes and size of header */
                     int valid=0; 	/* no of non-temporary items */
                     for (item=0; item<nitems; item++)
@@ -406,7 +406,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
         }
 
         /* ifs */
-			
+
         ifsoffset = write_IFS(GBCONTAINER_IFS(gbc),out,offset);
 
         /* gbc */
@@ -415,7 +415,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
 
         if (out)
         {
-	    
+
             struct gbdata_offset *dof = find_gbdata_offset(quark, (GBDATA *)gbc);
             gbccopy.index = dof->index;
             ad_assert(dof->index <= gbc->index); /* very simple check */
@@ -438,9 +438,9 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
     }
     else		/* GBDATA */
     {
-        int 	ex = gbd->flags2.extern_data;			
+        int 	ex = gbd->flags2.extern_data;
         GBDATA 	gbdcopy = *gbd;	/* make copy to avoid change of mem */
-	
+
         if (ex) {
             size_t 	ex_size = ALIGN(gbdcopy.info.ex.memsize);
             long 	exoffset = *offset;
@@ -462,7 +462,7 @@ static long write_GBDATA(GB_MAIN_TYPE *Main,GBDATA *gbd, int quark, FILE *out, l
             gbdcopy.rel_father = (GB_REL_CONTAINER)getrel_GBDATA(gbdoffset,(GBDATA*)GB_FATHER(gbd));
             gbdcopy.ext = NULL;
             gbdcopy.server_id = GBTUM_MAGIC_NUMBER;
-            convertFlags4Save(&(gbdcopy.flags),&(gbdcopy.flags2),NULL);		
+            convertFlags4Save(&(gbdcopy.flags),&(gbdcopy.flags2),NULL);
             gbdcopy.cache_index = 0;
             ftwrite(&gbdcopy,ALIGN(sizeof(gbdcopy)),out);
         }
@@ -481,15 +481,15 @@ static long writeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey gbk, FILE *out, GB_MAIN_I
 
     for (idx=0; idx<Main->keycnt; idx++)
     {
-        for (idx2=0; idx2<gbk[idx].cnt; idx2++)	
+        for (idx2=0; idx2<gbk[idx].cnt; idx2++)
         {
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
             long gboffset =
-#endif // DEBUG
+#endif // ASSERTION_USED
                 write_GBDATA(Main,gbk[idx].gbdoff[idx2].gbd,idx,out, &offset,main_idx);
             ad_assert(gboffset == gbk[idx].gbdoff[idx2].offset);
-        }		
-    }	
+        }
+    }
 
     return offset;
 }
@@ -502,12 +502,12 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey gbk)
 
     for (idx=0; idx<Main->keycnt; idx++)
     {
-        for (idx2=0; idx2<gbk[idx].cnt; idx2++)	
+        for (idx2=0; idx2<gbk[idx].cnt; idx2++)
         {
-            gbk[idx].gbdoff[idx2].offset = 
+            gbk[idx].gbdoff[idx2].offset =
                 write_GBDATA(Main,gbk[idx].gbdoff[idx2].gbd,idx, NULL, &offset,0);
-        }		
-    }	
+        }
+    }
 
     return offset;
 }
@@ -519,7 +519,7 @@ static long calcGbdOffsets(GB_MAIN_TYPE *Main, gbdByKey gbk)
 static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
 {
     unsigned int quark;
-	
+
     if (gbd->flags.temporary) return;
 
     if (GB_TYPE(gbd) == GB_DB)	/* CONTAINER */
@@ -527,15 +527,15 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
         int 		idx;
         GBCONTAINER 	*gbc = (GBCONTAINER *)gbd;
         GBDATA 		*gbd2;
-	
+
         for (idx=0; idx < gbc->d.nheader; idx++)
             if ((gbd2=GBCONTAINER_ELEM(gbc,idx))!=NULL)
-                scanGbdByKey(Main,gbd2,gbk);		
+                scanGbdByKey(Main,gbd2,gbk);
     }
 
     quark = GB_KEY_QUARK(gbd);
 
-    
+
     ad_assert(gbk[quark].gbdoff!=0);
 
     gbk[quark].gbdoff[ gbk[quark].cnt ].gbd = gbd;
@@ -546,7 +546,7 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey gbk)
 static gbdByKey createGbdByKey(GB_MAIN_TYPE *Main)
 {
     int idx;
-    gbdByKey gbk = (gbdByKey)GB_calloc(Main->keycnt, sizeof(*gbk));	
+    gbdByKey gbk = (gbdByKey)GB_calloc(Main->keycnt, sizeof(*gbk));
 
     if (!gbk) goto err1;
 
@@ -571,7 +571,7 @@ static gbdByKey createGbdByKey(GB_MAIN_TYPE *Main)
 
     /* error handling: */
 
- err2:	while (idx>=0) 
+ err2:	while (idx>=0)
  {
      GB_FREE(gbk[idx].gbdoff);
      idx--;
@@ -609,14 +609,14 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
 
     /* write file */
 
-    out = fopen(opath, "w");	
+    out = fopen(opath, "w");
     writeError = out==NULL;		/* global flag */
 
     ad_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
     GB_MEMSET(&mheader,0,sizeof(mheader));
     strcpy(mheader.mapfileID,ADMAP_ID);	/* header */
 
-    mheader.version = ADMAP_VERSION;	
+    mheader.version = ADMAP_VERSION;
     mheader.byte_order = ADMAP_BYTE_ORDER;
     main_idx  = gb_make_main_idx(Main);	/* Generate a new main idx */
     mheader.main_idx = main_idx;
@@ -669,43 +669,43 @@ void renameOverwrittenMapfile(const char *path)
  */
 
 int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader)
-	 
+
 {
     /* Dont map anything in memory debug mode */
 #if  ( MEMORY_TEST == 1)
     GBUSE(path);
     GBUSE(mheader);
     return -1;
-#else    
+#else
     FILE *in;
-    in = fopen(path,"r");	
+    in = fopen(path,"r");
 
     if (in)
-    {	
+    {
         fread((char *)mheader, sizeof(*mheader),1,in);
         fclose(in);
-	     
-        if (strcmp(mheader->mapfileID,ADMAP_ID)!=0) 
-        { 
-            GB_export_error("'%s' is not a ARB-FastLoad-File", path); 
+
+        if (strcmp(mheader->mapfileID,ADMAP_ID)!=0)
+        {
+            GB_export_error("'%s' is not a ARB-FastLoad-File", path);
             GB_print_error();
-            return 0; 
+            return 0;
         }
-        if (mheader->version!=ADMAP_VERSION) 	
-        { 
+        if (mheader->version!=ADMAP_VERSION)
+        {
             GB_export_error("FastLoad-File '%s' has wrong version\n"
                             "	It is no longer needed, you should remove it", path);
             GB_print_error();
-            return 0; 
+            return 0;
         }
 
-        if (mheader->byte_order!=ADMAP_BYTE_ORDER) 
-        { 
-            GB_export_error("FastLoad-File '%s' has wrong byte order", path); 
+        if (mheader->byte_order!=ADMAP_BYTE_ORDER)
+        {
+            GB_export_error("FastLoad-File '%s' has wrong byte order", path);
             GB_print_error();
-            return 0; 
+            return 0;
         }
-	     
+
         return 1;
     }
     return -1;
@@ -714,12 +714,12 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader)
 
 /*
 	The module admalloc.c must be able to determine whether a memory block
-	is inside the mapped file. So we store the location of the mapped file in 
+	is inside the mapped file. So we store the location of the mapped file in
 	the following both static variables.
 */
 
 
-static char *fileMappedTo[GB_MAX_MAPPED_FILES]; 
+static char *fileMappedTo[GB_MAX_MAPPED_FILES];
 static long fileLen[GB_MAX_MAPPED_FILES];
 static int mappedFiles = 0;
 
@@ -729,11 +729,11 @@ GBDATA *gb_map_mapfile(const char *path)
 
     printf("	ARB:	Opening FastLoad File '%s' ...\n",path);
 
-    if (gb_is_valid_mapfile(path, &mheader)>0) 
+    if (gb_is_valid_mapfile(path, &mheader)>0)
     {
         char *mapped = GB_map_file(path, 1);
 
-        if (mapped) 
+        if (mapped)
         {
             fileMappedTo[mappedFiles] = mapped;
             fileLen[mappedFiles++] = GB_size_of_file(path);
@@ -753,7 +753,7 @@ int gb_isMappedMemory(char *mem)
     while (file<mappedFiles)
     {
         if (mem>=fileMappedTo[file] &&
-            mem<(fileMappedTo[file]+fileLen[file])) return 1; 
+            mem<(fileMappedTo[file]+fileLen[file])) return 1;
         file++;
     }
 

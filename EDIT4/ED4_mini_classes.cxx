@@ -366,7 +366,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
     }
 }
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 
 int ED4_bases_table::empty() const
 {
@@ -389,7 +389,7 @@ int ED4_bases_table::empty() const
 
     return 1;
 }
-#endif
+#endif // ASSERTION_USED
 
 /* --------------------------------------------------------------------------------
    Build consensus
@@ -1081,7 +1081,8 @@ void ED4_char_table::change_table_length(int new_length)
 //  --------------
 //      tests:
 //  --------------
-#if defined(TEST_CHAR_TABLE_INTEGRITY)
+
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
 bool ED4_char_table::empty() const
 {
@@ -1133,6 +1134,10 @@ bool ED4_char_table::ok() const
 
     return true;
 }
+
+#endif // TEST_CHAR_TABLE_INTEGRITY || ASSERTION_USED
+
+#if defined(TEST_CHAR_TABLE_INTEGRITY)
 
 //  ------------------------------------------
 //      void ED4_char_table::test() const
