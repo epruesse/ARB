@@ -16,16 +16,10 @@ public LineArea(int [] coordinates)
         corners = coordinates;
     }
 
-public boolean isInside(int x, int y)
+public boolean isInside(int x, int y, int tolerance)
     {
-        if (x >= corners[0] && x <= corners[2] && y >= corners[1] && y <= corners[3])
-            {
-                return true;
-            }
-        else
-            {
-                return false;
-            }
+        return ((x+tolerance) >= corners[0] && (x-tolerance) <= corners[2] &&
+                (y+tolerance) >= corners[1] && (y-tolerance) <= corners[3]);
     }
 
 
