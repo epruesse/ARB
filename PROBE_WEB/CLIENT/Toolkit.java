@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Thu Sep/18/2003 13:48 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Sep/21/2003 19:06 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -29,7 +29,7 @@ public static void AbortWithError(String error)
 public static void AbortWithServerProblem(String error)
     {
         System.out.println(clientName+" has a server problem: "+error);
-        System.out.println("Sorry - working on it. Try again later..");
+        System.out.println("Please check whether your internet connection works.");
         System.exit(2); // server problem
     }
 
