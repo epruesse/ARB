@@ -5,15 +5,18 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-#define ADD_LEN 10
-#define PRM_HASH_SIZE 1024
+#define ADD_LEN        10
+#define PRM_HASH_SIZE  1024
 #define PRM_HASH2_SIZE 512
+#define PRM_BUFFERSIZE 256
+
+
 struct arb_prm_struct {
 	char **alignment_names;
 	int	al_len;
 	int	max_name;
 	GBDATA	*gb_main;
-	char	buffer[256];
+	char	buffer[PRM_BUFFERSIZE];
 	char	*source;
 	int	prmanz;
 	int	prmlen;
@@ -40,7 +43,7 @@ void arb_prm_menu()
 		printf("%i:	%s\n",i,*alignment_name);
 	}
 	aprm.max_name = i;
-	gets(aprm.buffer);
+	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);
 	if ((i<1) || (i>=aprm.max_name)) {
 		printf ("ERROR: select %i out of range\n",i);
@@ -52,12 +55,12 @@ void arb_prm_menu()
 		"	are n primers for n taxa.\n"
 		"	Please specify the maximum number of primers:\n"
 		);
-	gets(aprm.buffer);
+	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);
 	aprm.prmanz = i;
 	printf( "Select minimum length of a primer, the maximum will be (mimimum + %i)\n",
 		ADD_LEN);
-	gets(aprm.buffer);
+	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);
 	if ((i<4) || (i>30)) {
 		printf ("ERROR: select %i out of range\n",i);
@@ -68,7 +71,7 @@ void arb_prm_menu()
 	printf( "There may be short sequences or/and deletes in full sequences\n"
 		"	So a primer normally does not match all sequences\n"
 		"	Specify minimum percentage of species (0-100 %%):\n");
-	gets(aprm.buffer);
+	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);
 	if ((i<1) || (i>100)) {
 		printf ("ERROR: select %i out of range\n",i);
@@ -77,7 +80,7 @@ void arb_prm_menu()
 	aprm.prmsmin = i;
 
 	printf( "Write output to file (enter \"\" to write to screen)\n");
-	gets(aprm.buffer);
+	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	aprm.outname = strdup(aprm.buffer);
 }
 
@@ -139,7 +142,7 @@ char *arb_prm_read(int /*prmanz*/)
 	if (sp_count ==0) {
 		exit(0);
 	}
-	return 0;	
+	return 0;
 }
 
 long arb_count_keys(const char */*key*/,long val)
