@@ -835,11 +835,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
             awm->insert_separator();
 
-            AWMIMT("print_tree", "Print Tree ...",			"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
-            GDE_load_menu(awm,"pretty_print");
-            awm->insert_separator();
-
-
             AWMIMT("macros",	"Macros  ...",				"M", "macro.hlp",	AWM_ALL, 		(AW_CB)AW_POPUP,	(AW_CL)awt_open_macro_window,(AW_CL)"ARB_NT");
             AWMIMT("new_window",	"New Window",			"N","newwindow.hlp",		F_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1 );
             awm->insert_sub_menu(  0,"Registration/Bug report/Version info ",		"A" );
@@ -948,6 +943,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
 
             awm->insert_separator();
+
+            GDE_load_menu(awm,"pretty_print");
+
+            awm->insert_separator();
+
             AWMIMT("ins_del_col",	"Insert_Delete Column ...",		"I","insdelchar.hlp",		AWM_SEQ2, 	AW_POPUP, (AW_CL)create_insertchar_window,	0 );
             //	awm->insert_sub_menu(0, "Translate",			"T");
             AWMIMT("dna_2_pro",	"Translate Nucleic to Amino Acid ...",	"T","translate_dna_2_pro.hlp",	AWM_PRO,	AW_POPUP, (AW_CL)create_dna_2_pro_window, 0 );
@@ -1011,8 +1011,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         if (!clone){
             awm->insert_separator();
             AWMIMT("tree_admin",	"Copy_Delete_Rename_Import_Export ...",		"C","treeadm.hlp",	AWM_TREE, 	AW_POPUP, (AW_CL)create_trees_window,	0 );
-            AWMIMT("tree_2_xfig",	"Edit Tree View using XFIG ...",		"X","tree2file.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)AWT_create_export_window,	(AW_CL)ntw );
-            AWMIMT("tree_print",	"Print Tree View to Printer ...",		"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
+            awm->insert_separator();
+            AWMIMT("print_tree", "Print Tree View ...",			"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
+            AWMIMT("tree_2_xfig",	"Export Tree View (XFIG) ...",		"X","tree2file.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)AWT_create_export_window,	(AW_CL)ntw );
             awm->insert_separator();
         }
         awm->insert_sub_menu(0, "Collapse/Expand Tree",			"G");
