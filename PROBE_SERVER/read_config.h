@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : read_config.h                                          //
 //    Purpose   : reads and provides probe_parameters.conf               //
-//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 20:27 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -25,8 +25,8 @@ namespace {
     class Config : public ConfigBase {
         probe_config_data& data;
 
-        void parseBondQuadruple(const string& key, double *bond_array) {
-            const string *val = parser.getValue(key, error);
+        void parseBondQuadruple(const std::string& key, double *bond_array) {
+            const std::string *val = parser.getValue(key, error);
             if (val) {
                 char *range = strdup(val->c_str());
                 char *b1, *b2, *b3, *b4;
@@ -52,7 +52,7 @@ namespace {
 
     public:
 
-        Config(const string &filename, probe_config_data& write_to_data)
+        Config(const std::string &filename, probe_config_data& write_to_data)
             : ConfigBase(filename)
             , data(write_to_data)
         {
