@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_physical_layout.h                                   //
 //    Purpose   : Class used for calculation of the phys. layout of seq. //
-//    Time-stamp: <Tue Feb/2/2004 14:48> MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/03/2004 14:48 MET  Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -91,7 +91,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
 
     /*calculate layout in percent*/
     if (GC!=0) {
-        GC_proportion = GC / count_bases; //this is a hack, as ARB can't save real values
+        GC_proportion = GC / count_bases;
     }
     temp = 100 - (100*((count_scores + count_dots)/size));
     percent_bases = roundme(temp);

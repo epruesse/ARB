@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Mon Feb/02/2004 18:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/03/2004 14:34 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -275,9 +275,9 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		//evaluate the number of positions where no helix can be built
 		GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
 		noh = GB_read_int(gb_result3);
-		if (noh < 900) result = 2;
+		if (noh < 450) result = 2;
 		else {
-	  	    if (noh < 1100) result = 1;
+	  	    if (noh < 550) result = 1;
 		    else { result = 0;}
 		}
 		result = result * weight_helix;

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.cxx                                       //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Sat Jan/20/2004 11:59 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/03/2004 14:34 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -33,7 +33,7 @@ SQ_GroupData::~SQ_GroupData() { }
 
 double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
     double deviation = 0;
-    double value     = 0;
+    //    double value     = 0;
     int current[7];
 
 
