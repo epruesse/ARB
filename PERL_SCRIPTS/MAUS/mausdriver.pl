@@ -1,12 +1,8 @@
-#!perl
+#!/usr/bin/perl -w
 use strict;
 use diagnostics;
 
 use Maus;
-
-
-
-
 
 ## main section
 
