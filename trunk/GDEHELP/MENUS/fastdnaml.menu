@@ -1,11 +1,18 @@
 item:FastDnaMl (max 150 Species)
-itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((arb_fastdnaml;$DISPLAY_FUNC)); rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates $RATES "Y 1" $QUICKADD | arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_fastdnaml;$DISPLAY_FUNC)); rm in1 )&
+itemmethod_old:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_fastdnaml;arb_wait;$DISPLAY_FUNC)); rm in1 )&
 itemhelp:fastdnaml.help
 
 arg:RATES
 argtype:weights
 arglabel:Select a Weighting Mask
 argchoice:POS_VAR_BY_PARS
+
+arg:QUICKADD
+argtype:chooser
+arglabel:Use Quickadd
+argchoice:Yes:
+argchoice:No:"Q"
 
 arg:DISPLAY_FUNC
 argtype:chooser
