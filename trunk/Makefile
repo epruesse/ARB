@@ -188,7 +188,7 @@ ifeq ($(X11R6),1)
    XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 else
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
+   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc -lGLw
 endif
 
    GLPNGLIBS = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
@@ -535,7 +535,10 @@ ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
 		RNA3D/OPENGL/OPENGL.a \
 
-$(RNA3D): gl $(ARCHS_RNA3D:.a=.dummy) shared_libs 
+$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
+#	@echo $@ currently does not work as standalone application
+#	false
+
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
 		echo Link $@ ; \
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
@@ -564,6 +567,8 @@ ARCHS_EDIT4 = \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
+		RNA3D/RNA3D.a \
+		RNA3D/OPENGL/OPENGL.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
@@ -573,8 +578,8 @@ ARCHS_EDIT4 = \
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(GLLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  $(GLLIBS) ; \
 		)
 
 #***********************************	arb_wetc **************************************
@@ -1239,7 +1244,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip #3d
+arbxtras: tg ps pc pst chip 3d
 
 tryxtras:
 		@echo $(SEP)
