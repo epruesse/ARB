@@ -13,6 +13,8 @@ gellisary::GAGenom::GAGenom(string * fname)
 	prepared = false;
 	file_name = *fname;
 	complete_file = false;
+	error_number = 2;
+	error_message = "The FlatFile is incomplete!";
 }
 
 string * gellisary::GAGenom::getIdentification()
@@ -31,6 +33,16 @@ string * gellisary::GAGenom::getAccessionNumber()
 		parseFlatFile();
 	}
 	return &accession_number;
+}
+
+int gellisary::GAGenom::getErrorNumber()
+{
+	return error_number;
+}
+
+string * gellisary::GAGenom::getErrorMessage()
+{
+	return &error_message;
 }
 
 string * gellisary::GAGenom::getOrganismClassificationAsOneString()

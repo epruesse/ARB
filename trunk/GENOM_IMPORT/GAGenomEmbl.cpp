@@ -293,6 +293,13 @@ void gellisary::GAGenomEmbl::parseFlatFile()
             	if(seq_len == (int) sequence.size()) 
             	{
             		complete_file = true;
+            		error_number = 0;
+            		error_message = "All Okay!";
+            	}
+            	else
+            	{
+            		error_number = 1;
+            		error_message = "Sequence string of genome is incomplete!";
             	}
                 flatfile.close();
                 break;
@@ -524,9 +531,9 @@ void gellisary::GAGenomEmbl::parseSequence(string * source_str)
     for(i = 0; i < (int) source_str->size(); i++)
     {
         tmp_char = source_str->operator[](i);
-        if((tmp_char == 't') || (tmp_char == 'g') || (tmp_char == 'c') || (tmp_char == 'a') || (tmp_char == 'T') || (tmp_char == 'G') || (tmp_char == 'C') || (tmp_char == 'A'))
+        if((tmp_char != ' ') && (tmp_char != '\r') && (tmp_char != '\n') && (tmp_char != '0') && (tmp_char != '1') && (tmp_char != '2') && (tmp_char != '3') && (tmp_char != '4') && (tmp_char != '5') && (tmp_char != '6') && (tmp_char != '7') && (tmp_char != '8') && (tmp_char != '9'))
         {
-            target_str += tmp_char;
+        	target_str += tmp_char;
         }
     }
 //    GAGenomUtilities::trimString(&target_str);

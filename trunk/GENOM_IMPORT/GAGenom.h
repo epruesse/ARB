@@ -72,7 +72,15 @@ namespace gellisary{
         std::string sequence;                               // embl:..  genbank,ddgj:ORIGIN
         std::string file_name;
         bool complete_file;
+        int error_number;
+        std::string error_message;
         bool prepared;
+        /*
+         * error_number:
+         *  0 - all okay
+         * 	1 - sequence string of genome is incomplete
+         *  2 - flatfile is incomplete, missing '//' at the end of the file - default
+         */
 
     public:
 
@@ -94,6 +102,8 @@ namespace gellisary{
         std::vector<std::string> * getOrganismClassification();
         virtual void parseSequence(std::string *)=0;
         bool isFileComplete();
+        int getErrorNumber();
+        std::string * getErrorMessage();
     };
 
 };
