@@ -13,7 +13,7 @@ void SQ_GroupData::SQ_init_consensus(int size){
     this->size = size;
 
     // two dimensional array
-    consensus = new int *[size];
+    consensus = new int *[size]; // @@@ wird nie freigegeben
     for (int i=0; i < size; i++ ){
 	consensus[i] = new int [7];
     }
@@ -33,14 +33,14 @@ void SQ_GroupData::SQ_add_consensus(int value, int row, int col) {
 }
 
 int **SQ_GroupData::SQ_get_consensus() {
-    
+
     return consensus;
 
 }
 
 
 bool SQ_GroupData::SQ_is_initialised() {
-    
+
     return initialised;
 
 }
