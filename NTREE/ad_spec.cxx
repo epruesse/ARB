@@ -623,7 +623,7 @@ void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
         if (!gb_data)   continue;
         if (count %10 == 0){
             GBDATA *gb_name = GB_search(gb_species,"name",GB_STRING);
-            aw_status(GBS_global_string("Species '%s' (%i:%i)",
+            aw_status(GBS_global_string("Species '%s' (%li:%li)",
                                         GB_read_char_pntr(gb_name),
                                         count, max));
         }
@@ -640,7 +640,7 @@ void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
                 AWTC_FIND_FAMILY_MEMBER *fm = ff.family_list;
                 const char *value;
                 if (fm){
-                    value = GBS_global_string("%i '%s'",fm->matches,fm->name);
+                    value = GBS_global_string("%li '%s'",fm->matches,fm->name);
                 }else{
                     value = "0";
                 }
@@ -696,7 +696,7 @@ void awtc_nn_search(AW_window *aww,AW_CL id ){
     }else{
         AWTC_FIND_FAMILY_MEMBER *fm;
         for (fm = ff.family_list; fm; fm = fm->next){
-            const char *dis = GBS_global_string("%-20s Score:%4i",fm->name,fm->matches);
+            const char *dis = GBS_global_string("%-20s Score:%4li",fm->name,fm->matches);
             aww->insert_selection(sel,(char *)dis,fm->name);
         }
 
