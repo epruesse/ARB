@@ -474,7 +474,6 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 			-e "s/\/usr\/include\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/lib\/[^ 	]*\.h//g" \
 			-e "s/\/[^ 	]*\/INCLUDE/\\\$$(ARBHOME)\/INCLUDE/g" \
-			-e "s/^[^ 	]*.o://g" \
 		>$(@D)/Makefile.2 && \
 		mv $(@D)/Makefile.2 $(@D)/Makefile || echo nop
 
