@@ -113,7 +113,7 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
 
     cbs->aws->insert_default_selection( cbs->result_id, "End of list", "" );
     cbs->aws->update_selection_list( cbs->result_id );
-    delete key;
+    free(key);
     cbs->aws->get_root()->awar(cbs->awar_count)->write_int( (long)count);
     GB_pop_transaction(cbs->gb_main);
     return count;
