@@ -29,8 +29,10 @@
 	#include <windows.h>
 #endif
 
-#include <GL/glpng.h>
+#include <GL/glew.h>
 #include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glpng.h>
 #include <stdlib.h>
 #include <math.h>
 #include <png.h>
@@ -41,7 +43,8 @@
 #endif
 
 static unsigned char DefaultAlphaCallback(unsigned char red, unsigned char green, unsigned char blue) {
-	return 255;
+    red = green = blue; // unused
+    return 255;
 }
 
 static unsigned char StencilRed = 0, StencilGreen = 0, StencilBlue = 0;
@@ -117,6 +120,8 @@ static void Resize(int components, const png_bytep d1, int w1, int h1, png_bytep
 	}
 }
 
+#ifdef SUPPORTS_PALETTE_EXT
+#ifdef _WIN32
 static int ExtSupported(const char *x) {
 	static const GLubyte *ext = NULL;
 	const char *c;
@@ -133,6 +138,8 @@ static int ExtSupported(const char *x) {
 
 	return 0;
 }
+#endif
+#endif
 
 #define GET(o) ((int)*(data + (o)))
 
