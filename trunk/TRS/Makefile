@@ -28,41 +28,53 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:   
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:   
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
-tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
-tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx
-tree_lib.o: trs_proto.h
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx
-trs_server.o: trs_proto.h
+
+tree_lib.c.o: $(ARBHOME)/INCLUDE/ad_prot.h
+tree_lib.c.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_lib.c.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:   
+tree_lib.c.o:   
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o:  
+tree_lib.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+tree_lib.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+tree_lib.c.o: tree_lib.hxx trs_proto.h
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:   
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o:  
+trs_hash.c.o: 
+trs_hash.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+trs_hash.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+trs_server.c.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o:  
+trs_server.c.o: 
+trs_server.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+trs_server.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+trs_server.c.o: tree_lib.hxx trs_proto.h

@@ -15,15 +15,23 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-readseq.o:  
+
 readseq.o:  
 readseq.o:  
 readseq.o:  
 readseq.o:   
-readseq.o:  ureadseq.h
-ureadseq.o:  
+readseq.o:   
+readseq.o:  
+readseq.o: 
+readseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+readseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ureadseq.h
 ureadseq.o:  
 ureadseq.o:  
 ureadseq.o:  
 ureadseq.o:   
-ureadseq.o:  ureadseq.h
+ureadseq.o:   
+ureadseq.o:  
+ureadseq.o: 
+ureadseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+ureadseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+ureadseq.o: ureadseq.h

@@ -17,30 +17,64 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  $(ARBHOME)/INCLUDE/arbdb.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h
-io_arbdb.o: xmalloc.h  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:   lenstring.h
-io_arbdb.o: hash.h careful.h
+
+careful.o:  
+careful.o:  
+careful.o:  
+careful.o:  
+careful.o:  
+careful.o:  
+careful.o:   
+careful.o: 
+careful.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+careful.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
 getopt.o:  
 getopt.o:  
 getopt.o:  
+getopt.o:   
 getopt.o:  
 getopt.o: 
-getopt1.o: getopt.h  
+getopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+getopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
 getopt1.o:  
 getopt1.o:  
 getopt1.o:  
-xmalloc.o:  
+getopt1.o:   
+getopt1.o: 
+getopt1.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+getopt1.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h getopt.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:   
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o: 
+io_arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+io_arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h careful.h
+io_arbdb.o: getopt.h hash.h lenstring.h ring.h xmalloc.h
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:   
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o: 
+lenstring.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+lenstring.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+lenstring.o: lenstring.h xmalloc.h
 xmalloc.o:  
 xmalloc.o:  
 xmalloc.o:  
@@ -48,21 +82,8 @@ xmalloc.o:
 xmalloc.o:  
 xmalloc.o:  
 xmalloc.o:   
-xmalloc.o:  xmalloc.h
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  lenstring.h xmalloc.h
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o: 
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+xmalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h xmalloc.h

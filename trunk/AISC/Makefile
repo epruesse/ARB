@@ -28,15 +28,24 @@ proto:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+
+aisc.o:  
+aisc.o:  
+aisc.o:  
+aisc.o:  
+aisc.o:  
+aisc.o:   
 aisc.o:   
 aisc.o:  
 aisc.o:  
-aisc.o:  
 aisc.o:   
-aisc.o:  
-aisc.o:  
-aisc.o:  
-aisc.o:   aisc.h aisc_proto.h
+aisc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+aisc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h aisc.h
+aisc.o: aisc_proto.h
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o: 
+aisc_commands.o: 
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
@@ -49,7 +58,23 @@ aisc_commands.o:
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
-aisc_commands.o:  aisc.h aisc_proto.h
+aisc_commands.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+aisc_commands.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+aisc_commands.o: aisc.h aisc_proto.h
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:   
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+aisc_mix.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h aisc.h
+aisc_mix.o: aisc_proto.h
 aisc_var_ref.o:  
 aisc_var_ref.o:  
 aisc_var_ref.o:  
@@ -59,15 +84,9 @@ aisc_var_ref.o:
 aisc_var_ref.o:  
 aisc_var_ref.o:  
 aisc_var_ref.o:  
-aisc_var_ref.o:   aisc.h
-aisc_var_ref.o: aisc_proto.h
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:  
-aisc_mix.o:   aisc.h aisc_proto.h
+aisc_var_ref.o:  
+aisc_var_ref.o:  
+aisc_var_ref.o: 
+aisc_var_ref.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+aisc_var_ref.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+aisc_var_ref.o: aisc.h aisc_proto.h

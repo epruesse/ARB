@@ -15,26 +15,41 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  
-clustalv.o:  clustalv.h general.h matrices.h
+
 amenu.o:  
 amenu.o:  
 amenu.o:  
 amenu.o:  
 amenu.o:   
+amenu.o:   
+amenu.o:   
 amenu.o:  
 amenu.o:  
 amenu.o:  
-amenu.o:  
-amenu.o:  clustalv.h general.h
+amenu.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+amenu.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h clustalv.h
+amenu.o: general.h
+clustalv.o:  
+clustalv.o:  
+clustalv.o:  
+clustalv.o:  
+clustalv.o:  
+clustalv.o:  
+clustalv.o:   
+clustalv.o:  
+clustalv.o:  
+clustalv.o:  
+clustalv.o: 
+clustalv.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+clustalv.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+clustalv.o: clustalv.h general.h matrices.h
+gcgcheck.o:  
+gcgcheck.o:  
+gcgcheck.o:   
+gcgcheck.o:  
+gcgcheck.o: 
+gcgcheck.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+myers.o:  
 myers.o:  
 myers.o:  
 myers.o:  
@@ -43,7 +58,12 @@ myers.o:
 myers.o:   
 myers.o:  
 myers.o:  
-myers.o:  clustalv.h general.h
+myers.o:  
+myers.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+myers.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h clustalv.h
+myers.o: general.h
+sequence.o:  
+sequence.o:  
 sequence.o:  
 sequence.o:  
 sequence.o:  
@@ -53,7 +73,9 @@ sequence.o:
 sequence.o:  
 sequence.o:  
 sequence.o:  
-sequence.o:  clustalv.h general.h
+sequence.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+sequence.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+sequence.o: clustalv.h general.h
 showpair.o:  
 showpair.o:  
 showpair.o:  
@@ -62,30 +84,18 @@ showpair.o:
 showpair.o:  
 showpair.o:  
 showpair.o:  
+showpair.o:   
 showpair.o:  
 showpair.o:  
 showpair.o:  
-showpair.o:  clustalv.h general.h
-upgma.o:  
-upgma.o:  
-upgma.o:  
-upgma.o:  
-upgma.o:   
-upgma.o:   
-upgma.o:  
-upgma.o:  
-upgma.o:  clustalv.h general.h
-util.o:  
-util.o:  
-util.o:  
-util.o:   
-util.o:  
-util.o:  
-util.o:   
-util.o:  
-util.o:   
-util.o:  
-util.o:  clustalv.h general.h
+showpair.o:  
+showpair.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+showpair.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+showpair.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+showpair.o: clustalv.h general.h
+trees.o:  
+trees.o:  
+trees.o:  
 trees.o:  
 trees.o:  
 trees.o:  
@@ -94,10 +104,35 @@ trees.o:
 trees.o:   
 trees.o:  
 trees.o:  
-trees.o:  
-trees.o:  
-trees.o:  clustalv.h general.h
-gcgcheck.o:  
-gcgcheck.o:  
-gcgcheck.o:  
-gcgcheck.o: 
+trees.o:   
+trees.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+trees.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+trees.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h clustalv.h
+trees.o: general.h
+upgma.o:  
+upgma.o:  
+upgma.o:  
+upgma.o:  
+upgma.o:  
+upgma.o:   
+upgma.o:   
+upgma.o:  
+upgma.o:  
+upgma.o:  
+upgma.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+upgma.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h clustalv.h
+upgma.o: general.h
+util.o:  
+util.o:  
+util.o:  
+util.o:  
+util.o:  
+util.o:   
+util.o:   
+util.o:   
+util.o:   
+util.o:  
+util.o:   
+util.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+util.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h clustalv.h
+util.o: general.h

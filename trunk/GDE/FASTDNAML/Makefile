@@ -13,6 +13,7 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+
 fastdnaml.o:  
 fastdnaml.o:  
 fastdnaml.o:  
@@ -21,7 +22,12 @@ fastdnaml.o:
 fastdnaml.o:  
 fastdnaml.o:  
 fastdnaml.o:  
+fastdnaml.o:   
 fastdnaml.o:  
 fastdnaml.o:  
 fastdnaml.o:  
-fastdnaml.o:  fastDNAml_1_0.h
+fastdnaml.o:  
+fastdnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+fastdnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+fastdnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+fastdnaml.o: fastDNAml_1_0.h
