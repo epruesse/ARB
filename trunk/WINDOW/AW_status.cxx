@@ -1350,17 +1350,18 @@ struct {
 //      static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false)
 //  ---------------------------------------------------------------------------------------------------------
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
-    GB_CSTR  result             = 0;
-    char    *user_doc_path      = strdup(GB_getenvDOCPATH());
-    char    *devel_doc_path     = GBS_global_string_copy("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME());
-    size_t   user_doc_path_len  = strlen(user_doc_path);
-    size_t   devel_doc_path_len = strlen(devel_doc_path);
+    GB_CSTR   result             = 0;
+    char     *user_doc_path      = strdup(GB_getenvDOCPATH());
+    char     *devel_doc_path     = GBS_global_string_copy("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME());
+    size_t    user_doc_path_len  = strlen(user_doc_path);
+    size_t    devel_doc_path_len = strlen(devel_doc_path);
 
     const char *rel_path = 0;
     if (strncmp(helpfile, user_doc_path, user_doc_path_len) == 0 && helpfile[user_doc_path_len] == '/') {
         rel_path = helpfile+user_doc_path_len+1;
     }
     else if (strncmp(helpfile, devel_doc_path, devel_doc_path_len) == 0 && helpfile[devel_doc_path_len] == '/') {
+        aw_assert(0);            // when does this happen ? never ?
         rel_path = helpfile+devel_doc_path_len+1;
     }
 
@@ -1371,7 +1372,26 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
         if (!rel_path) rel_path = helpfile;
 
         if (path_for_edit) {
-            result = GBS_global_string("%s/HELP_SOURCE/oldhelp/%s", GB_getenvARBHOME(), rel_path);
+            char *gen_doc_path = GBS_global_string_copy("%s/HELP_SOURCE/genhelp", GB_getenvARBHOME());
+
+            char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
+            char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
+
+            int devel_size = GB_size_of_file(devel_source);
+            int gen_size   = GB_size_of_file(gen_source);
+
+            gb_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
+
+            if (gen_size>0) {
+                result = GBS_global_string("%s", gen_source); // edit generated doc
+            }
+            else {
+                result = GBS_global_string("%s", devel_source); // use normal help source (may be non-existing)
+            }
+
+            free(gen_source);
+            free(devel_source);
+            free(gen_doc_path);
         }
         else {
             result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path);
