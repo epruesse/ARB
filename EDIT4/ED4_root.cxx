@@ -1627,7 +1627,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "props_nds", "Select visible info (NDS) ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
     ____________________________SEP;
 
-    awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prob/edit4)", "a","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -1646,7 +1646,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
 
-    // ----------------------------------------------------------------------------------------------------    
+    // ----------------------------------------------------------------------------------------------------
     awmm->button_length(7);
     awmm->help_text("quit.hlp");
     awmm->at("quit");
