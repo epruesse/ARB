@@ -7,7 +7,7 @@
 #include <memory.h>
 #include <ctype.h>
 
-#include <slist>
+#include <list>
 #include <string>
 
 #include <arbdb.h>
@@ -1109,7 +1109,7 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
     AW_root                *aw_root = csd->aww->get_root();
     GBDATA                 *gb_main = cmd->gb_main;
 
-    typedef slist<string> ColorList;
+    typedef list<string> ColorList;
     ColorList             cl;
 
     for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
