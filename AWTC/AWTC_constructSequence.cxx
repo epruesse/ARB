@@ -9,7 +9,8 @@
 #include <memory.h>
 #include <ctype.h>
 #include <string.h>
-#include <sys/time.h>
+// #include <sys/time.h>
+#include <time.h> // SuSE 7.3
 
 #include <arbdb.h>
 #include <arbdbt.h>
