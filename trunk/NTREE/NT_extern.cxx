@@ -126,7 +126,7 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
 
 AW_window *create_nds_export_window(AW_root *root){
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES", 100, 100 );
+    aws->init( root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -182,7 +182,7 @@ static void AWAR_SEARCH_BUTTON_TEXT_change_cb(AW_root *awr) {
 void create_all_awars(AW_root *awr, AW_default def)
 {
     GB_transaction dummy(gb_main);
-    awr->awar_string( "tmp/LeftFooter", "", def);
+    awr->awar_string( AWAR_FOOTER, "", def);
 
     if (GB_read_clients(gb_main)>=0){
         awr->awar_string( AWAR_TREE, "tree_main", gb_main);
@@ -315,7 +315,7 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO", 10, 10 );
+    aws->init( aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO");
     aws->load_xfig("save_as.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -405,7 +405,7 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root){
     free(largest_tree);
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE", 10, 10 );
+    aws->init( aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
@@ -450,7 +450,7 @@ AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_DB", "SAVE ARB DB", 10, 10 );
+    aws->init( aw_root, "SAVE_DB", "SAVE ARB DB" );
     aws->load_xfig("save_as.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -516,7 +516,7 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "TREE_PROPS", "TREE SETTINGS", 10, 10 );
+    aws->init( aw_root, "TREE_PROPS", "TREE SETTINGS");
     aws->load_xfig("awt/tree_settings.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -597,10 +597,10 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 
     AW_window_simple *aws = new AW_window_simple;
     if (bug_report) {
-        aws->init( aw_root, "SUBMIT_BUG", "Submit a bug", 10, 10 );
+        aws->init( aw_root, "SUBMIT_BUG", "Submit a bug");
     }
     else {
-        aws->init( aw_root, "SUBMIT_REG", "Submit registration", 10, 10 );
+        aws->init( aw_root, "SUBMIT_REG", "Submit registration");
     }
     aws->load_xfig("bug_report.fig");
 
@@ -852,6 +852,12 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
+// used to avoid that the species info window is stored in a menu (or with a button)
+void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
+    AW_window *aws = NT_create_species_window(aww->get_root());
+    aws->show();
+}
+
 //--------------------------------------------------------------------------------------------------
 
 void NT_calc_sequence_quality(AW_window *aww, AW_CL, AW_CL) {
@@ -942,7 +948,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         sprintf(window_title,"ARB_NT");
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr,window_title, window_title, 0,0,0,0);
+    awm->init(awr,window_title, window_title, 0,0);
 
     awm->button_length(5);
 
@@ -1044,7 +1050,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_menu(0,"Species","c","species.hlp", AWM_ALL);
         {
             AWMIMT( "species_search", "Search and query",    "q",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
-            AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
+            AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,NT_popup_species_window, 0, 0);
+//             AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
 
             SEP________________________SEP();
 
@@ -1107,11 +1114,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
 
 #if defined(DEVEL_RALF) || defined(DEVEL_JUERGEN)
-            AWMIMT("seq_quality", "Calc Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  NT_calc_sequence_quality,        0, 0);
+            AWMIMT("seq_quality", "Calc Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  NT_calc_sequence_quality,        0, 0);
 #endif //
 
-	    AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
-            AWMIMT("seq_quality", "Check Sequence Quality",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
+            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp",    AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,       0             );
             SEP________________________SEP();
 
@@ -1144,6 +1150,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)create_dna_2_pro_window, 0      );
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+            SEP________________________SEP();
+
+            AWMIMT("seq_quality", "Check Sequence Quality",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
+
             SEP________________________SEP();
 
             GDE_load_menu(awm,"pretty_print");
@@ -1411,7 +1421,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     int db_searchx;
     awm->get_at_position(&db_searchx, &first_liney);
-    awm->callback(AW_POPUP,   (AW_CL)create_speciesOrganismWindow/*ad_create_query_window*/, 0 );
+    awm->callback(NT_popup_species_window, (AW_CL)awm, 0);
+//     awm->callback(AW_POPUP,   (AW_CL)create_speciesOrganismWindow/*ad_create_query_window*/, 0 );
     awm->button_length(20);
     awm->help_text("sp_search.hlp");
     awm->create_button("SEARCH_SPECIES",  AWAR_SEARCH_BUTTON_TEXT);
@@ -1465,8 +1476,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_button("NO_TREE_TYPE", "#ndstree.bitmap",0);
 
     awm->at_newline();
-    awm->button_length(100);
-    awm->create_button(0,"tmp/LeftFooter");
+    awm->button_length(AWAR_FOOTER_MAX_LEN);
+    awm->create_button(0,AWAR_FOOTER);
     awm->at_newline();
     int last_linex, last_liney;
     awm->get_at_position( &last_linex,&last_liney );
