@@ -11,12 +11,25 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
+#include <string>
+
 #ifndef SQ_FUNCTIONS_H
 #define SQ_FUNCTIONS_H
 
 #ifndef SQ_GROUPADTA_H
 #include "SQ_GroupData.h"
 #endif
+
+#ifndef __MAP__
+#include <map>
+#endif
+
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
+
+typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
+typedef map<string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
 
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
@@ -34,6 +47,8 @@ GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main);
 void SQ_reset_counters(GBT_TREE *root); // reset counters used by SQ_calc_and_apply_group_data
 
 void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
+
+void create_multi_level_consensus(GBT_TREE *node, const SQ_GroupData *data);
 
 int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
 
