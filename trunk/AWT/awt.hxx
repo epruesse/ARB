@@ -7,7 +7,8 @@ char *AWT_fold_path(char *path, const char *pwd = "PWD");
 char *AWT_unfold_path(const char *path, const char *pwd = "PWD");
 const char *AWT_valid_path(const char *path);
 
-int AWT_is_dir(const char *path);
+int   AWT_is_dir(const char *path);
+char *AWT_extract_directory(const char *path);
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
