@@ -21,7 +21,7 @@ typedef char	*GB_CPNTR;		/* points into a piece of mem */
 #define GB_INCLUDED
 
 #define GB_CORE *(long *)0 =0
-#define GB_KEY_LEN_MAX  64
+#define GB_KEY_LEN_MAX  64 /* max. length of a key (a whole key path may be longer) */
 #define GB_KEY_LEN_MIN  2
 
 /* ---------------------------------------- need some stuff if adlocal.h is not included */
