@@ -1,39 +1,14 @@
 #include "RNA3D_GlobalHeader.hxx"
 
 // The following includes are needed to use AW_window_Motif 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-
-// rest of conflict resolving (left here for testing) : 
-// #include <aw_awars.hxx>
-// #include <aw_preset.hxx>
-// #include <awt_canvas.hxx>
-// #include <awt.hxx>
-// #include <aw_root.hxx>
-
-// #include <GL/glew.h>
-// #include <GL/GLwMDrawA.h>
-
-// #include <X11/keysym.h>
-// #include <X11/Xlib.h>
-// #include <X11/Xutil.h>
-// #include <Xm/Xm.h>
-// #include <Xm/Protocols.h>
-// #include <Xm/MwmUtil.h>
-// #include <Xm/MainW.h>
 
 #warning including ../something means hacking - will be removed when yadhu implemented the general idle handler
-#include "../WINDOW/aw_at.hxx"
 #include "../WINDOW/aw_awar.hxx"
-#include "../WINDOW/aw_xfig.hxx"
-#include "../WINDOW/aw_xfigfont.hxx"
 #include "../WINDOW/aw_Xm.hxx"
 #include "../WINDOW/aw_click.hxx"
 #include "../WINDOW/aw_size.hxx"
 #include "../WINDOW/aw_print.hxx"
 #include "../WINDOW/aw_window_Xm.hxx"
-#include "../WINDOW/aw_xkey.hxx"
 
 #include "RNA3D_Global.hxx"
 #include "RNA3D_Graphics.hxx"
@@ -128,11 +103,14 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
     extern bool enableZoom;
 
     switch(xr->button) {
+
     case LEFT_BUTTON:
         rotateMolecule = false;   
         break;
+
     case MIDDLE_BUTTON:
         break;
+
     case RIGHT_BUTTON:
         cout<<"Right Button REleased !!!"<<endl;
         break;
@@ -151,25 +129,28 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
     extern float scale;
 
     switch(xp->button) {
+
     case LEFT_BUTTON:
         rotateMolecule = true;   
         saved_x = xp->x;
         saved_y = xp->y;
         break;
+
     case MIDDLE_BUTTON:
         gl_Canvas->set_mode(AWT_MODE_NONE);
         cout<<"Middle Button pressed !!!"<<endl;
         break;
+
     case RIGHT_BUTTON:
         cout<<"Right Button PRESSed !!!"<<endl;
         break;
+
     case WHEEL_UP:
         scale += ZOOM_FACTOR;
-        cout<<"Wheel Up !!!"<<endl;
         break;
+
     case WHEEL_DOWN:
         scale -= ZOOM_FACTOR;
-        cout<<"Wheel Down !!!"<<endl;
         break;
 	}
     
@@ -248,9 +229,39 @@ void SetOpenGLBackGroundColor() {
     glClearColor(r, g, b, 0);
 }
 
+static void RefreshCanvas(AW_root *awr) {
+    MapDisplayParameters(awr);
+    RefreshOpenGLDisplay();
+}
+
 /*---------------------------- Creating WINDOWS ------------------------------ */
-static void AddCallBacks(AW_root *awr, AWT_canvas *ntw) {
+static void AddCallBacks(AW_root *awr) {
     // adding callbacks to the awars to refresh the display if recieved any changes
+
+    // General Molecule Display  Section
+    awr->awar(AWAR_3D_MOL_BACKBONE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MOL_COLORIZE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MOL_SIZE)->add_callback(RefreshCanvas);
+
+    // Display Base Section
+    awr->awar(AWAR_3D_DISPLAY_BASES)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_DISPLAY_SIZE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_BASES_MODE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_BASES_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_BASES_UNPAIRED_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_BASES_NON_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_SHAPES_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_SHAPES_UNPAIRED_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_SHAPES_NON_HELIX)->add_callback(RefreshCanvas);
+
+    // Display Helix Section
+    awr->awar(AWAR_3D_DISPLAY_HELIX)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_BACKBONE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_MIDPOINT)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_FROM)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_TO)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_NUMBER)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_SIZE)->add_callback(RefreshCanvas);
 }
 
 static AW_window *CreateSelectSAI_window(AW_root *aw_root){
@@ -264,7 +275,7 @@ static AW_window *CreateSelectSAI_window(AW_root *aw_root){
 
     aws->at("selection");
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_SELECTED);
+    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_3D_SAI_SELECTED);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -274,16 +285,153 @@ static AW_window *CreateSelectSAI_window(AW_root *aw_root){
     return (AW_window *)aws;
 }
 
+static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "DISPLAY_BASES", "RNA3D : Display BASES");
+    aws->load_xfig("RNA3D_DisplayBases.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    {  // Display Bases Section
+        aws->at("dispBases");
+        aws->create_toggle(AWAR_3D_DISPLAY_BASES);
+
+        aws->at("helix");
+        aws->create_toggle(AWAR_3D_BASES_HELIX);
+        aws->at("unpairHelix");
+        aws->create_toggle(AWAR_3D_BASES_UNPAIRED_HELIX);
+        aws->at("nonHelix");
+        aws->create_toggle(AWAR_3D_BASES_NON_HELIX);
+
+        aws->at("shapesSize");
+        aws->create_input_field(AWAR_3D_DISPLAY_SIZE, 5);
+
+        aws->at("basesMode");
+        aws->create_toggle_field(AWAR_3D_BASES_MODE,0);
+        aws->insert_toggle("CHARACTERS", "C", 0);
+        aws->insert_toggle("SHAPES", "S", 1);
+        aws->update_toggle_field();
+
+        aws->at("spHelix");
+        aws->create_toggle_field(AWAR_3D_SHAPES_HELIX,1);
+        aws->insert_toggle("#circle.bitmap",    "C", 0);
+        aws->insert_toggle("#diamond.bitmap",   "D", 1);
+        aws->insert_toggle("#polygon.bitmap",   "P", 2);
+        aws->insert_toggle("#star.bitmap",      "S", 3);
+        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->update_toggle_field();
+
+        aws->at("spUnpairedHelix");
+        aws->create_toggle_field(AWAR_3D_SHAPES_UNPAIRED_HELIX,1);
+        aws->insert_toggle("#circle.bitmap",    "C", 0);
+        aws->insert_toggle("#diamond.bitmap",   "D", 1);
+        aws->insert_toggle("#polygon.bitmap",   "P", 2);
+        aws->insert_toggle("#star.bitmap",      "S", 3);
+        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->update_toggle_field();
+
+        aws->at("spNonHelix");
+        aws->create_toggle_field(AWAR_3D_SHAPES_NON_HELIX,1);
+        aws->insert_toggle("#circle.bitmap",    "C", 0);
+        aws->insert_toggle("#diamond.bitmap",   "D", 1);
+        aws->insert_toggle("#polygon.bitmap",   "P", 2);
+        aws->insert_toggle("#star.bitmap",      "S", 3);
+        aws->insert_toggle("#rectangle.bitmap", "R", 4);
+        aws->update_toggle_field();
+   }
+
+    aws->show();
+
+    return (AW_window *)aws;
+}
+
+static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "DISPLAY_HELICES", "RNA3D : Display HELICES");
+    aws->load_xfig("RNA3D_DisplayHelices.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    {  // Display Helices Section
+        aws->at("dispHelix");
+        aws->create_toggle(AWAR_3D_DISPLAY_HELIX);
+
+        aws->at("backbone");
+        aws->create_toggle(AWAR_3D_HELIX_BACKBONE);
+        aws->at("midHelix");
+        aws->create_toggle(AWAR_3D_HELIX_MIDPOINT);
+        aws->at("helixNr");
+        aws->create_toggle(AWAR_3D_HELIX_NUMBER);
+        aws->at("from");
+        aws->create_input_field(AWAR_3D_HELIX_FROM, 5);
+        aws->at("to");
+        aws->create_input_field(AWAR_3D_HELIX_TO, 5);
+        aws->at("helixSize");
+        aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
+
+   }
+    aws->show();
+    return (AW_window *)aws;
+}
+
+static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "GENERAL_DISPLAY", "RNA3D : General Display ");
+    aws->load_xfig("RNA3D_DisplayOptions.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    {  // Display Molecule Section
+        aws->at("backbone");
+        aws->create_toggle(AWAR_3D_MOL_BACKBONE);
+        aws->at("color");
+        aws->create_toggle(AWAR_3D_MOL_COLORIZE);
+        aws->at("molSize");
+        aws->create_input_field(AWAR_3D_MOL_SIZE, 5);
+   }
+    aws->show();
+    return (AW_window *)aws;
+}
+
 AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(gb_main);
 
-    awr->awar_int(AWAR_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
-    int width = 600, height = 400;
+    awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
 
     extern AW_window_menu_modes_opengl *awm;
     awm = new AW_window_menu_modes_opengl();
-    awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA",width,height);
+    awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
     AW_gc_manager aw_gc_manager;
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,gb_main);
@@ -300,7 +448,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
     awm->create_menu( 0, "Properties", "P", 0,  AWM_ALL );
     awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)CreateSelectSAI_window, (AW_CL)0);
-    awm->insert_menu_topic( "SetColors", "Change Colors ", "c","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+    //    awm->insert_menu_topic( "SetColors", "Change Colors ", "c","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
 
     {
         awm->at(11,2);
@@ -314,18 +462,35 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         awm->create_button("Close", "Close");
     
         awm->get_at_position( &cur_x,&cur_y );
-        awm->callback(AW_POPUP,(AW_CL)CreateSelectSAI_window,(AW_CL)0);
-        awm->button_length(25);
-        awm->create_button("SELECT_SAI", AWAR_SAI_SELECTED);
+        awm->callback(AW_POPUP,(AW_CL)AW_create_gc_window,(AW_CL)aw_gc_manager);
+        awm->button_length(20);
+        awm->create_button("setColors", "Change Colors");
+
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->callback(AW_POPUP,(AW_CL)CreateDisplayBases_window,(AW_CL)0);
+        awm->button_length(20);
+        awm->create_button("displayBases", "Display Bases");
+
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->callback(AW_POPUP,(AW_CL)CreateDisplayHelices_window,(AW_CL)0);
+        awm->button_length(20);
+        awm->create_button("displayHelix", "Display Helices");
+
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->callback(AW_POPUP,(AW_CL)CreateDisplayOptions_window,(AW_CL)0);
+        awm->button_length(20);
+        awm->create_button("displayHelix", "Molecule Display");
 
         awm->at_newline();
         awm->get_at_position( &start_x,&second_line_y);
         awm->button_length(15);
         awm->callback( (AW_CB0)AW_POPDOWN );
         awm->create_button("sai", "Select SAI");
+
+
     }
 
-    AddCallBacks(awr, gl_Canvas);
+    AddCallBacks(awr);
 
     appContext = awr->prvt->context;
 

@@ -11,7 +11,7 @@
 OpenGLGraphics *cGraphics  = new OpenGLGraphics();
 Structure3D    *cStructure = new Structure3D();
 Texture2D      *cTexture   = new Texture2D();
-GLRenderer *cRenderer = new GLRenderer();
+GLRenderer     *cRenderer  = new GLRenderer();
 
 Vector3 sCen;
 
@@ -82,7 +82,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     }
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
-    // Prepare the structure Data 
+    // Prepare the structure Data  and Generate Display Lists  
 
     cStructure->ReadCoOrdinateFile(&sCen);    // Reading Structure information
     cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
@@ -92,14 +92,11 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
     // Generate Textures
     cTexture->LoadGLTextures();  // Load The Texture(s) 
+    glEnable(GL_TEXTURE_2D);	// Enable Texture Mapping
 
-    // Generate Display Lists  
-
-    glEnable(GL_TEXTURE_2D);			    // Enable Texture Mapping
-
-    glClearDepth(1.0);				        // Enables Clearing Of The Depth Buffer
-    glDepthFunc(GL_LESS);			         // The Type Of Depth Test To Do
-    glEnable(GL_DEPTH_TEST);		    	 // Enables Depth Testing
+    glClearDepth(1.0);			     // Enables Clearing Of The Depth Buffer
+    glDepthFunc(GL_LESS);		     // The Type Of Depth Test To Do
+    glEnable(GL_DEPTH_TEST);	   	 // Enables Depth Testing
     glShadeModel(GL_FLAT);			 
 
     glPointSize(1.0);
@@ -161,63 +158,73 @@ void CalculateRotationMatrix(){
     glPopMatrix();
 }
 
-void DrawStructure(){
-    if(dispHelices) {
-        char buf[100];
-        glColor4fv(DEFAULT);
-        sprintf(buf, "Helices Displayed (HELIX N0.) = %d - %d", cRenderer->StartHelix, cRenderer->EndHelix);
-        cGraphics->PrintString(sCen.x,sCen.y,sCen.z,buf,GLUT_BITMAP_8_BY_13);
+void MapDisplayParameters(AW_root *root){
+    // General Molecule Display Section
+    cRenderer->iBackBone     = root->awar(AWAR_3D_MOL_BACKBONE)->read_int();
+    cRenderer->iColorise     = root->awar(AWAR_3D_MOL_COLORIZE)->read_int();
+    cRenderer->fSkeletonSize = root->awar(AWAR_3D_MOL_SIZE)->read_float();
+
+    // Display Bases Section
+    cRenderer->iDisplayBases     = root->awar(AWAR_3D_DISPLAY_BASES)->read_int();
+    cRenderer->ObjectSize        = root->awar(AWAR_3D_DISPLAY_SIZE)->read_float();
+    cRenderer->iBaseMode         = root->awar(AWAR_3D_BASES_MODE)->read_int();
+    cRenderer->iBaseHelix        = root->awar(AWAR_3D_BASES_HELIX)->read_int();
+    cRenderer->iBaseUnpairHelix  = root->awar(AWAR_3D_BASES_UNPAIRED_HELIX)->read_int();
+    cRenderer->iBaseNonHelix     = root->awar(AWAR_3D_BASES_NON_HELIX)->read_int();
+    cRenderer->iShapeHelix       = root->awar(AWAR_3D_SHAPES_HELIX)->read_int();
+    cRenderer->iShapeUnpairHelix = root->awar(AWAR_3D_SHAPES_UNPAIRED_HELIX)->read_int();
+    cRenderer->iShapeNonHelix    = root->awar(AWAR_3D_SHAPES_NON_HELIX)->read_int();
+
+    //Display Helices Section
+    cRenderer->iDisplayHelix  = root->awar(AWAR_3D_DISPLAY_HELIX)->read_int();
+    cRenderer->iHelixMidPoint = root->awar(AWAR_3D_HELIX_MIDPOINT)->read_int();
+    cRenderer->iHelixNrs      = root->awar(AWAR_3D_HELIX_NUMBER)->read_int();
+    cRenderer->fHelixSize     = root->awar(AWAR_3D_HELIX_SIZE)->read_float();
+    cRenderer->iHelixBackBone = root->awar(AWAR_3D_HELIX_BACKBONE)->read_int();
+    cRenderer->iStartHelix    = root->awar(AWAR_3D_HELIX_FROM)->read_int();
+    cRenderer->iEndHelix      = root->awar(AWAR_3D_HELIX_TO)->read_int();
+
+    if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > 50 ) {
+        cout<<"Invalid Helix NUMBER !!"<<endl;
+        root->awar(AWAR_3D_HELIX_FROM)->write_int(1);
     }
+    if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > 50 ) {
+        cout<<"Invalid Helix NUMBER !!"<<endl;
+        root->awar(AWAR_3D_HELIX_TO)->write_int(50);
+    }
+
+    if(cRenderer->iStartHelix > cRenderer->iEndHelix) {
+        root->awar(AWAR_3D_HELIX_FROM)->write_int(cRenderer->iEndHelix - 1);
+    } 
+    else if(cRenderer->iEndHelix < cRenderer->iStartHelix) {
+        root->awar(AWAR_3D_HELIX_TO)->write_int(cRenderer->iStartHelix + 1);
+    }
+}
+
+void DrawStructure(){
+
+    glPushMatrix();
+    cRenderer->DoHelixMapping();
+    glPopMatrix();
+
+    glPushMatrix();
+    cRenderer->DisplayMolecule();
+    glPopMatrix();
 
     glPushMatrix();
     cRenderer->BeginTexturizer();
-    if (dispBases)         cRenderer->TexturizeStructure(MODE, cTexture, cGraphics);
-    if (dispNonHelixBases) cRenderer->TexturizeStructure(HELIX_MASK, cTexture, cGraphics);
+    cRenderer->TexturizeStructure(cTexture);
     cRenderer->EndTexturizer();
     glPopMatrix();
 
-    glPushMatrix();
-    if (dispHelices)       cRenderer->DisplayHelices();
-    if (dispHelixBackbone) cRenderer->DisplayHelixBackBone();
-    if (dispPositions)     cRenderer->DisplayPositions();
-    if (dispHelixNrs)      cRenderer->DisplayHelixNumbers();
-    glPopMatrix();
+//     glPushMatrix();
+//     glLineWidth(cRenderer->ObjectSize/2);
+//     glColor4fv(BLUE);
+//     glBegin(GL_LINE_STRIP);
+//     glCallList(STRUCTURE_SEARCH);
+//     glEnd();
+//     glPopMatrix();
 
-    glPushMatrix();
-    glLineWidth(cRenderer->ObjectSize/2);
-    glColor4fv(BLUE);
-    glBegin(GL_LINE_STRIP);
-    glCallList(STRUCTURE_SEARCH);
-    glEnd();
-    glPopMatrix();
-
-    glPushMatrix();
-    if(iStructurize){
-        glCallList(STRUCTURE_BACKBONE_CLR);
-    }
-    else if (dispBackBone) {
-        glColor4fv(DEFAULT);
-        glCallList(STRUCTURE_BACKBONE);
-    }
-    glPopMatrix();
-}
-
-
-void ConvertGCtoRGB(AW_window *aww){
-    //    for (int gc = int(RNA3D_GC_BACKGROUND); gc <= RNA3D_GC_MAX;  ++gc) {
-
-    int gc = int(RNA3D_GC_BACKGROUND);
-    float r, g, b;
-    const char *error = aww->GC_to_RGB_float(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
-    if (error) {
-        printf("Error retrieving RGB values for GC #%i: %s\n", gc, error);
-        glClearColor(0,0,0,0);
-    }
-    else {
-        printf("GC #%i RGB values: r=%.1f g=%.1f b=%.1f\n", gc, r, g, b);
-        //        glClearColor(r,g,b,0);
-    }
-        //    }
 }
 
 void RenderOpenGLScene(Widget w){

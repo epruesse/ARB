@@ -1,6 +1,7 @@
 #include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_Interface.hxx"
+#include "RNA3D_OpenGLEngine.hxx"
 
 using namespace std;
 
@@ -10,15 +11,21 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
-                      RNA3D_GC_BACKGROUND,
+                      RNA3D_GC_MOL_BACKBONE,
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
                       (AW_CB)AWT_resize_cb,
                       (AW_CL)ntw,
                       cd2,
                       false,
-                      "#005500",
-                      "+-Foreground$#FFAA00",
+                      "#000000",
+                      "-MOLECULE Skeleton$#606060",
+                      "-BASE: Helix$#55AAFF",
+                      "-BASE: Unpaired$#AAFF00",
+                      "-BASE: Non-Helix$#FFAA55",
+                      "-HELIX$#FF0000",
+                      "-HELIX Skeleton$#606060",
+                      "-HELIX MidPoint$#FFFFFF",
                       0 );
 
     return preset_window;
@@ -62,6 +69,7 @@ void RNA3D_Graphics::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line
 }
 
 void RNA3D_Graphics::paint(AW_device *device) {
+    MapDisplayParameters(aw_root);
     RefreshOpenGLDisplay();
     AWUSE(device);    
 }

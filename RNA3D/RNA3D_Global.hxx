@@ -2,15 +2,36 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define zoomFactor	1.0f     // scaling factor in z-axis (ZOOM)
+#define rna3d_assert(cond) arb_assert(cond)
 
-#define TRUE        1
-#define FALSE       0
+// Awars for SAI
+#define AWAR_3D_SAI_SELECTED "rna3d/sai_selected"
 
-#define SKELETON_SIZE  1.0f
-#define ZOOM_FACTOR    0.0005f
+// Awars for Helix 
+#define AWAR_3D_DISPLAY_HELIX   "rna3d/display_helix"
+#define AWAR_3D_HELIX_BACKBONE  "rna3d/helix_backbone"
+#define AWAR_3D_HELIX_MIDPOINT  "rna3d/helix_midpoint"
+#define AWAR_3D_HELIX_SIZE      "rna3d/helix_size"
+#define AWAR_3D_HELIX_FROM      "rna3d/helix_from"
+#define AWAR_3D_HELIX_TO        "rna3d/helix_to"
+#define AWAR_3D_HELIX_NUMBER    "rna3d/helix_number"
 
-#define AWAR_SAI_SELECTED "RNA3D/sai_selected"
+// Awars for Bases
+#define AWAR_3D_DISPLAY_BASES         "rna3d/display_bases"
+#define AWAR_3D_DISPLAY_SIZE          "rna3d/display_size"
+#define AWAR_3D_BASES_MODE            "rna3d/bases_mode"
+#define AWAR_3D_BASES_HELIX           "rna3d/bases_helix"
+#define AWAR_3D_BASES_UNPAIRED_HELIX  "rna3d/bases_unpaired_helix"
+#define AWAR_3D_BASES_NON_HELIX       "rna3d/bases_non_helix"
+#define AWAR_3D_SHAPES_HELIX          "rna3d/shapes_helix"
+#define AWAR_3D_SHAPES_UNPAIRED_HELIX "rna3d/shapes_unpaired_helix"
+#define AWAR_3D_SHAPES_NON_HELIX      "rna3d/shapes_non_helix"
+
+// Awars for General Molecule
+#define AWAR_3D_MOL_BACKBONE  "rna3d/mol_backbone"
+#define AWAR_3D_MOL_COLORIZE  "rna3d/mol_colorize"
+#define AWAR_3D_MOL_SIZE      "rna3d/mol_size"
+
 
 struct Vector3 {
 public:

@@ -18,7 +18,6 @@
 #include <aw_preset.hxx>
 #include <awt_canvas.hxx>
 #include <awt.hxx>
-#include <aw_root.hxx>
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>

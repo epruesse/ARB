@@ -1,3 +1,7 @@
+#define WINDOW_WIDTH   800
+#define WINDOW_HEIGHT  800
+
+#define ZOOM_FACTOR    0.0005f     // scaling factor in z-axis (ZOOM)
 
 enum {
     LEFT_BUTTON = 1,
