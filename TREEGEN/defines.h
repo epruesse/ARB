@@ -41,10 +41,10 @@ typedef const char    *cstr;
 __PROTOTYPEN__
 
     void error           (cstr message);
-    void errorf          (cstr format, ...);
+    void errorf          (cstr format, ...) __attribute__((format(printf, 1, 2)));
 
     void warning         (cstr message);
-    void warningf        (cstr format, ...);
+    void warningf        (cstr format, ...) __attribute__((format(printf, 1, 2)));
 
     void def_outOfMemory (cstr source, int lineno);
     void def_assert      (cstr whatFailed, cstr source, int lineno, int cnt);

@@ -14,7 +14,7 @@
 /* ------------------------------------------------------ 14.05.95 16:47 ---- */
 void error(cstr message)
 {
-    fprintf(stderr, "Fehler: %s\n", message);
+    fprintf(stderr, "Error: %s\n", message);
     exit(1);
 }
 /* -------------------------------------------------------------------------- */
@@ -22,7 +22,7 @@ void error(cstr message)
 /* ------------------------------------------------------ 18.05.95 11.41 ---- */
 void warning(cstr message)
 {
-    fprintf(stderr, "Warnung: %s\n", message);
+    fprintf(stderr, "Warning: %s\n", message);
 }
 /* -------------------------------------------------------------------------- */
 /*      void errorf(cstr format, ...) */
