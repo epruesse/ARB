@@ -1857,13 +1857,15 @@ int main(int argc, char **argv)
         }
         GB_export_error("Unknown option '%s'",argv[0]);
         GB_print_error();
-        printf("Options:\n"
-               "    -add_marked :   add marked species without changing topologie\n"
-               "    -add_selected   :   add selected species, no old topologie changes\n"
-               "    -calc_branchlengths:    calculat branch lenghts only\n"
-               "    -calc_bootstrap:    estimate bootstrap values\n"
-               "    -quit       :   quit after performing operations\n"
+        printf("    Options:                Meaning:\n"
+               "\n"
+               "    -add_marked             add marked species   (without changing topology)\n"
+               "    -add_selected           add selected species (without changing topology)\n"
+               "    -calc_branchlengths     calculate branch lenghts only\n"
+               "    -calc_bootstrap         estimate bootstrap values\n"
+               "    -quit                   quit after performing operations\n"
                );
+
         exit(-1);
     }
 
