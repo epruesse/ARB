@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-GB_CSTR awt_get_base_directory(const char *pwd_envar) {
+static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
     if (strcmp(pwd_envar, "PWD") == 0)  res = GB_getcwd();
     else                                res = GB_getenv(pwd_envar);
@@ -124,6 +124,16 @@ int AWT_is_dir(const char *path) {
     if (stat(AWT_valid_path(path), &stt)) return 0;
     if (S_ISDIR(stt.st_mode)) return 1;
     return 0;
+}
+
+char *AWT_extract_directory(const char *path) {
+    char *lslash = strrchr(path, '/');
+    if (!lslash) return 0;
+
+    char *result        = GB_strdup(path);
+    result[lslash-path] = 0;
+
+    return result;
 }
 
 void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, AW_window *aws, AW_selection_list *selid) {
