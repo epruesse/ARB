@@ -135,3 +135,9 @@ $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arbdbt.h
 $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_t_prot.h
+
+$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arbdb.h
+$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arb_assert.h
+$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_prot.h
+$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arbdbt.h
+$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_t_prot.h

@@ -207,10 +207,6 @@ dollop.o: phylip.h disc.h dollo.h
 
 dolpenny.o: phylip.h disc.h dollo.h
 
-drawgram.o: draw.h phylip.h
-
-drawtree.o: draw.h phylip.h
-
 factor.o: phylip.h
 
 fitch.o: phylip.h dist.h
@@ -225,14 +221,28 @@ move.o: phylip.h disc.h moves.h wagner.h
 
 neighbor.o: phylip.h dist.h
 
+pars.o: phylip.h discrete.h
+
 penny.o: phylip.h disc.h wagner.h
+
+proml.o: phylip.h seq.h
+
+promlk.o: phylip.h seq.h
 
 protdist.o: phylip.h seq.h
 
 protpars.o: phylip.h seq.h
+
+restdist.o: phylip.h seq.h
 
 restml.o: phylip.h seq.h
 
 retree.o: phylip.h moves.h
 
 seqboot.o: phylip.h seq.h
+
+treedist.o: phylip.h cons.h
+
+drawgram.o: draw.h phylip.h
+
+drawtree.o: draw.h phylip.h
