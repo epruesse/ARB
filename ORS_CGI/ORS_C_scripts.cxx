@@ -48,7 +48,7 @@ FILE *ors_tcp_open(char *mach_name, int socket_id) {
 	addr.s_addr = *(int *) (he->h_addr);
 	so_ad.sin_addr = addr;
 	so_ad.sin_family = AF_INET;
-	so_ad.sin_port = socket_id;	/* @@@ = pb_socket  */
+	so_ad.sin_port = htons(socket_id);	/* @@@ = pb_socket  */
 
 	if (connect(so, (struct sockaddr *)&so_ad, 16)) {
 		ORS_export_error("Cannot connect to %s:%i errno %i",
