@@ -15,16 +15,16 @@
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
 #ifdef HP
-#	define signed
+#   define signed
 #endif
 
 /********************************************************************************************
-			Versions:
-		ASCII
+            Versions:
+        ASCII
 
-		V0	- 20.6.95
-		V1	Full save
-		V2	Differential save
+        V0  - 20.6.95
+        V1  Full save
+        V2  Differential save
 ********************************************************************************************/
 
 GB_CPNTR gb_findExtension(GB_CSTR path)
@@ -62,7 +62,7 @@ GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
     if (!ext) ext = qname + strlen(qname);
 
     if (nr==-1) sprintf(ext,".arb.quick?");
-    else 	sprintf(ext,".arb.quick%i", nr);
+    else    sprintf(ext,".arb.quick%i", nr);
 
     return qname;
 }
@@ -81,7 +81,7 @@ GB_CSTR gb_quicksaveName(GB_CSTR path,int nr)
     }
 
     if (nr==-1) sprintf(ext,".a??");
-    else 	sprintf(ext,".a%02i", nr);
+    else    sprintf(ext,".a%02i", nr);
 
     return qname;
 }
@@ -120,9 +120,9 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
     }
     else
     {
-	int len = strlen(oname);
-        oname[len] = '~';    
-        oname[len+1] = 0;    
+        int len = strlen(oname);
+        oname[len] = '~';
+        oname[len+1] = 0;
     }
 
     return oname;
@@ -161,8 +161,8 @@ GB_ERROR gb_create_reference(const char *master){
         GB_set_mode_of_file(fullref,00666);
     }else{
         error = GB_export_error("WARNING: Cannot create file '%s'\n"
-                                "	Your database is saved, but you should check write permissions\n"
-                                "	in the destination directory",
+                                "   Your database is saved, but you should check write permissions\n"
+                                "   in the destination directory",
                                 fullref);
     }
 
@@ -174,7 +174,7 @@ GB_ERROR gb_add_reference(char *master, char *changes){
     char *fullmaster = gb_full_path(master);
     char *fullchanges = gb_full_path(changes);
     const char *fullref = gb_reffile_name(fullmaster);
-    GB_ERROR	error = 0;
+    GB_ERROR    error = 0;
     FILE *out = fopen(fullref,"a");
     if (out){
         fprintf(out,"%s\n",fullchanges);
@@ -182,9 +182,9 @@ GB_ERROR gb_add_reference(char *master, char *changes){
         GB_set_mode_of_file(fullref,00666);
     }else{
         error = GB_export_error("Cannot add your file '%s'\n"
-                                "	to the list of references '$s'\n"
-                                "	Please ask the owner of that file not to delete it\n"
-                                "	or save not only the changes but the entire database",
+                                "   to the list of references '$s'\n"
+                                "   Please ask the owner of that file not to delete it\n"
+                                "   or save not only the changes but the entire database",
                                 fullchanges,fullref);
     }
 
@@ -309,7 +309,7 @@ static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main)
 
 
 /********************************************************************************************
-					Ascii to  Binary
+                    Ascii to  Binary
 ********************************************************************************************/
 
 
@@ -320,7 +320,7 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd)
     register const char   *s;
     register char *d,c;
     register long   len,k;
-    register	long i;
+    register    long i;
     len = 0;
     s = source;
 
@@ -388,7 +388,7 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd)
     return 0;
 }
 /********************************************************************************************
-					Binary to  Ascii
+                    Binary to  Ascii
 ********************************************************************************************/
 
 #define GB_PUT(c,out) if(c>=10) c+='A'-10; else c+= '0'; *(out++) = (char)c;
@@ -397,7 +397,7 @@ GB_CPNTR gb_bin_2_ascii(GBDATA *gbd)
 {
     register signed char  *s, *out, c, mo;
     register unsigned long    i;
-    register	int	j;
+    register    int j;
     char *buffer;
     int k;
 
@@ -455,7 +455,7 @@ GB_CPNTR gb_bin_2_ascii(GBDATA *gbd)
 
 
 /********************************************************************************************
-					Write Ascii File
+                    Write Ascii File
 ********************************************************************************************/
 #define GB_PUT_OUT(c,out) if(c>=10) c+='A'-10; else c+= '0'; putc(c,out);
 
@@ -465,13 +465,14 @@ long gb_test_sub(GBDATA *gbd)
     return 0;
 }
 
+/* only used for saving ASCII database */
 long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 {
     register long i;
     register char *s;
     register char c;
     register GBDATA *gb;
-    char	*strng;
+    char    *strng;
     char *key;
     /*int index;*/
     for (gb = GB_find((GBDATA *)gbc,0,0,down_level);
@@ -479,13 +480,13 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
          gb = GB_find(gb,0,0,this_level|search_next)) {
         if (gb->flags.temporary) continue;
         key = GB_KEY(gb);
-        if (!strcmp(key,GB_SYSTEM_FOLDER)) continue;	/* do not save system folder */
+        if (!strcmp(key,GB_SYSTEM_FOLDER)) continue;    /* do not save system folder */
         for (i=deep;i--;) putc('\t',out);
         fprintf(out,"%s\t",key);
         if ((int)strlen(key) < 8){
             putc('\t',out);
         }
-        if (	gb->flags.security_delete ||
+        if (    gb->flags.security_delete ||
                 gb->flags.security_write ||
                 gb->flags.security_read ||
                 gb->flags2.last_updated ){
@@ -501,7 +502,7 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
             putc('\t',out);
         }
         switch (GB_TYPE(gb)) {
-            case	GB_STRING:
+            case    GB_STRING:
                 strng = GB_read_char_pntr(gb);
                 if (*strng == '%') {
                     putc('%',out);
@@ -511,7 +512,7 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
                 GBS_fwrite_string(strng,out);
                 putc('\n',out);
                 break;
-            case	GB_LINK:
+            case    GB_LINK:
                 strng = GB_read_link_pntr(gb);
                 if (*strng == '%') {
                     putc('%',out);
@@ -567,10 +568,10 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 
 
 /********************************************************************************************
-					Read Binary File
+                    Read Binary File
 ********************************************************************************************/
 
-long	gb_read_in_long(FILE *in,long reversed)
+long    gb_read_in_long(FILE *in,long reversed)
 {
     long sdata = 0;
     register char *p = (char *)&sdata;
@@ -658,10 +659,10 @@ long gb_read_bin_error(FILE *in,GBDATA *gbd,const char *text)
 
 
 /********************************************************************************************
-					Write Binary File
+                    Write Binary File
 ********************************************************************************************/
 
-long	gb_write_out_long(long data, FILE *out)
+long    gb_write_out_long(long data, FILE *out)
 {
     long sdata[1];
     register char *p = (char *)sdata,c;
@@ -677,15 +678,15 @@ long	gb_write_out_long(long data, FILE *out)
     return 0;
 }
 /** Test whether to write any data to disc.
-	version 1		write only latest data
-	version 2		write deleted entries two (which are not already stored to master file !!!
-	try to avoid to access gbd, keep it swap out
+    version 1       write only latest data
+    version 2       write deleted entries two (which are not already stored to master file !!!
+    try to avoid to access gbd, keep it swap out
 */
 
 
 int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long version, long diff_save)
 {
-    if (version == 2 && header->flags.changed==gb_deleted) return 1;	/* save delete flag */
+    if (version == 2 && header->flags.changed==gb_deleted) return 1;    /* save delete flag */
     if (!gbd) return 0;
     if (diff_save) {
         if (!header->flags.ever_changed) return 0;
@@ -699,7 +700,7 @@ int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long vers
 int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long diff_save, int is_root){
     struct gb_header_list_struct *header;
     register int i,index;
-    int	counter;
+    int counter;
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (i=0, index = 0; index < gbc->d.nheader; index++) {
         if (gb_is_writeable(&(header[index]),GB_HEADER_LIST_GBD(header[index]),version,diff_save)) i++;
@@ -715,7 +716,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
     for (index = 0; index < gbc->d.nheader; index++){
         GBDATA *h_gbd;
 
-        if (header[index].flags.changed == gb_deleted_in_master){	/* count deleted items in master, because of index renaming */
+        if (header[index].flags.changed == gb_deleted_in_master){   /* count deleted items in master, because of index renaming */
             counter ++;
             continue;
         }
@@ -723,7 +724,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
         h_gbd = GB_HEADER_LIST_GBD(header[index]);
 
         if(!gb_is_writeable(&(header[index]),h_gbd,version,diff_save))
-        {	/* mark deleted in master */
+        {   /* mark deleted in master */
             if (version <= 1 && header[index].flags.changed == gb_deleted) {
                 header[index].flags.changed = gb_deleted_in_master;
             }
@@ -748,27 +749,27 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
 {
     register int i;
     GBCONTAINER *gbc =0;
-    long	memsize =0;
-    int	type;
+    long    memsize =0;
+    int type;
 
     if ((type=GB_TYPE(gbd)) == GB_DB) {
         gbc = (GBCONTAINER *)gbd;
-    }else	if (	( type == GB_STRING) &&
+    }else   if (    ( type == GB_STRING) &&
                     !gbd->flags.compressed_data &&
                     (memsize = GB_GETMEMSIZE(gbd)) < GBTUM_SHORT_STRING_SIZE){
         type = GB_STRING_SHRT;
     }
 
-    i = 	(type<<4)
-        + 	(gbd->flags.security_delete<<1)
-        +	(gbd->flags.security_write>>2);
+    i =     (type<<4)
+        +   (gbd->flags.security_delete<<1)
+        +   (gbd->flags.security_write>>2);
     putc(i,out);
 
-    i =  	((gbd->flags.security_write &3) <<6)
-        + 	(gbd->flags.security_read<<3)
-        +	(gbd->flags.compressed_data<<2)
-        +	((GB_ARRAY_FLAGS(gbd).flags&1)<<1)
-        +	(gbd->flags.unused);
+    i =     ((gbd->flags.security_write &3) <<6)
+        +   (gbd->flags.security_read<<3)
+        +   (gbd->flags.compressed_data<<2)
+        +   ((GB_ARRAY_FLAGS(gbd).flags&1)<<1)
+        +   (gbd->flags.unused);
     putc(i,out);
 
     gb_put_number(GB_ARRAY_FLAGS(gbd).key_quark,out);
@@ -781,7 +782,7 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
     putc(i,out);
 
     switch(type) {
-        case	GB_STRING_SHRT:
+        case    GB_STRING_SHRT:
             if (memsize) {
                 i = fwrite(GB_GETDATA(gbd),(size_t)memsize,1,out);
                 if (i<=0){
@@ -792,31 +793,31 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
             }
             return 0;
 
-        case	GB_DB:
+        case    GB_DB:
             i = gb_write_bin_sub_containers(out,gbc,version,diff_save,0);
             return i;
 
-        case	GB_INT:{
+        case    GB_INT:{
             GB_UINT4 buffer = (GB_UINT4)htonl(gbd->info.i);
             if (!fwrite((char *)&buffer,sizeof(float),1,out)) return -1;
             return 0;
         }
-        case	GB_FLOAT:
+        case    GB_FLOAT:
             if (!fwrite((char *)&gbd->info.i,sizeof(float),1,out)) return -1;
             return 0;
-        case	GB_STRING:
-        case	GB_LINK:
-        case	GB_BITS:
-        case	GB_BYTES:
-        case	GB_INTS:
-        case	GB_FLOATS:
+        case    GB_STRING:
+        case    GB_LINK:
+        case    GB_BITS:
+        case    GB_BYTES:
+        case    GB_INTS:
+        case    GB_FLOATS:
             memsize = GB_GETMEMSIZE(gbd);
             gb_put_number(GB_GETSIZE(gbd),out);
             gb_put_number(memsize,out);
             i = fwrite(GB_GETDATA(gbd),(size_t)memsize,1,out);
             if (memsize && !i ) return -1;
             return 0;
-        case	GB_BYTE:
+        case    GB_BYTE:
             putc((int)(gbd->info.i),out);
             return 0;
         default:
@@ -825,8 +826,8 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
 }
 
 
-/** 	version 1 write master arb file
-	version 2 write slave arb file */
+/**     version 1 write master arb file
+        version 2 write slave arb file */
 int gb_write_bin(FILE *out,GBDATA *gbd,long version){
     long i;
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
@@ -846,8 +847,8 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version){
             gb_put_number(Main->keys[i].nref,out);
             fprintf(out,"%s",Main->keys[i].key);
         }else{
-            putc(0,out);		/* 0 nref */
-            putc(1,out);		/* empty key */
+            putc(0,out);        /* 0 nref */
+            putc(1,out);        /* empty key */
         }
         putc(0,out);
 
@@ -869,17 +870,17 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version){
 }
 
 /********************************************************************************************
-					SAVE DATABASE
+                    SAVE DATABASE
 ********************************************************************************************/
 
 
 GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
      /*
- *	savetype 'a' 	ascii
- *		 'b' 	binary
- *		 'bm'	binary + mapfile
- *		 0=ascii
- */
+      * savetype 'a'    ascii
+      *      'b'    binary
+      *      'bm'   binary + mapfile
+      *      0=ascii
+      */
 {
     if (path)
     {
@@ -893,28 +894,29 @@ GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
 /*      GB_ERROR GB_create_directory(const char *path)       */
 /*  -------------------------------------------------------  */
 GB_ERROR GB_create_directory(const char *path) {
-    char     *mkdir = GB_give_buffer(1024);
-    GB_ERROR  error = 0;
+    char     *mkdir          = GB_give_buffer(1024);
+    GB_ERROR  error          = 0;
     sprintf(mkdir, "mkdir -p %s", path);
     if (system(mkdir)) error = GB_export_error("Cannot create directory %s",path);
+    /* @@@ FIXME: use POSIX command instead of system call!  */
     return error;
 }
 
 GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
      /*
- *	savetype 'a' 	ascii
- *		 'b' 	binary
- *		 'bm'	binary + mapfile
- *		 0=ascii
- *
- *      creates subdirectories too
- */
+      * savetype 'a'    ascii
+      *      'b'    binary
+      *      'bm'   binary + mapfile
+      *      0=ascii
+      *
+      *      creates subdirectories too
+      */
 {
     GB_ERROR error = 0;
     char *buffer;
     const char *env;
     char *slash;
-/*     char *buf2; */
+    /*     char *buf2; */
 
     env = GB_getenvHOME();
     if(!path) path = GB_MAIN(gb)->path;
@@ -938,20 +940,20 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
 /** Save whole database */
 GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
      /*
- *	savetype 	'a' ascii
- *			'b' binary
- *			'm' save mapfile too (only with binary)
- *			'f' force saving even in disabled path to a different directory (out of order save)
- *                      'S' save to stdout (for debugging)
- *			 0=ascii
- *  
- */
+      * savetype    'a' ascii
+      *         'b' binary
+      *         'm' save mapfile too (only with binary)
+      *         'f' force saving even in disabled path to a different directory (out of order save)
+      *                      'S' save to stdout (for debugging)
+      *          0=ascii
+      *
+      */
 {
     FILE *out;
     long erg =0;
     int slevel;
     int translevel;
-    char	*sec_path = NULL;
+    char    *sec_path = NULL;
     GB_CSTR map_path = NULL;
     GB_MAIN_TYPE *Main = GB_MAIN(gb);
     int deleteQuickAllowed = savetype==NULL || strchr(savetype, 'f')==NULL;
@@ -973,8 +975,8 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     sec_path = GB_STRDUP(gb_overwriteName(path));
 
     if (strchr(savetype,'S')) {
-	out = stdout;
-	dump_to_stdout = 1;
+        out = stdout;
+        dump_to_stdout = 1;
     }
     else if ((out = fopen(sec_path, "w")) == NULL)
     {
@@ -998,7 +1000,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
     Main->security_level = 7;
 
-    if (!savetype || strchr(savetype,'a')) 			/* ASCII */
+    if (!savetype || strchr(savetype,'a'))          /* ASCII */
     {
         fprintf(out,"/*ARBDB ASCII*/\n");
         erg = gb_write_rek(out,(GBCONTAINER *)gb,0,1);
@@ -1009,7 +1011,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
             if (deleteQuickAllowed && gb_remove_all_but_main(Main,path)) goto error;
         }
     }
-    else if (strchr(savetype,'b'))				/* binary */
+    else if (strchr(savetype,'b'))              /* binary */
     {
         /* it's necessary to save the mapfile FIRST, cause this re-orders all GB_CONTAINERs
          * containing NULL-entries in their header */
@@ -1028,7 +1030,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
         }
 
         if (erg==0){
-            if (!strchr(savetype,'f')){				/* allow quick saving unless saved in 'f' mode */
+            if (!strchr(savetype,'f')){             /* allow quick saving unless saved in 'f' mode */
                 if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
                 Main->qs.quick_save_disabled = 0; /* and allow quicksaving */
             }
@@ -1049,32 +1051,32 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
 
 
     if (!dump_to_stdout) {
-	if (GB_rename(sec_path, path)==0){
-	    if (map_path){
-		GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
-		long path_mode = GB_mode_of_file(path);
+        if (GB_rename(sec_path, path)==0){
+            if (map_path){
+                GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
+                long path_mode = GB_mode_of_file(path);
 
-		if (GB_rename(overwrite_map_path, map_path)==0)
-		    {
-			GB_set_mode_of_file(map_path,path_mode);        /* set mapfile to same mode as binary file */
-		    }
-		else /* if we cannot rename the mapfile, then we delete it */
-		    {
-			GB_unlink(overwrite_map_path);
-			goto error;
-		    }
-	    }
-	    if (Main->qs.quick_save_disabled == 0){		/* do we need an ARF file ?? */
-		gb_create_reference(path);
-	    }else{
-		gb_delete_reference(path);				/* delete old ARF file */
-	    }
-	}else{
-	    goto error;
-	}
+                if (GB_rename(overwrite_map_path, map_path)==0)
+                {
+                    GB_set_mode_of_file(map_path,path_mode);        /* set mapfile to same mode as binary file */
+                }
+                else /* if we cannot rename the mapfile, then we delete it */
+                {
+                    GB_unlink(overwrite_map_path);
+                    goto error;
+                }
+            }
+            if (Main->qs.quick_save_disabled == 0){     /* do we need an ARF file ?? */
+                gb_create_reference(path);
+            }else{
+                gb_delete_reference(path);              /* delete old ARF file */
+            }
+        }else{
+            goto error;
+        }
     }
     free(sec_path);sec_path = 0;
-    if (!strchr(savetype,'f')){	/* reset values unless out of order save */
+    if (!strchr(savetype,'f')){ /* reset values unless out of order save */
         Main->last_saved_transaction = GB_read_clock(gb);
         Main->last_main_saved_transaction = GB_read_clock(gb);
         Main->last_saved_time = GB_time_of_day();
@@ -1096,8 +1098,8 @@ GB_ERROR gb_check_quick_save(GBDATA *gb_main, char *refpath)
 
     if (Main->qs.quick_save_disabled) {
         return GB_export_error("Save Changes Disabled, because\n"
-                               "	'%s'\n"
-                               "	Save whole database using binary mode first",
+                               "    '%s'\n"
+                               "    Save whole database using binary mode first",
                                Main->qs.quick_save_disabled);
     }
 
@@ -1131,21 +1133,21 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         return GB_export_error("Please specify a file name");
     }
 
-    if (!strcmp(path,Main->path)) return GB_save_quick(gb_main,path);	/* No rename */
+    if (!strcmp(path,Main->path)) return GB_save_quick(gb_main,path);   /* No rename */
     if (gb_check_quick_save(gb_main,path)) return GB_get_error();
     if (gb_check_saveable(gb_main,path,"bn")) return GB_get_error();
 
-    fmaster = fopen( Main->path, "r" );	/* old master !!!! */
-    if (!fmaster){		/* Oh no, where is my old master */
+    fmaster = fopen( Main->path, "r" ); /* old master !!!! */
+    if (!fmaster){      /* Oh no, where is my old master */
         return GB_export_error("Save Changes is missing master ARB file '%s',\n"
-                               "	save database first", Main->path);
+                               "    save database first", Main->path);
     }
     fclose(fmaster);
     if (GB_unlink(path)<0){
         return GB_export_error("File '%s' already exists and cannot be deleted",path);
-    };		/* delete old file */
+    };      /* delete old file */
 
-    mode = GB_mode_of_link(Main->path);	/* old master */
+    mode = GB_mode_of_link(Main->path); /* old master */
     if (S_ISLNK(mode)){
         org_master = GB_follow_unix_link(Main->path);
     }else{
@@ -1161,12 +1163,12 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     mode = GB_mode_of_file(org_master);
     if (mode & S_IWUSR) {
         if (GB_set_mode_of_file(org_master,mode & ~(S_IWUSR | S_IWGRP | S_IWOTH))){
-            GB_warning(	"!!!!!!!!! WARNING !!!!!!!\n"
-                        "	Cannot set mode of file '%s'\n"
-                        "	NEVER, NEVER delete or change file\n"
-                        "		 '%s'\n"
-                        "	Best: Ask your system administrator\n"
-                        "	to remove write permissions.",
+            GB_warning( "!!!!!!!!! WARNING !!!!!!!\n"
+                        "   Cannot set mode of file '%s'\n"
+                        "   NEVER, NEVER delete or change file\n"
+                        "        '%s'\n"
+                        "   Best: Ask your system administrator\n"
+                        "   to remove write permissions.",
                         org_master,org_master);
         }
     }
@@ -1183,24 +1185,24 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         return GB_get_error();
     }
     if (GB_getuid_of_file(full_path_of_source) != GB_getuid()){
-        GB_warning(	"**** WARNING ******\n"
-                    "	You now using a file '%s'\n"
-                    "	which is owned by another user\n"
-                    "	Please ask him not to delete this file\n"
-                    "	If you don't trust him, don't save changes but\n"
-                    "	the WHOLE database",full_path_of_source);
+        GB_warning( "**** WARNING ******\n"
+                    "   You now using a file '%s'\n"
+                    "   which is owned by another user\n"
+                    "   Please ask him not to delete this file\n"
+                    "   If you don't trust him, don't save changes but\n"
+                    "   the WHOLE database",full_path_of_source);
     }
     if (gb_add_reference(full_path_of_source,path)){
         GB_warning("%s",GB_get_error());
     }
 
-    free(Main->path);		/* Symlink created -> rename allowed */
+    free(Main->path);       /* Symlink created -> rename allowed */
     Main->path = GB_STRDUP(path);
 
     free(full_path_of_source);
     free(org_master);
 
-    Main->qs.last_index = 0;		/* Start with new quicks */
+    Main->qs.last_index = 0;        /* Start with new quicks */
     return GB_save_quick(gb_main,path);
 }
 
@@ -1223,7 +1225,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     if (refpath && strcmp(refpath, Main->path) )
     {
         return GB_export_error("Internal ARB Error, master file rename '%s'!= '%s',\n"
-                               "	save database first", refpath,Main->path);
+                               "    save database first", refpath,Main->path);
     }
 
     fmaster = fopen( Main->path, "r");
@@ -1231,7 +1233,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     if (!fmaster) /* Oh no, where is my old master */
     {
         return GB_export_error("Quick save is missing master ARB file '%s',\n"
-                               "	save database first", refpath);
+                               "    save database first", refpath);
     }
     fclose(fmaster);
 
@@ -1283,7 +1285,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 }
 
 /********************************************************************************************
-					DISABLE DIRECTORIES
+                    DISABLE DIRECTORIES
 ********************************************************************************************/
 
 /** returns 0 if user is allowed to save */
@@ -1328,24 +1330,24 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
             free(fullpath);
             return GB_export_error(
                                    "You are not allowed to save your database in this directory,\n"
-                                   "	Please select 'save as' and save your data to a different location");
+                                   "    Please select 'save as' and save your data to a different location");
         }
     }
     free(fullpath);
     if ( !strchr(flags,'q')){
         mode = GB_mode_of_link(path);
-        if (mode >=0 && !(mode & S_IWUSR)){	/* no write access -> lookes like a master file */
+        if (mode >=0 && !(mode & S_IWUSR)){ /* no write access -> lookes like a master file */
             return GB_export_error(
                                    "Your selected file '%s' already exists and is write protected\n"
-                                   "	It looks like that your file is a master arb file which is\n"
-                                   "	used by some xxx.a?? quicksave databases\n"
-                                   "	If you want to save it nevertheless, delete it first !!!",
+                                   "    It looks like that your file is a master arb file which is\n"
+                                   "    used by some xxx.a?? quicksave databases\n"
+                                   "    If you want to save it nevertheless, delete it first !!!",
                                    path);
         }
     }
     if (strchr(path,':')){
         return GB_export_error( "Your database name must not contain a ':' charactar\n"
-                                "	choose a new name");
+                                "   choose a new name");
     }
     if ( strchr(flags,'n')){
         if (GB_time_of_file(path)){

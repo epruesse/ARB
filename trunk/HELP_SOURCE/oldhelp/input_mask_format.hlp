@@ -130,6 +130,11 @@ DESCRIPTION
                 <id>           mandatory; a unique identifier
                 <default>      mandatory; default value for variable
 
+            SCRIPT(id,aci)     "declare a script"
+
+                <id>           mandatory; a unique identifier
+                <aci>          mandatory; the script itself (" has to be written as \")
+
             SHOW(label,idref,width) "display/edit a variable or script"
 
                 <label>        mandatory; Label appearing in front of input-field
