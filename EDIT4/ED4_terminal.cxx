@@ -1187,11 +1187,11 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 #undef BUFFERSIZE
 
 
-ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, GBDATA *gbd, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
+ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /*GBDATA *gbd,*/ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
     : ED4_text_terminal( temp_id, x, y, width, height, temp_parent )
 {
     spec = &(sequence_info_terminal_spec);
-    gbdata = gbd;
+    // gbdata = gbd;
 }
 
 
