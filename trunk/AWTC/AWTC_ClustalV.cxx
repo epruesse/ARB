@@ -485,12 +485,12 @@ static void fill_pam()
 static void exit_myers(void)
 {
     int i;
-    for (i=0; i<21; i++) delete(naas[i]);
-    delete(naas);
-    for (i=0; i<21; i++) delete(naa2[i]);
-    delete(naa2);
-    for (i=0; i<21; i++) delete(naa1[i]);
-    delete(naa1);
+    for (i=0; i<21; i++) free(naas[i]);
+    free(naas);
+    for (i=0; i<21; i++) free(naa2[i]);
+    free(naa2);
+    for (i=0; i<21; i++) free(naa1[i]);
+    free(naa1);
 }
 
 static void init_show_pair(long max_seq_length)

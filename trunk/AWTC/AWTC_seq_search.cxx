@@ -113,7 +113,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
 
     //awtc_assert(myLength);	// otherwise text does only contain gaps
 
-    myText = new char[myLength+1];
+    myText           = new char[myLength+1];
     myText[myLength] = 0;
 
     expdPositionTab = new int[myLength+1];	// plus one extra element
@@ -135,7 +135,9 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
         }
     }
 
-    gapsBeforePosition[myLength] = length - expdPositionTab[myLength-1];	// gaps before end of sequence
+    if (myLength>0) {
+        gapsBeforePosition[myLength] = length - expdPositionTab[myLength-1]; // gaps before end of sequence
+    }
 
     referred = 1;
 
