@@ -470,7 +470,7 @@ bool PG_add_probe(GBDATA *pb_group, const char *probe) {
             pg_assert(exists[-1] == ',');
         }
 
-        pg_assert(exists[strlen(probe)] == ',');
+        pg_assert(exists[strlen(probe)] == ',' || exists[strlen(probe)] == '\0');
     }
     else {
         string newProbes(existing);
