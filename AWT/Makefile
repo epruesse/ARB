@@ -3,7 +3,7 @@
 .SUFFIXES: .o .cxx
 
 OBJECTS =	\
-		AWT_input_mask.o \
+		AWT_input_mask.o AWT_hotkeys.o \
 		AWT_www.o AWT_tables.o AWT_irstree.o \
 		AWT_asciiprint.o AWT_map_key.o AWT_tree_cmp.o AWT_seq_colors.o \
 		AWT_pro_a_nucs.o AWT_csp.o AWT_canvas.o AWT_dtree.o AWT_tree.o AWT_tree_cb.o AWT_nei.o \
@@ -36,8 +36,23 @@ AWT_input_mask.o:
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_prot.h ./awt.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx awt_input_mask.hxx
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_input_mask.o:  
+AWT_input_mask.o: 
+AWT_input_mask.o:  
+AWT_input_mask.o:  
+AWT_input_mask.o:  
+AWT_input_mask.o:  
+AWT_input_mask.o:  
+AWT_input_mask.o:  
+AWT_input_mask.o: awt_input_mask.hxx $(ARBHOME)/INCLUDE/smartptr.h
+AWT_input_mask.o: ./awt_hotkeys.hxx
+AWT_hotkeys.o: ./awt_hotkeys.hxx  
+AWT_hotkeys.o:  
+AWT_hotkeys.o:  
+AWT_hotkeys.o:  
+AWT_hotkeys.o:  
+AWT_hotkeys.o: 
 AWT_www.o:  
 AWT_www.o:  
 AWT_www.o:  
