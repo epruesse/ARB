@@ -31,7 +31,7 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
 #if 0
 /*
-  
+
 / ****************
 	Their are 3 stages of data format:
 		1st:		Creation of the tree
@@ -56,7 +56,7 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 	[int		size] 		if bit[0-3] == 0;
 
 / ********************* tip (7-13   +4) *********************** /
-	byte	<32			bit[7] = bit[6] = bit[5] = 0 
+	byte	<32			bit[7] = bit[6] = bit[5] = 0
 					bit[3-4] free
 	[PT_PNTR	father]		if main->mode
 	short/int	name		int if bit[0]
@@ -99,7 +99,7 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 				if bit[15] than integer
 		short/int	apos short if bit[15] = 0]
 ]
-	
+
 
 / ********************* chain (8-n +4) stage 2/3 *********************** /
 
@@ -145,45 +145,48 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 /********************* Read and write to memory ***********************/
 
-#define PT_READ_INT(ptr,my_int_i) do { unsigned char *mycharp=(unsigned char *)ptr;	\
-		my_int_i= mycharp[0]<<24 | mycharp[1]<<16 | mycharp[2]<<8 | mycharp[3];	\
-		} while(0)
+#define PT_READ_INT(ptr,my_int_i) do {                                      \
+    unsigned char *mycharp=(unsigned char *)ptr;                            \
+    my_int_i= mycharp[0]<<24 | mycharp[1]<<16 | mycharp[2]<<8 | mycharp[3]; \
+} while(0)
 
-#define PT_WRITE_INT(ptr,my_int_i) do { unsigned char *mycharp=(unsigned char *)(ptr);unsigned long myinti = (unsigned long)(my_int_i);	\
-		mycharp[0]= (unsigned char)(myinti>>24);										\
-		mycharp[1]= (unsigned char)(myinti>>16);										\
-		mycharp[2]= (unsigned char)(myinti>>8);											\
-		mycharp[3]= (unsigned char)myinti;											\
-		} while(0)
+#define PT_WRITE_INT(ptr,my_int_i) do {                 \
+    unsigned char *mycharp=(unsigned char *)(ptr);      \
+    unsigned long myinti = (unsigned long)(my_int_i);   \
+    mycharp[0]= (unsigned char)(myinti>>24);            \
+    mycharp[1]= (unsigned char)(myinti>>16);            \
+    mycharp[2]= (unsigned char)(myinti>>8);             \
+    mycharp[3]= (unsigned char)myinti;                  \
+} while(0)
 
-#define PT_READ_SHORT(ptr,my_int_i) do { unsigned char *mycharp=(unsigned char *)ptr;	\
-		my_int_i= mycharp[0]<<8 | mycharp[1];					\
-		} while(0)
+#define PT_READ_SHORT(ptr,my_int_i)                 \
+do {                                                \
+    unsigned char *mycharp=(unsigned char *)ptr;    \
+    my_int_i= mycharp[0]<<8 | mycharp[1];           \
+} while(0)
 
-#define PT_WRITE_SHORT(ptr,my_int_i) do {							\
-    unsigned char *mycharp=(unsigned char *)ptr;unsigned long myinti = (unsigned long)my_int_i;	\
-    mycharp[0]= (unsigned char)(myinti>>8);							\
-    mycharp[1]= (unsigned char)(myinti);							\
-    } while(0)
+#define PT_WRITE_SHORT(ptr,my_int_i) do {           \
+    unsigned char *mycharp=(unsigned char *)ptr;    \
+    unsigned long myinti = (unsigned long)my_int_i; \
+    mycharp[0]= (unsigned char)(myinti>>8);         \
+    mycharp[1]= (unsigned char)(myinti);            \
+} while(0)
 
 #define PT_WRITE_CHAR(ptr,my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while(0)
 
 #define PT_READ_CHAR(ptr,my_int_i)  do { my_int_i = *(unsigned char *)(ptr); } while(0)
 
-
-
-	
 #ifdef DIGITAL
 
 /* DIGITAL */
-	
-# define PT_READ_PNTR(ptr,my_int_i)							\
-    do {										\
-        if (sizeof(my_int_i)==4) GB_CORE;						\
-	unsigned char *mycharp=(unsigned char *)ptr;					\
-	my_int_i= mycharp[0]<<56 | mycharp[1]<<48 | mycharp[2]<<40 | mycharp[3] << 32 |	\
-	          mycharp[4]<<24 | mycharp[5]<<16 | mycharp[6]<<8 | mycharp[7];		\
-    } while(0)
+
+# define PT_READ_PNTR(ptr,my_int_i)                                                 \
+do {                                                                                \
+    if (sizeof(my_int_i)==4) GB_CORE;                                               \
+	unsigned char *mycharp=(unsigned char *)ptr;                                    \
+	my_int_i= mycharp[0]<<56 | mycharp[1]<<48 | mycharp[2]<<40 | mycharp[3] << 32 | \
+        mycharp[4]<<24 | mycharp[5]<<16 | mycharp[6]<<8 | mycharp[7];               \
+} while(0)
 
 # define PT_WRITE_PNTR(ptr,my_int_i)									\
     do {												\
@@ -198,119 +201,132 @@ only few functions can be used, when the tree is reloaded (stage 3):
 	mycharp[7]= (unsigned char)myinti;								\
     } while(0)
 
-	
+
 #else
 
-/* not DIGITAL */		   
-	
+/* not DIGITAL */
+
 # define PT_READ_PNTR(ptr,my_int_i) 	PT_READ_INT(ptr, my_int_i)
 # define PT_WRITE_PNTR(ptr,my_int_i) 	PT_WRITE_INT(ptr, my_int_i)
-	
-#endif	
+
+#endif
 
 
 
-#define PT_WRITE_NAT(ptr,i) do {		\
-    if (i<0) GB_CORE;				\
-    if (i>= 0x7FFE)				\
-    {						\
-        PT_WRITE_INT(ptr,i|0x80000000);		\
-        ptr += sizeof(int);			\
-    }						\
-    else					\
-    {						\
-         PT_WRITE_SHORT(ptr,i);			\
-         ptr += sizeof(short);			\
-    }						\
+#define PT_WRITE_NAT(ptr,i) do {                \
+    if (i<0) GB_CORE;                           \
+    if (i>= 0x7FFE)                             \
+    {                                           \
+        PT_WRITE_INT(ptr,i|0x80000000);         \
+        ptr += sizeof(int);                     \
+    }                                           \
+    else                                        \
+    {                                           \
+        PT_WRITE_SHORT(ptr,i);                  \
+        ptr += sizeof(short);                   \
+    }                                           \
 } while (0)
 
-#define PT_READ_NAT(ptr,i)						\
-    do {								\
-        if (*ptr & 0x80) {						\
-		PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff;	\
-	}else{								\
-		PT_READ_SHORT(ptr,i); ptr+= sizeof(short);		\
-	}								\
-    } while(0)
+#define PT_READ_NAT(ptr,i)                                      \
+do {                                                            \
+    if (*ptr & 0x80) {                                          \
+		PT_READ_INT(ptr,i); ptr+= sizeof(int); i &= 0x7fffffff; \
+	}else{                                                      \
+		PT_READ_SHORT(ptr,i); ptr+= sizeof(short);              \
+	}                                                           \
+} while(0)
 
 
 /********************* PT_READ_CHAIN_ENTRY ***********************/
 
 
-#define PT_READ_CHAIN_ENTRY(ptr,mainapos,name,apos,rpos) do {						\
-	unsigned int rcei;										\
-	unsigned char *rcep = (unsigned char*)ptr;							\
-	int	isapos;											\
-	apos = 0;											\
-	rpos = 0;											\
-	rcei = (*rcep);											\
-	if (rcei==PT_CHAIN_END) { name = -1; ptr++;							\
-	}else {												\
-		if (rcei&0x80) {if (rcei&0x40) { PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;	\
-				}else{	PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;		\
-				}									\
-		}else{ rcei&= 0x7f;rcep++; }								\
-		name += rcei;										\
-		rcei = (*rcep);										\
-		if (rcei&0x80) isapos = 1; else isapos = 0;						\
-		if (rcei&0x40) { PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;			\
-		}else{	PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;				\
-		}											\
-		rpos = (int)rcei;									\
-		if (isapos) {										\
-			rcei = (*rcep);									\
-			if (rcei&0x80) {	PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;	\
-			}else{		PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;		\
-			}										\
-			apos = (int)rcei;								\
-		}else{											\
-			apos = (int)mainapos;}								\
-		ptr = (char *)rcep;									\
-	} } while(0)
+#define PT_READ_CHAIN_ENTRY(ptr,mainapos,name,apos,rpos) do {           \
+	unsigned int rcei;                                                  \
+	unsigned char *rcep = (unsigned char*)ptr;                          \
+	int	isapos;                                                         \
+	apos = 0;                                                           \
+	rpos = 0;                                                           \
+	rcei = (*rcep);                                                     \
+	if (rcei==PT_CHAIN_END) { name = -1; ptr++;                         \
+	}else {                                                             \
+		if (rcei&0x80) {                                                \
+            if (rcei&0x40) {                                            \
+                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;    \
+            }                                                           \
+            else {                                                      \
+                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;      \
+            }                                                           \
+		}                                                               \
+        else {                                                          \
+            rcei&= 0x7f;rcep++;                                         \
+        }                                                               \
+		name += rcei;                                                   \
+		rcei = (*rcep);                                                 \
+		if (rcei&0x80) isapos = 1;                                      \
+        else isapos = 0;                                                \
+		if (rcei&0x40) {                                                \
+            PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;        \
+		}else{                                                          \
+            PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;          \
+		}                                                               \
+		rpos = (int)rcei;                                               \
+		if (isapos) {                                                   \
+			rcei = (*rcep);                                             \
+			if (rcei&0x80) {                                            \
+                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;    \
+			}else{                                                      \
+                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;      \
+			}                                                           \
+			apos = (int)rcei;                                           \
+		}else{                                                          \
+			apos = (int)mainapos;}                                      \
+		ptr = (char *)rcep;                                             \
+	}                                                                   \
+} while(0)
 
-    
+
 /* stage 1 */
 GB_INLINE char *PT_WRITE_CHAIN_ENTRY(char *ptr,int mainapos,int name,int apos,int rpos)
 {
     register unsigned char *wcep = (unsigned char *)ptr;
     int	 isapos;
     if (name < 0x7f) {		/* write the name */
-	*(wcep++) = name;
+        *(wcep++) = name;
     } else if (name <0x3fff) {
-	name |= 0x8000;
-	PT_WRITE_SHORT(wcep,name);
-	wcep += 2;
+        name |= 0x8000;
+        PT_WRITE_SHORT(wcep,name);
+        wcep += 2;
     } else {
-	name|=0xc0000000;
-	PT_WRITE_INT(wcep,name);
-	wcep += 4;
+        name|=0xc0000000;
+        PT_WRITE_INT(wcep,name);
+        wcep += 4;
     }
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
     if (rpos < 0x7fff) {		/* write the rpos */
-	PT_WRITE_SHORT(wcep,rpos);
-	*wcep |= isapos;
-	wcep += 2;
+        PT_WRITE_SHORT(wcep,rpos);
+        *wcep |= isapos;
+        wcep += 2;
     } else {
-	PT_WRITE_INT(wcep,rpos);
-	*wcep |= 0x40+isapos;
-	wcep += 4;
+        PT_WRITE_INT(wcep,rpos);
+        *wcep |= 0x40+isapos;
+        wcep += 4;
     }
     if (isapos){			/* write the apos */
-	if (apos < 0x7fff) {
-	    PT_WRITE_SHORT(wcep,apos);
-	    wcep += 2;
-	} else {
-	    PT_WRITE_INT(wcep,apos);
-	    *wcep |= 0x80;
-	    wcep += 4;
-	}
+        if (apos < 0x7fff) {
+            PT_WRITE_SHORT(wcep,apos);
+            wcep += 2;
+        } else {
+            PT_WRITE_INT(wcep,apos);
+            *wcep |= 0x80;
+            wcep += 4;
+        }
     }
     return (char *)wcep;
 }
-		// calculate the index of the pointer in a node
+// calculate the index of the pointer in a node
 
 GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
-	{
+{
 	register long i;
 	register uint sec;
 	register uint offset;
@@ -351,7 +367,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 }
 
 GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
-	{
+{
 	register long i;
 	if (!( (1<<base) & node->flags)) return 0;	/* bit not set */
 	base = (PT_BASES)PT_count_bits[base][node->flags];
@@ -360,12 +376,12 @@ GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES b
 }
 
 GB_INLINE PT_NODE_TYPE PT_read_type(POS_TREE *node)
-	{
+{
 	return (PT_NODE_TYPE)PT_GET_TYPE(node);
 }
 
 GB_INLINE int PT_read_name(PTM2 *ptmain,POS_TREE *node)
-	{
+{
 	int i;
 	if (node->flags&1){
 		PT_READ_INT((&node->data)+ptmain->mode,i);
@@ -376,7 +392,7 @@ GB_INLINE int PT_read_name(PTM2 *ptmain,POS_TREE *node)
 }
 
 GB_INLINE int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
-	{
+{
 	int i;
 	char *data = (&node->data)+2+ptmain->mode;
 	if (node->flags&1) data+=2;
@@ -389,7 +405,7 @@ GB_INLINE int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
 }
 
 GB_INLINE int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
-	{
+{
 	int i;
 	char *data = (&node->data)+ptmain->mode+4;	/* father 4 name 2 rpos 2 */
 	if (node->flags&1) data+=2;
@@ -408,23 +424,23 @@ GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int a
     int cname;
     int	error;
     char *data;
-    
+
     data = (&node->data) + ptmain->mode;
     if (node->flags&1){
-	PT_READ_INT(data,pos);
-	data += 4;
+        PT_READ_INT(data,pos);
+        data += 4;
     }else{
-	PT_READ_SHORT(data,pos);
-	data += 2;
+        PT_READ_SHORT(data,pos);
+        data += 2;
     }
     error = 0;
     cname = 0;
     while (cname>=0){
-	PT_READ_CHAIN_ENTRY(data,pos,cname,apos,rpos);
-	if (cname>=0){
-	    error = func(cname,apos,rpos,clientdata);
-	    if (error) return error;
-	}
+        PT_READ_CHAIN_ENTRY(data,pos,cname,apos,rpos);
+        if (cname>=0){
+            error = func(cname,apos,rpos,clientdata);
+            if (error) return error;
+        }
     }
     return error;
 }
