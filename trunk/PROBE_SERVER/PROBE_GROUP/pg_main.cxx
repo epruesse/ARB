@@ -15,6 +15,8 @@
 #include <algorithm>
 
 #include "../global_defs.h"
+#define SKIP_GETDATABASESTATE
+#include "../common.h"
 
 #define SAVE_AFTER_XXX_NEW_GROUPS 10000
 
@@ -280,15 +282,18 @@ int PG_status(double) {
     return 0;
 }
 
-//  ----------------------------------------------
-//      static GB_ERROR save(GBDATA *pb_main)
-//  ----------------------------------------------
-static GB_ERROR save(GBDATA *pb_main) {
-    const char  *name  = para.db_out_name.c_str();
-    GB_ERROR     error = 0;
+// ------------------------------------------------------------------
+//      static GB_ERROR save(GBDATA *pb_main, const char *state)
+// ------------------------------------------------------------------
+static GB_ERROR save(GBDATA *pb_main, const char *state) {
+    GB_ERROR error = setDatabaseState(pb_main, 0, state);
 
-    out.put("Saving %s ...", name);
-    error = GB_save(pb_main, name, SAVE_MODE); // was "a"
+    if (!error) {
+        const char *name = para.db_out_name.c_str();
+
+        out.put("Saving %s ...", name);
+        error = GB_save(pb_main, name, SAVE_MODE); // was "a"
+    }
 
     return error;
 }
@@ -345,30 +350,33 @@ int main(int argc,char *argv[]) {
             error             = GB_get_error();
             if (!error) error = GB_export_error("Can't open database '%s'", name);
         }
+        if (!error) error = setDatabaseState(pb_main, "probe_group_db", "empty");
     }
 
     //open path-mapping-database:
     if (!error) {
-        const char *name=para.db_out_alt_name2.c_str();
+        const char *name = para.db_out_alt_name2.c_str();
 
         out.put("Opening path-mapping-database '%s'..",name);
-        pbb_main=GB_open(name,"wch");
-        if(!pbb_main){
-            error=GB_get_error();
-            if(!error) error=GB_export_error("Can't open database '%s'..",name);
+        pbb_main = GB_open(name,"wch");
+        if (!pbb_main){
+            error            = GB_get_error();
+            if(!error) error = GB_export_error("Can't open database '%s'..",name);
         }
+        if (!error) error = setDatabaseState(pbb_main, "probe_group_mapping_db", "empty");
     }
 
     //open probe-group-subtree-result-database:
     if (!error) {
-        const char *name=para.db_out_alt_name.c_str();
+        const char *name = para.db_out_alt_name.c_str();
 
         out.put("Opening probe-group-subtree-result-database '%s'..",name);
-        pba_main=GB_open(name,"wch");
-        if(!pba_main){
-            error=GB_get_error();
-            if(!error) error=GB_export_error("Can't open database '%s'",name);
+        pba_main = GB_open(name,"wch");
+        if (!pba_main){
+            error            = GB_get_error();
+            if(!error) error = GB_export_error("Can't open database '%s'",name);
         }
+        if (!error) error = setDatabaseState(pba_main, "probe_group_subtree_db", "empty");
     }
 
     if (!error) {
@@ -377,7 +385,7 @@ int main(int argc,char *argv[]) {
 
         int statistic[PG_NumberSpecies()];
         for(int i=0;i<PG_NumberSpecies();i++)
-            statistic[i]=0;
+            statistic[i] = 0;
 
         bool status=false;
 
@@ -496,7 +504,7 @@ int main(int argc,char *argv[]) {
                                                         length);
 
                                                 last_save_group_count = group_count;
-                                                error = save(pb_main);
+                                                error = save(pb_main, "autosave");
                                             }
                                         }
                                     }
@@ -521,7 +529,7 @@ int main(int argc,char *argv[]) {
             }
 
             // save last state:
-            if (!error) error = save(pb_main);
+            if (!error) error = save(pb_main, "complete");
         }
 
         if (!error) {
@@ -622,6 +630,11 @@ int main(int argc,char *argv[]) {
                         data += buffer;
                     }
                     error = GB_write_string(stat,data.c_str());
+                }
+
+                if (!error) {
+                    error = setDatabaseState(pba_main, 0, "complete"); // set the state of the database
+                    error = setDatabaseState(pbb_main, 0, "complete"); // set the state of the database
                 }
 
                 if (error) GB_abort_transaction(pba_main);

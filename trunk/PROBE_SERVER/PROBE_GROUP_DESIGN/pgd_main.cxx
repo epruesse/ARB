@@ -11,6 +11,7 @@
 #include <servercntrl.h>
 
 #include "../global_defs.h"
+#include "../common.h"
 
 #define MINTEMPERATURE 30.0
 #define MAXTEMPERATURE 100.0
@@ -353,7 +354,6 @@ GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_list)
     return error;
 }
 
-
 int main(int argc,char *argv[]) {
     printf("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram\n");
 
@@ -382,6 +382,9 @@ int main(int argc,char *argv[]) {
         if (!pd_main) {
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'",pd_name);
+        }
+        else {
+            error = checkDatabaseType(pd_main, pd_name, "probe_group_subtree_db", "complete");
         }
     }
 
@@ -470,11 +473,10 @@ int main(int argc,char *argv[]) {
                         }
                     }
 
-                    if (error) {
-                        fputc('\n', stdout);
-                    }
+                    if (error) fputc('\n', stdout);
                     else {
                         printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
+                        printf("\nMarking common probes..\n");
 
                         // check whether probes common in probe_group and probe_group_design
                         count           = 0;
@@ -482,6 +484,10 @@ int main(int argc,char *argv[]) {
                              pd_subtree && !error;
                              pd_subtree = GB_find(pd_subtree,"subtree",0,this_level|search_next))
                         {
+                            ++count;
+                            if (count%60) fputc('.', stdout);
+                            else printf(". %i%%\n", int((double(count)/subtrees)*100+0.5));
+
                             GBDATA *pd_probe_group        = GB_find(pd_subtree, "probe_group", 0, down_level);
                             GBDATA *pd_probe_group_design = GB_find(pd_subtree, "probe_group_design", 0, down_level);
 
@@ -524,9 +530,12 @@ int main(int argc,char *argv[]) {
                                     else error_message                       = "Containers 'probe_group' and 'probe_group_design' not found";
                                 }
 
-                                fprintf(stderr, "%s (in subtree '%s')\n", error_message, path);
+                                fprintf(stderr, "\n%s (in subtree '%s')\n", error_message, path);
                             }
                         }
+
+                        if (error) fputc('\n', stdout);
+                        else printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
                     }
                 }
 
@@ -536,6 +545,9 @@ int main(int argc,char *argv[]) {
                 PG_exit_pt_server();
             }
         }
+
+        // adjust database type
+        if (!error) error = setDatabaseState(pd_main, "probe_group_design_db", "complete");
 
         if (error) {
             GB_abort_transaction(pd_main);
