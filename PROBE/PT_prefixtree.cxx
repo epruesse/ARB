@@ -56,11 +56,15 @@ char *PTM_get_mem(int size)
         PTM.tables[pos] = (char *)i;
     } else {
         if (PTM.size < nsize) {
-            PTM.data = (char *) calloc(1, PTM_TABLE_SIZE);
-            PTM.size = PTM_TABLE_SIZE;
-            PTM.allsize += PTM_TABLE_SIZE;
+            PTM.data         = (char *) calloc(1, PTM_TABLE_SIZE);
+            PTM.size         = PTM_TABLE_SIZE;
+            PTM.allsize     += PTM_TABLE_SIZE;
 #ifdef PTM_DEBUG
-            printf("Memory usage: %i byte\n",PTM.allsize);
+            static int less  = 0;
+            if ((less%10) == 0) {
+                printf("Memory usage: %i byte\n",PTM.allsize);
+            }
+            ++less;
 #endif
         }
         erg = PTM.data;
@@ -489,7 +493,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 */*ptmain*/ , char ** 
         int size = wp -buffer;
         if (1 !=fwrite(buffer,size,1,out) ) {
             fprintf(stderr,"Write Error (Disc Full ???)\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         *ppos += size;
         PTM_free_mem(entry,rp-entry);
@@ -708,7 +712,7 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
     if (!buffer){
         GB_print_error();
         fprintf(stderr,"PT_SERVER: Error Out of Memory: mmap failes\n");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     long size = GB_size_of_file(fname);
