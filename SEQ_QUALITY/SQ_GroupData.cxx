@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include <cstdio>
+#include <cctype>
 #include "SQ_GroupData.h"
 
 using namespace std;
@@ -27,7 +28,7 @@ double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
 	current = 0;
 	div     = 0;
 	sema    = false;
-        switch(sequence[i]) {
+        switch(toupper(sequence[i])) {
             case 'A':
                 current = consensus[i].i[0];
 		sema=true;
@@ -85,7 +86,7 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 
     for (int i=0; i < size; i++) {
 #warning has to work with IUPAC codes!
-        switch(sequence[i]) {
+        switch(toupper(sequence[i])) {
             case 'A':
                 consensus[i].i[0] = consensus[i].i[0] + 100;
                 break;
