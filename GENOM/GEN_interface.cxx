@@ -25,10 +25,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-//  --------------------------------------------------------------------------------------------------
-//      static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
-//  --------------------------------------------------------------------------------------------------
-static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
+void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *organism  = GB_strdup(item_name);
     char *gene = strchr(organism, '/');
 
@@ -197,7 +194,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
 //  ----------------------------------------------------
 struct ad_item_selector GEN_item_selector         = {
     AWT_QUERY_ITEM_GENES,
-    gen_select_gene,
+    GEN_select_gene,
     gen_gene_result_name,
     (AW_CB)awt_gene_field_selection_list_update_cb,
     25,
