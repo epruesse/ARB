@@ -2490,6 +2490,23 @@ GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
     return hash;
 }
 
+GB_HASH *GBT_generate_SAI_hash(GBDATA *gb_main)
+{
+    GB_HASH *hash = GBS_create_hash(1000, 0);
+    GBDATA  *gb_ext;
+
+    for (gb_ext = GBT_first_SAI(gb_main);
+         gb_ext;
+         gb_ext = GBT_next_SAI(gb_ext))
+    {
+        GBDATA *gb_name = GB_find(gb_ext, "name", 0, down_level);
+        if (gb_name) {
+            GBS_write_hash(hash, GB_read_char_pntr(gb_name), (long)gb_ext);
+        }
+    }
+    return hash;
+}
+
 /********************************************************************************************
                 Rename one or many species (only one session at a time/ uses
                 commit abort transaction)
