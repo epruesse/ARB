@@ -1983,6 +1983,44 @@ GBDATA *GBT_next_species(GBDATA *gb_species)
     return gb_species;
 }
 
+#ifdef DEVEL_IDP
+
+GBDATA *GBT_first_marked_gene_rel_species(GBDATA *gb_species)
+{
+  GBDATA *gene_data;
+  gene_data = GB_find(gb_species,"gene_data",0,down_level);
+  return GB_first_marked(gene_data,"gene");
+}
+
+GBDATA *GBT_get_gene_data(GBDATA *gb_main) {
+  return GB_search(gb_main,"gene_data",GB_CREATE_CONTAINER);
+}
+
+GBDATA *GBT_first_marked_gene(GBDATA *gb_main)
+{
+    return GB_first_marked(GBT_get_gene_data(gb_main), "gene");
+}
+
+GBDATA *GBT_next_marked_gene(GBDATA *gb_species)
+{
+    return GB_next_marked(gb_species,"gene");
+}
+
+GBDATA *GBT_find_gene_rel_species(GBDATA *gb_species,const char *name)
+{
+
+    GBDATA *gb_gene_name;
+    GBDATA *gb_gene_data;
+    gb_gene_data = GB_find(gb_species,"gene_data",0,down_level);
+    gb_gene_name = GB_find(gb_gene_data,"name",name,down_2_level);
+    if (!gb_gene_name) return 0;
+    return GB_get_father(gb_gene_name);
+}
+
+
+#endif
+
+
 GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *name)
 {
 
