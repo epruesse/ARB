@@ -322,7 +322,7 @@ void PH_save_ml_cb(AW_window *aww) {
             bits[x] = '0'+bit;
         }
 
-        GB_write_bits(gb_bits,bits,len,'0');
+        GB_write_bits(gb_bits,bits,len, "0");
         char buffer[1024];
         sprintf(buffer,"FMX: Filter by Maximum Frequency: "
                 "Start %li; Stop %li; Minhom %li%%; Maxhom %li%%",
