@@ -126,38 +126,40 @@ struct gbcms_create_struct {
 ***************************************************************************************/
 GBCONTAINER *gbcms_gb_main;
 void *gbcms_sighup(void){
-    char buffer[1024];
-    char *fname;
-    GB_ERROR error;
-    int translevel;
-    const char *ap = GB_getenv("ARB_PID");
+    char          buffer[1024];
+    char         *fname;
+    GB_ERROR      error;
+    int           translevel;
     GB_MAIN_TYPE *Main;
 
-    if (!ap ) ap = "";
-    sprintf(buffer,"/tmp/arb_panic_%s_%s",GB_getenvUSER(),ap);
+    {
+        const char *ap = GB_getenv("ARB_PID");
+        if (!ap ) ap = "";
+        sprintf(buffer,"/tmp/arb_panic_%s_%s",GB_getenvUSER(),ap);
+    }
     fprintf(stderr,"**** ARB DATABASE SERVER GOT a HANGUP SIGNAL ****\n");
-    fprintf(stderr,"    Looking for file %s\n",buffer);
+    fprintf(stderr,"- Looking for file '%s'\n",buffer);
     fname = GB_read_file(buffer);
     if (!fname) {
-        fprintf(stderr,"    File not %s found ->EXIT\n",buffer);
-        exit (-1);
+        fprintf(stderr,"- File '%s' not found - exiting!\n",buffer);
+        exit(EXIT_FAILURE);
     }
     if (fname[strlen(fname)-1] == '\n') fname[strlen(fname)-1] = 0;
-    if (!strcmp(fname,"core")) {
-        GB_CORE;
-    }
-    fprintf(stderr,"    Trying to save DATABASE in ASCII Mode\n");
-    Main = GBCONTAINER_MAIN(gbcms_gb_main);
-    translevel = Main->transaction;
+    if (strcmp(fname,"core") == 0) { GB_CORE; }
+
+    fprintf(stderr,"- Trying to save DATABASE in ASCII Mode into file '%s'\n", fname);
+    Main              = GBCONTAINER_MAIN(gbcms_gb_main);
+    translevel        = Main->transaction;
     Main->transaction = 0;
-    error = GB_save_as((GBDATA*)gbcms_gb_main,fname,"a");
-    if (error){
-        fprintf(stderr,"Error while saving: %s\n",error);
-    }else{
-        fprintf(stderr,"    DATABASE saved\n");
-    }
+    error             = GB_save_as((GBDATA*)gbcms_gb_main, fname, "a");
+    
+    if (error) fprintf(stderr,"Error while  saving '%s': %s\n", fname, error);
+    else fprintf(stderr,"- DATABASE saved into '%s'\n", fname);
+
     unlink(buffer);
     Main->transaction = translevel;
+    
+    free(fname);
 
     return 0;
 }
