@@ -7,6 +7,8 @@
 /* #include <malloc.h> */
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
+#include <float.h> 
 
 #include "adlocal.h"
 /*#include "arbdb.h"*/
@@ -39,6 +41,202 @@ struct gbs_hashi_struct {
     struct gbs_hashi_entry **entries;
 };
 
+/* prime numbers */
+
+#define KNOWN_PRIMES 279
+static long sorted_primes[KNOWN_PRIMES] = {
+    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 47, 53, 59, 67, 71, 79, 89, 97, 103, 109, 127, 137, 149, 157, 167, 179, 191, 211, 
+    223, 239, 257, 271, 293, 311, 331, 349, 373, 397, 419, 443, 467, 499, 541, 571, 607, 641, 677, 719, 757, 797, 839, 887, 937, 
+    991, 1049, 1109, 1171, 1237, 1303, 1373, 1447, 1531, 1613, 1699, 1789, 1889, 1993, 2099, 2213, 2333, 2459, 2591, 2729, 2879, 
+    3037, 3203, 3373, 3557, 3761, 3967, 4177, 4397, 4637, 4889, 5147, 5419, 5711, 6029, 6353, 6689, 7043, 7417, 7817, 8231, 8669, 
+    9127, 9613, 10133, 10667, 11239, 11831, 12457, 13121, 13829, 14557, 15329, 16139, 16993, 17891, 18839, 19841, 20887, 21991, 23159, 
+    24379, 25667, 27031, 28463, 29983, 31567, 33247, 35023, 36871, 38821, 40867, 43019, 45289, 47681, 50207, 52859, 55661, 58601, 
+    61687, 64937, 68371, 71971, 75767, 79757, 83969, 88397, 93053, 97961, 103123, 108553, 114269, 120293, 126631, 133303, 140321, 
+    147709, 155501, 163697, 172313, 181387, 190979, 201031, 211619, 222773, 234499, 246889, 259907, 273601, 288007, 303187, 319147, 
+    335953, 353641, 372263, 391861, 412487, 434201, 457057, 481123, 506449, 533111, 561173, 590713, 621821, 654553, 689021, 725293, 
+    763471, 803659, 845969, 890501, 937373, 986717, 1038671, 1093357, 1150909, 1211489, 1275269, 1342403, 1413077, 1487459, 1565747, 
+    1648181, 1734937, 1826257, 1922383, 2023577, 2130101, 2242213, 2360243, 2484473, 2615243, 2752889, 2897789, 3050321, 3210871, 
+    3379877, 3557773, 3745051, 3942209, 4149703, 4368113, 4598063, 4840103, 5094853, 5363011, 5645279, 5942399, 6255157, 6584377, 
+    6930929, 7295719, 7679713, 8083919, 8509433, 8957309, 9428759, 9925021, 10447391, 10997279, 11576087, 12185359, 12826699, 13501819, 
+    14212447, 14960471, 15747869, 16576727, 17449207, 18367597, 19334317, 20351927, 21423107, 22550639, 23737523, 24986867, 26301967, 
+    27686291, 29143493, 30677363, 32291971, 33991597, 35780639, 37663841, 39646153, 41732809, 43929307, 46241389, 48675167, 51237019, 
+    53933713, 56772371, 59760391, 62905681, 66216511, 69701591, 73370107, 77231711, 81296543, 85575313, 90079313, 94820347, 99810899 
+};
+
+
+/* define CALC_PRIMES only to expand the above table */
+#if defined(DEBUG)
+/* #define CALC_PRIMES */
+#endif /* DEBUG */
+
+#ifdef CALC_PRIMES
+
+#define CALC_PRIMES_UP_TO 100000000L
+#define PRIME_UNDENSITY   20L   /* the higher, the less primes are stored */
+
+#warning "please don't define CALC_PRIMES permanently"
+
+static unsigned char bit_val[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
+
+static int bit_value(const unsigned char *erastothenes, long num) { // 'num' is odd and lowest 'num' is 3
+    long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
+    long byte_num = bit_num >> 3; // div 8
+    char byte     = erastothenes[byte_num];
+
+    gb_assert(bit_num >= 0);
+    gb_assert((num&1) == 1);    // has to odd
+
+    bit_num = bit_num &  7;
+
+    return (byte & bit_val[bit_num]) ? 1 : 0;
+}
+static void set_bit_value(unsigned char *erastothenes, long num, int val) { // 'num' is odd and lowest 'num' is 3; val is 0 or 1
+    long bit_num  = ((num-1) >> 1)-1; // 3->0 5->1 7->2 etc.
+    long byte_num = bit_num >> 3; // div 8
+    char byte     = erastothenes[byte_num];
+
+    gb_assert(bit_num >= 0);
+    gb_assert((num&1) == 1);    // has to odd
+
+    bit_num = bit_num &  7;
+
+    if (val) {
+        byte |= bit_val[bit_num];
+    }
+    else {
+        byte &= (0xff - bit_val[bit_num]);
+    }
+    erastothenes[byte_num] = byte;
+}
+
+static void calculate_primes_upto() {
+    {
+        long           bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
+        long           bytes_needed = (bits_needed/8)+1;
+        unsigned char *erastothenes = GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
+        long           prime_count  = 0;
+        long           num;
+
+        printf("erastothenes' size = %li\n", bytes_needed);
+
+        if (!erastothenes) {
+            GB_internal_error("out of memory");
+            return;
+        }
+
+        for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
+            if (bit_value(erastothenes, num) == 0) { // is a prime number
+                long num2;
+                prime_count++;
+                for (num2 = num*2; num2 <= CALC_PRIMES_UP_TO; num2 += num) { // with all multiples
+                    if ((num2&1) == 1) { // skip even numbers
+                        set_bit_value(erastothenes, num2, 1);
+                    }
+                }
+            }
+            // otherwise it is no prime and all multiples are already set to 1
+        }
+
+        /* thin out prime numbers (we don't need all of them) */
+        {
+            long prime_count2 = 0;
+            long last_prime   = -1000;
+            int  index;
+            int  printed      = 0;
+
+            for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
+                if (bit_value(erastothenes, num) == 0) { // is a prime number
+                    long diff = num-last_prime;
+                    if ((diff*PRIME_UNDENSITY)<num) {
+                        set_bit_value(erastothenes, num, 1); // delete unneeded prime
+                    }
+                    else {
+                        prime_count2++; // count needed primes
+                        last_prime = num;
+                    }
+                }
+            }
+
+            printf("\nUsing %li prime numbers up to %li:\n\n", prime_count2, CALC_PRIMES_UP_TO);
+            printf("#define KNOWN_PRIMES %li\n", prime_count2);
+            printf("static long sorted_primes[KNOWN_PRIMES] = {\n    ");
+            printed = 4;
+
+            index = 0;
+            for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
+                if (bit_value(erastothenes, num) == 0) { // is a prime number
+                    if (printed>128) {
+                        printf("\n    ");
+                        printed = 4;
+                    }
+                    if (num>INT_MAX) {
+                        printed += printf("%liL, ", num);
+                    }
+                    else {
+                        printed += printf("%li, ", num);
+                    }
+                }
+            }
+            printf("\n};\n\n");
+        }
+
+        free(erastothenes);
+    }
+    fflush(stdout);
+    exit(1);
+}
+
+#endif /* CALC_PRIMES */
+
+long GBS_get_a_prime(long above_or_equal_this) {
+    // return a prime number above_or_equal_this
+    // NOTE: it is not necessarily the next prime number, because we don't calculate all prime numbers!
+    
+#if defined(CALC_PRIMES)
+    calculate_primes_upto(above_or_equal_this);
+#endif /* CALC_PRIMES */
+
+    if (sorted_primes[KNOWN_PRIMES-1] >= above_or_equal_this) {
+        int l = 0, h = KNOWN_PRIMES-1;
+        
+        while (l < h) {
+            int m = (l+h)/2;
+#if defined(DEBUG) && 0
+            printf("l=%-3i m=%-3i h=%-3i above_or_equal_this=%li sorted_primes[%i]=%li sorted_primes[%i]=%li sorted_primes[%i]=%li\n",
+                   l, m, h, above_or_equal_this, l, sorted_primes[l], m, sorted_primes[m], h, sorted_primes[h]);
+#endif /* DEBUG */
+            gb_assert(l <= m);
+            gb_assert(m <= h);
+            if (sorted_primes[m] > above_or_equal_this) {
+                h = m-1;
+            }
+            else {
+                if (sorted_primes[m] < above_or_equal_this) {
+                    l = m+1;
+                }
+                else {
+                    h = l = m;
+                }
+            }
+        }
+
+        if (sorted_primes[l] < above_or_equal_this) {
+            l++;                // take next
+            gb_assert(l<KNOWN_PRIMES);
+        }
+
+        gb_assert(sorted_primes[l] >= above_or_equal_this);
+        gb_assert(l == 0 || sorted_primes[l-1] < above_or_equal_this);
+
+        return sorted_primes[l];
+    }
+
+    fprintf(stderr, "Warning: GBS_get_a_prime failed for value %li (performance bleed)\n", above_or_equal_this);
+    gb_assert(0); // add more primes to sorted_primes[]
+
+    return above_or_equal_this;
+}
+
 /********************************************************************************************
                     Some Hash Procedures for [string,long]
 ********************************************************************************************/
@@ -63,17 +261,19 @@ struct gbs_hashi_struct {
     }
 
 
-GB_HASH *GBS_create_hash(long size,int upper_case){
+GB_HASH *GBS_create_hash(long user_size,int upper_case){
     /* Create a hash of size size, this hash is using linked list to avoid collisions,
-     *  if upper_case = 0 then 'a!=A'
-     *  else if upper_case = 1 then 'a==A'
+     *  if upper_case            = 0 then 'a!=A'
+     *  else if upper_case       = 1 then 'a==A'
      *  */
     struct gbs_hash_struct *hs;
-    hs = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
-    hs->size = size;
-    hs->nelem = 0;
+    long                    size = GBS_get_a_prime(user_size); // use next prime number for hash size
+
+    hs             = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
+    hs->size       = size;
+    hs->nelem      = 0;
     hs->upper_case = upper_case;
-    hs->entries = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *),(size_t)size);
+    hs->entries    = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *),(size_t)size);
     return hs;
 }
 
@@ -276,11 +476,18 @@ long GBS_incr_hash(GB_HASH *hs,const char *key)
 
 void GBS_free_hash_entries(GB_HASH *hs)
 {
-    register long    i;
-    register long    e2;
+    register long          i;
+    register long          e2;
     struct gbs_hash_entry *e, *ee;
+#if defined(DEBUG)
+    int                    queues = 0;
+#endif /* DEBUG */
+
     e2 = hs->size;
     for (i = 0; i < e2; i++) {
+#if defined(DEBUG)
+        if (hs->entries[i]) queues++;
+#endif /* DEBUG */
         for (e = hs->entries[i]; e; e = ee) {
             free(e->key);
             ee = e->next;
@@ -288,6 +495,17 @@ void GBS_free_hash_entries(GB_HASH *hs)
         }
         hs->entries[i] = 0;
     }
+#if defined(DEBUG)
+    {
+        long   collisions     = hs->nelem-queues;
+        double collision_rate = (double)collisions/hs->nelem;
+
+        if (collision_rate > 0.3) { // more than 30% collisions - increase hash ?
+            printf("hash-size-warning: size=%li elements=%li collisions=%li collision_rate=%5.1f%%\n",
+                   hs->size, hs->nelem, collisions, collision_rate*100.0);
+        }
+    }
+#endif /* DEBUG */
 }
 
 void GBS_free_hash(GB_HASH *hs)
@@ -296,6 +514,108 @@ void GBS_free_hash(GB_HASH *hs)
     GBS_free_hash_entries(hs);
     free((char *)hs->entries);
     free((char *)hs);
+}
+
+/* determine hash quality */
+
+typedef struct {
+    long   count;               // how many stats
+    long   min_size, max_size, sum_size;
+    long   min_nelem, max_nelem, sum_nelem;
+    long   min_collisions, max_collisions, sum_collisions;
+    double min_fill_ratio, max_fill_ratio, sum_fill_ratio;
+    double min_hash_quality, max_hash_quality, sum_hash_quality;
+} gbs_hash_statistic_summary;
+
+static GB_HASH *stat_hash = 0;
+
+static void init_hash_statistic_summary(gbs_hash_statistic_summary *stat) {
+    stat->count          = 0;
+    stat->min_size       = stat->min_nelem = stat->min_collisions = LONG_MAX;
+    stat->max_size       = stat->max_nelem = stat->max_collisions = LONG_MIN;
+    stat->min_fill_ratio = stat->min_hash_quality = DBL_MAX;
+    stat->max_fill_ratio = stat->max_hash_quality = DBL_MIN;
+
+    stat->sum_size       = stat->sum_nelem = stat->sum_collisions = 0;
+    stat->sum_fill_ratio = stat->sum_hash_quality = 0.0;
+}
+
+static gbs_hash_statistic_summary *get_stat_summary(const char *id) {
+    long found;
+    if (!stat_hash) stat_hash = GBS_create_hash(10, 0);
+    found                     = GBS_read_hash(stat_hash, id);
+    if (!found) {
+        gbs_hash_statistic_summary *stat = GB_calloc(1, sizeof(*stat));
+        init_hash_statistic_summary(stat);
+        found                            = (long)stat;
+        GBS_write_hash(stat_hash, id, found);
+    }
+
+    return (gbs_hash_statistic_summary*)found;
+}
+
+static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long size, long nelem, long collisions, double fill_ratio, double hash_quality) {
+    stat->count++;
+
+    if (stat->min_size > size) stat->min_size = size;
+    if (stat->max_size < size) stat->max_size = size;
+
+    if (stat->min_nelem > nelem) stat->min_nelem = nelem;
+    if (stat->max_nelem < nelem) stat->max_nelem = nelem;
+
+    if (stat->min_collisions > collisions) stat->min_collisions = collisions;
+    if (stat->max_collisions < collisions) stat->max_collisions = collisions;
+
+    if (stat->min_fill_ratio > fill_ratio) stat->min_fill_ratio = fill_ratio;
+    if (stat->max_fill_ratio < fill_ratio) stat->max_fill_ratio = fill_ratio;
+
+    if (stat->min_hash_quality > hash_quality) stat->min_hash_quality = hash_quality;
+    if (stat->max_hash_quality < hash_quality) stat->max_hash_quality = hash_quality;
+
+    stat->sum_size         += size;
+    stat->sum_nelem        += nelem;
+    stat->sum_collisions       += collisions;
+    stat->sum_fill_ratio   += fill_ratio;
+    stat->sum_hash_quality += hash_quality;
+}
+
+void GBS_clear_hash_statistic_summary(const char *id) {
+    init_hash_statistic_summary(get_stat_summary(id));
+}
+
+void GBS_print_hash_statistic_summary(const char *id) {
+    gbs_hash_statistic_summary *stat  = get_stat_summary(id);
+    long                        count = stat->count;
+    printf("Statistic summary for %li hashes of type '%s':\n", count, id);
+    printf("- size:          min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_size, stat->max_size, (double)stat->sum_size/count);
+    printf("- nelem:         min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_nelem, stat->max_nelem, (double)stat->sum_nelem/count);
+    printf("- fill_ratio:    min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_fill_ratio*100.0, stat->max_fill_ratio*100.0, (double)stat->sum_fill_ratio/count*100.0);
+    printf("- collisions:    min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_collisions, stat->max_collisions, (double)stat->sum_collisions/count);
+    printf("- hash_quality:  min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_hash_quality*100.0, stat->max_hash_quality*100.0, (double)stat->sum_hash_quality/count*100.0);
+}
+
+void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
+    long   i;
+    long   queues     = 0;
+    long   collisions;
+    double fill_ratio = (double)hs->nelem/hs->size;
+    double hash_quality;
+
+    for (i = 0; i < hs->size; i++) {
+        if (hs->entries[i]) queues++;
+    }
+    collisions = hs->nelem - queues;
+
+    hash_quality = (double)queues/hs->nelem; // no collisions means 100% quality
+
+    if (print != 0) {
+        printf("Statistic for hash '%s':\n", id);
+        printf("- size       = %li\n", hs->size);
+        printf("- elements   = %li (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
+        printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
+    }
+
+    addto_hash_statistic_summary(get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
 }
 
 void GBS_free_hash_entries_free_pointer(GB_HASH *hs)
