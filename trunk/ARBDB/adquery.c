@@ -661,23 +661,24 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
     return 0;
 }
 
-char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd ){
+char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
     /* simple command interpreter returns 0 on error (+ GB_export_error) */
     /* if first character is == ':' run string parser
        if first character is == '/' run regexpr
        else command interpreter
+       
     */
-    int strmalloc = 0;
-    int len;
-    char *buffer;
-    GB_ERROR error;
-    char *error2 = 0;
-    int i;
-    int argcinput;
-    int argcparam;
-    int argcout;
-    char *bracket;
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    int           strmalloc = 0;
+    int           len;
+    char         *buffer;
+    GB_ERROR      error;
+    char         *error2    = 0;
+    int           i;
+    int           argcinput;
+    int           argcparam;
+    int           argcout;
+    char         *bracket;
+    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
 
     GBL morig[GBL_MAX_ARGUMENTS];
     GBL min[GBL_MAX_ARGUMENTS];
@@ -852,7 +853,9 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         error = "Unknown Command";
                         error2 = GB_STRDUP(s1);
                     }else{
-                        error = command(gbd,s1,argcinput,orig,argcparam,in, &argcout, &out);
+                        GBL_client_data cd;
+                        cd.default_tree_name = default_tree_name;
+                        error                = command(gbd,s1,&cd,argcinput,orig,argcparam,in, &argcout, &out);
                     }
                 }
 
