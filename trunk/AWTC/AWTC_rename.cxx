@@ -7,6 +7,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 #include "awtc_rename.hxx"
 
 #include <names_client.h>
@@ -238,11 +239,13 @@ void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
 {
     AWUSE(aww);
     //  int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
-    //  int save_data = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
+    //  int save_data  = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
     aw_openstatus("Generating new names");
-    GB_ERROR error = AWTC_pars_names(gb_main,1);
+    GB_ERROR error     = AWTC_pars_names(gb_main,1);
     aw_closestatus();
     if (error) aw_message(error);
+    
+    aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 
