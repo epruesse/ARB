@@ -2,7 +2,7 @@
 <!--                                                                      -->
 <!--   File      : arb_tree.dtd                                           -->
 <!--   Purpose   : DTD for ARB tree export                                -->
-<!--   Time-stamp: <Fri May/31/2002 20:54 MET Coder@ReallySoft.de>        -->
+<!--   Time-stamp: <Sat Jun/01/2002 13:07 MET Coder@ReallySoft.de>        -->
 <!--                                                                      -->
 <!--                                                                      -->
 <!-- Coded by Ralf Westram (coder@reallysoft.de) in May 2002              -->
@@ -12,17 +12,22 @@
 <!--                                                                      -->
 <!-- ==================================================================== -->
 
-<!ELEMENT ARB_TREE (COMMENT|SPECIES|NODE)* >
+<!ELEMENT ARB_TREE (COMMENT|ITEM|BRANCH)* >
+<!ATTLIST ARB_TREE database CDATA #IMPLIED> <!--name of ARB database tree was exported from-->
+<!ATTLIST ARB_TREE treename CDATA #IMPLIED> <!--ARB internal tree name-->
+<!ATTLIST ARB_TREE export_date CDATA #IMPLIED>
 
 <!ELEMENT COMMENT (#PCDATA) >
 
-<!ELEMENT NODE (NODE|SPECIES)* >
-<!ATTLIST NODE length CDATA #IMPLIED > <!--branchlength-->
-<!ATTLIST NODE groupname CDATA #IMPLIED > <!--groupname-->
-<!ATTLIST NODE bootstrap CDATA #IMPLIED > <!--bootstrap value-->
+<!ELEMENT BRANCH (BRANCH|ITEM)* >
+<!ATTLIST BRANCH name ID #REQUIRED> <!--unique ID (counts the single branches and items) -->
+<!ATTLIST BRANCH length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
+<!ATTLIST BRANCH groupname CDATA #IMPLIED > <!--groupname (defaults to none)-->
+<!ATTLIST BRANCH bootstrap CDATA #IMPLIED > <!--bootstrap value (defaults to none)-->
 
-<!ELEMENT SPECIES EMPTY>
-<!ATTLIST SPECIES name CDATA #REQUIRED> <!--species name (should be a unique name)-->
-<!ATTLIST SPECIES length CDATA #IMPLIED> <!--branchlength-->
+<!ELEMENT ITEM EMPTY>
+<!ATTLIST ITEM name ID #REQUIRED> <!--unique ID (counts the single branches and items) -->
+<!ATTLIST ITEM length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
+<!ATTLIST ITEM itemname CDATA #REQUIRED> <!--species name (should be a unique name (at least inside ARB))-->
 
 
