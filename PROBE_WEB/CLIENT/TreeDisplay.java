@@ -684,7 +684,7 @@ public class TreeDisplay extends Canvas
         }
     }
 
-    public void countMarkedSpecies () {
+    public void countMarkedSpecies() throws Exception {
         if (root != null) {
             int marked = root.countMarked();
             Toolkit.showMessage("\nNumber of marked species: " + marked);
