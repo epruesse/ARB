@@ -439,12 +439,12 @@ void SAI_graphic::paint(AW_device *device) {
     char buf[1024];
     if (strcmp(saiSelected,"")==0)  sprintf(buf,"Selected SAI = Not Selected!");
     else sprintf(buf,"Selected SAI = %s",saiSelected);
-    device->text(SAI_GC_HIGHLIGHT, buf, 100, -30, 0, 1, 0, 0);
+    device->text(SAI_GC_PROBE, buf, 100, -30, 0, 1, 0, 0);
 
     double yLineStep = dispSai ? yStep*2 : yStep;
 
     if (g_pbdata) {
-        device->text(SAI_GC_HIGHLIGHT,  "Species INFO",0,10, 0, 1, 0, 0, 0);
+        device->text(SAI_GC_PROBE,  "Species INFO",0,10, 0, 1, 0, 0, 0);
         if (!g_pbdata->probeSpecies.empty()) {
             for ( size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j ) {
                 const char *name = g_pbdata->probeSpecies[j];
@@ -484,7 +484,8 @@ void SAI_graphic::paint(AW_device *device) {
 
                 ParsedProbeMatch parsed(g_pbdata->probeSeq[i], parser);
 
-                if ((error = parsed.get_error())) {                    device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                if ((error = parsed.get_error())) {   
+                    device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
                 }
                 else {
                     const char *probeRegion      = parsed.get_probe_region();
