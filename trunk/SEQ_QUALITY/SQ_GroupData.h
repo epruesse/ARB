@@ -36,6 +36,8 @@ public:
 
     void         SQ_set_avg_bases(int bases) { avg_bases += bases; }
     int          SQ_get_avg_bases() const { return (avg_bases/nr_sequences); } //probleme mit no tree?
+    void         SQ_set_avg_gc(int gc) { gc_prop += gc; }
+    int          SQ_get_avg_gc() const { return (gc_prop/nr_sequences); }
     void         SQ_count_sequences() { nr_sequences++; }
     int          SQ_get_nr_sequences() const { return nr_sequences; }
     bool         SQ_is_initialized() const { return initialized; }
@@ -51,6 +53,7 @@ protected:
     int  size;
     int  avg_bases;
     int  nr_sequences;
+    int  gc_prop;
     bool initialized;
 };
 
@@ -98,6 +101,7 @@ public:
 	if (!initialized) SQ_init_consensus(other.size);
 	seq_assert(size==other.size);
 	avg_bases = other.avg_bases;
+	gc_prop = other.gc_prop;
 	for (int s=0; s<size; ++s) {
 	    consensus[s] = other.consensus[s];
 	}
@@ -175,6 +179,7 @@ void SQ_GroupData_Impl<I>::SQ_add(const SQ_GroupData& other_base) {
     }
     nr_sequences+=other.nr_sequences;
     avg_bases+=other.avg_bases;//????????
+    gc_prop += other.gc_prop;//???????????
 }
 
 template <int I>

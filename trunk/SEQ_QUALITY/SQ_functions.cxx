@@ -111,10 +111,10 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
-    if (true /*marked_only*/) {
-	getFirst = GBT_first_marked_species;
-	getNext = GBT_next_marked_species;
-    }
+    /*marked_only*/
+    getFirst = GBT_first_marked_species;
+    getNext = GBT_next_marked_species;
+
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
 
@@ -205,14 +205,11 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
-    if (true /*marked_only*/) {
-	getFirst = GBT_first_marked_species;
-	getNext = GBT_next_marked_species;
-    }
+    //getFirst = GBT_first_marked_species;
+    //getNext = GBT_next_marked_species;
 
-    //DEBUG why SIGSEV???
-    //getFirst = GBT_first_species;
-    //getNext  = GBT_next_species;
+    getFirst = GBT_first_species;
+    getNext  = GBT_next_species;
 
 
     for (gb_species = getFirst(gb_main);
@@ -279,16 +276,20 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 		GBDATA *gb_result5 = GB_search(gb_quality, "iupac_value", GB_INT);
 		iupv = GB_read_int(gb_result5);
-		result = iupv;
+		if (iupv < 1) result = 3;
+		else {
+	  	    if (iupv < 20) result = 2;
+		    else { result = 1;}
+		}
 		result = result * weight_iupac;
 		value += result;
 
-		GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_INT);
+		GBDATA *gb_result6 = GB_search(gb_quality, "GC_difference", GB_INT);
 		gcprop = GB_read_int(gb_result6);
-		if (gcprop < 150) result = 1;
+		if (abs(gcprop) < 6) result = 3;
 		else {
-	  	    if (gcprop < 190) result = 2;
-		    else { result = 3;}
+		    if (abs(gcprop) < 12) result = 2;
+		    else { result = 1;}
 		}
 		result = result * weight_gc;
 		value += result;
@@ -298,7 +299,6 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value);
-		printf("value: %i\n",value);
 
 	    }
 	}
@@ -364,6 +364,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 		    /*calculate the average number of bases in group*/
 		    globalData->SQ_count_sequences();
 		    globalData->SQ_set_avg_bases(ps_chan->SQ_get_number_of_bases());
+		    globalData->SQ_set_avg_gc(ps_chan->SQ_get_gc_proportion());
 		    delete ps_chan;
 
 		    /*get values for  ambiguities*/
@@ -547,11 +548,14 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    const char *rawSequence = 0;
 		    double value1           = 0;
 		    double value2           = 0;
+		    int value3              = 0;
 		    int evaluation          = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
 		    int diff_percent        = 0;
+		    int avg_gc              = 0;
+		    int gcp                 = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
@@ -564,7 +568,6 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
 		    bases = GB_read_int(gb_result1);
 		    avg_bases = globalData->SQ_get_avg_bases();
-		    //printf("\n%i avg :",avg_bases);
 
 		    if (avg_bases !=0) {
 			diff = bases - avg_bases;
@@ -574,6 +577,23 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
+
+		    /*
+		      calculate the average gc proportion in group, and the difference of
+		      a single seqeunce in group from it
+		    */
+		    GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_INT);
+		    gcp = GB_read_int(gb_result6);
+		    avg_gc = globalData->SQ_get_avg_gc();
+
+		    if (avg_gc !=0) {
+			diff = gcp - avg_gc;
+			diff_percent = (100*diff) / avg_gc;
+		    }
+
+		    GBDATA *gb_result7 = GB_search(gb_quality, "GC_difference", GB_INT);
+		    seq_assert(gb_result7);
+		    GB_write_int(gb_result7, diff_percent);
 
 
 		    /* get groupnames of visited groups
@@ -588,11 +608,16 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			        SQ_GroupDataPtr GD_ptr = GDI->second;
 				value1 = GD_ptr->SQ_calc_consensus_conformity(rawSequence);
 				value2 = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
+				value3 = GD_ptr->SQ_get_nr_sequences();
 
+				//format: <Groupname:value:numberofspecies>
 				strcat(cons_conf, "<");
 				strcat(cons_conf, backup->name);
 				strcat(cons_conf, ":");
 				sprintf(temp,"%f",value1);
+				strcat(cons_conf, temp);
+				strcat(cons_conf, ":");
+				sprintf(temp,"%i",value3);
 				strcat(cons_conf, temp);
 				strcat(cons_conf, ">");
 
@@ -600,6 +625,9 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 				strcat(cons_dev, backup->name);
 				strcat(cons_dev, ":");
 				sprintf(temp,"%f",value2);
+				strcat(cons_dev, temp);
+				strcat(cons_dev, ":");
+				sprintf(temp,"%i",value3);
 				strcat(cons_dev, temp);
 				strcat(cons_dev, ">");
 			    }
