@@ -3,6 +3,7 @@
 
 #define CHANGE_KEY_PATH             "presets/key_data"
 #define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"
+#define CHANGE_KEY_PATH_EXPERIMENTS "presets/experiment_key_data"
 #define CHANGEKEY                   "key"
 #define CHANGEKEY_NAME              "key_name"
 #define CHANGEKEY_TYPE              "key_type"
@@ -42,6 +43,7 @@
 /* - normally AWAR_ORGANISM_NAME contains the same value as AWAR_SPECIES_NAME
    - if AWAR_SPECIES_NAME contains the name of a pseudo gene-species then AWAR_ORGANISM_NAME
    contains the name of the species the pseudo gene-species originated from */
+#define AWAR_EXPERIMENT_NAME "tmp/focus/experiment_name" /* string :  name of selected experiment */
 
 
 #define AWAR_HELIX_NAME     "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
