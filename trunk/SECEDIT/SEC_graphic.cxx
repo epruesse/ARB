@@ -25,7 +25,7 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
     aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/file_name", "noname.ass");
     aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/filter", "ass");
 
-    aw_root->awar_string("tmp/LeftFooter");
+    aw_root->awar_string(AWAR_FOOTER);
 
     {
         GB_CSTR arbhome = GB_getenvARBHOME();
@@ -93,18 +93,18 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      "HELIX NUMBERS$#ffffff",
 
                      // Color Ranges to paint SAIs
-                     "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0", 
+                     "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
                      "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
                      "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
                      "+-RANGE 9$#303030",    "+-CURSOR$#ff0000",     "-MISMATCHES$#FF9AFF",
 
-                     // colors used to Paint search patterns 
-                     "+-USER1$#B8E2F8",          "+-USER2$#B8E2F8",         "-PROBE$#B8E2F8",     
+                     // colors used to Paint search patterns
+                     "+-USER1$#B8E2F8",          "+-USER2$#B8E2F8",         "-PROBE$#B8E2F8",
                      "+-PRIMER(l)$#A9FE54",      "+-PRIMER(r)$#A9FE54",     "-PRIMER(g)$#A9FE54",
                      "+-SIGNATURE(l)$#DBB0FF",   "+-SIGNATURE(r)$#DBB0FF",  "-SIGNATURE(g)$#DBB0FF",
 
                      //colors used to paint the skeleton of the structure
-                     "+-SKELETON HELIX$#B8E2F8", "+-SKELETON LOOP$#DBB0FF", "-SKELETON NONHELIX$#A9FE54",   
+                     "+-SKELETON HELIX$#B8E2F8", "+-SKELETON LOOP$#DBB0FF", "-SKELETON NONHELIX$#A9FE54",
                      0 );
 
     return preset_window;
