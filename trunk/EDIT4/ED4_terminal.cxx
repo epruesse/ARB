@@ -227,7 +227,7 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
                 break;
             }
             case GB_BITS: {
-                err = GB_write_bits(gbd, seq, seq_len, '.');
+                err = GB_write_bits(gbd, seq, seq_len, ".-");
                 break;
             }
             default: {
