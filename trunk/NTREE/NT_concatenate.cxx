@@ -328,7 +328,7 @@ void concatenateAlignments(AW_window *aws) {
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 
         if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
-            int ans = aw_message(GBS_global_string("Do you want to overwrite the existing data in alignment \" %s \"", new_ali_name), "YES,NO", false);
+            int ans = aw_message(GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name), "YES,NO", false);
             if (ans) error = "Alignment exists! Quitting function...!!!";
             else {
                 gb_new_alignment = GBT_get_alignment(gb_main,new_ali_name);
@@ -384,10 +384,10 @@ void concatenateAlignments(AW_window *aws) {
             }
 
             {    /*............. print missing alignments...........*/
-                aw_message(GBS_global_string("Concatenation of Alignments was performed for\"%d\" species.",GBT_count_marked_species(gb_main)));
+                aw_message(GBS_global_string("Concatenation of Alignments was performed for %ld species.",GBT_count_marked_species(gb_main)));
                 const_ali_name = con_alignment_list->first_element(); int i = 0;
                 while (const_ali_name) {
-                    aw_message(GBS_global_string("%s : Found in \"%d\" species & Missing in \"%d\" species.",const_ali_name,found[i],missing[i]));
+                    aw_message(GBS_global_string("%s : Found in %d species & Missing in %d species.",const_ali_name,found[i],missing[i]));
                     const_ali_name = con_alignment_list->next_element();
                     i++;
                 }
@@ -713,7 +713,7 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     GB_begin_transaction(gb_main);  //open database for transaction
 
     GB_ERROR error = checkAndCreateNewField(gb_main,new_field_name);
-    
+
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species && !error; gb_species = GBT_next_marked_species(gb_species)) {
         GBDATA  *gb_species_field = GB_find(gb_species, merge_field_name, 0, down_level);
         if (gb_species_field) {
@@ -804,9 +804,15 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
     aws->init( aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW", 100, 100 );
     aws->load_xfig("concatenate.fig");
 
+    aws->button_length(8);
+
     aws->callback( AW_POPUP_HELP,(AW_CL)"concatenate.hlp");
     aws->at("help");
     aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("dbAligns");
     conAlignStruct *cas = createSelectionList(gb_main, (AW_window *)aws, AWAR_CON_DB_ALIGNS);
@@ -862,7 +868,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
     aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR,5);
 
     aws->at("concatenate");
-    aws->callback((AW_CB0)concatenateAlignments); 
+    aws->callback((AW_CB0)concatenateAlignments);
     aws->create_button("CONCATENATE","CONCATENATE","A");
 
     aws->at("merge_species");
@@ -872,10 +878,6 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
     aws->at("merge_concatenate");
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow,cl_ntw);
     aws->create_button("MERGE_CONCATENATE","MERGE and CONCATENATE","S");
-
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
 
     aws->show();
     return (AW_window *)aws;
