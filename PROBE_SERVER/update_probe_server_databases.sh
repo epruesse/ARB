@@ -83,7 +83,8 @@ ZIPPEDTREENAME=${TREENAME}.gz
 
 # generate the tree version
 touch $TREEVERSIONFILE
-TREEVERSION=`stat --format=%Y $TREEVERSIONFILE`
+# TREEVERSION=`stat --format=%Y $TREEVERSIONFILE` # stat not generally available
+TREEVERSION=`./getFiletime.pl $TREEVERSIONFILE`
 
 create_group_design_db() {
     echo "------------------------------------------------------------"
@@ -123,7 +124,7 @@ else
     exit 1;
 fi
 
-CLIENTBASENAME=probe_library.jar
+CLIENTBASENAME=arb_probe_library.jar
 CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTBASENAME
 CLIENTZIP=$DEST_DIR/$CLIENTBASENAME.gz
 
