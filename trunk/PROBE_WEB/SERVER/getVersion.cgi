@@ -10,7 +10,7 @@ if (-f $treefile) {
   my $mtime = (stat($treefile))[9];
   print "result=ok\n";
   print "tree_version=ARB_PS_TREE_$mtime\n";
-  print "client_version=1.0\n";
+  print "client_version=0.9alpha\n"; # CLIENT_SERVER_VERSION -- clients version has to match (see Toolkit.java in ../CLIENT)
 }
 else {
   probe_server::print_critical_error("no such file:'$treefile'");
