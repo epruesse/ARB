@@ -159,7 +159,7 @@ void nt_intro_start_merge(AW_window *aws,AW_root *awr){
 void nt_intro_start_import(AW_window *aws)
 	{
 	aws->hide();
-	aws->get_root()->awar_string( AWAR_DB"file_name")->write_string( "noname.arb");
+	aws->get_root()->awar_string( AWAR_DB_PATH )->write_string( "noname.arb");
 	aws->get_root()->awar_int(AWAR_READ_GENOM_DB, 2); // Default toggle  in window  "Create&import" is Non-Genom
 	gb_main = open_AWTC_import_window(aws->get_root(),"",1,(AW_RCB)main3,0,0);
 }
@@ -186,33 +186,46 @@ AW_window *nt_create_intro_window(AW_root *awr)
 	aws->create_button(0,"#logo.bitmap");
 
 
-	aws->button_length(25);
+// 	aws->button_length(25);
 
 	aws->at("old");
 	aws->callback(nt_intro_start_old);
-	aws->create_button("OPEN_SELECTED","OPEN SELECTED","O");
+	aws->create_autosize_button("OPEN_SELECTED","OPEN SELECTED","O");
 
-	aws->at("merge");
-	aws->callback((AW_CB1)nt_intro_start_merge,0);
-	aws->create_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
+	aws->at("del");
+	aws->callback(nt_delete_database);
+	aws->create_autosize_button("DELETE_SELECTED","DELETE SELECTED");
 
 	aws->at("new_complex");
 	aws->callback(nt_intro_start_import);
-	aws->create_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");
+	aws->create_autosize_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");
+
+	aws->at("merge");
+	aws->callback((AW_CB1)nt_intro_start_merge,0);
+	aws->create_autosize_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
 
 	aws->at("novice");
 	aws->create_toggle("NT/GB_NOVICE");
 
-
-	aws->at("del");
-	aws->button_length(15);
-	aws->callback(nt_delete_database);
-	aws->create_button("DELETE_SELECTED","DELETE SELECTED");
 	return (AW_window *)aws;
 }
 
 void AD_set_default_root(AW_root *aw_root);
 
+//  ----------------------------------------------------------
+//      static void AWAR_DB_PATH_changed_cb(AW_root *awr)
+//  ----------------------------------------------------------
+static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
+    char    *value        = awr->awar(AWAR_DB_PATH)->read_string();
+    char    *lslash       = strrchr(value, '/');
+
+    lslash = lslash ? lslash+1 : value;
+    awr->awar(AWAR_DB_NAME)->write_string(lslash);
+}
+
+//  ---------------------------------------
+//      int main(int argc, char **argv)
+//  ---------------------------------------
 int main(int argc, char **argv)
 {
 	AW_root *aw_root;
@@ -236,11 +249,14 @@ int main(int argc, char **argv)
 	aw_root->init_variables(aw_default);
 	aw_root->init("ARB_NT");
 
-	aw_root->awar_string( AWAR_DB"file_name", "noname.arb", aw_default);
+	aw_root->awar_string( AWAR_DB_PATH, "noname.arb", aw_default);
 	aw_root->awar_string( AWAR_DB"directory", "", aw_default);
 	aw_root->awar_string( AWAR_DB"filter", "arb", aw_default);
 	aw_root->awar_string( AWAR_DB"type", "b", aw_default);
 	aw_root->awar_int( "NT/GB_NOVICE", 		0, aw_default)	->add_target_var(&GB_NOVICE);
+
+    aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
+    aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
 	if (argc==3) {		// looks like merge
 	    MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
@@ -300,7 +316,7 @@ int main(int argc, char **argv)
             latest[l-1] = 'b';
             latest[l-2] = 'r';
             latest[l-3] = 'a';
-            aw_root->awar(AWAR_DB"file_name")->write_string(latest);
+            aw_root->awar(AWAR_DB_PATH)->write_string(latest);
             delete latest;
 	    }
 	    AW_window *iws;
