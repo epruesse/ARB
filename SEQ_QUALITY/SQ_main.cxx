@@ -72,7 +72,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
     if (!error) {
-        const char *option = "value_of_evaluation";// "consensus_conformity";
+        const char *option = "number_of_bases";// "consensus_conformity";
 
         /*
           "option" is variable which is passed to function "SQ_get_value()".
