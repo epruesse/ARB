@@ -7,7 +7,8 @@
 #include "AP_buffer.hxx"
 #include "AP_error.hxx"
 
-#define MAX_DSTACKSIZE 100000	// defaultwert fuer dynamischen stack
+#define MAX_SPECIES 250000L
+#define MAX_DSTACKSIZE (MAX_SPECIES*2)   // defaultwert fuer dynamischen stack
 
 AP_STACK::AP_STACK() {
     first = 0;
