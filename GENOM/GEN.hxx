@@ -34,6 +34,7 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 // windows/menus:
 
 AW_window *GEN_create_gene_window(AW_root *aw_root);
+void       GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL); // preferred over GEN_create_gene_window
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
 AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas);
 
