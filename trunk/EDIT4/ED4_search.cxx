@@ -1690,41 +1690,39 @@ static AW_window *save_search_parameters(AW_root *root, AW_CL cl_type) {
 }
 
 
-//  ------------------------------------------------------------------------
-//      static void search_init_config(AW_window *aww, int search_type)
-//  ------------------------------------------------------------------------
-static void search_init_config(AW_window *aww, int search_type) {
+static void search_init_config(AWT_config_definition& cdef, int search_type) {
     SearchAwarList awarList = &awar_list[search_type];
-    AWT_reset_configDefinition(aww->get_root());
 
-    AWT_add_configDefinition(awarList->show, "show");
-    AWT_add_configDefinition(awarList->openFolded, "openFolded");
-    AWT_add_configDefinition(awarList->autoJump, "autoJump");
-    AWT_add_configDefinition(awarList->pattern, "pattern");
-    AWT_add_configDefinition(awarList->min_mismatches, "min_mismatches");
-    AWT_add_configDefinition(awarList->max_mismatches, "max_mismatches");
-    AWT_add_configDefinition(awarList->seq_gaps, "seq_gaps");
-    AWT_add_configDefinition(awarList->pat_gaps, "pat_gaps");
-    AWT_add_configDefinition(awarList->tu, "tu");
-    AWT_add_configDefinition(awarList->case_sensitive, "case_sensitive");
-    AWT_add_configDefinition(awarList->reverse, "reverse");
-    AWT_add_configDefinition(awarList->complement, "complement");
-    AWT_add_configDefinition(awarList->exact, "exact");
+    cdef.add(awarList->show, "show");
+    cdef.add(awarList->openFolded, "openFolded");
+    cdef.add(awarList->autoJump, "autoJump");
+    cdef.add(awarList->pattern, "pattern");
+    cdef.add(awarList->min_mismatches, "min_mismatches");
+    cdef.add(awarList->max_mismatches, "max_mismatches");
+    cdef.add(awarList->seq_gaps, "seq_gaps");
+    cdef.add(awarList->pat_gaps, "pat_gaps");
+    cdef.add(awarList->tu, "tu");
+    cdef.add(awarList->case_sensitive, "case_sensitive");
+    cdef.add(awarList->reverse, "reverse");
+    cdef.add(awarList->complement, "complement");
+    cdef.add(awarList->exact, "exact");
 }
 
 //  -------------------------------------------------------------------------
 //      static char *search_store_config(AW_window *aww, AW_CL , AW_CL )
 //  -------------------------------------------------------------------------
 static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL ) {
-    search_init_config(aww, int(cl_search_type));
-    return AWT_store_configDefinition();
+    AWT_config_definition cdef(aww->get_root());
+    search_init_config(cdef, int(cl_search_type));
+    return cdef.read();
 }
 //  -----------------------------------------------------------------------------------------------------
 //      static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL )
 //  -----------------------------------------------------------------------------------------------------
 static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL ) {
-    search_init_config(aww, int(cl_search_type));
-    AWT_restore_configDefinition(stored_string);
+    AWT_config_definition cdef(aww->get_root());
+    search_init_config(cdef, int(cl_search_type));
+    cdef.write(stored_string);
 }
 
 

@@ -540,24 +540,23 @@ void transferProbeData(struct saiProbeData *spd) {
 
 /* ---------------------------------- Creating WINDOWS ------------------------------------------------ */
 
-static void saiColorDefs_init_config(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    AWT_reset_configDefinition(awr);
-
+static void saiColorDefs_init_config(AWT_config_definition& cdef) {
     for (int i = 0; i < 10; i++) {
         const char *awarDef = getAwarName(i);
-        AWT_add_configDefinition(awarDef, "" , i);
+        cdef.add(awarDef, "" , i);
     }
 }
 
 static char *saiColorDefs_store_config(AW_window *aww, AW_CL, AW_CL ) {
-    saiColorDefs_init_config(aww);
-    return AWT_store_configDefinition();
+    AWT_config_definition cdef(aww->get_root());
+    saiColorDefs_init_config(cdef);
+    return cdef.read();
 }
 
 static void saiColorDefs_restore_config(AW_window *aww, const char *stored_string, AW_CL, AW_CL) {
-    saiColorDefs_init_config(aww);
-    AWT_restore_configDefinition(stored_string);
+    AWT_config_definition cdef(aww->get_root());
+    saiColorDefs_init_config(cdef);
+    cdef.write(stored_string);
 }
 
 static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // creates color tranlation table window
@@ -630,7 +629,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr){
 
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
-    
+
     awm->create_menu( 0, "Properties", "P", 0,  AWM_ALL );
     awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
     awm->insert_menu_topic( "clrTransTable", "Define Color Translations", "D","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);

@@ -463,49 +463,40 @@ void create_primer_design_result_window( AW_window *aww )
     pdrw->show();
 }
 
-//  --------------------------------------------------------------
-//      static void primer_design_init_config(AW_window *aww)
-//  --------------------------------------------------------------
-static void primer_design_init_config(AW_window *aww) {
-    AWT_reset_configDefinition(aww->get_root());
+static AWT_config_mapping_def primer_design_config_mapping[] = {
+    { AWAR_PRIMER_DESIGN_LEFT_POS,               "lpos" },         
+    { AWAR_PRIMER_DESIGN_LEFT_LENGTH,            "llen" },         
+    { AWAR_PRIMER_DESIGN_RIGHT_POS,              "rpos" },         
+    { AWAR_PRIMER_DESIGN_RIGHT_LENGTH,           "rlen" },         
+    { AWAR_PRIMER_DESIGN_LENGTH_MIN,             "lenmin" },       
+    { AWAR_PRIMER_DESIGN_LENGTH_MAX,             "lenmax" },       
+    { AWAR_PRIMER_DESIGN_DIST_MIN,               "distmin" },      
+    { AWAR_PRIMER_DESIGN_DIST_MAX,               "distmax" },      
+    { AWAR_PRIMER_DESIGN_GCRATIO_MIN,            "gcmin" },      
+    { AWAR_PRIMER_DESIGN_GCRATIO_MAX,            "gcmax" },      
+    { AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,        "tempmin" },      
+    { AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,        "tempmax" },      
+    { AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, "minmatchdist" }, 
+    { AWAR_PRIMER_DESIGN_EXPAND_IUPAC,           "iupac" },        
+    { AWAR_PRIMER_DESIGN_MAX_PAIRS,              "maxpairs" },     
+    { AWAR_PRIMER_DESIGN_GC_FACTOR,              "gcfactor" },     
+    { AWAR_PRIMER_DESIGN_TEMP_FACTOR,            "temp_factor" },
+    { 0, 0 }
+};
 
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_LEFT_POS, "lpos");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_LEFT_LENGTH, "llen");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_RIGHT_POS, "rpos");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_RIGHT_LENGTH, "rlen");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_LENGTH_MIN, "lenmin");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_LENGTH_MAX, "lenmax");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_DIST_MIN, "distmin");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_DIST_MAX, "distmax");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_GCRATIO_MIN, "distmin");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_GCRATIO_MAX, "distmax");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN, "tempmin");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX, "tempmax");
-
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, "minmatchdist");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_EXPAND_IUPAC, "iupac");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_MAX_PAIRS, "maxpairs");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_GC_FACTOR, "gcfactor");
-    AWT_add_configDefinition(AWAR_PRIMER_DESIGN_TEMP_FACTOR, "temp_factor");
-}
 //  --------------------------------------------------------------------------------
 //      static char *primer_design_store_config(AW_window *aww, AW_CL , AW_CL )
 //  --------------------------------------------------------------------------------
 static char *primer_design_store_config(AW_window *aww, AW_CL , AW_CL ) {
-    primer_design_init_config(aww);
-    return AWT_store_configDefinition();
+    AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
+    return cdef.read();
 }
 //  ------------------------------------------------------------------------------------------------------------
 //      static void primer_design_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL )
 //  ------------------------------------------------------------------------------------------------------------
 static void primer_design_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL ) {
-    primer_design_init_config(aww);
-    AWT_restore_configDefinition(stored_string);
+    AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
+    cdef.write(stored_string);
     primer_design_event_update_memory(aww);
 }
 

@@ -1283,39 +1283,41 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
     return aws;
 }
 
-static void probe_design_init_config(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    AWT_reset_configDefinition(awr);
+static AWT_config_mapping_def probe_design_mapping_def[] = {
+    { AWAR_PD_DESIGN_CLIPRESULT,   "clip" }, 
+    { AWAR_PD_DESIGN_MISHIT,       "mishit" }, 
+    { AWAR_PD_DESIGN_MAXBOND,      "maxbond" }, 
+    { AWAR_PD_DESIGN_MINTARGETS,   "mintarget"}, 
+    { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" }, 
+    { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" }, 
+    { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" }, 
+    { AWAR_PD_DESIGN_MIN_GC,       "mingc" }, 
+    { AWAR_PD_DESIGN_MAX_GC,       "maxgc" }, 
+    { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" }, 
+    { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" }, 
+    { AWAR_PD_DESIGN_GENE,         "gene" }, 
+    { AWAR_PD_DESIGN_EXP_SPLIT,    "split" }, 
+    { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" }, 
+    { AWAR_PD_DESIGN_EXP_DT,       "dt" },
+    { 0, 0 }
+};
 
-    AWT_add_configDefinition(AWAR_PD_DESIGN_CLIPRESULT,   "clip"     );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MISHIT,       "mishit"   );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MAXBOND,      "maxbond"  );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MINTARGETS,   "mintarget");
-    AWT_add_configDefinition(AWAR_PD_DESIGN_PROBELENGTH,  "probelen" );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_TEMP,     "mintemp"  );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp"  );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_GC,       "mingc"    );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_GC,       "maxgc"    );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_GENE,         "gene"     );
-
+static void probe_design_init_config(AWT_config_definition& cdef) {
+    cdef.add(probe_design_mapping_def);
     for (int i = 0; i<16; ++i) {
-        AWT_add_configDefinition(GBS_global_string(AWAR_PD_DESIGN_EXP_BONDS "%i", i), "bond", i);
+        cdef.add(GBS_global_string(AWAR_PD_DESIGN_EXP_BONDS "%i", i), "bond", i);
     }
-
-    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_SPLIT,  "split" );
-    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_DTEDGE, "dtedge");
-    AWT_add_configDefinition(AWAR_PD_DESIGN_EXP_DT,     "dt"    );
 }
 
 static char *probe_design_store_config(AW_window *aww, AW_CL, AW_CL) {
-    probe_design_init_config(aww);
-    return AWT_store_configDefinition();
+    AWT_config_definition cdef(aww->get_root());
+    probe_design_init_config(cdef);
+    return cdef.read();
 }
 static void probe_design_restore_config(AW_window *aww, const char *stored_string, AW_CL, AW_CL) {
-    probe_design_init_config(aww);
-    AWT_restore_configDefinition(stored_string);
+    AWT_config_definition cdef(aww->get_root());
+    probe_design_init_config(cdef);
+    cdef.write(stored_string);
 }
 
 void probe_design_save_default(AW_window *aw,AW_default aw_def)
