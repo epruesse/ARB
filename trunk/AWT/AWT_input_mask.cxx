@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Feb/20/2003 13:28 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/21/2003 13:02 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -787,9 +787,9 @@ string awt_numeric_input_field::awar2db(const string& awar_content) const {
 //      static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo)
 //  -------------------------------------------------------------------------
 static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo) {
-	const int  BUFSIZE = 8000;
-	char       buffer[BUFSIZE];
-	char      *res     = fgets(&buffer[0], BUFSIZE-1, in);
+    const int  BUFSIZE = 8000;
+    char       buffer[BUFSIZE];
+    char      *res     = fgets(&buffer[0], BUFSIZE-1, in);
     GB_ERROR   error   = 0;
 
     if (int err = ferror(in)) {
@@ -1912,8 +1912,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 error = readLine(in, line, lineNo);
                 if (error) break;
 
-
-                printf("line = '%s'\n", line.c_str());
+                if (line.empty()) continue;
                 if (line[0] == '#') continue;
 
                 if (line == "@MASK_END") {
