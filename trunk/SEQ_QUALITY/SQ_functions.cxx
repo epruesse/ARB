@@ -421,7 +421,7 @@ void SQ_calc_helix_conformance(GBDATA *gb_main) {
     GBDATA *(*getFirst)(GBDATA*) = 0;
     GBDATA *(*getNext)(GBDATA*) = 0;
 
-    BI_PAIR_TYPE pair_type;
+    BI_PAIR_TYPE pair_type = HELIX_PAIR;
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
@@ -473,12 +473,16 @@ void SQ_calc_helix_conformance(GBDATA *gb_main) {
 		  i++;
 		  right = rawSequence[i];
 		  temp = my_helix.check_pair(left, right, pair_type);
+
 		  switch(temp){
-		      case '2': count_helix++;
+		      case 2:
+			  count_helix++;
 			  break;
-		      case '1': count_weak_helix++;
+		      case 1:
+			  count_weak_helix++;
 			  break;
-		      case '0': count_no_helix++;
+		      case 0:
+			  count_no_helix++;
 			  break;
 		  }
 	      }

@@ -29,3 +29,5 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
       So, with the "weight_..."  -values one can customise how important a value stored in a contaier becomes
       for the final result.
     */
+
+void SQ_calc_helix_conformance(GBDATA *gb_main);
