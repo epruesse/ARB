@@ -1621,15 +1621,15 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 
     awmm->at("pos");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_cursor, AW_CL(1));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,5);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,8);
 
     awmm->at("ecoli");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_Ecoli, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,5);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,8);
 
     awmm->at("base");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_basePos, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,5);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,8);
 
     awmm->at("iupac");
     awmm->callback((AW_CB)ED4_set_iupac,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_IUPAC, AW_CL(0));
