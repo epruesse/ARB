@@ -1,6 +1,5 @@
-item:FastDnaMl (max 150 Species)
-itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates $RATES "Y 1" $QUICKADD | arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_fastdnaml;$DISPLAY_FUNC)); rm in1 )&
-# itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_fastdnaml;arb_wait;$DISPLAY_FUNC)); rm in1 )&
+item:AxML + FastdnaML (max 150 Species)
+itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates $RATES "Y 1" $QUICKADD | arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_fastdnaml $PROGRAM;$DISPLAY_FUNC)); rm in1 )&
 itemhelp:fastdnaml.help
 
 arg:RATES
@@ -8,33 +7,11 @@ argtype:weights
 arglabel:Select a Weighting Mask
 argchoice:POS_VAR_BY_PARS
 
-arg:QUICKADD
+arg:PROGRAM
 argtype:chooser
-arglabel:Use Quickadd
-argchoice:Yes:
-argchoice:No:"Q"
-
-arg:DISPLAY_FUNC
-argtype:chooser
-arglabel:What to do with the tree:?
-argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=FASTDNAML FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
-argchoice:Treetool:treetool treefile
-
-in:in1
-informat:genbank
-inmask:
-insave:
-
-
-
-item:AxML (optimized fastdnaml)
-itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates $RATES "Y 1" $QUICKADD | arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((cp infile last.infile;arb_axml <infile;$DISPLAY_FUNC)); rm in1 )&
-itemhelp:axml.help
-
-arg:RATES
-argtype:weights
-arglabel:Select a Weighting Mask
-argchoice:POS_VAR_BY_PARS
+arglabel:Select program to use
+argchoice:AxML:axml
+argchoice:FastdnaML:fastdnaml
 
 arg:QUICKADD
 argtype:chooser
@@ -45,7 +22,7 @@ argchoice:No:"Q"
 arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_axml_//'):arb_read_tree tree_fml_$$ treefile "PRG=AXML FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
 argchoice:Treetool:treetool treefile
 
 in:in1
