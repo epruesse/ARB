@@ -4,6 +4,7 @@
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <probe_design.hxx>
+//#include <nt_edconf.hxx>
 #include "GEN_db.hxx"
 
 
@@ -25,13 +26,8 @@ static GBDATA *get_current_gene(AW_root *root) {
 
 static AW_CL ad_global_scannerid = 0;
 static AW_root *ad_global_scannerroot = 0;
-AW_CL ad_query_global_cbs = 0;
-
-//create_species_window
-//ad_create_query_window
-
-
-
+//AW_CL ad_query_global_cbs = 0;
+AW_CL gene_query_global_cbs = 0;
 AW_window *create_gene_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -222,130 +218,6 @@ void GEN_create_field_items(AW_window *aws) {
 }
 
 
-//*****************************wird von 'GEN_gene_next_neighbours_create' aus aufgerufen******************************************
-
-void awtc_nn_search(AW_window *aww,AW_CL id ){
-  //   GB_transaction dummy(gb_main);
-//     int pts = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-//     int max_hits = aww->get_root()->awar("next_neighbours/max_hits")->read_int();
-//     char *sequence = 0;
-//     {
-//         char *sel_species = 	aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-//         GBDATA *gb_species =	GBT_find_species(gb_main,sel_species);
-
-//         if (!gb_species){
-//             delete sel_species;
-//             aw_message("Select a species first");
-//             return;
-//         }
-//         char *ali_name = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-//         GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-//         if (!gb_data){
-//             aw_message(GBS_global_string("Species '%s' has no sequence '%s'",sel_species,ali_name));
-//         }
-//         delete sel_species;
-//         delete ali_name;
-//         if (!gb_data) return;
-//         sequence = GB_read_string(gb_data);
-//     }
-    
-//     AWTC_FIND_FAMILY ff(gb_main);
-//     GB_ERROR error = ff.go(pts,sequence,GB_TRUE,max_hits);
-//     delete sequence;
-//     AW_selection_list* sel = (AW_selection_list *)id;
-//     aww->clear_selection_list(sel);
-//     if (error) {
-//         aw_message(error);
-//         aww->insert_default_selection(sel,"No hits found","");
-//     }else{
-//         AWTC_FIND_FAMILY_MEMBER *fm;
-//         for (fm = ff.family_list; fm; fm = fm->next){
-//             const char *dis = GBS_global_string("%-20s Score:%4i",fm->name,fm->matches);
-//             aww->insert_selection(sel,(char *)dis,fm->name);
-//         }
-	
-//         aww->insert_default_selection(sel,"No more hits","");
-//     }
-//     aww->update_selection_list(sel);
-}
-
-void awtc_move_hits(AW_window *,AW_CL id, AW_CL cbs){
-    awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs,(AW_selection_list *)id);
-}
-
-void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
-   //  struct adaqbsstruct *cbs = (struct adaqbsstruct *)_cbs;
-//     GB_begin_transaction(gb_main);
-//     int pts = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-//     char *dest_field = aww->get_root()->awar("next_neighbours/dest_field")->read_string();
-//     char *ali_name = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-//     GB_ERROR error = 0;
-//     GB_TYPES dest_type = awt_get_type_of_changekey(gb_main,dest_field);
-//     if (!dest_type){
-//         error = GB_export_error("Please select a valid field");
-//     }
-//     long max = awt_count_queried_species(cbs);
-    
-//     if (strcmp(dest_field, "name")==0) {
-//         int answer = aw_message("CAUTION! This will destroy all name-fields of the listed species.\n",
-//                                 "Continue and destroy all name-fields,Abort");
-	
-//         if (answer==1) {
-//             error = GB_export_error("Aborted by user");
-//         }
-//     } 
-    
-//     aw_openstatus("Finding next neighbours");
-//     long count = 0;
-//     GBDATA *gb_species;
-//     for (gb_species = GBT_first_species(gb_main);
-//          !error && gb_species;
-//          gb_species = GBT_next_species(gb_species)){
-//         if (!IS_QUERIED(gb_species,cbs)) continue;
-//         count ++;
-//         GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-//         if (!gb_data)	continue;
-//         if (count %10 == 0){
-//             GBDATA *gb_name = GB_search(gb_species,"name",GB_STRING);
-//             aw_status(GBS_global_string("Species '%s' (%i:%i)",
-//                                         GB_read_char_pntr(gb_name),
-//                                         count, max));
-//         }
-//         if (aw_status(count/(double)max)){
-//             error = "operation aborted";
-//             break;
-//         }
-//         {
-//             char *sequence = GB_read_string(gb_data);
-//             AWTC_FIND_FAMILY ff(gb_main);
-//             error = ff.go(pts,sequence,GB_TRUE,1);	
-//             if (error) break;
-//             {
-//                 AWTC_FIND_FAMILY_MEMBER *fm = ff.family_list;
-//                 const char *value;
-//                 if (fm){
-//                     value = GBS_global_string("%i '%s'",fm->matches,fm->name);
-//                 }else{
-//                     value = "0";
-//                 }
-//                 GBDATA *gb_dest = GB_search(gb_species,dest_field,dest_type);
-//                 error = GB_write_as_string(gb_dest,value);
-//             }    
-//             delete sequence;
-//         }
-//     }
-//     aw_closestatus();
-//     if (error){
-//         GB_abort_transaction(gb_main);
-//         aw_message(error);
-//     }else{
-//         GB_commit_transaction(gb_main);
-//     }
-//     delete dest_field;
-//     delete ali_name;
-}
-//**********************************************************************************************************************************************************************************************
-
 AW_window *GEN_create_gene_window(AW_root *aw_root) {
 static AW_window_simple_menu *aws = 0;
     if (aws){
@@ -427,7 +299,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     awtqs.open_parser_pos_fig= "openparser";
     awtqs.create_view_window= (AW_CL)GEN_create_gene_window;
     AW_CL cbs = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
-    ad_query_global_cbs = cbs;
+    gene_query_global_cbs = cbs;
     aws->create_menu(       0,   "MORE_SEARCH",     "S" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
