@@ -4,9 +4,11 @@
 #define CHANGE_KEY_PATH             "presets/key_data"
 #define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"
 #define CHANGE_KEY_PATH_EXPERIMENTS "presets/experiment_key_data"
-#define CHANGEKEY                   "key"
-#define CHANGEKEY_NAME              "key_name"
-#define CHANGEKEY_TYPE              "key_type"
+
+#define CHANGEKEY        "key"
+#define CHANGEKEY_NAME   "key_name"
+#define CHANGEKEY_TYPE   "key_type"
+#define CHANGEKEY_HIDDEN "key_hidden"
 
 #define AWAR_DB	                    "tmp/nt/arbdb/"
 #define AWAR_DB_PATH                AWAR_DB "file_name"
