@@ -706,7 +706,7 @@ GB_ERROR GBT_delete_tree(GBT_TREE *tree)
 	*/
 {
     GB_ERROR error;
-    if (tree->name) free(tree->name);
+    if (tree->name)  free(tree->name);
     if (tree->remark_branch) free(tree->remark_branch);
     if (tree->is_leaf == 0) {
         if ( (error=GBT_delete_tree( tree->leftson) ) ) return error;
