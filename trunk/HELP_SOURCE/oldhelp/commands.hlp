@@ -114,6 +114,25 @@ SECTION COMMANDLIST
 		srt("orig=dest",...)	replace command, invokes SRT
                                         (see LINK{parser.hlp})
 
+                translate("old","new"[,"other"])
+
+                        translates all characters from input that occur in the
+                        first argument ("old") by the corresponding character of the
+                        second argument ("new").
+
+                        An optional third argument (one character only) means:
+                        replace all other characters with the third argument.
+
+                        Example:
+
+                                Input:                        "--AabBCcxXy--"
+                                translate("abc-","xyz-")      "--AxyBCzxXy--"
+                                translate("abc-","xyz-",".")  "--.xy..z...--"
+
+                        This can be used to replace illegal characters from sequence date
+                        (see predefined expressions in 'Modify fields of listed species').
+
+
 		tab(n)			append n-len(input) spaces
 
 		pretab(n)               prepend n-len(input) spaces
@@ -124,32 +143,12 @@ SECTION COMMANDLIST
                 lower                   converts string to lower case
                 caps                    capitalizes string
 
-		checksum(options)	calculates a CRC checksum
-                                        options:
-                                        "exclude=chrs"    remove 'chrs' before calculation
-                                        "toupper"         make everything uppercase first
-
-		gcgchecksum		a gcg compatible checksum
-
-
-	DATABASE (works only if command is first)
-
-		sequence		the default sequence.
-					For genes only the corresponding part
-					of the sequence.
-				 	If the field complement = 1 then the
-					result is the reverse-complement.
-
-		readdb(field_name)	the contents of the field 'field_name'
-
-	SPECIALS
-
 		format(options)
 
                     takes a long string and breaks it into several lines
 
 			option       (default)     description
-
+                        ==========================================================
 			width=#      (50)          line width
 			firsttab=#   (10)          first line left indent
 			tab=#        (10)          left indent (not first line)
@@ -162,6 +161,76 @@ SECTION COMMANDLIST
                     Search for all words (seperated by ',' ';' ':' ' ' or 'tab') that
                     contain more characters of type chars than val, sort them
                     alphabetically and write them seperated by ' ' to the output
+
+	CALCULATOR
+
+		plus			takes exactly the first two input
+					numbers and creates one output with the sum
+		minus			"			difference
+		mult			"			product
+		div			"			quotient
+		per_cent		"                       quotient * 100
+
+	DATABASE AND SEQUENCE
+
+		readdb(field_name)	the contents of the field 'field_name'
+
+		sequence		the sequence in the current alignment.
+
+                                        Note: older ARB versions returned 'no sequence'
+                                        if the current alignment contained no sequence.
+                                        Now it returns an empty string.
+
+					For genes it returns only the corresponding part
+					of the sequence. If the field complement = 1 then the
+					result is the reverse-complement.
+
+	 	sequence_type 		the default sequence's type(rna/dna..)
+		sequence_name		the default sequence name(ali_16s,..)
+
+                Note: The commands above only work at the beginning of the ACI expression.
+
+		checksum(options)	calculates a CRC checksum
+                                        options:
+                                        "exclude=chrs"    remove 'chrs' before calculation
+                                        "toupper"         make everything uppercase first
+
+		gcgchecksum		a gcg compatible checksum
+
+		format_sequence(options)
+
+                        takes a long string ( sequence ) and breaks it into several lines
+
+			option       (default)  description
+                        =============================================================
+			width=#      (50)       sequence line width
+			firsttab=#   (10)       first line left indent
+			tab=#        (10)       left indent (not first line)
+			numleft      (NO)       numbers on the left side
+			gap=#        (10)       insert a gap every # seq. characters.
+
+		filter(options)
+
+			exclude=#   	characters in filter sequence which exclude the coloumn or
+			include=# 	vice versa
+			SAI=#	   	SAI of filter sequence or
+			species=   	species of filter sequence
+
+		diff(options)
+
+                        show differences to default alignment of another species
+
+                             SAI=#
+                             species=#
+                             [equal=.]
+
+		extract_sequence("chars",rel_len)
+
+                        like extract_words, but do not sort words, but rel_len is the minimum
+                        percantage of characters of a word that mach a character in 'chars'
+                        before word is taken. All words will be seperated by white space.
+
+	SPECIALS
 
 		exec(command,var1,...)
 
@@ -186,66 +255,17 @@ SECTION COMMANDLIST
                 origin_organism(escapedCommand)
                 origin_gene(escapedCommand)
 
-                        like command() but readdb() etc. read all data from the
+                        like command() but readdb() etc. reads all data from the
                         origin organism/gene of a gene-species (not from the gene-species itself).
 
                         This function applies only to gene-species!
 
-	CALCULATOR
-
-		plus			takes exactly the first two input
-					numbers and creates one output with the sum
-		minus			"			difference
-		mult			"			product
-		div			"			quotient
-		per_cent		"                       quotient * 100
-
-	SEQUENCE SPECIALS
-
-		sequence		the default sequence
-					(in case of genes this is only the
-					 corresponding part of the sequence)
-	 	sequence_type 		the default sequence's type(rna/dna..)
-		sequence_name		the default sequence name(ali_16s,..)
-
-		format_sequence(options)
-
-                        takes a long string ( sequence ) and breaks it into several lines
-
-			option       (default)  description
-
-			width=#      (50)       sequence line width
-			firsttab=#   (10)       first line left indent
-			tab=#        (10)       left indent (not first line)
-			numleft      (NO)       numbers on the left side
-			gap=#        (10)       insert a gap every # seq. characters.
+SECTION         Future features
 
 		statistic
 
                         creates a character statistic of the sequence
                         (not implemented yet)
-
-		filter(options)
-
-			exclude=#   	characters in filter sequence which exclude the coloumn or
-			include=# 	vice versa
-
-			SAI=#	   	SAI of filter sequence or
-			species=   	species of filter sequence
-
-		diff(options)
-
-                        show differences to default alignment of another species
-
-                             SAI=#
-                             species=#
-                             [equal=.]
-
-		extract_sequence("chars",rel_len)
-
-                        like extract_words, but do not sort words, but rel_len is the minimum
-                        percantage of characters of a word that mach a character in 'chars'
-                        before word is taken. All words will be seperated by white space.
 
 EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE_";dd
 
