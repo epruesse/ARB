@@ -160,7 +160,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
 
     char *ali_name = GBT_get_default_alignment(gb_main);
 
-    hash = GBS_create_hash(10024,1);
+    hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
     err2 = 0;
 
     long spcount = 0;
