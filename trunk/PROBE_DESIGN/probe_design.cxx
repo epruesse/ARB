@@ -1301,7 +1301,7 @@ void pd_export_pt_server(AW_window *aww)
         if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
         aw_status("Exporting the database");
-        if ( (error = GB_save_as(gb_main,file,"bf")) ) { // mode hase been "bfm" - but that crashes with newer dbs -- ralf jan 03
+        if ( (error = GB_save_as(gb_main,file,"bfm")) ) { // save PT-server database with Fastload file
             aw_message(error);
             return;
         }
