@@ -13,7 +13,38 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
+enum { CS_CLEAR, CS_PASS1 };
 
+GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
+    GB_push_transaction(gb_main);
+
+    GB_ERROR  error          = 0;
+    char     *alignment_name = GBT_get_default_alignment(gb_main);
+
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species && !error;
+         gb_species = GBT_next_species(gb_species))
+    {
+        GBDATA *gb_ali     = GB_find(gb_species,alignment_name,0,down_level);
+        if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
+        else {
+            GBDATA *gb_quality     = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+            if (!gb_quality) error = GB_get_error();
+            else {
+                GBDATA *gb_calcstate     = GB_search(gb_quality, "calcstate", GB_INT);
+                if (!gb_calcstate) error = GB_get_error();
+                else {
+                    GB_write_int(gb_calcstate, CS_CLEAR); // clear calculation state
+                }
+            }
+        }
+    }
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
 
 void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
@@ -120,9 +151,9 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 				case 0:
 				    count_no_helix++;
 				    break;
-			    }			
+			    }
 			}
-			
+
 			/*calculate consensus*/
 			cons_mkd.SQ_calc_consensus(rawSequence[i], i);
 			//char c = cons_mkd.SQ_get_consensus(i);
@@ -212,11 +243,11 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
 		    int cons_conf           = 0;
-		    int cons_conf_percent   = 0;		
+		    int cons_conf_percent   = 0;
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
 
-		    
+
 		    for (int i = 0; i < sequenceLength; i++) {
 			char c;
 			c = cons_mkd.SQ_get_consensus(i);
