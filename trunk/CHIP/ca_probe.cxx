@@ -23,9 +23,11 @@
 #define MAX_SPECIES 999999 // max species returned by pt-server (probe match)
 using namespace std;
 
+#if 0
 static void my_print(const char *, ...) {
     chip_assert(0); // CHIP_init_pt_server should install another handler
 }
+#endif
 // ================================================================================
 // KAI  -  added 30.04.2003
 
@@ -42,9 +44,12 @@ void correctIllegalChars(char *str)
 
 // ================================================================================
 
-static bool 	 server_initialized  		   = false;;
-static char 	*current_server_name 		   = 0;
+static bool  server_initialized  = false;;
+static char *current_server_name = 0;
+
+#if 0
 static void 	 (*print)(const char *format, ...) = my_print;
+#endif
 
 static GB_ERROR connection_lost      = "connection to pt-server lost";
 static GB_ERROR cant_contact_unknown = "can't contact pt-server (unknown reason)";
@@ -138,8 +143,8 @@ int main(int argc,char **argv)
   char *arg_numMismatches= NULL;
   int numMismatches= 0;
   int weightedMismatches= 0;
-  
-  
+
+
   if (argc < 4)
     args_help = 1;
 
