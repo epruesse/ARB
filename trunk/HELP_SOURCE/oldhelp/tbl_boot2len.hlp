@@ -1,0 +1,28 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Bootstrap/Branchlength transfer
+
+OCCURRENCE	ARB_NT/Tree/Modify branches/Bootstraps .. Branchlengths
+
+DESCRIPTION     'Bootstrap -> Branchlength' sets the branchlength to
+
+                           (100 - bootstrap)  /  100.0
+
+                'Branchlength -> Bootstrap' does the opposite.
+
+NOTES		Consider whether using this functionality really makes sense to you!
+
+EXAMPLES	None
+
+WARNINGS	Bootstrap values only contain full numbers.
+                Doing both calculations several times may easily lead to numerical errors.
+
+BUGS		No bugs known
