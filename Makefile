@@ -363,6 +363,7 @@ first_target:
 		@echo ' doc         - create doxygen documentation'
 ifeq ($(DEVELOPER), "RELEASE")
 		@echo ' export      - make tarfiles and export to homepage'
+		@echo ' export_beta - make tarfiles and export to homepage (as beta version)'
 		@echo ' build       - make tarfiles in local dir'
 endif
 		@echo ''
@@ -1101,9 +1102,11 @@ build:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) tarfile sourcetarfile
 
-export:	build
+export_beta: build
 	util/arb_export /beta
-#	util/arb_export
+
+export:
+	util/arb_export
 
 binlink:
 	(cd bin; $(MAKE) all);
