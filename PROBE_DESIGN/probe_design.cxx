@@ -767,8 +767,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
 		    if (gene_flag) {
-		      gb_gene = GEN_find_gene(gb_species,gene_str);
-		      GB_write_flag(gb_gene,1);
+		      if (strcmp(gene_str,"intron")) {
+			gb_gene = GEN_find_gene(gb_species,gene_str);
+			GB_write_flag(gb_gene,1);
+		      }
 		    }
 #endif
 		    flag = '*';
