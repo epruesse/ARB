@@ -7,6 +7,41 @@
 #include "adlocal.h"
 /*#include "arbdb.h"*/
 
+static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
+    GBCONTAINER *gbc = GB_FATHER(gbd);
+    const char  *key;
+
+    if (gbc) {
+        build_GBDATA_path((GBDATA*)gbc, buffer);
+        key = GB_KEY(gbd);
+        {
+            char *bp = *buffer;
+            *bp++ = '/';
+            while (*key) *bp++ = *key++;
+            *bp      = 0;
+
+            *buffer = bp;
+        }
+    }
+}
+
+#define BUFFERSIZE 1024
+
+const char *GB_get_GBDATA_path(GBDATA *gbd) {
+    static char *orgbuffer = 0;
+    char        *buffer;
+
+    if (!orgbuffer) orgbuffer = (char*)malloc(BUFFERSIZE);
+    buffer                    = orgbuffer;
+
+    build_GBDATA_path(gbd, &buffer);
+
+    if ((buffer-orgbuffer) >= BUFFERSIZE) {
+        GB_CORE; // buffer overflow
+    }
+
+    return orgbuffer;
+}
 
 /********************************************************************************************
 					QUERIES
@@ -38,7 +73,9 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
 				header = GB_DATA_LIST_HEADER(gbf->d);
 				gb = GB_HEADER_LIST_GBD(header[index]);
 				if (!gb){
-					GB_internal_error("Database entry is missing");
+                    const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
+					GB_internal_error(err);
+/* 					GB_internal_error("Database entry is missing"); */
 					continue;
 				}
 			}
