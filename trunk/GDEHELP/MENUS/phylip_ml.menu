@@ -2,7 +2,9 @@
 item:Phylip PROML
 itemmeta: O
 itemmethod:(GEN_INFILE(in1);\
-            RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE $RATE_VARIATION $INTERACTIVE; $DISPLAY_FUNC));\
+            RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE \
+                                     $RATE_VARIATION $VARIATION_COEFF $HMM_RATES $INV_FRACTION \
+                                     $INTERACTIVE; $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1) )&
 itemhelp:proml.help
 
@@ -43,6 +45,21 @@ arglabel:Rate variation among sites?
 argchoice:Constant rate of change:0
 argchoice:Gamma distributed rates:1
 argchoice:Gamma+Invariant sites:2
+
+arg:VARIATION_COEFF
+argtype:text
+arglabel:Variation coeff. (gamma only)
+argtext:4
+
+arg:HMM_RATES
+argtype:text
+arglabel:Rates in HMM (gamma only)
+argtext:4
+
+arg:INV_FRACTION
+argtype:text
+arglabel:Fraction of invariant sites
+argtext:0.1
 
 arg:BOOTSTRAP
 argtype:choice_menu
