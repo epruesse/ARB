@@ -221,15 +221,15 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int                  selection_col1, selection_col2;
         int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
         int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
-        
+
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
             (st_ml_node || (st_ml_node = st_ml_convert_species_name_to_node(ED4_ROOT->st_ml,this->species_name))))
             {
                 colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
             }
-       
-        char *saiColors = 0; int isSai;
+
+        const char *saiColors = 0; int isSai;
         if(species_name && ED4_ROOT->visualizeSAI && !(isSai = checkSai(this->species_name))) {
             if (is_marked)
                 saiColors = getSaiColorString(seq_start, seq_end);
@@ -271,7 +271,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 }
                 else if (saiColors) {
                     color = saiColors[new_pos];
-                    if (color < ED4_G_CBACK_0 || color > ED4_G_CBACK_9)  color = ED4_G_STANDARD; 
+                    if (color < ED4_G_CBACK_0 || color > ED4_G_CBACK_9)  color = ED4_G_STANDARD;
                 }
                 else if (is_marked) {
                     color = ED4_G_MARKED;

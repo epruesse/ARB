@@ -36,7 +36,7 @@
 #define CREATE_CLR_TR_TABLE  1
 #define COPY_CLR_TR_TABLE    0
 
-AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root);
-char      *getSaiColorString(int start, int end);   //used in ED4_text_terminal.cxx & SEC_paint.cxx to paint the SAI in the background
-int        checkSai(const char *species_name);      //used in ED4_text_terminal.cxx  to validate SAI with respect to species 
+AW_window  *ED4_createVisualizeSAI_window(AW_root *aw_root);
+const char *getSaiColorString(int start, int end); //used in ED4_text_terminal.cxx & SEC_paint.cxx to paint the SAI in the background
+int         checkSai(const char *species_name); //used in ED4_text_terminal.cxx  to validate SAI with respect to species
 
