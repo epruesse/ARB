@@ -28,6 +28,11 @@
 #include "nt_cb.hxx"
 #include "nt_date.h"
 
+#include <set>
+#include <string>
+
+using namespace std;
+
 AW_HEADER_MAIN
 
 #define nt_assert(bed) arb_assert(bed)
@@ -136,12 +141,95 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     return err;
 }
 
+GB_ERROR NT_fix_empty_gene_data(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    int            deleted_gene_datas = 0;
+    GB_ERROR       error              = 0;
+
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species && !error;
+         gb_species = GBT_next_species(gb_species))
+    {
+        GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
+        if (gb_gene_data) {
+            GBDATA *gb_child = GB_find(gb_gene_data, 0, 0, down_level);
+            if (!gb_child) {
+                error = GB_delete(gb_gene_data);
+                if (!error) deleted_gene_datas++;
+            }
+        }
+    }
+
+    if (error) {
+        ta.abort();
+    }
+    else if (deleted_gene_datas>0) {
+        aw_message(GBS_global_string("Deleted %i useless empty 'gene_data' entries.", deleted_gene_datas));
+    }
+    return error;
+}
+
+// CheckedConsistencies provides an easy way to automatically correct flues in the database
+// by calling a check routine exactly one.
+// For an example see nt_check_database_consistency()
+
+class CheckedConsistencies {
+    GBDATA      *gb_main;
+    set<string>  consistencies;
+
+public:
+    CheckedConsistencies(GBDATA *gb_main_) : gb_main(gb_main_) {
+        GB_transaction ta(gb_main);
+        GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
+
+        for (GBDATA *gb_check = GB_find(gb_checks, "check", 0, down_level);
+             gb_check;
+             gb_check = GB_find(gb_check, "check", 0, this_level|search_next))
+        {
+            consistencies.insert(GB_read_char_pntr(gb_check));
+        }
+    }
+
+    bool was_performed(const string& check_name) const {
+        return consistencies.find(check_name) != consistencies.end();
+    }
+
+    GB_ERROR register_as_performed(const string& check_name) {
+        GB_ERROR error = 0;
+        if (was_performed(check_name)) {
+            printf("check '%s' already has been registered before. Duplicated check name?\n", check_name.c_str());
+        }
+        else {
+            GB_transaction ta(gb_main);
+            GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
+            GBDATA *gb_check  = GB_create(gb_checks, "check", GB_STRING);
+
+            if (!gb_check) {
+                error = GB_get_error();
+            }
+            else {
+                error = GB_write_string(gb_check, check_name.c_str());
+            }
+
+            if (!error) consistencies.insert(check_name);
+        }
+        return error;
+    }
+};
+
+
 // called once on ARB_NTREE startup
 //
 static GB_ERROR nt_check_database_consistency() {
     aw_openstatus("Checking database...");
 
-    GB_ERROR err = NT_format_all_alignments(gb_main);
+    CheckedConsistencies check(gb_main);
+    GB_ERROR             err = NT_format_all_alignments(gb_main);
+
+    if (!err && !check.was_performed("empty gene_data")) {
+        err = NT_fix_empty_gene_data(gb_main);
+        if (!err) check.register_as_performed("empty gene_data");
+    }
 
     aw_closestatus();
     return err;
