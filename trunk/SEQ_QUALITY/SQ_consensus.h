@@ -12,6 +12,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include <vector>
 
 class SQ_consensus {
 
@@ -20,39 +21,30 @@ public:
     ~SQ_consensus();
     void SQ_init_consensus(int size);
     void SQ_calc_consensus(const char *sequence);
-    int** SQ_get_consensus();
+    int* SQ_get_consensus();
     void SQ_add_consensus(int **consensus_add);
 
 private:
-    int **consensus;
     int size;
+    vector<vector<int> >  v2;
 
 };
 
 
 SQ_consensus::SQ_consensus() {
-     size = 0;
+    size = 0;
 }
 
 
 SQ_consensus::~SQ_consensus() {
-     delete [] consensus;
 }
 
 
 void SQ_consensus::SQ_init_consensus(int size){
     this->size = size;
-
-    // two dimensional array
-    consensus = new int *[size];
-    for ( int i=0; i < size; i++ ){
-	consensus[i] = new int [6];
-    }
-    for ( int i = 0; i < size; i++ ){
-	for (int j = 0; i < 6; i++) {
-	    consensus[i][j] = 0;
-	}
-    }
+    this->v2 = v2;
+    vector<int> v(6);
+    vector<vector<int> >  v2(size,v);
 }
 
 
@@ -64,36 +56,33 @@ void SQ_consensus::SQ_calc_consensus(const char *sequence){
 
 	switch(temp) {
 	    case 'A':
-		consensus[i][0] = consensus[i][0]++;
+		v2[i][0]++;
 		break;
 	    case 'T':
-		consensus[i][0] = consensus[i][1]++;
+		v2[i][1]++;
 		break;
 	    case 'C':
-		consensus[i][0] = consensus[i][2]++;
+		v2[i][2]++;
 		break;
 	    case 'G':
-		consensus[i][0] = consensus[i][3]++;
+		v2[i][3]++;
 		break;
 	    case '.':
-		consensus[i][0] = consensus[i][4]++;
+		v2[i][4]++;
 		break;
 	    case '-':
-		consensus[i][0] = consensus[i][5]++;
+		v2[i][5]++;
 		break;
 	}
     }
 }
 
 
-int** SQ_consensus::SQ_get_consensus() {
+int* SQ_consensus::SQ_get_consensus() {
+    int* pa;
 
-    for(int i = 0; i < 10; i++) {
-	for(int j = 0; j < 6; j++) {
-	    printf("\n %i ",consensus[i][j]);
-	}
-    }
-    return consensus;
+    pa = &v2[0][0];
+    return pa;
 }
 
 
@@ -101,14 +90,7 @@ void SQ_consensus::SQ_add_consensus(int **consensus_add) {
 
     for (int i = 0; i < size; i++){
 	for (int j = 0; i < 6; i++){
-	    consensus[i][j] = consensus[i][j] + consensus_add[i][j];
+	   v2[i][j] = v2[i][j] + consensus_add[i][j];
 	}
     }
 }
-
-
-/* int* SQ_consensus::tester() { */
-/*     int *i; */
-/*     i = &consensus[0][0]; */
-/*     return i; */
-/* } */

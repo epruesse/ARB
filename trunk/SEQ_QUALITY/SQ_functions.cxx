@@ -156,21 +156,27 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		    SQ_helix heli_chan(sequenceLength);
 		    heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
 
-
-
 		    /*calculate consensus sequence*/
 		    SQ_consensus consens;
 		    consens.SQ_init_consensus(sequenceLength);
 
+
+ 		    int *pa;
+ 		    pa = consens.SQ_get_consensus();
+// 		    printf("    %i ",*pa);
+
+
 		    {
-			int consensus[sequenceLength][6];
-			int **pp;
-			pp =  consens.SQ_get_consensus();
-			for(int i = 0; i < sequenceLength; i++) {
-			    for(int j = 0; j < 6; j++) {
-				consensus[i][j] = *(*(pp+i)+j);
-			    }
-			}
+// 			int consensus[sequenceLength][6];
+// 			int **pp;
+// 			pp =  consens.SQ_get_consensus();
+// 			consens.SQ_init_consensus(sequenceLength);
+// 			//consens.SQ_get_consensus();
+// 			for(int i = 0; i < sequenceLength; i++) {
+// 			    for(int j = 0; j < 6; j++) {
+// 				consensus[i][j] = *(*(pp+i)+j);
+		// 	    }
+// 			}
 			//consens.SQ_calc_consensus(rawSequence);
 			globalData.SQ_init_consensus(sequenceLength);
 			//globalData.SQ_add_consensus(consensus);
