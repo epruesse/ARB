@@ -260,7 +260,8 @@ void AP_display::display(void)   // draw area
 
 
 
-        case filter_dpy: device->shift_dy(off_dy);
+        case filter_dpy: {
+            device->shift_dy(off_dy);
             device->shift_dx(off_dx);
             ypos=0;
             for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
@@ -313,9 +314,10 @@ void AP_display::display(void)   // draw area
             device->shift_dy(-off_dy);
             device->shift_dx(-off_dx);
             break;
+        }
 
-
-        default: printf("\ndisplay: unknown display type (maybe not implemented yet)\n");
+        default:
+            printf("\ndisplay: unknown display type (maybe not implemented yet)\n");
     }  // switch
     //  display_status(0,(AW_CL) main_win->get_root(),0);
 }
