@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Tue Oct/02/2001 17:06 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/22/2001 16:58 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -2044,6 +2044,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
         fclose(in);
     }
+
+    if (error) mask.SetNull();
 
     return mask;
 }

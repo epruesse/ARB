@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Tue Oct/02/2001 16:40 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/22/2001 17:04 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -347,7 +347,10 @@ protected:
 
 public:
     awt_linked_to_item() : gb_item(0) {}
-    virtual ~awt_linked_to_item() { unlink(); }
+    virtual ~awt_linked_to_item() {
+        /* unlink(); calling unlink does not work here, because it may cause a pure virtual call */
+        assert(!gb_item); // you forgot to call awt_linked_to_item::unlink from where you destroy 'this'
+    }
 
     GBDATA *item() { return gb_item; }
     virtual GB_ERROR link_to(GBDATA *gb_new_item) = 0; // link to a new item
