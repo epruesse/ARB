@@ -56,12 +56,12 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
         delete buffer;
         buffer_size = right_index + 10;
         buffer = new char[buffer_size];
-        memset(buffer, 0 , buffer_size);
+        memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
     }
 
     {
         int pos;
-        for (pos = left_index; pos < right_index; pos++){
+        for (pos = left_index; pos <= right_index; pos++){
             int seq_pos = rm->screen_to_sequence(pos);
             if (seq_pos<0){
                 buffer[pos] = ' ';
