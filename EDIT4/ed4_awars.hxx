@@ -65,7 +65,7 @@
 
 // 	Search awars
 
-#define ED4_AWAR_USER1_SEARCH_PATTERN		    "search/user1/pattern"
+#define ED4_AWAR_USER1_SEARCH_PATTERN             AWAR_PRIMER_TARGET_STRING // s.a.:PRIMER_DESIGN/primerdesign.cxx
 #define ED4_AWAR_USER1_SEARCH_MIN_MISMATCHES	"search/user1/min_mismatches"
 #define ED4_AWAR_USER1_SEARCH_MAX_MISMATCHES	"search/user1/max_mismatches"
 #define ED4_AWAR_USER1_SEARCH_CASE		        "search/user1/case"
