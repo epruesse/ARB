@@ -361,7 +361,7 @@ first_target:
 #		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' doc         - create doxygen documentation'
-ifeq ($(DEVELOPER), "RELEASE")
+ifeq ($(DEVELOPER), RELEASE)
 		@echo ' export      - make tarfiles and export to homepage'
 		@echo ' export_beta - make tarfiles and export to homepage (as beta version)'
 		@echo ' build       - make tarfiles in local dir'
