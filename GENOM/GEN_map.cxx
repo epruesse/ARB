@@ -563,8 +563,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->create_mode( 0, "info.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOD);
 
     awm->set_info_area_height( 250 );
-    awm->at(5,2);
-    awm->auto_space(-2,-2);
+    awm->at(11,2);
+    awm->auto_space(2,-2);
     //awm->auto_space(5,-2);
     awm->shadow_width(1);
 
@@ -583,7 +583,12 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->create_button("Close", "Close");
 
     awm->get_at_position( &cur_x,&cur_y );
+
+    printf("cur_x = %i\n", cur_x);
+    printf("cur_y = %i\n", cur_y);
+
     int gene_x = cur_x+10;
+    gene_x     = start_x+100; //@@@
 
     printf("gene_x = %i\n", gene_x);
 
@@ -621,6 +626,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->get_at_position( &cur_x,&cur_y );
     int dtype_x1 = cur_x+10;
+    dtype_x1     = gene_x+200;
 
     printf("dtype_x1 = %i\n", dtype_x1);
 
@@ -639,6 +645,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->get_at_position( &cur_x,&cur_y );
     int jump_x = cur_x+10;
+    jump_x     = dtype_x1+100;
 
     printf("jump_x = %i\n", jump_x);
 
@@ -660,6 +667,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->get_at_position( &cur_x,&cur_y );
     int help_x = cur_x+10;
+    help_x     = jump_x+100;
 
     awm->at(help_x, first_line_y);
     awm->help_text("help.hlp");
