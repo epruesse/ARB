@@ -24,11 +24,33 @@
 struct awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
 
+// -------------------------------------------------------------------
+//      static char * awtc_fgets(char *s, int size, FILE *stream)
+// -------------------------------------------------------------------
+// same as fgets but also works with file in MACOS format
+
+static char *awtc_fgets(char *s, int size, FILE *stream) {
+    int i;
+    for (i = 0; i<(size-1); ++i) {
+        int byte = fgetc(stream);
+        if (byte == EOF) {
+            if (i == 0) return 0;
+            break;
+        }
+
+        s[i] = byte;
+        if (byte == '\n' || byte == '\r') break;
+    }
+    s[i] = 0;
+
+    return s;
+}
+
 AW_BOOL  awtc_read_string_pair(FILE *in, char *&s1,char *&s2)
 {
 	const int BUFSIZE = 8000;
 	char buffer[BUFSIZE];
-	char *res = fgets(&buffer[0], BUFSIZE-1, in);
+	char *res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
 	delete s1;
 	delete s2;
 	s1 = 0;
@@ -297,7 +319,6 @@ static const char *awtc_next_file(void){
 	}
 	return "last file reached";
 }
-
 char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
 	/* two modes:	tab == 0 -> read single lines,
        different files are seperated by sequenceend,
@@ -334,7 +355,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
 			in_queue = 0;
 			return s;
 		}
-		p = fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+		p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
 		if (!p){
 			sprintf(ifo->b1,"%s",sequenceend);
 			if (awtcig.in) fclose(awtcig.in);awtcig.in= 0;
@@ -359,7 +380,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
 		if (!GBS_string_cmp(ifo->b2,sequencestart,0)) return ifo->b2;
 	}
 	while (1) {
-		p = fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+		p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
 		if (!p){
 			if (awtcig.in) fclose(awtcig.in);awtcig.in= 0;
 			break;
