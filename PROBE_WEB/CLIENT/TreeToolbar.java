@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : TreeToolbar.java                                       // 
 //    Purpose   : Toolbar for tree display                               // 
-//    Time-stamp: <Sat Mar/13/2004 18:31 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Mon Mar/15/2004 13:43 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -31,11 +31,11 @@ class TreeToolbar extends Panel {
                     Button b   = (Button)event.getSource();
                     String cmd = b.getLabel();
 
-                    if (cmd.equals("Back"))                 tree_display().previousRoot();
-                    else if (cmd.equals("Root"))            tree_display().resetRoot();
+                    if (cmd.equals("Root"))                 tree_display().resetRoot();
                     else if (cmd.equals("Up"))              tree_display().goUp();
-                    else if (cmd.equals("Show"))            tree_display().unfoldMarkedFoldRest();
+                    else if (cmd.equals("Back"))            tree_display().previousRoot();
                     else if (cmd.equals("Jump"))            tree_display().gotoRootOfMarked();
+                    else if (cmd.equals("Show"))            tree_display().unfoldMarkedFoldRest();
                     else if (cmd.equals("Expand"))          tree_display().smartUnfold();
                     else if (cmd.equals("Collapse"))        tree_display().smartFold();
                     else {
@@ -45,11 +45,10 @@ class TreeToolbar extends Panel {
             };
 
         Button toAdd;
-        toAdd = new Button("Back");         toAdd.addActionListener(buttonListener); add(toAdd);
         toAdd = new Button("Root");         toAdd.addActionListener(buttonListener); add(toAdd);
         toAdd = new Button("Up");           toAdd.addActionListener(buttonListener); add(toAdd);
-        toAdd = new Button("Expand");       toAdd.addActionListener(buttonListener); add(toAdd);
-        toAdd = new Button("Collapse");     toAdd.addActionListener(buttonListener); add(toAdd);
+        toAdd = new Button("Back");         toAdd.addActionListener(buttonListener); add(toAdd);
+        toAdd = new Button("Jump");         toAdd.addActionListener(buttonListener); add(toAdd);
 
         add(new Label("Search:"));
         searchText = new TextField("", 10);
@@ -62,8 +61,8 @@ class TreeToolbar extends Panel {
         add(searchText);
 
         toAdd = new Button("Show");         toAdd.addActionListener(buttonListener); add(toAdd);
-        toAdd = new Button("Jump");         toAdd.addActionListener(buttonListener); add(toAdd);
-
+        toAdd = new Button("Expand");       toAdd.addActionListener(buttonListener); add(toAdd);
+        toAdd = new Button("Collapse");     toAdd.addActionListener(buttonListener); add(toAdd);
     }
 
 //     public Dimension getMaximumSize() {
