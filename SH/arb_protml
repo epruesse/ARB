@@ -20,6 +20,9 @@ else
     else
         FLAGS="-v $MODEL"
         if [ \! "$REARRANGE" = "0" ]; then
+            if [ "$SEARCH" = "-s" ]; then
+                arb_message "You have selected 'Star decomposition search' AND 'Rearrangement'.\n  Original protml crashed with this parameter combination.\n  We fixed protml, but we did not check the results\n  - so use them with care!"
+            fi
             FLAGS="$FLAGS $REARRANGE"
         fi
 
