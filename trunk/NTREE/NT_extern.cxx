@@ -1045,7 +1045,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
             awm->insert_sub_menu(0, "Add Species to Existing Tree",	"A");
             {
-                AWMIMT( "arb_pars_quick",	"Quick Add Marked to a Tree using Parsimony ...",	"P", "pars.hlp",	AWM_TREE,	(AW_CB)NT_system_cb,	(AW_CL)"arb_pars -add_marked -quit &",0 );
+                AWMIMT( "arb_pars_quick",	"Parsimony (Quick Add Marked) ...",	"P", "pars.hlp",	AWM_TREE,	(AW_CB)NT_system_cb,	(AW_CL)"arb_pars -add_marked -quit &",0 );
                 AWMIMT( "arb_pars",		"Parsimony interaktiv ...",				"I", "pars.hlp",	AWM_TREE,	(AW_CB)NT_system_cb,	(AW_CL)"arb_pars &",	0 );
                 GDE_load_menu(awm,"Incremental_Phylogeny");
             }
