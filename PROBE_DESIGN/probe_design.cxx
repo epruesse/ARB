@@ -726,12 +726,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (show_status) aw_status("Start Probe Match");
 
             if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
-                          LOCS_MATCH_REVERSED,          root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
-                          LOCS_MATCH_SORT_BY,           root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
-                          LOCS_MATCH_COMPLEMENT,        0,
-                          LOCS_MATCH_MAX_MISMATCHES,    root->awar(AWAR_MAX_MISMATCHES)->read_int(),
-                          LOCS_MATCH_MAX_SPECIES,       root->awar(AWAR_PD_MATCH_CLIPHITS)->read_int(),
-                          LOCS_SEARCHMATCH,             probe,
+                          LOCS_MATCH_REVERSED,       root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
+                          LOCS_MATCH_SORT_BY,        root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
+                          LOCS_MATCH_COMPLEMENT,     0,
+                          LOCS_MATCH_MAX_MISMATCHES, root->awar(AWAR_MAX_MISMATCHES)->read_int(),
+                          LOCS_MATCH_MAX_SPECIES,    root->awar(AWAR_PD_MATCH_CLIPHITS)->read_int(),
+                          LOCS_SEARCHMATCH,          probe,
                           0))
             {
                 error = "Connection to PT_SERVER lost (2)";
@@ -750,18 +750,20 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         bytestring bs;
         bs.data = 0;
 
+        long matches_truncated = 0;
         if (!error) {
             if (show_status) aw_status("Read the Results");
 
             T_PT_MATCHLIST  match_list;
-            long            match_list_cnt = 0;
-            char           *locs_error     = 0;
+            long            match_list_cnt    = 0;
+            char           *locs_error        = 0;
 
             if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                          LOCS_MATCH_LIST,     &match_list,
-                          LOCS_MATCH_LIST_CNT, &match_list_cnt,
-                          LOCS_MATCH_STRING,   &bs,
-                          LOCS_ERROR,          &locs_error,
+                          LOCS_MATCH_LIST,        &match_list,        
+                          LOCS_MATCH_LIST_CNT,    &match_list_cnt,    
+                          LOCS_MATCH_STRING,      &bs,                
+                          LOCS_MATCHES_TRUNCATED, &matches_truncated, 
+                          LOCS_ERROR,             &locs_error,        
                           0))
             {
                 error = "Connection to PT_SERVER lost (3)";
@@ -770,7 +772,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (*locs_error) error = GBS_global_string("%s", locs_error);
             free(locs_error);
 
-            root->awar(AWAR_PD_MATCH_NHITS)->write_int(match_list_cnt);
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "> %li" : "%li", match_list_cnt));
         }
 
         long mcount                = 0;
@@ -994,6 +996,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
 
         if (error) {
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string("0"); // clear hits
             aw_message(error);
         }
         else {
@@ -1016,7 +1019,13 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         pd_gl.link = 0;
 
         if (selection_id) {
-            aww->insert_default_selection( selection_id, "****** End of List *******", "" );
+            const char *last_line                 = 0;
+            if (error) last_line                  = GBS_global_string("****** Error: %s *******", error);
+            else if (matches_truncated) last_line = "****** List is truncated *******";
+            else        last_line                 = "****** End of List *******";
+            
+            aww->insert_default_selection( selection_id, last_line, "" );
+
             if (show_status) aw_status("Formatting output");
             aww->update_selection_list( selection_id );
         }
@@ -1114,10 +1123,10 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     char buffer[256]; memset(buffer,0,256);
     int  i;
     pd_gl.pd_design = 0;        /* design result window not created */
-    root->awar_string( AWAR_SPECIES_NAME, "" , db1);
-    root->awar_string( AWAR_PD_SELECTED_MATCH, "" , db1)->add_callback(selected_match_changed_cb);
-    root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
-    root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
+    root->awar_string(AWAR_SPECIES_NAME,         "", db1);
+    root->awar_string(AWAR_PD_SELECTED_MATCH,    "", db1)->add_callback(selected_match_changed_cb);
+    root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
+    root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, db1);
 
     root->awar_string( AWAR_PROBE_LIST, "" , global);
 
@@ -1135,24 +1144,17 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     }
 #if 0
     for (i=0;i<PROBE_DESIGN_EXCEPTION_MAX;i++){
-        sprintf(buffer,"probe_design/exceptions/nr%i/MODE",i);
-        root->awar_int(     buffer, -1  ,    db1);
-
-        sprintf(buffer,"probe_design/exceptions/nr%i/LLEFT",i);
-        root->awar_float( buffer, 0.0  ,    db1);
-        sprintf(buffer,"probe_design/exceptions/nr%i/LEFT",i);
-        root->awar_float( buffer, 0.0  ,    db1);
-        sprintf(buffer,"probe_design/exceptions/nr%i/CENTER",i);
-        root->awar_float( buffer, 0.0  ,    db1);
-        sprintf(buffer,"probe_design/exceptions/nr%i/RIGHT",i);
-        root->awar_float( buffer, 0.0  ,    db1);
-        sprintf(buffer,"probe_design/exceptions/nr%i/RRIGHT",i);
-        root->awar_float( buffer, 0.0  ,    db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/MODE",   i); root->awar_int  (buffer, -1,  db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/LLEFT",  i); root->awar_float(buffer, 0.0, db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/LEFT",   i); root->awar_float(buffer, 0.0, db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/CENTER", i); root->awar_float(buffer, 0.0, db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/RIGHT",  i); root->awar_float(buffer, 0.0, db1);
+        sprintf(buffer, "probe_design/exceptions/nr%i/RRIGHT", i); root->awar_float(buffer, 0.0, db1);
     }
 #endif
-    root->awar_float( AWAR_PD_DESIGN_EXP_SPLIT, .5  ,    db1);
-    root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
-    root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
+    root->awar_float(AWAR_PD_DESIGN_EXP_SPLIT,  .5, db1);
+    root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
+    root->awar_float(AWAR_PD_DESIGN_EXP_DT,     .5, db1);
 
     root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   db1)->set_minmax(0, 1000  );
     root->awar_int  (AWAR_PD_DESIGN_MISHIT,     0,    db1)->set_minmax(0, 100000);
@@ -1167,8 +1169,8 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int  (AWAR_PD_DESIGN_MIN_ECOLIPOS, 0,      db1)->set_minmax(0,  1000000);
     root->awar_int  (AWAR_PD_DESIGN_MAX_ECOLIPOS, 100000, db1)->set_minmax(0,  1000000);
 
-    root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
-    root->awar_int( AWAR_PD_DESIGN_GENE, 0, db1);
+    root->awar_int(AWAR_PT_SERVER,      0, db1);
+    root->awar_int(AWAR_PD_DESIGN_GENE, 0, db1);
 
     root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
     root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1   );
@@ -1178,15 +1180,15 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int   (AWAR_MAX_MISMATCHES,      0,    global);
     root->awar_int   (AWAR_PD_MATCH_CLIPHITS,   1000, db1   );
     root->awar_string(AWAR_TARGET_STRING,       "",   global);
-    root->awar_int   (AWAR_PD_MATCH_NHITS,      0,    db1   );
+    root->awar_string(AWAR_PD_MATCH_NHITS,      0,    db1   );
     root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1   )->add_callback(auto_match_changed);
 
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", db1)->add_callback(resolved_probe_chosen);
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
-    root->awar_int( AWAR_PROBE_ADMIN_PT_SERVER, 0  ,    db1);
-    root->awar_int( AWAR_PROBE_CREATE_GENE_SERVER, 0  ,    db1);
-    root->awar_string(AWAR_SAI_2_PROBE, "", global); // probe and sai visualization
+    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1   );
+    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1   );
+    root->awar_string(AWAR_SAI_2_PROBE,              "", global); // probe and sai visualization
     // root->awar_string(AWAR_SAI_COLOR_STR, "", global);
     // for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
     //  AW_awar *def_awar = root->awar_string(getAwarName(i),"",global);
@@ -1361,29 +1363,18 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->label("PT-Server:");
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
-    aws->at("lenout");
-    aws->create_input_field( AWAR_PD_DESIGN_CLIPRESULT , 6 );
-    aws->at("mishit");
-    aws->create_input_field( AWAR_PD_DESIGN_MISHIT , 6);
-    aws->at("maxbonds");
-    aws->create_input_field( AWAR_PD_DESIGN_MAXBOND , 6);
-    aws->at("minhits");
-    aws->create_input_field( AWAR_PD_DESIGN_MINTARGETS , 6);
+    aws->at("lenout"  ); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
+    aws->at("mishit"  ); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6); 
+    aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6); 
+    aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6); 
 
-    aws->at("minlen");
-    aws->create_input_field( AWAR_PD_DESIGN_PROBELENGTH , 5);
-    aws->at("mint");
-    aws->create_input_field( AWAR_PD_DESIGN_MIN_TEMP , 5);
-    aws->at("maxt");
-    aws->create_input_field( AWAR_PD_DESIGN_MAX_TEMP , 5);
-    aws->at("mingc");
-    aws->create_input_field( AWAR_PD_DESIGN_MIN_GC , 5);
-    aws->at("maxgc");
-    aws->create_input_field( AWAR_PD_DESIGN_MAX_GC , 5);
-    aws->at("minpos");
-    aws->create_input_field( AWAR_PD_DESIGN_MIN_ECOLIPOS , 5);
-    aws->at("maxpos");
-    aws->create_input_field( AWAR_PD_DESIGN_MAX_ECOLIPOS , 5);
+    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5); 
+    aws->at("mint"  ); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5); 
+    aws->at("maxt"  ); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5); 
+    aws->at("mingc" ); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5); 
+    aws->at("maxgc" ); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5); 
+    aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5); 
+    aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5); 
 
     if (is_genom_db) {
         aws->at("gene");
