@@ -900,6 +900,8 @@ char *GBS_strclose(void *strstruct)
     long                  length = strstr->GBS_strcat_pos;
     char                 *str    = (char*)malloc(length+1);
 
+    gb_assert(str);
+
     memcpy(str, strstr->GBS_strcat_data, length+1); /* copy with 0 */
 
     if (last_used) {
@@ -1018,11 +1020,7 @@ void GBS_chrcat(void *strstruct,char ch)    /* this function adds many strings.
                                                The first call should be a null pointer */
 {
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    if (strstr->GBS_strcat_pos + 3 >= strstr->GBS_strcat_data_size) {
-        strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+3)*3/2;
-        strstr->GBS_strcat_data = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,
-                                                  (size_t)strstr->GBS_strcat_data_size);
-    }
+    gbs_strensure_mem(strstruct, 1);
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos++] = ch;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
