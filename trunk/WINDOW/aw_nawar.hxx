@@ -1,5 +1,5 @@
-#ifndef aw_nawar_hxx_included
-#define aw_nawar_hxx_included
+#ifndef AW_NAWAR_HXX
+#define AW_NAWAR_HXX
 
 /*************************************************************************/
 struct AW_var_callback {
@@ -25,5 +25,6 @@ struct AW_var_target {
 
 void aw_update_awar_window_geometry(AW_root *awr);
 
-
+#else
+#error aw_nawar.hxx included twice
 #endif

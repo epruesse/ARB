@@ -1,8 +1,5 @@
-#ifndef aw_at_hxx_included
-#define aw_at_hxx_included
-
-
-#define _AW_AT_INCLUDED
+#ifndef AW_AT_HXX
+#define AW_AT_HXX
 
 
 class AW_at {
@@ -56,4 +53,6 @@ public:
 };
 
 
+#else
+#error aw_at.hxx included twice
 #endif

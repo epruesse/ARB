@@ -1,5 +1,5 @@
-#ifndef aw_preset_hxx_included
-#define aw_preset_hxx_included
+#ifndef AW_PRESET_HXX
+#define AW_PRESET_HXX
 
 #define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
@@ -47,4 +47,6 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char
 
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...);
 
+#else
+#error aw_preset.hxx included twice
 #endif

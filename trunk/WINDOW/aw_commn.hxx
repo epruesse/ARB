@@ -1,7 +1,7 @@
-#ifndef aw_commn_hxx_included
-#define aw_commn_hxx_included
+#ifndef AW_COMMN_HXX
+#define AW_COMMN_HXX
 
-#define _AW_COMMON_INCLUDED
+// #define _AW_COMMON_INCLUDED
 
 #define AW_INT(x) (  ((x)>=0) ? (int) ((x)+.5):(int )((x)-.5) )
 
@@ -65,5 +65,6 @@ inline AW_GC_Xm *AW_MAP_GC_tested(AW_common *common, int gc) {
 }
 #define AW_MAP_GC(gc) AW_MAP_GC_tested(common, gc)
 
-
+#else
+#error aw_commn.hxx included twice
 #endif

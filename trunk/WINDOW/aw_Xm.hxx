@@ -1,5 +1,5 @@
-#ifndef aw_Xm_hxx_included
-#define aw_Xm_hxx_included
+#ifndef AW_XM_HXX
+#define AW_XM_HXX
 
 
 class AW_device_Xm: public AW_device {
@@ -25,5 +25,6 @@ public:
     void move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
 };
 
-
+#else
+#error aw_Xm.hxx included twice
 #endif

@@ -1,5 +1,5 @@
-#ifndef aw_window_Xm_hxx_included
-#define aw_window_Xm_hxx_included
+#ifndef AW_WINDOW_XM_HXX
+#define AW_WINDOW_XM_HXX
 
 // Makrodefinitionen
 #define  p_r        prvt
@@ -334,4 +334,6 @@ void        message_cb( AW_window *aw, AW_CL cd1 );
 void        input_cb( AW_window *aw, AW_CL cd1 );
 
 
+#else
+#error aw_window_Xm.hxx included twice
 #endif

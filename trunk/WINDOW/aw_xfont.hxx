@@ -1,5 +1,5 @@
-#ifndef aw_xfont_hxx_included
-#define aw_xfont_hxx_included
+#ifndef AW_XFONT_HXX
+#define AW_XFONT_HXX
 
 #define         NORMAL_FONT     "fixed"
 #define         BOLD_FONT       "8x13bold"
@@ -35,5 +35,6 @@ extern appresStruct appres;
 #define DEF_FONTSIZE 12
 #define NORMAL_FONT     "fixed"
 
-
+#else
+#error aw_xfont.hxx included twice
 #endif

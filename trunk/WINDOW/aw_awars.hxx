@@ -1,5 +1,5 @@
-#ifndef aw_awars_hxx_included
-#define aw_awars_hxx_included
+#ifndef AW_AWARS_HXX
+#define AW_AWARS_HXX
 
 #define CHANGE_KEY_PATH             "presets/key_data"
 #define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"
@@ -60,4 +60,6 @@
 #define AWAR_FOOTER     "tmp/LeftFooter" // mode line (showing help for selected mode)
 #define AWAR_FOOTER_MAX_LEN 100 // max allowed textlen for mode line
 
+#else
+#error aw_awars.hxx included twice
 #endif

@@ -1,5 +1,5 @@
-#ifndef aw_xkey_hxx_included
-#define aw_xkey_hxx_included
+#ifndef AW_XKEY_HXX
+#define AW_XKEY_HXX
 
 struct awxkeymap_struct {
 	int	xmod;
@@ -13,5 +13,6 @@ struct awxkeymap_struct {
 void aw_install_xkeys(Display *display);
 struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent);
 
-
+#else
+#error aw_xkey.hxx included twice
 #endif

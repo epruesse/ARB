@@ -1,5 +1,5 @@
-#ifndef aw_print_hxx_included
-#define aw_print_hxx_included
+#ifndef AW_PRINT_HXX
+#define AW_PRINT_HXX
 
 
 class AW_device_print: public AW_device {
@@ -24,5 +24,6 @@ public:
     int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 };
 
-
+#else
+#error aw_print.hxx included twice
 #endif
