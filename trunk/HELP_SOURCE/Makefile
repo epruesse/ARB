@@ -10,21 +10,31 @@ HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 
 # choose conversion mode:
-CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (backup first)
+CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that's ok for now!)
 
 # needed tools:
 TOOL_OBJECT = \
 	 arb_help2xml.o
 
+# I use Sablotron 0.71
+XSLT = sabcmd
+VALIDATE = rxp -v -V -V
+
 # --------------------------------------------------------------------------------
 
 all: date dirs tools delzerohtml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
+		@echo ---------------------------------------------------
+		@echo ------------ Converting old hlp  2 xml:
 		$(MAKE) xml
 endif
+		@echo ---------------------------------------------------
+		@echo ------------ Converting xml 2 hlp:
+		$(MAKE) help
+		@echo ---------------------------------------------------
+		@echo ------------ Converting xml 2 html:
 		$(MAKE) html
 		$(MAKE) html_index
-		$(MAKE) help
 
 dirs:
 		(test -d $(XML_LOCATION)) || mkdir $(XML_LOCATION)
@@ -42,7 +52,7 @@ HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 
-#OLD_HELP= oldhelp/export_format.hlp oldhelp/arb_pars.hlp
+#OLD_HELP= oldhelp/arb_commands.hlp
 OLD_HELP= $(wildcard $(HLP_SOURCE)/*.hlp $(HLP_SOURCE)/seer/*.hlp)
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
@@ -53,6 +63,7 @@ xml : $(XML)
 
 $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 		arb_help2xml $< $@
+		$(VALIDATE) $@ >/dev/null
 
 else
 
@@ -72,12 +83,6 @@ HELP=$(HELP_TMP:$(XML_LOCATION)/%=$(HLP_DEST)/%)
 delzerohtml:
 		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
 
-clean:
-		-rm $(HTML)
-ifeq ($(CONVERT_FROM_OLD_HELP),1)
-		-rm $(XML)
-endif
-
 date:
 		$(MAKE) date.xsl
 
@@ -87,10 +92,6 @@ date.xsl :
 		cat date.xsl.foot >>$@
 
 # --------------------------------------------------------------------------------
-
-# I use Sablotron 0.71
-XSLT = sabcmd
-VALIDATE = rxp -v -V -V
 
 DTD=arb_help.dtd
 STYLE_HTML=to_html.xsl
@@ -102,8 +103,8 @@ $(HELP) : $(STYLE_HELP) $(DTD)
 
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
-		$(VALIDATE) $< >/dev/null
-		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)'
+		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' \
+				|| rm $@
 
 # --------------------------------------------------------------------------------
 
@@ -111,8 +112,8 @@ $(HTML) : $(STYLE_HTML) $(DTD)
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
-		$(VALIDATE) $< >/dev/null
-		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)'
+		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' \
+				|| (rm $@ && test -f $@)
 
 # --------------------------------------------------------------------------------
 
@@ -136,6 +137,15 @@ html_index : $(HTML_IDX)
 # --------------------------------------------------------------------------------
 
 help : $(HELP)
+
+# --------------------------------------------------------------------------------
+
+clean:
+		-rm $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
+		-rm html.list `find $(HTML_LOCATION) -name "*.html"`
+ifeq ($(CONVERT_FROM_OLD_HELP),1)
+		-rm dummy `find $(XML_LOCATION) -name "*.xml"`
+endif
 
 # --------------------------------------------------------------------------------
 
