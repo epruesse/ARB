@@ -16,7 +16,7 @@ public ProbeList()
         setVisible(true);
     }
 
-private String getProbeInfo(int index) {
+public String getProbeInfo(int index) {
         if (index<0 || index >= count) return null;
         return (String)info.elementAt(index);
     }
