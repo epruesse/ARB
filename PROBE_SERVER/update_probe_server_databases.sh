@@ -78,18 +78,40 @@ else
     fi
 fi
 
+count_pt_servers() {
+    ps -auxw | grep "arb_pt_server.*$PT_SERVER_DB" | grep -v grep | wc -l
+}
+
 if [ $UPDATE = 1 ]; then
-    echo "Terminate running PT-Server.."
+    SERVERS=`count_pt_servers`
+    echo "Found $SERVERS pt-servers on $PT_SERVER_DB - requesting shutdown.."
     arb_pt_server -kill -D$PT_SERVER_DB
 
-    echo "Updating PT-Server.."
+    WAIT=""
+    while [ \( \! $SERVERS = 0 \) -a \( \! "$WAIT" = ".........." \) ]; do
+        sleep 1
+        WAIT=".$WAIT"
+        SERVERS=`count_pt_servers`
+    done
+
+    if [ \! $SERVERS = 0 ]; then
+        # not all servers did terminate
+        pgrep arb_pt_server $PT_SERVER_DB
+        pkill arb_pt_server $PT_SERVER_DB
+    fi
+
+    echo "Updating PT-Server database.."
+    chmod u+w $PT_SERVER_DB
     cp -p $DB $PT_SERVER_DB
+    chmod a-w $PT_SERVER_DB
     rm $PT_SERVER_DB.pt
 fi
 
 OUT=$TEMP_DIR/$DB_BASENAME
 rm $OUT*
 rm $DEST_DIR/$DB_BASENAME*
+
+# ls -al $PTS/ $SOURCE_DIR/
 
 create_group_db() {
     echo "------------------------------------------------------------"
