@@ -2381,6 +2381,8 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def)
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,0,def);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,1.0,def) ->set_minmax(0.1,20);
     aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,20,def)     ->set_minmax(0,100);
+
+    aw_root->awar_int(AWAR_DTREE_REFRESH,0,def);
 }
 
 
