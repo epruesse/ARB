@@ -1,7 +1,7 @@
 #ifndef SEQ_QUALITY_H
 #define SEQ_QUALITY_H
 
-GB_ERROR SQ_calc_seq_quality(GBDATA *gbmain);
+GB_ERROR SQ_calc_seq_quality(GBDATA *gbmain, const char *tree_name);
 
 
 #else

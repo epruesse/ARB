@@ -3,12 +3,17 @@
 
 #include "seq_quality.h"
 
-GB_ERROR SQ_calc_seq_quality(GBDATA *gbmain) {
-    GB_ERROR error = 0;
+//#include <stdio.h>
 
-    error = GB_export_error("Not implemented yet");
 
-    return error;
+GB_ERROR SQ_calc_seq_quality(GBDATA *gbmain, const char *tree_name) {
+
+//    by Ralf
+//    GB_ERROR error = 0;
+//    error = GB_export_error("Not implemented yet");
+//    return error;
+
+
 }
 
 
