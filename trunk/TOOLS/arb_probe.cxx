@@ -350,9 +350,9 @@ int main(int argc,char ** argv){
         s->sequence = P.DESIGNSEQUENCE;
         P.DESIGNSEQUENCE = 0;
     }
-    P.DESIGNPROBELENGTH	= getInt("designprobelength",18,15,25,	"Length of probe");
-    P.MINTEMP		= getInt("designmintemp",0,0,100,	"Minimum melting temperature of probe");
-    P.MAXTEMP		= getInt("designmaxtemp",100,0,100,	"Maximum melting temperature of probe");
+    P.DESIGNPROBELENGTH	= getInt("designprobelength",18,10,100,	"Length of probe");
+    P.MINTEMP		= getInt("designmintemp",0,0,400,	"Minimum melting temperature of probe");
+    P.MAXTEMP		= getInt("designmaxtemp",400,0,400,	"Maximum melting temperature of probe");
     P.MINGC			= getInt("desingmingc",30,0,100,	"Minimum gc content");
     P.MAXGC			= getInt("desingmaxgc",80,0,100,	"Maximum gc content");
     P.MAXBOND		= getInt("desingmaxbond",0,0,10,	"Not implemented");
