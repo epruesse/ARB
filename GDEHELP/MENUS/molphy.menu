@@ -30,7 +30,7 @@ argchoice:Proportional:-pf
 arg:BOOTSTRP
 arglabel:How many bootstraps ?
 argtype:chooser
-argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_protml $MODEL -s in1.in
+argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_protml $MODEL -s infile
 argchoice:10:   arb_bootstrap 10   "arb_protml $MODEL $SEARCH infile 10"
 argchoice:100:  arb_bootstrap 100  "arb_protml $MODEL $SEARCH infile 100"
 argchoice:1000: arb_bootstrap 1000 "arb_protml $MODEL $SEARCH infile 1000"
