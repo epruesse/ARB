@@ -179,13 +179,13 @@ AP_tree_edge* AP_tree_nlen::edgeTo(const AP_tree_nlen *neighbour) const
 
     for (e=0; e<3; e++)
     {
-	if (edge[e]!=NULL && edge[e]->node[1-index[e]]==neighbour)
-	{
-	    return edge[e];
-	}
+        if (edge[e]!=NULL && edge[e]->node[1-index[e]]==neighbour)
+        {
+            return edge[e];
+        }
     }
-    GB_CORE;
     cout << "AP_tree_nlen::edgeTo: " << *this << "\nhas no edge to " << *neighbour << '\n';
+    GB_CORE;
     return NULL;
 }
 
@@ -336,7 +336,7 @@ GB_ERROR AP_tree_nlen::remove(void)
 
     if (father == 0)
     {
-	return (char *)GB_export_error("AP_tree_nlen::remove(void) Tried to remove ROOT ");
+        return (char *)GB_export_error("AP_tree_nlen::remove(void) Tried to remove ROOT ");
     }
 
     ap_main->push_node(this, STRUCTURE);
@@ -344,52 +344,57 @@ GB_ERROR AP_tree_nlen::remove(void)
 
     for (pntr = father->father; pntr; pntr = pntr->father)
     {
-	ap_main->push_node(pntr, SEQUENCE);
+        ap_main->push_node(pntr, SEQUENCE);
     }
 
     if (father->father)
     {
-	AP_tree_nlen *grandPa = Father()->Father();
+        AP_tree_nlen *grandPa = Father()->Father();
 
-	ap_main->push_node(father, BOTH);
-	ap_main->push_node(grandPa, STRUCTURE);
+        ap_main->push_node(father, BOTH);
+        ap_main->push_node(grandPa, STRUCTURE);
 
-	edgeTo(Father())->unlink();
-	Father()->edgeTo(oldBrother)->unlink();
+        edgeTo(Father())->unlink();
+        Father()->edgeTo(oldBrother)->unlink();
 
-	if (grandPa->father)
-	{
-	    oldEdge = Father()->edgeTo(grandPa)->unlink();
-	    error = this->AP_tree::remove();
-	    oldEdge->relink(oldBrother,grandPa);
-	}
-	else	// remove grandson of root
-	{
-	    AP_tree_nlen *uncle = Father()->Brother();
-	    ap_main->push_node(uncle,STRUCTURE);
+        if (grandPa->father)
+        {
+            oldEdge = Father()->edgeTo(grandPa)->unlink();
+            error = this->AP_tree::remove();
+            oldEdge->relink(oldBrother,grandPa);
+        }
+        else	// remove grandson of root
+        {
+            AP_tree_nlen *uncle = Father()->Brother();
+            ap_main->push_node(uncle,STRUCTURE);
 
-	    oldEdge = Father()->edgeTo(uncle)->unlink();
-	    error = this->AP_tree::remove();
-	    oldEdge->relink(oldBrother,uncle);
-	}
+            oldEdge = Father()->edgeTo(uncle)->unlink();
+            error = this->AP_tree::remove();
+            oldEdge->relink(oldBrother,uncle);
+        }
     }
     else 	// remove son of root
     {
-	AP_tree_nlen *lson = Brother()->Leftson();
-	AP_tree_nlen *rson = Brother()->Rightson();
+        AP_tree_nlen *lson = Brother()->Leftson();
+        AP_tree_nlen *rson = Brother()->Rightson();
 
-	ap_main->push_node(lson,STRUCTURE);
-	ap_main->push_node(rson,STRUCTURE);
-	ap_main->push_node(father, ROOT);
+        if (!lson || !rson) {
+            error = "Your tree contains less than 2 species (cannot load it)";
+        }
+        else {
+            ap_main->push_node(lson,STRUCTURE);
+            ap_main->push_node(rson,STRUCTURE);
+            ap_main->push_node(father, ROOT);
 
-	ap_main->set_tree_root(oldBrother);
+            ap_main->set_tree_root(oldBrother);
 
-//	delete edgeTo(oldBrother);
-	oldBrother->edgeTo(lson)->unlink();
-//	delete oldBrother->edgeTo(lson);
-	oldEdge = oldBrother->edgeTo(rson)->unlink();
-	error = this->AP_tree::remove();
-	oldEdge->relink(lson,rson);
+            //	delete edgeTo(oldBrother);
+            oldBrother->edgeTo(lson)->unlink();
+            //	delete oldBrother->edgeTo(lson);
+            oldEdge = oldBrother->edgeTo(rson)->unlink();
+            error = this->AP_tree::remove();
+            oldEdge->relink(lson,rson);
+        }
     }
 
     return error;
