@@ -34,7 +34,7 @@
 
 // Globals
 #define AW_GAUGE_SIZE        40 // length of gauge display (in characters)
-#define AW_GAUGE_GRANULARITY 3000 // how fine the gauge is transported to status (no of steps) [old value = 255]
+#define AW_GAUGE_GRANULARITY 1000 // how fine the gauge is transported to status (no of steps) [old value = 255]
 
 
 #define AW_STATUS_KILL_DELAY        4000 // in ms
@@ -362,7 +362,10 @@ inline const char *sec2disp(long seconds) {
     return buffer;
 }
 
-#define ARB_LOGGING
+// if you change this do NOT check it into CVS!
+#if defined(DEBUG)
+// #define ARB_LOGGING
+#endif // DEBUG
 
 #ifdef ARB_LOGGING
 void aw_status_append_to_log(const char* str)
@@ -382,12 +385,21 @@ void aw_status_append_to_log(const char* str)
 }
 #endif
 
+#if defined(DEBUG)
+// #define TRACE_STATUS
+#endif // DEBUG
+
+
 void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 {
     static int  delay      = AW_STATUS_LISTEN_DELAY;
     int         cmd;
     char       *str        = 0;
     int         gaugeValue = 0;
+
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "in aw_status_timer_listen_event\n"); fflush(stdout);
+#endif // TRACE_STATUS
 
     cmd = aw_status_read_command( aw_stg.fd_to[0], 1, str, &gaugeValue);
     if (cmd == EOF){
@@ -397,9 +409,12 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
         delay = delay*2/3 +1;       // shorten time
     }
     char *gauge = 0;
-    while(cmd != EOF){
+    while (cmd != EOF) {
         switch(cmd) {
             case AW_STATUS_CMD_OPEN:
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_OPEN\n"); fflush(stdout);
+#endif // TRACE_STATUS
                 aw_stg.mode       = AW_STATUS_OK;
                 aw_stg.last_start = time(0);
                 aw_stg.aws->show();
@@ -418,11 +433,17 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 continue;       // break while loop
 
             case AW_STATUS_CMD_CLOSE:
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_CLOSE\n"); fflush(stdout);
+#endif // TRACE_STATUS
                 aw_stg.mode = AW_STATUS_OK;
                 aw_stg.aws->hide();
                 break;
 
             case AW_STATUS_CMD_TEXT:
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_TEXT\n"); fflush(stdout);
+#endif // TRACE_STATUS
 #if defined(ARB_LOGGING)
                 aw_status_append_to_log(str);
 #endif // ARB_LOGGING
@@ -430,6 +451,9 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
 
             case AW_STATUS_CMD_GAUGE: {
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_GAUGE\n"); fflush(stdout);
+#endif // TRACE_STATUS
                 free(gauge);
                 gauge = str;
                 str   = 0;
@@ -447,6 +471,9 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
             }
             case AW_STATUS_CMD_MESSAGE:
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_MESSAGE\n"); fflush(stdout);
+#endif // TRACE_STATUS
 #if defined(ARB_LOGGING)
                 aw_status_append_to_log(str);
 #endif // ARB_LOGGING
@@ -460,11 +487,19 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
         free(str);
         cmd = aw_status_read_command( aw_stg.fd_to[0],1,str);
     }
+
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "exited while loop\n"); fflush(stdout);
+#endif // TRACE_STATUS
+
     if (gauge){
         awr->awar(AWAR_STATUS_GAUGE)->write_string(gauge);
         free(gauge);
     }
     if (delay>AW_STATUS_LISTEN_DELAY) delay = AW_STATUS_LISTEN_DELAY;
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
+#endif // TRACE_STATUS
     awr->add_timed_callback(delay,aw_status_timer_listen_event, 0, 0);
 }
 
@@ -499,7 +534,6 @@ void aw_initstatus( void )
         exit(-1);
     }
 
-
     aw_stg.pid = getpid();
     GB_install_pid(1);
     pid_t clientid = fork();
@@ -508,10 +542,15 @@ void aw_initstatus( void )
         return;
     } else {
         GB_install_pid(1);
+
+#if defined(TRACE_STATUS)
+        fprintf(stderr, "Forked status!\n"); fflush(stderr);
+#endif // TRACE_STATUS
+
         aw_status_wait_for_open(aw_stg.fd_to[0]);
-        AW_root *aw_root;
-        aw_root = new AW_root;
-        AW_default aw_default = aw_root->open_default(".arb_prop/status.arb");
+        AW_root    *aw_root;
+        aw_root                = new AW_root;
+        AW_default  aw_default = aw_root->open_default(".arb_prop/status.arb");
         aw_root->init_variables(aw_default);
         aw_root->awar_string( AWAR_STATUS_TITLE,"------------------------------------",aw_default);
         aw_root->awar_string( AWAR_STATUS_TEXT,"",aw_default);
@@ -575,7 +614,6 @@ void aw_initstatus( void )
 
 
         aw_root->main_loop();
-
     }
 }
 
@@ -601,7 +639,10 @@ int aw_status( const char *text )
     if (!text) text = "";
 
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
-    write(aw_stg.fd_to[1], text, strlen(text)+1 );
+    if (write(aw_stg.fd_to[1], text, strlen(text)+1 ) <= 0 || aw_stg.pipe_broken) {
+        printf("Pipe broken.\n");
+        exit(1);
+    }
 
     return aw_status();
 }
@@ -616,7 +657,10 @@ extern "C" {
 
         if (val != last_val) {
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
-            write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
+            if (write(aw_stg.fd_to[1], (char*)&val, sizeof(int)) <= 0 || aw_stg.pipe_broken) {
+                printf("Pipe broken.\n");
+                exit(0);
+            }
             //             aw_status_write(aw_stg.fd_to[1], (int)(gauge*AW_GAUGE_GRANULARITY));
         }
         last_val = val;
