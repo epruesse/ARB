@@ -15,6 +15,8 @@ typedef float GBT_LEN;
 	char			*name;                          \
 	char			*remark_branch 
 
+/* @@@ FIXME: remark_branch should not be saved to treefiles */
+
 #define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)           \
 (tree_obj_ptr)->is_leaf = GB_FALSE;                     \
 (tree_obj_ptr)->tree_is_one_piece_of_memory = GB_FALSE; \
