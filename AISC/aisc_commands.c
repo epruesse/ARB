@@ -11,7 +11,8 @@
 int      contains_tabs = 0;
 
 int print_error(const char *err) {
-    fprintf(stderr, "ERROR: %s: line %i in file %s\n", err, gl->pc->linenr, gl->pc->path);
+    /* fprintf(stderr, "ERROR: %s: line %i in file %s\n", err, gl->pc->linenr, gl->pc->path); */
+    fprintf(stderr, "%s:%i: Error: %s\n", gl->pc->path, gl->pc->linenr, err);
     return 1;
 }
 
@@ -84,7 +85,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
     }
     br = strchr(p, ')');
     if (!br) {
-        printf("%s#%s\n",str,lastbr);
+        fprintf(stderr, "%s#%s\n",str,lastbr);
         print_error("unbalanced brackets; missing ')'");
         return 0;
     }
@@ -396,8 +397,7 @@ do_com_tab(char *str)
 int
 do_com_error(char *str)
 {
-    print_error("runtime_error");
-    fprintf(stderr, "ERROR: %s\n", str);
+    print_error(str);
     return 1;
 }
 int do_com_open(char *str)
@@ -438,8 +438,13 @@ int do_com_open(char *str)
         print_error("Cannot open File");
         return 1;
     }
-    gl->fouts[i] = strdup(str);
-    gl->outs[i] = file;
+
+    gl->fouts[i]      = strdup(str);
+    gl->fouts_name[i] = strdup(fn);
+    gl->outs[i]       = file;
+
+    /* fprintf(stderr, "do_com_open creates file '%s' (type='%s')\n", gl->fouts_name[i], gl->fouts[i]); */
+
     return 0;
 }
 void aisc_remove_files()
@@ -448,7 +453,10 @@ void aisc_remove_files()
     for (i = 0; i < OPENFILES; i++) {
         if (gl->fouts[i]) {
             fclose(gl->outs[i]);
-            unlink(gl->fouts[i]);
+            if (gl->fouts_name[i]) {
+                fprintf(stderr, "Unlinking %s\n", gl->fouts_name[i]);
+                unlink(gl->fouts_name[i]);
+            }
         }
     }
 }
@@ -462,8 +470,11 @@ int do_com_close(char *str)
         if (gl->fouts[i]) {
             if (!strcmp(gl->fouts[i], str)) {
                 fclose(gl->outs[i]);
+                /* fprintf(stderr, "do_com_close(%s)\n", gl->fouts_name[i]); */
                 free(gl->fouts[i]);
-                gl->fouts[i] = 0;
+                free(gl->fouts_name[i]);
+                gl->fouts[i]      = 0;
+                gl->fouts_name[i] = 0;
                 if (gl->outs[i] == gl->out) {
                     gl->out = stdout;
                 }
@@ -887,6 +898,9 @@ int do_com_next(const char *str)
 #define COMMAND2(str,string,len,func) if ( string[0]==str[0]\
 		&&!strncmp(string,str,len)) { char *s=str+len;\
 		if (func(s)) break; continue;}
+#define COMMAND2_NOFAIL(str,string,len,func) if ( string[0]==str[0]\
+		&&!strncmp(string,str,len)) { char *s=str+len;\
+		if (func(s)) { return -1; } continue;}
 int
 run_prg(void)
 {
@@ -966,7 +980,7 @@ run_prg(void)
             COMMAND(gl->linebuf,"OPEN",4,do_com_open)
             COMMAND(gl->linebuf,"CLOSE",5,do_com_close)
             COMMAND(gl->linebuf,"OUT",3,do_com_out)
-            COMMAND2(gl->linebuf,"ERROR",5,do_com_error)
+            COMMAND2_NOFAIL(gl->linebuf,"ERROR",5,do_com_error)
             COMMAND(gl->linebuf,"TABSTOP",7,do_com_tabstop)
             COMMAND(gl->linebuf,"TAB",3,do_com_tab)
             COMMAND(gl->linebuf,"PP",2,do_com_print2)
