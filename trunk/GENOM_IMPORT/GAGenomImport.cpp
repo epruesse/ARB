@@ -271,7 +271,7 @@ void gellisary::writeGeneEmbl(GBDATA * source_container, gellisary::GAGenomGeneE
             {
                 t3_str = "pos_joined";
                 gellisary::writeInteger(gene_container,&t3_str,((int)joined.size()/2));
-                for(int k = 0; k < (int) joined.size(); k+=2)
+                for(int k = 0; k < ((int) joined.size()/2); k++)
                 {
                     if(k == 0)
                     {
@@ -286,12 +286,12 @@ void gellisary::writeGeneEmbl(GBDATA * source_container, gellisary::GAGenomGeneE
                     }
                     else
                     {
-                        t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k];
+                        t3_str = "pos_begin"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)];
                         gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
-                        t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k+1];
+                        t3_str = "pos_end"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)+1];
                         gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
