@@ -156,7 +156,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
         char *data = (char *)calloc(sizeof(char),(int)len+1);
         int x;
         float *markerline = PHDATA::ROOT->markerline;
-
+        int cnt=0; FILE *saveResults = fopen("/tmp/conservationProfile.gnu","w+"); if(!saveResults) cout<<"Cant write to file"<<endl; //YK
         for (x=0;x<len;x++) {
             char c;
 
@@ -164,7 +164,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                 c = '.';
             }
             else  {
-                float ml = markerline[x];
+                float ml = markerline[x];  if(nr==2 && ml>0.0) {fprintf(saveResults,"%i\t%.2f\n",cnt,ml); cnt++;}
 
                 if (ml>=0.0 && ml>=minhom && ml<=maxhom) {
                     int digit = -1;
@@ -190,9 +190,9 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
                 }
             }
 
-            data[x] = c;
+            data[x] = c; 
         }
-        data[len] = 0;
+        data[len] = 0; fclose(saveResults); //YK
 
         GB_write_string(gb_data, data);
 

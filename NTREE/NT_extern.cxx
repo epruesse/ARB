@@ -33,6 +33,7 @@
 #include "nt_sort.hxx"
 #include "ap_consensus.hxx"
 #include "ap_csp_2_gnuplot.hxx"
+#include "ap_conservProfile2Gnuplot.hxx"
 #include <awti_export.hxx>
 #include "nt_join.hxx"
 #include "nt_edconf.hxx"
@@ -51,6 +52,7 @@
 #include "nt_concatenate.hxx"
 #include "nt_validNames.hxx"
 #include "nt_validManual.hxx"
+#include "nt_tipsAndTricks.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -1119,6 +1121,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                     AWMIMT("pos_var_dist",  "Positional variability (distance method)",     "P","pos_variability.ps", AWM_EXP, AW_POPUP, (AW_CL)AP_open_cprofile_window, 0 );
                     AWMIMT("count_different_chars","Count different chars/column",          "C","count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars", 0);
                     AWMIMT("export_pos_var",    "Export Column Statistic (GNUPLOT format)",    "E","csp_2_gnuplot.hlp",  AWM_EXP, AW_POPUP, (AW_CL)AP_open_csp_2_gnuplot_window, 0 );
+                    AWMIMT("conservation_profile", "Display Conservation Profile (Using GNUPLOT)",    "D","conser_profile.hlp",  AWM_EXP, AW_POPUP, (AW_CL)AP_openConservationPorfileWindow, 0 );
                 }
                 awm->close_sub_menu();
             }
@@ -1382,7 +1385,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("undo.hlp");
     awm->create_button("REDO", "#redo.bitmap",0);
 
+    awm->at_newline();
+    int third_linex, third_liney;
+    awm->get_at_position(&third_linex, &third_liney);
 
+    awm->button_length(19);
+    awm->at(db_pathx, third_liney);
+    awm->callback((AW_CB2)AW_POPUP,(AW_CL)createTipsAndTricks_window, (AW_CL)0);
+    awm->create_button("TIPS_AND_TRICKS","Tips and Tricks");
 
     // tree buttons:
 
@@ -1395,10 +1405,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_TREE);
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE_TYPE", "#list.bitmap",0);
-
-    awm->at_newline();
-    int third_linex, third_liney;
-    awm->get_at_position(&third_linex, &third_liney);
 
     awm->at(db_treex, third_liney);
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_IRS_TREE);
