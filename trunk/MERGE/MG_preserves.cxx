@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/06/2004 13:12 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -235,7 +235,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
             }
             else {
                 if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid preserve candidate '%s' (%s)", name, err));
+                    aw_message(GBS_global_string("Invalid adaption candidate '%s' (%s)", name, err));
                     GB_clear_error();
                 }
                 delete cand;
@@ -276,7 +276,7 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
             }
             else {
                 if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid preserve candidate 'SAI:%s' (%s)", name, err));
+                    aw_message(GBS_global_string("Invalid adaption candidate 'SAI:%s' (%s)", name, err));
                     GB_clear_error();
                 }
                 delete cand;
@@ -396,7 +396,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "SELECT_PRESERVES", "SELECT PRESERVES");
+    aws->init(aw_root, "SELECT_PRESERVES", "Select adaption candidates");
     aws->load_xfig("merge/preserves.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -406,8 +406,8 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->callback(AW_POPUP_HELP,(AW_CL)"mg_preserve.hlp");
     aws->create_button("HELP","HELP","H");
 
-    aws->at("preserve");
-    aws->label("Preserve alignments");
+    aws->at("adapt");
+    aws->label("Adapt alignments");
     aws->create_toggle(AWAR_REMAP_ENABLE);
 
     aws->at("reference");

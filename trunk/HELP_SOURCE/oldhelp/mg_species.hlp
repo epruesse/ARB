@@ -68,7 +68,7 @@ DESCRIPTION	Allows 	# database searching,
 		To save modifications press the 'Save result' button of the
 			'ARB_MERGE' window.
 
-	Preserve Alignment:
+	Adapt Alignment:
 
 		ARB Merge tries to keep the alignment correct. Normally people
 		have inserted new gaps in either the left or right database.
@@ -77,7 +77,7 @@ DESCRIPTION	Allows 	# database searching,
 		program will try to find those species in both databases,
 		create a column reference list, and realign all transfered
 		sequences.
-                To enable this feature, enable the 'Preserve Alignment' toggle.
+                To enable this feature, enable the 'Adapt alignment' toggle.
 
 
 NOTES		None

@@ -8,14 +8,14 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		SELECT PRESERVES
+TITLE		Select species to use for alignment adaption
 
-OCCURRENCE	ARB_MERGE/TRANSFER SPECIES (Preserve alignment/SELECT)
+OCCURRENCE	ARB_MERGE/TRANSFER SPECIES (Adapt alignment/SELECT)
 
 DESCRIPTION     Helps you finding candidates for alignment preservation.
 
                 Normally people have inserted new gaps in one of the two databases.
-                ARB Merge tries to preserve the alignment.
+                ARB Merge tries to adapt the alignment.
 
                 To be able to do this, you have to specify one or more species or SAIs
                 existing in BOTH databases. ARB Merge then creates a column reference list
@@ -38,12 +38,12 @@ DESCRIPTION     Helps you finding candidates for alignment preservation.
                 didn't change. A high value means that species changed data and isn't a good candidate
                 for alignment preservation.
 
-                To enable this feature, enable the 'Preserve Alignment' toggle.
+                To enable this feature, enable the 'Adapt alignment' toggle.
 
 NOTES		In our database releases we provide SAIs named 'gaps_...'.
                 These SAIs are the best candidates for alignment preservation.
 
-                When merging similar databases with many species, searching preserve candidates
+                When merging similar databases with many species, searching adapt candidates
                 may take a loong time. Press KILL in the status window to abort the process.
 
 EXAMPLES	None
