@@ -32,7 +32,7 @@ void ed_rehash_mapping(AW_root *awr, ed_key *ek)
             ps = awr->awar(source)->read_string();
             pd = awr->awar(dest)->read_string();
             if (strlen(ps) && strlen(pd) ) {
-                ek->map[ps[0]] = pd[0];
+                ek->map[(unsigned char)ps[0]] = pd[0];
             }
             free(ps);
             free(pd);

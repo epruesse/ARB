@@ -3,7 +3,7 @@
 //    File      : path_code.h                                            //
 //    Purpose   : node-path en/decoding                                  //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Mon Oct/06/2003 13:21 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/05/2004 19:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -79,7 +79,7 @@
             const char *enc = encodePath(decoded, 4, error);
             pc_assert(!error);
 
-            decodeTable[enc[4]] = strdup(decoded);
+            decodeTable[(unsigned char)enc[4]] = strdup(decoded);
 
             for (int j = 3; j >= 0; --j) { // permutate decoded path
                 if (decoded[j] == 'L') {
@@ -120,7 +120,7 @@
             const char *pp = encodedPath+4;
 
             while (bits > 0) {
-                const char *dec = decodeTable[*pp++];
+                const char *dec = decodeTable[(unsigned char)*pp++];
                 if (!dec) {
                     error = GBS_global_string("Illegal char '%c' in path ('%s')", *pp, encodedPath);
                     return 0;

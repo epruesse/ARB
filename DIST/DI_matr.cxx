@@ -537,9 +537,9 @@ GB_ERROR PHMATRIX::haeschoe(const char *path)
             this->clear(temp2);
             for (pos = 0; pos < s_len; pos++){
                 if(filter[pos]>=0) {
-                    temp[*seq1][*seq2]++;
+                    temp[(unsigned char)*seq1][(unsigned char)*seq2]++;
                 }else{
-                    temp2[*seq1][*seq2]++;
+                    temp2[(unsigned char)*seq1][(unsigned char)*seq2]++;
                 }
                 seq1++; seq2++;
             }
@@ -695,7 +695,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                         memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
                         int pos;
                         for (pos = s_len; pos >=0; pos--){
-                            hits[*(seq1++)][*(seq2++)]++;
+                            hits[(unsigned char)*(seq1++)][(unsigned char)*(seq2++)]++;
                         }
                         int x,y;
                         double diffsum = 0.0;
@@ -744,7 +744,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                     double p,q;
                     memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
                     for (pos = s_len; pos >=0; pos--){
-                        hits[*(seq1++)][*(seq2++)]++;
+                        hits[(unsigned char)*(seq1++)][(unsigned char)*(seq2++)]++;
                     }
                     switch(transformation){
                         case PH_TRANSFORMATION_KIMURA:

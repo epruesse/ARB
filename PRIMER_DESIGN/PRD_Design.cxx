@@ -198,7 +198,7 @@ void PrimerDesign::run ( int print_stages_ )
 
 // add new child to parent or update existing child
 // returns child_index
-int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ )
+int PrimerDesign::insertNode ( Node *current_, unsigned char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ )
 {
     int  index     = CHAR2CHILD.INDEX[ base_ ];
     bool is_primer = primer_length.includes( delivered_ ); // new child is primer if true

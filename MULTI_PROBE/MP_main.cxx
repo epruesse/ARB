@@ -93,12 +93,10 @@ void create_tables()
     for (i=0; i<256; i++)
         MP_probe_tab[i] = FALSE;
 
-    MP_probe_tab['a'] = MP_probe_tab['A'] =
-        MP_probe_tab['t'] = MP_probe_tab['T'] =
-        MP_probe_tab['g'] = MP_probe_tab['G'] =
-        MP_probe_tab['u'] = MP_probe_tab['U'] =
-        MP_probe_tab['c'] = MP_probe_tab['C'] =
-        MP_probe_tab['n'] = MP_probe_tab['N'] = TRUE;
+    const unsigned char *true_chars = (const unsigned char *)"atgucnATGUCN";
+    for (i = 0; true_chars[i]; ++i) {
+        MP_probe_tab[true_chars[i]] = TRUE;
+    }
 }
 
 AW_window *MP_main(AW_root *root, AW_default def)

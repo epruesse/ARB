@@ -40,7 +40,7 @@ public:
     float   *frequency[256];
     GB_UINT4 *mut_sum;
     GB_UINT4 *freq_sum;
-    char    *is_helix;  // == 1 -> helix; == 0 -> loop region
+    unsigned char *is_helix;  // == 1 -> helix; == 0 -> loop region
     char    *desc;
 
     AWT_csp(GBDATA *gb_main, AW_root *awr, const char *awar_template);

@@ -780,12 +780,12 @@ struct T2J_transfer_struct *T2J_read_query_result_from_data(char *data,CAT_FIELD
     char *np;
     char ascii_2_col[256];
     memset(ascii_2_col,T2J_COLOR_UNKNOWN,256);
-    ascii_2_col['+'] = T2J_COLOR_YES;
-    ascii_2_col['p'] = T2J_COLOR_YES;
-    ascii_2_col['1'] = T2J_COLOR_YES;
-    ascii_2_col['-'] = T2J_COLOR_NO;
-    ascii_2_col['n'] = T2J_COLOR_NO;
-    ascii_2_col['0'] = T2J_COLOR_NO;
+    ascii_2_col[(unsigned char)'+'] = T2J_COLOR_YES;
+    ascii_2_col[(unsigned char)'p'] = T2J_COLOR_YES;
+    ascii_2_col[(unsigned char)'1'] = T2J_COLOR_YES;
+    ascii_2_col[(unsigned char)'-'] = T2J_COLOR_NO;
+    ascii_2_col[(unsigned char)'n'] = T2J_COLOR_NO;
+    ascii_2_col[(unsigned char)'0'] = T2J_COLOR_NO;
     int i;
     for (i=0;i<10;i++) {
 	ascii_2_col['0' + i] = i;
@@ -808,7 +808,7 @@ struct T2J_transfer_struct *T2J_read_query_result_from_data(char *data,CAT_FIELD
 	while ( *p == ' ') p++;		// remove leading spaces
 	while ( *val == ' ') val++;
 	transfer->items[nls].key = p;
-	transfer->items[nls].color = ascii_2_col[col[0]];
+	transfer->items[nls].color = ascii_2_col[(unsigned char)col[0]];
 	if (np - val > MAXIMUM_LINE_LENGTH) val[MAXIMUM_LINE_LENGTH] = 0;// maximum line length 1000
 	transfer->items[nls].value = val;
 	nls++;

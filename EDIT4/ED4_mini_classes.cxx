@@ -539,7 +539,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                             group_count[j] = 0;
                         }
                         for (j=0; j<used_bases_tables; j++) {
-                            char bchar = index_to_upperChar(j);
+                            unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
                                 if (PERCENT(base[j], sequences)>=BK_considbound) {
@@ -601,8 +601,8 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 // bool ED4_char_table::tables_are_valid = true;
 bool ED4_char_table::initialized = false;
 unsigned char ED4_char_table::char_to_index_tab[MAXCHARTABLE];
-char *ED4_char_table::upper_index_chars = 0;
-char *ED4_char_table::lower_index_chars = 0;
+unsigned char *ED4_char_table::upper_index_chars = 0;
+unsigned char *ED4_char_table::lower_index_chars = 0;
 int ED4_char_table::used_bases_tables = 0;
 
 inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
@@ -611,11 +611,11 @@ inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
     char_to_index_tab[upper_index_chars[index] = toupper(c)] = index;
     char_to_index_tab[lower_index_chars[index] = tolower(c)] = index;
 }
-char ED4_char_table::index_to_upperChar(int index) const
+unsigned char ED4_char_table::index_to_upperChar(int index) const
 {
     return upper_index_chars[index];
 }
-char ED4_char_table::index_to_lowerChar(int index) const
+unsigned char ED4_char_table::index_to_lowerChar(int index) const
 {
     return lower_index_chars[index];
 }
@@ -654,8 +654,8 @@ ED4_char_table::ED4_char_table(int maxseqlength)
             }
         }
 
-        lower_index_chars = new char[used_bases_tables];
-        upper_index_chars = new char[used_bases_tables];
+        lower_index_chars = new unsigned char[used_bases_tables];
+        upper_index_chars = new unsigned char[used_bases_tables];
 
         int idx = 0;
         unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table

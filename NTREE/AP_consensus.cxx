@@ -953,7 +953,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
         int sum                               = 0;
         int max                               = 0;
         for (i=0;i<end;i++) {
-            if (no_gaps && (i == convtable['-']) ) continue;
+            if (no_gaps && (i == convtable[(unsigned char)'-']) ) continue;
             sum                              += statistic[i][pos];
             if (statistic[i][pos] > max) max  = statistic[i][pos];
         }
