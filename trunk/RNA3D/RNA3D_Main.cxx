@@ -5,8 +5,6 @@
 
 using namespace std;
 
-extern GBDATA *gb_main;
-
 static void  CreateRNA3DAwars(AW_root *root){
     // Display Base Section
     root->awar_int(AWAR_3D_DISPLAY_BASES, 0, AW_ROOT_DEFAULT); 

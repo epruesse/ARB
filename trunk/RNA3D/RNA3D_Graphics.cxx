@@ -5,7 +5,6 @@
 
 using namespace std;
 
-extern GBDATA *gb_main;
 
 AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2) {
     AW_gc_manager preset_window =
