@@ -349,16 +349,10 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-#ifdef DEBUG
-#define DO_DATA_OPTIMIZE
-#else
-#define DO_DATA_OPTIMIZE
-#endif
-
 void NT_database_optimization(AW_window *aww){
     GB_ERROR error = 0;
+    GB_push_my_security(gb_main);
 
-#ifdef DO_DATA_OPTIMIZE
     {
         aw_openstatus("Optimizing Database, Please Wait");
         char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
@@ -378,11 +372,9 @@ void NT_database_optimization(AW_window *aww){
         free(tree_name);
         aw_closestatus();
     }
-#endif
 
     int errors = 0;
-    if (error)
-    {
+    if (error) {
         errors++;
         aw_message(error);
     }
@@ -391,8 +383,9 @@ void NT_database_optimization(AW_window *aww){
     error = GB_optimize(gb_main);
     aw_closestatus();
 
-    if (error)
-    {
+    GB_pop_my_security(gb_main);
+
+    if (error) {
         errors++;
         aw_message(error);
     }
@@ -1063,7 +1056,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     AWT_canvas *ntw;
     {
         AP_tree_sort  old_sort_type = nt.tree->tree_sort;
-        nt.tree->set_tree_type(AP_NO_NDS); // avoid NDS warnings during startup
+        nt.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
         ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
         nt.tree->set_tree_type(old_sort_type);
     }
@@ -1618,20 +1611,20 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->button_length(9);
     awm->at(db_treex, second_liney);
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_RADIAL_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
     awm->help_text("tr_type_radial.hlp");
     awm->create_button("RADIAL_TREE_TYPE", "#radial.bitmap",0);
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE_TYPE", "#list.bitmap",0);
 
     awm->at(db_treex, third_liney);
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_IRS_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_IRS);
     awm->help_text("tr_type_irs.hlp");
     awm->create_button("FOLDED_LIST_TREE_TYPE", "#list.bitmap",0);
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_NDS_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_NDS);
     awm->help_text("tr_type_nds.hlp");
     awm->create_button("NO_TREE_TYPE", "#ndstree.bitmap",0);
 
