@@ -518,19 +518,21 @@ class Client
         configBuf.append("Width="+psize.width+"\n");
         configBuf.append("Height="+psize.height+"\n");
 
-        TreeDisplay tree_display = display.getTreeDisplay();
-        configBuf.append("Folding="+tree_display.getFolding()+"\n");
-        configBuf.append("VisibleSubtree="+tree_display.getVisibleSubtree().getCodedPath()+"\n");
+        if (root != null) {
+            TreeDisplay tree_display = display.getTreeDisplay();
+            configBuf.append("Folding="+tree_display.getFolding()+"\n");
+            configBuf.append("VisibleSubtree="+tree_display.getVisibleSubtree().getCodedPath()+"\n");
 
-        TreeNode lastMatched = tree_display.getLastMatchedNode();
-        if (lastMatched != null) {
-            configBuf.append("LastMatchedSubtree="+lastMatched.getCodedPath()+"\n");
-        }
+            TreeNode lastMatched = tree_display.getLastMatchedNode();
+            if (lastMatched != null) {
+                configBuf.append("LastMatchedSubtree="+lastMatched.getCodedPath()+"\n");
+            }
 
-        ProbeList pl            = display.getProbeList();
-        Probe     selectedProbe = pl.getSelectedProbe();
-        if (selectedProbe != null) {
-            configBuf.append("SelectedProbe="+selectedProbe.sequence());
+            ProbeList pl            = display.getProbeList();
+            Probe     selectedProbe = pl.getSelectedProbe();
+            if (selectedProbe != null) {
+                configBuf.append("SelectedProbe="+selectedProbe.sequence());
+            }
         }
 
         String configuration = configBuf.toString();
