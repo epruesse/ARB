@@ -12,6 +12,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
@@ -534,27 +535,11 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 {
-    char base_name[100];
-    sprintf(base_name,"tmp/save_box_sel_%li",(long)selid);
-    char file_name[100];
-    char directory[100];
-    char filter[100];
-    char line_anz[100];
-
-    sprintf(line_anz,"%s/line_anz",base_name);
-    aw_root->awar_int( line_anz, 80);
-
-    sprintf(filter,"%s/filter",base_name);
-    aw_root->awar_string( filter, "list");
-
-    sprintf(file_name,"%s/file_name",base_name);
-    char *suffix = aw_root->awar(filter)->read_string();
-    aw_root->awar_string( file_name, GBS_global_string("noname.%s",suffix));
-    free(suffix);
-
-    sprintf(directory,"%s/directory",base_name);
-    aw_root->awar_string( directory, ".");
-
+    char *base_name = GBS_global_string_copy("tmp/save_box_sel_%li", long(selid)); // don't free (passed to callback)
+    char *line_anz  = GBS_global_string_copy("%s/line_anz", base_name);
+    {
+        aw_create_selection_box_awars(aw_root, base_name, ".", GBS_global_string("noname.list"), "list");
+    }
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SAVE_SELECTCION_BOX", "SAVE BOX");
@@ -565,7 +550,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 
     aws->at("save");
     aws->highlight();
-    aws->callback(create_save_box_for_selection_lists_save,selid,(AW_CL)strdup(base_name));
+    aws->callback(create_save_box_for_selection_lists_save,selid,(AW_CL)base_name); // loose ownership of base_name!
     aws->create_button("SAVE", "SAVE","S");
 
 
@@ -580,6 +565,8 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     aws->update_option_menu();
 
     awt_create_selection_box((AW_window *)aws,base_name);
+
+    free(line_anz);
 
     return (AW_window *)aws;
 }
@@ -608,20 +595,10 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
 
 AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
-    char file_name[100];
-    char directory[100];
-    char filter[100];
     char base_name[100];
     sprintf(base_name,"tmp/load_box_sel_%li",(long)selid);
 
-    sprintf(file_name,"%s/file_name",base_name);
-    aw_root->awar_string( file_name, "");
-
-    sprintf(directory,"%s/directory",base_name);
-    aw_root->awar_string( directory, ".");
-
-    sprintf(filter,"%s/filter",base_name);
-    aw_root->awar_string( filter, "list");
+    aw_create_selection_box_awars(aw_root, base_name, ".", "list", "");
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "LOAD_SELECTION_BOX", "Load box");
@@ -661,22 +638,13 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
 
 {
-    char file_name[100];
-    char directory[100];
-    char filter[100];
-    char base_name[100];
+    char *base_name = GBS_global_string_copy("tmp/load_box_%s",load_what);
 
-    sprintf(base_name,"tmp/load_box_%s",load_what);
+    aw_create_selection_box_awars(aw_root, base_name, ".", file_extension, "");
 
-    sprintf(file_name,"%s/file_name",base_name);
-    aw_root->awar_string( file_name, "");
-    if (set_file_name_awar) *set_file_name_awar = strdup(file_name);
-
-    sprintf(directory,"%s/directory",base_name);
-    aw_root->awar_string( directory, ".");
-
-    sprintf(filter,"%s/filter",base_name);
-    aw_root->awar_string( filter, file_extension);
+    if (set_file_name_awar) {
+        *set_file_name_awar = GBS_global_string_copy("%s/file_name", base_name);
+    }
 
     AW_window_simple *aws = new AW_window_simple;
     {
@@ -709,6 +677,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     aws->create_button("LOAD", "LOAD","L");
 
     awt_create_selection_box((AW_window *)aws,base_name);
+    free(base_name);
     return (AW_window*) aws;
 }
 
@@ -737,9 +706,6 @@ void awt_edit(AW_root */*awr*/, const char *path, int /*x*/, int /*y*/, const ch
 // ---------------
 
 #define AWAR_MACRO_BASE                 "tmp/macro"
-#define AWAR_MACRO_FILENAME             AWAR_MACRO_BASE"/file_name"
-#define AWAR_MACRO_SUFFIX               AWAR_MACRO_BASE"/filter"
-#define AWAR_MACRO_DIRECTORY            AWAR_MACRO_BASE"/directory"
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 
 void awt_delete_macro_cb(AW_window *aww){
@@ -819,9 +785,8 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
     aws->init( aw_root, "MACROS", "MACROS");
     aws->load_xfig("macro_select.fig");
 
-    aw_root->awar_string(AWAR_MACRO_FILENAME,"");
-    aw_root->awar_string(AWAR_MACRO_DIRECTORY,".");
-    aw_root->awar_string(AWAR_MACRO_SUFFIX,".amc");
+    aw_create_selection_box_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
+
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT,"RECORD");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -832,9 +797,6 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
 
     aws->at("start");aws->callback((AW_CB1)awt_start_macro_cb,(AW_CL)application_id);
     aws->create_button(0, AWAR_MACRO_RECORDING_MACRO_TEXT);
-
-    //    aws->at("stop");aws->callback(awt_stop_macro_cb);
-    //    aws->create_button("STOP");
 
     aws->at("delete");aws->callback(awt_delete_macro_cb);
     aws->create_button("DELETE", "DELETE");
