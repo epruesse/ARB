@@ -545,8 +545,8 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 #endif
 
 #ifdef TEST_THIS_MODULE
-typedef const char *cstr;
-typedef char *str;
+// typedef const char *cstr;
+// typedef char *str;
 
 #define PARTS           10
 #define OVERLAPPING_BASES   100
@@ -584,9 +584,9 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         }
     }
 
-    int parts = PARTS;
-    str *part = new str[PARTS];
-    int p;
+    int    parts = PARTS;
+    char **part  = new (char*)[PARTS];
+    int    p;
 
     printf("AWTC_testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);
 
@@ -635,9 +635,9 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
     for (p=0; p<parts; p++)
     {
-        int l;
-        int llen = strlen(part[p]);
-        str s = part[p];
+        int   l;
+        int   llen = strlen(part[p]);
+        char *s    = part[p];
 
         for (l=0; l<llen; l++)
         {
@@ -666,8 +666,8 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
     for (p=0; p<parts; p++) // insert some errors into sequences
     {
-        int changes = 0;
-        str s = part[p];
+        int   changes = 0;
+        char *s       = part[p];
 
         while (*s)
         {
@@ -684,7 +684,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         printf("[%02i] base-errors = %i\n", p, changes);
     }
 
-    char *neu = AWTC_constructSequence(parts, (cstr*)part, 10, NULL);
+    char *neu = AWTC_constructSequence(parts, (const char**)part, 10, NULL);
 
     for (p=0; p<parts; p++) delete [] part[p];
     delete [] part;
