@@ -2,7 +2,7 @@
 
 typedef struct {
     int len;
-    char	used[256];
+    char    used[256];
     unsigned char *con[256];
 } GB_Consensus;
 

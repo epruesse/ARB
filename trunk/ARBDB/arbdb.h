@@ -9,9 +9,9 @@
 #endif
 #define gb_assert(bed) arb_assert(bed)
 
-typedef const char *GB_CSTR;		/* local memory mgrment */
-typedef const char *GB_ERROR;		/* memory management is controlled by the ARBDB lib */
-typedef char	*GB_CPNTR;		/* points into a piece of mem */
+typedef const char *GB_CSTR;        /* local memory mgrment */
+typedef const char *GB_ERROR;       /* memory management is controlled by the ARBDB lib */
+typedef char    *GB_CPNTR;      /* points into a piece of mem */
 
 #define GB_PATH_MAX 1024
 #define GBS_GLOBAL_STRING_SIZE 64000
@@ -65,36 +65,36 @@ typedef const float GB_CFLOAT;
 
 #if (MEMORY_TEST==1)
 
-typedef char 				        *GB_REL_STRING;
-typedef struct gb_data_base_type	*GB_REL_GBDATA;
-typedef struct gb_data_base_type2	*GB_REL_CONTAINER;
+typedef char                        *GB_REL_STRING;
+typedef struct gb_data_base_type    *GB_REL_GBDATA;
+typedef struct gb_data_base_type2   *GB_REL_CONTAINER;
 
 #else
 
-typedef long 	GB_REL_STRING;		/* relative adress */
-typedef long 	GB_REL_GBDATA;		/* relative adress */
-typedef long 	GB_REL_CONTAINER;		/* relative adress */
+typedef long    GB_REL_STRING;      /* relative adress */
+typedef long    GB_REL_GBDATA;      /* relative adress */
+typedef long    GB_REL_CONTAINER;       /* relative adress */
 
 #endif /*MEMORY_TEST==1*/
 
-typedef	void GB_MAIN_TYPE;
+typedef void GB_MAIN_TYPE;
 typedef struct gbs_hash_struct GB_HASH;
 
-struct gb_flag_types {		/* public flags */
-    unsigned int 		type:4;
-    unsigned int		security_delete:3;
-    unsigned int		security_write:3;
-    unsigned int		security_read:3;
-    unsigned int 		compressed_data: 1;
-    unsigned int		unused: 1;	/* last bit saved */
-    unsigned int		user_flags:8;
-    unsigned int		temporary:1;	/* ==1 -> dont save entry */
-    unsigned int		saved_flags:8;
+struct gb_flag_types {      /* public flags */
+    unsigned int        type:4;
+    unsigned int        security_delete:3;
+    unsigned int        security_write:3;
+    unsigned int        security_read:3;
+    unsigned int        compressed_data: 1;
+    unsigned int        unused: 1;  /* last bit saved */
+    unsigned int        user_flags:8;
+    unsigned int        temporary:1;    /* ==1 -> dont save entry */
+    unsigned int        saved_flags:8;
 };
 
-struct gb_flag_types2 {		/* private flags */
-    unsigned int 		intern0: 16;
-    unsigned int 		intern1: 16;
+struct gb_flag_types2 {     /* private flags */
+    unsigned int        intern0: 16;
+    unsigned int        intern1: 16;
 };
 
 
@@ -106,12 +106,12 @@ typedef int GBQUARK;
 
 /*********** Undo ***********/
 typedef enum {
-    GB_UNDO_NONE,	/* no undo */
-    GB_UNDO_KILL,	/* no undo and delete all old undos */
-    GB_UNDO_UNDO,	/* normal undo -> deleted all redoes */
-    GB_UNDO_REDO,	/* moves to UNDO_REDO */
-    GB_UNDO_UNDO_REDO	/* internal makes undo redoable */
-}	GB_UNDO_TYPE;
+    GB_UNDO_NONE,   /* no undo */
+    GB_UNDO_KILL,   /* no undo and delete all old undos */
+    GB_UNDO_UNDO,   /* normal undo -> deleted all redoes */
+    GB_UNDO_REDO,   /* moves to UNDO_REDO */
+    GB_UNDO_UNDO_REDO   /* internal makes undo redoable */
+}   GB_UNDO_TYPE;
 
 
 struct gb_transaction_save;
@@ -124,25 +124,25 @@ typedef char GB_BOOL;
 typedef int GB_COMPRESSION_MASK;
 
 typedef enum gb_key_types {
-    GB_NONE		= 0,
-    GB_BIT		= 1,
-    GB_BYTE		= 2,
-    GB_INT		= 3,
-    GB_FLOAT	= 4,
-    GB_BITS		= 6,
-    GB_BYTES	= 8,
-    GB_INTS		= 9,
-    GB_FLOATS	= 10,
-    GB_LINK		= 11,
-    GB_STRING	= 12,
-    GB_STRING_SHRT	= 13, /* not working and not used anywhere */
-    GB_DB		= 15,
-    GB_TYPE_MAX	= 16
+    GB_NONE     = 0,
+    GB_BIT      = 1,
+    GB_BYTE     = 2,
+    GB_INT      = 3,
+    GB_FLOAT    = 4,
+    GB_BITS     = 6,
+    GB_BYTES    = 8,
+    GB_INTS     = 9,
+    GB_FLOATS   = 10,
+    GB_LINK     = 11,
+    GB_STRING   = 12,
+    GB_STRING_SHRT  = 13, /* not working and not used anywhere */
+    GB_DB       = 15,
+    GB_TYPE_MAX = 16
 } GB_TYPES;
 
 enum gb_search_enum {
     GB_FIND = 0,
-    GB_CREATE_CONTAINER = GB_DB	/* create other types: use GB_TYPES */
+    GB_CREATE_CONTAINER = GB_DB /* create other types: use GB_TYPES */
 };
 
 #define GB_TYPE_2_CHAR "-bcif-B-CIFlSS-%"
@@ -151,15 +151,15 @@ enum gb_search_types {
     this_level = 1,
     down_level = 2,
     down_2_level = 4,
-    search_next = 8	/* search after item : this_level,down_level*/
+    search_next = 8 /* search after item : this_level,down_level*/
 };
 /********************* public end ******************/
 
 /********************* client/server ******************/
 struct gbcmc_comm {
-    int	socket;
-    char	*unix_name;
-    char	*error;
+    int socket;
+    char    *unix_name;
+    char    *error;
 };
 
 
@@ -168,45 +168,45 @@ struct gbcmc_comm {
 
 struct gb_extern_data {
 
-    GB_REL_STRING rel_data;	/* Typ: (char *) */
-    long	memsize;
-    long	size;
+    GB_REL_STRING rel_data; /* Typ: (char *) */
+    long    memsize;
+    long    size;
 };
 
 struct GB_INTern_strings {
-    char	data[SIZOFINTERN];
+    char    data[SIZOFINTERN];
     unsigned char memsize;
     unsigned char size;
 };
 
 struct GB_INTern {
-    char	data[SIZOFINTERN];
+    char    data[SIZOFINTERN];
 };
 
 union gb_data_base_type_union {
-    long	i;
+    long    i;
     struct GB_INTern_strings istr;
-    struct GB_INTern	in;
-    struct gb_extern_data	ex;
+    struct GB_INTern    in;
+    struct gb_extern_data   ex;
 };
 
 struct gb_callback;
 struct gb_db_extended {
-    long	creation_date;
-    long	update_date;
-    struct gb_callback		*callback;
-    struct gb_transaction_save	*old;
+    long    creation_date;
+    long    update_date;
+    struct gb_callback      *callback;
+    struct gb_transaction_save  *old;
 };
 
 struct gb_data_base_type {
-    long	server_id;
-    GB_REL_CONTAINER rel_father;	/* Typ: (struct gb_data_base_type2 *) */
-    struct gb_db_extended	*ext;
-    long	index;
-    struct gb_flag_types	flags;
-    struct gb_flag_types2	flags2;
+    long    server_id;
+    GB_REL_CONTAINER rel_father;    /* Typ: (struct gb_data_base_type2 *) */
+    struct gb_db_extended   *ext;
+    long    index;
+    struct gb_flag_types    flags;
+    struct gb_flag_types2   flags2;
     union gb_data_base_type_union info;
-    int	cache_index;	/* should be a member of gb_db_extended */
+    int cache_index;    /* should be a member of gb_db_extended */
 };
 
 /*********** Alignment ***********/
@@ -214,10 +214,10 @@ struct gb_data_base_type {
 typedef enum
 {
     GB_AT_UNKNOWN,
-    GB_AT_RNA,		/* Nucleotide sequence (U) */
-    GB_AT_DNA,		/* Nucleotide sequence (T) */
-    GB_AT_AMI,		/* AminoAcid */
-    GB_AT_PRO		/* Protein */
+    GB_AT_RNA,      /* Nucleotide sequence (U) */
+    GB_AT_DNA,      /* Nucleotide sequence (T) */
+    GB_AT_AMI,      /* AminoAcid */
+    GB_AT_PRO       /* Protein */
 
 } GB_alignment_type;
 
@@ -237,17 +237,17 @@ extern "C" {
 
 extern long GB_NOVICE;
 
-	/*********** Commands ***********/
-#define GBL_MAX_ARGUMENTS	50
+    /*********** Commands ***********/
+#define GBL_MAX_ARGUMENTS   50
 
 /*
 #define GBL_COMMAND GB_ERROR (*)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, \
-		int argcparam,GBL *argvparam, \
-		int *argcout, GBL **argvout)
+        int argcparam,GBL *argvparam, \
+        int *argcout, GBL **argvout)
 
 #define GBL_COMMAND_DECL(x) GB_ERROR (*x)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, \
-		int argcparam,GBL *argvparam, \
-		int *argcout, GBL **argvout)
+        int argcparam,GBL *argvparam, \
+        int *argcout, GBL **argvout)
 */
 
 typedef struct gbl_struct {

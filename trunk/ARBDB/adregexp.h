@@ -1,54 +1,54 @@
-/*	Copyright (c) 1988 AT&T	*/
-/*	  All Rights Reserved  	*/
+/*  Copyright (c) 1988 AT&T */
+/*    All Rights Reserved   */
 
-/*	THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF AT&T	*/
-/*	The copyright notice above does not evidence any   	*/
-/*	actual or intended publication of such source code.	*/
+/*  THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF AT&T */
+/*  The copyright notice above does not evidence any    */
+/*  actual or intended publication of such source code. */
 
 #ifndef _REGEXP_H
-#define	_REGEXP_H
+#define _REGEXP_H
 
 #include <string.h>
 #ifndef __STDC__
 #define __STDC__
 #endif
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 extern "C" {
 #endif
 
-#define	CBRA	2
-#define	CCHR	4
-#define	CDOT	8
-#define	CCL	12
-#define	CXCL	16
-#define	CDOL	20
-#define	CCEOF	22
-#define	CKET	24
-#define	CBACK	36
-#define	NCCL	40
+#define CBRA    2
+#define CCHR    4
+#define CDOT    8
+#define CCL 12
+#define CXCL    16
+#define CDOL    20
+#define CCEOF   22
+#define CKET    24
+#define CBACK   36
+#define NCCL    40
 
-#define	STAR	01
-#define	RNGE	03
+#define STAR    01
+#define RNGE    03
 
-#define	NBRA	9
+#define NBRA    9
 
-#define	PLACE(c)	ep[c >> 3] |= bittab[c & 07]
-#define	ISTHERE(c)	(ep[c >> 3] & bittab[c & 07])
-#define	ecmp(s1, s2, n)	(strncmp(s1, s2, n) == 0)
+#define PLACE(c)    ep[c >> 3] |= bittab[c & 07]
+#define ISTHERE(c)  (ep[c >> 3] & bittab[c & 07])
+#define ecmp(s1, s2, n) (strncmp(s1, s2, n) == 0)
 
-    static char	*braslist[NBRA];
-    static char	*braelist[NBRA];
-    int	sed, nbra;
-    char	*loc1, *loc2, *locs;
-    static int	nodelim;
+    static char *braslist[NBRA];
+    static char *braelist[NBRA];
+    int sed, nbra;
+    char    *loc1, *loc2, *locs;
+    static int  nodelim;
 
-    int	circf;
-    static int	low;
-    static int	size;
+    int circf;
+    static int  low;
+    static int  size;
 
-    static unsigned char	bittab[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
+    static unsigned char    bittab[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
-#ifdef	__STDC__
+#ifdef  __STDC__
     int advance(const char *lp, const char *ep);
     static void getrnge(const char *str);
 #else
@@ -57,7 +57,7 @@ extern "C" {
 #endif
 
     char *
-#ifdef	__STDC__
+#ifdef  __STDC__
     compile(char *instring, char *ep, const char *endbuf, int seof)
 #else
         compile(instring, ep, endbuf, seof)
@@ -66,7 +66,7 @@ extern "C" {
     int seof;
 #endif
     {
-        INIT	/* Dependent declarations and initializations */
+        INIT    /* Dependent declarations and initializations */
             register int c;
         register int eof = seof;
         char *lastep = instring;
@@ -253,7 +253,7 @@ extern "C" {
                             }
                             if (GETC() != '}')
                                 ERROR(45);
-                            if (!cflg)	/* one number */
+                            if (!cflg)  /* one number */
                                 *ep++ = i;
                             else if ((ep[-1] & 0377) < (ep[-2] & 0377))
                                 ERROR(46);
@@ -286,7 +286,7 @@ extern "C" {
         }
     }
 
-#ifdef	__STDC__
+#ifdef  __STDC__
     int
     step(const char *p1, const char *p2)
 #else
@@ -315,7 +315,7 @@ extern "C" {
             } while (*p1++);
             return (0);
         }
-		/* regular algorithm */
+        /* regular algorithm */
         do {
             if (advance(p1, p2)) {
                 loc1 = (char *) p1;
@@ -326,14 +326,14 @@ extern "C" {
     }
 
     int
-#ifdef	__STDC__
+#ifdef  __STDC__
     advance(const char *lp, const char *ep)
 #else
         advance(lp, ep)
         register char *lp, *ep;
 #endif
     {
-#ifdef	__STDC__
+#ifdef  __STDC__
         const char *curlp;
 #else
         register char *curlp;
@@ -437,7 +437,7 @@ extern "C" {
                     }
                     if (size < 0)
                         lp++;
-                    ep += 34;		/* 32 + 2 */
+                    ep += 34;       /* 32 + 2 */
                     goto star;
 
                 case NCCL | RNGE:
@@ -458,7 +458,7 @@ extern "C" {
                     }
                     if (size < 0)
                         lp++;
-                    ep += 18; 		/* 16 + 2 */
+                    ep += 18;       /* 16 + 2 */
                     goto star;
 
                 case CBACK:
@@ -530,7 +530,7 @@ extern "C" {
     }
 
     static void
-#ifdef	__STDC__
+#ifdef  __STDC__
     getrnge(const char *str)
 #else
         getrnge(str)
@@ -541,8 +541,8 @@ extern "C" {
         size = ((*str & 0377) == 255)? 20000: (*str &0377) - low;
     }
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
 #endif
 
-#endif	/* _REGEXP_H */
+#endif  /* _REGEXP_H */
