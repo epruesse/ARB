@@ -14,6 +14,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
+#include <aw_color_groups.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
