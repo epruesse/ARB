@@ -121,9 +121,14 @@ create_db() {
         mv $OUT$1_design.arb $DEST_DIR
 }
 
+abort_work() {
+    echo "Aborting.."
+    exit 1
+}
+
 create_dbs() {
     while [ \! -z "$1" ]; do
-        create_db $1
+        create_db $1 || abort_work
         shift
     done
 }
