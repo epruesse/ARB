@@ -8,7 +8,7 @@
 
 AW_window *create_probe_design_window( AW_root *root, AW_default def);
 AW_window *create_probe_match_window( AW_root *root, AW_default def);
-AW_window *create_probe_admin_window( AW_root *root, AW_default def);
+AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db);
 AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw);
 
 #define PROBE_DESIGN_EXCEPTION_MAX	1
