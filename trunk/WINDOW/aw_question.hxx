@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.hxx                                        //
 //    Purpose   : Functions to ask questions to user                     //
-//    Time-stamp: <Wed Jan/23/2002 14:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/08/2003 07:37 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -22,6 +22,10 @@
 #ifndef _STDLIB_H
 #include <stdlib.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 
 // for simple questions use :  int aw_message(const char *msg, const char *buttons)
 //
@@ -31,19 +35,26 @@
 // Usage : 1. Create a new instance of AW_repeated_question outside the loop
 //         2. call get_answer() inside the loop
 
-class AW_repeated_question {
+class AW_repeated_question : Noncopyable {
 private:
     int   answer;
     bool  dont_ask_again;
     char *buttons_used;
+    char *helpfile;
 
 public:
     AW_repeated_question(bool dont_ask_again_ = false)
         : answer(0),
           dont_ask_again(dont_ask_again_),
-          buttons_used(0)
+          buttons_used(0),
+          helpfile(0)
     {}
-    virtual ~AW_repeated_question() { free(buttons_used); }
+    virtual ~AW_repeated_question() {
+        free(buttons_used);
+        free(helpfile);
+    }
+
+    void add_help(const char *help_file); // when called, a help button is added to the prompter
 
     int get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort);
     // return 0 for first button, 1 for second button, 2 for third button, ...
