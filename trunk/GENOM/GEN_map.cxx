@@ -564,14 +564,16 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
-//     awm->auto_space(-2,-2);
-    awm->auto_space(5,-2);
+    awm->auto_space(-2,-2);
+    //awm->auto_space(5,-2);
     awm->shadow_width(1);
 
     // close + undo button, info area, define line y-positions:
 
     int cur_x, cur_y, start_x, first_line_y, second_line_y, third_line_y;
     awm->get_at_position( &start_x,&first_line_y);
+
+    printf("start_x = %i\n", start_x);
 
     awm->button_length(5);
 
@@ -582,6 +584,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->get_at_position( &cur_x,&cur_y );
     int gene_x = cur_x+10;
+
+    printf("gene_x = %i\n", gene_x);
 
     awm->at_newline();
     awm->get_at_position( &cur_x,&second_line_y);
@@ -618,6 +622,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->get_at_position( &cur_x,&cur_y );
     int dtype_x1 = cur_x+10;
 
+    printf("dtype_x1 = %i\n", dtype_x1);
+
     // display type buttons:
 
     awm->button_length(7);
@@ -633,6 +639,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->get_at_position( &cur_x,&cur_y );
     int jump_x = cur_x+10;
+
+    printf("jump_x = %i\n", jump_x);
 
     awm->at(dtype_x1, second_line_y);
     awm->help_text("gen_disp_vertical.hlp");
