@@ -660,21 +660,18 @@ char *AWT_graphic_tree_node_deleted(void *cd, AP_tree *old)
 void AWT_graphic_tree::toggle_group(AP_tree * at)
 {
     if (at->gb_node) {
-        GBDATA         *gb_name;
-        gb_name = GB_search(at->gb_node, "group_name", GB_FIND);
-        char *gname;
+        GBDATA *gb_name = GB_search(at->gb_node, "group_name", GB_FIND);
         if (gb_name) {
-            gname = GB_read_string(gb_name);
-
-            const char *msg = GBS_global_string("What to do with group '%s'?",gname);
-            delete gname;
+            char       *gname = GB_read_string(gb_name);
+            const char *msg   = GBS_global_string("What to do with group '%s'?",gname);
+            
             switch (aw_message(msg,"Rename,Destroy,Cancel")){
                 case 0: {
                     char *new_gname = aw_input("Rename group", 0, at->name);
                     if (new_gname) {
                         free(at->name);
                         at->name = new_gname;
-			GB_write_string(gb_name, new_gname);
+                        GB_write_string(gb_name, new_gname);
                     }
                     return;
                 }
@@ -689,6 +686,11 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
                     return;
                 }
             }
+
+            free(gname);
+        }
+        else {
+            
         }
     }
     if (create_group(at)) at->gr.grouped = 1;
@@ -696,25 +698,31 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
 
 AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
 {
-    if (!at->gb_node) {
-        at->gb_node = GB_create_container(this->tree_static->gb_tree, "node");
-        GBDATA         *gb_id;
-        gb_id = GB_search(at->gb_node, "id", GB_INT);
+    if (!at->name) {
+        char *gname = aw_input("Enter Name of Group",0);
+        if (!gname) return AW_FALSE;
+
+        GBDATA         *gbmain = GB_get_root(tree_static->gb_tree);
+        GB_transaction  ta(gbmain);
+
+        if (!at->gb_node) {
+            at->gb_node   = GB_create_container(this->tree_static->gb_tree, "node");
+            GBDATA *gb_id = GB_search(at->gb_node, "id", GB_INT);
+            GB_write_int(gb_id, 0);
+            this->exports.save = 1;
+        }
+
+        at->name = gname;
+        GBDATA *gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
+        GBT_write_group_name(gb_name, at->name);
+    }
+    else if (!at->gb_node) {
+        at->gb_node   = GB_create_container(this->tree_static->gb_tree, "node");
+        GBDATA *gb_id = GB_search(at->gb_node, "id", GB_INT);
         GB_write_int(gb_id, 0);
         this->exports.save = 1;
     }
-    if (!at->name) {
-        at->name = aw_input("Enter Name of Group",0);
-        if (!at->name) {
-            return AW_FALSE;
-        }
 
-        GBDATA *gb_name;
-        gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
-        GBT_write_group_name(gb_name, at->name);
-	//        GBT_write_group_name(gb_name, "noname");
-	//        	 GB_write_string(gb_name, "noname");
-    }
     return AW_TRUE;
 }
 
