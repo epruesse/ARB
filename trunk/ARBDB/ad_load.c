@@ -22,35 +22,42 @@
         V2  Differential save
 ********************************************************************************************/
 
-long
-gb_read_ascii(const char *path, GBCONTAINER * gbd)
+long gb_read_ascii(const char *path, GBCONTAINER * gbd)
 {
-    char          **pdat, **p2;
-    if (gbd == NULL)
-        return -1;
-    if (path == NULL)
-        return -1;
+    char **pdat, **p2;
+
+    if (gbd == NULL) return -1;
+    if (path == NULL) return -1;
+
     pdat = gb_read_file(path);
     if (pdat) {
         GB_search((GBDATA *)gbd,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER);      /* Switch to Version 3 */
         p2 = gb_read_rek(pdat + 1, gbd);
-        if (p2)
+        if (p2) {
             if (*p2) {
                 fprintf(stderr, "error in file: %s\n", path);
                 gb_file_loc_error(p2, "syntax error before in fi");
-            };
+            }
+        }
         free(pdat[0]);
-        free((char *)pdat);
-    };
+        free(pdat);
+    }
+
     return 0;
 }
 
 char **gb_read_file(const char *path)
-{   /*  ' ' '\t' '\n' werden entfernt und durch '\0' ersetzt
-        "string" wird zu string\0
-        \0 folgt short  bis zur naechsten '\0'
-        Kommentare #  und  comment werden entfernt
+{   /* This is used to load an ASCII-database
+
+    ' ' '\t' '\n' werden entfernt und durch '\0' ersetzt
+    "string" wird zu string\0
+    \0 folgt short  bis zur naechsten '\0'
+    Kommentare #  und  comment werden entfernt
+
     */
+
+/* @@@ FIXME: should use GBS_fconvert_string  */
+
 
     register char *t,*t2,*pb;
     char tab[256],tab2[256],x;
@@ -73,59 +80,65 @@ char **gb_read_file(const char *path)
     pdat = NULL;data_size = 0;
     if ((input = fopen(path, "r")) == NULL) {
         printf(" file %s not found\n", path);
-    }else{
-        if (fseek(input,0,2)==-1){
+    }
+    else {
+        if (fseek(input,0,2)==-1) {
             printf("file %s not seekable\n",path);
-        }else{
-            data_size = (long)ftell(input) + 1;
+        }
+        else {
+            data_size         = (long)ftell(input) + 1;
             rewind(input);
-            buffer =  (char *)malloc((size_t)data_size+1);
-            data_size = fread(buffer,1,(int)data_size,input);
+            buffer            = (char *)malloc((size_t)data_size+1);
+            data_size         = fread(buffer,1,(int)data_size,input);
             fclose(input);
-            pdat_size = data_size/CROSS_BUFFER_DIFF+2;
+            pdat_size         = data_size/CROSS_BUFFER_DIFF+2;
             buffer[data_size] = 0;
-            pdat_cnt = 0;
-            pdat = (char **)malloc((size_t)(sizeof(char *) * pdat_size));
-            pdat[pdat_cnt++] = buffer;
-            pb = buffer;
+            pdat_cnt          = 0;
+            pdat              = (char **)malloc((size_t)(sizeof(char *) * pdat_size));
+            pdat[pdat_cnt++]  = buffer;
+            pb                = buffer;
+
             while ( 1 ) {
-                if (pdat_cnt == pdat_size){
+                if (pdat_cnt == pdat_size) {
                     pdat_size += data_size/CROSS_BUFFER_DIFF+2;
-                    pdat = (char **)realloc((char *)pdat,
-                                            (size_t)(sizeof(char *) * pdat_size));
+                    pdat = (char **)realloc((char *)pdat, (size_t)(sizeof(char *) * pdat_size));
                 }
                 while ( t2[(int)(x = *pb)] ) pb++;
                 if (! x) break;
-                if (x == '"'){  /* string anfang */
-                    char *dest;
+                if (x == '"') {  /* string start */
                     if (pb[1] == 1) {   /* old string mode */
                         pb += 2;
                         pdat[pdat_cnt++] = pb;
                         while ( (x = *pb++) ) {
-                            if( (x==(char)1) &&
-                                (pb[0]==(char)34) )break;
+                            if( (x==(char)1) && (pb[0]==(char)34) ) break;
                         }
                         if (!x) break;
                         pb[-1] = 0;
                         pb++;
-                        continue;
                     }
-                    pdat[pdat_cnt++] = ++pb;
-                    dest = pb;
-                    while ((x = *pb++) != '"' ){
-                        if (x == '\\'){
-                            x = *pb++;
-                            if (!x) break;
-                            if (x>='@' && x <='@'+ 25) {
-                                *dest++ = x-'@';continue;
-                            }
-                            if (x>='0' && x <='9') {
-                                *dest++ = x-('0'-25);continue;
-                            }
-                        }
-                        *dest++ = x;
+                    else {
+                        pdat[pdat_cnt++] = ++pb; /* store string-start (behind ") in pointer-array */
+                        pb = GBS_fconvert_string(pb);
+                        if (!pb) break; /* error: 0-character found */
+
+                        /*  char *dest; */
+                        /*  pdat[pdat_cnt++] = ++pb;  */
+                        /*  dest             = pb; */
+                        /*  while ((x = *pb++) != '"' ){ */
+                        /*      if (x == '\\'){ */
+                        /*          x = *pb++; */
+                        /*          if (!x) break; */
+                        /*          if (x>='@' && x <='@'+ 25) { */
+                        /*              *dest++ = x-'@';continue; */
+                        /*          } */
+                        /*          if (x>='0' && x <='9') { */
+                        /*              *dest++ = x-('0'-25);continue; */
+                        /*          } */
+                        /*      } */
+                        /*      *dest++ = x; */
+                        /*  } */
+                        /*  dest[0] = 0; */
                     }
-                    dest[0] = 0;
                     continue;
                 }
                 if ( (x == '/') && (pb[1] == '*') ) {
@@ -145,7 +158,6 @@ char **gb_read_file(const char *path)
             }
         }
         pdat[pdat_cnt] = NULL;
-
 
         /* all data read */
 
