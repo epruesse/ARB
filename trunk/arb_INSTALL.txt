@@ -57,7 +57,15 @@ Additional software that is needed to compile ARB:
 - java 1.3.1 or above [needed for arb_probe_library only]
 - lynx
 
+Additional software that is needed to compile open gl parts:
+------------------------------------------------------------
+
+- mesa-devel ?
+- libpng
+- libglew                  http://glew.sourceforge.net/
+
 ----------------------------------------------------------------------
 If we forgot something (or if your OS needs something special)
 please notify us (devel@arb-home.de). We will mention it here..
 ----------------------------------------------------------------------
+
