@@ -4,14 +4,12 @@ import java.awt.event.*;
 
 
 /**
- * central driver and control class for ARB probe service client
+ * central driver and control class for ARB probe library client
  */
 
 class Client
 {
-
 private ProbesGUI     display;
-// private TreeDisplay   tree;
 private TreeNode      root;
 private String        treeString;
 private String        baseurl;
@@ -25,11 +23,6 @@ private HashMap knownOptions()
          hm.put("tree",   "=reload       Force tree reload");
          return hm;
      }
-
-    // private TreeNode subtree;
-
-    // private Communicationsubsystem
-
 
 public static String readTree(HttpSubsystem webAccess, boolean forceReload)
     {
@@ -79,16 +72,8 @@ public static String readTree(HttpSubsystem webAccess, boolean forceReload)
     }
 
 public static void main(String[] args)
-
     {
-        // create central client object(s)
-        // create communication structure
-        // initialization of communication
-        // control of user interaction
-
-        // System.out.println(args.length);
-
-        Client cl         = new Client();
+        Client cl          = new Client();
         Toolkit.clientName = "arb_probe_library";
 
         System.out.println(Toolkit.clientName+" v"+Toolkit.clientVersion+" -- (C) 2003 Lothar Richter & Ralf Westram");
@@ -125,21 +110,15 @@ public static void main(String[] args)
 
         cl.root.setPath("");
         cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion, cl);
-        //        ProbesGUIActionListener al = new ProbesGUIActionListener(cl.display);
-        //        cl.display.setMenuBar(new ProbeMenu(al));
-        //
-        // obtain reference to Treedisplay first !
-        cl.display.getTreeDisplay().setBoss(cl);
-        cl.display.setLocation(200, 200);
+
+        cl.display.getTreeDisplay().setBoss(cl); // obtain reference to Treedisplay first !
+        // cl.display.setLocation(200, 200); // this seems to cause display problems with fvwm
         cl.display.setVisible(true);
-
-
     }
 
 public Client()
     {
-        //        display = new ProbesGUI();
-        groupCache        = new GroupCache();
+        groupCache = new GroupCache();
     }
 
 public ProbesGUI getDisplay()
@@ -148,9 +127,12 @@ public ProbesGUI getDisplay()
     }
 
 public void matchProbes(String probeInfo) {
-    root.markSubtree(false);    // unmark all
-
-    if (probeInfo != null) {
+    boolean needUpdate = false;
+    if (probeInfo == null) {
+        root.unmarkSubtree();   // unmark all
+        needUpdate = true;
+    }
+    else {
         int komma1 = probeInfo.indexOf(',');
         int komma2 = probeInfo.indexOf(',', komma1+1);
 
@@ -166,11 +148,12 @@ public void matchProbes(String probeInfo) {
             }
             else {
                 System.out.println("Members='"+members+"'");
-                root.markSpecies(","+members+",");
+                needUpdate = root.markSpecies(","+members+",");
             }
         }
     }
-    display.getTreeDisplay().repaint();
+    if (needUpdate) display.getTreeDisplay().repaint();
+    else System.out.println("Nothing changed");
 }
 
 public void updateNodeInformation(String encodedPath)
@@ -189,9 +172,16 @@ public void updateNodeInformation(String encodedPath)
         else {
             list.setContents(parsedAnswer);
 
-            // testing only :
-            String probe_info = list.getProbeInfo(0); // simulate selection of first probe in list
-            matchProbes(probe_info);
+            if (parsedAnswer.hasKey("probe0")) { // if we found probes
+                // select the first one
+                list.select(0);
+                // list.requestFocus(); // doesn't work
+                matchProbes(list.getProbeInfo(0)); // so we do the action manually
+            }
+            else {
+                root.unmarkSubtree();
+                display.getTreeDisplay().repaint();
+            }
         }
     }
 }
