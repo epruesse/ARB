@@ -104,7 +104,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     delete [] weights; weights = new GB_UINT4[seq_len];
     delete [] rates;   rates   = new float[seq_len];
     delete [] ttratio; ttratio = new float[seq_len];
-    delete [] is_helix;is_helix = new char[seq_len];
+    delete [] is_helix;is_helix = new unsigned char[seq_len];
     delete [] mut_sum; mut_sum = new GB_UINT4[seq_len];
     delete [] freq_sum;freq_sum    = new GB_UINT4[seq_len];
     delete desc;    desc = 0;
