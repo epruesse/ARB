@@ -23,7 +23,7 @@ Software that is useful together with ARB:
 
 - gnuplot
 - ghostview (gv)
-- xfig
+- xfig (+ fig2dev to print from xfig)
 - perl5
 
 ================================================================================
