@@ -22,7 +22,6 @@
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 
-#include "../NTREE/ad_ext.hxx"
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx"
 
