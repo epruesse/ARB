@@ -921,12 +921,12 @@ void SEC_bond_def::paint(AW_device *device, SEC_root *root, char base1, char bas
         }
         case 'o': { // circle
             double diameter = dist*0.5*0.3;
-            device->circle(SEC_GC_BONDS, xm, ym, diameter, diameter, root->helix_filter, 0, 0);
+            device->circle(SEC_GC_BONDS, false, xm, ym, diameter, diameter, root->helix_filter, 0, 0);
             break;
         }
         case '.': { // point
             double diameter = dist*0.5*0.1;
-            device->circle(SEC_GC_BONDS, xm, ym, diameter, diameter, root->helix_filter, 0, 0);
+            device->circle(SEC_GC_BONDS, false, xm, ym, diameter, diameter, root->helix_filter, 0, 0);
             break;
         }
         case ' ': { // no bond

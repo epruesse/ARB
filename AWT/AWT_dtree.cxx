@@ -295,7 +295,7 @@ void AWT_show_circle(AW_device *device, const char *bootstrap, double zoom_facto
     if (radius < 0) return;
     //if (radius > 0.04) radius = 0.04;
     if (radius > 0.06) radius = 0.06;
-    device->circle(AWT_GC_BRANCH_REMARK, x,y,radius,radius,filter,cd1 , (AW_CL) cd2 );
+    device->circle(AWT_GC_BRANCH_REMARK, false, x,y,radius,radius,filter,cd1 , (AW_CL) cd2 );
 }
 
 double comp_rot_orientation(AW_clicked_line *cl)

@@ -104,7 +104,7 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
 	return 0;
 }
 
-int AW_device_Xm::circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
 	AWUSE(cd1);AWUSE(cd2);
 	register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
 	//AW_pos x1,y1;
@@ -127,13 +127,16 @@ int AW_device_Xm::circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height,
 	    X0 -= 2.0; Y0 -= 2.0;
 	    drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
 	    if (drawflag) {
-		AWUSE(cd1);
-		AWUSE(cd2);
-		width *= 2.0 * this->get_scale();
-		height *= 2.0 * this->get_scale();
-		XDrawArc(common->display, common->window_id,
-			 gcm->gc, (int)XL,(int)YL,
-			 (int)width, (int)height,0,64*360 );
+            AWUSE(cd1);
+            AWUSE(cd2);
+            width  *= 2.0 * this->get_scale();
+            height *= 2.0 * this->get_scale();
+            if (!filled) {
+                XDrawArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
+            }
+            else {
+                XFillArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
+            }
 		}
 	}
 	return 0;
