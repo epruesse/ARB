@@ -391,9 +391,9 @@
   <!-- ============================== -->
   <!--     insert document header     -->
   <!-- ============================== -->
-  <xsl:template name="header" xml:space="preserve">
+  <xsl:template name="header">
     <xsl:param name="title" select="'Untitled'"/>
-    <xsl:text># Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de)
+    <xsl:text xml:space="preserve"># Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de)
 #
 #  ****  DO NOT EDIT (edit in $(ARBHOME)/HELP_SOURCE/oldhelp instead)  ****
 </xsl:text>
