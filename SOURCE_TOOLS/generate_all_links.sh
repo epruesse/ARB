@@ -78,6 +78,7 @@ ln -s ../TEMPLATES/inline.h INCLUDE/inline.h
 ln -s ../TEMPLATES/arbtools.h INCLUDE/arbtools.h
 ln -s ../TEMPLATES/config_parser.h INCLUDE/config_parser.h
 ln -s ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h
+ln -s ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h
 
 # INCLUDE directory
 
