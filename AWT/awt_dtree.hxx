@@ -104,7 +104,7 @@ class AWT_graphic_tree : public AWT_graphic {
 	void mark_tree(struct AP_tree *at, int mark);
 	int  group_tree(struct AP_tree *at, int mode);
 	int  resort_tree(int mode, struct AP_tree *at = 0 );
-	void create_group(AP_tree * at);
+	AW_BOOL create_group(AP_tree * at);
 	void toggle_group(AP_tree * at);
 	void jump(AP_tree *at, const char *name);
 	AP_tree *search(AP_tree *root, const char *name);
