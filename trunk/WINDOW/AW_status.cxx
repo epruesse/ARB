@@ -504,11 +504,9 @@ void aw_set_local_message(){
     aw_stg.local_message = 1;
 }
 
-int aw_message(const char *msg, const char *buttons)
-    //
+int aw_message(const char *msg, const char *buttons) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
-    //
-{
+    // the single buttons are seperated by kommas (i.e. "YES,NO")
     if (!buttons){		        /* asynchronous message */
 #if defined(DEBUG)
         printf("aw_message: '%s'\n", msg);
