@@ -43,7 +43,6 @@ int main(void) {
   double fA=0.25;
   double fG=0.25;
 
-  int rates=FALSE;
   double rTC=4.0;
   double rTA=1.0;
   double rTG=1.0;
@@ -70,7 +69,7 @@ int main(void) {
   Align(
    nX,X,secX,&XX,nY,Y,secY,&YY,
    freqs,fT,fC,fA,fG,
-   rates,rTC,rTA,rTG,rCA,rCG,rAG,
+   rTC,rTA,rTG,rCA,rCG,rAG,
    dist,supp,gapA,gapB,gapC,thres
   );
 
