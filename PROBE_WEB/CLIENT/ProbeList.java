@@ -42,6 +42,7 @@ class ProbeList extends java.awt.List {
 
 //     public int getSelectedIndex() { return getSelectedIndex(); }
     public Probe getProbe(int index) { return probes == null ? null : probes.getProbe(index); }
+    public Probe getSelectedProbe() { return lastSelectedProbe; }
 
     public int getSortedIndexOf(Probe p) { return probes == null ? -1 : probes.getSortedIndexOf(p); }
     public int getSortedIndexOf(String probeSeq) { return probes == null ? -1 : probes.getSortedIndexOf(probeSeq); }
@@ -66,6 +67,7 @@ class ProbeList extends java.awt.List {
         if (index != -1) {
             // System.out.println("selectProbe index="+index);
             select(index);
+            makeVisible(index);
 
             Probe p = getProbe(index);
             getGUI().getClient().matchProbes(p);
@@ -130,9 +132,15 @@ class ProbeList extends java.awt.List {
         }
     }
 
-    public void setContents(NodeProbes nodeProbes) throws Exception {
+    public void setContents(NodeProbes nodeProbes, String preferredProbe) throws Exception {
         probes = nodeProbes;
         probes.resortProbes();
+        
+        int preferredIndex = preferredProbe == null ? -1 : probes.getSortedIndexOf(preferredProbe);
+        if (preferredIndex != -1) {
+            lastSelectedProbe = getProbe(preferredIndex);
+        }
+
         count = probes.size();
         rebuildList();
     }
