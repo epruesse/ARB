@@ -24,8 +24,8 @@ public:
   Item ();
   ~Item () {};
 
-  void  print             ( char *prefix_, char *suffix_ );	// print Items's values
-  int   sprint            ( char *buf, char *prefix_, char *suffix_ , int max_primer_length, int max_position_length, int max_length_length );
+  void  print             ( const char *prefix_, const char *suffix_ );	// print Items's values
+  int   sprint            ( char *buf, const char *prefix_, const char *suffix_ , int max_primer_length, int max_position_length, int max_length_length );
   char* getPrimerSequence ( const char *sequence_ );		// return the string the Item describes
 };
 

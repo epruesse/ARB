@@ -13,7 +13,7 @@
 
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
-#define DEFAULT_LENGTH 0.1 // default length of tree-edge w/o given length
+#define DEFAULT_LENGTH 0.1 /* default length of tree-edge w/o given length */
 
 /********************************************************************************************
 					some alignment header functions
@@ -1889,7 +1889,7 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
     return GBS_strclose(out, 1);
 }
 
-GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, GB_ERROR (*doit)(GBDATA *gb_species, int *clientdata), int *clientdata) {
+GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
     /* call function 'doit' with all species stored in 'stored' */
 
 #define MAX_NAME_LEN 20

@@ -162,7 +162,7 @@ GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
 ********************************************************************************************/
 
 static char *unEscapeString(const char *escapedString) {
-    // replaces all \x by x
+    /* replaces all \x by x */
     char *result = GBS_strdup(escapedString);
     char *to     = result;
     char *from   = result;
@@ -696,9 +696,9 @@ typedef enum enum_gbt_item_type {
 } gbt_item_type;
 
 static gbt_item_type identify_gb_item(GBDATA *gb_item) {
-    // returns: GBT_ITEM_UNKNOWN    -> unknown database_item
-    //          GBT_ITEM_SPECIES    -> /species_data/species
-    //          GBT_ITEM_GENE       -> /species_data/species/gene_data/gene
+    /* returns: GBT_ITEM_UNKNOWN    -> unknown database_item
+     *          GBT_ITEM_SPECIES    -> /species_data/species
+     *          GBT_ITEM_GENE       -> /species_data/species/gene_data/gene */
 
     GBDATA     *gb_father;
     const char *key;

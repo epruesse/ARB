@@ -15,7 +15,8 @@
 
 #include "xml.hxx"
 
-using namespace rs::xml;
+// using namespace rs::xml;
+using std::string;
 
 export_format_struct::export_format_struct(void){
 	memset((char *)this,0,sizeof(export_format_struct));
@@ -68,7 +69,7 @@ enum AWTI_EXPORT_CMD {
     AWTI_EXPORT_XML,
 
     AWTI_EXPORT_COMMANDS,       // counter
-    AWTI_EXPORT_BY_FORM,
+    AWTI_EXPORT_BY_FORM
 };
 
 static const char *internal_export_commands[AWTI_EXPORT_COMMANDS] = {

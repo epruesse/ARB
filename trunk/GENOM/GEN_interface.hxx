@@ -10,7 +10,7 @@
 extern struct ad_item_selector GEN_item_selector;
 
 // internal helpers :
-GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
+extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
 
 #else
 #error GEN_interface.hxx included twice

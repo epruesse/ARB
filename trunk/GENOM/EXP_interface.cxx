@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Sep/07/2001 13:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Oct/10/2001 18:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -12,9 +12,6 @@
 //                                                                       //
 //                                                                       //
 //  ==================================================================== //
-
-#include <cstdlib>
-#include <cstring>
 
 #include <awt.hxx>
 #include <arbdbt.h>
@@ -29,6 +26,9 @@
 #include "GEN_interface.hxx"
 
 #include "../NTREE/ad_spec.hxx"
+
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 
@@ -51,7 +51,7 @@ GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
 //      static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
 //  --------------------------------------------------------------------------------------------------------
 static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
-    char *name  = strdup(item_name);
+    char *name  = GB_strdup(item_name);
     char *slash = strchr(name, '/');
 
     if (slash) {
@@ -87,6 +87,11 @@ static char *EXP_experiment_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*
 }
 
 static char *old_species_marks = 0; // configuration storing marked species
+
+// extern "C" {
+//     typedef  GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
+//     GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
+// }
 
 //  ---------------------------------------------------------------------------------------------------------------
 //      static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)

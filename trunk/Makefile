@@ -124,7 +124,8 @@ endif
 #********************* SUN5  ****
 ifdef SUN5
    SITE_DEPENDEND_TARGETS = perl
-   AR = $(FORCEMASK);ld -r -o#			# Archive Linker
+   #AR = $(FORCEMASK);ld -r -o#			# Archive Linker
+   AR = $(FORCEMASK);CC -xar -o#
    XAR = $(FORCEMASK);CC -xar -o#
    ARLIB = $(FORCEMASK);ld -G -o#
 
@@ -509,6 +510,7 @@ mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
+dball: db dbs db2
 db:		ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
 db2:	ARBDB2/libARBDB.dummy

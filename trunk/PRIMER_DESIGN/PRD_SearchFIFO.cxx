@@ -1,8 +1,10 @@
 #include "PRD_SearchFIFO.hxx"
 #include <cstdio>
- 
-using namespace std;
- 
+#include <cmath>
+
+using std::printf;
+using std::fabs;
+
 //
 // Constructor
 //
@@ -155,7 +157,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 
   Node *child;
   int   bits;
-  
+
   current = begin;
 
   if ( !expand_IUPAC_Codes ) {
@@ -171,14 +173,14 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
       else {
 	// step down as child exists
 	current->node = child;
-	
+
 	// invalidate if node is primer and is in range
 	if ( child->isValidPrimer() ) {
 	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
 	  }
 	  else {
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	    if ( min_distance_to_next_match >= fabs(double(pos_ - child->last_base_index)) ) child->last_base_index = -pos_;
 	  }
 	}
 
@@ -194,7 +196,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    // erase node
 	    delete child;
 	  }
-	} 
+	}
       }
 
       // next parameter (or begin if erase killed current while pointing to begin)
@@ -207,14 +209,14 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 
       if ( bits & 1 ) { // A
 	child = current->node->child[ 2 ]; // 2 = A
-	
+
 	// invalidate if node is primer and is in range
 	if ( child->isValidPrimer() ) {
 	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
 	  }
 	  else {
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	    if ( min_distance_to_next_match >= fabs(double(pos_ - child->last_base_index)) ) child->last_base_index = -pos_;
 	  }
 	}
 
@@ -243,7 +245,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    child->last_base_index = -pos_;
 	  }
 	  else {
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	    if ( min_distance_to_next_match >= fabs(double(pos_ - child->last_base_index)) ) child->last_base_index = -pos_;
 	  }
 	}
 
@@ -272,7 +274,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    child->last_base_index = -pos_;
 	  }
 	  else {
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	    if ( min_distance_to_next_match >= fabs(double(pos_ - child->last_base_index)) ) child->last_base_index = -pos_;
 	  }
 	}
 
@@ -301,7 +303,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    child->last_base_index = -pos_;
 	  }
 	  else {
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	    if ( min_distance_to_next_match >= fabs(double(pos_ - child->last_base_index)) ) child->last_base_index = -pos_;
 	  }
 	}
 

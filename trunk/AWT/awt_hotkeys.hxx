@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_hotkeys.hxx                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Sat Aug/18/2001 13:21 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/02/2001 16:17 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -21,11 +21,10 @@
 #endif
 
 #if defined(DEBUG)
-#ifndef __STDIO_H__
-#include <stdio.h>
-#endif
+# ifndef __STDIO_H__
+#  include <stdio.h>
+# endif
 #endif // DEBUG
-
 
 //  --------------------------
 //      class awt_hotkeys
@@ -54,7 +53,7 @@ public:
     // return a unique hotkey (returns an empty string if no hotkey left)
     const char* artifical_hotkey();
     // return a unique hotkey for label (uses one character from label if possible)
-    const char* hotkey(const string& label);
+    const char* hotkey(const std::string& label);
 };
 
 

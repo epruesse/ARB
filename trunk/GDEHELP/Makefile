@@ -1,7 +1,7 @@
-CPP = cpp
-#CPP = /usr/ccs/lib/cpp -B 
+#CPP = cpp
+#CPP = /usr/ccs/lib/cpp -B
 all:
-	cpp -P -IMENUS ARB_GDEmenus.source ARB_GDEmenus
+	$(CPP)  -P -IMENUS ARB_GDEmenus.source >ARB_GDEmenus
 
 save:
 	rm -f arbgdemenus*.tar.gz

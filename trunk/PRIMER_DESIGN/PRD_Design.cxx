@@ -10,7 +10,12 @@
 #include <iostream>
 #include <cmath>
 
-using namespace std;
+// using namespace std; (does not work well with Solaris CC)
+using std::printf;
+using std::deque;
+using std::cout;
+using std::endl;
+using std::pair;
 
 //
 // Constructor

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Sep/28/2001 18:06 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/02/2001 17:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -106,7 +106,7 @@ static EXP_item_type_species_selector item_type_experiment;
 static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-    assert(descriptor);
+    exp_assert(descriptor);
     if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_experiment, descriptor->get_maskname());
 }
 

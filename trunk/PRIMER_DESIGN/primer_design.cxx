@@ -15,6 +15,8 @@
 
 extern GBDATA *gb_main;
 
+using std::string;
+
 //  ---------------------------------------------
 //      static double get_estimated_memory()
 //  ---------------------------------------------
@@ -173,6 +175,9 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
   return aws;
 }
 
+inline int prd_aw_status(const char *s) { return aw_status(s); }
+inline int prd_aw_status(double d) { return aw_status(d); }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_go
 //
@@ -228,7 +233,7 @@ void primer_design_event_go(AW_window *aww) {
                              (float)root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->read_int()/100
                              );
 
-        PD->set_status_callbacks(aw_status, aw_status);
+        PD->set_status_callbacks(prd_aw_status, prd_aw_status);
 
         try {
 #ifdef DEBUG
@@ -252,8 +257,8 @@ void primer_design_event_go(AW_window *aww) {
             // create result-list:
             pdrw->clear_selection_list( pdrw_id );
             int max_primer_length   = PD->get_max_primer_length();
-            int max_position_length = int( log10( PD->get_max_primer_pos()    ) )+1;
-            int max_length_length   = int( log10( PD->get_max_primer_length() ) )+1;
+            int max_position_length = int(std::log10(double (PD->get_max_primer_pos())))+1;
+            int max_length_length   = int(std::log10(double(PD->get_max_primer_length())))+1;
 
             if ( max_position_length < 3 ) max_position_length = 3;
             if ( max_length_length   < 3 ) max_length_length   = 3;
