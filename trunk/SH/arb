@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 nargs=$#
 args="$*"
 
@@ -55,7 +54,7 @@ case "X${ARBHOME}" in
 	      case "$0" in
 		/*)
 		       ARB="$0";;
-		*)	
+		*)
 		     if ARB=`which $0`; then
 		       echo $ARB
 		     else
@@ -63,13 +62,13 @@ case "X${ARBHOME}" in
 		     fi;;
 	      esac
 	fi
-	
+
 	ARBBIN=`dirname $ARB`
 	export ARBBIN
 	ARBHOME=`dirname $ARBBIN`
 	export ARBHOME
-      echo "Environment Variable ARBHOME not set"
-      echo "	set to $ARBHOME";;
+    echo "Environment Variable ARBHOME was empty"
+    echo "Using '$ARBHOME'"
 esac
 
 prepend PATH			$ARBHOME/bin
@@ -90,16 +89,20 @@ if [ -x $ARBHOME/bin/ghostview ] ; then
   export GS_LIB
 fi
 
-if [ "X$ARBMACROHOME" = "X" ] ; then
-  ARBMACROHOME="$ARBHOME/lib/macros"
-  export ARBMACROHOME
-fi
-
 ARB_PID="$$"; export ARB_PID
 
 if [ ! -d ${HOME}/.arb_prop ] ; then
-  echo 'Directory $HOME/.arb_prop not found creating ...'
+  echo 'Directory $HOME/.arb_prop not found - creating ...'
   mkdir ${HOME}/.arb_prop
+fi
+
+if [ "X$ARBMACROHOME" = "X" ] ; then
+  ARBMACROHOME="$ARBHOME/lib/macros"
+  export ARBMACROHOME
+  if [ ! -d ${ARBMACROHOME} ] ; then
+    echo 'Directory $ARBMACROHOME not found - creating ...'
+    mkdir ${ARBMACROHOME}
+  fi
 fi
 
 if [ "X$GDE_HELP_DIR" = "X" ] ; then
