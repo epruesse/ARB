@@ -510,6 +510,7 @@ void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE){
     THIS->gb_node = 0;
 }
 
+static bool vtable_ptr_check_done = false;
 
 AP_tree::AP_tree(AP_tree_root   *tree_rooti)
 {
@@ -525,6 +526,18 @@ AP_tree::AP_tree(AP_tree_root   *tree_rooti)
     sequence = 0;
 
     gr.spread = 1.0;
+    
+    if (!vtable_ptr_check_done) {
+        vtable_ptr_check_done = true;
+        GBT_TREE *tree        = get_gbt_tree(); // hack-warning: points to part of this!
+        bool      was_leaf    = tree->is_leaf;
+
+        // if one of the assertions below fails, then there is a problem with the
+        // vtable-pointer position (grep for FAKE_VTAB_PTR for more info)
+        tree->is_leaf = GB_FALSE; awt_assert(is_leaf == GB_FALSE);
+        tree->is_leaf = GB_TRUE; awt_assert(is_leaf == GB_TRUE);
+        tree->is_leaf = was_leaf;
+    }
 }
 
 AP_tree::~AP_tree(void)
@@ -631,6 +644,13 @@ GB_ERROR AP_tree::insert(AP_tree *new_brother){
 char *AP_tree_root::inform_about_changed_root(class AP_tree *old, class AP_tree *newroot) {
     if (this->root_changed) root_changed(root_changed_cd,old,newroot);
     this -> tree = newroot;
+    if (!newroot) {             // tree empty
+        if (gb_tree) {
+            GB_delete(gb_tree);
+            gb_tree = 0;
+            aw_message(GBS_global_string("Tree '%s' lost all leafs and has been deleted!", tree_name));
+        }
+    }
     return 0;
 }
 
@@ -1037,7 +1057,7 @@ void AP_tree::move_gbt_2_ap(GBT_TREE* tree, GB_BOOL insert_remove_cb)
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
-// #define DEBUG_PH_tree_write_byte
+#define DEBUG_PH_tree_write_byte
 #endif // DEVEL_RALF
 #endif // DEBUG
 
@@ -1578,12 +1598,13 @@ GB_ERROR AP_tree::buildBranchList(AP_tree **&list, long &num,
 
 GB_ERROR AP_tree::remove_leafs(GBDATA *gb_main,int awt_remove_type)
 {
-    AP_tree **list;
-    long count;
-    GB_ERROR error = 0;
-    if (!error) error = buildLeafList(list,count);
-    long i;
-    GB_transaction dummy(gb_main);
+    AP_tree        **list;
+    long             count;
+    GB_ERROR         error   = 0;
+    if (!error) error        = buildLeafList(list,count);
+    long             i;
+    GB_transaction   ta(gb_main);
+
     for (i=0;i<count; i++) {
         long flag;
         if (list[i]->gb_node) {
