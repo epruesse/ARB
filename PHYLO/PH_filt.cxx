@@ -59,7 +59,7 @@ float *PH_filter::calculate_column_homology(void){
     char delete_when_max[100],get_maximum_from[100],all_chars[100],max_char;
     long reference_table[256],**chars_counted;
     const char *real_chars,*low_chars,*rest_chars;
-    char *sequence_buffer;
+    unsigned char *sequence_buffer;
     AW_root *aw_root;
     float *mline=0;
     double gauge;
@@ -70,14 +70,14 @@ float *PH_filter::calculate_column_homology(void){
     if (GBT_is_alignment_protein(PHDATA::ROOT->gb_main,PHDATA::ROOT->use)){
         bases_used = AW_FALSE;
     }
-    
+
     aw_root=PH_used_windows::windowList->phylo_main_window->get_root();
-    
+
     if(bases_used){
         real_chars="ACGTU";
         low_chars="acgtu";
         rest_chars="MRWSYKVHDBXNmrwsykvhdbxn";
-	
+
         strcpy(all_chars,real_chars);
         strcat(all_chars,low_chars);
         strcat(all_chars,rest_chars);
@@ -85,14 +85,14 @@ float *PH_filter::calculate_column_homology(void){
         real_chars="ABCDEFGHIKLMNPQRSTVWYZ";
         low_chars=0;
         rest_chars="X";
-	
+
         strcpy(all_chars,real_chars);
         strcat(all_chars,rest_chars);
     }
     strcpy(get_maximum_from,real_chars);  // get maximum from markerline from these characters
     strcat(all_chars,".-");
     num_all_chars=strlen(all_chars);
-    
+
     // initialize variables
     delete mline;
     delete options_vector;
@@ -115,27 +115,27 @@ float *PH_filter::calculate_column_homology(void){
         chars_counted[i]=(long *) calloc((int) num_all_chars+2,sizeof(long));
         for(j=0;j<num_all_chars+2;j++) chars_counted[i][j]=0;
     }
-  
+
     for(i=0;i<PHDATA::ROOT->get_seq_len();i++) mline[i]=-1.0;  // all columns invalid
     for(i=0;i<256;i++){
         mask[i]=AW_FALSE;
         reference_table[i]=num_all_chars;    // invalid and synonyme characters
     }
-  
+
     // set valid characters
     for(i=0;i<num_all_chars;i++){
         mask[all_chars[i]]=AW_TRUE;
         reference_table[all_chars[i]]=i;
     }
-  
+
     // rna or dna sequence: set synonymes
     if(bases_used){
         reference_table['U']=reference_table['T'];  /* T=U */
         reference_table['u']=reference_table['t'];
         reference_table['N']=reference_table['X'];
         reference_table['n']=reference_table['x'];
-    } 
-   
+    }
+
     // set mappings according to options
     // be careful the elements of rest and low are mapped to 'X' and 'a'
     switch(options_vector[4]){       // '.' in column
@@ -150,7 +150,7 @@ float *PH_filter::calculate_column_homology(void){
             reference_table['.']=num_all_chars;    // map to invalid position
             break;
     }
-       
+
     switch(options_vector[5]){       // '-' in column
         case 0: // don't count
             mask['-']=AW_FALSE;
@@ -164,7 +164,7 @@ float *PH_filter::calculate_column_homology(void){
             break;
         case 3: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
-            // but use character ( AW_TRUE in mask ) 
+            // but use character ( AW_TRUE in mask )
             break;
     }
     // 'MNY....' in column
@@ -183,7 +183,7 @@ float *PH_filter::calculate_column_homology(void){
         case 3: // use like another valid base/acid whlie not maximal
             break;
     }
-       
+
     if(bases_used){
         switch(options_vector[7]){   // 'acgtu' in column
             case 0: //use next maximal base, don't count
@@ -214,7 +214,7 @@ float *PH_filter::calculate_column_homology(void){
     for(i=0;i<long(PHDATA::ROOT->nentries);i++){
         gauge = (double)i/(double)PHDATA::ROOT->nentries;
         if (aw_status(gauge*gauge)) return 0;
-        sequence_buffer=GB_read_char_pntr(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
+        sequence_buffer = (unsigned char*)GB_read_char_pntr(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
         long send = stopcol;
         long slen = GB_read_string_count(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
         if (slen< send) send = slen;
@@ -226,8 +226,8 @@ float *PH_filter::calculate_column_homology(void){
             }
         }
     }
-   
-    // calculate homology  
+
+    // calculate homology
     aw_status("Calculate homology");
     for(i=0;i<len;i++){
         if (aw_status(i/(double)len)) return 0;
@@ -248,11 +248,11 @@ float *PH_filter::calculate_column_homology(void){
             mline[i+startcol]= ( max/
                                  ((float) PHDATA::ROOT->nentries -
                                   (float) chars_counted[i][num_all_chars+1]))*100.0;
-            // (maximum in column / number of counted positions) * 100 
+            // (maximum in column / number of counted positions) * 100
         } // if
         } //if
     } // for
-  
+
     for(i=0;i<len;i++){
         delete chars_counted[i];
     }
@@ -263,13 +263,13 @@ float *PH_filter::calculate_column_homology(void){
     ///////////////////////////////
     // debugging
     ///////////////////////////////
-    /* 
+    /*
        FILE *f_ptr;
        int used;
 
        f_ptr=fopen("test.mli","w");
        for(i=0;i<PHDATA::ROOT->get_seq_len();i++)
-       { if (i%10 == 9) 
+       { if (i%10 == 9)
        { putc('\n',f_ptr);
        }
        fprintf(f_ptr,"%6.2f ",mline[i]);
@@ -287,7 +287,7 @@ float *PH_filter::calculate_column_homology(void){
        }
        }
        fprintf(f_ptr,"\n");
-  
+
        fprintf(f_ptr,"\n");
        used=0;
        fprintf(f_ptr,"\n\n\nstatistics:\n");
@@ -301,7 +301,7 @@ float *PH_filter::calculate_column_homology(void){
        ((float)PHDATA::ROOT->get_seq_len()-(float)used)));
 
 
-       fclose(f_ptr);   
+       fclose(f_ptr);
     */
     ////////////////////////////////////
     // end debugging
@@ -314,15 +314,15 @@ float *PH_filter::calculate_column_homology(void){
     filt[i]='\0';
     aw_root->awar("phyl/filter/filter")->write_string(filt);
     delete filt;
-  
+
     return mline;
 
 }
-               
+
 
 
 void create_filter_variables(AW_root *aw_root,AW_default default_file)
-{ 
+{
     // filter awars
     aw_root->awar_int("phyl/filter/startcol",0,default_file);
     aw_root->awar_int("phyl/filter/stopcol",99999,default_file);
@@ -333,7 +333,7 @@ void create_filter_variables(AW_root *aw_root,AW_default default_file)
     aw_root->awar_int("phyl/filter/minus",0,default_file);   // '-' in column
     aw_root->awar_int("phyl/filter/rest",0,default_file);    // 'MNY....' in column
     aw_root->awar_int("phyl/filter/lower",0,default_file);   // 'acgtu' in column
-  
+
     // matrix awars (das gehoert in ein anderes file norbert !!!)
     aw_root->awar_int("phyl/matrix/point",0,default_file);   // '.' in column
     aw_root->awar_int("phyl/matrix/minus",0,default_file);   // '-' in column
@@ -368,56 +368,56 @@ AW_window *create_filter_window(AW_root *aw_root)
     aws->init(aw_root,"PHYL_FILTER", "PHYL FILTER",10,10);
     aws->load_xfig("phylo/filter.fig");
     aws->button_length(10);
-  
+
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");		     
-    
+    aws->create_button("CLOSE","CLOSE","C");
+
     aws->at("startcol");
     aws->create_input_field("phyl/filter/startcol",6);
-  
+
     aws->at("stopcol");
     aws->create_input_field("phyl/filter/stopcol",6);
-  
+
     aws->at("minhom");
     aws->create_input_field("phyl/filter/minhom",3);
-  
+
     aws->at("maxhom");
     aws->create_input_field("phyl/filter/maxhom",3);
-  
+
     aws->at("point_opts");
     aws->create_option_menu("phyl/filter/point","'.' in column      ","0");  // "0": no shortcut
     aws->insert_option(filter_text[0],"0",0);
     aws->insert_option(filter_text[1],"0",1);
     aws->insert_option(filter_text[2],"0",2);
     aws->update_option_menu();
-  
-    aws->at("minus_opts");  
+
+    aws->at("minus_opts");
     aws->create_option_menu("phyl/filter/minus","'-' in column      ","0");
     aws->insert_option(filter_text[0],"0",0);
     aws->insert_option(filter_text[1],"0",1);
     aws->insert_option(filter_text[2],"0",2);
-    aws->insert_option(filter_text[3],"0",3);  
+    aws->insert_option(filter_text[3],"0",3);
     aws->update_option_menu();
 
     aws->at("rest_opts");
     aws->create_option_menu("phyl/filter/rest","rest in column     ","0");
-    aws->insert_option(filter_text[0],"0",0); 
+    aws->insert_option(filter_text[0],"0",0);
     aws->insert_option(filter_text[1],"0",1);
     aws->insert_option(filter_text[2],"0",2);
     aws->insert_option(filter_text[3],"0",3);
     aws->update_option_menu();
-  
-    aws->at("lower_opts");    
+
+    aws->at("lower_opts");
     aws->create_option_menu("phyl/filter/lower","'acgtu' in column  ","0");
     aws->insert_option(filter_text[0],"0",0);
     aws->insert_option(filter_text[1],"0",1);
     aws->insert_option(filter_text[2],"0",2);
     aws->insert_option(filter_text[4],"0",4);
     aws->update_option_menu();
-  
-    return (AW_window *)aws;    
-}    
-  
-    
-  
+
+    return (AW_window *)aws;
+}
+
+
+
