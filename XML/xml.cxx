@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed Oct/24/2001 21:32 MET Coder@ReallySoft.de>
+// Time-stamp: <Sun Nov/25/2001 13:12 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -126,7 +126,7 @@ XML_Node::~XML_Node() {
 
 // ********************************************************************************
 
-inline void to_indent(FILE *out, int indent) { while (indent--) fputc(' ', out); }
+inline void to_indent(FILE *out, int indent) { int i = indent*the_XML_Document->indentation_per_level; while (i--) fputc(' ', out); }
 
 //  ---------------------------------------------
 //      XML_Tag::XML_Tag(const string &name_)
@@ -242,12 +242,13 @@ void XML_Text::close(FILE *out) {
 //      XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
 //  ---------------------------------------------------------------------------------------
 XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
-    : dtd(dtd_), root(0), out(out_), skip_empty_tags(false)
+    : dtd(dtd_), root(0), out(out_), skip_empty_tags(false), indentation_per_level(1)
 {
+    xml_assert(out);
     if (the_XML_Document) string Error("You can only have one XML_Document at a time.");
     the_XML_Document = this;
-    latest_son  = 0;
-    root        = new XML_Tag(name_);
+    latest_son       = 0;
+    root             = new XML_Tag(name_);
     xml_assert(latest_son == root);
 
     fputs("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n", out);
