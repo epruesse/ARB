@@ -52,6 +52,7 @@
 #include "nt_concatenate.hxx"
 #include "nt_validNames.hxx"
 #include "nt_validManual.hxx"
+#include "seq_quality.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -850,6 +851,13 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
+//--------------------------------------------------------------------------------------------------
+
+void NT_calc_sequence_quality(AW_window *, AW_CL, AW_CL) {
+    GB_ERROR error = SQ_calc_seq_quality(gb_main);
+    if (error) aw_message(error);
+}
+
 //--------------------------------------- to increase the area of display --------------------
 static int windowHeight = 0;
 static void title_mode_changed(AW_root *aw_root, AW_window *aww)
@@ -1093,6 +1101,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
+
+#if defined(DEVEL_RALF) || defined(DEVEL_JUERGEN)
+            AWMIMT("seq_quality", "Calc Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  NT_calc_sequence_quality,        0, 0);
+#endif //
+
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
             AWMIMT("seq_quality", "Check Sequence Quality",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp",    AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,       0             );
