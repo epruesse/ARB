@@ -1,4 +1,5 @@
 item:Assemble Contigs
+itemmeta: A
 itemmethod:(sed "s////>/"<in1 >in1.tmp; CAP2 in1.tmp $OVERLAP $PMATCH > out1;/bin/rm -f in1.tmp)
 itemhelp:CAP2.help
 
@@ -24,6 +25,7 @@ outformat:gde
 outoverwrite:
 
 item:Map View
+itemmeta: M
 itemmethod:(mapview in1 -pbl $PBL -npp $NPP; /bin/rm -f in1)&
 itemhelp:mapview.help
 
@@ -54,6 +56,7 @@ argmax:5
 
 
 item:Restriction sites
+itemmeta: R
 itemmethod:(cp $ENZ in1.tmp ; $PRE_EDIT Restriction in1.tmp in1 > out1 ; rm in1.tmp; cp out1 tmp );
 itemhelp:Restriction.help
 
@@ -66,7 +69,7 @@ arg:PRE_EDIT
 argtype:chooser
 arglabel:Edit enzyme file first?
 argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.tmp;
-argchoice:No: 
+argchoice:No:
 
 in:in1
 informat:flat

@@ -1,10 +1,8 @@
-// I do not like shell scripts (OLI)
-// But there is no trivial way to get the various information
-
 item:Phylip Distance Methods ( Simple GUI Based Interface )
+itemmeta: G
 itemmethod:(	GEN_INFILE(in1);RUN_IN_WINDOW(( $CORRECTION;$DPGM;mv -f outfile infile;arb_echo y |$PROGRAM;$DISPLAY_FUNC ));	RM_LOCAL_FILES(in1)	)&
 itemhelp:phylip.help
- 
+
 arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:What to do with the tree:?
@@ -44,9 +42,10 @@ insave:
 
 
 item:Phylip Distance Matrix
+itemmeta: M
 itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank in1 -phylip infile ; $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;${ARB_TEXTEDIT:-textedit} outfile;/bin/rm -f in1 infile outfile)&
 itemhelp:phylip.help
- 
+
 arg:DPGM
 arglabel:Treat data as..
 argtype:chooser
@@ -58,7 +57,7 @@ argtype:chooser
 arglabel:Edit input before running?
 argchoice:No:
 argchoice:Yes:${ARB_TEXTEDIT:-textedit} infile;
- 
+
 in:in1
 informat:genbank
 inmask:
