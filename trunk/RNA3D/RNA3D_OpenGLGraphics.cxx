@@ -19,8 +19,10 @@
 
 using namespace std;
 
-OpenGLGraphics::OpenGLGraphics(void){
-    displayGrid = false;
+OpenGLGraphics::OpenGLGraphics(void)
+    : displayGrid(false)
+    , ApplicationBGColor(0, 0, 0)
+{
 }
 
 OpenGLGraphics::~OpenGLGraphics(void){
@@ -30,9 +32,9 @@ OpenGLGraphics::~OpenGLGraphics(void){
 void OpenGLGraphics::SetOpenGLBackGroundColor() {
 
 	unsigned long bgColor;
-	XtVaGetValues( GLOBAL->glw, XmNbackground, &bgColor, NULL );
+	XtVaGetValues( RNA3D->glw, XmNbackground, &bgColor, NULL );
 
-    Widget w = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+    Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
     XColor xcolor;
     xcolor.pixel = bgColor;
@@ -47,7 +49,7 @@ void OpenGLGraphics::SetOpenGLBackGroundColor() {
     // set OpenGL Backgroud Color to the widget's backgroud     
     glClearColor(r, g, b, 1);
 
-    extern ColorRGBf ApplicationBGColor;
+    // extern ColorRGBf ApplicationBGColor;
     ApplicationBGColor = ColorRGBf(r, g, b);
 }
 
@@ -56,9 +58,9 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0,0,0);
     float r, g, b; r = g = b = 0.0;
    
-    Widget w = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+    Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
-    AW_common *common = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
+    AW_common *common = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
     register class AW_GC_Xm *gcm = AW_MAP_GC( gc );
  
     XGCValues xGCValues;
