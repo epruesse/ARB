@@ -12,11 +12,12 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt_canvas.hxx>
+#include "awt.hxx"
 #include "awt_tree.hxx"
 
 /*****************************************************************************************
-************			Filter						**********
-*****************************************************************************************/
+ ************			Filter						**********
+ *****************************************************************************************/
 
 AP_filter::AP_filter(void){
     memset ((char *)this,0,sizeof(*this));
@@ -152,8 +153,8 @@ void AP_filter::enable_bootstrap(int random_seed){
 }
 
 /*****************************************************************************************
-************			Rates						**********
-*****************************************************************************************/
+ ************			Rates						**********
+ *****************************************************************************************/
 void AP_rates::print(void)
 {
     AP_FLOAT max;
@@ -210,8 +211,8 @@ AP_rates::~AP_rates(void)	{ if (rates) delete(rates);}
 
 
 /*****************************************************************************************
-************			Weights					       	**********
-*****************************************************************************************/
+ ************			Weights					       	**********
+ *****************************************************************************************/
 
 AP_weights::AP_weights(void) {
     memset ((char *)this,0,sizeof(AP_weights));
@@ -255,8 +256,8 @@ AP_weights::~AP_weights(void)
 }
 
 /*****************************************************************************************
-************			Matrizes					       	**********
-*****************************************************************************************/
+ ************			Matrizes					       	**********
+ *****************************************************************************************/
 
 void AP_matrix::set_description(const char *xstring,const char *ystring){
     char *x = strdup(xstring);
@@ -407,8 +408,8 @@ AP_matrix::~AP_matrix(void)
 
 
 /*****************************************************************************************
-************			AP_Sequence					**********
-*****************************************************************************************/
+ ************			AP_Sequence					**********
+ *****************************************************************************************/
 
 
 char *AP_sequence::mutation_per_site = 0;
@@ -430,12 +431,12 @@ void AP_sequence::set_gb(GBDATA *gb_data){
     this->set(GB_read_char_pntr(gb_data));
 }
 /*****************************************************************************************
-************			AP_tree_root					**********
-*****************************************************************************************/
+ ************			AP_tree_root					**********
+ *****************************************************************************************/
 
 void
 AP_tree_tree_deleted(GBDATA * gbd, class AP_tree_root * tr
-		     /* , GB_CB_TYPE gbtype */ )
+                     /* , GB_CB_TYPE gbtype */ )
 {
     if (gbd == tr->gb_tree) {
         tr->gb_tree = 0;
@@ -504,8 +505,8 @@ void AP_tree_root::update_timers(void)
 }
 
 /*****************************************************************************************
-************			AP_tree						**********
-*****************************************************************************************/
+ ************			AP_tree						**********
+ *****************************************************************************************/
 void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE){
     AP_tree *THIS = (AP_tree *)cl;
     THIS->gb_node = 0;
@@ -1202,33 +1203,51 @@ int AP_tree::calc_color(void) {
     int l,r;
     int res;
     if (is_leaf) {
-	if (gb_node){
-	    if (GB_read_flag(gb_node)){
-		res = AWT_GC_SELECTED;
-	    }else{
-		res =  AWT_GC_NSELECTED;
-	    }
-	}else		res = 	AWT_GC_SOME_MISMATCHES;
-    }else{
-	l = leftson->calc_color();
-	r = rightson->calc_color();
-	if ( l == r) {
-	    res = l;
-	}else if ( l == AWT_GC_SELECTED && r == AWT_GC_NSELECTED) {
-	    res = AWT_GC_UNDIFF;
-	}else if ( l == AWT_GC_SOME_MISMATCHES) {
-	    res = r;
-	}else if ( r == AWT_GC_SOME_MISMATCHES) {
-	    res = l;
-	}else{
-	    res = AWT_GC_UNDIFF;
-	}
+        if (gb_node) {
+            if (GB_read_flag(gb_node)) {
+                res = AWT_GC_SELECTED;
+            }
+            else {
+                // check for user color
+                long color_group = AW_find_color_group(gb_node);
+                if (color_group == 0) {
+                    res = AWT_GC_NSELECTED;
+                }
+                else {
+                    res = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
+                }
+            }
+        }
+        else {
+            res = AWT_GC_SOME_MISMATCHES;
+        }
     }
+    else {
+        l = leftson->calc_color();
+        r = rightson->calc_color();
+
+        if ( l == r) res = l;
+
+        else if ( l == AWT_GC_SELECTED && r != AWT_GC_SELECTED) res = AWT_GC_UNDIFF;
+        else if ( l != AWT_GC_SELECTED && r == AWT_GC_SELECTED) res = AWT_GC_UNDIFF;
+
+        else if ( l == AWT_GC_SOME_MISMATCHES) res = r;
+        else if ( r == AWT_GC_SOME_MISMATCHES) res = l;
+
+        else if ( l == AWT_GC_UNDIFF || r == AWT_GC_UNDIFF) res = AWT_GC_UNDIFF;
+
+        else {
+            awt_assert(l != AWT_GC_SELECTED && r != AWT_GC_SELECTED);
+            awt_assert(l != AWT_GC_UNDIFF && r != AWT_GC_UNDIFF);
+            res = AWT_GC_NSELECTED; // was : res = AWT_GC_UNDIFF;
+        }
+    }
+
     gr.gc = res;
     if (res == AWT_GC_NSELECTED){
-	gr.has_marked_children = 0;
+        gr.has_marked_children = 0;
     }else{
-	gr.has_marked_children = 1;
+        gr.has_marked_children = 1;
     }
     return res;
 }
@@ -1241,30 +1260,30 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
     int res;
 
     if (is_leaf) {
-	if (gb_node){
-	    res = GBS_read_hash( hashptr, name );
-	    //		    printf("Ausgabe aus Alex' Hashtabelle : %d\n",res);
-	    if (GB_read_flag(gb_node))			//Bakt. ist markiert
-		if (!res)
-		    res = AWT_GC_BLACK;
-		else
-		    if (!res)
-			res =  AWT_GC_BLACK;
-	}else{
-	    res = 	AWT_GC_SOME_MISMATCHES;
-	}
+        if (gb_node){
+            res = GBS_read_hash( hashptr, name );
+            //		    printf("Ausgabe aus Alex' Hashtabelle : %d\n",res);
+            if (GB_read_flag(gb_node))			//Bakt. ist markiert
+                if (!res)
+                    res = AWT_GC_BLACK;
+                else
+                    if (!res)
+                        res =  AWT_GC_BLACK;
+        }else{
+            res = 	AWT_GC_SOME_MISMATCHES;
+        }
     }else{
-	l = leftson->calc_color_probes(hashptr);
-	r = rightson->calc_color_probes(hashptr);
-	if ( l == r) {
-	    res = l;
-	}else if ( l == AWT_GC_SOME_MISMATCHES) {
-	    res = r;
-	}else if ( r == AWT_GC_SOME_MISMATCHES) {
-	    res = l;
-	}else{
-	    res = AWT_GC_UNDIFF;
-	}
+        l = leftson->calc_color_probes(hashptr);
+        r = rightson->calc_color_probes(hashptr);
+        if ( l == r) {
+            res = l;
+        }else if ( l == AWT_GC_SOME_MISMATCHES) {
+            res = r;
+        }else if ( r == AWT_GC_SOME_MISMATCHES) {
+            res = l;
+        }else{
+            res = AWT_GC_UNDIFF;
+        }
     }
     gr.gc = res;
     return res;
@@ -1486,7 +1505,7 @@ char *buildBranchList_rek(AP_tree *THIS, AP_tree **list,long& num,
 }
 
 GB_ERROR AP_tree::buildBranchList(AP_tree **&list, long &num,
-			       AP_BOOL create_terminal_branches, int deep)
+                                  AP_BOOL create_terminal_branches, int deep)
 {
     if (deep>=0) {
         int i;
