@@ -471,8 +471,6 @@ static void deleteColorTranslationTable(AW_window *aws){
         aw_message("Selected Color Translation Table is not VALID and cannot be DELETED!");
     }
     free(clrTabName);
-
-//     ED4_ROOT->refresh_all_windows(1); //refresh editor
 }
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
@@ -642,46 +640,6 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
         aws->create_input_field(getAwarName(i), 20);
     }
 
-//     aws->at("range0");
-//     aws->callback(colorDefChange_callback,0);
-//     aws->create_input_field(AWAR_SAI_CLR_0,20);
-
-//     aws->at("range1");
-//     aws->callback(colorDefChange_callback,1);
-//     aws->create_input_field(AWAR_SAI_CLR_1,20);
-
-//     aws->at("range2");
-//     aws->callback(colorDefChange_callback,2);
-//     aws->create_input_field(AWAR_SAI_CLR_2,20);
-
-//     aws->at("range3");
-//     aws->callback(colorDefChange_callback,3);
-//     aws->create_input_field(AWAR_SAI_CLR_3,20);
-
-//     aws->at("range4");
-//     aws->callback(colorDefChange_callback,4);
-//     aws->create_input_field(AWAR_SAI_CLR_4,20);
-
-//     aws->at("range5");
-//     aws->callback(colorDefChange_callback,5);
-//     aws->create_input_field(AWAR_SAI_CLR_5,20);
-
-//     aws->at("range6");
-//     aws->callback(colorDefChange_callback,6);
-//     aws->create_input_field(AWAR_SAI_CLR_6,20);
-
-//     aws->at("range7");
-//     aws->callback(colorDefChange_callback,7);
-//     aws->create_input_field(AWAR_SAI_CLR_7,20);
-
-//     aws->at("range8");
-//     aws->callback(colorDefChange_callback,8);
-//     aws->create_input_field(AWAR_SAI_CLR_8,20);
-
-//     aws->at("range9");
-//     aws->callback(colorDefChange_callback,9);
-//     aws->create_input_field(AWAR_SAI_CLR_9,20);
-
     aws->at("close");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
@@ -714,8 +672,6 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     if (aws) return aws;
 
     aws = new AW_window_simple;
-
-//     ED4_createVisualizeSAI_Awars(aw_root,AW_ROOT_DEFAULT);
 
     aws->init( aw_root, "VISUALIZE_SAI", "VISUALIZE SAI", 150, 150 );
     aws->load_xfig("visualizeSAI.fig");
