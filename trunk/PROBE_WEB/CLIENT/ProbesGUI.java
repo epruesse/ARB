@@ -46,7 +46,6 @@ public ProbesGUI( TreeNode root, int levels, String title)
 
     al = new ProbesGUIActionListener(this);
     setMenuBar(pm = new ProbeMenu(al));
-    // setMenuBar(pm = new ProbeMenu());
 
     details = new TextArea("Display detail information", 10, 40, TextArea.SCROLLBARS_BOTH);
     add(details, BorderLayout.SOUTH);

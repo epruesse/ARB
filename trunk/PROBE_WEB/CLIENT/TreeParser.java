@@ -180,11 +180,8 @@ private void handleLeafNodeInformation(TreeNode node, String nodeInfo) {
     String error = null;
 
     try {
-        String decodedNodeInfo = decodedNodeInfo(nodeInfo);
-        // System.out.println("handleLeafNodeInformation '"+nodeInfo+"'");
-        // System.out.println("handleLeafNodeInformation '"+decodedNodeInfo+"'");
-
-        ServerAnswer parsed_info = new ServerAnswer(decodedNodeInfo, false, false);
+        String       decodedNodeInfo = decodedNodeInfo(nodeInfo);
+        ServerAnswer parsed_info     = new ServerAnswer(decodedNodeInfo, false, false);
 
         if (parsed_info.hasError())        {
             error = parsed_info.getError();
