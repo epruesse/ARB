@@ -136,6 +136,7 @@ ln -s ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx
 ln -s ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx
 ln -s ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx
 ln -s ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx
+ln -s ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx
 ln -s ../XML/xml.hxx INCLUDE/xml.hxx
 
 # arbdb dirs
