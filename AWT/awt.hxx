@@ -6,7 +6,7 @@
 #endif
 #define awt_assert(bed) arb_assert(bed)
 
-#ifndef aw_window_hxx_included
+#ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
 #ifndef ARBDB_H
