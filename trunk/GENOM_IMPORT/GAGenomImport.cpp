@@ -20,10 +20,12 @@
 #include "GAGenomGeneEmbl.h"
 #include "GAGenomGeneLocationEmbl.h"
 
+using namespace std;
+
 /*bool gellisary::GAGenomImport::setFileName(std::string * source_str)
 {
 	std::string extension;
-	
+
 	for(int i = (file_name_size-1); i >= 0; i--)
 	{
 		if(filename[i] == '.')
@@ -35,7 +37,7 @@
 		}
 	}
 }
- 
+
 bool gellisary::GAGenomImport::setFileName(char * source_chars)
 {
 	std::string target_str = *source_chars;
@@ -47,7 +49,7 @@ void gellisary::GAGenomImport::writeReferenceEmbl(GBDATA * source_container, gel
 	std::string r_nummer("reference_");
 	r_nummer.append((GAGenomUtilities::integerToString(reference->getNumber())));
 	r_nummer.append("_");
-	
+
 	std::string * tmp_str_pnt;
 	tmp_str_pnt = reference->getAuthorsAsString();
 	if(*tmp_str_pnt != "none")
@@ -112,7 +114,7 @@ void gellisary::GAGenomImport::writeGeneEmbl(GBDATA * source_container, gellisar
 	std::string * tmp_str_pnt;
 	std::string * tmp_str_pnt2;
 	GBDATA * gene_container;
-	
+
 	tmp_str_pnt = gene->getNameOfGene();
 	if(*tmp_str_pnt != "none")
 	{
@@ -160,7 +162,7 @@ void gellisary::GAGenomImport::writeGeneEmbl(GBDATA * source_container, gellisar
 				}
 			}
 		}
-		
+
 		GAGenomGeneLocationEmbl * tmp_location;
 		GAGenomGeneLocationEmbl * tmp_location2;
 		tmp_location = gene->getLocation();
@@ -290,12 +292,12 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 {
 //	gb_name = gb_main;
 //	alignement_name = *ali_name;
-	
+
 	GB_ERROR error = NULL;
 	int file_name_size = strlen(file_name);
-	
+
 	std::string extension;
-	
+
 	for(int i = (file_name_size-1); i >= 0; i--)
 	{
 		if(file_name[i] == '.')
@@ -306,7 +308,7 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 			}
 		}
 	}
-	
+
 	if(extension == "embl")
 	{
 		string ffname = file_name;
@@ -317,16 +319,16 @@ GB_ERROR gellisary::GAGenomImport::executeQuery(GBDATA * gb_main, const char * f
 		char          *new_species_name = AWTC_makeUniqueShortName("genom", gb_species_data);
 		GBDATA        *gb_species       = GBT_create_species(gb_main, new_species_name);
 //		int rcounter = 0;
-		
+
 		std::vector<std::string> tmp_str_vector;
 		std::vector<int> tmp_int_vector;
 		std::string tmp_string;
 		std::string * tmp_string_pnt;
-		
+
 //		char *content;
 //		char nummer[] = {'0','1','2','3','4','5','6','7','8','9'};
 		std::string field;
-		
+
 		field = "identification";
 		tmp_string_pnt = genomembl.getIdentification();
 		if(*tmp_string_pnt != "none")
