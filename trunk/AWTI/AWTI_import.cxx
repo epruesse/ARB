@@ -820,9 +820,6 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
         free(ali_type);
     }
 
-#ifndef DEVEL_ARTEM
-    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle value is not necessary for Artems new importer
-#endif
     bool ask_generate_names = true;
 
     if (!error) {
@@ -856,19 +853,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 #endif // DEBUG
 
                     try {
-#ifdef DEVEL_ARTEM
-                        // printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
                         error_this_file = GI_importGenomeFile(GB_MAIN,fnames[count], ali_name);
-#else
-                        // Importfunktionen je nach Togglestellung aufrufen
-                        if (toggle_value==IMP_GENOME_GENEBANK) {
-                            error_this_file = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
-                        }
-                        else if (toggle_value==IMP_GENOME_EMBL) {
-                            error_this_file = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
-                        }
-#endif
-
                     }
                     catch (...) {
                         error_this_file = GB_export_error("Error: %s not imported (Unknown exception occurred)", fnames[count]);
@@ -1117,12 +1102,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 
     aws->at("genom");
     aws->create_toggle_field(AWAR_READ_GENOM_DB);
-#ifdef DEVEL_ARTEM
     aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
-#else
-    aws->insert_toggle("Import genome data in GENBANK format","g",IMP_GENOME_GENEBANK);
-    aws->insert_toggle("Import genome data in EMBL format","e",IMP_GENOME_EMBL);
-#endif
     aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
     aws->update_toggle_field();
 
