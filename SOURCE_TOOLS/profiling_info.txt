@@ -1,0 +1,13 @@
+
+Short instructions how to profile ARB
+-------------------------------------
+
+1. Install calltree (a valgrind extension)
+2. run 'calltree --trace-children=yes programname prog_arguments'
+3. perform the actions you want to get info for and terminate 'programname'
+4. run 'ct_annotate --tree=both --inclusive=yes --auto=yes cachegrind.out.xxx'
+   where xxx is the PID of the program.
+   Note: most ARB programs start 2 processes -> normally simply use the bigger out file
+
+
+
