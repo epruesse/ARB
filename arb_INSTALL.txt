@@ -1,5 +1,6 @@
-
-To install ARB follow these steps:
+================================================================================
+To install a precompiled ARB
+================================================================================
 
 1. download the needed files from our homepage http://www.arb-home.de/
    and save them into a directory of your choice (i.e. ~/arb-install/ )
@@ -12,11 +13,9 @@ To install ARB follow these steps:
 4. Install the following packages:
 
 Software that is needed to run ARB:
------------------------------------
 
 - xview
 - (open)motif
-
 
 Software that is useful together with ARB:
 ------------------------------------------
@@ -24,6 +23,27 @@ Software that is useful together with ARB:
 - gnuplot
 - ghostview (gv)
 - xfig
+- perl5
+
+================================================================================
+To build ARB from source
+================================================================================
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-build/ )
+
+   Files needed: 'arbsrc*.tgz'
+
+2. Unpack the source
+
+   e.g.
+        tar -zxvf arbsrc_2003_05_22.tgz
+
+3. Run
+
+        make all
+
+   and follow the instructions there.
 
 
 Additional software that is needed to compile ARB:
