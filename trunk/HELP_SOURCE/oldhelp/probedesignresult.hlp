@@ -46,7 +46,7 @@ DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 		To write the results to an ascii file press the 'SAVE' button
 			to display the 'SELECTION BOX' window.
 
-
+                The 'Auto match' toggle has the same meaning as in LINK{probematch.hlp}.
 
 SECTION         SORTING
 
