@@ -41,7 +41,8 @@ class Client
         HashMap hm = new HashMap();
         hm.put("server", "=URL        Specify server URL manually");
         hm.put("tree",   "=reload       Force tree reload");
-        hm.put("proxy",  "=host:port   Specify proxy");
+        hm.put("proxy",  "=host:port   Specify proxy ('none' to disable)");
+        hm.put("debug",  "=1           Activate debug messages");
         return hm;
     }
 
@@ -363,6 +364,15 @@ class Client
     }
 
     private void initialize(CommandLine cmdline) throws Exception {
+        if (cmdline.getOption("debug")) {
+            String debug = cmdline.getOptionValue("debug");
+            if (debug.equals("1") || debug.equals("yes") || debug.equals("on")) {
+                Toolkit.setDebugMode(true);
+            }
+            else {
+                System.out.println("Warning: Unknown parameter for 'debug': '"+debug+"'");
+            }
+        }
 
         loadConfig();
         createProbesGUI(); // creates 'display'
@@ -370,7 +380,7 @@ class Client
 
         try {
             String baseurl = null;
-            
+
             if (cmdline.getOption("server")) {
                 baseurl = cmdline.getOptionValue("server");
             }
@@ -383,7 +393,6 @@ class Client
             String proxy = null;
             if (cmdline.getOption("proxy")) {
                 proxy = cmdline.getOptionValue("proxy");
-                Toolkit.InternalError("parameter 'proxy' not implemented yet");
             }
             else {
                 // Properties p = System.getProperties();
