@@ -35,11 +35,11 @@ char *PHMATRIX::analyse(AW_root *awrdummy)
 	if (is_AA) {
 		if (nentries> 100) {
 			aw_message("A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)");
-			aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_KIMURA);
+			aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_KIMURA);
 		}else{
 			aw_message(	"Only limited number of sequences!\n"
 					"   ==> slow PAM selected! (instead of Kimura)");
-			aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_PAM);
+			aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_PAM);
 		}
 		return 0;
 	}
@@ -75,13 +75,13 @@ char *PHMATRIX::analyse(AW_root *awrdummy)
 
 
 	if(mean_len < 100) {
-		aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_NONE);
+		aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_NONE);
 		aw_message("Too short sequences!\n   ==> No correction selected!");
 		return NULL;
 	}
 
 	if(mean_len < 300) {
-		aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_JUKES_CANTOR);
+		aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_JUKES_CANTOR);
 		aw_message("Meanlength shorter than 300\n   ==> Jukes Cantor selected!");
 		return NULL;
 	}
@@ -92,12 +92,12 @@ char *PHMATRIX::analyse(AW_root *awrdummy)
 		else
 			sprintf(dummy, "Maximal GC (%f) : Minimal GC (%f) < 1.2\n", max_gc, min_gc);
 		sprintf(dummy, "%s   ==> Felsenstein selected!", dummy);
-		aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_FELSENSTEIN);
+		aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_FELSENSTEIN);
 		aw_message(dummy);
 		return NULL;
 	}
 
-	aw_root->awar("dist/correction/trans")->write_int(PH_TRANSFORMATION_OLSEN);
+	aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(PH_TRANSFORMATION_OLSEN);
 	aw_message("Olsen selected!");
 	return NULL;
 
