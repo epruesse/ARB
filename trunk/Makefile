@@ -1069,7 +1069,7 @@ gde:		GDE/GDE.dummy
 agde: 		ARB_GDE/ARB_GDE.dummy
 #ps:		$(ARCHS_PROBE_SET:.a=.dummy) $(PROBE_SET)
 ps:			PROBE_SET/PROBE_SET.dummy
-tools:		TOOLS/TOOLS.dummy
+tools:		shared_libs TOOLS/TOOLS.dummy
 chip:		CHIP/CHIP.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
