@@ -1037,9 +1037,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT( "new_names",    "Generate New Names",   "e", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
 
-#if defined(DEVEL_LOTHAR) || defined(DEVEL_RALF)
-
-            awm->insert_sub_menu(0, "Valid Names ... (lothar working)",     "");
+            awm->insert_sub_menu(0, "Valid Names ...",     "");
             {
                 AWMIMT("imp_names", "Import Names from File", "","imp_val_nam.hlp",   AWM_EXP,NT_importValidNames,        0,              0 );
                 AWMIMT("del_names", "Delete Names from DB"  , "","delete_names.hlp",  AWM_EXP,NT_deleteValidNames ,       0,              0 );
@@ -1047,7 +1045,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("search_names", "Search manually"    , "","search_names.hlp",  AWM_ALL,  AW_POPUP, (AW_CL)NT_searchManuallyNames , 0 );
            }
             awm->close_sub_menu();
-#endif
         }
         //  --------------------------
         //      Genes + Experiment
