@@ -691,9 +691,8 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
     ED4_ROOT->aw_root->add_timed_callback(2000,ED4_timer,(AW_CL)0,(AW_CL)0);
 
     char *out_message = GBS_strclose(not_found_message,0);
-    if (all_found != 0) {
-        aw_message(out_message);
-    }
+    not_found_message = 0;
+    if (all_found != 0) aw_message(out_message);
     free(out_message);
 
     return ( ED4_R_OK );
@@ -1369,8 +1368,8 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     }
 
 
-    delete helix_name;
-    delete alignment_name;
+    free(helix_name);
+    free(alignment_name);
 
     GB_pop_transaction(gb_main);
 }
