@@ -17,6 +17,7 @@
 #include "GEN.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_local.hxx"
+#include "GEN_nds.hxx"
 
 // Standard fields of a gb_gene entry:
 // -----------------------------------
@@ -34,7 +35,7 @@
 //
 // fields used for display:
 // ------------------------
-// display_hidden           = 1 -> do not display this gene
+// display_hidden           = 1 -> do not display this gene (depends on AWAR_GENMAP_SHOW_HIDDEN too)
 
 using namespace std;
 
@@ -84,9 +85,15 @@ GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_) {
     init(gb_gene_, root_);
     load_positions(1);
 
-    nodeInfo = name;
+    nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }
 
+//  ------------------------------------------
+//      void GEN_gene::reinit_NDS() const
+//  ------------------------------------------
+void GEN_gene::reinit_NDS() const {
+    nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
+}
 //  --------------------------------------------------------------------------------------------
 //      GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts)
 //  --------------------------------------------------------------------------------------------
@@ -108,39 +115,49 @@ GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxPar
 GEN_gene::~GEN_gene() {
 }
 
-//  -----------------------------------------------------------------------------------------------------------------------------
-//      GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment)
-//  -----------------------------------------------------------------------------------------------------------------------------
-GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment) {
-    gb_main      = gb_main_;
-    species_name = species_name_;
-    gene_name    = gene_name_;
-    error_reason = "";
-    gb_gene_data = 0;
-    change_flag  = 1;
+//  -------------------------------------------------------------------------------------------------
+//      GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_)
+//  -------------------------------------------------------------------------------------------------
+GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root) {
+    gb_main       = gb_main_;
+    organism_name = organism_name_;
+    gene_name     = gene_name_;
+    error_reason  = "";
+    gb_gene_data  = 0;
+    change_flag   = 1;
 
     {
         GB_transaction  dummy(gb_main);
-        GBDATA         *gb_species = GBT_find_species(gb_main, species_name.c_str());
+        GBDATA         *gb_organism = GBT_find_species(gb_main, organism_name.c_str());
 
-        if (!gb_species) {
+        if (!gb_organism) {
             error_reason = strdup("Please select a species.");
         }
         else {
-            GBDATA *gb_data = GBT_read_sequence(gb_species, "ali_genom");
+            GBDATA *gb_data = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
             length          = GB_read_count(gb_data);
 
-            gb_gene_data    = GEN_get_gene_data(gb_species);
+            gb_gene_data    = GEN_get_gene_data(gb_organism);
             GBDATA *gb_gene = gb_gene_data ? GEN_first_gene_rel_gene_data(gb_gene_data) : 0;
 
             if (!gb_gene) {
-                error_reason = GBS_global_string("Species '%s' has no gene-information", species_name.c_str());
+                error_reason = GBS_global_string("Species '%s' has no gene-information", organism_name.c_str());
             }
             else {
-                while (gb_gene) {
-                    GBDATA *gbd = GB_find(gb_gene, "display_hidden", 0, down_level);
+                bool show_hidden = aw_root->awar(AWAR_GENMAP_SHOW_HIDDEN)->read_int() != 0;
 
-                    if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
+                while (gb_gene) {
+                    bool show_this = show_hidden;
+
+                    if (!show_this) {
+                        GBDATA *gbd = GB_find(gb_gene, "display_hidden", 0, down_level);
+
+                        if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
+                            show_this = true;
+                        }
+                    }
+
+                    if (show_this) {
                         GBDATA *gbd    = GB_find(gb_gene, "pos_joined", 0, down_level);
                         int     joined = gbd ? GB_read_int(gbd) : 0;
 
@@ -166,4 +183,11 @@ GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb
 GEN_root::~GEN_root() {
 }
 
-
+//  ------------------------------------
+//      void GEN_root::reinit_NDS()
+//  ------------------------------------
+void GEN_root::reinit_NDS() {
+    for (GEN_gene_set::iterator gene = gene_set.begin(); gene != gene_set.end(); ++gene) {
+        gene->reinit_NDS();
+    }
+}

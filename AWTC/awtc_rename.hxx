@@ -13,8 +13,9 @@ void		awt_rename_cb(AW_window *aww,GBDATA *gb_main);
 AW_window	*create_awtc_names_admin_window(AW_root *aw_root);
 
 GB_ERROR	AWTC_pars_names(GBDATA *gb_main, int update_status = 0);
-GB_ERROR    AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name);
+GB_ERROR    AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus);
 
 char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data);
+char *AWTC_generate_random_name(GBDATA *gb_species_data);
 
 #endif

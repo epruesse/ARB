@@ -28,10 +28,17 @@
 #define AWAR_GENE_POS1 "tmp/gene/pos1"
 #define AWAR_GENE_POS2 "tmp/gene/pos2"
 
+// to extract genes to pseudo-species:
+#define AWAR_GENE_EXTRACT_ALI "tmp/gene/extract/ali"
+
+// --------------------------------------------------------------------------------
+// display styles:
 #define AWAR_GENMAP_DISPLAY_TYPE "genemap/display/type"
 
 // all display styles:
-#define AWAR_GENMAP_ARROW_SIZE "genemap/display/arrow_size"
+#define AWAR_GENMAP_ARROW_SIZE   "genemap/display/arrow_size"
+#define AWAR_GENMAP_SHOW_HIDDEN  "genemap/display/show_hidden"
+#define AWAR_GENMAP_SHOW_ALL_NDS "genemap/display/show_all_nds"
 
 // display book-style:
 #define AWAR_GENMAP_BOOK_WIDTH_FACTOR   "genemap/display/book/width_factor"
@@ -50,6 +57,7 @@
 // other options:
 #define AWAR_GENMAP_AUTO_JUMP       "genemap/options/autojump"
 
+// --------------------------------------------------------------------------------
 #else
 #error GEN_local.hxx included twice
 #endif // GEN_LOCAL_HXX

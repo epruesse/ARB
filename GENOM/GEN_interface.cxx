@@ -10,10 +10,9 @@
 #ifndef GEN_LOCAL_HXX
 #include "GEN_local.hxx"
 #endif
-#ifndef GEN_MAP_HXX
-#include "GEN_map.hxx"
+#ifndef GEN_NDS_HXX
+#include "GEN_nds.hxx"
 #endif
-
 
 // --------------------------------------------------------------------------------
 
@@ -27,7 +26,12 @@ static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *i
 
     if (slash) {
         slash[0] = 0;
-        aw_root->awar(AWAR_SPECIES_NAME)->write_string(name);
+
+        // @@@ suchen nach pseudo-species
+        // falls gefunden -> AWAR_SPECIES_NAME auf Pseudo-Species setzen
+        // -> AWAR_ORGANISM_NAME + AWAR_GENE_NAME werden automatisch gesetzt
+
+        aw_root->awar(AWAR_ORGANISM_NAME)->write_string(name);
         aw_root->awar(AWAR_GENE_NAME)->write_string(slash+1);
     }
     free(name);
@@ -129,18 +133,46 @@ struct ad_item_selector GEN_item_selector         = {
     GEN_next_gene
 };
 
-// --------------------------------------------------------------------------------
+//  -------------------------------------------------------
+//      void GEN_species_name_changed_cb(AW_root *awr)
+//  -------------------------------------------------------
+void GEN_species_name_changed_cb(AW_root *awr) {
+    char   *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
+    GBDATA *gb_species   = GBT_find_species(gb_main, species_name);
 
+    if (GEN_is_pseudo_gene_species(gb_species)) {
+        awr->awar(AWAR_ORGANISM_NAME)->write_string(GEN_origin_organism(gb_species));
+        awr->awar(AWAR_GENE_NAME)->write_string(GEN_origin_gene(gb_species));
+    }
+    else {
+        awr->awar(AWAR_ORGANISM_NAME)->write_string(species_name);
+    }
+
+    free(species_name);
+}
+
+//  -------------------------------------------------------------------
+//      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
+//  -------------------------------------------------------------------
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
 	aw_root->awar_string( AWAR_GENE_NAME, "" ,	gb_main);
+	aw_root->awar_string( AWAR_ORGANISM_NAME, "" ,	gb_main);
+
+    aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB0)GEN_species_name_changed_cb);
+
     aw_root->awar_string( AWAR_GENE_DEST, "" ,	aw_def);
     aw_root->awar_string( AWAR_GENE_POS1, "" ,	aw_def);
     aw_root->awar_string( AWAR_GENE_POS2, "" ,	aw_def);
+
+    aw_root->awar_string( AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,	aw_def);
 }
 
 
-GBDATA *GEN_get_current_species(GBDATA *gb_main, AW_root *aw_root) {
-    char   *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+//  ---------------------------------------------------------------------------
+//      GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root)
+//  ---------------------------------------------------------------------------
+GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root) {
+    char   *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
     GBDATA *gb_species   = GBT_find_species(gb_main,species_name);
     delete species_name;
     return gb_species;
@@ -150,7 +182,7 @@ GBDATA *GEN_get_current_species(GBDATA *gb_main, AW_root *aw_root) {
 //      GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root)
 //  -----------------------------------------------------------------------------
 GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_species      = GEN_get_current_species(gb_main, aw_root);
+    GBDATA *gb_species      = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_gene_data    = 0;
 
     if (gb_species) gb_gene_data = GEN_get_gene_data(gb_species);
@@ -162,7 +194,7 @@ GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
 //      GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *root)
 //  ---------------------------------------------------------------------
 GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_species   = GEN_get_current_species(gb_main, aw_root);
+    GBDATA *gb_species   = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_gene      = 0;
 
     if (gb_species) {
@@ -540,22 +572,4 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     return (AW_window *)aws;
 
 }
-//  ----------------------------------------------
-//      AW_window *GEN_map(AW_root *aw_root)
-//  ----------------------------------------------
-AW_window *GEN_map(AW_root *aw_root) {
-    static AW_window *aw_gen = 0;
-
-    if (!aw_gen) { // do not open window twice
-        aw_gen = GEN_map_create_main_window(aw_root);
-        if (!aw_gen) {
-            aw_message("Couldn't start Gene-Map");
-            return 0;
-        }
-    }
-
-    aw_gen->show();
-    return aw_gen;
-}
-
 

@@ -104,6 +104,7 @@ GBDATA *GB_test_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *
 GBDATA *GBT_open P_((const char *path, const char *opent, const char *disabled_path));
 GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const char *action_name));
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
+char *GBT_read_gene_sequence P_((GBDATA *gb_gene));
 
 /* adseqcompr.c */
 GB_ERROR GBT_compress_sequence_tree P_((GBDATA *gb_main, GB_CTREE *tree, const char *ali_name));

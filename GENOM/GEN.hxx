@@ -14,7 +14,8 @@
 // --------------------------------------------------------------------------------
 // awars:
 
-#define AWAR_GENE_NAME "tmp/gene/name"
+#define AWAR_GENE_NAME  "tmp/gene/name"
+#define GENOM_ALIGNMENT "ali_genom"
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
 
@@ -31,16 +32,15 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root);
 AW_window *GEN_map(AW_root *aw_root);
 
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
-    
+
 // --------------------------------------------------------------------------------
 // genes:
 
 inline GBDATA* GEN_get_gene_data(GBDATA *gb_species) { return GB_search(gb_species, "gene_data", GB_CREATE_CONTAINER); }
 
-GBDATA* GEN_get_current_species(GBDATA *gb_main, AW_root *aw_root);
-GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root);
-GBDATA* GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root); // searches the current gene (using AWAR_SPECIES_NAME and AWAR_GENE_NAME)
-
+GBDATA* GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root); // uses AWAR_ORGANISM_NAME
+GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root); // uses AWAR_ORGANISM_NAME
+GBDATA* GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root); // searches the current gene (using AWAR_ORGANISM_NAME and AWAR_GENE_NAME)
 
 GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name); // find existing gene
 GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name); // create or find existing gene
@@ -52,15 +52,25 @@ GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
 GBDATA* GEN_next_gene(GBDATA *gb_gene);
 
 // --------------------------------------------------------------------------------
-// annotations:
+// pseudo gene-species:
 
-GBDATA* GEN_find_annotation(GBDATA *gb_gene, const char *name); // find existing annotation
-GBDATA* GEN_create_annotation(GBDATA *gb_gene, const char *name); // create or find existing annotation
+bool GEN_is_pseudo_gene_species(GBDATA *gb_species);
 
-GBDATA* GEN_first_annotation(GBDATA *gb_gene);
-GBDATA* GEN_next_annotation(GBDATA *gb_gene);
+const char *GEN_origin_organism(GBDATA *gb_pseudo);
+const char *GEN_origin_gene(GBDATA *gb_pseudo);
+GBDATA     *GEN_find_origin_organism(GBDATA *gb_pseudo);
+GBDATA     *GEN_find_origin_gene(GBDATA *gb_pseudo);
 
-// substitute functions for equivalent species functions:
+GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene);
 
+GBDATA* GEN_first_pseudo_species(GBDATA *gb_main);
+GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data);
+GBDATA* GEN_next_pseudo_species(GBDATA *gb_species);
+
+// --------------------------------------------------------------------------------
+// toolkit:
+
+// in adtools.c:
+// char *GBT_read_gene_sequence P_((GBDATA *gb_gene));
 
 #endif // GEN_HXX

@@ -21,13 +21,13 @@ class GEN_root;
 //  -----------------------
 class GEN_gene {
 private:
-    GBDATA   *gb_gene;
-    GEN_root *root;
-    string    name;
-    string    nodeInfo;
-    long      pos1;
-    long      pos2;
-    bool      complement;
+    GBDATA         *gb_gene;
+    GEN_root       *root;
+    string          name;
+    mutable string  nodeInfo;
+    long            pos1;
+    long            pos2;
+    bool            complement;
 
     //     int       level; // on which "level" the gene is printed
 
@@ -56,6 +56,8 @@ public:
     const string& Name() const { return name; } // returns the short name of the gene
     const GBDATA *GbGene() const { return gb_gene; }
     GEN_root *Root() { return root; }
+
+    void reinit_NDS() const;
 };
 
 typedef multiset<GEN_gene> GEN_gene_set;
@@ -66,22 +68,24 @@ typedef GEN_gene_set::iterator GEN_iterator;
 //  -----------------------
 class GEN_root {
 private:
-    GBDATA       *gb_main;
-    string        species_name; // name1 of current species
-    string        gene_name;    // name of current gene
-    GEN_gene_set  gene_set;
-    string        error_reason; // reason why we can't display gene_map
-    long          length;       // length of organism sequence
+    GBDATA *gb_main;
+    string  organism_name;      // name1 of current species
+    // (in case of a pseudo gene-species this is the name of the species it originated from)
+
+    string       gene_name;     // name of current gene
+    GEN_gene_set gene_set;
+    string       error_reason;  // reason why we can't display gene_map
+    long         length;        // length of organism sequence
 
     GBDATA *gb_gene_data;       // i am build upon this
     int     change_flag;        // == 1 -> update needed
 
 public:
-    GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment);
+    GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root);
     virtual ~GEN_root();
 
     const string& GeneName() const { return gene_name; }
-    const string& SpeciesName() const { return species_name; }
+    const string& OrganismName() const { return organism_name; }
 
     GBDATA *GbMain() { return gb_main; }
 
@@ -93,6 +97,8 @@ public:
     void paint(AW_device *device);
 
     int check_update(GBDATA *gbdummy);
+
+    void reinit_NDS();
 };
 
 

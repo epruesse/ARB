@@ -1666,14 +1666,14 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
     AW_pos		offset;
     long		max_strlen = 0;
 
-    disp_device->text(AWT_GC_CURSOR,"NDS List of all marked species:",
+    disp_device->text(AWT_GC_CURSOR,"NDS List of all species:",
                       (AW_pos) scale * 2, (AW_pos) 0,
                       (AW_pos) 0, text_filter,
                       (AW_CL) 0, (AW_CL) 0);
 
-    for (gb_species = GBT_first_marked_species(gb_main);
+    for (gb_species = GBT_first_species(gb_main);
          gb_species;
-         gb_species = GBT_next_marked_species(gb_species)) {
+         gb_species = GBT_next_species(gb_species)) {
 
         y_position += scale;
         gb_name = GB_find(gb_species, "name", 0, down_level);
@@ -1692,11 +1692,13 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
             if ( Y > disp_device->clip_rect.b) continue;
         }
 
-        if (disp_device->type() != AW_DEVICE_SIZE){	// tree below cliprect bottom can be cut
-            const char *data = make_node_text_nds(gb_main, gb_species, 1, 0);
-            long slen = strlen(data);
-            offset = scale * 0.5;
-            disp_device->text(AWT_GC_CURSOR,data,
+        if (disp_device->type() != AW_DEVICE_SIZE){ // tree below cliprect bottom can be cut
+            const char *data     = make_node_text_nds(gb_main, gb_species, 1, 0);
+            long        slen     = strlen(data);
+            offset               = scale * 0.5;
+
+            disp_device->text(GB_read_flag(gb_species) ? AWT_GC_SELECTED : AWT_GC_NSELECTED,
+                              data,
                               (AW_pos) scale * 2, (AW_pos) y_position + offset,
                               (AW_pos) 0, text_filter,
                               (AW_CL) gb_species, (AW_CL) "species", slen);

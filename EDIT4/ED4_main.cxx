@@ -347,6 +347,7 @@ void ED4_create_awars(AW_root *root, const char *config_name) { // cursor awars 
     root->awar_int( AWAR_EDIT_TITLE_MODE, 0);
 
     root->awar_int(AWAR_CURSOR_POSITION, 1, gb_main);
+    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, gb_main);
     root->awar_int(AWAR_SET_CURSOR_POSITION, 1, gb_main)->add_callback(ED4_remote_set_cursor_cb, 0, 0);
 
     root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);

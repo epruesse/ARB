@@ -83,7 +83,7 @@ public:
 static NameServerConnection name_server;
 
 
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name) {
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -92,7 +92,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     new_name = 0;
     if (!acc) acc = "";
 
-    aw_openstatus(GBS_global_string("Generating new name for '%s'", full_name));
+    if (openstatus) aw_openstatus(GBS_global_string("Short name for '%s'", full_name));
 
     aw_status("Connecting to name server");
     aw_status((double)0);
@@ -130,7 +130,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         }
     }
 
-    aw_closestatus();
+    if (openstatus) aw_closestatus();
 
     return err;
 }
@@ -291,16 +291,20 @@ void AWTC_create_rename_variables(AW_root *root,AW_default db1){
 }
 
 
-//  ------------------------------------------------------------------------------------
-//      char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data)
-//  ------------------------------------------------------------------------------------
-
+//  ----------------------------------------------------------------------------------
+//      inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data)
+//  ----------------------------------------------------------------------------------
 inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
-char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
+//  --------------------------------------------------------------------------------------
+//      static char *makeUniqueShortName(const char *prefix, GBDATA *gb_species_data)
+//  --------------------------------------------------------------------------------------
+static char *makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
     // generates a non-existing short-name (name starts with prefix)
+    // returns 0 if failed
+
     char *result = 0;
 
     int prefix_len = strlen(prefix);
@@ -326,3 +330,49 @@ char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
     return result;
 }
 
+//  ------------------------------------------------------------------------------------
+//      char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data)
+//  ------------------------------------------------------------------------------------
+char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
+    // generates a unique species name from prefix (will be shortened down to first char)
+    // returns 0 if fails
+
+    int  len = strlen(prefix);
+    gb_assert(len <= 8);
+
+    char p[9];
+    strcpy(p, prefix);
+
+    char *result = 0;
+
+    for (int l = len-1; l>0 && !result; --l) {
+        p[l]   = 0;
+        result = makeUniqueShortName(p, gb_species_data);
+    }
+
+    return result;
+}
+
+//  -----------------------------------------------------------------
+//      char *AWTC_generate_random_name(GBDATA *gb_species_data)
+//  -----------------------------------------------------------------
+char *AWTC_generate_random_name(GBDATA *gb_species_data) {
+    char *new_species_name = 0;
+    char  short_name[9];
+    short_name[8]          = 0;
+    int   count            = 1000;
+
+    while (count--) {
+        for (int x=0; x<8; ++x) {
+            int r = int((double(rand())/RAND_MAX)*36);
+            short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
+        }
+
+        if (nameIsUnique(short_name, gb_species_data))  {
+            new_species_name = strdup(short_name);
+            break;
+        }
+    }
+
+    return new_species_name;
+}

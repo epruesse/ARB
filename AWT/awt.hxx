@@ -65,6 +65,7 @@ struct ad_item_selector {
 };
 
 extern ad_item_selector AWT_species_selector;
+extern ad_item_selector AWT_organism_selector;
 
 /**************************************************************************
 *********************		File Selection Boxes 	*******************
@@ -282,7 +283,7 @@ public:
     const char *do_set_pos_fig;	// multi set a key
     const char *open_parser_pos_fig;
     const char *do_refresh_pos_fig;
-    AW_CL	    create_view_window;
+    AW_CL	    create_view_window;     // AW_window *(*create_view_window)(AW_root *aw_root)
 
     const char *info_box_pos_fig;
 

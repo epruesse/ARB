@@ -1177,6 +1177,22 @@ struct ad_item_selector AWT_species_selector = {
 
         };
 
+struct ad_item_selector AWT_organism_selector = {
+    AWT_QUERY_ITEM_SPECIES,
+        awt_select_species,
+        awt_species_result_name,
+        (AW_CB)awt_selection_list_rescan_cb,
+        12,
+        CHANGE_KEY_PATH,
+        "organism",
+        "organism",
+        awt_get_first_species_data,
+        awt_get_next_species_data,
+        GBT_first_species_rel_species_data,
+        GBT_next_species
+
+        };
+
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_cbs) {
     const char          *awar_selection = (const char *)cl_awar_selection;
     struct adaqbsstruct *cbs            = (struct adaqbsstruct *)cl_cbs;
@@ -1279,7 +1295,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	if (awtqs->result_pos_fig){
 		aws->at(awtqs->result_pos_fig);
 		if(awtqs->create_view_window) {
-			aws->callback(AW_POPUP,awtqs->create_view_window,0);
+			aws->callback(AW_POPUP,awtqs->create_view_window, 0);
 		}
 		aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 

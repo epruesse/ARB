@@ -11,7 +11,8 @@
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
 
 void       create_species_var(AW_root *aw_root, AW_default aw_def);
-AW_window *create_species_window(AW_root *aw_root);
+AW_window *NT_create_species_window(AW_root *aw_root);
+AW_window *NT_create_organism_window(AW_root *aw_root);
 AW_window *ad_create_query_window(AW_root *aw_root);
 void       ad_unquery_all();
 void       ad_query_update_list();

@@ -1,4 +1,7 @@
+#include <malloc.h>
+
 #include <arbdb.h>
+#include <arbdbt.h>
 
 #ifndef GEN_LOCAL_HXX
 #include "GEN_local.hxx"
@@ -50,43 +53,81 @@ GBDATA* GEN_next_gene(GBDATA *gb_gene) {
     return GB_find(gb_gene, "gene", 0, this_level|search_next);
 }
 
-//  --------------------
-//      annotations:
-//  --------------------
 
-inline GBDATA* get_ann_data(GBDATA *gb_species) {
-    return GB_search(gb_species, "ann_data", GB_CREATE_CONTAINER);
+// --------------------------------------------------------------------------------
+// pseudo gene-species:
+
+//  -----------------------------------------------------------
+//      const char *GEN_origin_organism(GBDATA *gb_pseudo)
+//  -----------------------------------------------------------
+const char *GEN_origin_organism(GBDATA *gb_pseudo) {
+    GBDATA *gb_origin = GB_find(gb_pseudo, "ARB_origin_species", 0, down_level);
+    return gb_origin ? GB_read_char_pntr(gb_origin) : 0;
+}
+//  -------------------------------------------------------
+//      const char *GEN_origin_gene(GBDATA *gb_pseudo)
+//  -------------------------------------------------------
+const char *GEN_origin_gene(GBDATA *gb_pseudo) {
+    GBDATA *gb_origin = GB_find(gb_pseudo, "ARB_origin_gene", 0, down_level);
+    return gb_origin ? GB_read_char_pntr(gb_origin) : 0;
 }
 
-GBDATA* GEN_find_annotation(GBDATA *gb_gene, const char *name) {
-    // find existing annotation
-    GBDATA *gb_ann_data = get_ann_data(gb_gene);
-    GBDATA *gb_name = GB_find(gb_ann_data, "name", name, down_2_level);
+//  ------------------------------------------------------------
+//      GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo)
+//  ------------------------------------------------------------
+GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo) {
+    const char *origin_species_name = GEN_origin_organism(gb_pseudo);
+    return origin_species_name
+        ? GBT_find_species_rel_species_data(GB_get_father(gb_pseudo), origin_species_name)
+        : 0;
+}
+//  --------------------------------------------------------
+//      GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo)
+//  --------------------------------------------------------
+GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo) {
+    const char *origin_gene_name = GEN_origin_gene(gb_pseudo);
+    if (!origin_gene_name) return 0;
 
-    if (gb_name) return GB_get_father(gb_name); // found existing annotation
+    GBDATA *gb_organism = GEN_find_origin_organism(gb_pseudo);
+    gb_assert(gb_organism);
+    return GEN_find_gene(gb_organism, origin_gene_name);
+}
+
+//  ------------------------------------------------------------
+//      bool GEN_is_pseudo_gene_species(GBDATA *gb_species)
+//  ------------------------------------------------------------
+bool GEN_is_pseudo_gene_species(GBDATA *gb_species) {
+    return GEN_origin_organism(gb_species) != 0;
+}
+
+//  ----------------------------------------------------------
+//      GBDATA* GEN_first_pseudo_species(GBDATA *gb_main)
+//  ----------------------------------------------------------
+GBDATA* GEN_first_pseudo_species(GBDATA *gb_main) {
+    GBDATA *gb_species = GBT_first_species(gb_main);
+    return GEN_is_pseudo_gene_species(gb_species)
+        ? gb_species
+        : GEN_next_pseudo_species(gb_species);
+}
+//  -----------------------------------------------------------------------------------
+//      GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data)
+//  -----------------------------------------------------------------------------------
+GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data) {
+    GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
+    return GEN_is_pseudo_gene_species(gb_species)
+        ? gb_species
+        : GEN_next_pseudo_species(gb_species);
+}
+//  ------------------------------------------------------------
+//      GBDATA* GEN_next_pseudo_species(GBDATA *gb_species)
+//  ------------------------------------------------------------
+GBDATA* GEN_next_pseudo_species(GBDATA *gb_species) {
+    while (gb_species) {
+        gb_species = GBT_next_species(gb_species);
+        if (GEN_is_pseudo_gene_species(gb_species)) {
+            return gb_species;
+        }
+    }
     return 0;
 }
-
-GBDATA* GEN_create_annotation(GBDATA *gb_gene, const char *name) {
-    // create or find existing annotation
-    GBDATA *gb_ann_data = get_ann_data(gb_gene);
-    GBDATA *gb_name = GB_find(gb_ann_data, "name", name, down_2_level);
-
-    if (gb_name) return GB_get_father(gb_name); // found existing annotation
-
-    GBDATA *gb_ann = GB_create_container(gb_ann_data, "ann");
-    gb_name = GB_create(gb_ann, "name", GB_STRING);
-    GB_write_string(gb_name, name);
-
-    return gb_ann;
-}
-
-GBDATA* GEN_first_annotation(GBDATA *gb_gene) {
-    GBDATA *gb_ann_data = get_ann_data(gb_gene);
-    return GB_find(gb_ann_data, "ann", 0, down_level);
-}
-GBDATA* GEN_next_annotation(GBDATA *gb_gene) {
-    return GB_find(gb_gene, "ann", 0, this_level|search_next);
-}
-
 
