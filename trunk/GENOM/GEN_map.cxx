@@ -715,7 +715,7 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mmode) {
             case GEN_PERFORM_ALL_BUT_CURRENT_SPECIES:   where = "all but the current species"; break;
             default: gen_assert(0); break;
         }
-        aw_message(GBS_global_string("There are %i marked genes in %s", gen_count_marked_genes, where));
+        aw_message(GBS_global_string("There are %li marked genes in %s", gen_count_marked_genes, where));
     }
 }
 
