@@ -865,20 +865,21 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
 }
 //--------------------------------------------------------------------------------------------------
 #if defined(DEBUG)
-void NT_rename_test(AW_window *, AW_CL cl_gb_main) {
+void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
     GBDATA   *gb_main = (GBDATA*)cl_gb_main;
+    GB_begin_transaction(gb_main);
     GBDATA   *gbd     = GBT_find_species(gb_main, "MssVanni");
     GB_ERROR  error   = 0;
 
     if (gbd) {
-        GBDATA *gb_remark = GB_find(gbd, "remark", 0, down_level);
+        GBDATA *gb_remark = GB_find(gbd, "ali_16s", 0, down_level);
         if (gb_remark) {
-            if (GB_rename(gb_remark, "new_remark") != 0) {
-                error = "Can't rename MssVanni/remark";
+            if (GB_rename(gb_remark, "ali_16s_new") != 0) {
+                error = "Can't rename MssVanni/ali_16s";
             }
         }
         else {
-            error = "MssVanni has no entry 'remark'";
+            error = "MssVanni has no entry 'ali_16s'";
         }
     }
     else {
@@ -886,8 +887,14 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main) {
     }
 
     if (error) {
+        GB_abort_transaction(gb_main);
         aw_message(error);
     }
+    else {
+        GB_commit_transaction(gb_main);
+    }
+
+
 }
 #endif // DEBUG
 
