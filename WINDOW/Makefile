@@ -4,7 +4,7 @@ STD_OBJECTS =	AW_xkey.o AW_xfont.o AW_nawar.o AW_button.o \
 		AW_at.o AW_print.o AW_window.o \
 		AW_device.o AW_Xm.o AW_click.o AW_size.o \
 		AW_xfig.o AW_xfigfont.o AW_status.o AW_preset.o \
-		AW_question.o AW_global_awars.o \
+		AW_question.o AW_global_awars.o AW_font_group.o 
 
 OPENGL_OBJECTS = GLwMDrawA.o GLwDrawA.o
 
@@ -42,6 +42,7 @@ depend.init:
 
 AW_at.o: aw_at.hxx
 AW_at.o: aw_device.hxx
+AW_at.o: aw_keysym.hxx
 AW_at.o: aw_root.hxx
 AW_at.o: aw_window.hxx
 AW_at.o: aw_xfig.hxx
@@ -53,6 +54,7 @@ AW_button.o: aw_at.hxx
 AW_button.o: aw_awar.hxx
 AW_button.o: aw_click.hxx
 AW_button.o: aw_device.hxx
+AW_button.o: aw_keysym.hxx
 AW_button.o: aw_print.hxx
 AW_button.o: aw_root.hxx
 AW_button.o: aw_size.hxx
@@ -74,9 +76,15 @@ AW_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
 AW_device.o: aw_commn.hxx
 AW_device.o: aw_device.hxx
+AW_device.o: aw_keysym.hxx
 AW_device.o: aw_root.hxx
 AW_device.o: aw_window.hxx
 AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
+
+AW_font_group.o: aw_device.hxx
+AW_font_group.o: aw_font_group.hxx
+AW_font_group.o: aw_root.hxx
+AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
 AW_global_awars.o: aw_global_awars.hxx
 AW_global_awars.o: aw_root.hxx
@@ -85,6 +93,7 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 AW_nawar.o: aw_device.hxx
+AW_nawar.o: aw_keysym.hxx
 AW_nawar.o: aw_nawar.hxx
 AW_nawar.o: aw_root.hxx
 AW_nawar.o: aw_window.hxx
@@ -95,6 +104,7 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 AW_preset.o: aw_color_groups.hxx
 AW_preset.o: aw_device.hxx
+AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
@@ -126,6 +136,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
+AW_status.o: aw_keysym.hxx
 AW_status.o: aw_root.hxx
 AW_status.o: aw_window.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -165,6 +176,7 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 AW_xfigfont.o: aw_commn.hxx
 AW_xfigfont.o: aw_device.hxx
+AW_xfigfont.o: aw_keysym.hxx
 AW_xfigfont.o: aw_root.hxx
 AW_xfigfont.o: aw_window.hxx
 AW_xfigfont.o: aw_xfig.hxx
