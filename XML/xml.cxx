@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Tue Oct/02/2001 18:09 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Oct/24/2001 21:32 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -20,12 +20,51 @@
 #include "xml.hxx"
 
 using namespace std;
-// using namespace rs;
-// using namespace rs::xml;
 
 XML_Document *the_XML_Document = 0;
 
+static const char *entities =
+"  <!ENTITY nbsp \"&#160;\">\n"
+"  <!ENTITY acute \"&#180;\">\n"
+"  <!ENTITY semi \"&#59;\">\n"
+;
+
 // ********************************************************************************
+
+//  ---------------------------------------------------------------------------------
+//      static string encodeEntities(const string& str, bool quotedText = false)
+//  ---------------------------------------------------------------------------------
+static string encodeEntities(const string& str, bool quotedText = false) {
+    string neu;
+    neu.reserve(str.length()*4);
+
+
+    for (string::const_iterator s = str.begin(); s != str.end(); ++s) {
+        char        replace = 0;
+        const char *entity  = 0;
+
+        switch (*s) {
+            case '<':  { entity = "lt"; break; }
+            case '>':  { entity = "gt"; break; }
+            case '&':  { entity = "amp"; break; }
+            case '\'':  { entity = "acute"; break; }
+
+            default :  { replace = *s; }
+        }
+
+        if (replace) {
+            neu.append(1, replace);
+        }
+        else {
+            assert(entity);
+            neu.append(1, '&');
+            neu.append(entity);
+            neu.append(1, ';');
+        }
+    }
+
+    return neu;
+}
 
 //  ----------------------------------------------------------------------------------
 //      XML_Attribute::XML_Attribute(const string& name_, const string& content_)
@@ -193,7 +232,8 @@ void XML_Text::open(FILE*) {
 void XML_Text::close(FILE *out) {
     if (father && !father->Opened()) father->open(out);
     //fputc('\n', out); to_indent(out, Indent());
-    fputs(content.c_str(), out);
+//     fputs(content.c_str(), out);
+    fputs(encodeEntities(content).c_str(), out);
 }
 
 // ********************************************************************************
@@ -211,7 +251,7 @@ XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
     xml_assert(latest_son == root);
 
     fputs("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n", out);
-    fprintf(out, "<!DOCTYPE %s SYSTEM '%s'>\n", name_.c_str(), dtd.c_str());
+    fprintf(out, "<!DOCTYPE %s SYSTEM '%s' [\n%s]>\n", name_.c_str(), dtd.c_str(), entities);
 }
 
 //  --------------------------------------
