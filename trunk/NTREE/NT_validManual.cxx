@@ -37,10 +37,10 @@ static struct selectValidNameStruct* svnp;
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string( AWAR_SELECTED_VALNAME,      "????" ,                        aw_def);
     aw_root->awar_string( AWAR_INPUT_INITIALS,      "" ,                        aw_def);
-} 
+}
 
 
-//struct selectValidNameStruct* 
+//struct selectValidNameStruct*
 void fillSelNamList(struct selectValidNameStruct* svnp){
 
 
@@ -53,7 +53,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
 
     GBDATA* GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
     if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
-    
+
     GB_ERROR err = 0;
 
     // search validNames
@@ -61,17 +61,17 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
     for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
          GB_validNamePair && !err;
          GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
-        //    if (!GB_validNamePair){std::cout << "GB_validNamePair not found" << std:: cout; return; } 
+        //    if (!GB_validNamePair){std::cout << "GB_validNamePair not found" << std:: cout; return; }
         // retrieve list of all species names
-        
+
         GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
         char* typeString = GB_read_string(actDesc);
         if (strcmp(typeString, "NOTYPE") != 0){
             GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
             char* validName = newName ? GB_read_string(newName) : 0;
             //if (!validName){std::cout << "validName not found" << std:: cout; return; } // string
-            
-            
+
+
             if (!validName) {
                 err = GBS_global_string("Invalid names entry");
             }
@@ -80,13 +80,13 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
             //                         ptr to list, item to display, item value (here: equal)
 
             if (strncmp (validName, searchstr, length) == 0){
-            svnp->aws->insert_selection(validNamesList,validName, validName);            
+            svnp->aws->insert_selection(validNamesList,validName, validName);
             }
 
             free (validName);
         }
 
-        free (typeString);                     
+        free (typeString);
     }
 
 
@@ -111,22 +111,22 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
 //void awarTestFunction(AW_CL vns){
 // void awarTestFunction(AW_root *awr){
 
-//     //    const char* selectedName = ((struct selectValidNameStruct *)vns)->awr->awar(AWAR_INPUT_INITIALS)->read_string(); 
-//     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string(); 
-    
+//     //    const char* selectedName = ((struct selectValidNameStruct *)vns)->awr->awar(AWAR_INPUT_INITIALS)->read_string();
+//     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
+
 //     aw_message(GBS_global_string("now selected: %s\n",selectedName));
-               
+
 // }
 
 void updateValNameList(AW_root *awr){
 
-    const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string(); 
-    
+    const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
+
 #ifdef DEBUG
     aw_message(GBS_global_string("now selected: %s\n",selectedName));
 #endif
     svnp->initials = selectedName;
-    fillSelNamList(svnp);               
+    fillSelNamList(svnp);
 #ifdef DEBUG
     aw_message(GBS_global_string("SelectionList updated"));
 #endif
@@ -136,8 +136,8 @@ void updateValNameList(AW_root *awr){
 
 struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, const char *awarName){
     aw_message("ValidNameSelectionList was created");
-    GBDATA *gb_presets;
-    AW_root *aw_root  = aws->get_root();
+//     GBDATA *gb_presets;
+//     AW_root *aw_root  = aws->get_root();
     validNamesList = aws->create_selection_list(awarName,0,"",10,20);
 
     svnp = new struct selectValidNameStruct; // declared static
@@ -150,7 +150,7 @@ struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, 
     return svnp;
 
 
-    
+
 }
 
 // this function transfer a the selected valid name upon mouse click on select button to selected species
@@ -181,14 +181,14 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     GBDATA* GB_selectedSpecies = GBT_find_species(gb_main, selectedSpeciesName);
 #ifdef DEBUG
     const char * test = GB_read_string(GB_find(GB_selectedSpecies,"full_name",0,down_level));
-    aw_message(GBS_global_string("species %s in database found", test ));    
+    aw_message(GBS_global_string("species %s in database found", test ));
     aw_message("----test----");
-#endif    
-    
+#endif
+
     if(! GB_selectedSpecies)
         {err = "species not found in database";
     }else{ GBDATA* GB_nameCont = GB_search(GB_selectedSpecies,"Valid_Name",GB_CREATE_CONTAINER);
-    
+
        if(! GB_nameCont)
            {err = "could not create Valid Name container in database";}
        else{
@@ -197,7 +197,7 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
 
            GBDATA* GB_valType = GB_find(GB_nameCont,"DescType",0,down_level);
            if(! GB_valType){GB_valType = GB_create(GB_nameCont, "DescType", GB_STRING);}
-           
+
            GB_write_string(GB_valName, selectedValName);
            GB_write_string(GB_valType, "MAN");
        }
@@ -209,7 +209,7 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     }
     else {
         GB_commit_transaction(gb_main);
-        
+
     }
 #ifdef DEBUG
     aw_message(GBS_global_string("Selection confirmed: %s", selectedValName));
@@ -234,8 +234,9 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
 
     aws->at("nameList");
     // creates the selection list and asign AWAR_SELECTED_VALNAME
+
     struct selectValidNameStruct *vns = createValNameList(gb_main, (AW_window *)aws, AWAR_SELECTED_VALNAME);
-  
+
     aws->at("select");
     aws->callback( selectValidNameFromList,0,0); // (... 0,0)
     aws->create_button("SELECT","SELECT");
