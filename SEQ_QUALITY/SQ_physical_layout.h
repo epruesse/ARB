@@ -33,6 +33,7 @@ private:
     int percent_scores;
     int percent_dots;
     int percent_bases;
+    int GC;
     int GC_proportion;
 
 };
@@ -45,48 +46,43 @@ SQ_physical_layout::SQ_physical_layout(){
     percent_scores    = 0;
     percent_dots      = 0;
     percent_bases     = 0;
+    GC                = 0;
     GC_proportion     = 0;
 }
 
 
 
 void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality){
-
+    char c;
     count_bases = size;
 
     for (int i = 0; i < size; i++) {
 
-	/*claculate physical layout of sequence*/
-	if (sequence[i] == '-') {
-	    count_bases--;
-	    count_scores++;
-	}
-	if (sequence[i] == '.') {
-	    count_bases--;
-	    count_dots++;
-	}
-
-    }
-
-    for (int i = 0; i < size; i++) {
-
-	/*claculate GC layout of sequence*/
-	if (sequence[i] == 'G') {
-	    GC_proportion++;
-	}
-	if (sequence[i] == 'C') {
-	    GC_proportion++;
+	c = sequence[i];
+	switch (c) {
+	    case '-':	         /*claculate number of dots and spaces*/
+		count_bases--;
+		count_scores++;
+		break;
+	    case '.':
+		count_bases--;
+		count_dots++;
+		break;
+	    case 'G':	         /*claculate GC layout of sequence*/
+		GC++;
+		break;
+	    case 'C':
+		GC++;
+		break;
 	}
 
     }
 
     /*calculate layout in percent*/
-    //GC_proportion = 100 * GC_proportion / count_bases;
+    GC_proportion = (100 * count_bases) / GC; //this is a hack, as ARB can't save real values
     percent_scores = (100 * count_scores) / size;
     percent_dots   = (100 * count_dots) / size;
     percent_bases  = 100 - (percent_scores + percent_dots);
-
-
 
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
     seq_assert(gb_result1);

@@ -12,6 +12,10 @@
 #include "seq_quality.h"
 #include "SQ_functions.h"
 
+#ifndef SQ_GROUPDATA_H
+#define SQ_GROUPDATA_H
+#endif
+
 extern GBDATA *gb_main;
 
 // --------------------------------------------------------------------------------
@@ -110,7 +114,18 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         bool marked_only = aw_root->awar(AWAR_SQ_MARKED)->read_int(); // whether to analyse marked or all species
 
         //SQ_traverse_through_tree(gb_main, tree, marked_only);
-	SQ_calc_sequence_structure(gb_main, marked_only);
+
+
+
+	//TEST!!!
+
+	SQ_GroupData my_object;
+	SQ_calc_sequence_structure(my_object, gb_main, marked_only);
+	//my_object.SQ_print_on_screen();
+
+	//END TEST
+
+
         SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
 	int value = SQ_get_value(gb_main, option);
         aw_message(GBS_global_string("Value in container %s : %i",option, value));
