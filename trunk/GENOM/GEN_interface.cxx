@@ -26,7 +26,7 @@ using namespace std;
 //  --------------------------------------------------------------------------------------------------
 //      static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
 //  --------------------------------------------------------------------------------------------------
-static void gen_select_gene(GBDATA* gb_main, AW_root *aw_root, const char *item_name) {
+static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *organism  = GB_strdup(item_name);
     char *gene = strchr(organism, '/');
 

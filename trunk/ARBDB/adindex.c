@@ -44,7 +44,7 @@ char *gb_index_check_in(GBDATA *gbd)
 		return 0;
 	}
 
-	data = GB_read_char_pntr(gbd);	
+	data = GB_read_char_pntr(gbd);
 	GB_CALC_HASH_INDEX(data,index);
 	index = index % ifs->hash_table_size;
 	ifs->nr_of_elements++;
@@ -85,15 +85,15 @@ char *gb_index_check_out(GBDATA *gbd)
 	if (!ifs) {
 		GB_internal_error("gb_index_check_out ifs not found");
 		return 0;		/* This key is not indexed */
-	}	
-	data = GB_read_char_pntr(gbd);	
+	}
+	data = GB_read_char_pntr(gbd);
 	GB_CALC_HASH_INDEX(data,index);
 	index = index % ifs->hash_table_size;
 	ifes2 = 0;
 	entries = GB_INDEX_FILES_ENTRIES(ifs);
 
-	for (	ifes = GB_ENTRIES_ENTRY(entries,index); 
-            ifes; 
+	for (	ifes = GB_ENTRIES_ENTRY(entries,index);
+            ifes;
             ifes = GB_IF_ENTRIES_NEXT(ifes))
 	{
 		if (gbd == GB_IF_ENTRIES_GBD(ifes)) {		/* entry found */
@@ -178,8 +178,8 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
 	index = index % ifs->hash_table_size;
 	min_index = gbf->d.nheader;
 
-	for (	ifes = GB_ENTRIES_ENTRY(GB_INDEX_FILES_ENTRIES(ifs),index); 
-            ifes; 
+	for (	ifes = GB_ENTRIES_ENTRY(GB_INDEX_FILES_ENTRIES(ifs),index);
+            ifes;
             ifes = GB_IF_ENTRIES_NEXT(ifes))
 	{
 		GBDATA *igbd = GB_IF_ENTRIES_GBD(ifes);
@@ -241,7 +241,7 @@ void gb_init_undo_stack(struct gb_main_type *Main){
 	Main->undo = (struct g_b_undo_mgr_struct *)GB_calloc(sizeof(struct g_b_undo_mgr_struct),1);
 	Main->undo->max_size_of_all_undos = GB_MAX_UNDO_SIZE;
 	Main->undo->u = (struct g_b_undo_header_struct *) GB_calloc(sizeof(struct g_b_undo_header_struct),1);
-	Main->undo->r = (struct g_b_undo_header_struct *) GB_calloc(sizeof(struct g_b_undo_header_struct),1); 
+	Main->undo->r = (struct g_b_undo_header_struct *) GB_calloc(sizeof(struct g_b_undo_header_struct),1);
 }
 
 void delete_g_b_undo_entry_struct(struct g_b_undo_entry_struct *entry){
@@ -306,9 +306,9 @@ char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long m
 char *g_b_check_undo_size(GB_MAIN_TYPE *Main){
     char *error = 0;
     long maxsize = Main->undo->max_size_of_all_undos;
-    error = g_b_check_undo_size2(Main->undo->u, maxsize/2,GB_MAX_UNDO_CNT);	
+    error = g_b_check_undo_size2(Main->undo->u, maxsize/2,GB_MAX_UNDO_CNT);
     if (error) return error;
-    error = g_b_check_undo_size2(Main->undo->r, maxsize/2,GB_MAX_REDO_CNT);	
+    error = g_b_check_undo_size2(Main->undo->r, maxsize/2,GB_MAX_REDO_CNT);
     if (error) return error;
     return 0;
 }
@@ -356,13 +356,13 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                     gb_save_extern_data_in_ts(gbd);	/* check out and free string */
                     gbd->flags = ue->d.ts->flags;
                     gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
-	    
+
                     GB_MEMCPY(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
                     if (type >= GB_BITS) {
                         if (gbd->flags2.extern_data){
                             SET_GB_EXTERN_DATA_DATA(gbd->info.ex, ue->d.ts->info.ex.data); /* set relative pointers correctly */
                         }
-		
+
                         gb_del_ref_and_extern_gb_transaction_save(ue->d.ts);
                         ue->d.ts = 0;
 
@@ -372,7 +372,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
                 }
                 {
                     struct gb_header_flags *pflags = &GB_ARRAY_FLAGS(gbd);
-                    if (pflags->flags != ue->flag){
+                    if (pflags->flags != (unsigned)ue->flag){
                         GBCONTAINER *gb_father = GB_FATHER(gbd);
                         gbd->flags.saved_flags = pflags->flags;
                         pflags->flags = ue->flag;
@@ -388,7 +388,7 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
             GB_internal_error("Undo stack corrupt:!!!");
             error = GB_export_error("shit 34345");
     }
-  
+
     return error;
 }
 
@@ -546,12 +546,12 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main,GBDATA *gbd){
     long type = GB_TYPE(gbd);
     struct g_b_undo_entry_struct *ue;
     struct gb_transaction_save *old;
-	
+
     if (!Main->undo->valid_u){
         GB_FREE_TRANSACTION_SAVE(gbd);
         return;
     }
-    
+
     old = GB_GET_EXT_OLD_DATA(gbd);
     ue = new_g_b_undo_entry_struct(Main->undo->valid_u);
     ue->source = gbd;
@@ -611,7 +611,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main,GBDATA *gbd, int deep){
 		g_b_add_size_to_undo_entry(ue,sizeof(GBCONTAINER));
 	}else{
 		if (type >= GB_BITS && gbd->flags2.extern_data) {
-            /* we have copied the data structures, now 
+            /* we have copied the data structures, now
                mark the old as deleted !!! */
 			g_b_add_size_to_undo_entry(ue,GB_GETMEMSIZE(gbd));
 		}
@@ -667,12 +667,12 @@ GB_ERROR GB_undo(GBDATA *gb_main,GB_UNDO_TYPE type) {
 	switch (type){
 		case GB_UNDO_UNDO:
 			GB_request_undo_type(gb_main,GB_UNDO_REDO);
-			error =  g_b_undo(Main,gb_main,Main->undo->u); 
+			error =  g_b_undo(Main,gb_main,Main->undo->u);
 			GB_request_undo_type(gb_main,old_type);
 			break;
 		case GB_UNDO_REDO:
 			GB_request_undo_type(gb_main,GB_UNDO_UNDO_REDO);
-			error =  g_b_undo(Main,gb_main,Main->undo->r); 
+			error =  g_b_undo(Main,gb_main,Main->undo->r);
 			GB_request_undo_type(gb_main,old_type);
 			break;
 		default:
@@ -699,7 +699,7 @@ char *GB_undo_info(GBDATA *gb_main,GB_UNDO_TYPE type) {
     }
     switch (type){
         case GB_UNDO_UNDO:
-            return g_b_undo_info(Main,gb_main,Main->undo->u); 
+            return g_b_undo_info(Main,gb_main,Main->undo->u);
         case GB_UNDO_REDO:
             return g_b_undo_info(Main,gb_main,Main->undo->r);
         default:

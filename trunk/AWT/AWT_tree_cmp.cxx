@@ -45,8 +45,7 @@ AWT_species_set_root::~AWT_species_set_root(){
 
 void AWT_species_set_root::add(const char *species_name){
     if (GBS_read_hash(species_hash,species_name) ){
-        aw_message(GBS_global_string("Warning: Species '%s' is found\n"
-                                     "	more than once in tree"));
+        aw_message(GBS_global_string("Warning: Species '%s' is found more than once in tree", species_name));
     }else{
         GBS_write_hash(species_hash,species_name,species_counter++);
     }
@@ -178,7 +177,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
         ss->node->remark_branch = 0;
         if (mismatches){
             char remark[20];
-            sprintf(remark,"# %i",mismatches);
+            sprintf(remark,"# %i",mismatches); // # is important (otherwise AWT_export_tree will not work correctly)
             ss->node->remark_branch = strdup(remark);
         }
     }else{

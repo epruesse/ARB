@@ -21,7 +21,7 @@
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
 
 #define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0) // to link to the colors defined in primary editor ed4_defs.hxx
- 
+
 int SEC_font_info::max_width;
 int SEC_font_info::max_height;
 int SEC_font_info::max_ascent;
@@ -48,16 +48,16 @@ static inline int validSearchColor(int posColor){
     else                                                 return 0;
 }
 
-const char *SEC_root::getSearchResults(int startPos,int endPos){                                     // this function is defined in SEC_root 
-    //seqTerminal is a pointer to ED4_sequence_terminal declared in SEC_root 
+const char *SEC_root::getSearchResults(int startPos,int endPos){                                     // this function is defined in SEC_root
+    //seqTerminal is a pointer to ED4_sequence_terminal declared in SEC_root
 
     if (seqTerminal) {                                                                        //if seqTerminal is initialised and selected
 	const char *searchCols =seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);
 
-	//  results() is the member function of ED4_sequence_terminal and the buildColorString is the sub-function 
+	//  results() is the member function of ED4_sequence_terminal and the buildColorString is the sub-function
 	// buildColorString builds the background color of each base
 
-	return searchCols;                                                                       // returning the color strings 
+	return searchCols;                                                                       // returning the color strings
     }
     return 0;                                                                                   //if not return 0
 }
@@ -71,10 +71,10 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
     double lineCenter = radius*0.6;
 
     if (searchCols && searchCols[absPos]){
-	backColor = searchCols[absPos] - COLORLINK; 
-	
+	backColor = searchCols[absPos] - COLORLINK;
+
 	if(!validSearchColor(backColor)) return;
-	
+
 	device->set_line_attributes(backColor,15, AW_SOLID);
 
 	if(next_x!=next_y)
@@ -86,7 +86,7 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
 		nextBackColor = searchCols[absPos+1] - COLORLINK;
 		if(backColor==nextBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
 	    }
-	
+
 	device->circle(backColor, true, last_x, last_y-lineCenter, radius, radius, -1, 0, 0);
     }
 }
@@ -314,7 +314,7 @@ int SEC_region::get_faked_basecount(void) {
     else return(base_count);
 }
 
-void SEC_loop::compute_umfang(void) { 
+void SEC_loop::compute_umfang(void) {
     SEC_segment *segment_pointer = segment;
     SEC_helix_strand *strand_pointer;
     SEC_region *region_pointer;
@@ -345,7 +345,7 @@ void SEC_helix_strand::update(double fixpoint_x_, double fixpoint_y_, double ang
     //update this strands own fixpoints
     fixpoint_x = fixpoint_x_;
     fixpoint_y = fixpoint_y_;
-    
+
     if (angle_difference != 0) {
         double new_angle = angle_difference + helix_info->get_delta();
         //the next "if" corrects negative angles that can occur during drag-operations
@@ -680,9 +680,9 @@ void SEC_helix_strand::print_lonely_bases(char *buffer, AW_device *device, doubl
 
     double print_pos_x = base_x - start_end_v[0]*0.5;
     double print_pos_y = base_y - start_end_v[1]*0.5;
-    
+
     double radius = transform_size(device,font_info[SEC_GC_HELIX].get_ascent())*0.75;
-    
+
     if(thisStrand){
 	root->paintSearchBackground(device, bgColor, thisLastAbsPos, thisLast_x, thisLast_y, print_pos_x, print_pos_y, radius,0);
 	device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), thisLastAbsPos,0 );
@@ -806,7 +806,8 @@ void SEC_segment::prepare_paint(SEC_helix_strand *previous_strand_pointer, doubl
     angle_step = dif_angle / (base_count+1);
 }
 
-static int inline cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
+
+inline int cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
     if (cursor==abs_pos) {
         return 1;
     }
@@ -820,9 +821,9 @@ static int inline cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
     }
     else if (abs_pos<last_abs_pos && (last_abs_pos-abs_pos>5000 /* yes it's a hack ;-) */)) {
         // last_abs_pos is short before end of sequence, abs_pos is short after start of sequence
-	
+
       if (cursor<abs_pos) {
-	return 1;
+          return 1;
       }
     }
 
@@ -832,7 +833,7 @@ static int inline cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
 void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_pointer) {
     double angle_step, radius, eta, gamma;
     int base_count;
-    
+
     prepare_paint(previous_strand_pointer, gamma, eta, radius, base_count, angle_step);
 
     //    int cursor = root->get_cursor();
@@ -858,16 +859,16 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     const char *bgColor = 0;//, *bgColorLastSeg = 0;
 
     if(seqStart<seqEnd)  bgColor = root->getSearchResults(seqStart-1, seqEnd);
-    else {                   
+    else {
 	int tempSeqEnd = root->get_max_index()+1;
 	if(tempSeqEnd>(seqStart-1)) bgColor  = root->getSearchResults(seqStart-1, tempSeqEnd);
 	//	bgColorLastSeg   = root->getSearchResults(1,seqEnd);
     }
-    
-    int lastSearchColor = 0; 
+
+    int lastSearchColor = 0;
     if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]) lastSearchColor = bgColor[seqStart-1] - COLORLINK;
 
-    char helixStartBase[2], helixEndBase[2]; 
+    char helixStartBase[2], helixEndBase[2];
     helixStartBase[0] = helixStartBase[1] = 0;
     helixEndBase[0]   = helixEndBase[1]   = 0;
 
@@ -899,14 +900,14 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
 	    }while(root->sequence[tempAbsPos] == '-'|| root->sequence[tempAbsPos] == '.');
 	}
 
-	// this repaints the start base of the loop infact the end base of helix and paints the search background 
+	// this repaints the start base of the loop infact the end base of helix and paints the search background
 	if(lastSearchColor){
 	    root->paintSearchBackground(device, bgColor, abs_pos,start_x,start_y,next_x, next_y, circleRadius,1);
 	    device->text(SEC_GC_HELIX, helixEndBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)(previous_strand_pointer)),0,0 );
 	    root->announce_base_position(abs_pos, start_x,start_y-font_height2);
 	    lastSearchColor = 0;
 	}
-	
+
 	// this paints the actual bases in the loop
 	root->paintSearchBackground(device, bgColor, abs_pos,next_x, next_y, nextCircle_x, nextCircle_y, circleRadius,0);
 	device->text(SEC_GC_LOOP, buffer, next_x, next_y, 0.5, root->segment_filter, (AW_CL)((SEC_Base *)this),abs_pos, 0 );
@@ -923,7 +924,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
 	else helixStartBase[0]=0;
     }
     //this paints the first base of helix if search pattern is found
-    if(bgColor && bgColor[last_abs_pos+1] && helixStartBase[0]!='-'){	
+    if(bgColor && bgColor[last_abs_pos+1] && helixStartBase[0]!='-'){
 	device->text(SEC_GC_HELIX, helixStartBase, nextCircle_x, nextCircle_y, 0.5,root->helix_filter, (AW_CL)((SEC_Base *)(previous_strand_pointer)),(last_abs_pos+1),0 );
         root->announce_base_position(last_abs_pos+1, nextCircle_x, nextCircle_y-font_height2);
     }
@@ -974,12 +975,12 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 
     double radius     = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())*0.75;
 
-    const char *otherBgColor, *thisBgColor;    
+    const char *otherBgColor, *thisBgColor;
     char thisBgColor_buf[seqEnd-seqStart+1];
-    { 
+    {
 	const char *thisBgColor_tmp = root->getSearchResults(seqStart, seqEnd);
 	if (thisBgColor_tmp) {
-	    memcpy(thisBgColor_buf,thisBgColor_tmp+seqStart,seqEnd-seqStart+1);	    
+	    memcpy(thisBgColor_buf,thisBgColor_tmp+seqStart,seqEnd-seqStart+1);
 	    thisBgColor=thisBgColor_buf-seqStart;
 	}
 	else {
@@ -994,23 +995,23 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     for (int i=0,j=(max_base_count-1); i<max_base_count; i++,j--) {
         int this_abs_pos;
         int other_abs_pos;
-			    
-        if (region.abspos_array) this_abs_pos = region.abspos_array[i];     
+
+        if (region.abspos_array) this_abs_pos = region.abspos_array[i];
 	else 			 this_abs_pos = i+region.get_sequence_start();
-	
-	if (other_region.abspos_array) other_abs_pos = other_region.abspos_array[j];     
+
+	if (other_region.abspos_array) other_abs_pos = other_region.abspos_array[j];
 	else 			       other_abs_pos = other_region.get_sequence_end()-1-j;
-	
+
         int this_legal = this_abs_pos>=0 && i<this_base_count;
         int other_legal = other_abs_pos>=0 && j<other_base_count;
-	
+
 	double this_x  = attachp2_x + v[0]*this_db*i;
         double this_y  = attachp2_y + v[1]*this_db*i;
         double other_x;
         double other_y;
 
-	double nextCircleThis_x  ; if(i<max_base_count-1) nextCircleThis_x = attachp2_x + v[0]*this_db*(i+1); 
-	double nextCircleThis_y  ; if(i<max_base_count-1) nextCircleThis_y = attachp2_y + v[1]*this_db*(i+1); 
+	double nextCircleThis_x  ; if(i<max_base_count-1) nextCircleThis_x = attachp2_x + v[0]*this_db*(i+1);
+	double nextCircleThis_y  ; if(i<max_base_count-1) nextCircleThis_y = attachp2_y + v[1]*this_db*(i+1);
 	double nextCircleOther_x ;
 	double nextCircleOther_y ;
 
@@ -1028,7 +1029,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 
         this_buffer[0]  = (this_abs_pos>=0  && this_abs_pos<root->sequence_length)  ? root->sequence[this_abs_pos]  : '.';
         other_buffer[0] = (other_abs_pos>=0 && other_abs_pos<root->sequence_length) ? root->sequence[other_abs_pos] : '.';
-	
+
 	if(i==0){
 	    thisBaseColor  = SEC_GC_HELIX; thisLastAbsPos  = this_abs_pos;  thisBase[0]  = this_buffer[0];  thisLast_x  = this_x;  thisLast_y  = this_y;
 	    otherBaseColor = SEC_GC_HELIX; otherLastAbsPos = other_abs_pos; otherBase[0] = other_buffer[0]; otherLast_x = other_x; otherLast_y = other_y;
@@ -1047,7 +1048,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 		thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
 		root->announce_base_position(this_abs_pos, this_x, this_y-font_height2);
             }
-	} 
+	}
 
 	if (other_legal) {
             if (root->helix && root->helix->entries[other_abs_pos].pair_type==HELIX_NONE) {

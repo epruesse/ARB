@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Sun Dec/09/2001 13:56 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/21/2002 14:07 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1307,7 +1307,7 @@ static InputMaskList                    input_mask_list;
 //  ---------------------------------------------------------------------------------
 //      static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask)
 //  ---------------------------------------------------------------------------------
-static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask) {
+static void awt_input_mask_awar_changed_cb(AW_root */*root*/, AW_CL cl_mask) {
     awt_input_mask *mask = (awt_input_mask*)(cl_mask);
     mask->relink();
 }

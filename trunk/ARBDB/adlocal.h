@@ -13,12 +13,20 @@
 #define MEMORY_TEST 0
 #endif
 
+#ifdef __cplusplus
+inline void ad_use(int, ...) {}
+#else
+void ad_use(int dummy, ...);
+#endif
+
+#define ADUSE(variable) ad_use(1, variable)
+
 #if (MEMORY_TEST==1)
 
 #define gbb_put_memblk(block,size)
 #define gbb_get_memblk(size)		(char*)(GB_calloc(1,size))
 #define gbm_get_mem(size,index)         (char*)(GB_calloc(1,size))
-#define gbm_free_mem(block,size,index)  free(block)
+#define gbm_free_mem(block,size,index) do { free(block); ADUSE(index); } while(0)
 #define fread(block,size,nelem,stream)  (memset(block,0,size*nelem),\
 					(fread)(block,size,nelem,stream))
 #endif

@@ -593,7 +593,7 @@ void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *sec, GB_CB_TYPE type)
 //  ---------------------------------------------------------
 // This is called when ... is set to a new value.
 // Reloads all column-specific stuff (helix, ecoli)
-static void SEC_alignment_length_changed(AW_root *awr) {
+static void SEC_alignment_length_changed(AW_root */*awr*/) {
     SEC_graphic *sec_graphic = SEC_GRAPHIC;
     sec_graphic->gb_struct = NULL;
     sec_graphic->gb_struct_ref = NULL;

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri May/10/2002 18:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/21/2002 14:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -59,7 +59,7 @@ void init_Advisor(AW_root *awr, AW_default def)
 // -------------------------
 
 #define AWT_ADVICE_LISTEN_DELAY 500
-static char *awt_advice_cb_result = 0;
+static const char *awt_advice_cb_result = 0;
 
 void awt_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
@@ -179,7 +179,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         //     aws->show_grabbed();
         aws->show();
 
-        char dummy[]         = "";
+        const char *dummy    = "";
         awt_advice_cb_result = dummy;
 
         advice_root->add_timed_callback(AWT_ADVICE_LISTEN_DELAY, awt_message_timer_listen_event, (AW_CL)aws, 0);

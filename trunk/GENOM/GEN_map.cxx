@@ -75,7 +75,7 @@ void GEN_create_genemap_awars(AW_root *aw_root,AW_default def) {
 //  --------------------------------------------------------------------------------------------------
 //      void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_gmw, GB_CB_TYPE gb_type)
 //  --------------------------------------------------------------------------------------------------
-void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_gmw, GB_CB_TYPE gb_type) {
+void GEN_gene_container_changed_cb(GBDATA */*gb_gene_data*/, int *cl_gmw, GB_CB_TYPE /*gb_type*/) {
     AWT_canvas *gmw = (AWT_canvas*)cl_gmw;
 
     GEN_GRAPHIC->delete_gen_root(gmw);
@@ -147,7 +147,7 @@ void GEN_gene_name_changed_cb(AW_root *awr, AWT_canvas *gmw) {
 //  -------------------------------------------------------------------------
 //      void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *gmw)
 //  -------------------------------------------------------------------------
-void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *gmw) {
+void GEN_display_param_changed_cb(AW_root */*awr*/, AWT_canvas *gmw) {
     gmw->zoom_reset();
     gmw->refresh();
 }
@@ -551,7 +551,7 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
 //  --------------------------------------------------------------------------------------------------
 //      static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL cl_user)
 //  --------------------------------------------------------------------------------------------------
-static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL cl_user) {
+static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL /*cl_user*/) {
     GEN_HIDE_MODE mode = (GEN_HIDE_MODE)imode;
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_species);
@@ -744,7 +744,7 @@ GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
 // cl_mark == 1 -> mark
 // cl_mark == 2 -> invert mark
 // cl_mark == 3 -> mark organisms, unmark rest
-static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
+static void mark_organisms(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
 
@@ -777,7 +777,7 @@ static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
 //  cl_mark == 2 -> invert mark
 //  cl_mark == 3 -> mark gene-species, unmark rest
 
-static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
+static void mark_gene_species(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
 
@@ -804,7 +804,7 @@ static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
 //  ----------------------------------------------------------------------------------------------
 //      static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL)
 //  ----------------------------------------------------------------------------------------------
-static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL) {
+static void mark_gene_species_of_marked_genes(AW_window */*aww*/, AW_CL cl_canvas, AW_CL) {
     GB_transaction dummy(gb_main);
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
@@ -827,7 +827,7 @@ static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, A
 //  ---------------------------------------------------------------------------------------------
 //      static void mark_organisms_with_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL)
 //  ---------------------------------------------------------------------------------------------
-static void mark_organisms_with_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL) {
+static void mark_organisms_with_marked_genes(AW_window */*aww*/, AW_CL cl_canvas, AW_CL) {
     GB_transaction dummy(gb_main);
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
@@ -850,7 +850,7 @@ static void mark_organisms_with_marked_genes(AW_window *aww, AW_CL cl_canvas, AW
 //  ------------------------------------------------------------------------------------------------------
 //      static void mark_gene_species_using_current_alignment(AW_window *aww, AW_CL cl_canvas, AW_CL)
 //  ------------------------------------------------------------------------------------------------------
-static void mark_gene_species_using_current_alignment(AW_window *aww, AW_CL cl_canvas, AW_CL) {
+static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL cl_canvas, AW_CL) {
     GB_transaction  dummy(gb_main);
     char           *ali = GBT_get_default_alignment(gb_main);
 
@@ -872,7 +872,7 @@ static void mark_gene_species_using_current_alignment(AW_window *aww, AW_CL cl_c
 //  ------------------------------------------------------------------------------------
 //      static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL)
 //  ------------------------------------------------------------------------------------
-static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL) {
+static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) {
     GB_transaction dummy(gb_main);
 
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
@@ -1194,7 +1194,7 @@ void GEN_create_hide_submenu(AW_window_menu_modes *awm) {
 //  ----------------------------------------------------------------------------------------
 //      void GEN_set_display_style(void *dummy, AWT_canvas *ntw, GEN_DisplayStyle type)
 //  ----------------------------------------------------------------------------------------
-void GEN_set_display_style(void *dummy, AWT_canvas *ntw, GEN_DisplayStyle type) {
+void GEN_set_display_style(void */*dummy*/, AWT_canvas *ntw, GEN_DisplayStyle type) {
     GEN_GRAPHIC->aw_root->awar(AWAR_GENMAP_DISPLAY_TYPE)->write_int(type);
     GEN_GRAPHIC->set_display_style(type);
     ntw->zoom_reset();

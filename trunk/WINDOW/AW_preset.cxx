@@ -420,8 +420,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                     *color++ = 0;
                 }
                 else {
-                    if (first) color = "white";
-                    else color = "navy";
+                    if (first) color = (char*)"white";
+                    else color = (char*)"navy";
                 }
 
                 gcmgr2 = new aw_gc_manager;
@@ -608,7 +608,7 @@ struct attached_window {
 //  ------------------------------------------------------------------------------------------------
 //      void AW_create_gc_color_groups_window(AW_window *aww, AW_CL cl_aw_root, AW_CL cl_gcmgr)
 //  ------------------------------------------------------------------------------------------------
-void AW_create_gc_color_groups_window(AW_window *aww, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
+void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_CL cl_gcmgr) {
     AW_root       *aw_root = (AW_root*)cl_aw_root;
     aw_gc_manager *gcmgr   = (aw_gc_manager*)cl_gcmgr;
 

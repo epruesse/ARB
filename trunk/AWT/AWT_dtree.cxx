@@ -953,8 +953,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
 
                 switch(button){
                     case AWT_M_LEFT:
-                        // Do not group any subtree
-                        if ( (!at->gr.grouped) && (!at->name)) break;
+                        if ( (!at->gr.grouped) && (!at->name)) {
+                            break; // not grouped and no name
+                        }
+
+                        if (at->is_leaf) break; // don't touch zombies
+
                         if (this->tree_static->gb_tree) {
                             this->create_group(at);
                         }

@@ -74,8 +74,8 @@ private:
     //
     // INTERNAL STUFF
     //
-    const static int FORWARD  =  1;
-    const static int BACKWARD = -1;
+    static const int FORWARD  =  1;
+    static const int BACKWARD = -1;
 
     // primertrees
     Node* root1;
@@ -129,10 +129,10 @@ public:
     const char       *get_result( int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length ) const; // return 0 if no more results (primers is set to "leftPrimer,rightPrimer")
 
 public:
-    const static int PRINT_RAW_TREES     = 1;
-    const static int PRINT_MATCHED_TREES = 2;
-    const static int PRINT_PRIMER_LISTS  = 4;
-    const static int PRINT_PRIMER_PAIRS  = 8;
+    static const int PRINT_RAW_TREES     = 1;
+    static const int PRINT_MATCHED_TREES = 2;
+    static const int PRINT_PRIMER_LISTS  = 4;
+    static const int PRINT_PRIMER_PAIRS  = 8;
 
 private:
     void             init               ( const char *sequence_, long int seqLength_, Range pos1_, Range pos2_, Range length_, Range distance_, Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );

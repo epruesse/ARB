@@ -177,622 +177,638 @@ depend:
 
 ../../bin/Dpstree.o: protml.h molphy.h 
 ../../bin/Dpstree.o:  
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o:  
-../../bin/Dpstree.o:  
-../../bin/Dpstree.o:  
-../../bin/Dpstree.o:  
-../../bin/Dpstree.o:  
+../../bin/Dpstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o:  
 ../../bin/Dpstree.o: 
-../../bin/Dpstree.o: 
-../../bin/Dpstree.o: 
-../../bin/Dpstree.o:  matrixut.h
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Dpstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Dpstree.o:   matrixut.h
 ../../bin/Ndistan.o: protml.h molphy.h 
 ../../bin/Ndistan.o:  
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o:  
-../../bin/Ndistan.o:  
-../../bin/Ndistan.o:  
-../../bin/Ndistan.o:  
-../../bin/Ndistan.o:  
+../../bin/Ndistan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o:  
 ../../bin/Ndistan.o: 
-../../bin/Ndistan.o: 
-../../bin/Ndistan.o: 
-../../bin/Ndistan.o:  matrixut.h
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Ndistan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Ndistan.o:   matrixut.h
 ../../bin/Njdist.o: tridist.h molphy.h 
 ../../bin/Njdist.o:  
+../../bin/Njdist.o: 
+../../bin/Njdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
-../../bin/Njdist.o:  
-../../bin/Njdist.o:  
-../../bin/Njdist.o:  
+../../bin/Njdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o:  
 ../../bin/Njdist.o: 
-../../bin/Njdist.o:  
-../../bin/Njdist.o:  matrixut.h
+../../bin/Njdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Njdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Njdist.o:   matrixut.h
 ../../bin/Nmlklhd.o: protml.h molphy.h 
 ../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o:  
-../../bin/Nmlklhd.o:  
-../../bin/Nmlklhd.o:  
-../../bin/Nmlklhd.o:  
-../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o:  
 ../../bin/Nmlklhd.o: 
-../../bin/Nmlklhd.o: 
-../../bin/Nmlklhd.o: 
-../../bin/Nmlklhd.o:  matrixut.h
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Nmlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Nmlklhd.o:   matrixut.h
 ../../bin/Nseqstat.o: protst.h molphy.h 
 ../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o:  
-../../bin/Nseqstat.o:  
-../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o:  
 ../../bin/Nseqstat.o: 
-../../bin/Nseqstat.o: 
 ../../bin/Nseqstat.o:  
-../../bin/Nseqstat.o: 
-../../bin/Nseqstat.o: 
-../../bin/Nseqstat.o: 
-../../bin/Nseqstat.o:  matrixut.h
+../../bin/Nseqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Nseqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Nseqstat.o:   matrixut.h
 ../../bin/Ntranprb.o: protml.h molphy.h 
 ../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o:  
-../../bin/Ntranprb.o:  
-../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o:  
 ../../bin/Ntranprb.o: 
-../../bin/Ntranprb.o: 
 ../../bin/Ntranprb.o:  
-../../bin/Ntranprb.o: 
-../../bin/Ntranprb.o: 
-../../bin/Ntranprb.o: 
-../../bin/Ntranprb.o:  matrixut.h
+../../bin/Ntranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Ntranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Ntranprb.o:   matrixut.h
 ../../bin/Nucml.o: protml.h molphy.h 
 ../../bin/Nucml.o:  
+../../bin/Nucml.o: 
+../../bin/Nucml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
-../../bin/Nucml.o:  
-../../bin/Nucml.o:  
-../../bin/Nucml.o:  
+../../bin/Nucml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o:  
 ../../bin/Nucml.o: 
-../../bin/Nucml.o:  
-../../bin/Nucml.o:  matrixut.h
+../../bin/Nucml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Nucml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Nucml.o:   matrixut.h
 ../../bin/Nucst.o: protst.h molphy.h 
 ../../bin/Nucst.o:  
+../../bin/Nucst.o: 
+../../bin/Nucst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
-../../bin/Nucst.o:  
-../../bin/Nucst.o:  
-../../bin/Nucst.o:  
+../../bin/Nucst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o:  
 ../../bin/Nucst.o: 
-../../bin/Nucst.o:  
-../../bin/Nucst.o:  matrixut.h
+../../bin/Nucst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Nucst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Nucst.o:   matrixut.h
 ../../bin/Nuctpm.o: protml.h molphy.h 
 ../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
-../../bin/Nuctpm.o:  
-../../bin/Nuctpm.o:  
-../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o:  
 ../../bin/Nuctpm.o: 
-../../bin/Nuctpm.o:  
-../../bin/Nuctpm.o:  matrixut.h
+../../bin/Nuctpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Nuctpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Nuctpm.o:   matrixut.h
 ../../bin/Prottpm.o: protml.h molphy.h 
 ../../bin/Prottpm.o:  
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o:  
-../../bin/Prottpm.o:  
-../../bin/Prottpm.o:  
-../../bin/Prottpm.o:  
-../../bin/Prottpm.o:  
+../../bin/Prottpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o:  
 ../../bin/Prottpm.o: 
-../../bin/Prottpm.o: 
-../../bin/Prottpm.o: 
-../../bin/Prottpm.o:  matrixut.h
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/Prottpm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/Prottpm.o:   matrixut.h
 ../../bin/altree.o: protml.h molphy.h 
 ../../bin/altree.o:  
+../../bin/altree.o: 
+../../bin/altree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/altree.o:  
 ../../bin/altree.o:  
 ../../bin/altree.o:  
-../../bin/altree.o:  
-../../bin/altree.o:  
-../../bin/altree.o:  
+../../bin/altree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/altree.o:  
 ../../bin/altree.o:  
 ../../bin/altree.o:  
 ../../bin/altree.o:  
 ../../bin/altree.o:  
 ../../bin/altree.o: 
-../../bin/altree.o:  
-../../bin/altree.o:  matrixut.h
+../../bin/altree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/altree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/altree.o:   matrixut.h
 ../../bin/distan.o: protml.h molphy.h 
 ../../bin/distan.o:  
+../../bin/distan.o: 
+../../bin/distan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/distan.o:  
 ../../bin/distan.o:  
 ../../bin/distan.o:  
-../../bin/distan.o:  
-../../bin/distan.o:  
-../../bin/distan.o:  
+../../bin/distan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/distan.o:  
 ../../bin/distan.o:  
 ../../bin/distan.o:  
 ../../bin/distan.o:  
 ../../bin/distan.o:  
 ../../bin/distan.o: 
-../../bin/distan.o:  
-../../bin/distan.o:  matrixut.h
+../../bin/distan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/distan.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/distan.o:   matrixut.h
 ../../bin/distproc.o: tridist.h molphy.h 
 ../../bin/distproc.o:  
+../../bin/distproc.o: 
+../../bin/distproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/distproc.o:  
 ../../bin/distproc.o:  
 ../../bin/distproc.o:  
-../../bin/distproc.o:  
-../../bin/distproc.o:  
+../../bin/distproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/distproc.o:  
 ../../bin/distproc.o:  
 ../../bin/distproc.o:  
 ../../bin/distproc.o:  
 ../../bin/distproc.o: 
-../../bin/distproc.o: 
 ../../bin/distproc.o:  
-../../bin/distproc.o: 
-../../bin/distproc.o: 
-../../bin/distproc.o: 
-../../bin/distproc.o:  matrixut.h
+../../bin/distproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/distproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/distproc.o:   matrixut.h
 ../../bin/dyhfjtt.o: protml.h molphy.h 
 ../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o:  
-../../bin/dyhfjtt.o:  
-../../bin/dyhfjtt.o:  
-../../bin/dyhfjtt.o:  
-../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o:  
 ../../bin/dyhfjtt.o: 
-../../bin/dyhfjtt.o: 
-../../bin/dyhfjtt.o: 
-../../bin/dyhfjtt.o:  matrixut.h
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/dyhfjtt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/dyhfjtt.o:   matrixut.h
 ../../bin/getseq.o: protml.h molphy.h 
 ../../bin/getseq.o:  
+../../bin/getseq.o: 
+../../bin/getseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
-../../bin/getseq.o:  
-../../bin/getseq.o:  
-../../bin/getseq.o:  
+../../bin/getseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
 ../../bin/getseq.o:  
 ../../bin/getseq.o: 
-../../bin/getseq.o:  
-../../bin/getseq.o:  matrixut.h prot_tml.h
+../../bin/getseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/getseq.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/getseq.o:   matrixut.h
+../../bin/getseq.o: prot_tml.h
+../../bin/matrixut.o:  
+../../bin/matrixut.o:  
+../../bin/matrixut.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/matrixut.o:  
 ../../bin/matrixut.o:  
 ../../bin/matrixut.o:  
-../../bin/matrixut.o:  
-../../bin/matrixut.o: matrixut.h
+../../bin/matrixut.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
+../../bin/matrixut.o:  matrixut.h
 ../../bin/mlklhd.o: protml.h molphy.h 
 ../../bin/mlklhd.o:  
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
-../../bin/mlklhd.o:  
-../../bin/mlklhd.o:  
-../../bin/mlklhd.o:  
+../../bin/mlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o:  
 ../../bin/mlklhd.o: 
-../../bin/mlklhd.o:  
-../../bin/mlklhd.o:  matrixut.h
+../../bin/mlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/mlklhd.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/mlklhd.o:   matrixut.h
 ../../bin/mltree.o: protml.h molphy.h 
 ../../bin/mltree.o:  
+../../bin/mltree.o: 
+../../bin/mltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
-../../bin/mltree.o:  
-../../bin/mltree.o:  
-../../bin/mltree.o:  
+../../bin/mltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
 ../../bin/mltree.o:  
 ../../bin/mltree.o: 
-../../bin/mltree.o:  
-../../bin/mltree.o:  matrixut.h
+../../bin/mltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/mltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/mltree.o:   matrixut.h
 ../../bin/mtrev22.o: protml.h molphy.h 
 ../../bin/mtrev22.o:  
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o:  
-../../bin/mtrev22.o:  
-../../bin/mtrev22.o:  
-../../bin/mtrev22.o:  
-../../bin/mtrev22.o:  
+../../bin/mtrev22.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o:  
 ../../bin/mtrev22.o: 
-../../bin/mtrev22.o: 
-../../bin/mtrev22.o: 
-../../bin/mtrev22.o:  matrixut.h
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/mtrev22.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/mtrev22.o:   matrixut.h
 ../../bin/mtrev24.o: protml.h molphy.h 
 ../../bin/mtrev24.o:  
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o:  
-../../bin/mtrev24.o:  
-../../bin/mtrev24.o:  
-../../bin/mtrev24.o:  
-../../bin/mtrev24.o:  
+../../bin/mtrev24.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o:  
 ../../bin/mtrev24.o: 
-../../bin/mtrev24.o: 
-../../bin/mtrev24.o: 
-../../bin/mtrev24.o:  matrixut.h
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/mtrev24.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/mtrev24.o:   matrixut.h
 ../../bin/mygetopt.o: molphy.h  
 ../../bin/mygetopt.o:  
+../../bin/mygetopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o:  
-../../bin/mygetopt.o:  
-../../bin/mygetopt.o:  
+../../bin/mygetopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o:  
 ../../bin/mygetopt.o: 
 ../../bin/mygetopt.o:  
-../../bin/mygetopt.o: 
-../../bin/mygetopt.o: 
-../../bin/mygetopt.o: 
-../../bin/mygetopt.o: 
+../../bin/mygetopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/mygetopt.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/mygetopt.o:  
 ../../bin/njmtree.o: protml.h molphy.h 
 ../../bin/njmtree.o:  
+../../bin/njmtree.o: 
+../../bin/njmtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o:  
-../../bin/njmtree.o:  
-../../bin/njmtree.o:  
-../../bin/njmtree.o:  
-../../bin/njmtree.o:  
+../../bin/njmtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o:  
 ../../bin/njmtree.o: 
-../../bin/njmtree.o: 
-../../bin/njmtree.o: 
-../../bin/njmtree.o:  matrixut.h
+../../bin/njmtree.o:  
+../../bin/njmtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/njmtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/njmtree.o:   matrixut.h
 ../../bin/njproc.o: tridist.h molphy.h 
 ../../bin/njproc.o:  
+../../bin/njproc.o: 
+../../bin/njproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
-../../bin/njproc.o:  
-../../bin/njproc.o:  
-../../bin/njproc.o:  
+../../bin/njproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
 ../../bin/njproc.o:  
 ../../bin/njproc.o: 
-../../bin/njproc.o:  
-../../bin/njproc.o:  matrixut.h
+../../bin/njproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/njproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/njproc.o:   matrixut.h
 ../../bin/njtree.o: protml.h molphy.h 
 ../../bin/njtree.o:  
+../../bin/njtree.o: 
+../../bin/njtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
-../../bin/njtree.o:  
-../../bin/njtree.o:  
-../../bin/njtree.o:  
+../../bin/njtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
 ../../bin/njtree.o:  
 ../../bin/njtree.o: 
-../../bin/njtree.o:  
-../../bin/njtree.o:  matrixut.h
+../../bin/njtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/njtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/njtree.o:   matrixut.h
 ../../bin/nucproc.o: protml.h molphy.h 
 ../../bin/nucproc.o:  
+../../bin/nucproc.o: 
+../../bin/nucproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o:  
-../../bin/nucproc.o:  
-../../bin/nucproc.o:  
-../../bin/nucproc.o:  
-../../bin/nucproc.o:  
+../../bin/nucproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o:  
 ../../bin/nucproc.o: 
-../../bin/nucproc.o: 
-../../bin/nucproc.o: 
-../../bin/nucproc.o:  matrixut.h
+../../bin/nucproc.o:  
+../../bin/nucproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/nucproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/nucproc.o:   matrixut.h
 ../../bin/protml.o: protml.h molphy.h 
 ../../bin/protml.o:  
+../../bin/protml.o: 
+../../bin/protml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/protml.o:  
 ../../bin/protml.o:  
 ../../bin/protml.o:  
-../../bin/protml.o:  
-../../bin/protml.o:  
-../../bin/protml.o:  
+../../bin/protml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/protml.o:  
 ../../bin/protml.o:  
 ../../bin/protml.o:  
 ../../bin/protml.o:  
 ../../bin/protml.o:  
 ../../bin/protml.o: 
-../../bin/protml.o:  
-../../bin/protml.o:  matrixut.h
+../../bin/protml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/protml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/protml.o:   matrixut.h
 ../../bin/protproc.o: protml.h molphy.h 
 ../../bin/protproc.o:  
+../../bin/protproc.o: 
+../../bin/protproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/protproc.o:  
 ../../bin/protproc.o:  
 ../../bin/protproc.o:  
-../../bin/protproc.o:  
-../../bin/protproc.o:  
+../../bin/protproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/protproc.o:  
 ../../bin/protproc.o:  
 ../../bin/protproc.o:  
 ../../bin/protproc.o:  
 ../../bin/protproc.o: 
-../../bin/protproc.o: 
 ../../bin/protproc.o:  
-../../bin/protproc.o: 
-../../bin/protproc.o: 
-../../bin/protproc.o: 
-../../bin/protproc.o:  matrixut.h
+../../bin/protproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/protproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/protproc.o:   matrixut.h
 ../../bin/protst.o: protst.h molphy.h 
 ../../bin/protst.o:  
+../../bin/protst.o: 
+../../bin/protst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/protst.o:  
 ../../bin/protst.o:  
 ../../bin/protst.o:  
-../../bin/protst.o:  
-../../bin/protst.o:  
-../../bin/protst.o:  
+../../bin/protst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/protst.o:  
 ../../bin/protst.o:  
 ../../bin/protst.o:  
 ../../bin/protst.o:  
 ../../bin/protst.o:  
 ../../bin/protst.o: 
-../../bin/protst.o:  
-../../bin/protst.o:  matrixut.h
+../../bin/protst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/protst.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/protst.o:   matrixut.h
 ../../bin/prtree.o: protml.h molphy.h 
 ../../bin/prtree.o:  
+../../bin/prtree.o: 
+../../bin/prtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
-../../bin/prtree.o:  
-../../bin/prtree.o:  
-../../bin/prtree.o:  
+../../bin/prtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
 ../../bin/prtree.o:  
 ../../bin/prtree.o: 
-../../bin/prtree.o:  
-../../bin/prtree.o:  matrixut.h
+../../bin/prtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/prtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/prtree.o:   matrixut.h
 ../../bin/pstree.o: protml.h molphy.h 
 ../../bin/pstree.o:  
+../../bin/pstree.o: 
+../../bin/pstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
-../../bin/pstree.o:  
-../../bin/pstree.o:  
-../../bin/pstree.o:  
+../../bin/pstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
 ../../bin/pstree.o:  
 ../../bin/pstree.o: 
-../../bin/pstree.o:  
-../../bin/pstree.o:  matrixut.h
+../../bin/pstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/pstree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/pstree.o:   matrixut.h
 ../../bin/qltree.o: protml.h molphy.h 
 ../../bin/qltree.o:  
+../../bin/qltree.o: 
+../../bin/qltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
-../../bin/qltree.o:  
-../../bin/qltree.o:  
-../../bin/qltree.o:  
+../../bin/qltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
 ../../bin/qltree.o:  
 ../../bin/qltree.o: 
-../../bin/qltree.o:  
-../../bin/qltree.o:  matrixut.h
+../../bin/qltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/qltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/qltree.o:   matrixut.h
 ../../bin/seqproc.o: protml.h molphy.h 
 ../../bin/seqproc.o:  
+../../bin/seqproc.o: 
+../../bin/seqproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o:  
-../../bin/seqproc.o:  
-../../bin/seqproc.o:  
-../../bin/seqproc.o:  
-../../bin/seqproc.o:  
+../../bin/seqproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o:  
 ../../bin/seqproc.o: 
-../../bin/seqproc.o: 
-../../bin/seqproc.o: 
-../../bin/seqproc.o:  matrixut.h
+../../bin/seqproc.o:  
+../../bin/seqproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/seqproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/seqproc.o:   matrixut.h
 ../../bin/seqstat.o: protst.h molphy.h 
 ../../bin/seqstat.o:  
+../../bin/seqstat.o: 
+../../bin/seqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o:  
-../../bin/seqstat.o:  
-../../bin/seqstat.o:  
-../../bin/seqstat.o:  
-../../bin/seqstat.o:  
+../../bin/seqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o:  
 ../../bin/seqstat.o: 
-../../bin/seqstat.o: 
-../../bin/seqstat.o: 
-../../bin/seqstat.o:  matrixut.h
+../../bin/seqstat.o:  
+../../bin/seqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/seqstat.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/seqstat.o:   matrixut.h
 ../../bin/sltree.o: protml.h molphy.h 
 ../../bin/sltree.o:  
+../../bin/sltree.o: 
+../../bin/sltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
-../../bin/sltree.o:  
-../../bin/sltree.o:  
-../../bin/sltree.o:  
+../../bin/sltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
 ../../bin/sltree.o:  
 ../../bin/sltree.o: 
-../../bin/sltree.o:  
-../../bin/sltree.o:  matrixut.h
+../../bin/sltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/sltree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/sltree.o:   matrixut.h
 ../../bin/totalml.o: totalml.h molphy.h 
 ../../bin/totalml.o:  
+../../bin/totalml.o: 
+../../bin/totalml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/totalml.o:  
 ../../bin/totalml.o:  
 ../../bin/totalml.o:  
-../../bin/totalml.o:  
-../../bin/totalml.o:  
-../../bin/totalml.o:  
-../../bin/totalml.o:  
+../../bin/totalml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/totalml.o:  
 ../../bin/totalml.o:  
 ../../bin/totalml.o:  
 ../../bin/totalml.o:  
 ../../bin/totalml.o: 
-../../bin/totalml.o: 
-../../bin/totalml.o: 
-../../bin/totalml.o:  matrixut.h
+../../bin/totalml.o:  
+../../bin/totalml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/totalml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/totalml.o:   matrixut.h
 ../../bin/tranprb.o: protml.h molphy.h 
 ../../bin/tranprb.o:  
+../../bin/tranprb.o: 
+../../bin/tranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o:  
-../../bin/tranprb.o:  
-../../bin/tranprb.o:  
-../../bin/tranprb.o:  
-../../bin/tranprb.o:  
+../../bin/tranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o:  
 ../../bin/tranprb.o: 
-../../bin/tranprb.o: 
-../../bin/tranprb.o: 
-../../bin/tranprb.o:  matrixut.h
+../../bin/tranprb.o:  
+../../bin/tranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/tranprb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/tranprb.o:   matrixut.h
 ../../bin/tridist.o: tridist.h molphy.h 
 ../../bin/tridist.o:  
+../../bin/tridist.o: 
+../../bin/tridist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/tridist.o:  
 ../../bin/tridist.o:  
 ../../bin/tridist.o:  
-../../bin/tridist.o:  
-../../bin/tridist.o:  
-../../bin/tridist.o:  
-../../bin/tridist.o:  
+../../bin/tridist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/tridist.o:  
 ../../bin/tridist.o:  
 ../../bin/tridist.o:  
 ../../bin/tridist.o:  
 ../../bin/tridist.o: 
-../../bin/tridist.o: 
-../../bin/tridist.o: 
-../../bin/tridist.o:  matrixut.h
+../../bin/tridist.o:  
+../../bin/tridist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/tridist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/tridist.o:   matrixut.h
 ../../bin/triproc.o: tridist.h molphy.h 
 ../../bin/triproc.o:  
+../../bin/triproc.o: 
+../../bin/triproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
 ../../bin/triproc.o:  
 ../../bin/triproc.o:  
 ../../bin/triproc.o:  
-../../bin/triproc.o:  
-../../bin/triproc.o:  
-../../bin/triproc.o:  
-../../bin/triproc.o:  
+../../bin/triproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
 ../../bin/triproc.o:  
 ../../bin/triproc.o:  
 ../../bin/triproc.o:  
 ../../bin/triproc.o:  
 ../../bin/triproc.o: 
-../../bin/triproc.o: 
-../../bin/triproc.o: 
-../../bin/triproc.o:  matrixut.h
+../../bin/triproc.o:  
+../../bin/triproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/limits.h
+../../bin/triproc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/float.h
+../../bin/triproc.o:   matrixut.h

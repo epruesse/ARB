@@ -116,7 +116,7 @@ inline char *                           GB_EXTERN_DATA_DATA(struct gb_extern_dat
 #define GBCONTAINER_IFS(gbc)			GB_RESOLVE(struct gb_index_files_struct *,gbc,rel_ifs)
 #define GB_EXTERN_DATA_DATA(ex)			GB_RESOLVE(char*,(&(ex)),rel_data)
 
-#endif 
+#endif
 
 /* -------------------------------------------------------------------------------- */
 
@@ -136,9 +136,9 @@ inline void SET_GB_EXTERN_DATA_DATA(struct gb_extern_data& ex, char *data)      
 # define SET_GB_HEADER_LIST_GBD(hl,gbd) 		    GB_SETREL((&(hl)),rel_hl_gbd,gbd)
 # define SET_GB_DATA_LIST_HEADER(dl,head) 	        GB_SETREL((&(dl)),rel_header,head)
 # define SET_GB_IF_ENTRIES_NEXT(ie,next) 	        GB_SETREL(ie,rel_ie_next,next)
-# define SET_GB_IF_ENTRIES_GBD(ie,gbd) 		        GB_SETREL(ie,rel_ie_gbd,gbd) 
+# define SET_GB_IF_ENTRIES_GBD(ie,gbd) 		        GB_SETREL(ie,rel_ie_gbd,gbd)
 # define SET_GB_INDEX_FILES_NEXT(if,next) 	        GB_SETREL(if,rel_if_next,next)
-# define SET_GB_INDEX_FILES_ENTRIES(if,entries) 	GB_SETREL(if,rel_entries,entries) 
+# define SET_GB_INDEX_FILES_ENTRIES(if,entries) 	GB_SETREL(if,rel_entries,entries)
 # define SET_GBCONTAINER_IFS(gbc,ifs)		        GB_SETREL(gbc,rel_ifs,ifs)
 # define SET_GB_EXTERN_DATA_DATA(ex,data)	        GB_SETREL((&(ex)),rel_data,data)
 
@@ -149,17 +149,17 @@ inline void SET_GB_EXTERN_DATA_DATA(struct gb_extern_data& ex, char *data)      
 #ifdef __cplusplus
 
 inline GBCONTAINER* GB_FATHER(GBDATA *gbd)                                  { return GB_RESOLVE(struct gb_data_base_type2 *,gbd,rel_father); }
-inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                             { return GB_RESOLVE(struct gb_data_base_type2 *,gbc,rel_father); } 
+inline GBCONTAINER* GB_FATHER(GBCONTAINER *gbc)                             { return GB_RESOLVE(struct gb_data_base_type2 *,gbc,rel_father); }
 inline void SET_GB_FATHER(GBDATA *gbd, GBCONTAINER *father)                 { GB_SETREL(gbd, rel_father, father); }
 inline void SET_GB_FATHER(GBCONTAINER *gbc, GBCONTAINER *father)            { GB_SETREL(gbc, rel_father, father); }
 
-inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                                 { return GB_FATHER(GB_FATHER(gbd)); } 
+inline GBCONTAINER* GB_GRANDPA(GBDATA *gbd)                                 { return GB_FATHER(GB_FATHER(gbd)); }
 
 inline GBDATA *EXISTING_GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx)          { return GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx]); }
-inline GBDATA *GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx)                   { if (idx<gbc->d.nheader) return EXISTING_GBCONTAINER_ELEM(gbc, idx); return (GBDATA*)0; } 
+inline GBDATA *GBCONTAINER_ELEM(GBCONTAINER *gbc,int idx)                   { if (idx<gbc->d.nheader) return EXISTING_GBCONTAINER_ELEM(gbc, idx); return (GBDATA*)0; }
 inline void SET_GBCONTAINER_ELEM(GBCONTAINER *gbc, int idx, GBDATA *gbd)    { SET_GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER(gbc->d)[idx], gbd); }
 
-inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc)                     { return gb_main_array[(gbc->main_idx) % GB_MAIN_ARRAY_SIZE]; } 
+inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc)                     { return gb_main_array[(gbc->main_idx) % GB_MAIN_ARRAY_SIZE]; }
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)                                   { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)                              { return GBCONTAINER_MAIN(gbc); }
 
@@ -171,17 +171,17 @@ inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)                              { re
 # define GB_GRANDPA(gbd)				    GB_FATHER(GB_FATHER(gbd))
 
 # define EXISTING_GBCONTAINER_ELEM(gbc,idx)	(GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx]))
-# define GBCONTAINER_ELEM(gbc,idx)		    ((struct gb_data_base_type *)((idx)<(gbc)->d.nheader ? EXISTING_GBCONTAINER_ELEM(gbc, idx) : NULL)) 
-# define SET_GBCONTAINER_ELEM(gbc,idx,gbd)	SET_GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx],gbd) 
+# define GBCONTAINER_ELEM(gbc,idx)		    ((struct gb_data_base_type *)((idx)<(gbc)->d.nheader ? EXISTING_GBCONTAINER_ELEM(gbc, idx) : NULL))
+# define SET_GBCONTAINER_ELEM(gbc,idx,gbd)	SET_GB_HEADER_LIST_GBD(GB_DATA_LIST_HEADER((gbc)->d)[idx],gbd)
 
-# define GBCONTAINER_MAIN(gbc)    		    gb_main_array[((gbc)->main_idx) % GB_MAIN_ARRAY_SIZE] 
+# define GBCONTAINER_MAIN(gbc)    		    gb_main_array[((gbc)->main_idx) % GB_MAIN_ARRAY_SIZE]
 # define GB_MAIN(gbd) 		                GBCONTAINER_MAIN(GB_FATHER(gbd))
- 
+
 #endif
 
 /********************* SOME FLAGS ******************/
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 
 inline int GB_KEY_QUARK(GBDATA *gbd)                        { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags.key_quark; }
 inline char *GB_KEY(GBDATA *gbd)                            { return GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key; }
@@ -205,7 +205,7 @@ inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc)    { return GB_DATA_LIS
 
 /********************* INDEX ******************/
 
-# define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index) 
+# define GB_GBM_INDEX(gbd) ((gbd)->flags2.gbm_index)
 
 #ifdef __cplusplus
 
@@ -214,7 +214,7 @@ inline long GB_GBD_2_GBMINDEX(GBDATA *gbd)                          { return GB_
 
 #else
 
-# define GB_QUARK_2_GBMINDEX(Main,key_quark)        (((Main)->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : (key_quark)) 
+# define GB_QUARK_2_GBMINDEX(Main,key_quark)        (((Main)->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : (key_quark))
 # define GB_GBD_2_GBMINDEX(gbd)                     GB_QUARK_2_GBMINDEX(GB_MAIN(gbd), GB_KEY_QUARK(gbd))
 
 #endif
@@ -229,7 +229,7 @@ inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
     if (!GB_MAIN(gbd)->transaction) {
 	    GB_internal_error("no running transaction\ncall GB_begin_transaction(GBDATA *)\n");
 	    GB_CORE;
-    } 
+    }
 }
 
 #else
@@ -374,7 +374,7 @@ do {                                                                \
         }                                                           \
     }                                                               \
 }while(0)
-    
+
 #endif
 
 /********************* DATA ACCESS  ******************/
@@ -409,7 +409,7 @@ inline void GB_FREE_TRANSACTION_SAVE(GBDATA *gbd) {
     if (gbd->ext && gbd->ext->old) {
         gb_del_ref_gb_transaction_save(gbd->ext->old);
         gbd->ext->old = NULL;
-    } 
+    }
 }
 
 /* frees local data */
@@ -429,7 +429,7 @@ do {                                                        \
         gb_del_ref_gb_transaction_save((gbd)->ext->old);    \
         (gbd)->ext->old = NULL;                             \
     }                                                       \
-} while(0) 
+} while(0)
 
 /* frees local data */
 #define GB_FREEDATA(gbd)                                                                                        \
@@ -440,8 +440,8 @@ do {                                                                            
         SET_GB_EXTERN_DATA_DATA((gbd)->info.ex,0);                                                              \
     }                                                                                                           \
 } while(0)
-    
-#endif    
+
+#endif
 
 #ifdef __cplusplus
 
@@ -475,7 +475,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
         gbd->info.istr.size = (unsigned char)siz;
         gbd->info.istr.memsize = (unsigned char)memsiz;
     }
-    GB_INDEX_CHECK_IN(gbd); 
+    GB_INDEX_CHECK_IN(gbd);
 }
 
 inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
@@ -535,15 +535,15 @@ do {                                                                            
 	/** 	copy all info + external data mem
 		to an one step undo buffer (to abort a transaction */
 
-#endif        
-        
+#endif
+
 /********************* UNDO  ******************/
 
 #ifdef __cplusplus
 
 inline void _GB_CHECK_IN_UNDO_DELETE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 	if (Main->undo_type) gb_check_in_undo_delete(Main,gbd,0);
-	else gb_delete_entry(gbd);                                  
+	else gb_delete_entry(gbd);
 }
 inline void _GB_CHECK_IN_UNDO_CREATE(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 	if (Main->undo_type) gb_check_in_undo_create(Main,gbd);
@@ -552,8 +552,8 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 	if (Main->undo_type) gb_check_in_undo_modify(Main,gbd);
 }
 inline void STATIC_BUFFER(char*& strvar, int minlen) {
-    if (strvar && (long)strlen(strvar) < (minlen-1)) { free((void*)(strvar)); strvar=NULL; }    
-    if (!strvar) strvar=(char*)GB_calloc(minlen,1);                                
+    if (strvar && (long)strlen(strvar) < (minlen-1)) { free((void*)(strvar)); strvar=NULL; }
+    if (!strvar) strvar=(char*)GB_calloc(minlen,1);
 }
 
 #else
