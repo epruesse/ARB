@@ -129,7 +129,7 @@ void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_f
     for (gb_table = GBT_first_table(cbs->gb_main);
          gb_table;
          gb_table = GBT_next_table(gb_table)){
-        
+
         GBDATA *gb_name = GB_find(gb_table,"name",0,down_level);
         GBDATA *gb_description = GB_search(gb_table,"description",GB_STRING);
         if (!gb_name) continue;
@@ -213,8 +213,8 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main,AW_window *aws,co
 // ******************** selection boxes on editor configurations ********************
 
 void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
-    AWUSE(dummy); 
- restart:    
+    AWUSE(dummy);
+ restart:
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_configuration_data = GB_search(cbs->gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
     GBDATA *gb_config;
@@ -223,7 +223,7 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
 	 gb_config = GB_find(gb_config,0,0,this_level | search_next))
     {
 	GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
-	if (!gb_name){		
+	if (!gb_name){
 	    aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
 	    gb_name = GB_create(gb_config, "name", GB_STRING);
 	    if (!gb_name) {
@@ -231,7 +231,7 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
 		GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
 						     "Do you like do delete the unnamed configuration?", err);
 		free(err);
-		
+
 		int del_config = 0==aw_message(question, "Yes,No");
 		if (del_config) {
 		    GB_delete(gb_config);
@@ -316,7 +316,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 	cbs->aws->update_selection_list( cbs->id );
 }
 
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname, 
+void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
 			char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
 			AW_BOOL add_sel_species)
 {
@@ -434,7 +434,7 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
     AW_root 	*aw_root 	= aww->get_root();
     char 	bfile_name[GB_PATH_MAX];
     GB_ERROR	error;
-    
+
     sprintf(bfile_name,"%s/file_name",basename);
 
     char *filename = aw_root->awar(bfile_name)->read_string();
@@ -442,9 +442,9 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
 
     if (error)
 	aw_message(error);
-    
+
     AW_POPDOWN(aww);
-    
+
     delete filename;
 }
 
@@ -455,7 +455,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     char filter[100];
 	char base_name[100];
 	sprintf(base_name,"tmp/load_box_sel_%li",(long)selid);
-	
+
     sprintf(file_name,"%s/file_name",base_name);
     aw_root->awar_string( file_name, "");
 
@@ -477,7 +477,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->highlight();
     aws->callback(AWT_load_list,selid,(AW_CL)strdup(base_name));
     aws->create_button("LOAD", "LOAD","L");
-	
+
     awt_create_selection_box((AW_window *)aws,base_name);
 	return (AW_window*) aws;
 }
@@ -493,23 +493,23 @@ void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid){
 
 
 /* ************************************************** */
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar, 
-                               void (*callback)(AW_window*), 
+AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
+                               void (*callback)(AW_window*),
                                AW_window* (*create_popup)(AW_root *, AW_default))
-    
+
     /*      You can either provide a normal callback or a create_popup-callback
      *      (the not-used callback has to be 0)
      */
-    
-    
+
+
 {
     char file_name[100];
     char directory[100];
     char filter[100];
 	char base_name[100];
-	
+
 	sprintf(base_name,"tmp/load_box_%s",load_what);
-    
+
     sprintf(file_name,"%s/file_name",base_name);
     aw_root->awar_string( file_name, "");
     if (set_file_name_awar) *set_file_name_awar = strdup(file_name);
@@ -534,11 +534,11 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"");
-	aws->create_button("HELP","HELP");			   
-    
+	aws->create_button("HELP","HELP");
+
     aws->at("go");
     aws->highlight();
-    
+
     if (callback) {
         aw_assert(!create_popup);
         aws->callback((AW_CB0)callback);
@@ -547,9 +547,9 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
         aw_assert(create_popup);
         aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_popup);
     }
-    
+
     aws->create_button("LOAD", "LOAD","L");
-	
+
     awt_create_selection_box((AW_window *)aws,base_name);
 	return (AW_window*) aws;
 }
@@ -575,8 +575,8 @@ void awt_edit(AW_root *awr, const char *path, int x, int y, const char *font){
 	char *path2 = GBS_eval_env(path);
 	const char *ae = getenv("ARB_TEXTEDIT");
 	if (!ae) ae = "textedit";
-	if (!strcmp(ae,"textedit")){
-	    sprintf(buffer, "textedit -Ws %i %i -font %s %s &",x,y,font,path2);	
+	if (strcmp(ae,"textedit")==0){
+	    sprintf(buffer, "textedit -Ws %i %i -font %s %s &",x,y,font,path2);
 	}else{
 	    sprintf(buffer, "%s %s &",ae,path2);
 	}
@@ -681,7 +681,7 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
 
     aws->at("edit");aws->callback(awt_edit_macro_cb);
     aws->create_button("EDIT", "EDIT");
-    
+
     aws->at("exec");aws->callback(awt_exec_macro_cb);
     aws->create_button("EXECUTE", "EXECUTE");
 

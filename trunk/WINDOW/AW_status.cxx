@@ -797,7 +797,8 @@ void aw_help_edit_help(AW_window *aww)
         printf("%s\n",buffer);
         system(buffer);
     }
-    sprintf(buffer,"textedit %s &", helpfile);
+
+    sprintf(buffer,"textedit %s &", helpfile); // we use textedit to edit help-files to ensure correct format
     printf("%s\n",buffer);
     system(buffer);
 
