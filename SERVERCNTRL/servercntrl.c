@@ -15,14 +15,14 @@ struct gl_struct {
     long             com;
 }               glservercntrl;
 
-GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int sleepval)
+GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
-    char           *tcp_id;
-    char           *server;
-    char           *file;
-    char           *host;
-    char           *p;
-    char            command[1024];
+    char *tcp_id;
+    char *server;
+    char *file;
+    char *host;
+    char *p;
+    char  command[1024];
 
     if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
         return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
@@ -39,8 +39,9 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int sleepval)
         if (!gbmain || GBCMC_system(gbmain,command)){
             system(command);
         }
-        sleep(sleepval*4);
-    } else {
+        if (do_sleep) sleep(4);
+    }
+    else {
         host = strdup(tcp_id);
         p = strchr(host, ':');
         if (!p) {
@@ -49,29 +50,49 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int sleepval)
         *p = 0;
         if (GB_host_is_local(host)){
             sprintf(command,"%s %s -T%s &",server, file, tcp_id);
+#if defined(DEBUG)
+            printf("Contacting local host '%s' (cmd='%s')\n", host, command);
+#endif /* DEBUG */
         }else{
             sprintf(command,"rsh %s -n %s %s -T%s &",host, server, file, tcp_id);
+#if defined(DEBUG)
+            printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
+#endif /* DEBUG */
         }
         if (!gbmain || GBCMC_system(gbmain,command)){
             system(command);
         }
         free(host);
-        sleep(sleepval*16);
+        if (do_sleep) sleep(5); 
     }
     free(tcp_id);
     return 0;
 }
 
-int servercntrl_started;
+static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
+    serverctrl->link = aisc_open(tcp_id, &(serverctrl->com), magic_number);
+    if (!serverctrl->link) { // no server running -> start one
+        GB_ERROR error = arb_start_server(arb_tcp_env, gbmain, 0);
+        if (error) return error;
 
-GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain){
+        while (!serverctrl->link && wait) {
+            sleep(1);
+            wait--;
+            if ((wait%10) == 0 && wait>0) {
+                printf("Waiting for server '%s' to come up (%i seconds left)\n", arb_tcp_env, wait);
+            }
+            serverctrl->link  = aisc_open(tcp_id, &(serverctrl->com), magic_number);
+        }
+    }
 
-    int             mytry;
-    char           *tcp_id;
-    char           *server;
-    char           *file;
+    return 0;
+}
 
-    servercntrl_started = 0;
+GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain) {
+    char *tcp_id;
+    char *server;
+    char *file;
+
     if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
         return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
@@ -106,20 +127,18 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
         }
     }
 
-    for (glservercntrl.link = 0, mytry = 0; (!glservercntrl.link) && (mytry <= TRIES); mytry++) {
-        glservercntrl.link = (aisc_com *) aisc_open(tcp_id,&glservercntrl.com, (int)magic_number);
-        if ((mytry<TRIES)&&(!glservercntrl.link) ) {
-            GB_ERROR error = arb_start_server(arb_tcp_env,gbmain,1);
-            if (error) return error;
-            servercntrl_started = 1;
-        }
+    {
+        GB_ERROR error = arb_wait_for_server(arb_tcp_env, gbmain, tcp_id, magic_number, &glservercntrl, 20);
+        free(tcp_id);
+        if (error) return error;
     }
-    free(tcp_id);
+
     if (glservercntrl.link) {
         aisc_close(glservercntrl.link);
         glservercntrl.link = 0;
         return 0;
     }
+    
     return GB_export_error("I got some problems to start your server:\n"
                            "	Possible Reasons:\n"
                            "	- there is no database in $ARBHOME/lib/pts/*\n"
