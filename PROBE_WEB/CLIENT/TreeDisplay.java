@@ -462,6 +462,19 @@ public void resetRoot()
     }
 
 
+public void previousRoot()
+    {
+        vs = prevNode;
+//         System.out.println("TreeDisplay/goDown() was called");
+//         System.out.println("current node: " + vs);
+//         System.out.println("father node: " + vs.getFather());
+
+        newLayout = true;
+        repaint();
+    }
+
+
+
     // transform coordinates in TreeNode
 private TreeNode getClickedNode(int x, int y)
     {
