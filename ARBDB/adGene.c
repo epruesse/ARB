@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Tue Dec/16/2003 14:33 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Wed Feb/25/2004 16:29 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -15,36 +15,6 @@
 
 #include "adGene.h"
 #include "arbdbt.h"
-
-
-#ifdef DEVEL_IDP
-
-/* GBDATA *GBT_first_marked_gene_rel_species(GBDATA *gb_species) */
-/* { */
-/*   GBDATA *gene_data; */
-/*   gene_data = GB_find(gb_species,"gene_data",0,down_level); */
-/*   return GB_first_marked(gene_data,"gene"); */
-/* } */
-
-/* GBDATA *GBT_get_gene_data(GBDATA *gb_main) { */
-/*   return GB_search(gb_main,"gene_data",GB_CREATE_CONTAINER); */
-/* } */
-
-/* GBDATA *GBT_find_gene_rel_species(GBDATA *gb_species,const char *name) */
-/* { */
-
-/*     GBDATA *gb_gene_name; */
-/*     GBDATA *gb_gene_data; */
-/*     gb_gene_data = GB_find(gb_species,"gene_data",0,down_level); */
-/*     gb_gene_name = GB_find(gb_gene_data,"name",name,down_2_level); */
-/*     if (!gb_gene_name) return 0; */
-/*     return GB_get_father(gb_gene_name); */
-/* } */
-
-
-#endif
-
-
 
 //  --------------
 //      genes:
