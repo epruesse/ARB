@@ -15,6 +15,9 @@ private String        treeString;
 private String        baseurl;
 private HttpSubsystem webAccess;
 private GroupCache    groupCache;
+private String        members;
+private Vector        memberList;
+private HashMap       shortNameHash;
 
 private HashMap knownOptions()
      {
@@ -100,6 +103,8 @@ public static void main(String[] args)
             boolean reload_tree = cmdline.getOption("tree") && cmdline.getOptionValue("tree").equals("reload");
             cl.treeString       = readTree(cl.webAccess, reload_tree); // terminates on failure
             cl.root             = (new TreeParser(cl.treeString)).getRootNode();
+            cl.fillShortNameHash(cl.root);
+            System.out.println("Number of shortNameHash-entries: " + cl.shortNameHash.size());
         }
 
         if (cl.root == null)
@@ -120,6 +125,8 @@ public static void main(String[] args)
 public Client()
     {
         groupCache = new GroupCache();
+        memberList = new Vector();
+        shortNameHash = new HashMap();
     }
 
 public void saveConfig() // called at shutdown
@@ -153,8 +160,8 @@ public void matchProbes(String probeInfo) {
         }
         else {
             String groupId = probeInfo.substring(komma2+1);
-            String members = groupCache.getGroupMembers(webAccess, groupId, komma1);
-
+            members = groupCache.getGroupMembers(webAccess, groupId, komma1);
+            updateDetails(probeInfo,members);
             if (members == null) {
                 System.out.println("Error during probe match: "+groupCache.getError());
             }
@@ -164,7 +171,11 @@ public void matchProbes(String probeInfo) {
             }
         }
     }
-    if (needUpdate) display.getTreeDisplay().repaint();
+    if (needUpdate) 
+        {
+            display.getTreeDisplay().repaint();
+
+        }
     else System.out.println("Nothing changed");
 }
 
@@ -196,5 +207,80 @@ public void updateNodeInformation(String encodedPath)
             }
         }
     }
+
+
+    // should be grouped in separate class later on
+public void updateDetails (String probeInfo, String shortNames)
+    {
+        TextArea ta = display.getDetails();
+        ta.setText("");
+        int komma1 = probeInfo.indexOf(',');
+        int komma2 = probeInfo.indexOf(',', komma1+1);
+
+        if (komma1 == -1 || komma2 == -1) {
+            System.out.println("Kommas expected in '"+probeInfo+"'");
+        }
+        else
+            {
+                String probeSequenz = probeInfo.substring(0,komma1);
+                ta.append("Detailed hit list for probe: " + probeSequenz + "\n");
+                int tm = 0;
+                for (int i = 0; i < probeSequenz.length(); i ++)
+                    {
+                        tm = tm + ((probeSequenz.charAt(i) == 'A' || probeSequenz.charAt(i) == 'U') ? 2 : 4); // 2 + 4 rule
+                    }
+                ta.append("Melting temperature (2+4 rule):  " + tm+ "°C\n");
+                // GC content
+                int gc = 0;
+                for (int i = 0; i < probeSequenz.length(); i ++)
+                    {
+                        gc = gc + ((probeSequenz.charAt(i) == 'G' || probeSequenz.charAt(i) == 'C') ? 1: 0); 
+                    }
+                ta.append("%GC-Content:  " + (gc*100)/probeSequenz.length() + "%\n");
+
+                if (shortNames.length() != 0)
+                    {
+                        int komma = 0;
+                        int begin = 0;
+                        while (begin < shortNames.length())
+                            {
+                                komma = shortNames.indexOf(',', begin);
+                                if (komma == -1) komma = shortNames.length();
+                                String sn = shortNames.substring(begin,komma);
+                                String details;
+
+                                TreeNode ref = (TreeNode)shortNameHash.get(sn);
+                                details = ref.getFullName() + " , " + ref.getAccessionNumber() + "\n";
+                                ta.append(details);
+
+                                begin = komma + 1;
+                            }
+                    }
+
+                System.out.println("probeInfo:  " + probeInfo);
+                System.out.println("probe sequence: " + probeSequenz);
+
+
+
+            }
+    }
+
+
+public void fillShortNameHash(TreeNode node)
+    {
+        if (!node.testLeaf())
+            {
+                fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
+                fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
+            }
+        else
+            {
+                shortNameHash.put(node.getShortName(), node);
+            }
+
+
+    }
+
+
 }
 

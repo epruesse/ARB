@@ -209,12 +209,12 @@ public String getDisplayString() { // the string displayed in window
         result += getFullName()+", "+getAccessionNumber();
     }
     else {
-        if (groupName != null && groupName.length() != 0) {
-            if (result.length() != 0) {
-                result += " ";
-            }
-            result += groupName;
-        }
+//         if (groupName != null && groupName.length() != 0) {
+//             if (result.length() != 0) {
+//                 result += " ";
+//             }
+//             result += groupName;
+//        }
     }
 
     return result;

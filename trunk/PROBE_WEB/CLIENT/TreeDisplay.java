@@ -230,6 +230,8 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                     if (brclose != -1) {
                         info = info.substring(0, brclose+1); // cut rest after '[...]'
                         g.setColor(nic1); // and draw again in different color
+
+                        
                         g.drawString(info, x, y);
                     }
                 }
