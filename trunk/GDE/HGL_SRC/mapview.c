@@ -3,7 +3,7 @@
  *
  *  To compile:
  *
- *  cc -o mapview mapview.c HGLfuncs.c Alloc.c ChooseFile.c 
+ *  cc -o mapview mapview.c HGLfuncs.c Alloc.c ChooseFile.c
  *     -lxview -lolgx -lX11
  *
  ********************************/
@@ -14,6 +14,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
 #include <X11/keysym.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/canvas.h>
 #include <xview/panel.h>
@@ -139,7 +140,7 @@ main(argc, argv)
     char filename[128];
     FILE *fp;
     Rect *rect;
-    
+
     /* malloc_debug(2); */
 
     for(i = 1; i<argc; i++)
@@ -185,17 +186,17 @@ main(argc, argv)
     strcat(Csync_fname, ".Csync");
 */
     xv_init(XV_INIT_ARGS, argc, argv, NULL);
-    
-    frame = xv_create(XV_NULL, FRAME, 
+
+    frame = xv_create(XV_NULL, FRAME,
      FRAME_LABEL, "",
      FRAME_SHOW_FOOTER, TRUE,
      FRAME_LEFT_FOOTER,
      "Mouse location: Line =         Position =         Column =",
      FRAME_RIGHT_FOOTER, "Sequence:     ",
      NULL);
-    
+
     panel = (Panel) xv_create(frame, PANEL, NULL);
-    
+
     (void) xv_create(panel,PANEL_BUTTON,
 		     PANEL_LABEL_STRING, "Properties...",
 		     PANEL_NOTIFY_PROC, show_prop_frame,
@@ -205,12 +206,12 @@ main(argc, argv)
 		     PANEL_LABEL_STRING, "Load",
 		     PANEL_NOTIFY_PROC, Load,
 		     NULL);
-    
+
     (void) xv_create(panel,PANEL_BUTTON,
 		     PANEL_LABEL_STRING, "Exit",
 		     PANEL_NOTIFY_PROC, exit_proc,
 		     NULL);
-    
+
     window_fit_height(panel);
 
     cms = xv_create(NULL, CMS,
@@ -218,9 +219,9 @@ main(argc, argv)
 		    CMS_TYPE,  XV_DYNAMIC_CMS,
 		    CMS_COLORS, cms_colors,
 		    NULL);
-    
+
     canvas = (Canvas) xv_create(frame, CANVAS,
-				CANVAS_RETAINED,       FALSE, 
+				CANVAS_RETAINED,       FALSE,
 				CANVAS_X_PAINT_WINDOW, TRUE,
 				CANVAS_REPAINT_PROC,   canvas_repaint_proc,
 				CANVAS_RESIZE_PROC,    canvas_resize_proc,
@@ -230,11 +231,11 @@ main(argc, argv)
 				WIN_INHERIT_COLORS,    FALSE,
 				WIN_BELOW,             panel,
 				NULL);
-    
+
     h_scrollbar = (Scrollbar) xv_create(canvas, SCROLLBAR,
 		SCROLLBAR_DIRECTION, SCROLLBAR_HORIZONTAL,
 		/* SCROLLBAR_OVERSCROLL,0, */
-		SCROLLBAR_OBJECT_LENGTH, max_dots+margin, 
+		SCROLLBAR_OBJECT_LENGTH, max_dots+margin,
 		NULL);
 
     xv_set(canvas,
@@ -243,7 +244,7 @@ main(argc, argv)
 	   NULL);
 
     xv_set(canvas_paint_window(canvas),
-	   WIN_BIT_GRAVITY, ForgetGravity, 
+	   WIN_BIT_GRAVITY, ForgetGravity,
            WIN_CONSUME_EVENTS,
 	      MS_LEFT,
 	      WIN_RIGHT_KEYS,
@@ -253,7 +254,7 @@ main(argc, argv)
 	      NULL,
 	   WIN_EVENT_PROC,  footer_proc,
 	   NULL);
-    
+
     window_fit(canvas);
 
     prop_subframe = (Frame)xv_create(frame, FRAME_CMD,
@@ -262,7 +263,7 @@ main(argc, argv)
 
     panel = (Panel)xv_get(prop_subframe, FRAME_CMD_PANEL);
     (void) xv_set(panel, PANEL_LAYOUT, PANEL_VERTICAL,NULL);
-    
+
     scale_slider = (Panel_item) xv_create(panel, PANEL_SLIDER,
 		  PANEL_LABEL_STRING, "Nucleotides Per Pixel",
 		  PANEL_VALUE,     scale,
@@ -272,7 +273,7 @@ main(argc, argv)
 		  PANEL_TICKS, 5,
 		  PANEL_NOTIFY_PROC, scale_proc,
 		  NULL);
-    
+
     pbl_slider = (Panel_item) xv_create(panel, PANEL_SLIDER,
 		PANEL_LABEL_STRING, "Pixel Between Lines  ",
 		PANEL_VALUE,     pbl,
@@ -308,7 +309,7 @@ main(argc, argv)
                 PANEL_ITEM_MENU, color_menu,
 		XV_KEY_DATA, FILE_NAME, filename,
 		NULL);
-		
+
     (void) xv_create(panel,PANEL_CHOICE,
 		     PANEL_LABEL_STRING,   "Synchronization",
 		     PANEL_CHOICE_STRINGS, "No", "Yes", NULL,
@@ -321,18 +322,18 @@ main(argc, argv)
     window_fit(prop_subframe);
 
     colors = (unsigned long *)xv_get(canvas, WIN_X_COLOR_INDICES);
-    
+
     paint_win = (Xv_Window) canvas_paint_window(canvas);
     display = (Display *)xv_get(paint_win, XV_DISPLAY);
     xwin = (Window)xv_get(paint_win, XV_XID);
     gc = DefaultGC(display, DefaultScreen(display));
-    
+
     window_fit(frame);
 
     if (argc>1)
     {
 	xv_set(frame,FRAME_LABEL, filename, NULL);
-	
+
 	rect = (Rect *)xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
 	XClearArea(display, xwin,
 		   rect->r_left, rect->r_top,
@@ -346,7 +347,7 @@ main(argc, argv)
     }
 
 /*    line_p_page = (canvas_h -line_space + pbl/2) / line_space; */
-    
+
     xv_main_loop(frame);
 }
 
@@ -379,7 +380,7 @@ char *name_str;
 	fprintf(stderr,"File not found: %s\n", name_str);
 	exit(1);
     }
-    
+
     max_dots = 1000;
     mark_x = mark_y = 0;
 
@@ -401,7 +402,7 @@ char *name_str;
 	    info_max_size *= 2;
 	    info = (INFO *)Realloc(info, sizeof(INFO)*info_max_size);
 	}
-	strcpy(info[iSeq].name, tSeq->name); 
+	strcpy(info[iSeq].name, tSeq->name);
 
 	info[iSeq].direction = tSeq->direction;
 	info[iSeq].strandedness = tSeq->strandedness;
@@ -409,13 +410,13 @@ char *name_str;
 	info[iSeq].orig_direction = tSeq->orig_direction;
 	if(tSeq->orig_strand == 2)
 	  info[iSeq].orig_direction *= -1;
-	
+
 	min_offset = MIN(min_offset, tSeq->offset);
 	max_dots = MAX(max_dots, tSeq->offset+tSeq->seqlen);
 
 	if(info[iSeq].max_size == 0)
 	{
-	    info[iSeq].max_size = 8; 
+	    info[iSeq].max_size = 8;
 	    info[iSeq].dots=(int *)Calloc(info[iSeq].max_size*2,
 					  sizeof(int));
 	}
@@ -434,8 +435,8 @@ char *name_str;
 		if(iSeg == info[iSeq].max_size)
 		{
 		    info[iSeq].max_size *= 2;
-		    info[iSeq].dots = 
-		      (int *)Realloc(info[iSeq].dots, 
+		    info[iSeq].dots =
+		      (int *)Realloc(info[iSeq].dots,
 				     sizeof(int)*2*info[iSeq].max_size);
 		}
 	    }
@@ -446,7 +447,7 @@ char *name_str;
 	    }
 	    dot_cnt++;
 	}
-	
+
 	info[iSeq].size = iSeg;
 	iSeq++;
     }
@@ -465,15 +466,15 @@ char *name_str;
 	      POS2(info[iSeq].dots, iSeg, 1) -= min_offset;
 	  }
     }
-    
+
     XClearWindow(display, xwin);
     (void)xv_set(canvas_paint_window(canvas),
-		 XV_WIDTH, 
+		 XV_WIDTH,
 		 MAX((int)xv_get(canvas,XV_WIDTH),max_dots+margin),
 		 NULL);
     (void) xv_set(h_scrollbar,
-		  SCROLLBAR_OBJECT_LENGTH, 
-		       MAX((int)xv_get(canvas, XV_WIDTH), 
+		  SCROLLBAR_OBJECT_LENGTH,
+		       MAX((int)xv_get(canvas, XV_WIDTH),
 			   max_dots/scale+margin),
 
 		  SCROLLBAR_VIEW_START, 0,
@@ -485,7 +486,7 @@ char *name_str;
 
 
 
-canvas_repaint_proc(canvas,pw,display, xwin, xrects ) 
+canvas_repaint_proc(canvas,pw,display, xwin, xrects )
      Canvas canvas;
      Xv_Window pw;
      Display *display;
@@ -501,24 +502,24 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
     if(FROM_RESIZE == 'T')
     {
 	(void)xv_set(h_scrollbar,
-		     SCROLLBAR_OBJECT_LENGTH, 
+		     SCROLLBAR_OBJECT_LENGTH,
 		     MAX((int)xv_get(canvas,XV_WIDTH),
 			 max_dots/scale+margin),
 /**  XVIEW3 of DEC? :
-  This version of xview 
+  This version of xview
   1. calls resize_proc() when a scrollbar is clicked.
   2. automatically sets SCROLLBAR_VIEW_START to 0 when a resize_proc()
      is called.
   Therefore, the following action can't be used.
 
-		     SCROLLBAR_VIEW_START, 
+		     SCROLLBAR_VIEW_START,
 		     MAX(0, MIN(mark_x/scale - 100,
 				max_dots/scale+margin-
 				(int)xv_get(canvas, XV_WIDTH))),
 **/
 		     NULL);
 
-	(void)xv_set(paint_win,  XV_WIDTH, 
+	(void)xv_set(paint_win,  XV_WIDTH,
 		     MAX((int)xv_get(canvas,XV_WIDTH),
 			 max_dots/scale+margin),
 		     NULL);
@@ -534,14 +535,14 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 	rect=(Rect *)xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
 	drawarea_min_y = rect->r_top;
 	drawarea_max_y = drawarea_min_y + rect->r_height;
-    } 
+    }
     /* else: this is to redraw the cleared area.
-     * drawarea_min_y and drawarea_max_y have been set by 
+     * drawarea_min_y and drawarea_max_y have been set by
      * the caller procedure, so don't reset they.
      */
 
-    /* 
-     *  Set drawarea_min_x, drawarea_max_x. 
+    /*
+     *  Set drawarea_min_x, drawarea_max_x.
      */
 
     rect=(Rect *)xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
@@ -550,11 +551,11 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
     canvas_h = rect->r_height;
 
     y = 0;
-    
+
     for(iSeq = 0; iSeq<info_size; iSeq++)
     {
-	y = (y + 2*line_space - pbl/2 > canvas_h) ? 
-	  line_space : y + line_space; 
+	y = (y + 2*line_space - pbl/2 > canvas_h) ?
+	  line_space : y + line_space;
 
 	/*
 	if(info[iSeq].orig_strand == 1)
@@ -577,12 +578,12 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 		    POS2(info[iSeq].dots,
 			 info[iSeq].size -1, 1)/scale,y);
 	}
-	    
+
 	for(iSeg=0; iSeg<info[iSeq].size; iSeg++)
 	{
 	    head = POS2(info[iSeq].dots,iSeg,0)/scale;
 	    tail = POS2(info[iSeq].dots,iSeg,1)/scale;
-	    
+
 	    /****
 	    fprintf(stderr, "min_x=%d  max_x=%d  min_y=%d  max_y=%d  ",
 		    drawarea_min_x, drawarea_max_x,
@@ -598,7 +599,7 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 		for(i=0; i<lwidth; i++)
 		{
 
-		    XDrawLine(display, xwin, gc, 
+		    XDrawLine(display, xwin, gc,
 			      POS2(info[iSeq].dots,iSeg,0)/scale,y+i,
 			      POS2(info[iSeq].dots,iSeg,1)/scale,y+i);
 		}
@@ -616,7 +617,7 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
     }
     else
       clear_mark = 'F';
-    
+
     return XV_OK;
 }
 
@@ -634,8 +635,8 @@ footer_proc ( paint_win, event, arg )
     char buf[125];
     static int print_line = 1;
     int save_line, position, i, ii, iSeq, iSeg;
-    int  return_len=10;      
-    char return_str[10];     
+    int  return_len=10;
+    char return_str[10];
     KeySym keysym;
     XEvent *xevent;
     int save_mark_x = mark_x;
@@ -648,7 +649,7 @@ footer_proc ( paint_win, event, arg )
     FILE *Lsync_fp;
     char line[256];
     Rect *rect;
-    
+
     stat(Lsync_fname, &stbuf);
 
     if (event_id(event) == LOC_WINENTER)
@@ -673,7 +674,7 @@ footer_proc ( paint_win, event, arg )
 		    }
 		}
 		fclose(Lsync_fp);
-		
+
 		if(loc_name[0] == ' ' || loc_col == INT_MAX)
 		{
 		    fprintf(stderr, "Bad status file.\n");
@@ -686,7 +687,7 @@ footer_proc ( paint_win, event, arg )
 		    {
 			iSeq++;
 		    }
-		    
+
 		    if(iSeq == info_size)
 		    {
 			fprintf(stderr, "Sequence name for location-sync not found.\n");
@@ -696,14 +697,14 @@ footer_proc ( paint_win, event, arg )
 			mark_x = loc_col;
 			mark_y = (iSeq + 1) * line_space;
 			need_to_paint = 'T';
-			
+
 			rect = (Rect *)
 			  xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
-			
+
 			(void)xv_set(h_scrollbar,
-			    SCROLLBAR_VIEW_START, 
+			    SCROLLBAR_VIEW_START,
 			    MAX(0,MIN(mark_x/scale-rect->r_width/2,
-				      (int)xv_get(h_scrollbar, 
+				      (int)xv_get(h_scrollbar,
 						  SCROLLBAR_OBJECT_LENGTH)
 				      - (int)xv_get(canvas, XV_WIDTH))),
 				     NULL);
@@ -727,14 +728,14 @@ footer_proc ( paint_win, event, arg )
 	    }
 	    if(ii == 20)
 	    {
-		fprintf(stderr, "Can't open status file for updating: %s\n", 
+		fprintf(stderr, "Can't open status file for updating: %s\n",
 			Lsync_fname);
 	    }
 	    else
 	    {
 		char *temp_file;
 		int file_maxlen = 256, file_len = 0;
-		
+
 		temp_file = (char *)Calloc(file_maxlen, 1);
 		while(fgets(line, 256, Lsync_fp) != NULL)
 		{
@@ -744,10 +745,10 @@ footer_proc ( paint_win, event, arg )
 		    }
 		    else if(strncmp(line, "SeqID:", 6) == 0)
 		    {
-			sprintf(line, "SeqID:%s\n", 
+			sprintf(line, "SeqID:%s\n",
 				info[print_line-1].name);
 		    }
-		    
+
 		    file_len += strlen(line);
 		    if(file_len+1 >=file_maxlen)
 		    {
@@ -768,7 +769,7 @@ footer_proc ( paint_win, event, arg )
     {
 	if(event_action(event)==ACTION_SELECT)
 	{
-	    mark_x = event_x(event)*scale + 0.5*scale; 
+	    mark_x = event_x(event)*scale + 0.5*scale;
 	    mark_y = event_y(event);
 	    need_to_paint = 'T';
 	}
@@ -776,20 +777,20 @@ footer_proc ( paint_win, event, arg )
 		event_is_ascii(event))
 	{
 	    int return_int;
-	    
+
 	    return_int =  XLookupString(event->ie_xevent,/*not used */
 					return_str, /*not used*/
 					return_len, /*not used*/
 					&keysym,NULL );
-	    
+
 	    switch(keysym)
 	    {
 	      case XK_F31: /* center, key 5 on the right keyboard. */
 		rect = (Rect *)
 		  xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
-		
+
 		(void)xv_set(h_scrollbar,
-			     SCROLLBAR_VIEW_START, 
+			     SCROLLBAR_VIEW_START,
 			     MAX(0, MIN(mark_x/scale - rect->r_width/2,
 			     (int)xv_get(h_scrollbar, SCROLLBAR_OBJECT_LENGTH)
 					- (int)xv_get(canvas, XV_WIDTH))),
@@ -808,7 +809,7 @@ footer_proc ( paint_win, event, arg )
 		need_to_paint = 'T';
 		break;
 	      case XK_Up:
-		if (mark_y>= 2*line_space - pbl/2) 
+		if (mark_y>= 2*line_space - pbl/2)
 		  mark_y -= line_space;
 		else
 		  mark_y = line_p_page*line_space + lwidth;
@@ -825,37 +826,37 @@ footer_proc ( paint_win, event, arg )
 	    }
 	}
     }
-    
+
     if(need_to_paint == 'T')
     {
 	/**
-	 ** clear the old mark. 
+	 ** clear the old mark.
 	 **/
-	
+
 	XSetForeground(display, gc, colors[WHITE]);
 	cross(lwidth, save_mark_x/scale, save_mark_y);
-	
+
 	drawarea_min_y = save_mark_y - 10;
 	drawarea_max_y = save_mark_y + 10;
-	
+
 	clear_mark = 'T';
-	
+
 	canvas_repaint_proc(canvas,paint_win,display, xwin, NULL);
-	
+
 	/**
-	 ** put a new mark.  
+	 ** put a new mark.
 	 **/
-	
+
 	XSetForeground(display, gc, colors[RED]);
 	cross(lwidth, mark_x/scale, mark_y);
-	
+
 	/**
 	 ** Update the frame footer information.
 	 **/
-	
+
 	position = INT_MIN;
 
-	if (mark_y < 2*line_space - pbl/2) 
+	if (mark_y < 2*line_space - pbl/2)
 	  save_line = 0;
 	else
 	  save_line= (mark_y - 2*line_space + pbl/2)/line_space +1;
@@ -864,13 +865,13 @@ footer_proc ( paint_win, event, arg )
 	while(iSeq < info_size)
 	{
 	    int accu_pos = 0;
-	    
+
 	    iSeg = 0;
 	    while(iSeg < info[iSeq].size)
 	    {
 		if(mark_x > POS2(info[iSeq].dots,iSeg,1))
 		{
-		    accu_pos += POS2(info[iSeq].dots,iSeg,1) - 
+		    accu_pos += POS2(info[iSeq].dots,iSeg,1) -
 		      POS2(info[iSeq].dots, iSeg ,0)+1;
 		    iSeg++;
 		}
@@ -886,7 +887,7 @@ footer_proc ( paint_win, event, arg )
 			xv_set(frame,FRAME_RIGHT_FOOTER,"Sequence: ",NULL);
 			return XV_OK;
 		    }
-		    position = accu_pos + mark_x - POS2(info[iSeq].dots, iSeg, 0) + 1;  
+		    position = accu_pos + mark_x - POS2(info[iSeq].dots, iSeg, 0) + 1;
 		    print_line = iSeq+1;
 		    break;
 		}
@@ -915,7 +916,7 @@ footer_proc ( paint_win, event, arg )
 	    xv_set(frame,FRAME_LEFT_FOOTER, buf, NULL);
 	    sprintf(buf,"Sequence: \n");
 	}
-	
+
 	xv_set(frame,FRAME_RIGHT_FOOTER, buf, NULL);
     }
     return XV_OK;
@@ -957,16 +958,16 @@ scale_proc(item, i_scale, event)
      Event *event;
 {
     scale = i_scale;
-    
+
     (void)xv_set(h_scrollbar,
-	 SCROLLBAR_OBJECT_LENGTH, MAX((int)xv_get(canvas, XV_WIDTH), 
+	 SCROLLBAR_OBJECT_LENGTH, MAX((int)xv_get(canvas, XV_WIDTH),
 				      max_dots/scale+margin),
 	 SCROLLBAR_VIEW_START, MAX(0, MIN(mark_x/scale - 100,
 					  max_dots/scale+margin -
 					  (int)xv_get(canvas, XV_WIDTH))),
 	 NULL);
 
-    (void)xv_set(paint_win,  XV_WIDTH, 
+    (void)xv_set(paint_win,  XV_WIDTH,
 		 MAX((int)xv_get(canvas,XV_WIDTH),max_dots/scale+margin),
 		 NULL);
 
@@ -994,7 +995,7 @@ pbl_proc(item, i_pbl, event)
       tt = line_p_page;
 
     mark_y = tt*line_space;
-    
+
     XClearWindow(display, xwin);
 
     canvas_repaint_proc(canvas,paint_win,display, xwin, NULL);
@@ -1019,7 +1020,7 @@ lwidth_proc(item, i_lw, event)
       tt = line_p_page;
 
     mark_y = tt*line_space;
-    
+
     XClearWindow(display, xwin);
 
     canvas_repaint_proc(canvas,paint_win,display, xwin, NULL);
@@ -1037,7 +1038,7 @@ exit_proc(item, event)
 	xv_destroy_safe(frame);
 	return(XV_OK);
     }
-    else 
+    else
       return(XV_ERROR);
 }
 
@@ -1070,7 +1071,7 @@ r_arrow(size, strand, loc_x, loc_y)
 int size, strand, loc_x, loc_y;
 {
     int ii;
-    
+
     if(size == 1)
     {
 	if(strand < 2)
@@ -1086,8 +1087,8 @@ int size, strand, loc_x, loc_y;
 	  XDrawLine(display,xwin,gc,
 		    loc_x-ii, loc_y-ii, loc_x-ii, loc_y-1);
 	if(strand == 0 || strand == 2)
-	  XDrawLine(display,xwin,gc, 
-		    loc_x-ii, loc_y+size-1+ii, loc_x-ii, 
+	  XDrawLine(display,xwin,gc,
+		    loc_x-ii, loc_y+size-1+ii, loc_x-ii,
 		    loc_y+size); /* actually, loc_y+size-1+1.*/
     }
 
@@ -1097,13 +1098,13 @@ int size, strand, loc_x, loc_y;
 	XDrawLine(display,xwin,gc,
 		  loc_x+ii, loc_y+ii, loc_x+ii, loc_y+size-1-ii);
     }
-    
+
     for(ii=1; strand==1 && ii < size; ii++)
     {
 	XDrawLine(display,xwin,gc,
 		  loc_x+ii, loc_y+ii, loc_x+ii, loc_y+size-1);
     }
-	
+
     for(ii=1; strand==2 && ii < size; ii++)
     {
 	XDrawLine(display,xwin,gc,
@@ -1133,8 +1134,8 @@ int size, strand, loc_x, loc_y;
 	  XDrawLine(display,xwin,gc,
 		    loc_x+ii, loc_y-ii, loc_x+ii, loc_y-1);
 	if(strand == 0 || strand == 2)
-	  XDrawLine(display,xwin,gc, 
-		    loc_x+ii, loc_y+size-1+ii, loc_x+ii, 
+	  XDrawLine(display,xwin,gc,
+		    loc_x+ii, loc_y+size-1+ii, loc_x+ii,
 		    loc_y+size); /* actually, loc_y+size-1+1.*/
     }
 
@@ -1144,13 +1145,13 @@ int size, strand, loc_x, loc_y;
 	XDrawLine(display,xwin,gc,
 		  loc_x-ii, loc_y+ii, loc_x-ii, loc_y+size-1-ii);
     }
-    
+
     for(ii=1; strand==1 && ii < size; ii++)
     {
 	XDrawLine(display,xwin,gc,
 		  loc_x-ii, loc_y+ii, loc_x-ii, loc_y+size-1);
     }
-	
+
     for(ii=1; strand==2 && ii < size; ii++)
     {
 	XDrawLine(display,xwin,gc,
@@ -1164,7 +1165,7 @@ cross(size, loc_x, loc_y)
      int size, loc_x, loc_y;
 {
     int ii;
-    
+
     if(size == 1)
     {
 	XDrawLine(display,xwin,gc, loc_x-2,loc_y,  loc_x+2,loc_y);
@@ -1178,7 +1179,7 @@ cross(size, loc_x, loc_y)
 	    XDrawLine(display,xwin,gc,loc_x+ii,loc_y-2,loc_x+ii,loc_y+3);
 	}
     }
-    else 
+    else
     {
 	for(ii= -1; ii<2; ii++)
 	{

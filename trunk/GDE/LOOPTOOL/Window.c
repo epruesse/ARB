@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/canvas.h>
 #include <xview/cursor.h>

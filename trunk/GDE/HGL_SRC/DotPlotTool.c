@@ -2,13 +2,13 @@
  *
  *  To compile:
  *
- *  cc -o DotPlotTool plot.c HGLfuncs.c Alloc.c ChooseFile.c 
+ *  cc -o DotPlotTool plot.c HGLfuncs.c Alloc.c ChooseFile.c
  *     -lxview -lolgx -lX11
  *
  *  Notes: Set canvas width and height to fit the max_width when
  *         loading a dataset.  Change the viewable size by changing
  *         the viewable_length of the scrollbars.
- *         
+ *
  ********************************/
 
 #ifndef _GLOBAL_DEFS_H
@@ -20,6 +20,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
 #include <X11/keysym.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/canvas.h>
 #include <xview/panel.h>
@@ -52,11 +53,11 @@
 #define margin       50
 
 Frame     frame=NULL, prop_subframe;
-Panel     panel_1;  /* panel_1 width should change with the size of the 
+Panel     panel_1;  /* panel_1 width should change with the size of the
 		     * dataset.
 		     */
 Panel     width_panel=NULL; /* There is a limitation on the max size of a
-                             * canvas.  When loading a large dataset, 
+                             * canvas.  When loading a large dataset,
 			     * max_width may have to be reduced to fit into
 			     * the canvas.  So, width_panel has to be saved
 			     * to allow changes.
@@ -129,7 +130,7 @@ main(argc, argv)
     {255, 165, 0},     /* orange */
     {225, 0, 0},       /* RED */
     {0, 0, 0},         /* black  */
-    {192, 192, 192},   /* GREY */      
+    {192, 192, 192},   /* GREY */
     {240, 240, 240},
     {210, 210, 210},
     {180, 180, 180},
@@ -140,7 +141,7 @@ main(argc, argv)
     {30, 30, 30},
     {0, 0, 0}
   };
-    
+
     FILE *fp;
     Rect *rect;
     Panel panel;
@@ -172,7 +173,7 @@ main(argc, argv)
 /*z*/	 0, 0, 1, 3,-6, 5, 5,-1, 2,-2,-2, 0,-1,-5, 0, 0,-1,-6,-4,-2, 4, 6, 0,-8,
 /*x*/	-1,-2,-1,-2,-4,-1,-1,-2,-2,-1,-2,-2,-2,-3,-2,-1,-1,-5,-3,-1,-1, 0,-2,-8,
 /***/	-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8, 1};
-    
+
     static pam250[24][24] = {
    /*a  r  n  d  c  q  e  g  h  i  l  k  m  f  p  s  t  w  y  v  b  z  x  *  */
      2,-2, 0, 0,-2, 0, 0, 1,-1,-1,-2,-1,-1,-3, 1, 1, 1,-6,-3, 0, 2, 1, 0,-8,
@@ -199,7 +200,7 @@ main(argc, argv)
      1, 2, 3, 4,-4, 5, 5, 1, 3,-1,-1, 2, 0,-4, 1, 1, 1,-4,-3, 0, 5, 6, 0,-8,
      0,-1, 0,-1,-3,-1,-1,-1,-1,-1,-1,-1,-1,-2,-1, 0, 0,-4,-2,-1,-1, 0,-1,-8,
     -8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8,-8, 1};
-    
+
     /* malloc_debug(2); */
 
     if(argc == 1)
@@ -216,8 +217,8 @@ main(argc, argv)
 
     for(ii = 0; ii < 256; ii++)
       for(jj = 0; jj < 256; jj++)
-	AAmatr[ii][jj] = -100;    
-    
+	AAmatr[ii][jj] = -100;
+
     pam = 250;
     if(argc > 2)
     {
@@ -229,7 +230,7 @@ main(argc, argv)
 	    exit(1);
 	}
     }
-    
+
     for(ii = 0; ii < strlen(aa); ii++)
       for(jj = 0; jj < strlen(aa); jj++)
       {
@@ -248,17 +249,17 @@ main(argc, argv)
     tmp_compd = compd;
 
     xv_init(XV_INIT_ARGS, argc, argv, NULL);
-    
-    frame = xv_create(XV_NULL, FRAME, 
+
+    frame = xv_create(XV_NULL, FRAME,
 		      FRAME_LABEL, heading,
 		      FRAME_SHOW_FOOTER, TRUE,
 		      FRAME_LEFT_FOOTER, "Mouse Location:",
 		      FRAME_RIGHT_FOOTER, footnote,
 		      NULL);
-    
+
     panel_1 = (Panel) xv_create(frame, PANEL,
 				NULL);
-    
+
     (void) xv_create(panel_1,PANEL_BUTTON,
 		     PANEL_LABEL_STRING, "Properties...",
 		     PANEL_NOTIFY_PROC, show_prop_frame,
@@ -268,12 +269,12 @@ main(argc, argv)
 		     PANEL_LABEL_STRING, "Load",
 		     PANEL_NOTIFY_PROC, Load,
 		     NULL);
-		     
+
     (void) xv_create(panel_1,PANEL_BUTTON,
 		     PANEL_LABEL_STRING, "Exit",
 		     PANEL_NOTIFY_PROC, exit_proc,
 		     NULL);
-    
+
     window_fit_height(panel_1);
 
     canvas = (Canvas) xv_create(frame, CANVAS,
@@ -287,7 +288,7 @@ main(argc, argv)
 				XV_WIDTH, MIN(600, Xaxis*width)+margin,
 				XV_HEIGHT,MIN(400, Yaxis*width)+margin,
 				WIN_BELOW,             panel_1,
-				CANVAS_RETAINED,       FALSE, 
+				CANVAS_RETAINED,       FALSE,
 				NULL);
 /*
     printf("Canvas_WIDTH=%d  _HEIGHT=%d\n",
@@ -296,7 +297,7 @@ main(argc, argv)
 */
     paint_win = (Xv_Window) canvas_paint_window(canvas);
     xv_set(paint_win,
-	   WIN_BIT_GRAVITY, ForgetGravity, 
+	   WIN_BIT_GRAVITY, ForgetGravity,
            WIN_CONSUME_EVENTS,
 	      MS_LEFT,
 	      NULL,
@@ -305,10 +306,10 @@ main(argc, argv)
 
     h_scrollbar = (Scrollbar) xv_create(canvas, SCROLLBAR,
 		SCROLLBAR_DIRECTION, SCROLLBAR_HORIZONTAL,
-		SCROLLBAR_OBJECT_LENGTH, Xaxis*width+margin, 
+		SCROLLBAR_OBJECT_LENGTH, Xaxis*width+margin,
 		SCROLLBAR_VIEW_START, 0,
 		NULL);
-    
+
     v_scrollbar = (Scrollbar) xv_create(canvas, SCROLLBAR,
 		SCROLLBAR_DIRECTION, SCROLLBAR_VERTICAL,
 		SCROLLBAR_OBJECT_LENGTH, Yaxis*width+margin,
@@ -320,12 +321,12 @@ main(argc, argv)
 		    CMS_TYPE,  XV_DYNAMIC_CMS,
 		    CMS_COLORS, cms_colors,
 		    NULL);
-    
+
     xv_set(canvas, WIN_CMS, cms,
 	   WIN_INHERIT_COLORS,    FALSE,
 	   WIN_BACKGROUND_COLOR,  WHITE,
 	   NULL);
-    
+
     window_fit(canvas);
 
     prop_subframe = (Frame)xv_create(frame, FRAME_CMD,
@@ -334,7 +335,7 @@ main(argc, argv)
 
     panel = (Panel)xv_get(prop_subframe, FRAME_CMD_PANEL);
     (void) xv_set(panel, PANEL_LAYOUT, PANEL_VERTICAL,NULL);
-    
+
     (void) xv_create(panel, PANEL_SLIDER,
 		     PANEL_LABEL_STRING, "Dot Size:         ",
 		     PANEL_VALUE,     size,
@@ -367,7 +368,7 @@ main(argc, argv)
 
     (void)xv_create(panel, PANEL_CHOICE,
 		    PANEL_LABEL_STRING, "Match Direction",
-		    PANEL_CHOICE_STRINGS, 
+		    PANEL_CHOICE_STRINGS,
 		    "Direct",
 		    "Reversed",
 		    "Both",
@@ -392,12 +393,12 @@ main(argc, argv)
 		     PANEL_TICKS, 5,
 		     PANEL_NOTIFY_PROC, cutoff_proc,
 		     NULL);
-    
+
     (void)xv_create(panel, PANEL_BUTTON,
 		    PANEL_LABEL_STRING, "OK",
 		    PANEL_NOTIFY_PROC, ok_proc,
 		    NULL);
-		
+
     window_fit(panel);
     window_fit(prop_subframe);
 
@@ -409,19 +410,19 @@ main(argc, argv)
 
     xv_set(panel_1,XV_WIDTH,MIN(600, Xaxis*width)+margin,NULL);
     window_fit(frame);
-	
+
     rect = (Rect *)xv_get(canvas,CANVAS_VIEWABLE_RECT,paint_win);
     XClearArea(display, xwin,
 	       rect->r_left, rect->r_top,
 	       rect->r_width, rect->r_height,
 	       0);
-    
+
     image = (Server_image)xv_create(NULL, SERVER_IMAGE,
 				    XV_WIDTH,  64,
 				    XV_HEIGHT, 64,
 				    SERVER_IMAGE_BITS, plot_bits,
 				    NULL);
-    
+
     icon = (Icon)xv_create(frame, ICON,
 			   ICON_IMAGE,  image,
 /*			   ICON_TRANSPARENT, TRUE,*/
@@ -476,12 +477,12 @@ char *name_str;
 
     sprintf(heading, "PLOT : %s", name_str);
     sprintf(footnote, "X-axis: %s   Y-axis: %s ",
-	    (tSeq[0].name[0]!='\0')?tSeq[0].name:tSeq[0].sequence_ID, 
+	    (tSeq[0].name[0]!='\0')?tSeq[0].name:tSeq[0].sequence_ID,
 	    (tSeq[1].name[0]!='\0')?tSeq[1].name:tSeq[1].sequence_ID);
 
     if(frame != NULL)
     {
-	XClearWindow(display, xwin); 
+	XClearWindow(display, xwin);
 
 	(void)xv_set(canvas,
 		     XV_WIDTH, MIN(600, Xaxis*width)+margin,
@@ -493,7 +494,7 @@ char *name_str;
 	xv_set(panel_1,XV_WIDTH,(int)xv_get(canvas,XV_WIDTH),NULL);
 	window_fit(frame);
 
-	xv_set(frame,FRAME_RIGHT_FOOTER, footnote, NULL);	
+	xv_set(frame,FRAME_RIGHT_FOOTER, footnote, NULL);
 
 	(void)xv_set(h_scrollbar,
 		     SCROLLBAR_OBJECT_LENGTH, Xaxis*width+margin,
@@ -543,17 +544,17 @@ int x, y, size;
 	XDrawLine(display, xwin, gc, x+3,y, x+3,y+4);
 	break;
       default:
-	fprintf(stderr, 
+	fprintf(stderr,
 		"Dot size %d is not implemented. 2 is used.\n",size);
 	XDrawLine(display, xwin, gc, x,y+1, x+2,y+1);
-	XDrawLine(display, xwin, gc, x+1,y, x+1,y+2); 
+	XDrawLine(display, xwin, gc, x+1,y, x+1,y+2);
 	break;
     }
 }
 
 
 
-canvas_repaint_proc(canvas,pw,display, xwin, xrects ) 
+canvas_repaint_proc(canvas,pw,display, xwin, xrects )
      Canvas canvas;
      Xv_Window pw;
      Display *display;
@@ -586,17 +587,17 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 	       drawarea_min_y,drawarea_max_y);
 	*/
 
-	for(ii=MAX(drawarea_min_y/width, 0); 
-	    ii<MIN(drawarea_max_y/width+1, Yaxis); 
+	for(ii=MAX(drawarea_min_y/width, 0);
+	    ii<MIN(drawarea_max_y/width+1, Yaxis);
 	    ii++)
 	{
-	    for(jj = MAX(drawarea_min_x/width, 0); 
+	    for(jj = MAX(drawarea_min_x/width, 0);
 		jj<MIN(drawarea_max_x/width+1, Xaxis);
 		jj++)
 	    {
 		if((tmp_color=ToDisplay(tSeq, jj, ii)) == WHITE)
 		  continue;
-		
+
 		if(tmp_color != prev_color)
 		{
 		    XSetForeground(display,gc,colors[tmp_color]);
@@ -604,11 +605,11 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 		}
 		DrawDot(display, xwin, gc,
 			jj * width,
-			ii * width, 
+			ii * width,
 			size);
 	    }
 	}
-    } 
+    }
     else
     {
 	for(cnt=xrects->count-1; cnt>=0; cnt--)
@@ -616,7 +617,7 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 	    drawarea_min_y = xrects->rect_array[cnt].y;
 	    drawarea_max_y = xrects->rect_array[cnt].y +
 	      xrects->rect_array[cnt].height;
-	    
+
 	    drawarea_min_x = xrects->rect_array[cnt].x;
 	    drawarea_max_x = xrects->rect_array[cnt].x +
 	      xrects->rect_array[cnt].width;
@@ -627,18 +628,18 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 		   drawarea_min_y,drawarea_max_y);
 	    */
 
-	    for(ii=MAX(drawarea_min_y/width, 0); 
-		ii<MIN(drawarea_max_y/width+1, Yaxis); 
+	    for(ii=MAX(drawarea_min_y/width, 0);
+		ii<MIN(drawarea_max_y/width+1, Yaxis);
 		ii++)
 	    {
-		for(jj = MAX(drawarea_min_x/width, 0); 
+		for(jj = MAX(drawarea_min_x/width, 0);
 		jj<MIN(drawarea_max_x/width+1, Xaxis);
 		    jj++)
 		{
-		    
+
 		    if((tmp_color=ToDisplay(tSeq, jj, ii)) == WHITE)
 		      continue;
-		    
+
 		    if(tmp_color != prev_color)
 		    {
 			XSetForeground(display,gc,colors[tmp_color]);
@@ -646,7 +647,7 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
 		    }
 		    DrawDot(display, xwin, gc,
 			    jj * width,
-			    ii * width, 
+			    ii * width,
 			    size);
 		}
 	    }
@@ -663,7 +664,7 @@ canvas_repaint_proc(canvas,pw,display, xwin, xrects )
     }
     else
       clear_mark = 'F';
-    
+
     return XV_OK;
 }
 
@@ -680,8 +681,8 @@ footer_proc ( paint_win, event, arg )
 {
     char buf[125];
     int save_line, i, ii, iSeq, iSeg;
-    int  return_len=10;      
-    char return_str[10];     
+    int  return_len=10;
+    char return_str[10];
     KeySym keysym;
     XEvent *xevent;
     int save_mark_x = mark_x;
@@ -691,7 +692,7 @@ footer_proc ( paint_win, event, arg )
     int loc_col = INT_MAX, ii1, ii2;
     char cc1, cc2;
     Rect *rect;
-    
+
     if (event_id(event) == LOC_WINENTER)
     {
 	win_set_kbd_focus(canvas, xwin);
@@ -728,30 +729,30 @@ footer_proc ( paint_win, event, arg )
 	sprintf(buf,
 		"Mouse location: X=(%c, %d)   Y=(%c, %d)  ",
 		cc1, ii1, cc2, ii2);
-	
+
 	xv_set(frame,FRAME_LEFT_FOOTER, buf, NULL);
     }
-    
+
     if(need_to_paint == 'T')
     {
 	/**
-	 ** clear the old mark. 
+	 ** clear the old mark.
 	 **/
-	
+
 	XSetForeground(display, gc, colors[WHITE]);
 	cross(size, save_mark_x, save_mark_y);
-	
+
 	drawarea_min_y = save_mark_y - 10;
 	drawarea_max_y = save_mark_y + 15;
-	
+
 	clear_mark = 'T';
-	
+
 	canvas_repaint_proc(canvas,paint_win,display, xwin, NULL);
-	
+
 	/**
-	 ** put a new mark.  
+	 ** put a new mark.
 	 **/
-	
+
 	XSetForeground(display, gc, colors[RED]);
 	cross(size, mark_x, mark_y);
     }
@@ -818,7 +819,7 @@ exit_proc(item, event)
 	xv_destroy_safe(frame);
 	return(XV_OK);
     }
-    else 
+    else
       return(XV_ERROR);
 }
 
@@ -835,7 +836,7 @@ cross(size, loc_x, loc_y)
      int size, loc_x, loc_y;
 {
     int ii;
-    
+
     if(size == 1)
     {
 	XDrawLine(display,xwin,gc, loc_x-2,loc_y,  loc_x+2,loc_y);
@@ -849,7 +850,7 @@ cross(size, loc_x, loc_y)
 	    XDrawLine(display,xwin,gc,loc_x+ii,loc_y-2,loc_x+ii,loc_y+3);
 	}
     }
-    else 
+    else
     {
 	for(ii= -1; ii<2; ii++)
 	{
@@ -913,21 +914,21 @@ int x, y;       /* axes. */
 		x - kk >= 0 && y - kk >= 0 &&
 		AAmatr[tSeq[0].c_elem[x-kk]][tSeq[1].c_elem[y-kk]] >= cutoff;
 		kk++, cnt++);
-	    
+
 	    for(kk = 1;
 		cnt < filter &&
 		kk < filter &&
 		x + kk < Xaxis && y + kk < Yaxis &&
 		AAmatr[tSeq[0].c_elem[x+kk]][tSeq[1].c_elem[y+kk]] >= cutoff;
 		kk++, cnt++);
-	    
+
 	    if(cnt >= filter)
 	      return ((this_score+9)/4+1 +11);
-	    
+
 	    if(direction == 1)
 	      return WHITE;
 	}
-	
+
 	if(direction == 0 || direction == -1)
 	{
 	    cnt = 1;
@@ -937,14 +938,14 @@ int x, y;       /* axes. */
 		y + kk < Yaxis && x - kk >= 0 &&
 		AAmatr[tSeq[0].c_elem[x-kk]][tSeq[1].c_elem[y+kk]] >= cutoff;
 		kk++, cnt++);
-	    
+
 	    for(kk = 1;
 		cnt < filter &&
 		kk < filter &&
 		y - kk >= 0 && x + kk < Xaxis &&
 		AAmatr[tSeq[0].c_elem[x+kk]][tSeq[1].c_elem[y-kk]] >= cutoff;
 		kk++, cnt++);
-	    
+
 	    if(cnt >= filter)
 	      return ((this_score+9)/4+1 +11); /* +11 to use grey scale.*/
 	    return WHITE;
@@ -956,7 +957,7 @@ int x, y;       /* axes. */
 	if((this_score=ScoreMatch(tSeq[0].c_elem[x],GetBase(tSeq[1],y)))
 	   == mmscore)
 	  return WHITE;
-	
+
 	if(direction == 0 || direction == 1)
 	{
 	    cnt = 1;
@@ -965,24 +966,24 @@ int x, y;       /* axes. */
 		kk < filter &&
 		x - kk >= 0 && y - kk >= 0 &&
 		ScoreMatch(tSeq[0].c_elem[x-kk],GetBase(tSeq[1],y-kk))
-		!= mmscore; 
+		!= mmscore;
 		kk++, cnt++);
-	    
+
 	    for(kk = 1;
 		cnt < filter &&
 		kk < filter &&
 		x + kk < Xaxis && y + kk < Yaxis &&
-		ScoreMatch(tSeq[0].c_elem[x+kk],GetBase(tSeq[1],y+kk)) 
-		!= mmscore; 
+		ScoreMatch(tSeq[0].c_elem[x+kk],GetBase(tSeq[1],y+kk))
+		!= mmscore;
 		kk++, cnt++);
-	    
+
 	    if(cnt >= filter)
 	      return this_score;
 
 	    if(direction == 1)
 	      return WHITE;
 	}
-	
+
 	if(direction == 0 || direction == -1)
 	{
 	    cnt = 1;
@@ -990,26 +991,26 @@ int x, y;       /* axes. */
 		cnt < filter &&
 		kk < filter &&
 		y + kk < Yaxis && x - kk >= 0 &&
-		ScoreMatch(tSeq[0].c_elem[x-kk],GetBase(tSeq[1],y+kk)) 
+		ScoreMatch(tSeq[0].c_elem[x-kk],GetBase(tSeq[1],y+kk))
 		!= mmscore;
 		kk++, cnt++);
-	    
+
 	    for(kk = 1;
 		cnt < filter &&
 		kk < filter &&
 		y - kk >= 0 && x + kk < Xaxis &&
 		ScoreMatch(tSeq[0].c_elem[x+kk],GetBase(tSeq[1],y-kk))
-		!= mmscore; 
+		!= mmscore;
 		kk++, cnt++);
-	    
+
 	    if(cnt >= filter)
 	      return this_score;
 	    return WHITE;
 	}
     }
-    else 
+    else
     {
-	fprintf(stderr, "%cCan't plot sequences with types %s vs. %s.\n", 
+	fprintf(stderr, "%cCan't plot sequences with types %s vs. %s.\n",
 		7, tSeq[0].type, tSeq[1].type);
 	exit(1);
     }
@@ -1025,7 +1026,7 @@ Event *event;
       tmp_direction = 1;
     else if(ii == 1)
       tmp_direction = -1;
-    else 
+    else
       tmp_direction = 0;
 
     return XV_OK;
@@ -1040,7 +1041,7 @@ Event *event;
 {
     if(ii == 0)
       tmp_compd = 'N';
-    else 
+    else
       tmp_compd = 'Y';
 
     return XV_OK;
@@ -1068,14 +1069,14 @@ Event *event;
 	(void)xv_set(h_scrollbar,
 		     SCROLLBAR_OBJECT_LENGTH, Xaxis*width+margin,
 		     SCROLLBAR_VIEW_START,
-		     MIN(MAX(0,mark_x - 100), 
+		     MIN(MAX(0,mark_x - 100),
 			 MAX(0,Xaxis*width+margin-(int)xv_get(canvas,XV_WIDTH))),
 		     NULL);
 
 	(void)xv_set(v_scrollbar,
 		     SCROLLBAR_OBJECT_LENGTH, Yaxis*width+margin,
-		     SCROLLBAR_VIEW_START, 			
-		     MIN(MAX(0,mark_y - 100), 
+		     SCROLLBAR_VIEW_START,
+		     MIN(MAX(0,mark_y - 100),
 			 MAX(0,Yaxis*width+margin-(int)xv_get(canvas, XV_HEIGHT))),
 		     NULL);
     }

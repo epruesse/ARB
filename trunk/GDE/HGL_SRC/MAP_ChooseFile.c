@@ -4,12 +4,12 @@ rights reserved.  Written by Michael Maciukenas at the Center for Prokaryote
 Genome Analysis.  Design and implementation guidance by Steven Smith, Carl
 Woese.
 */
-/* File picker by Mike Maciukenas 
-** Allows the user to search up and down the directory tree, and choose a 
-**  file.  
+/* File picker by Mike Maciukenas
+** Allows the user to search up and down the directory tree, and choose a
+**  file.
 ** "Open" descends down into a directory, or chooses a file (depending **  on what is selected).  The user may also press return after choosing
 **  a file or directory, to do the same thing.
-** "Up Dir" ascends to the parent directory.  
+** "Up Dir" ascends to the parent directory.
 ** "Cancel" cancels the operation.
 ** The user may also type a directory into the "Directory:" field.  When the
 **  user presses return (or tab, or newline), the contents of the new directory
@@ -18,6 +18,7 @@ Woese.
 
 #include <sys/types.h>
 #include <dirent.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/textsw.h>
 #include <xview/xview.h>
 #include <xview/panel.h>
@@ -178,7 +179,7 @@ Xv_opaque passdata;
 */
   XSetForeground(display,fl_gc,BlackPixel(display,DefaultScreen(display)));
   XSetBackground(display,fl_gc,WhitePixel(display,DefaultScreen(display)));
-  
+
 
   /* set up the extra trailing node for the linked list, makes insertion
   ** into the list easier */
@@ -239,10 +240,10 @@ Event *event;
 	strcat(thestr, namebuf);
 
 	/* call load data procedure. */
-	
+
 	top_frame = (Frame) xv_get(
 		    (Frame) xv_get(
-		    (Panel) xv_get(item,XV_OWNER), 
+		    (Panel) xv_get(item,XV_OWNER),
 				   XV_OWNER),
 				   XV_OWNER);
 
@@ -254,7 +255,7 @@ Event *event;
 	    LoadGDEData(thestr);
 	    set_offset = 0;
 	}
-        else if(strcmp(thestr+(strlen(thestr)-3), "HGL") == 0) 
+        else if(strcmp(thestr+(strlen(thestr)-3), "HGL") == 0)
 	{
 *********/
 	if((r = LoadHGLData(thestr)) == -1)
@@ -361,7 +362,7 @@ Panel_item item;
 Event *event;
 {
 
-    LoadHGLData(""); 
+    LoadHGLData("");
     xv_destroy_safe(fl_getframe);
     return XV_OK;
 }
@@ -388,7 +389,7 @@ char *buf;
 	buf[i]='\0';
 }
 
-int fl_make_list() 
+int fl_make_list()
 /* Creates a list of files, out of the current working directory.  It then
 ** tells the file list canvas to refresh itself.  The list sits attached to
 ** fl_start, for reading by the show_list() routine.
@@ -397,7 +398,7 @@ int fl_make_list()
   FILE *dirp;					/* for directory data */
   int i, list_len, cur_pos;
   char dirname[GBUFSIZ], tempbuf[GBUFSIZ];
-  NameData *current, *temp;			/* structures for reading 
+  NameData *current, *temp;			/* structures for reading
 						** and sorting file names */
   int notdone;
   struct stat statbuf;				/* for checking if a file
@@ -574,7 +575,7 @@ Rectlist *repaint_area;
   dpy = (Display *)xv_get(paint_window, XV_DISPLAY);
   xwin = (Window)xv_get(paint_window, XV_XID);
 
-  /* clear the area given us by Xview, for simplicity, we clear the 
+  /* clear the area given us by Xview, for simplicity, we clear the
   ** smallest rectangle that encloses all of the destroyed areas, the
   ** rl_bound rectangle */
   XClearArea(dpy, xwin,
@@ -629,7 +630,7 @@ Event *event;
 	   (event_action(event) == LOC_DRAG))
 		{
 		picked = (event_y(event) - 1)  / fl_cell_h;
-		/* make sure the file picked is on screen.  if it is not, 
+		/* make sure the file picked is on screen.  if it is not,
 		** we just ignore it.  this avoids wierd stuff, like being
 		** able to pick files that aren't shown on screen */
 		if((picked >= cur_pos)&&
@@ -655,10 +656,10 @@ Event *event;
 		    }
 		 }
 		}
-	/* user may have pressed return, then just call the open button 
+	/* user may have pressed return, then just call the open button
 	** callback procedure.  PANEL_FIRST_ITEM gets the pointer to the
-	** open button itself, since it happens to be the first item on 
-	** the panel. fl_open_btn doesn't really use this parameter, but 
+	** open button itself, since it happens to be the first item on
+	** the panel. fl_open_btn doesn't really use this parameter, but
 	** just in case it ever does, we include it. */
 	else if((event_is_ascii(event))&&(event_action(event) == '\r'))
 	  fl_open_btn_lf(xv_get(fl_Getpanel, PANEL_FIRST_ITEM), event);
@@ -673,7 +674,7 @@ int fl_view_h()
 
 Notify_value
 fl_free_mem(client, status)
-/* clean up when the frame is destroyed.  Frees up the memory used in the 
+/* clean up when the frame is destroyed.  Frees up the memory used in the
 ** linked list of file names, and sets the Frame variable (getframe) to null */
 Notify_client client;
 Destroy_status status;

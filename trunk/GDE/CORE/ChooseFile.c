@@ -18,6 +18,7 @@ Woese.
 #include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/textsw.h>
 #include <xview/xview.h>
 #include <xview/panel.h>

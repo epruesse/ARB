@@ -1,4 +1,5 @@
 #include <stdio.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/defaults.h>
 #include <xview/xview.h>
 #include <xview/panel.h>

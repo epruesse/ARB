@@ -1,5 +1,6 @@
 #include <stdio.h>
 /* #include <malloc.h> */
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/notice.h>
 #include <xview/panel.h>
