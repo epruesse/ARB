@@ -23,9 +23,9 @@ private:
     int   file_mode;
     bool  is_readonly;
     // bufferhandling
-    char *buffer;
-    int   size;                         // how much is in buffer
-    int   position;                     // where am i in the buffer
+    unsigned char *buffer;
+    int            size;                // how much is in buffer
+    int            position;            // where am i in the buffer
     // debug
     unsigned long int total_read;
     unsigned long int total_write;
@@ -39,10 +39,85 @@ public:
     static const bool READONLY  = true;
     static const bool WRITEONLY = false;
 
+    //
+    // IO-functions
+    //
+
+    // raw
     void put ( const void *_data, int _length );
     void get (       void *_data, int _length );
     void peek(       void *_data, int _length ); // read but don't advance position
 
+    // char
+    void put_char( unsigned char  _c ) {
+        if (is_readonly) {
+            fprintf( stderr, "sorry, i can't write to files opened readonly\n" );
+            *(int *)0 = 0;
+        }
+        if (size+1 < BUFFER_SIZE) {
+            buffer[size] = _c;
+            ++size;
+        } else {
+            flush();
+            buffer[0] = _c;
+            size      = 1;
+        }
+    }
+    void get_char( unsigned char &_c ) {
+        if (position < size) {
+            _c = buffer[position];
+            ++position;
+        } else {
+            refill();
+            _c       = buffer[0];
+            position = 1;
+        }
+    }
+
+    // long
+    void put_ulong( unsigned long int  _ul );
+    void get_ulong( unsigned long int &_ul );
+    void put_long( long int  _l ) {
+        unsigned long int ul;
+        if (_l < 0) {
+            ul = (-_l << 1) | 1;
+        } else {
+            ul = _l << 1;
+        }
+        put_ulong( ul );
+    }
+    void get_long( long int &_l ) {
+        unsigned long int ul;
+        get_ulong( ul );
+        if (ul & 1) {
+            _l = -(long)(ul >> 1);
+        } else {
+            _l = ul >> 1;
+        }
+    }
+
+    // int
+    void put_uint( unsigned int  _ui ) { 
+        put_ulong( _ui ); 
+    }
+    void get_uint( unsigned int &_ui ) { 
+        unsigned long int ul; 
+        get_ulong( ul ); 
+        _ui=(unsigned int)ul; 
+    }
+    void put_int( int  _i ) { 
+        put_long( _i ); 
+    }
+    void get_int( int &_i ) { 
+        long int l; 
+        get_long( l ); 
+        _i=(int)l; 
+    }
+
+
+    //
+    // utility-functions
+    //
     bool empty() {
         if (size == 0) return true;
         return (position < size);
@@ -53,6 +128,9 @@ public:
         position = 0;
     }
 
+    //
+    // initialization-functions
+    //
     void reinit( const char *name, bool _readonly ); // reinit. with new file
 
     PS_FileBuffer( const char *_name, bool _readonly );
