@@ -742,6 +742,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	  temp_gene_str = new char[strlen(match_info)+1];
 	  strcpy(temp_gene_str,match_info);
 	  temp_gene_str[strlen(temp_gene_str)] = '\0';
+	  //@@@ IDP: mit strtok wird match_info zerlegt. Mit strtok_r wird temp_gene_str zerlegt: Wird Benötigt um den Gennamen zu extrahieren. HIER PASSIERT DER FEHLER
 	  gene_str = strtok_r(temp_gene_str," ",ptrptr);
 	  gene_str = strtok_r(NULL," ",ptrptr);
 	}
