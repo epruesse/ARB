@@ -163,19 +163,24 @@ int nt_build_conf_string_rek(GB_HASH *used,GBT_TREE *tree, void *memfile,
         }
         else { // marked species
             if (marked_at_left<use_species_aside) {
-                nt_assert(marked_at_left>=0);
-                GBT_TREE *leaf_at_left = tree;
-                int step_over = marked_at_left+1; // step over myself
-                int then_mark = use_species_aside-marked_at_left;
+                // on the left side there are not as many marked species as needed!
 
-                while (step_over--) {
+                nt_assert(marked_at_left>=0);
+
+                GBT_TREE *leaf_at_left = tree;
+                int       step_over    = marked_at_left+1; // step over myself
+                int       then_mark    = use_species_aside-marked_at_left;
+
+                while (step_over--) { // step over self and over any adjacent, marked species
                     leaf_at_left = left_neighbour_leaf(leaf_at_left);
                 }
 
                 Store_species *marked_back = 0;
-                while (leaf_at_left && then_mark--) {
-                    mark_species(leaf_at_left, extra_marked_species);
-                    marked_back = (new Store_species(leaf_at_left))->add(marked_back);
+                while (leaf_at_left && then_mark--) { // then additionally mark some species
+                    if (GB_read_flag(leaf_at_left->gb_node) == 0) { // if they are not marked yet
+                        mark_species(leaf_at_left, extra_marked_species);
+                        marked_back = (new Store_species(leaf_at_left))->add(marked_back);
+                    }
                     leaf_at_left = left_neighbour_leaf(leaf_at_left);
                 }
 
@@ -489,10 +494,15 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     if (!conf_name) return GB_export_error("no config name");
 
     if (use_species_aside==-1) {
-        char *use_species = aw_input("Enter number of extra species to view aside marked:", 0);
+        static int last_used_species_aside = 3;
+
+        const char *val         = GBS_global_string("%i", last_used_species_aside);
+        char       *use_species = aw_input("Enter number of extra species to view aside marked:", 0, val);
 
         if (use_species) use_species_aside = atoi(use_species);
         if (use_species_aside<1) return GB_export_error("illegal # of species aside");
+
+        last_used_species_aside = use_species_aside; // remember for next time
     }
 
     GB_transaction dummy2(gb_main);     // open close transaction
