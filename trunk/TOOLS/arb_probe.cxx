@@ -16,25 +16,25 @@ struct apd_sequence {
 };
 
 struct Params{
-    int	DESIGNCPLIPOUTPUT;
-    int	SERVERID;
+    int         DESIGNCPLIPOUTPUT;
+    int         SERVERID;
     const char *DESINGNAMES;
-    int	DESIGNPROBELENGTH;
+    int         DESIGNPROBELENGTH;
     const char *DESIGNSEQUENCE;
 
-    int	MINTEMP;
-    int	MAXTEMP;
-    int	MINGC;
-    int	MAXGC;
-    int	MAXBOND;
-    int	MINPOS;
-    int	MAXPOS;
-    int	MISHIT;
-    int	MINTARGETS;
+    int         MINTEMP;
+    int         MAXTEMP;
+    int         MINGC;
+    int         MAXGC;
+    int         MAXBOND;
+    int         MINPOS;
+    int         MAXPOS;
+    int         MISHIT;
+    int         MINTARGETS;
     const char *SEQUENCE;
-    int	MISMATCHES;
-    int	COMPLEMENT;
-    int	WEIGHTED;
+    int         MISMATCHES;
+    int         COMPLEMENT;
+    int         WEIGHTED;
 
     apd_sequence *sequence;
 } P;
@@ -44,7 +44,7 @@ struct gl_struct {
     aisc_com *link;
     T_PT_LOCS locs;
     T_PT_MAIN com;
-    int	pd_design_id;
+    int pd_design_id;
 } pd_gl;
 
 
@@ -91,7 +91,7 @@ int probe_design_send_data(T_PT_PDC  pdc) {
 
 void AP_probe_design_event() {
     char *servername;
-    //    char	buffer[256];
+    //    char  buffer[256];
     T_PT_PDC  pdc;
     T_PT_TPROBE tprobe;
     bytestring bs;
@@ -117,19 +117,19 @@ void AP_probe_design_event() {
     bs.size = strlen(bs.data)+1;
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
+                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
                 PDC_PROBELENGTH,P.DESIGNPROBELENGTH,
-                PDC_MINTEMP,	(double)P.MINTEMP,
-                PDC_MAXTEMP,	(double)P.MAXTEMP,
-                PDC_MINGC,	P.MINGC/100.0,
-                PDC_MAXGC,	P.MAXGC/100.0,
-                PDC_MAXBOND,	P.MAXBOND,
+                PDC_MINTEMP,    (double)P.MINTEMP,
+                PDC_MAXTEMP,    (double)P.MAXTEMP,
+                PDC_MINGC,  P.MINGC/100.0,
+                PDC_MAXGC,  P.MAXGC/100.0,
+                PDC_MAXBOND,    P.MAXBOND,
                 0);
     aisc_put(pd_gl.link,PT_PDC, pdc,
-             PDC_MINPOS,	P.MINPOS,
-             PDC_MAXPOS,	P.MAXPOS,
-             PDC_MISHIT,	P.MISHIT,
-             PDC_MINTARGETS,	P.MINTARGETS/100.0,
+             PDC_MINPOS,    P.MINPOS,
+             PDC_MAXPOS,    P.MAXPOS,
+             PDC_MISHIT,    P.MISHIT,
+             PDC_MINTARGETS,    P.MINTARGETS/100.0,
              0);
 
     if (probe_design_send_data(pdc)) {
@@ -156,7 +156,7 @@ void AP_probe_design_event() {
     {
         char *locs_error = 0;
         if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                      LOCS_ERROR	,&locs_error,
+                      LOCS_ERROR    ,&locs_error,
                       0)){
             aw_message ("Connection to PT_SERVER lost (1)");
             return;
@@ -174,17 +174,17 @@ void AP_probe_design_event() {
 
     if (tprobe) {
         aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                  TPROBE_INFO_HEADER,	&match_info,
+                  TPROBE_INFO_HEADER,   &match_info,
                   0);
         printf("%s\n",match_info);
         free(match_info);
     }
 
 
-    while (	tprobe ){
+    while ( tprobe ){
         if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                      TPROBE_NEXT,		&tprobe,
-                      TPROBE_INFO,		&match_info,
+                      TPROBE_NEXT,      &tprobe,
+                      TPROBE_INFO,      &match_info,
                       0)) break;
         printf("%s\n",match_info);
     }
@@ -194,15 +194,15 @@ void AP_probe_design_event() {
 
 void AP_probe_match_event()
 {
-    char	       *servername;
-    //    char	buffer[256];
-    //    char	result[1024];
+    char           *servername;
+    //    char  buffer[256];
+    //    char  result[1024];
     T_PT_PDC        pdc;
     T_PT_MATCHLIST  match_list;
     //    char *match_info, *match_name;
-    //    int	mark;
-    char	       *probe = 0;
-    char	       *locs_error;
+    //    int   mark;
+    char           *probe = 0;
+    char           *locs_error;
 
 
     if( !(servername=(char *)probe_pt_look_for_server()) ){
@@ -222,7 +222,7 @@ void AP_probe_match_event()
     }
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
+                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
                 0);
     if (probe_design_send_data(pdc)) {
         aw_message ("Connection to PT_SERVER lost (2)");
@@ -232,12 +232,12 @@ void AP_probe_match_event()
 
 
     if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_REVERSED,		P.COMPLEMENT,
-                  LOCS_MATCH_SORT_BY,		P.WEIGHTED,
-                  LOCS_MATCH_COMPLEMENT,		0,
-                  LOCS_MATCH_MAX_MISMATCHES,	P.MISMATCHES,
-                  LOCS_MATCH_MAX_SPECIES,		100000,
-                  LOCS_SEARCHMATCH,		P.SEQUENCE,
+                  LOCS_MATCH_REVERSED,      P.COMPLEMENT,
+                  LOCS_MATCH_SORT_BY,       P.WEIGHTED,
+                  LOCS_MATCH_COMPLEMENT,        0,
+                  LOCS_MATCH_MAX_MISMATCHES,    P.MISMATCHES,
+                  LOCS_MATCH_MAX_SPECIES,       100000,
+                  LOCS_SEARCHMATCH,     P.SEQUENCE,
                   0)){
         free(probe);
         aw_message ("Connection to PT_SERVER lost (2)");
@@ -248,10 +248,10 @@ void AP_probe_match_event()
     bytestring bs;
     bs.data = 0;
     aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-              LOCS_MATCH_LIST,	&match_list,
-              LOCS_MATCH_LIST_CNT,	&match_list_cnt,
-              LOCS_MATCH_STRING,	&bs,
-              LOCS_ERROR,		&locs_error,
+              LOCS_MATCH_LIST,  &match_list,
+              LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+              LOCS_MATCH_STRING,    &bs,
+              LOCS_ERROR,       &locs_error,
               0);
     if (*locs_error) {
         aw_message(locs_error);
@@ -275,13 +275,13 @@ int helpflag;
 
 int getInt(const char *param, int val, int min, int max, const char *description){
     if (helpflag){
-        printf("	%s=%3i [%3i:%3i] %s\n",param,val,min,max,description);
+        printf("    %s=%3i [%3i:%3i] %s\n",param,val,min,max,description);
         return 0;
     }
     int   i;
     char *s = 0;
 
-    arb_assert(pargc>1);        // otherwise s stays 0
+    arb_assert(pargc >= 1);     // otherwise s stays 0
 
     for (i=1;i<pargc;i++){
         s = pargv[i];
@@ -293,7 +293,7 @@ int getInt(const char *param, int val, int min, int max, const char *description
     if (*s != '=') return val;
     s++;
     val = atoi(s);
-    pargc--;		// remove parameter
+    pargc--;        // remove parameter
     for (;i<pargc;i++){
         pargv[i] = pargv[i+1];
     }
@@ -306,13 +306,13 @@ int getInt(const char *param, int val, int min, int max, const char *description
 const char *getString(const char *param, const char *val, const char *description){
     if (helpflag){
         if (!val) val = "";
-        printf("	%s=%s   %s\n",param,val,description);
+        printf("    %s=%s   %s\n",param,val,description);
         return 0;
     }
     int   i;
     char *s = 0;
 
-    arb_assert(pargc>1);        // otherwise s stays 0
+    arb_assert(pargc >= 1);     // otherwise s stays 0
 
     for (i=1;i<pargc;i++){
         s = pargv[i];
@@ -323,7 +323,7 @@ const char *getString(const char *param, const char *val, const char *descriptio
     s+= strlen(param);
     if (*s != '=') return val;
     s++;
-    pargc--;		// remove parameter
+    pargc--;        // remove parameter
     for (;i<pargc;i++){
         pargv[i] = pargv[i+1];
     }
@@ -334,37 +334,37 @@ int main(int argc,char ** argv){
     pargc = argc;
     pargv = argv;
     if (argc<=1) helpflag = 1;
-    else		helpflag = 0;
+    else        helpflag = 0;
 
-    P.SERVERID		= getInt("serverid"	,0,0,100,	"Server Id, look into $ARBHOME/lib/arb_tcp.dat");
+    P.SERVERID = getInt("serverid" ,0,0,100,   "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
 
-    P.DESIGNCPLIPOUTPUT	= getInt("designmaxhits",100,10,10000,	"Maximum Number of Probe Design Suggestions");
-    P.DESINGNAMES		= getString("designnames","",		"List of short names seperated by '#'");
-    P.sequence = 0;
-    while  ((P.DESIGNSEQUENCE = getString("designsequence",0,		"Additional Sequences, will be added to the target group"))) {
-        apd_sequence *s = new apd_sequence;
-        s->next = P.sequence;
-        P.sequence = s;
-        s->sequence = P.DESIGNSEQUENCE;
+    P.DESIGNCPLIPOUTPUT = getInt("designmaxhits",100,10,10000,  "Maximum Number of Probe Design Suggestions");
+    P.DESINGNAMES       = getString("designnames","",       "List of short names seperated by '#'");
+    P.sequence          = 0;
+    while  ((P.DESIGNSEQUENCE = getString("designsequence",0,       "Additional Sequences, will be added to the target group"))) {
+        apd_sequence *s  = new apd_sequence;
+        s->next          = P.sequence;
+        P.sequence       = s;
+        s->sequence      = P.DESIGNSEQUENCE;
         P.DESIGNSEQUENCE = 0;
     }
-    P.DESIGNPROBELENGTH	= getInt("designprobelength",18,10,100,	"Length of probe");
-    P.MINTEMP		= getInt("designmintemp",0,0,400,	"Minimum melting temperature of probe");
-    P.MAXTEMP		= getInt("designmaxtemp",400,0,400,	"Maximum melting temperature of probe");
-    P.MINGC			= getInt("desingmingc",30,0,100,	"Minimum gc content");
-    P.MAXGC			= getInt("desingmaxgc",80,0,100,	"Maximum gc content");
-    P.MAXBOND		= getInt("desingmaxbond",0,0,10,	"Not implemented");
+    P.DESIGNPROBELENGTH = getInt("designprobelength",18,10,100, "Length of probe");
+    P.MINTEMP           = getInt("designmintemp",0,0,400,   "Minimum melting temperature of probe");
+    P.MAXTEMP           = getInt("designmaxtemp",400,0,400, "Maximum melting temperature of probe");
+    P.MINGC             = getInt("desingmingc",30,0,100,    "Minimum gc content");
+    P.MAXGC             = getInt("desingmaxgc",80,0,100,    "Maximum gc content");
+    P.MAXBOND           = getInt("desingmaxbond",0,0,10,    "Not implemented");
 
-    P.MINPOS		= getInt("desingminpos",0,0,10000,	"Minimum ecoli position");
-    P.MAXPOS		= getInt("desingmaxpos",10000,0,10000,	"Maximumm ecoli position");
+    P.MINPOS = getInt("desingminpos",0,0,10000,  "Minimum ecoli position");
+    P.MAXPOS = getInt("desingmaxpos",10000,0,10000,  "Maximumm ecoli position");
 
-    P.MISHIT		= getInt("designmishit",0,0,10000,	"Number of allowed hits outside the selected group");
-    P.MINTARGETS		= getInt("designmintargets",50,0,100,	"Minimum percentage of hits within the selected species");
+    P.MISHIT     = getInt("designmishit",0,0,10000,  "Number of allowed hits outside the selected group");
+    P.MINTARGETS = getInt("designmintargets",50,0,100,   "Minimum percentage of hits within the selected species");
 
-    P.SEQUENCE		= getString("matchsequence","agtagtagt","The sequence to search for");
-    P.MISMATCHES		= getInt("matchmismatches", 0,0,5,	"Maximum Number of allowed mismatches");
-    P.COMPLEMENT		= getInt("matchcomplement", 0,0,1,	"Match reversed and complemented probe");
-    P.WEIGHTED		= getInt("matchweighted", 0,0,1,	"Use weighted mismatches");
+    P.SEQUENCE   = getString("matchsequence","agtagtagt","The sequence to search for");
+    P.MISMATCHES = getInt("matchmismatches", 0,0,5,  "Maximum Number of allowed mismatches");
+    P.COMPLEMENT = getInt("matchcomplement", 0,0,1,  "Match reversed and complemented probe");
+    P.WEIGHTED   = getInt("matchweighted", 0,0,1,    "Use weighted mismatches");
 
 
     if (pargc>1){
