@@ -87,19 +87,29 @@ void AW_normal_cursor(AW_root *);
 /*************************************************************************/
 class AW_cb_struct {
 private:
-    AW_CL cd1;
-    AW_CL cd2;
+
+    AW_CL               cd1;
+    AW_CL               cd2;
     class AW_cb_struct *next;
+
 public:
     // ************ This is not the public section *************
-    AW_window   *pop_up_window;
+    AW_window  *pop_up_window;
     void (*f)(AW_window*,AW_CL ,AW_CL);
-    AW_window *aw;
+    AW_window  *aw;
     const char *help_text;
-    char *id;
+    char       *id;
+
     // ************ The real public section *************
-    AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i = 0, AW_CL cd2i = 0, const char *help_texti = 0, AW_cb_struct *next = 0);
-    void        run_callback(void); // runs the whole list
+    AW_cb_struct(AW_window    *awi,
+                 void (*g)(AW_window*,AW_CL ,AW_CL),
+                 AW_CL         cd1i       = 0,
+                 AW_CL         cd2i       = 0,
+                 const char   *help_texti = 0,
+                 AW_cb_struct *next       = 0);
+
+    void    run_callback(void); // runs the whole list
+    AW_BOOL contains(void (*g)(AW_window*,AW_CL ,AW_CL)); // test if contained in list
 };
 
 
@@ -260,6 +270,12 @@ public:
     void set_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
     void set_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1=0, AW_CL cd2=0);
+
+    AW_BOOL is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_input_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_motion_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_double_click_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL));
 
     void get_event(AW_event *eventi);       // In an event callback get the events info
 
