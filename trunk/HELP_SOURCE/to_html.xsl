@@ -148,6 +148,7 @@
   <!-- ======================== -->
   <xsl:template name="link-to-document">
     <xsl:param name="doc"/>
+    <xsl:param name="missing"/>
 
     <xsl:choose>
       <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
@@ -157,11 +158,18 @@
       </xsl:when>
       <xsl:otherwise>
         <A href="{concat($rootpath,$doc)}.html">
-          <xsl:for-each select="document(concat($xml_location,'/',$doc,'.xml'))">
-            <xsl:for-each select="PAGE/TITLE">
-              <xsl:value-of select="text()"/>
-            </xsl:for-each>
-          </xsl:for-each>
+          <xsl:choose>
+            <xsl:when test="$missing='1'">
+              <FONT color="red"><xsl:value-of select="concat('Missing Link to ',$doc,'.hlp')"/></FONT>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:for-each select="document(concat($xml_location,'/',$doc,'.xml'))">
+                <xsl:for-each select="PAGE/TITLE">
+                  <xsl:value-of select="text()"/>
+                </xsl:for-each>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
         </A>
       </xsl:otherwise>
     </xsl:choose>
@@ -173,6 +181,7 @@
 
   <xsl:template match="UP" mode="uplinks"><LI><xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
+        <xsl:with-param name="missing" select="@missing"/>
       </xsl:call-template></LI></xsl:template>
 
   <xsl:template match="*" mode="uplinks">
@@ -186,6 +195,7 @@
     <LI>
       <xsl:call-template name="link-to-document">
         <xsl:with-param name="doc" select="@dest"/>
+        <xsl:with-param name="missing" select="@missing"/>
       </xsl:call-template>
     </LI>
   </xsl:template>
