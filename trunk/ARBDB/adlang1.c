@@ -1103,6 +1103,12 @@ struct cached_taxonomy {
                        */
 };
 
+static void free_cached_taxonomy(struct cached_taxonomy *ct) {
+    free(ct->tree_name);
+    GBS_free_hash(ct->taxonomy);
+    free(ct);
+}
+
 static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *parent_group, int *group_counter) {
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
@@ -1146,6 +1152,60 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 
 static GB_HASH *cached_taxonomies = 0;
 
+
+static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
+    /* this cb is bound to "/tree_data/tree_xxx".
+     * it invalidates cached taxonomies for that tree (when changed or deleted)
+     */
+
+    struct cached_taxonomy *ct    = (struct cached_taxonomy *)cd_ct;
+    const char             *key   = 0;
+    const char             *found = 0;
+    long                    val;
+    GB_ERROR                error = 0;
+
+    /* search the hash to find the correct cached taxonomy.
+       searching for tree name does not work, because the tree may already be deleted
+    */
+
+#if defined(DEBUG)
+    fprintf(stderr, "Currently cached taxonomies:\n");
+#endif /* DEBUG */
+    for (GBS_hash_first_element(cached_taxonomies, &key, &val);
+         val;
+         GBS_hash_next_element(cached_taxonomies, &key, &val))
+    {
+        struct cached_taxonomy *curr_ct = (struct cached_taxonomy *)val;
+#if defined(DEBUG)
+        fprintf(stderr, " curr_ct=%p key='%s'\n", curr_ct, key);
+#endif /* DEBUG */
+        if (ct == curr_ct) {
+            found = key;
+#if !defined(DEBUG)
+            break;
+#endif /* DEBUG */
+        }
+    }
+
+    if (found) {
+#if defined(DEBUG)
+        fprintf(stderr, "Deleting cached taxonomy ct=%p (tree='%s')\n", ct, found);
+#endif /* DEBUG */
+        GBS_write_hash(cached_taxonomies, found, 0); /* delete cached taxonomy from hash */
+        free_cached_taxonomy(ct);
+    }
+    else {
+#if defined(DEBUG)
+        fprintf(stderr, "No tree found for cached_taxonomies ct=%p (already deleted?)\n", ct);
+#endif /* DEBUG */
+    }
+
+    error = GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, cd_ct);
+    if (error) {
+        fprintf(stderr, "Error in flush_taxonomy_cb: %s\n", error);
+    }
+}
+
 static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
     long cached;
     *error = 0;
@@ -1155,9 +1215,6 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
         GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
-#if defined(DEBUG)
-        printf("Creating taxonomy hash for '%s'\n", tree_name);
-#endif /* DEBUG */
         if (!tree) {
             *error = GB_get_error();
         }
@@ -1166,16 +1223,27 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
         }
 
         if (!*error) {
-            struct cached_taxonomy *ct            = malloc(sizeof(*ct));
-            long                    nodes         = GBT_count_nodes(tree);
-            int                     group_counter = 0;
+            GBDATA *gb_tree = GBT_get_tree(gb_main, tree_name);
+            if (!gb_tree) {
+                *error = GB_export_error("Can't find 'tree_data'");
+            }
+            else {
+                struct cached_taxonomy *ct            = malloc(sizeof(*ct));
+                long                    nodes         = GBT_count_nodes(tree);
+                int                     group_counter = 0;
 
-            ct->tree_name = strdup(tree_name);
-            ct->taxonomy  = GBS_create_hash((int)(nodes*1.5), 1);
+                ct->tree_name = strdup(tree_name);
+                ct->taxonomy  = GBS_create_hash((int)(nodes*1.5), 1);
 
-            build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);
-            cached = (long)ct;
-            GBS_write_hash(cached_taxonomies, tree_name, (long)ct);
+                build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);
+                cached = (long)ct;
+                GBS_write_hash(cached_taxonomies, tree_name, (long)ct);
+
+                GB_add_priority_callback(gb_tree, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct, 4);
+#if defined(DEBUG)
+                fprintf(stderr, "Created taxonomy hash for '%s' (ct=%p)\n", tree_name, ct);
+#endif /* DEBUG */
+            }
         }
 
         if (tree) GBT_delete_tree(tree);
@@ -1583,11 +1651,11 @@ static GB_ERROR gbl_diff(GBL_command_arguments *args)
 
     GBL_BEGIN_PARAMS;
     GBL_PARAM_STRING(sai,     "SAI=",     0,   "Use default Sequence of SAI as a filter"    );
-    GBL_PARAM_STRING(species, "species=", 0,   "Use default Sequence of species as a filter"); 
-    GBL_PARAM_STRING(equal,   "equal=",   ".", "symbol for equal characters"                ); 
+    GBL_PARAM_STRING(species, "species=", 0,   "Use default Sequence of species as a filter");
+    GBL_PARAM_STRING(equal,   "equal=",   ".", "symbol for equal characters"                );
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
     GBL_END_PARAMS;
-    
+
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     if (args->cinput==0) return "No input stream";
     if (!sai && !species) return "Missing parameter: 'SAI=' or 'species='";
