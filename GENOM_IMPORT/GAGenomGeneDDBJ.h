@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAGENOMGENEDDBJ_H
 #define GAGENOMGENEDDBJ_H
@@ -10,17 +11,17 @@
 
 namespace gellisary{
 
-class GAGenomGeneDDBJ : public GAGenomGene{
-private:
-	GAGenomGeneLocationDDBJ location;
-	
-public:
+    class GAGenomGeneDDBJ : public GAGenomGene{
+    private:
+        GAGenomGeneLocationDDBJ location;
 
-	GAGenomGeneDDBJ(){}
-	virtual ~GAGenomGeneDDBJ(){}
-	virtual void parse();
-	GAGenomGeneLocationDDBJ * getLocation();
-};
+    public:
+
+        GAGenomGeneDDBJ(){}
+        virtual ~GAGenomGeneDDBJ(){}
+        virtual void parse();
+        GAGenomGeneLocationDDBJ * getLocation();
+    };
 
 };
 

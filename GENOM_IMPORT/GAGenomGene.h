@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAGENOMGENE_H
 #define GAGENOMGENE_H
@@ -20,39 +21,39 @@
 #endif
 
 namespace gellisary {
-/*
- * Bemerkung:
- * 	Schau dir die Implementation der Methode getQualifierName() an und korregiere es!!!
- */
-class GAGenomGene : public GAParser{
-protected:
-	std::string gene_type;
-	std::map<std::string,std::string> qualifiers;
-	std::vector<std::string> names_of_qualifiers;
-	int gene_type_number;
-	int gene_number;
-	std::map<std::string,std::string>::iterator iter;
-	std::string location_as_string;
-	std::string name_of_gene;
-	std::string tmp_key;
-	std::string tmp_value;
-	
-public:
-	GAGenomGene(){}
-	virtual ~GAGenomGene(){}
-	virtual void parse() = 0;
-	std::string * getGeneType();
-	int getGeneTypeNumber();
-	int getGeneNumber();
-	std::string * getQualifierName();
-	std::string * getQualifierValue(std::string *);
-	void setGeneNumber(int);
-	void setGeneTypeNumber(int);
-	std::string * getLocationAsString();
-	std::string * getNameOfGene();
-	void setNameOfGene(std::string *);
-	void setIterator();
-};
+    /*
+     * Bemerkung:
+     *  Schau dir die Implementation der Methode getQualifierName() an und korregiere es!!!
+     */
+    class GAGenomGene : public GAParser{
+    protected:
+        std::string gene_type;
+        std::map<std::string,std::string> qualifiers;
+        std::vector<std::string> names_of_qualifiers;
+        int gene_type_number;
+        int gene_number;
+        std::map<std::string,std::string>::iterator iter;
+        std::string location_as_string;
+        std::string name_of_gene;
+        std::string tmp_key;
+        std::string tmp_value;
+
+    public:
+        GAGenomGene(){}
+        virtual ~GAGenomGene(){}
+        virtual void parse() = 0;
+        std::string * getGeneType();
+        int getGeneTypeNumber();
+        int getGeneNumber();
+        std::string * getQualifierName();
+        std::string * getQualifierValue(std::string *);
+        void setGeneNumber(int);
+        void setGeneTypeNumber(int);
+        std::string * getLocationAsString();
+        std::string * getNameOfGene();
+        void setNameOfGene(std::string *);
+        void setIterator();
+    };
 
 };
 

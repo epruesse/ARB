@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAGENOMFEATURETABLEDDBJ_H
 #define GAGENOMFEATURETABLEDDBJ_H
@@ -23,26 +24,26 @@
 
 namespace gellisary{
 
-class GAGenomFeatureTableDDBJ : public GAGenomFeatureTable{
-private:
-	GAGenomFeatureTableSourceDDBJ source;
-	std::map<std::string,GAGenomGeneDDBJ> genes;
-	std::vector<std::string> features;
-	std::vector<int> number_of_features;
-	std::map<std::string,GAGenomGeneDDBJ>::iterator iter;
-	
-	int nameToNumberOfFeature(std::string *);
+    class GAGenomFeatureTableDDBJ : public GAGenomFeatureTable{
+    private:
+        GAGenomFeatureTableSourceDDBJ source;
+        std::map<std::string,GAGenomGeneDDBJ> genes;
+        std::vector<std::string> features;
+        std::vector<int> number_of_features;
+        std::map<std::string,GAGenomGeneDDBJ>::iterator iter;
 
-public:
+        int nameToNumberOfFeature(std::string *);
 
-	GAGenomFeatureTableDDBJ();
-	virtual ~GAGenomFeatureTableDDBJ(){}
-	virtual void parse();
-	GAGenomFeatureTableSourceDDBJ * getFeatureTableSource();
-	std::string * getGeneName();
-	GAGenomGeneDDBJ * getGeneByName(std::string *);
-	void setIterator();
-};
+    public:
+
+        GAGenomFeatureTableDDBJ();
+        virtual ~GAGenomFeatureTableDDBJ(){}
+        virtual void parse();
+        GAGenomFeatureTableSourceDDBJ * getFeatureTableSource();
+        std::string * getGeneName();
+        GAGenomGeneDDBJ * getGeneByName(std::string *);
+        void setIterator();
+    };
 
 };
 

@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAGENOMFEATURETABLEGENBANK_H
 #define GAGENOMFEATURETABLEGENBANK_H
@@ -23,26 +24,26 @@
 
 namespace gellisary{
 
-class GAGenomFeatureTableGenBank : public GAGenomFeatureTable{
-private:
-	GAGenomFeatureTableSourceGenBank source;
-	std::map<std::string,GAGenomGeneGenBank> genes;
-	std::vector<std::string> features;
-	std::vector<int> number_of_features;
-	std::map<std::string,GAGenomGeneGenBank>::iterator iter;
-	
-	int nameToNumberOfFeature(std::string *);
+    class GAGenomFeatureTableGenBank : public GAGenomFeatureTable{
+    private:
+        GAGenomFeatureTableSourceGenBank source;
+        std::map<std::string,GAGenomGeneGenBank> genes;
+        std::vector<std::string> features;
+        std::vector<int> number_of_features;
+        std::map<std::string,GAGenomGeneGenBank>::iterator iter;
 
-public:
+        int nameToNumberOfFeature(std::string *);
 
-	GAGenomFeatureTableGenBank();
-	virtual ~GAGenomFeatureTableGenBank(){}
-	virtual void parse();
-	GAGenomFeatureTableSourceGenBank * getFeatureTableSource();
-	std::string * getGeneName();
-	GAGenomGeneGenBank * getGeneByName(std::string *);
-	void setIterator();
-};
+    public:
+
+        GAGenomFeatureTableGenBank();
+        virtual ~GAGenomFeatureTableGenBank(){}
+        virtual void parse();
+        GAGenomFeatureTableSourceGenBank * getFeatureTableSource();
+        std::string * getGeneName();
+        GAGenomGeneGenBank * getGeneByName(std::string *);
+        void setIterator();
+    };
 
 };
 

@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAGENOMFEATURETABLESOURCE_H
 #define GAGENOMFEATURETABLESOURCE_H
@@ -16,29 +17,29 @@
 #endif
 
 namespace gellisary {
-/*
- * Bemerkung:
- * 	Schau dir die Implementation der Methode getQualifierName() an und korregiere es!!!
- */
-class GAGenomFeatureTableSource : public GAParser{
-protected:
-	std::map<std::string,std::string> qualifiers;
-	int source_begin;
-	int source_end;
-	std::map<std::string,std::string>::iterator iter;
-	std::string tmp_key;
-	
-public:
+    /*
+     * Bemerkung:
+     *  Schau dir die Implementation der Methode getQualifierName() an und korregiere es!!!
+     */
+    class GAGenomFeatureTableSource : public GAParser{
+    protected:
+        std::map<std::string,std::string> qualifiers;
+        int source_begin;
+        int source_end;
+        std::map<std::string,std::string>::iterator iter;
+        std::string tmp_key;
 
-//	GAGenomFeatureTableSource();
-	virtual ~GAGenomFeatureTableSource(){}
-	virtual void parse() = 0;
-	int getBegin();
-	int getEnd();
-	std::string * getNameOfQualifier();
-	std::string * getValueOfQualifier(std::string *);
-	void setIterator();
-};
+    public:
+
+        //  GAGenomFeatureTableSource();
+        virtual ~GAGenomFeatureTableSource(){}
+        virtual void parse() = 0;
+        int getBegin();
+        int getEnd();
+        std::string * getNameOfQualifier();
+        std::string * getValueOfQualifier(std::string *);
+        void setIterator();
+    };
 
 };
 
