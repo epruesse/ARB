@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Fri Aug/23/2002 21:53 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri Nov/08/2002 22:58 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -88,10 +88,11 @@ public:
 /// xml element
 class XML_Tag : public XML_Node {
 private:
-    std::string         name;
+    std::string    name;
     XML_Node      *son;
     XML_Attribute *attribute;
-    int            state; // 0 = no son; 1 = only content; 2 = son-tag;
+    int            state;       // 0        = no son; 1 = only content; 2 = son-tag;
+    bool           onExtraLine; // default = true; if false -> does not print linefeed before tag
 
 public:
     /** Create a new xml element
@@ -110,6 +111,8 @@ public:
     virtual void remove_son(XML_Node *son_);
     virtual void open(FILE *out);
     virtual void close(FILE *out);
+
+    void set_on_extra_line(bool oel) { onExtraLine = oel; }
 };
 
 //  -----------------------------------------
