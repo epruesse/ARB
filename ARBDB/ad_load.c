@@ -1580,6 +1580,11 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
     }
     Main->security_level = 0;
     gbl_install_standard_commands((GBDATA *)gbd);
+    
+    if (Main->local_mode == GB_TRUE) { // i am the server
+        GBT_install_message_handler((GBDATA *)gbd);
+    }
+
     if (gb_verbose_mode)    {
         GB_information("ARB: Loading '%s' done\n", path);
 /*         fprintf(stdout, "   ARB:    Loading '%s' done\n", path); */
