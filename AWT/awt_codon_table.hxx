@@ -58,7 +58,7 @@ void AWT_initialize_codon_tables();
 
 int AWT_embl_transl_table_2_arb_code_nr(int embl_index);
 
-int         AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left);
+bool        AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason = 0);
 const char *AWT_get_codons(char protein, int code_nr);
 
 const char *AWT_get_protein_name(char protein);
