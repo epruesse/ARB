@@ -1,7 +1,7 @@
 /*ARBDB ASCII*/
 window	%% (%
 	font		"8x13bold"
-	background		"#fbb"
+	background		"#cececc"
 	foreground		"Black"
 	color_1		"red"
 	color_2		"green"
