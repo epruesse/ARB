@@ -1461,6 +1461,8 @@ static void pars_start_cb(AW_window *aww)
         aw_closestatus();
     }
 
+    awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
+
     if (ap_main->commands.add_marked){
         NT_quick_add(awm,ntw,0);
     }
