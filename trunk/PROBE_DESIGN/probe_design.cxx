@@ -256,6 +256,9 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
         GBS_chrcat(names, '#');
     }
 
+    GBS_str_cut_tail(names, 1); // remove trailing '#'
+    GBS_str_cut_tail(checksums, 1); // remove trailing '#'
+
     free(use);
 
     bs.data = GBS_strclose(names);
@@ -328,6 +331,9 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
         }
     }
 
+    GBS_str_cut_tail(names, 1); // remove trailing '#'
+    GBS_str_cut_tail(checksums, 1); // remove trailing '#'
+    
     bs.data = GBS_strclose(names);
     bs.size = strlen(bs.data)+1;
 
@@ -412,8 +418,8 @@ void probe_design_event(AW_window *aww)
         error = "Cannot contact to probe server: Connection Refused";
     }
 
+    bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main);
     if (!error){
-        bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main);
         if (design_gene_probes) { // design probes for genes
             error = pd_get_the_gene_names(bs,check);
         }
@@ -458,7 +464,7 @@ void probe_design_event(AW_window *aww)
              0);
 
 
-    /* Get the unknown names !!! */
+    /* Get the unknown names */
     bytestring unknown_names;
     if (aisc_get(pd_gl.link,PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
@@ -468,154 +474,175 @@ void probe_design_event(AW_window *aww)
         return;
     }
 
-    char *unames =  unknown_names.data;
-    if (unknown_names.size>1){
-        if (aw_message(GBS_global_string(
-                                         "Your PT server is not up to date or wrongly chosen\n"
-                                         "  The following names are new to it:\n"
-                                         "  %s\n"
-                                         "  This version allows you to quickly add the unknown sequences\n"
-                                         "  to the pt_server\n"
-                                         ,unames),"Add and Continue,Abort")){
-            delete unknown_names.data;
-            goto end;
+    char *unames = unknown_names.data;
+    bool  abort  = false;
+    
+    if (unknown_names.size>1) {
+        if (design_gene_probes) { // updating sequences of missing genes is not possible with gene PT server
+            aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen.\n"
+                                         "The following genes are new to it: %s\n"
+                                         "You'll have to update the PT server.", unames));
+            abort = true;
         }
-        char *h;
-        GB_transaction dummy(gb_main);
-        char *ali_name = GBT_get_default_alignment(gb_main);
-        for (;unames;unames = h){
-            h = strchr(unames,'#');
-            if (h) *(h++) = 0;
-            GBDATA *gb_species = GBT_find_species(gb_main,unames);
-            if (!gb_species) {
-                aw_message("Internal Error: a species not found");
-                continue;
-            }
-            GBDATA *data = GBT_read_sequence(gb_species,ali_name);
-            if (!data) {
-                aw_message( GB_export_error("Species '%s' has no sequence belonging to alignment %s",
-                                            GB_read_char_pntr(GB_search(gb_species,"name",GB_STRING)),
-                                            ali_name));
-                goto end;
-            }
-            T_PT_SEQUENCE pts;
-            bytestring bs_seq;
-            bs_seq.data = GB_read_char_pntr(data);
-            bs_seq.size = GB_read_string_count(data)+1;
-            aisc_create(pd_gl.link, PT_PDC, pdc,
-                        PDC_SEQUENCE, PT_SEQUENCE, &pts,
-                        SEQUENCE_SEQUENCE, &bs_seq,
-                        0);
+        else if (aw_message(GBS_global_string(
+                                              "Your PT server is not up to date or wrongly chosen\n"
+                                              "  The following names are new to it:\n"
+                                              "  %s\n"
+                                              "  This version allows you to quickly add the unknown sequences\n"
+                                              "  to the pt_server\n"
+                                              ,unames),"Add and Continue,Abort"))
+        {
+            abort = true;
         }
-        delete unknown_names.data;
+        else {
+            GB_transaction dummy(gb_main);
+            
+            char *h;
+            char *ali_name = GBT_get_default_alignment(gb_main);
+
+            for (; unames && !abort; unames = h) {
+                h = strchr(unames,'#');
+                if (h) *(h++) = 0;
+                GBDATA *gb_species = GBT_find_species(gb_main,unames);
+                if (!gb_species) {
+                    aw_message(GBS_global_string("Species '%s' not found", unames));
+                    abort = true;
+                }
+                else {
+                    GBDATA *data = GBT_read_sequence(gb_species,ali_name);
+                    if (!data) {
+                        aw_message( GB_export_error("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
+                        abort = true;
+                    }
+                    else {
+                        T_PT_SEQUENCE pts;
+                        bytestring    bs_seq;
+                        bs_seq.data = GB_read_char_pntr(data);
+                        bs_seq.size = GB_read_string_count(data)+1;
+                        aisc_create(pd_gl.link, PT_PDC, pdc, PDC_SEQUENCE,
+                                    PT_SEQUENCE, &pts,
+                                    SEQUENCE_SEQUENCE, &bs_seq,
+                                    0);
+                    }
+                }
+            }
+        }
+        free(unknown_names.data);
     }
 
-    aisc_put(pd_gl.link,PT_PDC, pdc,
-             PDC_GO,0,
-             0);
+    if (!abort) {
+        aisc_put(pd_gl.link,PT_PDC, pdc,
+                 PDC_GO,0,
+                 0);
 
-    aw_status("Read the results from the server");
-    {
-        char *locs_error = 0;
-        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, 0)) {
-            aw_message ("Connection to PT_SERVER lost (1)");
-            aw_closestatus();
-            return;
+        aw_status("Read the results from the server");
+        {
+            char *locs_error = 0;
+            if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, 0)) {
+                aw_message ("Connection to PT_SERVER lost (1)");
+                abort = true;
+            }
+            else if (*locs_error) {
+                aw_message(locs_error);
+                abort = true;
+            }
+            else {
+                free(locs_error);
+            }
         }
-        if (*locs_error) aw_message(locs_error);
-        free(locs_error);
     }
 
-    aisc_get( pd_gl.link, PT_PDC, pdc,
-              PDC_TPROBE, &tprobe,
-              0);
-
-    probe_design_create_result_window(aww);
-    pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
-
-    if (tprobe) {
-        aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                  TPROBE_INFO_HEADER,   &match_info,
+    if (!abort) {
+        aisc_get( pd_gl.link, PT_PDC, pdc,
+                  PDC_TPROBE, &tprobe,
                   0);
-        char *s = strtok(match_info,"\n");
-        while (s) {
-            pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, s, "" );
-            s = strtok(0,"\n");
-        }
-        free(match_info);
-    }else{
-        pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, "There are no results", "" );
-    }
 
-    //#define TEST_PD
-#if defined(TEST_PD)
-    int my_TPROBE_KEY;
-    char *my_TPROBE_KEYSTRING;
-    int my_TPROBE_CNT;
-    int my_TPROBE_PARENT;
-    int my_TPROBE_LAST;
-    char *my_TPROBE_IDENT;
-    char *my_TPROBE_SEQUENCE;
-    double my_TPROBE_QUALITY;
-    int my_TPROBE_GROUPSIZE;
-    int my_TPROBE_HAIRPIN;
-    int my_TPROBE_WHAIRPIN;
-    //    int my_TPROBE_PERC;
-    double my_TPROBE_TEMPERATURE;
-    int my_TPROBE_MISHIT;
-    int my_TPROBE_APOS;
-    int my_TPROBE_ECOLI_POS;
+        probe_design_create_result_window(aww);
+        pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
 
-#endif // TEST_PD
-
-    while ( tprobe ){
-      long tprobe_next;
-        if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                      TPROBE_NEXT,      &tprobe_next,
-                      TPROBE_INFO,      &match_info,
-#if defined(TEST_PD)
-                      TPROBE_KEY, &my_TPROBE_KEY,
-                      TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
-                      TPROBE_CNT, &my_TPROBE_CNT,
-                      TPROBE_PARENT, &my_TPROBE_PARENT,
-                      TPROBE_LAST, &my_TPROBE_LAST,
-                      TPROBE_IDENT, &my_TPROBE_IDENT,
-                      TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // Sondensequenz codiert (2=A 3=C 4=G 5=U)
-                      TPROBE_QUALITY, &my_TPROBE_QUALITY, // Qualitaet der Sonde ?
-#endif // TEST_PD
-                      0)) break;
-
-
-#if defined(TEST_PD)
-        if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                      TPROBE_GROUPSIZE, &my_TPROBE_GROUPSIZE, // groesse der Gruppe,  die von Sonde getroffen wird?
-                      TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN,
-                      TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN,
-                      //                      TPROBE_PERC, &my_TPROBE_PERC,
-                      TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
-                      TPROBE_MISHIT, &my_TPROBE_MISHIT, // Treffer ausserhalb von Gruppe ?
-                      TPROBE_APOS, &my_TPROBE_APOS, // Alignment-Position
-                      TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS,
-                      0)) break;
-#endif // TEST_PD
-        tprobe = tprobe_next;
-
-        char *probe,*space;
-        probe = strpbrk(match_info,"acgtuACGTU");
-        if (probe) space = strchr(probe,' ');
-        if (probe && space) {
-            *space = 0; probe = strdup(probe);*space=' ';
+        if (tprobe) {
+            aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+                      TPROBE_INFO_HEADER,   &match_info,
+                      0);
+            char *s = strtok(match_info,"\n");
+            while (s) {
+                pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, s, "" );
+                s = strtok(0,"\n");
+            }
+            free(match_info);
         }else{
-            probe = strdup("");
+            pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, "There are no results", "" );
         }
-        pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, match_info, probe );
-        free(probe);
-        free(match_info);
-    }
-    pd_gl.pd_design->insert_default_selection( pd_gl.pd_design_id, "default", "" );
-    pd_gl.pd_design->update_selection_list( pd_gl.pd_design_id );
 
- end:
+        //#define TEST_PD
+#if defined(TEST_PD)
+        int my_TPROBE_KEY;
+        char *my_TPROBE_KEYSTRING;
+        int my_TPROBE_CNT;
+        int my_TPROBE_PARENT;
+        int my_TPROBE_LAST;
+        char *my_TPROBE_IDENT;
+        char *my_TPROBE_SEQUENCE;
+        double my_TPROBE_QUALITY;
+        int my_TPROBE_GROUPSIZE;
+        int my_TPROBE_HAIRPIN;
+        int my_TPROBE_WHAIRPIN;
+        //    int my_TPROBE_PERC;
+        double my_TPROBE_TEMPERATURE;
+        int my_TPROBE_MISHIT;
+        int my_TPROBE_APOS;
+        int my_TPROBE_ECOLI_POS;
+
+#endif // TEST_PD
+
+        while ( tprobe ){
+            long tprobe_next;
+            if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+                          TPROBE_NEXT,      &tprobe_next,
+                          TPROBE_INFO,      &match_info,
+#if defined(TEST_PD)
+                          TPROBE_KEY, &my_TPROBE_KEY,
+                          TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
+                          TPROBE_CNT, &my_TPROBE_CNT,
+                          TPROBE_PARENT, &my_TPROBE_PARENT,
+                          TPROBE_LAST, &my_TPROBE_LAST,
+                          TPROBE_IDENT, &my_TPROBE_IDENT,
+                          TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
+                          TPROBE_QUALITY, &my_TPROBE_QUALITY, // quality of probe ? 
+#endif // TEST_PD
+                          0)) break;
+
+
+#if defined(TEST_PD)
+            if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
+                          TPROBE_GROUPSIZE, &my_TPROBE_GROUPSIZE, // groesse der Gruppe,  die von Sonde getroffen wird?
+                          TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN,
+                          TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN,
+                          //                      TPROBE_PERC, &my_TPROBE_PERC,
+                          TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
+                          TPROBE_MISHIT, &my_TPROBE_MISHIT, // Treffer ausserhalb von Gruppe ?
+                          TPROBE_APOS, &my_TPROBE_APOS, // Alignment-Position
+                          TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS,
+                          0)) break;
+#endif // TEST_PD
+            tprobe = tprobe_next;
+
+            char *probe,*space;
+            probe = strpbrk(match_info,"acgtuACGTU");
+            if (probe) space = strchr(probe,' ');
+            if (probe && space) {
+                *space = 0; probe = strdup(probe);*space=' ';
+            }else{
+                probe = strdup("");
+            }
+            pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, match_info, probe );
+            free(probe);
+            free(match_info);
+        }
+        pd_gl.pd_design->insert_default_selection( pd_gl.pd_design_id, "default", "" );
+        pd_gl.pd_design->update_selection_list( pd_gl.pd_design_id );
+    }
+
     aisc_close(pd_gl.link); pd_gl.link = 0;
     aw_closestatus();
     return;
