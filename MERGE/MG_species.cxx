@@ -42,8 +42,8 @@ MG_remap::MG_remap(){
 }
 
 MG_remap::~MG_remap(){
-    delete remap_tab;
-    delete soft_remap_tab;
+    delete [] remap_tab;
+    delete [] soft_remap_tab;
 }
 
 GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
@@ -310,36 +310,57 @@ void MG_transfer_fields_info(char *fieldname)
         free(name);
     }
 }
-#define MG_REMAP_WARNING "\n\tPlease read PRESERVE ALIGNMENT section in help file"
 
 MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name){
     char *tok;
     MG_remap *rem = new MG_remap();
     char *ref_list = strdup(reference_species_names);
     for (tok = strtok(ref_list," \n,;");tok;tok = strtok(NULL," \n,;")){
-        GBDATA *gb_species_left = GBT_find_species(gb_left,tok);
-        if (!gb_species_left){
-            aw_message(GBS_global_string("Warning Couldn't find species '%s' in left DB" MG_REMAP_WARNING,tok));
+        bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;
+        GBDATA *gb_species_left  = 0;
+        GBDATA *gb_species_right = 0;
+
+        if (is_SAI) {
+            gb_species_left  = GBT_find_SAI(gb_left, tok+4);
+            gb_species_right = GBT_find_SAI(gb_right, tok+4);
+        }
+        else {
+            gb_species_left  = GBT_find_species(gb_left,tok);
+            gb_species_right = GBT_find_species(gb_right,tok);
+        }
+
+        if (!gb_species_left || !gb_species_right) {
+            aw_message(GBS_global_string("Warning: Couldn't find %s'%s' in %s DB.\nPlease read PRESERVE ALIGNMENT section in help file!",
+                                         is_SAI ? "" : "species ",
+                                         tok,
+                                         gb_species_left ? "right" : "left"));
             continue;
         }
-        GBDATA *gb_species_right = GBT_find_species(gb_right,tok);
-        if (!gb_species_right){
-            aw_message(GBS_global_string("Warning Couldn't find species '%s' in right DB" MG_REMAP_WARNING,tok));
-            continue;
-        }
-        GBDATA *gb_seq_left = GBT_read_sequence(gb_species_left,alignment_name);
-        if (!gb_seq_left){
-            continue;
-        }
+
+        // look for sequence/SAI "data"
+        GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left,alignment_name);
+        if (!gb_seq_left) continue;
         GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right,alignment_name);
-        if (!gb_seq_right){
+        if (!gb_seq_right) continue;
+
+        GB_TYPES type_left  = GB_read_type(gb_seq_left);
+        GB_TYPES type_right = GB_read_type(gb_seq_right);
+
+        if (type_left != type_right) {
+            aw_message(GBS_global_string("Warning: data type of '%s' differs in both databases", tok));
             continue;
         }
-        char *sleft = GB_read_string(gb_seq_left);
-        char *sright = GB_read_string(gb_seq_right);
-        rem->set(sleft,sright);
-        delete sleft;
-        delete sright;
+
+        if (type_right == GB_STRING) {
+            rem->set(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
+        }
+        else {
+            char *sleft  = GB_read_as_string(gb_seq_left);
+            char *sright = GB_read_as_string(gb_seq_right);
+            rem->set(sleft,sright);
+            free(sleft);
+            free(sright);
+        }
     }
     rem->compile();
     delete ref_list;
@@ -353,7 +374,7 @@ MG_remaps::MG_remaps(GBDATA *gb_left,GBDATA *gb_right,AW_root *awr){
 
     char *reference_species_names = awr->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
     this->alignment_names = GBT_get_alignment_names(gb_left);
-    for (n_remaps = 0;alignment_names[n_remaps];n_remaps++);
+    for (n_remaps = 0;alignment_names[n_remaps];n_remaps++) ;
     this->remaps = (MG_remap **)GB_calloc(sizeof(MG_remap *),n_remaps);
     int i;
     for (i=0;i<n_remaps;i++){
@@ -1159,7 +1180,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     if (aws) return (AW_window *)aws;
 
     awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli",gb_dest);
-    awr->awar_int(AWAR_REMAP_ENABLE, 1, gb_dest);
+    awr->awar_int(AWAR_REMAP_ENABLE, 0, gb_dest);
 
     aws = new AW_window_simple_menu;
     aws->init( awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES", 0,0,10,10 );
@@ -1171,12 +1192,6 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->at("help");
     aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
     aws->create_button("HELP","HELP","H");
-
-    aws->at("preserve");
-    aws->create_toggle(AWAR_REMAP_ENABLE);
-
-    aws->at("reference");
-    aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
 
     awt_query_struct awtqs;
     aws->create_menu(0,"DB_I_Expert","D");
@@ -1245,26 +1260,43 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
 
+    // big transfer buttons:
     aws->button_length(13);
-    aws->shadow_width(3);
+    {
+        aws->shadow_width(3);
 
-    aws->at("transsspec");
-    aws->callback(MG_transfer_selected_species);
-    aws->create_button("TRANSFER_SELECTED_DELETE_DUPLICATED",
-                       "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II","T");
+        aws->at("transsspec");
+        aws->callback(MG_transfer_selected_species);
+        aws->create_button("TRANSFER_SELECTED_DELETE_DUPLICATED",
+                           "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II","T");
 
-    aws->at("translspec");
-    aws->callback(MG_transfer_species_list);
-    aws->create_button("TRANSFER_LISTED_DELETE_DUPLI",
-                       "TRANSFER\nLISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
+        aws->at("translspec");
+        aws->callback(MG_transfer_species_list);
+        aws->create_button("TRANSFER_LISTED_DELETE_DUPLI",
+                           "TRANSFER\nLISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
 
-    aws->at("transfield");
-    aws->callback(AW_POPUP,(AW_CL)MG_transfer_fields,0);
-    aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
-                       "TRANSFER\nFIELD\nOF LISTED\nIN SPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
+        aws->at("transfield");
+        aws->callback(AW_POPUP,(AW_CL)MG_transfer_fields,0);
+        aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
+                           "TRANSFER\nFIELD\nOF LISTED\nIN SPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
 
+        aws->shadow_width(1);
+    }
+
+    // preserve alignments
+    aws->button_length(7);
+    aws->at("preserve");
+    aws->create_toggle(AWAR_REMAP_ENABLE);
+
+    aws->at("reference");
+    aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
+
+    aws->at("pres_sel");
+    aws->callback((AW_CB1)AW_POPUP,(AW_CL)MG_select_preserves_cb);
+    aws->create_button("SELECT", "SELECT", "S");
+
+    // top icon
     aws->button_length(0);
-    aws->shadow_width(1);
     aws->at("icon");
     aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
     aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
