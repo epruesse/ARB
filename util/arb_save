@@ -1,7 +1,7 @@
 #!/bin/sh
 #watch out for DEPOT and DEPOT2
-name=`date '+arbsrc_%d_%m_%y.tgz'`
-rm -f arbsrc_*.tgz
+name=`date '+arbsrc_%Y_%m_%d.tgz'`
+#rm -f arbsrc_*.tgz
 (	ls -d 	./load  ./demo.arb ./README ./arb_* ;\
 	find . 	-name DEPOT -prune -o -name DEPOT2 -prune -o 	\( \
 	   -name "Makefile" -o -name "*.makefile" \
@@ -32,7 +32,8 @@ rm -f arbsrc_*.tgz
     |sort|uniq \
     |cpio -oH tar |gzip - >$name
 
-rm -f arbsrc
+# rm -f arbsrc
 rm -f arbsrc.tgz
 ln -s $name arbsrc.tgz
+ls -alG -rt arbsrc*
 
