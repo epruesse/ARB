@@ -151,7 +151,9 @@ static void update_min_mutations() {
 //      void AP_sequence_protein::set(char *isequence)
 // -------------------------------------------------------
 
-#define SHOW_SEQ
+#if defined(DEBUG)
+// #define SHOW_SEQ
+#endif // DEBUG
 
 void AP_sequence_protein::set(char *isequence)
 {
