@@ -151,53 +151,6 @@ public:
 
 };
 
-#if defined(DEVEL_RALF)
-#warning replace SEC_font_info by AW_font_group
-#endif // DEVEL_RALF
-class SEC_font_info
-{
-    int width,  // maximum letter sizes
-        height,
-        ascent,
-        descent;
-
-    static int max_width;
-    static int max_height;
-    static int max_ascent;
-    static int max_descent;
-
-public:
-
-    SEC_font_info() {}
-
-    static void reset_maximas()
-    {
-        max_width = 0;
-        max_ascent = 0;
-        max_height = 0;
-        max_descent = 0;
-    }
-
-    void update(const AW_font_information *font_info)
-    {
-        width = font_info->max_letter_width;        if (width>max_width) max_width = width;
-        height = font_info->max_letter_height;      if (height>max_height) max_height = height;
-        ascent = font_info->max_letter_ascent;      if (ascent>max_ascent) max_ascent = ascent;
-        descent = font_info->max_letter_descent;    if (descent>max_descent) max_descent = descent;
-    }
-
-    int get_width() const { return width; } // this font
-    int get_height() const { return height; }
-    int get_ascent() const { return ascent; }
-    int get_descent() const { return descent; }
-
-    static int get_max_width() { return max_width; }    // all update'd fonts
-    static int get_max_height() { return max_height; }
-    static int get_max_ascent() { return max_ascent; }
-    static int get_max_descent() { return max_descent; }
-};
-
-extern SEC_font_info font_info[];
 extern SEC_graphic *SEC_GRAPHIC;
 
 
