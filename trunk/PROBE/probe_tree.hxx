@@ -304,19 +304,22 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
         PT_WRITE_SHORT(wcep,name);
         wcep += 2;
     } else {
-        name|=0xc0000000;
+        name |= 0xc0000000;
         PT_WRITE_INT(wcep,name);
         wcep += 4;
     }
+
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
 
     /* tell about old decompression error */
+#if defined(DEBUG)
     if (rpos < 0x7fff && rpos > 0x3fff) {
 	printf("REMARK: Was wrong data (name = %d, apos = %d, rpos = %d)\n", name, apos, rpos);
     }
+#endif // DEBUG
 
-    if (rpos < 0x3fff) {		/* write the rpos */ 
-	       /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/ 
+    if (rpos < 0x3fff) {		/* write the rpos */
+	       /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/
         PT_WRITE_SHORT(wcep,rpos);
         *wcep |= isapos;
         wcep += 2;

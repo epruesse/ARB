@@ -864,6 +864,6 @@ GB_ULONG GB_get_physical_memory(void){
 #elif defined(DIGITAL)
     return 80000;		/* 100 megabyte */
 #else
-    return 40000;		/* 40 megabyte default memory */
+    return 80000;		/* 40 megabyte default memory */
 #endif
 }
