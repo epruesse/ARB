@@ -7,7 +7,7 @@
 # objects for library
 CPP_OBJECTS =   \
 		GenomEmbl.o \
-    GeneEmbl.o \
+		GeneEmbl.o \
 		GenomFeatureTableEmbl.o \
 		GenomLocation.o \
 		GenomReferenceEmbl.o \
