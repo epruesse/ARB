@@ -320,7 +320,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         addr.s_addr = *(long *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = (unsigned short)(socket_id[0]);	/* @@@ = pb_socket  */
+        so_ad.sin_port = htons((unsigned short)(socket_id[0]));	/* @@@ = pb_socket  */
         if (do_connect){
             /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);*/
             if (connect((int)*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
