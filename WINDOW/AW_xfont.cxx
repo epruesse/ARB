@@ -103,6 +103,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-*-screen-bold-r-*-*-",                      (struct xfont*) NULL},
     {"-*-clean-medium-r-*-*-",                     (struct xfont*) NULL},
     {"-*-clean-bold-r-*-*-",                       (struct xfont*) NULL},
+#warning biwidth font is only here for testing - remove for release!    
     {"-*-biwidth-medium-r-*-*-",                   (struct xfont*) NULL},
     {"-*-biwidth-bold-r-*-*-",                     (struct xfont*) NULL},
     {"-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL},
@@ -678,12 +679,15 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
         CI_GET_DEFAULT_INFO_2D(xfs, def);
     }
 
-    fontinfo.max_letter_ascent  = 0;
-    fontinfo.max_letter_descent = 0;
-    fontinfo.max_letter_width   = 0;
+    fontinfo.max_letter.reset();
+    fontinfo.max_all_letter.reset();
+
+    aw_assert(AW_FONTINFO_CHAR_MIN < AW_FONTINFO_CHAR_MAX);
+    aw_assert(AW_FONTINFO_CHAR_ASCII_MAX <= AW_FONTINFO_CHAR_MAX);
+    aw_assert(AW_FONTINFO_CHAR_MIN < AW_FONTINFO_CHAR_ASCII_MAX);
 
     unsigned int i;
-    for (i = 0; i < 256; i++) {
+    for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
         if (singlerow) {/* optimization */
             CI_GET_CHAR_INFO_1D(xfs, i, def, cs);
         } else {
@@ -695,9 +699,10 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
             descent_of_chars[i] = cs->descent;
             width_of_chars[i]   = cs->width;
 
-            if (cs->ascent >fontinfo.max_letter_ascent ) fontinfo.max_letter_ascent  = cs->ascent;
-            if (cs->descent>fontinfo.max_letter_descent) fontinfo.max_letter_descent = cs->descent;
-            if (cs->width  >fontinfo.max_letter_width  ) fontinfo.max_letter_width   = cs->width;
+            if (i <= AW_FONTINFO_CHAR_ASCII_MAX) {
+                fontinfo.max_letter.notify_all(cs->ascent, cs->descent, cs->width);
+            }
+            fontinfo.max_all_letter.notify_all(cs->ascent, cs->descent, cs->width);
         }
         else {
             width_of_chars[i]   = 0;
@@ -706,15 +711,8 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
         }
     }
 
-#if defined(DEBUG) && 0
-#define INCREASE 0
-#warning increasing font size for testing
-    fontinfo.max_letter_width   += INCREASE;
-    fontinfo.max_letter_ascent  += INCREASE;
-    fontinfo.max_letter_descent += INCREASE;
-#endif                          // DEBUG
-
-    fontinfo.max_letter_height = fontinfo.max_letter_descent + fontinfo.max_letter_ascent;
+    fontinfo.max_letter.calc_height();
+    fontinfo.max_all_letter.calc_height();
 
     this->fontnr   = font_nr;
     this->fontsize = size;
