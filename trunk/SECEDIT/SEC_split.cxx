@@ -106,7 +106,9 @@ void SEC_root::find(int pos, SEC_segment **found_segment, SEC_helix_strand **fou
     SEC_loop *root_loop = root_segment->get_loop();
 
     root_loop->find(pos, NULL, found_segment, found_strand);
+#if defined(DEBUG)
     sec_assert(*found_segment || *found_strand); // pos should be somewhere (maybe pos is wrong?)
+#endif // DEBUG
 }
 
 
