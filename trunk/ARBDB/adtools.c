@@ -1038,11 +1038,11 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main,const char *tree_name, long structure_si
 /********************************************************************************************
 					link the tree tips to the database
 ********************************************************************************************/
-long gbt_count_nodes(GBT_TREE *tree){
+long GBT_count_nodes(GBT_TREE *tree){
     if ( tree->is_leaf ) {
         return 1;
     }
-    return gbt_count_nodes(tree->leftson) + gbt_count_nodes(tree->rightson);
+    return GBT_count_nodes(tree->leftson) + GBT_count_nodes(tree->rightson);
 }
 
 GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, GBDATA *gb_species_data, long nodes, long *counter)
@@ -1079,7 +1079,7 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
     GB_ERROR error = 0;
     long nodes =  0;
     long counter = 0;
-    if (show_status) nodes = gbt_count_nodes(tree) + 1;
+    if (show_status) nodes = GBT_count_nodes(tree) + 1;
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     error = gbt_link_tree_to_hash_rek(tree,gb_species_data,nodes,&counter);
     return error;

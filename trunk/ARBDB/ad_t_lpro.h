@@ -14,7 +14,6 @@ GB_ERROR gbt_insert_character P_((GBDATA *gb_species_data, const char *species, 
 long gbt_write_tree_nodes P_((GBDATA *gb_tree, GBT_TREE *node, long startid));
 GB_CPNTR gbt_write_tree_rek_new P_((GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode));
 GBT_TREE *gbt_read_tree_rek P_((char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree));
-long gbt_count_nodes P_((GBT_TREE *tree));
 GB_ERROR gbt_link_tree_to_hash_rek P_((GBT_TREE *tree, GBDATA *gb_species_data, long nodes, long *counter));
 double gbt_read_number P_((FILE *input));
 char *gbt_read_quoted_string P_((FILE *input));

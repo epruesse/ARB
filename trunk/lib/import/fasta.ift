@@ -5,11 +5,12 @@ KEYWIDTH	1
 BEGIN	">??*"
 
 MATCH	">*"
-	SRT "* *=*1"
+    # The second space in the next line HAS TO be a TAB
+	SRT "* *=*1:*	*=*1"
 	WRITE "name"
 
 SEQUENCEAFTER	"*"
-SEQUENCESRT	""
+SEQUENCESRT	" ="
 SEQUENCECOLUMN	0
 SEQUENCEEND	">*"
 

@@ -34,6 +34,7 @@ const char *AWAR_TREE_REM		=	"tmp/ad_tree/tree_rem";
 #define AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS AWAR_TREE_EXPORT_SAVE "/bootstraps"
 #define AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS AWAR_TREE_EXPORT_SAVE "/branchlens"
 #define AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES AWAR_TREE_EXPORT_SAVE "/groupnames"
+#define AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS AWAR_TREE_EXPORT_SAVE "/hide_folded"
 
 void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
@@ -157,6 +158,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
 
 	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS , 0, aw_def);
 	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS , 1, aw_def);
+	aw_root->awar_int(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS , 0, aw_def);
 	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES , 1, aw_def);
 
 	aw_root->awar_string( AWAR_TREE_IMPORT "/file_name", "treefile",aw_def);
@@ -267,7 +269,10 @@ void tree_save_cb(AW_window *aww){
 				break;
             }
             case AD_TREE_EXPORT_FORMAT_XML: {
-                error = AWT_export_XML_tree(gb_main, db_name, tree_name, use_NDS, fname);
+                error = AWT_export_XML_tree(gb_main, db_name, tree_name,
+                                            use_NDS,
+                                            aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
+                                            fname);
 				break;
             }
             case AD_TREE_EXPORT_FORMAT_NEWICK: {
@@ -327,6 +332,7 @@ AW_window *create_tree_export_window(AW_root *root)
     aws->at_newline(); aws->label("Save branch lengths"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS);
     aws->at_newline(); aws->label("Save bootstrap values"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS);
     aws->at_newline(); aws->label("Save group names"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES);
+    aws->at_newline(); aws->label("Hide folded groups (XML only)"); aws->create_toggle(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS);
 
     aws->at_newline();
 	aws->callback(tree_save_cb);
