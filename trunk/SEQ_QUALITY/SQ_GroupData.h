@@ -28,13 +28,11 @@
 
 
 class SQ_GroupData {
-    SQ_GroupData(const SQ_GroupData& other);              // copying not allowed
-    SQ_GroupData& operator = (const SQ_GroupData& other); // assignment not allowed
-
 public:
     SQ_GroupData();
     virtual ~SQ_GroupData();
-
+    //    SQ_GroupData(const SQ_GroupData& other) {}
+    virtual SQ_GroupData& operator = (const SQ_GroupData& other) = 0;
     virtual SQ_GroupData *clone() const = 0;
 
     void         SQ_set_avg_bases(int bases) { avg_bases = bases; }
@@ -56,7 +54,6 @@ protected:
 template <int I>
 class Int {
     Int(const Int& other);            // copying not allowed
-    Int& operator=(const Int& other); // assignment not allowed
 
 public:
     int i[I];
@@ -74,17 +71,35 @@ public:
         }
         return *this;
     }
+    Int& operator=(const Int& other) {
+        for (int j = 0; j<I; ++j) {
+            i[j] = other.i[j];
+        }
+        return *this;      
+    }
 };
 
 
 template <int I>
 class SQ_GroupData_Impl : public SQ_GroupData {
+    SQ_GroupData_Impl(const SQ_GroupData_Impl& other);
 
-    SQ_GroupData_Impl(const SQ_GroupData_Impl& other);            // copying not allowed
-    SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other); // assignment not allowed
 public:
     SQ_GroupData_Impl() { consensus = 0; }
     virtual ~SQ_GroupData_Impl();
+
+    SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other) {
+      seq_assert(other.size>0 && other.initialized);
+      if (!initialized) SQ_init_consensus(other.size);
+      seq_assert(size==other.size);
+
+      avg_bases=other.avg_bases;
+
+      for (int s=0; s<size; ++s) {
+	consensus[s] = other.consensus[s];
+      }
+      return *this;
+    }
 
     void SQ_init_consensus(int size);
     int  SQ_print_on_screen();
@@ -100,11 +115,13 @@ protected:
 class SQ_GroupData_RNA: public SQ_GroupData_Impl<7> {
 
     SQ_GroupData_RNA(const SQ_GroupData_RNA& other);            // copying not allowed
-    SQ_GroupData_RNA& operator=(const SQ_GroupData_RNA& other); // assignment not allowed
 public:
     SQ_GroupData_RNA() {}
 
     SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
+    SQ_GroupData_RNA& operator=(const SQ_GroupData& other) {
+      return static_cast<SQ_GroupData_RNA&>(SQ_GroupData_Impl<7>::operator=(static_cast<const SQ_GroupData_Impl<7>& >(other)));
+    }
 
     double SQ_test_against_consensus(const char *sequence);
     void SQ_add_sequence(const char *sequence);
@@ -113,11 +130,13 @@ public:
 class SQ_GroupData_PRO: public SQ_GroupData_Impl<20> {
 
     SQ_GroupData_PRO(const SQ_GroupData_PRO& other);            // copying not allowed
-    SQ_GroupData_PRO& operator=(const SQ_GroupData_PRO& other); // assignment not allowed
 public:
     SQ_GroupData_PRO() {}
 
     SQ_GroupData_PRO *clone() const { return new SQ_GroupData_PRO; }
+    SQ_GroupData_PRO& operator=(const SQ_GroupData& other) {
+      return static_cast<SQ_GroupData_PRO&>(SQ_GroupData_Impl<20>::operator=(static_cast<const SQ_GroupData_Impl<20>& >(other)));
+    }
 
     double SQ_test_against_consensus(const char *sequence);
     void   SQ_add_sequence(const char *sequence);
@@ -144,6 +163,7 @@ void SQ_GroupData_Impl<I>::SQ_init_consensus(int size_) {
 template <int I>
 void SQ_GroupData_Impl<I>::SQ_add(const SQ_GroupData& other_base) {
     const SQ_GroupData_Impl<I>& other = dynamic_cast<const SQ_GroupData_Impl<I>&>(other_base);
+    seq_assert(size==other.size);
     for (int i = 0; i<size; ++i) {
         consensus[i] += other.consensus[i];
     }

@@ -750,7 +750,7 @@ void SQ_reset_counters(GBT_TREE *root) {
 
 void create_multi_level_consensus(GBT_TREE *node, SQ_GroupData *data) {
     SQ_GroupData *newData  = data->clone();  //save actual consensus
-    newData=data;
+    *newData=*data;
     group_dict[node->name] = newData;        //and link it with an name
 }
 
@@ -767,19 +767,19 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 	GBT_TREE *node1 = node->leftson;
 	GBT_TREE *node2 = node->rightson;
 
-	if (node1) {
-	    SQ_GroupData *leftData  = data->clone();
-	    SQ_calc_and_apply_group_data(node1, gb_main, leftData);
-	    data->SQ_add(*leftData);
-	    delete leftData;
-	}
-	if (node2) {
-	    SQ_GroupData *rightData = data->clone();
-	    SQ_calc_and_apply_group_data(node2, gb_main, rightData);
-	    data->SQ_add(*rightData);
+	//	if (node1) {
+	//	    SQ_GroupData *leftData  = data->clone();
+	SQ_calc_and_apply_group_data(node1, gb_main, data); //Note: data is not used yet!
+	//	data->SQ_add(*leftData);
+	//	    delete leftData;
+	    //	}
+	    //	if (node2) {
+	SQ_GroupData *rightData = data->clone();
+	SQ_calc_and_apply_group_data(node2, gb_main, rightData);
+	data->SQ_add(*rightData);
 	    delete rightData;
 
-	}
+	    //	}
 	if (node->name) {        //  group identified
 	    create_multi_level_consensus(node, data);
 	    globalcounter++;
