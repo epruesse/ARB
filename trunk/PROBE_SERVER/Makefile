@@ -26,6 +26,25 @@ ARCHS_PGD_TREE_MERGE      = TREE_MERGE/TREE_MERGE.a
 
 # --------------------------------------------------------------------------------
 
+ifeq ('$(MAIN)','PROBE_SERVER.a')
+		TARGET=$(MAIN)
+else
+		TARGET=help_local
+endif
+
+main_target : $(TARGET)
+
+help_local:
+	@echo ""
+	@echo "    target      description"
+	@echo "   ----------------------------------------------------------------------"
+	@echo ""
+	@echo "    binaries    builds needed binaries"
+	@echo ""
+
+binaries:
+	(cd $(ARBHOME); make dball pt libs ps)
+
 $(MAIN): $(SUBS) $(BINARIES)
 
 $(BINARIES): makedestdir $(SUBS)
