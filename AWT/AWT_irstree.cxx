@@ -54,7 +54,7 @@ void draw_top_seperator(){
 	    irs_gl.device->line(gc,-10000,y,10000,y,-1,(AW_CL)0,(AW_CL)0);
 	}
     }
-}	
+}
 
 int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
@@ -89,12 +89,12 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	int gc = node->gr.gc;
 
 
-	
-	if (node->name && node->name[0] == this->species_name[0] && 
+
+	if (node->name && node->name[0] == this->species_name[0] &&
 			!strcmp(node->name,this->species_name)) {
 			x_cursor = x; y_cursor = irs_gl.y;
 	}
-	
+
 	const char *str = 0;
 	if (!irs_gl.is_size_device){
 	    if (node->gb_node && GB_read_flag(node->gb_node)){
@@ -104,8 +104,8 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	    irs_gl.device->text(gc,str, x, y,0.0,-1, (AW_CL)node,0);
 	}
 	return irs_gl.y;
-    }	
-	
+    }
+
     /* *********************** i'm a grouped subtree ************************ */
     int last_y = irs_gl.y;
     const char *node_string = 0;
@@ -128,13 +128,13 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	    int rx = x_offset + vsize + vsize;
 	    int gc = AWT_GC_GROUPS;
 	    irs_gl.device->line(gc,x_offset, topy, rx, topy, -1,(AW_CL)node,0);
-	
+
 	    irs_gl.device->box(node->gr.gc,x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1),
 			       tipBoxSize, tipBoxSize, -1, (AW_CL)node,0);
-				
+
 	    irs_gl.device->line(gc,x_offset, topy, x_offset, boty, -1, (AW_CL)node,0);
 	    irs_gl.device->line(gc,x_offset, boty, rx,       boty, -1, (AW_CL)node,0);
-	    
+
 	    irs_gl.device->box(node->gr.gc,x_offset+2,irs_gl.y+irs_gl.step_y,vsize,vsize, -1,(AW_CL)node,0);
 
 	    irs_gl.y += vsize + 2*irs_gl.step_y ;
@@ -153,11 +153,11 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	}
 	return y_center;
     }
-	
+
     if ( irs_gl.pruneLevel != IRS_NOPRUNE ){
 	node_string = 0;
     }
-	
+
     /* *********************** i'm a labeled node ************************ */
     /*	If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
 
@@ -174,7 +174,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	irs_gl.y+=int(irs_gl.step_y * 1.8);
 	int gc = AWT_GC_GROUPS;
 	irs_gl.device->line(gc,x_offset,last_y,  x_offset+400, last_y, -1, (AW_CL)node,0);
-	
+
 	irs_gl.device->box(node->gr.gc,x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1),
 			   tipBoxSize,tipBoxSize,
 			   -1, (AW_CL)node,0);
@@ -193,7 +193,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
 
     /* *********************** draw structure ************************ */
-	
+
     if (left_y > irs_gl.min_y){
 	if (left_y < irs_gl.max_y){ // clip y on top border
 	    if (node->leftson->remark_branch ) {
@@ -207,7 +207,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     }else{
 	left_y = irs_gl.min_y;
     }
-    
+
     y_center = (left_y + right_y) / 2; // clip conter on bottom border
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) {
 	if (node->rightson->remark_branch ) {
@@ -218,7 +218,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 	}
 	irs_gl.device->line(node->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
     }
-    
+
     irs_gl.device->line(node->gr.gc,x_offset,left_y,x_offset,   right_y, -1, (AW_CL)node,0);
 
     if (node_string != 0) {		//  A node name should be displayed
@@ -271,7 +271,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     int clipped_r,clipped_b;
     device->rtransform(device->clip_rect.l,device->clip_rect.t,clipped_l,clipped_t);
     device->rtransform(device->clip_rect.r,device->clip_rect.b,clipped_r,clipped_b);
-    
+
     irs_gl.nodes_nnnodes = MAXSHOWNNODES;
     irs_gl.nodes_ntip = 0;
     irs_gl.font_height_2 = font_info->max_letter_ascent/2;
@@ -288,7 +288,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     if (irs_gl.device->type() == AW_DEVICE_SIZE){
 	irs_gl.is_size_device = 1;
     }
-    
+
     this->paint_sub_tree(at,0,AWT_IRS_NORMAL_TREE );
     if (irs_gl.is_size_device){
 	irs_gl.device->invisible(0,irs_gl.min_x,irs_gl.y + (irs_gl.min_y-y) + 200,-1,0,0);

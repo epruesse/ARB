@@ -12,7 +12,10 @@
 
 class AW_window;
 class AW_root;
+
 #include <awt_pro_a_nucs.hxx>
+#include <aw_color_groups.hxx>
+
 typedef unsigned char uchar;
 enum {
 	AWT_GC_CURSOR=0,
@@ -30,8 +33,9 @@ enum {
 	AWT_GC_GREEN,   AWT_GC_CYAN,
 	AWT_GC_BLUE,    AWT_GC_WHITE,
 
-	AWT_GC_MAX
-}; // AW_gc
+    AWT_GC_FIRST_COLOR_GROUP,
+	AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
+};                              // AW_gc
 
 typedef enum {
     NOTHING=0,	// nothing to buffer in AP_tree node

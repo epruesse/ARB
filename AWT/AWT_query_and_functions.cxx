@@ -13,12 +13,20 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_preset.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
 #include "GEN.hxx"
 
 /***************** Create the database query box and functions *************************/
+
+#define AWAR_COLORIZE "tmp/arbdb_query_all/colorize"
+
+static void awt_query_create_global_awars(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_int(AWAR_COLORIZE, 0, aw_def);
+}
+
 
 
 enum AWT_EXT_QUERY_TYPES {
@@ -792,6 +800,85 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
 	delete str;
 }
 
+//  ------------------------------------------------------------------------
+//      static void awt_colorize(void *dummy, struct adaqbsstruct *cbs)
+//  ------------------------------------------------------------------------
+static void awt_colorize(void *dummy, struct adaqbsstruct *cbs) {
+	GB_transaction trans_dummy(cbs->gb_main);
+    GB_ERROR       error = 0;
+
+    AW_root         *aw_root     = cbs->aws->get_root();
+    int              color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    AWT_QUERY_RANGE  range       = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+
+    for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
+         !error && gb_item_container;
+         gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item       = cbs->selector->get_next_item(gb_item))
+        {
+            if (IS_QUERIED(gb_item,cbs)) {
+                AW_set_color_group(gb_item, color_group);
+            }
+        }
+    }
+
+    if (error) GB_export_error(error);
+}
+
+//  ------------------------------------------------------------------------------------
+//      AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs)
+//  ------------------------------------------------------------------------------------
+AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
+	AW_window_simple *aws = new AW_window_simple;
+
+    {
+        char *macro_name = strdup(GBS_global_string("COLORIZE_%s", cbs->selector->items_name));
+        char *window_name = strdup(GBS_global_string("Colorize listed %s", cbs->selector->items_name));
+
+        aws->init( aw_root, macro_name, window_name, 300, 0 );
+
+        free(window_name);
+        free(macro_name);
+    }
+
+    aws->at(10, 10);
+    aws->auto_space(5, 5);
+
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE", "C");
+    aws->at_newline();
+
+    {
+        int color_group;
+
+        aws->label(GBS_global_string("Set color of %s to", cbs->selector->items_name));
+        aws->create_option_menu(AWAR_COLORIZE);
+        for (color_group = 0; color_group <= AW_COLOR_GROUPS; ++color_group) {
+            char buf[50];
+            sprintf(buf, "color group %i", color_group);
+            if (color_group == 0) {
+                aws->insert_default_option(buf, "none", color_group);
+            }
+            else {
+                aws->insert_option(buf,"",color_group);
+            }
+        }
+        aws->update_option_menu();
+    }
+    aws->at_newline();
+
+    aws->callback((AW_CB1)awt_colorize, (AW_CL)cbs);
+    aws->create_button("GO","GO", "G");
+    aws->at_newline();
+
+    aws->window_fit();
+
+    return aws;
+}
+
 AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 {
 	AW_window_simple *aws = 0;
@@ -799,7 +886,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 
     {
         char *macro_name = strdup(GBS_global_string("MODIFY_DATABASE_FIELD_%s", cbs->selector->items_name));
-        char *window_name = strdup(GBS_global_string("MODIFY DATABASE FIELD of %s", cbs->selector->items_name));
+        char *window_name = strdup(GBS_global_string("MODIFY DATABASE FIELD of listed %s", cbs->selector->items_name));
 
         aws->init( aw_root, macro_name, window_name, 600, 0 );
 
@@ -1224,6 +1311,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
 
+    awt_query_create_global_awars(aw_root, AW_ROOT_DEFAULT);
+
 	sprintf(buffer,"tmp/arbdb_query_%i/key",query_id);
 	cbs->awar_key = strdup(buffer);
 	aw_root->awar_string( cbs->awar_key, "name", AW_ROOT_DEFAULT);
@@ -1393,6 +1482,11 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	    sprintf(buffer, "Mark Listed %s, Unmark Rest", Items);          aws->insert_menu_topic("mark_listed_unmark_rest", buffer, "L","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)1);
 	    sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items);  aws->insert_menu_topic("unmark_listed", buffer,"U","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)0 | 8);
 	    sprintf(buffer, "Unmark Listed %s, Mark Rest", Items);          aws->insert_menu_topic("unmark_listed_mark_rest", buffer,"R","mark.hlp",-1,(AW_CB)awt_do_mark_list,(AW_CL)cbs,(AW_CL)0);
+	    aws->insert_separator();
+
+
+	    sprintf(buffer, "Set Color of Listed %s", Items);    aws->insert_menu_topic("set_color_of_listed", buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_colorizer, (AW_CL)cbs);
+
 	    if (cbs->gb_ref){
             awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
             aws->insert_separator();

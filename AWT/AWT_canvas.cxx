@@ -230,7 +230,7 @@ AWT_canvas::tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos
 	}
 
 	if(this->trans_to_fit > max_trans_to_fit){
-		aw_message("Maximum Zoom Factor exceeded!");
+        // aw_message("Maximum Zoom Factor exceeded!");
 		this->trans_to_fit = max_trans_to_fit;
 	}
 

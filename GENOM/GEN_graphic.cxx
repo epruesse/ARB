@@ -75,6 +75,7 @@ AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      (AW_CB)AWT_resize_cb,
                      (AW_CL)ntw,
                      cd2,
+                     true, // define color groups
                      "#55C0AA",
                      "Default$#5555ff",
                      "Gene$#000000",
@@ -181,12 +182,23 @@ inline void getDrawGcs(GEN_iterator& gene, const string& curr_gene_name, int& dr
     if (curr_gene_name == gene->Name()) { // current gene
         draw_gc = text_gc = GEN_GC_CURSOR;
     }
-    else if (GB_read_flag((GBDATA*)gene->GbGene())) { // marked genes
-        draw_gc = text_gc = GEN_GC_MARKED;
-    }
     else {
-        draw_gc = GEN_GC_GENE;
-        text_gc = GEN_GC_DEFAULT; // see show_all_nds in GEN_root::paint if you change this!!!
+        GBDATA *gb_gene = (GBDATA*)gene->GbGene();
+
+        if (GB_read_flag(gb_gene)) { // marked genes
+            draw_gc = text_gc = GEN_GC_MARKED;
+        }
+        else {
+            int color_group = AW_find_color_group(gb_gene);
+
+            if (color_group) {
+                draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
+            }
+            else {
+                draw_gc = GEN_GC_GENE;
+                text_gc = GEN_GC_DEFAULT; // see show_all_nds in GEN_root::paint if you change this!!!
+            }
+        }
     }
 }
 

@@ -7,6 +7,7 @@
 #ifndef GEN_GRAPHIC_HXX
 #define GEN_GRAPHIC_HXX
 
+#include <aw_color_groups.hxx>
 
 enum {
 	GEN_GC_DEFAULT    = 0,
@@ -18,7 +19,10 @@ enum {
 
     GEN_GC_LAST_FONT = GEN_GC_CURSOR,
 
-	GEN_GC_MAX
+    GEN_GC_FIRST_COLOR_GROUP,
+
+	GEN_GC_MAX = GEN_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
+
 };                              // AW_gc
 
 typedef enum {
