@@ -244,6 +244,7 @@ ln -s ../LIBLINK          TOOLS/LIBLINK
 ln -s ../AISC/aisc             MAKEBIN/aisc
 ln -s ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt
 
-# help files (make sure the files is present in user distribution!)
+# help files (make sure the file is present in user distribution!)
 
-ln -s ../help/input_mask_format.hlp lib/inputMasks/format.readme 
+ln -s ../help/input_mask_format.hlp     lib/inputMasks/format.readme
+ln -s ../../GDEHELP                     lib/help/GDEHELP
