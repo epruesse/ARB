@@ -1,10 +1,29 @@
 #include "RNA3D_GlobalHeader.hxx"
 
 // The following includes are needed to use AW_window_Motif 
-#define _AW_COMMON_INCLUDED
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+
+// rest of conflict resolving (left here for testing) : 
+// #include <aw_awars.hxx>
+// #include <aw_preset.hxx>
+// #include <awt_canvas.hxx>
+// #include <awt.hxx>
+// #include <aw_root.hxx>
+
+// #include <GL/glew.h>
+// #include <GL/GLwMDrawA.h>
+
+// #include <X11/keysym.h>
+// #include <X11/Xlib.h>
+// #include <X11/Xutil.h>
+// #include <Xm/Xm.h>
+// #include <Xm/Protocols.h>
+// #include <Xm/MwmUtil.h>
+// #include <Xm/MainW.h>
+
+#warning including ../something means hacking - will be removed when yadhu implemented the general idle handler
 #include "../WINDOW/aw_at.hxx"
 #include "../WINDOW/aw_awar.hxx"
 #include "../WINDOW/aw_xfig.hxx"

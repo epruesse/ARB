@@ -2,7 +2,7 @@
 //                                                                  //
 //    File      : NT_MAUS.cxx                                       //
 //    Purpose   :                                                   //
-//    Time-stamp: <Thu Jul/01/2004 19:30 MET Coder@ReallySoft.de>   //
+//    Time-stamp: <Wed Jan/05/2005 12:55 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in July 2004      //
 //    Institute of Microbiology (Technical University Munich)       //
@@ -14,9 +14,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "arbdb.h"
-#include "awt.hxx"
-#include "aw_window.hxx"
+#include <arbdb.h>
+#include <awt.hxx>
 
 #define AWAR_MAUS_INPUTNAME     "MAUS/inputname"
 #define AWAR_MAUS_EXCLUDED_ACCS "MAUS/excl_acc"
