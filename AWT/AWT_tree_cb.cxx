@@ -57,10 +57,10 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             text = "SWAP MODE    LEFT: swap branches";
             break;
         case AWT_MODE_LENGTH:
-            text = "BRANCH LENGTH MODE   LEFT: Select branch and drag to change length  RIGHT: -";
+            text = "BRANCH LENGTH MODE   LEFT: Drag branch/ruler to change length  RIGHT: use discrete lengths";
             break;
         case AWT_MODE_MOVE:
-            text = "MOVE MODE   LEFT: move subtree and drag to new destination RIGHT: move group info only";
+            text = "MOVE MODE   LEFT: move subtree/ruler to new destination RIGHT: move group info only";
             break;
         case AWT_MODE_NNI:
             text = "NEAREST NEIGHBOUR INTERCHANGE OPTIMIZER  L: select subtree R: whole tree";
@@ -682,8 +682,8 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
             }
         }
         switch (AWT_TREE(ntw)->tree_sort) {
-            case AP_IRS_TREE:
-            case AP_LIST_TREE:{
+            case AP_TREE_IRS:
+            case AP_TREE_NORMAL:{
                 if (auto_expand_groups) {
                     AW_BOOL         changed = AW_FALSE;
                     while (found) {
@@ -724,7 +724,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 ntw->refresh();
                 break;
             }
-            case AP_NDS_TREE:
+            case AP_LIST_NDS:
                 {
                     AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
                     device->set_filter(AW_SIZE);
@@ -751,7 +751,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                     ntw->refresh();
                     break;
                 }
-            case AP_RADIAL_TREE:{
+            case AP_TREE_RADIAL:{
                 AWT_TREE(ntw)->tree_root_display = 0;
                 AWT_TREE(ntw)->jump(AWT_TREE(ntw)->tree_root, name);
                 if (!AWT_TREE(ntw)->tree_root_display) {
@@ -769,7 +769,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
 }
 
 void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){    // jump only if auto jump is set
-    if (AWT_TREE(ntw)->tree_sort == AP_LIST_TREE || AWT_TREE(ntw)->tree_sort == AP_NDS_TREE) {
+    if (AWT_TREE(ntw)->tree_sort == AP_TREE_NORMAL || AWT_TREE(ntw)->tree_sort == AP_LIST_NDS) {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
             NT_jump_cb(dummy,ntw,0);
             return;
