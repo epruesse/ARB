@@ -72,6 +72,9 @@ double SQ_GroupData::SQ_test_against_consensus(const char *sequence) {
 
     for (int i = 0; i < size; i++ ){
 	c = sequence[i];
+	current = 0;
+	div     = 0;
+	sema    = false;
         switch(c) {
             case 'A':
                 current = consensus[i][0];
@@ -105,16 +108,16 @@ double SQ_GroupData::SQ_test_against_consensus(const char *sequence) {
 		temp = temp + consensus[i][j];
 	    }
 	    div = current / temp;
-	    current = 0;
-	    sema = false;
 	}
-
 	result = result + div;
 	//printf(" %f",result);
-	div = 0;
     }
-
-    result = result / base_counter;
-    //printf(" %i",base_counter);
+    if(base_counter!=0){
+	result = result / base_counter;
+	//printf(" %i",base_counter);
+    }
+    else{
+	result=0;
+    }
     return result;
 }
