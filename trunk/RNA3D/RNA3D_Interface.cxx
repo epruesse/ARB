@@ -222,8 +222,9 @@ void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
             ok =  true;
         }
         catch (string& err) {
-#warning errors catched here should close the RNA3D window again (or prevent it from opening)
+            //errors catched here should close the RNA3D window again (or prevent it from opening)
             aw_message(GBS_global_string("Error in RNA3D: %s", err.c_str()));
+            awm->hide();
         }
     }
 
@@ -564,7 +565,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         awm->get_at_position( &start_x,&first_line_y);
         awm->button_length(0);
         awm->callback( (AW_CB0)AW_POPDOWN );
-        awm->create_button("Close", "#quitText.xpm");
+        awm->create_button("Quit", "#quitText.xpm");
     
         awm->get_at_position( &cur_x,&cur_y );
         awm->callback(AW_POPUP,(AW_CL)AW_create_gc_window,(AW_CL)aw_gc_manager);
