@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Oct/11/2002 18:12 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/25/2003 09:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -206,9 +206,9 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_experiment = 0;
 
     if (gb_species) {
-		char *experiment_name = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
-		gb_experiment         = EXP_find_experiment(gb_species,experiment_name);
-		delete experiment_name;
+        char *experiment_name = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
+        gb_experiment         = EXP_find_experiment(gb_species,experiment_name);
+        delete experiment_name;
     }
 
     return gb_experiment;
@@ -234,27 +234,27 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
 
     awt_query_struct awtqs;
 
-    awtqs.gb_main		      = gb_main;
+    awtqs.gb_main             = gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
     //     awtqs.query_genes  = true;
     //     awtqs.gene_name    = AWAR_GENE_NAME;
-    awtqs.select_bit	      = 1;
-    awtqs.use_menu		      = 1;
-    awtqs.ere_pos_fig	      = "ere3";
-    awtqs.where_pos_fig	      = "where3";
-    awtqs.by_pos_fig	      = "by3";
-    awtqs.qbox_pos_fig	      = "qbox";
-    awtqs.rescan_pos_fig	  = 0;
-    awtqs.key_pos_fig	      = 0;
-    awtqs.query_pos_fig	      = "content";
-    awtqs.result_pos_fig	  = "result";
-    awtqs.count_pos_fig	      = "count";
-    awtqs.do_query_pos_fig	  = "doquery";
-    awtqs.config_pos_fig	  = "doconfig";
-    awtqs.do_mark_pos_fig	  = "domark";
-    awtqs.do_unmark_pos_fig	  = "dounmark";
-    awtqs.do_delete_pos_fig	  = "dodelete";
-    awtqs.do_set_pos_fig	  = "doset";
+    awtqs.select_bit          = 1;
+    awtqs.use_menu            = 1;
+    awtqs.ere_pos_fig         = "ere3";
+    awtqs.where_pos_fig       = "where3";
+    awtqs.by_pos_fig          = "by3";
+    awtqs.qbox_pos_fig        = "qbox";
+    awtqs.rescan_pos_fig      = 0;
+    awtqs.key_pos_fig         = 0;
+    awtqs.query_pos_fig       = "content";
+    awtqs.result_pos_fig      = "result";
+    awtqs.count_pos_fig       = "count";
+    awtqs.do_query_pos_fig    = "doquery";
+    awtqs.config_pos_fig      = "doconfig";
+    awtqs.do_mark_pos_fig     = "domark";
+    awtqs.do_unmark_pos_fig   = "dounmark";
+    awtqs.do_delete_pos_fig   = "dodelete";
+    awtqs.do_set_pos_fig      = "doset";
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
     awtqs.create_view_window  = (AW_CL)EXP_create_experiment_window;
@@ -264,8 +264,8 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
     experiment_query_global_cbs = cbs;
 
     aws->create_menu(       0,   "More search",     "S" );
-    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
-    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
+    aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
+    aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
 
     aws->button_length(7);
 
@@ -320,7 +320,7 @@ void experiment_create_cb(AW_window *aww){
         else error = GB_get_error();
     }
     if (!error) GB_commit_transaction(gb_main);
-    else	GB_abort_transaction(gb_main);
+    else    GB_abort_transaction(gb_main);
     if (error) aw_message(error);
     delete dest;
 }
@@ -490,8 +490,8 @@ AW_window *create_experiment_create_window(AW_root *root)
 //  ------------------------------------------------------------------
 void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
 {
-	GB_transaction 	dummy(gb_main);
-    GBDATA 		   *gb_experiment = EXP_get_current_experiment(gb_main, aw_root);
+    GB_transaction  dummy(gb_main);
+    GBDATA         *gb_experiment = EXP_get_current_experiment(gb_main, aw_root);
 
     if (gb_experiment) awt_map_arbdb_scanner(scannerid, gb_experiment, 0, CHANGE_KEY_PATH_EXPERIMENTS);
 }
@@ -501,14 +501,14 @@ void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
 //      void EXP_create_field_items(AW_window *aws)
 //  ----------------------------------------------------
 void EXP_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...", "r","spaf_reorder.hlp", AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...", "D","spaf_delete.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("create_field",		"Create Field ...",	     "C","spaf_create.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("reorder_fields",    "Reorder Fields ...",    "R","spaf_reorder.hlp", AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("delete_field",      "Delete/Hide Field ...", "D","spaf_delete.hlp",  AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("create_field",      "Create Field ...",      "C","spaf_create.hlp",  AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
     aws->insert_separator();
-//     aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("unhide_fields", "Show all hidden fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields","U","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("del_unused_fields", "Remove unused fields","e","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    //     aws->insert_menu_topic("unhide_fields",      "Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("unhide_fields",       "Show all hidden fields", "h","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",    "k","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",   "u","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 //  ------------------------------------------------------------
@@ -521,7 +521,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION", 0,0,800, 0 );
     aws->load_xfig("ad_spec.fig");
-//     aws->load_xfig("experiment_info.fig");
+    //     aws->load_xfig("experiment_info.fig");
 
     aws->button_length(8);
 
@@ -543,13 +543,13 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     ad_global_scannerroot = aws->get_root();
 
     aws->create_menu(       0,   "EXPERIMENT",     "E", "spa_experiment.hlp",  AD_F_ALL );
-    aws->insert_menu_topic("experiment_delete",	"Delete",	"D","spa_delete.hlp",	    AD_F_ALL,	(AW_CB)experiment_delete_cb, 0, 0);
-    aws->insert_menu_topic("experiment_rename",	"Rename ...",	"R","spa_rename.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_experiment_rename_window, 0);
-    aws->insert_menu_topic("experiment_copy",		"Copy ...",	"C","spa_copy.hlp",	        AD_F_ALL,	AW_POPUP, (AW_CL)create_experiment_copy_window, 0);
-    aws->insert_menu_topic("experiment_create",	"Create ...",	"R","spa_create.hlp",	AD_F_ALL, 	AW_POPUP, (AW_CL)create_experiment_create_window, 0);
+    aws->insert_menu_topic("experiment_delete", "Delete",     "D","spa_delete.hlp",       AD_F_ALL,   (AW_CB)experiment_delete_cb, 0, 0);
+    aws->insert_menu_topic("experiment_rename", "Rename ...", "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_rename_window, 0);
+    aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y","spa_copy.hlp",         AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_copy_window, 0);
+    aws->insert_menu_topic("experiment_create", "Create ...", "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_experiment_create_window, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "I", "experiment_fields.hlp",  AD_F_ALL );
+    aws->create_menu(       0,   "FIELDS",     "F", "experiment_fields.hlp",  AD_F_ALL );
     EXP_create_field_items(aws);
 
     Awar_Callback_Info *cb_info = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, scannerid); // do not delete!
@@ -559,7 +559,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
     aws->create_button("DETACH", "DETACH", "D");
 
-//     aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
+    //     aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
 
     aws->show();
     EXP_map_experiment(aws->get_root(),scannerid);
