@@ -16,6 +16,7 @@
 #include <awt_nds.hxx>
 #include "awt_tree.hxx"
 #include "awt_dtree.hxx"
+#include "awt_attributes.hxx"
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 
@@ -2287,7 +2288,8 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
             int gc = AWT_GC_NSELECTED;
             if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
             else {
-                int color_group     = AW_find_color_group(gb_species);
+                int color_group     = AWT_species_get_dominant_color(gb_species);
+                // int color_group     = AW_find_color_group(gb_species);
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
 

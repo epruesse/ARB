@@ -19,6 +19,7 @@
 #include <BI_helix.hxx>
 
 #include <awt_seq_colors.hxx>
+#include <awt_attributes.hxx>
 #include <st_window.hxx>
 
 #include "ed4_class.hxx"
@@ -253,7 +254,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int                  is_marked    = GB_read_flag(spec_man->get_species_pointer());
         int                  selection_col1, selection_col2;
         int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
-        int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
+        int                  color_group  = AWT_species_get_dominant_color(spec_man->get_species_pointer());
+        // int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
 
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
