@@ -19,6 +19,7 @@
 //  ----------------------------------------
 
 class GEN_root;
+class GEN_graphic;
 
 //  -----------------------
 //      class GEN_gene
@@ -72,20 +73,20 @@ typedef GEN_gene_set::iterator GEN_iterator;
 //  -----------------------
 class GEN_root {
 private:
-    GBDATA *gb_main;
-    std::string  organism_name;      // name1 of current species
+    GBDATA      *gb_main;
+    GEN_graphic *gen_graphic;
+    std::string  organism_name; // name1 of current species
     // (in case of a pseudo gene-species this is the name of the species it originated from)
 
-    std::string       gene_name;     // name of current gene
+    std::string  gene_name;     // name of current gene
     GEN_gene_set gene_set;
-    std::string       error_reason;  // reason why we can't display gene_map
+    std::string  error_reason;  // reason why we can't display gene_map
     long         length;        // length of organism sequence
 
     GBDATA *gb_gene_data;       // i am build upon this
-    int     change_flag;        // == 1 -> update needed
 
 public:
-    GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root);
+    GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_);
     virtual ~GEN_root();
 
     const std::string& GeneName() const { return gene_name; }
@@ -93,16 +94,11 @@ public:
 
     GBDATA *GbMain() { return gb_main; }
 
-    void set_GeneName(const std::string& gene_name_) {
-        if (gene_name != gene_name_) change_flag = -1;
-        gene_name = gene_name_;
-    }
+    void set_GeneName(const std::string& gene_name_) { gene_name = gene_name_; }
 
     void paint(AW_device *device);
 
-    int check_update(GBDATA *gbdummy);
-
-    void reinit_NDS();
+    void reinit_NDS() const;
 };
 
 
