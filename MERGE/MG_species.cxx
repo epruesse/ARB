@@ -1204,6 +1204,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.gb_ref              = gb_dest;
     awtqs.look_in_ref_list    = AW_FALSE;
     awtqs.species_name        = AWAR_SPECIES1;
+    awtqs.tree_name           = 0; // no selected tree here -> can't use tree related ACI commands without specifying a tree
     awtqs.select_bit          = 1;
     awtqs.ere_pos_fig         = "ere1";
     awtqs.by_pos_fig          = "by1";
