@@ -1,6 +1,9 @@
 item:TREEPUZZLE ...
 itemmeta: T
-itemmethod:(/bin/rm -f outfile infile treefile outtree;arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC)); rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile outtree;\
+            arb_convert_aln -GenBank in1 -phylip2 infile;\
+            RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
+            rm in1 )&
 itemhelp:fastdnaml.help
 
 arg:DISPLAY_FUNC

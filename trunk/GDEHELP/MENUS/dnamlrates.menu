@@ -1,7 +1,14 @@
 item:Positional Variability by Olsons dnamlrates (max 5000 Species, 8000 seqlength)
 itemmeta: O
-itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates "" "M $RESIDUES" "T $TTRATIO" "U" $LENGTHS "F" |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
-# itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
+itemmethod:(/bin/rm -f outfile infile treefile ; \
+            arb_export_rates "" "M $RESIDUES" "T $TTRATIO" "U" $LENGTHS "F" | \
+                arb_convert_aln -GenBank in1 -phylip2 in1.ph; \
+            echo 1 >>in1.ph; \
+            arb_export_tree $TREE >>in1.ph; \
+            RUN_IN_WINDOW ((cat in1.ph |arb_dnarates)); \
+            echo done )&
+
+// itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
 itemhelp:phylip.help
 
 arg:TREE

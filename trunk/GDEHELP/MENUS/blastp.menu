@@ -1,6 +1,9 @@
 item:blastp
 itemmeta: b
-itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; cp $ARBHOME/GDEHELP/BLAST/PAM??? .; blastp $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;arb_textedit in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[//%]/>/" <in1 > in1.f;\
+            cp $ARBHOME/GDEHELP/BLAST/PAM??? .;\
+            blastp $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;\
+            arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -29,7 +32,11 @@ argvalue:3
 
 item:tblastn
 itemmeta: t
-itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; cp $ARBHOME/GDEHELP/BLAST/PAM??? .; tblastn $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE > in1.tmp; arb_textedit in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[//%]/>/" <in1 > in1.f;\
+            cp $ARBHOME/GDEHELP/BLAST/PAM??? .;\
+            tblastn $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE > in1.tmp;\
+            arb_textedit in1.tmp;\
+            rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -70,7 +77,11 @@ argchoice:Echinodermate Mitochondrial:8
 
 item:blast3
 itemmeta: 3
-itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; cp $ARBHOME/GDEHELP/BLAST/PAM??? .; blast3 $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;arb_textedit in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[//%]/>/" <in1 > in1.f;\
+            cp $ARBHOME/GDEHELP/BLAST/PAM??? .;\
+            blast3 $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;\
+            arb_textedit in1.tmp;\
+            rm in1* PAM???)&
 itemhelp:blast3.help
 
 in:in1
@@ -98,7 +109,10 @@ argvalue:3
 
 item:FASTA (Protein)
 itemmeta: F
-itemmethod:(sed "s/[//%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; arb_textedit in1.out;\rm in1*) &
+itemmethod:(sed "s/[//%]/>/"<in1 >in1.fasta;\
+            fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out;\
+            arb_textedit in1.out;\
+            rm in1*) &
 itemhelp:FASTA.help
 
 in:in1

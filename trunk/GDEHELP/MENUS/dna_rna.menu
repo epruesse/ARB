@@ -55,7 +55,11 @@ insave:
 
 item:Clustal alignment
 itemmeta: C
-itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; RUN_IN_WINDOW((clustalw /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;\
+            cp in1 test;\
+            RUN_IN_WINDOW((clustalw /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;\
+                           cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1;));\
+            /bin/rm -f clus_in* in1)
 
 itemhelp:clustal_help
 
@@ -124,7 +128,13 @@ outformat:colormask
 
 item:MFOLD
 itemmeta: M
-itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps; ZUKERGDE.sh .GDE.tmp.caps $CT $ARBHOME/GDEHELP/ZUKER/ > out1 && $METHOD < out1; Zuk_to_gen < $CT >file.gen; gde file.gen& arb_textedit RegionTable/*; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps*/)&
+itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps;\
+            ZUKERGDE.sh .GDE.tmp.caps $CT $ARBHOME/GDEHELP/ZUKER/ > out1 && $METHOD < out1;\
+            Zuk_to_gen < $CT >file.gen;\
+            gde file.gen&;\
+            arb_textedit RegionTable\
+            /*; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps*/ \
+            )&
 itemhelp:MFOLD.help
 
 in:seqGB
