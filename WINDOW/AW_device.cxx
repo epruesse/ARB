@@ -331,7 +331,7 @@ void AW_GC_Xm::set_background_color(unsigned long colori) {
     XSetBackground(common->display,gc, colori );
 }
 
-class AW_font_information *AW_gc::get_font_information(int gc, char c) {
+class AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
     register AW_GC_Xm *gcm = (common->gcs[gc]);
     class AW_font_information *ptr = &common->gcs[gc]->fontinfo;
     ptr->this_letter_ascent = gcm->ascent_of_chars[c];
