@@ -5,7 +5,7 @@
 #include <warning.menu>
 
 lmenu:export
-item:Export Sequences only to Foreign Format (using readseq: slow) ...
+item:Export Sequences Only to Foreign Format (using readseq: slow) ...
 #include <export.menu>
 
 lmenu:pretty_print
@@ -45,4 +45,5 @@ menu:Phylogeny
 #include <phylip_dist.menu>
 #include <phylip_pars.menu>
 #include <fastdnaml.menu>
+#include <puzzle.menu>
 #include <molphy.menu>

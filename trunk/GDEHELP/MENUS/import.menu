@@ -11,15 +11,7 @@ arglabel:Name of foreign file?
 
 out:OUTPUTFILE
 outformat:genbank
-
  
-
-item:Test arb_jim ...
-
-
-itemmethod:arb_jim
-itemhelp:jim.help
-
 
 out:OUTPUTFILE
 outformat:genbank
