@@ -26,35 +26,39 @@
 #include <string.h>
 
 #if 0
-#define DEBUG_PRINT(s) (fputs(s, stderr))
+#define DEBUG_PRINT(s) (fputs((s), stderr))
 #else
 #define DEBUG_PRINT(s)
 #endif
 
+#define PRINT(s) fputs((s), stdout)
+
 #define ISCSYM(x) ((x) > 0 && (isalnum(x) || (x) == '_'))
 #define ABORTED ( (Word *) -1 )
-#define MAXPARAM 20 		/* max. number of parameters to a function */
+#define MAXPARAM 20         /* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
-int         dostatic         = 0; /* do static functions? */
-int         donum            = 0; /* print line numbers? */
-int         define_macro     = 1; /* define macro for prototypes? */
-int         use_macro        = 1; /* use a macro for prototypes? */
-char const *macro_name       = "P_"; /*   macro to use for prototypes */
-int         no_parm_names    = 0; /* no parm names - only types */
-int         print_extern     = 0; /* use "extern" before function declarations */
-int         dont_promote     = 0; /* don't promote prototypes */
-int         aisc             = 0; /* aisc compatible output */
-int         cansibycplus     = 0; /* produce extern "C" */
-int         promote_extern_c = 0; /* produce extern "C" into prototype */
-int extern_c_seen            = 0; /* true, if extern "C" was parsed */
-char                            const *ourname; 		/* our name, from argv[] array */
-int  inquote      = 0;		    /* in a quote?? */
-int  newline_seen = 1;		    /* are we at the start of a line */
-long linenum      = 1L;		    /* line number in current file */
-int  glastc       = ' ';		/* last char. seen by getsym() */
+int  dostatic            = 0;   /* do static functions? */
+int  donum               = 0;   /* print line numbers? */
+int  define_macro        = 1;   /* define macro for prototypes? */
+int  use_macro           = 1;   /* use a macro for prototypes? */
+int  no_parm_names       = 0;   /* no parm names - only types */
+int  print_extern        = 0;   /* use "extern" before function declarations */
+int  dont_promote        = 0;   /* don't promote prototypes */
+int  aisc                = 0;   /* aisc compatible output */
+int  cansibycplus        = 0;   /* produce extern "C" */
+int  promote_extern_c    = 0;   /* produce extern "C" into prototype */
+int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
+int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
+int  inquote             = 0;   /* in a quote?? */
+int  newline_seen        = 1;   /* are we at the start of a line */
+long linenum             = 1L;  /* line number in current file */
+int  glastc              = ' '; /* last char. seen by getsym() */
 
-/* char *sym_part = 0;*/		/* create only prototypes starting with 'sym_start' */
+char const *macro_name = "P_";  /*   macro to use for prototypes */
+char const *ourname;            /* our name, from argv[] array */
+
+/* char *sym_part = 0;*/        /* create only prototypes starting with 'sym_start' */
 /* int sym_part_len = 0; */
 
 typedef struct sym_part {
@@ -242,10 +246,50 @@ int ngetc(FILE *f){
     return c;
 }
 
+static char  last_comment[500];
+static int   lc_size            = 0;
+static char *found__attribute__ = 0;
+
+void clear_found_attribute() {
+    free(found__attribute__);
+    found__attribute__ = 0;
+}
+
+void search_comment_for_attribute() {
+    char *att;
+
+    if (found__attribute__) return; // only take first __attribute__
+
+    last_comment[lc_size] = 0;  // close string
+    att                   = strstr(last_comment, "__attribute__");
+
+    if (att != 0) {
+        char *a  = att+13;
+        int   parens = 1;
+
+        while (*a && *a != '(') ++a; // search '('
+        if (*a++ == '(')  {   // if '(' found
+            while (parens) {
+                switch (*a++) {
+                    case '(': parens++; break;
+                    case ')': parens--; break;
+                }
+            }
+            *a = 0;
+            DEBUG_PRINT("attribute found!\n");
+            found__attribute__ = strdup(att);
+        }
+    }
+}
+
 /* read the next character from the file. If the character is '\' then
  * read and skip the next character. Any comment sequence is converted
  * to a blank.
+ *
+ * if a comment contains __attribute__ and search__attribute__ != 0
+ * the attribute string is stored in found__attribute__
  */
+
 
 int fnextch(FILE *f){
     int c, lastc, incomment;
@@ -253,37 +297,47 @@ int fnextch(FILE *f){
     c = ngetc(f);
     while (c == '\\') {
         DEBUG_PRINT("fnextch: in backslash loop\n");
-        c = ngetc(f);	/* skip a character */
+        c = ngetc(f);   /* skip a character */
         c = ngetc(f);
     }
     if (c == '/' && !inquote) {
         c = ngetc(f);
         if (c == '*') {
             incomment = 1;
-            c = ' ';
+            c         = ' ';
             DEBUG_PRINT("fnextch: comment seen\n");
+            lc_size   = 0;
+
             while (incomment) {
-                lastc = c;
-                c = ngetc(f);
-                if (lastc == '*' && c == '/')
-                    incomment = 0;
-                else if (c < 0)
+                lastc                   = c;
+                c                       = ngetc(f);
+                last_comment[lc_size++] = c;
+
+                if (lastc == '*' && c == '/') incomment = 0;
+                else if (c < 0) {
                     return c;
+                }
             }
+            if (search__attribute__) search_comment_for_attribute();
             return fnextch(f);
         }
-        else if (c == '/') {	/* C++ style comment */
+        else if (c == '/') {    /* C++ style comment */
             incomment = 1;
-            c = ' ';
+            c         = ' ';
             DEBUG_PRINT("fnextch: C++ comment seen\n");
+            lc_size   = 0;
+
             while (incomment) {
-                lastc = c;
-                c = ngetc(f);
-                if (lastc != '\\' && c == '\n')
-                    incomment = 0;
-                else if (c < 0)
+                lastc                   = c;
+                c                       = ngetc(f);
+                last_comment[lc_size++] = c;
+
+                if (lastc != '\\' && c == '\n') incomment = 0;
+                else if (c < 0) {
                     return c;
+                }
             }
+            if (search__attribute__) search_comment_for_attribute();
             return fnextch(f);
         }
         else {
@@ -318,7 +372,7 @@ int nextch(FILE *f){
         /* check for #line */
         if (c == 'l') {
             c = fnextch(f);
-            if (c != 'i')	/* not a #line directive */
+            if (c != 'i')   /* not a #line directive */
                 goto skip_rest_of_line;
             do {
                 c = fnextch(f);
@@ -463,10 +517,10 @@ int skipit(char *buf, FILE *f){
 
 int is_type_word(char *s){
     static const char *typewords[] = {
-        "char",		"const",	"double",	"enum",
-        "float",	"int",		"long",		"short",
-        "signed",	"struct",	"union",	"unsigned",
-        "void",		"volatile",	(char *)0
+        "char",     "const",    "double",   "enum",
+        "float",    "int",      "long",     "short",
+        "signed",   "struct",   "union",    "unsigned",
+        "void",     "volatile", (char *)0
     };
 
     register const char **ss;
@@ -484,9 +538,9 @@ int is_type_word(char *s){
  * losing too many type specifiers. (sg)
  */
 #define IS_PARM_NAME(w) \
-	(ISCSYM(*(w)->string) && !is_type_word((w)->string) && \
-	(!(w)->next || *(w)->next->string == ',' || \
-	 *(w)->next->string == '['))
+    (ISCSYM(*(w)->string) && !is_type_word((w)->string) && \
+    (!(w)->next || *(w)->next->string == ',' || \
+     *(w)->next->string == '['))
 
 
 /*
@@ -519,14 +573,14 @@ Word *typelist(Word *p){
 
 Word *getparamlist(FILE *f){
     static Word *pname[MAXPARAM]; /* parameter names */
-    Word	*tlist,		  /* type name */
-        *plist;		  /* temporary */
-    int  	np = 0;		  /* number of parameters */
-    int  	typed[MAXPARAM];  /* parameter has been given a type */
-    int	tlistdone;	  /* finished finding the type name */
-    int	sawsomething;
-    int  	i;
-    int	inparen = 0;
+    Word    *tlist,       /* type name */
+        *plist;       /* temporary */
+    int     np = 0;       /* number of parameters */
+    int     typed[MAXPARAM];  /* parameter has been given a type */
+    int tlistdone;    /* finished finding the type name */
+    int sawsomething;
+    int     i;
+    int inparen = 0;
     char buf[80];
 
     DEBUG_PRINT("in getparamlist\n");
@@ -537,21 +591,21 @@ Word *getparamlist(FILE *f){
 
     /* first, get the stuff inside brackets (if anything) */
 
-    sawsomething = 0;	/* gets set nonzero when we see an arg */
+    sawsomething = 0;   /* gets set nonzero when we see an arg */
     for (;;) {
         if (getsym(buf, f) < 0) return NULL;
         if (*buf == ')' && (--inparen < 0)) {
-            if (sawsomething) {	/* if we've seen an arg */
+            if (sawsomething) { /* if we've seen an arg */
                 pname[np] = plist;
                 plist = word_alloc("");
                 np++;
             }
             break;
         }
-        if (*buf == ';') {	/* something weird */
+        if (*buf == ';') {  /* something weird */
             return ABORTED;
         }
-        sawsomething = 1;	/* there's something in the arg. list */
+        sawsomething = 1;   /* there's something in the arg. list */
         if (*buf == ',' && inparen == 0) {
             pname[np] = plist;
             plist = word_alloc("");
@@ -770,10 +824,10 @@ void emit(Word *wlist, Word *plist, long startline){
         printf("%s", w->string);
         needspace = ISCSYM(w->string[0]);
     }
-    if (use_macro)
-        printf(" %s((", macro_name);
-    else
-        putchar('(');
+
+    if (use_macro) printf(" %s((", macro_name);
+    else putchar('(');
+
     needspace = 0;
     for (w = plist; w; w = w->next) {
         if (no_parm_names && IS_PARM_NAME(w))
@@ -790,10 +844,15 @@ void emit(Word *wlist, Word *plist, long startline){
         }
         printf("%s", w->string);
     }
-    if (use_macro)
-        printf("));\n");
-    else
-        printf(");\n");
+
+    if (use_macro)  PRINT("))");
+    else            PRINT(")");
+
+    if (found__attribute__) {
+        PRINT(" ");
+        PRINT(found__attribute__);
+    }
+    PRINT(";\n");
 }
 
 /*
@@ -804,7 +863,7 @@ void getdecl(FILE *f){
     Word *plist, *wlist = NULL;
     char buf[80];
     int sawsomething;
-    long startline;		/* line where declaration started */
+    long startline;     /* line where declaration started */
     int oktoprint;
  again:
     DEBUG_PRINT("again\n");
@@ -890,13 +949,16 @@ void getdecl(FILE *f){
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
                 }
 
-                if (oktoprint &&symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
+                if (oktoprint && symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
                     oktoprint = 0; /* => do not emit prototype */
                 }
             }
 
-            if (oktoprint)
+            if (oktoprint) {
                 emit(wlist, plist, startline);
+            }
+            clear_found_attribute();
+
             word_free(plist);
             goto again;
         }
@@ -907,24 +969,23 @@ void getdecl(FILE *f){
 }
 
 void Usage(void){
-    fprintf(stderr,
-            "Usage: %s [-e][-n][-p sym][-s][-x][-z][-A][-W][-F sym_part[,sym_part]*][files ...]\n", ourname);
+    fprintf(stderr, "Usage: %s [flags] [files ...]\n", ourname);
+
+    fputs("Supported flags:\n",stderr);
     fputs("   -a: make a funcion list for aisc_includes\n",stderr);
-    fputs("   -e: put an explicit \"extern\" keyword in declarations\n",
-          stderr);
+    fputs("   -e: put an explicit \"extern\" keyword in declarations\n", stderr);
     fputs("   -n: put line numbers of declarations as comments\n",stderr);
-    fputs("   -p nm: use \"nm\" as the prototype macro (default \"P_\")\n",
-          stderr);
+    fputs("   -p sym: use \"sym\" as the prototype macro (default \"P_\")\n", stderr);
     fputs("   -s: include declarations for static functions\n", stderr);
     fputs("   -x: omit parameter names in prototypes\n", stderr);
     fputs("   -z: omit prototype macro definition\n", stderr);
-    fputs("   -A: omit prototype macro; header files are strict ANSI\n",
-          stderr);
+    fputs("   -A: omit prototype macro; header files are strict ANSI\n", stderr);
     fputs("   -V: print version number\n", stderr);
     fputs("   -W: don't promote types in old style declarations\n", stderr);
     fputs("   -F sym_part[,sym_part]*: create prototypes only for function-names containing one of the sym_parts\n", stderr);
     fputs("   -C: insert 'extern \"C\"'\n", stderr);
     fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
+    fputs("   -g: search for GNU extension __attribute__ in comment behind function header\n", stderr);
     exit(EXIT_FAILURE);
 }
 
@@ -949,20 +1010,20 @@ int main(int argc, char **argv){
     while (*argv && **argv == '-') {
         t = *argv++; --argc; t++;
         while (*t) {
-            if (*t == 'e')
-                print_extern = 1;
-            else if (*t == 'n')
-                donum = 1;
-            else if (*t == 'a')
-                aisc = 1;
-            else if (*t == 'C')
-                cansibycplus = 1;
-            else if (*t == 'E')
-                promote_extern_c = 1;
+            if (*t == 'e')              print_extern        = 1;
+            else if (*t == 'A')         use_macro           = 0;
+            else if (*t == 'C')         cansibycplus        = 1;
+            else if (*t == 'E')         promote_extern_c    = 1;
+            else if (*t == 'W')         dont_promote        = 1;
+            else if (*t == 'a')         aisc                = 1;
+            else if (*t == 'g')         search__attribute__ = 1;
+            else if (*t == 'n')         donum               = 1;
+            else if (*t == 's')         dostatic            = 1;
+            else if (*t == 'x')         no_parm_names       = 1; /* no parm names, only types (sg) */
+            else if (*t == 'z')         define_macro        = 0;
             else if (*t == 'p') {
                 t = *argv++; --argc;
-                if (!t)
-                    Usage();
+                if (!t) Usage();
                 use_macro = 1;
                 macro_name = t;
                 break;
@@ -975,34 +1036,29 @@ int main(int argc, char **argv){
 /*                 sym_part_len = strlen(sym_part); */
                 break;
             }
-            else if (*t == 's')
-                dostatic = 1;
-            else if (*t == 'x')
-				/* no parm names, only types (sg) */
-                no_parm_names = 1;
-            else if (*t == 'z')
-                define_macro = 0;
-            else if (*t == 'A')
-                use_macro = 0;
             else if (*t == 'V') {
                 exit_if_noargs = 1;
                 Version();
             }
-            else if (*t == 'W')
-                dont_promote = 1;
-            else
-                Usage();
+            else Usage();
             t++;
         }
     }
 
-    if (argc == 0 && exit_if_noargs)
+    if (argc == 0 && exit_if_noargs) {
         exit(EXIT_FAILURE);
+    }
 
     if (aisc) {
         printf("@FUNCTION_TYPE, @FUNCTION, @FUNCTION_REF;");
     }
     else {
+        printf("/*\n");
+        printf(" * This file is generated by aisc_mkpt.\n");
+        printf(" * Any changes you make here will be overwritten later!\n");
+        printf(" *\n");
+        printf(" */\n\n");
+
         if (use_macro) {
             if (define_macro) {
                 printf("#ifndef %s\n",macro_name);
@@ -1021,10 +1077,18 @@ int main(int argc, char **argv){
                 printf("#endif\n\n");
             }
         }
+        if (search__attribute__) {
+            printf("/* hide GNU extensions for non-gnu compilers: */\n");
+            printf("#ifndef GNU\n");
+            printf("# ifndef __attribute__\n");
+            printf("#  define __attribute__(x)\n");
+            printf("# endif\n");
+            printf("#endif\n\n");
+        }
         if (cansibycplus) {
             printf("#ifdef __cplusplus\n");
             printf("extern \"C\" {\n");
-            printf("#endif\n");
+            printf("#endif\n\n");
         }
     }
     if (argc == 0) {
@@ -1063,7 +1127,7 @@ int main(int argc, char **argv){
             printf("#endif\n");
         }
         if (use_macro && define_macro) {
-            printf("\n#undef %s\n", macro_name);	/* clean up namespace */
+            printf("\n#undef %s\n", macro_name);    /* clean up namespace */
         }
     }
 
