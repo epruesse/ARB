@@ -1149,7 +1149,7 @@ insave:
 
 item:DNA_ML (FastDnaMl) (max 150 Species)
 itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH;  (arb_fastdnaml;$DISPLAY_FUNC)  ;arb_wait'' ; rm in1 )&
-itemhelp:phylip.help
+itemhelp:fastdnaml.help
 
 arg:RATES
 argtype:weights
