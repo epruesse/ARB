@@ -15,7 +15,7 @@ all : $(DEST_EXECUTABLES)
 
 # --------------------------------------------------------------------------------
 
-SHARED_OBJECTS = # z.B.ps_node.o
+SHARED_OBJECTS = # z.B. ps_node.o
 
 # --------------------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ PROBE_SET_OBJECTS = ps_dump_db.o
 $(ARBHOME)/bin/arb_probe_set : $(SHARED_OBJECTS) $(PROBE_SET_OBJECTS)
 	$(CPP) -o $@ $< $(LIBS)
 
-PROBE_SET2_OBJECTS = ps_dump_db.o
+PROBE_SET2_OBJECTS = ps_merge_my_dbs.o
 $(ARBHOME)/bin/arb_probe_set2 : $(SHARED_OBJECTS) $(PROBE_SET2_OBJECTS)
 	$(CPP) -o $@ $< $(LIBS)
 
