@@ -223,6 +223,7 @@ ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 NT_cb.o: ad_trees.hxx
+NT_cb.o: nt_cb.hxx
 NT_cb.o: nt_internal.h
 NT_cb.o: ntree.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_prot.h
