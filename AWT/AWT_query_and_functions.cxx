@@ -999,6 +999,8 @@ static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
 
     if (error) GB_export_error(error);
 }
+
+// @@@ awt_mark_colored is obsolete!
 static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
 {
     const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
