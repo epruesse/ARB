@@ -30,6 +30,7 @@ int regerrno;
 #   include <regexpr.h>
 #endif
 
+
 /********************************************************************************************
                     directory handling
 ********************************************************************************************/
@@ -214,14 +215,15 @@ void GB_raise_critical_error(const char *msg) {
 
 static char *GB_error_buffer = 0;
 
-GB_ERROR GB_export_error(const char *templat, ...)
-{
-    char buffer[GBS_GLOBAL_STRING_SIZE];
-    char *p = buffer;
-    va_list parg;
+GB_ERROR GB_export_error(const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
+    char     buffer[GBS_GLOBAL_STRING_SIZE];
+    char    *p  = buffer;
+    va_list  parg;
     memset(buffer,0,1000);
     sprintf (buffer,"ARB ERROR: ");
-    p += strlen(p);
+    p          += strlen(p);
     va_start(parg,templat);
 
     vsprintf(p,templat,parg);
@@ -337,8 +339,9 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg)
 /*     return gb_global_string; */
 }
 
-GB_CSTR GBS_global_string(const char *templat, ...)
-{
+GB_CSTR GBS_global_string(const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
     GB_CSTR result;
 
@@ -350,6 +353,8 @@ GB_CSTR GBS_global_string(const char *templat, ...)
 }
 
 char *GBS_global_string_copy(const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
     GB_CSTR result;
 
@@ -928,7 +933,9 @@ void GBS_strncat(void *strstruct,const char *ptr,long len)  /* this function add
 
 
 
-void GBS_strnprintf(void *strstruct, long len, const char *templat, ...){
+void GBS_strnprintf(void *strstruct, long len, const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 3, 4)))  */
+
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     char                 *buffer;
     int                   psize;
@@ -1737,6 +1744,8 @@ NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message){
 }
 
 void GB_internal_error(const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
 
     fprintf(stderr,"*********** Internal ARB Error: ***************\n");
@@ -1754,6 +1763,8 @@ void GB_internal_error(const char *templat, ...) {
 }
 
 void GB_warning( const char *templat, ...) {    /* max 4000 characters */
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
 
     if ( gb_warning_func ) {
@@ -1773,6 +1784,8 @@ NOT4PERL void GB_install_warning(gb_warning_func_type warn){
 }
 
 void GB_information( const char *templat, ...) {    /* max 4000 characters */
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
 
     if ( gb_information_func ) {
@@ -1815,7 +1828,9 @@ NOT4PERL void GB_install_status(gb_status_func_type func){
 }
 
 
-int GB_status2( const char *templat, ...) {
+int GB_status2( const char *templat, ... ) {
+    /* goes to header: __attribute__((format(printf, 1, 2)))  */
+
     va_list parg;
 
     if ( gb_status_func2 ) {
