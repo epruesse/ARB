@@ -27,6 +27,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 SQ_functions.o: SQ_ambiguities.h
+SQ_functions.o: SQ_functions.h
 SQ_functions.o: SQ_GroupData.h
 SQ_functions.o: SQ_helix.h
 SQ_functions.o: SQ_physical_layout.h
