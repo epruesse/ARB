@@ -387,6 +387,14 @@ NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
+NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_MAUS.o: $(ARBHOME)/INCLUDE/awt.hxx
+
 NT_sort.o: nt_sort.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
