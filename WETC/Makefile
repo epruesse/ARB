@@ -24,10 +24,13 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
-WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+WETC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx

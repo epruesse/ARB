@@ -177,72 +177,117 @@ clean:
 	@rm $(PROGS:%=../../bin/%) *.o
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-clique.o: phylip.h disc.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-consense.o: phylip.h cons.h
+clique.o: disc.h
+clique.o: phylip.h
 
-contml.o: phylip.h cont.h
+consense.o: cons.h
+consense.o: phylip.h
 
-contrast.o: phylip.h cont.h
+contml.o: cont.h
+contml.o: phylip.h
 
-dnacomp.o: phylip.h seq.h
+contrast.o: cont.h
+contrast.o: phylip.h
 
-dnadist.o: phylip.h seq.h
+dnacomp.o: phylip.h
+dnacomp.o: seq.h
 
-dnainvar.o: phylip.h seq.h
+dnadist.o: phylip.h
+dnadist.o: seq.h
 
-dnaml.o: phylip.h seq.h
+dnainvar.o: phylip.h
+dnainvar.o: seq.h
 
-dnamlk.o: phylip.h seq.h
+dnaml.o: phylip.h
+dnaml.o: seq.h
 
-dnamove.o: phylip.h moves.h seq.h
+dnamlk.o: phylip.h
+dnamlk.o: seq.h
 
-dnapars.o: phylip.h seq.h
+dnamove.o: moves.h
+dnamove.o: phylip.h
+dnamove.o: seq.h
 
-dnapenny.o: phylip.h seq.h
+dnapars.o: phylip.h
+dnapars.o: seq.h
 
-dolmove.o: phylip.h moves.h disc.h dollo.h
+dnapenny.o: phylip.h
+dnapenny.o: seq.h
 
-dollop.o: phylip.h disc.h dollo.h
+dollop.o: disc.h
+dollop.o: dollo.h
+dollop.o: phylip.h
 
-dolpenny.o: phylip.h disc.h dollo.h
+dolmove.o: disc.h
+dolmove.o: dollo.h
+dolmove.o: moves.h
+dolmove.o: phylip.h
+
+dolpenny.o: disc.h
+dolpenny.o: dollo.h
+dolpenny.o: phylip.h
+
+drawgram.o: draw.h
+drawgram.o: phylip.h
+
+drawtree.o: draw.h
+drawtree.o: phylip.h
 
 factor.o: phylip.h
 
-fitch.o: phylip.h dist.h
+fitch.o: dist.h
+fitch.o: phylip.h
 
 gendist.o: phylip.h
 
-kitsch.o: phylip.h dist.h
+kitsch.o: dist.h
+kitsch.o: phylip.h
 
-mix.o: phylip.h disc.h wagner.h
+mix.o: disc.h
+mix.o: phylip.h
+mix.o: wagner.h
 
-move.o: phylip.h disc.h moves.h wagner.h
+move.o: disc.h
+move.o: moves.h
+move.o: phylip.h
+move.o: wagner.h
 
-neighbor.o: phylip.h dist.h
+neighbor.o: dist.h
+neighbor.o: phylip.h
 
-pars.o: phylip.h discrete.h
+pars.o: discrete.h
+pars.o: phylip.h
 
-penny.o: phylip.h disc.h wagner.h
+penny.o: disc.h
+penny.o: phylip.h
+penny.o: wagner.h
 
-proml.o: phylip.h seq.h
+proml.o: phylip.h
+proml.o: seq.h
 
-promlk.o: phylip.h seq.h
+promlk.o: phylip.h
+promlk.o: seq.h
 
-protdist.o: phylip.h seq.h
+protdist.o: phylip.h
+protdist.o: seq.h
 
-protpars.o: phylip.h seq.h
+protpars.o: phylip.h
+protpars.o: seq.h
 
-restdist.o: phylip.h seq.h
+restdist.o: phylip.h
+restdist.o: seq.h
 
-restml.o: phylip.h seq.h
+restml.o: phylip.h
+restml.o: seq.h
 
-retree.o: phylip.h moves.h
+retree.o: moves.h
+retree.o: phylip.h
 
-seqboot.o: phylip.h seq.h
+seqboot.o: phylip.h
+seqboot.o: seq.h
 
-treedist.o: phylip.h cons.h
-
-drawgram.o: draw.h phylip.h
-
-drawtree.o: draw.h phylip.h
+treedist.o: cons.h
+treedist.o: phylip.h

@@ -25,8 +25,12 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
-servercntrl.o: $(ARBHOME)/INCLUDE/client.h
-servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+servercntrl.o: servercntrl.h
+servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
-servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h servercntrl.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
+servercntrl.o: $(ARBHOME)/INCLUDE/client.h
+servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h

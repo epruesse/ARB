@@ -24,11 +24,24 @@ depend.init:
 
 # DO NOT DELETE
 
-island_hopping.o: island_hopping.h i-hopper.h defs.h memory.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+align.o: defs.h
+align.o: i-hopper.h
+align.o: memory.h
+align.o: trnsprob.h
+
+i-hopper.o: defs.h
+i-hopper.o: i-hopper.h
+i-hopper.o: memory.h
+
+island_hopping.o: defs.h
+island_hopping.o: i-hopper.h
+island_hopping.o: island_hopping.h
+island_hopping.o: memory.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
-i-hopper.o: memory.h i-hopper.h defs.h
-
-align.o: memory.h trnsprob.h i-hopper.h defs.h
-
-trnsprob.o: defs.h memory.h trnsprob.h
+trnsprob.o: defs.h
+trnsprob.o: memory.h
+trnsprob.o: trnsprob.h

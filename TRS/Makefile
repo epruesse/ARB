@@ -37,9 +37,16 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
-tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
-tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
-tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h
+tree_lib.o: tree_lib.hxx
+tree_lib.o: trs_proto.h
+tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
+tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
+tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
+
+trs_server.o: tree_lib.hxx
+trs_server.o: trs_proto.h
+trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx

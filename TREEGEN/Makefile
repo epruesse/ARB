@@ -32,6 +32,9 @@ depend.init:
 
 # DO NOT DELETE
 
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
 base.o: base.h
 
 defines.o: defines.h
@@ -40,9 +43,12 @@ frand.o: frand.h
 
 readcfg.o: readcfg.h
 
-rns.o: rns.h spreadin.h
+rns.o: rns.h
+rns.o: spreadin.h
 
-sim.o: rns.h simcfg.h base.h
+sim.o: base.h
+sim.o: rns.h
+sim.o: simcfg.h
 
 simcfg.o: simcfg.h
 

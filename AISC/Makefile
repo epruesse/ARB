@@ -36,10 +36,17 @@ proto:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-aisc.o: aisc.h aisc_proto.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-aisc_commands.o: aisc.h aisc_proto.h
+aisc.o: aisc.h
+aisc.o: aisc_proto.h
 
-aisc_var_ref.o: aisc.h aisc_proto.h
+aisc_commands.o: aisc.h
+aisc_commands.o: aisc_proto.h
 
-aisc_mix.o: aisc.h aisc_proto.h
+aisc_mix.o: aisc.h
+aisc_mix.o: aisc_proto.h
+
+aisc_var_ref.o: aisc.h
+aisc_var_ref.o: aisc_proto.h

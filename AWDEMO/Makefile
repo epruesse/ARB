@@ -20,8 +20,12 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-demo.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+demo.o: demo.hxx
 demo.o: $(ARBHOME)/INCLUDE/arb_assert.h
 demo.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+demo.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+demo.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 demo.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-demo.o: $(ARBHOME)/INCLUDE/aw_preset.hxx demo.hxx

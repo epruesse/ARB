@@ -22,8 +22,12 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-CAT_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
-CAT_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+CAT_tree.o: cat_tree.hxx
 CAT_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+CAT_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+CAT_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CAT_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CAT_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h cat_tree.hxx

@@ -23,7 +23,10 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
+db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
+db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h

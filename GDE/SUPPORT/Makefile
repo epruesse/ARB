@@ -22,11 +22,14 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-Restriction.o: Flatio.c
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 count.o: Flatio.c
 
 findall.o: Flatio.c
+
+Restriction.o: Flatio.c
 
 sho_helix.o: Flatio.c
 
