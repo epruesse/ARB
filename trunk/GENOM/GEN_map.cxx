@@ -198,7 +198,9 @@ void GEN_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         }
     }
 
-    aws->get_root()->awar("tmp/LeftFooter")->write_string( text);
+    gen_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
+
+    aws->get_root()->awar(AWAR_FOOTER)->write_string( text);
     ntw->set_mode(mode);
     ntw->refresh();
 }
@@ -226,7 +228,7 @@ AW_window *GEN_create_options_window(AW_root *awr) {
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( awr, "GEN_OPTIONS", "GENE MAP OPTIONS", 10, 10 );
+    aws->init( awr, "GEN_OPTIONS", "GENE MAP OPTIONS");
     aws->load_xfig("gene_options.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -252,7 +254,7 @@ AW_window *GEN_create_options_window(AW_root *awr) {
 AW_window *GEN_create_layout_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "GENE_LAYOUT", "Gene Map Layout", 100, 100);
+    aws->init(awr, "GENE_LAYOUT", "Gene Map Layout");
     aws->load_xfig("gene_layout.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -939,7 +941,7 @@ static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) 
 AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXTRACT_GENE", "Extract genes to alignment", 100, 100 );
+    aws->init( root, "EXTRACT_GENE", "Extract genes to alignment");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -1029,7 +1031,7 @@ AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(aw_root, "DEBUG_AWARS", "DEBUG AWARS", 10, 10);
+        aws->init(aw_root, "DEBUG_AWARS", "DEBUG AWARS");
         aws->at(10, 10);
         aws->auto_space(10,10);
 
@@ -1122,6 +1124,11 @@ static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root) {
     return awt_create_item_colorizer(aw_root, gb_main, &AWT_organism_selector);
 }
 
+// used to avoid that the organisms info window is stored in a menu (or with a button)
+void GEN_popup_organism_window(AW_window *aww, AW_CL, AW_CL) {
+    AW_window *aws = NT_create_organism_window(aww->get_root());
+    aws->show();
+}
 //  ------------------------------------------------------------------------------------------------------------
 //      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas)
 //  ------------------------------------------------------------------------------------------------------------
@@ -1133,7 +1140,8 @@ void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_ca
     else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
 
     {
-        AWMIMT( "organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,  0 );
+        AWMIMT( "organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL,GEN_popup_organism_window,  0, 0);
+//         AWMIMT( "organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,  0 );
 
         awm->insert_separator();
 
@@ -1198,7 +1206,8 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT
             EXP_create_experiments_submenu(awm, true); // Experiments
             awm->insert_separator();
         }
-        AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window, 0 );
+        AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,GEN_popup_gene_window, (AW_CL)awm, 0);
+//         AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window, 0 );
         AWMIMT( "gene_search",  "Search and Query", "", "gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
 
         GEN_create_mask_submenu(awm);
@@ -1274,7 +1283,7 @@ void GEN_set_display_style(void */*dummy*/, AWT_canvas *ntw, GEN_DisplayStyle ty
 AW_window *GEN_map_create_main_window(AW_root *awr, AWT_canvas *ntree_canvas) {
     GB_transaction        dummy(gb_main);
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr, "ARB_GENE_MAP", "ARB_GENE_MAP", 800, 600, 10, 10);
+    awm->init(awr, "ARB_GENE_MAP", "ARB_GENE_MAP", 300, 300);
 
     GEN_create_genemap_awars(awr, AW_ROOT_DEFAULT);
 
@@ -1345,8 +1354,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr, AWT_canvas *ntree_canvas) {
     awm->at_newline();
     awm->get_at_position( &cur_x,&third_line_y);
 
-    awm->button_length(100);
-    awm->create_button(0,"tmp/LeftFooter");
+    awm->button_length(AWAR_FOOTER_MAX_LEN);
+    awm->create_button(0,AWAR_FOOTER);
 
     awm->at_newline();
     awm->get_at_position( &cur_x,&cur_y );
