@@ -424,7 +424,6 @@ ARCHS = \
 			AWTC/AWTC.a \
 			AWTI/AWTI.a \
 			CAT/CAT.a \
-			CHIP/CHIP.a \
 			CONSENSUS_TREE/CONSENSUS_TREE.a \
 			CONVERTALN/CONVERTALN.a \
 			DBSERVER/DBSERVER.a \
@@ -634,17 +633,6 @@ ARCHS_GENE_PROBE = \
 $(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS)
-
-#***********************************	chip **************************************
-CHIP = bin/chip
-ARCHS_CHIP = \
-		SERVERCNTRL/SERVERCNTRL.a \
-		$(ARCHS_CLIENTACC) \
-		CHIP/CHIP.a \
-
-$(CHIP):	$(ARCHS_CHIP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
@@ -951,7 +939,7 @@ ds:		$(DBSERVER)
 pt:		$(PROBE)
 pr:		$(PROBE)
 pg:		$(PROBE_GROUP) $(PROBE_GROUP_DESIGN)
-chip:	$(CHIP)
+#chip:		$(CA_MARK) $(CA_PROBE)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(NAMES)
 os:		$(ORS_SERVER)
@@ -1010,6 +998,7 @@ agde: 		ARB_GDE/ARB_GDE.dummy
 #ps:		$(ARCHS_PROBE_SET:.a=.dummy) $(PROBE_SET)
 ps:			PROBE_SET/PROBE_SET.dummy
 tools:		TOOLS/TOOLS.dummy
+chip:		CHIP/CHIP.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
 convert:	CONVERTALN/CONVERTALN.dummy
