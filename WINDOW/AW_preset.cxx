@@ -114,7 +114,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
 
         awr->awar_string(AWAR_GLOBAL_COLOR_NAME);
         aws = new AW_window_simple;
-        aws->init(awr, "COLORS", "COLORS", 400, 300);
+        aws->init(awr, "COLORS", "COLORS");
         aws->at(10, 10);
         aws->auto_space(3, 3);
         aws->callback     ( AW_POPDOWN );
@@ -767,7 +767,7 @@ void AW_create_gc_color_groups_name_window(AW_window */*aww*/, AW_CL cl_aw_root,
 
         aws = look->aws;
 
-        aws->init(aw_root, "NAME_COLOR_GROUPS", "COLORS GROUP NAMES", 400, 300);
+        aws->init(aw_root, "NAME_COLOR_GROUPS", "COLORS GROUP NAMES");
 
         aws->at(10, 10);
         aws->auto_space(5, 5);
@@ -822,7 +822,7 @@ void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_C
 
         aws = look->aws;
 
-        aws->init(aw_root, "PROPS_COLOR_GROUPS", "COLORS GROUPS", 400, 300);
+        aws->init(aw_root, "PROPS_COLOR_GROUPS", "COLORS GROUPS");
 
         aws->at(10, 10);
         aws->auto_space(5, 5);
@@ -860,7 +860,7 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
     //crazy simple function
     // The window has already been created
     AW_window_simple * aws = new AW_window_simple;
-    aws->init(aw_root, "PROPS_GC", "COLORS AND FONTS", 400, 300);
+    aws->init(aw_root, "PROPS_GC", "COLORS AND FONTS");
 
     aw_gc_manager *gcmgr = (aw_gc_manager *)id_par;
 
@@ -905,7 +905,7 @@ void awt_xfig_font_create_filerequest(AW_window *aw) {
     if (!aws) {
         // called *ONCE* to open the window
         aws = new AW_window_simple;
-        aws->init( aw_root, "SELECT_VECTORFONT", "Select Xfig Vectorfont Resource", 10, 10 );
+        aws->init( aw_root, "SELECT_VECTORFONT", "Select Xfig Vectorfont Resource");
         aws->load_xfig("fontgfx_request.fig");
         aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE","CLOSE","C");
@@ -924,7 +924,7 @@ AW_window *AWT_preset_window( AW_root *root )
 {
     AW_window_simple *aws = new AW_window_simple;
     const int   tabstop = 400;
-    aws->init( root, "PROPS_FRAME", "WINDOW_PROPERTIES", 400, 300 );
+    aws->init( root, "PROPS_FRAME", "WINDOW_PROPERTIES");
 
     aws->label_length( 25 );
     aws->button_length( 20 );

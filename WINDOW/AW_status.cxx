@@ -521,7 +521,7 @@ void aw_initstatus( void )
         aw_root->init("ARB_STATUS",AW_TRUE);
 
         AW_window_simple *aws = new AW_window_simple;
-        aws->init( aw_root, "STATUS_BOX", "STATUS BOX", 500, 300 );
+        aws->init( aw_root, "STATUS_BOX", "STATUS BOX");
         aws->load_xfig("status.fig");
 
         aws->button_length(AW_GAUGE_SIZE+4);
@@ -549,7 +549,7 @@ void aw_initstatus( void )
         aw_stg.aws = (AW_window *)aws;
 
         AW_window_simple *awm = new AW_window_simple;
-        awm->init( aw_root, "MESSAGE_BOX", "MESSAGE BOX", 500, 300 );
+        awm->init( aw_root, "MESSAGE_BOX", "MESSAGE BOX");
         awm->load_xfig("message.fig");
 
         awm->at("Message");
@@ -726,7 +726,8 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
         GBS_write_hash(hash_windows,hindex,(long)aw_msg);
         int counter = 0;
 
-        aw_msg->init( root, "QUESTION BOX", 1000, 1000, 300, 300 );
+        aw_msg->init( root, "QUESTION BOX");
+        aw_msg->recalc_size_at_show = 1; // force size recalc (ignores user size)
 
         aw_msg->label_length( 10 );
         aw_msg->button_length( 0 );
@@ -874,25 +875,42 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, title, 1000, 1000, 300, 300 );
+#define INPUT_SIZE 50
+
+        // @@@ FIXME: tried to attach input field and title button to right border
+        // but it's not working at all
+
+        aw_msg->init( root, title);
+//         aw_msg->at_set_min_size(600, 300);
 
         aw_msg->label_length( 0 );
-        aw_msg->button_length( 30 );
+        aw_msg->button_length( INPUT_SIZE+1 );
+        aw_msg->auto_space( 10, 10 );
 
         aw_msg->at( 10, 10 );
-        aw_msg->auto_space( 10, 10 );
+//         aw_msg->at_set_to( AW_TRUE, AW_FALSE, , 30 );
         aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
+//         aw_msg->at_unset_to();
 
-        aw_msg->at_newline();
-        aw_msg->create_input_field((char *)AW_INPUT_AWAR,30);
-        aw_msg->at_newline();
+//         aw_msg->at_newline();
 
-        aw_msg->button_length( 0 );
+        aw_msg->at( 10, 40 );
+//         aw_msg->at_set_to( AW_TRUE, AW_FALSE, -7, 30 );
+        aw_msg->create_input_field((char *)AW_INPUT_AWAR, INPUT_SIZE);
+//         aw_msg->at_unset_to();
 
-        aw_msg->callback     ( input_cb, 0 );
+//         aw_msg->at_newline();
+
+        aw_msg->at( 10, 70 );
+        aw_msg->button_length(7);
+
+//         aw_msg->at_set_to( AW_FALSE, AW_FALSE, 100, 40 ); // defines button size
+//          aw_msg->highlight();
+        aw_msg->callback(input_cb, 0);
         aw_msg->create_button( "OK", "OK", "O" );
+//         aw_msg->at_unset_to();
 
-        aw_msg->callback     ( input_cb, -1 );
+        aw_msg->callback(input_cb, -1);
         aw_msg->create_button( "CANCEL", "CANCEL", "C" );
     }
 
@@ -957,7 +975,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
 
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, title, 1000, 1000, 300, 300 );
+        aw_msg->init( root, title );
 
         aw_msg->label_length( 0 );
         aw_msg->button_length(width);
@@ -1084,7 +1102,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "ENTER A STRING", 1000, 1000, 300, 300 );
+        aw_msg->init( root, "ENTER A STRING");
 
         aw_msg->label_length( 0 );
         aw_msg->button_length( 30 );
@@ -1493,7 +1511,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
         awr->awar("tmp/aw_window/helpfile")->add_callback(aw_help_new_helpfile);
 
         helpwindow=new AW_window_simple;
-        helpwindow->init(awr,"HELP","HELP WINDOW",200,10);
+        helpwindow->init(awr,"HELP","HELP WINDOW");
         helpwindow->load_xfig("help.fig");
 
         helpwindow->button_length(10);
