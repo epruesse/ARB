@@ -38,10 +38,6 @@ void add_bootstrap(GBT_TREE *node, double max_val) {
         node->rightson->remark_branch = strdup(buffer);
     }
 
-    // set all branchlens to same value
-    node->leftlen  = 0.1;
-    node->rightlen = 0.1;
-
     add_bootstrap(node->leftson, max_val);
     add_bootstrap(node->rightson, max_val);
 }
