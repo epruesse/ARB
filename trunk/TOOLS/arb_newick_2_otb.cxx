@@ -22,7 +22,7 @@ int main(int argc,char **argv)
 	char *otb_name = argv[2];
 
 
-	GBT_TREE *tree = GBT_load_tree(nname,sizeof(GBT_TREE), 0);
+	GBT_TREE *tree = GBT_load_tree(nname,sizeof(GBT_TREE), 0, 1);
 	if (!tree) {
 	    GB_print_error();
 	    return -1;
