@@ -36,6 +36,9 @@ NOTES		The example will be calculated for the gene-species which is selected
                 The ACI expression applies to the Organism or the Gene if 'Copy from organism/gene'
                 is selected. If 'Only use ACI' is selected it applies to the gene-species.
 
+                Note that it is possible to create hierarchical keys. Simply enter something like
+                'organism/full_name' into the destination field.
+
 EXAMPLES	None
 
 WARNINGS	None
