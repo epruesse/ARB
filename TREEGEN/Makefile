@@ -42,6 +42,8 @@ readcfg.o: readcfg.h
 
 rns.o: rns.h spreadin.h
 
+sim.o: rns.h simcfg.h base.h
+
 simcfg.o: simcfg.h
 
 spreadin.o: spreadin.h
