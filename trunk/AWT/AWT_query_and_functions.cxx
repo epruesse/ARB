@@ -1347,18 +1347,26 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
 }
 
 void awt_toggle_flag(AW_window *aww, struct adaqbsstruct *cbs) {
-	GB_transaction dummy(cbs->gb_main);
-	char *sname = aww->get_root()->awar(cbs->species_name)->read_string();
-	if (strlen(sname)){
-		GBDATA *gb_species = GBT_find_species(cbs->gb_main,sname);
-		if (gb_species) {
-			long flag = GB_read_flag(gb_species);
-			GB_write_flag(gb_species,1-flag);
-		}
-	}
+    GB_transaction dummy(cbs->gb_main);
+    GBDATA *gb_item = cbs->selector->get_selected_item(cbs->gb_main, aww->get_root());
+    if (gb_item) {
+        long flag = GB_read_flag(gb_item);
+        GB_write_flag(gb_item, 1-flag);
+    }
+    awt_query_update_list(aww,cbs);
 
-	delete sname;
-	awt_query_update_list(aww,cbs);
+    // 	GB_transaction dummy(cbs->gb_main);
+    // 	char *sname = aww->get_root()->awar(cbs->species_name)->read_string();
+// 	if (sname[0]){
+// 		GBDATA *gb_species = GBT_find_species(cbs->gb_main,sname);
+// 		if (gb_species) {
+// 			long flag = GB_read_flag(gb_species);
+// 			GB_write_flag(gb_species,1-flag);
+// 		}
+// 	}
+
+// 	delete sname;
+// 	awt_query_update_list(aww,cbs);
 }
 
 //  -----------------------------------------------------
@@ -1376,6 +1384,16 @@ static void awt_select_species(GBDATA* , AW_root *aw_root, const char *item_name
     aw_root->awar(AWAR_SPECIES_NAME)->write_string(item_name);
 }
 
+static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
+    char   *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    GBDATA *gb_species   = 0;
+    if (species_name[0]) {
+        gb_species = GBT_find_species(gb_main, species_name);
+    }
+    free(species_name);
+    return gb_species;
+}
+
 static char* awt_species_result_name(GBDATA *, AW_root *, GBDATA *gb_species) {
     // awt_species_result_name creates the label that occurs in the search and query result list
     GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
@@ -1385,35 +1403,35 @@ static char* awt_species_result_name(GBDATA *, AW_root *, GBDATA *gb_species) {
 
 struct ad_item_selector AWT_species_selector = {
     AWT_QUERY_ITEM_SPECIES,
-        awt_select_species,
-        awt_species_result_name,
-        (AW_CB)awt_selection_list_rescan_cb,
-        12,
-        CHANGE_KEY_PATH,
-        "species",
-        "species",
-        awt_get_first_species_data,
-        awt_get_next_species_data,
-        GBT_first_species_rel_species_data,
-        GBT_next_species
-
-        };
+    awt_select_species,
+    awt_species_result_name,
+    (AW_CB)awt_selection_list_rescan_cb,
+    12,
+    CHANGE_KEY_PATH,
+    "species",
+    "species",
+    awt_get_first_species_data,
+    awt_get_next_species_data,
+    GBT_first_species_rel_species_data,
+    GBT_next_species,
+    awt_get_selected_species
+};
 
 struct ad_item_selector AWT_organism_selector = {
     AWT_QUERY_ITEM_SPECIES,
-        awt_select_species,
-        awt_species_result_name,
-        (AW_CB)awt_selection_list_rescan_cb,
-        12,
-        CHANGE_KEY_PATH,
-        "organism",
-        "organism",
-        awt_get_first_species_data,
-        awt_get_next_species_data,
-        GBT_first_species_rel_species_data,
-        GBT_next_species
-
-        };
+    awt_select_species,
+    awt_species_result_name,
+    (AW_CB)awt_selection_list_rescan_cb,
+    12,
+    CHANGE_KEY_PATH,
+    "organism",
+    "organism",
+    awt_get_first_species_data,
+    awt_get_next_species_data,
+    GBT_first_species_rel_species_data,
+    GBT_next_species,
+    awt_get_selected_species
+};
 
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_cbs) {
     const char          *awar_selection = (const char *)cl_awar_selection;

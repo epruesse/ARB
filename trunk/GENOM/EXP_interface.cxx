@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Oct/10/2001 18:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Dec/09/2001 14:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -178,9 +178,9 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
 //  ------------------------------------------------------------
 //      struct ad_item_selector EXP_item_selector =
 //  ------------------------------------------------------------
-struct ad_item_selector EXP_item_selector         =
-{
-    AWT_QUERY_ITEM_EXPERIMENTS,
+struct ad_item_selector EXP_item_selector =
+    {
+        AWT_QUERY_ITEM_EXPERIMENTS,
         EXP_select_experiment,
         EXP_experiment_result_name,
         (AW_CB)awt_experiment_field_selection_list_rescan_cb,
@@ -191,8 +191,9 @@ struct ad_item_selector EXP_item_selector         =
         EXP_get_first_experiment_data,
         EXP_get_next_experiment_data,
         EXP_first_experiment_rel_experiment_data,
-        EXP_next_experiment
-        };
+        EXP_next_experiment,
+        EXP_get_current_experiment
+    };
 
 
 //  ------------------------------------------------------------------------------

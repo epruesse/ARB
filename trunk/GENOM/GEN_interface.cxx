@@ -190,7 +190,8 @@ struct ad_item_selector GEN_item_selector         = {
     GEN_get_first_gene_data,
     GEN_get_next_gene_data,
     GEN_first_gene_rel_gene_data,
-    GEN_next_gene
+    GEN_next_gene,
+    GEN_get_current_gene
 };
 
 //  -------------------------------------------------------
@@ -267,8 +268,8 @@ GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
 //      GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *root)
 //  ---------------------------------------------------------------------
 GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
-    GBDATA *gb_species   = GEN_get_current_organism(gb_main, aw_root);
-    GBDATA *gb_gene      = 0;
+    GBDATA *gb_species = GEN_get_current_organism(gb_main, aw_root);
+    GBDATA *gb_gene    = 0;
 
     if (gb_species) {
 		char *gene_name = aw_root->awar(AWAR_GENE_NAME)->read_string();

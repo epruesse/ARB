@@ -1096,11 +1096,28 @@ static void mg_select_species2(GBDATA* , AW_root *aw_root, const char *item_name
     aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
 }
 
-static GBDATA *mg_get_first_species_data1(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
     return GBT_get_species_data(gb_merge);
 }
-static GBDATA *mg_get_first_species_data2(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
     return GBT_get_species_data(gb_dest);
+}
+
+static GBDATA *mg_get_selected_species1(GBDATA *gb_main, AW_root *aw_root) {
+    GB_transaction dummy(gb_merge);
+    char   *species_name            = aw_root->awar(AWAR_SPECIES1)->read_string();
+    GBDATA *gb_species              = 0;
+    if (species_name[0]) gb_species = GBT_find_species(gb_merge, species_name);
+    free(species_name);
+    return gb_species;
+}
+static GBDATA *mg_get_selected_species2(GBDATA *gb_main, AW_root *aw_root) {
+    GB_transaction dummy(gb_dest);
+    char   *species_name            = aw_root->awar(AWAR_SPECIES2)->read_string();
+    GBDATA *gb_species              = 0;
+    if (species_name[0]) gb_species = GBT_find_species(gb_dest, species_name);
+    free(species_name);
+    return gb_species;
 }
 
 static struct ad_item_selector MG_species_selector[2];
@@ -1116,6 +1133,7 @@ static void mg_initialize_species_selectors() {
 
             sel.update_item_awars        = s ? mg_select_species2 : mg_select_species1;
             sel.get_first_item_container = s ? mg_get_first_species_data2 : mg_get_first_species_data1;
+            sel.get_selected_item = s ? mg_get_selected_species2 : mg_get_selected_species1;
         }
 
         initialized = 1;
