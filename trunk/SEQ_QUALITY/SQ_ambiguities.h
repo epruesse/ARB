@@ -2,10 +2,10 @@
 //                                                                       //
 //    File      : SQ_ambiguities.h                                       //
 //    Purpose   : Class used for evaluation of iupac ambiguities         //
-//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/04/2004 14:34 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - October 2003                        //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
