@@ -248,7 +248,9 @@ GB_ERROR read_input_file(char *fn)
 {
     GB_ERROR 	error = 0;
 
-    char line[255];
+    char line[256];
+    line[255]= 0; // no segfault
+
     char tmpname[255];
     char tmplongname[255];
     char tmpsequence[255];
@@ -257,10 +259,8 @@ GB_ERROR read_input_file(char *fn)
     iS.open(fn);
     if(iS)  
     {
-       while(!iS.eof()) 
-        {
-          iS.getline(line, 255);
-
+       while(iS.getline(line, 255))
+       {
 	if(!line[0]) 
 	  iS.getline(line, 255); //Zeile++
 

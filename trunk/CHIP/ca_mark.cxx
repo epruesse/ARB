@@ -66,12 +66,12 @@ int parse_species_file(char *filename)
 
     if(iS) // file.open succeeded
     {
-       while(!iS.eof()) // while there is unread data, do...
+       while(iS.getline(buffer, 255)) // while there is unread data, do...
         {
-	    buffer[0]= 0;
+	    //buffer[0]= 0;
 	    
 	    // read a line to:  char *buffer
-	    iS.getline(buffer, 255);
+	    //iS.getline(buffer, 255);
 
 	    // the following lines split the buffer into 3 substrings by
 	    // exchanging the delimiter ':' with NULL.
