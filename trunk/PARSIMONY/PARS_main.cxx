@@ -612,6 +612,8 @@ static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
     aw_closestatus();
 
     AWT_TREE(ntw)->resort_tree(0);
+
+    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->tree_root;
     ntw->zoom_reset();
     ntw->refresh();
     PARS_export_tree();
