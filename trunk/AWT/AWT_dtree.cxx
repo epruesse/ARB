@@ -1433,7 +1433,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if(cl->exists){
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
+                            
                             reset_line_width(at);
+                            if (at->father) { // reset clicked branch
+                                if (at->father->leftson == at) at->father->gr.left_linewidth = 0;
+                                else at->father->gr.right_linewidth                          = 0;
+                            }
                             this->exports.save = 1;
                             this->exports.refresh = 1;
                         }
@@ -1451,20 +1456,18 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
                             if(at->father){
-                                if(at->father->leftson == at){
+                                if(at->father->leftson == at) {
                                     at->father->gr.left_linewidth-=1;
-                                    if(at->father->gr.left_linewidth<0){
-                                        at->father->gr.left_linewidth=0;
-                                    }
-                                }else{
+                                    if(at->father->gr.left_linewidth<0) at->father->gr.left_linewidth=0;
+                                }
+                                else {
                                     at->father->gr.right_linewidth-=1;
-                                    if(at->father->gr.right_linewidth<0){
-                                        at->father->gr.right_linewidth=0;
-                                    }
+                                    if(at->father->gr.right_linewidth<0) at->father->gr.right_linewidth=0;
                                 }
                                 this->exports.save = 1;
                                 this->exports.refresh = 1;
                             }
+                            
                         }
                         break;
                     case AWT_M_RIGHT:
@@ -1480,6 +1483,9 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                 this->exports.save = 1;
                                 this->exports.refresh = 1;
                             }
+#if defined(DEBUG)
+                            printf("key_modifier=%i\n", key_modifier);
+#endif // DEBUG
                         }
                         break;
                 } /* switch button */
@@ -2072,26 +2078,27 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         }
     }
 
+#if defined(DEBUG)
+    if (at->gb_node) {
+        disp_device->text(at->gr.gc, GBS_global_string("%p(gb_node)", at->gb_node), x_father, (ny0+ny1)/2, 0, text_filter, (AW_CL)at, 0);
+    }
+#endif // DEBUG
+
 
     int lw = at->gr.left_linewidth+baselinewidth;
-    disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
+    // disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
+    disp_device->set_line_attributes(at->leftson->gr.gc,lw,AW_SOLID);
     disp_device->line(at->leftson->gr.gc, x_son, ny0, nx0, ny0, line_filter, (AW_CL)at->leftson,0);
+    // disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
+    disp_device->line(at->leftson->gr.gc, x_son, ny0, x_son, ry, vert_line_filter, (AW_CL)at,0);
 
     int rw = at->gr.right_linewidth+baselinewidth;
-    disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
+    // disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
+    disp_device->set_line_attributes(at->rightson->gr.gc,rw,AW_SOLID);
     disp_device->line(at->rightson->gr.gc,x_son, ny1, nx1, ny1, line_filter, (AW_CL)at->rightson,0);
+    // disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
+    disp_device->line(at->rightson->gr.gc, x_son, ry, x_son, ny1, vert_line_filter, (AW_CL)at,0);
 
-//     if (lw == rw) {
-//         disp_device->line(at->gr.gc, x_son, ny0, x_son, ny1,
-//                           vert_line_filter,
-//                           (AW_CL)at,0);
-//     }else{
-        disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
-        disp_device->line(at->leftson->gr.gc, x_son, ny0, x_son, ry, vert_line_filter, (AW_CL)at,0);
-
-        disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
-        disp_device->line(at->rightson->gr.gc, x_son, ry, x_son, ny1, vert_line_filter, (AW_CL)at,0);
-//     }
     return ry;
 }
 
@@ -2517,7 +2524,7 @@ AWT_graphic *NT_generate_tree( AW_root *root,GBDATA *gb_main )
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def)
 {
-    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH,1,def)   ->set_minmax(1,10);
+    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH,1,def)->set_minmax(1, 10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,1.0,def)->set_minmax(0.01,30);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,1,def);
 
