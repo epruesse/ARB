@@ -257,7 +257,7 @@ public:
     void    set_function(int gc,AW_function function);
     void    set_foreground_color(int gc,AW_color color);    // lines ....
     void    set_background_color(int gc,AW_color color);    // for box
-    AW_font_information     *get_font_information(int gc,char c);
+    AW_font_information     *get_font_information(int gc, unsigned char c);
     int     get_string_size(int gc,const  char *string,long textlen);       // get the size of the string
     AW_gc();
     virtual ~AW_gc() {};
