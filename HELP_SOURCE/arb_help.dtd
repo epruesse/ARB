@@ -1,0 +1,42 @@
+<!-- ==================================================================== -->
+<!--                                                                      -->
+<!--   File      : arb_help.dtd                                           -->
+<!--   Purpose   :                                                        -->
+<!--   Time-stamp: <Sun Nov/25/2001 21:32 MET Coder@ReallySoft.de>        -->
+<!--                                                                      -->
+<!--                                                                      -->
+<!-- Coded by Ralf Westram (coder@reallysoft.de) in October 2001          -->
+<!-- Copyright Department of Microbiology (Technical University Munich)   -->
+<!--                                                                      -->
+<!-- Visit our web site at: http://www.arb-home.de/                       -->
+<!--                                                                      -->
+<!--                                                                      -->
+<!-- ==================================================================== -->
+
+<!ELEMENT PAGE (UP*,SUB*,TITLE,SECTION*) >
+<!ATTLIST PAGE name CDATA #REQUIRED > <!--name of page (equal to filename)-->
+
+<!ELEMENT UP EMPTY>
+<!ATTLIST UP dest CDATA #REQUIRED >
+
+<!ELEMENT SUB EMPTY>
+<!ATTLIST SUB dest CDATA #REQUIRED >
+
+<!ELEMENT TITLE (#PCDATA) >
+
+<!ELEMENT SECTION ((T|P|ENUM|LIST)*) >
+<!ATTLIST SECTION name CDATA #REQUIRED >
+
+<!ELEMENT ENUM (ENTRY*) >
+<!ELEMENT LIST (ENTRY*) >
+
+<!ELEMENT ENTRY ((T|P|ENUM|LIST)*) >
+<!ATTLIST ENTRY indentation CDATA #IMPLIED >
+<!ATTLIST ENTRY enumerated CDATA #IMPLIED >
+
+<!ELEMENT P ((T|P|ENUM|LIST)*) >
+<!ATTLIST P indentation CDATA #IMPLIED >
+<!ATTLIST P enumerated CDATA #IMPLIED >
+
+<!ELEMENT T (#PCDATA) >
+<!ATTLIST T reflow (0|1) #REQUIRED >
