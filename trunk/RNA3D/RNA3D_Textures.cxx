@@ -57,8 +57,6 @@ void Texture2D::LoadGLTextures(void) {
 
         if (texture[i] == 0) {
             throw string(GBS_global_string("Error loading %s", ImageFile));
-            // cout<<"Error loading file : "<<ImageFile<<" !!!"<<endl;
-            // exit(0);
         }
 
     extern bool bPointSpritesSupported;

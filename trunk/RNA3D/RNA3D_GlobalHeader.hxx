@@ -37,7 +37,7 @@
 
 // @yadhu : please don't remove any code here until it works on all machines
 
-#define OPEN_GL_WAY_TO_INCLUDE 3
+#define OPEN_GL_WAY_TO_INCLUDE 1
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 1)
 // working on waltz:
@@ -47,11 +47,15 @@
 #ifdef __GLX_glx_h__
 #error include wrapper define for glx.h already set -- next include will do nothing
 #endif
-#include <GL/glx.h>
+// @ralf: i have not included this file in my version. I replaced glxew.h with glx.h when
+// you mentioned that it was not compiling on your machine and checked in to the repository. 
+//#include <GL/glx.h>
 #endif // OPEN_GL_WAY_TO_INCLUDE == 1
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 2)
 // working on ralfs machine
+// not workint on waltz : Previous declaration errors because
+// GLwMDrawA.h includes glx.h and/or glxew.h files
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GL/glpng.h>
@@ -60,6 +64,7 @@
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 3)
 // working on ralfs machine
+// working on waltz too
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <GL/glpng.h>
