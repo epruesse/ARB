@@ -1,0 +1,55 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	rl_dna_prot.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Translate DNA to Protein
+
+OCCURRENCE	ARB_NT/Sequence/Translate
+
+DESCRIPTION	Translates nucleic acid sequences. The alignment of the amino
+		acid sequences is adapted to that of the nucleic acids. The one
+		letter code is used.
+
+		1. Select source and destination alignment from the respective
+		   subwindows.
+
+		2. Select reading frame by pressing the 'Start at alignment
+		   position' button and selecting first, second or third
+		   absolut position (alternatively you can position the cursor
+		   in ARB_EDIT4 at start of the reading frame).
+
+		3. Press the 'TRANSLATE' button.
+
+		Example:
+			DNA:		---UGG...GUAUGGUUA
+			-> PRO:		-Y.LYG
+
+WARNING         The program does begin at the first three bases, but at the
+		first three alignment positions. That means that all your
+		three letter codons should start at every third position.
+
+		Example:	(### codon for aminoacid # )
+
+			DNA:		...111...222...333444
+			PRO:		.1.2.34
+
+			DNA:		..111...222....333444
+			PRO:		XXXX.34	    // 1 2 are out of sync
+
+			DNA:		...111...22.2..333444
+			PRO:		.1.XX34		// bad alignment for 2
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	see above
+
+BUGS		unknown

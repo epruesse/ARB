@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_pars.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Store Tree Topologies
+
+OCCURRENCE	ARB_NT/Tree/Parsimony <Stack> button
+
+DESCRIPTION	Allows to temporarily store tree topologies.
+
+		Click on the <+> button to store the current tree. The number of
+			stored tree topologies is shown in the 'Stack'
+			subwindow.
+
+		After performing further optimizations, any new tree topology
+			can be added to the stack by clicking on <+> again.
+
+		Click on the <-> button to display former trees assigned to the
+			numbers displayed in the 'Stack' subwindow
+
+NOTES		None	
+
+EXAMPLES	None
+
+WARNINGS	!!! The trees of the stack are lost closing the 'ARB PARSIMONY'
+			window'.
+
+BUGS		No bugs known
