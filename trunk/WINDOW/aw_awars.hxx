@@ -55,8 +55,9 @@
 #define AWAR_SAI_NAME           "tmp/focus/sai_name" /* string :  name of selected SAI (e.g. in EDIT4 and 'Manage SAI') */
 #define AWAR_SAI_GLOBAL         "tmp/focus/sai_global" /* string :  name of selected SAI in EDIT4/Visualize SAI Tool - used in RNA3D Tool*/
 
-#define AWAR_HELIX_NAME     "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
-#define AWAR_ERROR_MESSAGES "tmp/Message" /* error: messages */
+#define AWAR_HELIX_NAME "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
+
+#define AWAR_ERROR_MESSAGES "tmp/message/displayed" /* error-messages: display awar */
 
 #define AWAR_FOOTER     "tmp/LeftFooter" // mode line (showing help for selected mode)
 #define AWAR_FOOTER_MAX_LEN 100 // max allowed textlen for mode line
