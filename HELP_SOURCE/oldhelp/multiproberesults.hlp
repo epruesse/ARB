@@ -24,8 +24,5 @@ NOTE		If you do not see any colors, try the following:
 
                 - the colors in 'Properties/Tree-Colors' are misconfigured
 
-                - you are probably using an old default file. You should delete the file
-                  '~/.arb_prob/ntree.arb' and restart arb. This will delete all your
-                  Settings - so backup first.
 
 
