@@ -572,7 +572,7 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
                     Command Interpreter
 ********************************************************************************************/
 
-void GB_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
+void gb_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (!Main->command_hash) Main->command_hash = GBS_create_hash(1024,1);
@@ -853,9 +853,18 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         error = "Unknown Command";
                         error2 = GB_STRDUP(s1);
                     }else{
-                        GBL_client_data cd;
-                        cd.default_tree_name = default_tree_name;
-                        error                = command(gbd,s1,&cd,argcinput,orig,argcparam,in, &argcout, &out);
+                        GBL_command_arguments args;
+                        args.gb_ref            = gbd;
+                        args.default_tree_name = default_tree_name;
+                        args.command           = s1;
+                        args.cinput            = argcinput;
+                        args.vinput            = orig;
+                        args.cparam            = argcparam;
+                        args.vparam            = in;
+                        args.coutput           = &argcout;
+                        args.voutput           = &out;
+
+                        error = command(&args);
                     }
                 }
 
