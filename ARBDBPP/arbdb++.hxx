@@ -21,17 +21,12 @@ AD_MARK
 
 ***********************************************************/
 
-#ifndef _AW_KEY_CODES_INCLUDED
+#ifndef AW_KEYSYM_HXX
 #include <aw_keysym.hxx>
 #endif
 
-
 #ifndef ARBDBPP_INCLUDED
 #define ARBDBPP_INCLUDED
-
-#ifndef GB_INCLUDED
-typedef struct gb_data_base_type GBDATA;
-#endif
 
 #define ADPP_CORE *(int *)0=0;
 #define AD_ERR_WARNING  1
