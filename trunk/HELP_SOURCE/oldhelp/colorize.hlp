@@ -8,7 +8,7 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Standard help file form
+TITLE		Colorizing marked items / Marking colored items
 
 OCCURRENCE	Species/Colors
                 Genes/Colors
