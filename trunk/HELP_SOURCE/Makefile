@@ -84,8 +84,9 @@ OLD_HELP_ALL= \
 		)
 
 ifeq ($(TEST_ONE),1)
-OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
+#OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp
+OLD_HELP=$(HLP_SOURCE)/help.hlp
 else
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
 endif
@@ -135,6 +136,7 @@ delzerohtml:
 		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
 
 date:
+		rm date.xsl
 		$(MAKE) date.xsl
 
 date.xsl :
