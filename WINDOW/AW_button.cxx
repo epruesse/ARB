@@ -454,8 +454,27 @@ Widget AW_window::get_last_button_widget() const {
     return p_global->get_last_button_widget();
 }
 
+static void detect_text_size(const char *text, int& width, int& height) {
+    char *linefeed = strchr(text, '\n');
+    if (!linefeed) {
+        width  = strlen(text);
+        height = 1;
+        return;
+    }
+
+    int my_width = linefeed-text;
+    detect_text_size(linefeed+1, width, height);
+
+    if (my_width>width) width = my_width;
+    height++;
+    return;
+}
+
 void AW_window::create_autosize_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, unsigned xtraSpace) {
-    int   len               = strlen(buttonlabel)+(xtraSpace*2);
+    int width, height;
+    detect_text_size(buttonlabel, width, height);
+
+    int   len               = width+(xtraSpace*2);
     short length_of_buttons = _at->length_of_buttons;
 
     _at->length_of_buttons = len+1;
