@@ -581,7 +581,7 @@ AW_window *create_gene_create_window(AW_root *root)
 //      void gene_delete_cb(AW_window *aww)
 //  -------------------------------------------
 void gene_delete_cb(AW_window *aww){
-    if (aw_message("Are you sure to delete the gene","OK,CANCEL"))return;
+    if (aw_message("Are you sure to delete the gene","OK,CANCEL")) return;
 
     GB_begin_transaction(gb_main);
 
