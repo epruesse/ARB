@@ -106,7 +106,6 @@ GB_ERROR IslandHopping::do_align() {
 
     for(i=0;i<alignment_length;i++) {
 
-
         if(ref_sequence[i]!='-' && ref_sequence[i]!='.') {
             X[j] = ref_sequence[i];
             if (ref_helix) {
@@ -124,11 +123,12 @@ GB_ERROR IslandHopping::do_align() {
                         LJ = 2;
                         break;
                     default:
-                        printf("Unknown '%c'\n", ref_helix[j]);
+                        printf("Unknown '%c'\n", ref_helix[i]);
                         ih_assert(0);
                         break;
                 }
             }
+
             secX[j]=LJ?J:0;
             j++;
         }
@@ -149,7 +149,7 @@ GB_ERROR IslandHopping::do_align() {
                         LK=2;
                         break;
                     default:
-                        printf("Unknown '%c'\n", ref_helix[j]);
+                        printf("Unknown '%c'\n", toAlign_helix[i]);
                         ih_assert(0);
                         break;
                 }
