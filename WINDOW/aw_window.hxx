@@ -51,6 +51,15 @@ public:
     void restore(AW_at *at) const;
 };
 
+class AW_at_maxsize {
+    int maxx;
+    int maxy;
+
+public:
+    void store(const AW_at *at);
+    void restore(AW_at *at) const;
+};
+
 typedef enum {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
@@ -348,21 +357,24 @@ public:
     void shadow_width (int shadow_thickness);       // set the shadow_thickness of buttons
 
     // *** local modifiers: ********
-    void    at( int x, int y ); // abs pos of a button (>10,10)
-    void    at_x( int x );      // abs x pos
-    void    at_y( int y );      // abs y pos
-    void    at_shift( int x, int y ); // rel pos of a button
-    void    at_newline( void ); // in auto_space mode only: newline
+    void at( int x, int y );    // abs pos of a button (>10,10)
+    void at_x( int x );         // abs x pos
+    void at_y( int y );         // abs y pos
+    void at_shift( int x, int y ); // rel pos of a button
+    void at_newline( void );    // in auto_space mode only: newline
+
     void    at( const char *id ); // place the button at the position set in the .fig
     // file (loaded with load_xfig) by the string $id
     AW_BOOL at_ifdef(const  char *id); // check whether 'id' is an element if the .fig file
-    void    label( const char *label ); // Create a label before the button
+
+    void label( const char *label ); // Create a label before the button
 
     void get_at_position( int *x, int *y );
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
     void at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff); // set "to:XY:id" manually
-    void at_unset_to(); // unset "to:id" manually
+    void at_unset_to();         // unset "to:id" manually
+    void at_set_min_size(int xmin, int ymin); // define minimum window size
 
     void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
     void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
@@ -475,9 +487,7 @@ private:
 public:
     AW_window_menu_modes(void);
     ~AW_window_menu_modes(void);
-    void init(AW_root *root, const char *wid, const char *windowname,
-              int width, int height,
-              int posx, int posy);
+    void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
 
@@ -486,9 +496,7 @@ private:
 public:
     AW_window_menu(void);
     ~AW_window_menu(void);
-    void init(AW_root *root, const char *wid, const char *windowname,
-              int width, int height,
-              int posx, int posy);
+    void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
 };
 
 class AW_window_simple_menu : public AW_window {
@@ -496,9 +504,7 @@ private:
 public:
     AW_window_simple_menu(void);
     ~AW_window_simple_menu(void);
-    void init(AW_root *root, const char *wid, const char *windowname,
-              int width, int height,
-              int posx, int posy);
+    void init(AW_root *root, const char *wid, const char *windowname);
 };
 
 
@@ -507,7 +513,7 @@ private:
 public:
     AW_window_simple(void);
     ~AW_window_simple(void);
-    void init(AW_root *root, const char *wid, const char *windowname,int posx, int posy);
+    void init(AW_root *root, const char *wid, const char *windowname);
 };
 
 
@@ -516,9 +522,7 @@ private:
 public:
     AW_window_message(void);
     ~AW_window_message(void);
-    void init(AW_root *root, const char *windowname,
-              int width, int height,
-              int posx, int posy);
+    void init(AW_root *root, const char *windowname);
 };
 
 
