@@ -212,56 +212,56 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 	if(button==AWT_M_LEFT) {
 	    switch(type){
 	    case AW_Mouse_Press: {
-			base = (SEC_Base*)ct->client_data1;
-			if (base) {
-				if(base->getType()==SEC_HELIX_STRAND) {
-					strand     = (SEC_helix_strand*)base;
-					helix_info = strand->get_helix_info();
-					fixpoint_x = strand->get_fixpoint_x();
-					fixpoint_y = strand->get_fixpoint_y();
-					startDist  = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
-					//					initialLengthConstraint = helix_info->get_length();
-				}
-				if(base->getType()==SEC_SEGMENT) {
-					segment      = (SEC_segment*)base;
-					loop         = segment->get_loop();
-					loopCentre_x = loop->get_x_loop();
-					loopCentre_y = loop->get_y_loop();
-					startDist    = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
-					initialRadiusConstraint = loop->get_min_radius();
-				}
-			}
-			break;
+		base = (SEC_Base*)ct->client_data1;
+		if (base) {
+		    if(base->getType()==SEC_HELIX_STRAND) {
+			strand     = (SEC_helix_strand*)base;
+			helix_info = strand->get_helix_info();
+			fixpoint_x = strand->get_fixpoint_x();
+			fixpoint_y = strand->get_fixpoint_y();
+			startDist  = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
+			//					initialLengthConstraint = helix_info->get_length();
+		    }
+		    if(base->getType()==SEC_SEGMENT) {
+			segment      = (SEC_segment*)base;
+			loop         = segment->get_loop();
+			loopCentre_x = loop->get_x_loop();
+			loopCentre_y = loop->get_y_loop();
+			startDist    = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
+			initialRadiusConstraint = loop->get_min_radius();
+		    }
+		}
+		break;
 	    }
 	    case AW_Mouse_Drag:{  
-			base = (SEC_Base*)ct->client_data1;
-			if (base) {
-				if(base->getType()==SEC_HELIX_STRAND) {
-					strand     = (SEC_helix_strand*)base;
-					helix_info = strand->get_helix_info();
-					fixpoint_x = strand->get_fixpoint_x();
-					fixpoint_y = strand->get_fixpoint_y();
-					endDist    = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
-					finalLengthConstraint            = ((endDist/startDist) + endDist);
-					helix_info->get_min_length_ref() = finalLengthConstraint;
-				}
-				if(base->getType()==SEC_SEGMENT) {
-					segment      = (SEC_segment*)base;
-					loop         = segment->get_loop();
-					loopCentre_x = loop->get_x_loop();
-					loopCentre_y = loop->get_y_loop();
-					endDist      = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
-					finalRadiusConstraint      = ((endDist/startDist) * initialRadiusConstraint);
-					loop->get_min_radius_ref() = finalRadiusConstraint;
-				}
-			}
-			sec_root->update();
-			exports.refresh = 1;
-			exports.save    = 1;
-			break;
+		base = (SEC_Base*)ct->client_data1;
+		if (base) {
+		    if(base->getType()==SEC_HELIX_STRAND) {
+			strand     = (SEC_helix_strand*)base;
+			helix_info = strand->get_helix_info();
+			fixpoint_x = strand->get_fixpoint_x();
+			fixpoint_y = strand->get_fixpoint_y();
+			endDist    = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
+			finalLengthConstraint            = ((endDist/startDist) + endDist);
+			helix_info->get_min_length_ref() = finalLengthConstraint;
+		    }
+		    if(base->getType()==SEC_SEGMENT) {
+			segment      = (SEC_segment*)base;
+			loop         = segment->get_loop();
+			loopCentre_x = loop->get_x_loop();
+			loopCentre_y = loop->get_y_loop();
+			endDist      = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
+			//	finalRadiusConstraint      = ((endDist/startDist) * initialRadiusConstraint);
+			loop->get_min_radius_ref() = endDist;//finalRadiusConstraint;
+		    }
+		}
+		sec_root->update();
+		exports.refresh = 1;
+		exports.save    = 1;
+		break;
 	    }
 	    default:
-			break;
+		break;
 	    }
 	}
 	break;

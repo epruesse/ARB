@@ -926,9 +926,8 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     double nextCircle_x, nextCircle_y;
     double nextGamma;
 
-    const double start_x = previous_strand_pointer->get_attachp1_x();
-    const double start_y = previous_strand_pointer->get_attachp1_y();
-
+    double start_x,start_y;
+ 
     if(root->show_debug) {
 		paintDebugInfo(device,SEC_GC_LOOP, start_x, start_y,"AP1");
 		paintDebugInfo(device,SEC_GC_LOOP, previous_strand_pointer->get_attachp2_x(),previous_strand_pointer->get_attachp2_y(), "AP2");
@@ -950,7 +949,12 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     }
 
     int lastSearchColor = 0;
-    if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]) lastSearchColor = bgColor[seqStart-1] - COLORLINK;
+    if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]){
+      lastSearchColor = bgColor[seqStart-1] - COLORLINK;
+      start_x = previous_strand_pointer->get_attachp1_x();
+      start_y = previous_strand_pointer->get_attachp1_y();
+    }
+
 
     char helixStartBase[2], helixEndBase[2];
     helixStartBase[0] = helixStartBase[1] = 0;
