@@ -10,10 +10,17 @@
 #endif
 #define aw_assert(bed) arb_assert(bed)
 
+/* hide GNU extensions for non-gnu compilers: */
+#ifndef GNU
+# ifndef __attribute__
+#  define __attribute__(x)
+# endif
+#endif
+
 #define AW_ROOT_DEFAULT (aw_main_root_default)
-class AW_root;
-class AW_window;
-typedef long    AW_CL;      // generic client data type (void *)
+class        AW_root;
+class        AW_window;
+typedef long AW_CL;             // generic client data type (void *)
 
 typedef void (*AW_RCB)(AW_root*,AW_CL,AW_CL);
 typedef void (*AW_RCB0)(AW_root*);
@@ -76,7 +83,7 @@ void        aw_set_local_message(); // no message window, AWAR tmp/Message inste
 void        aw_message(const char *msg);
 extern char AW_ERROR_BUFFER[1024];
 void        aw_message();       // prints AW_ERROR_BUFFER;
-void        aw_macro_message(const char *temp,...); // gives control to the user
+void        aw_macro_message(const char *temp,...) __attribute__((format(printf, 1, 2))); // gives control to the user
 
 // Read a string from the user :
 char *aw_input( const char *title, const char *prompt, const char *awar_value, const char *default_input);
@@ -84,7 +91,7 @@ char *aw_input(const char *prompt, const char *awar_value, const char *default_i
 char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
 int   aw_string_selection_button(); // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 
-void AW_ERROR(const char *templat, ...);
+void AW_ERROR(const char *templat, ...) __attribute__((format(printf, 1, 2)));
 
 void aw_initstatus( void );     // call this function only once as early as possible
 void aw_openstatus( const char *title ); // show status
