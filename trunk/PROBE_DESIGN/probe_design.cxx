@@ -612,10 +612,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     GBDATA *gb_species;
 #ifdef DEVEL_IDP
     GBDATA *gb_gene;
-    int gene_flag = 0;
-    char *gene_str;
-    char *temp_gene_str;
-    char *ptrptr = 0;
+    int     gene_flag       = 0;
+    char   *gene_str        = 0;
+
+//     char *ptrptr = 0;
     char *gene_match_name;
 #endif
     int show_status = 0;
@@ -776,23 +776,15 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         match_info = strtok(0,toksep);
     if (!match_info) break;
 #ifdef DEVEL_IDP
-    /*<<<<<<< probe_design.cxx
     if (gene_flag) {
-      temp_gene_str = new char[strlen(match_info)+1];
-      strcpy(temp_gene_str,match_info);
-      gene_str = strtok_r(temp_gene_str," ",ptrptr);
-      gene_str = strtok_r(NULL," ",ptrptr);
+        char *temp_gene_str = new char[strlen(match_info)+1];
+        strcpy(temp_gene_str,match_info);
+        gene_str      = strtok(temp_gene_str," ");
+        gene_str      = strtok(NULL," ");
+
+        if (gene_str) gene_str = strdup(gene_str);
+        delete [] temp_gene_str;
     }
-    =======*/
-	if (gene_flag) {
-	  temp_gene_str = new char[strlen(match_info)+1];
-	  strcpy(temp_gene_str,match_info);
-	  temp_gene_str[strlen(temp_gene_str)] = '\0';
-	  //@@@ IDP: mit strtok wird match_info zerlegt. Mit strtok_r wird temp_gene_str zerlegt: Wird Benötigt um den Gennamen zu extrahieren. HIER PASSIERT DER FEHLER
-	  gene_str = strtok_r(temp_gene_str," ",&ptrptr);
-	  gene_str = strtok_r(NULL," ",&ptrptr);
-	}
-	//>>>>>>> 1.37
 #endif
     char flag  = 'x';
         if (gb_main){
@@ -802,19 +794,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (mark) {
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
-		    /*<<<<<<< probe_design.cxx
-		      if (gene_flag) {
-		      gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
-		      GB_write_flag(gb_gene,1);
-		      }
-		      =======*/
 		    if (gene_flag) {
-		      if (strcmp(gene_str,"intron")) {
-			gb_gene = GEN_find_gene(gb_species,gene_str);
-			GB_write_flag(gb_gene,1);
-		      }
+                        if (strcmp(gene_str,"intron")) {
+                            gb_gene = GEN_find_gene(gb_species,gene_str);
+                            GB_write_flag(gb_gene,1);
+                        }
 		    }
-		    //>>>>>>> 1.37
 #endif
             flag = '*';
         }
@@ -847,9 +832,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
 #ifdef DEVEL_IDP
     if (gene_flag) {
-      gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
-      sprintf(gene_match_name,"%s/%s",match_name,gene_str);
-      if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
+        gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
+        sprintf(gene_match_name,"%s/%s",match_name,gene_str);
+        if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
     }
     else {
 #endif
@@ -862,7 +847,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
           matchName = strdup((const char*) match_name);
           g_spd->probeSpecies.push_back(matchName);
       }
-      
+
 #ifdef DEVEL_IDP
     }
 #endif
@@ -876,6 +861,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (counter) *counter = mcount;
 
     delete bs.data;
+    free(gene_str);
     if (gb_main) GB_pop_transaction(gb_main);
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -885,7 +871,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         if (show_status) aw_status("Formatting output");
         aww->update_selection_list( selection_id );
     }
-    
+
     if (show_status) aw_closestatus();
     return;
 }
@@ -1456,7 +1442,7 @@ AW_window *create_IUPAC_resolve_window(AW_root *root) {
     return aws;
 }
 
-void *matchSaiProbe(AW_window *aw) {  
+static void matchSaiProbe(AW_window *aw) {
     AW_root *awr = aw->get_root();
     static AW_window *awExists = 0;
 
@@ -1495,8 +1481,8 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->at("print");
     aws->create_button("PRINT","PRINT","P");
 
-    aws->at("matchSai");     
-    aws->callback((void(*)(AW_window*))matchSaiProbe);
+    aws->at("matchSai");
+    aws->callback(matchSaiProbe);
     aws->create_button("MATCH_SAI","Match SAI","S");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
