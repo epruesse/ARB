@@ -4,8 +4,12 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+#ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
+#endif
+#ifndef ADGENE_H
 #include <adGene.h>
+#endif
 
 class AWT_canvas;
 
