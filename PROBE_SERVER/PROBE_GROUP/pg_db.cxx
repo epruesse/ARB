@@ -248,7 +248,7 @@ bool PG_match_path_with_mismatches(const char *members, SpeciesBagIter start, Sp
         if (matched) {
             matched_members += matched;
 
-            if (matched == size) { // complete (rest of) path matched
+            if (matched == (size_t)size) { // complete (rest of) path matched
                 nextToMatch  = end;
                 path_matched = true;
                 break;
