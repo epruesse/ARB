@@ -11,7 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 #include <aisc_func_types.h>
 
 /* server.c */
@@ -22,7 +22,7 @@ void *aisc_server_sigpipe P_((void));
 int aisc_s_read P_((int socket, char *ptr, int size));
 int aisc_s_write P_((int socket, char *ptr, int size));
 const char *aisc_get_object_names P_((long i));
-char *aisc_get_object_attribute P_((long i, long j));
+const char *aisc_get_object_attribute P_((long i, long j));
 char *aisc_get_hostname P_((void));
 const char *aisc_get_m_id P_((char *path, char **m_name, int *id));
 const char *aisc_open_socket P_((char *path, int delay, int do_connect, int *psocket, char **unix_name));
