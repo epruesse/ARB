@@ -1397,15 +1397,6 @@ char *GBS_ptserver_id_to_choice(int i) {
 
 char *GBS_read_arb_tcp(const char *env)
 {
-    char        buffer[256];
-    FILE       *arb_tcp;
-    char       *p;
-    char       *nl;
-    char       *tok1;
-    const char *user;
-    char       *envuser;
-    int         envlen;
-    int         envuserlen;
     char       *filename;
     char       *result = 0;
 
@@ -1416,60 +1407,67 @@ char *GBS_read_arb_tcp(const char *env)
     filename = GBS_find_lib_file("arb_tcp.dat","", 1);
     if (!filename) {
         GB_export_error("File $ARBHOME/lib/arb_tcp.dat not found");
-        return 0;
-    }
-    arb_tcp = fopen(filename,"r");
-
-    envlen = strlen(env);
-    user   = GB_getenvUSER();
-
-    if (!user) {
-        GB_export_error("Enviroment Variable 'USER' not found");
-        GB_print_error();
-        return 0;
-    }
-    envuserlen = strlen(user)+envlen+1;
-    envuser = (char *)GB_calloc(sizeof(char),envuserlen+1);
-    sprintf(envuser,"%s:%s",user,env);
-
-
-    for (p = fgets(buffer,255,arb_tcp);
-         p;
-         p = fgets(p,255,arb_tcp))
-    {
-        if (!strncmp(envuser,buffer,envuserlen)) {
-            envlen = envuserlen;
-            break;
-        }
-        if (!strncmp(env,buffer,envlen)) break;
-    }
-    free(envuser);
-    fclose(arb_tcp);
-
-    if (p) {
-        if ( (nl = strchr(p,'\n')) ) *nl = 0;
-        p = p+envlen;
-        while ((*p == ' ') || (*p == '\t')) p++;
-        p = GBS_eval_env(p);
-        strncpy(buffer,p,200);
-        free(p);
-        p = buffer;
-
-        tok1 = strtok(p," \t");
-        p = buffer;
-        while (tok1) {
-            int len = strlen(tok1);
-            memmove(p, tok1, len+1);
-            p += len+1;
-            tok1 = strtok(0," \t");
-        }
-
-        result = (char*)GB_calloc(sizeof(char),p-buffer);
-        GB_MEMCPY(result,buffer,p-buffer);
     }
     else {
-        GB_export_error("Missing '%s' in '%s'",env,filename);
+        FILE       *arb_tcp = fopen(filename,"r");
+        int         envlen  = strlen(env);
+        const char *user    = GB_getenvUSER();
+
+        if (!user) {
+            GB_export_error("Enviroment Variable 'USER' not found");
+            GB_print_error();
+        }
+        else {
+            int   envuserlen = strlen(user)+envlen+1;
+            char *envuser    = (char *)GB_calloc(sizeof(char),envuserlen+1);
+            char  buffer[256];
+            char *p;
+            char *nl;
+            char *tok1;
+
+            sprintf(envuser,"%s:%s",user,env);
+
+            for (p = fgets(buffer,255,arb_tcp);
+                 p;
+                 p = fgets(p,255,arb_tcp))
+            {
+                if (!strncmp(envuser,buffer,envuserlen)) {
+                    envlen = envuserlen;
+                    break;
+                }
+                if (!strncmp(env,buffer,envlen)) break;
+            }
+
+            if (p) {
+                if ( (nl = strchr(p,'\n')) ) *nl = 0;
+                p = p+envlen;
+                while ((*p == ' ') || (*p == '\t')) p++;
+                p = GBS_eval_env(p);
+                strncpy(buffer,p,200);
+                free(p);
+                p = buffer;
+
+                tok1 = strtok(p," \t");
+                p = buffer;
+                while (tok1) {
+                    int len = strlen(tok1);
+                    memmove(p, tok1, len+1);
+                    p += len+1;
+                    tok1 = strtok(0," \t");
+                }
+
+                result = (char*)GB_calloc(sizeof(char),p-buffer);
+                GB_MEMCPY(result,buffer,p-buffer);
+            }
+            else {
+                GB_export_error("Missing '%s' in '%s'",env,filename);
+            }
+
+            free(envuser);
+        }
+        fclose(arb_tcp);
     }
+    free(filename);
 
     return result;
 }
