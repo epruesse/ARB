@@ -68,6 +68,7 @@ struct adaqbsstruct {
     GBDATA            *gb_ref;  // second reference database
     AW_BOOL            look_in_ref_list; // for querys
     AWAR               species_name;
+    AWAR               tree_name;
     AWAR               awar_keys[AWT_QUERY_SEARCHES];
     AWAR               awar_setkey;
     AWAR               awar_setprotection;
