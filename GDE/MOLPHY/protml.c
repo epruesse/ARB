@@ -607,11 +607,11 @@ FILE *ofp;
 	if ((User_optn || Aneal_optn || Stard_optn || Njoin_optn) && !Ctacit_optn)
 		header(ofp, &Maxspc, &Maxsite, &Comment);
 	if (Distn_optn && Maxspc > 2) headerd(ofp, &Maxspc, &Maxsite, &Comment);
-	Identif = (char **)malloc((unsigned)Maxspc * sizeof(char *));
+	Identif = (char **)calloc((unsigned)Maxspc, sizeof(char *));
 	if (Identif == NULL) maerror("in prologue, Identif");
-	Sciname = (char **)malloc((unsigned)Maxspc * sizeof(char *));
+	Sciname = (char **)calloc((unsigned)Maxspc, sizeof(char *));
 	if (Sciname == NULL) maerror("in prologue, Sciname");
-	Engname = (char **)malloc((unsigned)Maxspc * sizeof(char *));
+	Engname = (char **)calloc((unsigned)Maxspc, sizeof(char *));
 	if (Engname == NULL) maerror("in prologue, Engname");
 	Seqchar = new_cmatrix(Maxspc, Maxsite);
 	if (Seque_optn)
