@@ -17,8 +17,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <iterator>
 
 #include "nt_validNameParser.hxx"
+
+using namespace std;
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
