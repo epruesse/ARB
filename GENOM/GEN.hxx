@@ -55,4 +55,6 @@ GBDATA* GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root); // searches the
 // in adtools.c:
 // char *GBT_read_gene_sequence P_((GBDATA *gb_gene));
 
+void GEN_select_gene(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
+
 #endif // GEN_HXX
