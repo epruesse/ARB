@@ -479,14 +479,16 @@ void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only)
 
     GBT_TREE *parent = 0;
 
-
     
 	if (node->is_leaf){
-	    parent = node->father;
-	    if (parent->name){
-		//gb_main = parent->gb_node;
-		//gb_main = GB_find(parent->gb_node,"name",0,down_level);
-		SQ_calc_sequence_structure(gb_main, marked_only);
+	    if (node->gb_node != 0){
+		parent = node->father;
+		if (parent->name && parent->name[0]){
+		    //gb_main = parent->gb_node;
+		    //gb_main = GB_find(parent->gb_node,"name",0,down_level);
+		    //SQ_calc_sequence_structure(gb_main, marked_only);
+		    printf("%s",parent->name);
+		}
 	    }
 	}
 	else {
