@@ -420,7 +420,7 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
     }
 
     if ( text != NULL ) {
-        ED4_ROOT->temp_device->text( ED4_G_DRAG, text, (x + 20), (y + height - MAXLETTERDESCENT), 0, 1, 0, 0);
+        ED4_ROOT->temp_device->text( ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, 1, 0, 0);
     }
 
     return ( ED4_R_OK );
@@ -799,60 +799,17 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id )
 }
 
 
-ED4_returncode ED4_terminal::adjust_clipping_rectangle( void )                  //set scrolling area in AW_MIDDLE_AREA
+int ED4_terminal::adjust_clipping_rectangle( void )                  //set scrolling area in AW_MIDDLE_AREA
 {
     AW_pos              x, y; //, width, height;
     AW_rectangle        area_size;
-
 
     ED4_ROOT->temp_device->get_area_size( &area_size );
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
-    //     AW_rectangle rect;
-    //     rect.t = y;
-    //     rect.b = y+extension.size[HEIGHT]-1;
-    //     rect.l = x;
-    //     rect.r = x+extension.size[WIDTH]-1;
-
-    ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
-
-    //  width  = extension.size[WIDTH]  - 1;
-    //  height = extension.size[HEIGHT] - 1;
-
-    //  ED4_ROOT->temp_device->reduce_top_clip_border(y);
-    //  ED4_ROOT->temp_device->reduce_bottom_clip_border(y+height);
-    //  ED4_ROOT->temp_device->reduce_left_clip_border(x);
-    //  ED4_ROOT->temp_device->reduce_right_clip_border(x+width);
-
-
-    //  if ( update_info.refresh_vertical_scrolling )
-    //  {
-    //      ED4_ROOT->temp_device->set_top_clip_border( (int) ED4_ROOT->temp_ed4w-> scrolled_rect.scroll_top-> window_pos[Y_POS] );
-    //      ED4_ROOT->temp_device->set_bottom_clip_border( area_size.b );           //there's no room between middle area and bottom area
-    // //**     ED4_ROOT->temp_device->set_bottom_clip_border( (int) ED4_ROOT->temp_ed4w->calc_bottom_border(ED4_B_BORDER) );
-    //  }
-    //  else
-    //  {
-    //      ED4_ROOT->temp_device->set_top_clip_border( (int) y );              // set clipping rectangle to our window coords
-    //      ED4_ROOT->temp_device->set_bottom_clip_border( (int) (y + height) );
-    //  }
-
-    //  if ( update_info.refresh_horizontal_scrolling )
-    //  {
-    //      ED4_ROOT->temp_device->set_left_clip_border( (int) ED4_ROOT->temp_ed4w->
-    //                                 scrolled_rect.scroll_left->
-    //                                 window_pos[X_POS] );
-    //      ED4_ROOT->temp_device->set_right_clip_border( area_size.r );
-    //  }
-    //  else
-    //  {
-    //      ED4_ROOT->temp_device->set_left_clip_border( (int) x );             // set clipping rectangle to our window coords
-    //      ED4_ROOT->temp_device->set_right_clip_border( (int) (x + width) );
-    //  }
-
-    return ( ED4_R_OK );
+    return ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
 
@@ -874,9 +831,9 @@ ED4_terminal::~ED4_terminal()
     if (selection_info) {
         delete selection_info;
     }
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-    if (this == cursor->owner_of_cursor) {
-        cursor->init();
+    ED4_cursor& cursor = ED4_ROOT->temp_ed4w->cursor;
+    if (this == cursor.owner_of_cursor) {
+        cursor.init();
     }
 }
 
@@ -900,11 +857,12 @@ ED4_returncode ED4_tree_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
-    adjust_clipping_rectangle();
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
     }
-    draw();
     ED4_ROOT->temp_device->pop_clip_scale();
 
     return ( ED4_R_OK );
@@ -914,45 +872,15 @@ ED4_returncode ED4_tree_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared
 
 ED4_returncode ED4_tree_terminal::draw( int /*only_text*/ )                 // draws bounding box of object
 {
-    AW_pos      x, y,
-        //          width  = extension.size[WIDTH] - 1,
-        height = extension.size[HEIGHT] - 1;
-    //          margin = 0;
-
-    AW_pos      text_x, text_y;
-    char        *db_pointer;
+    AW_pos  x, y;
+    AW_pos  text_x, text_y;
+    char   *db_pointer;
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
-    /*
-      AW_pos        line_x0[4], line_y0[4];
-      AW_pos        line_x1[4], line_y1[4];
-      line_x0[0] = x + margin;
-      line_y0[0] = y + margin;
-      line_x1[0] = x + width - margin;
-      line_y1[0] = y + margin;
-
-      line_x0[1] = x + width - margin;
-      line_y0[1] = y + margin;
-      line_x1[1] = x + width - margin;
-      line_y1[1] = y + height - margin;
-
-      line_x0[2] = x + width - margin;
-      line_y0[2] = y + height - margin;
-      line_x1[2] = x + margin;
-      line_y1[2] = y + height - margin;
-
-      line_x0[3] = x + margin;
-      line_y0[3] = y + height - margin;
-      line_x1[3] = x + margin;
-      line_y1[3] = y + margin;
-    */
     text_x = x + CHARACTEROFFSET;                           // don't change
-    text_y = y + height - MAXLETTERDESCENT;
-
-    //      for( i = 0; i <= 3; i++ )
-    //          ED4_ROOT->temp_device->line( gc, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
+    text_y = y + SEQ_TERM_TEXT_YOFFSET;
 
     db_pointer = resolve_pointer_to_string_copy();
     ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0);
@@ -975,11 +903,12 @@ ED4_returncode ED4_bracket_terminal::Show(int IF_DEBUG(refresh_all), int is_clea
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
-    adjust_clipping_rectangle();
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
     }
-    draw();
     ED4_ROOT->temp_device->pop_clip_scale();
 
     return ED4_R_OK;
@@ -1239,35 +1168,20 @@ ED4_returncode ED4_spacer_terminal::Show(int /*refresh_all*/, int is_cleared) //
     if (update_info.clear_at_refresh && !is_cleared) {
         clear_background();
     }
+    draw();
     return ED4_R_OK;
 }
 
 
 ED4_returncode ED4_spacer_terminal::draw( int /*only_text*/ )                   // draws bounding box of object
 {
-    AW_pos x,
-        y,
-        height = extension.size[HEIGHT] - 1;
-    AW_pos text_x,
-        text_y;
-
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_aww, &x, &y);
-
-    text_x = x + CHARACTEROFFSET;                           // don't change
-    text_y = y + height - MAXLETTERDESCENT;
-
-    ED4_ROOT->temp_device->text( ED4_G_STANDARD, "", text_x, text_y, 0, 1, 0, 0);
-
+#if defined(DEBUG) && 0
+    clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
+#else
+    clear_background(0);
+#endif // DEBUG
     return ( ED4_R_OK );
 }
-
-// #if 0
-// ED4_returncode ED4_spacer_terminal::show_scrolled(ED4_properties /*scroll_prop*/, int /*only_text*/ )
-// {
-//     return ( ED4_R_OK );
-// }
-// #endif
 
 ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
     : ED4_terminal( temp_id, x, y, width, height, temp_parent )
@@ -1280,47 +1194,27 @@ ED4_spacer_terminal::~ED4_spacer_terminal()
 {
 }
 
-// #if 0
-// ED4_returncode ED4_line_terminal::set_scroll_refresh( AW_pos /*world_x*/, AW_pos /*world_y*/, AW_pos /*width*/, AW_pos /*height*/,
-//                            ED4_properties /*scroll_prop*/)
-// // sets refresh flag of current object
-// // if object is (even partly) within given rectangle
-// {
-//     update_info.refresh_horizontal_scrolling = 1;    // line terminals always have to be refreshed
-//     return ( ED4_R_OK );
-// }
-// #endif
-
 ED4_returncode ED4_line_terminal::draw( int /*only_text*/ )     // draws bounding box of object
 {
-    ED4_index   i;
-    AW_pos      x, y,
-        width  = extension.size[WIDTH] - 1,
-        height = extension.size[HEIGHT] - 1,
-        margin = 0;
-    AW_pos      line_x0[2], line_y0[2];
-    AW_pos      line_x1[2], line_y1[2];
+    AW_pos x1, y1;
+    calc_world_coords( &x1, &y1 );
+    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x1, &y1 );
 
+    AW_pos x2 = x1+extension.size[WIDTH]-1;
+    AW_pos y2 = y1+extension.size[HEIGHT]-1;
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    AW_device *device = ED4_ROOT->temp_device;
 
-    line_x0[0] = x + margin;
-    line_y0[0] = y + margin;
-    line_x1[0] = x + margin + width;
-    line_y1[0] = y + margin;
-
-    line_x0[1] = x + margin;
-    line_y0[1] = y + margin + height;
-    line_x1[1] = x + margin + width;
-    line_y1[1] = y + margin + height;
-
-    for( i = 0; i <= 1; i++ )
-        ED4_ROOT->temp_device->line( ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
-
-    return ( ED4_R_OK );
+    device->line(ED4_G_STANDARD, x1, y1, x2, y1, -1, 0, 0);
+#if defined(DEBUG)
+    device->box(ED4_G_MARKED, x1, y1+1, x2-x1+1, y2-y1-1, -1, 0, 0);
+#else
+    device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, -1);
+#endif // DEBUG
+    device->line(ED4_G_STANDARD, x1, y2, x2, y2, -1, 0, 0);
+    
+    return ED4_R_OK;
 }
-
 
 ED4_returncode ED4_line_terminal::Show(int /*refresh_all*/, int is_cleared)
 {
@@ -1350,11 +1244,12 @@ ED4_returncode ED4_columnStat_terminal::Show(int IF_DEBUG(refresh_all), int is_c
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
-    adjust_clipping_rectangle();
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
     }
-    draw();
     ED4_ROOT->temp_device->pop_clip_scale();
 
     return ED4_R_OK;
@@ -1454,6 +1349,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
 
 ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
 {
+#warning test drawing of ED4_columnStat_terminal    
     if (!update_likelihood()) {
         aw_message("Can't calculate likelihood.", "OK");
         return ED4_R_IMPOSSIBLE;
