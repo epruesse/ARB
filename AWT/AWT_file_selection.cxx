@@ -439,6 +439,13 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
 
     // if name w/o directory was entered by hand (or by default) then append the directory :
 
+    char    *awar_name = GBS_global_string_copy("%s/directory", awar_prefix);
+    AW_awar *awar_dir  = awr->awar_no_error(awar_name);
+    if (!awar_dir) { // file selection box was not active (happens e.g. for print tree)
+        awar_dir = awr->awar_string(awar_name, GB_getcwd());
+    }
+    free(awar_name);
+
     char *dir  = awr->awar(GBS_global_string("%s/directory", awar_prefix))->read_string();
     char *full = strdup(AWT_concat_full_path(dir, file));
 
