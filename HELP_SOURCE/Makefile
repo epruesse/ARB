@@ -155,6 +155,7 @@ $(HELP) : $(STYLE_HELP) $(DTD)
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
 		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
+		@test -f $@
 
 # --------------------------------------------------------------------------------
 
@@ -164,10 +165,12 @@ $(HTML) : $(STYLE_HTML) $(DTD)
 google_logo: $(HTML_LOCATION)/Logo_25wht.gif
 $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 		cp -p $< $@
+		@test -f $@
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
 		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
+		@test -f $@
 
 # --------------------------------------------------------------------------------
 
