@@ -366,75 +366,6 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     return (AW_window *)aws;
 }
 
-GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
-	GBT_TREE *tree = *ptree;
-	char     *to_free = 0;
-
-	if (!conf_name) {
-        char *existing_configs = awt_create_string_on_configurations(gb_main);
-        conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0);
-        free(existing_configs);
-    }
-	if (!conf_name) return GB_export_error("no config name");
-
-	if (use_species_aside==-1) {
-	    char *use_species = aw_input("Enter number of extra species to view aside marked:", 0);
-
-	    if (use_species) use_species_aside = atoi(use_species);
-	    if (use_species_aside<1) return GB_export_error("illegal # of species aside");
-	}
-
- 	GB_transaction dummy2(gb_main);		// open close transaction
-	GB_HASH *used = GBS_create_hash(10000,0);
-	void *topfile = GBS_stropen(1000);
-	void *topmid = GBS_stropen(10000);
-	{
-	    void *middlefile = GBS_stropen(10000);
-	    nt_build_sai_string(topfile,topmid);
-
-	    if (use_species_aside) {
-			Store_species *extra_marked_species = 0;
-			int auto_mark = 0;
-			int marked_at_right;
-			nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
-			if (extra_marked_species) {
-				extra_marked_species->call(unmark_species);
-				delete extra_marked_species;
-			}
-	    }
-	    else {
-			int dummy_1=0, dummy_2;
-			nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
-	    }
-	    nt_build_conf_marked(used,topmid);
-	    char *mid = GBS_strclose(middlefile,0);
-	    GBS_strcat(topmid,mid);
-	    delete mid;
-	}
-
-	char *middle = GBS_strclose(topmid,0);
-	char *top = GBS_strclose(topfile,0);
-
-	GBDATA *gb_configuration = GBT_create_configuration(gb_main,conf_name);
-	GB_ERROR error = 0;
-	if (!gb_configuration){
-	    error = GB_get_error();
-	}else{
-	    GBDATA *gb_top_area = GB_search(gb_configuration,"top_area",GB_STRING);
-	    GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
-	    error = GB_write_string(gb_top_area,top);
-	    if (!error){
-            error = GB_write_string(gb_middle_area,middle);
-	    }
-	}
-	delete to_free;
-	delete middle;
-	delete top;
-	GBS_free_hash(used);
-	if (error) aw_message(error);
-	return error;
-}
-
 void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside){
     GB_ERROR error = NT_create_configuration(0,ptree,CONFNAME, use_species_aside);
     if (!error) {
@@ -510,4 +441,80 @@ AW_window *NT_extract_configuration(AW_root *awr){
 
     aws->window_fit();
     return (AW_window *)aws;
+}
+
+GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
+	GBT_TREE *tree = *ptree;
+	char     *to_free = 0;
+
+	if (!conf_name) {
+        char *existing_configs = awt_create_string_on_configurations(gb_main);
+        conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0);
+        free(existing_configs);
+    }
+	if (!conf_name) return GB_export_error("no config name");
+
+	if (use_species_aside==-1) {
+	    char *use_species = aw_input("Enter number of extra species to view aside marked:", 0);
+
+	    if (use_species) use_species_aside = atoi(use_species);
+	    if (use_species_aside<1) return GB_export_error("illegal # of species aside");
+	}
+
+ 	GB_transaction dummy2(gb_main);		// open close transaction
+	GB_HASH *used = GBS_create_hash(10000,0);
+	void *topfile = GBS_stropen(1000);
+	void *topmid = GBS_stropen(10000);
+	{
+	    void *middlefile = GBS_stropen(10000);
+	    nt_build_sai_string(topfile,topmid);
+
+	    if (use_species_aside) {
+			Store_species *extra_marked_species = 0;
+			int auto_mark = 0;
+			int marked_at_right;
+			nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
+			if (extra_marked_species) {
+				extra_marked_species->call(unmark_species);
+				delete extra_marked_species;
+			}
+	    }
+	    else {
+			int dummy_1=0, dummy_2;
+			nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
+	    }
+	    nt_build_conf_marked(used,topmid);
+	    char *mid = GBS_strclose(middlefile,0);
+	    GBS_strcat(topmid,mid);
+	    delete mid;
+	}
+
+	char *middle = GBS_strclose(topmid,0);
+	char *top = GBS_strclose(topfile,0);
+
+	GBDATA *gb_configuration = GBT_create_configuration(gb_main,conf_name);
+	GB_ERROR error = 0;
+	if (!gb_configuration){
+	    error = GB_get_error();
+	}else{
+	    GBDATA *gb_top_area = GB_search(gb_configuration,"top_area",GB_STRING);
+	    GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
+	    error = GB_write_string(gb_top_area,top);
+	    if (!error){
+            error = GB_write_string(gb_middle_area,middle);
+	    }
+	}
+	delete to_free;
+	delete middle;
+	delete top;
+	GBS_free_hash(used);
+	if (error) aw_message(error);
+	return error;
+}
+
+GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
+    GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
+    int        use_species_aside = int(cl_use_species_aside);
+    aww->get_root()->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+    return NT_create_configuration(0, ptree, 0, use_species_aside);
 }

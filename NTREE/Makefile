@@ -22,13 +22,14 @@ nt_date_dummy:
 
 proto:
 	rm -f nt_internal.h
-	../MAKEBIN/aisc_mkpt -A -E -F NT_,AP_ $(CPP_OBJECTS:.o=.cxx) >nt_internal.h
+	../MAKEBIN/aisc_mkpt -A -E -F NT_,AP_ $(CPP_SOURCES) >nt_internal.h
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_SOURCES)
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -208,7 +209,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
 AP_consensus.o:  $(ARBHOME)/INCLUDE/arbdb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h 
+AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -1,9 +1,10 @@
 
 /* NT_edconf.cxx */
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
-GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf_name, int use_species_aside);
 void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside);
 AW_window *NT_extract_configuration(AW_root *awr);
+GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf_name, int use_species_aside);
+GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside);
 
 /* NT_join.cxx */
 
@@ -63,5 +64,5 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root);
 /* ETC_check_gcg.cxx */
 
 /* AP_csp_2_gnuplot.cxx */
-void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_runGnuplot);
+void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode);
 AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);

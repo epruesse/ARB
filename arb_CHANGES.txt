@@ -1,6 +1,7 @@
 Major changes for next Beta:
 ----------------------------
 
+ - Colorize species (see demo.arb)
  - Fixed missing-character-bug in Xfig, Print and Edit4-Info-Display
  - 'IslandHopper' -- a new integrated aligner
  - Many improvements and bugfixes to secondary structure editor

@@ -51,7 +51,4 @@
 #define AWAR_HELIX_NAME     "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
 #define AWAR_ERROR_MESSAGES "tmp/Message" /* error: messages */
 
-
-
-
 #endif

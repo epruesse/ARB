@@ -1045,14 +1045,18 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
     if (i==init) {
         if (node->gb_node){
             gbd = GB_find(node->gb_node,key,0,down_level);
-            if (gbd) GB_delete(gbd);
+            if (gbd) {
+                GB_delete(gbd);
+            }
         }
     }else{
         if (!node->gb_node){
             node->gb_node = GB_create_container(gb_tree,"node");
         }
         gbd = GB_find(node->gb_node,key,0,down_level);
-        if (!gbd) gbd = GB_create(node->gb_node,key,GB_BYTE);
+        if (!gbd) {
+            gbd = GB_create(node->gb_node,key,GB_BYTE);
+        }
         error = GB_write_byte(gbd,i);
     }
     return error;
@@ -1176,7 +1180,7 @@ int AP_tree::arb_tree_set_leafsum_viewsum()	// count all visible leafs
     gr.leave_sum = r+l;
     gr.view_sum = leftson->gr.view_sum + rightson->gr.view_sum;
     if (gr.grouped) {
-        gr.view_sum = (int)pow((double)(gr.leave_sum +GROUPED_SUM),.33);
+        gr.view_sum = (int)pow((double)(gr.leave_sum - GROUPED_SUM + 9),.33);
     }
     return gr.leave_sum;
 }

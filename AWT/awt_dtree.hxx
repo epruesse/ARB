@@ -101,8 +101,8 @@ class AWT_graphic_tree : public AWT_graphic {
 				AW_pos x, AW_pos y,
 				AW_clicked_line *cl, AW_clicked_text *ct);
 
-	void mark_tree(struct AP_tree *at, int mark);
-	int  group_tree(struct AP_tree *at, int mode);
+	void mark_tree(struct AP_tree *at, int mark, int color_group);
+	int  group_tree(struct AP_tree *at, int mode, int color_group);
 	int  resort_tree(int mode, struct AP_tree *at = 0 );
 	AW_BOOL create_group(AP_tree * at);
 	void toggle_group(AP_tree * at);
