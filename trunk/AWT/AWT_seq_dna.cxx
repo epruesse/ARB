@@ -8,6 +8,7 @@
 #include <arbdbt.h>
 #include <awt_tree.hxx>
 #include "awt_seq_dna.hxx"
+#include "awt_parsimony_defaults.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -15,13 +16,6 @@
 #define awt_assert(bed) arb_assert(bed)
 
 char *AP_sequence_parsimony::table;
-
-
-/*************************8
-
-
-**************************/
-
 
 
 /*****************************
@@ -189,7 +183,10 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
         if ((c1&c2) == 0) {    // bases are distinct (that means we count a mismatch)
             p[idx] = c1|c2;     // mix distinct bases
 
-            if (p[idx]&AP_S) { // contains a gap
+#if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
+            // count multiple mutations as 1 mutation
+            // this was an experiment (don't use it, it does not work!)
+            if (p[idx]&AP_S) {  // contains a gap
                 if (idx>0 && (p[idx-1]&AP_S)) { // last position also contained gap..
                     if (((c1&AP_S) && (p1[idx-1]&AP_S)) || // ..in same sequence
                         ((c2&AP_S) && (p2[idx-1]&AP_S)))
@@ -200,6 +197,9 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
                     }
                 }
             }
+#endif // MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS
+
+            // now count mutation :
 
             if (mutpsite) mutpsite[idx]++; // count mutations per site (unweighted)
             result += w ? w[idx] : 1; // count weighted or simple
@@ -208,12 +208,16 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
             p[idx] = c1&c2; // store common bases for both subtrees
         }
 
+
+#if !defined(PROPAGATE_GAPS_UPWARDS)
         // do not propagate mixed gaps upwards (they cause neg. branches)
+        // this was an experiment (don't use it, it does not work!)
         if (p[idx] & AP_S) {
             if (p[idx] != AP_S) {
                 p[idx] = AP_BASES(p[idx]^AP_S);
             }
         }
+#endif // PROPAGATE_GAPS_UPWARDS
 
         awt_assert(p[idx] != 0);
     }
