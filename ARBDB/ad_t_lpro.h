@@ -18,7 +18,6 @@ long gbt_count_nodes P_((GBT_TREE *tree));
 GB_ERROR gbt_link_tree_to_hash_rek P_((GBT_TREE *tree, GBDATA *gb_species_data, long nodes, long *counter));
 double gbt_read_number P_((FILE *input));
 char *gbt_read_quoted_string P_((FILE *input));
-GBT_TREE *gbt_load_tree_rek P_((FILE *input, int structuresize));
 int gbt_sum_leafs P_((GBT_TREE *tree));
 GB_CSTR *gbt_fill_species_names P_((GB_CSTR *des, GBT_TREE *tree));
 void gbt_export_tree_node_print_remove P_((char *str));
