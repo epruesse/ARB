@@ -20,13 +20,24 @@ ARB-Input-Mask
 
 @MASK_BEGIN
 
+    TEXT("Switch to..") CHANGEMASK("Expert","expert.mask") OPENMASK("Basic fields","basic_fields.mask")
+
+    NEW_SECTION()
     TEXT("You are editing") SELF()
-    TEXT("     ")
+
+    NEW_SECTION()
+    NUMFIELD( "number (-10..10)", "number", 3, -10, 10)
+    NEW_SECTION()
+
     TEXTFIELD(   "Name (Fullname)",  "full_name" ,63  )
-    TEXTFIELD(   "16s data",  "ali_16s/data" ,63  )
+
+    NEW_SECTION()
+
     TEXTFIELD(   "Remark  ",  "remark" ,  70  )
-    TEXT("     ")
     TEXTFIELD(   "Remark2 ",  "remark2" ,  70  )
+
+    NEW_SECTION()
+
     CHECKBOX(    "checked?",  "mbi/checked", 0)
     RADIO(       "Species class: ", "class", 1, y,        \
                 "other", "", \
@@ -34,6 +45,5 @@ ARB-Input-Mask
                 "real",             "real-value" )     TEXTFIELD("", "class", 30)
 
     RADIO ("Partial sequence", "partial_seq", 2, x, "yes","1","no","0")
-
 
 @MASK_END
