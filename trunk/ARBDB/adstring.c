@@ -1589,6 +1589,12 @@ char **GBS_read_dir(const char *dir, const char *filter)
     long    resultptr=0;
     FILE    *ls;
 
+#warning rewrite me
+
+#ifdef DEBUG
+    printf("dir='%s' filter='%s'\n",dir, filter);
+#endif
+
     if (!dir) {
         dir = dirbuffer;
         sprintf(dirbuffer,"%s/lib",GB_getenvARBHOME());
