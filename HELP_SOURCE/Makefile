@@ -1,16 +1,18 @@
 
-.SUFFIXES: .o .c .cxx
+.SUFFIXES: .o .c .cxx .source .hlp .xml .html
 
 # --------------------------------------------------------------------------------
 # directories of source/destination files:
 
 HLP_SOURCE=oldhelp
+HLP_GENERATED=genhelp
 XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 
 # choose conversion mode:
-CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that's ok for now!)
+CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that's intended for now!)
+# if set to 0 the helpfiles in oldhelp are ignored and only XML is used as source (not intended for now)
 
 # needed tools:
 TOOL_OBJECT = \
@@ -22,10 +24,10 @@ VALIDATE = rxp -v -V -V
 
 # --------------------------------------------------------------------------------
 
-all: date dirs tools delzerohtml
+all: date generated dirs tools delzerohtml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 		@echo ---------------------------------------------------
-		@echo ------------ Converting old hlp  2 xml:
+		@echo ------------ Converting old hlp 2 xml:
 		$(MAKE) xml
 endif
 		@echo ---------------------------------------------------
@@ -49,20 +51,51 @@ dirs:
 HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
 # --------------------------------------------------------------------------------
+# Generate help files in $(HLP_GENERATED):
+
+generated:
+		@echo ---------------------------------------------------
+		@echo ------------ Generating some help files:
+		(cd $(HLP_GENERATED);$(MAKE) all)
+
+# --------------------------------------------------------------------------------
 
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 
 #OLD_HELP= oldhelp/importift.hlp
-OLD_HELP_ALL= $(HLP_SOURCE)/arb.hlp $(wildcard $(HLP_SOURCE)/*.hlp $(HLP_SOURCE)/seer/*.hlp)
+OLD_HELP_ALL= \
+		$(HLP_SOURCE)/arb.hlp \
+		$(wildcard \
+				$(HLP_GENERATED)/*.hlp \
+				$(HLP_SOURCE)/*.hlp \
+				$(HLP_SOURCE)/seer/*.hlp \
+		)
+
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
-XML=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
+XML_TMP2=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
+XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 
 $(XML) : $(HELP2XML)
 
 xml : $(XML)
 
+dump:
+		echo $(XML)
+
 $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
+		@test \! -f $(HLP_GENERATED)/$(<F) || \
+				( echo $<:1: exists twice -- only one existance allowed; \
+				  echo $(HLP_GENERATED)/$(<F):1: other occurance \
+				  && false )
+		arb_help2xml $< $@
+		$(VALIDATE) $@ >/dev/null
+
+$(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
+		@test \! -f $(HLP_SOURCE)/$(<F) || \
+				( echo $<:1: exists twice -- only one existance allowed; \
+				  echo $(HLP_SOURCE)/$(<F):1: other occurance \
+				  && false )
 		arb_help2xml $< $@
 		$(VALIDATE) $@ >/dev/null
 
@@ -74,7 +107,6 @@ endif
 
 HTML_TMP=$(XML:%.xml=%.html)
 HTML=$(HTML_TMP:$(XML_LOCATION)/%=$(HTML_LOCATION)/%)
-#HTML=html/acisrt.html html/seer/login.html
 
 HELP_TMP=$(XML:%.xml=%.hlp)
 HELP=$(HELP_TMP:$(XML_LOCATION)/%=$(HLP_DEST)/%)
@@ -145,6 +177,7 @@ clean:
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 		-rm dummy `find $(XML_LOCATION) -name "*.xml"`
 endif
+		(cd $(HLP_GENERATED);$(MAKE) clean)
 
 # --------------------------------------------------------------------------------
 
