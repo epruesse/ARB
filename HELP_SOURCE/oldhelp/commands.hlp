@@ -87,8 +87,10 @@ SECTION COMMANDLIST
 	STRING
 
 		head(n)			the first n characters
+		left(n)			the first n characters
 
 		tail(n)			the last n characters
+		right(n)		the last n characters
 
 		len			the length of the input
 
@@ -98,6 +100,9 @@ SECTION COMMANDLIST
 		mid(x,y)		the string from x to y
 					y < 0 means a position relative to the
 					end
+
+                crop("str")             removes characters of 'str' from
+                                        both ends of the input
 
 		remove("str");		removes all characters of 'str'
 					e.g. remove(" ") removes all blanks
@@ -110,7 +115,13 @@ SECTION COMMANDLIST
 
 		tab(n)			append n-len(input) spaces
 
+		pretab(n)               prepend n-len(input) spaces
+
 		cut(n1,n2,n3)		copies the nth input stream
+
+                upper                   converts string to upper case
+                lower                   converts string to lower case
+                caps                    capitalizes string
 
 		checksum(options)	calculates a CRC checksum
 
