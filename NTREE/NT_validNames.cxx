@@ -20,6 +20,12 @@
 #include "nt_validNames.hxx"
 #include "nt_validNameParser.hxx"
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
+
 extern GBDATA* gb_main;
 
 
@@ -233,87 +239,145 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 
 }
 
-void NT_insertValidNames(AW_window*, AW_CL, AW_CL)
-{
-  using validNames::Desco;
-  //  printf ("Hallo\n");
-  NAMELIST oldFullNames; // stl container derived
+// void NT_insertValidNames(AW_window*, AW_CL, AW_CL)
+// {
+//   using validNames::Desco;
+//   //  printf ("Hallo\n");
+//   NAMELIST oldFullNames; // stl container derived
 
 
-  GB_begin_transaction(gb_main);
-  GBDATA* GBT_actspecies = GBT_first_species(gb_main);
+//   GB_begin_transaction(gb_main);
+//   GBDATA* GBT_actspecies = GBT_first_species(gb_main);
 
-  char* GBT_oldName = GBT_read_name(GBT_actspecies);
-  printf ("%s\n",  GBT_oldName);
+//   char* GBT_oldName = GBT_read_name(GBT_actspecies);
+//   printf ("%s\n",  GBT_oldName);
 
-  GBDATA* GB_full_name = GB_find(GBT_actspecies,"full_name",0,down_level);
-  char* fullName =  GB_read_string(GB_full_name);
-  printf ("%s\n",  fullName);
+//   GBDATA* GB_full_name = GB_find(GBT_actspecies,"full_name",0,down_level);
+//   char* fullName =  GB_read_string(GB_full_name);
+//   printf ("%s\n",  fullName);
 
-//     for (	gb_species = GBT_first_species(gb_main);
-//             gb_species;
-//             gb_species = GBT_next_species(gb_species) ){
-//         GB_write_flag(gb_species,flag);
+// //     for (	gb_species = GBT_first_species(gb_main);
+// //             gb_species;
+// //             gb_species = GBT_next_species(gb_species) ){
+// //         GB_write_flag(gb_species,flag);
+// //     }
+
+// // strange loop
+//   for (GBDATA *spe=GBT_first_species(gb_main);
+//        spe;
+//        spe=GBT_next_species(spe)) ;
+
+//   GBDATA* GBT_next;
+//   while( (GBT_next = GBT_next_species(GBT_actspecies)) )
+//     {
+//       printf ("%s\n",  GBT_read_name(GBT_next));
+//       GBDATA* GB_full_name = GB_find(GBT_next,"full_name",0,down_level);
+//       char* fullName = (char*) GB_read_string(GB_full_name);
+//       printf ("%s\n",  fullName);
+//       oldFullNames.push_back(fullName);
+//       GBT_actspecies = GBT_next;
+
 //     }
-
-// strange loop
-  for (GBDATA *spe=GBT_first_species(gb_main);
-       spe;
-       spe=GBT_next_species(spe)) ;
-
-  GBDATA* GBT_next;
-  while( (GBT_next = GBT_next_species(GBT_actspecies)) )
-    {
-      printf ("%s\n",  GBT_read_name(GBT_next));
-      GBDATA* GB_full_name = GB_find(GBT_next,"full_name",0,down_level);
-      char* fullName = (char*) GB_read_string(GB_full_name);
-      printf ("%s\n",  fullName);
-      oldFullNames.push_back(fullName);
-      GBT_actspecies = GBT_next;
-
-    }
-  GB_commit_transaction(gb_main);
+//   GB_commit_transaction(gb_main);
 
 
 
-};
+// };
 
 
 void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
 {
-  std::cout <<"Valid Names suggestion section" << std::endl;
-  GBDATA* species;
-  GBDATA* pair;
-  GBDATA* oldName;
-  GBDATA* newName;
-  GBDATA* GBT_fullName;
-  const char* fullName;
-  GBDATA* desc; // string
-  NAMELIST speciesNames;
-  const char* typeStr;
+    std::cout <<"Valid Names suggestion section" << std::endl;
+    GBDATA* species;
+    GBDATA* pair;
+    GBDATA* oldName;
+    GBDATA* newName;
+    //  GBDATA* validName;
+    GBDATA* GBT_fullName;
+    // char* fullName;
+    GBDATA* desc; // string
+    NAMELIST speciesNames;
+    // char* typeStr;
 
-  GB_begin_transaction(gb_main);
-
-  for (GBDATA *GBT_species=GBT_first_species(gb_main);
-       GBT_species;
-       GBT_species=GBT_next_species(GBT_species)){
-    // retrieve list of all species names
-    GBDATA* GBT_fullName = GB_find(GBT_species,"full_name",0,down_level);
-    fullName =  GB_read_string(GBT_fullName);
-    printf ("%s\n",  fullName);
-    GB_commit_transaction(gb_main);
-  } ;
-
-  /*
-     for (){
-     // iterate all pairs to look for relevant names
+    GB_begin_transaction(gb_main);
 
 
-     } ;
-  */
- /*
-   GB_begin_transaction(gb_main);
-   // code goes here
-   GB_commit_transaction(gb_main);
- */
+    GBDATA* GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
+    if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; return; }
+
+    GB_ERROR err = 0;
+
+    for (GBDATA *GBT_species=GBT_first_species(gb_main);
+         GBT_species;
+         GBT_species=GBT_next_species(GBT_species)){
+        // retrieve species names
+        GBDATA* GBT_fullName = GB_find(GBT_species,"full_name",0,down_level); // gb_fullname
+        char *fullName =  GBT_fullName ? GB_read_string(GBT_fullName) : 0;
+        if (!fullName) err = "Species has no fullname";
+
+        //   printf ("%s\n",  fullName);
+
+        // search validNames
+
+        for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
+             GB_validNamePair && !err;
+             GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
+            //    if (!GB_validNamePair){std::cout << "GB_validNamePair not found" << std:: cout; return; } 
+            // retrieve list of all species names
+
+            GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
+            char* typeString = GB_read_string(actDesc);
+            if (strcmp(typeString, "NOTYPE") != 0){
+                GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
+                char* validName = newName ? GB_read_string(newName) : 0;
+                //if (!validName){std::cout << "validName not found" << std:: cout; return; } // string
+                GBDATA* oldName = GB_find(GB_validNamePair, "OLDNAME", 0, down_level);
+                if (!oldName){std::cout << "oldName not found" << std:: cout; return; }  
+                char* depName = GB_read_string(oldName);
+                if (!depName){std::cout << "deprecatedName not found" << std:: cout; return; } 
+                //           printf ("%s\n",  validName);
+
+                if (!validName || !depName) {
+                    err = GBS_global_string("Invalid names entry for %s",fullName);
+                }
+                
+                // now compare all names
+                if(!err && ( (strcmp(fullName, validName) == 0)||(strcmp(fullName, depName) == 0))) {
+                    //insert new database fields if necessary
+
+                    GBDATA* GB_speciesValidNameCont = GB_find(GBT_species,"Valid_Name",0, down_level);
+                    if (GB_speciesValidNameCont == 0){GB_speciesValidNameCont = GB_create_container(GBT_species, "Valid_Name");}
+
+                    GBDATA* GB_speciesValidName = GB_find(GB_speciesValidNameCont, "NameString", 0, down_level);
+                    if (GB_speciesValidName == 0){GB_speciesValidName = GB_create(GB_speciesValidNameCont, "NameString", GB_STRING);}
+                    GB_write_string(GB_speciesValidName, validName);
+                
+                    GBDATA* GB_speciesDescType = GB_find(GB_speciesValidNameCont, "DescType", 0, down_level);
+                    if (GB_speciesDescType == 0){GB_speciesDescType = GB_create(GB_speciesValidNameCont, "DescType", GB_STRING);}
+                    GB_write_string(GB_speciesDescType, typeString);
+
+                    if(strcmp(fullName, validName) == 0){std::cout << "validspeciesname found" << std::endl;}
+                    if(strcmp(fullName, depName) == 0){std::cout << "depspeciesname found" << std::endl;}
+
+ 
+ 
+               }
+
+                free (validName);
+                free (depName);
+
+            }
+            free (typeString);             
+        }
+
+        free (fullName);
+    } 
+
+    if (err) {
+        GB_abort_transaction(gb_main);
+        aw_message(err);
+    }
+    else {
+        GB_commit_transaction(gb_main);
+    }
 }

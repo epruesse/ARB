@@ -1831,6 +1831,7 @@ GBDATA *GBT_next_species(GBDATA *gb_species)
 
 GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *name)
 {
+
     GBDATA *gb_species_name;
     gb_species_name = GB_find(gb_species_data,"name",name,down_2_level);
     if (!gb_species_name) return 0;
