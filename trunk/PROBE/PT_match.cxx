@@ -66,7 +66,7 @@ int PT_chain_print(int name, int apos, int rpos, long ilocs)
     }
 
     ml = create_PT_probematch();
-    
+
     ml->name         = name;
     ml->b_pos        = apos;
     ml->g_pos        = -1;
@@ -338,9 +338,28 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     locs->pm_sequence = psg.main_probe = strdup(probestring);
     compress_data(probestring);
     while ((ml = locs->pm))	destroy_PT_probematch(ml);
-    if (strlen(probestring) + 2 * locs->pm_max < MIN_PROBE_LENGTH) {
-        pt_export_error(locs,"error: probe too short!!\n");
-        return 0;
+    {
+        int probe_len = strlen(probestring);
+        if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
+            if (probe_len >= MIN_PROBE_LENGTH) {
+                int max_pos_mismatches = (probe_len-MIN_PROBE_LENGTH)/2;
+                if (max_pos_mismatches>0) {
+                    if (max_pos_mismatches>1) {
+                        pt_export_error(locs, GBS_global_string("Max. %i mismatches are allowed for probes of length %i", max_pos_mismatches, probe_len));
+                    }
+                    else {
+                        pt_export_error(locs, GBS_global_string("Max. 1 mismatch is allowed for probes of length %i", probe_len));
+                    }
+                }
+                else {
+                    pt_export_error(locs, "No mismatches allowed for that short probes.");
+                }
+            }
+            else {
+                pt_export_error(locs, GBS_global_string("Min. probe length is %i\n", MIN_PROBE_LENGTH));
+            }
+            return 0;
+        }
     }
     set_table_for_PT_N_mis();
     if (locs->pm_complement) {
@@ -381,7 +400,7 @@ struct format_props {
     bool show_mismatches;       // whether to show 'mis' and 'N_mis'
     bool show_ecoli;            // whether to show 'ecoli' column
     bool show_gpos;             // whether to show 'gpos' column
-    
+
     int name_width;             // width of 'name' column
     int gene_or_full_width;     // width of 'genename' or 'fullname' column
     int pos_width;              // max. width of pos column
@@ -602,7 +621,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 
         if (gb_pos) {
             long gene_pos  = GB_read_int(gb_pos);
-            ml->g_pos      = ml->b_pos; 
+            ml->g_pos      = ml->b_pos;
             ml->b_pos     += gene_pos;
         }
         else {
