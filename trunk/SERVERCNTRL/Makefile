@@ -1,15 +1,32 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .c .cxx
+.SUFFIXES: .o .c .cxx .depend
 OBJECTS = servercntrl.o
 $(MAIN): $(OBJECTS)
 	$(AR) $(@) $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES)
-.cxx.o: 
+.cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 proto:
 	rm -f servercntrl_prototypes.h
 	../MAKEBIN/aisc_mkpt -C $(OBJECTS:.o=.c) >servercntrl_prototypes.h
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECTS:.o=.cxx)
+
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
+servercntrl.o: $(ARBHOME)/INCLUDE/client.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
+servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h servercntrl.h

@@ -1,16 +1,27 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .cxx
+.SUFFIXES: .o .cxx .depend
 CPP_OBJECTS = demo.o
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
-.cxx.o: 
+.cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 demo.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 demo.o: $(ARBHOME)/INCLUDE/arb_assert.h
 demo.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 demo.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-demo.o: $(ARBHOME)/INCLUDE/aw_preset.hxx ./demo.hxx
+demo.o: $(ARBHOME)/INCLUDE/aw_preset.hxx demo.hxx

@@ -1,8 +1,8 @@
 # Makefile February 2002 by Alexandros P. Stamatakis
 
-.SUFFIXES: .o .c .h
+.SUFFIXES: .o .c .h .depend
 
-OBJECT = axml.o
+OBJECTS = axml.o
 RM 	   = rm -f
 
 # ----------------------------------------
@@ -32,18 +32,25 @@ endif
 
 all : $(TARGET)
 
-$(TARGET) : $(OBJECT)
+$(TARGET) : $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean :
-	$(RM) $(OBJECT) $(TARGET)
+	$(RM) $(OBJECTS) $(TARGET)
 
-depend:
-	makedepend $(MAKEDEPENDINC) $(OBJECT:.o=.c)
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
-axml.o:  axml.h
+axml.o: axml.h

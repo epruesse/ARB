@@ -1,5 +1,5 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .cxx
+.SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = AWTI_import.o \
 		      AWTI_export.o \
@@ -8,8 +8,19 @@ $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -24,8 +35,8 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/adGene.h awti_import.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
-AWTI_import.o: awti_imp_local.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx awti_imp_local.hxx
+
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -36,6 +47,5 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h awti_export.hxx
-AWTI_export.o: awti_exp_local.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+AWTI_export.o: awti_exp_local.hxx $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx

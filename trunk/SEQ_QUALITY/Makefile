@@ -1,5 +1,5 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .cxx
+.SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = SQ_main.o SQ_functions.o
 
@@ -9,7 +9,28 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+SQ_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SQ_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h seq_quality.h SQ_functions.h
+
+SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

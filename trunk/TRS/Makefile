@@ -1,5 +1,5 @@
 
-.SUFFIXES: .o .c .cxx
+.SUFFIXES: .o .c .cxx .depend
 
 OBJECTS = trs_hash.o tree_lib.o trs_server.o
 
@@ -23,15 +23,23 @@ proto:
 $(ARBHOME)/irsbin/%: %.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECTS:.o=.c*)
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
 tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
-tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx
-tree_lib.o: trs_proto.h
-trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx
-trs_server.o: trs_proto.h
+tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h
+
+trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h

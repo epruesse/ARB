@@ -1,6 +1,6 @@
 OBJECT = readseq.o ureadseq.o
 
-.SUFFIXES: .o .c .cxx
+.SUFFIXES: .o .c .cxx .depend
 
 ifdef DEBIAN
 all:
@@ -27,10 +27,20 @@ $(ARBHOME)/bin/arb_readseq:  $(OBJECT)
 .c.o:
 	$(SUB_ACC) $(cflags) -c $< $(AINCLUDES)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECT:.o=.c*)
+DEPENDS = $(OBJECT:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-readseq.o:  ureadseq.h
-ureadseq.o:  ureadseq.h
+readseq.o: ureadseq.h
+
+ureadseq.o: ureadseq.h
