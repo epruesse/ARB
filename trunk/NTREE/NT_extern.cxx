@@ -698,7 +698,7 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     // NT_unmark_all_cb(aww,ntw);
     AWT_TREE(ntw)->tree_root->mark_long_branches(gb_main,atof(val));
     AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-    delete val;
+    free(val);
     ntw->refresh();
 }
 void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
@@ -901,6 +901,108 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
 
 
 }
+
+void NT_test_AWT(AW_window *aww) {
+    AW_root          *root = aww->get_root();
+    AW_window_simple *aws  = new AW_window_simple;
+
+    aws->init( root, "AWT_TEST", "AWT test");
+
+    aws->load_xfig("awt_test.fig");
+
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->auto_space(0, 0);
+
+    aws->at("buttons");
+
+#if 0    
+    aws->label("Test label");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","Button 1","1");
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
+    aws->create_button("B2","Button 2","2");
+
+    aws->at_newline(); // ------------------------------
+
+    aws->label("Longer test label");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","Button 1","1");
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
+    aws->create_button("B2","Button 2","2");
+
+    aws->at_newline();          // ------------------------------    
+#endif
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","Button 1","1");
+
+    aws->label("Label with 2nd button");
+    aws->highlight();
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
+    aws->create_button("B2","Button 2","2");
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button3.hlp");
+    aws->create_button("B3","Button 3","3");
+
+    aws->at_newline();          // ------------------------------
+
+#if 0    
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","Button 1","1");
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
+    aws->create_button("B2","Button 2","2");
+
+#endif    
+
+    aws->at("buttons2");
+
+    aws->label("Test label");
+    aws->highlight();
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons2","1");
+
+    aws->at("buttons3");
+
+    aws->label("Test label");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons3","1");
+
+    aws->at("buttons4");
+
+    aws->label("Test label");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons4","1");
+
+    aws->at("buttons5");
+
+    aws->label("Test label");
+    aws->highlight();
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons5","1");
+
+    aws->at("buttons6");
+
+    aws->label("Test label");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons6","1");
+
+    aws->at("buttons7");
+
+    aws->label("Test label");
+    aws->highlight();
+    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
+    aws->create_button("B1","buttons7","1");
+
+    aws->show();
+}
+
 #endif // DEBUG
 
 //--------------------------------------------------------------------------------------------------
@@ -969,7 +1071,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GBDATA *gb_arb_presets =    GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
 
-    bool is_genom_db = GEN_is_genom_db(gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
+    bool is_genome_db = GEN_is_genome_db(gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
     // --------------------------------------------------------------------------------
     //     File
@@ -1097,7 +1199,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genom_db) GEN_create_genes_submenu(awm, true, ntw);
+        if (is_genome_db) GEN_create_genes_submenu(awm, true, ntw);
 
         // --------------------------------------------------------------------------------
         //     Sequence
@@ -1145,7 +1247,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 #endif // DEVEL_RALF
             AWMIMT("seq_quality", "Check Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
 #endif // DEBUG
-            
+
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
 #warning chimere check needs to be fixed
@@ -1195,14 +1297,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Probes","P","probe_menu.hlp", AWM_ALL);
         {
-            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, 0 );
+            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
             AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_PRB, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw           );
             AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_PRB, AW_POPUP, (AW_CL)create_probe_match_window, 0  );
             SEP________________________SEP();
             AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0);
             AWMIMT("primer_design",     "Design Sequencing Primers", "",  "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0                      );
             SEP________________________SEP();
-            AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genom_db);
+            AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)is_genome_db);
         }
 
     } // clone
@@ -1293,7 +1395,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         }
         awm->close_sub_menu();
-        AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0); 
+        AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
 
@@ -1515,7 +1617,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", "#edit.bitmap",0);
 
-    if (is_genom_db) {
+    if (is_genome_db) {
         awm->button_length(4);
         awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map, (AW_CL)ntw);
         awm->help_text("gene_map.hlp");
@@ -1595,6 +1697,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // Automatically start:
     // --------------------
 
+    NT_test_AWT(awm);
     // NT_test_input_mask(awm->get_root());
 
 #endif // DEVEL_RALF
