@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Jan/09/2002 19:15 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jan/23/2002 19:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -282,7 +282,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
 //      void experiment_delete_cb(AW_window *aww)
 //  -------------------------------------------------
 void experiment_delete_cb(AW_window *aww){
-    if (aw_message("Are you sure to delete the experiment","OK,CANCEL"))return;
+    if (aw_message("Are you sure to delete the experiment","OK,CANCEL")) return;
 
     GB_begin_transaction(gb_main);
 

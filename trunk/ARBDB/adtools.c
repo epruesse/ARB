@@ -844,17 +844,20 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
     /* now delete all old style tree data */
     for (	gb_node = GB_find(gb_tree,"node",0,down_level);
             gb_node;
-            gb_node = GB_find(gb_node,"node",0,this_level|search_next)){
+            gb_node = GB_find(gb_node,"node",0,this_level|search_next))
+    {
         GB_write_usr_private(gb_node,1);
     }
-    gb_ctree = GB_search(gb_tree,"tree",GB_STRING);
-    t_size = gbt_write_tree_rek_new(gb_tree, tree, 0, GBT_GET_SIZE);
-    ctree= (char *)GB_calloc(sizeof(char),(size_t)(t_size+1));
-    t_size = gbt_write_tree_rek_new(gb_tree, tree, ctree, GBT_PUT_DATA);
+
+    gb_ctree  = GB_search(gb_tree,"tree",GB_STRING);
+    t_size    = gbt_write_tree_rek_new(gb_tree, tree, 0, GBT_GET_SIZE);
+    ctree     = (char *)GB_calloc(sizeof(char),(size_t)(t_size+1));
+    t_size    = gbt_write_tree_rek_new(gb_tree, tree, ctree, GBT_PUT_DATA);
     *(t_size) = 0;
-    error = GB_set_compression(gb_main,0);		/* no more compressions */
-    error = GB_write_string(gb_ctree,ctree);
-    error = GB_set_compression(gb_main,-1);		/* allow all types of compression */
+    error     = GB_set_compression(gb_main,0); /* no more compressions */
+    error     = GB_write_string(gb_ctree,ctree);
+    error     = GB_set_compression(gb_main,-1); /* allow all types of compression */
+
     free(ctree);
     if (!error) size = gbt_write_tree_nodes(gb_tree,tree,0);
     if (error || (size<0)) {
@@ -1586,7 +1589,7 @@ GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name)
 
 GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type)
 {
-    /* the same as GB_search(species, 'using/key', GB_CREATE) */
+    /* the same as GB_search(species, 'ali_name/key', GB_CREATE) */
     GBDATA *gb_gb;
     GBDATA *gb_data;
     if (GB_check_key(ali_name)) {
@@ -1595,10 +1598,9 @@ GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_T
     if (GB_check_hkey(key)) {
         return 0;
     }
-    gb_gb = GB_find(species,ali_name,0,down_level);
-    if (!gb_gb) {
-        gb_gb = GB_create_container(species,ali_name);
-    };
+    gb_gb             = GB_find(species,ali_name,0,down_level);
+    if (!gb_gb) gb_gb = GB_create_container(species,ali_name);
+    
     if (type == GB_STRING) {
         gb_data = GB_search(gb_gb, key, GB_FIND);
         if (!gb_data){
