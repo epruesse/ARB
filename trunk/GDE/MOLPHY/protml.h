@@ -3,6 +3,9 @@
  * Copyright (C) 1992-1996 J. Adachi & M. Hasegawa. All rights reserved.
  */
 
+#include "../../INCLUDE/arb_assert.h"
+#define mo_assert(cond) arb_assert(cond)
+
 #include "molphy.h"
 #include "matrixut.h"
            /* unit time (length) is a number of substitutions per 100 sites */
