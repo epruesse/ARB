@@ -698,7 +698,7 @@ long GB_size_of_FILE(FILE *in){
     int fi = fileno(in);
     struct stat st;
     if (fstat(fi, &st)) {
-        GB_export_error("GB_size_of_FILE: sorry file '%s' not readable"); // @@@ pass filename as parameter and show here
+        GB_export_error("GB_size_of_FILE: sorry file is not readable");
         return -1;
     }
     return st.st_size;
