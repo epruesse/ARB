@@ -51,7 +51,7 @@ static void crash_handler(int sig_num)
       puts("This program has attempted an illegal instruction");
       break;
 #endif  /* SIGILL */
-#ifdef SIGPIPE 
+#ifdef SIGPIPE
     case SIGPIPE:
       puts("This program tried to write to a broken pipe");
       break;
@@ -61,7 +61,7 @@ static void crash_handler(int sig_num)
       puts("This program had a bus error");
       break;
 #endif /* SIGBUS */
-  }   
+  }
   if (sig_num == SIGSEGV) {
     puts("       This may have been caused by an incorrectly formatted");
     puts("       input tree file or input file.  You should check those");
@@ -87,11 +87,11 @@ static void crash_handler(int sig_num)
 }
 
 
-void init(int argc, char** argv) 
-{ /* initialization routine for all programs 
-   * anything done at the beginig for every program should be done here */ 
- 
-  /* set up signal handler for 
+void init(int argc, char** argv)
+{ /* initialization routine for all programs
+   * anything done at the beginig for every program should be done here */
+
+  /* set up signal handler for
    * segfault,floating point exception, illeagal instruction, bad pipe, bus error
    * there are more signals that can cause a crash, but these are the most common
    * even these aren't found on all machines.  */
@@ -118,13 +118,13 @@ void init(int argc, char** argv)
 
 }
 
-void scan_eoln(FILE *f) 
+void scan_eoln(FILE *f)
 { /* eat everything to the end of line or eof*/
   char ch;
 
-  while (!eoff(f) && !eoln(f)) 
+  while (!eoff(f) && !eoln(f))
     gettc(f);
-  if (!eoff(f)) 
+  if (!eoff(f))
     ch = gettc(f);
   if (ch == '\r' && !eoff(f) && eoln(f))
     gettc(f);
@@ -135,7 +135,7 @@ boolean eoff(FILE *f)
 { /* check for end of file */
     int ch;
 
-    if (feof(f)) 
+    if (feof(f))
       return true;
     ch = getc(f);
     if (ch == EOF) {
@@ -368,7 +368,7 @@ double normrand(longer seed)
        + randum(seed)+randum(seed)+randum(seed)+randum(seed)
        + randum(seed)+randum(seed)+randum(seed)+randum(seed)-6.0;
   return(x);
-} /* normrand */ 
+} /* normrand */
 
 
 long readlong(const char *prompt)
@@ -590,7 +590,7 @@ void lgr(long m, double b, raterootarray lgroot)
             upper = x;
           else
             lower = x;
-        }        
+        }
       }
       lgroot[m][i] = (lower+upper)/2.0;
       dwn = !dwn;                /* switch for next one */
@@ -641,7 +641,7 @@ double logfac (long n)
     }
 }
 
-                        
+
 double glaguerre(long m, double b, double x)
 { /* Generalized Laguerre polynomial computed recursively.
      For use by initgammacat */
@@ -849,7 +849,7 @@ void inithowmany(long *howmany, long howoften)
   long loopcount;
 
   loopcount = 0;
-  do { 
+  do {
     printf("How many cycles of %4ld trees?\n", howoften);
     scanf("%ld%*[^\n]", howmany);
     getchar();
@@ -1082,7 +1082,7 @@ void samenumsp(long *chars, long ith)
   /* check if spp is same as the first set in other data sets */
   long cursp, curchs;
 
-  if (eoln(infile)) 
+  if (eoln(infile))
     scan_eoln(infile);
   fscanf(infile, "%ld%ld", &cursp, &curchs);
   if (cursp != spp) {
@@ -1099,7 +1099,7 @@ void samenumsp2(long ith)
   /* check if spp is same as the first set in other data sets */
   long cursp;
 
-  if (eoln(infile)) 
+  if (eoln(infile))
     scan_eoln(infile);
   if (fscanf(infile, "%ld", &cursp) != 1) {
     printf("\n\nERROR: Unable to read number of species in data set %ld\n",
@@ -1154,10 +1154,10 @@ void inputweightsold(long chars, steptr weight, boolean *weights)
 
   for (i = 1; i < nmlngth ; i++)
     getc(infile);
- 
+
   for (i = 0; i < chars; i++) {
     do {
-      if (eoln(infile)) 
+      if (eoln(infile))
         scan_eoln(infile);
       ch = gettc(infile);
       if (ch == '\n')
@@ -1186,7 +1186,7 @@ void inputweights(long chars, steptr weight, boolean *weights)
 
   for (i = 0; i < chars; i++) {
     do {
-      if (eoln(weightfile)) 
+      if (eoln(weightfile))
         scan_eoln(weightfile);
       ch = gettc(weightfile);
       if (ch == '\n')
@@ -1278,7 +1278,7 @@ void inputcategs(long a, long b, steptr category, long categs,const char *prog)
 
   for (i = a; i < b; i++) {
     do {
-      if (eoln(catfile)) 
+      if (eoln(catfile))
         scan_eoln(catfile);
       ch = gettc(catfile);
     } while (ch == ' ');
@@ -1323,7 +1323,7 @@ void inputfactors(long chars, Char *factor, boolean *factors)
   for (i = 1; i < nmlngth; i++)
     gettc(infile);
   for (i = 0; i < (chars); i++) {
-    if (eoln(infile)) 
+    if (eoln(infile))
       scan_eoln(infile);
     factor[i] = gettc(infile);
     if (factor[i] == '\n')
@@ -1339,7 +1339,7 @@ void inputfactorsnew(long chars, Char *factor, boolean *factors)
   long i;
 
   for (i = 0; i < (chars); i++) {
-    if (eoln(factfile)) 
+    if (eoln(factfile))
       scan_eoln(factfile);
     factor[i] = gettc(factfile);
     if (factor[i] == '\n')
@@ -1394,10 +1394,19 @@ void initname(long i)
   long j;
 
   for (j = 0; j < nmlngth; j++) {
-    if (eoff(infile) | eoln(infile)){
-      printf("\n\nERROR: end-of-line or end-of-file");
-      printf(" in the middle of species name for species %ld\n\n", i+1);
-      exxit(-1);
+    if (eoff(infile) || eoln(infile)) {
+        int j2;
+        if (eoff(infile)) {
+            printf("\n\nERROR: end-of-file");
+        }
+        else {
+            printf("\n\nERROR: end-of-line");
+        }
+
+        printf(" in the middle of species name for species %ld (got '", i+1);
+        for (j2 = 0; j2<j; ++j2) fputc(nayme[i][j2], stdout);
+        printf("')\n\n", i+1);
+        exxit(-1);
     }
     nayme[i][j] = gettc(infile);
     if ((nayme[i][j] == '(') || (nayme[i][j] == ')') || (nayme[i][j] == ':')
@@ -1552,7 +1561,7 @@ void getch(Char *c, long *parens, FILE *treefile)
 { /* get next nonblank character */
 
   do {
-    if (eoln(treefile)) 
+    if (eoln(treefile))
       scan_eoln(treefile);
     (*c) = gettc(treefile);
 
@@ -1569,7 +1578,7 @@ void getch(Char *c, long *parens, FILE *treefile)
 void getch2(Char *c, long *parens)
 { /* get next nonblank character */
   do {
-    if (eoln(intree)) 
+    if (eoln(intree))
       scan_eoln(intree);
     *c = gettc(intree);
     if (*c == '\n' || *c == '\t')
@@ -1661,7 +1670,7 @@ void findch2(Char c, long *lparens, long *rparens, Char *ch)
   }
 }  /* findch2 */
 
-void processlength(double *valyew, double *divisor, Char *ch, 
+void processlength(double *valyew, double *divisor, Char *ch,
         boolean *minusread, FILE *treefile, long *parens)
 { /* read a branch length from a treefile */
   long digit, ordzero;
@@ -1729,7 +1738,7 @@ void odd_malloc(long x)
 
   /* abort() can be used to crash
    * for debugging */
-  
+
   exxit(-1);
 }
 
@@ -1844,7 +1853,7 @@ void allocnode(node **anode, long *zeros, long endsite)
 }  /* allocnode */
 
 
-void allocdiscnode(node **anode, long *zeros, unsigned char *zeros2, 
+void allocdiscnode(node **anode, long *zeros, unsigned char *zeros2,
         long endsite)
 { /* allocate a node */
   /* used by pars */
@@ -1953,7 +1962,7 @@ void inittrav (node *p)
 { /* traverse to set pointers uninitialized on inserting */
   long i, num_sibs;
   node *sib_ptr;
-  
+
   if (p == NULL)
     return;
   if (p->tip)
@@ -1971,11 +1980,11 @@ void inittrav (node *p)
 void commentskipper(FILE ***intree, long *bracket)
 { /* skip over comment bracket contents in reading tree */
   char c;
-  
+
   c = gettc(**intree);
-  
+
   while (c != ']') {
-    
+
     if(feof(**intree)) {
       printf("\n\nERROR: Unmatched comment brackets\n\n");
       exxit(-1);
@@ -1993,7 +2002,7 @@ void commentskipper(FILE ***intree, long *bracket)
 
 long countcomma(FILE **treefile, long *comma)
 {
-  /* Modified by Dan F. 11/10/96 */ 
+  /* Modified by Dan F. 11/10/96 */
 
   /* The next line inserted so this function leaves the file pointing
      to where it found it, not just re-winding it. */
@@ -2041,7 +2050,7 @@ long countsemic(FILE **treefile)
   Char c;
   long return_val, semic = 0;
   long bracket = 0;
-  
+
   /* Eat all whitespace */
   c = gettc(*treefile);
   while ((c == ' ')  ||
@@ -2053,7 +2062,7 @@ long countsemic(FILE **treefile)
   /* Then figure out if the first non-white character is a digit; if
      so, return it */
   if (isdigit (c)) {
-    return_val = atoi(&c); 
+    return_val = atoi(&c);
   } else {
 
     /* Loop past all characters, count the number of semicolons
@@ -2099,12 +2108,12 @@ void link_trees(long local_nextnum, long nodenum, long local_nodenum,
 } /* link_trees() */
 
 
-void allocate_nodep(pointarray *nodep, FILE **treefile, long  *precalc_tips)  
+void allocate_nodep(pointarray *nodep, FILE **treefile, long  *precalc_tips)
 { /* pre-compute space and allocate memory for nodep */
 
   long numnodes;      /* returns number commas & (    */
   long numcom = 0;        /* returns number commas */
-  
+
   numnodes = countcomma(treefile, &numcom) + 1;
   *nodep      = (pointarray)Malloc(2*numnodes*sizeof(node *));
 
@@ -2146,7 +2155,7 @@ long take_name_from_tree (Char *ch, Char *str, FILE *treefile)
     if ((*ch) == '_')
       (*ch) = ' ';
     str[name_length++] = (*ch);
-    if (eoln(treefile)) 
+    if (eoln(treefile))
       scan_eoln(treefile);
     (*ch) = gettc(treefile);
     if (*ch == '\n')
@@ -2165,7 +2174,7 @@ void match_names_to_data (Char *str, pointarray treenode, node **p, long spp)
   boolean found;
   long i, n;
 
-  n = 1;  
+  n = 1;
   do {
     found = true;
     for (i = 0; i < nmlngth; i++) {
@@ -2173,14 +2182,14 @@ void match_names_to_data (Char *str, pointarray treenode, node **p, long spp)
         (((nayme[n - 1][i] == '_') && (str[i] == ' ')) ||
         ((nayme[n - 1][i] == ' ') && (str[i] == '\0')))));
     }
-    
+
     if (found)
       *p = treenode[n - 1];
     else
       n++;
 
   } while (!(n > spp || found));
-  
+
   if (n > spp) {
     printf("\n\nERROR: Cannot find species: ");
     for (i = 0; (str[i] != '\0') && (i < MAXNCH); i++)
@@ -2219,7 +2228,7 @@ void addelement(node **p, node *q, Char *ch, long *parens, FILE *treefile,
                        /* ... doing what is done before each */
       r = (*p)->next;
       getch(ch, parens, treefile);      /* look for next character */
-      
+
       addelement(&(*p)->next->back, (*p)->next, ch, parens, treefile,
         treenode, goteof, first, nodep, nextnode, ntips,
         haslengths, grbg, initnode);        /* call self recursively */
@@ -2238,7 +2247,7 @@ void addelement(node **p, node *q, Char *ch, long *parens, FILE *treefile,
            (*ch) != '[' && (*ch) != ';' && (*ch) != ':');
       }
     }
-    
+
     (*p)->next = pfirst;
     (*p)       = pfirst;
 
@@ -2257,14 +2266,14 @@ void addelement(node **p, node *q, Char *ch, long *parens, FILE *treefile,
     getch(ch, parens, treefile);
   if (q != NULL)
     hookup(q, (*p));                    /* now hook up */
-  (*initnode)(p, grbg, q, len, nodei, ntips, 
+  (*initnode)(p, grbg, q, len, nodei, ntips,
                 parens, iter, treenode, nodep, str, ch, treefile);
   if ((*ch) == ':')
-    (*initnode)(p, grbg, q, len, nodei, ntips, 
+    (*initnode)(p, grbg, q, len, nodei, ntips,
                   parens, length, treenode, nodep, str, ch, treefile);
                                    /* do what needs to be done with length */
   else if ((*ch) != ';' && (*ch) != '[')
-    (*initnode)(p, grbg, q, len, nodei, ntips, 
+    (*initnode)(p, grbg, q, len, nodei, ntips,
                   parens, hsnolength, treenode, nodep, str, ch, treefile);
                              /* ... or what needs to be done when no length */
   if ((*ch) == '[')
@@ -2278,25 +2287,25 @@ void addelement(node **p, node *q, Char *ch, long *parens, FILE *treefile,
 
 
 void treeread (FILE *treefile, node **root, pointarray treenode,
-        boolean *goteof, boolean *first, pointarray nodep, 
+        boolean *goteof, boolean *first, pointarray nodep,
         long *nextnode, boolean *haslengths, node **grbg, initptr initnode)
 {
   /* read in user-defined tree and set it up */
   char  ch;
   long parens = 0;
   long ntips = 0;
-  
+
   (*goteof) = false;
   (*nextnode) = spp;
 
   /* eat blank lines */
-  while (eoln(treefile) && !eoff(treefile)) 
+  while (eoln(treefile) && !eoff(treefile))
     scan_eoln(treefile);
 
   if (eoff(treefile)) {
     (*goteof) = true;
     return;
-  } 
+  }
 
   getch(&ch, &parens, treefile);
 
@@ -2305,17 +2314,17 @@ void treeread (FILE *treefile, node **root, pointarray treenode,
        encounter an open-paren */
     getch(&ch, &parens, treefile);
   }
-  (*haslengths) = true; 
+  (*haslengths) = true;
   addelement(root, NULL, &ch, &parens, treefile,
          treenode, goteof, first, nodep, nextnode, &ntips,
          haslengths, grbg, initnode);
-  
-  /* Eat blank lines and end of current line*/ 
+
+  /* Eat blank lines and end of current line*/
   do {
     scan_eoln(treefile);
   }
   while (eoln(treefile) && !eoff(treefile));
-  
+
   (*first) = false;
   if (parens != 0) {
     printf("\n\nERROR in tree file: unmatched parentheses\n\n");
@@ -2351,9 +2360,9 @@ void addelement2(node *q, Char *ch, long *parens, FILE *treefile,
       p = p->next;
       /* added to ensure that non base nodes in loops have indices */
       p->index = current_loop_index + 1;
-      
+
       getch(ch, parens, treefile);
-      
+
       addelement2(p, ch, parens, treefile, treenode, lngths, trweight,
         goteof, nextnode, ntips, no_species, haslengths);
 
@@ -2367,7 +2376,7 @@ void addelement2(node *q, Char *ch, long *parens, FILE *treefile,
     }
 
   } else if ((*ch) != ')') {
-    for (i = 0; i < MAXNCH; i++) 
+    for (i = 0; i < MAXNCH; i++)
       str[i] = '\0';
     len = take_name_from_tree (ch, str, treefile);
     match_names_to_data (str, treenode, &p, spp);
@@ -2378,7 +2387,7 @@ void addelement2(node *q, Char *ch, long *parens, FILE *treefile,
     strncpy (p->nayme, str, len);
   } else
     getch(ch, parens, treefile);
-  
+
   if ((*ch) == '[') {    /* getting tree weight from last comment field */
     if (!eoln(treefile)) {
       fscanf(treefile, "%lf", trweight);
@@ -2403,7 +2412,7 @@ void addelement2(node *q, Char *ch, long *parens, FILE *treefile,
   }
   else
     (*haslengths) = ((*haslengths) && q == NULL);
-  
+
   if (q != NULL)
     hookup(q, pfirst);
   if (q != NULL) {
@@ -2430,7 +2439,7 @@ void addelement2(node *q, Char *ch, long *parens, FILE *treefile,
     }
     }
   }
-  
+
 }  /* addelement2 */
 
 
@@ -2444,18 +2453,18 @@ void treeread2 (FILE *treefile, node **root, pointarray treenode,
   long parens = 0;
   long ntips = 0;
   long nextnode;
-  
+
   (*goteof) = false;
   nextnode = 0;
 
   /* Eats all blank lines at start of file */
-  while (eoln(treefile) && !eoff(treefile)) 
+  while (eoln(treefile) && !eoff(treefile))
     scan_eoln(treefile);
 
   if (eoff(treefile)) {
     (*goteof) = true;
     return;
-  } 
+  }
 
   getch(&ch, &parens, treefile);
 
@@ -2470,7 +2479,7 @@ void treeread2 (FILE *treefile, node **root, pointarray treenode,
   (*root) = treenode[*no_species];
 
   /*eat blank lines */
-  while (eoln(treefile) && !eoff(treefile)) 
+  while (eoln(treefile) && !eoff(treefile))
     scan_eoln(treefile);
 
   (*root)->oldlen = 0.0;
@@ -2500,17 +2509,18 @@ void exxit(int exitcode)
 } /* exxit */
 
 
-char gettc(FILE* file) 
+char gettc(FILE* file)
 { /* catch eof's so that other functions not expecting an eof
    * won't have to worry about it */
   int ch;
 
-  ch=getc(file);
+  ch = getc(file);
 
   if (ch == EOF )   {
     puts("Unexpected End of File");
     exxit(-1);
   }
+/*   printf("ch='%c'\n", (char)ch); */
   return ch;
 } /* gettc */
 
@@ -2528,7 +2538,7 @@ void phySetConsoleAttributes()
 
   phySaveConsoleAttributes();
 
-  SetConsoleTextAttribute(hConsoleOutput, 
+  SetConsoleTextAttribute(hConsoleOutput,
     BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
 } /* phySetConsoleAttributes */
 
@@ -2537,7 +2547,7 @@ void phyRestoreConsoleAttributes()
 {
   COORD coordScreen = { 0, 0 };
   DWORD cCharsWritten;
-  DWORD dwConSize; 
+  DWORD dwConSize;
 
   dwConSize = savecsbi.dwSize.X * savecsbi.dwSize.Y;
 
@@ -2552,8 +2562,8 @@ void phyFillScreenColor()
 {
   COORD coordScreen = { 0, 0 };
   DWORD cCharsWritten;
-  CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */ 
-  DWORD dwConSize; 
+  CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
+  DWORD dwConSize;
 
   GetConsoleScreenBufferInfo( hConsoleOutput, &csbi );
   dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
@@ -2566,32 +2576,32 @@ void phyFillScreenColor()
 void phyClearScreen()
 {
    COORD coordScreen = { 0, 0 };    /* here's where we'll home the
-                                       cursor */ 
+                                       cursor */
    DWORD cCharsWritten;
-   CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */ 
+   CONSOLE_SCREEN_BUFFER_INFO csbi; /* to get buffer info */
    DWORD dwConSize;                 /* number of character cells in
-                                       the current buffer */ 
+                                       the current buffer */
 
-   /* get the number of character cells in the current buffer */ 
+   /* get the number of character cells in the current buffer */
 
    GetConsoleScreenBufferInfo( hConsoleOutput, &csbi );
    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
 
-   /* fill the entire screen with blanks */ 
+   /* fill the entire screen with blanks */
 
    FillConsoleOutputCharacter( hConsoleOutput, (TCHAR) ' ',
       dwConSize, coordScreen, &cCharsWritten );
 
-   /* get the current text attribute */ 
+   /* get the current text attribute */
 
    GetConsoleScreenBufferInfo( hConsoleOutput, &csbi );
 
-   /* now set the buffer's attributes accordingly */ 
+   /* now set the buffer's attributes accordingly */
 
    FillConsoleOutputAttribute( hConsoleOutput, csbi.wAttributes,
       dwConSize, coordScreen, &cCharsWritten );
 
-   /* put the cursor at (0, 0) */ 
+   /* put the cursor at (0, 0) */
 
    SetConsoleCursorPosition( hConsoleOutput, coordScreen );
    return;
