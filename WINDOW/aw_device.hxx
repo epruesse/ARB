@@ -65,7 +65,9 @@ enum {
     AW_LUCIDA_SANS_BOLD_OBLIQUE    = 38,
     AW_LUCIDA_SANS_TYPEWRITER      = 39,
     AW_LUCIDA_SANS_TYPEWRITER_BOLD = 40,
-    AW_NUM_FONTS                   = 41,
+    AW_SCREEN_MEDIUM               = 41,
+    AW_SCREEN_BOLD                 = 42,
+    AW_NUM_FONTS                   = 43,
 
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
     AW_DEFAULT_BOLD_FONT   = AW_LUCIDA_SANS_BOLD,
@@ -292,9 +294,9 @@ class AW_device: public AW_matrix, public AW_gc {
 
      virtual AW_DEVICE_TYPE type(void) =0;
 
-     // * functions below return 1 if any pixel is drawn, 0 otherwise     
+     // * functions below return 1 if any pixel is drawn, 0 otherwise
      // * primary functions (always virtual)
-     
+
      virtual bool ready_to_draw(int gc);
 
      virtual int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1,
