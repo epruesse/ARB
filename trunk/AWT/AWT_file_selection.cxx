@@ -20,13 +20,16 @@
 #include <sys/stat.h>
 #include <sys/param.h>
 
+#include <string>
+#include <set>
+
 static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
-    
+
     if (strcmp(pwd_envar, "PWD") == 0) {
         res = GB_getcwd();
     }
-    else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {        
+    else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
         static char *pt_server_home = GBS_global_string_copy("%s/lib/pts", GB_getenvARBHOME());
         res                         = pt_server_home;
     }
@@ -34,7 +37,6 @@ static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
         res = GB_getenv(pwd_envar);
         if (!res) {
             res = GB_getcwd();
-            aw_message(GBS_global_string("Environment variable '%s' not defined - using '%s' as base dir", pwd_envar, res));
         }
     }
 
@@ -132,7 +134,7 @@ const char *AWT_valid_path(const char *path) {
     return ".";
 }
 
-int AWT_is_dir(const char *path) { // Warning : returns 1 for symbolic links to directories 
+int AWT_is_dir(const char *path) { // Warning : returns 1 for symbolic links to directories
     struct stat stt;
     if (stat(AWT_valid_path(path), &stt)) return 0;
     return !!S_ISDIR(stt.st_mode);
@@ -244,26 +246,40 @@ static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, 
     closedir(dirp);
 }
 
-static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char *envar, const char *cwd) {
+class DuplicateLinkFilter {
+    set<string> insertedDirectories;
+
+public:
+    DuplicateLinkFilter() {}
+
+    bool not_seen_yet(const string& dir) const { return insertedDirectories.find(dir) == insertedDirectories.end(); }
+    void register_directory(const string& dir) {
+        // printf("register_directory '%s'\n", dir.c_str());
+        insertedDirectories.insert(dir);
+    }
+};
+
+
+static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char *envar, DuplicateLinkFilter& unDup) {
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
     const char *expanded_dir = awt_get_base_directory(envar);
-    if (strcmp(expanded_dir, cwd) && expanded_dir[0] != 0) {
+    string      edir(expanded_dir);
+
+    if (unDup.not_seen_yet(edir)) {
+        // printf("New directory '%s' (deduced from '$%s')\n", expanded_dir, envar);
+        unDup.register_directory(edir);
         const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
         aws->insert_selection(sel_id, entry, expanded_dir);
     }
-}
-
-static void show_soft_link_nodup(AW_window *aws, AW_selection_list *sel_id, const char *envar, const char *cwd) {
-    // avoid duplicate soft links
-    if (strstr(GBS_global_string(";%s;", envar), ";HOME;ARBHOME;ARB_WORKDIR;PT_SERVER_HOME;PWD;") == 0) {
-        show_soft_link(aws, sel_id, envar, cwd);
-    }
+    // else {
+        // printf("Skipping directory '%s' (deduced from '$%s')\n", expanded_dir, envar);
+    // }
 }
 
 void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
-    AW_root *aw_root = cbs->aws->get_root();
+    AW_root             *aw_root = cbs->aws->get_root();
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
 
@@ -283,6 +299,9 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         name_only       = "";
     }
 
+    DuplicateLinkFilter  unDup;
+    unDup.register_directory(fulldir);
+
     bool is_wildcard = strchr(name_only, '*');
 
     if (cbs->show_dir) {
@@ -301,7 +320,7 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
                 cbs->aws->insert_selection( cbs->id, "! \'PARENT DIR       (..)\'", ".." );
             }
 
-            show_soft_link_nodup(cbs->aws, cbs->id, cbs->pwd, fulldir);
+            show_soft_link(cbs->aws, cbs->id, cbs->pwd, unDup);
 
             if (cbs->pwdx) {        // additional directories
                 char *start = cbs->pwdx;
@@ -309,21 +328,21 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
                     char *multiple = strchr(start, '^');
                     if (multiple) {
                         multiple[0] = 0;
-                        show_soft_link_nodup(cbs->aws, cbs->id, start, fulldir);
+                        show_soft_link(cbs->aws, cbs->id, start, unDup);
                         multiple[0] = '^';
                         start       = multiple+1;
                     }
                     else {
-                        show_soft_link_nodup(cbs->aws, cbs->id, start, fulldir);
+                        show_soft_link(cbs->aws, cbs->id, start, unDup);
                         start = 0;
                     }
                 }
             }
 
-            show_soft_link(cbs->aws, cbs->id, "HOME", fulldir);
-            show_soft_link(cbs->aws, cbs->id, "PWD", fulldir);
-            show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", fulldir);
-            show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", fulldir);
+            show_soft_link(cbs->aws, cbs->id, "HOME", unDup);
+            show_soft_link(cbs->aws, cbs->id, "PWD", unDup);
+            show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", unDup);
+            show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", unDup);
 
             cbs->aws->insert_selection( cbs->id, "! \' Hide sub-directories\'", GBS_global_string("%s?hide?", name));
         }
