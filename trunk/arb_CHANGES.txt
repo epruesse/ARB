@@ -2,6 +2,9 @@ ARB change log
 
 Major changes for next Beta:
 
+ - Parsimony now counts multiple gaps as 1 mutation; done because 
+   partial sequences were misplaced with old method (PROT-parsimony 
+   was completely redesigned and works now most similar to DNA/RNA-parsimony)
  - Information windows are detachable (allows to have multiple windows showing different items)
  - Scanning for hidden/unknown database fields improved and seperated;
    possibility to remove unused fields.
@@ -16,9 +19,11 @@ Major changes for next Beta:
  - Colorize species (see demo.arb)
  - Fixed missing-character-bug in Xfig, Print and Edit4-Info-Display
  - 'IslandHopper' -- a new integrated aligner
- - Many improvements and bugfixes to secondary structure editor
-   (i.e. highlighting of search (i.e for probes) like in EDIT4,
-   interactive constraint editing (stretch/compress), probe info)
+ - Many improvements and bugfixes to secondary structure editor:
+   * highlighting of search (i.e for probes) like in EDIT4
+   * interactive constraint editing (stretch/compress)
+   * probe info
+   * editing secondary structure in XFIG now possible
  - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features; basic help
  - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )

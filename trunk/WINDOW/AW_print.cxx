@@ -41,10 +41,12 @@ int AW_device_print::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_b
         this->transform(x1,y1,X1,Y1);
         drawflag = this->clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
         if (drawflag) {
-            int line_width = gcm->line_width;
+            int line_width                = gcm->line_width;
             if (line_width<=0) line_width = 1;
             AWUSE(cd1);
             AWUSE(cd2);
+
+            aw_assert(out); // file has to be good!
             fprintf(out, "2 1 0 %d 0 0 0 0.000 0 0 0\n\t%d %d %d %d 9999 9999\n",
                     (int)line_width,(int)CX0,(int)CY0,(int)CX1,(int)CY1);
         }
