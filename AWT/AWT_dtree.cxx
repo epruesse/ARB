@@ -1408,7 +1408,7 @@ AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_
 
 double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double x_son)
 {
-    double ny0, ny1, nx0, nx1, ry, l_min, l_max,offset;
+    double ny0, ny1, nx0, nx1, ry, l_min, l_max, xoffset, yoffset;
     AWUSE(x_father);
     ny0 = y_pos;
 
@@ -1444,9 +1444,17 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
             // text darstellen
             const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree());
 
-            offset = scale*0.4;
+            //             offset = scale*0.4;
+
+
+            AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
+            double               text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
+
+            yoffset = text_ascent*.5;
+            xoffset = yoffset;
+
             disp_device->text(at->gr.gc,data ,
-                              (AW_pos) x_son+offset,(AW_pos) ny0+offset,
+                              (AW_pos) x_son+xoffset,(AW_pos) ny0+yoffset,
                               (AW_pos) 0 , text_filter,
                               (AW_CL) at , (AW_CL) 0 );
         }
@@ -1455,6 +1463,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         y_pos += scale;
         return ny0;
     }
+
     if (at->gr.grouped) {
         l_min = at->gr.min_tree_depth;
         l_max = at->gr.tree_depth;
@@ -1482,18 +1491,25 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter, (AW_CL)at,0);
 
+        // double add_y_offset = scale*0.3;
+
+        AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
+        double               text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
+
+        yoffset = (ny1-ny0+text_ascent)*.5;
+        xoffset = text_ascent*.5;
 
         if (at->gb_node && (disp_device->filter & text_filter)){
             const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree());
 
-            offset = (ny1-ny0) *0.5;
             disp_device->text(at->gr.gc,data ,
-                              (AW_pos) nx0,(AW_pos) ny0+offset,
+                              (AW_pos) nx0+xoffset,(AW_pos) ny0+yoffset,
                               (AW_pos) 0 , text_filter,
                               (AW_CL) at , (AW_CL) 0 );
         }
         disp_device->text(at->gr.gc,(char *)GBS_global_string(" %i",at->gr.leave_sum),
-                          x_son,(ny0+ny1)*.5,0,text_filter,(AW_CL)at,0);
+                          x_son+xoffset, ny0+yoffset,
+                          0,text_filter,(AW_CL)at,0);
 
         y_pos += scale;
 
