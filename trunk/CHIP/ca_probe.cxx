@@ -245,7 +245,7 @@ int main(int argc,char **argv)
 	  }
 
 	// Gehe probeData durch, und rufe fuer jeden Eintrag CHIP_probe_match auf
-	for (uint j=0; j<probeData.size(); j++)
+	for (unsigned int j=0; j<probeData.size(); j++)
 	{
 	  //printf("j=%d and probename=%s\n", j, probeData[j].name);
 	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches);
