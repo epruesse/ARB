@@ -18,6 +18,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 
 static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
