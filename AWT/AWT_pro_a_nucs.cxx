@@ -199,10 +199,16 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 {
     GB_transaction dummy(gb_main);
     gb_main = GB_get_root(gb_main);
+
+    int        code_nr                 = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+    static int initialized_for_code_nr = -1;
+
     if (!awt_pro_a_nucs){
-        GBDATA *awar = GB_search(gb_main,AP_PRO_TYPE_AWAR,GB_INT);
+        GBDATA *awar = GB_search(gb_main,AWAR_PROTEIN_TYPE,GB_INT);
         GB_add_callback(awar,GB_CB_CHANGED,(GB_CB)awt_pro_a_nucs_convert_init,0);
     }else{
+        if (code_nr == initialized_for_code_nr) return; // already initialized correctly
+
         delete awt_pro_a_nucs;
         awt_pro_a_nucs = 0;
     }
@@ -212,8 +218,6 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     awt_pro_a_nucs->t2i_hash     = GBS_create_hash(1024,1); // case insensitive
 
     AWT_initialize_codon_tables();
-
-    int code_nr = GBT_read_int(gb_main,AP_PRO_TYPE_AWAR);
 
     {
         char *D_codons = GB_strdup(AWT_get_codons('D', code_nr));
@@ -425,6 +429,7 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     */
 
 	awt_pro_a_nucs->pro_2_bitset = awt_nuc_create_pro_to_bits();
+    initialized_for_code_nr      = code_nr;
 }
 
 int	AP_nuc_dist(char p1, char p2){	// nucleotid changes between two aa
