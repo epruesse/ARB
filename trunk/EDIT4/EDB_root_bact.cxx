@@ -200,7 +200,17 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 seq_manager->children->append_member( sequence_info_terminal );
 
                 ED4_text_terminal *text_terminal = 0;
-                int is_data = strcmp(key_string, "data")==0;
+                int                is_data       = false;
+
+                if (strcmp(key_string, "data") == 0 ||
+                    strcmp(key_string, "dat2") == 0 || // SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
+                    strcmp(key_string, "bits") == 0) // binary SAIs
+                {
+                    is_data = true; // handle as sequence data
+                    // i.e: - use for consensus calculation
+                    //      - compress gaps
+                    //      - ...
+                }
 
                 if (is_data) {
                     ED4_sequence_terminal *seq_term;
