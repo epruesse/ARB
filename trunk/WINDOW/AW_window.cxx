@@ -1431,6 +1431,29 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green
     return error;
 }
 
+// Converts GC to RGB float values to the range (0 - 1.0)
+const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
+    AW_common *common = device->common;
+    AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
+    aw_assert(gcm);
+    unsigned   pixel  = (unsigned short)(gcm->color);
+    GB_ERROR   error  = 0;
+    XColor     query_color;
+    
+    query_color.pixel = pixel;
+    XQueryColor(p_global->display, p_global->colormap, &query_color);
+    // @@@ FIXME: error handling!
+
+    red   = query_color.red/65535.0;
+    green = query_color.green/65535.0;
+    blue  = query_color.blue/65535.0;
+
+    if (error) {
+        red = green = blue = 1.0f;
+    }
+    return error;
+}
+
 
 AW_color AW_window::alloc_named_data_color(int colnum, char *colorname)
 {
