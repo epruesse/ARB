@@ -5,7 +5,7 @@ use warnings;
 use lib "$ENV{'ARBHOME'}/lib/";
 use ARB;
 
-use lib "$ENV{'ARBHOME'}/lib/PERL_SCRIPTS/GENOME/";
+use lib "$ENV{'ARBHOME'}/PERL_SCRIPTS/GENOME/";
 use GI;
 
 # -----------------------
