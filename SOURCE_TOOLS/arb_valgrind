@@ -90,7 +90,13 @@ else
 
     if [ $UPDATE = 1 ] ; then
         echo "Creating list of source files starting in $ARB_VALGRIND_SOURCE_ROOT ..."
-        find $ARB_VALGRIND_SOURCE_ROOT -name "*.[ch]" -o -name "*.[ch]xx" -o -name "*.[ch]pp" -o -name "*.cc" -o -name "*.hh" > $LIST
+        find $ARB_VALGRIND_SOURCE_ROOT \! -path "*\{arch\}*" -a \
+					\( 	-name "*.[ch]" -o \
+						-name "*.[ch]xx" -o \
+						-name "*.[ch]pp" -o \
+						-name "*.cc" -o \
+						-name "*.hh" \) \
+		> $LIST
         echo 'done.'
     fi
     if [ $RUN = 1 ] ; then
