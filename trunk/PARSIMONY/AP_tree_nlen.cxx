@@ -814,7 +814,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     AP_tree_buffer *buff;
 
     if (stack_level != datum) {
-        // new AP_ERR("AP_tree_nlen::pop()", "Error in Node Stack");
+        AW_ERROR("AP_tree_nlen::pop(): Error in Node Stack");
     }
 
     buff = stack.pop();
