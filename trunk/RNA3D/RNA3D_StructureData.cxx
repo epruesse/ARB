@@ -461,8 +461,6 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
     }
     readData.close();
 
-    char POS[10];
-
     glNewList(ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS, GL_COMPILE);
     {   
         for(int i = 0; i < k; ) {
@@ -854,7 +852,6 @@ void Structure3D::PrepareSecondaryStructureData(void) {
     }
 }
 
-
 CurrSpecies *startSp = NULL;
 bool bOldSpecesDataExists = false;
 
@@ -916,7 +913,7 @@ void Structure3D::GenerateBaseDifferencePositionDisplayList(){
                     {
                         if(temp->pos == t->pos) {
                             sprintf(POS, "%d", temp->pos);
-                            GRAPHICS->PrintString(temp->x-spacer, temp->y, temp->z-spacer, POS, GLUT_BITMAP_HELVETICA_10);
+                            GRAPHICS->PrintString(temp->x-spacer, temp->y, temp->z-spacer, POS, GLUT_BITMAP_8_BY_13);
                         }
                     }
             }
@@ -925,7 +922,7 @@ void Structure3D::GenerateBaseDifferencePositionDisplayList(){
 
     glNewList(MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR, GL_COMPILE);
     {
-        glLineWidth(0.5);
+        glLineWidth(1.0);
         glBegin(GL_LINES);
 
         for(t = startSp; t != NULL; t = t->next) 
@@ -1021,6 +1018,113 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
     }
 }
 
+Insertions *startIns         = NULL;
+bool bOldInsertionDataExists = false;
+
+void Structure3D::StoreInsertions(char base, int pos){
+    Insertions *data, *temp;
+    data = new Insertions;
+    data->base = base; 
+    data->pos  = pos;
+    data->next = NULL;
+    
+    if (startIns == NULL){
+        startIns = data;
+        bOldInsertionDataExists = true;
+    }
+    else {
+        temp = startIns;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = data;
+    }
+}
+
+void Structure3D::DeleteOldInsertionData(){
+    Insertions *tmp, *data;
+
+    for(data = startIns; data != NULL; data = tmp) {
+        tmp = data->next;
+        delete data;
+    }
+    startIns = NULL; 
+
+    bOldInsertionDataExists = false;
+}
+
+void Structure3D::GenerateInsertionDisplayList(){
+    Insertions   *ins;
+    Struct3Dinfo *str;
+    char inserts[500];
+    int i, cntr;
+    float spacer = 2.0;
+
+    glNewList(MAP_SPECIES_INSERTION_BASES, GL_COMPILE);
+    {   
+        for(str = start3D; str != NULL; str = str->next) 
+        {
+            i = cntr = 0;
+            for(ins = startIns; ins != NULL; ins = ins->next) 
+                {
+                    if(str->pos == ins->pos) {
+                        inserts[i++] = ins->base;
+                        cntr++; 
+                    }
+                }
+            if(cntr>0) {
+                inserts[i] = '\0';
+                char buffer[strlen(inserts) + 10];
+                sprintf(buffer, "%d:%s", cntr, inserts);
+                GRAPHICS->PrintString(str->x, str->y+spacer, str->z, 
+                                      buffer, GLUT_BITMAP_8_BY_13);
+            }
+        }
+    }
+    glEndList();
+
+    glNewList(MAP_SPECIES_INSERTION_BASES_ANCHOR, GL_COMPILE);
+    {   
+        glLineWidth(1.0);
+        glBegin(GL_LINES);
+
+        for(str = start3D; str != NULL; str = str->next) 
+        {
+            for(ins = startIns; ins != NULL; ins = ins->next) 
+                {
+                    if(str->pos == ins->pos) {
+                        glVertex3f(str->x, str->y, str->z);          
+                        glVertex3f(str->x, str->y+spacer, str->z);          
+                    }
+                }
+        }
+        glEnd();
+    }
+    glEndList();
+
+    glNewList(MAP_SPECIES_INSERTION_POINTS, GL_COMPILE);
+    {   
+        extern bool bPointSpritesSupported;
+        if (bPointSpritesSupported) {
+            glBegin(GL_POINTS);
+        }
+        for(str = start3D; str != NULL; str = str->next) 
+        {
+            for(ins = startIns; ins != NULL; ins = ins->next) 
+                {
+                    if(str->pos == ins->pos) {
+                        PointsToQuads(str->x, str->y, str->z);
+                        break;
+                    }
+                }
+        }
+        if (bPointSpritesSupported){
+            glEnd();
+        }
+    }
+    glEndList();
+}
+
 bool bStartPosStored = false;
 bool bEndPosStored   = false;
 
@@ -1094,12 +1198,32 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                                 }
                             }
                         }
+
+                        if(bOldInsertionDataExists) {
+                            DeleteOldInsertionData();
+                        }
+
+                        for(int i = iStartPos, iSeqCount = 0; i < iEndPos; i++) {
+                            if((pTemplateSeqData[i] != '.') && 
+                               (pTemplateSeqData[i] != '-'))
+                                { // Store EColi base positions : Insertion point !
+                                    iSeqCount++;                                    
+                                }
+
+                            if((pTemplateSeqData[i] == '-') &&
+                               (pSeqData[i]         != '-') &&
+                               (pSeqData[i]         != '.'))
+                                { 
+                                    StoreInsertions(pSeqData[i],iSeqCount);
+                                }
+                        }
                     }
                     free(pSpFullName);
                 }
                 free(ali_name);
             }
             GenerateBaseDifferenceDisplayList();
+            GenerateInsertionDisplayList();
         }
         free(pSpeciesName);
     }

@@ -16,7 +16,8 @@ enum {
     MAP_SPECIES_BASE_DIFFERENCE, 
     MAP_SPECIES_BASE_DIFFERENCE_POS, MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR,
     MAP_SPECIES_BASE_A, MAP_SPECIES_BASE_G, MAP_SPECIES_BASE_C, MAP_SPECIES_BASE_U,
-    MAP_SPECIES_DELETION, MAP_SPECIES_MISSING,
+    MAP_SPECIES_DELETION, MAP_SPECIES_MISSING, 
+    MAP_SPECIES_INSERTION_POINTS, MAP_SPECIES_INSERTION_BASES, MAP_SPECIES_INSERTION_BASES_ANCHOR,
     MAP_SAI_TO_STRUCTURE, 
     MAP_SEARCH_STRINGS_TO_STRUCTURE,MAP_SEARCH_STRINGS_BACKBONE,
     ECOLI_CURSOR_POSITION, 
@@ -67,6 +68,12 @@ struct CurrSpecies {
     int pos;
     char base;
     struct CurrSpecies *next;
+};
+
+struct Insertions {
+    int pos;
+    char base;
+    struct Insertions *next;
 };
 
 struct Vector3;
@@ -122,6 +129,9 @@ public:
     void BuildDisplayList(int listID, int *pos, int len);
     void GenerateBaseDifferenceDisplayList();
     void GenerateBaseDifferencePositionDisplayList();
+    void StoreInsertions(char base, int pos);
+    void DeleteOldInsertionData();
+    void GenerateInsertionDisplayList();
 
     void GenerateCursorPositionDispList(long pos);
 

@@ -37,6 +37,8 @@ static void  CreateRNA3DAwars(AW_root *root){
     root->awar_int(AWAR_3D_MAP_SPECIES_DISP_POS, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MAP_SPECIES_DISP_DELETIONS, 1, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MAP_SPECIES_DISP_MISSING, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_CURSOR_POSITION, 0, AW_ROOT_DEFAULT); 
     root->awar_float(AWAR_3D_MOL_SIZE, 0.5, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MOL_DISP_POS, 0, AW_ROOT_DEFAULT);

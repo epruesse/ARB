@@ -239,14 +239,16 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iDispTerInt    = root->awar(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS)->read_int();
 
     // Mapping Sequence Data Section
-    cStructure->iMapSAI        = root->awar(AWAR_3D_MAP_SAI)->read_int();
-    cStructure->iMapSearch     = root->awar(AWAR_3D_MAP_SEARCH_STRINGS)->read_int();
-    cStructure->iMapEnable     = root->awar(AWAR_3D_MAP_ENABLE)->read_int();
-    cRenderer->iMapSpecies     = root->awar(AWAR_3D_MAP_SPECIES)->read_int();
-    cRenderer->iMapSpeciesBase = root->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->read_int();
-    cRenderer->iMapSpeciesPos  = root->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->read_int();
-    cRenderer->iMapSpeciesDels = root->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->read_int();
-    cRenderer->iMapSpeciesMiss = root->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->read_int();
+    cStructure->iMapSAI           = root->awar(AWAR_3D_MAP_SAI)->read_int();
+    cStructure->iMapSearch        = root->awar(AWAR_3D_MAP_SEARCH_STRINGS)->read_int();
+    cStructure->iMapEnable        = root->awar(AWAR_3D_MAP_ENABLE)->read_int();
+    cRenderer->iMapSpecies        = root->awar(AWAR_3D_MAP_SPECIES)->read_int();
+    cRenderer->iMapSpeciesBase    = root->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->read_int();
+    cRenderer->iMapSpeciesPos     = root->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->read_int();
+    cRenderer->iMapSpeciesDels    = root->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->read_int();
+    cRenderer->iMapSpeciesMiss    = root->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->read_int();
+    cRenderer->iMapSpeciesIns     = root->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS)->read_int();
+    cRenderer->iMapSpeciesInsInfo = root->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO)->read_int();
 
     { // Validation of Helix Numbers entered by the User
         if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > 50 ) {

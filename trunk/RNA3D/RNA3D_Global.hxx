@@ -36,11 +36,15 @@
 #define AWAR_3D_MOL_DISP_POS                 "rna3d/mol_disp_pos"
 #define AWAR_3D_MOL_POS_INTERVAL             "rna3d/mol_pos_interval"
 #define AWAR_3D_MOL_ROTATE                   "rna3d/mol_rotate"
-#define AWAR_3D_MAP_SPECIES                  "rna3d/mol_map_species"
-#define AWAR_3D_MAP_SPECIES_DISP_BASE        "rna3d/mol_map_species_base"
-#define AWAR_3D_MAP_SPECIES_DISP_POS         "rna3d/mol_map_species_pos"
-#define AWAR_3D_MAP_SPECIES_DISP_DELETIONS   "rna3d/mol_map_species_deletions"
-#define AWAR_3D_MAP_SPECIES_DISP_MISSING     "rna3d/mol_map_species_missing"
+
+#define AWAR_3D_MAP_SPECIES                      "rna3d/mol_map_species"
+#define AWAR_3D_MAP_SPECIES_DISP_BASE            "rna3d/mol_map_species_base"
+#define AWAR_3D_MAP_SPECIES_DISP_POS             "rna3d/mol_map_species_pos"
+#define AWAR_3D_MAP_SPECIES_DISP_DELETIONS       "rna3d/mol_map_species_deletions"
+#define AWAR_3D_MAP_SPECIES_DISP_MISSING         "rna3d/mol_map_species_missing"
+#define AWAR_3D_MAP_SPECIES_DISP_INSERTIONS      "rna3d/mol_map_species_insertions"
+#define AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO "rna3d/mol_map_species_insertions_info"
+
 #define AWAR_3D_SELECTED_SPECIES             "rna3d/selected_species"
 #define AWAR_3D_CURSOR_POSITION              "rna3d/cursor_postion"
 

@@ -317,6 +317,8 @@ static void AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO)->add_callback(RefreshCanvas);
 }
 
 static void RefreshMappingDisplay(AW_window *aw) {
@@ -531,6 +533,10 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_DELETIONS);
         aws->at("mis");
         aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_MISSING);
+        aws->at("ins");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS);
+        aws->at("bs");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO);
    }
     aws->show();
     return (AW_window *)aws;
