@@ -13,86 +13,109 @@
 #include <servercntrl.h>
 #include <client.h>
 
-struct ang_struct {
+//  -----------------------------------
+//      class NameServerConnection
+//  -----------------------------------
+
+class NameServerConnection {
+private:
     aisc_com *link;
     T_AN_LOCAL locs;
     T_AN_MAIN com;
-} ang = { 0,0,0} ;
 
-int init_local_com_names()
-{
-    if (!ang.link) return 1;	/*** create and init local com structure ***/
-    if( aisc_create(ang.link, AN_MAIN, ang.com,
-		    MAIN_LOCAL, AN_LOCAL, &ang.locs,
-		    LOCAL_WHOAMI, "i bin der arb_tree",
-		    NULL)){
-	return 1;
+    //  ----------------------------------
+    //      int init_local_com_names()
+    //  ----------------------------------
+    int init_local_com_names()
+    {
+        if (!link) return 1;	/*** create and init local com structure ***/
+        if (aisc_create(link, AN_MAIN, com,
+                        MAIN_LOCAL, AN_LOCAL, &locs,
+                        LOCAL_WHOAMI, "i bin der arb_tree",
+                        NULL)){
+            return 1;
+        }
+        return 0;
     }
-    return 0;
-}
 
-static const char *connect_2_an(GBDATA *gb_main)
-{
-    char *servername;
-    const char *name_server = "ARB_NAME_SERVER";
+    NameServerConnection(const NameServerConnection& other);
+    NameServerConnection& operator=(const NameServerConnection& /*other*/);
 
-    if (arb_look_and_start_server(AISC_MAGIC_NUMBER,name_server,gb_main)){
-	return "Sorry I can't start the NAME SERVER";
+public:
+
+    NameServerConnection() {
+        link = 0;
+        locs = 0;
+        com = 0;
     }
-    servername = (char *)GBS_read_arb_tcp(name_server);
-    if (!servername) exit (-1);
-
-    ang.link = (aisc_com *)aisc_open(servername, &ang.com,AISC_MAGIC_NUMBER);
-    if (init_local_com_names()){
-	free(servername);
-	return "Sorry I can't start the NAME SERVER";
+    virtual ~NameServerConnection() {
+        if (link) aisc_close(link);
+        link = 0;
     }
-    free(servername);
-    return 0;
-}
 
-void disconnect_an(void)
-{
-    if (ang.link) aisc_close(ang.link);
-    ang.link = 0;
-}
+    GB_ERROR connect(GBDATA *gb_main) {
+        GB_ERROR err = 0;
+        if (!link) {
+            const char *name_server = "ARB_NAME_SERVER";
+            if (arb_look_and_start_server(AISC_MAGIC_NUMBER,name_server,gb_main)){
+                err = "Sorry I can't start the NAME SERVER";
+            }
+            else {
+                char *servername = (char *)GBS_read_arb_tcp(name_server);
+                if (!servername) {
+                    GB_CORE;
+                    exit (-1);
+                }
+
+                link = (aisc_com *)aisc_open(servername, &com,AISC_MAGIC_NUMBER);
+                if (init_local_com_names()) err = "Sorry I can't start the NAME SERVER";
+                free(servername);
+            }
+        }
+        return err;
+    }
+
+    aisc_com *getLink() { return link; }
+    T_AN_LOCAL getLocs() { return locs; }
+};
+
+static NameServerConnection name_server;
+
 
 GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name) {
-    // create a unique short name for 'full_name'    
-    // the result is written into 'new_name' (as malloc-copy) 
+    // create a unique short name for 'full_name'
+    // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
     // acc may be 0
-    
+
     new_name = 0;
     if (!acc) acc = "";
-    
-    aw_openstatus(GBS_global_string("Generating new name for '%s'", full_name)); 
-    
+
+    aw_openstatus(GBS_global_string("Generating new name for '%s'", full_name));
+
     aw_status("Connecting to name server");
     aw_status((double)0);
-    
-    GB_ERROR err = connect_2_an(gb_main);
+
+    GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
-    
+
     aw_status("Generating name");
     static char *shrt = 0;
     if (strlen(full_name)) {
-        if (aisc_nput(ang.link, AN_LOCAL, ang.locs,
+        if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                       LOCAL_FULL_NAME,	full_name,
                       LOCAL_ACCESSION,	acc,
                       LOCAL_ADVICE,		"",
                       0)){
             err = "Connection Problems with the NAME_SERVER";
         }
-        if (aisc_get(ang.link, AN_LOCAL, ang.locs,
+        if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_GET_SHORT,	&shrt,
                      0)){
             err = "Connection Problems with the NAME_SERVER";
         }
     }
-    
-    disconnect_an();    
-    
+
     if (err) {
         free(shrt);
     }
@@ -105,9 +128,9 @@ GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, const char *a
             err = GB_export_error("Generation of short name for '%s' failed", full_name);
         }
     }
-    
+
     aw_closestatus();
-    
+
     return err;
 }
 
@@ -128,17 +151,14 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
     GB_ERROR err;
     GB_ERROR err2;
 
-    err = connect_2_an(gb_main);
+    err = name_server.connect(gb_main);
     if (err) return err;
 
     err = GBT_begin_rename_session(gb_main,1);
-    if (err){
-        disconnect_an();
-        return err;
-    }
+    if (err) return err;
 
     char *ali_name = GBT_get_default_alignment(gb_main);
-	
+
     hash = GBS_create_hash(10024,1);
     err2 = 0;
 
@@ -160,16 +180,16 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
         if (gb_full_name) full_name = GB_read_string(gb_full_name);
         else		  full_name = strdup("");
         name = GB_read_string(gb_name);
-        
+
         if (strlen(acc) + strlen(full_name) ) {
-            if (aisc_nput(ang.link, AN_LOCAL, ang.locs,
+            if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                           LOCAL_FULL_NAME,	full_name,
                           LOCAL_ACCESSION,	acc,
                           LOCAL_ADVICE,		name,
                           0)){
                 err = "Connection Problems with the NAME_SERVER";
             }
-            if (aisc_get(ang.link, AN_LOCAL, ang.locs,
+            if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                          LOCAL_GET_SHORT,	&shrt,
                          0)){
                 err = "Connection Problems with the NAME_SERVER";
@@ -179,7 +199,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
         }
         if (!err) {
             //printf("full='%s' short='%s'\n", full_name, shrt);
-            
+
             if (GBS_read_hash(hash,shrt)) {
                 char *newshrt;
                 int i;
@@ -199,7 +219,6 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
         if (full_name)	free(full_name);full_name = 0;
         if (shrt)	free(shrt);	shrt = 0;
     }
-    disconnect_an();
     delete ali_name; ali_name = 0;
 
     GBS_free_hash(hash);
@@ -208,7 +227,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
         GBT_abort_rename_session();
         return err;
     }else{
-        aw_status("Renaming species in trees"); 
+        aw_status("Renaming species in trees");
         aw_status((double)0);
         GBT_commit_rename_session(aw_status);
     }
