@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Sat Sep/27/2003 16:45 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Oct/02/2003 17:02 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -492,7 +492,7 @@ namespace {
                                 int count = 0;
 
                                 for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
-                                    fprintf(out, "probe%04i=%s,E,%s\n", count, *p, enc_path);
+                                    fprintf(out, "probe%i=%s,E,%s\n", count, *p, enc_path);
                                 }
                             }
                         }
