@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Tue Sep/16/2003 16:13 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Sep/16/2003 18:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -343,7 +343,12 @@ namespace {
             }
 
             if (!gb_subtree) {
-                error = GBS_global_string("Illegal subtree path '%s'", path);
+                if (error) {
+                    error = GBS_global_string("Illegal subtree path '%s' (enc_path=%s, reason: %s)", path, enc_path, error);
+                }
+                else {
+                    error = GBS_global_string("Illegal subtree path '%s' (enc_path=%s)", path, enc_path);
+                }
             }
             else {
                 if (gb_subtree == gb_is_inner_node) { // inner node w/o info
@@ -624,7 +629,7 @@ namespace {
                     printf("detected request '%s'\n", filename);
 #endif // VERBOSE
                 }
-#ifdef VERBOSE
+#if defined(VERBOSE)
                 else {
                     if (filename[0] == '.' && (filename[1] == 0 || (filename[1] == '.' && filename[2] == 0))) {
                         ; // silently ignore . and ..
@@ -633,7 +638,7 @@ namespace {
                         printf("ignoring file '%s'\n", filename);
                     }
                 }
-#endif
+#endif // VERBOSE
             }
 
             closedir(dirp);
