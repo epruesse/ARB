@@ -2,10 +2,13 @@
 #define PS_NODE_HXX
 
 #include <smartptr.h>
-#include <unistd.h>
 #include <set>
 #include <map>
 #include "../PROBE_GROUP/pg_search.hxx"
+
+#ifndef PS_FILEBUFFER_HXX
+#include "ps_filebuffer.hxx"
+#endif
 
 using namespace std;
 
@@ -94,16 +97,14 @@ public:
         }
     }
 
-    PS_NodePtr getChild( SpeciesID id ) {
+    pair<bool,PS_NodePtr> getChild( SpeciesID id ) {
 	PS_NodeMapIterator it = children.find(id);
-	if (it!=children.end()) return it->second;
-	return 0;
+	return pair<bool,PS_NodePtr>(it!=children.end(),it->second);
     }
 
-    const PS_NodePtr getChild( SpeciesID id ) const {
+    pair<bool,const PS_NodePtr> getChild( SpeciesID id ) const {
 	PS_NodeMapConstIterator it = children.find(id);
-	if (it!=children.end()) return it->second;
-	return 0;
+	return pair<bool,const PS_NodePtr>(it!=children.end(),it->second);
     }
 
     bool   hasChildren()   const { return (!children.empty()); }
@@ -126,10 +127,10 @@ public:
 	    return true;
 	} else {
 	    pair<PS_ProbeSetIterator,bool> p = probes->insert(probe);
-	    if (!p.second) {
-		printf( "probe " ); PS_printProbe(probe);
-		printf( " already exists\n" );
-	    }
+// 	    if (!p.second) {
+// 		printf( "probe " ); PS_printProbe(probe);
+// 		printf( " already exists\n" );
+// 	    }
 
 	    return p.second;
 	}
@@ -168,8 +169,9 @@ public:
     //
     // *** disk i/o ***
     //
-    bool save( int fd );
-    bool load( int fd );
+    bool save( PS_FileBuffer* _fb );
+    bool load( PS_FileBuffer* _fb );
+    bool append( PS_FileBuffer* _fb ); // load from file and append to node
 
     //
     // *** constructors ***

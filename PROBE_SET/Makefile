@@ -8,6 +8,8 @@ LIBS = -L$(ARBHOME)/LIBLINK -lARBDB $(SYSLIBS) $(CCPLIBS)
 # --------------------------------------------------------------------------------
 
 DEST_EXECUTABLES = \
+	$(ARBHOME)/PROBE_SET/fb_test \
+	$(ARBHOME)/bin/arb_probe_set4 \
 	$(ARBHOME)/bin/arb_probe_set3 \
 	$(ARBHOME)/bin/arb_probe_set2 \
 	$(ARBHOME)/bin/arb_probe_set1 \
@@ -16,7 +18,7 @@ all : $(DEST_EXECUTABLES)
 
 # --------------------------------------------------------------------------------
 
-SHARED_OBJECTS = ps_node.o
+SHARED_OBJECTS = ps_node.o ps_filebuffer.o
 
 # --------------------------------------------------------------------------------
 
@@ -32,12 +34,20 @@ PROBE_SET3_OBJECTS = ps_make_sample_db.o
 $(ARBHOME)/bin/arb_probe_set3 : $(SHARED_OBJECTS) $(PROBE_SET3_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET3_OBJECTS) $(LIBS)
 
-CPP_OBJECTS = $(SHARED_OBJECTS) $(PROBE_SET1_OBJECTS) $(PROBE_SET2_OBJECTS) $(PROBE_SET3_OBJECTS)
+PROBE_SET4_OBJECTS = ps_detect_weak_differences.o
+$(ARBHOME)/bin/arb_probe_set4 : $(SHARED_OBJECTS) $(PROBE_SET4_OBJECTS)
+	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET4_OBJECTS) $(LIBS)
 
-#	$(CLEAN_BEFORE_MAKE)
-#	$(MAKE) $(ARBHOME)/bin/arb_probe_set
-#	$(MAKE) $(ARBHOME)/bin/arb_probe_blub
-#	$(MAKE) $(ARBHOME)/bin/arb_probe_bla
+PROBE_SET5_OBJECTS = fb_test.o
+$(ARBHOME)/PROBE_SET/fb_test : $(SHARED_OBJECTS) $(PROBE_SET5_OBJECTS)
+	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET5_OBJECTS) $(LIBS)
+
+CPP_OBJECTS = $(SHARED_OBJECTS) \
+	$(PROBE_SET1_OBJECTS) \
+	$(PROBE_SET2_OBJECTS) \
+	$(PROBE_SET3_OBJECTS) \
+	$(PROBE_SET4_OBJECTS) \
+	$(PROBE_SET5_OBJECTS) \
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
@@ -62,9 +72,10 @@ ps_dump_db.o: $(ARBHOME)/INCLUDE/ad_prot.h ps_node.hxx
 ps_dump_db.o: $(ARBHOME)/INCLUDE/smartptr.h 
 ps_dump_db.o: ../PROBE_GROUP/pg_search.hxx ../PROBE_GROUP/pg_def.hxx
 ps_dump_db.o: ../PROBE_GROUP/pg_db.hxx ps_pg_tree_functions.cxx
+ps_detect_weak_differences.o:  ps_node.hxx
+ps_detect_weak_differences.o:  ps_bitmap.hxx
+ps_detect_weak_differences.o:  ps_bitset.hxx
 ps_merge_my_dbs.o:  ps_node.hxx
-ps_merge_my_dbs.o:  ps_bitmap.hxx
-ps_merge_my_dbs.o:  ps_bitset.hxx
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_merge_my_dbs.o:  ../PROBE_GROUP/pg_search.hxx
 ps_merge_my_dbs.o: ../PROBE_GROUP/pg_def.hxx ../PROBE_GROUP/pg_db.hxx
