@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Sep/28/2001 17:57 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/02/2001 17:06 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -68,7 +68,7 @@ static bool in_awar_changed_callback  = false;
 //  --------------------------------------------------------------------------------------------------
 //      static void item_changed_cb(GBDATA *gb_item, int *cl_awt_linked_to_item, GB_CB_TYPE type)
 //  --------------------------------------------------------------------------------------------------
-static void item_changed_cb(GBDATA *gb_item, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
+static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
         in_item_changed_callback   = true;
         awt_linked_to_item *item_link = (awt_linked_to_item*)cl_awt_linked_to_item;
@@ -88,7 +88,7 @@ static void item_changed_cb(GBDATA *gb_item, int *cl_awt_linked_to_item, GB_CB_T
 //  --------------------------------------------------------------------------------------------------
 //      static void field_changed_cb(GBDATA *gb_item, int *cl_awt_input_handler, GB_CB_TYPE type)
 //  --------------------------------------------------------------------------------------------------
-static void field_changed_cb(GBDATA *gb_item, int *cl_awt_input_handler, GB_CB_TYPE type) {
+static void field_changed_cb(GBDATA */*gb_item*/, int *cl_awt_input_handler, GB_CB_TYPE type) {
     if (!in_field_changed_callback) { // avoid deadlock
         in_field_changed_callback  = true;
         awt_input_handler *handler = (awt_input_handler*)cl_awt_input_handler;
@@ -105,7 +105,7 @@ static void field_changed_cb(GBDATA *gb_item, int *cl_awt_input_handler, GB_CB_T
 //  -------------------------------------------------------------------------------
 //      static void awar_changed_cb(AW_root *awr, AW_CL cl_awt_mask_awar_item)
 //  -------------------------------------------------------------------------------
-static void awar_changed_cb(AW_root *awr, AW_CL cl_awt_mask_awar_item) {
+static void awar_changed_cb(AW_root */*awr*/, AW_CL cl_awt_mask_awar_item) {
     if (!in_awar_changed_callback) { // avoid deadlock
         in_awar_changed_callback   = true;
         awt_mask_awar_item *item = (awt_mask_awar_item*)cl_awt_mask_awar_item;
@@ -285,11 +285,11 @@ string awt_script::get_value() const
     GBDATA                       *gbd      = selector->current(root);
 
     if (gbd) {
-        char           *name    = root->awar(selector->get_self_awar())->read_string();
+        char           *species_name    = root->awar(selector->get_self_awar())->read_string();
         GBDATA         *gb_main = mask_global()->get_gb_main();
         GB_transaction  tscope(gb_main);
 
-        char *val = GB_command_interpreter(gb_main, name, script.c_str(), gbd);
+        char *val = GB_command_interpreter(gb_main, species_name, script.c_str(), gbd);
         if (!val) {
             aw_message(GB_get_error());
             result = "<error>";
@@ -298,7 +298,7 @@ string awt_script::get_value() const
             result = val;
             free(val);
         }
-        free(name);
+        free(species_name);
     }
     else {
         result = "<undefined>";
@@ -924,7 +924,7 @@ string list_keywords(const char **allowed_keywords) {
 inline int isKeyword(const char *current, const char *keyword) {
     int pos = 0;
     for (; keyword[pos]; ++pos) {
-        if (!current[pos] || tolower(current[pos]) != tolower(keyword[pos])) {
+        if (!current[pos] || std::tolower(current[pos]) != std::tolower(keyword[pos])) {
             return 0;
         }
     }
@@ -1081,7 +1081,7 @@ static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& e
     }
     else {
         char   found       = line[start];
-        char   upper_found = toupper(found);
+        char   upper_found = std::toupper(found);
         size_t pos         = allowed_flags.find(upper_found);
 
         if (pos != string::npos) {
@@ -1288,7 +1288,7 @@ static void awt_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mas
         awt_input_mask_global *global = mask->mask_global();
 
         printf("aww=%p root=%p ; global=%p root=%p\n", aww, aww->get_root(), global, global->get_root());
-        assert(aww->get_root() == global->get_root());
+        awt_assert(aww->get_root() == global->get_root());
 
         if (reload) mask->set_reload_on_reinit(true);
         if (hide_current) mask->hide();

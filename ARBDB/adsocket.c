@@ -857,7 +857,7 @@ GB_ULONG GB_get_physical_memory(void){
 #if defined(SUN5) || defined(LINUX)
     long pagesize = sysconf(_SC_PAGESIZE);
     long pages = sysconf(_SC_PHYS_PAGES);
-    //    long test = sysconf(_SC_AVPHYS_PAGES);
+    /*    long test = sysconf(_SC_AVPHYS_PAGES); */
     long memsize = pagesize/1024 * pages;
     long nettomemsize = memsize- 10000;	/* kernel size */
     return nettomemsize * 70 / 100; /* maximum 70 % of memory */

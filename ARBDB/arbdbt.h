@@ -13,7 +13,7 @@ typedef float GBT_LEN;
 	GBT_LEN			leftlen,rightlen;               \
 	GBDATA			*gb_node;                       \
 	char			*name;                          \
-	char			*remark_branch 
+	char			*remark_branch
 
 /* @@@ FIXME: remark_branch should not be saved to treefiles */
 
@@ -45,16 +45,16 @@ typedef FAKE_VIRTUAL_TABLE_POINTER virtualTable;
 #endif
 
 typedef struct gbt_tree_struct {
-#ifdef FAKE_VIRTUAL_TABLE_POINTER    
-    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */ 
-#endif    
+#ifdef FAKE_VIRTUAL_TABLE_POINTER
+    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
+#endif
     GBT_TREE_ELEMENTS(struct gbt_tree_struct);
 } GBT_TREE;
 
 typedef struct gb_seq_compr_tree {
-#ifdef FAKE_VIRTUAL_TABLE_POINTER    
-    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */ 
-#endif    
+#ifdef FAKE_VIRTUAL_TABLE_POINTER
+    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
+#endif
     GBT_TREE_ELEMENTS(struct gb_seq_compr_tree);
     int	index;			/* either master/sequence index */
 } GB_CTREE;				/* @@@ OLI */
@@ -64,19 +64,20 @@ typedef struct gb_seq_compr_tree {
 
 #define P_(s) s
 
-#if defined(__GNUG__) || defined(__cplusplus) 
+#if defined(__GNUG__) || defined(__cplusplus)
 extern "C" {
-# include <ad_t_prot.h>    
-# ifdef GBL_INCLUDED
-#  include <ad_t_lpro.h>
-# endif
-} 
-#else 
+#endif
+
+    typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
+
+#if defined(__GNUG__) || defined(__cplusplus)
+}
+#endif
+
 # include <ad_t_prot.h>
 # ifdef GBL_INCLUDED
 #  include <ad_t_lpro.h>
-# endif /* GBL_INCLUDED */
-#endif /* defined(__GNUG__) || defined(__cplusplus) */
+# endif
 
-#undef P_ 
+#undef P_
 #endif /*arbdbt_h_included*/

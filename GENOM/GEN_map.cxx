@@ -288,7 +288,7 @@ typedef enum  {
     GEN_PERFORM_ALL_SPECIES,
     GEN_PERFORM_CURRENT_SPECIES,
     GEN_PERFORM_ALL_BUT_CURRENT_SPECIES,
-    GEN_PERFORM_MARKED_SPECIES,
+    GEN_PERFORM_MARKED_SPECIES
 } GEN_PERFORM_MODE;
 
 typedef enum  {
@@ -302,7 +302,7 @@ typedef enum  {
     GEN_MARK_HIDDEN,
     GEN_MARK_VISIBLE,
     GEN_UNMARK_HIDDEN,
-    GEN_UNMARK_VISIBLE,
+    GEN_UNMARK_VISIBLE
 } GEN_MARK_MODE;
 
 typedef enum  {
@@ -312,7 +312,7 @@ typedef enum  {
 
     GEN_HIDE_MARKED,
     GEN_UNHIDE_MARKED,
-    GEN_INVERT_HIDE_MARKED,
+    GEN_INVERT_HIDE_MARKED
 } GEN_HIDE_MODE;
 
 //  ----------------------------------------------------------------------------------
@@ -903,7 +903,7 @@ static GEN_item_type_species_selector item_type_gene;
 static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-    assert(descriptor);
+    gen_assert(descriptor);
     if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_maskname());
 }
 

@@ -20,6 +20,18 @@
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
 
+#ifndef NDEBUG
+# define tpl_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
+# ifndef DEBUG
+#  error DEBUG is NOT defined - but it has to!
+# endif
+#else
+# ifdef DEBUG
+#  error DEBUG is defined - but it should not!
+# endif
+# define tpl_assert(bed)
+#endif
+
 // --------------------------------------------------------------------------------
 //     SmartPointers
 // --------------------------------------------------------------------------------
@@ -35,8 +47,8 @@ private:
     unsigned counter;
     T *const pointer;
 
-    Counted(T *p) : counter(0), pointer(p) { assert(p); }
-    ~Counted() { assert(counter==0); delete pointer; }
+    Counted(T *p) : counter(0), pointer(p) { tpl_assert(p); }
+    ~Counted() { tpl_assert(counter==0); delete pointer; }
 
     unsigned new_reference() {
         //cout << "new reference to pointer" << int(pointer) << " (now there are " << counter+1 << " references)" << "\n";
@@ -44,7 +56,7 @@ private:
     }
     unsigned free_reference() {
         //cout << "removing reference to pointer " << int(pointer) << " (now there are " << counter-1 << " references)\n";
-        assert(counter!=0);
+        tpl_assert(counter!=0);
         return --counter;
     }
 
@@ -99,11 +111,11 @@ public:
         return *this;
     }
 
-    T *operator->() { assert(object); return object->pointer; }
-    const T *operator->() const { assert(object); return object->pointer; }
+    T *operator->() { tpl_assert(object); return object->pointer; }
+    const T *operator->() const { tpl_assert(object); return object->pointer; }
 
-    T& operator*() { assert(object); return *(object->pointer); }
-    const T& operator*() const { assert(object); return *(object->pointer); }
+    T& operator*() { tpl_assert(object); return *(object->pointer); }
+    const T& operator*() const { tpl_assert(object); return *(object->pointer); }
 
     /** test if SmartPtr is 0 */
     bool Null() const { return object==0; }
@@ -128,8 +140,8 @@ public:
         @return true if the SmartPtrs point to the same object
     */
     bool sameObject(const SmartPtr<T>& other) const {
-        assert(object);
-        assert(other.object);
+        tpl_assert(object);
+        tpl_assert(other.object);
         return object==other.object;
     }
 };

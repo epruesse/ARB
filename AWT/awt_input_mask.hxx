@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Sep/28/2001 17:55 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/02/2001 16:40 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -25,7 +25,7 @@
 #ifndef __VECTOR__
 #include <vector>
 #endif
-#ifndef MAP
+#ifndef __MAP__
 #include <map>
 #endif
 
@@ -100,18 +100,18 @@ public:
 class awt_input_mask_id_list {
 private:
     // maps ids to corresponding input_handlers
-    map<string, awt_mask_item*> id;
+    std::map<std::string, awt_mask_item*> id;
 
 public:
     awt_input_mask_id_list() {}
     virtual ~awt_input_mask_id_list() {}
 
-    awt_mask_item *lookup(const string& name) const {
-        map<string, awt_mask_item*>::const_iterator found = id.find(name);
+    awt_mask_item *lookup(const std::string& name) const {
+        std::map<std::string, awt_mask_item*>::const_iterator found = id.find(name);
         return (found == id.end()) ? 0 : found->second;
     }
-    GB_ERROR add(const string& name, awt_mask_item *item);
-    GB_ERROR remove(const string& name);
+    GB_ERROR add(const std::string& name, awt_mask_item *item);
+    GB_ERROR remove(const std::string& name);
     bool empty() const { return id.empty(); }
 };
 
@@ -124,8 +124,8 @@ private:
     mutable AW_root *awr;
     mutable GBDATA  *gb_main;
     //     int              input_mask_id; // unique number of input mask
-    string           mask_name; // filename of mask-file
-    string           mask_id; // key generated from mask_name
+    std::string           mask_name; // filename of mask-file
+    std::string           mask_id; // key generated from mask_name
     awt_item_type    itemtype;  // what kind of item do we handle ?
 
     const awt_item_type_selector *sel;
@@ -134,10 +134,10 @@ private:
     awt_input_mask_id_list        ids; // local
     static awt_input_mask_id_list global_ids;
 
-    static string generate_id(const string& mask_name_);
+    static std::string generate_id(const std::string& mask_name_);
 
 public:
-    awt_input_mask_global(AW_root *awr_, GBDATA *gb_main_, const string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
+    awt_input_mask_global(AW_root *awr_, GBDATA *gb_main_, const std::string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
         : awr(awr_)
         , gb_main(gb_main_)
         , mask_name(mask_name_)
@@ -151,34 +151,34 @@ public:
 
     AW_root *get_root() const { return awr; }
     GBDATA *get_gb_main() const { return gb_main; }
-    const string& get_maskname() const { return mask_name; }
-    string get_maskid() const { return mask_id; }
+    const std::string& get_maskname() const { return mask_name; }
+    std::string get_maskid() const { return mask_id; }
     awt_item_type get_itemtype() const { return itemtype; }
     const awt_item_type_selector *get_selector() const { awt_assert(sel); return sel; }
-    const char* hotkey(const string& label)  { return hotkeys.hotkey(label); }
+    const char* hotkey(const std::string& label)  { return hotkeys.hotkey(label); }
 
-    bool has_local_id(const string& name) const { return ids.lookup(name); }
-    bool has_global_id(const string& name) const { return global_ids.lookup(name); }
+    bool has_local_id(const std::string& name) const { return ids.lookup(name); }
+    bool has_global_id(const std::string& name) const { return global_ids.lookup(name); }
 
-    GB_ERROR add_local_id(const string& name, awt_mask_item *handler) {
+    GB_ERROR add_local_id(const std::string& name, awt_mask_item *handler) {
         if (has_global_id(name)) return GB_export_error("ID '%s' already defined as GLOBAL", name.c_str());
         return ids.add(name, handler);
     }
 
-    GB_ERROR add_global_id(const string& name, awt_mask_item *handler) {
+    GB_ERROR add_global_id(const std::string& name, awt_mask_item *handler) {
         if (has_local_id(name)) return GB_export_error("ID '%s' already defined as LOCAL", name.c_str());
         return global_ids.add(name, handler);
     }
 
-    GB_ERROR remove_local_id(const string& name) { return ids.remove(name); }
+    GB_ERROR remove_local_id(const std::string& name) { return ids.remove(name); }
 //     GB_ERROR remove_global_id(const string& name) { return global_ids.remove(name); }
-    GB_ERROR remove_id(const string& name) {
+    GB_ERROR remove_id(const std::string& name) {
         if (has_local_id(name)) return remove_local_id(name);
         if (has_global_id(name)) return 0; // global ids are only created (never removed)
         return GBS_global_string("ID '%s' not found - can't remove id", name.c_str());
     }
 
-    awt_mask_item *get_identified_item(const string& name, GB_ERROR& error) const {
+    awt_mask_item *get_identified_item(const std::string& name, GB_ERROR& error) const {
         awt_mask_item *found = 0;
         if (!error) {
             found             = ids.lookup(name);
@@ -198,7 +198,7 @@ private:
 
     // basic item members
     awt_input_mask_global *global; // reference
-    SmartPtr<string>       name; // name of this item (optional -- caused i.e. by script command 'ID')
+    SmartPtr<std::string>       name; // name of this item (optional -- caused i.e. by script command 'ID')
 
 public:
     awt_mask_item(awt_input_mask_global *global_); // awar_base has to be unique (in every mask)
@@ -208,8 +208,8 @@ public:
     awt_input_mask_global *mask_global() { return global; }
 
     bool has_name() const { return !name.Null(); }
-    const string& get_name() const { awt_assert(has_name()); return *name; }
-    GB_ERROR set_name(const string& name_, bool is_global);
+    const std::string& get_name() const { awt_assert(has_name()); return *name; }
+    GB_ERROR set_name(const std::string& name_, bool is_global);
     GB_ERROR remove_name();
 
     inline const awt_viewport *to_viewport(bool fail = true) const;
@@ -225,8 +225,8 @@ public:
     bool is_input_handler() const { return to_input_handler(0) != 0; }
     bool is_script_viewport() const { return to_script_viewport(0) != 0; }
 
-    virtual string get_value() const                    = 0; // reads the current value of the item
-    virtual GB_ERROR set_value(const string& new_value) = 0; // assigns a new value to the item
+    virtual std::string get_value() const                    = 0; // reads the current value of the item
+    virtual GB_ERROR set_value(const std::string& new_value) = 0; // assigns a new value to the item
 };
 
 //  ---------------------------------------------------------
@@ -236,7 +236,7 @@ public:
 class awt_mask_awar_item :  public awt_mask_item {
 private:
     // awar related members
-    string     awarName;        // name of the awar
+    std::string     awarName;        // name of the awar
 
 protected:
 
@@ -244,19 +244,19 @@ protected:
     void remove_awar_callbacks();
 
 public:
-    awt_mask_awar_item(awt_input_mask_global *global_, const string& awar_base, const string& default_value, bool saved_with_properties);
+    awt_mask_awar_item(awt_input_mask_global *global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties);
     virtual ~awt_mask_awar_item() { remove_awar_callbacks(); }
 
     virtual void awar_changed() = 0; // called when awar changes
 
-    string awar_name() const  { return awarName; }
+    std::string awar_name() const  { return awarName; }
     const AW_awar *awar() const { return mask_global()->get_root()->awar(awarName.c_str()); }
     AW_awar *awar() { return mask_global()->get_root()->awar(awarName.c_str()); }
 
-    virtual string get_value() const {  // reads the current value of the item
+    virtual std::string get_value() const {  // reads the current value of the item
         return const_cast<AW_awar*>(awar())->read_string();
     }
-    virtual GB_ERROR set_value(const string& new_value) { // assigns a new value to the item
+    virtual GB_ERROR set_value(const std::string& new_value) { // assigns a new value to the item
         awar()->write_string(new_value.c_str());
         return 0; // an overloaded method may return an error
     }
@@ -268,20 +268,20 @@ public:
 // awar bound to a widget
 class awt_viewport : public awt_mask_awar_item {
 private:
-    string label;               // label of viewport
+    std::string label;               // label of viewport
 
 public:
-    awt_viewport(awt_input_mask_global *global_, const string& awar_base, const string& default_value, bool saved_with_properties, const string& label_)
+    awt_viewport(awt_input_mask_global *global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties, const std::string& label_)
         : awt_mask_awar_item(global_, awar_base, default_value, saved_with_properties)
         , label(label_)
     {}
-    awt_viewport(const awt_mask_awar_item& ref_item, const string& label_)
+    awt_viewport(const awt_mask_awar_item& ref_item, const std::string& label_)
         : awt_mask_awar_item(ref_item)
         , label(label_)
     {}
     virtual ~awt_viewport() {}
 
-    const string& get_label() const { return label; }
+    const std::string& get_label() const { return label; }
     virtual void build_widget(AW_window *aws) = 0; // builds the widget at the current position
 };
 
@@ -293,16 +293,16 @@ class awt_variable : public awt_mask_awar_item {
 private:
     bool is_global;
 
-    static string generate_baseName(const awt_input_mask_global *global_, const string& id, bool is_global_) {
+    static std::string generate_baseName(const awt_input_mask_global *global_, const std::string& id, bool is_global_) {
         // the generated name is NOT enumerated, because any reference to a variable should
         // work on the same awar
         return
             is_global_
-            ? string("global_")+id
-            : GBS_global_string("local_%s_%s", global_->get_maskid().c_str(), id.c_str());
+            ? std::string("global_")+id
+            : std::string(GBS_global_string("local_%s_%s", global_->get_maskid().c_str(), id.c_str()));
     }
 public:
-    awt_variable(awt_input_mask_global *global_, const string& id, bool is_global_, const string& default_value, GB_ERROR& error);
+    awt_variable(awt_input_mask_global *global_, const std::string& id, bool is_global_, const std::string& default_value, GB_ERROR& error);
     virtual ~awt_variable();
     virtual void awar_changed() {
 #if defined(DEBUG)
@@ -317,17 +317,17 @@ public:
 //  ------------------------------------------------
 class awt_script : public awt_mask_item {
 private:
-    string script;
+    std::string script;
 
 public:
-    awt_script(awt_input_mask_global *global_, const string& script_)
+    awt_script(awt_input_mask_global *global_, const std::string& script_)
         : awt_mask_item(global_)
         , script(script_)
     {}
     virtual ~awt_script() {}
 
-    virtual string get_value() const; // reads the current value of the item
-    virtual GB_ERROR set_value(const string& /*new_value*/); // assigns a new value to the item
+    virtual std::string get_value() const; // reads the current value of the item
+    virtual GB_ERROR set_value(const std::string& /*new_value*/); // assigns a new value to the item
 };
 
 //  ---------------------------------
@@ -365,13 +365,13 @@ private:
     const awt_script *script;
     int               field_width;
 
-    static string generate_baseName(const awt_input_mask_global *global_) {
+    static std::string generate_baseName(const awt_input_mask_global *global_) {
         static int awar_counter = 0;
         return GBS_global_string("%s/scriptview_%i", global_->get_maskid().c_str(), awar_counter++);
     }
 
 public:
-    awt_script_viewport(awt_input_mask_global *global_, const awt_script *script_, const string& label_, long field_width_);
+    awt_script_viewport(awt_input_mask_global *global_, const awt_script *script_, const std::string& label_, long field_width_);
     virtual ~awt_script_viewport();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
@@ -390,14 +390,14 @@ public:
 class awt_input_handler : public awt_viewport, public awt_linked_to_item {
 private:
     GBDATA   *gbd;              // link to database
-    string    child_path;       // path in database from item to handled child
+    std::string    child_path;       // path in database from item to handled child
     GB_TYPES  db_type;          // type of database field
     bool      in_destructor;
 
     virtual GB_ERROR add_db_callbacks();
     virtual GB_ERROR remove_db_callbacks();
 
-    static string generate_baseName(const awt_input_mask_global *global_, const string& child_path) {
+    static std::string generate_baseName(const awt_input_mask_global *global_, const std::string& child_path) {
         // the generated name is enumerated to allow different awt_input_handler's to be linked
         // to the same child_path
         static int awar_counter = 0;
@@ -406,7 +406,7 @@ private:
 
 
 public:
-    awt_input_handler(awt_input_mask_global *global_, const string& child_path_, GB_TYPES type_, const string& label_);
+    awt_input_handler(awt_input_mask_global *global_, const std::string& child_path_, GB_TYPES type_, const std::string& label_);
     virtual ~awt_input_handler();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
@@ -417,16 +417,16 @@ public:
     GB_TYPES type() const { return db_type; }
     void set_type(GB_TYPES typ) { db_type = typ; }
 
-    const string& get_child_path() const { return child_path; }
+    const std::string& get_child_path() const { return child_path; }
 
     // callbacks are handled via the following virtual functions :
     virtual void db_changed()   = 0;
 };
 
 typedef SmartPtr<awt_input_handler> awt_input_handler_ptr;
-typedef list<awt_input_handler_ptr> awt_input_handler_list;
+typedef std::list<awt_input_handler_ptr> awt_input_handler_list;
 typedef SmartPtr<awt_mask_item>     awt_mask_item_ptr;
-typedef list<awt_mask_item_ptr>     awt_mask_item_list;
+typedef std::list<awt_mask_item_ptr>     awt_mask_item_list;
 
 //  ------------------------------------------------------------
 //      class awt_string_handler : public awt_input_handler
@@ -434,10 +434,10 @@ typedef list<awt_mask_item_ptr>     awt_mask_item_list;
 // this handler handles string fields
 class awt_string_handler : public awt_input_handler {
 private:
-    string  default_value;      // default value for awar if no data present
+    std::string  default_value;      // default value for awar if no data present
 
 public:
-    awt_string_handler(awt_input_mask_global *global_, const string& child_path_, const string& default_awar_value_, GB_TYPES default_type, const string& label_)
+    awt_string_handler(awt_input_mask_global *global_, const std::string& child_path_, const std::string& default_awar_value_, GB_TYPES default_type, const std::string& label_)
         : awt_input_handler(global_, child_path_, default_type, label_)
         , default_value(default_awar_value_)
     {
@@ -448,8 +448,8 @@ public:
     virtual void awar_changed();
     virtual void db_changed();
 
-    virtual string awar2db(const string& awar_content) const { return awar_content; }
-    virtual string db2awar(const string& db_content) const { return db_content; }
+    virtual std::string awar2db(const std::string& awar_content) const { return awar_content; }
+    virtual std::string db2awar(const std::string& db_content) const { return db_content; }
 
     virtual void build_widget(AW_window *aws) = 0; // builds the widget at the current position
 };
@@ -463,7 +463,7 @@ private:
     int    field_width;
 
 public:
-    awt_input_field(awt_input_mask_global *global_, const string& child_path_, const string& label_, int field_width_, const string& default_value, GB_TYPES default_type)
+    awt_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value, GB_TYPES default_type)
         : awt_string_handler(global_, child_path_, default_value, default_type, label_)
         , field_width(field_width_)
     { }
@@ -480,7 +480,7 @@ private:
     int    field_width;
 
 public:
-    awt_text_viewport(const awt_mask_awar_item *item, const string& label_, long field_width_)
+    awt_text_viewport(const awt_mask_awar_item *item, const std::string& label_, long field_width_)
         : awt_viewport(*item, label_)
         , field_width(field_width_)
     {}
@@ -503,14 +503,14 @@ private:
     long min, max;
 
 public:
-    awt_numeric_input_field(awt_input_mask_global *global_, const string& child_path_, const string& label_, int field_width_, long default_value, long min_, long max_)
+    awt_numeric_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, long default_value, long min_, long max_)
         : awt_input_field(global_, child_path_, label_, field_width_, GBS_global_string("%li", default_value), GB_FLOAT)
         , min(min_)
         , max(max_)
     {}
     virtual ~awt_numeric_input_field() {}
 
-    virtual string awar2db(const string& awar_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const;
 };
 
 
@@ -521,13 +521,13 @@ class awt_check_box : public awt_string_handler {
 private:
 
 public:
-    awt_check_box(awt_input_mask_global *global_, const string& child_path_, const string& label_, bool default_checked)
+    awt_check_box(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, bool default_checked)
         : awt_string_handler(global_, child_path_, default_checked ? "yes" : "no", GB_BITS, label_)
     {}
     virtual ~awt_check_box() {}
 
-    virtual string awar2db(const string& awar_content) const;
-    virtual string db2awar(const string& db_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const;
+    virtual std::string db2awar(const std::string& db_content) const;
 
     virtual void build_widget(AW_window *aws);
 };
@@ -539,11 +539,11 @@ class awt_radio_button : public awt_string_handler {
 private:
     int            default_position;
     bool           vertical;
-    vector<string> buttons; // the awar contains the names of the buttons
-    vector<string> values; // the database contains the names of the values
+    std::vector<std::string> buttons; // the awar contains the names of the buttons
+    std::vector<std::string> values; // the database contains the names of the values
 
 public:
-    awt_radio_button(awt_input_mask_global *global_, const string& child_path_, const string& label_, int default_position_, bool vertical_, const vector<string>& buttons_, const vector<string>& values_)
+    awt_radio_button(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int default_position_, bool vertical_, const std::vector<std::string>& buttons_, const std::vector<std::string>& values_)
         : awt_string_handler(global_, child_path_, buttons_[default_position_], GB_STRING, label_)
         , default_position(default_position_)
         , vertical(vertical_)
@@ -554,8 +554,8 @@ public:
     }
     virtual ~awt_radio_button() {}
 
-    virtual string awar2db(const string& awar_content) const;
-    virtual string db2awar(const string& db_content) const;
+    virtual std::string awar2db(const std::string& awar_content) const;
+    virtual std::string db2awar(const std::string& db_content) const;
 
     virtual void build_widget(AW_window *aws);
 
@@ -579,7 +579,7 @@ private:
     bool                   shall_reload_on_reinit;
 
 public:
-    awt_input_mask(AW_root *awr, GBDATA *gb_main, const string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
+    awt_input_mask(AW_root *awr, GBDATA *gb_main, const std::string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
         : global(awr, gb_main, mask_name_, itemtype_, sel_)
         , aws(0)
         , shall_reload_on_reinit(false)
@@ -609,17 +609,17 @@ public:
 //      casts :
 //  ----------------
 
-inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); assert(!fail || viewport); return viewport; }
-inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); assert(!fail || viewport); return viewport; }
+inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
+inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
 
-inline const awt_input_handler *awt_mask_item::to_input_handler(bool fail) const { const awt_input_handler *handler = dynamic_cast<const awt_input_handler*>(this); assert(!fail || handler); return handler; }
-inline awt_input_handler *awt_mask_item::to_input_handler(bool fail)  { awt_input_handler *handler = dynamic_cast<awt_input_handler*>(this); assert(!fail || handler); return handler; }
+inline const awt_input_handler *awt_mask_item::to_input_handler(bool fail) const { const awt_input_handler *handler = dynamic_cast<const awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
+inline awt_input_handler *awt_mask_item::to_input_handler(bool fail)  { awt_input_handler *handler = dynamic_cast<awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
 
-inline const awt_script_viewport *awt_mask_item::to_script_viewport(bool fail) const { const awt_script_viewport *viewport = dynamic_cast<const awt_script_viewport*>(this); assert(!fail || viewport); return viewport; }
-inline awt_script_viewport *awt_mask_item::to_script_viewport(bool fail)  { awt_script_viewport *viewport = dynamic_cast<awt_script_viewport*>(this); assert(!fail || viewport); return viewport; }
+inline const awt_script_viewport *awt_mask_item::to_script_viewport(bool fail) const { const awt_script_viewport *viewport = dynamic_cast<const awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
+inline awt_script_viewport *awt_mask_item::to_script_viewport(bool fail)  { awt_script_viewport *viewport = dynamic_cast<awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
 
 
-awt_item_type AWT_getItemType(const string& itemtype_name);
+awt_item_type AWT_getItemType(const std::string& itemtype_name);
 void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL));
 
 #else

@@ -22,7 +22,7 @@ public:
   void max( PRD_Sequence_Pos new_max_ ) { maximum = new_max_; }
   bool includes ( PRD_Sequence_Pos value_ );				// check if given value is in range
   bool includes ( PRD_Sequence_Pos min_, PRD_Sequence_Pos max_ );	// check if given range overlaps self
-  void print    ( char *prefix_,char *suffix_ );			// print range
+  void print    ( const char *prefix_,const char *suffix_ );			// print range
 };
 
 #else

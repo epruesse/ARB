@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Sun Apr/01/2001 02:31 MET Coder@ReallySoft.de>
+// Time-stamp: <Tue Oct/02/2001 18:09 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -20,10 +20,10 @@
 #include "xml.hxx"
 
 using namespace std;
-using namespace rs;
-using namespace rs::xml;
+// using namespace rs;
+// using namespace rs::xml;
 
-XML_Document *rs::xml::theDocument = 0;
+XML_Document *the_XML_Document = 0;
 
 // ********************************************************************************
 
@@ -63,10 +63,10 @@ void XML_Attribute::print(FILE *out) const {
 //      XML_Node::XML_Node(bool is_tag)
 //  ----------------------------------------
 XML_Node::XML_Node(bool is_tag) {
-    assert(theDocument);
+    xml_assert(the_XML_Document);
 
-    father = theDocument->LatestSon();
-    theDocument->set_LatestSon(this);
+    father = the_XML_Document->LatestSon();
+    the_XML_Document->set_LatestSon(this);
     indent = 0;
 
     if (father) {
@@ -82,7 +82,7 @@ XML_Node::XML_Node(bool is_tag) {
 //  ------------------------------
 XML_Node::~XML_Node() {
     if (father) father->remove_son(this);
-    theDocument->set_LatestSon(father);
+    the_XML_Document->set_LatestSon(father);
 }
 
 // ********************************************************************************
@@ -100,7 +100,7 @@ XML_Tag::XML_Tag(const string &name_)
 //      XML_Tag::~XML_Tag()
 //  ----------------------------
 XML_Tag::~XML_Tag() {
-    FILE *out = theDocument->Out();
+    FILE *out = the_XML_Document->Out();
     if (son) {
         throw string("XML_Tag has son in destructor");
     }
@@ -147,7 +147,7 @@ void XML_Tag::open(FILE *out) {
 //  ----------------------------------------
 void XML_Tag::close(FILE *out)  {
     if (!opened) {
-        if (!theDocument->skip_empty_tags || attribute || !father) {
+        if (!the_XML_Document->skip_empty_tags || attribute || !father) {
             if (father && !father->Opened()) father->open(out);
             fputc('\n', out); to_indent(out, Indent());
             fputc('<', out); fputs(name.c_str(), out);
@@ -167,7 +167,7 @@ void XML_Tag::close(FILE *out)  {
 //      XML_Text::~XML_Text()
 //  ------------------------------
 XML_Text::~XML_Text() {
-    FILE *out = theDocument->Out();
+    FILE *out = the_XML_Document->Out();
     close(out);
 }
 //  -------------------------------------------------
@@ -204,11 +204,11 @@ void XML_Text::close(FILE *out) {
 XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
     : dtd(dtd_), root(0), out(out_), skip_empty_tags(false)
 {
-    if (theDocument) string Error("You can only have one XML_Document at a time.");
-    theDocument = this;
+    if (the_XML_Document) string Error("You can only have one XML_Document at a time.");
+    the_XML_Document = this;
     latest_son  = 0;
     root        = new XML_Tag(name_);
-    assert(latest_son == root);
+    xml_assert(latest_son == root);
 
     fputs("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n", out);
     fprintf(out, "<!DOCTYPE %s SYSTEM '%s'>\n", name_.c_str(), dtd.c_str());
@@ -219,7 +219,7 @@ XML_Document::XML_Document(const string& name_, const string& dtd_, FILE *out_)
 //  --------------------------------------
 XML_Document::~XML_Document() {
     delete root;
-    assert(theDocument == this);
-    theDocument = 0;
+    xml_assert(the_XML_Document == this);
+    the_XML_Document = 0;
 }
 

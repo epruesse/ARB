@@ -15,6 +15,8 @@
 #include "GEN_nds.hxx"
 #endif
 
+using namespace std;
+
 // --------------------------------------------------------------------------------
 
 #define AD_F_ALL (AW_active)(-1)
@@ -25,7 +27,7 @@
 //      static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
 //  --------------------------------------------------------------------------------------------------
 static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
-    char *name  = strdup(item_name);
+    char *name  = GB_strdup(item_name);
     char *slash = strchr(name, '/');
 
     if (slash) {
@@ -70,10 +72,10 @@ static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBD
 
 static char *old_species_marks = 0; // configuration storing marked species
 
-//  ---------------------------------------------------------------------------------------------------
-//      GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
-//  ---------------------------------------------------------------------------------------------------
-GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
+//  --------------------------------------------------------------------------------------------------------------
+//      extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
+//  --------------------------------------------------------------------------------------------------------------
+extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
     AWUSE(client_data);
     GB_ERROR error = 0;
 

@@ -681,7 +681,7 @@ static nt_item_type_species_selector item_type_species;
 static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-    assert(descriptor);
+    gb_assert(descriptor);
     if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_maskname());
 }
 

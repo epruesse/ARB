@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_local.hxx                                          //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Sep/06/2001 22:42 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/02/2001 17:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -15,6 +15,18 @@
 
 #ifndef EXP_LOCAL_HXX
 #define EXP_LOCAL_HXX
+
+#ifndef NDEBUG
+# define exp_assert(bed) do { if (!(bed)) *(int *)0 = 0; } while (0)
+# ifndef DEBUG
+#  error DEBUG is NOT defined - but it has to!
+# endif
+#else
+# ifdef DEBUG
+#  error DEBUG is defined - but it should not!
+# endif
+# define exp_assert(bed)
+#endif /* NDEBUG */
 
 // contains the path to the experiment:  "organism_name;experiment_name"
 // writing this awar has no effect

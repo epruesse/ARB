@@ -10,7 +10,7 @@
 #include "arbdb.h"
 #include "arbdbt.h"
 
-// -------------------------------------------------------------------------------- reverse complement functions
+/* -------------------------------------------------------------------------------- reverse complement functions */
 
 
 
@@ -20,43 +20,43 @@ char GBT_complementNucleotide(char c, char T_or_U)
 
     switch (c)
     {
-        case 'A': n = T_or_U; break;			// A <-> TU
+        case 'A': n = T_or_U; break;			/* A <-> TU */
         case 'a': n = tolower(T_or_U); break;
         case 'U':
         case 'T': n = 'A'; break;
         case 'u':
         case 't': n = 'a'; break;
 
-        case 'C': n = 'G'; break;			// C <-> G
+        case 'C': n = 'G'; break;			/* C <-> G */
         case 'c': n = 'g'; break;
         case 'G': n = 'C'; break;
         case 'g': n = 'c'; break;
 
-        case 'M': n = 'K'; break;			// M=A/C <-> TU/G=K
+        case 'M': n = 'K'; break;			/* M=A/C <-> TU/G=K */
         case 'm': n = 'k'; break;
         case 'K': n = 'M'; break;
         case 'k': n = 'm'; break;
 
-        case 'R': n = 'Y'; break;			// R=A/G <-> TU/C=Y
+        case 'R': n = 'Y'; break;			/* R=A/G <-> TU/C=Y */
         case 'r': n = 'y'; break;
         case 'Y': n = 'R'; break;
         case 'y': n = 'r'; break;
 
-        case 'V': n = 'B'; break;    			// V=A/C/G <-> TU/G/C=B
+        case 'V': n = 'B'; break;    			/* V=A/C/G <-> TU/G/C=B */
         case 'v': n = 'b'; break;
         case 'B': n = 'V'; break;
         case 'b': n = 'v'; break;
 
-        case 'H': n = 'D'; break;    			// H=A/C/TU <-> TU/G/A=D
+        case 'H': n = 'D'; break;    			/* H=A/C/TU <-> TU/G/A=D */
         case 'h': n = 'd'; break;
         case 'D': n = 'H'; break;
         case 'd': n = 'h'; break;
 
-        case 'S':					// S=C/G <-> G/C=S
+        case 'S':					/* S=C/G <-> G/C=S */
         case 's':
-        case 'W': 					// W=A/TU <-> TU/A=W
+        case 'W': 					/* W=A/TU <-> TU/A=W */
         case 'w':
-        case 'N':					// N=A/C/G/TU
+        case 'N':					/* N=A/C/G/TU */
         case 'n':
         case '.':
         case '-': break;

@@ -15,6 +15,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2001/10/18 09:29:53  westram
+ * fixes for compiling Solaris debugging version
+ *
  * Revision 1.2  2001/08/17 19:56:47  westram
  * * aw_xfig.hxx: - new method AW_xfig::add_line
  *            - new constructor (constructing empty xfig)
@@ -85,7 +88,7 @@ public:
 	void print(AW_device *device); // you can scale it
 	void create_gcs(AW_device *device, int screen_depth); // create the gcs
 
-    void add_line(int x1, int y2, int x2, int y2, int width); // add a line to xfig
+    void add_line(int x1, int y1, int x2, int y2, int width); // add a line to xfig
 };
 
 

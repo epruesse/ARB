@@ -42,6 +42,6 @@ bool Range::includes( PRD_Sequence_Pos min_, PRD_Sequence_Pos max_ )
 //
 // print range
 //
-void Range::print ( char *prefix_, char *suffix_ ) {
+void Range::print ( const char *prefix_, const char *suffix_ ) {
   cout << prefix_ << "(" << minimum << "," << maximum << ")" << suffix_;
 }
