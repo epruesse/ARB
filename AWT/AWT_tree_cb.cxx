@@ -579,13 +579,15 @@ void NT_set_tree_style(void *dummy, AWT_canvas *ntw, AP_tree_sort type)
 void NT_remove_leafs(void *dummy, AWT_canvas *ntw, long mode) // if dummy == 0 -> no message
 {
     AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    {
+        GB_transaction gb_dummy(ntw->gb_main);
+        AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    GB_ERROR error = AWT_TREE(ntw)->tree_root->remove_leafs(ntw->gb_main, (int)mode);
-    if (error) aw_message(error);
-    if (AWT_TREE(ntw)->tree_root) AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        GB_ERROR error = AWT_TREE(ntw)->tree_root->remove_leafs(ntw->gb_main, (int)mode);
+        if (error) aw_message(error);
+        if (AWT_TREE(ntw)->tree_root) AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    }
     ntw->zoom_reset();
     ntw->refresh();
 }
