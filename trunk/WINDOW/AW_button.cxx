@@ -1151,8 +1151,6 @@ int AW_window::move_selection(AW_selection_list *selection_list, AW_awar *list_a
 
 /*-------------------- function to get index of an entry in the selection lists -------------------- */
 int AW_window::get_index_of_element(AW_selection_list *selection_list, const char *searched_value){
-    //     int         no_of_elements = get_no_of_entries(selection_list);
-
 
     int         element_index = 0;
     int         found_index   = -1;
@@ -1167,21 +1165,11 @@ int AW_window::get_index_of_element(AW_selection_list *selection_list, const cha
         listEntry = selection_list->next_element();
     }
 
-//     if (listEntry && listEntry[0]) {
-//         for (int i=0; i<no_of_elements; i++){
-//             if (GBS_strscmp(listEntry,searched_value) == 0){
-//                 element_index = i;
-//                 break;
-//             }
-//             listEntry = selection_list->next_element();
-//         }
-//     }
     return element_index;
 }
 
 /*-------------------- function to get value of entry in the selection list for the index passed  -------------------- */
 const char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index){
-    //     int no_of_elements = get_no_of_entries(selection_list);
 
     const char *element = 0;
 
@@ -1198,17 +1186,9 @@ const char *AW_window::get_element_of_index(AW_selection_list *selection_list, i
             listEntry = selection_list->next_element();
         }
     }
-//     if(!listEntry || !listEntry[0] || listEntry == NULL) return element = NULL;
-
-//     for (int i=0; i<no_of_elements; i++){
-//         if (index == i){
-//             element = strdup(listEntry);
-//             break;
-//         }
-//         listEntry = selection_list->next_element();
-//     }
-
-    return element;
+    
+    if(!element) return NULL;
+    else return element;
 }
 
 void AW_window::delete_selection_from_list( AW_selection_list *selection_list, const char *disp_string )
