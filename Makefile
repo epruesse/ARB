@@ -196,6 +196,7 @@ else
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc -lGL
 endif
 
+
    GLPNGLIBS = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
    GLLIBS = -L$(XHOME)/lib -lGLEW -lGLw -lGL -lglut $(GLPNGLIBS) 
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
@@ -226,7 +227,7 @@ ifdef SUN5
 
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
 
-   SYSLIBS = -lsocket -lm # -lnsl -lgen -lposix4
+   SYSLIBS = -lsocket -lm -lnsl -lgen -lposix4
    XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
 
 endif
@@ -714,8 +715,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_pt_server **************************************
@@ -729,8 +730,8 @@ ARCHS_PROBE = \
 $(PROBE): $(ARCHS_PROBE:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_name_server **************************************
@@ -743,8 +744,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
 		)
 
 #***********************************	ors **************************************
