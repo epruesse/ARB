@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Aug/17/2001 21:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Sep/07/2001 14:45 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -15,6 +15,7 @@
 
 #include <arbdb.h>
 #include <awt.hxx>
+#include <awt_www.hxx>
 
 #ifndef __MAP__
 #include <map>
@@ -31,17 +32,31 @@
 
 using namespace std;
 
+const char *awt_itemtype_names[AWT_IT_TYPES+1] =
+{
+ "Unknown",
+ "Species", "Organism", "Gene", "Experiment",
+ "<overflow>"
+};
+
 #define SEC_XBORDER    3        // space left/right of NEW_SECTION line
 #define SEC_YBORDER    4        // space above/below
 #define SEC_LINE_WIDTH 1        // line width
 
-//  ********************************************************************************
-//  ********************************************************************************
-//      Callbacks from database and awars
+#define MIN_TEXTFIELD_SIZE 1
+#define MAX_TEXTFIELD_SIZE 1000
 
-static bool in_item_changed_callback = false;
+// #########################################################
+// #########################################################
+// ###                                                   ###
+// ##          Callbacks from database and awars          ##
+// ###                                                   ###
+// #########################################################
+// #########################################################
+
+static bool in_item_changed_callback  = false;
 static bool in_field_changed_callback = false;
-static bool in_awar_changed_callback = false;
+static bool in_awar_changed_callback  = false;
 
 //  -------------------------------------------------------------------------------------------------
 //      static void item_changed_cb(GBDATA *gb_item, int *cl_awt_input_handler, GB_CB_TYPE type)
@@ -242,6 +257,14 @@ void awt_string_handler::db_changed() {
     }
 }
 
+// ###############################
+// ###############################
+// ###                         ###
+// ##          Widgets          ##
+// ###                         ###
+// ###############################
+// ###############################
+
 //  -----------------------------------------------------------
 //      void awt_input_field::build_widget(AW_window *aws)
 //  -----------------------------------------------------------
@@ -274,14 +297,25 @@ void awt_radio_button::build_widget(AW_window *aws) {
     int                            pos = 0;
 
     for (; b != buttons.end() && v != values.end(); ++b, ++v, ++pos) {
-        /*if (pos == default_position)    aws->insert_default_toggle(b->c_str(), "", v->c_str());
-          else*/                            aws->insert_toggle(b->c_str(), "", b->c_str());
+        void (AW_window::*ins_togg)(AW_label, const char*, const char*);
+        ins_togg = (pos == default_position) ? &AW_window::insert_default_toggle : &AW_window::insert_toggle;
+
+        (aws->*ins_togg)(b->c_str(), mask_global()->hotkey(*b), b->c_str());
     }
 
     aw_assert(b == buttons.end() && v == values.end());
 
     aws->update_toggle_field();
 }
+
+// ########################################################
+// ########################################################
+// ###                                                  ###
+// ##          Special AWAR <-> DB translations          ##
+// ###                                                  ###
+// ########################################################
+// ########################################################
+
 //  ------------------------------------------------------------------
 //      string awt_check_box::awar2db(const string& awar_content)
 //  ------------------------------------------------------------------
@@ -347,14 +381,13 @@ string awt_numeric_input_field::awar2db(const string& awar_content) const {
     return GBS_global_string("%li", val);
 }
 
-// ********************************************************************************
-// ********************************************************************************
-// the input-mask-management :
-
-typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
-typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
-
-static InputMaskList input_mask_list;
+// ########################################################
+// ########################################################
+// ###                                                  ###
+// ##          Routines to parse user-mask file          ##
+// ###                                                  ###
+// ########################################################
+// ########################################################
 
 //  -------------------------------------------------------------------------
 //      static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo)
@@ -396,29 +429,6 @@ static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo) {
     return error;
 }
 
-const char *awt_itemtype_names[AWT_IT_TYPES+1] =
-{
-    "Unknown",
-        "Species", "Organism", "Gene", "Experiment",
-        "<overflow>"
-        };
-
-//  -------------------------------------------------------------------
-//      awt_item_type AWT_getItemType(const string& itemtype_name)
-//  -------------------------------------------------------------------
-awt_item_type AWT_getItemType(const string& itemtype_name) {
-    awt_item_type type = AWT_IT_UNKNOWN;
-
-    for (int i = AWT_IT_UNKNOWN+1; i<AWT_IT_TYPES; ++i) {
-        if (itemtype_name == awt_itemtype_names[i]) {
-            type = awt_item_type(i);
-            break;
-        }
-    }
-
-    return type;
-}
-
 //  -----------------------------------------------------------------------
 //      inline size_t next_non_white(const string& line, size_t start)
 //  -----------------------------------------------------------------------
@@ -435,16 +445,20 @@ static bool was_last_parameter = false;
 inline size_t eat_para_separator(const string& line, size_t start, GB_ERROR& error) {
     size_t para_sep = next_non_white(line, start);
 
-    if (para_sep == string::npos) error = "',' or ')' expected after parameter";
+    if (para_sep == string::npos) {
+        error = "',' or ')' expected after parameter";
+    }
     else {
         switch (line[para_sep]) {
             case ')' :
                 was_last_parameter = true;
                 break;
+
             case ',' :
                 break;
+
             default :
-                error              = "',' or ')' expected after parameter";
+                error = "',' or ')' expected after parameter";
                 break;
         }
         if (!error) para_sep++;
@@ -467,6 +481,8 @@ static void check_last_parameter(GB_ERROR& error, const string& command) {
 //  ---------------------------------------------------------------------------------------------------------------------
 static void check_no_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& command) {
     size_t start = next_non_white(line, scan_pos);
+    scan_pos     = start;
+
     if (start == string::npos) {
         error = "')' expected";
     }
@@ -475,32 +491,164 @@ static void check_no_parameter(const string& line, size_t& scan_pos, GB_ERROR& e
         check_last_parameter(error, command);
     }
     else { // ok
-        scan_pos = start+1;
+        scan_pos++;
     }
+}
+
+//  --------------------------------------------------
+//      inline GB_ERROR decode_escapes(string& s)
+//  --------------------------------------------------
+inline GB_ERROR decode_escapes(string& s) {
+    string::iterator f = s.begin();
+    string::iterator t = s.begin();
+
+    for (; f != s.end(); ++f, ++t) {
+        if (*f == '\\') {
+            ++f;
+            if (f == s.end()) return GBS_global_string("Trailing \\ in '%s'", s.c_str());
+        }
+        *t = *f;
+    }
+
+    s.erase(t, f);
+
+    return 0;
 }
 
 //  ---------------------------------------------------------------------------------------------------
 //      static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error)
 //  ---------------------------------------------------------------------------------------------------
-static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error) {
+static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, bool allow_escaped = false) {
     string result;
     size_t open_quote = next_non_white(line, scan_pos);
+    scan_pos          = open_quote;
 
     if (open_quote == string::npos || line[open_quote] != '\"') {
         error = "string parameter expected";
     }
     else {
-        size_t close_quote = line.find('\"', open_quote+1);
+        size_t close_quote = string::npos;
+
+        if (allow_escaped) {
+            size_t start = open_quote+1;
+
+            while (1) {
+                close_quote = line.find_first_of("\\\"", start);
+
+                if (close_quote == string::npos) break; // error
+                if (line[close_quote] == '\"') break; // found closing quote
+
+                if (line[close_quote] == '\\') { // escape next char
+                    close_quote++;
+                }
+                start = close_quote+1;
+            }
+        }
+        else {
+            close_quote = line.find('\"', open_quote+1);
+        }
+
         if (close_quote == string::npos) {
             error = "string parameter missing closing '\"'";
         }
         else {
-            result   = line.substr(open_quote+1, close_quote-open_quote-1);
-            scan_pos = eat_para_separator(line, close_quote+1, error);
+            result = line.substr(open_quote+1, close_quote-open_quote-1);
+            if (allow_escaped) {
+                assert(!error);
+                error = decode_escapes(result);
+            }
+            if (!error) scan_pos = eat_para_separator(line, close_quote+1, error);
         }
     }
 
     return result;
+}
+
+//  ------------------------------------------------------------
+//      string list_keywords(const char **allowed_keywords)
+//  ------------------------------------------------------------
+string list_keywords(const char **allowed_keywords) {
+    string result;
+    for (int i = 0; allowed_keywords[i]; ++i) {
+        if (i) {
+            if (allowed_keywords[i+1]) result += ", ";
+            else result                       += " or ";
+        }
+        result += allowed_keywords[i];
+    }
+    return result;
+}
+
+//  -------------------------------------------------------------------
+//      inline int isKeyword(const char *current, const char *keyword)
+//  -------------------------------------------------------------------
+inline int isKeyword(const char *current, const char *keyword) {
+    int pos = 0;
+    for (; keyword[pos]; ++pos) {
+        if (!current[pos] || tolower(current[pos]) != tolower(keyword[pos])) {
+            return 0;
+        }
+    }
+    return pos;
+}
+//  --------------------------------------------------------------------------------------------------------------------------------
+//      static int scan_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const char **allowed_keywords)
+//  --------------------------------------------------------------------------------------------------------------------------------
+// return index of keyword (or -1)
+// allowed_keywords has to be 0-terminated
+static int scan_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const char **allowed_keywords) {
+    int    result = -1;
+    size_t start  = next_non_white(line, scan_pos);
+    scan_pos      = start;
+
+    aw_assert(!error);
+
+    if (start == string::npos) {
+EXPECTED :
+        string keywords = list_keywords(allowed_keywords);
+        error           = GBS_global_string("%s expected", keywords.c_str());
+    }
+    else {
+        const char *current = line.c_str()+start;
+
+        int i = 0;
+        for (; allowed_keywords[i]; ++i) {
+            int found_keyword_size = isKeyword(current, allowed_keywords[i]);
+            if (found_keyword_size) {
+                result    = i;
+                scan_pos += found_keyword_size;
+                break;
+            }
+        }
+        if (!allowed_keywords[i]) goto EXPECTED;
+        aw_assert(!error);
+        scan_pos = eat_para_separator(line, scan_pos, error);
+    }
+    return result;
+}
+
+//  -----------------------------------------------------------------------------------------------------------
+//      static void scan_string_or_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error,
+//  -----------------------------------------------------------------------------------------------------------
+static void scan_string_or_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error,
+                                             string& string_para, int& keyword_index, // result parameters
+                                             const char **allowed_keywords) {
+    // if keyword_index != -1 -> keyword found
+    //                  == -1 -> string_para contains string-parameter
+
+    aw_assert(!error);
+
+    string_para = scan_string_parameter(line, scan_pos, error);
+    if (!error) {
+        keyword_index = -1;
+    }
+    else {                      // no string
+        error         = 0;      // ignore error - test for keywords
+        keyword_index = scan_keyword_parameter(line, scan_pos, error, allowed_keywords);
+        if (keyword_index == -1) { // no keyword
+            error = GBS_global_string("string parameter or %s", error);
+        }
+    }
 }
 
 //  -----------------------------------------------------------------------------------------------
@@ -511,7 +659,9 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
     size_t start  = next_non_white(line, scan_pos);
     bool   neg    = false;
 
-    while (1) {
+    aw_assert(!error);
+
+    while (start != string::npos) {
         char c = line[start];
         if (c != '+' && c != '-') break;
 
@@ -521,7 +671,8 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
     }
 
     if (start == string::npos || !isdigit(line[start]) ) {
-        error = "digits (or+-) expected";
+        scan_pos = start;
+        error    = "digits (or+-) expected";
     }
     else {
         size_t end = line.find_first_not_of("0123456789", start);
@@ -539,10 +690,13 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
 //  -------------------------------------------------------------------------------------------------------------------
 // with range-check
 static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long min, long max) {
-    long result = scan_long_parameter(line, scan_pos, error);
+    aw_assert(!error);
+    size_t old_scan_pos = scan_pos;
+    long   result       = scan_long_parameter(line, scan_pos, error);
     if (!error) {
         if (result<min || result>max) {
-            error = GBS_global_string("value %li is outside allowed range (%li-%li)", result, min, max);
+            scan_pos = old_scan_pos;
+            error    = GBS_global_string("value %li is outside allowed range (%li-%li)", result, min, max);
         }
     }
     return result;
@@ -552,12 +706,17 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
 //      static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long if_empty)
 //  ------------------------------------------------------------------------------------------------------------------
 static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long if_empty) {
-    long result = scan_long_parameter(line, scan_pos, error);
+    aw_assert(!error);
+    size_t old_scan_pos = scan_pos;
+    long   result       = scan_long_parameter(line, scan_pos, error);
     if (error) {
-        error = 0;              // ignore and test for empty parameter
-        eat_para_separator(line, scan_pos, error);
+        error    = 0;           // ignore and test for empty parameter
+        scan_pos = old_scan_pos;
+        scan_pos = eat_para_separator(line, scan_pos, error);
+
         if (error) {
-            error = "expected number or empty parameter";
+            error    = "expected number or empty parameter";
+            scan_pos = old_scan_pos;
         }
         else {
             result = if_empty;
@@ -573,11 +732,13 @@ static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERR
 // return 0..n-1 ( = position in 'allowed_flags')
 // or error is set
 static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& allowed_flags) {
+    aw_assert(!error);
     int    result = 0;
     size_t start  = next_non_white(line, scan_pos);
+    scan_pos      = start;
 
     if (start == string::npos) {
-        error = GBS_global_string("One of '%s' expected", allowed_flags.c_str());
+        error    = GBS_global_string("One of '%s' expected", allowed_flags.c_str());
     }
     else {
         char   found       = line[start];
@@ -598,43 +759,15 @@ static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& e
 //      static bool scan_bool_parameter(const string& line, size_t& scan_pos, GB_ERROR& error)
 //  -----------------------------------------------------------------------------------------------
 static bool scan_bool_parameter(const string& line, size_t& scan_pos, GB_ERROR& error) {
-    long result = scan_long_parameter(line, scan_pos, error);
+    aw_assert(!error);
+    size_t old_scan_pos = scan_pos;
+    long   result       = scan_long_parameter(line, scan_pos, error);
+
     if (!error && (result != 0) && (result != 1)) {
-        error = "'0' or '1' expected";
+        scan_pos = old_scan_pos;
+        error    = "'0' or '1' expected";
     }
     return result != 0;
-}
-
-//  --------------------------------------
-//      void awt_input_mask::relink()
-//  --------------------------------------
-void awt_input_mask::relink() {
-    const awt_item_type_selector  *sel     = global.get_selector();
-    GBDATA                        *gb_item = sel->current(global.get_root());
-
-    for (awt_input_handler_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
-        (*h)->link_to(gb_item);
-    }
-}
-
-//  ---------------------------------------------------------------------------------
-//      static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask)
-//  ---------------------------------------------------------------------------------
-static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask) {
-    awt_input_mask *mask = (awt_input_mask*)(cl_mask);
-    mask->relink();
-}
-
-//  -------------------------------------------------------------------
-//      static void link_mask_to_database(awt_input_mask_ptr mask)
-//  -------------------------------------------------------------------
-static void link_mask_to_database(awt_input_mask_ptr mask) {
-    awt_input_mask_global         *global = mask->mask_global();
-    const awt_item_type_selector  *sel    = global->get_selector();
-    AW_root                       *root   = global->get_root();
-
-    sel->add_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
-    awt_input_mask_awar_changed_cb(root, (AW_CL)(&*mask));
 }
 
 //  ------------------------------------
@@ -726,6 +859,32 @@ static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name) {
     awt_edit(aww->get_root(), fullmask.c_str());
 }
 
+//  ---------------------------------
+//      input mask container :
+//  ---------------------------------
+typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
+typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
+static InputMaskList                    input_mask_list;
+
+//  ---------------------------------------------------------------------------------
+//      static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask)
+//  ---------------------------------------------------------------------------------
+static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask) {
+    awt_input_mask *mask = (awt_input_mask*)(cl_mask);
+    mask->relink();
+}
+//  -------------------------------------------------------------------
+//      static void link_mask_to_database(awt_input_mask_ptr mask)
+//  -------------------------------------------------------------------
+static void link_mask_to_database(awt_input_mask_ptr mask) {
+    awt_input_mask_global         *global = mask->mask_global();
+    const awt_item_type_selector  *sel    = global->get_selector();
+    AW_root                       *root   = global->get_root();
+
+    sel->add_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
+    awt_input_mask_awar_changed_cb(root, (AW_CL)(&*mask));
+}
+
 //  -----------------------------------------------------------------------------------------------------------------------------------
 //      static void awt_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current)
 //  -----------------------------------------------------------------------------------------------------------------------------------
@@ -755,6 +914,37 @@ static void AWT_change_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_m
     awt_open_input_mask(aww, cl_mask_name, cl_mask_to_open, false, true);
 }
 
+
+
+static void AWT_input_mask_browse_url(AW_window *aww, AW_CL cl_url_srt, AW_CL cl_mask_ptr) {
+    AW_root                      *root     = aww->get_root();
+    const string                 *url_srt  = (const string *)cl_url_srt;
+    const awt_input_mask         *mask     = (const awt_input_mask *)cl_mask_ptr;
+    const awt_input_mask_global  *global   = mask->mask_global();
+    const awt_item_type_selector *selector = global->get_selector();
+    GBDATA                       *gbd      = selector->current(root);
+
+    if (!gbd) {
+        aw_message(GBS_global_string("You have to select a %s first", awt_itemtype_names[selector->get_item_type()]));
+    }
+    else {
+        char     *name  = root->awar(selector->get_self_awar())->read_string();
+        GB_ERROR  error = awt_open_ACISRT_URL_by_gbd(root, global->get_gb_main(), gbd, name, url_srt->c_str());
+        if (error) aw_message(error);
+        free(name);
+    }
+}
+
+
+
+// ##########################################
+// ##########################################
+// ###                                    ###
+// ##          User Mask Commands          ##
+// ###                                    ###
+// ##########################################
+// ##########################################
+
 enum MaskCommand  {
     CMD_TEXTFIELD,
     CMD_NUMFIELD,
@@ -764,6 +954,7 @@ enum MaskCommand  {
     CMD_CHANGEMASK,
     CMD_TEXT,
     CMD_SELF,
+    CMD_WWW,
     CMD_NEW_LINE,
     CMD_NEW_SECTION,
 
@@ -788,6 +979,7 @@ static struct MaskCommandDefinition mask_command[MASK_COMMANDS+1] =
  { "SELF", CMD_SELF },
  { "NEW_LINE", CMD_NEW_LINE },
  { "NEW_SECTION", CMD_NEW_SECTION },
+ { "WWW", CMD_WWW },
 
  { 0, CMD_UNKNOWN}
 };
@@ -804,6 +996,78 @@ inline MaskCommand findCommand(const string& cmd_name) {
         }
     }
     return CMD_UNKNOWN;
+}
+
+//  -----------------------------------------------------------------------------------------------------------
+//      static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, const string& command,
+//  -----------------------------------------------------------------------------------------------------------
+static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, const string& command,
+                            awt_input_handler_ptr& handler1, awt_input_handler_ptr& handler2, awt_input_mask_global *global) {
+    string         label, data_path;
+    int            default_position, orientation;
+    vector<string> buttons;
+    vector<string> values;
+    bool           allow_edit    = false;
+    int            width;
+    int            edit_position = -1;
+
+    label                        = scan_string_parameter(line, scan_pos, error);
+    if (!error) data_path        = scan_string_parameter(line, scan_pos, error);
+    if (!error) default_position = scan_long_parameter(line, scan_pos, error);
+    if (!error) {
+        orientation = scan_flag_parameter(line, scan_pos, error, "HVXY");
+        orientation = orientation&1;
+    }
+    while (!error && !was_last_parameter) {
+        string but = scan_string_parameter(line, scan_pos, error);
+        string val = "";
+        if (!error) {
+            int keyword_index;
+            const char *allowed_keywords[] = { "ALLOW_EDIT", 0};
+            scan_string_or_keyword_parameter(line, scan_pos, error, val, keyword_index, allowed_keywords);
+
+            if (!error) {
+                if (keyword_index != -1) { // found keyword
+                    if (allow_edit) error = "ALLOW_EDIT is allowed only once for each RADIO";
+
+                    if (!error) width = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
+                    if (!error) val   = scan_string_parameter(line, scan_pos, error);
+
+                    if (!error) {
+                        allow_edit    = true;
+                        edit_position = buttons.size()+1; // positions are 1..n
+                        buttons.push_back(but);
+                        values.push_back(val);
+                    }
+                }
+                else { // found string
+                    buttons.push_back(but);
+                    values.push_back(val);
+                }
+            }
+        }
+    }
+    check_last_parameter(error, command);
+
+    if (!error && (buttons.size()<2)) error = "You have to define at least 2 buttons.";
+
+    if (!error && allow_edit && edit_position != default_position) {
+        error = GBS_global_string("Invalid default %i (must be index of ALLOW_EDIT: %i )", default_position, edit_position);
+    }
+    if (!error && (default_position<1 || size_t(default_position)>buttons.size())) {
+        error = GBS_global_string("Invalid default %i (valid: 1..%i)", default_position, buttons.size());
+    }
+
+    if (!error) {
+        if (allow_edit) {
+            // create radio-button + textfield
+            handler1 = new awt_radio_button(global, data_path, label, default_position-1, orientation, buttons, values);
+            handler2 = new awt_input_field(global, data_path, "", width, "", GB_STRING);
+        }
+        else {
+            handler1 = new awt_radio_button(global, data_path, label, default_position-1, orientation, buttons, values);
+        }
+    }
 }
 
 //  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -835,7 +1099,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         awt_item_type itemtype;
 
         string line;
-        error = readLine(in, line, lineNo);
+        size_t err_pos = 0;     // 0 = unknown; string::npos = at end of line; else position+1;
+        error          = readLine(in, line, lineNo);
 
         if (!error && line != ARB_INPUT_MASK_ID) {
             error = "'" ARB_INPUT_MASK_ID "' expected";
@@ -876,8 +1141,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         // check data :
         if (!error) {
             if (title == "") title = string("Untitled (")+mask_name+")";
-            itemtype                              = AWT_getItemType(itemtypename);
-            if (itemtype == AWT_IT_UNKNOWN) error = GBS_global_string("Unknown @ITEMTYPE '%s'", itemtypename.c_str());
+            itemtype = AWT_getItemType(itemtypename);
+
+            if (itemtype == AWT_IT_UNKNOWN)         error = GBS_global_string("Unknown @ITEMTYPE '%s'", itemtypename.c_str());
+            if (itemtype != sel->get_item_type())   error = GBS_global_string("Mask is designed for @ITEMTYPE '%s' (current @ITEMTYPE '%s')",
+                                                                              itemtypename.c_str(), awt_itemtype_names[sel->get_item_type()]);
         }
 
         // create mask
@@ -891,30 +1159,19 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         if (!error) {
             aw_assert(!mask.Null());
             AW_window_simple*& aws = mask->get_window();
-
             aws = new AW_window_simple;
-#if defined(DEBUG)
-            printf("new AW_window_simple: %p\n", aws);
-#endif // DEBUG
             aws->init(root, "INPUT_MASK", title.c_str(), 200, 100);
             aws->load_xfig(0, AW_TRUE);
 
-//             aws->auto_space(5, 3);
             aws->auto_space(x_spacing, y_spacing);
-
             aws->at_newline();
-            aws->callback((AW_CB0)AW_POPDOWN);
-            aws->create_button("CLOSE", "CLOSE", "C");
 
-            aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp");
-            aws->create_button("HELP","HELP","H");
+            aws->callback((AW_CB0)AW_POPDOWN); aws->create_button("CLOSE", "CLOSE", "C");
+            aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp"); aws->create_button("HELP","HELP","H");
 
             if (edit_reload) {
-                aws->callback( AWT_edit_input_mask, (AW_CL)&mask->get_maskname());
-                aws->create_button("EDIT","EDIT","E");
-
-                aws->callback( AWT_reload_input_mask, (AW_CL)&mask->get_maskname());
-                aws->create_button("RELOAD","RELOAD","R");
+                aws->callback( AWT_edit_input_mask, (AW_CL)&mask->get_maskname()); aws->create_button("EDIT","EDIT","E");
+                aws->callback( AWT_reload_input_mask, (AW_CL)&mask->get_maskname()); aws->create_button("RELOAD","RELOAD","R");
             }
 
             aws->at_newline();
@@ -950,15 +1207,19 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                             else {
                                 size_t                scan_pos = paren_open+1;
                                 awt_input_handler_ptr handler;
+                                awt_input_handler_ptr radio_edit_handler;
                                 MaskCommand           cmd      = findCommand(command);
 
+                                //  --------------------------------------
+                                //      code for different commands :
+                                //  --------------------------------------
 
                                 if (cmd == CMD_TEXTFIELD) {
                                     string label, data_path;
                                     long   width;
                                     label                 = scan_string_parameter(line, scan_pos, error);
                                     if (!error) data_path = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) width     = scan_long_parameter(line, scan_pos, error);
+                                    if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     check_last_parameter(error, command);
 
                                     if (!error) handler = new awt_input_field(mask->mask_global(), data_path, label, width, "", GB_STRING);
@@ -972,7 +1233,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
                                     label                 = scan_string_parameter(line, scan_pos, error);
                                     if (!error) data_path = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) width     = scan_long_parameter(line, scan_pos, error, 1, 10000);
+                                    if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     if (!was_last_parameter) {
                                         if (!error) min = scan_optional_parameter(line, scan_pos, error, LONG_MIN);
                                         if (!error) max = scan_optional_parameter(line, scan_pos, error, LONG_MAX);
@@ -992,34 +1253,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     if (!error) handler = new awt_check_box(mask->mask_global(), data_path, label, checked);
                                 }
                                 else if (cmd == CMD_RADIO) {
-                                    string         label, data_path;
-                                    int            default_position, orientation;
-                                    vector<string> buttons;
-                                    vector<string> values;
-
-                                    label                        = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path        = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) default_position = scan_long_parameter(line, scan_pos, error);
-                                    if (!error) {
-                                        orientation = scan_flag_parameter(line, scan_pos, error, "HVXY");
-                                        orientation = orientation&1;
-                                    }
-                                    while (!error && !was_last_parameter) {
-                                        string but = scan_string_parameter(line, scan_pos, error);
-                                        string val = scan_string_parameter(line, scan_pos, error);
-                                        buttons.push_back(but);
-                                        values.push_back(val);
-                                    }
-                                    check_last_parameter(error, command);
-
-                                    if (!error && (buttons.size()<2)) error = "You have to define at least 2 buttons.";
-                                    if (!error && (default_position<1 || size_t(default_position)>buttons.size())) {
-                                        error = GBS_global_string("Invalid default %i (valid: 1..%i)", default_position, buttons.size());
-                                    }
-
-                                    if (!error) {
-                                        handler = new awt_radio_button(mask->mask_global(), data_path, label, default_position-1, orientation, buttons, values);
-                                    }
+                                    parse_CMD_RADIO(line, scan_pos, error, command, handler, radio_edit_handler, mask->mask_global());
                                 }
                                 else if (cmd == CMD_OPENMASK || cmd == CMD_CHANGEMASK) {
                                     string label, mask_to_start;
@@ -1034,6 +1268,22 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                         aws->callback( cb, (AW_CL)&mask->get_maskname(), (AW_CL)new string(mask_to_start));
                                         aws->button_length(label.length()+2);
                                         aws->create_button(key, label.c_str());
+
+                                        free(key);
+                                    }
+                                }
+                                else if (cmd == CMD_WWW) {
+                                    string button_text, url_srt;
+                                    button_text         = scan_string_parameter(line, scan_pos, error);
+                                    if (!error) url_srt = scan_string_parameter(line, scan_pos, error, true);
+                                    check_last_parameter(error, command);
+
+                                    if (!error) {
+                                        char *key = GBS_string_2_key(button_text.c_str());
+
+                                        aws->callback(AWT_input_mask_browse_url, (AW_CL)new string(url_srt), (AW_CL)&*mask);
+                                        aws->button_length(button_text.length()+2);
+                                        aws->create_button(key, button_text.c_str());
 
                                         free(key);
                                     }
@@ -1053,9 +1303,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                 else if (cmd == CMD_SELF) {
                                     check_no_parameter(line, scan_pos, error, command);
                                     if (!error) {
-                                        string  button_awar_name = mask->mask_global()->get_selector()->get_self_awar();
-                                        char   *key              = GBS_string_2_key(button_awar_name.c_str());
-                                        aws->button_length(20);
+                                        const awt_item_type_selector *sel              = mask->mask_global()->get_selector();
+                                        string                        button_awar_name = sel->get_self_awar();
+                                        char                         *key              = GBS_string_2_key(button_awar_name.c_str());
+
+                                        aws->button_length(sel->get_self_awar_content_length());
                                         aws->create_button(key, button_awar_name.c_str());
                                         free(key);
                                     }
@@ -1085,18 +1337,55 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     aw_assert(0);
                                 }
 
+                                //  --------------------------
+                                //      insert handler(s)
+                                //  --------------------------
+
                                 if (!handler.Null() && !error) {
-                                    mask->add_handler(handler);
-                                    handler->build_widget(aws);
+                                    if (!radio_edit_handler.Null()) { // special radio handler
+                                        const awt_radio_button *radio = dynamic_cast<const awt_radio_button*>(&*handler);
+                                        assert(radio);
+
+                                        int x_start, y_start;
+
+                                        aws->get_at_position(&x_start, &y_start);
+
+                                        mask->add_handler(handler);
+                                        handler->build_widget(aws);
+
+                                        int x_end, y_end, dummy;
+                                        aws->get_at_position(&x_end, &dummy);
+                                        aws->at_newline();
+                                        aws->get_at_position(&dummy, &y_end);
+
+                                        int height    = y_end-y_start;
+                                        int each_line = height/radio->no_of_toggles();
+                                        int y_offset  = each_line*(radio->default_toggle());
+
+                                        aws->at(x_end+x_spacing, y_start+y_offset);
+
+                                        mask->add_handler(radio_edit_handler);
+                                        radio_edit_handler->build_widget(aws);
+
+                                        radio_edit_handler.SetNull();
+                                    }
+                                    else {
+                                        mask->add_handler(handler);
+                                        handler->build_widget(aws);
+                                    }
                                 }
 
-                                line = line.substr(scan_pos);
-                                if (!error) goto PARSE_REST_OF_LINE;
+                                // parse rest of line or abort
+                                if (!error) {
+                                    line = line.substr(scan_pos);
+                                    goto PARSE_REST_OF_LINE;
+                                }
+                                err_pos = scan_pos;
+                                if (err_pos != string::npos) err_pos++; // because 0 means unknown
                             }
                         }
                     }
-                    else {
-                        // printf("got newline\n");
+                    else { // reached the end of the current line
                         aws->at_newline();
                     }
                 }
@@ -1121,7 +1410,32 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         }
 
         if (error) {
-            error = GBS_global_string("Wrong format (%s) in line #%u", error, lineNo);
+            if (err_pos == 0) { // don't knows exact error position
+                error = GBS_global_string("%s in line #%u", error, lineNo);
+            }
+            else if (err_pos == 0) {
+                error = GBS_global_string("%s at end of line #%u", error, lineNo);
+            }
+            else {
+                int    wanted         = 35;
+                size_t end            = line.length();
+                string context;
+                context.reserve(wanted);
+                bool   last_was_space = false;
+
+                for (size_t ex = err_pos-1; ex<end && wanted>0; ++ex) {
+                    char ch            = line[ex];
+                    bool this_is_space = ch == ' ';
+
+                    if (!this_is_space || !last_was_space) {
+                        context.append(1, ch);
+                        --wanted;
+                    }
+                    last_was_space = this_is_space;
+                }
+
+                error = GBS_global_string("%s in line #%u at '%s...'", error, lineNo, context.c_str());
+            }
         }
 
         fclose(in);
@@ -1169,6 +1483,18 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 
     if (error) aw_message(error);
     return error;
+}
+
+//  --------------------------------------
+//      void awt_input_mask::relink()
+//  --------------------------------------
+void awt_input_mask::relink() {
+    const awt_item_type_selector  *sel     = global.get_selector();
+    GBDATA                        *gb_item = sel->current(global.get_root());
+
+    for (awt_input_handler_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
+        (*h)->link_to(gb_item);
+    }
 }
 
 //  -----------------------------------------------------------------------------------------------------------------------------------
@@ -1263,4 +1589,53 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id) {
     const awt_input_mask_descriptor *descriptor = &existing_masks[id];
     return descriptor;
 }
+
+//  -------------------------------------------------------------------
+//      awt_item_type AWT_getItemType(const string& itemtype_name)
+//  -------------------------------------------------------------------
+awt_item_type AWT_getItemType(const string& itemtype_name) {
+    awt_item_type type = AWT_IT_UNKNOWN;
+
+    for (int i = AWT_IT_UNKNOWN+1; i<AWT_IT_TYPES; ++i) {
+        if (itemtype_name == awt_itemtype_names[i]) {
+            type = awt_item_type(i);
+            break;
+        }
+    }
+
+    return type;
+}
+
+//  ------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL))
+//  ------------------------------------------------------------------------------------------------------------------------------------------------------------
+void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL)) {
+    // add a user mask submenu at current position
+    bool found = false;
+
+    for (int id = 0; ;++id) {
+        const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+        if (!descriptor) break;
+
+        awt_item_type item_type = AWT_getItemType(descriptor->get_itemtypename());
+
+        if (item_type == wanted_item_type) {
+            if (!found) awm->insert_sub_menu(0, "User Masks", "");
+
+            found               = true;
+            char *macroname2key = GBS_string_2_key(descriptor->get_maskname());
+#if defined(DEBUG) && 0
+            printf("added user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
+#endif // DEBUG
+            awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_window_cb, (AW_CL)id, (AW_CL)0);
+            free(macroname2key);
+        }
+        else if (item_type == AWT_IT_UNKNOWN) {
+            aw_message(GBS_global_string("Unkown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_maskname()));
+        }
+    }
+
+    if (found) awm->close_sub_menu();
+}
+
 
