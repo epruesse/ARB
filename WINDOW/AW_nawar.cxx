@@ -611,3 +611,17 @@ void Awar_Callback_Info::init(AW_root *awr_, const char *awar_name_, Awar_CB2 ca
     awar_name     = strdup(awar_name_);
     org_awar_name = strdup(awar_name_);
 }
+
+void aw_create_selection_box_awars(AW_root *awr, const char *awar_base, const char *directory, const char *filter, const char *file_name, AW_default default_file)
+{
+    int   base_len  = strlen(awar_base);
+    bool  has_slash = awar_base[base_len-1] == '/';
+    char *awar_name = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+
+    sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash)); awr->awar_string(awar_name, directory, default_file);
+    sprintf(awar_name, "%s%s", awar_base, "/filter"   +int(has_slash)); awr->awar_string(awar_name, filter,    default_file);
+    sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash)); awr->awar_string(awar_name, file_name, default_file);
+
+    delete [] awar_name;
+}
+
