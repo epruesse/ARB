@@ -303,7 +303,9 @@ AD_ERR *AD_STAT::put() {
         }
     }
     if  (gb_char_mark != 0) {
-        error = (char *)GB_write_bits(gb_char_mark,markdata,nmark,c_0);
+        char c_0_buf[] = "x";
+        c_0_buf[0]     = c_0;
+        error          = (char *)GB_write_bits(gb_char_mark,markdata,nmark,c_0_buf);
         if (error != 0) {
             return new AD_ERR(error);
         }
@@ -538,7 +540,7 @@ AD_ERR * AD_SEQ::put()
     if (gb_seq == 0)
         return new AD_ERR("AD_SEQ::write not possible!");
     if (nseq_but_filter) {
-        error = (char *)GB_write_bits(gb_seq,seq,seq_len, '.');
+        error = (char *)GB_write_bits(gb_seq,seq,seq_len, ".");
     }else{
         error = (char *)GB_write_string(gb_seq,seq);
     }

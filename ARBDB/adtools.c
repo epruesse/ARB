@@ -513,7 +513,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
             cchars = GB_read_bits_pntr(gb_data,'-','+');
             if (!cchars) return GB_get_error();
             chars = gbt_insert_delete( cchars,size,len, &dlen, pos, nchar, sizeof(char), '-','-' );
-            if (chars) { error = GB_write_bits(gb_data,chars,dlen,'-');
+            if (chars) { error = GB_write_bits(gb_data,chars,dlen,"-");
             free(chars);
             }
             break;
