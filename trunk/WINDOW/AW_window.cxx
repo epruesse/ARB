@@ -2653,7 +2653,7 @@ void AW_window::set_window_title_intern( char *title ) {
 }
 
 
-void AW_window::set_window_title( char *title ) {
+void AW_window::set_window_title( const char *title ) {
     XtVaSetValues( p_w->shell ,XmNtitle, title, NULL );
     delete window_name;
     window_name = strdup(title);
