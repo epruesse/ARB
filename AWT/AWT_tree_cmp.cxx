@@ -220,6 +220,16 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
         }
 
         if (set->node->gb_node && (delete_old_nodes || insert_new_node)) { // There is already a node, delete old
+	    if (set->node->name == 0) {
+		GBDATA *gb_name = GB_find(set->node->gb_node, "group_name", 0, down_level);
+		if (gb_name) {
+		    set->node->name = GB_read_string(gb_name);
+		}
+		else {
+		    set->node->name = strdup("<gb_node w/o name>");
+		}
+	    }	
+
             old_group_name = strdup(set->node->name); // store old_group_name to rename new inserted node
 #if defined(DEBUG)
             printf("delete node '%s'\n", set->node->name);
