@@ -1,11 +1,28 @@
-item:Positional Variability by Olsons dnamlrates (max 5000 Species, 8000 seqlength) 
-itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
+item:Positional Variability by Olsons dnamlrates (max 5000 Species, 8000 seqlength)
+itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates dummy_rate "M $RESIDUES" "T $TTRATIO" "U" $LENGTHS |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
+# itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;RUN_IN_WINDOW ((cat in1.ph |arb_dnarates));echo done )&
 itemhelp:phylip.help
 
 arg:TREE
 argtype:tree
 arglabel:Base Tree
 argchoice:tree_main
+
+arg:RESIDUES
+argtype:text
+arglabel:Number of informative residues
+argtext:10
+
+arg:TTRATIO
+argtype:text
+arglabel:Transition/transversion ratio
+argtext:2.0
+
+arg:LENGTHS
+argtype:chooser
+arglabel:Use branchlengths?
+argchoice:Yes:"L"
+argchoice:No:
 
 in:in1
 informat:genbank
