@@ -11,7 +11,8 @@
 #include "ed4_RNA3D.hxx"
 
 void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL)
-{
+{    
+#if defined(DEVEL_YADHU)
     static AW_window *aw_3D = 0;
 
     if (!aw_3D) { // do not open window twice
@@ -23,5 +24,6 @@ void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL)
         }
     }
     aw_3D->show();
+#endif // DEVEL_YADHU
 }
 
