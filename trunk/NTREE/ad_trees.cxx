@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <malloc.h>
 #include <string.h>
+#include <assert.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -25,8 +26,16 @@ const char *AWAR_TREE_REM		=	"tmp/ad_tree/tree_rem";
 #define AWAR_TREE_EXPORT	            "tmp/ad_tree/export_tree"
 #define AWAR_TREE_IMPORT	            "tmp/ad_tree/import_tree"
 #define AWAR_NODE_INFO_ONLY_MARKED	    "tmp/ad_tree/import_only_marked_node_info"
+#define AWAR_TREE_EXPORT_SAVE           "ad_tree/export_tree"
 
-void tree_vars_callback(AW_root *aw_root)		// Map tree vars to display objects
+#define AWAR_TREE_EXPORT_FILTER             AWAR_TREE_EXPORT "/filter"
+#define AWAR_TREE_EXPORT_FORMAT             AWAR_TREE_EXPORT_SAVE "/format"
+#define AWAR_TREE_EXPORT_NDS                AWAR_TREE_EXPORT_SAVE "/NDS"
+#define AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS AWAR_TREE_EXPORT_SAVE "/bootstraps"
+#define AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS AWAR_TREE_EXPORT_SAVE "/branchlens"
+#define AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES AWAR_TREE_EXPORT_SAVE "/groupnames"
+
+void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
 {
 	GB_push_transaction(gb_main);
 	char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
@@ -93,13 +102,41 @@ void ad_tree_set_security(AW_root *aw_root)
 	free(treename);
 }
 
+enum ExportTreeType {
+    AD_TREE_EXPORT_FORMAT_NEWICK, // was 0
+//     AD_TREE_EXPORT_NDS, // was 1
+    AD_TREE_EXPORT_FORMAT_ORS, // was 2
+};
+
+enum ExportNodeType {
+    AD_TREE_EXPORT_NODE_SPECIES_NAME,
+    AD_TREE_EXPORT_NODE_NDS
+};
+
 void update_filter_cb(AW_root *root){
-	int NDS = root->awar(AWAR_TREE_EXPORT "/NDS")->read_int();
-	switch(NDS){
-        case 1:	root->awar(AWAR_TREE_EXPORT "/filter")->write_string("tree");break;
-        case 2:	root->awar(AWAR_TREE_EXPORT "/filter")->write_string("otb");break;
-        default:root->awar(AWAR_TREE_EXPORT "/filter")->write_string("ntree");break;
-	}
+    const char     *filter_type = 0;
+
+    switch (ExportTreeType(root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
+        case AD_TREE_EXPORT_FORMAT_ORS: filter_type = "otb"; break;
+        case AD_TREE_EXPORT_FORMAT_NEWICK:
+            switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
+                case AD_TREE_EXPORT_NODE_SPECIES_NAME:  filter_type = "ntree"; break;
+                case AD_TREE_EXPORT_NODE_NDS:           filter_type = "tree"; break;
+                default: assert(0); break;
+            }
+            break;
+        default: assert(0); break;
+    }
+
+    assert(filter_type);
+    root->awar(AWAR_TREE_EXPORT_FILTER)->write_string(filter_type);
+
+// 	switch(exportType){
+//         case AD_TREE_EXPORT_NDS:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("tree"); break;
+//         case AD_TREE_EXPORT_ORS:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("otb"); break;
+//         case AD_TREE_EXPORT_PLAIN:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("ntree"); break;
+//         default: assert(0); break;
+// 	}
 }
 
 void create_trees_var(AW_root *aw_root, AW_default aw_def)
@@ -111,8 +148,13 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
 
 	aw_root->awar_string( AWAR_TREE_EXPORT "/file_name", "treefile",aw_def);
 	aw_root->awar_string( AWAR_TREE_EXPORT "/directory", "",	aw_def);
-	aw_root->awar_string( AWAR_TREE_EXPORT "/filter", "tree",	aw_def);
-	aw_root->awar_int(    AWAR_TREE_EXPORT "/NDS", 0,		aw_def)-> add_callback(update_filter_cb);
+	aw_root->awar_string( AWAR_TREE_EXPORT_FILTER, "tree",	aw_def);
+	aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
+	aw_root->awar_int(AWAR_TREE_EXPORT_NDS , AD_TREE_EXPORT_NODE_SPECIES_NAME, aw_def)-> add_callback(update_filter_cb);
+
+	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS , 0, aw_def);
+	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS , 1, aw_def);
+	aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES , 1, aw_def);
 
 	aw_root->awar_string( AWAR_TREE_IMPORT "/file_name", "treefile",aw_def);
 	aw_root->awar_string( AWAR_TREE_IMPORT "/directory", "",	aw_def);
@@ -206,20 +248,30 @@ void create_tree_last_window(AW_window *aww) {
 }
 
 void tree_save_cb(AW_window *aww){
-	AW_root *aw_root = aww->get_root();
-	GB_ERROR error = 0;
-	long NDS = aw_root->awar(AWAR_TREE_EXPORT "/NDS")->read_int();
-	char *fname = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
-	char *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
+	AW_root        *aw_root   = aww->get_root();
+	GB_ERROR        error     = 0;
+	char           *fname     = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
+	char           *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
+
 	if (!tree_name || !strlen(tree_name)) error = GB_export_error("Please select a tree first");
 	if (!error){
-		switch(NDS){
-			case 2:
+		switch(ExportTreeType(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
+			case AD_TREE_EXPORT_FORMAT_ORS:
 				error = create_and_save_CAT_tree(gb_main,tree_name,fname);
 				break;
-			default:
-				error = AWT_export_tree(gb_main,tree_name,(int)NDS,fname);
-				break;
+            case AD_TREE_EXPORT_FORMAT_NEWICK:
+                error = AWT_export_tree(gb_main, tree_name,
+
+                                        (ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS),
+                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
+                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
+                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
+                                        fname);
+
+                // error = AWT_export_tree(gb_main,tree_name,0/*(int)NDS*/,fname);
+                // .... Parameter fuer bootstraps, branchlens, groupnames an AWT_export_tree weiterreichen
+                break;
+			default: assert(0); break;
 		}
 	}
 
@@ -247,44 +299,59 @@ AW_window *create_tree_export_window(AW_root *root)
 	aws->create_button("HELP","HELP","H");
 
 	aws->at("user");
-	aws->create_option_menu(AWAR_TREE_EXPORT "/NDS",0,0);
-	aws->insert_option("PLAIN FORMAT","P",0);
-	aws->insert_option("USE NDS (CANNOT BE RELOADED)","N",1);
-	aws->insert_option("ORS TRANSFER BINARY FORMAT","O",2);
+	aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT,0,0);
+	aws->insert_option("NEWICK TREE FORMAT","P",AD_TREE_EXPORT_FORMAT_NEWICK);
+// 	aws->insert_option("USE NDS (CANNOT BE RELOADED)","N",AD_TREE_EXPORT_NDS);
+	aws->insert_option("ORS TRANSFER BINARY FORMAT","O",AD_TREE_EXPORT_FORMAT_ORS);
 	aws->update_option_menu();
 
-	awt_create_selection_box((AW_window *)aws,AWAR_TREE_EXPORT "");
+ 	awt_create_selection_box((AW_window *)aws,AWAR_TREE_EXPORT "");
 
-	aws->at("save2");
+    aws->at("user2");
+    aws->auto_space(10, 10);
+    aws->label("Nodetype");
+    aws->create_toggle_field(AWAR_TREE_EXPORT_NDS, 1);
+    aws->insert_default_toggle("Species name", "S", 0);
+    aws->insert_toggle("NDS", "N", 1);
+    aws->update_toggle_field();
+
+    aws->at_newline(); aws->label("Save branch lengths"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS);
+    aws->at_newline(); aws->label("Save bootstrap values"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS);
+    aws->at_newline(); aws->label("Save group names"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES);
+
+    aws->at_newline();
 	aws->callback(tree_save_cb);
 	aws->create_button("SAVE","SAVE","o");
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("cancel2");
 	aws->create_button("CANCEL","CANCEL","C");
+
+    aws->window_fit();
 
 	return (AW_window *)aws;
 }
 
 void tree_load_cb(AW_window *aww){
-	AW_root *aw_root = aww->get_root();
-	GB_ERROR error = 0;
-	char *fname = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-	char *tree_name = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
-	GBT_TREE *tree = GBT_load_tree(fname,sizeof(GBT_TREE));
+	AW_root  *aw_root      = aww->get_root();
+	GB_ERROR  error        = 0;
+	char     *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
+	char     *tree_name    = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
+    char     *tree_comment = 0;
+	GBT_TREE *tree         = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment);
 
     //	long fuzzy = aw_root->awar( AWAR_TREE_IMPORT "/fuzzy")->read_int();
 
-	if (!tree){
-		error = GB_get_error();
-	}else{
+	if (!tree) error = GB_get_error();
+    else{
 		GB_transaction dummy(gb_main);
         //		if (fuzzy) {
         //			error = GBT_fuzzy_link_tree(tree,gb_main);
         //		}
 		if (!error) error = GBT_write_tree(gb_main,0,tree_name,tree);
+        if (!error && tree_comment) error = GBT_write_tree_rem(gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
 		GBT_delete_tree(tree);
 	}
+
 	if (error) aw_message(error);
 	else{
 	    aww->hide();
