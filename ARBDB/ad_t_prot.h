@@ -25,7 +25,7 @@ char **GBT_get_alignment_names P_((GBDATA *gbd));
 GB_ERROR GBT_check_alignment_name P_((const char *alignment_name));
 GBDATA *GBT_create_alignment P_((GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type));
 NOT4PERL GB_ERROR GBT_check_alignment P_((GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash));
-GB_ERROR GBT_rename_alignment P_((GBDATA *gbd, const char *source, const char *dest, int copy, int dele));
+GB_ERROR GBT_rename_alignment P_((GBDATA *gbMain, const char *source, const char *dest, int copy, int dele));
 GBDATA *GBT_find_or_create P_((GBDATA *Main, const char *key, long delete_level));
 GB_ERROR GBT_check_data P_((GBDATA *Main, const char *alignment_name));
 GB_ERROR GBT_check_lengths P_((GBDATA *Main, const char *alignment_name));
