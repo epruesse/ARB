@@ -321,9 +321,9 @@ dummy:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' tarfile     - make rebuild and create "arb.tar.gz"'
+		@echo ' tarfile     - make rebuild and create "arb.tar.gz" (tarfile_ignore to skip rebuild)'
 		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
-		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
+		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
 		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 ifeq ($(USER),westram)
@@ -787,7 +787,7 @@ menus:
 
 tarfile:	rebuild
 	util/arb_compress
-tarfile_ignore:
+tarfile_ignore: all
 	util/arb_compress
 tarale:
 	util/arb_compress_emacs
