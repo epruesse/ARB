@@ -4,7 +4,7 @@
 //    Purpose   : global definitions for PROBE_GROUP and                 //
 //                PROBE_GROUP_DESIGN                                     //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Fri Sep/12/2003 11:27 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Oct/08/2003 20:37 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -25,6 +25,22 @@
 #else
 #define SAVE_MODE "bm"
 #endif // DEBUG
+
+struct probe_config_data {
+    double min_temperature;
+    double max_temperature;
+    double min_gccontent;
+    double max_gccontent;
+    int    max_hairpin_bonds;
+    int    ecoli_min_pos;
+    int    ecoli_max_pos;
+
+    // same as in expert window of probe match/design
+    double bonds[4*4];
+    double split;
+    double dtedge;
+    double dt;
+};
 
 
 #else
