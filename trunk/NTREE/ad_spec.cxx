@@ -645,15 +645,15 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 }
 
 void ad_spec_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields", "Reorder fields ...",     "r", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector); 
-    aws->insert_menu_topic("delete_field",   "Delete/hide fields ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector); 
+    aws->insert_menu_topic("reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector); 
+    aws->insert_menu_topic("delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector); 
     aws->insert_menu_topic("create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector); 
     aws->insert_separator(); 
     aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
     aws->insert_separator(); 
     aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER); 
     aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "s", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER); 
 }
 
 #include <probe_design.hxx>
