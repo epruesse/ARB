@@ -816,7 +816,9 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
         free(ali_type);
     }
     
+#ifndef DEVEL_ARTEM
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle is obsolete for Artems new importer
+#endif    
     bool ask_generate_names = true;
 
     if (!error) {                               //Falls Formatchecks erfolgreich
