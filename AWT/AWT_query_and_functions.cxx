@@ -59,7 +59,7 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
 {
     AWUSE(dummy);
     GB_push_transaction(cbs->gb_main);
-    char buffer[128],*p;
+    //     char buffer[BUFSIZE+1],*p;
     int count;
     char    *key = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
 
@@ -72,44 +72,43 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
          gb_item_container;
          gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
-        {
+    {
             for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
                  gb_item;
                  gb_item       = cbs->selector->get_next_item(gb_item))
-                {
-                    if (IS_QUERIED(gb_item,cbs)) {
-                        if (count < AWT_MAX_QUERY_LIST_LEN ){
-                            //              GBDATA *gb_name = GB_find(gb_item,"name",0,down_level);
-                            //              if (!gb_name) continue; // a guy with no name
+            {
+                if (IS_QUERIED(gb_item,cbs)) {
+                    if (count < AWT_MAX_QUERY_LIST_LEN ) {
+                        char *name = cbs->selector->generate_item_name(cbs->gb_main, aw_root, gb_item);
+                        if (!name) continue; // a guy w/o name
 
-                            char *name = cbs->selector->generate_item_name(cbs->gb_main, aw_root, gb_item);
-                            if (!name) continue; // a guy w/o name
+                        char flag                       = ' ';
+                        if (GB_read_flag(gb_item)) flag = '*';
 
-                            char flag                       = ' ';
-                            if (GB_read_flag(gb_item)) flag = '*';
-
-                            sprintf(buffer,"%c %-*s ", flag, cbs->selector->item_name_length, name);
-                            p = buffer + strlen(buffer);
-
+                        char *data = 0;
+                        {
                             GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);
                             if (gb_key) {
-                                char *data = GB_read_as_string(gb_key);
-                                if (data){
-                                    sprintf(p,":%.70s",data);
-                                    free(data);
-                                }
+                                data = GB_read_as_string(gb_key);
                             }
-                            cbs->aws->insert_selection( cbs->result_id, buffer, name );
-                            free(name);
                         }
-                        else if (count == AWT_MAX_QUERY_LIST_LEN) {
-                            cbs->aws->insert_selection( cbs->result_id,
-                                                        "********* List truncated *********","" );
-                        }
-                        count ++;
+                        const char *line = GBS_global_string("%c %-*s :%s",
+                                                             flag,
+                                                             cbs->selector->item_name_length, name,
+                                                             data ? data : "<no data>");
+
+                        cbs->aws->insert_selection( cbs->result_id, line, name );
+                        free(name);
+                        free(data);
                     }
+                    else if (count == AWT_MAX_QUERY_LIST_LEN) {
+                        cbs->aws->insert_selection( cbs->result_id,
+                                                    "********* List truncated *********","" );
+                    }
+                    count ++;
                 }
-        }
+            }
+    }
 
     cbs->aws->insert_default_selection( cbs->result_id, "End of list", "" );
     cbs->aws->update_selection_list( cbs->result_id );
@@ -1751,10 +1750,10 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     }
 
     // distances for multiple queries :
-    
+
 #define KEY_Y_OFFSET 32
 
-    int xpos_calc[3] = { -1, -1, -1 }; // X-positions for elements in search expressions 
+    int xpos_calc[3] = { -1, -1, -1 }; // X-positions for elements in search expressions
 
     if (awtqs->qbox_pos_fig){
         AW_at_size at_size;
