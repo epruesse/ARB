@@ -15,8 +15,8 @@
 #include "dist.hxx"
 #include <BI_helix.hxx>
 
-#include <ph_matr.hxx>
-#include <ph_view_matrix.hxx>
+#include <di_matr.hxx>
+#include <di_view_matrix.hxx>
 
 
 void vertical_change_cb(AW_window *aww,PH_dmatrix *dis)

@@ -15,7 +15,7 @@
 #include <awt_nds.hxx>
 #include <awt_csp.hxx>
 
-#include "ph_matr.hxx"
+#include "di_matr.hxx"
 
 
 const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)

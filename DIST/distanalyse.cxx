@@ -18,7 +18,7 @@
 #include <awt_tree.hxx>
 #include "dist.hxx"
 #include "BI_helix.hxx"
-#include "ph_matr.hxx"
+#include "di_matr.hxx"
 
 
 

@@ -20,8 +20,8 @@
 #include <BI_helix.hxx>
 #include <awt_csp.hxx>
 
-#include "ph_matr.hxx"
-#include "ph_protdist.hxx"
+#include "di_matr.hxx"
+#include "di_protdist.hxx"
 
 #define epsilon         0.000001/* a small number */
 

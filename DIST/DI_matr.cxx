@@ -20,9 +20,9 @@
 #include <BI_helix.hxx>
 #include <awt_csp.hxx>
 #include <CT_ctree.hxx>
-#include "ph_matr.hxx"
-#include "ph_protdist.hxx"
-#include "ph_view_matrix.hxx"
+#include "di_matr.hxx"
+#include "di_protdist.hxx"
+#include "di_view_matrix.hxx"
 
 #define AWAR_MATRIX_DNA_PREFIX "dist/dna/matrix"
 PHMATRIX *PHMATRIX::ROOT = 0;
