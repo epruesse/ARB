@@ -177,7 +177,8 @@ public class HttpSubsystem {
             Toolkit.showMessage("  to file "+fileName);
             FileWriter outfile = new FileWriter(fileName);
 
-            int streamedBytes = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+            // int streamedBytes = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+            int streamedBytes = conductRequest_internal("getTreeBinary.cgi", "application/octet-stream", outfile);
 
             // System.out.println("downloaded tree (lastRequestError="+lastRequestError+")");
             // outstream.write(response, 0, response.length);
