@@ -113,8 +113,9 @@ GB_ERROR gb_commit_transaction_local_rek P_((GBDATA *gbd, long mode, int *pson_c
 /* adoptimize.c */
 GB_ERROR gb_convert_compression P_((GBDATA *source));
 GB_ERROR gb_convert_V2_to_V3 P_((GBDATA *gb_main));
-char *gb_compress_by_dictionary P_((GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward));
+char *gb_uncompress_by_dictionary_internal P_((GB_DICTIONARY *dict, GB_CSTR s_source, long size, GB_BOOL append_zero));
 char *gb_uncompress_by_dictionary P_((GBDATA *gbd, GB_CSTR s_source, long size));
+char *gb_compress_by_dictionary P_((GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward));
 GB_ERROR gb_create_dictionaries P_((GB_MAIN_TYPE *Main, long maxmem));
 
 /* adsystem.c */

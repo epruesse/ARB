@@ -822,7 +822,9 @@ GB_CSTR GB_getenvARBHOME(void){
 GB_CSTR GB_getenvARBMACROHOME(void){
     static const char *amh = 0;
     if (!amh) {
-        amh = GB_getenv("ARBMACROHOME");
+        char *res = getenv("ARBMACROHOME");
+        if (res) amh = res;
+        else     amh = GBS_eval_env("$(ARBHOME)/lib/macros");
     }
     return amh;
 }
@@ -833,15 +835,28 @@ GB_CSTR GB_getenvGS(void){
     return "ghostview";
 }
 
-GB_CSTR GB_getenv(const char *env){
-    static char *amh = 0;
-    char *res = getenv(env);
-    if (res) return res;
-    if (!strcmp(env,"ARBMACROHOME")){
-        if (!amh) amh = GBS_eval_env("$(ARBHOME)/lib/macros");
-        return amh;
+GB_CSTR GB_getenvDOCPATH(void){
+    static const char *dp = 0;
+    if (!dp) {
+        char *res = getenv("ARB_DOC");
+        if (res) dp = res;
+        else     dp = GBS_eval_env("$(ARBHOME)/lib/help");
     }
-    return 0;
+    return dp;
+}
+
+GB_CSTR GB_getenv(const char *env){
+    if (strncmp(env, "ARB", 3)          == 0) {
+        if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
+        if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
+        if (strcmp(env, "ARB_GS")      == 0) return GB_getenvGS();
+        if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
+    }
+    else {
+        if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
+    }
+
+    return getenv(env);
 }
 
 
