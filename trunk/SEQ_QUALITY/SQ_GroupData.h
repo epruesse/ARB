@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : We will see!                                           //
-//    Time-stamp: <Sun Nov/23/2003 14:47 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Nov/26/2003 11:59 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -42,6 +42,7 @@ public:
     virtual int SQ_print_on_screen()                               = 0;
     virtual double SQ_test_against_consensus(const char *sequence) = 0;
     virtual void SQ_add_sequence(const char *sequence)             = 0;
+    virtual void SQ_add(const SQ_GroupData& other)                 = 0;
 
 protected:
 
@@ -60,15 +61,16 @@ public:
 
     int size() const { return I; }
 
-    Int<I>() {
+    Int() {
         for (int j=0; j<I; ++j)
             i[j] = 0;
     }
 
-    Int<I>& operator += (const Int<I>& other) {
+    Int& operator += (const Int& other) {
         for (int j = 0; j<I; ++j) {
             i[j] += other.i[j];
         }
+        return *this;
     }
 };
 
@@ -79,14 +81,14 @@ class SQ_GroupData_Impl : public SQ_GroupData {
     SQ_GroupData_Impl(const SQ_GroupData_Impl& other); // copying not allowed
     SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other); // assignment not allowed
 public:
-    SQ_GroupData_Impl<I>() { consensus = 0; }
+    SQ_GroupData_Impl() { consensus = 0; }
     virtual ~SQ_GroupData_Impl();
 
     void SQ_init_consensus(int size);
     int  SQ_print_on_screen();
     void SQ_add_column(int col);
 
-    void SQ_add(const SQ_GroupData_Impl<I>& other); // add's other to this
+    void SQ_add(const SQ_GroupData& other); // add's other to this
 
 protected:
     Int<I> *consensus;
@@ -138,7 +140,8 @@ void SQ_GroupData_Impl<I>::SQ_init_consensus(int size_) {
 }
 
 template <int I>
-void SQ_add(const SQ_GroupData_Impl<I>& other) {
+void SQ_GroupData_Impl<I>::SQ_add(const SQ_GroupData& other_base) {
+    const SQ_GroupData_Impl<I>& other = dynamic_cast<const SQ_GroupData_Impl<I>&>(other_base);
     for (int i = 0; i<size; ++i) {
         consensus[i] += other.consensus[i];
     }
