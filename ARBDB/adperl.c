@@ -49,7 +49,7 @@ static const char *gbp_typeconvert[] = {
 
 
 const char *GBP_type_to_string(GB_TYPES type){
-    if (type <0 || type >= GB_TYPE_MAX) {
+    if (type >= GB_TYPE_MAX) {
         GB_warning("Unknown Type");
         return "????";
     }
