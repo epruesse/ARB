@@ -1202,6 +1202,14 @@ GB_ERROR GB_delete(GBDATA *source)
     return 0;
 }
 
+/* int GB_entry_is_deleted(GBDATA *gb_entry) { */
+/*     GBCONTAINER  *father      = gb_entry ? GB_FATHER(gb_entry) : 0; */
+/*     GB_MAIN_TYPE *Main        = father ? GB_MAIN(gb_entry) : 0; */
+/*     int           legal_entry = (father != 0) && (Main != 0); */
+
+/*     return !legal_entry; */
+/* } */
+
 GB_ERROR gb_delete_force(GBDATA *source)    /* delete always */
 {
     gb_touch_entry(source,gb_deleted);
