@@ -46,6 +46,7 @@ NT_global nt = { 0, 0, 0, AW_FALSE };
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     GB_ERROR err = 0;
     GB_push_transaction(gb_main);
+    GB_push_my_security(gb_main);
 
     aw_status("Checking alignments");
     err = GBT_check_data(gb_main, 0);
@@ -125,6 +126,8 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
             }
         }
     }
+
+    GB_pop_my_security(gb_main);
 
     if (err) GB_abort_transaction(gb_main);
     else GB_commit_transaction(gb_main);
@@ -302,7 +305,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->create_button(0, GBS_global_string("Version " DATE), 0); // version
 
     aws->at("copyright");
-    aws->create_button(0, GBS_global_string("(C) 1993-" DATE_YEAR), 0); 
+    aws->create_button(0, GBS_global_string("(C) 1993-" DATE_YEAR), 0);
 
     //  aws->button_length(25);
 
@@ -346,7 +349,7 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
 #if defined(DEBUG)
         printf("writing '%s' to AWAR_DB_NAME\n", name);
 #endif // DEBUG
-        awr->awar(AWAR_DB_NAME)->write_string(name); 
+        awr->awar(AWAR_DB_NAME)->write_string(name);
 
         if (lslash) {               // update value of directory
             lslash[0] = 0;
