@@ -75,14 +75,32 @@ SECTION COMMANDLIST
 		If not otherwise mentioned every command creates one
 		output stream for each input stream ;
 
-	BASIC
+	STREAM HANDLING
 
 		echo(x1;x2;x3...)	creates an output stream for each
 					parameter 'x' and writes 'x' onto it.
 
 		"text"			== echo("text")
 
-		dd			copies input to output
+		dd			copies all input streams to output streams
+
+		cut(N1,N2,N3)		copies the Nth input stream(s)
+
+                drop(N1,N2)             copies all but the Nth input stream(s)
+
+                dropempty               drops all empty input streams
+
+                dropzero                drops all non-numeric or zero input streams
+
+                swap(N1,N2)             swaps two input streams
+                                        (w/o parameters: swaps last two streams)
+
+                toback(X)               moves the Xth input stream to the end of output streams
+                tofront(X)              moves the Xth input stream to the start of output streams
+
+                merge([sep])            merges all input streams into one output stream. If 'sep'
+                                        is specified, it's inserted between them.
+                                        if no input streams are given, it returns 1 empty input stream.
 
 	STRING
 
@@ -111,11 +129,6 @@ SECTION COMMANDLIST
 					remove all chars that are not a member
 					of 'str'
 
-                compare("str", ignore); compares all input streams with "str". For each comparation it
-                                        returns '0' if strings are equal, '-1' if input stream is
-                                        alphabethically smaller than "str" and '1' in the opposite case.
-                                        When 'ignore' is non-zero the compare works case-insensitive.
-
 		srt("orig=dest",...)	replace command, invokes SRT
                                         (see LINK{parser.hlp})
 
@@ -142,8 +155,6 @@ SECTION COMMANDLIST
 
 		pretab(n)               prepend n-len(input) spaces
 
-		cut(n1,n2,n3)		copies the nth input stream
-
                 upper                   converts string to upper case
                 lower                   converts string to lower case
                 caps                    capitalizes string
@@ -167,14 +178,56 @@ SECTION COMMANDLIST
                     contain more characters of type chars than val, sort them
                     alphabetically and write them seperated by ' ' to the output
 
+	STRING COMPARATION
+
+               compare(a,b)             return -1 if a<b, 0 if a=b, 1 if a>b
+               equals(a,b)              return 1 if a=b, 0 otherwise
+               contains(a,b)            return 1 if a contains b, 0 otherwise
+               partof(a,b)              return 1 if a is part of b, 0 otherwise
+
+               The above functions are binary operators (see below).
+               For each of them a case-insensitive alternative exists (icompare, iequals, ...).
+
 	CALCULATOR
 
-		plus			takes exactly the first two input
-					numbers and creates one output with the sum
-		minus			"			difference
-		mult			"			product
-		div			"			quotient
-		per_cent		"                       quotient * 100
+		plus			add arguments
+		minus			subtract arguments
+		mult			multiply arguments
+		div			divide arguments
+		per_cent                divide arguments * 100 (rounded)
+		rest                    divide arguments, take rest
+
+                The above functions work as binary operators (see below).
+
+                To avoid 'devision by zero'-errors, the operators 'div', 'per_cent' and 'rest'
+                return 0 if the second argument is zero.
+
+                Calculation is performed with integer numbers.
+
+        BINARY OPERATORS
+
+               Several operators work as so called 'binary operators'.
+               These operators may be used in various ways, which are
+               shown using the operator 'plus':
+
+                     ACI                OUTPUT                  STREAMS
+                     plus(a,b)          a+b                     input:0 output:1
+                     a;b|plus           a+b                     input:2 output:1
+                     a;b;c;d|plus       a+b;c+d                 input:4 output:2
+                     a;b;c|operator(x)  a+x;b+x;c+x             input:3 output:3
+
+               That means, if the binary operator
+
+                    - has no arguments, it expects an even number of input streams. The operator is
+                      applied to the first 2 streams, then to the second 2 stream and so on.
+                      The number of output streams is half the number of input streams.
+                    - has 1 argument, it accepts one to many input streams. The operator
+                      is applied to each input stream together with the argument.
+                      For each input stream one output stream is generated.
+                    - has 2 arguments, it is applied to these. Input streams are ignored and one
+                      output stream is generated. In this case the arguments are not interpreted as
+                      strings, but as escaped ACI commands.
+
 
 	DATABASE AND SEQUENCE
 
