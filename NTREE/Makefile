@@ -12,6 +12,10 @@ CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o \
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 
+proto: 
+	rm -f nt_internal.h
+	../MAKEBIN/aisc_mkpt -A -E -F NT_,AP_ $(CPP_OBJECTS:.o=.cxx) >nt_internal.h
+
 NT_extern.o:	NT_extern.cxx
 # 	Ohne den rm und ohne chmod geht's auch bei mir [Ralf]
 #
