@@ -675,10 +675,13 @@ void AWTC_import_go_cb(AW_window *aww)
                   aw_openstatus("Reading input files");
                   for (int count = 0; !error && fnames[count]; ++count) {
                       aw_status(GBS_global_string("Reading %s", fnames[count]));
+#if defined(DEBUG)
+                      printf("Reading '%s' ...\n", fnames[count]);
+#endif // DEBUG
                       if (toggle_value==0) {
                           error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
                       }
-                      if (toggle_value==1) {
+                      else if (toggle_value==1) {
                           error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
                       }
                   }

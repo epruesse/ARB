@@ -1286,7 +1286,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->set_bottom_area_height( 0 );
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     NT_test_input_mask(awm->get_root());
 #endif // DEBUG
 
