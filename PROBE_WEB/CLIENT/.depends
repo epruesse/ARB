@@ -34,8 +34,6 @@ IOManager.class : Toolkit.java
 LineArea.class : LineArea.java
 LineAreaFactory.class : LineArea.java
 LineAreaFactory.class : LineAreaFactory.java
-NodeError.class : NodeError.java
-NodeError.class : TreeNode.java
 NodeProbes.class : ClientException.java
 NodeProbes.class : HttpSubsystem.java
 NodeProbes.class : NodeProbes.java
