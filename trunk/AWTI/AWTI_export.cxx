@@ -325,9 +325,9 @@ void AWTC_export_go_cb(AW_window *aww,GBDATA *gb_main){
     char *real_outname = 0;     // with suffix
 
 	error = AWTC_export_format(gb_main, formname, outname, multiple,1, &real_outname);
-    if (real_outname) aww->get_root()->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
+    if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
 
-	aww->get_root()->awar(AWAR_EXPORT_FILE"/directory")->touch();
+    awt_refresh_selection_box(awr, AWAR_EXPORT_FILE);
 
 	delete outname;
 	delete formname;
