@@ -199,7 +199,8 @@ public class TreeNode
             result = "["+getExactMatches()+"]";
         }
         else if ((getMinNonGroupHits() != 0) || (getMaxCoverage() != 100)) {
-            result = "["+getMinNonGroupHits()+"/"+getMaxCoverage()+"%]";
+            // result = "["+getMinNonGroupHits()+"/"+getMaxCoverage()+"%]"; // final version
+            result = "["+getMaxCoverage()+"%]";
         }
         else {
             result = "";
