@@ -25,6 +25,7 @@
 
 AW_HEADER_MAIN
 
+
 #define NT_SERVE_DB_TIMER 50
 #define NT_CHECK_DB_TIMER 200
 
@@ -83,7 +84,6 @@ void nt_main_startup_main_window(AW_root *aw_root){
 
 int main_load_and_startup_main_window(AW_root *aw_root)	// returns 0 when successfull
 {
-
 
 	char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
 	gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");

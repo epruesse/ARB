@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -757,7 +755,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     AW_gc_manager  aw_gc_manager;
     char	      *awar_tree;
     char	       window_title[256];
-    awar_tree = (char *)GB_calloc(sizeof(char),strlen(AWAR_TREE) + 10);	// do not free this
+    awar_tree = (char *)GB_calloc(sizeof(char),strlen(AWAR_TREE) + 10); // do not free this
 
     if (clone){
         sprintf(awar_tree,AWAR_TREE "_%li", clone);
