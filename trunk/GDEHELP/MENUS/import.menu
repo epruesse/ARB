@@ -10,8 +10,65 @@ arglabel:Name of foreign file?
 out:OUTPUTFILE
 outformat:genbank
 
+// out:OUTPUTFILE
+// outformat:genbank
+
+item:Import using MAUS
+itemmeta: M
+itemmethod:mausdriver.pl -if=$INPUTFILE -of=$OUTPUTFILE \
+-exff=$EXCLUDEFILE -exfl=$EXLCUDELIST -kwl=$KWLIST -acl=ACLIST -avl=$AVLIST\
+-log=$LOG -cdat=$CDATE -udat=$UDATE -min=$MIN -max=$MAX -spec=$SPEC
+
+itemhelp:MAUS.help
+
+arg:INPUTFILE
+argtype:text
+arglabel:Input Sequece File
+
+arg:EXCLUDEFILE
+argtype:text
+arglabel:File Name for Exclude Accession Numbers
+
+arg:EXCLUDELIST
+argtype:text
+arglabel:List of Excluded Accession Numbers
+
+arg:KWLIST
+argtype:text
+arglabel:List Of Key Words
+
+arg:ACLIST
+argtype:text
+arglabel:List Of Accession Numbers
+
+arg:AVLIST
+argtype:text
+arglabel:List Of Version Numbers
+
+arg:LOG
+argtype:text
+arglabel:Name of Log File
+
+arg:CDATE
+argtype:text
+arglabel:Date of Creation
+
+arg:UDATE
+argtype:text
+arglabel:Date of Last Update
+
+arg:MIN
+argtype:number
+arglabel:Minimal Sequence Length
+
+arg:MAX
+argtype:number
+arglabel:Maximal Sequence Length
+
+arg:SPEC
+argtype:text
+arglabel:Species Name Compoments
 
 out:OUTPUTFILE
-outformat:genbank
-
+outformat:EMBL
 
