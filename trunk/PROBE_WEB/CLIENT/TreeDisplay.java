@@ -49,7 +49,7 @@ public float maxDist        = 0;
 private int  clickTolerance = 5;
 
 
-public TreeDisplay(TreeNode root, int treeLevels)
+public TreeDisplay(TreeNode root, int treeLevels) throws Exception 
     {
         setBackground(Color.lightGray);
         // postpone this later until tree is parsed to determined the needed space
@@ -67,47 +67,75 @@ public TreeDisplay(TreeNode root, int treeLevels)
         laf = new LineAreaFactory(6);
 
         this.treeLevels = treeLevels;
-        this.root = root;
-        if (root == null) {
-            Toolkit.AbortWithError("TreeDisplay: no root node obtained from caller");
+        if (root != null) {
+            setRootNode(root);
         }
-//         if (root == null)
-//             {
-//                 System.out.println("tree parsing failed, no root node returned");
-//                 System.exit(1);
-//             }
 
-//        vs =  clipTree(root, treeLevels);
-        vs = root;
-            //        root.setDistance((float)0.01);
-        vs.setDistance(0.01);
+//         this.root       = root;
+//         if (root == null) {
+//             Toolkit.AbortWithError("TreeDisplay: no root node obtained from caller");
+//         }
 
-//         System.out.println("root name: " + vs.getNodeName());
-//         System.out.println(">>>"+vs.getNodeName()+"<<<");
+// //        vs =  clipTree(root, treeLevels);
+//         vs = root;
+//             //        root.setDistance((float)0.01);
+//         vs.setDistance(0.01);
 
-        System.out.println("Tree has " + vs.getNoOfLeaves() + " leaves.");
-        leafNumber = vs.getNoOfLeaves();
+// //         System.out.println("root name: " + vs.getNodeName());
+// //         System.out.println(">>>"+vs.getNodeName()+"<<<");
+
+//         System.out.println("Tree has " + vs.getNoOfLeaves() + " leaves.");
+//         leafNumber = vs.getNoOfLeaves();
         //        root.calculateTotalDist(0);
-        vs.calculateTotalDist(0);
-        calculateYValues4Leaves(vs, treeLevels);
-        calculateYValues4internal(vs, treeLevels);
+//         vs.calculateTotalDist(0);
+//         calculateYValues4Leaves(vs, treeLevels);
+//         calculateYValues4internal(vs, treeLevels);
 
         //        setSize(xSize,ySize);
         //        xSize = (int)(root.getMaxDepth()*xSpreading +100);
-        xSize = 1000;
-        ySize = yPointer + 50;
+        xSize           = 1000;
+//         ySize           = yPointer + 50;
+        ySize           = 1000;
         setSize(xSize,ySize);
-//         System.out.println("tree area: x: " + xSize);
-//         System.out.println("maxDist  : x: " + maxDist);
-//         System.out.println("tree area: y: " + ySize);
-        addMouseListener(new DisplayMouseAdapter(this));
+        // //         System.out.println("tree area: x: " + xSize);
+        // //         System.out.println("maxDist  : x: " + maxDist);
+        // //         System.out.println("tree area: y: " + ySize);
+        //         addMouseListener(new DisplayMouseAdapter(this));
 
         //        setVisible(true);
     }
 
+    public void setRootNode(TreeNode root) throws Exception {
+        if (this.root != null) {
+            Toolkit.AbortWithError("TreeDisplay: root set twice");
+        }
+        if (root == null) {
+            Toolkit.AbortWithError("TreeDisplay: no root node obtained from caller");
+        }
+        this.root = root;
+        vs = root;
+        vs.setDistance(0.01);
+        leafNumber = vs.getNoOfLeaves();
+        System.out.println("Tree has " + leafNumber + " leaves.");
 
-public void paint(Graphics g)
+        vs.calculateTotalDist(0);
+        calculateYValues4Leaves(vs, treeLevels);
+        calculateYValues4internal(vs, treeLevels);
+
+        xSize = 1000;
+        ySize = yPointer + 50;
+        setSize(xSize,ySize);
+
+        addMouseListener(new DisplayMouseAdapter(this));
+        repaint();
+    }
+
+public void paint(Graphics g)  
     {
+        if (root == null) {
+            // Toolkit.AbortWithError("in paint: no valid node given to display");
+            return;
+        }
 
         // rooot changed, layout new tree
 
@@ -131,12 +159,15 @@ public void paint(Graphics g)
 
             }
 
-        if (root == null) {
-            Toolkit.AbortWithError("in paint: no valid node given to display");
+
+
+
+        try {
+            displayTreeGraph(g, vs, treeLevels);
         }
-
-
-        displayTreeGraph(g, vs, treeLevels);
+        catch (Exception e) {
+            myBoss.showError(e.getMessage());
+        }
         // new lines are registered in displayTreeGraph()
 
         if (rootSet.isEmpty() || branchSet.isEmpty()) // equivalent to newLayout == true except first invocation
@@ -194,7 +225,7 @@ private static void setColor(int markedState, Graphics g) {
     }
 }
 
-public void displayTreeGraph(Graphics g, TreeNode node, int depth)
+public void displayTreeGraph(Graphics g, TreeNode node, int depth) throws Exception
     {
         if (node == null) {
             Toolkit.AbortWithError("no valid node given to display");
@@ -402,15 +433,19 @@ public void handleRightMouseClick(int x, int y)
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
             // System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
-            String codedPath = clickedNode.getCodedPath();
-            // System.out.println("path to clicked node: " + codedPath);
-            myBoss.updateNodeInformation(codedPath, clickedNode.getExactMatches()>0);
-
-//             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
-//             boolean state = clickedNode.isMarked() != 0;
-//             clickedNode.markSubtree(!state);
-//             updateListOfMarked();
-//             repaint();
+            try {
+                String codedPath = clickedNode.getCodedPath();
+                // System.out.println("path to clicked node: " + codedPath);
+                myBoss.updateNodeInformation(codedPath, clickedNode.getExactMatches()>0);
+            }
+            catch (Exception ex) {
+                myBoss.showError(ex.getMessage());
+            }
+            //             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
+                //             boolean state = clickedNode.isMarked() != 0;
+                //             clickedNode.markSubtree(!state);
+                //             updateListOfMarked();
+                //             repaint();
         }
     }
 
@@ -419,27 +454,25 @@ public void handleRightMouseClick(int x, int y)
 
 public void unmarkNodes()
     {
-        root.unmarkSubtree();
-        repaint();
+        if (root != null) {
+            root.unmarkSubtree();
+            repaint();
+        }
     }
 
 public void goDown()
     {
-        //        prevNode = vs;
-        history.push(vs);
-
-//         System.out.println("TreeDisplay/goDown() was called");
-//         System.out.println("current node: " + vs);
-//         System.out.println("father node: " + vs.getFather());
-
-        vs = vs.getFather();
-        newLayout = true;
-        repaint();
+        if (vs != null) {
+            history.push(vs);
+            vs        = vs.getFather();
+            newLayout = true;
+            repaint();
+        }
     }
 
 public void enterUBr()
     {
-        if (!vs.testLeaf())
+        if (vs != null && !vs.testLeaf())
             {
                 //           prevNode = vs;
                 history.push(vs);
@@ -453,7 +486,7 @@ public void enterUBr()
 
 public void enterLBr()
     {
-        if (!vs.testLeaf())
+        if (vs != null && !vs.testLeaf())
             {
                 //                prevNode = vs;
                 history.push(vs);
@@ -491,8 +524,13 @@ public void previousRoot()
 
 public void countMarkedSpecies ()
     {
-        int numberOfMarked = countMarkedRecursive(root);
-        System.out.println("Currently number of marked species: " + numberOfMarked);
+        if (root != null) {
+            int numberOfMarked = countMarkedRecursive(root);
+            myBoss.showMessage("Number of marked species: " + numberOfMarked);
+        }
+        else {
+            myBoss.showMessage("You have no tree");
+        }
     }
 
 public int countMarkedRecursive(TreeNode node)
