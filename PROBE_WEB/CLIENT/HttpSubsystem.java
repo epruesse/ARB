@@ -50,19 +50,19 @@ public class HttpSubsystem {
 
         try {
             int readBytes = in.read(buffer);
-            // System.out.println("  readBytes="+readBytes+" (first)");
+            System.out.println("  readBytes="+readBytes+" (first)");
             while (readBytes != -1) { // got some bytes
                 out.write(buffer, 0, readBytes);
                 streamedBytes += readBytes;
                 readBytes      = in.read(buffer);
-                // System.out.println("  readBytes="+readBytes);
+                System.out.println("  readBytes="+readBytes);
             }
         }
         catch (IOException e) {
             Toolkit.AbortWithError("while streaming data: "+e.getMessage());
         }
 
-        // System.out.println("streamedBytes="+streamedBytes);
+        System.out.println("streamedBytes="+streamedBytes);
         return streamedBytes;
     }
 
@@ -136,6 +136,9 @@ public class HttpSubsystem {
                 if (bytes_read != content_len && content_len != -1) {
                     System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
                 }
+                else {
+                    System.out.println("length is correct");
+                }
                 return bytes_read;
             }
             catch (Exception e) {
@@ -155,9 +158,9 @@ public class HttpSubsystem {
         int          streamedBytes = conductRequest_internal(relativePath, "text/plain", str);
 
         if (streamedBytes <= 0 && lastRequestError == null) {
-            lastRequestError = "streamedBytes="+streamedBytes+" (illegal value)";            
+            lastRequestError = "streamedBytes="+streamedBytes+" (illegal value)";
         }
-        
+
         if (lastRequestError != null) {
             return null;
         }
@@ -178,9 +181,9 @@ public class HttpSubsystem {
 
             // System.out.println("downloaded tree (lastRequestError="+lastRequestError+")");
             // outstream.write(response, 0, response.length);
-            
+
             outfile.close();
-            
+
             Toolkit.showMessage("Tree has been saved ("+(streamedBytes/1024)+"k)");
         }
         catch (Exception e) {
