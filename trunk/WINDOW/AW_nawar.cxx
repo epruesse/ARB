@@ -549,7 +549,7 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
 
 AW_error *AW_root::save_default( const char *var_name ) {
-    save_default(var_name, NULL);
+    return save_default(var_name, NULL);
 }
 
 AW_error *AW_root::save_default( const char *var_name, const char *file_name) {
