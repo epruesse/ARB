@@ -401,6 +401,50 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 }
 
+const char *ED4_propertyName(int mode) {
+    // mode == 0 -> alignment specific          (e.g. ".arb_prop/edit4_ali_16s.arb")
+    // mode == 1 -> alignment-type specific     (e.g. ".arb_prop/edit4_rna.arb")
+    // mode == 2 -> unspecific (normal)         (always ".arb_prop/edit4.arb")
+    //
+    // Note : result is only valid until next call
+
+    e4_assert(mode >= 0 && mode <= 2);
+
+    if (mode == 2) return ".arb_prop/edit4.arb";
+
+    static char *ali_name = 0;
+    static char *ali_type = 0;
+    static char *result = 0;
+
+    if (!ali_name) {
+        GB_transaction dummy(gb_main);
+        ali_name = GBT_get_default_alignment(gb_main);
+        ali_type = GBT_get_alignment_type_string(gb_main, ali_name);
+        result   = new char[21+strlen(ali_name)];
+    }
+
+    sprintf(result, ".arb_prop/edit4_%s.arb", mode == 0 ? ali_name : ali_type);
+
+    return result;
+}
+
+
+static void openProperties() {
+    for (int mode = 0; mode <= 2; ++mode) { // search for defaults-database
+        const char *name  = ED4_propertyName(mode);
+        AW_default  found = ED4_ROOT->aw_root->open_default(name, mode == 2); // if mode == 2 -> create if missing
+
+        if (found) {
+            ED4_ROOT->db      = found;
+            ED4_ROOT->db_name = strdup(name);
+            break;
+        }
+    }
+
+    GB_information("Using '%s'", ED4_ROOT->db_name);
+    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
+}
+
 int main(int argc,char **argv)
 {
     const char *data_path = ":";
@@ -450,11 +494,10 @@ int main(int argc,char **argv)
     }
 
     ED4_ROOT = new ED4_root;
-//     ED4_ROOT = new ED4_root();
 
-    ED4_ROOT->db = ED4_ROOT->aw_root->open_default( ".arb_prop/edit4.arb" );    // open default-database
-    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db);               // pass defaults
-    ED4_ROOT->aw_root->init( "ARB_EDIT4" );                 // initialize window-system
+    openProperties(); // open properties database
+
+    ED4_ROOT->aw_root->init( "ARB_EDIT4" ); // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
