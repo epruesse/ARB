@@ -765,7 +765,7 @@ GB_ERROR GB_write_link(GBDATA *gbd,const char *s)
 }
 
 
-GB_ERROR GB_write_bits(GBDATA *gbd,const char *bits,long size,char c_0)
+GB_ERROR GB_write_bits(GBDATA *gbd,const char *bits,long size, const char *c_0)
 {
     char *d;
     long memsize[2];
@@ -838,7 +838,7 @@ GB_ERROR GB_write_as_string(GBDATA *gbd,const char *val)
         case GB_BYTE:   return GB_write_byte(gbd,atoi(val));
         case GB_INT:    return GB_write_int(gbd,atoi(val));
         case GB_FLOAT:  return GB_write_float(gbd,GB_atof(val));
-        case GB_BITS:   return GB_write_bits(gbd,val,strlen(val),'0');
+        case GB_BITS:   return GB_write_bits(gbd,val,strlen(val),"0");
         default:    return GB_export_error("Error: You cannot use GB_write_as_string on this type of entry (%s)",GB_read_key_pntr(gbd));
     }
 }
