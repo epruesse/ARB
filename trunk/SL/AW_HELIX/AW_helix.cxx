@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_helix.cxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Tue Dec/21/2004 17:10 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri Mar/04/2005 19:51 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -32,21 +32,22 @@ struct {
     { "User_Pair3", HELIX_USER2 },
     { "User_Pair4", HELIX_USER3 },
     { "Default", HELIX_DEFAULT },
-    { "Non_Standart_aA", HELIX_NON_STANDART0 },
-    { "Non_Standart1", HELIX_NON_STANDART1 },
-    { "Non_Standart2", HELIX_NON_STANDART2 },
-    { "Non_Standart3", HELIX_NON_STANDART3 },
-    { "Non_Standart4", HELIX_NON_STANDART4 },
-    { "Non_Standart5", HELIX_NON_STANDART5 },
-    { "Non_Standart6", HELIX_NON_STANDART6 },
-    { "Non_Standart7", HELIX_NON_STANDART7 },
-    { "Non_Standart8", HELIX_NON_STANDART8 },
-    { "Non_Standart9", HELIX_NON_STANDART9 },
-    { "Not_Non_Standart", HELIX_NO_MATCH },
+    { "Non_Standard_aA", HELIX_NON_STANDARD0 },
+    { "Non_Standard1", HELIX_NON_STANDARD1 },
+    { "Non_Standard2", HELIX_NON_STANDARD2 },
+    { "Non_Standard3", HELIX_NON_STANDARD3 },
+    { "Non_Standard4", HELIX_NON_STANDARD4 },
+    { "Non_Standard5", HELIX_NON_STANDARD5 },
+    { "Non_Standard6", HELIX_NON_STANDARD6 },
+    { "Non_Standard7", HELIX_NON_STANDARD7 },
+    { "Non_Standard8", HELIX_NON_STANDARD8 },
+    { "Non_Standard9", HELIX_NON_STANDARD9 },
+    { "Not_Non_Standard", HELIX_NO_MATCH },
     { 0, HELIX_NONE },
 };
 
 AW_helix::AW_helix(AW_root * aw_root)
+    : enabled(0)
     // : BI_helix()
 {
     int i;
@@ -61,6 +62,7 @@ AW_helix::AW_helix(AW_root * aw_root)
         sprintf(awar,HELIX_AWAR_SYMBOL_TEMPLATE, helix_awars[j].awar);
         aw_root->awar_string( awar, char_bind[i])->add_target_var(&char_bind[i]);
     }
+    aw_root->awar_int(HELIX_AWAR_ENABLE, 1)->add_target_var(&enabled);
     // deleteable = 0;
 }
 
@@ -69,9 +71,9 @@ char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type){
     right = toupper(right);
     int i;
     int erg;
-    if (pair_type< HELIX_NON_STANDART0) {
+    if (pair_type< HELIX_NON_STANDARD0) {
         erg = *char_bind[HELIX_DEFAULT];
-        for (i=HELIX_STRONG_PAIR; i< HELIX_NON_STANDART0; i++){
+        for (i=HELIX_STRONG_PAIR; i< HELIX_NON_STANDARD0; i++){
             if (_check_pair(left,right,(BI_PAIR_TYPE)i)){
                 erg = *char_bind[i];
                 break;
@@ -143,7 +145,7 @@ int AW_helix::show_helix( void *devicei, int gc1 , char *sequence,
 
 
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs){
+AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct *awcbs){
     AW_window_simple *aws = new AW_window_simple;
     aws->init( awr, "HELIX_PROPS", "HELIX_PROPERTIES");
 
@@ -154,12 +156,17 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
     aws->at_newline();
 
     aws->label_length( 18 );
-    int i;
-    int j;
-    int ex= 0,ey = 0;
+    int  i;
+    int  j;
+    int  ex = 0,ey = 0;
     char awar[256];
-    for (j=0; helix_awars[j].awar; j++){
 
+    aws->label("Show helix?");
+    aws->callback(awcbs);
+    aws->create_toggle(HELIX_AWAR_ENABLE);
+    aws->at_newline();
+
+    for (j=0; helix_awars[j].awar; j++) {
         aws->label_length( 25 );
         i = helix_awars[j].pair_type;
 
@@ -168,8 +175,9 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
             aws->label(helix_awars[j].awar);
             aws->callback(awcbs);
             aws->create_input_field(awar,20);
-        }else{
-            aws->create_button(0,helix_awars[j].awar);
+        }
+        else {
+            aws->create_autosize_button(0,helix_awars[j].awar);
             aws->at_x(ex);
         }
         if (!j) aws->get_at_position(&ex,&ey);
