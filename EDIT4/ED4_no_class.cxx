@@ -1215,7 +1215,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     ED4_ROOT->temp_ed4w   = ED4_ROOT->first_window->get_matching_ed4w(use_as_main_window);
 
     if (!use_field) {
-        char group_name[50];
+        char group_name[GB_GROUP_NAME_MAX];
         {
             char *dummy = aw_input("Enter name for new group:", 0);
             if (!dummy) {
