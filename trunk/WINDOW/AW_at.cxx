@@ -25,6 +25,7 @@ void AW_window::shadow_width (int shadow_thickness ) { _at->shadow_thickness = s
 void AW_window::label_length( int length ) { _at->length_of_label_for_inputfield = length; }
 
 void AW_window::button_length( int length ) { _at->length_of_buttons = length; }
+int  AW_window::get_button_length() const { return _at->length_of_buttons; }
 
 void AW_window::highlight( void ) { _at->highlight = AW_TRUE; }
 
