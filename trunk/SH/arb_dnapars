@@ -1,14 +1,15 @@
 #!/bin/bash -x
 
-if [ -z "$6" ]; then
-    echo "Usage: arb_dnapars bootstrap searchdepth viewreport randomize stepcount threshold"
+if [ -z "$7" ]; then
+    echo "Usage: arb_dnapars bootstrap searchdepth viewreport randomize transversion_pars threshold_pars interactive"
 else
     BOOTSTRAP=$1
     SEARCH=$2
     REPORT=$3
     RANDOMIZE=$4
-    STEPCOUNT=$5
-    THRESHOLD=$6
+    TRANSVERSION_PARS=$5
+    THRESHOLD_PARS=$6
+    INTERACTIVE=$7
 
     FLAGS=
 
@@ -17,12 +18,12 @@ else
         FLAGS="$FLAGS j $RANDOMSEED 1"
     fi
 
-    if [ "$STEPCOUNT" = "0" ]; then
+    if [ "$TRANSVERSION_PARS" = "1" ]; then
         FLAGS="$FLAGS n"
     fi
 
-    if [ \! "$THRESHOLD" = "0" ]; then
-        FLAGS="$FLAGS t $THRESHOLD"
+    if [ \! "$THRESHOLD_PARS" = "0" ]; then
+        FLAGS="$FLAGS t $THRESHOLD_PARS"
     fi
 
     case $SEARCH in
@@ -33,8 +34,11 @@ else
     esac
 
     if [ "$BOOTSTRAP" = "0" ]; then
-        arb_echo $FLAGS y | dnapars
-        #dnapars
+        if [ "$INTERACTIVE" = "0" ]; then
+            arb_echo $FLAGS y | dnapars
+        else
+            (arb_echo $FLAGS; cat -) | ( dnapars ; echo "Press RETURN to continue.." )
+        fi
         echo >arb_read_tree_args
         WHAT=dnapars
     else
