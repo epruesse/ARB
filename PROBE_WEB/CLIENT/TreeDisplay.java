@@ -17,6 +17,8 @@ private TreeNode root;
 private TreeNode vs; // visible subtree
 private TreeNode prevNode;
 private Stack history;
+
+
 // private int xSize = 800;
 // private int ySize = 1000;
 private int xSize = 0;
@@ -26,6 +28,7 @@ private int leafNumber;
 
 private HashMap branchLines; // vertical lines
 private HashMap rootLines;  // horizontal lines
+private Client myBoss;
 private int yPosition = 10;
 private int leafSpace  = 15 ;// ySpan / leafNumber;
 private int yPointer = 0; // serves as pointer to the y-space already used up
@@ -402,6 +405,9 @@ public void handleRightMouseClick(int x, int y)
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null)
             {
+                System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
+                System.out.println("path to clicked node: " + clickedNode.getCodedPath());
+
                 boolean state = clickedNode.isMarked();
                 clickedNode.markSubtree(!state);
                 repaint();
@@ -510,7 +516,11 @@ private TreeNode getClickedNode(int x, int y)
 
         return null;
     }
+public void setBoss(Client boss)
+    {
+        myBoss = boss;
 
+    }
  
     
 }

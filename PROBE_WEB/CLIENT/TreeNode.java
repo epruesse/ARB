@@ -24,7 +24,9 @@ private float totalDist = 0;
 private float bootstrap;
 private String emblAccession;
 private String arbAccession;
-
+private String binaryPath;
+private String codedPath;
+private  static  final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
     // data structure 
 private boolean isLeaf;
 private TreeNode father;
@@ -246,4 +248,82 @@ public void markSubtree(boolean flag)
         }
 }
 
+public void setPath(String path)
+{
+    binaryPath = path;
+    codedPath =  encodePath(binaryPath);
+    if(!testLeaf())
+        {
+            ((TreeNode)childNodes.elementAt(0)).setPath(binaryPath + "0");
+            ((TreeNode)childNodes.elementAt(1)).setPath(binaryPath + "1");
+        }
 }
+
+public String getBinaryPath()
+{
+    return binaryPath;
+}
+
+public String getCodedPath()
+{
+    return codedPath;
+}
+
+private String encodePath(String path)
+{
+    StringBuffer coded = new StringBuffer();
+    int pathLength = path.length();
+
+    // transform length into two byte hex format
+    for (int digit = 0; digit < 4; digit ++)
+            {
+                int remain = pathLength%16;
+                pathLength = pathLength/16;
+                coded.insert(0,hexToken[remain]);
+            }
+
+
+    int value = 0;
+    for (int position = 0; position < path.length(); position++ )
+            {
+                //                System.out.println(path.charAt(position));
+                 if (path.charAt(position) == '1')
+                     {
+                     // value = value + (3 - (position%4))*2; 
+                         switch (position%4)
+                             {
+                             case 0:
+                                 value += 8;
+                                 break;
+                             case 1:
+                                 value += 4;
+                                 break;
+                             case 2:
+                                 value += 2;
+                                 break;
+                             case 3:
+                                 value += 1;
+                                 break;
+                             default: 
+                                 System.out.println("Error in binary string conversion");
+                             }
+
+                     };
+                 //              System.out.println(value);
+                 if ((position%4) == 3) 
+                     {
+                         //                         System.out.println(value); 
+                         //                         System.out.println(hexToken[value]); 
+                         coded.append(hexToken[value]); 
+                         value = 0;
+                     }
+
+            }
+
+    //        System.out.println(hexToken[value]); 
+        coded.append(hexToken[value]); 
+        //                System.out.println("am Ende: " + binary);
+    return coded.toString();
+}
+
+}// end of class
