@@ -8,6 +8,8 @@
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
 #include "../EDIT4/ed4_visualizeSAI.hxx"
 
+#include <cerrno>
+
 #define COLORLINK (ED4_G_SBACK_0 - RNA3D_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
 #define SAICOLORS (ED4_G_CBACK_0 - RNA3D_GC_CBACK_0)
 
@@ -19,6 +21,17 @@ inline float _max(float a, float b) { return (a<b)? b:a; }
 
 OpenGLGraphics *GRAPHICS = new OpenGLGraphics();
 bool bEColiRefInitialised = false;
+
+static char *find_data_file(const char *name) {
+    char *fname = GBS_find_lib_file(name, "rna3d/", 0);
+    if (!fname) throw string("file not found: ")+name;
+    return fname;
+}
+
+static void throw_IO_error(const char *filename) {
+    string error = string("IO-Error: ")+strerror(errno)+" ('"+filename+"')";
+    throw error;
+}
 
 Structure3D::Structure3D(void) {
     strCen = new Vector3(0.0, 0.0, 0.0);
@@ -63,10 +76,10 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
-    const char 
-        DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb",
-        ErrorMsg[] = "\n *** Error Opening File : ";
-    char buf[256];
+    // const char DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb";
+    char *DataFile           = find_data_file("Ecoli_1M5G_16SrRNA.pdb");
+    const char ErrorMsg[]        = "\n *** Error Opening File : ";
+    char      buf[256];
 
     float X, Y, Z;
     unsigned int pos;
@@ -75,8 +88,9 @@ void Structure3D::ReadCoOrdinateFile() {
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
-        cerr<<ErrorMsg<<DataFile<<endl;
-        exit(1);
+        throw_IO_error(DataFile);
+        // cerr<<ErrorMsg<<DataFile<<endl;
+        // exit(1);
     }
 
     int cntr = 0;
@@ -111,10 +125,11 @@ void Structure3D::ReadCoOrdinateFile() {
     iEColiStartPos = pos; 
 
     strCen->x = strCen->x/cntr; 
-    strCen->y = strCen->y/cntr; 
+    strCen->y = strCen->y/cntr;
     strCen->z = strCen->z/cntr;
 
     readData.close();
+    free(DataFile);
 }
 
 Struct2Dinfo  *start2D = NULL;
@@ -145,10 +160,10 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 //=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
-    const char 
-        DataFile[] = "data/ECOLI_SECONDARY_STRUCTURE_INFO",
-        ErrorMsg[] = "\n *** Error Opening File : ";
-    char buf[256];
+    // const char DataFile[] = "data/ECOLI_SECONDARY_STRUCTURE_INFO";
+    char *DataFile        = find_data_file("ECOLI_SECONDARY_STRUCTURE_INFO");
+    const char ErrorMsg[] = "\n *** Error Opening File : ";
+    char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
     char info[4]; info[4] = '\0';
@@ -158,8 +173,9 @@ void Structure3D::GetSecondaryStructureInfo(void) {
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
-        cerr<<ErrorMsg<<DataFile<<endl;
-        exit(1);
+        throw_IO_error(DataFile);
+        // cerr<<ErrorMsg<<DataFile<<endl;
+        // exit(1);
     }
 
     while (!readData.eof()) {
@@ -192,6 +208,7 @@ void Structure3D::GetSecondaryStructureInfo(void) {
         }
     }
     readData.close();
+    free(DataFile);
 }
 
 Struct2Dplus3D *start2D3D = NULL;
@@ -383,16 +400,17 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
 
 void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
-    const char 
-        DataFile[] = "data/ECOLI_Tertiary_Interaction.data",
-        ErrorMsg[] = "\n *** Error Opening File : ";
-    char buf[256];
+    // const char DataFile[] = "data/ECOLI_Tertiary_Interaction.data";
+    char           *DataFile = find_data_file("ECOLI_Tertiary_Interaction.data");
+    const char ErrorMsg[]    = "\n *** Error Opening File : ";
+    char            buf[256];
 
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
-        cerr<<ErrorMsg<<DataFile<<endl;
-        exit(1);
+        throw_IO_error(DataFile);
+        // cerr<<ErrorMsg<<DataFile<<endl;
+        // exit(1);
     }
 
     int K[50];
@@ -466,6 +484,7 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
         }
     }
     glEndList();
+    free(DataFile);
 }
 
 //==============================================================================
