@@ -72,11 +72,15 @@ static long     no_of_subtrees      = 0;
 static int      max_subtree_pathlen = 0;
 static char    *pathbuffer          = 0;
 
+
+
 static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_subtrees) {
     GB_ERROR error = 0;
     if (!path2subtree) {
         path2subtree   = GBS_create_hash(expected_no_of_subtrees, 1);
         no_of_subtrees = 0;
+
+        char length_buf[] = "xxxx"; // first 4 bytes of path is the pathlen
 
         for (GBDATA *pd_subtree = GB_find(pd_father,"subtree",0,down_level);
              pd_subtree && !error;
@@ -87,11 +91,12 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
                 error = "Missing 'path' entry";
             }
             else {
-                GBS_write_hash(path2subtree, GB_read_char_pntr(pd_path), (long)pd_subtree);
+                const char *path = GB_read_char_pntr(pd_path);
+                GBS_write_hash(path2subtree, path, (long)pd_subtree);
                 no_of_subtrees++;
 
-                // determine max. pathlen
-                int pathlen = GB_read_count(pd_path);
+                memcpy(length_buf, path, 4);
+                int pathlen = (int)strtoul(length_buf, 0, 16);
                 if (pathlen>max_subtree_pathlen) {
                     max_subtree_pathlen = pathlen;
                 }
@@ -108,7 +113,8 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
         }
 
         if (!error) {
-            pathbuffer = (char*)GB_calloc(max_subtree_pathlen+1, sizeof(char));
+            // we need 1 additional byte (pgd_add_species tries to go down from leafs as well)
+            pathbuffer = (char*)GB_calloc(max_subtree_pathlen+1+1, sizeof(char));
         }
     }
 
@@ -287,8 +293,8 @@ static GB_ERROR pgd_add_species(int len, set<SpeciesName> *species) {
                     return GBS_global_string("'member' expected in '%s'", pathbuffer);
                 }
 
-                const string& name = PM_ID2name(GB_read_int(gb_member));
-                species->insert(name.c_str());
+                const string& name = PM_ID2name(GB_read_int(gb_member), error);
+                if (!error) species->insert(name.c_str());
             }
             else { // inner node
                 pathbuffer[len]   = 'R';
@@ -319,19 +325,43 @@ static GB_ERROR pgd_init_species(GBDATA *pd_probe_group, set<SpeciesName> *speci
             const char *decoded_path = decodePath(group_id+1, error);
             if (!error) {
                 int len = strlen(decoded_path);
+                pgd_assert(len <= max_subtree_pathlen);
                 memcpy(pathbuffer, decoded_path, len+1);
                 error   = pgd_add_species(len, species);
             }
         }
+        else if (group_id[0] == 'g') { // subtree independent probe-group
+            GBDATA *pd_members = GB_find(pd_probe_group, "members", 0, down_level);
+            if (pd_members) {
+                const char *members = GB_read_char_pntr(pd_members);
+                const char *number   = members;
+
+                while (number && !error) {
+                    SpeciesID     id   = atoi(number);
+                    const string& name = PM_ID2name(id, error);
+
+                    if (!error) {
+                        species->insert(name.c_str());
+
+                        const char *komma  = strchr(number, ',');
+                        if (komma) number  = komma+1;
+                        else        number = 0;
+                    }
+                }
+            }
+            else {
+                error = GBS_global_string("'members' expected in independent group '%s'", group_id);
+            }
+        }
         else {
-            error = "subtree-independant probe groups not implemented yet!";
+            error = GBS_global_string("Illegal group_id '%s'", group_id);
         }
     }
 
     return error;
 }
 
-static char *pgd_get_the_names(set<SpeciesName> *species,bytestring &bs,bytestring &checksum){
+static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytestring &checksum, const char *use) {
     GBDATA *gb_species;
     GBDATA *gb_name;
     GBDATA *gb_data;
@@ -340,7 +370,7 @@ static char *pgd_get_the_names(set<SpeciesName> *species,bytestring &bs,bytestri
     void *checksums = GBS_stropen(1024);
 
     GB_begin_transaction(gb_main);
-    char *use=GBT_get_default_alignment(gb_main);
+//     char *use = GBT_get_default_alignment(gb_main);
 
     gb_species=GB_search(gb_main,"species_data",GB_FIND);
     if(!gb_species) return 0;
@@ -384,7 +414,7 @@ static int pgd_probe_design_send_data(){
     return 0;
 }
 
-static GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_list)
+static GB_ERROR PGD_probe_design_event(set<SpeciesName> *species,set<Probes> *probe_list, const char *use)
 {
     T_PT_TPROBE  tprobe;        //long
     bytestring   bs;
@@ -393,7 +423,7 @@ static GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_
     const char  *error = 0;
 
     // validate sequence of the species
-    error = pgd_get_the_names(species,bs,check);
+    error = pgd_get_the_names(species,bs,check, use);
 
     if (!error) {
         aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
@@ -415,9 +445,9 @@ static GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_
                 error = GB_export_error("Your PT server is not up to date or wrongly chosen\n"
                                         "The following names are new to it:\n"
                                         "%s" , unames);
-                delete unknown_names.data;
             }
         }
+        free(unknown_names.data);
     }
 
     if (!error) {
@@ -479,6 +509,9 @@ static GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_
         }
     }
 
+    free(bs.data);
+    free(check.data);
+
     return error;
 }
 
@@ -517,11 +550,8 @@ static GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
             error = GBS_global_string("komma expected in node name '%s'", newName);
         }
         else {
-            const string& shortname = PM_ID2name(atoi(newName));
-            if (shortname.empty()) {
-                error = GBS_global_string("illegal id in '%s'", newName);
-            }
-            else {
+            const string& shortname = PM_ID2name(atoi(newName), error);
+            if (!error) {
                 char *fullname = afterNum+1;
                 char *acc      = strchr(fullname, ',');
                 if (!acc) {
@@ -717,7 +747,7 @@ public:
 };
 
 
-static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group) {
+static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
     {
         GBDATA *pbgrp = GB_find(pd_probe_group,"probe_group_design",0,down_level);
         if (pbgrp) GB_delete(pbgrp); // erase existing data
@@ -730,7 +760,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group) {
     if (!error && species.empty()) error = "No species detected for probe group.";
     if (!error) {
         std::set<Probes>      probe; //set of probes from the design
-        error = probe_design_event(&species, &probe); // call probe_design
+        error = PGD_probe_design_event(&species, &probe, use); // call probe_design
 
         if (!error && !probe.empty()) {
             // store the result
@@ -848,7 +878,13 @@ static GB_ERROR designProbes() {
             printf("Designing probes for %li used probe groups:\n", probe_group_counter);
 
             // design probes
-            long     count         = 0;
+            long count = 0;
+
+            char *use;
+            {
+                GB_transaction dummy(gb_main);
+                use = GBT_get_default_alignment(gb_main);
+            }
 
             for (GBDATA *pd_probe_group = GB_find(pd_probegroup_cont,"probe_group",0,down_level);
                  pd_probe_group && !error;
@@ -858,8 +894,10 @@ static GB_ERROR designProbes() {
                 if (count%60) fputc('.', stdout);
                 else printf(". %i%%\n", int((double(count)/probe_group_counter)*100+0.5));
 
-                error = designProbesForGroup(pd_probe_group);
+                error = designProbesForGroup(pd_probe_group, use);
             }
+
+            free(use);
 
             if (error) fputc('\n', stdout);
             else printf(" %i%%\n", int((double(count)/probe_group_counter)*100+0.5));
