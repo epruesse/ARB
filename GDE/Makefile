@@ -34,6 +34,14 @@ ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
 endif
 endif
 
+# --------------------------------------------------------------------------------
+# no warnings in this subtree
+
+SUB_CPP=$(CPP:-W -Wall=-w)
+SUB_ACC=$(ACC:-W -Wall=-w)
+
+# --------------------------------------------------------------------------------
+
 $(MAIN): $(ARCHS)
 
 depend: $(ARCHS:.dummy=.depend)
@@ -52,14 +60,12 @@ depend: $(ARCHS:.dummy=.depend)
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.2 $(@D)/Makefile
 
-#			-e "s&/trance1/ARB/source/ARB/&\\\$$(ARBHOME)/&g" \
-
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
 		"MAKE = $(MAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(CPP)" "ACC = $(ACC)" \
+		"CPP = $(SUB_CPP)" "ACC = $(SUB_ACC)" \
 		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
 		"AR = $(AR)" "ARLIB = $(ARLIB)" \
 		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
