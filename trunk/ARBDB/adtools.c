@@ -2272,24 +2272,27 @@ void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
         len_of_prefix = strlen(prefix);
         for (	gb2 = GB_find(gbd,0,0,down_level);	/* find everything */
                 gb2;
-                gb2 = GB_find(gb2,0,0,this_level|search_next)){
+                gb2 = GB_find(gb2,0,0,this_level|search_next))
+        {
             if (deep){
                 key = GB_read_key_pntr(gb2);
                 sprintf(&prefix[len_of_prefix],"/%s",key);
                 gbt_scan_db_rek(gb2,prefix,1);
-            }else{
+            }
+            else {
                 prefix[len_of_prefix] = 0;
                 gbt_scan_db_rek(gb2,prefix,1);
             }
         }
         prefix[len_of_prefix] = 0;
-    }else{
+    }
+    else {
         if (GB_check_hkey(prefix+1)) {
             prefix = prefix;		/* for debugging purpose */
-        }else{
+        }
+        else {
             prefix[0] = (char)type;
-            GBS_incr_hash(	gbs_scan_db_data.hash_table,
-                            prefix);
+            GBS_incr_hash( gbs_scan_db_data.hash_table, prefix);
         }
     }
 }
@@ -2301,9 +2304,20 @@ long gbs_scan_db_count(const char *key,long val)
     return val;
 }
 
-long gbs_scan_db_insert(const char *key,long val)
+long gbs_scan_db_insert(const char *key,long val, void *v_datapath)
 {
-    gbs_scan_db_data.result[gbs_scan_db_data.count++]= GB_STRDUP(key);
+    if (!v_datapath) {
+        gbs_scan_db_data.result[gbs_scan_db_data.count++]  = GB_STRDUP(key);        
+    }
+    else {
+        char *datapath = (char*)v_datapath;
+        if (GBS_strscmp(datapath, key+1) == 0) { // datapath matches
+            char *subkey = GB_STRDUP(key+strlen(datapath)); // cut off prefix
+            subkey[0]    = key[0]; // copy type
+            
+            gbs_scan_db_data.result[gbs_scan_db_data.count++] = subkey;
+        }
+    }
     return val;
 }
 
@@ -2312,15 +2326,18 @@ long gbs_scan_db_compare(const char *left,const char *right){
 }
 
 
-char	**GBT_scan_db(GBDATA *gbd){
+char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
     /* returns a NULL terminated array of 'strings'
        each string is the path to a node beyond gbd;
        every string exists only once
        the first character of a string is the type of the entry
        the strings are sorted alphabetically !!!
+
+       if datapath              != 0, only keys with prefix datapath are scanned and
+       the prefix is removed from the resulting key_names
 	*/
-    gbs_scan_db_data.hash_table = GBS_create_hash(1024,0);
-    gbs_scan_db_data.buffer = (char *)malloc(GBT_SUM_LEN);
+    gbs_scan_db_data.hash_table  = GBS_create_hash(1024,0);
+    gbs_scan_db_data.buffer      = (char *)malloc(GBT_SUM_LEN);
     strcpy(gbs_scan_db_data.buffer,"");
     gbt_scan_db_rek(gbd, gbs_scan_db_data.buffer,0);
 
@@ -2331,7 +2348,7 @@ char	**GBT_scan_db(GBDATA *gbd){
     /* null terminated result */
 
     gbs_scan_db_data.count = 0;
-    GBS_hash_do_loop(gbs_scan_db_data.hash_table,gbs_scan_db_insert);
+    GBS_hash_do_loop2(gbs_scan_db_data.hash_table,gbs_scan_db_insert, (void*)datapath);
 
     GBS_free_hash(gbs_scan_db_data.hash_table);
 
