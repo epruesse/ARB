@@ -15,6 +15,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_advice.hxx>
 #include <GEN.hxx>
 #include "awti_import.hxx"
 #include "awtc_rename.hxx"
@@ -682,17 +683,6 @@ void AWTC_import_go_cb(AW_window *aww)
     {
         bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
 
-//         {
-//             GB_transaction dummy(GB_MAIN);
-
-//             GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
-//             if (!gb_genom_db) {
-//                 gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
-//                 GB_write_int(gb_genom_db, read_genom_db);
-//             }
-//             is_genom_db = GB_read_int(gb_genom_db) != 0;
-//         }
-
         is_genom_db = GEN_is_genom_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
@@ -868,9 +858,13 @@ void AWTC_import_go_cb(AW_window *aww)
     GB_change_my_security(GB_MAIN,0,"");
     GB_commit_transaction(GB_MAIN);
 
-//     if (!is_genom_db) {
-        awtcig.func(awr, awtcig.cd1,awtcig.cd2);
-//     }
+    //     if (!is_genom_db) {
+    awtcig.func(awr, awtcig.cd1,awtcig.cd2);
+    //     }
+
+    if (!is_genom_db) {
+        AWT_advice("Use Sequence/Admin/Format to fix the length of the imported sequences.", AWT_ADVICE_TOGGLE, 0, "ad_align.hlp");
+    }
 }
 
 //  ------------------------------------------------------
