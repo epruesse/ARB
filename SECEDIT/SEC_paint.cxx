@@ -55,9 +55,9 @@ inline int cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
     else if (abs_pos<last_abs_pos && (last_abs_pos-abs_pos>5000 /* yes it's a hack ;-) */)) {
         // last_abs_pos is short before end of sequence, abs_pos is short after start of sequence
 
-      if (cursor<abs_pos) {
-          return 1;
-      }
+	if (cursor<abs_pos) {
+	    return 1;
+	}
     }
 
     return 0;
@@ -185,7 +185,7 @@ void SEC_region::count_bases(SEC_root *root) {
                     }
                 }
                 else {
-                      goto take_pos3;
+		    goto take_pos3;
                 }
                 continue;
 
@@ -266,21 +266,21 @@ void SEC_loop::compute_radius(void) {
 
 void SEC_loop::compute_segments_edge(double &attachp1_x, double &attachp1_y, double &attachp2_x, double &attachp2_y, SEC_segment *segment_pointer) {
 
-	//test, if the center of the segment lies left or right of loop's center
-	double attach_attach_v[2] = { (attachp1_x - attachp2_x), (attachp1_y-attachp2_y) };
-	double attach_loopcenter_v[2] = { (attachp1_x-x_loop), (attachp1_y-y_loop) };
+    //test, if the center of the segment lies left or right of loop's center
+    double attach_attach_v[2] = { (attachp1_x - attachp2_x), (attachp1_y-attachp2_y) };
+    double attach_loopcenter_v[2] = { (attachp1_x-x_loop), (attachp1_y-y_loop) };
 
-	double tmp = attach_attach_v[0];
-	attach_attach_v[0] = -attach_attach_v[1];
-	attach_attach_v[1] = tmp;
+    double tmp = attach_attach_v[0];
+    attach_attach_v[0] = -attach_attach_v[1];
+    attach_attach_v[1] = tmp;
 
-	double direction = (attach_attach_v[0]*attach_loopcenter_v[0]) + (attach_attach_v[1]*attach_loopcenter_v[1]);
-	if (direction > 0) {
-	    segment_pointer->update_center_point(attachp1_x, attachp1_y, attachp2_x, attachp2_y);
-	}
-	else {
-	    segment_pointer->update_center_point(attachp2_x, attachp2_y, attachp1_x, attachp1_y);
-	}
+    double direction = (attach_attach_v[0]*attach_loopcenter_v[0]) + (attach_attach_v[1]*attach_loopcenter_v[1]);
+    if (direction > 0) {
+	segment_pointer->update_center_point(attachp1_x, attachp1_y, attachp2_x, attachp2_y);
+    }
+    else {
+	segment_pointer->update_center_point(attachp2_x, attachp2_y, attachp1_x, attachp1_y);
+    }
 }
 
 void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region){
@@ -353,10 +353,10 @@ void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region){
     }
 
  copy_last_bases:
-	// copy the rest
-	while (f_last < f->base_count){
-	    fdest_array[fdest++] = f->abspos_array[f_last++];
-	}
+    // copy the rest
+    while (f_last < f->base_count){
+	fdest_array[fdest++] = f->abspos_array[f_last++];
+    }
     delete f->abspos_array;
     f->abspos_array = fdest_array;
     f->base_count = fdest;
@@ -364,68 +364,37 @@ void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region){
 }
 
 void SEC_root::set_root(SEC_Base *base) {
-  /***Selects the clicked base and gets the respective information if clicked on segment or loop  ******************/
-  SEC_loop *loop;
+    /***Selects the clicked base and gets the respective information if clicked on segment or loop  ******************/
+    SEC_loop *loop;
 
-  if (base->getType() == SEC_SEGMENT) {
-    root_segment = (SEC_segment *) base; 
-    loop = root_segment->get_loop();
-  }
-  else if (base->getType() == SEC_LOOP) {
-    loop = (SEC_loop *) base;
-    root_segment = loop->get_segment();
-  }
-  else {
-    aw_message("You cannot assign the \"root-attribute\" to helix-strands");
-    return;
-  }
+    if (base->getType() == SEC_SEGMENT) {
+	root_segment = (SEC_segment *) base; 
+	loop = root_segment->get_loop();
+    }
+    else if (base->getType() == SEC_LOOP) {
+	loop = (SEC_loop *) base;
+	root_segment = loop->get_segment();
+    }
+    else {
+	aw_message("You cannot assign the \"root-attribute\" to helix-strands");
+	return;
+    }
 
-  SEC_segment      *segment_pointer = loop->get_segment();
-  SEC_helix_strand *strand_pointer  = segment_pointer->get_next_helix();
+    SEC_segment      *segment_pointer = loop->get_segment();
+    SEC_helix_strand *strand_pointer  = segment_pointer->get_next_helix();
 
-  double delta      = strand_pointer->get_helix_info()->get_delta();  //getting delta from the immediate strand found from the clicked pos.
-//   double direction;
-//   double found      = 0;
-//   double fixpoint_x = strand_pointer->get_fixpoint_x();
-//   double fixpoint_y = strand_pointer->get_fixpoint_y();
-//   double loop_x     = loop->get_x_loop();
-//   double loop_y     = loop->get_y_loop();
-  
-//   //search caller of this loop and set it's segment-pointer appropriatly
-//    while (strand_pointer->get_next_segment() != loop->get_segment()) {
-//     direction = (cos(delta)*(fixpoint_x - loop_x)) + (sin(delta)*(fixpoint_y - loop_y));
-//     if (direction < 0) {
-//       found = 1;
-//       break;
-//       }
-//     segment_pointer = strand_pointer->get_next_segment();
-//     strand_pointer  = segment_pointer->get_next_helix();
-//     delta           = strand_pointer->get_helix_info()->get_delta();
-//     fixpoint_x      = strand_pointer->get_fixpoint_x();
-//     fixpoint_y      = strand_pointer->get_fixpoint_y();
-//   }
-    
-//   if (!found) {
-//     //check direction, because maybe the while-loop was never entered
-//     direction = (cos(delta)*(fixpoint_x - loop_x)) + (sin(delta)*(fixpoint_y - loop_y));
-//     if (direction > 0) {
-//       segment_pointer = loop->get_segment();
-//       strand_pointer = segment_pointer->get_next_helix();
-//       delta = strand_pointer->get_helix_info()->get_delta();
-//       strand_pointer->get_helix_info()->set_delta(delta  + M_PI);
-//     }
-//     }
+    double delta      = strand_pointer->get_helix_info()->get_delta();  //getting delta from the immediate strand found from the clicked pos.
 
-   /********* Going thru the entire loop and selects the last segment and strand of the loop  **********/
-  while(strand_pointer->get_next_segment() != loop->get_segment()) {
-    segment_pointer = strand_pointer->get_next_segment();
-    strand_pointer  = segment_pointer->get_next_helix();
-    delta           = strand_pointer->get_helix_info()->get_delta();
-  }
-  //  strand_pointer->get_helix_info()->set_delta(delta  + M_PI);
-  setRootAngle(delta);  //setting the angle of root 
-  // set_root_segment(segment_pointer); //setting the root segment
-  loop->set_segment(segment_pointer);  //setting the segment pointer
+    /*---------------- Going thru the entire loop and selects the last segment and strand of the loop  -----------*/
+    while(strand_pointer->get_next_segment() != loop->get_segment()) {
+	segment_pointer = strand_pointer->get_next_segment();
+	strand_pointer  = segment_pointer->get_next_helix();
+	delta           = strand_pointer->get_helix_info()->get_delta();
+    }
+
+    setRootAngle(delta);  //setting the angle of root 
+
+    loop->set_segment(segment_pointer);  //setting the segment pointer
 }
 
 /*---------------------------------------------Updating methods-------------------------------------------------------------*/
@@ -512,10 +481,10 @@ void SEC_segment::update_alpha(void) {  //alpha is an angle of segment
 
 void SEC_loop::test_angle(double &strand_angle, double &gamma, SEC_helix *helix_info, double &angle_difference) {
 
-  //now we will test, if delta points away from the current loop, or to it. If it points to this loop, then it will be mirrored
+    //now we will test, if delta points away from the current loop, or to it. If it points to this loop, then it will be mirrored
     double delta_direction = ( (cos(gamma) * cos(strand_angle)) + (sin(gamma) * sin(strand_angle)) );
     if (delta_direction < 0) { //points to the current loop if true
-      /* if(!root->rotateBranchesMode) */ strand_angle +=M_PI;  //mirrors the angle of strands preventing overlapping of the strands to its loop
+	if(!root->rotateBranchesMode) strand_angle +=M_PI;  //mirrors the angle of strands preventing overlapping of the strands to its loop
         helix_info->set_delta(strand_angle-angle_difference);
     }
 }
@@ -523,7 +492,7 @@ void SEC_loop::test_angle(double &strand_angle, double &gamma, SEC_helix *helix_
 void SEC_loop::update_caller(double &gamma, double &strand_angle, SEC_helix *helix_info, double &angle_difference, SEC_helix_strand *strand_pointer) {
     double delta_direction = ( (cos(gamma) * cos(strand_angle)) + (sin(gamma) * sin(strand_angle)) );
     if (delta_direction < 0) { 
-      strand_angle+= M_PI;
+	strand_angle+= M_PI;
         helix_info->set_delta(strand_angle-angle_difference);
     }
     double next_x = x_loop + cos(gamma)*radius;
@@ -578,10 +547,10 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
    
     //compute fixpoints of caller if we are in the root loop
     if (is_root) {
-      previous_fxpt_x = x_loop + cos(gamma)*radius;
-      previous_fxpt_y = y_loop + sin(gamma)*radius;
-      caller->set_fixpoint_x(previous_fxpt_x);
-      caller->set_fixpoint_y(previous_fxpt_y);
+	previous_fxpt_x = x_loop + cos(gamma)*radius;
+	previous_fxpt_y = y_loop + sin(gamma)*radius;
+	caller->set_fixpoint_x(previous_fxpt_x);
+	caller->set_fixpoint_y(previous_fxpt_y);
     }
 
     //compute attachment-points of segments for caller
@@ -610,7 +579,7 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
 
         strand_pointer->update(next_strand_fxpt_x, next_strand_fxpt_y, angle_difference);
 
-        strand_pointer->compute_attachment_points(strand_angle);
+	strand_pointer->compute_attachment_points(strand_angle);
 	
 	helix_info->set_deltaIn(strand_angle+M_PI);
 
@@ -649,9 +618,9 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
 
     //now we will test, if delta points away from the current loop, or to it. If it points to this loop, then it will be mirrored
     delta_direction = ( (cos(gamma) * cos(strand_angle)) + (sin(gamma) * sin(strand_angle)) );
-       if (delta_direction < 0) {
-	 strand_angle += 2*M_PI;
-       }
+    if (delta_direction < 0) {
+	strand_angle += 2*M_PI;
+    }
     attachp1_x = previous_strand_pointer->get_attachp1_x();
     attachp1_y = previous_strand_pointer->get_attachp1_y();
     attachp2_x = strand_pointer->get_attachp2_x();
@@ -823,25 +792,25 @@ void SEC_helix_strand::print_ecoli_pos(long ecoli_pos, double attachpA_x, double
 
 void SEC_helix_strand::printHelixNumbers(AW_device *device, double helixStart_x, double helixStart_y, double helixEnd_x, double helixEnd_y, double base_x, double base_y, int absPos){
 
-  if(!root->show_helixNrs) return;
+    if(!root->show_helixNrs) return;
 
-  double start_base_v[2] = {(helixEnd_x-helixStart_x), (helixEnd_y-helixStart_y) };
+    double start_base_v[2] = {(helixEnd_x-helixStart_x), (helixEnd_y-helixStart_y) };
    
-   double tmp = start_base_v[0];
-   start_base_v[0] = -start_base_v[1];
-   start_base_v[1] = tmp;
+    double tmp = start_base_v[0];
+    start_base_v[0] = -start_base_v[1];
+    start_base_v[1] = tmp;
    
-   double length_of_v = sqrt( (start_base_v[0]*start_base_v[0]) + (start_base_v[1]*start_base_v[1]) );
-   start_base_v[0] = start_base_v[0]/length_of_v;
-   start_base_v[1] = start_base_v[1]/length_of_v;
+    double length_of_v = sqrt( (start_base_v[0]*start_base_v[0]) + (start_base_v[1]*start_base_v[1]) );
+    start_base_v[0] = start_base_v[0]/length_of_v;
+    start_base_v[1] = start_base_v[1]/length_of_v;
 
-   double printPos_x = base_x - start_base_v[0]*2;
-   double printPos_y = base_y - start_base_v[1]*2;
-   char *helixNumber = root->helix->entries[absPos].helix_nr;
+    double printPos_x = base_x - start_base_v[0]*2;
+    double printPos_y = base_y - start_base_v[1]*2;
+    char *helixNumber = root->helix->entries[absPos].helix_nr;
      
-   if(helixNumber != NULL){
-     device->text(SEC_GC_HELIX, helixNumber, printPos_x, printPos_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), 0 );
-   }
+    if(helixNumber != NULL){
+	device->text(SEC_GC_HELIX, helixNumber, printPos_x, printPos_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), 0 );
+    }
 }
 
 /*---------------------------------Paints HELICES----------------------------------------------------------------------------*/
@@ -859,8 +828,8 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     double other_db = length_of_v/(other_base_count-1); // compute the distance between the bases of this strand
 
     double font_height2 = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())/2.0; // half ascent-size of used font
-    //double fontWidth    = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())/2.0;
-    device->set_line_attributes(SEC_GC_HELIX,3, AW_SOLID);  //setting the line attributes
+
+    device->set_line_attributes(SEC_SKELE_HELIX,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes
     double font_size;
 
     {
@@ -907,10 +876,10 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
         int other_abs_pos;
         
         if (region.abspos_array) this_abs_pos = region.abspos_array[i];
-        else 			         this_abs_pos = i+region.get_sequence_start();
+        else		         this_abs_pos = i+region.get_sequence_start();
         
         if (other_region.abspos_array) other_abs_pos = other_region.abspos_array[j];
-        else 			               other_abs_pos = other_region.get_sequence_end()-1-j;
+        else	               other_abs_pos = other_region.get_sequence_end()-1-j;
 
         int this_legal = this_abs_pos>=0 && i<this_base_count;
         int other_legal = other_abs_pos>=0 && j<other_base_count;
@@ -953,48 +922,48 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 		thisLonelyBaseClrTag =1;
             }
             else {
-	      if(thisLonelyBaseClrTag && root->show_strSkeleton) {
-		device->line(SEC_GC_NHELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
-		thisLonelyBaseClrTag = 0;
-	      }
-	      else {
-		if(root->show_strSkeleton) device->line(SEC_GC_HELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
-	      }
-	      if(thisValid) root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, this_x, this_y, radius,lineWidth,0);
-	      if(!root->hide_bases)  device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
-	      root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
-	      //paints the Helix Numbers 
-	      if(!thisHelixNrTag && i%(this_base_count/2)==0){
-		printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
-		thisHelixNrTag = 1;
-	      }
-	      thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
+		if(thisLonelyBaseClrTag && root->show_strSkeleton) {
+		    device->line(SEC_SKELE_NHELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
+		    thisLonelyBaseClrTag = 0;
+		}
+		else {
+		  if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, thisLast_x, thisLast_y-font_height2, this_x, this_y-font_height2, -1, 0, 0);
+		}
+		if(thisValid) root->paintSearchBackground(device, thisBgColor, thisLastAbsPos, thisLast_x, thisLast_y, this_x, this_y, radius,lineWidth,0);
+		if(!root->hide_bases)  device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
+		root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
+		//paints the Helix Numbers 
+		if(!thisHelixNrTag && i%(this_base_count/2)==0){
+		    printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
+		    thisHelixNrTag = 1;
+		}
+		thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
             }
         }
 
         if (other_legal && i>0) {
             if (root->helix && root->helix->entries[other_abs_pos].pair_type==HELIX_NONE) {
                 print_lonely_bases(other_buffer, device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y,
-                               other_x, other_y, other_abs_pos, font_height2,otherBgColor,0);
+				   other_x, other_y, other_abs_pos, font_height2,otherBgColor,0);
 		otherLonelyBaseClrTag = 1;
             }
             else {
-	      if(otherLonelyBaseClrTag  && root->show_strSkeleton){
-		device->line(SEC_GC_NHELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
-		otherLonelyBaseClrTag = 0;
-	      }
-	      else {
-		if(root->show_strSkeleton) device->line(SEC_GC_HELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
-	      }
-	      if(otherValid) root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
-	      if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
-	      root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
-	      //paints the Helix Numbers 
-	      if(!otherHelixNrTag && j%(other_base_count/2)==0){
-		printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
-		otherHelixNrTag = 1;
-	      }
-	      otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
+		if(otherLonelyBaseClrTag  && root->show_strSkeleton){
+		    device->line(SEC_SKELE_NHELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
+		    otherLonelyBaseClrTag = 0;
+		}
+		else {
+		    if(root->show_strSkeleton) device->line(SEC_SKELE_HELIX, otherLast_x, otherLast_y-font_height2, other_x, other_y-font_height2, -1, 0, 0);
+		}
+		if(otherValid) root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
+		if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
+		root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
+		//paints the Helix Numbers 
+		if(!otherHelixNrTag && j%(other_base_count/2)==0){
+		    printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
+		    otherHelixNrTag = 1;
+		}
+		otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
             }
         }
 
@@ -1002,7 +971,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
         if (this_legal && other_legal) {
 	    paintLastBase = 1; //if it is valid strand set to true for painting last base of each strand
 	    if(!root->hide_bonds) 
-	      SEC_GRAPHIC->bond.paint(device, root, this_buffer[0], other_buffer[0], this_x, this_y-font_height2, other_x, other_y-font_height2, this_db, font_size);
+		SEC_GRAPHIC->bond.paint(device, root, this_buffer[0], other_buffer[0], this_x, this_y-font_height2, other_x, other_y-font_height2, this_db, font_size);
         }
 
         // draw ecoli positions:
@@ -1054,17 +1023,17 @@ void SEC_helix_strand::print_lonely_bases(char *buffer, AW_device *device, doubl
     double radius = transform_size(device,font_info[SEC_GC_HELIX].get_ascent())*0.75;
 
     double lineWidth = font_info[SEC_GC_NHELIX].get_max_width();
-    device->set_line_attributes(SEC_GC_NHELIX,3, AW_SOLID);  //setting the line attributes
+    device->set_line_attributes(SEC_SKELE_NHELIX,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes
 
     if(thisStrand){
-	if(root->show_strSkeleton) device->line(SEC_GC_NHELIX, thisLast_x, thisLast_y-half_font_height, print_pos_x, print_pos_y-half_font_height, -1, 0, 0);
+	if(root->show_strSkeleton) device->line(SEC_SKELE_NHELIX, thisLast_x, thisLast_y-half_font_height, print_pos_x, print_pos_y-half_font_height, -1, 0, 0);
         root->paintSearchBackground(device, bgColor, thisLastAbsPos, thisLast_x, thisLast_y, print_pos_x, print_pos_y, radius,lineWidth,0);
         if(!root->hide_bases) device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), thisLastAbsPos,0 );
         root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-half_font_height);
         thisBaseColor=SEC_GC_NHELIX; thisLast_x=print_pos_x; thisLast_y=print_pos_y; thisBase[0]=buffer[0]; thisLastAbsPos=abs_pos;
     }
     else {
-      if(root->show_strSkeleton) device->line(SEC_GC_NHELIX, otherLast_x, otherLast_y-half_font_height, print_pos_x, print_pos_y-half_font_height, -1, 0, 0);
+	if(root->show_strSkeleton) device->line(SEC_SKELE_NHELIX, otherLast_x, otherLast_y-half_font_height, print_pos_x, print_pos_y-half_font_height, -1, 0, 0);
         root->paintSearchBackground(device, bgColor, otherLastAbsPos, otherLast_x, otherLast_y, print_pos_x, print_pos_y, radius,lineWidth,1);
 	if(!root->hide_bases) device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
         root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-half_font_height);
@@ -1143,7 +1112,7 @@ void SEC_root::paint(AW_device *device) {
 
             device->set_line_attributes(SEC_GC_CURSOR, 3, AW_SOLID);
             device->line(SEC_GC_CURSOR, x1, y1, x2, y2);
-			set_last_drawed_cursor_position(x1, y1, x2, y2);
+	    set_last_drawed_cursor_position(x1, y1, x2, y2);
         }
     }
 }
@@ -1211,10 +1180,10 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     double start_x, start_y; //to get the previous strand attachment points
 
     if(root->show_debug) {
-      paintDebugInfo(device,SEC_GC_LOOP, start_x, start_y,"AP1");
-      paintDebugInfo(device,SEC_GC_LOOP, previous_strand_pointer->get_attachp2_x(),previous_strand_pointer->get_attachp2_y(), "AP2");
-      paintDebugInfo(device,SEC_GC_LOOP, previous_strand_pointer->get_fixpoint_x(), previous_strand_pointer->get_fixpoint_y(), "FP");
-      paintDebugInfo(device,SEC_GC_LOOP, x_seg, y_seg,"Seg_centre");
+	paintDebugInfo(device,SEC_GC_LOOP, start_x, start_y,"AP1");
+	paintDebugInfo(device,SEC_GC_LOOP, previous_strand_pointer->get_attachp2_x(),previous_strand_pointer->get_attachp2_y(), "AP2");
+	paintDebugInfo(device,SEC_GC_LOOP, previous_strand_pointer->get_fixpoint_x(), previous_strand_pointer->get_fixpoint_y(), "FP");
+	paintDebugInfo(device,SEC_GC_LOOP, x_seg, y_seg,"Seg_centre");
     }
 
     int seqStart = region.get_sequence_start();
@@ -1236,7 +1205,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     start_y = previous_strand_pointer->get_attachp1_y();
 
     if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]){
-      lastSearchColor = bgColor[seqStart-1] - COLORLINK;
+	lastSearchColor = bgColor[seqStart-1] - COLORLINK;
     }
 
     char helixStartBase[2], helixEndBase[2];
@@ -1264,45 +1233,46 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
 	if (abs_pos<root->sequence_length && i==0){
 	    tempAbsPos = abs_pos;
 	    do{
-            tempAbsPos--;
-            if (root->sequence[tempAbsPos] != '-' && root->sequence[tempAbsPos] != '.')
-                helixEndBase[0] = root->sequence[tempAbsPos];  //getting the last base of helix region
+		tempAbsPos--;
+		if (root->sequence[tempAbsPos] != '-' && root->sequence[tempAbsPos] != '.')
+		    helixEndBase[0] = root->sequence[tempAbsPos];  //getting the last base of helix region
 	    }while(root->sequence[tempAbsPos] == '-'|| root->sequence[tempAbsPos] == '.');
 	}
 
-	device->set_line_attributes(SEC_GC_LOOP,3, AW_SOLID);  //setting the line attributes
-	if(i==0  && root->show_strSkeleton)  device->line(SEC_GC_LOOP, start_x, start_y-font_height2,next_x, next_y-font_height2, -1, 0, 0);
+	device->set_line_attributes(SEC_SKELE_LOOP,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes
+	
+	if(i==0  && root->show_strSkeleton)  device->line(SEC_SKELE_LOOP, start_x, start_y-font_height2,next_x, next_y-font_height2, -1, 0, 0);
 	
 	// this repaints the start base of the loop infact the end base of helix and paints the search background
-    if(lastSearchColor){
-      root->paintSearchBackground(device, bgColor, abs_pos,start_x,start_y,next_x, next_y, circleRadius,lineWidth,1);
-      if(!root->hide_bases)  device->text(SEC_GC_HELIX, helixEndBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)previous_strand_pointer),tempAbsPos,0 );
-      root->announce_base_position(tempAbsPos, start_x, start_y-font_height2);
-      lastSearchColor = 0;
-    }
+	if(lastSearchColor){
+	    root->paintSearchBackground(device, bgColor, abs_pos,start_x,start_y,next_x, next_y, circleRadius,lineWidth,1);
+	    if(!root->hide_bases)  device->text(SEC_GC_HELIX, helixEndBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)previous_strand_pointer),tempAbsPos,0 );
+	    root->announce_base_position(tempAbsPos, start_x, start_y-font_height2);
+	    lastSearchColor = 0;
+	}
 
-    // this paints the actual bases in the loop
-    if(root->show_strSkeleton) device->line(SEC_GC_LOOP, next_x, next_y-font_height2, nextCircle_x, nextCircle_y-font_height2, -1, 0, 0);
-    root->paintSearchBackground(device, bgColor, abs_pos,next_x, next_y, nextCircle_x, nextCircle_y, circleRadius,lineWidth,0);
-    if(!root->hide_bases)   device->text(SEC_GC_LOOP, buffer, next_x, next_y, 0.5, root->segment_filter, (AW_CL)((SEC_Base *)this),abs_pos, 0 );
-    root->announce_base_position(abs_pos, next_x, next_y-font_height2);
+	// this paints the actual bases in the loop
+	if(root->show_strSkeleton) device->line(SEC_SKELE_LOOP, next_x, next_y-font_height2, nextCircle_x, nextCircle_y-font_height2, -1, 0, 0);
+	root->paintSearchBackground(device, bgColor, abs_pos,next_x, next_y, nextCircle_x, nextCircle_y, circleRadius,lineWidth,0);
+	if(!root->hide_bases)   device->text(SEC_GC_LOOP, buffer, next_x, next_y, 0.5, root->segment_filter, (AW_CL)((SEC_Base *)this),abs_pos, 0 );
+	root->announce_base_position(abs_pos, next_x, next_y-font_height2);
 
-    if (root->ecoli != NULL) {
-        root->ecoli->abs_2_rel(abs_pos, ecoli_pos, dummy);
-        if ((ecoli_pos%50)==0) {
-            print_ecoli_pos(ecoli_pos, next_x, next_y, device);
-        }
-    }
-    last_abs_pos = abs_pos;
+	if (root->ecoli != NULL) {
+	    root->ecoli->abs_2_rel(abs_pos, ecoli_pos, dummy);
+	    if ((ecoli_pos%50)==0) {
+		print_ecoli_pos(ecoli_pos, next_x, next_y, device);
+	    }
+	}
+	last_abs_pos = abs_pos;
 
-    if (abs_pos < root->sequence_length) helixStartBase[0] = root->sequence[last_abs_pos+1];
-    else helixStartBase[0]=0;
+	if (abs_pos < root->sequence_length) helixStartBase[0] = root->sequence[last_abs_pos+1];
+	else helixStartBase[0]=0;
     }
 
     //this paints the first base of helix if search pattern is found
     if(bgColor && bgColor[last_abs_pos+1] && helixStartBase[0]!='-'){
-      if(!root->hide_bases)  device->text(SEC_GC_HELIX, helixStartBase, nextCircle_x, nextCircle_y, 0.5,root->helix_filter,(AW_CL)((SEC_Base *)previous_strand_pointer),(last_abs_pos+1),0 );
-      root->announce_base_position((last_abs_pos+1), nextCircle_x, nextCircle_y-font_height2);
+	if(!root->hide_bases)  device->text(SEC_GC_HELIX, helixStartBase, nextCircle_x, nextCircle_y, 0.5,root->helix_filter,(AW_CL)((SEC_Base *)previous_strand_pointer),(last_abs_pos+1),0 );
+	root->announce_base_position((last_abs_pos+1), nextCircle_x, nextCircle_y-font_height2);
     }
 }
 
@@ -1325,8 +1295,8 @@ void SEC_helix_strand::paint(AW_device *device, int show_constraints) {
 
     //compute vector v pointing from attachp1 to other_strand->attachp2
     double v[2] = { (other_strand->attachp2_x - attachp1_x),
-                        (other_strand->attachp2_y - attachp1_y)
-                        };
+		    (other_strand->attachp2_y - attachp1_y)
+    };
 
     //normalize v
     double length_of_v = sqrt( (v[0]*v[0]) + (v[1]*v[1]) );
@@ -1344,9 +1314,9 @@ void SEC_helix_strand::paint(AW_device *device, int show_constraints) {
     other_strand->loop->paint(other_strand, device, show_constraints);
 
     if(root->show_debug) {
-		paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp1_x, other_strand->attachp1_y,"AP1");
-		paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp2_x,other_strand->attachp2_y, "AP2");
-		paintDebugInfo(device,SEC_GC_HELIX, other_strand->fixpoint_x, other_strand->fixpoint_y, "FP");
+	paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp1_x, other_strand->attachp1_y,"AP1");
+	paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp2_x,other_strand->attachp2_y, "AP2");
+	paintDebugInfo(device,SEC_GC_HELIX, other_strand->fixpoint_x, other_strand->fixpoint_y, "FP");
     }
 }
 
@@ -1538,57 +1508,58 @@ void SEC_root::create_default_bone(int align_length) {
     cursor = 0;
     fresh_sequence = 0;
     set_distance_between_strands(4);
+    set_skeleton_thickness(1);
 
     //initialize segment pointers of loops
-	loop1->set_segment(loop1_segment1);
-	loop2->set_segment(loop2_segment1);
+    loop1->set_segment(loop1_segment1);
+    loop2->set_segment(loop2_segment1);
 
-	//initialize next_helix_strand pointers of segments
-	loop1_segment1->set_next_helix_strand(strand_a1);
-	loop2_segment1->set_next_helix_strand(strand_a2);
+    //initialize next_helix_strand pointers of segments
+    loop1_segment1->set_next_helix_strand(strand_a1);
+    loop2_segment1->set_next_helix_strand(strand_a2);
 
-	//initialize loop-pointers of strands
-	strand_a1->set_loop(loop1);
-	strand_a2->set_loop(loop2);
+    //initialize loop-pointers of strands
+    strand_a1->set_loop(loop1);
+    strand_a2->set_loop(loop2);
 
-	//initialize loop pointers of segments
-	loop1_segment1->set_loop(loop1);
-	loop2_segment1->set_loop(loop2);
+    //initialize loop pointers of segments
+    loop1_segment1->set_loop(loop1);
+    loop2_segment1->set_loop(loop2);
 
-	//initialize other_strand pointers
-	strand_a1->set_other_strand(strand_a2);
-	strand_a2->set_other_strand(strand_a1);
+    //initialize other_strand pointers
+    strand_a1->set_other_strand(strand_a2);
+    strand_a2->set_other_strand(strand_a1);
 
-	//initialize helix_info pointers
-	strand_a1->set_helix_info(helix_a);
-	strand_a2->set_helix_info(helix_a);
+    //initialize helix_info pointers
+    strand_a1->set_helix_info(helix_a);
+    strand_a2->set_helix_info(helix_a);
 
-	//initialize next_segment pointers
-	strand_a1->set_next_segment(loop1_segment1);
-	strand_a2->set_next_segment(loop2_segment1);
+    //initialize next_segment pointers
+    strand_a1->set_next_segment(loop1_segment1);
+    strand_a2->set_next_segment(loop2_segment1);
 
-	//initialize SEQ-data
-	SEC_region *temp_region;
-	int part_segment = int((5.0/12)*align_length);
-	int part_strand = int((1.0/6)*align_length);
+    //initialize SEQ-data
+    SEC_region *temp_region;
+    int part_segment = int((5.0/12)*align_length);
+    int part_strand = int((1.0/6)*align_length);
 
-	temp_region = loop1_segment1->get_region();
-	temp_region->set_sequence_start(0);
-	temp_region->set_sequence_end(part_segment);
+    temp_region = loop1_segment1->get_region();
+    temp_region->set_sequence_start(0);
+    temp_region->set_sequence_end(part_segment);
 
-	temp_region = strand_a1->get_region();
-	temp_region->set_sequence_start(part_segment);
-	temp_region->set_sequence_end(part_segment + part_strand);
+    temp_region = strand_a1->get_region();
+    temp_region->set_sequence_start(part_segment);
+    temp_region->set_sequence_end(part_segment + part_strand);
 
-	temp_region = loop2_segment1->get_region();
-	temp_region->set_sequence_start(part_segment + part_strand);
-	temp_region->set_sequence_end(2*part_segment + part_strand);
+    temp_region = loop2_segment1->get_region();
+    temp_region->set_sequence_start(part_segment + part_strand);
+    temp_region->set_sequence_end(2*part_segment + part_strand);
 
-	temp_region = strand_a2->get_region();
-	temp_region->set_sequence_start(2*part_segment + part_strand);
-	temp_region->set_sequence_end(align_length);
+    temp_region = strand_a2->get_region();
+    temp_region->set_sequence_start(2*part_segment + part_strand);
+    temp_region->set_sequence_end(align_length);
 
-	this->update(0);
+    this->update(0);
 }
 
 /*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*/

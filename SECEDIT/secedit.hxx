@@ -200,7 +200,7 @@ private:
 
 public:
     int rotateBranchesMode;
-
+    double skeleton_thickness;
     bool show_debug; // show debug info in structure display (todo)
 
     bool show_helixNrs; //to display helix number information
@@ -246,7 +246,7 @@ public:
     void paintSearchPatternStrings(AW_device *device, int clickedPos,  AW_pos xPos,  AW_pos yPos);
     //used in SEC_paint.cxx
 
-    SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
+    SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands, double skeleton_thickness);
     ~SEC_root();
 
     //methods
@@ -269,6 +269,7 @@ public:
     //selector methods
     int get_max_index() 			{ return max_index; }
     double get_distance_between_strands() 	{ return distance_between_strands; }
+    double get_skeleton_thickness() 	        { return skeleton_thickness; }
     SEC_segment * get_root_segment () 		{ return root_segment; }
     int get_cursor() 				{ return cursor; }
 
@@ -278,8 +279,9 @@ public:
     void set_max_index(int max_index_) 						{ max_index = max_index_; }
     void set_root_segment(SEC_segment *root_segment_) 				{ root_segment = root_segment_; }
     void set_distance_between_strands (double distance_between_strands_) 	{ distance_between_strands = distance_between_strands_; }
-    void set_show_debug (bool show) 	{ show_debug=show; }
 
+    void set_skeleton_thickness (double skeleton_thickness_)   { skeleton_thickness = skeleton_thickness_; }
+    void set_show_debug (bool show) 	 { show_debug=show; }
     void set_show_helixNrs (bool show) 	 { show_helixNrs    = show; }
     void set_show_strSkeleton (bool show){ show_strSkeleton = show; }
     void set_hide_bases (bool hide)      { hide_bases = hide; }
@@ -533,6 +535,7 @@ void SEC_add_awar_callbacks(AW_root *aw_root, AW_default def, AWT_canvas *ntw);
 
 
 void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_skeleton_thickness_changed_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_show_helixNrs_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_show_strSkeleton_toggled_cb(AW_root *awr, AW_CL cl_ntw);

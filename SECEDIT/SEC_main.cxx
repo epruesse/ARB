@@ -43,6 +43,17 @@ void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw)
     ntw->refresh();
 }
 
+void SEC_skeleton_thickness_changed_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    double thickness = awr->awar(AWAR_SECEDIT_SKELETON_THICKNESS)->read_float();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_skeleton_thickness(thickness);
+    root->update(0);
+    ntw->refresh();
+}
+
 void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw)
 {
     SEC_root *root = SEC_GRAPHIC->sec_root;
@@ -877,6 +888,10 @@ AW_window *SEC_create_display_window(AW_root *awr) {
     aws->label("Hide Bonds                 :");
     aws->create_toggle(AWAR_SECEDIT_HIDE_BONDS);
 
+    aws->at("skelThickness");
+    aws->label("Skeleton Thickness         :");
+    aws->create_input_field( AWAR_SECEDIT_SKELETON_THICKNESS);
+
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -924,7 +939,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    //    awm->insert_menu_topic("secStruct2xfig", "Edit view using XFIG", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_export_window, 0);
+    awm->insert_menu_topic("secStruct2xfig", "Edit Secondary structure using XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
     awm->insert_menu_topic("save_props",	"Save Options (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);

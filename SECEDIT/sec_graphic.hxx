@@ -14,6 +14,7 @@
 #define AWAR_SECEDIT_IMEXPORT_BASE 	"secedit/imexportbase"
 
 #define AWAR_SECEDIT_DIST_BETW_STRANDS 	"secedit/layout/dist_betw_strands"
+#define AWAR_SECEDIT_SKELETON_THICKNESS "secedit/layout/skelton_thickness"
 #define AWAR_SECEDIT_SHOW_DEBUG 	"secedit/layout/show_debug_info"
 #define AWAR_SECEDIT_SHOW_HELIX_NRS 	"secedit/layout/show_helix_numbers"
 #define AWAR_SECEDIT_SHOW_STR_SKELETON 	"secedit/layout/show_structure_skeleton"
@@ -55,8 +56,10 @@ enum {
 	SEC_GC_SBACK_6,  // Signature (local)
 	SEC_GC_SBACK_7,  // Signature (region)
 	SEC_GC_SBACK_8,  // Signature (global)
+	SEC_SKELE_HELIX,  //skeleton helix color
+	SEC_SKELE_LOOP,  //skeleton loop color
+	SEC_SKELE_NHELIX,  //skeleton non-pairing helix color
 	SEC_GC_MBACK,      //mismatches 
-	
 	SEC_GC_MAX
 }; // AW_gc
 
