@@ -203,22 +203,59 @@ void GB_dump_db_path(GBDATA *gbd) {
 }
 
 void GB_dump(GBDATA *gbd) {    
-    int          type      = GB_TYPE(gbd);
-    const char  *type_name = GB_get_type_name(gbd);
-    const char  *key_name  = 0;
-    const char  *content   = 0;
-    GBCONTAINER *father    = GB_FATHER(gbd);
-    static int   indent    = 0;
+    static int   indent            = 0;
+    int          type              = GB_TYPE(gbd);
+    const char  *type_name         = GB_get_type_name(gbd);
+    const char  *key_name          = 0;
+    const char  *content           = 0;
+    GBCONTAINER *father            = GB_FATHER(gbd);
+    GBDATA      *gb_show_later     = 0;
+    char        *whatto_show_later = 0;
 
-    if (!father) {
-        key_name = "<unknown quark - element w/o father>";
+    if (father) {
+        int index_pos = (int)gbd->index; /* my index position in father */
+        struct gb_header_list_struct *hls = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
+
+        if (!hls) {
+            key_name = GBS_global_string("<no gb_header_list_struct found for index_pos=%i>", index_pos);
+            father = 0; // otherwise crash below
+        }
+        else {
+            GBDATA *gb_self = GB_HEADER_LIST_GBD(*hls);
+            if (gb_self != gbd) {
+                key_name = GBS_global_string("<element not linked in parent>");
+                if (gb_self) {
+                    gb_show_later     = gb_self;
+                    whatto_show_later = GBS_global_string_copy("Element linked at index pos of %p", gbd);
+                }
+                father = 0; // otherwise crash below
+            }
+            // otherwise father looks fine
+        }
     }
-    else {
-        key_name = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
+
+    if (father) {
+        GB_MAIN_TYPE *Main        = GBCONTAINER_MAIN(father);
+        int          is_db_server = Main->local_mode ? 1 : 0; /* 0 = no (client); 1 = yes (server); */
+
+        if (is_db_server == 1 && gbd->server_id != GBTUM_MAGIC_NUMBER) {
+            key_name = GBS_global_string("<element with illegal server-id %p>", (void*)gbd->server_id);
+        }
+        else if (is_db_server == 1 && father->server_id != GBTUM_MAGIC_NUMBER) {
+            key_name = GBS_global_string("<elements parent has illegal server-id %p>", (void*)father->server_id);
+            father   = 0; /* avoids crashes below */
+        }
+        else {
+            key_name = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
+        }
+    }
+
+    if (!father && !key_name) {
+        key_name = "<unknown quark - element w/o father>";
     }
 
     if (indent == 0) {
-        printf("\nGB_dump of '%s':\n", father ? GB_get_db_path(gbd) : "<GBDATA w/o father>");
+        printf("\nGB_dump of '%s':\n", father ? GB_get_db_path(gbd) : "<no DB-path - father missing or not inspected>");
     }
 
     if (father) {
@@ -242,7 +279,7 @@ void GB_dump(GBDATA *gbd) {
         }
     }
 
-    if (content==0) content = "<not examined>";
+    if (content==0) content = "<unknown - not examined>";
 
     printf("%*s %-15s gbd=%p type=%s content='%s'\n", indent, "", key_name, gbd, type_name, content);
 
@@ -256,6 +293,14 @@ void GB_dump(GBDATA *gbd) {
             GB_dump(gbp);
             --indent;
         }
+    }
+
+    if (gb_show_later) {
+        printf("%*s Showing %s:\n", indent, "", whatto_show_later);
+        free(whatto_show_later); whatto_show_later = 0;
+        ++indent;
+        GB_dump(gb_show_later);
+        --indent;
     }
 }
 
