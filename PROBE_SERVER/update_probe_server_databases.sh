@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE_DIR=./ps_source_db
+SOURCE_DIR=./ps_input_db
 TEMP_DIR=./ps_tmpdata
 DEST_DIR=./ps_serverdata
 WORKER_DIR=./ps_workerdir
@@ -88,9 +88,9 @@ create_db() {
 }
 
 create_db 15
-create_db 16
-create_db 17
-create_db 18
-create_db 19
-create_db 20
+# create_db 16
+# create_db 17
+# create_db 18
+# create_db 19
+# create_db 20
 
