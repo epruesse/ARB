@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Fri Dec/03/2004 12:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/03/2005 20:54 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -42,7 +42,6 @@ using namespace std;
 
 string strf(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
-
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
 #define MAX_LINE_LENGTH 500     // maximum length of lines in input stream
 #define TABSIZE         8
@@ -52,14 +51,9 @@ static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EX
                                        "QUESTION", "ANSWER", "SECTION",
                                        0 };
 
-using namespace std;
-
 // #define X() do { printf("Line=%i\n", __LINE__); } while(0)
 // #define D(x) do { printf("%s='%s'\n", #x, x); } while(0)
 
-    // --------------------------------------------------------------------------------
-//     string vstrf(const char *format, va_list argPtr)
-// --------------------------------------------------------------------------------
 string vstrf(const char *format, va_list argPtr) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
@@ -84,9 +78,6 @@ string vstrf(const char *format, va_list argPtr) {
     return string(buffer, length);
 }
 
-//  ---------------------------------------------
-//      string strf(const char *format, ...)
-//  ---------------------------------------------
 string strf(const char *format, ...) {
     va_list argPtr;
     va_start(argPtr, format);
@@ -96,9 +87,50 @@ string strf(const char *format, ...) {
     return result;
 }
 
-//  ---------------------
+// --------------------------------------
+//      warnings
+// --------------------------------------
+
+class LineAttachedMessage {
+    string message;
+    size_t lineno;
+
+public:
+    LineAttachedMessage(const string& message_, size_t lineno_)
+        : message(message_)
+        , lineno(lineno_)
+    {}
+
+    const string& Message() const { return message; }
+    size_t Lineno() const { return lineno; }
+};
+
+
+static list<LineAttachedMessage> warnings;
+
+inline LineAttachedMessage make_warning(const string& warning, size_t lineno) {
+    return LineAttachedMessage(string("Warning: ")+warning, lineno);
+}
+inline void add_warning(const string& warning, size_t lineno) {
+    warnings.push_back(make_warning(warning, lineno));
+}
+inline void preadd_warning(const string& warning, size_t lineno) {
+    LineAttachedMessage line_message = make_warning(warning, lineno);
+    if (warnings.size() < 2) {
+        warnings.push_front(line_message);
+    }
+    else {
+        LineAttachedMessage prev_message = warnings.back();
+        warnings.pop_back();
+        warnings.push_back(line_message);
+        warnings.push_back(prev_message);
+    }
+}
+
+// ----------------------
 //      class Reader
-//  ---------------------
+// ----------------------
+
 class Reader {
 private:
     istream& in;
@@ -152,7 +184,23 @@ public:
 
 
 typedef list<string> Strings;
-typedef list<string> Section;
+// typedef list<string> Section;
+
+class Section {
+    Strings content;
+    size_t  start_lineno;
+
+public:
+    Section(size_t start_lineno_) : start_lineno(start_lineno_) {}
+
+    const Strings& Content() const { return content; }
+    Strings& Content() { return content; }
+
+    size_t StartLineno() const { return start_lineno; }
+    void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
+
+};
+
 
 //  ---------------------------
 //      class NamedSection
@@ -175,18 +223,35 @@ public:
 
 typedef list<NamedSection> NamedSections;
 
+class Link {
+    string target;
+    int    source_lineno;
+
+public:
+    Link(const string& target_, size_t source_lineno_)
+        : target(target_)
+        , source_lineno(source_lineno_)
+    {}
+
+    const string& Target() const { return target; }
+    int SourceLineno() const { return source_lineno; }
+};
+
+typedef list<Link> Links;
+
 //  -----------------------
 //      class Helpfile
 //  -----------------------
 class Helpfile {
 private:
-    Strings       uplinks;
-    Strings       references;
+    Links         uplinks;
+    Links         references;
+    Links         auto_references;
     Section       title;
     NamedSections sections;
 
 public:
-    Helpfile() {}
+    Helpfile() : title(-1U) {}
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
@@ -197,18 +262,12 @@ public:
 inline bool isWhite(char c) { return c == ' '; }
 
 #if defined(DUMP_DATA)
-//  ------------------------------------------------------------------------------------
-//      static void display(const Strings& strings, const string& title, FILE *out)
-//  ------------------------------------------------------------------------------------
 static void display(const Strings& strings, const string& title, FILE *out) {
     fprintf(out, "  %s:\n", title.c_str());
     for (Strings::const_iterator s = strings.begin(); s != strings.end(); ++s) {
         fprintf(out, "    '%s'\n", s->c_str());
     }
 }
-//  --------------------------------------------------------------------------------------
-//      static void display(const Sections& sections, const string& title, FILE *out)
-//  --------------------------------------------------------------------------------------
 static void display(const Sections& sections, const string& title, FILE *out) {
     fprintf(out, "%s:\n", title.c_str());
     for (Sections::const_iterator s = sections.begin(); s != sections.end(); ++s) {
@@ -217,9 +276,6 @@ static void display(const Sections& sections, const string& title, FILE *out) {
 }
 #endif // DUMP_DATA
 
-//  ----------------------------------------------------
-//      inline bool isEmptyOrComment(const char *s)
-//  ----------------------------------------------------
 inline bool isEmptyOrComment(const char *s) {
     if (s[0] == '#') return true;
     for (int off = 0; ; ++off) {
@@ -230,9 +286,6 @@ inline bool isEmptyOrComment(const char *s) {
     return false;
 }
 
-//  -----------------------------------------------------------------------------
-//      inline const char *extractKeyword(const char *line, string& keyword)
-//  -----------------------------------------------------------------------------
 inline const char *extractKeyword(const char *line, string& keyword) {
     // returns NULL if no keyword was found
     // otherwise returns position behind keyword and sets value of 'keyword'
@@ -252,39 +305,31 @@ inline const char *extractKeyword(const char *line, string& keyword) {
     return 0;
 }
 
-//  ------------------------------------------------------
-//      inline const char *eatWhite(const char *line)
-//  ------------------------------------------------------
 inline const char *eatWhite(const char *line) {
     // skips whitespace
     while (isWhite(*line)) ++line;
     return line;
 }
 
-//  -------------------------------------------------------------------
-//      inline void pushParagraph(Section& sec, string& paragraph)
-//  -------------------------------------------------------------------
 inline void pushParagraph(Section& sec, string& paragraph) {
     if (paragraph.length()) {
-        sec.push_back(paragraph);
+        sec.Content().push_back(paragraph);
         paragraph = "";
     }
 }
 
-//  ----------------------------------------------------
-//      inline const char *firstChar(const char *s)
-//  ----------------------------------------------------
 inline const char *firstChar(const char *s) {
     while (isWhite(s[0])) ++s;
     return s;
 }
 
-//  --------------------------------------------------------------------------------------------------
-//      static void parseSection(Section& sec, const char *line, int indentation, Reader& reader)
-//  --------------------------------------------------------------------------------------------------
 static void parseSection(Section& sec, const char *line, int indentation, Reader& reader) {
     string paragraph          = line;
     int    lines_in_paragraph = 1;
+
+    if (sec.StartLineno() == -1U) {
+        sec.set_StartLineno(reader.getLineNo());
+    }
 
     while (1) {
         line = reader.getNext();
@@ -320,21 +365,18 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
     pushParagraph(sec, paragraph);
 
-    if (sec.size()>0) {
+    if (sec.Content().size()>0) {
         string spaces;
         spaces.reserve(indentation);
         spaces.append(indentation, ' ');
 
-        Section::iterator p = sec.begin();
+        Strings::iterator p = sec.Content().begin();
 
         *p = string("\n")+spaces+*p;
 //         advance(p, sec.size()-1);
 //         *p = *p+string("\n");
     }
 }
-//  ------------------------------------------------------------
-//      inline string cutoff_hlp_extension(const string& s)
-//  ------------------------------------------------------------
 inline string cutoff_hlp_extension(const string& s) {
     // cuts off the '.hlp'
     size_t pos   = s.find(".hlp");
@@ -345,25 +387,19 @@ inline string cutoff_hlp_extension(const string& s) {
     }
     return string(s, 0, s.length()-4);
 }
-// -----------------------------------------------------------------------------------------------
-//      static void check_duplicates(const string& link, const char *where, Strings existing)
-// -----------------------------------------------------------------------------------------------
-inline void check_duplicates(const string& link, const char *where, Strings existing) {
-    for (Strings::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
-        if (*ex == link) throw strf("%s-Link used again (duplicated link)", where);
+inline void check_duplicates(const string& link, const char */*where*/, const Links& existing, bool add_warnings) {
+    for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
+        if (ex->Target() == link) {
+            if (add_warnings) add_warning(strf("First Link to '%s' was found here.", ex->Target().c_str()), ex->SourceLineno());
+            throw strf("Link to '%s' duplicated here.", link.c_str());
+        }
     }
 }
-// -----------------------------------------------------------------------------------------------
-//      static void check_duplicates(const string& link, Strings uplinks, Strings references)
-// -----------------------------------------------------------------------------------------------
-inline void check_duplicates(const string& link, Strings uplinks, Strings references) {
-    check_duplicates(link, "UP", uplinks);
-    check_duplicates(link, "SUB", references);
+inline void check_duplicates(const string& link, const Links& uplinks, const Links& references, bool add_warnings) {
+    check_duplicates(link, "UP", uplinks, add_warnings);
+    check_duplicates(link, "SUB", references, add_warnings);
 }
 
-//  ---------------------------------------------
-//      void Helpfile::readHelp(istream& in)
-//  ---------------------------------------------
 void Helpfile::readHelp(istream& in, const string& filename) {
     Reader      read(in);
     const char *line;
@@ -377,18 +413,12 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             line = read.getNext();
             if (!line) break;
 
-//             X(); D(line);
-
             if (isEmptyOrComment(line)) {
                 continue;
             }
 
-//             cout << "line='" << line << "'\n";
-
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
-
-//             X(); D(rest); D(keyword.c_str());
 
             if (rest) {         // found a keyword
                 if (keyword == "UP") {
@@ -396,10 +426,10 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     if (strlen(rest)) {
                         string rest_noext = cutoff_hlp_extension(rest);
 
-                        check_duplicates(rest_noext, uplinks, references);
+                        check_duplicates(rest_noext, uplinks, references, true);
                         if (strcmp(name_only, rest) == 0) throw "UP link to self";
 
-                        uplinks.push_back(rest_noext);
+                        uplinks.push_back(Link(rest_noext, read.getLineNo()));
                     }
                 }
                 else if (keyword == "SUB") {
@@ -407,19 +437,19 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     if (strlen(rest)) {
                         string rest_noext = cutoff_hlp_extension(rest);
 
-                        check_duplicates(rest_noext, uplinks, references);
+                        check_duplicates(rest_noext, uplinks, references, true);
                         if (strcmp(name_only, rest) == 0) throw "SUB link to self";
 
-                        references.push_back(rest_noext);
+                        references.push_back(Link(rest_noext, read.getLineNo()));
                     }
                 }
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);
                     parseSection(title, rest, rest-line, read);
 
-                    if (title.empty()) throw "empty TITLE not allowed";
+                    if (title.Content().empty()) throw "empty TITLE not allowed";
 
-                    const char *t = title.front().c_str();
+                    const char *t = title.Content().front().c_str();
 
                     if (strstr(t, "Standard help file form") != 0) {
                         throw strf("Illegal title for help file: '%s'", t);
@@ -440,13 +470,15 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
                     if (knownSections[idx]) {
                         if (keyword == "SECTION") {
-                            string      section_name = eatWhite(rest);
-                            Section     sec;
+                            string  section_name = eatWhite(rest);
+                            Section sec(read.getLineNo());
+                            
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
-                            Section sec;
+                            Section sec(read.getLineNo());
+                            
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
                             sections.push_back(NamedSection(keyword, sec));
@@ -462,12 +494,14 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             }
         }
     }
-    catch (string& err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str()); }
-    catch (const char *err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err); }
+
+    catch (string& err) { throw LineAttachedMessage(err, read.getLineNo()); }
+    catch (const char *err) { throw LineAttachedMessage(err, read.getLineNo()); }
+
+    // catch (string& err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str()); }
+    // catch (const char *err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err); }
 }
-//  -------------------------------------------------------------------------
-//      static bool shouldReflow(const string& s, int& foundIndentation)
-//  -------------------------------------------------------------------------
+
 static bool shouldReflow(const string& s, int& foundIndentation) {
     // foundIndentation is only valid if shouldReflow() returns true
     enum { START, CHAR, SPACE, MULTIPLE, DOT, DOTSPACE } state = START;
@@ -503,9 +537,6 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
     return equal_indent;
 }
 
-//  -----------------------------------------------------------------------------------
-//      static bool startsWithNumber(string& s, int& number, bool do_erase = true)
-//  -----------------------------------------------------------------------------------
 static bool startsWithNumber(string& s, int& number, bool do_erase = true) {
     // tests if first line starts with 'number.'
     // if true then the number is removed
@@ -534,9 +565,6 @@ static bool startsWithNumber(string& s, int& number, bool do_erase = true) {
     return true;
 }
 
-//  ----------------------------------------------------------
-//      static int get_first_indentation(const string& s)
-//  ----------------------------------------------------------
 static int get_first_indentation(const string& s) {
     // returns the indentation of the first line containing other than spaces
     size_t text_start   = s.find_first_not_of(" \n");
@@ -546,9 +574,6 @@ static int get_first_indentation(const string& s) {
     return text_start-prev_lineend-1;
 }
 
-//  --------------------------------------------------------------------
-//      static string correctSpaces(const string& text, int change)
-//  --------------------------------------------------------------------
 static string correctSpaces(const string& text, int change) {
     h2x_assert(text.find('\n') == string::npos);
 
@@ -567,9 +592,6 @@ static string correctSpaces(const string& text, int change) {
     return string(change, ' ')+text;
 }
 
-//  -------------------------------------------------------------------------
-//      static string correctIndentation(const string& text, int change)
-//  -------------------------------------------------------------------------
 static string correctIndentation(const string& text, int change) {
     // removes 'remove' spaces from evry line
 
@@ -596,18 +618,12 @@ static string correctIndentation(const string& text, int change) {
     return result;
 }
 
-//  ------------------------------------------------------
-//      inline size_t countSpaces(const string& text)
-//  ------------------------------------------------------
 inline size_t countSpaces(const string& text) {
     size_t first = text.find_first_not_of(' ');
     if (first == string::npos) return INT_MAX; // empty line
     return first;
 }
 
-//  -------------------------------------------------------------
-//      static size_t scanMinIndentation(const string& text)
-//  -------------------------------------------------------------
 static size_t scanMinIndentation(const string& text) {
     size_t this_lineend = text.find('\n');
     size_t min_indent   = INT_MAX;
@@ -648,9 +664,9 @@ private:
 
     string text;                // text of the Section (containing linefeeds)
 
-    friend ParagraphTree* buildParagraphTree(Section::const_iterator begin, const Section::const_iterator end);
+    friend ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end);
 
-    ParagraphTree(Section::const_iterator begin, const Section::const_iterator end) {
+    ParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end) {
         h2x_assert(begin != end);
 
         text = *begin;
@@ -739,13 +755,13 @@ public:
         if (son) { cout << "\nson:\n"; son->dump(out); cout << "\n"; }
     }
 
-    static ParagraphTree* buildParagraphTree(Section::const_iterator begin, const Section::const_iterator end) {
+    static ParagraphTree* buildParagraphTree(Strings::const_iterator begin, const Strings::const_iterator end) {
         if (begin == end) return 0;
         return new ParagraphTree(begin, end);
     }
     static ParagraphTree* buildParagraphTree(const NamedSection& N) {
         ParagraphTree  *ptree = 0;
-        const Section&  S     = N.getSection();
+        const Strings&  S     = N.getSection().Content();
         if (S.empty()) throw string("Tried to build an empty ParagraphTree (Section=")+N.getName()+")";
         else ptree = buildParagraphTree(S.begin(), S.end());
         return ptree;
@@ -813,7 +829,7 @@ public:
     ParagraphTree* format_enums();
 private:
     static ParagraphTree* buildNewParagraph(const string& Text) {
-        Section S;
+        Strings S;
         S.push_back(Text);
         return new ParagraphTree(S.begin(), S.end());
     }
@@ -843,9 +859,6 @@ public:
 
 size_t ParagraphTree::embeddedCounter = 0;
 
-//  -----------------------------------------------------
-//      ParagraphTree* ParagraphTree::format_enums()
-//  -----------------------------------------------------
 ParagraphTree* ParagraphTree::format_enums() {
     // reformats tree such that all enums are brothers
     ParagraphTree *enum_this = firstEnumerated();
@@ -924,9 +937,6 @@ ParagraphTree* ParagraphTree::format_enums() {
     return this;
 }
 
-//  ------------------------------------------------------------
-//      ParagraphTree* ParagraphTree::format_indentations()
-//  ------------------------------------------------------------
 ParagraphTree* ParagraphTree::format_indentations() {
     if (brother) {
         if (is_enumerated)  {
@@ -997,9 +1007,6 @@ static void print_XML_Text_expanding_links(const string& text) {
     XML_Text t(text);
 }
 
-//  -----------------------------------------------------------------------------------
-//      void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry)
-//  -----------------------------------------------------------------------------------
 void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     if (is_enumerated && !ignore_enumerated) {
         XML_Tag e("ENUM");
@@ -1059,9 +1066,6 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     }
 }
 
-// --------------------------------------------------------------------------------------------------------------------------
-//      static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path1, const string& path2)
-// --------------------------------------------------------------------------------------------------------------------------
 static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path1, const string& path2) {
     struct stat st;
     string      fullname1 = path1+basename+".hlp";
@@ -1074,13 +1078,11 @@ static void addMissingAttribute(XML_Tag& link, const string& basename, const str
     }
 }
 
-// ---------------------------------------------------------------------------------------------------------------
-//      void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1, const string& path2)
-// ---------------------------------------------------------------------------------------------------------------
 void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1, const string& path2) {
 #if defined(DUMP_DATA)
     display(uplinks, "Uplinks", stdout);
     display(references, "References", stdout);
+    display(auto_references, "Auto-References", stdout);
     display(title, "Title", stdout);
     display(sections, "Sections", stdout);
 #endif // DUMP_DATA
@@ -1095,20 +1097,29 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
     xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
 #endif // DEBUG
 
-    for (Strings::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
+    for (Links::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
         XML_Tag uplink("UP");
-        uplink.add_attribute("dest", *s);
-        addMissingAttribute(uplink, *s, path1, path2);
+        uplink.add_attribute("dest", s->Target());
+        uplink.add_attribute("source_line", s->SourceLineno());
+        addMissingAttribute(uplink, s->Target(), path1, path2);
     }
-    for (Strings::const_iterator s = references.begin(); s != references.end(); ++s) {
+    for (Links::const_iterator s = references.begin(); s != references.end(); ++s) {
         XML_Tag sublink("SUB");
-        sublink.add_attribute("dest", *s);
-        addMissingAttribute(sublink, *s, path1, path2);
+        sublink.add_attribute("dest", s->Target());
+        sublink.add_attribute("source_line", s->SourceLineno());
+        addMissingAttribute(sublink, s->Target(), path1, path2);
+    }
+    for (Links::const_iterator s = auto_references.begin(); s != auto_references.end(); ++s) {
+        XML_Tag sublink("SUB");
+        sublink.add_attribute("dest", s->Target());
+        sublink.add_attribute("source_line", s->SourceLineno());
+        addMissingAttribute(sublink, s->Target(), path1, path2);
     }
     {
         XML_Tag title_tag("TITLE");
-        for (Section::const_iterator s = title.begin(); s != title.end(); ++s) {
-            if (s != title.begin()) { XML_Text text("\n"); }
+        Strings& T = title.Content();
+        for (Strings::const_iterator s = T.begin(); s != T.end(); ++s) {
+            if (s != T.begin()) { XML_Text text("\n"); }
             XML_Text text(*s);
         }
     }
@@ -1144,14 +1155,14 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
         delete ptree;
     }
 }
-//  ------------------------------------------
-//      void Helpfile::extractInternalLinks()
-//  ------------------------------------------
+
 void Helpfile::extractInternalLinks() {
     for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
+        const Section& sec = named_sec->getSection();
         try {
-            const Section& s = named_sec->getSection();
-            for (Section::const_iterator li = s.begin(); li != s.end(); ++li) {
+            const Strings& s   = sec.Content();
+            
+            for (Strings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
                 size_t        start = 0;
 
@@ -1172,42 +1183,62 @@ void Helpfile::extractInternalLinks() {
                         string rest_noext = cutoff_hlp_extension(link_target);
 
                         try {
-                            check_duplicates(rest_noext, uplinks, references);
-                            references.push_back(rest_noext);
+                            check_duplicates(rest_noext, "SUB", references, true); // check only sublinks here
+                            try {
+                                check_duplicates(rest_noext, "UP", uplinks, false); // check only sublinks here
+                                check_duplicates(rest_noext, "AUTO-SUB", auto_references, false); // check only sublinks here
+                                auto_references.push_back(Link(rest_noext, sec.StartLineno()));
+                            }
+                            catch (string& err) {
+                                ; // duplicated link in text
+                            }
                         }
                         catch (string& err) {
-                            cout << "Duplicated reference ingnored (" << err << ")\n";
+                            preadd_warning(strf("%s", err.c_str()), sec.StartLineno());
                         }
                     }
-                    // printf("link_target='%s'\n", link_target.c_str());
-
                     start = close+1;
                 }
             }
         }
         catch (string& err) {
-            throw string("'"+err+"' while scanning LINK{} in SECTION '"+named_sec->getName()+'\'');
+            throw LineAttachedMessage(string("'"+err+"' while scanning LINK{} in SECTION '"+named_sec->getName()+'\''),
+                                      sec.StartLineno());
         }
     }
 }
-// -------------------------------------------------------------------
-//      static void show_err(string err, const string& helpfile )
-// -------------------------------------------------------------------
-static void show_err(const string& err, const string& helpfile ) {
+
+static void show_err(const string& err, size_t lineno, const string& helpfile) {
     if (err.find(helpfile+':') != string::npos) {
         cerr << err;
     }
+    else if (lineno == -1U) {
+        cerr << helpfile << ":1: [in unknown line] " << err;
+    }
     else {
-        cerr << helpfile << ":1: " << err;
+        cerr << helpfile << ":" << lineno << ": " << err;
     }
     cerr << '\n';
 }
+static void show_err(const LineAttachedMessage& line_err, const string& helpfile) {
+    show_err(line_err.Message(), line_err.Lineno(), helpfile);
+}
 
+static void show_warnings(const string& helpfile) {
+    for (list<LineAttachedMessage>::const_iterator wi = warnings.begin(); wi != warnings.end(); ++wi) {
+        show_err(*wi, helpfile);
+    }
+}
 
+static void show_warnings_and_error(const LineAttachedMessage& error, const string& helpfile) {
+    show_warnings(helpfile);
+    show_err(error, helpfile);
+}
 
-//  -----------------------------------------
-//      int main(int argc, char *argv[])
-//  -----------------------------------------
+static void show_warnings_and_error(const string& error, const string& helpfile) {
+    show_warnings_and_error(LineAttachedMessage(error, -1U), helpfile);
+}
+
 int main(int argc, char *argv[]) {
     Helpfile help;
     string   arb_help;
@@ -1243,11 +1274,14 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        show_warnings(arb_help);
+
         return EXIT_SUCCESS;
     }
-    catch (string& err)         { show_err(err, arb_help); }
-    catch (const char * err)    { show_err(err, arb_help); }
-    catch (...)                 { cerr << "unknown exception (arb_help2xml)\n"; }
+    catch (LineAttachedMessage& err) { show_warnings_and_error(err, arb_help); }
+    catch (string& err)              { show_warnings_and_error(err, arb_help); }
+    catch (const char * err)         { show_warnings_and_error(err, arb_help); }
+    catch (...)                      { show_warnings_and_error("unknown exception in arb_help2xml", arb_help); }
 
     return EXIT_FAILURE;
 }
