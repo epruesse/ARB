@@ -987,6 +987,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
 	if (!error) error   = GB_write_string(gb_data2,result2);
 	GBDATA *gb_options  = GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
 	delete result;
+	delete result2;
 
 	if (!error) {
 		char	buffer[2000];
