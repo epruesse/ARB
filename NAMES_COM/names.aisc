@@ -42,44 +42,43 @@ dll_header,	COMMON,	0,	(~Der Link Header (sollte Kopf jeder Funktion sein)~), {
 # ********************************* USER STRUCTURES *******************************************
 
 AN_revers,  REVERS,	4,	(~ Revers mapping for shorts ~), {
-	@TYPE,	@IDENT,	@REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	dllh,	mh,	t,	,	1,	(~~),		0,	,		(~Header~);
-	aisc_string, full_name,t,	rw,	,	,		,	,		(~ the full name of a species ~);
-	aisc_string, acc,	t,	rw,	,	,		,	,		(~ accession number ~);
+	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
+	dllh,	        mh,	        t,	,	1,	(~~),		0,	,		(~Header~);
+	aisc_string,    full_name,      t,	rw,	,	,		,	,		(~ the full name of a species ~);
+	aisc_string,    acc,	        t,	rw,	,	,		,	,		(~ accession number ~);
 };
 
 AN_shorts, SHORTS,	3,	(~ a dictionary ~), SAVEDIRECTION HORIZONTAL, {
-	@TYPE,	@IDENT,	@REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	dllh,	mh,	t,	,	1,	(~~),		0,	,		(~Header~);
-	aisc_string, full_name,t,	r,	1,	FULL_NAME,	10,	,		(~ the full name of a species ~);
-	aisc_string, acc,	t,	r,	1,	ACC,		11,	,		(~ accession number ~);
-	aisc_string,	shrt,	t,	r,	1,	SHORT,		12,	,		(~ The Short ~);
+	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,	@DOCU;
+	dllh,	        mh,	        t,	,	1,	(~~),		0,	,	(~Header~);
+	aisc_string,    full_name,      t,	r,	1,	FULL_NAME,	10,	,	(~ the full name of a species ~);
+	aisc_string,    acc,	        t,	r,	1,	ACC,		11,	,	(~ accession number ~);
+	aisc_string,	shrt,	        t,	r,	1,	SHORT,		12,	,	(~ The Short ~);
 };
 
 AN_local, LOCAL, 	2, 	(~local communication buffer~), {
-	@TYPE,	@IDENT,	@REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	dllh,	mh,	t,	,	,	(~~),		0,	,		(~Header~);
-	int,	socket,	t,	,	,	,		,	names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
-
-	aisc_string, whoami,	t,	,	,	WHOAMI,		10,	,		(~ who am i ~);
-	aisc_string, full_name,t,	rw,	,	FULL_NAME,	11,	"",		(~ the full name of a species ~);
-	aisc_string, acc,	t,	rw,	,	ACCESSION,	12,	"",		(~ accession number ~);
-	int,	use_advice,t,	rw,	,	USEADVICE,	13,	,		(~ use the advice ~);
-	aisc_string, advice,	t,	rw,	,	ADVICE,		14,	"",		(~ advice for the short name ~);
-	aisc_string, get_short,%,	r,	,	GET_SHORT,	15,	,		(~ the short name ~);
+	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		        @DOCU;
+	dllh,	        mh,	        t,	,	,	(~~),		0,	,		        (~Header~);
+	int,	        socket,	        t,	,	,	,		,	names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
+	aisc_string,    whoami,	        t,	,	,	WHOAMI,		10,	,		        (~ who am i ~);
+	aisc_string,    full_name,      t,	rw,	,	FULL_NAME,	11,	"",		        (~ the full name of a species ~);
+	aisc_string,    acc,	        t,	rw,	,	ACCESSION,	12,	"",		        (~ accession number ~);
+	int,	        use_advice,     t,	rw,	,	USEADVICE,	13,	,		        (~ use the advice ~);
+	aisc_string,    advice,	        t,	rw,	,	ADVICE,		14,	"",		        (~ advice for the short name ~);
+	aisc_string,    get_short,      %,	r,	,	GET_SHORT,	15,	,		        (~ the short name ~);
 	};
 
 
 AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
-	@TYPE,	@IDENT,		@REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	t_key, 	key,		t,	n,	,	,		,	,		(~Der KEY~);
-	AN_local,loc_st,	d,	,	,	LOCAL,		10,	,		(~Die Parameter~);
-	AN_shorts, shorts1,	d,	r,	1,	SHORTS1,	12,	,		(~ the unique letters for a word ~);
-	AN_shorts, names,	d,	r,	1,	NAMES,		16,	,		(~ the unique names first*second*S*accession ~);
-	AN_revers, revers,	d,	r,	,	,		,	,		(~ the revers unique names first*second*S*accession ~);
-	int,	touched,	t,	r,	,	TOUCHED,	19,	0,		(~ Do the database need to be saved ~);
-        aisc_string,server_shutdown, %,      w,      ,       SHUTDOWN,       20,     ,               (~SHUTDOWN Command~);
-        int,	server_save,	%,      w,      ,       SAVEALL,	21, 	, 		(~SAVE everything~);
-	aisc_string,server_file,	t,	r,	,	FILENAME,	22,	,		(~The filename of the keys~);
+	@TYPE,	        @IDENT,		 @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
+	t_key, 	        key,		 t,	n,	,	,		,	,		(~Der KEY~);
+	AN_local,       loc_st,	         d,	,	,	LOCAL,		10,	,		(~Die Parameter~);
+	AN_shorts,      shorts1,	 d,	r,	1,	SHORTS1,	12,	,		(~ the unique letters for a word ~);
+	AN_shorts,      names,	         d,	r,	1,	NAMES,		16,	,		(~ the unique names first*second*S*accession ~);
+	AN_revers,      revers,	         d,	r,	,	,		,	,		(~ the revers unique names first*second*S*accession ~);
+	int,	        touched,	 t,	r,	,	TOUCHED,	19,	0,		(~ Do the database need to be saved ~);
+        aisc_string,    server_shutdown, %,     w,      ,       SHUTDOWN,       20,     ,               (~SHUTDOWN Command~);
+        int,	        server_save,	 %,     w,      ,       SAVEALL,	21, 	, 		(~SAVE everything~);
+	aisc_string,    server_file,	 t,	r,	,	FILENAME,	22,	,		(~The filename of the keys~);
 	};
 };
