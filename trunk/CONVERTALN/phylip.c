@@ -99,16 +99,16 @@ int	readstdin;
 	current = 0;
 	fprintf(ofp, "%4d %4d ", maxsize, current);
 	if (readstdin){
-	    int c;
-	    while (1){
-		c = getchar();
-		if (c == EOF) break;
+	    int c;	    
+	    while (1) {
+		c = getchar();	
+		if (c == EOF||c=='\n') break;
 		fputc(c,ofp);
 	    }
-
-	}else{
-	    fprintf(ofp,"\n");
+	    
 	}
+	fprintf(ofp,"\n");
+	
 	while(maxsize>current)	{
 		for(indi=0; indi<total_seq; indi++)	{
 			phylip_print_line(data.ids[indi],

@@ -1,49 +1,3 @@
-arb_item:ClustalV Alignment (DNA) (obsolete)
-itemmethod:(tr '"%//' '>' <in1 >clus_in; RUN_IN_WINDOW((clustalv /output=PIR /infile=clus_in /align /ktuple=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
-
-itemhelp:clustal_help
-
-arg:KTUP
-argtype:slider
-arglabel:K-tuple size for fast pairwise search 
-argmin:1
-argmax:10
-argvalue:2
-
-arg:WIN
-argtype:slider
-arglabel:Window size
-argmin:1
-argmax:10
-argvalue:4
-
-arg:Trans
-argtype:chooser
-arglabel:Transitions weighted?
-argchoice:Yes:/TRANSIT
-argchoice:No:
-
-arg:FIXED
-argtype:slider
-arglabel:Fixed gap penalty
-argmin:1
-argmax:100
-argvalue:10
-
-arg:FLOAT
-arglabel:Floating gap penalty
-argtype:slider
-argmin:1
-argmax:100
-argvalue:10
-
-in:in1
-informat:flat
-insave:
-
-out:out1
-outformat:flat
-
 
 item:ClustalW automatic
 itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
@@ -57,6 +11,40 @@ insave:
 
 out:out1
 outformat:flat
+
+
+
+item:Create ClustalW Profile 2
+itemmethod:(tr '"%//' '>' <in1 > clus_prf)
+
+itemhelp:clustalw.help
+
+in:in1
+informat:flat
+insave:
+
+
+item:Delete ClustalW Profile 2
+itemmethod:(/bin/rm -f clus_prf)
+
+itemhelp:clustalw.help
+
+
+
+item:ClustalW Profile Alignment
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=clus_prf -align ;cat clus_in.pir |sed "s/^>DL;/#/g"|sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
 
 
 item:ClustalW DNA Alignment (experts only)
