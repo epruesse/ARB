@@ -1,13 +1,26 @@
 #include <list.h>
 
 // to use to display SAI in the probe match section
-#define AWAR_PROBE_SAI_MATCH "tmp/probe_design/probe_sai_match"
-#define AWAR_PROBE_LIST "tmp/probe_design/probe_list"
-#define AWAR_SAI_2_PROBE "tmp/probe_design/sai_2_probe"
+#define AWAR_PROBE_SAI_MATCH  "tmp/probe_design/probe_sai_match"
+#define AWAR_PROBE_LIST       "tmp/probe_design/probe_list"
+#define AWAR_SAI_2_PROBE      "tmp/probe_design/sai_2_probe"
+
+#define AWAR_SAI_COLOR        "tmp/probeSai/color_0"
+#define SAI_CLR_COUNT 10
+
+enum {
+    PROBE,
+    PROBE_PREFIX,
+    PROBE_SUFFIX
+};
 
 enum {
     SAI_GC_FOREGROUND, SAI_GC_FOREGROUND_FONT = SAI_GC_FOREGROUND,
     SAI_GC_PROBE,      SAI_GC_PROBE_FONT      = SAI_GC_PROBE,
+
+    SAI_GC_0,  SAI_GC_1,  SAI_GC_2,  SAI_GC_3,  SAI_GC_4,
+    SAI_GC_5,  SAI_GC_6,  SAI_GC_7,  SAI_GC_8,  SAI_GC_9,
+
     SAI_GC_MAX
 };
 
