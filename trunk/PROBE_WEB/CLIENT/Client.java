@@ -17,10 +17,6 @@ class Client
     private HttpSubsystem webAccess  = null;
     private IOManager     iom        = null;    
 
-
-
-
-//     private GroupCache groupCache    = new GroupCache(this);
     private Vector     memberList    = new Vector();
     private HashMap    shortNameHash = new HashMap();
 
@@ -29,6 +25,8 @@ class Client
 
     public Client() {
         Probe.groupCache = new GroupCache(this);
+        Probe.setCompareOrder(Probe.SORT_BY_SEQUENCE); // 1 is default sort order
+        Toolkit.registerClient(this);
     }
 
     public HttpSubsystem webAccess() { return webAccess; }
@@ -67,10 +65,8 @@ class Client
 
         if (!serverTreeVersion.equals(localTreeVersion))
         {
-            showMessage("You have tree version '" + localTreeVersion+"'");
-            showMessage("Downloading updated tree '"+serverTreeVersion+"' ..");
-            //             System.out.println("You have tree version '" + localTreeVersion+"'");
-            //             System.out.println("Downloading updated tree '"+serverTreeVersion+"' ..");
+            Toolkit.showMessage("You have tree version '" + localTreeVersion+"'");
+            Toolkit.showMessage("Downloading updated tree '"+serverTreeVersion+"' ..");
 
             error = webAccess.downloadZippedTree(localTreeFile);
             if (error == null) {
@@ -82,33 +78,19 @@ class Client
             }
             else {
                 if (!tr.getVersionString().equals(serverTreeVersion)) {
-                    showMessage("Warning: downloaded tree has unexpected version '"+tr.getVersionString()+"'");
+                    Toolkit.showMessage("Warning: downloaded tree has unexpected version '"+tr.getVersionString()+"'");
                 }
             }
         }
         else {
-            showMessage("Your tree is up to date.");
+            Toolkit.showMessage("Your tree is up to date.");
         }
 
         return tr.getTreeString();
     }
 
 
-    public void saveConfig() // called at shutdown
-    {
-        Point     location = display.getLocationOnScreen();
-        Dimension size     = display.getScrollPaneSize();
-
-        System.out.println("Current location on screen: x="+location.x+" y="+location.y);
-        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height);
-
-        System.out.println("Saving config to ... [not implemented yet]");
-    }
-
-    public ProbesGUI getDisplay()
-    {
-        return display;
-    }
+    public ProbesGUI getDisplay() { return display; }
 
     public void matchProbes(Probe probe) throws Exception {
         boolean needUpdate = false;
@@ -141,7 +123,7 @@ class Client
 
         if (error != null) {
             root.unmarkSubtree();
-            showError(error);
+            Toolkit.showError(error);
             needUpdate = true;
         }
 
@@ -172,22 +154,22 @@ class Client
 
             list.setContents(probes);
 
-            System.out.println("list.length()="+list.length());
+            // System.out.println("list.length()="+list.length());
             if (list.length() == 0) {
                 root.unmarkSubtree();
             }
             else {
-                list.select(0);
+                list.selectProbe(0);
                 // list.requestFocus(); // doesn't work
                 matchProbes(list.getProbe(0)); // so we do the action manually
             }
         }
         catch (ClientException e) {
-            showError(e.getMessage());
+            Toolkit.showError(e.getMessage());
             emptyMessage = new String("An error occurred!");
         }
         catch (Exception e) {
-            showError("in updateNodeInformation: "+e.getMessage());
+            Toolkit.showError("in updateNodeInformation: "+e.getMessage());
             e.printStackTrace();
             emptyMessage = new String("Oops! Uncaught exception!");
         }
@@ -262,7 +244,7 @@ class Client
             formatError(error.substring(colon+1), indent+1);
     }
 
-    public void showError(String error) {
+    public void show_error(String error) {
         TextArea ta       = display.getDetails();
         if (detailState == 0)
             ta.setText("\n"+formatError(error, 0)+"\n");
@@ -273,7 +255,7 @@ class Client
         ta.setCaretPosition(999999999); // ugly way to go to end of text
     }
 
-    public void showMessage(String message)
+    public void show_message(String message)
     {
         TextArea ta = display.getDetails();
         if (detailState == 0)
@@ -287,51 +269,17 @@ class Client
 
     public void updateDetails(Probe probe, String shortNames) throws Exception
     {
-        TextArea ta = display.getDetails();
-        ta.setVisible(false);
-
-        //         int komma1 = probeInfo.indexOf(',');
-        //         int komma2 = probeInfo.indexOf(',', komma1+1);
-
-        //         if (komma1 == -1 || komma2 == -1) {
-        //             System.out.println("Kommas expected in '"+probeInfo+"'");
-        //         }
-        //         else {
         StringBuffer theText = new StringBuffer();
 
-        //             String probeSequenz = probeInfo.substring(0,komma1);
         theText.append("Selected probe: " + probe.sequence() + "\n");
-
-        //             int tm = 0;
-        //             for (int i = 0; i < probeSequence.length(); i ++) {
-        //                 tm = tm + ((probeSequence.charAt(i) == 'A' || probeSequenz.charAt(i) == 'U') ? 2 : 4); // 2 + 4 rule
-        //             }
         theText.append("Melting temperature (2+4 rule):  " + probe.temperature() + "°C\n");
-
-        // GC content
-        //             int gc = 0;
-        //             for (int i = 0; i < probeSequenz.length(); i ++) {
-        //                 gc = gc + ((probeSequenz.charAt(i) == 'G' || probeSequenz.charAt(i) == 'C') ? 1: 0);
-        //             }
-        //             theText.append("%GC-Content:  " + (gc*100)/probeSequenz.length() + "%\n");
         theText.append("%GC-Content:  " + (int)(probe.gc_content()+0.5) + "%\n");
 
-//         theText.append("");
-
         int snlen = shortNames.length();
-        if (snlen != 0)
-        {
-            int komma       = 0;
-            int begin       = 0;
-            int hit_count = probe.no_of_hits();
-
-//             while (begin < snlen) { // detect number of hits
-//                 komma                  = shortNames.indexOf(',', begin);
-//                 if (komma == -1) komma = snlen;
-//                 hit_count++;
-//                 begin                  = komma+1;
-//             }
-
+        if (snlen != 0) {
+            int komma              = 0;
+            int begin              = 0;
+            int hit_count          = probe.no_of_hits();
             int species_in_subtree = lastNode.getNoOfLeaves();
 
             theText.append("\nThe probe matches " + hit_count +
@@ -347,8 +295,6 @@ class Client
                 String   sn  = shortNames.substring(begin,komma);
                 TreeNode ref = (TreeNode)shortNameHash.get(sn);
 
-                // String details = ref.getFullName() + " , " + ref.getAccessionNumber() + "\n";
-                // toAppend.append(details);
                 theText.append(ref.getFullName());
                 theText.append(" , ");
                 theText.append(ref.getAccessionNumber());
@@ -360,18 +306,18 @@ class Client
         else {
             theText.append("Error: probe does not match any species (internal error)\n");
         }
+
+        TextArea ta = display.getDetails();
+        ta.setVisible(false);
         ta.setText(theText.toString());
-        //         }
         ta.setCaretPosition(0);
-        detailState = 0;
         ta.setVisible(true);
+
+        detailState = 0;
     }
 
     public void fillShortNameHash(TreeNode node) {
         if (!node.isLeaf()) {
-            //             fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
-            //             fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
-            
             fillShortNameHash(node.upperSon());
             fillShortNameHash(node.lowerSon());
         }
@@ -382,7 +328,7 @@ class Client
 
     public HashMap getShortNameHash() { return shortNameHash; }
 
-    
+
 //     public IOManager getIOManager(){
 // 	if (iom == null){
 // 	    System.out.println("Cannot return IOManager");
@@ -413,18 +359,18 @@ class Client
             }
 
             cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
+            cl.iom     = new IOManager(cl.display);
 
-	    cl.iom = new IOManager(cl.display, ""); // no config file name given, using default
-	    if (cl.iom == null){System.out.println("Cannot initialize IOManager");System.exit(2);}
-	    cl.display.setIOManager(cl.iom);
+//             cl.iom = new IOManager(cl.display, ".arb_probe_library_config"); // no config file name given, using default
+//   	    if (cl.iom == null) Toolkit.AbortWithError("Cannot initialize IOManager");
+//  	    cl.display.setIOManager(cl.iom);
+
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
                 NodeProbes.webAccess = cl.webAccess;
-//                 GroupCache.webAccess = cl.webAccess;
-//                 cl.groupCache        = new GroupCache(cl.webAccess);
 
                 // ask server for version info
-                cl.showMessage("Contacting probe server ..");
+                Toolkit.showMessage("Contacting probe server ..");
                 cl.webAccess.retrieveVersionInformation(); // terminates on failure
                 if (!Toolkit.clientVersion.equals(cl.webAccess.getNeededClientVersion())) {
                     Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
@@ -436,32 +382,21 @@ class Client
                     cl.treeString       = cl.readTree(cl.webAccess, reload_tree); // terminates on failure
                     cl.root             = (new TreeParser(cl.treeString)).getRootNode();
                     cl.fillShortNameHash(cl.root);
-                    // System.out.println("Number of shortNameHash-entries: " + cl.shortNameHash.size());
                 }
 
-                if (cl.root == null) {
-                    Toolkit.AbortWithError("no valid node given to display");
-                    //                     System.out.println("in Client(): no valid node given to display");
-                    //                     System.exit(1);
-                }
+                if (cl.root == null) Toolkit.AbortWithError("no valid node given to display");
 
                 cl.root.setPath("");
-                // cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
                 cl.display.initTreeDisplay(cl.root);
-
-                // cl.display.getTreeDisplay().setClient(cl); // obtain reference to Treedisplay first !
-                // cl.display.setLocation(200, 200); // this seems to cause display problems with fvwm
-                // cl.display.setVisible(true);
-                // cl.display.setLocation(200, 200);
             }
             catch (ClientException e) {
-                cl.showError(e.getMessage());
+                Toolkit.showError(e.getMessage());
                 MessageDialog popup = new MessageDialog(cl.getDisplay(), e.get_kind(), e.get_plain_message());
                 while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 System.exit(e.get_exitcode());
             }
             catch (Exception e) {
-                cl.showError(e.getMessage());
+                Toolkit.showError(e.getMessage());
                 MessageDialog popup = new MessageDialog(cl.getDisplay(), "Uncaught exception", e.getMessage());
                 while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 System.exit(3);
@@ -471,6 +406,29 @@ class Client
             System.out.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private void save(String content_type, String content, boolean ask_for_name) throws Exception {
+        if (ask_for_name) iom.saveAsk(content_type, content);
+        else              iom.save(content_type, content);
+    }
+
+    public void saveProbes(boolean ask_for_name) throws Exception {
+        save("probe list", display.getProbeList().getProbesAsString(), ask_for_name);
+    }
+    public void saveDetails(boolean ask_for_name) throws Exception {
+        save("details", display.getDetails().getText(), ask_for_name);
+    }
+
+    public void saveConfig() // called at shutdown
+    {
+        Point     location = display.getLocationOnScreen();
+        Dimension size     = display.getScrollPaneSize();
+
+        System.out.println("Current location on screen: x="+location.x+" y="+location.y);
+        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height);
+
+        System.out.println("Saving config to ... [not implemented yet]");
     }
 
 }
