@@ -179,9 +179,9 @@ static const char *parseFontString(const char *fontname, int *minus_position) {
 static char *getParsedFontPart(const char *fontname, int *minus_position, int idx) {
     aw_assert(idx >= 0 && idx<FONT_STRING_PARTS);
 
-    int   startpos = minus_position[idx]+1;
-    int   endpos   = (idx == (FONT_STRING_PARTS-1) ? strlen(fontname) : minus_position[idx+1])-1;
-    int   length   = endpos-startpos+1;
+    int   startpos = minus_position[idx]+1; // behind minus
+    int   endpos   = (idx == (FONT_STRING_PARTS-1) ? strlen(fontname) : minus_position[idx+1])-1; // in front of minus/string-end
+    int   length   = endpos-startpos+1; // excluding minus
     char *result   = new char[length+1];
 
     memcpy(result, fontname+startpos, length);
@@ -201,9 +201,10 @@ static int parsesize(const char *fontname) {
     if (!error) {
         char *sizeString = getParsedFontPart(fontname, pos, 6);
         size             = atoi(sizeString);
+        if (size == 0 && strcmp(sizeString, "0") != 0) {
+            error = GBS_global_string("Can't parse size (from '%s')", sizeString);
+        }
         delete [] sizeString;
-
-        if (size == 0) error = "zero size";
     }
 
     if (error) {
