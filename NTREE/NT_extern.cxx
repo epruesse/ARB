@@ -817,7 +817,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     }else{
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
-            AWMIMT("save_changes",	"Quicksave Changes",			"Q","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
+            AWMIMT("save_changes",	"Quicksave Changes",			"s","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
             AWMIMT("save_all_as",	"Save Whole Database As ...",		"W","save.hlp",	AWM_ALL, AW_POPUP, 	(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             awm->insert_separator();
 
@@ -1100,7 +1100,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("reset_logical_zoom",	"Reset Logical Zoom",		"o","rst_log_zoom.hlp",		AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
             AWMIMT("reset_physical_zoom",	"Reset Physical Zoom",		"y","rst_phys_zoom.hlp",	AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
             awm->insert_separator();
-            AWMIMT("table_aming",		"More Data Admin ...",		"M","tableadm.hlp",		AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
+#if defined(DEBUG)
+            AWMIMT("table_aming",		"More Data Admin ... (not finished)",		"M","tableadm.hlp",		AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
+#endif // DEBUG
             awm->insert_sub_menu(0,"Probe Functions",		"F");
             {
                 AWMIMT( "probe_design",		"Probe Design ...", "D", "probedesign.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, 0 );
