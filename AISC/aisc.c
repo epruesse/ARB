@@ -119,79 +119,24 @@ aisc_init()
     gl->outtab['9'] = 0;
     gl->outtab['\\'] = 0;
 }
-void
-p_err_eof(void)
-{
-    fprintf(stderr, "Unexpected end of file seen in line %i file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_brih(void)
-{
-    fprintf(stderr, "You tried to insert a bracket in a named field: line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_nobr(void)
-{
-    fprintf(stderr, "{} found; missing contents: line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_nocbr(void)
-{
-    fprintf(stderr, "missing '}': line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_emwbr(void)
-{
-    fprintf(stderr, "string expected ',' found: line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_hewnoid(void)
-{
-    fprintf(stderr, "string expected ';' found: line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_mixhnh(void)
-{
-    fprintf(stderr, "you cannot use the symbol @ in this line (or it mussed be the thirst symbol in a line): line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_misscom()
-{
-    fprintf(stderr, "missing ';': line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void
-p_error_missco()
-{
-    fprintf(stderr, "missing ',' or ';' or 'newline': line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
-    gl->error_flag = 1;
-}
-void p_error_exp_string(void)
-{
-    fprintf(stderr, "Error: Expecting string: line %i  file %s\n",
-	    gl->line_cnt,gl->line_path);
+
+void p_err(const char *error) {
+    fprintf(stderr, "%s:%i: Error: %s\n", gl->line_path, gl->line_cnt, error);
     gl->error_flag = 1;
 }
 
-char           *
-read_aisc_string(char ** in, int *is_m)
-{
+void p_err_eof         (void){ p_err("Unexpected end of file seen"); }
+void p_error_brih      (void){ p_err("You tried to insert a bracket in a named field"); }
+void p_error_nobr      (void){ p_err("{} found, missing contents"); }
+void p_error_nocbr     (void){ p_err("missing '}'"); }
+void p_error_emwbr     (void){ p_err("string expected, ',' found"); }
+void p_error_hewnoid   (void){ p_err("string expected, ';' found"); }
+void p_error_mixhnh    (void){ p_err("you cannot use the symbol '@' in this line (or it must be the third symbol in the line)"); }
+void p_error_misscom   (void){ p_err("missing ';'"); }
+void p_error_missco    (void){ p_err("missing ',' or ';' or 'newline'"); }
+void p_error_exp_string(void){ p_err("string expected"); }
+
+char *read_aisc_string(char ** in, int *is_m) {
     char           *cp;
     char            buf[1024];
     cp = &buf[0];
@@ -224,14 +169,47 @@ read_aisc_string(char ** in, int *is_m)
 	return 0;
     }
     if (gl->lastchar == '@') {
-	*is_m = 1;
-	get_byte(in);
-	while ((gl->lastchar != EOSTR) && (gl->s_tab[gl->lastchar]))
-	    get_byte(in);
-	if (gl->lastchar == EOSTR) {
-	    p_err_eof();
-	    return 0;
-	}
+        if (strncmp(*in, "SETSOURCE", 9) == 0) {
+            char *space = (*in)+9;
+            char *file;
+            char *comma;
+            char *end;
+            if (*space != ' ') {
+                p_err("space expected after '@SETSOURCE' (injected code)");
+                return 0;
+            }
+            *in   = space;
+            get_byte(in);
+            while ((gl->lastchar != EOSTR) && (gl->s_tab[gl->lastchar])) get_byte(in);
+            file  = (*in)-1;
+            comma = strchr(file, ',');
+            if (!comma) {
+                p_err("comma expected after '@SETSOURCE filename' (injected code)");
+                return 0;                
+            }
+            end = strchr(comma, '@');
+            if (!end) {
+                p_err("'@' expected after '@SETSOURCE filename,line' (injected code)");
+                return 0;
+            }
+
+            comma[0]      = 0;
+            gl->line_path = file;
+            gl->line_cnt  = atoi(comma+1);
+
+            *in = end+1;
+            get_byte(in);
+            return read_aisc_string(in, is_m);
+        }
+        else {
+            *is_m = 1;
+            get_byte(in);
+            while ((gl->lastchar != EOSTR) && (gl->s_tab[gl->lastchar])) get_byte(in);
+            if (gl->lastchar == EOSTR) {
+                p_err_eof();
+                return 0;
+            }
+        }
     } else {
 	*is_m = 0;
     }
