@@ -1,6 +1,11 @@
 item:Protein_ML (molphy; max 40 species)
 itemmeta: L
-itemmethod:(GEN_INFILE(in1);cat infile |tr '?' '-' >in1.in;mv in1.in infile;RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
+itemmethod:(GEN_INFILE(in1);\
+            cat infile |tr '?' '-' >in1.in;\
+            mv in1.in infile;\
+            RUN_IN_WINDOW(($BOOTSTRP;\
+                           $DISPLAY_FUNC));\
+            RM_LOCAL_FILES(in1 arb_read_tree_args))&
 itemhelp:protml.help
 
 arg:DISPLAY_FUNC

@@ -1,6 +1,10 @@
 item:DeSoete Tree fit
 itemmeta: D
-itemmethod: ( RUN_IN_WINDOW((arb_readseq -a -f8 in1>in1.flat;count -t $CORR in1.flat> in1.tmp ; lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out; $DISPLAY_FUNC));/bin/rm -f in1* )&
+itemmethod: (RUN_IN_WINDOW((arb_readseq -a -f8 in1>in1.flat;\
+                            count -t $CORR in1.flat> in1.tmp;\
+                            lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out;\
+                            $DISPLAY_FUNC));\
+            /bin/rm -f in1* )&
 itemhelp:lsadt.help
 
 in:in1

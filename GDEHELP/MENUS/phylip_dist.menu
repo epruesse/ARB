@@ -1,6 +1,12 @@
 item:Phylip Distance Methods ( Simple GUI Based Interface )
 itemmeta: G
-itemmethod:(	GEN_INFILE(in1);RUN_IN_WINDOW(( $CORRECTION;$DPGM;mv -f outfile infile;arb_echo y |$PROGRAM;$DISPLAY_FUNC ));	RM_LOCAL_FILES(in1)	)&
+itemmethod:(GEN_INFILE(in1);\
+            RUN_IN_WINDOW(($CORRECTION;\
+                           $DPGM;\
+                           mv -f outfile infile;\
+                           arb_echo y |$PROGRAM;\
+                           $DISPLAY_FUNC));\
+            RM_LOCAL_FILES(in1)	)&
 itemhelp:phylip.help
 
 arg:DISPLAY_FUNC
@@ -43,7 +49,11 @@ insave:
 
 item:Phylip Distance Matrix
 itemmeta: M
-itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank in1 -phylip infile ; $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;arb_textedit outfile;/bin/rm -f in1 infile outfile)&
+itemmethod:(/bin/rm -f treefile infile outfile;\
+            arb_convert_aln -GenBank in1 -phylip infile;\
+            $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;\
+            arb_textedit outfile;\
+            /bin/rm -f in1 infile outfile)&
 itemhelp:phylip.help
 
 arg:DPGM

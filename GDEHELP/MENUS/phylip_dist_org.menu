@@ -1,5 +1,10 @@
 item:Phylip Distance Methods ( Original Phylip, Interactiv )
-itemmethod:(	GEN_INFILE(in1);RUN_IN_WINDOW(( $DPGM;mv -f outfile infile;$PROGRAM;$DISPLAY_FUNC ));	RM_LOCAL_FILES(in1)	)&
+itemmethod:(GEN_INFILE(in1);\
+            RUN_IN_WINDOW(($DPGM;\
+                           mv -f outfile infile;\
+                           $PROGRAM;\
+                           $DISPLAY_FUNC));\
+            RM_LOCAL_FILES(in1))&
 
 arg:DISPLAY_FUNC
 argtype:chooser

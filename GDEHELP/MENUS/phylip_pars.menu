@@ -1,6 +1,8 @@
 item:Phylip DNAPARS
 itemmeta: P
-itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
+itemmethod:(GEN_INFILE(in1);\
+            RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));\
+            RM_LOCAL_FILES(in1 arb_read_tree_args) )&
 itemhelp:dnapars.help
 
 arg:DISPLAY_FUNC
@@ -26,7 +28,9 @@ insave:
 
 item:Phylip PROTPARS
 itemmeta: R
-itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
+itemmethod:(GEN_INFILE(in1);\
+            RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));\
+            RM_LOCAL_FILES(in1 arb_read_tree_args) )&
 itemhelp:dnapars.help
 
 arg:DISPLAY_FUNC
