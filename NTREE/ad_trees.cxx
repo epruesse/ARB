@@ -103,9 +103,9 @@ void ad_tree_set_security(AW_root *aw_root)
 }
 
 enum ExportTreeType {
-    AD_TREE_EXPORT_FORMAT_NEWICK, // was 0
-//     AD_TREE_EXPORT_NDS, // was 1
-    AD_TREE_EXPORT_FORMAT_ORS, // was 2
+    AD_TREE_EXPORT_FORMAT_NEWICK,
+    AD_TREE_EXPORT_FORMAT_ORS,
+    AD_TREE_EXPORT_FORMAT_XML,
 };
 
 enum ExportNodeType {
@@ -117,6 +117,7 @@ void update_filter_cb(AW_root *root){
     const char     *filter_type = 0;
 
     switch (ExportTreeType(root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
+        case AD_TREE_EXPORT_FORMAT_XML: filter_type = "xml"; break;
         case AD_TREE_EXPORT_FORMAT_ORS: filter_type = "otb"; break;
         case AD_TREE_EXPORT_FORMAT_NEWICK:
             switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
@@ -259,17 +260,18 @@ void tree_save_cb(AW_window *aww){
 			case AD_TREE_EXPORT_FORMAT_ORS:
 				error = create_and_save_CAT_tree(gb_main,tree_name,fname);
 				break;
+            case AD_TREE_EXPORT_FORMAT_XML:
+                error = AWT_export_XML_tree(gb_main, tree_name,
+                                            (ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS),
+                                            fname);
+				break;
             case AD_TREE_EXPORT_FORMAT_NEWICK:
                 error = AWT_export_tree(gb_main, tree_name,
-
                                         (ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS),
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
                                         fname);
-
-                // error = AWT_export_tree(gb_main,tree_name,0/*(int)NDS*/,fname);
-                // .... Parameter fuer bootstraps, branchlens, groupnames an AWT_export_tree weiterreichen
                 break;
 			default: assert(0); break;
 		}
@@ -302,6 +304,7 @@ AW_window *create_tree_export_window(AW_root *root)
 	aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT,0,0);
 	aws->insert_option("NEWICK TREE FORMAT","P",AD_TREE_EXPORT_FORMAT_NEWICK);
 // 	aws->insert_option("USE NDS (CANNOT BE RELOADED)","N",AD_TREE_EXPORT_NDS);
+	aws->insert_option("ARB_XML TREE FORMAT","X",AD_TREE_EXPORT_FORMAT_XML);
 	aws->insert_option("ORS TRANSFER BINARY FORMAT","O",AD_TREE_EXPORT_FORMAT_ORS);
 	aws->update_option_menu();
 
@@ -371,7 +374,6 @@ AW_window *create_tree_import_window(AW_root *root)
 	aws->at("close");
 	aws->create_button("CLOSE","CLOSE","C");
 
-
 	aws->at("user");
 	aws->label("tree_name:");
 	aws->create_input_field(AWAR_TREE_IMPORT "/tree_name",15);
@@ -385,6 +387,8 @@ AW_window *create_tree_import_window(AW_root *root)
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel2");
 	aws->create_button("CANCEL","CANCEL","C");
+
+    aws->window_fit();
 
 	return (AW_window *)aws;
 }
