@@ -36,7 +36,7 @@ Welcome to the 'ARB' Sequence Database Tools
 	'arb.tgz'		pub/ARB/$MACH		// ARB program
 	'zcat'			pub/ARB/$MACH		// decompress (gzip)
         ['arb_ale.tgz'		pub/ARB/$MACH		// optional Editor ]
-        ['***.arb'		pub/ARB/data/		// optional demo / 
+        ['***.arb'		pub/ARB/data/		// optional demo /
       								   real rRNA data ]
 
 	Notes:
@@ -52,7 +52,7 @@ Welcome to the 'ARB' Sequence Database Tools
 	directory. Creating this directory, copying all data into it, and setting
 	the permissions correctly is done by the installation script
 		'arb_install'
-	
+
 	Goto the directory, where the files
 
 		'arb_install.sh'		//install script
@@ -65,11 +65,11 @@ Welcome to the 'ARB' Sequence Database Tools
 
 	Answer all questions asked by the script.
 	Notes: -The script will ask about a pt_server directory. This is a
-		directory where arb will store big index files. 
+		directory where arb will store big index files.
 		You should enter a different path as you do not want to
 		recreate those files after an ARB update.
 	      - Normally pressing enter will be a good choice.
-	      - You can rerun the script many times, it can be used to 
+	      - You can rerun the script many times, it can be used to
 		change an existing installation.
 
 	Change your .cshrc/.profile files:
@@ -80,7 +80,7 @@ Welcome to the 'ARB' Sequence Database Tools
 	reread it,	(logout+login )
 
 	goto a directory with a demo database 'eg demo.arb'
-	and start 'ARB' with 
+	and start 'ARB' with
 
 			'arb'
 
@@ -101,9 +101,9 @@ Welcome to the 'ARB' Sequence Database Tools
 		(see next topic)
 	5. emacs & ale
 
-	It may happen that we don't supply the most recent versions of the 
+	It may happen that we don't supply the most recent versions of the
 	foreign software.
-	It also may happen that you already have installed some of these 
+	It also may happen that you already have installed some of these
 	programs. In such a case it may happen that
 
 	1.	the old version is not compatible with the new one.
@@ -146,19 +146,19 @@ ARB uses  several non standard libraries:
 
 /*********** PT_server *************/
 
-	To Install 'ARB' you have to know that some modules use a so 
+	To Install 'ARB' you have to know that some modules use a so
 	called 'pt_server' (prefix tree server).
 
-	ARB needs a writeable directory to store the pt_server files. 
+	ARB needs a writeable directory to store the pt_server files.
 	Those files are needed for fast database search
 	(by probe_design, probe_match and the automatic aligner)
 	and need a lot of disc space (up to several 100 mega bytes,
 	e.g. 4000 16S RNA sequences require about 40 MB).
-	This files are not created now, but later on by all users 
+	This files are not created now, but later on by all users
 		<ARB_NT/etc/PT_SERVER admin/update server>
 	You may define a special directory as the pt_server files location.
-	This prevents any loss of data installing a new version of 
-	ARB. 
+	This prevents any loss of data installing a new version of
+	ARB.
 	To minimize the use of ressources in a workstation cluster
 	only one pt_server for each database is started on a user defined
 	host. The first user starts the pt_server, and all other users
@@ -204,8 +204,8 @@ ARB uses  several non standard libraries:
 	ARB is running properly and stably on our systems. However, it may be
 	that there are bugs never detected by us or never appearing on our
 	systems. Please don't hesitate to inform us about any bugs. A detailed
-	description of the steps performed before the problem was evident and 
-	of the number and types of modules running at the same time would 
+	description of the steps performed before the problem was evident and
+	of the number and types of modules running at the same time would
 	extremely be helpful to our computer scientists.
 
 	The 6demo.arb database contains a tree (tree_demo) that comprises all
@@ -217,7 +217,7 @@ ARB uses  several non standard libraries:
 	treeing methods (PHYLIP, De Soete, fastDNAml, ARB neighourjoining;
 	see online help).
 
-	In its default version, the tree shows groups. There is a completely 
+	In its default version, the tree shows groups. There is a completely
 	ungrouped (tree_ungrouped) version included too as well as subtrees for
 	the Bacteria and Archaea. See the online help texts to handle and modify
 	trees and data. Please let us know whether online help texts are
@@ -251,42 +251,35 @@ ARB uses  several non standard libraries:
 
 
 
-/*********** Hotline *************/
+/*********** Support *************/
+
 	Please send any comments, bug reports  or questions to
 
-		arb@mikro.biologie.tu-muenchen.de
-
-	or in very urgent cases directly to
-
-		strunk@mikro.biologie.tu-muenchen.de (Computer Scientist)
-		ludwig@mikro.biologie.tu-muenchen.de (Microbiologist)
-
-
-	Note: In the near future we will offer an online hotline to ARB users.
+		arb@arb-home.de
 
 /*********** Copyright Notice *************/
 
-	The ARB software and documentation are not in the public domain.  
-	External functions used by ARB are the proporty of, their respective 
+	The ARB software and documentation are not in the public domain.
+	External functions used by ARB are the proporty of, their respective
 	authors. This release of the ARB program and documentation may not
 	be sold, or incorporated into a commercial product, in whole or in
 	part without the expressed written consent of the Technical
 	University of Munich and of its supervisors
 	Oliver Strunk & Wolfgang Ludwig.
 
-	All interested parties may redistribute the ARB as 
-	long as all copies are accompanied by this 
-	documentation,  and all copyright notices remain 
-	intact.  Parties interested in redistribution must do 
-	so on a non-profit basis, charging only for cost of 
+	All interested parties may redistribute the ARB as
+	long as all copies are accompanied by this
+	documentation,  and all copyright notices remain
+	intact.  Parties interested in redistribution must do
+	so on a non-profit basis, charging only for cost of
 	media.
 
 /*********** Disclaimer *************/
 
 	THE AUTHORS OF ARB GIVE NO WARRANTIES,
-	EXPRESSED OR IMPLIED FOR THE SOFTWARE AND 
-	DOCUMENTATION PROVIDED, INCLUDING, 
-	BUT NOT LIMITED TO WARRANTY OF 
-	MERCHANTABILITY AND WARRANTY OF 
-	FITNESS FOR A PARTICULAR PURPOSE.  
+	EXPRESSED OR IMPLIED FOR THE SOFTWARE AND
+	DOCUMENTATION PROVIDED, INCLUDING,
+	BUT NOT LIMITED TO WARRANTY OF
+	MERCHANTABILITY AND WARRANTY OF
+	FITNESS FOR A PARTICULAR PURPOSE.
 
