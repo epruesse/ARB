@@ -45,12 +45,19 @@ endif
 dirs:
 		mkdir -p $(XML_LOCATION)
 		mkdir -p $(XML_LOCATION)/seer
+		mkdir -p $(XML_LOCATION)/prompt
+
 		mkdir -p $(HTML_LOCATION)
 		mkdir -p $(HTML_LOCATION)/seer
+		mkdir -p $(HTML_LOCATION)/prompt
+
 		mkdir -p $(HLP_DEST)
 		mkdir -p $(HLP_DEST)/seer
+		mkdir -p $(HLP_DEST)/prompt
+
 		@-ln -s ../arb_help.dtd $(XML_LOCATION)
 		@-ln -s ../../arb_help.dtd $(XML_LOCATION)/seer
+		@-ln -s ../../arb_help.dtd $(XML_LOCATION)/prompt
 
 HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
@@ -73,6 +80,7 @@ OLD_HELP_ALL= \
 				$(HLP_GENERATED)/*.hlp \
 				$(HLP_SOURCE)/*.hlp \
 				$(HLP_SOURCE)/seer/*.hlp \
+				$(HLP_SOURCE)/prompt/*.hlp \
 		)
 
 ifeq ($(TEST_ONE),1)
@@ -111,7 +119,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 
 else
 
-XML=$(wildcard $(XML_LOCATION)/*.xml $(XML_LOCATION)/seer/*.xml)
+XML=$(wildcard $(XML_LOCATION)/*.xml $(XML_LOCATION)/seer/*.xml) $(XML_LOCATION)/prompt/*.xml)
 
 endif
 
