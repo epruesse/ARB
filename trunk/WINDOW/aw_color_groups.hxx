@@ -2,7 +2,7 @@
 //                                                                  //
 //    File      : aw_color_groups.cxx                               //
 //    Purpose   :                                                   //
-//    Time-stamp: <Fri Jun/28/2002 13:16 MET Coder@ReallySoft.de>   //
+//    Time-stamp: <Fri Oct/11/2002 17:17 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in June 2001      //
 //    Institute of Microbiology (Technical University Munich)       //
@@ -49,7 +49,7 @@
 #define AW_COLOR_GROUP_ENTRY "ARB_color"
 #define AW_COLOR_GROUPS      12
 
-void        AW_set_color_group(GBDATA *gbd, long color_group);
+GB_ERROR    AW_set_color_group(GBDATA *gbd, long color_group);
 long        AW_find_color_group(GBDATA *gbd, AW_BOOL ignore_usage_flag = false);
 const char *AW_get_color_group_name(AW_root *awr, int color_group);
 
