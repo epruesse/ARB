@@ -185,7 +185,7 @@ public:
     AW_cb_struct    *_d_callback;
 
     AW_window();
-    ~AW_window();
+    virtual ~AW_window();
 
 
     AW_event       event;
