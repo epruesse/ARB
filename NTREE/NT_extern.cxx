@@ -988,9 +988,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Species","c","species.hlp", AWM_ALL);
         {
-            AWMIMT( "selection_admin","Configurations", "o", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
-            AWMIMT( "species_info",   "Species Information", "I",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
-            AWMIMT( "species_search", "Search species",         "S",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
+            AWMIMT( "selection_admin","Configurations",      "o", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
+            AWMIMT( "species_info",   "Species information", "i",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
+            AWMIMT( "species_search", "Search and query",    "q",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
 
             awm->insert_separator();
             awm->insert_sub_menu(0, "Database fields admin","f");
