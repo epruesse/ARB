@@ -114,6 +114,24 @@ GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo) {
     return GEN_find_gene(gb_organism, origin_gene_name);
 }
 
+GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, const char *gene_name) {
+    GBDATA *gb_pseudo;
+
+    for (gb_pseudo = GEN_first_pseudo_species(gb_main);
+         gb_pseudo;
+         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
+    {
+        const char *origin_gene_name = GEN_origin_gene(gb_pseudo);
+        if (strcmp(gene_name, origin_gene_name) == 0) {
+            const char *origin_species_name = GEN_origin_organism(gb_pseudo);
+            if (strcmp(organism_name, origin_species_name) == 0) {
+                break; // found pseudo species
+            }
+        }
+    }
+    return gb_pseudo;
+}
+
 //  --------------------------------
 //      find pseudo-species
 //  --------------------------------
