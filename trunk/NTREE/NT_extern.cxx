@@ -1129,7 +1129,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0, "Other sequence editors","O");
             {
                 AWMIMT("arb_edit", "ARB Editor (old)", "o", "arb_edit.hlp", AWM_SEQ2, (AW_CB)NT_system_cb, (AW_CL)"arb_edit &",  0               );
-                AWMIMT("arb_ale",  "ALE Editor",       "A", "ale.hlp",      AWM_SEQ2, (AW_CB)NT_system_cb, (AW_CL)"arb_ale : &", (AW_CL)"ale.hlp");
+                // AWMIMT("arb_ale",  "ALE Editor",       "A", "ale.hlp",      AWM_SEQ2, (AW_CB)NT_system_cb, (AW_CL)"arb_ale : &", (AW_CL)"ale.hlp");
                 AWMIMT("arb_gde",  "GDE Editor",       "G", "gde.hlp",      AWM_SEQ2, (AW_CB)NT_system_cb, (AW_CL)"arb_gde : &", (AW_CL)"gde.hlp");
             }
             awm->close_sub_menu();
