@@ -27,44 +27,15 @@ using namespace std;
 
 void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *organism  = GB_strdup(item_name);
-#ifndef DEVEL_IDP
     char *gene = strchr(organism, '/');
-#endif
-#ifdef DEVEL_IDP
-    char *gene = strchr(organism, ' ');
-#endif
 
     if (gene) {
-        gene[0] = 0;
-        ++gene;
-#ifndef DEVEL_IDP
- aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
- aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
-#endif
-#ifdef DEVEL_IDP
- aw_root->awar(AWAR_ORGANISM_NAME)->write_string(gene);
- aw_root->awar(AWAR_GENE_NAME)->write_string(organism);
-#endif
+        *gene++ = 0;
         aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
         aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
-
-        //         // search for pseudo species
-        //         GB_transaction  dummy(gb_main);
-        //         GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene);
-
-        //         if (gb_pseudo) {
-        //             GBDATA *gb_name     = GB_find(gb_pseudo, "name", 0, down_level);
-        //             char   *pseudo_name = GB_read_string(gb_name);
-
-        //             aw_root->awar(AWAR_SPECIES_NAME)->write_string(pseudo_name);
-        //             free(pseudo_name);
-        //             // Note : AWAR_ORGANISM_NAME and AWAR_GENE_NAME are set by AWAR_SPECIES_NAME
-        //         }
-        //         else {
-        //             aw_root->awar(AWAR_SPECIES_NAME)->write_string(organism);
-        //             aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
-        //             // Note : AWAR_ORGANISM_NAME is set by AWAR_SPECIES_NAME
-        //         }
+    }
+    else {
+        aw_message(GBS_global_string("Illegal item_name '%s' in GEN_select_gene()"));
     }
     free(organism);
 }
