@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Mon Oct/06/2003 10:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/14/2003 19:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -563,7 +563,11 @@ GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
     }
     globalData.SQ_set_avg_bases(avg_bases);
 
-    delete alignment_name;
+
+#warning read note please
+    delete alignment_name;      // alignment_name wurde mit malloc allociert -> bitte mit free() freigeben
+    // valgrind sollte dies melden
+
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
