@@ -26,8 +26,9 @@ public class TreeNode
     private String accession_number;
 
     // ARB Data (valid for internal nodes only)
-    private String  groupName;
-    private boolean folded; // whether group is folded
+    private String        groupName;
+    private boolean       folded; // whether group is folded
+    private static String autofold = "<autofold>";
 
     // probe information
     private int exactMatches;   // number of probes matching exactly
@@ -118,8 +119,23 @@ public class TreeNode
     }
 
     public void fold() { folded = true; }
-    public void unfold() { folded = false; }
-    public boolean isFolded() { return folded; }
+    public void unfold() {
+        folded = false;
+        if (groupName.equals(autofold)) {
+            groupName = null;
+        }
+    }
+
+    // safe version : 
+    public boolean isFoldedGroup() { return isGroup() && folded; }
+    public boolean isUnfoldedGroup() { return isGroup() && !folded; }
+    // quick version : 
+    // public boolean isFoldedGroup() { return folded; }
+    // public boolean isUnfoldedGroup() { return !folded; }
+    
+    // public boolean isFolded() { return folded; }
+
+    public boolean isAutofolded() { return isGroup() && groupName.equals(autofold); }
     public boolean isGroup() { return groupName != null; }
 
     public double getTotalDist() { return totalDist; }
@@ -137,7 +153,7 @@ public class TreeNode
         double d1 = upperSon().calculateTotalDist(totalDist);
         double d2 = lowerSon().calculateTotalDist(totalDist);
 
-        if (isFolded()) return totalDist;
+        if (isFoldedGroup()) return totalDist;
         return d1>d2 ? d1 : d2;
     }
 
@@ -207,18 +223,14 @@ public class TreeNode
         return result;
     }
 
-    public void setFather(TreeNode f) throws Exception
-    {
+    public void setFather(TreeNode f) throws Exception {
         if (father != null) {
             throw new Exception("setFather called twice");
         }
         father = f;
     }
 
-    public TreeNode getFather()
-    {
-        return father;
-    }
+    public TreeNode getFather() { return father; }
 
     public void addChild(TreeNode tn) throws Exception
     {
@@ -265,6 +277,44 @@ public class TreeNode
 
     public int getXOffset(){ return xOffset; }
     public int getYOffset(){ return yOffset; }
+
+    public TreeNode lowermostChild() {
+        if (isLeaf()) return this;
+        return lowerSon().lowermostChild();
+    }
+    public TreeNode uppermostChild() {
+        if (isLeaf()) return this;
+        return upperSon().uppermostChild();
+    }
+    public TreeNode getPreviousLeaf() {
+        if (father == this) return null; // at root (called somewhere from uppermost branch)
+        if (father.upperSon() == this) return father.getPreviousLeaf();
+        return father.upperSon().lowermostChild();
+    }
+
+    public int getHeight() {    // returns display height of subtree
+        if (isLeaf()) {
+            TreeNode previousLeaf = getPreviousLeaf();
+            if (previousLeaf == null) { // uppermost leaf
+                return getYOffset();
+            }
+            return getYOffset()-previousLeaf.getYOffset();
+        }
+
+        TreeNode lowestChild  = lowermostChild();
+        TreeNode uppestChild  = uppermostChild();
+        TreeNode previousLeaf = uppestChild.getPreviousLeaf();
+
+        if (previousLeaf == null) { // uppermost subtree
+            return lowestChild.getYOffset();
+        }
+
+        int upperOffset = previousLeaf.getYOffset();
+        int lowerOffset = lowestChild.getYOffset();
+
+        return lowerOffset-upperOffset;
+    }
+
 
     public boolean setMarked(int marker) {
         if (marker == marked) return false;
@@ -484,7 +534,7 @@ public class TreeNode
     public boolean unfoldAll(boolean recursive) {
         if (!isLeaf()) {
             boolean changed = false;
-            if (isGroup() && isFolded()) { changed = true; unfold(); }
+            if (isFoldedGroup()) { changed = true; unfold(); }
             if (recursive || !changed) {
                 changed = upperSon.unfoldAll(recursive) || changed;
                 changed = lowerSon.unfoldAll(recursive) || changed;
@@ -498,7 +548,7 @@ public class TreeNode
             boolean changed = false;
             changed = upperSon.foldAll(recursive) || changed;
             changed = lowerSon.foldAll(recursive) || changed;
-            if ((recursive || !changed) && isGroup() && !isFolded()) { changed = true; fold(); }
+            if ((recursive || !changed) && isUnfoldedGroup()) { changed = true; fold(); }
             return changed;
         }
         return false;
@@ -506,7 +556,7 @@ public class TreeNode
     public boolean unfoldCompleteMarked(boolean recursive) {
         if (!isLeaf() && markedState() != 0) {
             boolean changed = false;
-            if (isGroup() && isFolded() && markedState() == 2) { changed = true; unfold(); }
+            if (isFoldedGroup() && markedState() == 2) { changed = true; unfold(); }
             if (recursive || !changed) {
                 changed = upperSon.unfoldCompleteMarked(recursive) || changed;
                 changed = lowerSon.unfoldCompleteMarked(recursive) || changed;
@@ -520,7 +570,7 @@ public class TreeNode
             boolean changed = false;
             changed = upperSon.foldCompleteMarked(recursive) || changed;
             changed = lowerSon.foldCompleteMarked(recursive) || changed;
-            if ((recursive || !changed) && isGroup() && !isFolded() && markedState() == 2) { changed = true; fold(); }
+            if ((recursive || !changed) && isUnfoldedGroup() && markedState() == 2) { changed = true; fold(); }
             return changed;
         }
         return false;
@@ -528,7 +578,7 @@ public class TreeNode
     public boolean unfoldUnmarked(boolean recursive) {
         if (!isLeaf()) {
             boolean changed = false;
-            if (isGroup() && isFolded() && markedState() == 0) { changed = true; unfold(); }
+            if (isFoldedGroup() && markedState() == 0) { changed = true; unfold(); }
             if (recursive || !changed) {
                 changed = upperSon.unfoldUnmarked(recursive) || changed;
                 changed = lowerSon.unfoldUnmarked(recursive) || changed;
@@ -542,7 +592,7 @@ public class TreeNode
             boolean changed = false;
             changed = upperSon.foldUnmarked(recursive) || changed;
             changed = lowerSon.foldUnmarked(recursive) || changed;
-            if ((recursive || !changed) && isGroup() && !isFolded() && markedState() == 0) { changed = true; fold(); }
+            if ((recursive || !changed) && isUnfoldedGroup() && markedState() == 0) { changed = true; fold(); }
             return changed;
         }
         return false;
@@ -550,7 +600,7 @@ public class TreeNode
     public boolean unfoldPartiallyMarked(boolean recursive) {
         if (!isLeaf() && markedState() == 1) {
             boolean changed = false;
-            if (isGroup() && isFolded()) { changed = true; unfold(); }
+            if (isFoldedGroup()) { changed = true; unfold(); }
             if (recursive || !changed) {
                 changed = upperSon.unfoldPartiallyMarked(recursive) || changed;
                 changed = lowerSon.unfoldPartiallyMarked(recursive) || changed;
@@ -564,7 +614,7 @@ public class TreeNode
             boolean changed = false;
             changed = upperSon.foldPartiallyMarked(recursive) || changed;
             changed = lowerSon.foldPartiallyMarked(recursive) || changed;
-            if ((recursive || !changed) && isGroup() && !isFolded()) { changed = true; fold(); }
+            if ((recursive || !changed) && isUnfoldedGroup()) { changed = true; fold(); }
             return changed;
         }
         return false;
@@ -577,5 +627,71 @@ public class TreeNode
         return unfoldPartiallyMarked(true) || unfoldCompleteMarked(true) || unfoldUnmarked(true); // full-depth unfolding
     }
 
+
+    public AutofoldCandidate findFoldCandidate(int wanted_reduce) {
+        if (isLeaf()) return null;
+        if (isFoldedGroup()) return null;
+
+        AutofoldCandidate best = new AutofoldCandidate(this);
+        // System.out.println("height="+getHeight()+" ("+best.getNode().getBinaryPath()+")");
+        // if (best.getHeight() < wanted_reduce) return null; // subtree is too small to be candidate
+
+
+        {
+            AutofoldCandidate bestUpper = upperSon().findFoldCandidate(wanted_reduce);
+            if (bestUpper != null && bestUpper.betterThan(best)) {
+                // System.out.println("bestUpper("+bestUpper.getNode().getBinaryPath()+") betterThan best("+best.getNode().getBinaryPath()+")");
+                best = bestUpper;
+            }
+        }
+        {
+            AutofoldCandidate bestLower = lowerSon().findFoldCandidate(wanted_reduce);
+            if (bestLower != null && bestLower.betterThan(best)) {
+                // System.out.println("bestLower("+bestLower.getNode().getBinaryPath()+") betterThan best("+best.getNode().getBinaryPath()+")");
+                best = bestLower;
+            }
+        }
+
+        return best;
+    }
+
+    public void autofold(int wanted_reduce) {
+        System.out.println("autofolding.. wanted_reduce="+wanted_reduce);
+
+        AutofoldCandidate.setMinHeight(wanted_reduce);
+        AutofoldCandidate candidate = findFoldCandidate(wanted_reduce);
+
+        if (candidate != null) {
+            TreeNode node2fold = candidate.getNode();
+            System.out.println("autofolding "+node2fold.getBinaryPath());
+
+            if (node2fold.isGroup()) {
+                Toolkit.showMessage("Autofolding group '"+node2fold.getGroupName()+"'");
+                node2fold.fold();
+            }
+            else {
+                Toolkit.showMessage("Autofolding non-group '"+node2fold.getBinaryPath()+"'");
+                node2fold.groupName = autofold;
+                node2fold.fold();
+            }
+        }
+    }
+    public void autounfold() {
+        if (!isLeaf()) {
+            if (isAutofolded()) groupName = null;
+            upperSon().autounfold();
+            lowerSon().autounfold();
+        }
+    }
+
+    public boolean hasAnchestor(TreeNode anchestor) {
+        if (father == this) return false;
+        if (father == anchestor) return true;
+        return father.hasAnchestor(anchestor);
+    }
+
+    public boolean contains(TreeNode child) {
+        return child.hasAnchestor(this);
+    }
 
 }// end of class
