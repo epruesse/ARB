@@ -1888,16 +1888,11 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->callback(pd_export_pt_server);
     aws->create_button("UPDATE_SERVER","Update server");
 
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
-#warning re-activate the toggle when gene pt-server is fixed
-#endif // DEVEL_RALF
     if (is_genom_db) {
         aws->at( "gene_server" );
         aws->label("Gene server?");
         aws->create_toggle(AWAR_PROBE_CREATE_GENE_SERVER);
     }
-#endif // DEBUG
 
     return aws;
 }
