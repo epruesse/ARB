@@ -27,11 +27,16 @@ DESCRIPTION	Allows to start and kill 'PT_SERVER' and to update 'PT_SERVER'
 
                 In Genome Databases you may check the 'Gene server' toggle to
                 build a PT-Server which is based on the sequences of the single
-                genes (and introns) of all organisms.
+                genes (and intergene regions) of all organisms.
 
                 Such a PT-Server allows to perform similarity searches and probe
                 design/match for single genes (in opposite to whole genomes with
                 a "normal" PT-Server).
+
+                When designing probes with such a gene PT-Server you always have
+                to validate these probes against a PT-Server build upon complete
+                genome sequences, otherwise you will get incorrect results for all
+                probes matching at beginning/end of a gene.
 
 
 NOTES		Read PT_SERVER: What Why and How if you do not understand this
