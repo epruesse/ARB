@@ -1191,11 +1191,11 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 
     root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1   );
     root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1   );
-    root->awar_string(AWAR_SAI_2_PROBE,              "", global); // probe and sai visualization
-    // root->awar_string(AWAR_SAI_COLOR_STR, "", global);
-    // for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
-    //  AW_awar *def_awar = root->awar_string(getAwarName(i),"",global);
-    // }
+    root->awar_string(AWAR_SAI_2_PROBE,              "", global);   // probe and sai visualization
+    root->awar_string(AWAR_DB_FIELD_NAME,        "name", global);   // to select the database field for display purpose
+    root->awar_int   (AWAR_DB_FIELD_WIDTH,           10, db1   );   // setting the width of the database field to display 
+    root->awar_string(AWAR_ACI_COMMAND,              "", global);   // User defined or pre-defined ACI command to display
+    root->awar_string(AWAR_SELECTED_PROBE,           "", global);   // For highlighting the selected PROBE
 }
 /*
 AW_window *create_fig( AW_root *root, char *file)  {
