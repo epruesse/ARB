@@ -32,9 +32,9 @@
 #define KNOWN_ISO_VERSIONS 3
 
 #if defined(DEVEL_RALF)
-#warning font debugging is active in release
+// #warning font debugging is active in release
 #endif // DEVEL_RALF
-#define DUMP_FONT_LOOKUP
+// #define DUMP_FONT_LOOKUP
 // #define DUMP_FONT_DETAILS
 
 // --------------------------------------------------------------------------------
