@@ -196,16 +196,16 @@ GL_PNGLIBS=
 GLLIBS=
 
 ifeq ($(OPENGL),1)
-GL=gl# this is the name of the OPENGL base target
+GL:=gl # this is the name of the OPENGL base target
 GL_LIB:=-lGL
 GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw $(GL_LIB) -lglut $(GL_PNGLIBS)
+GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw -lglut $(GL_PNGLIBS)
 endif
 
 
 ifeq ($(X11R6),1)
    XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
+   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc $(GL_LIB)
 else
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc $(GL_LIB)
