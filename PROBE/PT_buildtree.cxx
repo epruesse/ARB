@@ -49,7 +49,7 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
 	anfangs_apos_ref = PT_read_apos(psg.ptmain,pthelp);
 	RNS_nr_ref = PT_read_name(psg.ptmain,pthelp);
 	j = anfangs_rpos_ref + height;
-	
+
 	while (psg.data[RNS_nr].data[i] == psg.data[RNS_nr_ref].data[j]) {	/* creates nodes until sequences are different */
 										// type != nt_node
 		if (PT_read_type(pthelp) == PT_NT_CHAIN) {			/* break */
@@ -57,8 +57,9 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
 			return pt;
 		}
 		if (height >= PT_POS_TREE_HEIGHT) {
-			if (PT_read_type(pthelp) == PT_NT_LEAF)
+			if (PT_read_type(pthelp) == PT_NT_LEAF) {
 				pthelp = PT_leaf_to_chain(psg.ptmain,pthelp);
+            }
 			pthelp = PT_add_to_chain(psg.ptmain,pthelp, RNS_nr, apos, anfangs_pos);
 			return pt;
 		}
@@ -102,14 +103,14 @@ static GB_INLINE void get_abs_align_pos(char *seq, int &pos)
     register int c;
     int q_exists = 0;
     while ( pos){
-	c = seq[pos];
-	if ( c== '.'){
-	    q_exists = 1; pos--; continue;
-	}
-	if (c == '-'){
-	    pos--; continue;
-	}
-	break;
+        c = seq[pos];
+        if ( c== '.'){
+            q_exists = 1; pos--; continue;
+        }
+        if (c == '-'){
+            pos--; continue;
+        }
+        break;
     }
     pos += q_exists;
 }
@@ -149,7 +150,7 @@ GB_INLINE int ptd_string_shorter_than(const char *s, int len){
 }
 
 /*initialize tree and call the build pos tree procedure*/
-void 
+void
 enter_stage_1_build_tree(PT_main * main,char *tname)
 {
 	main = main;
@@ -189,7 +190,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
 	pt = PT_change_leaf_to_node(psg.ptmain,pt);
 	psg.stat.cut_offs = 0;					/* statistic information */
 	GB_begin_transaction(psg.gb_main);
-	
+
 	int	partsize = 0;
 	char	partstring[256];
 	int	pass0 = 0;
@@ -208,16 +209,16 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
 	while (!PT_base_string_counter_eof(partstring)) {
 		printf("\n Starting pass %i(%i)\n",pass0++,passes);
 		for (i = 0; i < psg.data_count; i++) {
-			align_abs = probe_read_alignment(i, &psize);
-			if (i % 100 == 0)
-				printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
+			align_abs     = probe_read_alignment(i, &psize);
+			if (i % 100 == 0) printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
 			abs_align_pos = psize-1;
 			for (j = psg.data[i].size - 1; j >= 0; j--, abs_align_pos--) {
-				get_abs_align_pos(align_abs, abs_align_pos);
-				if ( partsize && (
-					*partstring!= psg.data[i].data[j] ||
-					strncmp(partstring,psg.data[i].data+j,partsize)) ) continue;
+				get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
+                if (abs_align_pos < 0) break; // -> in this case abort
+
+				if ( partsize && (*partstring!= psg.data[i].data[j] || strncmp(partstring,psg.data[i].data+j,partsize)) ) continue;
 				if (ptd_string_shorter_than(psg.data[i].data+j,9)) continue;
+
 				pt = build_pos_tree(pt, j, abs_align_pos, i, psg.data[i].size);
 			}
 			free(align_abs);
@@ -247,7 +248,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
 	if (GB_set_mode_of_file(tname,00666)) {
 		GB_print_error();
 	}
-	psg.pt = pt; 
+	psg.pt = pt;
 }
 
 /* load tree from disk */
