@@ -42,6 +42,7 @@
 #include "nt_date.h"
 #include <st_window.hxx>
 #include <probe_design.hxx>
+#include <GEN.hxx>
 
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
@@ -158,6 +159,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 	}
 	awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
 	awr->awar_string( AWAR_SPECIES_NAME, "" ,	gb_main);
+	awr->awar_string( AWAR_GENE_NAME, "" ,	gb_main);
 
 	awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 
@@ -735,6 +737,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
             AWMIMT( "species_submission", "Submission...",				"S",	"submission.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,	0 );
+            awm->insert_separator();
+            AWMIMT( "gene_info", 	"Gene: Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
+            AWMIMT( "gene_search",	"Gene: Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
             awm->insert_separator();
             AWMIMT("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
             AWMIMT("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
