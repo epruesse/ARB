@@ -1449,12 +1449,14 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
                                     "-RANGE 9$#A0A0A0",
 
+                                    // colors used to Paint search patterns
+                                    // (do not change the names of these gcs)
                                     "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
                                     "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
                                     "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
                                     "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                    "+-MARKED$#FFFFBD",         "-SELECTED$#FFFF80",
+                                    "+-MARKED$#FFFFBD",     "-SELECTED$#FFFF80",
 
                                     0);
 
@@ -1637,16 +1639,27 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_sub_menu(0, "Save properties ...", "a");
     {
         static const char * const tag[] = { "save_alispecific_props", "save_alitype_props", "save_props" };
-        static const char * const entry_type[] = { "alignment specific ", "alignment-type specific ", "" };
+        static const char * const entry_type[] = { "alignment specific ", "ali-type specific ", "" };
+
+        // check what is the default mode
+        int default_mode = -1;
+        for (int mode = 0; mode <= 2; ++mode) {
+            if (0 == strcmp(ED4_propertyName(mode), ED4_ROOT->db_name)) {
+                default_mode = mode;
+                break;
+            }
+        }
+
+        const char *entry = GBS_global_string("Save loaded Properties (~/%s)", ED4_ROOT->db_name);
+        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_EXP, ED4_save_defaults, (AW_CL)default_mode, 0);
+        ____________________________SEP;
 
         for (int mode = 2; mode >= 0; --mode) {
-            const char *entry = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
-
-            awmm->insert_menu_topic(tag[mode], entry, mode == 2 ? "a" : "", "e4_defaults.hlp", mode == 2 ? AWM_ALL : AWM_EXP, ED4_save_defaults, (AW_CL)mode, 0);
+            char hotkey[] = "x";
+            hotkey[0]     = "Pta"[mode];
+            entry         = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
+            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", mode == 2 ? AWM_ALL : AWM_EXP, ED4_save_defaults, (AW_CL)mode, 0);
         }
-//         awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
-//         awmm->insert_menu_topic ( "save_alitype_props", "Save alignment-type specific properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
-//         awmm->insert_menu_topic ( "save_alispecific_props", "Save alignment specific properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
     }
     awmm->close_sub_menu();
 
