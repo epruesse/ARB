@@ -592,7 +592,7 @@ static char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, G
     sprintf(choice, "ARB_PT_SERVER%li", (long)serverid);
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, gb_main);
     if (error) {
-        printf("error: cannot start pt-server");
+        printf("error: cannot start pt-server (%s)", error);
         return 0;
     }
     return GBS_read_arb_tcp(choice);
