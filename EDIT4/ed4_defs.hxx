@@ -319,8 +319,12 @@ struct ED4_extension // contains info about graphical properties
     AW_pos	position[2];		// upper left corner (pos_x, pos_y) in relation to parent
     // !!! WARNING: This is a hack!!! Every time you change 'position' you HAVE TO call ED4_base::touch_world_cache() !!!
 
-    AW_pos	size[2];		// width and height
-    ED4_index	y_folded;		// remember old position of consensus when folding group
+    AW_pos	  size[2];		    // width and height
+    ED4_index y_folded;		    // remember old position of consensus when folding group
+
+#if defined(IMPLEMENT_DUMP)
+    void dump(size_t indent) const;
+#endif // IMPLEMENT_DUMP
 };
 
 struct ED4_scroll_picture
@@ -375,6 +379,10 @@ struct ED4_update_info // if you add new elements, please ensure to initialize t
     void set_resize(int value) {
         resize = value;
     }
+
+#if defined(IMPLEMENT_DUMP)
+    void dump(size_t indent) const;
+#endif // IMPLEMENT_DUMP
 };
 
 struct ED4_coords
