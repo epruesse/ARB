@@ -13,59 +13,15 @@ depend:
 	makedepend $(MAKEDEPENDINC) $(OBJECTS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-main.o:   
-main.o: 
-main.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-main.o:  
-main.o:  
-main.o:  
-main.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-main.o:   loop.h globals.h
-Window.o:  
-Window.o:  
-Window.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-Window.o:  
-Window.o:  
-Window.o:  
-Window.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-Window.o:  
-Window.o:  
-Window.o:  
-Window.o:  
-Window.o:  
-Window.o:  loop.h globals.h
-menu.o:   
-menu.o: 
-menu.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-menu.o:  
-menu.o:  
-menu.o:  
-menu.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-menu.o:  loop.h globals.h
-ReadData.o:  
-ReadData.o:  
-ReadData.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-ReadData.o:  
-ReadData.o:  
-ReadData.o:  
-ReadData.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-ReadData.o:  
-ReadData.o:  loop.h globals.h
-Draw.o:   
-Draw.o: 
-Draw.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-Draw.o:  
-Draw.o:  
-Draw.o:  
-Draw.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-Draw.o:  
-Draw.o:  loop.h globals.h
-WriteData.o:  
-WriteData.o:  
-WriteData.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stddef.h
-WriteData.o:  
-WriteData.o:  
-WriteData.o:  
-WriteData.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.3/include/stdarg.h
-WriteData.o:  
-WriteData.o:  loop.h globals.h
+
+Draw.o:  globals.h
+Draw.o: loop.h
+ReadData.o:  globals.h
+ReadData.o: loop.h
+Window.o:  globals.h
+Window.o: loop.h
+WriteData.o: globals.h loop.h
+main.o:  globals.h
+main.o: loop.h
+menu.o:  globals.h
+menu.o: loop.h
