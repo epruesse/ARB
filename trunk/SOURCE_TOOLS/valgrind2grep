@@ -31,15 +31,26 @@ my $filter  = $ARGV[1];
 # read list of source files:
 
 open(SOURCELIST,"<$sourcelist") || die "can't open $sourcelist";
-my %fileIndex = map {
-  chomp $_;
-  if (/\/([^\/]+)$/) {
-    $1 => $_;
+
+my %fileIndex = {};
+foreach (<SOURCELIST>) {
+  chomp;
+  if (/\/([^\/]+)\/([^\/]+)$/) {
+    my $last_dir = $1;
+    my $fname    = $2;
+
+    $fileIndex{$fname} = $_;
+    $fileIndex{$last_dir.'/'.$fname} = $_;
+  }
+  elsif (/\/([^\/]+)$/) {
+    my $fname = $1;
+    $fileIndex{$fname} = $_;
   }
   else {
     die "invalid entry in $sourcelist ('$_')"
   }
-} <SOURCELIST>;
+}
+
 close(SOURCELIST);
 
 # use unbuffered I/O (otherwise pipe waits for valgrind to terminate???)
