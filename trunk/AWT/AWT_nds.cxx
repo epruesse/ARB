@@ -376,14 +376,19 @@ void make_node_text_init(GBDATA *gb_main){
 	awt_nds_ms->count = count;
 }
 
+enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
+
 char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species)
 {
-    /* if mode ==0 compress info else format info */
-    char           *bp, *p;
-    GBDATA         *gbe;
-    long            i, j;
-    long             first;
-    GBT_TREE	*father;
+    // mode == 0 compress info (no tabbing)
+    // mode == 1 format info (using spaces)
+    // mode == 2 format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+
+    char     *bp, *p;
+    GBDATA   *gbe;
+    long      i, j;
+    GBT_TREE *father;
+
     bp = awt_nds_ms->buf;
     if (!gbd) {
         static char hae[] = "??????";
@@ -392,7 +397,8 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
         return awt_nds_ms->buf;
     }
 
-    first = 0;
+#define IS_FIRST() (i == 0)
+
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {		/* hierarchical key */
             gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
@@ -401,48 +407,66 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
         }
 
         if (!gbe && awt_nds_ms->inherit[i] && species ) {
-            for (	father = species->father;
-                    father && !gbe;
-                    father = father->father){
+            for (	father = species->father; father && !gbe; father = father->father) {
                 if (father->gb_node){
                     gbe = GB_find(father->gb_node, awt_nds_ms->dkeys[i], NULL, down_level);
                 }
             }
         }
 
-        if (!mode && !gbe) continue;
-        if (!mode && first) {
-            (*bp++) = ',';
+        if (mode == MNTN_COMPRESSED && !gbe) continue;
+
+        switch (mode) {
+            case MNTN_COMPRESSED:
+                if (!IS_FIRST())  *bp++ = ','; // seperate single fields by komma in compressed mode
+                // no break here!!!
+            case MNTN_SPACED:
+                *bp++ = ' ';    // print at least one space if not using tabs
+                break;
+            case MNTN_TABBED:
+                if (!IS_FIRST()) *bp++ = '\t'; // tabbed output for star-calc/excel/...
+                break;
+            default :
+                awt_assert(0);
+                break;
         }
-        (*bp++) = ' ';
-        first++;
+
+//         if (mode == 0 && first) (*bp++) = ',';
+//         if (mode != 2)          (*bp++) = ' '; // print at least one space if not using tabs
+//         first++;
+
         if (gbe) {
             switch (GB_read_type(gbe)) {
                 case GB_INT:
-                    if (mode) {
-                        char buf[20];
-                        sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
-                        sprintf(bp, buf, GB_read_int(gbe));
-                    } else {
+                    if (mode == MNTN_SPACED) {
+//                         char buf[20];
+//                         sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
+//                         sprintf(bp, buf, GB_read_int(gbe));
+                        sprintf(bp, "%-*li", int(awt_nds_ms->lengths[i]), GB_read_int(gbe));
+                    }
+                    else {
                         sprintf(bp, "%li", GB_read_int(gbe));
                     }
                     bp += strlen(bp);
                     break;
                 case GB_BYTE:
-                    if (mode) {
-                        char buf[20];
-                        sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
-                        sprintf(bp, buf, GB_read_byte(gbe));
-                    } else {
+                    if (mode == MNTN_SPACED) {
+//                         char buf[20];
+//                         sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
+//                         sprintf(bp, buf, GB_read_byte(gbe));
+                        sprintf(bp, "%-*i", int(awt_nds_ms->lengths[i]), GB_read_byte(gbe));
+                    }
+                    else {
                         sprintf(bp, "%i", GB_read_byte(gbe));
                     }
                     bp += strlen(bp);
                     break;
                 case GB_STRING:
                     {
-                        long            post;
-                        long		dlen;
+                        long  post;
+                        long  dlen;
                         char *pars = 0;
+
                         if (awt_nds_ms->parsing[i]) {
                             p = GB_read_string(gbe);
                             pars = GB_command_interpreter(gb_main,p, awt_nds_ms->parsing[i],gbd);
@@ -468,7 +492,7 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
                             j = len;
                             if (j > dlen)	j = dlen;
                             for (; j; j--) *bp++ = *p++;
-                            if (mode){
+                            if (mode == MNTN_SPACED) {
                                 post = dlen - len;
                                 while (post-- > 0) *(bp++) = ' ';
                             }
@@ -477,23 +501,37 @@ char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *spec
                     }
                     break;
                 case GB_FLOAT:
-                    sprintf(bp, "%4.4f", GB_read_float(gbe));
+                    if (mode == MNTN_SPACED) {
+                        char buf[20];
+                        sprintf(buf, "%4.4f", GB_read_float(gbe));
+                        sprintf(bp, "%-*s", int(awt_nds_ms->lengths[i]), buf);
+                    }
+                    else {
+                        sprintf(bp, "%4.4f", GB_read_float(gbe));
+                        if (mode == MNTN_TABBED) { // '.' -> ','
+                            char *dot     = strchr(bp, '.');
+                            if (dot) *dot = ',';
+                        }
+                    }
                     bp += strlen(bp);
                     break;
                 default:
                     break;
             }
-        } else if (mode) {
+        }
+        else if (mode == MNTN_SPACED) { // fill with spaces till start of next column
             j = awt_nds_ms->lengths[i];
             if (j + (bp - awt_nds_ms->buf) + 256 > NDS_STRING_SIZE) {
                 j = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
             }
             for (; j > 0; j--)	*(bp++) = ' ';
         }
-    }			/* for */
+    }
     *bp = 0;
     return awt_nds_ms->buf;
 }
+
+#undef IS_FIRST
 
 char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
