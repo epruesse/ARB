@@ -619,7 +619,38 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
         }
     }
 
+    va_end(parg);
+
     return (AW_gc_manager)gcmgrfirst;
+}
+
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) {
+    // read the values of the specified GCs from 'source_window'
+    // and write the values into same-named GCs of 'dest_window'
+    //
+    // 'id0' is the first of a list of color ids
+    // a NULL pointer has to be given behind the last color!
+
+    va_list parg;
+    va_start(parg, id0);
+
+    const char *id = id0;
+    while (id) {
+        char *value = aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, source_window, id))->read_string();
+        aw_root->awar(GBS_global_string(AWP_COLORNAME_TEMPLATE, dest_window, id))->write_string(value);
+        free(value);
+
+        if (has_font_info) {
+            int ivalue = aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, source_window, id))->read_int();
+            aw_root->awar(GBS_global_string(AWP_FONTNAME_TEMPLATE, dest_window, id))->write_int(ivalue);
+            ivalue     = aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, source_window, id))->read_int();
+            aw_root->awar(GBS_global_string(AWP_FONTSIZE_TEMPLATE, dest_window, id))->write_int(ivalue);
+        }
+
+        id = va_arg(parg, const char*); // another argument ?
+    }
+
+    va_end(parg);
 }
 
 //  ---------------------------------------------------------------------------------------------------------------------------
