@@ -1467,7 +1467,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
             sprintf(buffer,"tmp/arbdb_query_%i/operator_%i",query_id, key_id);
             cbs->awar_operator[key_id] = strdup(buffer);
-            aw_root->awar_string( cbs->awar_operator[key_id], "and", AW_ROOT_DEFAULT);
+            aw_root->awar_string( cbs->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
         }
     }
 
