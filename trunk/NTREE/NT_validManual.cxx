@@ -62,7 +62,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
     for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
          GB_validNamePair && !err;
          GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
-        
+
         // retrieve list of all species names
         GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
         char* typeString = GB_read_string(actDesc);
@@ -94,7 +94,7 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
         GB_commit_transaction(gb_main);
 
         svnp->aws->insert_default_selection(svnp->validNamesList , "????", "????" );
-        svnp->aws->sort_selection_list(svnp->validNamesList , 0);
+        svnp->aws->sort_selection_list(svnp->validNamesList, 0, 1);
         svnp->aws->update_selection_list(svnp->validNamesList);
     }
 

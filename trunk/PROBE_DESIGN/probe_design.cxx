@@ -762,8 +762,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                           LOCS_MATCH_LIST,        &match_list,
                           LOCS_MATCH_LIST_CNT,    &match_list_cnt,
                           LOCS_MATCH_STRING,      &bs,
-                          LOCS_MATCHES_TRUNCATED, &matches_truncated, 
-                          LOCS_ERROR,             &locs_error,        
+                          LOCS_MATCHES_TRUNCATED, &matches_truncated,
+                          LOCS_ERROR,             &locs_error,
                           0))
             {
                 error = "Connection to PT_SERVER lost (3)";
@@ -1083,7 +1083,7 @@ void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
     aw_closestatus();
 
     if (local_count) {
-        aww->sort_selection_list(iselection_id, 1);
+        aww->sort_selection_list(iselection_id, 1, 1);
         aww->update_selection_list(iselection_id);
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
@@ -1372,12 +1372,12 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
     aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);
-    aws->at("mint"  ); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5); 
-    aws->at("maxt"  ); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5); 
-    aws->at("mingc" ); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5); 
-    aws->at("maxgc" ); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5); 
-    aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5); 
-    aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5); 
+    aws->at("mint"  ); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5);
+    aws->at("maxt"  ); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5);
+    aws->at("mingc" ); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5);
+    aws->at("maxgc" ); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5);
+    aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5);
+    aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5);
 
     if (is_genom_db) {
         aws->at("gene");
