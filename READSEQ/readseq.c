@@ -87,7 +87,7 @@ const char *title
               * changed 32bit checksum to default, -DSMALLCHECKSUM for GCG version
 
    1Feb93
-              = revert GenBank output to a fixed left number width which 
+              = revert GenBank output to a fixed left number width which
                other software depends on.
 	      = fix for MSF input to handle symbols in names
 	      = fix bug for possible memory overrun when truncating seqs for
@@ -891,7 +891,7 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
         if (to_lower(*stemp) == 'a') {
           chooseall= true;
           whichSeq = 1;
-          quietly = true; /* !? this means we don't ask for another file 
+          quietly = true; /* !? this means we don't ask for another file
                             as well as no more whichSeqs... */
           }
         else if (rs_isdigit(*stemp)) whichSeq= atol(stemp);
@@ -983,7 +983,7 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
                 if (seqlen < seqlen0) seq = (char *)realloc(seq, seqlen0);
                 for (i=seqlen; i<seqlen0; i++) seq[i]= gPretty.gapchar;
                 seqlen = seqlen0;
-                seq[seqlen] = 0; 
+                seq[seqlen] = 0;
                 }
               break;
 
@@ -994,10 +994,10 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
                 }
               else if (seqlen != seqlen0) {
                 erralert(eUnequalSize);
-                if (seqlen < seqlen0) seq = (char *)realloc(seq, seqlen0); 
+                if (seqlen < seqlen0) seq = (char *)realloc(seq, seqlen0);
                 for (i=seqlen; i<seqlen0; i++) seq[i]= gPretty.gapchar;
                 seqlen = seqlen0;
-                seq[seqlen] = 0; 
+                seq[seqlen] = 0;
                 }
               break;
 
@@ -1120,7 +1120,8 @@ fini:
           }
         fprintf(foo,"\nbegin data;\n");
         fprintf(foo," dimensions ntax=%d nchar=%d;\n", seqout, seqlen);
-        fprintf(foo," format datatype=%s interleave missing=%c", cp, gPretty.gapchar);
+        /* fix by Ralf Westram (ARB): '-' means 'gap' ('.' means 'missing') */
+        fprintf(foo," format datatype=%s interleave=yes missing=. gap=%c", cp, gPretty.gapchar);
         if (gPretty.domatch) fprintf(foo," matchchar=%c", gPretty.matchchar);
         fprintf(foo,";\n  matrix\n");
         }
