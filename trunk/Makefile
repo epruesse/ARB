@@ -387,11 +387,10 @@ ifeq ('2.95.3','$(GCC_VERSION)')
 else
 		@echo ''
 		@echo "You'll need gcc 2.95.3 to compile ARB [your gcc version is '$(GCC_VERSION)']"
+		@echo 'More information can be found in arb_README_gcc3.2.txt'
 		@echo ''
 		@/bin/false
 endif
-
-
 else
 		@echo "gcc version check skipped (should be gcc 2.95.3)"
 endif
