@@ -1,5 +1,5 @@
 item:DNA_ML (FastDnaMl) (max 150 Species)
-itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((arb_fastdnaml;which arb_read_tree; ldd arb_read_tree;echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH;$DISPLAY_FUNC)); rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((arb_fastdnaml;which arb_read_tree; cd;ldd `which arb_read_tree`;echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH;$DISPLAY_FUNC)); rm in1 )&
 itemhelp:phylip.help
 
 arg:RATES
