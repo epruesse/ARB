@@ -691,7 +691,7 @@ realclean: clean
 	rm -f AISC_MKPTPS/aisc_mkpt
 
 #*** basic arb libraries
-arbbasic: links mbin com ${MAKE_RTC}
+arbbasic: links mbin menus com ${MAKE_RTC}
 
 #*** New arb programs (Version 2.0) (Motif)
 arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs
