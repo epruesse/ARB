@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Thu Mar/04/2004 11:32 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/04/2004 23:59 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -25,10 +25,10 @@ class Toolkit
 //     public static void unregisterClient() { theClient = null; }
 
 
-    private static void AbortWithError_Internal(String kind_of_error, String error_message) throws Exception {
+    private static void AbortWithError_Internal(String kind_of_error, String error_message, int exitcode) throws Exception {
 //         if (theClient == null) {
         System.out.println(kind_of_error+": "+error_message);
-        throw new Exception(kind_of_error+": "+error_message);
+        throw new ClientException(kind_of_error, error_message, exitcode);        
         //             if (exitcode != 0) {
 //                 System.exit(exitcode);
 //             }
@@ -42,7 +42,7 @@ class Toolkit
 
     public static void AbortWithError(String error) throws Exception
     {
-        AbortWithError_Internal("Error in "+clientName, error);
+        AbortWithError_Internal("Error in "+clientName, error, 1);
         //         if (theClient == null) {
 //             System.out.println("Error in "+clientName+": "+error);
 //         }
@@ -55,7 +55,7 @@ class Toolkit
     public static void AbortWithConnectionProblem(String error) throws Exception
     {
         AbortWithError_Internal(clientName+" has a connection problem:",
-                                error+"\nPlease check whether your internet connection works");
+                                error+"\nPlease check whether your internet connection works", 2);
 //         System.out.println(clientName+" has a connection problem: "+error);
 //         System.out.println("Please check whether your internet connection works.");
 //         System.exit(2); // server problem
@@ -64,7 +64,7 @@ class Toolkit
     public static void AbortWithServerProblem(String error) throws Exception
     {
         AbortWithError_Internal(clientName+" got error from server:",
-                                error+"\nPlease report to "+maintainer);
+                                error+"\nPlease report to "+maintainer, 2);
 //         System.out.println(clientName+" got error from server:\n    "+error);
 //         System.out.println("Please report to "+maintainer);
 //         System.exit(2);         // server problem
@@ -73,13 +73,13 @@ class Toolkit
     public static void InternalError(String error) throws Exception
     {
         AbortWithError_Internal("Internal error in "+clientName+" v"+clientVersion,
-                                error+"\n(this seems to be a bug, please report to "+maintainer+")");
+                                error+"\n(this seems to be a bug, please report to "+maintainer+")", 666);
 //         System.out.println("Internal error in "+clientName+" v"+clientVersion+": "+error);
 //         System.out.println("(this seems to be a bug, please report to "+maintainer+")");
 //         System.exit(666);       // internal error
     }
 
-    public static void ExpectNoError(String error) throws Exception 
+    public static void ExpectNoError(String error) throws Exception
     {
         if (error != null) {
             InternalError("Unexpected error: "+error);
