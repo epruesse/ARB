@@ -298,7 +298,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
     static int  idx    = 0;
     int         my_idx = (idx+1)%GLOBAL_STRING_BUFFERS; // use next buffer
     int         psize;
-    
+
     ad_assert(my_idx >= 0 && my_idx<GLOBAL_STRING_BUFFERS);
 
 #ifdef LINUX
@@ -1254,12 +1254,11 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
             continue;
         }
 
-        bar = strchr(doppelpunkt+1, GBS_SET);               /* Pars the command string !!!! */
+        bar = strchr(doppelpunkt+1, GBS_SET);               /* Parse the command string !!!! */
         if (bar) {
             *(bar++) = 0;
         } else {
-            GB_export_error("SRT ERROR: no '=' found in '%s' position >%i",
-                            icommand,doppelpunkt-command+1);
+            GB_export_error("SRT ERROR: no '=' found in command '%s' (position > %i)", icommand,doppelpunkt-command+1);
             free(command);
             free(in);
             return 0;
