@@ -38,13 +38,15 @@
  *
  * -----------------------------------------------------------------
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+
 #include <memory.h>
-// #include <malloc.h>
-#include <math.h>
+
+#include <iostream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -53,9 +55,10 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
-typedef GB_UINT4 STATTYPE;
-void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2);
-extern GBDATA *gb_main;
+
+typedef GB_UINT4  STATTYPE;
+static void       CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2);
+extern GBDATA    *gb_main;
 enum {
     GAP = 1,
     BAS_A = 2,
@@ -136,8 +139,8 @@ struct CPRO_struct {
  * Dependencies:                 .
  * -----------------------------------------------------------------
  */
-void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
-                          char versus,char *align)
+static void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
+                                 char versus,char *align)
 {
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
     GBDATA *gb_species;
@@ -194,7 +197,7 @@ void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
 }
 
 // frees memory allocated by function CPRO_readandallocate
-void CPRO_deallocate(char **&speciesdata,GBDATA **&speciesdatabase)
+static void CPRO_deallocate(char **&speciesdata,GBDATA **&speciesdatabase)
 {
     for (long i=0;i<CPRO.numspecies;i++) {
         if (speciesdata[i]) {
@@ -211,7 +214,7 @@ void CPRO_deallocate(char **&speciesdata,GBDATA **&speciesdatabase)
     // function CPRO_drawstatistic
 }
 
-void CPRO_allocstatistic(char which_statistic)
+static void CPRO_allocstatistic(unsigned char which_statistic)
 {
     CPRO.result[which_statistic].statistic=(STATTYPE **)calloc((size_t)CPRO.result[which_statistic].resolution*3+3, sizeof(STATTYPE *));
     for (long i=0;i<CPRO.result[which_statistic].resolution*3;i++) {
@@ -219,7 +222,7 @@ void CPRO_allocstatistic(char which_statistic)
     }
 }
 
-void CPRO_freestatistic(char which_statistic)
+static void CPRO_freestatistic(unsigned char which_statistic)
 {
     for(long j=0;j<CPRO.result[which_statistic].resolution*3;j++) {
         if(CPRO.result[which_statistic].statistic[j]) {
@@ -232,7 +235,7 @@ void CPRO_freestatistic(char which_statistic)
 }
 
 // memory not used is given back to system
-void CPRO_workupstatistic(char which_statistic)
+static void CPRO_workupstatistic(unsigned char which_statistic)
 {
     long base;
     long column,colmax,memneeded=0;
@@ -314,41 +317,43 @@ void CPRO_workupstatistic(char which_statistic)
  * Dependencies:                 .
  * -----------------------------------------------------------------
  */
-void CPRO_maketables(char isamino,char countgaps)
+static void CPRO_maketables(char isamino,char countgaps)
 {
     long i;
     for(i=0;i<256;i++)  {
         CPRO.convtable[i]=0; }
     if(!isamino)
     {
-        if(countgaps) CPRO.convtable['-']=GAP;
-        CPRO.convtable['a']=BAS_A;  CPRO.convtable['A']=BAS_A;
-        CPRO.convtable['c']=BAS_C;  CPRO.convtable['C']=BAS_C;
-        CPRO.convtable['g']=BAS_G;  CPRO.convtable['G']=BAS_G;
-        CPRO.convtable['t']=BAS_T;  CPRO.convtable['T']=BAS_T;
-        CPRO.convtable['u']=BAS_T;  CPRO.convtable['U']=BAS_T;
+        if (countgaps) CPRO.convtable[(unsigned char)'-']=GAP;
+        CPRO.convtable[(unsigned char)'a']=BAS_A;  CPRO.convtable[(unsigned char)'A']=BAS_A;
+        CPRO.convtable[(unsigned char)'c']=BAS_C;  CPRO.convtable[(unsigned char)'C']=BAS_C;
+        CPRO.convtable[(unsigned char)'g']=BAS_G;  CPRO.convtable[(unsigned char)'G']=BAS_G;
+        CPRO.convtable[(unsigned char)'t']=BAS_T;  CPRO.convtable[(unsigned char)'T']=BAS_T;
+        CPRO.convtable[(unsigned char)'u']=BAS_T;  CPRO.convtable[(unsigned char)'U']=BAS_T;
 
-        for(i=0;i<MAX_AMINOS;i++) {
-            CPRO.grouptable[i]=0; }
+        for (i=0;i<MAX_AMINOS;i++) {
+            CPRO.grouptable[i]=0;
+        }
         CPRO.grouptable[BAS_A]=1;   CPRO.grouptable[BAS_G]=1;
         CPRO.grouptable[BAS_C]=2;   CPRO.grouptable[BAS_T]=2;
     }
     else
     {
-        if(countgaps) CPRO.convtable['-']=GAP;
+        if (countgaps) CPRO.convtable[(unsigned char)'-'] =GAP;
         for(i=0;i<MAX_AMINOS;i++)
         {
-            CPRO.convtable['a'+i]=i+1+GAP;
-            CPRO.convtable['A'+i]=i+1+GAP;
+            CPRO.convtable[(unsigned char)'a'+i] = i+1+GAP;
+            CPRO.convtable[(unsigned char)'A'+i] = i+1+GAP;
         }
-        CPRO.convtable['*']=10+GAP   ; /* 'J' */
+        CPRO.convtable[(unsigned char)'*'] = 10+GAP   ; /* 'J' */
 
-        for(i=0;i<MAX_AMINOS;i++) { CPRO.grouptable[i]=0; }
-#define SC(x,P) CPRO.grouptable[P-'A'+1+GAP] = x
+        for(i=0;i<MAX_AMINOS;i++) CPRO.grouptable[i] = 0;
+
+#define SC(x,P) CPRO.grouptable[(unsigned char)P-(unsigned char)'A'+1+GAP] = x
         SC(1,'P');SC(1,'A');SC(1,'G');SC(1,'S');SC(1,'T');
         /* PAGST */
         SC(2,'Q');SC(2,'N');SC(2,'E');SC(2,'D');SC(2,'B');
-        SC(2,'Z');     /* QNEDBZ */
+        SC(2,'Z');              /* QNEDBZ */
         SC(3,'H');SC(3,'K');SC(3,'R');
         /* HKR */
         SC(4,'L');SC(4,'I');SC(4,'V');SC(4,'M');
@@ -360,10 +365,9 @@ void CPRO_maketables(char isamino,char countgaps)
 }
 
 
-void CPRO_entryinstatistic(char **speciesdata,
-                           long elemx,long elemy,char which_statistic)
+static void CPRO_entryinstatistic(char **speciesdata, long elemx,long elemy, unsigned char which_statistic)
 {
-    register char value1, value2 =0;
+    register unsigned char value1, value2 =0;
     register char *firstseq=speciesdata[elemx];
     register char *secondseq=speciesdata[elemy];
     register float rate=0.0;
@@ -434,13 +438,13 @@ void CPRO_entryinstatistic(char **speciesdata,
 // is used by function CPRO_makestatistic
 // reads sequences of a segment into memory, converts them
 // and frees older sequences
-void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
-                         long elemx1,long elemx2,long elemy1,long elemy2,char which_statistic)
+static void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
+                                long elemx1,long elemx2,long elemy1,long elemy2,unsigned char which_statistic)
 {
     long i=0,j=0;
     char *tempdata;
     for(i=0;i<CPRO.numspecies;i++) {
-        if((speciesdata[i])&&(i<elemy1)&&(i>elemy2)&&(i<elemx1)&&(i>elemx2)) {
+        if ( (speciesdata[i]) && (i<elemy1) && (i>elemy2) && (i<elemx1) && (i>elemx2) ) {
             delete(speciesdata[i]); speciesdata[i]=0;
         }
     }
@@ -451,7 +455,7 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
                 tempdata=GB_read_char_pntr(speciesdatabase[i]);
                 speciesdata[i]=(char*)calloc((unsigned int) CPRO.result[which_statistic].maxalignlen,1);
                 for(j=0;j<CPRO.result[which_statistic].maxalignlen;j++)  {
-                    speciesdata[i][j]=CPRO.convtable[tempdata[j]];
+                    speciesdata[i][j]=CPRO.convtable[(unsigned char)tempdata[j]];
                 }
             }
         }
@@ -462,7 +466,7 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
                 tempdata=GB_read_char_pntr(speciesdatabase[i]);
                 speciesdata[i]=(char*)calloc((unsigned int) CPRO.result[which_statistic].maxalignlen,1);
                 for(j=0;j<CPRO.result[which_statistic].maxalignlen;j++)  {
-                    speciesdata[i][j]=CPRO.convtable[tempdata[j]];
+                    speciesdata[i][j]=CPRO.convtable[(unsigned char)tempdata[j]];
                 }
             }
         }
@@ -503,8 +507,7 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
  * Dependencies:                 CPRO_entryinstatistic , CPRO_readneededdata
  * -----------------------------------------------------------------
  */
-char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase,
-                        char which_statistic)
+static char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase, unsigned char which_statistic)
 {
     long widthmatrix=CPRO.partition;
     long n=CPRO.numspecies;
@@ -587,7 +590,7 @@ char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase,
  * Dependencies:   CPRO_readandallocate , CPRO_makestatistic , CPRO_deallocate
  * -----------------------------------------------------------------
  */
-void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
+static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 {
     AW_root *awr=aw->get_root();
     char *align=awr->awar("cpro/alignment")->read_string();
@@ -673,7 +676,7 @@ void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 
 }
 
-void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
+static void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
 {
     AWUSE(cd1),AWUSE(cd2);
     char *align=aw_root->awar("cpro/alignment")->read_string();
@@ -798,14 +801,14 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( "tmp/cpro/memstatistic","",aw_def);
     aw_root->awar_string( "tmp/cpro/memfor1","",aw_def);
     aw_root->awar_string( "tmp/cpro/memfor2","",aw_def);
-    
+
     aw_create_selection_box_awars(aw_root, "cpro/save", ".", ".cpr", "", aw_def);
     aw_create_selection_box_awars(aw_root, "cpro/load", ".", ".cpr", "", aw_def);
     memset((char *)&CPRO,0,sizeof(struct CPRO_struct));
 
 }
 
-float CPRO_statisticaccumulation(long res,long column,char which_statistic)
+static float CPRO_statisticaccumulation(long res,long column,unsigned char which_statistic)
 {
     STATTYPE hits=0, sum=0, group=0, different=0;
     long base=3*res;
@@ -827,8 +830,7 @@ float CPRO_statisticaccumulation(long res,long column,char which_statistic)
 
 // reports how many equal,group and differ entries are at a certain distance
 // at a certain column; mode=1 means smoothing is on.
-void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column,
-                           char which_statistic,char mode)
+void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column, unsigned char which_statistic,char mode)
 {
     STATTYPE hits=0, sum=0, group=0, different=0;
     long base=3*res;
@@ -901,7 +903,7 @@ void CPRO_box(AW_device *device,int gc,float l,float t,float width,float high)
     device->line(gc,l,t,l,t+high,1,(AW_CL)0,(AW_CL)0);
 }
 
-float CPRO_confidinterval(long res,long column,char which_statistic,char mode)
+float CPRO_confidinterval(long res,long column,unsigned char which_statistic,char mode)
 {
     STATTYPE hits=0, sum=0, group=0, different=0;
     long base=3*res;
@@ -920,7 +922,7 @@ float CPRO_confidinterval(long res,long column,char which_statistic,char mode)
     else return(0.0);
 }
 
-void CPRO_drawstatistic (AW_device *device,char which_statistic)
+void CPRO_drawstatistic (AW_device *device,unsigned char which_statistic)
 {
     float topdistance=70.0,leftdistance=40.0;
     float rightdistance=20.0,bottomdistance=10.0;
@@ -1349,7 +1351,7 @@ AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 
 // search point of resolution when half maximum if reached (for condense)
 float CPRO_gethalfmaximum(long column,float maximum,float firsttoreach,
-                          char transversion,char which_statistic,char mode)
+                          char transversion,unsigned char which_statistic,char mode)
 {
     float equal,ingroup,interest;
     float interval,sum;
@@ -1379,7 +1381,7 @@ float CPRO_gethalfmaximum(long column,float maximum,float firsttoreach,
 
 // search maximum distance in character (for condense)
 float CPRO_getmaximum(long column,char transversion,
-                      char which_statistic,char mode)
+                      unsigned char which_statistic,char mode)
 {
     float maximum=-101.0,equal,ingroup,interest,sum,interval;
     for(long res=0;res<CPRO.result[which_statistic].resolution;res++)
