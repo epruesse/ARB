@@ -2762,12 +2762,12 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
 }
 
-/*  -------------------------------------------------  */
-/*      char *GBT_read_gene_sequence(GBDATA *gb_gene)       */
-/*  -------------------------------------------------  */
+/*  ---------------------------------------------------------------------------------  */
+/*      char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement)       */
+/*  ---------------------------------------------------------------------------------  */
 /* GBT_read_gene_sequence is intentionally located here (otherwise we get serious linkage problems) */
 
-char *GBT_read_gene_sequence(GBDATA *gb_gene) {
+char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     /* read the sequence for the specified gene */
 
     GB_ERROR  error  = 0;
@@ -2803,7 +2803,8 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene) {
             memcpy(result, seq_data+pos1, length);
             result[length] = 0;
 
-            if (complement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
+            if (complement && use_revComplement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
+            /* @@@ FIXME: sequence is wrong with reverse complement  */
 
             if (error)  {
                 free(result);
