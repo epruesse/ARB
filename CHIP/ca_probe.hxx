@@ -26,7 +26,7 @@ struct probe_data {
 typedef int euer_container;
 
 //GB_ERROR CHIP_probe_match(euer_container& g, const CHIP_probe_match_para& para, const char *for_probe, GBDATA *gb_main);
-GB_ERROR CHIP_probe_match(probe_data& pD, const CHIP_probe_match_para& para, char *fn, int numMismatches);
+GB_ERROR CHIP_probe_match(probe_data& pD, const CHIP_probe_match_para& para, char *fn, int numMismatches, int weightedMismatches);
 GB_ERROR read_input_file(char *fn);
 char *parse_match_info(const char *match_info);
 GB_ERROR write_result_file(char *fn);
