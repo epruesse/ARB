@@ -34,6 +34,8 @@
 
 #include "edit_naligner.hxx"
 
+AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
+
 
 //*****************************************
 //* ED4_root Methods		beginning *
@@ -1776,6 +1778,19 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->create_mode( 0, "edit/mark.bitmap",  "mark.hlp",   ((AW_active)-1), (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
 
     AWTC_create_faligner_variables(awmm->get_root(), ED4_ROOT->db);
+
+#if defined(DEBUG)
+    if (strcmp(GB_getenvUSER(), "westram") == 0) {
+        // Automatically start:
+        // --------------------
+
+        AW_window *win = AWTC_create_island_hopping_window(aw_root, 0);
+        win->show();
+
+
+    }
+#endif // DEBUG
+
 
     return ( ED4_R_OK );
 }
