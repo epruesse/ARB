@@ -19,7 +19,7 @@
 #define AWAR_TREE_REFRESH  "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 #define AWAR_CONFIGURATION "focus/configuration"
 
-#define AWAR_SECURITY_LEVEL    "/tmp/etc/sequrity_level"
+#define AWAR_SECURITY_LEVEL    "/tmp/etc/security_level"
 #define AWAR_GDE_EXPORT_FILTER "/tmp/gde/export_filter"
 
 #define AWAR_DB_COMMENT "description"
