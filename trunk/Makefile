@@ -106,7 +106,7 @@ ifdef SUN4
    SITE_DEPENDEND_TARGETS = perl
    ARLIB =	ld -assert pure-text -o
    CPP = CC -D$(MACH) -DNO_REGEXPR
-   PP = CC -D$(MACH) -E
+   PP = cc -D$(MACH) -E
    ACC = acc -D$(MACH) -DNO_REGEXPR
    CCPLIB = $(CPP) -pic
    CCLIB = $(ACC) -pic
@@ -150,7 +150,7 @@ endif
 
    ACC = $(FORCEMASK);cc -D$(MACH) $(SUN_ACC_FLAGS)
    CPP = $(FORCEMASK);CC -D$(MACH) $(SUN_CPP_FLAGS)
-   PP = $(FORCEMASK);CC -D$(MACH) -E
+   PP = $(FORCEMASK);cc -D$(MACH) -E
    CCLIB = cc -D$(MACH) $(SUN_ACC_FLAGS) -Kpic
    CCPLIB = CC -D$(MACH) $(SUN_CPP_FLAGS) -PIC
 
