@@ -2,6 +2,10 @@
 .SUFFIXES: .o .c .cxx .source .hlp .xml .html
 
 # --------------------------------------------------------------------------------
+
+TEST_ONE=0# default is 0 (if 1 only arb.hlp is processed)
+
+# --------------------------------------------------------------------------------
 # directories of source/destination files:
 
 HLP_SOURCE=oldhelp
@@ -71,7 +75,13 @@ OLD_HELP_ALL= \
 				$(HLP_SOURCE)/seer/*.hlp \
 		)
 
+ifeq ($(TEST_ONE),1)
+OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
+#OLD_HELP=$(HLP_SOURCE)/arb.hlp
+else
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
+endif
+
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML_TMP2=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
 XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
