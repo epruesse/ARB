@@ -136,7 +136,7 @@ delzerohtml:
 		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
 
 date:
-		rm date.xsl
+		-rm date.xsl
 		$(MAKE) date.xsl
 
 date.xsl :

@@ -167,7 +167,7 @@ ifeq ($X11R6,1)
    XINCLUDES = -I/usr/X11R6/include
    XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 else
-   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
+   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 endif
 
@@ -224,6 +224,8 @@ ifdef ECGS
    ARLIB = gcc -Wall -shared $(SUN5_ECGS_SPECIALS) -o
 
    XAR = $(AR)# 			# Linker for archives containing templates
+
+   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
 
    SYSLIBS = -lsocket -lm # -lnsl -lgen -lposix4
    XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
