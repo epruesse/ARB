@@ -114,7 +114,12 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     const char *node_string = 0;
     if (node->gb_node){
         if (!irs_gl.is_size_device){
-            node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
+            if (!node->father) { // root node - don't try to get taxonomy
+                node_string = tree_name;
+            }
+            else {
+                node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
+            }
         }else{
             node_string = "0123456789";
         }
