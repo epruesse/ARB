@@ -1,6 +1,8 @@
 #include "include.hxx"
 #include "PH_display.hxx"
 
+using namespace std;
+
 extern void ph_view_matrix_cb(AW_window *);
 extern void ph_view_species_cb(AW_window *,AW_CL,AW_CL);
 extern void ph_view_filter_cb(AW_window *,AW_CL,AW_CL);

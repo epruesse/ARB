@@ -23,6 +23,8 @@
 #include <string>
 #include <set>
 
+using namespace std;
+
 static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
 

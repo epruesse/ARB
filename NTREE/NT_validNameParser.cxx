@@ -21,8 +21,11 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <cassert>
 
 #include "nt_validNameParser.hxx"
+
+using namespace std;
 
 // Hi Lothar,
 // ich hab ein paar CodeComments (CC : ) fuer Dich eingefuegt, die sich auf die Compiler-Warnungen beziehen.

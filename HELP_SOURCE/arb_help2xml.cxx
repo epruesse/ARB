@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Wed Oct/29/2003 23:55 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 20:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -31,6 +31,7 @@
 
 #include <xml.hxx>
 
+using namespace std;
 
 /* hide GNU extensions for non-gnu compilers: */
 #ifndef GNU

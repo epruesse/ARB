@@ -24,6 +24,8 @@
 #include <string>
 #include <set>
 
+using namespace std;
+
 #define DEFAULT_COLOR 8
 extern AW_CL agde_filtercd;
 
