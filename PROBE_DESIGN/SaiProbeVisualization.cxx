@@ -598,7 +598,7 @@ static void saiColorDefs_init_config(AW_window *aww) {
 
     for (int i = 0; i < 10; i++) {
         const char *awarDef = getAwarName(i);
-        AWT_add_configDefinition(awarDef, "" ,(AW_CL)i);
+        AWT_add_configDefinition(awarDef, "" , i);
     }
 }
 
