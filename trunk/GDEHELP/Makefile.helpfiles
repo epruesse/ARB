@@ -57,6 +57,7 @@ HELP_PHYLIP=../GDE/PHYLIP/doc
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html
 	lynx -dump -nolist $< | sed -e 's/©/(C)/ig' > $@
+	test -s $@ || (echo $@ not generated or empty && false)
 
 FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
 forcedoc: $(FORCED_DOCS)
