@@ -10,26 +10,25 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Frame Properties
 
-OCCURRENCE	ARB_NT/Properties/Menu:
-		ARB_NT/Tree/Neighbour joining/Properties
-		ARB_EDIT/Properties/Menu:
-		ARB_SECEDIT/Properties/Menu:
+OCCURRENCE	ARB_all/Properties/Frame Settings
 
-DESCRIPTION	Setup of the window. Choose the 'Menu:' item from the
+DESCRIPTION	Setup of the window. Choose the 'Frame Settings' item from the
 		'Properties' menu and select colours and fonts by using the
 		respective submenus or typing in the respective
 		subwindows of the 'WINDOW_PROPERTIES' window.
 
 NOTES		The selected properties are saved to files '.arb/prop*'
-		in the users home directory by choosing the 'Save Defaults'
-		item from the 'FILE' menu.
+		in the users home directory by choosing the 'Save properties'
+		item from the 'Properties' menu.
 
-		Changes are only shown when the program is restarted.
+		Some changes are only shown when the program is restarted.
 
 EXAMPLES	None
 
 WARNINGS	If you choose a font different from 8x13bold all windows are resized proportionally.
                 This may lead to undesired overlapping effect (especially if a smaller font is used)
+
+                On the other hand this can help people who use a small screen resolution.
 
 BUGS		No bugs known
 
