@@ -1968,7 +1968,7 @@ GBDATA *GBT_get_gene_data(GBDATA *gb_main) {
   temp = GB_search(temp,"species",GB_CREATE_CONTAINER);
   return GB_search(temp,"gene_data",GB_CREATE_CONTAINER);
   //  temp = GB_search(temp,"gene",GB_CREATE_CONTAINER);
-  
+
 }
 
 GBDATA *GBT_first_marked_gene(GBDATA *gb_main)
@@ -3239,7 +3239,11 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
             memcpy(result, seq_data+pos1-1, length);
             result[length] = 0;
 
-            if (complement && use_revComplement) error = GBT_reverseComplementNucSequence(result, length, GB_AT_DNA);
+            if (complement && use_revComplement) {
+                char T_or_U;
+                error = GBT_determine_T_or_U(GB_AT_DNA, &T_or_U, "reverse-complement");
+                if (!error) GBT_reverseComplementNucSequence(result, length, T_or_U);
+            }
             /* @@@ FIXME: sequence is wrong with reverse complement */
 
             if (error)  {
