@@ -158,7 +158,9 @@ void SEC_loop::read(SEC_helix_strand *other_strand, istream & in) {
             }
             else if (!(strncmp(string_buffer, "}", 1))) {
                 operation_selektor=3;
+#if defined(DEBUG)
                 sec_assert(other_strand!=NULL);
+#endif // DEBUG
                 segment->set_next_helix_strand(other_strand);
             }
 

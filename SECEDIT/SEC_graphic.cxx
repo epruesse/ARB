@@ -152,7 +152,9 @@ static GB_ERROR change_constraints(GB_CSTR constraint_type, GB_CSTR element_type
                 error = "Illegal values";
             }
             else {
+#if defined(DEBUG)
                 sec_assert(!low || !high || low<=high);
+#endif // DEBUG
 
                 // set new constraints:
                 lower_constraint = low;

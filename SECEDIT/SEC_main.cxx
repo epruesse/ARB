@@ -461,13 +461,17 @@ static void decode_xstring_rel_helix(GB_CSTR rel_helix, char *x_buffer, int xlen
 
                     no_of_helices++;
                     if (flag=='1') {
+#if defined(DEBUG)
                         sec_assert(end_helix!=-1);
+#endif // DEBUG
                         x_buffer[start_helix] = 'x';
                         x_buffer[end_helix+1] = 'x';
                     }
                     else if (flag!='0') {
                         if (flag==0) break; // eos
+#if defined(DEBUG)
                         sec_assert(0); // illegal character
+#endif // DEBUG
                         break;
                     }
                     if (pos==(xlength-1)) {
