@@ -1,5 +1,5 @@
 /*********************************************************************************
- *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2003               *
  *  Institute of Microbiology (Technical University Munich)                      *
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
@@ -533,7 +533,7 @@ int main(int argc,char *argv[]) {
             int       count               = 1;
             int       subtreeCounter      = 0;
             int       probeSubtreeCounter = 0;
-            int       depth               = 0;
+            unsigned  depth               = 0;
 
             GB_begin_transaction(pba_main);
             GB_begin_transaction(pbb_main);
