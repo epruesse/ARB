@@ -339,6 +339,7 @@ ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -37,6 +37,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -50,6 +51,8 @@ SEC_io.o: secedit.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbdb.h
+SEC_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 SEC_main.o: ../EDIT4/ed4_class.hxx
@@ -99,6 +102,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 SEC_split.o: secedit.hxx
@@ -106,4 +110,5 @@ SEC_split.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_root.hxx
