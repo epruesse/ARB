@@ -389,9 +389,12 @@ NT_save_as_cb(AW_window *aww)
 {
 	char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
 	char *filetype = aww->get_root()->awar(AWAR_DB"type")->read_string();
-	GB_ERROR error = GB_save(gb_main, filename, filetype);
+
+    GB_ERROR error = GB_save(gb_main, filename, filetype);
+
 	delete filename;
 	delete filetype;
+
 	if (error) {
 		aw_message(error);
 	}else{
