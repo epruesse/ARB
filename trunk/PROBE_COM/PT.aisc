@@ -165,6 +165,7 @@ PT_probematch, MATCHLIST,       1,      (~the  PROBEMATCH list~), {
     int,        name,           t,    r,    ,       ID,             10,     ,      (~id of species~);
     aisc_string,virt_name,      %,    r,    ,       NAME,           11,     ,      (~name of species~);
     int,        b_pos,          t,    r,    ,       POS,            12,     ,      (~pos of probe~);
+    int,        g_pos,          t,    r,    ,       GPOS,           12,     ,      (~pos of probe (gene relative)~);
     int,        rpos,           t,    r,    ,       ,               ,       ,      (~relative pos of probe~);
     int,        mismatches,     t,    r,    ,       MISMATCHES,     13,     ,      (~number of mismatches~);
     aisc_string,virt_fullname,  %,    r,    ,       FULLNAME,       14,     ,      (~fullname of species (or genename if it's a gene pt server)~);
