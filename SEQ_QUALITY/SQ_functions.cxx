@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Oct/14/2003 19:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Nov/23/2003 12:35 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -17,16 +17,10 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "SQ_GroupDataSeq.h"
-#include "SQ_consensus.h"
+#include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
-
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#define seq_assert(bed) arb_assert(bed)
 
 enum { CS_CLEAR, CS_PASS1 };
 
@@ -266,7 +260,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 
 //GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
-GB_ERROR SQ_pass1(SQ_GroupDataSeq* globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
@@ -347,24 +341,32 @@ GB_ERROR SQ_pass1(SQ_GroupDataSeq* globalData, GBDATA *gb_main) {
 
 		    /*calculate consensus sequence*/
 		    {
-			bool init;
- 			int *pp;
-			int p;
-
-			init = globalData->SQ_is_initialised();
-			if (init==false){
+                        if (!globalData->SQ_is_initialized()) {
 			    globalData->SQ_init_consensus(sequenceLength);
-			}
-			SQ_consensus* consens = new SQ_consensus(sequenceLength);
-			consens->SQ_calc_consensus(rawSequence);
-			for(int i = 0; i < sequenceLength; i++) {
-			    for(int j = 0; j < 7; j++) {
- 				pp = consens->SQ_get_consensus(i,j);
- 				p = *pp;
-				globalData->SQ_add_consensus(p,i,j);
-			    }
-			}
-			delete consens;
+                        }
+
+                        globalData->SQ_add_sequence(rawSequence);
+
+//  			int *pp;
+// 			int p;
+
+// 			init = globalData->SQ_is_initialised();
+// 			if (init==false){
+// 			    globalData->SQ_init_consensus(sequenceLength);
+// 			}
+// 			SQ_consensus* consens = new SQ_consensus(sequenceLength);
+// 			consens->SQ_calc_consensus(rawSequence);
+
+//                         globalData->SQ_add(consens);
+
+// 			for(int i = 0; i < sequenceLength; i++) {
+// 			    for(int j = 0; j < 7; j++) {
+//  				pp = consens->SQ_get_consensus(i,j);
+//  				p = *pp;
+// 				globalData->SQ_add_consensus(p,i,j);
+// 			    }
+// 			}
+// 			delete consens;
 		    }
 
 
@@ -387,7 +389,7 @@ GB_ERROR SQ_pass1(SQ_GroupDataSeq* globalData, GBDATA *gb_main) {
 
 
 
-GB_ERROR SQ_pass2(SQ_GroupDataSeq* globalData, GBDATA *gb_main, bool marked_only) {
+GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 
 
     char *alignment_name;
