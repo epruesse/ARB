@@ -3,34 +3,33 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	species_join.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Merge Similar Species
 
-OCCURRENCE	ARB_NT/Species/Merge Similar Species
+OCCURRENCE	ARB_NT/Species/Merge Species/Merge Similar Species
                 ARB_NT/Sequence/Concatenate sequences/alignments
 
 DESCRIPTION
 
-            "Merge Similar Species" function merges the database
-            fields of the similar species found in the database.
+            "Merge Similar Species" creates new species by merging
+            fields and alignments of several similar species.
 
-            Select the database field entry by clicking on the button
-            to set the criterion field to merge species in the
-            database (for e.g., full_name).
+            - Mark all species that should be examined for similarity.
 
-            Specify the new field name to which the "number of merged
-            species" information is to be stored (e.g.,
-            merged_species).
+            - Select a database field entry by clicking on the first
+              button to set a similarity-criterion used to detect
+              candidates for merging (for e.g., full_name).
 
-            Press MERGE SIMILAR SPECIES button to generate new species
-            by merging similar species having selected database entry
-            as a criterion.
+            - Specify the new field name to which the "number of merged
+              species" information is to be stored (e.g., merged_species).
 
-NOTES		None
+            - Press MERGE SIMILAR SPECIES to start.
+
+NOTES		There's a second function to merge species: see LINK{species_join.hlp}
 
 EXAMPLES	None
 
