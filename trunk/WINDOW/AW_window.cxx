@@ -3144,7 +3144,7 @@ void AW_window::_set_activate_callback(void *widget)
 /*****************      AW_MACRO_MESSAGE     *******************/
 /***********************************************************************/
 
-#define AW_MESSAGE_AWAR "tmp/message/string"
+#define AW_MESSAGE_AWAR "tmp/message/string" //  @@@ does this clash with AWAR_ERROR_MESSAGES ? --ralf
 
 void macro_message_cb( AW_window *aw,AW_CL  ) {
     AW_root *root = aw->get_root();
