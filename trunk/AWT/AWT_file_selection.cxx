@@ -126,6 +126,12 @@ int AWT_is_dir(const char *path) {
     if (S_ISDIR(stt.st_mode)) return 1;
     return 0;
 }
+int AWT_is_file(const char *path) {
+    struct stat stt;
+    if (stat(AWT_valid_path(path), &stt)) return 0;
+    if (S_ISREG(stt.st_mode)) return 1;
+    return 0;
+}
 
 char *AWT_extract_directory(const char *path) {
     char *lslash = strrchr(path, '/');
