@@ -81,7 +81,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws,c
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root,GBDATA *gb_main);
 
 /***********************	SAIS	 	************************/
-void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname, 
+void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
 				char *(*filter_poc)(GBDATA *gb_ext, AW_CL) = 0, AW_CL filter_cd = 0,
 				AW_BOOL add_sel_species= AW_FALSE);
 			/* Selection list for all extendeds !!!!!!!!! */
@@ -99,7 +99,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 
 /***********************	FILES IN GENERAL	 	************************/
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar, 
+AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
                                void (*callback)(AW_window*), // set callback ..
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
 
@@ -108,7 +108,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws,
 		const char *varname, long type_filter,
 		const char *scan_xfig_label,
 		const char *rescan_xfig_label = 0);
-			/* show fields of a species / extended !!! 
+			/* show fields of a species / extended !!!
 			type filter is a bitstring which controls what types are shown in
 			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
 			ints and strings */
@@ -133,14 +133,14 @@ AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def
 				and some internal awars
 			*/
 void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main,AW_root *awr, const char *awar_name);
-    
+
 AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_select_filter);
 			/* not just the box, but the whole window */
 
 class AP_filter;
 AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter);
 
-char *AWT_get_combined_filter_name(AW_root *aw_root);
+char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix);
 
 /**************************************************************************
 *********************	Various	Database SCANNER Boxes 	*******************
@@ -178,7 +178,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
 	long type_filter	// AWT_VIEWER BITFILTER for TYPES
 	);
 
-void awt_map_arbdb_scanner(AW_CL arbdb_scanid, 
+void awt_map_arbdb_scanner(AW_CL arbdb_scanid,
 			GBDATA *gb_pntr, int show_only_marked_flag);
 		/* map the Scanner to a database entry */
 GBDATA *awt_get_arbdb_scanner_gbdata(AW_CL arbdb_scanid);

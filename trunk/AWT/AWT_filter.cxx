@@ -75,7 +75,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
                 sprintf(buffer,"%li",i+1);
                 strncpy(data+i+1,buffer,strlen(buffer));
             }
-        }		
+        }
 
         if (GB_read_type(gbd) == GB_STRING) {	// read the filter
             str = GB_read_string(gbd);
@@ -150,7 +150,7 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
             char *target = (char *)GBS_global_string("%c%s%c%s",tpre,GB_read_key_pntr(gb_data),1,name);
             cbs->aws->insert_selection( cbs->id,(char *)str, target );
             delete str;
-            count++;		
+            count++;
         }
     }
     delete TYPE;
@@ -182,7 +182,7 @@ void awt_create_select_filter_window_gb_cb(void *dummy,struct adfiltercbstruct *
                 gb_extended = GBT_next_SAI(gb_extended)){
             awt_add_sequences_to_list(cbs,use,gb_extended,"",' ');
         }
-	
+
         cbs->aws->update_selection_list( cbs->id );
     }
     awt_create_select_filter_window_aw_cb(0,cbs);
@@ -215,7 +215,7 @@ AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *def_
 
     acbs->def_cancel = GBS_string_eval(def_name,"*/name=*1/cancel",0);
     aw_root->awar_string( acbs->def_cancel,".0-=",aw_def);
-    
+
     acbs->def_simplify = GBS_string_eval(def_name,"*/name=*1/simplify",0);
     aw_root->awar_int( acbs->def_simplify,0,aw_def);
 
@@ -242,7 +242,7 @@ AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *def_
         delete fname;
         aw_root->awar(acbs->def_subname)->write_string(fsname);		// cause an callback
     }
-    
+
     aw_root->awar(acbs->def_subname)->touch();		// cause an callback
 
     GBDATA *gb_extended_data =	GB_search(acbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
@@ -286,8 +286,8 @@ AW_window *awt_create_2_filter_window(AW_root *aw_root,AW_CL res_of_create_selec
     return awt_create_select_filter_win(aw_root,s2filter);
 }
 
-char *AWT_get_combined_filter_name(AW_root *aw_root) {
-    char *combined_name = strdup(aw_root->awar("gde/filter/name")->read_string());
+char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
+    char *combined_name = strdup(aw_root->awar(GBS_global_string("%s/filter/name", prefix))->read_string()); // "gde/filter/name"
     const char *awar_prefix = "tmp/gde/filter";
     const char *awar_repeated = "/2filter";
     const char *awar_postfix = "/name";
@@ -295,28 +295,28 @@ char *AWT_get_combined_filter_name(AW_root *aw_root) {
     int repeated_len = strlen(awar_repeated);
     int postfix_len = strlen(awar_postfix);
     int count;
-    
+
     for (count = 1; ; ++count) {
         char *awar_name = new char[prefix_len + count*repeated_len + postfix_len + 1];
         strcpy(awar_name, awar_prefix);
         int c;
         for (c=0; c<count; ++c) strcat(awar_name, awar_repeated);
         strcat(awar_name, awar_postfix);
-        
+
         AW_awar *awar_found = aw_root->awar_no_error(awar_name);
         delete awar_name;
-        
-        if (!awar_found) break; // no more filters defined 
-        char *content = awar_found->read_string(); 
-        
+
+        if (!awar_found) break; // no more filters defined
+        char *content = awar_found->read_string();
+
         if (strstr(content, "none")==0) { // don't add filters named 'none'
             char *new_combined_name = new char[strlen(combined_name)+1+strlen(content)+1];
-            sprintf(new_combined_name, "%s/%s", combined_name, content); 
+            sprintf(new_combined_name, "%s/%s", combined_name, content);
             delete combined_name;
-            combined_name = new_combined_name; 
+            combined_name = new_combined_name;
         }
     }
-    
+
     return combined_name;
 }
 
@@ -347,13 +347,13 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_sel
     aws->at("zero");
     aws->callback((AW_CB1)awt_create_select_filter_window_aw_cb,(AW_CL)acbs);
     aws->create_input_field(acbs->def_cancel,10);
-	
+
     aws->at("sequence");
     aws->create_text_field(acbs->def_source,1,1);
 
     aws->at("min");
     aws->create_input_field(acbs->def_min,4);
-	
+
     aws->at("max");
     aws->create_input_field(acbs->def_max,4);
 
@@ -363,7 +363,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_sel
     aws->insert_option("TRANSVERSIONS ONLY","T",1);
     aws->insert_option("SIMPLIFIED AA","A",2);
     aws->update_option_menu();
-	
+
     awt_create_select_filter_window_gb_cb(0,acbs);
 
     aws->button_length( 7 );
@@ -378,7 +378,7 @@ AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter)
     struct adfiltercbstruct *acbs = (struct adfiltercbstruct *) res_of_create_select_filter;
     AP_filter *filter = new AP_filter;
     if (!acbs) {
-        filter->init("","0",10);       
+        filter->init("","0",10);
         return filter;
     }
     GB_push_transaction(acbs->gb_main);
@@ -396,5 +396,5 @@ AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter)
 
     GB_pop_transaction(acbs->gb_main);
     return filter;
-}  
+}
 
