@@ -17,13 +17,13 @@ SUB	ae2_ift.hlp
 
 SUB	importift.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Import Foreign Data(bases)
 
 OCCURRENCE	ARB_INTRO <Create and Import>,
-                ARB_NT/File/Import
+                ARB_NT/File/Import/Import sequences and fields (ARB)
 
 DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 		and imports the foreign data. A selection of commonly used
@@ -67,6 +67,14 @@ NOTES		Following file formats currently can be detected and loaded:
 
 		If 'AUTO DETECT' does not find any format, selecting a format
 		by hand (except the universal format) will not help you.
+
+SECTION READSEQ
+
+                Alternatively 'readseq' can be used to import sequences.
+                It's also located in 'ARB_NT/File/Import' menu.
+                See LINK{agde_readseq.hlp}
+
+
 
 WARNINGS	!!! Using 'AUTO DETECT', check whether the format is detected
 		correctly. RDP files may be identified as GenBank. In this case
