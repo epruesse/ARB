@@ -27,7 +27,6 @@ gellisary::GAGenomEmbl::GAGenomEmbl(string * fname):GAGenom(fname)
 
 void gellisary::GAGenomEmbl::parseFlatFile()
 {
-    ifstream flatfile(file_name.c_str());
     string tmp_str;
     string del_str;
     string rep_str;
@@ -51,6 +50,19 @@ void gellisary::GAGenomEmbl::parseFlatFile()
 
     char tmp_line[128];
 
+    system("echo before plain read;date");
+
+    {
+    ifstream flatfile2(file_name.c_str());
+    while(!flatfile2.eof())
+    {
+        flatfile2.getline(tmp_line,128);
+    }
+    }
+    system("echo after plain read;date");
+
+
+    ifstream flatfile(file_name.c_str());
     while(!flatfile.eof())
     {
         flatfile.getline(tmp_line,128);
@@ -419,6 +431,9 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 break;
         }
     }
+
+    system("echo after parse;date");
+
     prepared = true;
 }
 
