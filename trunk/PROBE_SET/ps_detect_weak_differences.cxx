@@ -12,6 +12,7 @@
 
 // common globals
 SpeciesID         __MAX_ID;
+SpeciesID         __MIN_ID;
 PS_BitMap_Fast   *__MAP;
 // globals for PS_detect_weak_differences
 IDVector         *__PATH;
@@ -70,8 +71,8 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     //
     // append IDs to paths
     //
-    __PATH->push_back( id );
-    for (SpeciesID i = _parent_ID+1; ((i < id) && (i >= 0)); ++i) {
+    __PATH->push_back( id );                                                                    // append id to path
+    for (SpeciesID i = (_parent_ID < __MIN_ID) ? __MIN_ID : _parent_ID+1; i < id; ++i) {        // append parent_id+1 .. id-1 to inverse path
         //printf( "%i ",i );
         __INVERSE_PATH->push_back( i );
     }
@@ -188,7 +189,7 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
 
     int c = 0;
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin(); i != _root_node->getChildrenEnd(); ++i,++c ) {
-        if (c % 50 ==0) fprintf( stderr, "PS_detect_weak_differences_stepdown( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
+        if ((c < 50) || (c % 100 == 0)) printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i\n", i->first, c+1, _root_node->countChildren() );
         PS_detect_weak_differences_stepdown( i->second, -1 );
     }
     printf( "%lu * %lu + %lu set operations performed\n", __COUNT_SET_OPS2, ULONG_MAX, __COUNT_SET_OPS );
@@ -218,6 +219,7 @@ void PS_find_probes_for_pairs( const PS_NodePtr  _ps_node,
     //
     if ((id >= __ONEMATCH_MIN_ID) && has_probes) {
         for (ID2IDSetCIter pair=_pairs.begin(); pair != _pairs.end(); ++pair) {
+            // look for pair-IDs in the path
             bool found_first  = __PATHSET->find( pair->first  ) != __PATHSET->end();
             bool found_second = __PATHSET->find( pair->second ) != __PATHSET->end();
             if (found_first ^ found_second) { // ^ = XOR
@@ -271,10 +273,10 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     bool      bit1;
     bool      bit2;
     __ONEMATCH_MIN_ID = __MAX_ID;
-    __ONEMATCH_MAX_ID = -1;
-    for (SpeciesID id1 = 0; id1 <= __MAX_ID; ++id1) {
+    __ONEMATCH_MAX_ID = __MIN_ID;
+    for (SpeciesID id1 = __MIN_ID; id1 <= __MAX_ID; ++id1) {
 //         printf( "[%6i] ",id1 );
-        for (SpeciesID id2 = 0; id2 <= id1; ++id2) {
+        for (SpeciesID id2 = __MIN_ID; id2 <= id1; ++id2) {
             smaller_id = (id1 < id2) ? id1 : id2;
             bigger_id  = (id1 < id2) ? id2 : id1;
             bit1       = __MAP->get( smaller_id, bigger_id );
@@ -322,7 +324,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin();
          (i != _root_node->getChildrenEnd()) && (!oneMatch.empty());
          ++i,++c ) {
-        if (c % 50 == 0) printf( "PS_find_probes_for_pairs( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
+        if ((c < 50) || (c % 100 == 0)) printf( "PS_find_probes_for_pairs( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
         PS_find_probes_for_pairs( i->second, oneMatch );
     }
     //
@@ -359,15 +361,21 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     // make preset map
     //
     PS_BitMap_Counted *preset = new PS_BitMap_Counted( false, __MAX_ID+1 );
+    // set bits for no matches
+    for (ID2IDSetCIter pair=noMatch.begin(); pair != noMatch.end(); ++pair) {
+        preset->setTrue( pair->second, pair->first );
+    }
     // iterate over paths
     for (IDID2IDSetMapCIter i = __PAIR2PATH->begin();
          i != __PAIR2PATH->end();
          ++i) {
         // iterate over all IDs except path
-        IDSetCIter next_path_id = i->second.begin();
-        for (SpeciesID id = 0; id <= __MAX_ID; ++id) {
-            if (id == *next_path_id) {  // if i run into a ID in path
-                ++next_path_id;         // advance to next path ID
+        IDSetCIter path_iter    = i->second.begin();
+        SpeciesID  next_path_id = *path_iter;
+        for (SpeciesID id = __MIN_ID; id <= __MAX_ID; ++id) {
+            if (id == next_path_id) {   // if i run into a ID in path
+                ++path_iter;            // advance to next path ID
+                next_path_id = (path_iter == i->second.end()) ? -1 : *path_iter;
                 continue;               // skip this ID
             }
             // iterate over path IDs
@@ -381,6 +389,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             }
         }
     }
+    preset->recalcCounters();
     if (!_result_filename) preset->print();
     //
     // save results
@@ -451,6 +460,7 @@ int main( int argc,  char *argv[] ) {
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
     db->load();
     __MAX_ID = db->getMaxID();
+    __MIN_ID = db->getMinID();
     printf( "loaded database (enter to continue)\n" );
 //    getchar();
 
