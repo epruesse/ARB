@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Thu Mar/11/2004 20:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 20:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -23,6 +23,7 @@
 #include <map>
 #include <deque>
 #include <algorithm>
+#include <cmath>
 
 #include <smartptr.h>
 #include <output.h>
@@ -30,8 +31,8 @@
 // #include <arbdb.h>
 #include <arbdbt.h>
 
-#define NEED_encodeTreeNode 
-#define NEED_saveProbeContainerToString 
+#define NEED_encodeTreeNode
+#define NEED_saveProbeContainerToString
 #define NEED_setDatabaseState
 #include "../common.h"
 #include "../path_code.h"
@@ -220,7 +221,7 @@ GB_ERROR scanArguments(int argc,  char *argv[]) {
     para.dont_match_probes = false; // default is to match probes
 
     while (argc > 2) {
-        if (argv[1][0] != '-') break;        
+        if (argv[1][0] != '-') break;
 
         if (strcmp(argv[1], "-noprobe") == 0) {
             para.dont_match_probes = true;
@@ -617,7 +618,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
     if (!error) error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
 
     size_t       max_possible_groups = probe_count; // not quite correct (but only used for % display)
-    const size_t dot_devisor         = max_possible_groups ? static_cast<size_t>(sqrt(max_possible_groups)) : 1; // slow down dots
+    const size_t dot_devisor         = max_possible_groups ? static_cast<size_t>(sqrt(static_cast<double>(max_possible_groups))) : 1; // slow down dots
 
     if (!error) {
         out.put("Calculating probe-groups for found probes:");
