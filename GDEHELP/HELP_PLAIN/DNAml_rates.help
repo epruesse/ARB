@@ -1,0 +1,81 @@
+
+                              DNAml_rates_1_0
+
+                               Gary J. Olsen
+
+                              August 14, 1992
+
+
+The DNAml_rates program takes a set of sequences and corresponding
+phylogenetic tree and produces and maximum likelihood estimate of the
+rate of nucleotides substitution at each sequence position.
+
+Input is read from standard input.  The format is very much like that
+of the fastDNAml program.  The first line of the input file gives the
+number of sequences and the number of bases per sequence.  Also on
+this line are the requested program option letters.  Any auxiliary
+data required by the options follow on subsequent lines.  Either the
+user must specify the empirical base frequencies (F) option, or
+immediately preceding the data matrix there must be a line of data
+with the frequencies of A, C, G and T.  Next, the program expects a
+data matrix.  The first 10 characters of the first line of data for a
+given sequence in interpreted as the name (blanks are counted).
+Elsewhere in the data matrix, blanks and numbers are ignored.  The
+default data matrix format is interleaved.  If all the data for a
+sequence are on one input line, then interleaved and noninterleaved
+are equivalent.  Following the data matrix there must be a line with
+the number of user-specified trees for which rates are to be estimated
+(as with the U option is fastDNAml).  The rest of the input file is
+one or more user-specified trees with branch lengths (as with the U
+and L options in fastDNAml).
+
+The program writes to standard output.  The output lists the estimated
+rate of change at every site in the sequence, or "Undefined" if there
+are not sufficient unambiguous data at the site.
+
+If the C option is specified, the program also categorizes the rates
+into the requested number of categories.  The current categorization
+algorithm is rather crude, but is probably adequate if the number of
+categories is large enough.  A weighting mask is also created in which
+sites with Undefined rates are assigned a weight of zero.
+
+If the Y option is specified, the program writes the weights and
+categories data to a file in a format appropriate for use by
+fastDNAml.
+
+
+Options summary:
+
+1 - print data.  Toggles print data option (default = noprint).
+
+C - write categories.  Requires auxiliary line with a C and the desired
+    number of categories.
+
+F - empirical base frequencies.  Calculates base frequencies from data matrix,
+    rather than expecting a base frequency input line.
+
+I - interleave.  Toggles the data interleave option (default = interleave).
+
+L - userlengths.  This is implicit in the program, so the option is ignored.
+
+M - minimum informative sequences.  Requires an auxiliary data line with an
+    M and the minimum number of sequences in which a sequence position
+    (alignment column) must have unambiguous information in order for the rate
+    at the site to be defined (default = 4).
+
+T - transitions/transversion ratio.  Requires auxiliary line with a T and
+    the ration of observed transitions to transversions (default = 2.0).
+
+U - user trees.  This is implicit in the program, so the option is ignored.
+
+W - user weights.  Requires weights auxiliary data.
+
+Y - categories file.  Writes the weights and categories to a file.
+
+
+The option scripts usertree, weights, n_categories and categories_file are 
+useful for adding the appropriate options to the input data matrix.
+
+The option script weights_categories is useful for adding the resulting 
+outfile to a fastDNAml input file.
+
