@@ -92,6 +92,11 @@ GenomFeatureTableEmbl.o: GenomLocation.h
 GenomFeatureTableEmbl.o: GenomSourceFeatureEmbl.h
 GenomFeatureTableEmbl.o: GenomUtilities.h
 
+GenomImport.o: GenomImport.h
+GenomImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GenomImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
+
 GenomLocation.o: GenomLocation.h
 
 GenomReferenceEmbl.o: GenomReferenceEmbl.h
