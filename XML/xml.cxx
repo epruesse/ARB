@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Fri May/31/2002 20:47 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri Jun/14/2002 12:44 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -154,6 +154,14 @@ XML_Tag::~XML_Tag() {
 void XML_Tag::add_attribute(const string& name_, const string& content_) {
     XML_Attribute *newAttr = new XML_Attribute(name_, content_);
     attribute = newAttr->append_to(attribute);
+}
+// ---------------------------------------------------------------------
+//      void XML_Tag::add_attribute(const string& name_, int value)
+// ---------------------------------------------------------------------
+void XML_Tag::add_attribute(const string& name_, int value) {
+    char buf[30];
+    sprintf(buf, "%i", value);
+    add_attribute(name_, buf);
 }
 //  ---------------------------------------------------------------
 //      void XML_Tag::add_son(XML_Node *son_, bool son_is_tag)

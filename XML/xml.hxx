@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Sat Jun/01/2002 12:51 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri Jun/14/2002 12:42 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -116,6 +116,7 @@
                 @param content_ attribute value
             */
             void         add_attribute(const std::string& name_, const std::string& content_);
+            void         add_attribute(const std::string& name_, int value);
             virtual void add_son(XML_Node *son_, bool son_is_tag);
             virtual void remove_son(XML_Node *son_);
             virtual void open(FILE *out);
