@@ -204,24 +204,30 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
 }
 
 void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
-	
-	extern int OpenGLEngineState;  
-	
+	extern int  OpenGLEngineState;
+    static bool ok = false;
+
 	if ( OpenGLEngineState == NOT_CREATED ) {
 		extern GBDATA* OpenGL_gb_main;
 		OpenGL_gb_main = gb_main;
 		
 		InitializeOpenGLWindow( w );
-		
+
 		XExposeEvent *evt;
 		evt = (XExposeEvent*) event;
-		
-		InitializeOpenGLEngine( (GLint) evt->height, (GLint) evt->height );
-		
-		ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
-	}
 
-    RefreshOpenGLDisplay();
+        try {
+            InitializeOpenGLEngine( (GLint) evt->height, (GLint) evt->height );
+            ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
+            ok =  true;
+        }
+        catch (string& err) {
+#warning errors catched here should close the RNA3D window again (or prevent it from opening)
+            aw_message(GBS_global_string("Error in RNA3D: %s", err.c_str()));
+        }
+    }
+
+    if (ok) RefreshOpenGLDisplay();
 }
 
 void RefreshOpenGLDisplay() {
