@@ -209,7 +209,7 @@ void GB_dump(GBDATA *gbd) {
     const char *content   = 0;
 
     switch (type) {
-        case GB_INT:    { content = GBS_global_string("%i", GB_read_int(gbd)); break; }
+        case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
         case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
         case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
         case GB_STRING: { content = GB_read_char_pntr(gbd); break; }
