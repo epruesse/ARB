@@ -25,21 +25,24 @@ void alignment_vars_callback(AW_root *aw_root)
         aw_root->awar("presets/alignment_len")->unmap();
         aw_root->awar("presets/alignment_rem")->unmap();
         aw_root->awar("presets/aligned")->unmap();
+        aw_root->awar("presets/auto_format")->unmap();
         aw_root->awar("presets/security")->unmap();
     }else{
 
-        GBDATA *ali_name =  GB_search(ali_cont,"alignment_name",    GB_STRING);
-        GBDATA *ali_len =   GB_search(ali_cont,"alignment_len", GB_INT);
-        GBDATA *ali_aligned =   GB_search(ali_cont,"aligned",       GB_INT);
-        GBDATA *ali_type =  GB_search(ali_cont,"alignment_type",    GB_STRING);
-        GBDATA *ali_security =  GB_search(ali_cont,"alignment_write_security",GB_INT);
-        GBDATA *ali_rem =   GB_search(ali_cont,"alignment_rem", GB_STRING);
+        GBDATA *ali_name        = GB_search(ali_cont, "alignment_name",           GB_STRING);
+        GBDATA *ali_len         = GB_search(ali_cont, "alignment_len",            GB_INT   );
+        GBDATA *ali_aligned     = GB_search(ali_cont, "aligned",                  GB_INT   );
+        GBDATA *ali_auto_format = GB_search(ali_cont, "auto_format",              GB_INT   );
+        GBDATA *ali_type        = GB_search(ali_cont, "alignment_type",           GB_STRING);
+        GBDATA *ali_security    = GB_search(ali_cont, "alignment_write_security", GB_INT   );
+        GBDATA *ali_rem         = GB_search(ali_cont, "alignment_rem",            GB_STRING);
 
         aw_root->awar("presets/alignment_name")->map((void*)ali_name);
         aw_root->awar("presets/alignment_type")->map((void*)ali_type);
         aw_root->awar("presets/alignment_len")->map((void*)ali_len);
         aw_root->awar("presets/alignment_rem")->map((void*)ali_rem);
         aw_root->awar("presets/aligned")->map((void*)ali_aligned);
+        aw_root->awar("presets/auto_format")->map((void*)ali_auto_format);
         aw_root->awar("presets/security")->map((void*)ali_security);
     }
     GB_pop_transaction(gb_main);
@@ -50,19 +53,19 @@ void create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 {
     aw_root->awar_string( "presets/use", "" ,   aw_def);
     GB_push_transaction(gb_main);
+
     GBDATA *use = GB_search(gb_main,"presets/use",GB_STRING);
-    aw_root->awar("presets/use")->map( use);
+    aw_root->awar("presets/use")->map(use);
 
-    aw_root->awar_string( "presets/alignment_name", "" ,    aw_def)
-        ->set_srt( GBT_ALI_AWAR_SRT);
+    aw_root->awar_string( "presets/alignment_name", "" , aw_def) ->set_srt( GBT_ALI_AWAR_SRT);
+    aw_root->awar_string( "presets/alignment_dest", "" , aw_def) ->set_srt( GBT_ALI_AWAR_SRT);
 
-    aw_root->awar_string( "presets/alignment_dest", "" ,    aw_def)
-        ->set_srt( GBT_ALI_AWAR_SRT);
-    aw_root->awar_string( "presets/alignment_type", "" ,    aw_def);
+    aw_root->awar_string( "presets/alignment_type", "", aw_def);
     aw_root->awar_string( "presets/alignment_rem" );
-    aw_root->awar_int( "presets/alignment_len", 0 , aw_def);
-    aw_root->awar_int( "presets/aligned", 0 ,   aw_def);
-    aw_root->awar_int( "presets/security", 0 ,  aw_def);
+    aw_root->awar_int( "presets/alignment_len", 0, aw_def);
+    aw_root->awar_int( "presets/aligned", 0, aw_def);
+    aw_root->awar_int( "presets/auto_format", 0, aw_def);
+    aw_root->awar_int( "presets/security", 0, aw_def);
 
     aw_root->awar("presets/use")->add_callback( alignment_vars_callback);
     alignment_vars_callback(aw_root);
@@ -88,6 +91,14 @@ void ad_al_delete_cb(AW_window *aww)
 }
 
 
+void ed_al_check_auto_format(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+    char    *use = awr->awar("presets/use")->read_string();
+    if (strcmp(use, "ali_genom") == 0) {
+        awr->awar("presets/auto_format")->write_int(2); // ali_genom is always forced to "skip"
+    }
+}
+
 void ed_al_check_len_cb(AW_window *aww)
 {
     char *error = 0;
@@ -105,15 +116,13 @@ void ed_al_export_sec_cb(AW_window *aww)
 }
 void ed_al_align_cb(AW_window *aww)
 {
-    char *error = 0;
-    char *use = aww->get_root()->awar("presets/use")->read_string();
+    char     *use = aww->get_root()->awar("presets/use")->read_string();
     GB_begin_transaction(gb_main);
-    if (!error) error = (char *)GBT_check_data(gb_main,use);
-    if (!error) error = (char *)GBT_check_lengths(gb_main,use);
-    if (!error) error = (char *)GBT_check_data(gb_main,use);
+    GB_ERROR  err = GBT_format_alignment(gb_main, use);
     GB_commit_transaction(gb_main);
-    if (error) aw_message(error);
+    if (err) aw_message(err);
     free(use);
+    ed_al_check_len_cb(aww);
 }
 
 void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
@@ -280,6 +289,16 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
     aws->insert_default_option("not formatted","n",0);
     aws->callback(ed_al_align_cb);
     aws->insert_option("formatted","j",1);
+    aws->update_option_menu();
+
+    aws->at("auto_format");
+    aws->create_option_menu("presets/auto_format");
+    aws->callback(ed_al_check_auto_format);
+    aws->insert_default_option("ask","a",0);
+    aws->callback(ed_al_check_auto_format);
+    aws->insert_option("always","",1);
+    aws->callback(ed_al_check_auto_format);
+    aws->insert_option("never","",2);
     aws->update_option_menu();
 
     aws->at("len");
