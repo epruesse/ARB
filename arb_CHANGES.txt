@@ -2,6 +2,7 @@ ARB change log
 
 Major changes for next version:
 
+ - Enhanced Search Depth for Probe Match --> max 20 MM
  - CLUSTALW:
    * separated menus for fast and slow alignment
    * most parameters accessible from inside ARB now
