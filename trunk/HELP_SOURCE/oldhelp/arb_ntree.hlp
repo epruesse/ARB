@@ -108,8 +108,8 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 					'HELP: Glosssary')
 
 	The buttons of the first column of the 'ARB_NT' window are used to
-		to set the modi [huh?] for editing and modifying the current tree shown
-		in the tree display area.
+        select different modes for editing and modifying the current tree shown
+        in the tree display area.
 
 
 NOTES		Online help is available for all menu items and buttons (see
@@ -121,4 +121,4 @@ WARNINGS	None
 
 BUGS		Report any bugs:
 
-                       send bug report to arb@arb-home.de
+                       send bug report to devel@arb-home.de
