@@ -127,6 +127,7 @@ AW_window.o: aw_awar.hxx
 AW_window.o: aw_click.hxx
 AW_window.o: aw_commn.hxx
 AW_window.o: aw_device.hxx
+AW_window.o: aw_global.hxx
 AW_window.o: aw_keysym.hxx
 AW_window.o: aw_print.hxx
 AW_window.o: aw_root.hxx

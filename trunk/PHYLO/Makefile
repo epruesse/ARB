@@ -119,6 +119,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -37,6 +37,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
