@@ -18,9 +18,9 @@ MATCH	"SOURCE *"
 	TAG	"GB"
 	APPEND "source"
 
-MATCH	"  ORGANISM *"
-	SRT "*|*=*1"
-	WRITE "full_name"
+MATCH	"     source*organism=*"
+	SRT	"*organism\=\"*\"*=*2"
+	WRITE	"full_name"
 
 MATCH	"  ORGANISM *"
 	SRT "*|*=*1"
@@ -42,16 +42,69 @@ MATCH	"  JOURNAL *"
 	TAG	"GB"
 	APPEND	"journal"
 
-MATCH	"COMMENT*strain=*"
-	SRT	"*strain\=\"*\"*=*2"
+MATCH	"  MEDLINE *"
+	SRT	"No information*="
 	TAG	"GB"
+	APPEND	"medline"
+
+MATCH	"     source*strain=*"
+	SRT	"*strain\=\"*\"*=*2"
 	WRITE	"strain"
 
-SEQUENCEAFTER	"ORIGIN*"
-SEQUENCESRT	    "~=.:*Check*..="
-SEQUENCEACI	    "remove("0123456789 ")"
-SEQUENCEEND	    "//"
+MATCH	"     source*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	WRITE	"description"
 
+MATCH	"     Protein*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"description"
+
+MATCH	"     Protein*EC_number*"
+	SRT	"*/EC_number\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"EC_number"
+
+MATCH	"     Protein*product=*"
+	SRT	"*/product\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"gene_prod"
+
+MATCH	"KEYWORDS *"
+	TAG	"GB"
+	WRITE	"keywords"
+
+MATCH	"     CDS*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"description"
+
+MATCH	"     CDS*EC_number*"
+	SRT	"*/EC_number\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"EC_number"
+
+MATCH	"     CDS*product=*"
+	SRT	"*/product\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"gene_prod"
+
+MATCH	"     source*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	WRITE	"description"
+
+MATCH	"     source*clone*"
+	SRT	"*/clone\=\"*\"*=*2"
+	TAG	"GB"
+	WRITE	"clone"
+
+SEQUENCEAFTER	"ORIGIN*"
+SEQUENCESRT	" =:~=.:*Check*..="
+SEQUENCEACI	"remove("0123456789 /")"
+SEQUENCECOLUMN	0
+SEQUENCEEND	"//"
 CREATE_ACC_FROM_SEQUENCE
 
 END	"//"
