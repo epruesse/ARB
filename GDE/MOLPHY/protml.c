@@ -1108,6 +1108,12 @@ FILE *ofp;
 		exit(1);
 #endif /* DISLKL */
 
+		if (Relia_optn) { // bugfix : Reliprob/Relinum is used inside xstardecomp()
+			Relistat = new_ivector(Maxibrnch); 
+			Reliprob = new_dmatrix(Maxibrnch, 2);
+			Relinum  = new_imatrix(Maxibrnch, 2); 
+		}
+                
 #if 1
 		xstardecomp(Ctree);
 #else
@@ -1117,7 +1123,7 @@ FILE *ofp;
 		fmlength(Ctree, Distanmat, Maxspc);
 		initpartlkl(Ctree);
 		Alklptrn = Lklptrn[Cnotree];
-		rp = (Node *)mlikelihood(Ctree);
+		rp       = (Node *)mlikelihood(Ctree);
 		mlvalue(Ctree, Infotrees);
 		if (Debug_optn) putctopology(Ctree);
 		putchar('\n');
@@ -1126,6 +1132,11 @@ FILE *ofp;
 		pstree(Epsfp, Ctree);
 		fputcphylogeny(Trefp, Ctree);
 		FREE_LPMATRIX(Lklptrn);
+		if (Relia_optn) {
+                    free_ivector(Relistat); Relistat = 0;
+                    free_dmatrix(Reliprob); Reliprob = 0;
+                    free_imatrix(Relinum); Relinum   = 0; 
+		}
 
 	} else if (Njoin_optn) { /* NJ MODE */
 
