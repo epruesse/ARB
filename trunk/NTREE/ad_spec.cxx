@@ -729,9 +729,7 @@ AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     aws->create_button("HELP","HELP","H");
 
     aws->at("pt_server");
-    probe_design_build_pt_server_choices(aws,AWAR_PROBE_ADMIN_PT_SERVER,AW_FALSE);
-
-
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, true);
 
     aws->at("field");
     awt_create_selection_list_on_scandb(gb_main,aws,"next_neighbours/dest_field",
@@ -766,7 +764,7 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     aws->create_button("HELP","HELP","H");
 
     aws->at("pt_server");
-    probe_design_build_pt_server_choices(aws,AWAR_PROBE_ADMIN_PT_SERVER,AW_FALSE);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
 
     aws->at("max_hit");
     aws->create_input_field("next_neighbours/max_hits",5);
