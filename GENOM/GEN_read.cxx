@@ -287,7 +287,7 @@ static string removeFunction(string& content, const char *&error) {
 //  -------------------------
 //      class GeneBorder
 //  -------------------------
-class GeneBorder {
+class GeneBorder { 
 private:
     char sureness;              // 0 -> sure; '<' -> maybe lower; '>' -> maybe higher
     long pos;
@@ -305,9 +305,9 @@ public:
             ++p;
         }
         char *end = 0;
-        pos             = strtoul(p, &end, 10);
+        pos             = strtoul(p, &end, 10); 
         if (end[0] != 0) {
-            return GBS_global_string("Garbage ('%s') found after position", end);
+          return GBS_global_string("Garbage ('%s') found after position", end);
         }
         return 0;
     }
@@ -320,17 +320,63 @@ public:
 //  ---------------------------
 //      class GenePosition
 //  ---------------------------
-// class GenePosition {
+class GenePosition {
+private:
+    GeneBorder lower, upper;
+
+public:
+    // format of pos_string:
+    //  ['<'|'>']<num>'...'['<'|'>']<num>
+  GenePosition(const string& pos_string, const char *&error) {
+    size_t points         = pos_string.find("..");
+    //    size_t roof         = pos_string.find('^'); 
+    //        size_t points         = pos_string.find("..");
+	
+
+    if (points != string::npos) { 				// points found
+      error             = lower.parsePosString(pos_string.substr(0, points));
+      //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
+
+      if (!error) {
+	error = upper.parsePosString(pos_string.substr(points+2)); 
+      }
+    }
+    else {
+      size_t roof         = pos_string.find('^'); 
+      if (roof != string::npos) {
+	error             = lower.parsePosString(pos_string.substr(0, roof));
+	if (!error) error = upper.parsePosString(pos_string.substr(roof+1));
+      }
+      else {       
+	// lower equal upper border
+	error             = lower.parsePosString(pos_string);
+	if (!error) upper = lower;
+      }
+    }
+  }
+    virtual ~GenePosition() {}
+
+    const GeneBorder& getLower() const { return lower; }
+    const GeneBorder& getUpper() const { return upper; }
+};
+
+// //  ---------------------------
+// //      class GenePosition2
+// //  ---------------------------
+// class GenePosition2 {
 // private:
-//     GeneBorder lower, upper;
+//     GeneBorder2 lower, upper;
 
 // public:
 //     // format of pos_string:
 //     //  ['<'|'>']<num>'...'['<'|'>']<num>
-//     GenePosition(const string& pos_string, const char *&error) {
-//         size_t points         = pos_string.find("..");
-//         if (points != string::npos) {
-//             error             = lower.parsePosString(pos_string.substr(0, points));
+//     //  ['<'|'>']<num>'^'['<'|'>']<num>
+//     GenePosition2(const string& pos_string, const char *&error) {
+//         size_t roof         = pos_string.find("^");
+// 	//        size_t points         = pos_string.find("..");
+//         if (roof != string::npos) {
+//             error             = lower.parsePosString(pos_string.substr(0, roof));
+// 	    //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
 //             if (!error) error = upper.parsePosString(pos_string.substr(points+2));
 //         }
 //         else {                  // lower equal upper border
@@ -343,37 +389,6 @@ public:
 //     const GeneBorder& getLower() const { return lower; }
 //     const GeneBorder& getUpper() const { return upper; }
 // };
-
-
-//  ---------------------------
-//      class GenePosition
-//  ---------------------------
-class GenePosition {
-private:
-    GeneBorder lower, upper;
-
-public:
-    // format of pos_string:
-    //  ['<'|'>']<num>'...'['<'|'>']<num>
-    GenePosition(const string& pos_string, const char *&error) {
-        size_t points         = pos_string.find("..");
-	//        size_t points         = pos_string.find("..");
-        if (points != string::npos) {
-            error             = lower.parsePosString(pos_string.substr(0, points));
-	    //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
-            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
-        }
-        else {                  // lower equal upper border
-            error             = lower.parsePosString(pos_string);
-            if (!error) upper = lower;
-        }
-    }
-    virtual ~GenePosition() {}
-
-    const GeneBorder& getLower() const { return lower; }
-    const GeneBorder& getUpper() const { return upper; }
-};
-
 
 //  --------------------------------------------------------------------------
 //      GB_ERROR GEN_insert_warning(GBDATA *gb_item, const char *warning)
