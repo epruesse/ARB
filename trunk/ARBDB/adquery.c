@@ -899,7 +899,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     free(out[i].str);
                 }
             }
-            s1 = GBS_strclose(strstruct,1);
+            s1 = GBS_strclose(strstruct);
         }
         free(buffer);
 
