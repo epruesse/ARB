@@ -220,8 +220,13 @@ const char * AWT_date_string(void) {
     struct tm *p;
 
     gettimeofday(&date, 0);
-    p = localtime(&date.tv_sec);
-    return asctime(p);
+    p              = localtime(&date.tv_sec);
+    char *readable = asctime(p); // points to a static buffer
+    char *cr       = strchr(readable, '\n');
+    awt_assert(cr);
+    cr[0]          = 0;         // cut of \n
+
+    return readable;
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
