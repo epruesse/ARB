@@ -15,7 +15,10 @@ BEGIN {
   our (@ISA, @EXPORT, @EXPORT_OK);
 
   @ISA       = qw(Exporter);
-  @EXPORT    = qw( &print_header );
+  @EXPORT    = qw( &print_header
+                   &wait_answer
+                   &send_result
+                 );
   @EXPORT_OK = qw( $q %params $requestdir );
 }
 
@@ -38,9 +41,26 @@ BEGIN {
   $header_printed = 0;
   $q              = new CGI;
   %params         = $q->Vars();
-#  $requestdir     = '/home/westram/ARB/PROBE_SERVER/ps_workerdir';
-  $requestdir     = '/trance1/ARB/source/ARB/PROBE_SERVER/ps_workerdir';
+  $requestdir     = '/home/westram/ARB/PROBE_SERVER/ps_workerdir';
+#   $requestdir     = '/trance1/ARB/source/ARB/PROBE_SERVER/ps_workerdir';
   set_message(\&handle_errors);
+}
+
+sub wait_answer($) {
+  my ($result_name) = @_;
+  while (not -f $result_name) { sleep 1; }
+}
+
+sub send_result($) {
+  my ($result_name) = @_;
+  my $count         = 0;
+
+  if (not open(RESULT,"<$result_name")) { return "Can't read '$result_name'"; }
+  foreach (<RESULT>) { print $_; ++$count; }
+  close RESULT;
+  if ($count==0) { return "got empty result file from server"; }
+#  unlink $result_name;    # remove the result file
+  return;
 }
 
 END { }                         # module clean-up code here (global destructor)
