@@ -563,9 +563,11 @@ ARCHS = \
 			WINDOW/libAW.a \
 			XML/XML.a \
 
-ARCHS_CLIENTACC = PROBE_COM/client.a
-ARCHS_CLIENTCPP = NAMES_COM/client.a
-ARCHS_CLIENT = $(ARCHS_CLIENTCPP)
+#ARCHS_CLIENTACC = PROBE_COM/client.a
+#ARCHS_CLIENTCPP = NAMES_COM/client.a
+ARCHS_CLIENT_PROBE = PROBE_COM/client.a
+ARCHS_CLIENT_NAMES = NAMES_COM/client.a
+#ARCHS_CLIENT = $(ARCHS_CLIENT_NAMES)
 ARCHS_MAKEBIN =		AISC_MKPTPS/dummy.a AISC/dummy.a
 
 ARCHS_COMMUNICATION =	NAMES_COM/server.a\
@@ -582,7 +584,7 @@ $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
-		$(ARCHS_CLIENTACC) \
+		$(ARCHS_CLIENT_PROBE) \
 		$(SEERLIB) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
@@ -601,8 +603,11 @@ ARCHS_NTREE = \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
+		)
 
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
@@ -613,8 +618,13 @@ ARCHS_EDIT = \
 		XML/XML.a \
 
 $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
@@ -630,8 +640,13 @@ ARCHS_EDIT4 = \
 		XML/XML.a \
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
@@ -640,12 +655,18 @@ ARCHS_WETC = \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
+		$(ARCHS_CLIENT_PROBE) \
 		DIST/DIST.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
@@ -655,8 +676,13 @@ ARCHS_DIST = \
 #		FINDCORRWIN/FINDCORRWIN.a FINDCORRMATH/FINDCORRMATH.a
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS)
 
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
@@ -665,8 +691,13 @@ ARCHS_PARSIMONY = \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)
 
 #*********************************** arb_treegen **************************************
 TREEGEN = bin/arb_treegen
@@ -674,8 +705,13 @@ ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
 
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN)
 
 #***********************************	arb_naligner **************************************
 NALIGNER = bin/arb_naligner
@@ -685,8 +721,13 @@ ARCHS_NALIGNER = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	cp NALIGNER/NALIGNER.com $@
+	@SOURCE_TOOLS/binuptodate.pl $@ NALIGNER/NALIGNER.com || ( \
+		echo Link $@ ; \
+		echo cp NALIGNER/NALIGNER.com $@ ; \
+		cp NALIGNER/NALIGNER.com $@ ; \
+		)
+#	@echo $(SEP) Link $@
+#	cp NALIGNER/NALIGNER.com $@
 # no LIB_NALIGNER defined: see NALIGNER/Makefile
 
 #***********************************	arb_secedit **************************************
@@ -696,8 +737,10 @@ ARCHS_SECEDIT = \
 		XML/XML.a \
 
 $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
+	@echo $@ currently does not work as standalone application
+	false
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
 
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
@@ -708,8 +751,13 @@ ARCHS_GENE_PROBE = \
 		GENE_PROBE/GENE_PROBE.a \
 
 $(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) $(SYSLIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_GENE_PROBE) $(LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
@@ -718,8 +766,13 @@ ARCHS_PHYLO = \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)
 
 #***************************************************************************************
 #					SERVER SECTION
@@ -732,8 +785,13 @@ ARCHS_DBSERVER = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB $(SYSLIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) -lARBDB || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB # $(SYSLIBS)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
@@ -743,9 +801,14 @@ ARCHS_PROBE = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(PROBE): $(ARCHS_PROBE:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) PROBE/PROBE.a PROBE_COM/server.a \
-			SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) -lARBDB $(ARCHS_CLIENT_PROBE) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) -lARBDB $(ARCHS_CLIENT_PROBE) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) -lARBDB $(ARCHS_CLIENT_PROBE) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) -lARBDB $(ARCHS_CLIENT_PROBE)
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) PROBE/PROBE.a PROBE_COM/server.a SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS)
 
 #***********************************	arb_name_server **************************************
 NAMES = bin/arb_name_server
@@ -755,8 +818,13 @@ ARCHS_NAMES = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a NAMES_COM/server.a NAMES_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) -lARBDB $(ARCHS_CLIENT_NAMES) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) -lARBDB $(ARCHS_CLIENT_NAMES) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) -lARBDB $(ARCHS_CLIENT_NAMES) ; \
+		)
+#	@echo $(SEP) Link $@
+#	$(CPP) $(lflags) -o $@ $(LIBPATH) NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a NAMES_COM/server.a NAMES_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 #***********************************	ors **************************************
 ORS_SERVER = tb/ors_server
@@ -830,7 +898,7 @@ ARCHS_ACORR = \
 
 $(ACORR): $(ARCHS_ACORR:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) $(ARCHS_CLIENT) -lAWT -lARBDBPP $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) -lAWT -lARBDBPP $(LIBS)
 
 
 ARBDB_COMPRESS = tb/arbdb_compress
