@@ -1,6 +1,7 @@
 Major changes for next Beta:
 ----------------------------
 
+ - extract gene-species: creates acc; extraction to existing alignments
  - sequence of selected gene will be pasted into ARB_EDIT4 (local signature)
  - PCR primer-design for single genes
  - when selecting a gene, the corresponding gene-species is selected (if found)
