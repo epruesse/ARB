@@ -225,8 +225,10 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
       */
 {
     GBCONTAINER *gbc;
-    GBQUARK key_quark;
-    GBDATA *after = 0;
+    GBQUARK      key_quark;
+    GBDATA      *after = 0;
+
+    ad_assert(GB_FATHER(gbd));     /* otherwise your GBDATA has been deleted !? */
 
     /*fprintf(stderr, "GB_find(%p, %s, %s, %li)\n", gbd, key, str, gbs); */
 
@@ -666,7 +668,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     /* if first character is == ':' run string parser
        if first character is == '/' run regexpr
        else command interpreter
-       
+
     */
     int           strmalloc = 0;
     int           len;
@@ -864,7 +866,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         args.voutput           = &out;
 
                         error = command(&args);
-                        
+
                         if (error) {
                             char *inputstreams = 0;
                             char *paramlist    = 0;
