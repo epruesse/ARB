@@ -34,6 +34,8 @@ private boolean newLayout = true;
 private LineAreaFactory laf;
 private Set rootSet;
 private Set branchSet;
+private Color dc;
+private Color mc = Color.yellow;
 public float maxDist = 0;
 
 
@@ -92,17 +94,9 @@ public TreeDisplay(TreeNode root, int treeLevels)
         System.out.println("tree area: x: " + xSize);
         System.out.println("maxDist  : x: " + maxDist);
         System.out.println("tree area: y: " + ySize);
-        addMouseListener(new MouseAdapter()
-        {
-           public void mouseClicked(MouseEvent event)
-                 {
-                     System.out.print("left mouse button clicked at ");
-                     System.out.print("x pos:" + event.getX());
-                     System.out.println("y pos:" + event.getY());
-                     handleMouseClick(event.getX(), event.getY()); 
-                };
- 
-        }
+        addMouseListener(
+                         new DisplayMouseAdapter(this)
+
                          );
         
 
@@ -118,7 +112,10 @@ public void paint(Graphics g)
 
         // rooot changed, layout new tree 
 
-
+        if (dc == null)
+            {
+                dc = g.getColor();
+            }
         // do some cleanup or reset of datastructures before a new layout is generated
         if (newLayout == true)
             {
@@ -202,6 +199,14 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                 System.out.println("no valid node given to display");
                 System.exit(1);
             }
+        if (node.isMarked() == true )
+            {
+                g.setColor(mc);
+            }
+        else
+            {
+                g.setColor(dc);
+            }
         if ((node.testLeaf() == true) || (depth == 0))
              {
                  int[] line = new int[4];
@@ -209,6 +214,11 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                  line[1] = (int) node.getYOffset();
                  line[2] = (int)(node.getTotalDist()*xSpreading);
                  line[3] = (int) node.getYOffset();
+
+                 if (node.isMarked() == true)
+                     {
+                         g.setColor(Color.yellow);
+                     }
                  g.drawLine( line[0],
                              line[1],
                              line[2],
@@ -287,6 +297,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                  line[1] = ((TreeNode)(node.getChilds().elementAt(0))).getYOffset();
                  line[2] = (int)((node.getTotalDist())* xSpreading);
                  line[3] = ((TreeNode)(node.getChilds().elementAt(1))).getYOffset();
+
                  g.drawLine( line[0],
                              line[1],
                              line[2],
@@ -295,20 +306,8 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
 
                  if (newLayout == true)
                      {
-//                          branchLines.put(new Integer((int)((node.getTotalDist())* xSpreading)), 
-//                                          new Pair(
-//                                                   ((TreeNode)(node.getChilds().elementAt(0))).getYOffset(),
-//                                                   ((TreeNode)(node.getChilds().elementAt(1))).getYOffset()
-//                                                   )
-//                                          ); 
-
-
                          branchLines.put(laf.getLAObject(line), node); 
-
-
                      };
-
-
 
                  displayTreeGraph (g, (TreeNode)(node.getChilds().elementAt(0)), depth -1);
                  displayTreeGraph (g, (TreeNode)(node.getChilds().elementAt(1)), depth -1);
@@ -330,37 +329,93 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
 
     }
 
-    // yet to be implemented 
-private void recalculateLayout(TreeNode newRoot)
+
+// public void handleMouseClick(int x, int y)
+//     {
+//         System.out.println("handleMouseCLick() was called");
+//         System.out.println("coordinates " + x + "\t" + y );
+//         for (Iterator it = rootSet.iterator(); it.hasNext();)
+//             {
+//                 LineArea la = (LineArea) it.next();
+//                 if (la.isInside(x,y))
+//                     {
+//                         if(((TreeNode) rootLines.get(la)).equals(vs))
+//                             {
+//                                 vs = ((TreeNode) rootLines.get(la)).getFather();
+//                             }
+//                         else
+//                             {
+//                                 vs = (TreeNode) rootLines.get(la);
+//                             }
+
+//                         newLayout = true;
+//                         //      la.getBorder(); 
+//                         repaint();
+//                     }
+
+//             }
+
+//         for (Iterator it = branchSet.iterator(); it.hasNext();)
+//             {
+//                 LineArea la = (LineArea) it.next();
+//                 if (la.isInside(x,y))
+//                     {
+//                         vs = (TreeNode) branchLines.get(la);
+//                         newLayout = true;
+//                         // la.getBorder();
+//                         repaint();
+//                     }
+
+//             }
+
+//     }
+
+
+public void handleLeftMouseClick(int x, int y)
     {
-
-
+        System.out.println("handleLeftMouseCLick() was called");
+        System.out.println("coordinates " + x + "\t" + y );
+        TreeNode clickedNode = getClickedNode(x, y);
+        if ( clickedNode != null)
+            {
+                if(clickedNode.equals(vs))
+                    {
+                        vs = clickedNode.getFather();
+                    }
+                else
+                    {
+                        vs = clickedNode;
+                    }
+                newLayout = true;
+                repaint();
+            }
     }
 
 
-public void handleMouseClick(int x, int y)
+public void handleRightMouseClick(int x, int y)
     {
-        System.out.println("handleMouseCLick() was called");
-        System.out.println("coordinates " + x + "\t" + y );
+        System.out.println("right mouse button clicked");
+        TreeNode clickedNode = getClickedNode(x, y);
+        if(clickedNode != null)
+            {
+                boolean state = clickedNode.isMarked();
+                clickedNode.markSubtree(!state);
+                repaint();
+            }
+    }
+
+
+    // transform coordinates in TreeNode
+private TreeNode getClickedNode(int x, int y)
+    {
+
         for (Iterator it = rootSet.iterator(); it.hasNext();)
             {
                 LineArea la = (LineArea) it.next();
                 if (la.isInside(x,y))
                     {
-                        if(((TreeNode) rootLines.get(la)).equals(vs))
-                            {
-                                vs = ((TreeNode) rootLines.get(la)).getFather();
-                            }
-                        else
-                            {
-                                vs = (TreeNode) rootLines.get(la);
-                            }
-
-                        newLayout = true;
-                        la.getBorder(); 
-                        repaint();
+                        return (TreeNode) rootLines.get(la);
                     }
-
             }
 
         for (Iterator it = branchSet.iterator(); it.hasNext();)
@@ -368,24 +423,15 @@ public void handleMouseClick(int x, int y)
                 LineArea la = (LineArea) it.next();
                 if (la.isInside(x,y))
                     {
-                        vs = (TreeNode) branchLines.get(la);
-                        newLayout = true;
-                        la.getBorder();
-                        repaint();
+                        return (TreeNode) branchLines.get(la);
                     }
 
             }
 
+
+        return null;
     }
 
-// private Pair getLine(int x, int y)
-//     {
-
-
-
-
-//         return new Pair(0,9);
-//     }
-    
+ 
     
 }
