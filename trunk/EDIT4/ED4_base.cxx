@@ -33,26 +33,41 @@ bool ED4_base::remove_deleted_childs()
     return false;
 }
 
+// #define REMOVE_DELETED_CHILDS
+//
+// @@@ FIXME: Normally REMOVE_DELETED_CHILDS should be defined, but
+// it causes an error (species is no longer displayed after (un-)marking a species)
+// because the ED4_sequence_info_terminal disappears and therefore the ED4_sequence_terminal
+// is displayed at the wrong position.
+// The ED4_sequence_info_terminal disappears because it's species pointer is set to 0 by
+// some buggy code.
+
 bool ED4_terminal::remove_deleted_childs()
 {
+#if REMOVE_DELETED_CHILDS
     if (!get_species_pointer()) {
         parent->children->delete_member(this);
 #ifdef DEBUG
-        printf("ED4_terminal ohne species_pointer!\n");
+        printf("ED4_terminal w/o species_pointer has been removed.\n");
+        e4_assert(0);
 #endif
         return true;
     }
+#endif
     return false;
 }
 bool ED4_sequence_info_terminal::remove_deleted_childs()
 {
+#if REMOVE_DELETED_CHILDS
     if (!get_species_pointer()) {
         parent->children->delete_member(this);
 #ifdef DEBUG
-        printf("ED4_sequence_info_terminal ohne species_pointer!\n");
+        printf("ED4_sequence_info_terminal w/o species_pointer has been removed.\n");
+        e4_assert(0);
 #endif
         return true;
     }
+#endif
     return false;
 }
 
