@@ -1,6 +1,9 @@
 #ifndef ED4_defs
 #define ED4_defs
 
+#ifndef AW_COLOR_GROUPS_HXX
+#include <aw_color_groups.hxx>
+#endif
 
 //needed prototype classes
 class ED4_root;
@@ -150,11 +153,14 @@ typedef enum
     ED4_G_SBACK_8,
     ED4_G_MBACK,	// Mismatches
 
-    ED4_G_CURSOR,	// Color of cursor
-    ED4_G_MARKED,	// Background for marked species
-    ED4_G_SELECTED, 	// Background for selected species
+    ED4_G_CURSOR,	            // Color of cursor
+    ED4_G_MARKED,	            // Background for marked species
+    ED4_G_SELECTED, 	        // Background for selected species
 
-    ED4_G_DRAG		// must be last
+    ED4_G_FIRST_COLOR_GROUP,   // Background colors for colored species
+	ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,
+
+    ED4_G_DRAG = ED4_G_LAST_COLOR_GROUP+1               // must be last
 } ED4_gc;
 
 typedef enum

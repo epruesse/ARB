@@ -213,13 +213,14 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     // Set background
 
     {
-        GB_transaction dummy(gb_main);
-        ST_ML_Color *colors = 0;
-        char *searchColors = results().buildColorString(this, seq_start, seq_end);  // defined in ED4_SearchResults class : ED4_search.cxx
-        ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        int is_marked = GB_read_flag(spec_man->get_species_pointer());
-        int selection_col1, selection_col2;
-        int is_selected = ED4_get_selected_range(this, &selection_col1, &selection_col2);
+        GB_transaction       dummy(gb_main);
+        ST_ML_Color         *colors       = 0;
+        char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
+        ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
+        int                  is_marked    = GB_read_flag(spec_man->get_species_pointer());
+        int                  selection_col1, selection_col2;
+        int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
+        int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
 
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
@@ -228,7 +229,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
         }
 
-        if (colors || searchColors || is_marked || is_selected) {
+        if (colors || searchColors || is_marked || is_selected || color_group) {
             int i;
             AW_pos font_height = ED4_ROOT->font_info[ED4_G_HELIX].get_ascent();
             AW_pos width = ED4_ROOT->font_info[ED4_G_HELIX].get_width();
@@ -262,6 +263,9 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 }
                 else if (is_marked) {
                     color = ED4_G_MARKED;
+                }
+                else if (color_group) {
+                    color = ED4_G_FIRST_COLOR_GROUP+color_group-1;
                 }
                 else {
                     color = ED4_G_STANDARD;
