@@ -12,7 +12,6 @@ SQ_GroupData::SQ_GroupData() {
 SQ_GroupData::~SQ_GroupData() { }
 
 double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
-    char c;
     bool sema = false;
     double result    = 0;
     double div       = 0;
@@ -21,11 +20,10 @@ double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
     int current      = 0;
 
     for (int i = 0; i < size; i++ ){
-	c = sequence[i];
 	current = 0;
 	div     = 0;
 	sema    = false;
-        switch(c) {
+        switch(sequence[i]) {
             case 'A':
                 current = consensus[i].i[0];
 		sema=true;
@@ -57,7 +55,12 @@ double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
 	    for (int j = 0; j < 5; j++) {
 		temp = temp + consensus[i].i[j];
 	    }
-	    div = current / temp;
+	    if (temp !=0) {
+	        div = current / temp;
+	    }
+	    else {
+	        div = 0;
+	    }
 	}
 	result = result + div;
 	//printf(" %f",result);
@@ -78,7 +81,7 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 #warning has to work with IUPAC codes!
         switch(sequence[i]) {
             case 'A':
-                consensus[i].i[0] = consensus[i].i[0] + 100; //ich mach das noch mit operator +=
+                consensus[i].i[0] = consensus[i].i[0] + 100;
                 break;
             case 'T':
 		consensus[i].i[1] = consensus[i].i[1] + 100;
