@@ -95,7 +95,8 @@ SEER_to_seer.o:
 SEER_to_seer.o:  
 SEER_to_seer.o:  
 SEER_to_seer.o:  
-SEER_to_seer.o:  $(ARBHOME)/INCLUDE/arbdb.h
+SEER_to_seer.o: 
+SEER_to_seer.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEER_to_seer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

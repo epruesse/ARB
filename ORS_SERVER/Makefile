@@ -55,8 +55,8 @@ ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ors_server.h ./ors_lib.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ors_s_common.hxx
-ORS_S_userdb.o: ors_s_proto.hxx
+ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ORS_S_userdb.o: ors_s_common.hxx ors_s_proto.hxx
 ORS_S_probedb.o:  
 ORS_S_probedb.o:  
 ORS_S_probedb.o:  
@@ -129,6 +129,7 @@ ORS_lib.o:
 ORS_lib.o:   
 ORS_lib.o:  $(ARBHOME)/INCLUDE/arbdb.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h 
-ORS_lib.o:  $(ARBHOME)/INCLUDE/ors_client.h
+ORS_lib.o: 
+ORS_lib.o: $(ARBHOME)/INCLUDE/ors_client.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/client.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/servercntrl.h ./ors_lib.h

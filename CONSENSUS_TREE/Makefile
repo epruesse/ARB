@@ -24,7 +24,8 @@ CT_part.o:
 CT_part.o:  $(ARBHOME)/INCLUDE/arbdb.h
 CT_part.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_part.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx CT_part.hxx
+CT_part.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx
+CT_part.o: CT_part.hxx
 CT_hash.o:  
 CT_hash.o:  
 CT_hash.o:  
@@ -36,8 +37,8 @@ CT_hash.o:
 CT_hash.o:  $(ARBHOME)/INCLUDE/arbdb.h
 CT_hash.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_hash.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx CT_part.hxx
-CT_hash.o: CT_hash.hxx CT_ntree.hxx
+CT_hash.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx
+CT_hash.o: CT_part.hxx CT_hash.hxx CT_ntree.hxx
 CT_ntree.o:  
 CT_ntree.o:  
 CT_ntree.o:  

@@ -177,8 +177,8 @@ ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_sequence.hxx
-ali_global.o:  ali_pt.hxx ali_tlist.hxx
+ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_global.o: ali_sequence.hxx  ali_pt.hxx ali_tlist.hxx
 ali_global.o: $(ARBHOME)/INCLUDE/client.h ali_profile.hxx
 ali_global.o: ali_prealigner.hxx ali_pathmap.hxx ali_tarray.hxx
 ali_global.o: ali_tstack.hxx ali_solution.hxx

@@ -602,6 +602,8 @@ menus:
 
 tarfile:	all
 	util/arb_compress
+tarfile_ignore:
+	util/arb_compress
 tarale:
 	util/arb_compress_emacs
 export:	tarfile

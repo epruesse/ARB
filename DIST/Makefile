@@ -111,8 +111,8 @@ PH_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_view_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_view_matrix.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-PH_view_matrix.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx dist.hxx
-PH_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
+PH_view_matrix.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+PH_view_matrix.o: dist.hxx $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 PH_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 PH_view_matrix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx ph_matr.hxx
 PH_view_matrix.o: ./ph_view_matrix.hxx
@@ -126,7 +126,8 @@ PH_save_matr.o:
 PH_save_matr.o:  
 PH_save_matr.o:  
 PH_save_matr.o:  
-PH_save_matr.o:  $(ARBHOME)/INCLUDE/arbdb.h
+PH_save_matr.o: 
+PH_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

@@ -34,7 +34,8 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h probe_tree.hxx
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
-PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h pt_prototypes.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PT_new_design.o: pt_prototypes.h
 PT_family.o:  
 PT_family.o:  
 PT_family.o:  
@@ -163,7 +164,8 @@ PT_match.o:
 PT_match.o:  
 PT_match.o:  
 PT_match.o:  
-PT_match.o:  $(ARBHOME)/INCLUDE/PT_server.h
+PT_match.o: 
+PT_match.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_match.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_match.o: $(ARBHOME)/INCLUDE/struct_man.h probe.h
 PT_match.o: $(ARBHOME)/INCLUDE/PT_com.h

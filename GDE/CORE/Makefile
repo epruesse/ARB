@@ -129,5 +129,5 @@ arbdb_io.o:
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h defines.h
-arbdb_io.o: functions.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h
+arbdb_io.o: defines.h functions.h

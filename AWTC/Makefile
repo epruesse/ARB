@@ -48,7 +48,8 @@ AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx awtc_rename.hxx
+AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWTC_rename.o: awtc_rename.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/client.h
