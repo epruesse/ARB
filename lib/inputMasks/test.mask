@@ -1,0 +1,39 @@
+ARB-Input-Mask
+# This is a simple user-mask example.
+
+# What to edit
+@ITEMTYPE=Species
+
+# Title of the user-mask-window
+@TITLE=Test mask
+
+# Spacing in window
+@X_SPACING=5
+@Y_SPACING=3
+
+# Show edit/reload button
+@EDIT=1
+
+
+# ---------------------------
+# The definition of the mask:
+
+@MASK_BEGIN
+
+    TEXT("You are editing") SELF()
+    TEXT("     ")
+    TEXTFIELD(   "Name (Fullname)",  "full_name" ,63  )
+    TEXTFIELD(   "16s data",  "ali_16s/data" ,63  )
+    TEXTFIELD(   "Remark  ",  "remark" ,  70  )
+    TEXT("     ")
+    TEXTFIELD(   "Remark2 ",  "remark2" ,  70  )
+    CHECKBOX(    "checked?",  "mbi/checked", 0)
+    RADIO(       "Species class: ", "class", 1, y,        \
+                "other", "", \
+                "artificial",       "artificial-value",        \
+                "real",             "real-value" )     TEXTFIELD("", "class", 30)
+
+    RADIO ("Partial sequence", "partial_seq", 2, x, "yes","1","no","0")
+
+
+@MASK_END

@@ -2197,7 +2197,7 @@ Widget _aw_create_toggle_entry(AW_window *aww,Widget toggle_field,
 void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
 
     if ( p_w->toggle_field_var_type != AW_STRING ) {
-        AW_ERROR("This toggle field not defined for strings");
+        AW_ERROR("This toggle field only defined for strings");
         return;
     }
 
@@ -2213,7 +2213,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, cons
 // for string
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
     if ( p_w->toggle_field_var_type != AW_STRING ) {
-        AW_ERROR("This toggle field not defined for strings");
+        AW_ERROR("This toggle field only defined for strings");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2230,7 +2230,7 @@ void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemon
 void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
 
     if ( p_w->toggle_field_var_type != AW_INT ) {
-        AW_ERROR("This toggle field not defined for int");
+        AW_ERROR("This toggle field only defined for int");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2245,7 +2245,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, int 
 // for int
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
     if ( p_w->toggle_field_var_type != AW_INT ) {
-        AW_ERROR("This toggle field not defined for int");
+        AW_ERROR("This toggle field only defined for int");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2276,7 +2276,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, floa
 // for float
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, float var_value ) {
     if ( p_w->toggle_field_var_type != AW_FLOAT ) {
-        AW_ERROR("This toggle field not defined for float");
+        AW_ERROR("This toggle field only defined for float");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
