@@ -303,9 +303,16 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
 	return (AW_window *)aws;
 }
 
+#ifdef NDEBUG
+#define DO_DATA_OPTIMIZE
+#else
+#define DO_DATA_OPTIMIZE
+#endif
+
 void NT_database_optimization(AW_window *aww){
     GB_ERROR error = 0;
 
+#ifdef DO_DATA_OPTIMIZE
     {
         aw_openstatus("Optimizing Database, Please Wait");
         char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
@@ -325,6 +332,7 @@ void NT_database_optimization(AW_window *aww){
         delete tree_name;
         aw_closestatus();
     }
+#endif
 
     int errors = 0;
     if (error)
