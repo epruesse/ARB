@@ -2,6 +2,9 @@
 #define awtlocal_hxx_included
 
 struct adawcbstruct {
+    // @@@ FIXME: rethink design - maybe split into base class +
+    // several derived classes for the different usages.
+    
     AW_window              *aws;
     AW_root                *awr;
     GBDATA                 *gb_main;
@@ -19,6 +22,7 @@ struct adawcbstruct {
     char                   *pwd;
     char                   *pwdx; // additional directories
     AW_BOOL                 show_dir;
+    AW_BOOL                 leave_wildcards;
     char                    may_be_an_error;
     char                    show_only_marked;
     char                    scannermode;
