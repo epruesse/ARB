@@ -1397,16 +1397,17 @@ char *GBS_ptserver_id_to_choice(int i) {
 
 char *GBS_read_arb_tcp(const char *env)
 {
-    char buffer[256];
-    char    *filename;
-    FILE    *arb_tcp;
-    char    *p;
-    char    *nl;
-    char    *tok1;
-    const char  *user;
-    char    *envuser;
-    int envlen;
-    int envuserlen;
+    char        buffer[256];
+    FILE       *arb_tcp;
+    char       *p;
+    char       *nl;
+    char       *tok1;
+    const char *user;
+    char       *envuser;
+    int         envlen;
+    int         envuserlen;
+    char       *filename;
+    char       *result = 0;
 
     if (strchr(env,':')){
         return GB_STRDUP(env);
@@ -1418,9 +1419,10 @@ char *GBS_read_arb_tcp(const char *env)
         return 0;
     }
     arb_tcp = fopen(filename,"r");
-    envlen = strlen(env);
 
-    user = GB_getenvUSER();
+    envlen = strlen(env);
+    user   = GB_getenvUSER();
+
     if (!user) {
         GB_export_error("Enviroment Variable 'USER' not found");
         GB_print_error();
@@ -1431,9 +1433,10 @@ char *GBS_read_arb_tcp(const char *env)
     sprintf(envuser,"%s:%s",user,env);
 
 
-    for (   p=fgets(buffer,255,arb_tcp);
-            p;
-            p = fgets(p,255,arb_tcp)){
+    for (p = fgets(buffer,255,arb_tcp);
+         p;
+         p = fgets(p,255,arb_tcp))
+    {
         if (!strncmp(envuser,buffer,envuserlen)) {
             envlen = envuserlen;
             break;
@@ -1443,7 +1446,7 @@ char *GBS_read_arb_tcp(const char *env)
     free(envuser);
     fclose(arb_tcp);
 
-    if (p){
+    if (p) {
         if ( (nl = strchr(p,'\n')) ) *nl = 0;
         p = p+envlen;
         while ((*p == ' ') || (*p == '\t')) p++;
@@ -1452,22 +1455,23 @@ char *GBS_read_arb_tcp(const char *env)
         free(p);
         p = buffer;
 
-        free(filename);
         tok1 = strtok(p," \t");
         p = buffer;
         while (tok1) {
-            strcpy(p,tok1);
-            p+= strlen(p)+1;
+            int len = strlen(tok1);
+            memmove(p, tok1, len+1);
+            p += len+1;
             tok1 = strtok(0," \t");
         }
-        tok1 = (char*)GB_calloc(sizeof(char),p-buffer+2);
-        GB_MEMCPY(tok1,buffer,p-buffer);
-        return (tok1);
-    }else{
-        GB_export_error("Missing '%s' in '%s'",env,filename);
-        free(filename);
-        return 0;
+
+        result = (char*)GB_calloc(sizeof(char),p-buffer);
+        GB_MEMCPY(result,buffer,p-buffer);
     }
+    else {
+        GB_export_error("Missing '%s' in '%s'",env,filename);
+    }
+
+    return result;
 }
 
 char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
@@ -1849,9 +1853,11 @@ NOT4PERL void GB_install_information(gb_information_func_type info){
 
 
 int GB_status( double val) {
+    int result = 0;
     if ( gb_status_func ) {
-        return gb_status_func(val);
-    }else{
+        result = gb_status_func(val);
+    }
+    else {
         char buffer[100];
         int i;
         static int lastv = 0;
@@ -1862,8 +1868,8 @@ int GB_status( double val) {
         for (;i<80;i++) buffer[i] = '-';
         buffer[i] = 0;
         fprintf(stdout,"%s\n",buffer);
-        return 0;
     }
+    return result;
 }
 
 NOT4PERL void GB_install_status(gb_status_func_type func){
