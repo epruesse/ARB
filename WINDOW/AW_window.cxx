@@ -49,7 +49,6 @@
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
 
-
 AW_root *AW_root::THIS = NULL;
 
 AW_cb_struct::AW_cb_struct( AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti ) {
@@ -360,14 +359,14 @@ void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
 }
 
 /***********************************************************************/
-void value_changed_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+static void value_changed_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; //setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
-void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+static void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
@@ -383,14 +382,14 @@ void AW_window::set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL)
                    (XtPointer) new AW_cb_struct(this, f, cd1, cd2, "") );
 }
 
-void value_changed_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+static void value_changed_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; //setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
-void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+static void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
@@ -564,7 +563,7 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
 
 
 /***********************************************************************/
-void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
+static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     AWUSE(id);
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
     if (!tcbs) return;
@@ -612,7 +611,7 @@ static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
 #define aw_awar_name_width(aww)  aw_size_awar_name((aww), "width")
 #define aw_awar_name_height(aww) aw_size_awar_name((aww), "height")
 
-void aw_calculate_WM_offsets(AW_window *aww)
+static void aw_calculate_WM_offsets(AW_window *aww)
 {
     if (p_aww(aww)->WM_top_offset != -1000) return; // very bad hack continued
 
@@ -632,6 +631,8 @@ void aw_calculate_WM_offsets(AW_window *aww)
 }
 
 /************** standard callback server *********************/
+
+static void macro_message_cb( AW_window *aw,AW_CL); 
 
 void    AW_cb_struct::run_callback(void){
     AW_PPP g;
@@ -707,7 +708,7 @@ void AW_root_Motif::normal_cursor(void)
 }
 
 
-void    AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);AWUSE(call_data);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
@@ -773,7 +774,7 @@ void AW_normal_cursor(AW_root *root)
 }
 
 /***********************************************************************/
-void AW_root_focusCB(Widget wgt, XtPointer *awrp){
+static void AW_root_focusCB(Widget wgt, XtPointer *awrp){
     AWUSE(wgt);
     AW_root *aw_root = (AW_root *)awrp;
     if (aw_root->focus_callback_list){
@@ -785,7 +786,7 @@ void AW_root::set_focus_callback(void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd
     focus_callback_list = new AW_var_callback(f,cd1,cd2,focus_callback_list);
 }
 
-void AW_focusCB(Widget wgt, XtPointer aw_cb_struct) {
+static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct) {
     AWUSE(wgt);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->run_callback();
@@ -805,7 +806,7 @@ void AW_window::set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1,
 
 /*******************************    expose  ****************************************/
 
-void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
+static void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent *ev = call_data->event;
     AWUSE(wgt);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
@@ -872,7 +873,7 @@ void AW_window::window_fit(void){
 
 
 /*******************************    resize  ****************************************/
-void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
+static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);AWUSE(call_data);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
     if (aram->resize_cb)    aram->resize_cb->run_callback();
@@ -896,7 +897,7 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_
 
 
 /***********************************************************************/
-void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
+static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     AWUSE(wgt);
     XEvent *ev = call_data->event;
 
@@ -1038,7 +1039,7 @@ void AW_window::get_event(AW_event *eventi) {
 
 /***********************************************************************/
 
-void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev) {
+static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev) {
     AWUSE(w);
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
@@ -1070,7 +1071,7 @@ struct fallbacks {
     const char *init;
 };
 
-struct fallbacks aw_fb[] = {
+static struct fallbacks aw_fb[] = {
     // fallback awarname    init
 
     { "FontList", "window/font", "8x13bold" }
@@ -1082,7 +1083,7 @@ struct fallbacks aw_fb[] = {
     , { 0, 0, 0 }
 };
 
-const char *aw_awar_2_color[] =
+static const char *aw_awar_2_color[] =
 {
     "window/background",
         "window/foreground",
@@ -1133,7 +1134,7 @@ void *AW_root::get_aw_var_struct_no_error( char *awar ) {
     return (void*)vs;
 }
 
-void aw_root_create_color_map(AW_root *root)
+static void aw_root_create_color_map(AW_root *root)
 {
     int i;
     XColor xcolor_returned, xcolor_exakt;
@@ -1172,15 +1173,19 @@ void aw_root_create_color_map(AW_root *root)
 
 }
 
-void aw_message_dummy(const char *msg){
+static void aw_message_dummy(const char *msg){
+    aw_message(msg);
+}
+static void aw_message_dummy_verbose(const char *msg) {
+    fprintf(stderr, "ARB: %s\n", msg); // print to console as well
     aw_message(msg);
 }
 
-int aw_status_dummy(double val){
+static int aw_status_dummy(double val){
     return aw_status(val);
 }
 
-int aw_status_dummy2(const char *val){
+static int aw_status_dummy2(const char *val){
     return aw_status((char *)val);
 }
 
@@ -1200,6 +1205,7 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
         fallback_resources[i] = strdup(buffer);
     }
     fallback_resources[i] = 0;
+    GB_install_error_handler((gb_warning_func_type)aw_message_dummy_verbose);
     GB_install_warning((gb_warning_func_type)aw_message_dummy);
     GB_install_information((gb_information_func_type)0); // set to 0 to avoid pop-up message window
 
@@ -1285,7 +1291,7 @@ void AW_window::_get_area_size (AW_area area, AW_rectangle *square) {
 
 /***********************************************************************/
 
-void horizontal_scrollbar_redefinition_cb( class AW_root *aw_root , AW_CL cd1, AW_CL cd2 ) {
+static void horizontal_scrollbar_redefinition_cb( class AW_root *aw_root , AW_CL cd1, AW_CL cd2 ) {
     AW_rectangle screen;
     AWUSE(aw_root);
 
@@ -1306,7 +1312,7 @@ void horizontal_scrollbar_redefinition_cb( class AW_root *aw_root , AW_CL cd1, A
 
 }
 
-void vertical_scrollbar_redefinition_cb( class AW_root *aw_root , AW_CL cd1, AW_CL cd2 ) {
+static void vertical_scrollbar_redefinition_cb( class AW_root *aw_root , AW_CL cd1, AW_CL cd2 ) {
     AW_rectangle screen;
     AWUSE(aw_root);
 
@@ -1431,12 +1437,15 @@ void AW_window::create_devices(void)
     }
 }
 
+#if 0
+// currently unused
 void    activate_question(AW_root *root,AW_window *aww){
     p_global->help_active = 1;
     p_global->set_cursor(   XtDisplay(p_global->toplevel_widget),
                             XtWindow(p_aww(aww)->shell),
                             p_global->question_cursor);
 }
+#endif
 
 void AW_help_entry_pressed(AW_window *aww)
 {
@@ -1444,7 +1453,7 @@ void AW_help_entry_pressed(AW_window *aww)
     p_global->help_active = 1;
 }
 
-void create_help_entry(AW_window *aww){
+static void create_help_entry(AW_window *aww){
     aww->insert_help_topic(0,"Click here and then on the questionable button/menu/...",
                            "P",0,AWM_ALL,(AW_CB)AW_help_entry_pressed,0,0);
 }
@@ -1513,11 +1522,11 @@ void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
 /*********************************************************************************************/
 
 
-void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
+static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
     aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
 }
 
-void aw_window_destroy_cb(Widget w, AW_window *aww, XmAnyCallbackStruct *cbs)
+static void aw_window_destroy_cb(Widget w, AW_window *aww, XmAnyCallbackStruct *cbs)
 {
     AWUSE(cbs);AWUSE(w);
     AW_root *root = aww->get_root();
@@ -1530,7 +1539,7 @@ void aw_window_destroy_cb(Widget w, AW_window *aww, XmAnyCallbackStruct *cbs)
     aww->hide();
 }
 
-long aw_loop_get_window_geometrie(const char *key, long val){
+static long aw_loop_get_window_geometry(const char *key, long val){
     AWUSE(key);
     AW_window *aww = (AW_window *)val;
     short posx, posy;
@@ -1563,12 +1572,11 @@ long aw_loop_get_window_geometrie(const char *key, long val){
 
 
 
-void aw_update_awar_window_geometrie(AW_root *awr){
-    GBS_hash_do_loop(awr->hash_for_windows,(gb_hash_loop_type)aw_loop_get_window_geometrie);
+void aw_update_awar_window_geometry(AW_root *awr){
+    GBS_hash_do_loop(awr->hash_for_windows,(gb_hash_loop_type)aw_loop_get_window_geometry);
 }
 
-Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close,
-                       int width, int height, int posx, int posy)
+static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close, int width, int height, int posx, int posy)
 {
     AW_root *root = aww->get_root();
     Widget   shell;
@@ -1622,8 +1630,8 @@ Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close
         }
 
         if (has_user_geometry) {
-#if defined(DEBUG)
-            printf("User geometry detected for window '%s'\n", aww->window_defaults_name);
+#if defined(DEBUG) 
+            // printf("User geometry detected for window '%s'\n", aww->window_defaults_name);
 #endif // DEBUG
             aww->recalc_size_at_show = 2; // keep user geometry (only if user size is smaller than default size, the latter is used)
         }
@@ -1745,7 +1753,7 @@ void AW_window::set_icon(const char *icon, const char *default_icon)
     return;
 }
 
-void aw_realize_widget(AW_window *aww) {
+static void aw_realize_widget(AW_window *aww) {
     if ( p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->form){
         XtManageChild(p_aww(aww)->areas[AW_INFO_AREA]->form);
     }
@@ -2428,7 +2436,7 @@ void AW_window::select_mode(int mode){
     XtVaSetValues(widget,   XmNbackground, p_global->foreground,    0);
 }
 
-void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs){
+static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs){
     aww->select_mode((int)mode);
     cbs->run_callback();
 }
@@ -2923,14 +2931,14 @@ void AW_window::show(void) {
             int      user_height = root->awar(aw_awar_name_height(this))->read_int();
 
 #if defined(DEBUG)
-            printf("default size = %i/%i  user size = %i/%i\n", default_width, default_height, user_width, user_height);
+            // printf("default size = %i/%i  user size = %i/%i\n", default_width, default_height, user_width, user_height);
 #endif // DEBUG
 
             if (user_width<default_width)   user_width  = default_width;
             if (user_height<default_height) user_height = default_height;
 
 #if defined(DEBUG)
-            printf("using size = %i/%i\n", user_width, user_height);
+            // printf("using size = %i/%i\n", user_width, user_height);
 #endif // DEBUG
             set_window_size(user_width, user_height);
         }
@@ -3006,7 +3014,7 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/){
 }
 
 
-void timed_window_title_cb( class AW_root* aw_root, AW_CL cd1, AW_CL cd2 ) {
+static void timed_window_title_cb( class AW_root* aw_root, AW_CL cd1, AW_CL cd2 ) {
     AWUSE(aw_root);
     char *title = (char *)cd1;
     AW_window *aw = (AW_window *)cd2;
@@ -3056,7 +3064,7 @@ const char *AW_window::get_window_title( void ) {
 /***************************************************************************************************************************/
 /***************************************************************************************************************************/
 /***************************************************************************************************************************/
-void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
+static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
     AW_device *device = aww->get_device ( AW_INFO_AREA );
     device->reset();
@@ -3146,7 +3154,7 @@ void AW_window::_set_activate_callback(void *widget)
 
 #define AW_MESSAGE_AWAR "tmp/message/string" //  @@@ does this clash with AWAR_ERROR_MESSAGES ? --ralf
 
-void macro_message_cb( AW_window *aw,AW_CL  ) {
+static void macro_message_cb( AW_window *aw,AW_CL  ) {
     AW_root *root = aw->get_root();
     aw->hide();
 
@@ -3166,11 +3174,12 @@ void macro_message_cb( AW_window *aw,AW_CL  ) {
     return;
 }
 
-void aw_clear_macro_message_cb(AW_window *aww){
+static void aw_clear_macro_message_cb(AW_window *aww){
     aww->get_root()->awar(AW_MESSAGE_AWAR)->write_string("");
 }
 
 void aw_macro_message( const char *templat, ... )
+    // @@@ FIXME: this function is unused.
 {
 
     AW_root *root = AW_root::THIS;
