@@ -272,6 +272,7 @@ AWT_nei.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_nei.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_nei.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
+AWT_preset.o: aw_def.hxx
 AWT_preset.o: awt.hxx
 AWT_preset.o: awt_advice.hxx
 AWT_preset.o: awt_canvas.hxx

@@ -54,6 +54,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Interface.o: ../WINDOW/aw_awar.hxx
@@ -85,6 +86,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Main.o: RNA3D_Global.hxx
@@ -109,6 +111,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_OpenGLEngine.o: RNA3D_Global.hxx
@@ -138,6 +141,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_OpenGLGraphics.o: RNA3D_Global.hxx
@@ -164,8 +168,10 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
+RNA3D_Renderer.o: RNA3D_Global.hxx
 RNA3D_Renderer.o: RNA3D_GlobalHeader.hxx
 RNA3D_Renderer.o: RNA3D_Graphics.hxx
 RNA3D_Renderer.o: RNA3D_OpenGLGraphics.hxx
@@ -190,10 +196,17 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
+RNA3D_StructureData.o: ../EDIT4/ed4_class.hxx
+RNA3D_StructureData.o: ../EDIT4/ed4_defs.hxx
+RNA3D_StructureData.o: ../EDIT4/ed4_defs.hxx
+RNA3D_StructureData.o: ../EDIT4/ed4_search.hxx
+RNA3D_StructureData.o: ../EDIT4/ed4_visualizeSAI.hxx
 RNA3D_StructureData.o: RNA3D_Global.hxx
 RNA3D_StructureData.o: RNA3D_GlobalHeader.hxx
+RNA3D_StructureData.o: RNA3D_Graphics.hxx
 RNA3D_StructureData.o: RNA3D_OpenGLGraphics.hxx
 RNA3D_StructureData.o: RNA3D_StructureData.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -204,6 +217,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -214,6 +228,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Textures.o: RNA3D_Global.hxx
@@ -237,4 +252,5 @@ RNA3D_Textures.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/GL/glpng.h

@@ -103,6 +103,7 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 AW_preset.o: aw_color_groups.hxx
+AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
 AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_preset.hxx
@@ -187,6 +188,7 @@ AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 AW_xfont.o: aw_commn.hxx
+AW_xfont.o: aw_def.hxx
 AW_xfont.o: aw_device.hxx
 AW_xfont.o: aw_root.hxx
 AW_xfont.o: aw_xfont.hxx
