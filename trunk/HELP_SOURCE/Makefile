@@ -152,7 +152,7 @@ date :
 
 date.xsl.tmp :
 		cat date.xsl.header >$@
-		bash -c "(export LC_TIME=c;date '+%d.%b %Y')" >>$@
+		bash -c "(export LC_ALL=C;date '+%d. %b %Y')" >>$@
 		cat date.xsl.footer >>$@
 
 date.xsl : date
