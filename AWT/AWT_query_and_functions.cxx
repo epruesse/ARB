@@ -1619,37 +1619,28 @@ static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW
     free(item_name);
 }
 
-//  ------------------------------------------------------------------------------------
-//      static void query_box_init_config(AW_window *aww, struct adaqbsstruct *cbs)
-//  ------------------------------------------------------------------------------------
-static void query_box_init_config(AW_window *aww, struct adaqbsstruct *cbs) { // this defines what is saved/restored to/from configs
-    AWT_reset_configDefinition(aww->get_root());
-
+static void query_box_init_config(AWT_config_definition& cdef, struct adaqbsstruct *cbs) { // this defines what is saved/restored to/from configs
     //  don't save these
-    //     AWT_add_configDefinition(cbs->awar_ere, "action");
-    //     AWT_add_configDefinition(cbs->awar_where, "range");
-    //     AWT_add_configDefinition(cbs->awar_by, "by");
+    //     cdef.add(cbs->awar_ere, "action");
+    //     cdef.add(cbs->awar_where, "range");
+    //     cdef.add(cbs->awar_by, "by");
 
     for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
-        AWT_add_configDefinition(cbs->awar_keys[key_id], "key", key_id);
-        AWT_add_configDefinition(cbs->awar_queries[key_id], "query", key_id);
-        AWT_add_configDefinition(cbs->awar_not[key_id], "not", key_id);
-        AWT_add_configDefinition(cbs->awar_operator[key_id], "operator", key_id);
+        cdef.add(cbs->awar_keys[key_id], "key", key_id);
+        cdef.add(cbs->awar_queries[key_id], "query", key_id);
+        cdef.add(cbs->awar_not[key_id], "not", key_id);
+        cdef.add(cbs->awar_operator[key_id], "operator", key_id);
     }
 }
-//  ------------------------------------------------------------------------------
-//      static char *query_box_store_config(AW_window *, AW_CL cl_cbs, AW_CL)
-//  ------------------------------------------------------------------------------
 static char *query_box_store_config(AW_window *aww, AW_CL cl_cbs, AW_CL) {
-    query_box_init_config(aww, (struct adaqbsstruct *)cl_cbs);
-    return AWT_store_configDefinition();
+    AWT_config_definition cdef(aww->get_root());
+    query_box_init_config(cdef, (struct adaqbsstruct *)cl_cbs);
+    return cdef.read();
 }
-//  ----------------------------------------------------------------------------------------------------
-//      static void query_box_restore_config(AW_window *, const char *stored, AW_CL cl_cbs, AW_CL )
-//  ----------------------------------------------------------------------------------------------------
 static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_cbs, AW_CL ) {
-    query_box_init_config(aww, (struct adaqbsstruct *)cl_cbs);
-    AWT_restore_configDefinition(stored);
+    AWT_config_definition cdef(aww->get_root());
+    query_box_init_config(cdef, (struct adaqbsstruct *)cl_cbs);
+    cdef.write(stored);
 }
 
 
