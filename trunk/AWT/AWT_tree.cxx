@@ -579,7 +579,7 @@ void AP_tree::set_fathernotson(AP_tree *new_son) {
     else {
         if (father->leftson == this)  { father->rightson = new_son; return;}
         if (father->rightson == this)  { father->leftson = new_son; return; }
-        AW_ERROR("AP_tree::set_fathernotson: tree damaged!",1);
+        AW_ERROR("AP_tree::set_fathernotson: tree damaged!");
         return ;
     }
 }
