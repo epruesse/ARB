@@ -902,6 +902,8 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
 
 }
 
+#if defined(DEVEL_RALF)
+
 void NT_test_AWT(AW_window *aww) {
     AW_root          *root = aww->get_root();
     AW_window_simple *aws  = new AW_window_simple;
@@ -918,7 +920,7 @@ void NT_test_AWT(AW_window *aww) {
 
     aws->at("buttons");
 
-#if 0    
+#if 0
     aws->label("Test label");
     aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
     aws->create_button("B1","Button 1","1");
@@ -1002,6 +1004,7 @@ void NT_test_AWT(AW_window *aww) {
 
     aws->show();
 }
+#endif // DEVEL_RALF
 
 #endif // DEBUG
 
@@ -1078,6 +1081,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // --------------------------------------------------------------------------------
     if (clone){
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
+#if defined(DEBUG)
+        AWMIMT("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+        SEP________________________SEP();
+#endif // DEBUG
         AWMIMT( "close", "Close",                   "C",0,      AWM_ALL, (AW_CB)AW_POPDOWN,     0, 0 );
 
     }else{
@@ -1697,7 +1704,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     // Automatically start:
     // --------------------
 
-    NT_test_AWT(awm);
+    // NT_test_AWT(awm);
     // NT_test_input_mask(awm->get_root());
 
 #endif // DEVEL_RALF
