@@ -985,7 +985,7 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL)
             long length = GB_read_string_count(gbd);
 
             //AWTC_mirrorSequence(data, length, ED4_ROOT->alignment_type);
-            GBT_reverseComplementNucSequence(part[p], llen, GB_AT_RNA);
+            GBT_reverseComplementNucSequence(data, length, ED4_ROOT->alignment_type);
             error = GB_write_string(gbd,data);
         }
         else {
