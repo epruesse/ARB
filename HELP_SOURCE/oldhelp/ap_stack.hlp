@@ -15,15 +15,15 @@ OCCURRENCE	ARB_NT/Tree/Parsimony <Stack> button
 
 DESCRIPTION	Allows to temporarily store tree topologies.
 
-		Click on the <+> button to store the current tree. The number of
+		Click on the <STORE> button to store the current tree. The number of
                 stored tree topologies is shown in the 'Stack'
                 subwindow.
 
 		After performing further optimizations, any new tree topology
-                can be added to the stack by clicking on <+> again.
+                can be added to the stack by clicking on <STORE> again.
 
-		Click on the <-> button to display former trees assigned to the
-                numbers displayed in the 'Stack' subwindow
+		Click on the <RESTORE> button to restore stored trees. Your current tree
+                will be discarded.
 
 NOTES		None
 
