@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Mon Oct/06/2003 14:09 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Jan/20/2004 17:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -17,7 +17,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#ifndef SKIP_SETDATABASESTATE
+#ifdef NEED_setDatabaseState
 static GB_ERROR setDatabaseState(GBDATA *gb_main, const char *type, const char *state) {
     GB_ERROR error = GB_push_transaction(gb_main);
 
@@ -51,7 +51,7 @@ static GB_ERROR setDatabaseState(GBDATA *gb_main, const char *type, const char *
 }
 #endif
 
-#ifndef SKIP_GETDATABASESTATE
+#ifdef NEED_getDatabaseState
 static GB_ERROR getDatabaseState(GBDATA *gb_main, const char **typePtr, const char **statePtr) {
     GB_ERROR error = GB_push_transaction(gb_main);
 
@@ -127,12 +127,12 @@ static GB_ERROR checkDatabaseType(GBDATA *gb_main, const char *db_name, const ch
 //       :   <-> _c
 //       '   <-> _q
 
-#if !(defined(SKIP_ENCODETREENODE) && defined(SKIP_DECODETREENODE))
+#if (defined(NEED_encodeTreeNode) || defined(NEED_decodeTreeNode))
 static const char *PG_tree_node_escaped_chars = "_,;:'";
 static const char *PG_tree_node_replace_chars = "_.scq";
 #endif
 
-#ifndef SKIP_ENCODETREENODE
+#ifdef NEED_encodeTreeNode
 static char *encodeTreeNode(const char *str) {
     int   len    = strlen(str);
     char *result = (char*)GB_calloc(2*len+1, 1);
@@ -151,7 +151,8 @@ static char *encodeTreeNode(const char *str) {
     return result;
 }
 #endif
-#ifndef SKIP_DECODETREENODE
+
+#ifdef NEED_decodeTreeNode
 static char *decodeTreeNode(const char *str, GB_ERROR& error) {
     int   len    = strlen(str);
     char *result = (char*)GB_calloc(len+1, 1);
@@ -175,6 +176,50 @@ static char *decodeTreeNode(const char *str, GB_ERROR& error) {
     }
 
     return result;
+}
+#endif
+
+#ifdef NEED_saveProbeContainerToString
+template <typename C>
+static GB_ERROR saveProbeContainerToString(GBDATA *gb_father, const char *entry_name, bool allow_overwrite,
+                                           typename C::const_iterator start, typename C::const_iterator end) {
+    GB_ERROR  error    = 0;
+    GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+
+    if (gb_entry && !allow_overwrite) {
+        error = "tried to overwrite entry!";
+    }
+    else {
+        if (!gb_entry) gb_entry = GB_create(gb_father, entry_name, GB_STRING);
+
+        if (!gb_entry) {
+            error = GB_get_error();
+            if (!error) {
+                error = GBS_global_string("Could not create entry '%s' (unknown reason)", entry_name);
+            }
+        }
+        else {
+            string data;
+            {
+                int len   = 0;
+                int count = 0;
+
+                for (typename C::const_iterator i = start; i != end; ++i) {
+                    len += i->length();
+                    ++count;
+                }
+                len += count-1;
+                data.reserve(len);
+            }
+            for (typename C::const_iterator i = start; i != end; ++i) {
+                if (!data.empty()) data.append(1, ',');
+                data.append(*i);
+            }
+
+            error = GB_write_string(gb_entry, data.c_str());
+        }
+    }
+    return error;
 }
 #endif
 
