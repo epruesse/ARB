@@ -1,3 +1,28 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : merge.hxx                                              //
+//    Purpose   : Local header for usage inside directory MERGE          //
+//    Time-stamp: <Thu Jul/11/2002 13:47 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
+#ifndef NDEBUG
+# define mg_assert(bed) do { if (!(bed)) *(int *)0 = 0; } while (0)
+# ifndef DEBUG
+#  error DEBUG is NOT defined - but it has to!
+# endif
+#else
+# ifdef DEBUG
+#  error DEBUG is defined - but it should not!
+# endif
+# define mg_assert(bed)
+#endif /* NDEBUG */
+
 #define AWAR_MERGE_DB "tmp/merge1/db"
 #define AWAR_MAIN_DB  "tmp/merge2/db"
 
@@ -15,8 +40,19 @@ void MG_create_species_var(AW_root *aw_root, AW_default aw_def);
 
 int MG_check_alignment(AW_window *aww, int fast = 0);
 
+// export of gene-species:
+
+void       MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def);
+AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root);
+GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest); // export defined fields
+
 #define AWAR_REMAP_SPECIES_LIST "merge/remap_species_list"
-#define AWAR_REMAP_ENABLE "merge/remap_enable"
+#define AWAR_REMAP_ENABLE       "merge/remap_enable"
+
+#define AWAR_MERGE_GENE_SPECIES_BASE "merge/gene_species/"
+
+const char *MG_left_AWAR_SPECIES_NAME();
+const char *MG_right_AWAR_SPECIES_NAME();
 
 class MG_remap {
     int in_length;
@@ -46,8 +82,3 @@ public:
 extern GBDATA *gb_merge;
 extern GBDATA *gb_dest;
 extern GBDATA *gb_main;
-
-
-
-
-
