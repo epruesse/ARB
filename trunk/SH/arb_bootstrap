@@ -1,50 +1,65 @@
 #!/bin/bash -x
-# usage: arb_bootstrap count treeprog [keyin4treeprog]
-# 'count'            is the number of generated trees
-# 'treeprog'         calculates the trees (e.g. dnapars, protpars)
-# 'keyin4treeprog'   is echoed to stdin of 'treeprog'
+# ------------------------------------------------------------
+# (C) 2003 Lehrstuhl fuer Mikrobiologie TU Muenchen
+# Coded by Ralf Westram
+# ------------------------------------------------------------
+#
+# usage: arb_bootstrap count treeprog [keys for treeprog]
+#
+# 'count'                  is the number of generated trees
+# 'treeprog'               calculates the trees (e.g. dnapars, protpars)
+# 'keys for treeprog'      is arb_echo'ed to stdin of 'treeprog'
+#
 # expects input data in "infile"
+# output data is written to "outtree"
+#
+# ------------------------------------------------------------
 
 COUNT=$1
 TREEPROG=$2
-KEYIN=$3
-RANDOMSEED=$(($RANDOM|1)) # a odd number
+shift
+shift
+# additional arguments are pushed to arb_echo
+
+RANDOMSEED1=$(($RANDOM|1)) # a odd number
+RANDOMSEED2=$(($RANDOM|1)) # a odd number
 
 echo "-consense $COUNT" >arb_read_tree_args
 
-arb_echo $RANDOMSEED r $COUNT y | seqboot
+# arb_echo $RANDOMSEED r $COUNT y | seqboot
+arb_echo r "$COUNT" y $RANDOMSEED1 | seqboot
 
 if [ \! -f outfile ] ; then
     echo "Error in seqboot: 'outfile' not generated"
 else
     mv -f outfile infile
-    if [ -z "$KEYIN" ]; then
-        $TREEPROG
-    else
-        arb_echo $KEYIN | $TREEPROG
+    TREED=0
+    if [ \( "$TREEPROG" = "dnapars" \) -o \
+         \( "$TREEPROG" = "protpars" \) -o \
+         \( "$TREEPROG" = "proml" \) \
+         ]; then
+        arb_echo m d $COUNT $RANDOMSEED2 1 $* y | $TREEPROG
+        # $TREEPROG
+        TREED=1
     fi
 
-    if [ \! -f treefile ] ; then
-        echo "Error running $TREEPROG: 'treefile' not generated"
+    if [ "$TREED" = 0 ]; then
+        echo "treeprogram '$TREEPROG' is unknown by arb_bootstrap"
     else
-        if [ \! -s treefile ] ; then
-            echo "Error running $TREEPROG: 'treefile' is empty"
-            rm treefile
+        if [ \! -f outtree ] ; then
+            echo "Error running $TREEPROG: 'outtree' not generated"
         else
-            mv -f treefile infile
-            arb_echo y | consense
-
-            if [ \! -f treefile ] ; then
-                echo "Error running consense: 'treefile' not generated"
+            if [ \! -s outtree ] ; then
+                echo "Error running $TREEPROG: 'outtree' is empty"
+                rm outtree
             else
-                if [ \! -f outfile ] ; then
-                    echo "Warning running consense: 'outfile' not generated"
-                else
-                    if [ \! -s outfile ] ; then
-                        echo "Warning running consense: 'outfile' is empty"
-                    else
-                        arb_textedit outfile &
-                    fi
+                mv -f outtree intree
+                rm outfile
+                arb_echo y | consense
+                #consense
+
+                if [ \! -f outtree ] ; then
+                    echo "Error running consense: 'outtree' not generated"
                 fi
             fi
         fi
