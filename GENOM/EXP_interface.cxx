@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Aug/07/2002 15:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Aug/07/2002 17:54 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -520,7 +520,8 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
 
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION", 0,0,800, 0 );
-    aws->load_xfig("experiment_info.fig");
+    aws->load_xfig("ad_spec.fig");
+//     aws->load_xfig("experiment_info.fig");
 
     aws->button_length(8);
 

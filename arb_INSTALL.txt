@@ -20,3 +20,7 @@ Software that is needed to compile ARB:
 - sablotron
 
 
+----------------------------------------------------------------------
+If we forgot something (or if your OS needs something special)
+please notify us (devel@arb-home.de). We will mention it here..
+----------------------------------------------------------------------
