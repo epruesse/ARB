@@ -1751,19 +1751,24 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     }
 
     // distances for multiple queries :
-#define KEY_Y_OFFSET        32
-#define KEY_OPTION_X_OFFSET 70
-#define KEY_NOT_X_OFFSET    260
+    
+#define KEY_Y_OFFSET 32
+
+    int xpos_calc[3] = { -1, -1, -1 }; // X-positions for elements in search expressions 
 
     if (awtqs->qbox_pos_fig){
         AW_at_size at_size;
         int        xpos, ypos;
 
+        aws->auto_space(1, 1);
+
         aws->at(awtqs->qbox_pos_fig);
         aws->store_at_size_and_attach(&at_size);
         aws->get_at_position(&xpos, &ypos);
 
-        for (int key = 0; key<AWT_QUERY_SEARCHES; ++key) {
+        int ypos_dummy;
+
+        for (int key = AWT_QUERY_SEARCHES-1;  key >= 0; --key) {
             if (key) {
                 aws->at(xpos, ypos+key*KEY_Y_OFFSET);
                 aws->create_option_menu(cbs->awar_operator[key], 0, "");
@@ -1771,16 +1776,22 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
                 aws->insert_option("or", "", "or");
                 aws->insert_option("ign", "", "ign");
                 aws->update_option_menu();
+
+                if (xpos_calc[0] == -1) aws->get_at_position(&xpos_calc[0], &ypos_dummy);
             }
 
-            aws->at(xpos+KEY_OPTION_X_OFFSET, ypos+key*KEY_Y_OFFSET);
+            aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
             awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
-                                                0,awtqs->rescan_pos_fig,
-                                                awtqs->selector, 23, 30, true, true);
+                                                0, awtqs->rescan_pos_fig,
+                                                awtqs->selector, 22, 20, true, true);
 
-            aws->at(xpos+KEY_NOT_X_OFFSET, ypos+key*KEY_Y_OFFSET);
+            if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
+
+            aws->at(xpos_calc[1], ypos+key*KEY_Y_OFFSET);
             aws->create_toggle(cbs->awar_not[key], "matches.bitmap", "not.bitmap");
+
+            if (xpos_calc[2] == -1) aws->get_at_position(&xpos_calc[2], &ypos_dummy);
         }
     }
     if (awtqs->key_pos_fig){
@@ -1797,7 +1808,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->get_at_position(&xpos, &ypos);
 
         for (int key = 0; key<AWT_QUERY_SEARCHES; ++key) {
-            aws->at(xpos, ypos+key*KEY_Y_OFFSET);
+            aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
             aws->d_callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE); // enable ENTER in searchfield to start search
             aws->create_input_field(cbs->awar_queries[key],12);
@@ -1808,7 +1819,6 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->result_pos_fig);
         if(awtqs->create_view_window) {
             aws->callback(query_box_popup_view_window,(AW_CL)awtqs->create_view_window, 0);
-//             aws->callback(AW_POPUP,awtqs->create_view_window, 0);
         }
         aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 
