@@ -12,19 +12,17 @@ extern "C" {
 
 IslandHoppingParameter *IslandHopping::para = 0;
 
-IslandHoppingParameter::IslandHoppingParameter(int    freqs_,
+IslandHoppingParameter::IslandHoppingParameter(bool    use_user_freqs_,
                                                double fT_, double fC_, double fA_, double fG_,
-                                               int    rates_,
                                                double rTC_, double rTA_, double rTG_, double rCA_, double rCG_, double rAG_,
-                                               double dist_, double supp_, double gap_, double thres_)
+                                               double dist_, double supp_, double gapA_, double gapB_, double gapC_, double thres_)
 {
-    freqs = freqs_;
+    use_user_freqs = use_user_freqs_;
     fT    = fT_;
     fC    = fC_;
     fA    = fA_;
     fG    = fG_;
 
-    rates = rates_;
     rTC   = rTC_;
     rTA   = rTA_;
     rTG   = rTG_;
@@ -34,7 +32,9 @@ IslandHoppingParameter::IslandHoppingParameter(int    freqs_,
 
     dist  = dist_;
     supp  = supp_;
-    gap   = gap_;
+    gapA   = gapA_;
+    gapB   = gapB_;
+    gapC   = gapC_;
     thres = thres_;
 
     //@@@ init();
@@ -51,11 +51,7 @@ IslandHoppingParameter::~IslandHoppingParameter() {
 GB_ERROR IslandHopping::do_align() {
 
     if (!para) {
-        para = new IslandHoppingParameter(0,
-                                          0.25, 0.25, 0.25, 0.25,
-                                          0,
-                                          4.0, 1.0, 1.0, 1.0, 1.0, 4.0,
-                                          0.3, 0.5, 20.0, 0.003);
+        para = new IslandHoppingParameter(0, 0.25, 0.25, 0.25, 0.25, 0, 4.0, 1.0, 1.0, 1.0, 1.0, 4.0, 0.3, 0.5, 8.0, 4.0, 0.001);
     }
 
     int   nX;
@@ -82,8 +78,10 @@ GB_ERROR IslandHopping::do_align() {
     X=(char *)malloc((nX+1)*sizeof(char));
     secX=(int *)malloc((nX)*sizeof(int));
 
-    Y=(char *)malloc((nY+1)*sizeof(char));
-    secY=(int *)malloc((nY)*sizeof(int));
+    Y    = (char *)malloc((nY+1)*sizeof(char));
+    secY = (int *)malloc((nY)*sizeof(int));
+
+    // @@@ helix?
 
     j = 0;
     k = 0;
@@ -105,9 +103,9 @@ GB_ERROR IslandHopping::do_align() {
 
     Align(
           nX,X,secX,&XX,nY,Y,secY,&YY,
-          para->freqs,para->fT,para->fC,para->fA,para->fG,
-          para->rates,para->rTC,para->rTA,para->rTG,para->rCA,para->rCG,para->rAG,
-          para->dist,para->supp,para->gap,para->thres
+          para->use_user_freqs,para->fT,para->fC,para->fA,para->fG,
+          para->rTC,para->rTA,para->rTG,para->rCA,para->rCG,para->rAG,
+          para->dist,para->supp,para->gapA,para->gapB,para->gapC,para->thres
           );
 
     if(!Error) {
