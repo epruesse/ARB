@@ -10,7 +10,7 @@
 #define MAX_SEQUENCE_PER_MASTER 10
 
 double g_b_number_of_sequences_to_compress;
-int	g_b_counter_of_sequences_to_compress;
+int g_b_counter_of_sequences_to_compress;
 
 GB_Consensus *g_b_new_Consensus(long len){
     GB_Consensus *gcon = (GB_Consensus *)GB_calloc(sizeof(GB_Consensus),1);
@@ -38,7 +38,7 @@ void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
     register unsigned char *s;
     register int last;
     register unsigned char *p;
-    int	eq_count;
+    int eq_count;
     const int max_priority = 255/MAX_SEQUENCE_PER_MASTER; /* No overflow possible */
 
     if (seq_len > gcon->len) seq_len = gcon->len;
@@ -86,7 +86,7 @@ char *g_b_Consensus_get_sequence(GB_Consensus *gcon){
 
     memset(seq,'@',gcon->len);
 
-    for (c = 1; c<256;c++){	/* Find maximum frequency of non run */
+    for (c = 1; c<256;c++){ /* Find maximum frequency of non run */
         if (!gcon->used[c]) continue;
         s = gcon->con[c];
         for (pos= 0;pos<gcon->len;pos++){
@@ -132,10 +132,10 @@ void g_b_put_sequences_in_container(GB_CTREE *ctree,GB_Sequence *seqs,GB_Master 
     }
 }
 
-void g_b_create_master(	GB_CTREE *node,
+void g_b_create_master( GB_CTREE *node,
                         GB_Sequence *seqs,
                         GB_Master **masters,
-                        int	my_master,
+                        int my_master,
                         const char *ali_name, long seq_len){
     if (node->is_leaf){
         GBDATA *gb_data;
@@ -151,7 +151,7 @@ void g_b_create_master(	GB_CTREE *node,
     }
     g_b_create_master(node->leftson,seqs,masters,my_master,ali_name,seq_len);
     g_b_create_master(node->rightson,seqs,masters,my_master,ali_name,seq_len);
-    if (node->index>=0){		/* build me */
+    if (node->index>=0){        /* build me */
         char *data;
         GB_Consensus *gcon = g_b_new_Consensus(seq_len);
         g_b_put_sequences_in_container(node->leftson,seqs,masters,gcon);
@@ -166,10 +166,10 @@ void g_b_create_master(	GB_CTREE *node,
 }
 
 int g_b_set_masters_and_set_leafs(GB_CTREE *node,
-                                  GB_Sequence *seqs,	int *scount,
-                                  GB_Master **masters,	int *mcount,
+                                  GB_Sequence *seqs,    int *scount,
+                                  GB_Master **masters,  int *mcount,
                                   char *ali_name,
-                                  GBDATA			*master_folder ){
+                                  GBDATA            *master_folder ){
     int sumsons;
     if (node->is_leaf){
         if (node->gb_node ==0 || !GBT_read_sequence(node->gb_node,(char *)ali_name)){
@@ -183,8 +183,8 @@ int g_b_set_masters_and_set_leafs(GB_CTREE *node,
     }
     node->index = -1;
     sumsons =
-        g_b_set_masters_and_set_leafs( node->leftson,	seqs,scount,masters,mcount,ali_name, master_folder) +
-        g_b_set_masters_and_set_leafs( node->rightson,	seqs,scount,masters,mcount,ali_name, master_folder);
+        g_b_set_masters_and_set_leafs( node->leftson,   seqs,scount,masters,mcount,ali_name, master_folder) +
+        g_b_set_masters_and_set_leafs( node->rightson,  seqs,scount,masters,mcount,ali_name, master_folder);
     if (sumsons < MAX_SEQUENCE_PER_MASTER && node->father){
         return sumsons;
     }
@@ -197,29 +197,29 @@ int g_b_set_masters_and_set_leafs(GB_CTREE *node,
 }
 
 static GB_INLINE long g_b_read_number2(unsigned char **s) {
-	register unsigned int c0,c1,c2,c3,c4;
-	c0 = (*((*s)++));
-	if (c0 & 0x80){
-		c1 = (*((*s)++));
-		if (c0 & 0x40) {
-			c2 = (*((*s)++));
-			if (c0 & 0x20) {
-				c3 = (*((*s)++));
-				if (c0 &0x10) {
-					c4 = (*((*s)++));
-					return c4 | (c3<<8) | (c2<<16) | (c1<<8);
-				}else{
-					return (c3) | (c2<<8 ) | (c1<<16) | ((c0 & 0x0f)<<24);
-				}
-			}else{
-				return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
-			}
-		}else{
-			return (c1) | ((c0 & 0x3f)<<8);
-		}
-	}else{
-		return c0;
-	}
+    register unsigned int c0,c1,c2,c3,c4;
+    c0 = (*((*s)++));
+    if (c0 & 0x80){
+        c1 = (*((*s)++));
+        if (c0 & 0x40) {
+            c2 = (*((*s)++));
+            if (c0 & 0x20) {
+                c3 = (*((*s)++));
+                if (c0 &0x10) {
+                    c4 = (*((*s)++));
+                    return c4 | (c3<<8) | (c2<<16) | (c1<<8);
+                }else{
+                    return (c3) | (c2<<8 ) | (c1<<16) | ((c0 & 0x0f)<<24);
+                }
+            }else{
+                return (c2) | (c1<<8) | ((c0 & 0x1f)<<16);
+            }
+        }else{
+            return (c1) | ((c0 & 0x3f)<<8);
+        }
+    }else{
+        return c0;
+    }
 }
 
 static GB_INLINE void g_b_put_number2(int i, unsigned char **s) {
@@ -263,7 +263,7 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
         len = master_len;
     }
 
-    last = -1000;		/* Convert Sequence relative to Master */
+    last = -1000;       /* Convert Sequence relative to Master */
     for( i = len; i>0; i--){
         cm = *(master++);
         cs = *(seq++);
@@ -279,7 +279,7 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
         *(d++) = *(seq++);
     }
 
-    {				/* Append run length compression method */
+    {               /* Append run length compression method */
         unsigned char *buffer2;
         unsigned char *dest2;
         buffer2 = dest2 = (unsigned char *)GB_give_other_buffer((char *)buffer,seq_len+100);
@@ -311,7 +311,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
     int leafcount = 0;
     int mastercount = 0;
     int seqcount = 0;
-    int	main_clock;
+    int main_clock;
     GB_Sequence *seqs = 0;
     GB_Master **masters = 0;
     GBDATA *gb_master_ali;
@@ -341,7 +341,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
             char *master_data_name = GBS_global_string_copy("%s/@master_data",GB_SYSTEM_FOLDER);
             char *master_name = GBS_global_string_copy("@%s",ali_name);
             GBDATA *gb_master_data = gb_search( gb_main, master_data_name,GB_CREATE_CONTAINER,1);
-            gb_master_ali = gb_create_container( gb_master_data, master_name);		 /* create a master container always,
+            gb_master_ali = gb_create_container( gb_master_data, master_name);       /* create a master container always,
                                                                                         the old is deleted as soon as all sequences are
                                                                                         compressed by the new method*/
             GB_write_security_delete(gb_master_ali,7);
@@ -367,7 +367,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
 
         /* Compress sequences in tree */
         for (si=0;si<seqcount;si++){
-            int	mi = seqs[si].master;
+            int mi = seqs[si].master;
             GB_Master *master = masters[mi];
             GBDATA *gbd = seqs[si].gbd;
 
@@ -414,14 +414,14 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
 
         /* Compress all masters */
         for (si=0;si<mastercount;si++){
-            int	mi = masters[si]->master;
+            int mi = masters[si]->master;
             GB_Master *master;
             GBDATA *gbd;
             char *seqm;
             int master_len;
 
-            if (mi>0) {		/*  master available */
-                ad_assert(mi>si);	/* we don't want a rekursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
+            if (mi>0) {     /*  master available */
+                ad_assert(mi>si);   /* we don't want a rekursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
                 master = masters[mi];
                 gbd = masters[si]->gbd;
                 seqm = GB_read_string(master->gbd);
@@ -518,58 +518,58 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main){
 /* ******************** Decompress Sequences ******************** */
 char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size)
 {
-	register const signed char *source = (signed char *)s;
-	register char *dest;
-	register const char *m = master;
-	register unsigned int c;
-	register int j;
-	int i;
-	char *buffer;
+    register const signed char *source = (signed char *)s;
+    register char *dest;
+    register const char *m = master;
+    register unsigned int c;
+    register int j;
+    int i;
+    char *buffer;
 
-	dest = buffer = GB_give_other_buffer((char *)source,size);
+    dest = buffer = GB_give_other_buffer((char *)source,size);
 
-	for (i=size;i;) {
-		j = *(source++);
-		if (j>0) {		/* uncompressed data block */
-			if (j>i) j=i;
-			i -= j;
-			for (;j;j--) {
-			    c = *(source++);
-			    if (!c) c = *m;
-			    *(dest++) = c;
-			    m++;
-			}
-		}else{			/* equal bytes compressed */
-		    if (!j) break;	/* end symbol */
-		    if (j== -122) {
+    for (i=size;i;) {
+        j = *(source++);
+        if (j>0) {      /* uncompressed data block */
+            if (j>i) j=i;
+            i -= j;
+            for (;j;j--) {
+                c = *(source++);
+                if (!c) c = *m;
+                *(dest++) = c;
+                m++;
+            }
+        }else{          /* equal bytes compressed */
+            if (!j) break;  /* end symbol */
+            if (j== -122) {
                 j = *(source++) & 0xff;
                 j |= ((*(source++)) <<8) &0xff00;
                 j = -j;
-		    }
-		    c = *(source++);
-		    i += j;
-		    if (i<0) {
+            }
+            c = *(source++);
+            i += j;
+            if (i<0) {
                 GB_internal_error("Internal Error: Missing end in data");
                 j += -i;
                 i = 0;
-		    }
-		    if (c==0){
+            }
+            if (c==0){
                 for (;j<-4;j+=4){ /* copy 4 bytes at a time */
                     int a,b;
                     a = m[0];
-                    b = m[1];	dest[0] = a;
-                    a = m[2];	dest[1] = b;
-                    b = m[3];	dest[2] = a;
+                    b = m[1];   dest[0] = a;
+                    a = m[2];   dest[1] = b;
+                    b = m[3];   dest[2] = a;
                     dest[3] = b;
                     m+= 4;
                     dest += 4;
                 }
                 for (;j;j++) *(dest++) = *(m++);
-		    }else{
+            }else{
                 m -= j;
-                if (j<-16){		/* set multiple bytes */
+                if (j<-16){     /* set multiple bytes */
                     int k;
-                    c &= 0xff;	/* copy c to upper bytes */
+                    c &= 0xff;  /* copy c to upper bytes */
                     c |= (c<<8);
                     c |= (c<<16);
                     j = -j;
@@ -594,12 +594,12 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
                 }else{
                     for (;j;j++) *(dest++) = c;
                 }
-		    }
-		}
-	}
-	*(dest++) = 0;		/* NULL of NULL terminated string */
-	ad_assert(dest - buffer == size);
-	return buffer;
+            }
+        }
+    }
+    *(dest++) = 0;      /* NULL of NULL terminated string */
+    ad_assert(dest - buffer == size);
+    return buffer;
 }
 
 char *gb_uncompress_by_sequence(GBDATA *gbd, const char *s,long size, GB_ERROR *error){
