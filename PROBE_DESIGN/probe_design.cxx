@@ -14,6 +14,12 @@
 #include <aw_preset.hxx>
 #include <awt.hxx>
 #include <awt_iupac.hxx>
+
+#include <awt_canvas.hxx>
+#include <awt_tree.hxx>
+#include <awt_dtree.hxx>
+#include <awt_tree_cb.hxx>
+
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
