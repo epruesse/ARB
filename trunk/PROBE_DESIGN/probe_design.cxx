@@ -1790,10 +1790,15 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp);
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
-
+    
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#warning re-activate the toggle when gene pt-server is fixed
+#endif // DEVEL_RALF
     aws->at( "gene_server" );
     aws->label("Gene server");
     aws->create_toggle(AWAR_PROBE_USE_GENE_SERVER);
+#endif // DEBUG
     // aws->callback(pd_export_pt_server, 1);
     // aws->create_button("update_genesrv","Update GeneSrv");
 
