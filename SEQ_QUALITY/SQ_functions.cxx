@@ -6,7 +6,7 @@
 #undef _USE_AW_WINDOW
 #include "BI_helix.hxx"
 
-#include "SQ_consensus_marked.hxx"
+#include "SQ_consensus_marked.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -38,17 +38,16 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
     my_helix.init(gb_main, alignment_name);
-
+    SQ_consensus_marked cons_mkd;
 
     if (marked_only) {
 	getFirst = GBT_first_marked_species;
 	getNext  = GBT_next_marked_species;
-	//SQ_consensus_marked cm;
-	//cm.SQ_calc_consensus('b', 3);
     }
     else {
 	getFirst = GBT_first_species;
 	getNext  = GBT_next_species;
+	//SQ_consensus_marked cons_mmkd;//debug : another object for unmarked
     }
 
 
@@ -123,6 +122,11 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 				    break;
 			    }			
 			}
+			
+			/*calculate consensus*/
+			cons_mkd.SQ_calc_consensus(rawSequence[i], i);
+			//char c = cons_mkd.SQ_get_consensus(i);
+			//printf("%c",c);
 		    }
 
 
@@ -201,6 +205,34 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		seq_assert(gb_result2);
 		GB_write_int(gb_result2, diff_percent);
+
+
+		/*calculate consensus conformity*/
+		if (read_sequence) {
+		    int sequenceLength = 0;
+		    const char *rawSequence = 0;
+				
+		    rawSequence    = GB_read_char_pntr(read_sequence);
+		    sequenceLength = GB_read_count(read_sequence);
+		    int cons_conf=0;
+		    int cons_conf_percent=0;
+		    
+		    for (int i = 0; i < sequenceLength; i++) {
+			char c;
+
+			c = cons_mkd.SQ_get_consensus(i);
+			if (rawSequence[i] == c) {
+			    //printf("%c",c);
+			    cons_conf++;
+			}
+		    }
+		    cons_conf_percent = (cons_conf * 100) / sequenceLength;
+
+		    GBDATA *gb_result6 = GB_search(gb_quality, "consensus_conformity", GB_INT);
+		    seq_assert(gb_result6);
+		    GB_write_int(gb_result6, cons_conf_percent);
+		}
+
 
 	    }
 	}
