@@ -3,7 +3,7 @@
 //    File      : GEN_extern.h                                           //
 //    Purpose   : Provides some basic function for C                     //
 //                (Please avoid C++)                                     //
-//    Time-stamp: <Thu Jul/11/2002 12:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/10/2003 12:22 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -64,6 +64,9 @@ extern "C" {
 
     GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main);
     GBDATA *GEN_next_marked_pseudo_species(GBDATA *gb_species);
+
+    // --------------------------------------------------------------------------------
+    // organisms:
 
     GBDATA *GEN_first_organism(GBDATA *gb_main);
     GBDATA *GEN_next_organism(GBDATA *gb_organism);
