@@ -1037,15 +1037,15 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 		*/
 {
     GBCONTAINER         *gbd;
-    FILE           *input;
-    long             i;
-    char		*free_path = 0;
+    FILE                *input;
+    long                 i;
+    char		        *free_path           = 0;
     struct gb_main_type *Main;
-    enum gb_open_types opentype;
-    GB_CSTR quickFile = NULL;
-    int ignoreMissingMaster = 0;
-    int loadedQuickIndex = -1;
-    GB_ERROR	error = 0;
+    enum gb_open_types   opentype;
+    GB_CSTR              quickFile           = NULL;
+    int                  ignoreMissingMaster = 0;
+    int                  loadedQuickIndex    = -1;
+    GB_ERROR	         error               = 0;
 
 
     if (!opent) opentype = gb_open_all;
@@ -1080,8 +1080,9 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 			char *ext = gb_findExtension(base);
 			{
 				struct gb_scandir dir;
-				ext[0]=0;
+				ext[0] = 0;
 				gb_scan_directory(base,&dir);
+
 				loadedQuickIndex = dir.highest_quick_index;
 
 				if (dir.highest_quick_index!=dir.newest_quick_index)
@@ -1137,8 +1138,6 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
     Main->opentype = opentype;
     Main->security_level = 7;
 
-
-
     if (path && (strchr(opent, 'r')) ){
 		if (strchr(path, ':')){
 			error = gb_login_remote(Main,path,opent);
@@ -1162,9 +1161,12 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 					if (strchr(opent, 'd')||strchr(opent, 'D')){
 						/* use default settings */
 						const char *pre;
+                        GB_clear_error(); // with default-files gb_scan_directory (used above)
+                        // creates an error, cause the path is a fake path
+
 						if (strchr(opent, 'd')) pre = "";
-						else pre = "arb_default/";
-						free_path = GBS_find_lib_file(path,pre);
+						else pre                    = "arb_default/";
+						free_path                   = GBS_find_lib_file(path,pre);
 						if (!free_path) {
 							fprintf(stderr,"file %s not found\n", path);
 							fprintf(stderr,"Looking for default file %s, but not found in $ARBHOME/lib/%s\n",path,pre);
