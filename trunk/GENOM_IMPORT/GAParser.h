@@ -1,6 +1,7 @@
 /*
  * Author : Artem Artemov
  * Mail : hagilis@web.de
+ * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #ifndef GAPARSER_H
 #define GAPARSER_H
@@ -15,21 +16,21 @@
 
 namespace gellisary{
 
-class GAParser{
-protected:
-	std::vector<std::string> row_lines;
-	bool prepared;
-	
-	void checkFields();
-	
-public:
+    class GAParser{
+    protected:
+        std::vector<std::string> row_lines;
+        bool prepared;
 
-	GAParser();
-	virtual ~GAParser(){}
-	virtual void parse() = 0;
-	void update(std::string*);
-	// static bool writeMessage(std::string *);
-};
+        void checkFields();
+
+    public:
+
+        GAParser();
+        virtual ~GAParser(){}
+        virtual void parse() = 0;
+        void update(std::string*);
+        // static bool writeMessage(std::string *);
+    };
 
 };
 
