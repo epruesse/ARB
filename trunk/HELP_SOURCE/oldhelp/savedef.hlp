@@ -16,8 +16,9 @@ OCCURRENCE	ARB_NT/File/Save Defaults
 		ARB_EDIT4/Properties/Save defaults
 		ARB_SECEDIT/Properties/Save defaults
 		ARB_GENEMAP/Properties/Save defaults
+		ARB_MERGE/File/Save properties
 
-DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to files 
+DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to files
 		'~/.arb_prop/*' located in the users home directory.
 
 NOTES		To reset ARB to it's defaults simply remove one/all *.arb
@@ -29,8 +30,26 @@ NOTES		To reset ARB to it's defaults simply remove one/all *.arb
 		You can hand over your properties to another user by giving him
 		your property-files.
 
+SECTION GENERAL NOTES ABOUT PROPERTIES
+
+    Mosts settings you can change in ARB are saved either
+
+          - to properties or
+          - with your database.
+
+    Nevertheless some setting are not stored anywhere (some intentionally, some by mistake).
+
+    Please notify arb@arb-home.de if you think
+
+      - a setting should be saved in properties (instead of always setting
+        the same useless default value)
+      - a setting should be saved in the database instead of properties (or
+        vice versa)
+
 EXAMPLES	None
 
 WARNINGS	Better make backups of these files before you change them.
+
+                Be careful with ARB_MERGE: It uses the same properties as ARB_NT!
 
 BUGS		No bugs known

@@ -9,22 +9,22 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile strunk********
 TITLE		Print a Graphic to a Printer
 
-OCCURRENCE	ARB_NT/Tree/Print to Printer
+OCCURRENCE	ARB_NT/File/Print Tree
 
 DESCRIPTION	Multi Page Printer
 
-	***	Clip at Screen:	Show only those graphics that are
+	   	Clip at Screen:	Show only those graphics that are
 				drawn at the ARB_NT main window
 
 		Show Handles:	Show/Hide root and mark symbols
 
-	***	Graphic Size:	X * Y size of Graphic in inches.
+	 	Graphic Size:	X * Y size of Graphic in inches.
 				When you change the tree while this window
 				stays open
 				( eg. zoom in/out ...) press
 				<Get Graphic Size> to update graphic size
 
-		Magnification:
+		Magnification:  guess what
 
 		Paper Size:	X * Y inches
 
@@ -36,20 +36,19 @@ DESCRIPTION	Multi Page Printer
 				magnification will be adjusted to fit
 				the graphic into the number of pages.
 
-		Page Range:	Not implemented
-
-	***	Destination:	Printer: Use print command to print
+		Destination:	Printer: Use print command to print
 				File:	Use File Name as destination file name
 				Preview:
 
-
-
-NOTES           None
+NOTES           The default printer used by ARB can be defined by setting the
+                environment variable PRINTER to your printer name.
 
 EXAMPLES	Print a long list tree:
 
-			1. Select list tree style in ARB_NT main window
-			2.
+			1. Select tree style in ARB_NT main window
+			2. Select File/Print tree
+                        3. Select Destination 'Printer'
+                        4. Press PRINT button
 
 WARNINGS	Printing cannot be stopped
 

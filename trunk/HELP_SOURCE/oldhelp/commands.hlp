@@ -183,6 +183,14 @@ SECTION COMMANDLIST
                         In escapedCommand you have to escape '\' and '"' by
                         preceeding a '\'. If you nest calls you have to use multiple escapes.
 
+                origin_organism(escapedCommand)
+                origin_gene(escapedCommand)
+
+                        like command() but readdb() etc. read all data from the
+                        origin organism/gene of a gene-species (not from the gene-species itself).
+
+                        This function applies only to gene-species!
+
 	CALCULATOR
 
 		plus			takes exactly the first two input

@@ -282,9 +282,11 @@ ifndef ARCPPLIB
 	ARCPPLIB = $(ARLIB)
 endif
 
+SEP=--------------------------------------------------------------------------------
+
 dummy:
 		$(MAKE) tests
-		@echo ''
+		@echo $(SEP)
 		@echo 'Main targets:'
 		@echo ''
 		@echo ' all         - Compile ARB + TOOLs + and copy shared libs + link foreign software'
@@ -318,6 +320,8 @@ dummy:
 ifeq ($(USER),westram)
 		@echo ' export      - make tarfile and export to homepage'
 endif
+		@echo ''
+		@echo $(SEP)
 		@echo ''
 
 #********************* End of user defined Section *******************
@@ -418,6 +422,7 @@ ARCHS_NTREE = \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)
 
 #		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
@@ -429,19 +434,23 @@ $(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
 EDIT = bin/arb_edit
 ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a XML/XML.a
 $(EDIT): $(ARCHS_EDIT)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 ARCHS_EDIT4 = NAMES_COM/client.a AWTC/AWTC.a EDIT4/EDIT4.a SECEDIT/SECEDIT.a \
-	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a ISLAND_HOPPING/ISLAND_HOPPING.a XML/XML.a
+	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a \
+		ISLAND_HOPPING/ISLAND_HOPPING.a XML/XML.a
 $(EDIT4): $(ARCHS_EDIT4) aw db
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
 ARCHS_WETC = WETC/WETC.a XML/XML.a
 $(WETC): $(ARCHS_WETC)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)
 
 #***********************************	arb_dist **************************************
@@ -450,12 +459,14 @@ ARCHS_DIST = DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a CONSENSUS_TREE/CONSENSUS_TREE
 		EISPACK/EISPACK.a  XML/XML.a
 #		FINDCORRWIN/FINDCORRWIN.a FINDCORRMATH/FINDCORRMATH.a
 $(DIST): $(ARCHS_DIST)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) $(GUI_LIBS)
 
 #***********************************	arb_pars **************************************
 PARSIMONY =		bin/arb_pars
 ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a  XML/XML.a
 $(PARSIMONY): $(ARCHS_PARSIMONY)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)
 
 
@@ -463,6 +474,7 @@ $(PARSIMONY): $(ARCHS_PARSIMONY)
 NALIGNER = bin/arb_naligner
 ARCHS_NALIGNER = PROBE_COM/server.a NALIGNER/NALIGNER.a SERVERCNTRL/SERVERCNTRL.a
 $(NALIGNER): $(ARCHS_NALIGNER)
+	@echo $(SEP) Link $@
 	cp NALIGNER/NALIGNER.com $@
 # no LIB_NALIGNER defined: see NALIGNER/Makefile
 
@@ -470,6 +482,7 @@ $(NALIGNER): $(ARCHS_NALIGNER)
 SECEDIT = bin/arb_secedit
 ARCHS_SECEDIT = SECEDIT/SECEDIT.a  XML/XML.a
 $(SECEDIT):	$(ARCHS_SECEDIT)
+	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
 
@@ -477,18 +490,21 @@ $(SECEDIT):	$(ARCHS_SECEDIT)
 PROBE_GROUP = bin/arb_probe_group
 ARCHS_PROBE_GROUP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) PROBE_GROUP/PROBE_GROUP.a
 $(PROBE_GROUP):	$(ARCHS_PROBE_GROUP) PROBE_COM/server.a PROBE/PROBE.a
+	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
 ARCHS_CHIP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) CHIP/CHIP.a
 $(CHIP):	$(ARCHS_CHIP) PROBE_COM/server.a PROBE/PROBE.a
+	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
 ARCHS_PHYLO = PHYLO/PHYLO.a  XML/XML.a
 $(PHYLO): $(ARCHS_PHYLO)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)
 
 
@@ -500,12 +516,14 @@ $(PHYLO): $(ARCHS_PHYLO)
 DBSERVER = bin/arb_db_server
 ARCHS_DBSERVER = DBSERVER/DBSERVER.a SERVERCNTRL/SERVERCNTRL.a
 $(DBSERVER): $(ARCHS_DBSERVER)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB $(SYSLIBS)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
 ARCHS_PROBE = PROBE_COM/server.a PROBE/PROBE.a SERVERCNTRL/SERVERCNTRL.a
 $(PROBE): $(ARCHS_PROBE)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) PROBE/PROBE.a PROBE_COM/server.a \
 			SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS)
 
@@ -513,23 +531,27 @@ $(PROBE): $(ARCHS_PROBE)
 NAMES = bin/arb_name_server
 ARCHS_NAMES = NAMES_COM/server.a NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a
 $(NAMES): $(ARCHS_NAMES)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a NAMES_COM/server.a NAMES_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 #***********************************	ors **************************************
 ORS_SERVER = tb/ors_server
 ARCHS_ORS_SERVER = ORS_COM/server.a ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a
 $(ORS_SERVER): $(ARCHS_ORS_SERVER)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/server.a ORS_COM/client.a $(STATIC) -lARBDB $(DYNAMIC) $(SYSLIBS) $(CCPLIBS) $(CRYPTLIB)
 
 ORS_CGI = tb/ors_cgi
 ARCHS_ORS_CGI = ORS_COM/server.a ORS_CGI/ORS_CGI.a SERVERCNTRL/SERVERCNTRL.a
 $(ORS_CGI): $(ARCHS_ORS_CGI)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_CGI/ORS_CGI.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/client.a $(STATIC) -lARBDB $(DYNAMIC) $(SYSLIBS) $(CCPLIBS)
 
 
 EDITDB = tb/editDB
 ARCHS_EDITDB = EDITDB/EDITDB.a  XML/XML.a
 $(EDITDB): $(ARCHS_EDITDB)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(ARCHS_EDITDB) -lARBDB -lAWT $(LIBS)
 
 
@@ -537,28 +559,33 @@ $(EDITDB): $(ARCHS_EDITDB)
 AWDEMO = tb/awdemo
 ARCHS_AWDEMO = AWDEMO/AWDEMO.a
 $(AWDEMO): $(ARCHS_AWDEMO)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(ARCHS_AWDEMO) $(LIBS)
 
 TEST = tb/dbtest
 ARCHS_TEST = TEST/TEST.a  XML/XML.a
 $(TEST):	$(ARCHS_TEST)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
 
 ALIV3 = tb/aliv3
 ARCHS_ALIV3 = PROBE_COM/server.a ALIV3/ALIV3.a SERVERCNTRL/SERVERCNTRL.a
 $(ALIV3): $(ARCHS_ALIV3)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ALIV3/ALIV3.a SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 
 ACORR = tb/acorr
 ARCHS_ACORR = 	DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a FINDCORRASC/FINDCORRASC.a FINDCORRMATH/FINDCORRMATH.a FINDCORRWIN/FINDCORRWIN.a  XML/XML.a
 $(ACORR): $(ARCHS_ACORR)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) $(ARCHS_CLIENT) -lAWT -lARBDBPP $(LIBS)
 
 
 ARBDB_COMPRESS = tb/arbdb_compress
 ARCHS_ARBDB_COMPRESS = ARBDB_COMPRESS/ARBDB_COMPRESS.a
 $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
+	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ARBDB_COMPRESS/ARBDB_COMPRESS.a -lARBDB
 
 
@@ -587,7 +614,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 
 
 %.dummy:
-	@echo -------------------------------------------------------------------------------- Making $(@F:.dummy=.a) in $(@D)
+	@echo $(SEP) Making $(@F:.dummy=.a) in $(@D)
 	@$(GMAKE) -C $(@D) -r \
 		"GMAKE = $(GMAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
