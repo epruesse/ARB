@@ -181,11 +181,12 @@ void GLRenderer::BeginTexturizer(){
    glDisable(GL_CULL_FACE);
    glDisable(GL_LIGHTING);
    
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
    extern bool bPointSpritesSupported;
+
    if (bPointSpritesSupported) {
+       glEnable(GL_BLEND);
+       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
        float quadratic[] =  { 0.0f, 0.0f, 1.0f };
        glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, quadratic );
        
@@ -208,7 +209,12 @@ void GLRenderer::BeginTexturizer(){
 void GLRenderer::EndTexturizer(){
     glPopMatrix();
     glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+
+    extern bool bPointSpritesSupported;
+
+    if (bPointSpritesSupported) {
+        glDisable(GL_BLEND);
+    }
 }
 
 void GLRenderer::TexturizeStructure(Texture2D *cImages) {

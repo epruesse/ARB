@@ -262,10 +262,42 @@ void Structure3D::PointsToQuads(float x, float y, float z) {
     }
     else {
         glBegin(GL_QUADS);
-        glTexCoord2f(0,0); glVertex3f(x - 1, y - 1, z);
-        glTexCoord2f(1,0); glVertex3f(x + 1, y - 1, z);
-        glTexCoord2f(1,1); glVertex3f(x + 1, y + 1, z);
-        glTexCoord2f(0,1); glVertex3f(x - 1, y + 1, z);
+        // Front Face
+        glTexCoord2f(0,0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1,0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1,1); glVertex3f(x + 1, y - 1, z + 1);
+        glTexCoord2f(0,1); glVertex3f(x - 1, y - 1, z + 1);
+
+        // Back Face
+        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z - 1);
+        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z - 1);
+        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z - 1);
+
+        // Top Face
+        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1,1); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(0,1); glVertex3f(x + 1, y + 1, z - 1);
+
+        // Bottom Face
+        glTexCoord2f(0,0); glVertex3f(x + 1, y - 1, z - 1);
+        glTexCoord2f(1,0); glVertex3f(x - 1, y - 1, z - 1);
+        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z + 1);
+        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z + 1);
+
+        // Left Face
+        glTexCoord2f(0,0); glVertex3f(x + 1, y + 1, z + 1);
+        glTexCoord2f(1,0); glVertex3f(x + 1, y + 1, z - 1);
+        glTexCoord2f(1,1); glVertex3f(x + 1, y - 1, z - 1);
+        glTexCoord2f(0,1); glVertex3f(x + 1, y - 1, z + 1);
+
+        // Right Face
+        glTexCoord2f(0,0); glVertex3f(x - 1, y + 1, z - 1);
+        glTexCoord2f(1,0); glVertex3f(x - 1, y + 1, z + 1);
+        glTexCoord2f(1,1); glVertex3f(x - 1, y - 1, z + 1);
+        glTexCoord2f(0,1); glVertex3f(x - 1, y - 1, z - 1);
+
         glEnd();
     }
 }
