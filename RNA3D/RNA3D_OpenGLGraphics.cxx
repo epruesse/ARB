@@ -5,6 +5,9 @@
 #include "RNA3D_Textures.hxx"
 #include "RNA3D_StructureData.hxx"
 
+#include <math.h>
+
+
 using namespace std;
 
 OpenGLGraphics::OpenGLGraphics(void){
