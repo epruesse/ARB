@@ -1084,12 +1084,7 @@ static void pars_start_cb(AW_window *aww)
 
     awm->create_menu( 0,   "Species", "S", "nt_tree.hlp",  AWM_ALL );
     {
-        awm->insert_menu_topic("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("swap_marked",	"Swap Marked Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_invert_mark_all_cb,		(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_unmark_all_tree_cb,		(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
+        NT_insert_mark_submenus(awm, ntw);
 
     }
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
@@ -1106,6 +1101,8 @@ static void pars_start_cb(AW_window *aww)
             awm->insert_menu_topic("tree_group_all", 		"Group All",			"A","tgroupall.hlp",	AWM_ALL, 	(AW_CB)NT_group_tree_cb, 	(AW_CL)ntw, 0 );
             awm->insert_menu_topic("tree_group_not_marked", 	"Group All Except Marked",	"M","tgroupnmrkd.hlp",	AWM_ALL, 	(AW_CB)NT_group_not_marked_cb,	(AW_CL)ntw, 0 );
             awm->insert_menu_topic("tree_ungroup_all",		"Ungroup All",			"U","tungroupall.hlp",	AWM_ALL,	(AW_CB)NT_ungroup_all_cb,	(AW_CL)ntw, 0 );
+            awm->insert_separator();
+            NT_insert_color_collapse_submenu(awm, ntw);
         }
         awm->close_sub_menu();
         awm->insert_separator();
