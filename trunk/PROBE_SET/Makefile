@@ -20,7 +20,10 @@ DEST_EXECUTABLES = \
 	$(ARBHOME)/PROBE_SET/bin/ps_convert \
 	$(ARBHOME)/PROBE_SET/bin/fb_test \
 
-all : $(DEST_EXECUTABLES)
+all : bin $(DEST_EXECUTABLES)
+
+bin:
+		mkdir -p bin
 
 # --------------------------------------------------------------------------------
 
