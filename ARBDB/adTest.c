@@ -277,6 +277,8 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
             char         *new_key_name = GBS_string_2_key(new_key_try);
             GBQUARK       keyq         = gb_key_2_quark(Main, new_key_name);
 
+            printf("new_key_name='%s'\n", new_key_name);
+
             ad_assert(keyq != 0);
             {
                 long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
@@ -284,9 +286,11 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
 
                 /* @@@ FIXME: above command has no effect  */
 
-                printf("Fixed zero key_quark of ");
+                printf("Fixed zero key_quark of GBDATA at %p\n", gbd);
                 GB_dump_db_path(gbd);
             }
+
+            free(new_key_name);
         }
     }
 
