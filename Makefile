@@ -484,7 +484,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 	@$(GMAKE) -C $(@D) -r links || echo '********* Ignoring Errors !!!!! ********';
 
 %.dummy:
-	@echo -------------------------------------------------------------------------------- Making $(@F:.dummy=.a)
+	@echo -------------------------------------------------------------------------------- Making $(@F:.dummy=.a) in $(@D)
 	@$(GMAKE) -C $(@D) -r \
 		"GMAKE = $(GMAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
