@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Dec/07/2001 14:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jan/18/2002 15:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -118,16 +118,22 @@ static void EXP_create_mask_submenu(AW_window_menu_modes *awm) {
 }
 
 #define AWMIMT awm->insert_menu_topic
-//  -------------------------------------------------------------------------------------------
-//      void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
-//  -------------------------------------------------------------------------------------------
-void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
-    awm->create_menu(0,"Experiment","E","no.hlp",	AWM_ALL);
+//  -------------------------------------------------------------------------------------
+//      void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu)
+//  -------------------------------------------------------------------------------------
+void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
+    const char *title  = "Experiment";
+    const char *hotkey = "X";
+
+    if (submenu) awm->insert_sub_menu(0, title, hotkey);
+    else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
+
     {
         AWMIMT( "experiment_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window,	0 );
         AWMIMT( "experiment_search",	"Search and Query",			"",	"experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
 
         EXP_create_mask_submenu(awm);
     }
+    if (submenu) awm->close_sub_menu();
 }
 

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP.hxx                                                //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Sep/06/2001 23:18 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jan/18/2002 15:54 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -25,7 +25,7 @@ inline GBDATA* EXP_get_experiment_data(GBDATA *gb_species) { return GB_search(gb
 
 // --------------------------------------------------------------------------------
 // submenu:
-void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
+void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu);
 
 // --------------------------------------------------------------------------------
 // windows:

@@ -246,6 +246,20 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
     }
 }
 
+//  --------------------------------------------------------------------
+//      void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr)
+//  --------------------------------------------------------------------
+void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
+    GB_transaction  dummy(gb_main);
+    GBDATA         *gb_gene = GEN_get_current_gene(gb_main, awr);
+
+    if (gb_gene) {
+        char *gene_content = GBT_read_gene_sequence(gb_gene, false);
+        awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
+        free(gene_content);
+    }
+}
+
 //  --------------------------------------------------
 //      void GEN_update_combined_cb(AW_root *awr)
 //  --------------------------------------------------
@@ -258,6 +272,7 @@ void GEN_update_combined_cb(AW_root *awr) {
     if (strcmp(combined, old_combined) != 0) {
         awr->awar(AWAR_COMBINED_GENE_NAME)->write_string(combined);
         auto_select_pseudo_species(awr, gb_main, organism, gene);
+        GEN_update_GENE_CONTENT(gb_main, awr);
     }
 
     free(old_combined);
@@ -293,9 +308,11 @@ bool GEN_is_genom_db(GBDATA *gb_main, int default_value) {
 //      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
 //  -------------------------------------------------------------------
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_string(AWAR_COMBINED_GENE_NAME,"",gb_main);
+    aw_root->awar_string(AWAR_GENE_CONTENT,"",gb_main);
+
 	aw_root->awar_string(AWAR_GENE_NAME, "" ,	gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
 	aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,	gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
-    aw_root->awar_string(AWAR_COMBINED_GENE_NAME,"",gb_main);
 
     aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB0)GEN_species_name_changed_cb);
 
