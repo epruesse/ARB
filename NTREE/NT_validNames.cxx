@@ -15,7 +15,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
-
+#include <awt_www.hxx>
 
 #include <fstream>
 #include <iostream>
@@ -29,6 +29,7 @@
 #define nt_assert(bed) arb_assert(bed)
 
 
+//extern char* aw_file_selection(const char*,const char*,const char*,const char*);
 extern GBDATA* gb_main;
 
 
@@ -69,13 +70,14 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
   string tmpString;
   StrL fileContent;
   char* fileName =  getenv("ARBHOME");
-  //  char* baseName
+
   printf ("fileName is now: %s\n", fileName);
 
   if (fileName == 0){
     aw_message(GBS_global_string("$ARBHOME is not set"));
   }
   fileName = strcat(fileName, "/lib/unixnames.txt");
+ 
 
   printf ("fileName has changed to: %s\n", fileName);
 
@@ -193,15 +195,15 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 
 void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
 {
-    std::cout <<"Valid Names suggestion section" << std::endl;
-    GBDATA* species;
-    GBDATA* pair;
-    GBDATA* oldName;
-    GBDATA* newName;
+    //     std::cout <<"Valid Names suggestion section" << std::endl;
+    //     GBDATA* species;
+    //     GBDATA* pair;
+    //     GBDATA* oldName;
+    //     GBDATA* newName;
     //  GBDATA* validName;
-    GBDATA* GBT_fullName;
+    //    GBDATA* GBT_fullName;
     // char* fullName;
-    GBDATA* desc; // string
+    //    GBDATA* desc; // string
     NAMELIST speciesNames;
     // char* typeStr;
 
