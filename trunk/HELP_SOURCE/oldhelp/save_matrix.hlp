@@ -23,7 +23,10 @@ SECTION         FORMATS
 					and generate a pretty view of the
 					matrix
 
-WARNING         If you select to many fields by nds your matrix will be hardly
-		readable
+		Tabbed (using NDS):	same as 'Readable', but using TABs instead of
+                                        Spaces and ',' instead of '.'.
+                                        Import this into star-calc/excel/etc..
+
+WARNING         None
 
 BUGS		You cannot select the number of digits after '.'.

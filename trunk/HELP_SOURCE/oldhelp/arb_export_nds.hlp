@@ -16,17 +16,20 @@ OCCURRENCE	ARB_NT/File/Export NDS List
 DESCRIPTION	Writes 'field' (see 'HELP: Glossary') entries and other
 		information specified using the 'NDS' tool (see 'HELP: Node
 		Display Setup NDS') of 'marked species' (see 'HELP: Glossary')
-		to an ascii file. 
+		to an ascii file.
 
 		Choose the 'Export NDS List' option from the 'File' menu to
-			display the 'EXPORT NDS OF MARKED SPECIES' window.
+                display the 'EXPORT NDS OF MARKED SPECIES' window.
 
 		Select a file name from the 'Directories and Files' subwindow or
-			type it to the 'File Name' subwindow.
+                type it to the 'File Name' subwindow.
+
+                If you want to use the exported data in a star-calc/excel/... sheet,
+                you should check the 'Use TABs for columns' option.
 
 NOTES		The suffix shown or typed in the 'Suffix' subwindow is used as a
 		filter for the displayed file names and is automatically
-		appended to the file name in the 'File Name' subwindow.	
+		appended to the file name in the 'File Name' subwindow.
 
 EXAMPLES	None
 
