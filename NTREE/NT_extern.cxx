@@ -1116,11 +1116,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
-
-#if defined(DEVEL_RALF) || defined(DEVEL_JUERGEN)
-            AWMIMT("seq_quality", "Calc Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
-#endif //
-
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp",    AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,       0             );
             SEP________________________SEP();
@@ -1156,7 +1151,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
             SEP________________________SEP();
 
-            AWMIMT("seq_quality", "Check Sequence Quality",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
+            AWMIMT("seq_quality", "Check Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
+            AWMIMT("seq_quality", "Chimere Check [broken!]",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
 
             SEP________________________SEP();
 
