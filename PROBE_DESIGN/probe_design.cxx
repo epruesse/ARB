@@ -933,17 +933,21 @@ inline void my_strupr(char *s) {
 static GB_alignment_type ali_used_for_resolvement = GB_AT_UNKNOWN;
 
 static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid) {
-    AW_window *aww = (AW_window*)cl_aww;
+    AW_window         *aww          = (AW_window*)cl_aww;
     AW_selection_list *selection_id = (AW_selection_list*)cl_selid;
-
-    pd_assert(ali_used_for_resolvement==GB_AT_RNA || ali_used_for_resolvement==GB_AT_DNA);
-    int index = ali_used_for_resolvement==GB_AT_RNA ? 1 : 0;
 
     aww->clear_selection_list(selection_id);
 
-    AW_root *root = aww->get_root();
-    char *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
-    GB_ERROR err = 0;
+    if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
+        aww->insert_default_selection(selection_id, "Wrong alignment type!", "");
+        aww->update_selection_list(selection_id);
+        return;
+    }
+
+    int       index   = ali_used_for_resolvement==GB_AT_RNA ? 1 : 0;
+    AW_root  *root    = aww->get_root();
+    char     *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
+    GB_ERROR  err     = 0;
 
     if (istring && istring[0]) { // contains sth?
         my_strupr(istring);
@@ -1236,7 +1240,7 @@ void pd_export_pt_server(AW_window *aww)
                    "This function will send your currently loaded data as the new data to the pt_server !!!\n"
                    "The server will need a long time (up to several hours) to analyse the data.\n"
                    "Until the new server has analyzed all data, no server functions are available.\n\n"
-                   "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pt_server/xxx))\n"
+                   "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
                    "Note2 : The server will do the job in background,\n"
                    "        quitting this program won't affect the server","Cancel,Do it")){
         aw_openstatus("Export db to server");
