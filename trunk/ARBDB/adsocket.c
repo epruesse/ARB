@@ -43,30 +43,32 @@ int gbcm_sig_violation_flag;
 int gbcm_pipe_violation_flag;
 
 #if defined(HP)
-#   include <codelibs/nap.h>
+
+# include <codelibs/nap.h>
 void GB_usleep(long usec){
     nap((int)(usec/1000)+1);
 }
+
 #else
-#   if defined(SUN5)
+# if defined(SUN5)
 void GB_usleep(long usec){
     struct timespec timeout,time2;
     timeout.tv_sec  = 0;
     timeout.tv_nsec = usec*1000;
     nanosleep(&timeout,&time2);
 }
-#   else
-#       if defined(DIGITAL)
-#           if defined(__cplusplus)
+# else
+#  if defined(DIGITAL)
+#   if defined(__cplusplus)
 extern "C" {    extern void usleep(unsigned int );  }
-#           else
+#   else
 extern void usleep(unsigned int);
-#           endif
-#       endif
+#   endif
+#  endif // DIGITAL
 void GB_usleep(long usec){
     usleep(usec);
 }
-#   endif
+# endif
 #endif
 
 long gbcm_sig_violation_end();

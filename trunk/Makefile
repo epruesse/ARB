@@ -142,10 +142,8 @@ ifdef LINUX
    SITE_DEPENDEND_TARGETS = perl
    CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings) $(extended_cpp_warnings)
    ACC := $(ACC) $(LINUX_SPECIALS) $(extended_warnings)
-##   CCLIB = $(ACC) -fpic  ##Lothar
-##   CCPLIB = $(CPP) -fpic	#			# Same for c++
    CCLIB = $(ACC) -fPIC
-   CCPLIB = $(CPP) -fPIC	#			# Same for c++
+   CCPLIB = $(CPP) -fPIC#			# Same for c++
 
    f77_flags = $(fflags) -W -N9 -e
    F77LIB = -lU77
@@ -213,10 +211,25 @@ ifdef SUN5
    SITE_DEPENDEND_TARGETS = perl
 
 ifdef ECGS
-   CPP = g++ -W -Wall $(enumequiv) -D$(MACH) -D$(MACH)_ECGS $(havebool) -pipe#		# C++ Compiler /Linker
-   ACC = gcc -Wall $(enumequiv) -D$(MACH) -D$(MACH)_ECGS -pipe#				# Ansi C
+   # gcc on solaris:
+   SUN5_ECGS_SPECIALS=-DNO_REGEXPR
+
+   CPP = g++ -W -Wall $(enumequiv) -D$(MACH)_ECGS $(havebool) -pipe $(SUN5_ECGS_SPECIALS)#		# C++ Compiler /Linker
+   ACC = gcc -Wall $(enumequiv) -D$(MACH)_ECGS -pipe $(SUN5_ECGS_SPECIALS)#				# Ansi C
+
+   CCLIB = $(ACC) -fPIC
+   CCPLIB = $(CPP) -fPIC#			# Same for c++
+
+   ARCPPLIB = g++ -Wall -shared $(SUN5_ECGS_SPECIALS) -o
+   ARLIB = gcc -Wall -shared $(SUN5_ECGS_SPECIALS) -o
+
+   XAR = $(AR)# 			# Linker for archives containing templates
+
+   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11 $(SYSLIBS)
 
 else
+   # sun workshop specific
+
    #AR = $(FORCEMASK);ld -r -o#			# Archive Linker
    AR = $(FORCEMASK);CC -xar -o#
    XAR = $(FORCEMASK);CC -xar -o#
