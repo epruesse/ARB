@@ -11,17 +11,16 @@ private:
   PRD_Sequence_Pos maximum;
 
 public:
-  Range (const PRD_Sequence_Pos value1_, const PRD_Sequence_Pos value2_);
+  Range ( const PRD_Sequence_Pos value1_, const PRD_Sequence_Pos value2_ );
   Range ();
   ~Range () {};
 
   PRD_Sequence_Pos  min()   { return minimum; }
   PRD_Sequence_Pos  max()   { return maximum; }
   PRD_Sequence_Pos  range() { return maximum - minimum; }
-  bool includes ( PRD_Sequence_Pos value_ );
-  bool includes ( PRD_Sequence_Pos min_, PRD_Sequence_Pos max_ );
-  void print    ( char *prefix_,char *suffix_ );
-  void println();
+  bool includes ( PRD_Sequence_Pos value_ );				// check if given value is in range
+  bool includes ( PRD_Sequence_Pos min_, PRD_Sequence_Pos max_ );	// check if given range overlaps self
+  void print    ( char *prefix_,char *suffix_ );			// print range
 };
 
 #else

@@ -11,7 +11,10 @@
 typedef long int PRD_Sequence_Pos;
 
 
-
+//
+// BaseInverter is used to invert bases while matching sequence
+// backwards vs. the primertrees
+//
 class BaseInverter {
 public:
   char BASE[128];
@@ -76,9 +79,15 @@ public:
 static ChildLookupTable CHAR2CHILD;
 
 
+//
+// 2^0 = 1 = A
+// 2^1 = 2 = T/U
+// 2^2 = 4 = C
+// 2^3 = 8 = G
+//
 class BitField {
 public:
-  unsigned int FIELD[128];
+  unsigned int FIELD[128]; // bitoperations are done as unsigned int :(
 
   BitField()
   {
@@ -91,17 +100,17 @@ public:
     FIELD['C'] =  4;
     FIELD['G'] =  8;
 
-    FIELD['R'] =  9;
-    FIELD['M'] =  5;
-    FIELD['S'] = 12;
-    FIELD['Y'] =  6;
-    FIELD['K'] = 10;
-    FIELD['W'] =  3;
-    FIELD['V'] = 13;
-    FIELD['B'] = 14;
-    FIELD['D'] = 11;
-    FIELD['H'] =  7;
-    FIELD['N'] = 15;
+    FIELD['R'] =  9; // A  G
+    FIELD['M'] =  5; // A C
+    FIELD['S'] = 12; //   CG
+    FIELD['Y'] =  6; //  TC
+    FIELD['K'] = 10; //  T G
+    FIELD['W'] =  3; // AT
+    FIELD['V'] = 13; // A CG
+    FIELD['B'] = 14; //  TCG
+    FIELD['D'] = 11; // AT G
+    FIELD['H'] =  7; // ATC
+    FIELD['N'] = 15; // ATCG
   }
 };
 
