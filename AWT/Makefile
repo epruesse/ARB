@@ -120,6 +120,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_dtree.o: awt.hxx
 AWT_dtree.o: awt_canvas.hxx
