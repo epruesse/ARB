@@ -673,15 +673,21 @@ void aw_set_local_message(){
     aw_stg.local_message = 1;
 }
 
-int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
+int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
+    // if 'buttons' == 0 -> asynchronous message in message log window
+    //
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
-    // the single buttons are seperated by kommas (i.e. "YES,NO")
+    // the single buttons are seperated by kommas (e.g. "YES,NO")
     // If the button-name starts with ^ it starts a new row of buttons
     // (if a button named 'EXIT' is pressed the program terminates using exit(EXIT_FAILURE))
     //
+    // The remaining arguments only apply if 'buttons' is non-zero:
+    //
     // If fixedSizeButtons is true all buttons have the same size
     // otherwise the size for every button is set depending on the text length
+    //
+    // If 'helpfile' is non-zero a HELP button is added.
 
     if (!buttons){              /* asynchronous message */
 #if defined(DEBUG)
@@ -736,7 +742,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
         aw_msg->at_newline();
 
         if (fixedSizeButtons) {
-            size_t  max_button_length = 0;
+            size_t  max_button_length = helpfile ? 4 : 0;
             char   *pos               = button_list;
 
             while (1) {
@@ -753,9 +759,17 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
             aw_msg->button_length(max_button_length+1);
         }
 
-        char *ret = strtok( button_list, "," );
+        // insert the buttons:
+        char *ret              = strtok( button_list, "," );
+        bool  help_button_done = false;
+
         while( ret ) {
             if (ret[0] == '^') {
+                if (helpfile && !help_button_done) {
+                    aw_msg->callback(AW_POPUP_HELP,(AW_CL)helpfile);
+                    aw_msg->create_button("HELP", "HELP", "H");
+                    help_button_done = true;
+                }
                 aw_msg->at_newline();
                 ++ret;
             }
@@ -772,6 +786,12 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
                 aw_msg->create_autosize_button( 0,ret);
             }
             ret = strtok( NULL, "," );
+        }
+
+        if (helpfile && !help_button_done) { // if not done above
+            aw_msg->callback(AW_POPUP_HELP,(AW_CL)helpfile);
+            aw_msg->create_button("HELP", "HELP", "H");
+            help_button_done = true;
         }
 
         aw_msg->window_fit();
