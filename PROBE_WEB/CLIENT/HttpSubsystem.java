@@ -32,7 +32,6 @@ public class HttpSubsystem {
         System.out.println("Checking URL ["+where+"]:");
         System.out.println("  url.getHost()='"+url.getHost()+"'");
         System.out.println("  url.getPort()='"+url.getPort()+"'");
-        // System.out.println("  url.getDefaultPort()='"+url.getDefaultPort()+"'");
         System.out.println("  url.getPath()='"+url.getPath()+"'");
         System.out.println("  url.getQuery()='"+url.getQuery()+"'");
         System.out.println("  url.getFile()='"+url.getFile()+"'");
@@ -40,46 +39,15 @@ public class HttpSubsystem {
         System.out.println("  url.getRef()='"+url.getRef()+"'");
     }
 
-    // private static int readInputStream(InputStream in, char[])
-
     private static int streamAll(InputStream in, OutputStream out) throws Exception {
         final int bufsize       = 64*1024;
         byte[]    buffer        = new byte[bufsize];
         int       streamedBytes = 0;
 
-        // InputStreamReader  reader = new InputStreamReader(instream);
-        // OutputStreamWriter writer = new OutputStreamWriter(outstream);
-
         try {
             int readBytes = in.read(buffer);
             System.out.println("  readBytes="+readBytes+" (first)");
-            while (readBytes != -1) { // got some bytes
-                
-                out.write(buffer, 0, readBytes);
-                streamedBytes += readBytes;
-                readBytes      = in.read(buffer);
-                System.out.println("  readBytes="+readBytes);
-            }
-        }
-        catch (IOException e) {
-            Toolkit.AbortWithError("while streaming data: "+e.getMessage());
-        }
-
-        System.out.println("streamedBytes="+streamedBytes);
-        return streamedBytes;
-    }
-    private static int streamAll_old(Reader in, Writer out) throws Exception {
-        final int bufsize       = 64*1024;
-        char[]    buffer        = new char[bufsize];
-        int       streamedBytes = 0;
-
-        // InputStreamReader  reader = new InputStreamReader(instream);
-        // OutputStreamWriter writer = new OutputStreamWriter(outstream);
-
-        try {
-            int readBytes = in.read(buffer);
-            System.out.println("  readBytes="+readBytes+" (first)");
-            while (readBytes != -1) { // got some bytes
+            while (readBytes != -1) { // got some bytes                
                 out.write(buffer, 0, readBytes);
                 streamedBytes += readBytes;
                 readBytes      = in.read(buffer);
@@ -101,22 +69,9 @@ public class HttpSubsystem {
         try {
             URL url = new URL(baseUrl, relativePath);
 
-            // showUrlInfo("creation", url);
-
             try {
-                // System.out.println("Generating request to '"+relativePath+"'");
                 HttpURLConnection request = (HttpURLConnection)url.openConnection();
 
-//                 {
-//                     Permission perm = request.getPermission();
-//                     if (perm != null) {
-//                         System.out.println("Found permission[1]:");
-//                         System.out.println(" perm.toString()='"+perm.toString()+"'");
-//                         System.out.println(" perm.getName()='"+perm.getName()+"'");
-//                     }
-//                 }
-
-                // System.out.println("connecting request");
                 try {
                     request.connect();
                 }
@@ -124,21 +79,6 @@ public class HttpSubsystem {
                     throw new Exception("can't connect "+e.getMessage());
                     // Note : e.getMessage only contains the servername
                 }
-
-                // showUrlInfo("after connect", url);
-
-                // if (request.usingProxy()) {
-                    // System.out.println("* proxy is used");
-                // }
-
-//                 {
-//                     Permission perm = request.getPermission();
-//                     if (perm != null) {
-//                         System.out.println("Found permission[2]:");
-//                         System.out.println(" perm.toString()='"+perm.toString()+"'");
-//                         System.out.println(" perm.getName()='"+perm.getName()+"'");
-//                     }
-//                 }
 
                 int response_code = request.getResponseCode();
                 if (response_code != 200) {
@@ -152,30 +92,9 @@ public class HttpSubsystem {
                 }
 
                 int content_len = request.getContentLength();
-//                 if (content_len == -1) {
-//                     System.out.println("content_len is unknown");
-//                 }
-//                 else {
-//                     System.out.println("content_len='"+content_len+"'");
-//                 }
-
-//                 Reader in = null;
-//                 if (content_type.equals("text/plain")) {
-//                     in = new InputStreamReader(request.getInputStream());
-//                 }
-//                 else if (content_type.equals("application/octet-stream")) {
-//                     in = ;
-//                 }
-//                 else {
-//                     throw new Exception("Unhandled content-type '"+content_type+"'");
-//                 }
-
-                int bytes_read = streamAll(request.getInputStream(), out);
+                int bytes_read  = streamAll(request.getInputStream(), out);                
                 if (bytes_read != content_len && content_len != -1) {
                     System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
-                }
-                else {
-                    System.out.println("length is correct");
                 }
                 return bytes_read;
             }
@@ -192,8 +111,6 @@ public class HttpSubsystem {
     }
 
     public String conductRequest(String relativePath) {
-        // StringWriter str = new StringWriter(1000);
-        
         ByteArrayOutputStream str     = new ByteArrayOutputStream(10000);
         int                   written = conductRequest_internal(relativePath, "text/plain", str);
 
@@ -201,39 +118,22 @@ public class HttpSubsystem {
             lastRequestError = "written="+written+" (illegal value)";
         }
 
-        if (lastRequestError != null) {
-            return null;
-        }
-        else {
-            String result = str.toString();
-            // System.out.println("conductRequest result: '"+result+"'");
-
-            return result;
-        }
+        return lastRequestError == null ? str.toString() : null;
     }
 
     public String downloadZippedTree(String fileName) {
         try {
             Toolkit.showMessage("  to file "+fileName);
-            // FileWriter outfile          = new FileWriter(fileName);
             FileOutputStream outstream     = new FileOutputStream(fileName);
-            // int streamedBytes           = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
             int              streamedBytes = conductRequest_internal("getTreeBinary.cgi", "application/octet-stream", outstream);
 
-            // System.out.println("downloaded tree (lastRequestError="+lastRequestError+")");
-            // outstream.write(response, 0, response.length);
-
             outstream.close();
-
             Toolkit.showMessage("Tree has been saved ("+(streamedBytes/1024)+"k)");
         }
         catch (Exception e) {
             lastRequestError = "Can't save tree: "+e.getMessage();
         }
 
-        // byte[] response = conductRequest_internal("getTree.cgi", "text/gzipped");
-        // if (response != null) {
-        // }
         return lastRequestError;
     }
 
