@@ -1,3 +1,22 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_functions.h                                         //
+//    Purpose   :                                                        //
+//    Time-stamp: <Tue Sep/16/2003 13:06 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Haible in September 2003                            //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
+#ifndef SQ_FUNCTIONS_H
+#define SQ_FUNCTIONS_H
+
+GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
+
 void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only);
 
 void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
@@ -27,3 +46,5 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
       So, with the "weight_..."  -values one can customise how important a value stored in a contaier becomes
       for the final result.
     */
+
+#endif
