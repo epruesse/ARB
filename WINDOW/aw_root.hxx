@@ -230,6 +230,8 @@ typedef void (*Awar_CB2)(AW_root *, AW_CL, AW_CL);
 typedef void (*Awar_CB1)(AW_root *, AW_CL);
 typedef void (*Awar_CB0)(AW_root *);
 
+typedef struct gb_data_base_type GBDATA;
+
 class AW_awar {
     struct {
         struct {
@@ -249,15 +251,11 @@ class AW_awar {
 public:
     // read only
     class AW_root               *root;
-#ifdef GB_INCLUDED
     friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
 
     GBDATA           *gb_var;
     GBDATA           *gb_origin;
-#else
-    void             *gb_var;
-    void             *gb_origin;
-#endif
+    
     // read only
     void              run_callbacks();
     void              update_target(AW_var_target*pntr);
@@ -320,9 +318,7 @@ public:
 };
 
 bool ARB_global_awars_initialized();
-#ifdef GB_INCLUDED
 void ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
-#endif
 
 // ----------------------------------
 //      class Awar_Callback_Info
@@ -360,6 +356,6 @@ public:
     AW_root *get_root() { return awr; }
 };
 
-
-
+#else
+#error aw_root.hxx included twice
 #endif
