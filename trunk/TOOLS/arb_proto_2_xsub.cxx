@@ -7,13 +7,19 @@ int main(int argc, char **argv)
 {
     if (argc <= 2) {
 	fprintf(stderr,"arb_proto_2_xsub converts GB_prototyes to perl interface\n");
+	fprintf(stderr,"Usage: arb_proto_2_xsub <prototypes.h> <xs-header>\n");
+	fprintf(stderr,"<xs-header> may contain prototypes. Those will not be overwritten!!!\n");
 	return(-1);
     }
     char *data = GB_read_file(argv[1]);
     if (!data){
 	GB_print_error();
-	exit(0);
+	exit(EXIT_FAILURE);
     }
+
+    /* read old version (i.e. ARB.xs.default)
+       and put all existing functions to exclude hash */
+
     char *head = GB_read_file(argv[2]);
     printf("%s",head);
 	
@@ -29,7 +35,8 @@ int main(int argc, char **argv)
 	    }
 	}
     }
-	
+
+    
     data = GBS_string_eval(data,
 			   "\nchar=\nschar"	// strdupped char
 			   ":const ="
@@ -42,13 +49,27 @@ int main(int argc, char **argv)
 			   ":GB_BOOL =int "
 			   ":GB_UNDO_TYPE =char \\*"
 			   ,0);
+			   
+
     char *tok;
     void *gb_out = GBS_stropen(100000);
     void *gbt_out = GBS_stropen(100000);
 	
     for (tok = strtok(data,";\n");tok;tok= strtok(0,";\n")){
-	    
+      //      	fprintf(stderr,"Hmmm='%s'\n",tok);
+
+      if (strpbrk(tok,"#{}")) continue;
+	// ignore blocks like:
+	//
+	//#ifdef __cplusplus
+	//extern "C" {
+	//#endif
+	//#ifdef __cplusplus
+	//}
+	//#endif
+
 	/* exclude some functions  because of type problems */
+	if (strstr(tok,"NOT4PERL")) continue;
 	if (strstr(tok,"struct")) continue;
 	if (strstr(tok,"GBDATA_SET")) continue;
 	if (strstr(tok,"UINT4 *")) continue;
@@ -57,19 +78,24 @@ int main(int argc, char **argv)
 	if (strstr(tok,"GBQUARK")) continue;
 	if (strstr(tok,"GB_HASH")) continue;
 	if (strstr(tok,"GBT_TREE")) continue;
-	if (strstr(tok,"GB_CTREE")) continue;
 	if (strstr(tok,"GB_Link_Follower")) continue;
 	if (strstr(tok,"GB_alignment_type")) continue;
 	if (strstr(tok,"GB_COMPRESSION_MASK")) continue;
 	if (strstr(tok,"float *")) continue;
 	if (strstr(tok,"**")) continue;
 	if (!GBS_string_cmp(tok,"*(*(*)(*",0)) continue; // no function parameters
+	if (strstr(tok,"GB_CB")) continue; // this is a function parameters as well	
+
+	//	fprintf(stderr,"Good='%s'\n",tok);
 
 	/* extract function type */
 	char *sp = strchr(tok,' ');
 	const char *type = 0;
 	{
-	    if (!sp) exit(0);
+	    if (!sp) {
+	      fprintf(stderr, "Space expected in '%s'\n",tok);
+	      exit(EXIT_FAILURE);
+	    }
 	    if (sp[1] == '*') sp++;	// function type
 	    int c = sp[1];
 	    sp[1] = 0;
@@ -92,7 +118,10 @@ int main(int argc, char **argv)
 	    
 	tok = sp+1;
 	sp = strchr(tok,' ');
-	if (!sp) exit(0);
+	if (!sp) {
+	  fprintf(stderr, "Space expected in '%s'\n",tok);	  
+	  exit(EXIT_FAILURE);
+	}
 	*(sp++) = 0;
 
 	/* exclude some funtions */
@@ -107,6 +136,8 @@ int main(int argc, char **argv)
 		
 	char *perl_func_name = GBS_string_eval(func_name,"GBT_=P2AT_:GB_=P2A_",0);
 	if (GBS_read_hash(exclude_hash,perl_func_name)) continue;
+	GBS_write_hash(exclude_hash,perl_func_name,1); // don't list functions twice
+
 	
 	char *line = GBS_string_eval(sp,"P_(=:(=:)=",0);
 	char *p;
@@ -155,5 +186,6 @@ int main(int argc, char **argv)
     printf("%s",GBS_strclose(gb_out,0));
     printf("MODULE = ARB   PACKAGE = BIO  PREFIX = P2AT_\n\n");
     printf("%s",GBS_strclose(gbt_out,0));
-    return 0;
+
+    return EXIT_SUCCESS;
 }

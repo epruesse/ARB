@@ -1891,7 +1891,7 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
     return GBS_strclose(out, 1);
 }
 
-GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
+NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
     /* call function 'doit' with all species stored in 'stored' */
 
 #define MAX_NAME_LEN 20
