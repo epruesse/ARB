@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : probe_match_parser.hxx                                 // 
 //    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Wed Jun/09/2004 09:03 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Thu Jun/10/2004 13:58 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
@@ -55,7 +55,7 @@ public:
     int get_position() const;
     const char *get_probe_region() const;
 
-    char *get_column_content(const char *columnName) const;
+    char *get_column_content(const char *columnName, bool chop_spaces) const;
 };
 
 
