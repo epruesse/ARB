@@ -34,6 +34,10 @@
 
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
 
+// general awars
+
+#define AWAR_PROBE_USE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
+
 // probe match awars
 
 // #define AWAR_PD_MATCH_ITEM     AWAR_SPECIES_NAME
@@ -196,33 +200,53 @@ char *probe_pt_look_for_server(AW_root *root)
     return GBS_read_arb_tcp(choice);
 }
 
-char *pd_get_the_names(bytestring &bs, bytestring &checksum){
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    GBDATA  *gb_data;
-    long    len;
+static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required) {
+    GBDATA     *gb_species_name = GB_find(gb_species, "name", 0, down_level);
+    const char *name            = "unnamed (which is a dangerous error)";
+    if (gb_species_name) name   = GB_read_char_pntr(gb_species_name);
 
-    void *names = GBS_stropen(1024);
-    void *checksums = GBS_stropen(1024);
+    return GBS_global_string("Species '%s' needs %s", name, whats_required);
+}
+
+static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
+    GBDATA     *gb_gene_name    = GB_find(gb_gene, "name", 0, down_level);
+    const char *gene_name       = "unnamed (which is a dangerous error)";
+    if (gb_gene_name) gene_name = GB_read_char_pntr(gb_gene_name);
+
+    GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
+    pd_assert(gb_species);
+
+    GBDATA     *gb_species_name       = GB_find(gb_species, "name", 0, down_level);
+    const char *species_name          = "unnamed (which is a dangerous error)";
+    if (gb_species_name) species_name = GB_read_char_pntr(gb_species_name);
+
+    return GBS_global_string("Gene '%s' of organism '%s' needs %s", gene_name, species_name, whats_required);
+}
+
+GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
+    void     *names     = GBS_stropen(1024);
+    void     *checksums = GBS_stropen(1024);
+    GB_ERROR  error     = 0;
 
     GB_begin_transaction(gb_main);
+
     char *use = GBT_get_default_alignment(gb_main);
 
-    len = 0;
-    for (gb_species = GBT_first_marked_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_marked_species(gb_species) ){
-        gb_name = GB_find(gb_species, "name", 0, down_level);
-        if (!gb_name) continue;
-        gb_data = GBT_read_sequence(gb_species, use);
-        if(!gb_data){
-            return (char *)GB_export_error("Species '%s' has no sequence '%s'", GB_read_char_pntr(gb_name), use);
-        }
+    for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
+        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+        if (!gb_name) { error = species_requires(gb_species, "name"); break; }
+
+        GBDATA *gb_data = GBT_read_sequence(gb_species, use);
+        if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
+        
         GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
         GBS_strcat(names, GB_read_char_pntr(gb_name));
         GBS_chrcat(checksums, '#');
         GBS_chrcat(names, '#');
     }
+
+    free(use);
+
     bs.data = GBS_strclose(names, 0);
     bs.size = strlen(bs.data)+1;
 
@@ -230,58 +254,69 @@ char *pd_get_the_names(bytestring &bs, bytestring &checksum){
     checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
-    return 0;
+
+    return error;
 }
 
-char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
-    GBDATA *gb_species;
-    GBDATA *gb_gene;
-    GBDATA *gb_name;
-    GBDATA  *gb_data;
-    GBDATA *gene_pos_begin_ptr;
-    GBDATA *gene_pos_end_ptr;
-    //     GBDATA *gb_data_temp;
-    char *temp;
-    char *ali_genom;
-    int pos_begin,pos_end;
-
-    long    len;
-
-    void *names     = GBS_stropen(1024);
-    void *checksums = GBS_stropen(1024);
-
-
-    // @@@ FIXME: this function has several memory leaks! 
+GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
+    void     *names     = GBS_stropen(1024);
+    void     *checksums = GBS_stropen(1024);
+    GB_ERROR  error     = 0;
 
     GB_begin_transaction(gb_main);
-    char *use = GBT_get_default_alignment(gb_main);
+    const char *use = "ali_genom"; // gene pt server is always build on 'ali_genom'
 
-    len = 0;
-    for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
-        for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
-            gb_name = GB_find(gb_gene, "name", 0, down_level);
-            if (!gb_name) continue;
-            gb_data = GBT_read_sequence(gb_species, use);
-            if(!gb_data){
-                return (char *)GB_export_error("Species '%s' has no sequence '%s'", GB_read_char_pntr(gb_name), use);
+    for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
+        const char *sequence     = 0;
+        const char *species_name = 0;
+        {
+            GBDATA *gb_data = GBT_read_sequence(gb_species, use);
+            if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
+            sequence = GB_read_char_pntr(gb_data);
+            
+            GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
+            if (!gb_name) { error = species_requires(gb_species, "name"); break; }
+            species_name = GB_read_char_pntr(gb_name);
+        }
+
+        for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
+            const char *gene_name = 0;
+            {
+                GBDATA *gb_gene_name = GB_find(gb_gene, "name", 0, down_level);
+                if (!gb_gene_name) { error = gene_requires(gb_gene, "name"); break; }
+                gene_name = GB_read_char_pntr(gb_gene_name);
             }
 
-            gene_pos_begin_ptr = GB_find(gb_gene,"pos_begin",0,down_level);
-            gene_pos_end_ptr = GB_find(gb_gene,"pos_end",0,down_level);
-            pos_begin = GB_read_int(gene_pos_begin_ptr)-1;
-            pos_end = GB_read_int(gene_pos_end_ptr)-1;
-            ali_genom = GB_read_char_pntr(gb_data);
-            temp = new char[pos_end - pos_begin + 2];
-            ali_genom += pos_begin;
-            strncpy(temp,ali_genom,pos_end - pos_begin + 1);
-            temp[pos_end - pos_begin + 1]= '\0';
+            long checksum;
+            {
+                GBDATA *gb_gene_pos_begin = GB_find(gb_gene, "pos_begin", 0, down_level);
+                if (!gb_gene_pos_begin) { error = gene_requires(gb_gene, "pos_begin"); break; }
 
-            GBS_intcat(checksums, GBS_checksum(temp, 1, ".-"));
-            GBS_strcat(names, GB_read_char_pntr(gb_name));
+                GBDATA *gb_gene_pos_end = GB_find(gb_gene,"pos_end",0,down_level);
+                if (!gb_gene_pos_end) { error = gene_requires(gb_gene, "pos_end"); break; }
+
+                int pos_begin = GB_read_int(gb_gene_pos_begin)-1;
+                int pos_end   = GB_read_int(gb_gene_pos_end)-1;
+
+                int   len      = pos_end-pos_begin+1;
+                char *gene_seq = new char[len+1];
+                strncpy(gene_seq, sequence+pos_begin, len);
+                gene_seq[len]  = 0;
+
+                checksum = GBS_checksum(gene_seq, 1, ".-");
+
+                // @@@ FIXME: what to do with splitted genes ?
+            }
+
+            const char *id = GBS_global_string("%s/%s", species_name, gene_name);
+
+            GBS_intcat(checksums, checksum);
+            GBS_strcat(names, id);
             GBS_chrcat(checksums, '#');
             GBS_chrcat(names, '#');
         }
     }
+
     bs.data = GBS_strclose(names, 0);
     bs.size = strlen(bs.data)+1;
 
@@ -289,7 +324,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
-    return 0;
+    return error;
 }
 
 int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
@@ -337,14 +372,14 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 
 void probe_design_event(AW_window *aww)
 {
-    AW_root *root = aww->get_root();
-    char    *servername;
-    T_PT_PDC  pdc;
-    T_PT_TPROBE tprobe;
-    bytestring bs;
-    bytestring check;
-    char    *match_info;
-    const char  *error = 0;
+    AW_root     *root  = aww->get_root();
+    char        *servername;
+    T_PT_PDC     pdc;
+    T_PT_TPROBE  tprobe;
+    bytestring   bs;
+    bytestring   check;
+    char        *match_info;
+    GB_ERROR     error = 0;
 
     aw_openstatus("Probe Design");
     aw_status("Search a free running server");
@@ -471,16 +506,12 @@ void probe_design_event(AW_window *aww)
     aw_status("Read the results from the server");
     {
         char *locs_error = 0;
-        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                      LOCS_ERROR    ,&locs_error,
-                      0)){
+        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, 0)) {
             aw_message ("Connection to PT_SERVER lost (1)");
             aw_closestatus();
             return;
         }
-        if (*locs_error) {
-            aw_message(locs_error);
-        }
+        if (*locs_error) aw_message(locs_error);
         free(locs_error);
     }
 
@@ -581,59 +612,54 @@ void probe_design_event(AW_window *aww)
 
 void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr)
 {
-    AW_selection_list *selection_id = (AW_selection_list*)cl_selection_id;
-    int *counter = (int*)cl_count_ptr;
-    AW_root *root = aww->get_root();
-    char    *servername;
-    char    result[1024];
-    T_PT_PDC  pdc;
-    T_PT_MATCHLIST match_list;
-    char *match_info, *match_name;
-    int mark;
-    char    *probe;
-    char    *locs_error;
+    AW_selection_list *selection_id    = (AW_selection_list*)cl_selection_id;
+    int               *counter         = (int*)cl_count_ptr;
+    AW_root           *root            = aww->get_root();
+    char               result[1024];
+    T_PT_PDC           pdc;
+    T_PT_MATCHLIST     match_list;
+    char              *match_info, *match_name;
+    int                mark;
+    char              *probe;
+    char              *gene_str        = 0;
+    char              *gene_match_name;
+    int                show_status     = 0;
+    int                extras          = 1; // mark species and write to temp fields,
 
-    GBDATA *gb_species_data = 0;
-    GBDATA *gb_species;
-    GBDATA *gb_gene;
-    int     gene_flag       = 0;
-    char   *gene_str        = 0;
-    char   *ptrptr          = 0;
-    char   *gene_match_name;
-    int     show_status     = 0;
-    int     extras          = 1; // mark species and write to temp fields,
+    {
+        char *servername;
+        if( !(servername=(char *)probe_pt_look_for_server(root)) ){
+            return;
+        }
 
-    if( !(servername=(char *)probe_pt_look_for_server(root)) ){
-        return;
+        if (selection_id) {
+            aww->clear_selection_list(selection_id);
+            pd_assert(!counter);
+            show_status = 1;
+        }
+        else if (counter) {
+            extras = 0;
+        }
+
+        if (show_status) {
+            aw_openstatus("Probe Match");
+            aw_status("Open Connection");
+        }
+
+        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+        free (servername);
     }
-
-    if (selection_id) {
-        aww->clear_selection_list(selection_id);
-        pd_assert(!counter);
-        show_status = 1;
-    }
-    else if (counter) {
-        extras = 0;
-    }
-
-    if (show_status) {
-        aw_openstatus("Probe Match");
-        aw_status("Open Connection");
-    }
-
-    pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-    free (servername); servername = 0;
 
     if (!pd_gl.link) {
         if (show_status) {
-            aw_message ("Cannot contact Probe bank server ");
+            aw_message ("Cannot contact PT-server");
             aw_closestatus();
         }
         return;
     }
     if (show_status) aw_status("Initialize Server");
     if (init_local_com_struct() ) {
-        aw_message ("Cannot contact Probe bank server (2)");
+        aw_message ("Cannot contact PT-server (2)");
         if (show_status) aw_closestatus();
         return;
     }
@@ -666,7 +692,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
 
     char *matchName, *tmpMatchInfo, *tmpProbe;
-    g_spd = new saiProbeData; 
+    g_spd = new saiProbeData;
 
     if (selection_id) {
         sprintf(result, "Searched for                                     %s",probe);
@@ -676,24 +702,28 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
     free(probe);
 
-    long match_list_cnt;
+    long       match_list_cnt;
     bytestring bs;
     bs.data = 0;
     if (show_status) aw_status("Read the Results");
-    if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_LIST,  &match_list,
-                  LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-                  LOCS_MATCH_STRING,    &bs,
-                  LOCS_ERROR,       &locs_error,
-                  0)){
-        aw_message ("Connection to PT_SERVER lost (3)");
-        if (show_status) aw_closestatus();
+
+    {
+        char *locs_error;
+        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
+                      LOCS_MATCH_LIST,     &match_list,
+                      LOCS_MATCH_LIST_CNT, &match_list_cnt,
+                      LOCS_MATCH_STRING,   &bs,
+                      LOCS_ERROR,          &locs_error,
+                      0))
+        {
+            aw_message ("Connection to PT_SERVER lost (3)");
+            if (show_status) aw_closestatus();
+        }
+
+        if (*locs_error) aw_message(locs_error);
+        free(locs_error);
     }
 
-    if (*locs_error) {
-        aw_message(locs_error);
-    }
-    free(locs_error);
     root->awar(AWAR_PD_MATCH_NHITS)->write_int(match_list_cnt);
 
     if (show_status) aw_status("Parse the Results");
@@ -704,6 +734,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     toksep[1] = 0;
     char *hinfo = strtok(bs.data,toksep);
 
+    int gene_flag = 0;
     if (hinfo) {
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
         if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
@@ -714,127 +745,179 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     mark            = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
     int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
 
-    if (gb_main){
-        GB_push_transaction(gb_main);
-        gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-        if (mark) {
-            if (show_status) aw_status("Unmark all species");
-            for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
-                 gb_species;
-                 gb_species = GBT_next_marked_species(gb_species) )
-            {
-                GB_write_flag(gb_species,0);
-                if (gene_flag) {
-                    for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
-                        GB_write_flag(gb_gene,0);
-                    }
+    if (!gb_main) {
+        aw_message("No database");
+        if (show_status) aw_closestatus();
+        return;
+    }
+
+
+    GB_push_transaction(gb_main);
+    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    if (mark) {
+        if (show_status) aw_status(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
+        for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+             gb_species;
+             gb_species = GBT_next_marked_species(gb_species))
+        {
+            GB_write_flag(gb_species,0);
+            if (gene_flag) {
+                for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species);
+                     gb_gene;
+                     gb_gene = GEN_next_marked_gene(gb_gene))
+                {
+                    GB_write_flag(gb_gene,0);
                 }
             }
         }
-        if (write_2_tmp){
-            if (show_status) aw_status("Delete all old tmp fields");
-            for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
-                 gb_species;
-                 gb_species = GBT_next_species(gb_species) )
-            {
-                GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
-                if (gb_tmp) GB_delete(gb_tmp);
+    }
+    if (write_2_tmp){
+        if (show_status) aw_status("Deleting old 'tmp' fields");
+        for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
+             gb_species;
+             gb_species = GBT_next_species(gb_species) )
+        {
+            GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
+            if (gb_tmp) GB_delete(gb_tmp);
+            if (gene_flag) {
+                for (GBDATA *gb_gene = GEN_first_gene(gb_species);
+                     gb_gene;
+                     gb_gene = GEN_next_gene(gb_species))
+                {
+                    gb_tmp = GB_find(gb_gene, "tmp", 0, down_level);
+                    if (gb_tmp) GB_delete(gb_tmp);
+                }
             }
         }
     }
 
-    if (show_status) aw_status("Parse the Results");
+    // read results from pt-server : 
 
-    g_spd->probeSpecies.clear(); 
+    if (show_status) aw_status("Parsing results..");
+
+    g_spd->probeSpecies.clear();
     g_spd->probeSeq.clear();
 
-    while (hinfo && (match_name = strtok(0,toksep)) ) {
+    GB_ERROR error = 0;
+
+    while (hinfo && !error && (match_name = strtok(0,toksep)) ) {
         match_info = strtok(0,toksep);
         if (!match_info) break;
         if (gene_flag) {
-            char *temp_gene_str = new char[strlen(match_info)+1];
-            strcpy(temp_gene_str,match_info);
-            temp_gene_str[strlen(temp_gene_str)] = '\0';
-            gene_str      = strtok_r(temp_gene_str," ",&ptrptr);
-            gene_str      = strtok_r(NULL," ",&ptrptr);
+            // parse the gene name:
+            int off = 0;
+            while (match_info[off] == ' ') ++off; // search first non-space ( = start of species name)
 
-            //an dieser Stelle muss strtok_r verwendet werden, da strtok immer nur auf einer
-            //Zeichenkette arbeiten kann und bei Verwendung für eine 2. Zeichenkette der Zeiger auf die erste verloren geht.
-            //Bei strtok_r kann der Zeiger gespeichert werden (hier ptrptr).
-            //strtok würde match_name verlieren
+            char *space1       = strchr(match_info+off, ' '); // space between species and gene name
+            char *space2       = 0;
+            if (space1) space2 = strchr(space1+1, ' '); // space after gene name
 
-            //if (gene_str) gene_str = strdup(gene_str);
-            delete [] temp_gene_str;
+            if (space1 && space2) { // ok - parsing sucessful
+                int len       = space2-space1-1;
+                delete [] gene_str;
+                gene_str      = new char[len+1];
+                memcpy(gene_str, space1+1, len);
+                gene_str[len] = 0;
+            }
+            else {
+                error = "cannot parse gene name from match result";
+            }
         }
-        
-        char flag = 'x';
-        if (gb_main){
-            gb_species = GBT_find_species_rel_species_data(gb_species_data,match_name);
+
+        if (!error) {
+            char flags[]       = "xx";
+            GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, match_name);
 
             if (gb_species) {
-                if (mark) {
-                    GB_write_flag(gb_species,1);
-                    if (gene_flag) {
-                        if (strcmp(gene_str,"intron")) {
-                            gb_gene = GEN_find_gene(gb_species,gene_str);
-                            GB_write_flag(gb_gene,1);
-                        }
+                GBDATA *gb_gene = 0;
+                if (gene_flag && strncmp(gene_str,"intergene_", 10) != 0) { // real gene
+                    gb_gene = GEN_find_gene(gb_species,gene_str);
+                    if (!gb_gene) {
+                        aw_message(GBS_global_string("Gene '%s' not found in organism '%s'", gene_str, match_name));
                     }
-                    flag = '*';
+                }
+
+                if (mark) {
+                    GB_write_flag(gb_species, 1);
+                    flags[0] = '*';
+                    if (gb_gene) {
+                        GB_write_flag(gb_gene, 1);
+                        flags[1] = '*';
+                    }
+                    else {
+                        flags[1] = '?'; // no gene
+                    }
                 }
                 else {
-                    flag = GB_read_flag(gb_species) ? '*' : ' ';
+                    flags[0] = " *"[GB_read_flag(gb_species)];
+                    flags[1] = " *?"[gb_gene ? GB_read_flag(gb_gene) : 2];
                 }
 
                 if (write_2_tmp) {
-                    GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
-                    if (!gb_tmp) {
-                        gb_tmp = GB_search(gb_species,"tmp",GB_STRING);
+                    GBDATA   *gb_tmp = 0;
+                    GB_ERROR  error  = 0;
+                    {
+                        GBDATA *gb_parent = gene_flag ? gb_gene : gb_species;
+                        gb_tmp            = GB_search(gb_parent, "tmp", GB_FIND);
                         if (gb_tmp) {
-                            GB_ERROR error = GB_write_string(gb_tmp,match_info);
-                            if (error) aw_message(error);
+                            const char *name    = "<unknown>";
+                            GBDATA     *gb_name = GB_search(gb_parent, "name", GB_FIND);
+                            if (gb_name) name   = GB_read_char_pntr(gb_name);
+                            error               = GBS_global_string("field 'tmp' already exists for %s '%s'", gene_flag ? "gene" : "species", name);
+                            gb_tmp              = 0; // don't overwrite
                         }
                         else {
-                            aw_message(GB_get_error());
+                            gb_tmp = GB_search(gb_species, "tmp", GB_STRING);
                         }
                     }
+
+                    if (!error) {
+                        pd_assert(gb_tmp);
+                        error = GB_write_string(gb_tmp,match_info);
+                    }
+
+                    if (error) aw_message(error);
                 }
             }
             else {
-                flag = '?';
+                flags[0] = flags[1] = '?'; // species does not exist
             }
-        }
-        else {
-            flag = '.';
-        }
-        sprintf(result, "%c %s", flag, match_info);
 
-        if (gene_flag) {
-            gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
-            sprintf(gene_match_name,"%s/%s",match_name,gene_str);
-            if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
-        }
-        else {
-            if (selection_id)  aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
 
-            if(selection_id) {  //storing probe data into linked lists
-                tmpMatchInfo = strdup((const char*) match_info);
-                g_spd->probeSeq.push_back(tmpMatchInfo);
-
-                matchName = strdup((const char*) match_name);
-                g_spd->probeSpecies.push_back(matchName);
+            if (gene_flag) {
+                sprintf(result, "%s %s", flags, match_info+1); // both flags (skip 1 space from match info to keep alignment)
+                gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
+                sprintf(gene_match_name,"%s/%s",match_name,gene_str);
+                if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
             }
+            else {
+                sprintf(result, "%c %s", flags[0], match_info); // only first flag ( = species related)
+                if (selection_id)  aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+
+                if(selection_id) {  //storing probe data into linked lists
+                    tmpMatchInfo = strdup((const char*) match_info);
+                    g_spd->probeSeq.push_back(tmpMatchInfo);
+
+                    matchName = strdup((const char*) match_name);
+                    g_spd->probeSpecies.push_back(matchName);
+                }
+            }
+            mcount++;
         }
-        mcount++;
     }
 
-    if (g_spd)  transferProbeData(g_spd);               // to update probe list in sai probe match window
-    root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //update probe list if probe match results changed
+    if (!error) {
+        if (g_spd)  transferProbeData(g_spd); // to update probe list in sai probe match window
+        root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //update probe list if probe match results changed
+    }
+    else {
+        aw_message(error);
+    }
 
     if (counter) *counter = mcount;
 
-    delete bs.data;
-    free(gene_str);
+    free(bs.data);
+    delete [] gene_str;
     if (gb_main) GB_pop_transaction(gb_main);
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -914,6 +997,8 @@ static void selected_match_changed_cb(AW_root *root) {
         root->awar(AWAR_SPECIES_NAME)->write_string(selected_match);
     }
 
+    root->awar(AWAR_TARGET_STRING)->touch(); // forces editor to jump to probe match in gene 
+    
     free(selected_match);
 }
 
@@ -1001,12 +1086,12 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
     root->awar_int( AWAR_PROBE_ADMIN_PT_SERVER, 0  ,    db1);
+    root->awar_int( AWAR_PROBE_USE_GENE_SERVER, 0  ,    db1);
     root->awar_string(AWAR_SAI_2_PROBE, "", global); // probe and sai visualization
-    //    root->awar_string(AWAR_SAI_COLOR_STR, "", global);
-
-//     for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
-//        AW_awar *def_awar = root->awar_string(getAwarName(i),"",global);
-//      }
+    // root->awar_string(AWAR_SAI_COLOR_STR, "", global);
+    // for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
+    //  AW_awar *def_awar = root->awar_string(getAwarName(i),"",global);
+    // }
 }
 /*
 AW_window *create_fig( AW_root *root, char *file)  {
@@ -1458,27 +1543,10 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
 
     aws->at( "mismatches" );
     aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL , "" );
-    aws->insert_default_option( "SEARCH UP TO NULL MISMATCHES", "", 0 );
-    aws->insert_option( "SEARCH UP TO 1 MISMATCHES", "", 1 );
-    aws->insert_option( "SEARCH UP TO 2 MISMATCHES", "", 2 );
-    aws->insert_option( "SEARCH UP TO 3 MISMATCHES", "", 3 );
-    aws->insert_option( "SEARCH UP TO 4 MISMATCHES", "", 4 );
-    aws->insert_option( "SEARCH UP TO 5 MISMATCHES", "", 5 );
-    aws->insert_option( "SEARCH UP TO 6 MISMATCHES", "", 6 );
-    aws->insert_option( "SEARCH UP TO 7 MISMATCHES", "", 7 );
-    aws->insert_option( "SEARCH UP TO 8 MISMATCHES", "", 8 );
-    aws->insert_option( "SEARCH UP TO 9 MISMATCHES", "", 9 );
-    aws->insert_option( "SEARCH UP TO 10 MISMATCHES", "", 10 );
-    aws->insert_option( "SEARCH UP TO 11 MISMATCHES", "", 11 );
-    aws->insert_option( "SEARCH UP TO 12 MISMATCHES", "", 12 );
-    aws->insert_option( "SEARCH UP TO 13 MISMATCHES", "", 13 );
-    aws->insert_option( "SEARCH UP TO 14 MISMATCHES", "", 14 );
-    aws->insert_option( "SEARCH UP TO 15 MISMATCHES", "", 15 );
-    aws->insert_option( "SEARCH UP TO 16 MISMATCHES", "", 16 );
-    aws->insert_option( "SEARCH UP TO 17 MISMATCHES", "", 17 );
-    aws->insert_option( "SEARCH UP TO 18 MISMATCHES", "", 18 );
-    aws->insert_option( "SEARCH UP TO 19 MISMATCHES", "", 19 );
-    aws->insert_option( "SEARCH UP TO 20 MISMATCHES", "", 20 );
+    aws->insert_default_option( "Search up to zero mismatches", "", 0 );
+    for (int mm = 1; mm <= 20; ++mm) {
+        aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
+    }
     aws->update_option_menu();
 
     aws->at("tmp");
@@ -1590,25 +1658,41 @@ void pd_query_pt_server(AW_window *aww)
     delete rsh;
 }
 
-void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
+void pd_export_pt_server(AW_window *aww)
 {
-    int server_type = (int)cl_server_type;
-    AW_root  *awr = aww->get_root();
+    AW_root  *awr         = aww->get_root();
+    int       server_type = awr->awar(AWAR_PROBE_USE_GENE_SERVER)->read_int();
     char      pt_server[256];
     char     *server;
     char     *file;
-    GB_ERROR  error;
-    char     *tempfile;
-    char      command[1024];
+    GB_ERROR  error       = 0;
+
+    // check alignment first
+    if (server_type == 1) {     // gene pt server
+        GB_transaction dummy(gb_main);
+        GBDATA *gb_ali = GBT_get_alignment(gb_main, "ali_genom");
+        if (!gb_ali) {
+            error             = GB_get_error();
+            if (!error) error = "cannot find 'ali_genom'";
+        }
+    }
+    else { // normal pt server
+        GB_transaction dummy(gb_main);
+        char              *use     = GBT_get_default_alignment(gb_main);
+        GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, use);
+        if (alitype == GB_AT_AA) error = "The PT-server does only support RNA/DNA sequence data";
+        free(use);
+    }
 
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    if (aw_message(
-                   "This function will send your currently loaded data as the new data to the pt_server !!!\n"
+    if (!error &&
+        aw_message("This function will send your currently loaded data as the new data to the pt_server !!!\n"
                    "The server will need a long time (up to several hours) to analyse the data.\n"
                    "Until the new server has analyzed all data, no server functions are available.\n\n"
                    "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
                    "Note 2: The server will do the job in background,\n"
-                   "        quitting this program won't affect the server","Cancel,Do it")){
+                   "        quitting this program won't affect the server","Cancel,Do it"))
+    {
         aw_openstatus("Export db to server");
         aw_status("Search server to kill");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
@@ -1618,31 +1702,30 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
         if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
 
-#if defined(DEBUG)
-        printf ("\n\nGENSERVER: %i\n\n",server_type);
-#endif // DEBUG
-        if (server_type == 1) {
-            tempfile = (char*) malloc((strlen(file)+5));
-            strcpy (tempfile,file);
-            char *rslash = strrchr(tempfile, '/');
-            pd_assert(rslash);
-            strcpy(rslash+1,"t.arb");
-        }
-
         aw_status("Exporting the database");
-        if (server_type == 1) {
-            error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
-        }
-        else {
-            error = GB_save_as(gb_main,file,"bfm"); // save PT-server database with Fastload file
+        {
+            const char *mode = "bfm"; // save PT-server database with Fastload file
+
+            if (server_type == 1) { // gene pt server
+                char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
+                error = GB_save_as(gb_main, temp_server_name, mode);
+
+                if (!error) {
+                    // convert database (genes -> species)
+                    char *command = GBS_global_string_copy("$ARBHOME/bin/gene_probe %s %s", temp_server_name, file);
+                    printf("Executing '%s'\n", command);
+                    int result = system(command);
+                    if (result != 0) error = GBS_global_string("Couldn't convert database for gene pt server (gene_probe failed)");
+                    free(command);
+                }
+                free(temp_server_name);
+            }
+            else { // normal pt_server
+                error = GB_save_as(gb_main, file, mode);
+            }
         }
 
         if (!error) { // set pt-server database file to same permissions as pts directory
-            if (server_type == 1 ) {
-                sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
-                system(command);
-            }
-
             char *dir = strrchr(file,'/');
             if (dir) {
                 *dir = 0;
@@ -1657,11 +1740,9 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
             aw_status("Start new server");
             error = arb_start_server(pt_server,gb_main,0);
         }
-        if (error) {
-            aw_message(error);
-        }
         aw_closestatus();
     }
+    if (error) aw_message(error);
 }
 
 void pd_edit_arb_tcp(AW_window *aww){
@@ -1701,7 +1782,7 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->create_button("START_SERVER","START SERVER");
 
     aws->at( "export" );
-    aws->callback(pd_export_pt_server, 0);
+    aws->callback(pd_export_pt_server);
     aws->create_button("UPDATE_SERVER","UPDATE SERVER");
 
     aws->at( "query" );
@@ -1712,9 +1793,11 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->callback(pd_edit_arb_tcp);
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
 
-    aws->at( "export_gene" );
-    aws->callback(pd_export_pt_server, 1);
-    aws->create_button("update_genesrv","Update GeneSrv");
+    aws->at( "gene_server" );
+    aws->label("Gene server");
+    aws->create_toggle(AWAR_PROBE_USE_GENE_SERVER);
+    // aws->callback(pd_export_pt_server, 1);
+    // aws->create_button("update_genesrv","Update GeneSrv");
 
     return aws;
 }
