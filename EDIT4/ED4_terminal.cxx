@@ -507,7 +507,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                     else  {
                         if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
                             ED4_no_dangerous_modes();
-                            ED4_ROOT->temp_ed4w->cursor.show_clicked_cursor(event,this);
+                            ED4_ROOT->temp_ed4w->cursor.show_clicked_cursor(event->x, this);
                         }
                     }
                     break;
