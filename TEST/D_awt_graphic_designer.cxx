@@ -61,7 +61,7 @@ AWT_graphic_designer::AWT_graphic_designer() {
 
 AWT_graphic_designer::~AWT_graphic_designer() {;}
 
-void AWT_graphic_designer::command(AW_device*, AWT_COMMAND_MODE, int, AW_event_type, double, double,
+void AWT_graphic_designer::command(AW_device*, AWT_COMMAND_MODE, int, AW_key_mod, char, AW_event_type, double, double,
 				AW_clicked_line*, AW_clicked_text*) {;}
 
 

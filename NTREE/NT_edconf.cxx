@@ -300,9 +300,9 @@ void nt_build_sai_string(void *topfile, void *middlefile){
 		    char *cn = new char[strlen(gn) + strlen(name) + 2];
 		    sprintf(cn,"%s%c%s",gn,1,name);
 		    GBS_write_hash(hash,cn,1);
-		    delete name;
-		    delete cn;
-		    delete gn;
+		    free(name);
+		    delete [] cn;
+		    free(gn);
 		}
 	}
 

@@ -558,7 +558,7 @@ void aw_calculate_WM_offsets(AW_window *aww)
 
 void	AW_cb_struct::run_callback(void){
     AW_PPP g;
-    if (this->next) this->next->run_callback();	// callback the whole list
+    if (this->next) this->next->run_callback(); // callback the whole list
 
     AW_root *root = this->aw->get_root();
     if (!this->f) return;
@@ -567,7 +567,8 @@ void	AW_cb_struct::run_callback(void){
         if(	(this->f != (AW_CB)message_cb) &&
             (this->f != (AW_CB)macro_message_cb) &&
             (this->f != (AW_CB)input_cb) &&
-            (this->f != (AW_CB)aw_calculate_WM_offsets)	) {
+            (this->f != (AW_CB)aw_calculate_WM_offsets)	)
+        {
             return;
         }
     }
@@ -791,11 +792,12 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_
 void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     AWUSE(wgt);
     XEvent *ev = call_data->event;
-    AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
-    AW_window *aww = cbs->aw;
-    AW_BOOL run_callback = AW_FALSE;
-    AW_BOOL run_double_click_callback = AW_FALSE;
-    AW_area_management *area = 0;
+
+    AW_cb_struct       *cbs                       = (AW_cb_struct *) aw_cb_struct;
+    AW_window          *aww                       = cbs->aw;
+    AW_BOOL             run_callback              = AW_FALSE;
+    AW_BOOL             run_double_click_callback = AW_FALSE;
+    AW_area_management *area                      = 0;
     {
         int i;
         for ( i=0;i<AW_MAX_AREA;i++) {
@@ -807,12 +809,13 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
     }
 
     if(ev->xbutton.type == ButtonPress) {
-        cbs->aw->event.type	= AW_Mouse_Press;
-        cbs->aw->event.button	= ev->xbutton.button;
-        cbs->aw->event.x	= ev->xbutton.x;
-        cbs->aw->event.y	= ev->xbutton.y;
-        cbs->aw->event.keycode	= AW_KEY_NONE;
-        cbs->aw->event.character = '\0';
+        aww->event.type	       = AW_Mouse_Press;
+        aww->event.button      = ev->xbutton.button;
+        aww->event.x	       = ev->xbutton.x;
+        aww->event.y	       = ev->xbutton.y;
+        aww->event.keycode     = AW_KEY_NONE;
+        aww->event.keymodifier = AW_KEYMODE_NONE;
+        aww->event.character   = '\0';
 
         if (area && area->double_click_cb) {
             if ( (ev->xbutton.time - area->click_time ) < 200 ) {
@@ -825,20 +828,21 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
             run_callback = AW_TRUE;
         }
 
-        cbs->aw->event.time		= ev->xbutton.time;
+        aww->event.time		= ev->xbutton.time;
     }
     else if (ev->xbutton.type == ButtonRelease) {
-        cbs->aw->event.type	= AW_Mouse_Release;
-        cbs->aw->event.button	= ev->xbutton.button;
-        cbs->aw->event.x	= ev->xbutton.x;
-        cbs->aw->event.y	= ev->xbutton.y;
-        cbs->aw->event.keycode	= AW_KEY_NONE;
-        cbs->aw->event.character = '\0';
-        //	cbs->aw->event.time		use old time
+        aww->event.type	       = AW_Mouse_Release;
+        aww->event.button	   = ev->xbutton.button;
+        aww->event.x	       = ev->xbutton.x;
+        aww->event.y	       = ev->xbutton.y;
+        aww->event.keycode	   = AW_KEY_NONE;
+        aww->event.keymodifier = AW_KEYMODE_NONE;
+        aww->event.character   = '\0';
+        //	aww->event.time		use old time
 
         run_callback = AW_TRUE;
     }
-    else if (ev->xkey.type == KeyPress) {
+    else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
 
         struct awxkeymap_struct *mykey = aw_xkey_2_awkey(&(ev->xkey));
@@ -853,16 +857,22 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
             aww->event.character = 0;
         }
 
-        aww->event.type = AW_Keyboard_Press;
+        if (ev->xkey.type == KeyPress) {
+            aww->event.type = AW_Keyboard_Press;
+        }
+        else {
+            aww->event.type = AW_Keyboard_Release;
+        }
         aww->event.button = 0;
-        aww->event.x = ev->xbutton.x;
-        aww->event.y = ev->xbutton.y;
+        aww->event.x      = ev->xbutton.x;
+        aww->event.y      = ev->xbutton.y;
 
-        if (!mykey->awmod &&
-            mykey->awkey>=AW_KEY_F1 &&
-            mykey->awkey<= AW_KEY_F12 &&
-            p_aww(aww)->modes_f_callbacks &&
-            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1] )
+        if (!mykey->awmod                                         &&
+            mykey->awkey    >= AW_KEY_F1                          &&
+            mykey->awkey    <= AW_KEY_F12                         &&
+            p_aww(aww)->modes_f_callbacks                         &&
+            p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1] &&
+            aww->event.type == AW_Keyboard_Press)
         {
             p_aww(aww)->modes_f_callbacks[mykey->awkey-AW_KEY_F1]->run_callback();
         }
@@ -870,11 +880,13 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
             run_callback = AW_TRUE;
         }
     }
-    else if (ev->xkey.type == KeyRelease) { // added Jan 98 to fetch multiple keystrokes in EDIT4 (may cause side effects)
-        aww->event.time = ev->xbutton.time;
-        aww->event.type = AW_Keyboard_Release;
-        run_callback = AW_TRUE;
-    }
+
+    //  this is done above :
+    //     else if (ev->xkey.type == KeyRelease) { // added Jan 98 to fetch multiple keystrokes in EDIT4 (may cause side effects)
+    //         aww->event.time = ev->xbutton.time;
+    //         aww->event.type = AW_Keyboard_Release;
+    //         run_callback = AW_TRUE;
+    //     }
 
     if( run_double_click_callback  ) {
         if (cbs->help_text == (char*)1)  {
@@ -884,8 +896,9 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
         }
     }
 
-    if( run_callback && (cbs->help_text == (char*)0) )
+    if( run_callback && (cbs->help_text == (char*)0) ) {
         cbs->run_callback();
+    }
 }
 
 void AW_area_management::set_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -2615,8 +2628,13 @@ void AW_root::process_events(void){
 /** Returns type if key event follows, else 0 */
 
 AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/){
-    XEvent xevent;
+    XEvent  xevent;
     Boolean result = XtAppPeekEvent(p_r->context,&xevent);
+
+#if defined(DEBUG)
+    printf("peek_key_event\n");
+#endif // DEBUG
+
     if (!result) return NO_EVENT;
     if ( (xevent.type != KeyPress) && (xevent.type != KeyRelease)) return NO_EVENT;
     //XKeyEvent *kev = &xevent.xkey;

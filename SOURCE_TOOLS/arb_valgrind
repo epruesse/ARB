@@ -2,7 +2,7 @@
 
 if [ -z $1 ] ; then
     echo ''
-    echo 'Usage: arb_valgrind [-c <callers>] [-f <filter>] <arb_program> <arguments>'
+    echo 'Usage: arb_valgrind [-c <callers>] [-f <filter>] [-l [-r]] <arb_program> <arguments>'
     echo ''
     echo '    runs valgrind on that program piping results through a filter'
     echo '    so that the output can be used as emacs error messages'
@@ -10,11 +10,14 @@ if [ -z $1 ] ; then
     echo '    <callers>      show <callers> stackframes (default: none)'
     echo '                   [in fact they are always shown, but not marked as errors]'
     echo '    <filter>       regexpr to filter the reason (default: all)'
+    echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
     echo ''
     echo ''
     echo 'Usage: arb_valgrind update'
     echo ''
-    echo '    Updates the source file list (needed to create correct error message)'
+    echo '    Updates the source file list which is needed to create correct file refs.'
+    echo '    Called automatically by normal use if list is missing.'
+    echo '    Call if files are not highlighted as errors (i.e if you have new files).'
     echo ''
     echo 'Environment:'
     echo ''
@@ -27,7 +30,7 @@ if [ -z $1 ] ; then
     echo 'Note: I use this from inside emacs as follows:'
     echo '          M-x compile'
     echo '      with:'
-    echo '          (cd $ARBHOME;make nt) && arb_valgrind arb_ntree ~/ARB/demo.arb'
+    echo '          (cd $ARBHOME;make nt) && arb_valgrind -l arb_ntree ~/ARB/demo.arb'
     echo ''
 
 else
@@ -42,6 +45,7 @@ else
     RUN=0
     CALLERS=0
     FILTER='.*'
+    LEAK_CHECK=''
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -50,14 +54,31 @@ else
         UPDATE=1
     else
         RUN=1
-        if [ $1 = '-c' ] ; then
-            CALLERS=$2
-            shift 2
-        fi
-        if [ $1 = '-f' ] ; then
-            FILTER=$2
-            shift 2
-        fi
+        SCAN_ARGS=1
+
+        while [ $SCAN_ARGS = 1 ] ; do
+            SCAN_ARGS=0
+            if [ $1 = '-c' ] ; then
+                CALLERS=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ $1 = '-f' ] ; then
+                FILTER=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ $1 = '-l' ] ; then
+                LEAK_CHECK='--leak-check=yes --leak-resolution=high'
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ $1 = '-r' ] ; then
+                LEAK_CHECK="$LEAK_CHECK --show-reachable=yes"
+                shift 1
+                SCAN_ARGS=1
+            fi
+        done
     fi
 
     if [ $UPDATE = 1 ] ; then
@@ -69,7 +90,7 @@ else
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
-        valgrind --leak-check=yes --num-callers=10 $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
+        valgrind -v --num-callers=10 $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
         echo 'valgrind done.'
     fi
 fi

@@ -17,6 +17,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2002/12/17 10:36:40  westram
+ * valgrinded
+ *
  * Revision 1.2  2001/06/06 18:34:19  westram
  * changes for color groups (working for gene map)
  *
@@ -79,7 +82,7 @@ AWT_graphic_testbed::AWT_graphic_testbed(void):AWT_graphic() {
 // this is used for evaluating commands/actions in the canvas,
 // necessary dummies (input in the canvas, ...)
 // see AWT_dtree,cxx:AWT_graphic_tree
-void AWT_graphic_testbed::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) {
+void AWT_graphic_testbed::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) {
 	AWUSE(device); AWUSE(cmd); AWUSE(button); AWUSE(type);
 	AWUSE(x); AWUSE(y); AWUSE(cl); AWUSE(ct);
 }

@@ -137,10 +137,10 @@ void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
     AWUSE(ct);
 }
 
-//  ----------------------------------------------------------------------------------------------------------
-//      void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,
-//  ----------------------------------------------------------------------------------------------------------
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, char /*key_char*/, AW_event_type type,
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, char /*key_char*/, AW_event_type type,
                           AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AW_pos world_x;
     AW_pos world_y;

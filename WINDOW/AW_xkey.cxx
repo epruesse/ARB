@@ -9,7 +9,7 @@
 #include "aw_xkey.hxx"
 #include <arbdb.h>
 
-struct awxkeymap_struct awxkeymap[] = 
+struct awxkeymap_struct awxkeymap[] =
 {
 	{	XK_Shift_R,	XK_Left,    "Shift-Left",	AW_KEY_SHIFT,   AW_KEY_LEFT,    0},
 	{	XK_Shift_R,	XK_Right,   "Shift-Right",	AW_KEY_SHIFT,   AW_KEY_RIGHT,   0},
@@ -17,44 +17,44 @@ struct awxkeymap_struct awxkeymap[] =
 	{	XK_Shift_R,	XK_Down,    "Shift-Down",   AW_KEY_SHIFT,   AW_KEY_DOWN,    0},
 	{	XK_Shift_R,	XK_R10,     "Shift-Left",	AW_KEY_SHIFT,   AW_KEY_LEFT,    0},
 	{	XK_Shift_R,	XK_R12,     "Shift-Right",	AW_KEY_SHIFT,   AW_KEY_RIGHT,   0},
-    
+
 	{	XK_Shift_L,	XK_Left,    "Shift-Left",	AW_KEY_SHIFT,   AW_KEY_LEFT,    0},
 	{	XK_Shift_L,	XK_Right,   "Shift-Right",	AW_KEY_SHIFT,   AW_KEY_RIGHT,   0},
 	{	XK_Shift_L,	XK_Up,      "Shift-Up",	    AW_KEY_SHIFT,   AW_KEY_UP,      0},
 	{	XK_Shift_L,	XK_Down,    "Shift-Down",   AW_KEY_SHIFT,   AW_KEY_DOWN,    0},
 	{	XK_Shift_L,	XK_R10,     "Shift-Left",	AW_KEY_SHIFT,   AW_KEY_LEFT,    0},
 	{	XK_Shift_L,	XK_R12,     "Shift-Right",	AW_KEY_SHIFT,   AW_KEY_RIGHT,   0},
-    
+
 	{	XK_Meta_R,	XK_Left,    "Meta-Left",	AW_KEY_META,    AW_KEY_LEFT,    0},
 	{	XK_Meta_R,	XK_Right,   "Meta-Right",	AW_KEY_META,    AW_KEY_RIGHT,   0},
 	{	XK_Meta_R,	XK_Up,      "Meta-Up",	    AW_KEY_META,    AW_KEY_UP,      0},
 	{	XK_Meta_R,	XK_Down,    "Meta-Down",	AW_KEY_META,    AW_KEY_DOWN ,   0},
-    
+
 	{	XK_Meta_L,	XK_Left,    "Meta-Left",	AW_KEY_META,    AW_KEY_LEFT,    0},
 	{	XK_Meta_L,	XK_Right,   "Meta-Right",	AW_KEY_META,    AW_KEY_RIGHT,   0},
 	{	XK_Meta_L,	XK_Up,      "Meta-Up",	    AW_KEY_META,    AW_KEY_UP,      0},
 	{	XK_Meta_L,	XK_Down,    "Meta-Down",	AW_KEY_META,    AW_KEY_DOWN ,   0},
-    
+
 	{	XK_Alt_R,	XK_Left,    "Alt-Left",	    AW_KEY_ALT,     AW_KEY_LEFT ,   0},
 	{	XK_Alt_R,	XK_Right,   "Alt-Right",	AW_KEY_ALT,     AW_KEY_RIGHT,   0},
 	{	XK_Alt_R,	XK_Up,      "Alt-Up",	    AW_KEY_ALT,     AW_KEY_UP,      0},
 	{	XK_Alt_R,	XK_Down,    "Alt-Down",	    AW_KEY_ALT,     AW_KEY_DOWN,    0},
-    
+
 	{	XK_Alt_L,	XK_Left,    "Alt-Left",	    AW_KEY_ALT,     AW_KEY_LEFT ,   0},
 	{	XK_Alt_L,	XK_Right,   "Alt-Right",	AW_KEY_ALT,     AW_KEY_RIGHT,   0},
 	{	XK_Alt_L,	XK_Up,      "Alt-Up",	    AW_KEY_ALT,     AW_KEY_UP,      0},
 	{	XK_Alt_L,	XK_Down,    "Alt-Down",	    AW_KEY_ALT,     AW_KEY_DOWN,    0},
-    
+
 	{	XK_Control_R, XK_Left,  "Control-Left",	AW_KEY_CONTROL, AW_KEY_LEFT,    0},
 	{	XK_Control_R, XK_Right, "Control-Right",AW_KEY_CONTROL, AW_KEY_RIGHT,   0},
 	{	XK_Control_R, XK_Up,    "Control-Up",   AW_KEY_CONTROL, AW_KEY_UP,      0},
 	{	XK_Control_R, XK_Down,  "Control-Down", AW_KEY_CONTROL, AW_KEY_DOWN,    0},
-    
+
 	{	XK_Control_L, XK_Left,  "Control-Left",	AW_KEY_CONTROL, AW_KEY_LEFT,    0},
 	{	XK_Control_L, XK_Right, "Control-Right",AW_KEY_CONTROL, AW_KEY_RIGHT,   0},
 	{	XK_Control_L, XK_Up,    "Control-Up",   AW_KEY_CONTROL, AW_KEY_UP,      0},
 	{	XK_Control_L, XK_Down,  "Control-Down", AW_KEY_CONTROL, AW_KEY_DOWN,    0},
-    
+
 	{	0,	XK_Escape,	0,		AW_KEYMODE_NONE,	AW_KEY_ESCAPE , 0},
 
 	{	0,	XK_Left,	"Left",		AW_KEYMODE_NONE,	AW_KEY_LEFT , 0},
@@ -62,8 +62,8 @@ struct awxkeymap_struct awxkeymap[] =
 	{	0,	XK_Up,		"Up",		AW_KEYMODE_NONE,	AW_KEY_UP , 0},
 	{	0,	XK_Down,	"Down",		AW_KEYMODE_NONE,	AW_KEY_DOWN , 0},
 
-	{	0,		XK_R7,"Home",	AW_KEYMODE_NONE, AW_KEY_HOME , 0},
-	{	0,		XK_R13,"End",	AW_KEYMODE_NONE, AW_KEY_END , 0},
+	{	0, XK_R7,       "Home",	AW_KEYMODE_NONE, AW_KEY_HOME , 0},
+	{	0, XK_R13,      "End",	AW_KEYMODE_NONE, AW_KEY_END , 0},
 
 	{	0,	XK_F1,		0,		AW_KEYMODE_NONE,	AW_KEY_F1 , 0},
 	{	0,	XK_F2,		0,		AW_KEYMODE_NONE,	AW_KEY_F2 , 0},
@@ -142,6 +142,26 @@ struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent){
 		ind--;
 		return &awxkeymap[ind];
 	}
+
+//     if (count == 0) { // detect modifier presses
+//         // printf("special key event: state=%i keycode=%i keysym=%u\n", xkeyevent->state, xkeyevent->keycode, (unsigned int)keysym);
+//         if (keysym == XK_Meta_R || keysym == XK_Meta_L) {
+//             // printf("single Meta detected\n");
+//             singlekey.awmod = AW_KEY_META;
+//         }
+//         else if (keysym == XK_Alt_R || keysym == XK_Alt_L) {
+//             // printf("single Alt detected\n");
+//             singlekey.awmod = AW_KEY_ALT;
+//         }
+//         else if (keysym == XK_Control_R || keysym == XK_Control_L) {
+//             // printf("single Control detected\n");
+//             singlekey.awmod = AW_KEY_CONTROL;
+//         }
+//         else if (keysym == XK_Shift_R || keysym == XK_Shift_L) {
+//             // printf("single Shift detected\n");
+//             singlekey.awmod = AW_KEY_SHIFT;
+//         }
+//     }
 
 	return &singlekey;
 }

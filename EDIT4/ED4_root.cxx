@@ -39,14 +39,14 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 
 
 //*****************************************
-//* ED4_root Methods		beginning *
+//* ED4_root Methods        beginning *
 //*****************************************
 
 // ED4_returncode ED4_root::resize_all_windows( void )     // resizes all windows for updating folding actions, new groups, movements etc.
 // {
-//     ED4_window	*window, *ed4w_temp;
-//     AW_window	*aw_temp;
-//     AW_device	*dev_temp;
+//     ED4_window   *window, *ed4w_temp;
+//     AW_window    *aw_temp;
+//     AW_device    *dev_temp;
 
 //     ed4w_temp = ED4_ROOT->temp_ed4w;
 //     aw_temp   = ED4_ROOT->temp_aww;
@@ -55,16 +55,16 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 //     window = ED4_ROOT->first_window;
 //     while (window)
 //     {
-// 	ED4_ROOT->temp_aww 	= window->aww;
-// 	ED4_ROOT->temp_device 	= window->aww->get_device(AW_MIDDLE_AREA);
-// 	ED4_ROOT->temp_ed4w 	= window;
+//  ED4_ROOT->temp_aww  = window->aww;
+//  ED4_ROOT->temp_device   = window->aww->get_device(AW_MIDDLE_AREA);
+//  ED4_ROOT->temp_ed4w     = window;
 
-// 	ED4_ROOT->resize_all();
-// 	ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
-// //	ED4_ROOT->main_manager->clear_whole_background();
-// 	ED4_ROOT->show_all();
+//  ED4_ROOT->resize_all();
+//  ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
+// //   ED4_ROOT->main_manager->clear_whole_background();
+//  ED4_ROOT->show_all();
 
-// 	window = window->next;
+//  window = window->next;
 //     }
 
 //     ED4_ROOT->temp_ed4w = ed4w_temp;
@@ -108,9 +108,9 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 #ifdef DEBUG
     //    printf("ED4_root::refresh_all_windows this=%p\n", this);
 #endif
-    ED4_window	*window, *ed4w_temp;
-    AW_window	*aw_temp;
-    AW_device	*dev_temp;
+    ED4_window  *window, *ed4w_temp;
+    AW_window   *aw_temp;
+    AW_device   *dev_temp;
 
     ed4w_temp = ED4_ROOT->temp_ed4w;
     aw_temp   = ED4_ROOT->temp_aww;
@@ -139,9 +139,9 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
             last_window_reached = 1;
         }
 
-        ED4_ROOT->temp_aww 	= window->aww;
-        ED4_ROOT->temp_device 	= window->aww->get_device(AW_MIDDLE_AREA);
-        ED4_ROOT->temp_ed4w 	= window;
+        ED4_ROOT->temp_aww  = window->aww;
+        ED4_ROOT->temp_device   = window->aww->get_device(AW_MIDDLE_AREA);
+        ED4_ROOT->temp_ed4w     = window;
 
         refresh_window_simple(redraw);
 
@@ -159,8 +159,8 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
 }
 
 
-ED4_returncode ED4_root::win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos *y )			// calculates transformation from window to
-{													// world coordinates in a given window
+ED4_returncode ED4_root::win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos *y )            // calculates transformation from window to
+{                                                   // world coordinates in a given window
     ED4_window        *current_window;
     ED4_folding_line  *current_fl;
     AW_pos             temp_x, temp_y;
@@ -173,20 +173,20 @@ ED4_returncode ED4_root::win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos 
     temp_x = *x;
     temp_y = *y;
 
-    current_fl = current_window->vertical_fl;							// calculate x-offset due to vertical folding lines
+    current_fl = current_window->vertical_fl;                           // calculate x-offset due to vertical folding lines
     while ( (current_fl != NULL) && (*x >= current_fl->world_pos[X_POS]) )
     {
-        if ( 	(current_fl->length == INFINITE) ||
+        if (    (current_fl->length == INFINITE) ||
                 ((*y >= current_fl->window_pos[Y_POS]) && (*y <= (current_fl->window_pos[Y_POS] + current_fl->length))) )
             temp_x += current_fl->dimension;
 
         current_fl = current_fl->next;
     }
 
-    current_fl = current_window->horizontal_fl;							// calculate y-offset due to horizontal folding lines
+    current_fl = current_window->horizontal_fl;                         // calculate y-offset due to horizontal folding lines
     while ( (current_fl != NULL) && (*y >= current_fl->world_pos[Y_POS]) )
     {
-        if (  	  (current_fl->length == INFINITE) ||
+        if (      (current_fl->length == INFINITE) ||
                   ((*x >= current_fl->window_pos[X_POS]) && (*x <= (current_fl->window_pos[X_POS] + current_fl->length))) )
             temp_y += current_fl->dimension;
 
@@ -228,16 +228,16 @@ ED4_returncode ED4_root::deselect_all( void )
     //     current_list_elem = selected_objects.last();
 
     //     while ( current_list_elem ) {
-    // 	tmp_entry = ( ED4_selection_entry *) current_list_elem->elem();
-    // 	ED4_terminal *term = tmp_entry->object;
-    // 	remove_from_selected(term);
-    // 	current_list_elem = selected_objects.first();
+    //  tmp_entry = ( ED4_selection_entry *) current_list_elem->elem();
+    //  ED4_terminal *term = tmp_entry->object;
+    //  remove_from_selected(term);
+    //  current_list_elem = selected_objects.first();
     //     }
 
     //     return ( ED4_R_OK );
 }
 
-ED4_returncode	ED4_root::remove_from_selected( ED4_terminal *object )
+ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
 {
     if ( object == NULL )
         return ( ED4_R_IMPOSSIBLE );
@@ -292,7 +292,7 @@ ED4_returncode	ED4_root::remove_from_selected( ED4_terminal *object )
     return ( ED4_R_OK );
 }
 
-ED4_returncode	ED4_root::add_to_selected( ED4_terminal *object )
+ED4_returncode  ED4_root::add_to_selected( ED4_terminal *object )
 {
     ED4_base            *tmp_object;
     ED4_level            mlevel;
@@ -316,7 +316,7 @@ ED4_returncode	ED4_root::add_to_selected( ED4_terminal *object )
     if ( !(selected_objects.is_elem( (void *) object->selection_info )) ) { // object is really new to our list => calculate current extension and append it
         object->selection_info = new ED4_selection_entry;
 
-        if ( object->dynamic_prop & ED4_P_IS_HANDLE )				// object is a handle for an object up in the hierarchy => search it
+        if ( object->dynamic_prop & ED4_P_IS_HANDLE )               // object is a handle for an object up in the hierarchy => search it
         {
             mlevel = object->spec->handled_level;
             tmp_object = object;
@@ -326,13 +326,13 @@ ED4_returncode	ED4_root::add_to_selected( ED4_terminal *object )
             }
 
             if ( tmp_object == NULL ) {
-                return ( ED4_R_WARNING );  				// no target level found
+                return ( ED4_R_WARNING );               // no target level found
             }
 
             object->selection_info->actual_width = tmp_object->extension.size[WIDTH];
             object->selection_info->actual_height = tmp_object->extension.size[HEIGHT];
         }
-        else									// selected object is no handle => take it directly
+        else                                    // selected object is no handle => take it directly
         {
             object->selection_info->actual_width = object->extension.size[WIDTH];
             object->selection_info->actual_height = object->extension.size[HEIGHT];
@@ -459,7 +459,7 @@ ED4_returncode ED4_root::init_alignment() {
     return ED4_R_OK;
 }
 
-ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
+ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
 {
     int index = 0, x = 0, change = 0;
     ED4_index y = 0, help = 0;
@@ -486,7 +486,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     // [former position of ali-init-code]
 
-    main_manager = new ED4_main_manager  ( "Main_Manager"  , 0, 0, 0, 0, NULL );			// build a test hierarchy
+    main_manager = new ED4_main_manager  ( "Main_Manager"  , 0, 0, 0, 0, NULL );            // build a test hierarchy
     root_group_man = new ED4_root_group_manager ( "Root_Group_Manager" ,0 ,0 ,0 ,0 , main_manager);
     main_manager->children->append_member ( root_group_man );
 
@@ -548,7 +548,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             ED4_ROOT->database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(), area_string_top, &index, &y);
             GB_pop_transaction( gb_main );
 
-            top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, 3, device_manager );	// width will be set below
+            top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
             device_manager->children->append_member( top_mid_line_terminal );
 
             y+=3;
@@ -556,11 +556,11 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
             top_mid_spacer_terminal = new ED4_spacer_terminal( "Top_Middle_Spacer", 0, y, 880, 10 , device_manager);
             device_manager->children->append_member( top_mid_spacer_terminal );
-            y += 10;												// add top-mid_spacer_terminal height
+            y += 10;                                                // add top-mid_spacer_terminal height
 
             top_multi_species_manager->generate_id_for_groups();
 
-            //	top_area_manager->check_all();
+            //  top_area_manager->check_all();
         }
 
         // ********** Top Area end **********
@@ -569,7 +569,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         // ********** Middle Area beginning **********
 
         {
-            //	printf("Middle Area y : %d\n",y);
+            //  printf("Middle Area y : %d\n",y);
             middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
             device_manager->children->append_member(middle_area_manager);
             ED4_ROOT->middle_area_man = middle_area_manager;
@@ -583,7 +583,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg",0,0,0,3, mid_multi_species_manager);
             mid_multi_species_manager->children->append_member( mid_multi_spacer_terminal_beg );
 
-            y+=3;				// dummy height, to create a dummy layout ( to preserve order of objects )
+            y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
 
             scroll_links.link_for_ver_slider = middle_area_manager;
 
@@ -606,9 +606,9 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             tree_terminal->extension.size[HEIGHT] = y - help;
 
             mid_multi_species_manager->generate_id_for_groups();
-            y += 10;												// add top-mid_spacer_terminal height
+            y += 10;                                                // add top-mid_spacer_terminal height
 
-            mid_bot_line_terminal = new ED4_line_terminal( "Mid_Bot_Line_Terminal" ,0, y, 0, 3, device_manager );	// width will be set below
+            mid_bot_line_terminal = new ED4_line_terminal( "Mid_Bot_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
             device_manager->children->append_member( mid_bot_line_terminal );
             y += 3;
 
@@ -631,7 +631,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
         }
 
-        tree_terminal->set_links( NULL, mid_multi_species_manager );						// set links
+        tree_terminal->set_links( NULL, mid_multi_species_manager );                        // set links
         top_spacer_terminal->set_links( tree_terminal, top_multi_species_manager );
         top_mid_spacer_terminal->set_links( middle_area_manager, NULL );
         total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
@@ -656,7 +656,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     if (total_no_of_species > MINSPECFORSTATWIN)
         aw_closestatus();
 
-    //	main_manager->check_all();
+    //  main_manager->check_all();
 
     root_group_man->remap()->mark_compile_needed_force();
     root_group_man->update_remap();
@@ -746,11 +746,11 @@ ED4_returncode ED4_root::get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos
     return ED4_R_IMPOSSIBLE; // no area contains x/y :-(
 }
 
-ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *xPtr, AW_pos *yPtr)	// calculates transformation from world to window
-{												// coordinates in a given window
-    ED4_window		*current_window;
-    ED4_folding_line	*current_fl;
-    AW_pos		temp_x, temp_y, x, y;
+ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *xPtr, AW_pos *yPtr)  // calculates transformation from world to window
+{                                               // coordinates in a given window
+    ED4_window      *current_window;
+    ED4_folding_line    *current_fl;
+    AW_pos      temp_x, temp_y, x, y;
 
     current_window = ED4_ROOT->temp_ed4w;
     e4_assert(current_window==ED4_ROOT->first_window->get_matching_ed4w(aww));
@@ -763,7 +763,7 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *x
     temp_x = x = *xPtr;
     temp_y = y = *yPtr;
 
-    current_fl = current_window->vertical_fl;						// calculate x-offset due to vertical folding lines
+    current_fl = current_window->vertical_fl;                       // calculate x-offset due to vertical folding lines
     while (current_fl && (x>=current_fl->world_pos[X_POS])) {
         if ((current_fl->length == INFINITE) ||
             ((y >= current_fl->world_pos[Y_POS]) &&
@@ -775,7 +775,7 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *x
         current_fl = current_fl->next;
     }
 
-    current_fl = current_window->horizontal_fl;						// calculate y-offset due to horizontal folding lines
+    current_fl = current_window->horizontal_fl;                     // calculate y-offset due to horizontal folding lines
     while (current_fl && (y >= current_fl->world_pos[Y_POS])) {
         if ((current_fl->length == INFINITE) ||
             ((x >= current_fl->world_pos[X_POS]) &&
@@ -794,9 +794,9 @@ ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *x
 
 void ED4_root::copy_window_struct( ED4_window *source , ED4_window *destination )
 {
-    destination->slider_pos_horizontal 	= source->slider_pos_horizontal;
-    destination->slider_pos_vertical   	= source->slider_pos_vertical;
-    destination->coords			= source->coords;
+    destination->slider_pos_horizontal  = source->slider_pos_horizontal;
+    destination->slider_pos_vertical    = source->slider_pos_vertical;
+    destination->coords         = source->coords;
 }
 
 
@@ -815,7 +815,7 @@ void ED4_reload_ecoli_cb(AW_window *aww,AW_CL cd1, AW_CL cd2)
 }
 
 // --------------------------------------------------------------------------------
-// 	recursion through all species
+//  recursion through all species
 // --------------------------------------------------------------------------------
 
 static GB_ERROR do_sth_with_species_error = NULL;
@@ -850,7 +850,7 @@ GB_ERROR ED4_with_all_loaded_species(GB_ERROR (*what_to_do_with_species)(GBDATA*
 }
 
 // --------------------------------------------------------------------------------
-// 	faligner
+//  faligner
 // --------------------------------------------------------------------------------
 
 static int has_species_name(ED4_base *base, AW_CL cl_species_name)
@@ -934,12 +934,12 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
 
 struct AWTC_faligner_cd faligner_client_data =
 {
- 1,			                    // default is to do a refresh
- ED4_timer_refresh,	            // with this function
- get_group_consensus,	        // aligner fetches consensus of group of species via this function
- get_selected_range,		    // aligner fetches column range of selection via this function
+ 1,                             // default is to do a refresh
+ ED4_timer_refresh,             // with this function
+ get_group_consensus,           // aligner fetches consensus of group of species via this function
+ get_selected_range,            // aligner fetches column range of selection via this function
  get_first_selected_species,    // aligner fetches first and..
- get_next_selected_species, 	    // .. following selected species via this functions
+ get_next_selected_species,         // .. following selected species via this functions
  0 // BI_helix (needed for island_hopping)
  };
 
@@ -1105,8 +1105,8 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
 //     int title_mode = aw_root->awar(AWAR_EDIT_TITLE_MODE)->read_int();
 
 //     if (title_mode==0) {
-// 	aw_root->awar(AWAR_EDIT_TITLE_MODE)->write_int(1);
-// 	title_mode_changed(aw_root, aww);
+//  aw_root->awar(AWAR_EDIT_TITLE_MODE)->write_int(1);
+//  title_mode_changed(aw_root, aww);
 //     }
 // }
 
@@ -1127,7 +1127,7 @@ void ED4_undo_redo(AW_window*, AW_CL undo_type)
             terminal->set_refresh();
             terminal->parent->refresh_requested_by_child();
         }
-        //	aed_expose(aw,cd1,0);
+        //  aed_expose(aw,cd1,0);
     }
 }
 
@@ -1379,14 +1379,14 @@ static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {
     AWTC_create_faligner_window(awr, cd);
 }
 
-ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_window)
+ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
 {
-    AW_window_menu_modes	*awmm;
-    AW_gc_manager		aw_gc_manager;							//every window has its own gc_manager
-    char buf[25];
-    ED4_window		*ed4w = ED4_ROOT->first_window;
+    AW_window_menu_modes *awmm;
+    AW_gc_manager         aw_gc_manager; //every window has its own gc_manager
+    char                  buf[25];
+    ED4_window           *ed4w = ED4_ROOT->first_window;
 
-    while (ed4w)										// before creating a window look for a hidden window
+    while (ed4w)                                        // before creating a window look for a hidden window
     {
         if (ed4w->is_hidden)
         {
@@ -1398,7 +1398,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     }
 
 
-    if (ED4_window::no_of_windows == MAXWINDOWS)							// no more then 5 windows allowed
+    if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
     {
         aw_message("Restricted to 5 windows", 0);
         return ED4_R_BREAK;
@@ -1407,57 +1407,57 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     sprintf(buf,"ARB_EDIT4 *%d*", ED4_window::no_of_windows+1 );
 
     awmm = new AW_window_menu_modes;
-    awmm->init( aw_root, buf,buf, 800,600,20, 20 );					//create window
-    *device = awmm->get_device(AW_MIDDLE_AREA);						//Points to Middle Area device
+    awmm->init( aw_root, buf,buf, 800,600,20, 20 );                 //create window
+    *device = awmm->get_device(AW_MIDDLE_AREA);                     //Points to Middle Area device
 
-    *new_window	= first_window->insert_window( awmm );				//append to window list
+    *new_window = first_window->insert_window( awmm );              //append to window list
 
-    if (ED4_window::no_of_windows >= 1)							// this is the first window
+    if (ED4_window::no_of_windows >= 1)                         // this is the first window
     {
         copy_window_struct( first_window, *new_window );
     }
 
     AW_init_color_group_defaults("arb_edit4");
 
-    aw_gc_manager	= AW_manage_GC(	awmm,							//Window
-					*device,				//device-handle of window
-					ED4_G_STANDARD,						//GC_Standard configuration
-					ED4_G_DRAG,
-					AW_GCM_DATA_AREA,
-					ED4_expose_cb,						//callback function
-					1,						// AW_CL for callback function
-					0,						// AW_CL for callback function
-					true, // use color groups
+    aw_gc_manager   = AW_manage_GC( awmm,                           //Window
+                                    *device,                //device-handle of window
+                                    ED4_G_STANDARD,                     //GC_Standard configuration
+                                    ED4_G_DRAG,
+                                    AW_GCM_DATA_AREA,
+                                    ED4_expose_cb,                      //callback function
+                                    1,                      // AW_CL for callback function
+                                    0,                      // AW_CL for callback function
+                                    true, // use color groups
 
-					"#ffffe0",
-					"STANDARD$black",					// Standard Color showing sequences
-					"#SEQUENCES$navy",					// Color for selected sequences
-					"+-HELIX (1)$#8E0000", 	"+-COLOR 2$#07f", 	    "-COLOR 3$#0a0",
-					"+-COLOR 4$#80f", 	    "+-COLOR 5$#a90", 	    "-COLOR 6$grey",
-					"+-COLOR 7$red", 	    "+-COLOR 8$red", 	    "-COLOR 9$red",
-					"+-RANGE 0$#FFFFFF", 	"+-RANGE 1$#E0E0E0", 	"-RANGE 2$#C0C0C0",
-					"+-RANGE 3$#A0A0A0", 	"+-RANGE 4$#909090", 	"-RANGE 5$#808080",
-					"+-RANGE 6$#808080", 	"+-RANGE 7$#505050", 	"-RANGE 8$#404040",
-					"-RANGE 9$#303030",
+                                    "#ffffe0",
+                                    "STANDARD$black",                   // Standard Color showing sequences
+                                    "#SEQUENCES$navy",                  // Color for selected sequences
+                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",       "-COLOR 3$#0a0",
+                                    "+-COLOR 4$#80f",       "+-COLOR 5$#a90",       "-COLOR 6$grey",
+                                    "+-COLOR 7$red",        "+-COLOR 8$red",        "-COLOR 9$red",
+                                    "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
+                                    "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
+                                    "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
+                                    "-RANGE 9$#303030",
 
-					"+-User1$#B8E2F8", 	    "+-User2$#B8E2F8", 	    "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
-					"+-Primer(l)$#A9FE54", 	"+-Primer(r)$#A9FE54", 	"-Primer(g)$#A9FE54",
-					"+-Sig(l)$#DBB0FF", 	"+-Sig(r)$#DBB0FF", 	"-Sig(g)$#DBB0FF",
+                                    "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                                    "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
+                                    "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-					"+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-					"+-MARKED$#FFFFBD",	    "-SELECTED$#FFFF80",
-					0);
+                                    "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
+                                    "+-MARKED$#FFFFBD",     "-SELECTED$#FFFF80",
+                                    0);
 
 #define ____________________________SEP awmm->insert_separator()
 
     // ------------------------------
-    // 	File
+    //  File
     // ------------------------------
 
-    awmm->create_menu	( 0, "File", "F", "No Help", AWM_ALL );
+    awmm->create_menu   ( 0, "File", "F", "No Help", AWM_ALL );
 
-    awmm->insert_menu_topic	( "save_config", "Save Configuration", "S", "No Help", AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0, (int) 0 );
-    awmm->insert_menu_topic	( "save_config_as", "Save Configuration As", "A", "No Help", AWM_ALL, AW_POPUP, (AW_CL) ED4_save_configuration_as_open_window, (int) 0 );
+    awmm->insert_menu_topic ( "save_config", "Save Configuration", "S", "No Help", AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0, (int) 0 );
+    awmm->insert_menu_topic ( "save_config_as", "Save Configuration As", "A", "No Help", AWM_ALL, AW_POPUP, (AW_CL) ED4_save_configuration_as_open_window, (int) 0 );
     ____________________________SEP;
 
     awmm->insert_menu_topic ( "load_config", "Load Configuration", "L", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_start_editor_on_old_configuration, 0);
@@ -1468,7 +1468,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 
     awmm->insert_menu_topic ( "new_win", "New Editor Window", "W", "No Help", AWM_ALL, ED4_new_editor_window, 0, 0);
 
-    if (ED4_window::no_of_windows == 1) {							// this is the first window
+    if (ED4_window::no_of_windows == 1) {                           // this is the first window
         awmm->insert_menu_topic( "quit", "QUIT", "Q", "No Help", AWM_ALL, ED4_quit_editor, 0, 0 );
     }
     else {
@@ -1476,7 +1476,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     }
 
     // ------------------------------
-    // 	Create
+    //  Create
     // ------------------------------
 
     awmm->create_menu(0, "Create", "C", 0, AWM_ALL);
@@ -1488,11 +1488,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->insert_menu_topic("copy_species", "Copy current species", "", "No Help", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)2);
     ____________________________SEP;
 
-    awmm->insert_menu_topic( "create_group", "Create new group",  	"G", "No Help", AWM_ALL, group_species_cb, 0, 0);
+    awmm->insert_menu_topic( "create_group", "Create new group",    "G", "No Help", AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic( "create_groups_by_field", "Create new groups using field", "", "No Help", AWM_ALL, group_species_cb, 1, 0);
 
     // ------------------------------
-    // 	Edit
+    //  Edit
     // ------------------------------
 
     awmm->create_menu      ( 0  , "Edit", "E", 0, AWM_ALL);
@@ -1560,7 +1560,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     ____________________________SEP;
 
     awmm->insert_menu_topic( "show_diff", "Show only differences to Selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
-    awmm->insert_menu_topic( "show_all", "Show all bases", "a", 	"set_reference.hlp", 	AWM_ALL, ED4_set_reference_species, 1, 0 );
+    awmm->insert_menu_topic( "show_all", "Show all bases", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
     ____________________________SEP;
 
     awmm->insert_menu_topic( "enable_col_stat", "Activate column statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
@@ -1585,7 +1585,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 
 
     // ------------------------------
-    // 	Block
+    //  Block
     // ------------------------------
 
     awmm->create_menu(0, "Block", "B", 0, AWM_ALL);
@@ -1614,17 +1614,17 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->insert_menu_topic("shift_right", "Shift right", 0, "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT), 0);
 
     // ------------------------------
-    //	Properties
+    //  Properties
     // ------------------------------
 
-    awmm->create_menu      ( 0, "Properties", 	"P", "Select something", 	AWM_ALL);
-    awmm->insert_menu_topic( "props_frame", "Frame ..." , "F", 0,  	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awmm->insert_menu_topic( "props_options", "Options ..." , "O", "e4_options.hlp", 	AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window, 0 );
-    awmm->insert_menu_topic( "props_consensus", "Consensus ..." , 0, "e4_consensus.hlp", 	AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0 );
+    awmm->create_menu      ( 0, "Properties",   "P", "Select something",    AWM_ALL);
+    awmm->insert_menu_topic( "props_frame", "Frame ..." , "F", 0,   AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+    awmm->insert_menu_topic( "props_options", "Options ..." , "O", "e4_options.hlp",    AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window, 0 );
+    awmm->insert_menu_topic( "props_consensus", "Consensus ..." , 0, "e4_consensus.hlp",    AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0 );
     ____________________________SEP;
 
-    awmm->insert_menu_topic( "props_data", "Colors ..."  , 	"C", 0, 	AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-    awmm->insert_menu_topic( "props_seq_colors", "Sequence Colors ..."  , "S", "no help", 	AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors );
+    awmm->insert_menu_topic( "props_data", "Colors ..."  ,  "C", 0,     AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    awmm->insert_menu_topic( "props_seq_colors", "Sequence Colors ..."  , "S", "no help",   AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors );
     awmm->insert_menu_topic( "change_cursor", "Change Cursor", "u", 0, AWM_ALL, ED4_change_cursor, 0, 0);
     awmm->insert_menu_topic( "props_helix_sym", "Helix Symbols ...","H","helixsym.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_refresh_window,0,0) );
     ____________________________SEP;
@@ -1633,14 +1633,14 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->insert_menu_topic( "props_nds", "NDS ...", "N","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
     ____________________________SEP;
 
-    awmm->insert_menu_topic	( "save_props", "Save Defaults (in $home/.arb_prob/edit4)", "D","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awmm->insert_menu_topic ( "save_props", "Save Defaults (in $home/.arb_prob/edit4)", "D","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // ----------------------------------------------------------------------------------------------------
 
 #undef ____________________________SEP
 
     aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
-    awmm->set_bottom_area_height( 0 );							//No bottom area
+    awmm->set_bottom_area_height( 0 );                          //No bottom area
 
     awmm->auto_space(5,-2);
     awmm->shadow_width(3);
@@ -1655,8 +1655,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
 
     awmm->at("quit");
-    if (ED4_window::no_of_windows == 1) 	awmm->create_button("QUIT","Quit");	// this is the first window
-    else 					awmm->create_button("CLOSE","Close");
+    if (ED4_window::no_of_windows == 1)     awmm->create_button("QUIT","Quit"); // this is the first window
+    else                    awmm->create_button("CLOSE","Close");
 
     awmm->at("fold");
     awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "edit/folded.bitmap", "edit/unfolded.bitmap");
@@ -1801,52 +1801,52 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 }
 
 
-AW_window *ED4_root::create_new_window( void ) 						// only the first time, other cases: generate_window
+AW_window *ED4_root::create_new_window( void )                      // only the first time, other cases: generate_window
 {
-	AW_device		*device = NULL;
-	ED4_window		*new_window = NULL;
+    AW_device       *device = NULL;
+    ED4_window      *new_window = NULL;
 
-	generate_window( &device, &new_window );
-	ED4_calc_terminal_extentions();
+    generate_window( &device, &new_window );
+    ED4_calc_terminal_extentions();
 
-	last_window_reached = 1;
-	MARGIN = 5;
-	DRAW = 1;
-	move_cursor = 0;
-	all_found = 0;
-	species_read = 0;
-	max_seq_terminal_length = 0;
-	not_found_message = GBS_stropen(1000);
-	GBS_strcat(not_found_message,"Some species not found:\n");
+    last_window_reached = 1;
+    MARGIN = 5;
+    DRAW = 1;
+    move_cursor = 0;
+    all_found = 0;
+    species_read = 0;
+    max_seq_terminal_length = 0;
+    not_found_message = GBS_stropen(1000);
+    GBS_strcat(not_found_message,"Some species not found:\n");
 
-	return ( new_window->aww );
+    return ( new_window->aww );
 }
 
 
 ED4_root::ED4_root()
 {
     memset((char *)this,0,sizeof(*this));
-    aw_root				= new AW_root;
-    first_window			= NULL;
-    main_manager			= NULL;
-    database				= NULL;
-    temp_ed4w 				= NULL;
-    temp_aww			=	 NULL;
-    temp_device			= NULL;
-    temp_gc	 			= 0;
+    aw_root             = new AW_root;
+    first_window            = NULL;
+    main_manager            = NULL;
+    database                = NULL;
+    temp_ed4w               = NULL;
+    temp_aww            =    NULL;
+    temp_device         = NULL;
+    temp_gc             = 0;
     scroll_links.link_for_hor_slider= NULL;
     scroll_links.link_for_ver_slider= NULL;
-    folding_action			= 0;
-    //     ref_terminals.ref_sequence_info	= NULL;
-    //     ref_terminals.ref_sequence	= NULL;
-    species_mode			= ED4_SM_MOVE;
-    scroll_picture.scroll		= 0;
-    scroll_picture.old_x		= 0;
-    scroll_picture.old_y		= 0;
-    middle_area_man			= NULL;
-    top_area_man			= NULL;
-    root_group_man 			= NULL;
-    ecoli_ref			= NULL;
+    folding_action          = 0;
+    //     ref_terminals.ref_sequence_info  = NULL;
+    //     ref_terminals.ref_sequence   = NULL;
+    species_mode            = ED4_SM_MOVE;
+    scroll_picture.scroll       = 0;
+    scroll_picture.old_x        = 0;
+    scroll_picture.old_y        = 0;
+    middle_area_man         = NULL;
+    top_area_man            = NULL;
+    root_group_man          = NULL;
+    ecoli_ref           = NULL;
     column_stat_activated = 0;
     column_stat_initialized = 0;
 
@@ -1866,5 +1866,5 @@ ED4_root::~ED4_root()
 }
 
 //***********************************
-//* ED4_root Methods		end *
+//* ED4_root Methods        end *
 //***********************************

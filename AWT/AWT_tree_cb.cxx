@@ -147,16 +147,7 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     int         mark_mode = (int)cl_mark_mode;
 
     GB_transaction gb_dummy(ntw->gb_main);
-
-    if (mark_mode == 1 || mark_mode == 0) {
-        GBT_mark_all(ntw->gb_main,mark_mode);
-    }
-    else {
-        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
-            GB_write_flag(gb_species, !GB_read_flag(gb_species));
-        }
-    }
-
+    GBT_mark_all(ntw->gb_main,mark_mode);
     ntw->refresh();
 }
 
@@ -254,8 +245,8 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw) {
     awm->insert_menu_topic("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
     awm->insert_separator();
-    awm->insert_menu_topic("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, (AW_CL)1 );
-    awm->insert_menu_topic("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)1 );
+    awm->insert_menu_topic("mark_all",	    "Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, (AW_CL)1 );
+    awm->insert_menu_topic("mark_tree",	    "Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)1 );
 //     NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);       done by colorize
 //     awm->insert_separator();
     awm->insert_menu_topic("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, 0 );
