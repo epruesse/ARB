@@ -400,7 +400,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
     const char *off="off";
     const char *on="on";
     char *buffer=(char *)GB_calloc(2000,sizeof(char));
-    GB_begin_transaction(gb_main);
+//     GB_push_transaction(gb_main);
 
     GBDATA *gb_extended = GBT_create_SAI(gb_main,savename);
     GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
@@ -631,7 +631,7 @@ void CON_calculate_cb(AW_window *aw )
 
 
         /* creating the table for characters and allocating memory for 'statistc' */
-        int *statistic[MAX_AMINOS];
+        int *statistic[MAX_AMINOS+1];
         int  convtable[256];
         CON_maketables(convtable,statistic,maxalignlen,isamino);
 
@@ -915,7 +915,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
 
     AW_root *awr=aw->get_root();
     long maxalignlen,i;
-    int *statistic[MAX_AMINOS];
+    int *statistic[MAX_AMINOS+1];
     int convtable[256];
     int onlymarked=1,isamino=1;
     long no_gaps;
