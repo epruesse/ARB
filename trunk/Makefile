@@ -1084,7 +1084,7 @@ aleio:		ALEIO/.dummy
 rtc_patch:
 	rtc_patch_area -so LIBLINK/libRTC8M.so
 
-menus:
+menus: binlink
 	$(GMAKE) -C GDEHELP -r "PP=$(PP)" all
 
 tarfile:	rebuild
@@ -1097,7 +1097,7 @@ tarale:
 sourcetarfile:
 		util/arb_save
 
-build: 
+build:
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) tarfile sourcetarfile
 
