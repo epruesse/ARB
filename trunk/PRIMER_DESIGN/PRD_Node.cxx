@@ -2,6 +2,79 @@
 
 using namespace std;
 
+#define ELEMSIZE  sizeof(Node)
+#define TABLESIZE 1024
+
+
+//  -------------------------
+//      class NodeMemory
+//  -------------------------
+class NodeMemory {
+private:
+    char       *table;
+    int         filled;
+    int         firstfree;
+    NodeMemory *next;
+
+    char *add(int index) {
+        return table+(index*ELEMSIZE);
+    }
+
+    int idx(char *mem) {
+        int i = (mem-table)/ELEMSIZE;
+        prd_assert(i >= 0 && i<TABLESIZE);
+        return i;
+    }
+
+public:
+    NodeMemory() {
+        table     = new char[ELEMSIZE*TABLESIZE];
+        filled     = 0;
+        firstfree = -1;
+        next      = 0;
+    }
+    virtual ~NodeMemory() {
+        delete table;
+        delete next;
+    }
+
+    void *get() {
+        if (filled<TABLESIZE) {
+            return add(filled++);
+        }
+        if (firstfree == -1) {
+            if (!next) next = new NodeMemory();
+            return next->get();
+        }
+        char *nextfree = add(firstfree);
+        firstfree      = *(int*)nextfree;
+
+        return nextfree;
+    }
+    void put(void *mem) {
+        int i      = idx((char*)mem);
+        *(int*)mem = firstfree;
+        firstfree  = i;
+    }
+};
+
+NodeMemory* Node::noMem = 0;
+
+//  --------------------------------
+//      void* Node::allocNode()
+//  --------------------------------
+void* Node::allocNode() {
+    if (!noMem) noMem = new NodeMemory();
+    return noMem->get();
+}
+//  -----------------------------------------
+//      void  Node::freeNode(void *node)
+//  -----------------------------------------
+void  Node::freeNode(void *node) {
+    noMem->put(node);
+}
+
+
 
 //
 // Constructors
