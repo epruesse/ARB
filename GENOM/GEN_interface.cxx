@@ -263,13 +263,13 @@ void GEN_update_combined_cb(AW_root *awr) {
 }
 
 //  -----------------------------------------------------------------
-//      bool GEN_is_genom_db(GBDATA *gb_main, int default_value)
+//      bool GEN_is_genome_db(GBDATA *gb_main, int default_value)
 //  -----------------------------------------------------------------
 // default_value == 0 -> default to normal database
 //               == 1 -> default to GENOM database
 //               == -1 -> assume that type is already defined
 
-bool GEN_is_genom_db(GBDATA *gb_main, int default_value) {
+bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
 
@@ -679,7 +679,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY");
-    aws->create_menu(0,"More functions","F");
+    aws->create_menu(0,"More functions","f");
     aws->load_xfig("ad_query.fig");
 
     awt_query_struct awtqs;
@@ -713,7 +713,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     AW_CL cbs             = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     gene_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "More search",     "S" );
+    aws->create_menu(       0,   "More search",     "s" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
 
