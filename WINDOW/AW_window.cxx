@@ -313,7 +313,7 @@ static void dumpOpenSubMenu(const char *sub_name) {
     dumpMenuEntry(sub_name); // dump the menu itself
 
     if (sub_menu) {
-        char *new_sub_menu = GBS_global_string_copy("%s/%s", sub_menu, sub_name);
+        char *new_sub_menu = strdup(GBS_global_string("%s/%s", sub_menu, sub_name));
         free(sub_menu);
         sub_menu = new_sub_menu;
     }
