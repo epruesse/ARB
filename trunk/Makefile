@@ -337,7 +337,8 @@ tests: test_DEBUG
 # end test section
 
 DIR = $(ARBHOME)
-LIBS = -lAW -lARBDB $(RTC) $(XLIBS)
+LIBS = -lARBDB
+GUI_LIBS = $(LIBS) -lAW -lAWT $(RTC) $(XLIBS)
 LIBPATH = -LLIBLINK
 
 DEST_LIB = lib
@@ -417,7 +418,7 @@ ARCHS_NTREE = \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)
 
 #		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
 #		AWTC/AWTC.a AWTI/AWTI.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) GENOM/GENOM.a \
@@ -428,20 +429,20 @@ $(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
 EDIT = bin/arb_edit
 ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a XML/XML.a
 $(EDIT): $(ARCHS_EDIT)
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lAWT -lARBDBPP $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 ARCHS_EDIT4 = NAMES_COM/client.a AWTC/AWTC.a EDIT4/EDIT4.a SECEDIT/SECEDIT.a \
 	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a ISLAND_HOPPING/ISLAND_HOPPING.a XML/XML.a
 $(EDIT4): $(ARCHS_EDIT4) aw db
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
 ARCHS_WETC = WETC/WETC.a XML/XML.a
 $(WETC): $(ARCHS_WETC)
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
@@ -449,13 +450,13 @@ ARCHS_DIST = DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a CONSENSUS_TREE/CONSENSUS_TREE
 		EISPACK/EISPACK.a  XML/XML.a
 #		FINDCORRWIN/FINDCORRWIN.a FINDCORRMATH/FINDCORRMATH.a
 $(DIST): $(ARCHS_DIST)
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) $(GUI_LIBS)
 
 #***********************************	arb_pars **************************************
 PARSIMONY =		bin/arb_pars
 ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a  XML/XML.a
 $(PARSIMONY): $(ARCHS_PARSIMONY)
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)
 
 
 #***********************************	arb_naligner **************************************
@@ -488,7 +489,7 @@ $(CHIP):	$(ARCHS_CHIP) PROBE_COM/server.a PROBE/PROBE.a
 PHYLO = bin/arb_phylo
 ARCHS_PHYLO = PHYLO/PHYLO.a  XML/XML.a
 $(PHYLO): $(ARCHS_PHYLO)
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)
 
 
 #***************************************************************************************
