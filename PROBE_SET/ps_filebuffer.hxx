@@ -21,6 +21,7 @@ private:
     int   file_flags;
     int   file_mode;
     bool  is_readonly;
+    long  file_pos;
     // bufferhandling
     unsigned char *buffer;
     int            size;                // how much is in buffer
@@ -126,6 +127,22 @@ public:
     //
     // utility-functions
     //
+    bool store_pos() {
+        if (!is_readonly) return false; // cannot jump in a writeable file
+        file_pos = lseek( file_handle, 0, SEEK_CUR );
+        return (file_pos >= 0);
+    }
+
+    bool restore_pos() {
+        if (!is_readonly) return false; // cannot jump in a writeable file
+        if (file_pos < 0) return false;
+        if (lseek( file_handle, file_pos, SEEK_SET ) < 0) return false;
+        size     = 0;
+        position = 0;
+        refill();
+        return true;
+    }
+
     bool empty() {
         if (size == 0) return true;
         return (position < size);
@@ -139,6 +156,7 @@ public:
     bool isReadonly() {
         return is_readonly;
     }
+
     void flush();                       // write buffer to file
 
     //
