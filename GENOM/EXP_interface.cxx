@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Feb/25/2003 09:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 23:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -228,7 +228,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
         return (AW_window *)aws;
     }
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "EXPERIMENT_QUERY", "Experiment SEARCH and QUERY", 0,0,500, 0 );
+    aws->init( aw_root, "EXPERIMENT_QUERY", "Experiment SEARCH and QUERY");
     aws->create_menu(0,"More functions","F");
     aws->load_xfig("ad_query.fig");
 
@@ -419,7 +419,7 @@ void experiment_copy_cb(AW_window *aww){
 AW_window *create_experiment_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_EXPERIMENT", "EXPERIMENT RENAME", 100, 100 );
+    aws->init( root, "RENAME_EXPERIMENT", "EXPERIMENT RENAME");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -443,7 +443,7 @@ AW_window *create_experiment_rename_window(AW_root *root)
 AW_window *create_experiment_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_EXPERIMENT", "EXPERIMENT COPY", 100, 100 );
+    aws->init( root, "COPY_EXPERIMENT", "EXPERIMENT COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -468,7 +468,7 @@ AW_window *create_experiment_copy_window(AW_root *root)
 AW_window *create_experiment_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_EXPERIMENT","EXPERIMENT CREATE", 100, 100 );
+    aws->init( root, "CREATE_EXPERIMENT","EXPERIMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -519,7 +519,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION", 0,0,800, 0 );
+    aws->init( aw_root, "EXPERIMENT_INFORMATION", "EXPERIMENT INFORMATION");
     aws->load_xfig("ad_spec.fig");
     //     aws->load_xfig("experiment_info.fig");
 
@@ -564,5 +564,10 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws->show();
     EXP_map_experiment(aws->get_root(),scannerid);
     return (AW_window *)aws;
+}
+
+void EXP_popup_experiment_window(AW_window *aww, AW_CL, AW_CL) {
+    AW_window *aws = EXP_create_experiment_window(aww->get_root());
+    aws->show();
 }
 
