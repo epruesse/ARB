@@ -62,7 +62,7 @@ public TreeReader(String treefile)
                     String header = treeString.substring(bracket_open+1, bracket_close);
                     // System.out.println("header='"+header+"'");
 
-                    ServerAnswer parsed_header = new ServerAnswer(header, false, true);
+                    ServerAnswer parsed_header = new ServerAnswer(header, false, false);
 
                     if (parsed_header.hasError()) {
                         error = parsed_header.getError();

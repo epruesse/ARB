@@ -22,9 +22,9 @@ public DisplayMouseAdapter(TreeDisplay treeDisplay)
 
 public void mouseClicked(MouseEvent event)
     {
-        System.out.print("left mouse button clicked at ");
-        System.out.print("x pos:" + event.getX());
-        System.out.println("y pos:" + event.getY());
+        // System.out.print("left mouse button clicked at ");
+        // System.out.print("x pos:" + event.getX());
+        // System.out.println("y pos:" + event.getY());
 
         if (td == null)
             {
@@ -35,12 +35,12 @@ public void mouseClicked(MouseEvent event)
 
         if(event.getModifiers() == InputEvent.BUTTON1_MASK)
             {
-                td.handleLeftMouseClick(event.getX(), event.getY()); 
+                td.handleLeftMouseClick(event.getX(), event.getY());
             }
 
         if(event.getModifiers() == InputEvent.BUTTON3_MASK)
             {
-                td.handleRightMouseClick(event.getX(), event.getY()); 
+                td.handleRightMouseClick(event.getX(), event.getY());
             }
 
 

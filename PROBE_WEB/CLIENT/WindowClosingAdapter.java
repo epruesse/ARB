@@ -18,7 +18,7 @@ public WindowClosingAdapter()
     }
 public void windowClosing(WindowEvent event)
     {
-        System.out.println("in WindowClosingAdapter::windowClosing");
+        // System.out.println("in WindowClosingAdapter::windowClosing");
 
         ProbesGUI mainFrame = (ProbesGUI)event.getWindow();
 

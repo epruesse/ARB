@@ -28,9 +28,9 @@ public ProbesGUIActionListener(ProbesGUI g)
 
 public void actionPerformed(ActionEvent e)
     {
-        System.out.println("Action Source: " + ((MenuItem)e.getSource()).getLabel());
-        System.out.println("Action ID: " + e.getID());
-        System.out.println("Action command: " + e.getActionCommand());
+//         System.out.println("Action Source: " + ((MenuItem)e.getSource()).getLabel());
+//         System.out.println("Action ID: " + e.getID());
+//         System.out.println("Action command: " + e.getActionCommand());
         // yet to fill
 
         String menuName = ((MenuItem)e.getSource()).getLabel();

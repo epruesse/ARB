@@ -128,7 +128,7 @@ public void retrieveVersionInformation()
         if (versionInfo == null) {
             Toolkit.AbortWithServerProblem("cannot get version info ("+getLastRequestError()+")");
         }
-        ServerAnswer parsedVersionInfo = new ServerAnswer(versionInfo, true, true);
+        ServerAnswer parsedVersionInfo = new ServerAnswer(versionInfo, true, false);
 
         neededClientVersion = parsedVersionInfo.getValue("client_version");
         neededTreeVersion   = parsedVersionInfo.getValue("tree_version");

@@ -95,7 +95,7 @@ public static void main(String[] args)
         // ask server for version info
         cl.webAccess.retrieveVersionInformation(); // terminates on failure
         if (!Toolkit.clientVersion.equals(cl.webAccess.getNeededClientVersion())) {
-            Toolkit.AbortWithError("Your client is out-of-date! Please download the new version from http://arb-home.de/");
+            Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
         }
 
         // load and parse the most recent tree
@@ -104,7 +104,7 @@ public static void main(String[] args)
             cl.treeString       = readTree(cl.webAccess, reload_tree); // terminates on failure
             cl.root             = (new TreeParser(cl.treeString)).getRootNode();
             cl.fillShortNameHash(cl.root);
-            System.out.println("Number of shortNameHash-entries: " + cl.shortNameHash.size());
+            // System.out.println("Number of shortNameHash-entries: " + cl.shortNameHash.size());
         }
 
         if (cl.root == null)
@@ -114,7 +114,7 @@ public static void main(String[] args)
             }
 
         cl.root.setPath("");
-        cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion, cl);
+        cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
 
         // cl.display.getTreeDisplay().setBoss(cl); // obtain reference to Treedisplay first !
         // cl.display.setLocation(200, 200); // this seems to cause display problems with fvwm
@@ -166,17 +166,17 @@ public void matchProbes(String probeInfo) {
                 System.out.println("Error during probe match: "+groupCache.getError());
             }
             else {
-                System.out.println("Members='"+members+"'");
+                // System.out.println("Members='"+members+"'");
                 needUpdate = root.markSpecies(","+members+",");
             }
         }
     }
-    if (needUpdate) 
+    if (needUpdate)
         {
             display.getTreeDisplay().repaint();
 
         }
-    else System.out.println("Nothing changed");
+    else System.out.println("Marks did not change.");
 }
 
 public void updateNodeInformation(String encodedPath)
@@ -186,7 +186,7 @@ public void updateNodeInformation(String encodedPath)
         list.add("wait..");
 
         String       answer       = webAccess.retrieveNodeInformation(encodedPath);
-        ServerAnswer parsedAnswer = new ServerAnswer(answer, true, true);
+        ServerAnswer parsedAnswer = new ServerAnswer(answer, true, false);
 
         if (parsedAnswer.hasError()) {
             String error = parsedAnswer.getError();
@@ -234,7 +234,7 @@ public void updateDetails (String probeInfo, String shortNames)
                 int gc = 0;
                 for (int i = 0; i < probeSequenz.length(); i ++)
                     {
-                        gc = gc + ((probeSequenz.charAt(i) == 'G' || probeSequenz.charAt(i) == 'C') ? 1: 0); 
+                        gc = gc + ((probeSequenz.charAt(i) == 'G' || probeSequenz.charAt(i) == 'C') ? 1: 0);
                     }
                 ta.append("%GC-Content:  " + (gc*100)/probeSequenz.length() + "%\n");
 
@@ -257,8 +257,8 @@ public void updateDetails (String probeInfo, String shortNames)
                             }
                     }
 
-                System.out.println("probeInfo:  " + probeInfo);
-                System.out.println("probe sequence: " + probeSequenz);
+                // System.out.println("probeInfo:  " + probeInfo);
+                // System.out.println("probe sequence: " + probeSequenz);
 
 
 
