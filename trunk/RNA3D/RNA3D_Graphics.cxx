@@ -80,12 +80,15 @@ void RNA3D_Graphics::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, in
         cout<<"Clicked event Occured !!"<<endl;
     }
 }
+
 void RNA3D_Graphics::show(AW_device *device){
+    refreshOpenGLDisplay();
     //    paint(device);
 }
-void RNA3D_Graphics::show_opengl(){
-    refreshOpenGLDisplay();
-}
+
+// void RNA3D_Graphics::show_opengl(){
+//     //    refreshOpenGLDisplay();
+// }
 
 void RNA3D_Graphics::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
 {

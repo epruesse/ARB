@@ -472,7 +472,6 @@ ARCHS = \
 			PROBE_SERVER/PROBE_SERVER.a \
 			PROBE_SET/PROBE_SET.a \
 			READSEQ/READSEQ.a \
-			RNA3D/OPENGL/OPENGL.a \
 			RNA3D/RNA3D.a \
 			SECEDIT/SECEDIT.a \
 			SEER/SEER.a \
@@ -540,7 +539,7 @@ $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 RNA3D = bin/arb_rna3d
 ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
+#		RNA3D/OPENGL/OPENGL.a \
 
 $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@echo $@ currently does not work as standalone application
@@ -591,7 +590,6 @@ LIBS_EDIT4 =
 else
 ARCHS_EDIT4 =  \
 		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
 		$(ARCHS_EDIT4_GENERAL)
 LIBS_EDIT4 = $(GLLIBS)
 endif

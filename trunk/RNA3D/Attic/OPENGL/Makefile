@@ -2,7 +2,7 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = OpenGLGraphics.o Renderer.o TextureMapping.o
+CPP_OBJECTS = OpenGLGraphics.o Renderer.o #TextureMapping.o
 
 
 $(MAIN): $(CPP_OBJECTS)
