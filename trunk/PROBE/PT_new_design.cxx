@@ -575,11 +575,12 @@ void ptnd_check_part_inc_dt(PT_pdc *pdc ,PT_probeparts *parts,
             split = 1;
         }
     }
-    ndt = 	(	dt * pdc->dt +
-                (tprobe->sum_bonds - sum_bonds)*pdc->dte	)
-        /tprobe->seq_len;
+    ndt = (dt * pdc->dt + (tprobe->sum_bonds - sum_bonds)*pdc->dte ) / tprobe->seq_len;
     pos = (int)ndt;
-    if (pos >= PERC_SIZE) return;		/* out of observation */
+
+    pt_assert(pos >= 0);
+
+    if (pos >= PERC_SIZE) return; /* out of observation */
     tprobe->perc[pos] ++;
     if (ptnd.new_match) {			/* save the result in probematch */
         PT_probematch *match;
@@ -606,11 +607,12 @@ void ptnd_check_part_inc_dt(PT_pdc *pdc ,PT_probeparts *parts,
 int	ptnd_check_inc_mode(PT_pdc *pdc ,PT_probeparts *parts,double dt,double sum_bonds)
 {
     PT_tprobes *tprobe = parts->source;
-    double ndt = 	(	dt * pdc->dt +
-                        (tprobe->sum_bonds - sum_bonds)*pdc->dte	)
-        /tprobe->seq_len;
-    int	pos = (int)ndt;
-    if (pos >= PERC_SIZE) return 1;		/* out of observation */
+    double      ndt    = (dt * pdc->dt + (tprobe->sum_bonds - sum_bonds)*pdc->dte ) / tprobe->seq_len;
+    int         pos    = (int)ndt;
+
+    pt_assert(pos >= 0);
+
+    if (pos >= PERC_SIZE) return 1; /* out of observation */
     return 0;
 }
 
