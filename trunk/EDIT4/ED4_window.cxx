@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 #include <arbdb.h>
 #include <aw_root.hxx>
@@ -453,11 +454,6 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 //    ED4_ROOT->main_manager->Show(1);
     ED4_ROOT->main_manager->to_manager()->Show(1,1);
-}
-
-static inline int abs(int i)
-{
-    return i<0 ? -i : i;
 }
 
 static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, int dx, int dy)
