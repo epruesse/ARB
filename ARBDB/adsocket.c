@@ -403,10 +403,7 @@ long    gbcms_close(struct gbcmc_comm *link)
 }
 
 struct gbl_param *ppara;
-char *trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com);
-
-struct gbcmc_comm *
-gbcmc_open(const char *path)
+struct gbcmc_comm *gbcmc_open(const char *path)
 {
     struct gbcmc_comm *link;
     GB_ERROR err;
