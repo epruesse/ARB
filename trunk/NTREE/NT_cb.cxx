@@ -52,7 +52,7 @@ NT_open_select_tree_window(AW_root *awr,char *awar_tree)
 	aws->load_xfig("select_simple.fig");
 
 	aws->at("selection");
-	aws->callback((AW_CB0)AW_POPDOWN);
+// 	aws->callback((AW_CB0)AW_POPDOWN);
 	awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,awar_tree);
 
 	aws->at("close");
