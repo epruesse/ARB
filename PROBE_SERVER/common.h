@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Thu Sep/18/2003 18:45 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Sep/22/2003 13:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -117,6 +117,7 @@ static GB_ERROR checkDatabaseType(GBDATA *gb_main, const char *db_name, const ch
 #endif
 
 // encoding/decoding tree node strings
+// (Note: keep ../PROBE_WEB/CLIENT/TreeParser.java/decodeNodeInfo() up-to-date!)
 //
 // tree node strings may not contain ',' and ';'
 // performed escapes :
