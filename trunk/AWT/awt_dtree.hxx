@@ -113,9 +113,10 @@ class AWT_graphic_tree : public AWT_graphic {
     bool tree_has_marks(AP_tree *at);
     bool rest_tree_has_marks(AP_tree *at);
 
-    void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state);
+    void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son);
 
 	int       group_tree(struct AP_tree *at, int mode, int color_group);
+    int       group_rest_tree(AP_tree *at, int mode, int color_group);
 	int       resort_tree(int mode, struct AP_tree *at = 0 );
 	AW_BOOL   create_group(AP_tree * at);
 	void      toggle_group(AP_tree * at);

@@ -4,7 +4,7 @@ Major changes for next Beta:
 
  - alignment concatenation (i.e. several different genes)
  - merging data of similar species (according selected database field)
- - keyboard commands for ARB_NTREE
+ - keyboard commands for ARB_NTREE (mark/unmark/invert, collapse/expand)
  - expanded sellists
  - save/load fixed for multi probes
  - Some menu rearrangements
