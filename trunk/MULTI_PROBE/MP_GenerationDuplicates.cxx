@@ -1,5 +1,4 @@
 #include <MultiProbe.hxx>
-#include <MP_probe.hxx>
 #include <string.h>
 
 BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth)		//initial muss result TRUE sein

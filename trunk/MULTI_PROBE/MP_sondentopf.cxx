@@ -3,10 +3,7 @@
 #include <string.h>
 #include <arbdbt.h>
 #include <awt_tree.hxx>
-#include <aw_root.hxx>
 #include <math.h>
-#include <MP_probe.hxx>
-#include <SoTl.hxx>
 
 //############################################################################################
 /*

@@ -82,6 +82,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/client.h
@@ -118,6 +119,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -153,6 +155,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MP_probe.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/client.h
@@ -235,6 +238,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt.hxx

@@ -1,12 +1,10 @@
 #include <MP_probe.hxx>
-#include <MultiProbe.hxx>
 
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "SoTl.hxx"
 
 extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
 extern char     *MP_get_comment(int which, char *str);
