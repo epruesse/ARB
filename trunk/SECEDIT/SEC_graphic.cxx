@@ -39,6 +39,7 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
     }
 
     aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
+    aw_root->awar_float(AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1, 100);
     aw_root->awar_int(AWAR_SECEDIT_SHOW_DEBUG, 0, def);
     aw_root->awar_int(AWAR_SECEDIT_SHOW_HELIX_NRS, 0, def);
     aw_root->awar_int(AWAR_SECEDIT_SHOW_STR_SKELETON, 0, def);
@@ -98,6 +99,9 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
 		     "+-Sig(l)$#DBB0FF",
 		     "+-Sig(r)$#DBB0FF",
 		     "-Sig(g)$#DBB0FF",
+		     "+-Skeleton Helix$#B8E2F8",
+		     "+-Skeleton Loop$#DBB0FF",
+		     "-Skeleton NonHelix$#A9FE54",
 		     "+-MISMATCHES$#FF9AFF",
                      0 );
 
@@ -670,7 +674,7 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic() {
     rot_ct.exists = AW_FALSE;
     rot_cl.exists = AW_FALSE;
     sec_root = 0;
-    sec_root = new SEC_root(NULL, 0, aw_rooti->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->read_float());
+    sec_root = new SEC_root(NULL, 0, aw_rooti->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->read_float(),aw_rooti->awar(AWAR_SECEDIT_SKELETON_THICKNESS)->read_float());
     sec_root->set_show_debug(aw_rooti->awar(AWAR_SECEDIT_SHOW_DEBUG)->read_int());
     sec_root->set_show_helixNrs(aw_rooti->awar(AWAR_SECEDIT_SHOW_HELIX_NRS)->read_int());
     sec_root->set_show_strSkeleton(aw_rooti->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->read_int());
@@ -1078,6 +1082,7 @@ void SEC_bond_def::paint(AW_device *device, SEC_root *root, char base1, char bas
 
 void SEC_add_awar_callbacks(AW_root *aw_root,AW_default /*def*/, AWT_canvas *ntw) {
     aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->add_callback(SEC_distance_between_strands_changed_cb, (AW_CL)ntw);
+    aw_root->awar(AWAR_SECEDIT_SKELETON_THICKNESS)->add_callback(SEC_skeleton_thickness_changed_cb, (AW_CL)ntw);
     aw_root->awar(AWAR_SECEDIT_SHOW_DEBUG)->add_callback(SEC_show_debug_toggled_cb, (AW_CL)ntw);
     aw_root->awar(AWAR_SECEDIT_SHOW_HELIX_NRS)->add_callback(SEC_show_helixNrs_toggled_cb, (AW_CL)ntw);
     aw_root->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->add_callback(SEC_show_strSkeleton_toggled_cb, (AW_CL)ntw);

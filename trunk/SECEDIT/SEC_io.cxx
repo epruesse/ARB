@@ -328,12 +328,13 @@ SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double 
 }
 
 
-SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_between_strands_)
+SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_between_strands_, double skeleton_thickness_)
 {
     memset ((char *)this, 0, sizeof(*this));
     max_index = max_index_;
     root_segment = root_segment_;
     set_distance_between_strands(distance_between_strands_);
+    set_skeleton_thickness(skeleton_thickness_);
     set_show_debug(false);
     set_show_helixNrs(true);
     set_show_strSkeleton(true);
