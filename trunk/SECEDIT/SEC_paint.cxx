@@ -24,22 +24,6 @@ using namespace std;
 #define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
 #define SAICOLORS (ED4_G_CBACK_0 - SEC_GC_CBACK_0)
 
-int SEC_font_info::max_width;
-int SEC_font_info::max_height;
-int SEC_font_info::max_ascent;
-int SEC_font_info::max_descent;
-
-// ----------------------------------------------------------------------------------------------------
-
-SEC_font_info font_info[SEC_GC_LAST_FONT+1];
-
-static void init_font_infos(AW_device *device) {
-    SEC_font_info::reset_maximas();
-    for (int f=SEC_GC_FIRST_FONT; f<=SEC_GC_LAST_FONT; f++) {
-        font_info[f].update(device->get_font_information(f, 'A'));
-    }
-}
-
 /*-----------------------Inline Functions -------------------------------------------------------------------------------*/
 
 inline AW_pos transform_size(AW_device *device, AW_pos size) {
@@ -843,25 +827,26 @@ void SEC_helix_strand::printHelixNumbers(AW_device *device, double helixStart_x,
 /*---------------------------------Paints HELICES----------------------------------------------------------------------------*/
 
 void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &length_of_v){
-    char this_buffer[] = "?";
-    char other_buffer[] = "?";
+    char this_buffer[]       = "?";
+    char other_buffer[]      = "?";
     SEC_region& other_region = other_strand->region;
 
-    int this_base_count = region.get_base_count();
+    int this_base_count  = region.get_base_count();
     int other_base_count = other_region.get_base_count();
-    int max_base_count = max(this_base_count, other_base_count);
+    int max_base_count   = max(this_base_count, other_base_count);
 
-    double this_db = length_of_v/(this_base_count-1); // compute the distance between the bases of this strand
+    double this_db  = length_of_v/(this_base_count-1); // compute the distance between the bases of this strand
     double other_db = length_of_v/(other_base_count-1); // compute the distance between the bases of this strand
 
-    double font_height2 = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())/2.0; // half ascent-size of used font
+    const AW_font_group& font_group   = root->get_font_group();
+    double               font_height2 = transform_size(device, font_group.get_ascent(SEC_GC_HELIX)) / 2.0; // half ascent-size of used font
 
     device->set_line_attributes(SEC_SKELE_HELIX,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes
     double font_size;
 
     {
-        double h = transform_size(device, font_info[SEC_GC_HELIX].get_height());
-        double w = transform_size(device, font_info[SEC_GC_HELIX].get_width());
+        double h = transform_size(device, font_group.get_height(SEC_GC_HELIX));
+        double w = transform_size(device, font_group.get_width(SEC_GC_HELIX));
 
         font_size = h>w ? h : w;
     }
@@ -873,8 +858,8 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     int otherSeqStart = other_region.get_sequence_start();
     int otherSeqEnd   = other_region.get_sequence_end();
 
-    double radius     = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())*0.75;
-    double lineWidth  = font_info[SEC_GC_HELIX].get_max_width();
+    double radius     = transform_size(device, font_group.get_ascent(SEC_GC_HELIX)) * 0.75;
+    double lineWidth  = font_group.get_max_width();
 
     const char *otherBgColor, *thisBgColor;
 
@@ -1051,9 +1036,10 @@ void SEC_helix_strand::print_lonely_bases(char *buffer, AW_device *device, doubl
     double print_pos_x = base_x - start_end_v[0]*0.5;
     double print_pos_y = base_y - start_end_v[1]*0.5;
 
-    double radius = transform_size(device,font_info[SEC_GC_HELIX].get_ascent())*0.75;
+    const AW_font_group& font_group = root->get_font_group();
+    double               radius     = transform_size(device,font_group.get_ascent(SEC_GC_HELIX))*0.75;
 
-    double lineWidth = font_info[SEC_GC_NHELIX].get_max_width();
+    double lineWidth = font_group.get_max_width();
     device->set_line_attributes(SEC_SKELE_NHELIX,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes
 
     if(thisStrand){
@@ -1080,7 +1066,10 @@ void SEC_root::paint(AW_device *device) {
     }else{
         SEC_loop *root_loop = root_segment->get_loop();
         clear_base_positions(); // reset positions next to cursor
-        init_font_infos(device);
+        for (int gc = SEC_GC_FIRST_FONT; gc <= SEC_GC_LAST_FONT; ++gc) {
+            font_group.registerFont(device, gc);
+        }
+
 
         paint_box(this,root_loop,root_loop->get_x_loop(), root_loop->get_y_loop(), (root_loop->get_radius()/3), device); //mark the root_loop
         root_loop->paint(NULL, device, show_constraints);
@@ -1189,26 +1178,36 @@ void SEC_segment::prepare_paint(SEC_helix_strand *previous_strand_pointer, doubl
 }
 
 void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_pointer) {
-    double angle_step, radius, eta, gamma;
-    int base_count;
+    double angle_step;
+    double radius;
+    double eta;
+    double gamma;
+    int    base_count;
 
     prepare_paint(previous_strand_pointer, gamma, eta, radius, base_count, angle_step);
 
-    //    int cursor = root->get_cursor();
-    int abs_pos, last_abs_pos = -1;
-    double next_x, next_y;
-    int i;
+    int    abs_pos;
+    int    last_abs_pos = -1;
+    double next_x;
+    double next_y;
+    int    i;
+    long   ecoli_pos;
+    long   dummy;
+
+    const AW_font_group& font_group   = root->get_font_group();
+    double               font_height2 = transform_size(device, font_group.get_ascent(SEC_GC_LOOP)) / 2.0;
+
     char buffer[2];
     buffer[1] = 0;
-    long ecoli_pos, dummy;
-    double font_height2 = transform_size(device, font_info[SEC_GC_LOOP].get_ascent()) / 2.0;
 
-    double circleRadius = transform_size(device, font_info[SEC_GC_LOOP].get_ascent())*0.75;
-    double lineWidth    = font_info[SEC_GC_LOOP].get_max_width();
-    double nextCircle_x, nextCircle_y;
+    double circleRadius = transform_size(device, font_group.get_ascent(SEC_GC_LOOP))*0.75;
+    double lineWidth    = font_group.get_max_width();
+    double nextCircle_x;
+    double nextCircle_y;
     double nextGamma;
 
-    double start_x, start_y; //to get the previous strand attachment points
+    double start_x; // to get the previous strand attachment points
+    double start_y; 
 
     if(root->show_debug) {
         paintDebugInfo(device,SEC_GC_LOOP, start_x, start_y,"AP1");
@@ -1418,12 +1417,15 @@ void SEC_helix_strand::paint_other_strand(AW_device *device, double *v, double &
     //compute distance between the bases on this strand
     double db = length_of_v / (base_count - 1);
 
-    //    int cursor = root->get_cursor();
-    double point_of_base_x, point_of_base_y;
-    int abs_pos; /*, last_abs_pos = -1;*/
-    int j;
-    long ecoli_pos, dummy;
-    double font_height2 = transform_ysize(device, font_info[SEC_GC_HELIX].get_ascent()) / 2.0;
+    double point_of_base_x;
+    double point_of_base_y;
+    int    abs_pos;
+    int    j;
+    long   ecoli_pos;
+    long   dummy;
+
+    const AW_font_group& font_group   = root->get_font_group();
+    double               font_height2 = transform_ysize(device, font_group.get_ascent(SEC_GC_HELIX)) / 2.0;
 
     j = 0;
 
@@ -1472,16 +1474,19 @@ void SEC_helix_strand::paint_other_strand(AW_device *device, double *v, double &
 void SEC_helix_strand::paint_this_strand(AW_device *device, double *v, double &length_of_v) {
 
     double base_count = region.get_base_count();
-    double db = length_of_v / (base_count - 1);
+    double db         = length_of_v / (base_count - 1);
 
     char buffer[2];
     buffer[1] = 0;
 
-    //    int cursor = root->get_cursor();
-    double point_of_base_x, point_of_base_y;
-    int abs_pos; /*,  last_abs_pos = -1;*/
-    long ecoli_pos, dummy;
-    double font_height2 = transform_ysize(device, font_info[SEC_GC_HELIX].get_ascent()) / 2.0;
+    double point_of_base_x;
+    double point_of_base_y;
+    int    abs_pos;
+    long   ecoli_pos;
+    long   dummy;
+
+    const AW_font_group& font_group   = root->get_font_group();
+    double               font_height2 = transform_ysize(device, font_group.get_ascent(SEC_GC_HELIX)) / 2.0;
 
     for(int i=0; i<base_count; i++) {
         if (region.abspos_array) {
