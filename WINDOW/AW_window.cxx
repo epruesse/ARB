@@ -1079,7 +1079,8 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     }
     fallback_resources[i] = 0;
     GB_install_warning((gb_warning_func_type)aw_message_dummy);
-    GB_install_information((gb_information_func_type)aw_message_dummy);
+    GB_install_information((gb_information_func_type)0); // set to 0 to avoid pop-up message window
+
     GB_install_status((gb_status_func_type)aw_status_dummy);
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
