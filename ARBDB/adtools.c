@@ -2561,12 +2561,18 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 
 GB_ERROR GBT_message(GBDATA *gb_main, const char *msg)
 {
-    GBDATA *gbmesg;
+    GBDATA     *gb_msg;
+    const char *old_message;
+    char       *new_message;
+
     GB_push_transaction(gb_main);
-    gb_main = GB_get_root(gb_main);
-    gbmesg = GB_search(gb_main,"tmp/message",GB_STRING);
-    GB_write_string(gbmesg,msg);
+    gb_main     = GB_get_root(gb_main);
+    gb_msg      = GB_search(gb_main,"tmp/message",GB_STRING);
+    old_message = GB_read_char_pntr(gb_msg);
+    new_message = GBS_global_string_copy("%s\n%s", msg, old_message); // insert at start of message queue
+    GB_write_string(gb_msg, new_message);
     GB_pop_transaction(gb_main);
+    free(new_message);
     return 0;
 }
 
