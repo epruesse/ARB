@@ -23,6 +23,10 @@
 #include <string>
 #include <set>
 
+#if defined(DEBUG)
+// #define TRACE_FILEBOX
+#endif // DEBUG
+
 using namespace std;
 
 static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
@@ -170,6 +174,7 @@ char *AWT_extract_directory(const char *path) {
 static const char *DIR_sort_order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
 static int DIR_sort_order     = 0; // 0 = alpha; 1 = date; 2 = size;
 static int DIR_subdirs_hidden = 0; // 1 -> hide sub-directories (by user-request)
+static int DIR_show_hidden    = 0; // 1 -> show hidden (i.e. files/directories starting with '.')
 
 static void awt_execute_browser_command(const char *browser_command) {
     if (strcmp(browser_command, "sort") == 0) {
@@ -181,14 +186,22 @@ static void awt_execute_browser_command(const char *browser_command) {
     else if (strcmp(browser_command, "show") == 0) {
         DIR_subdirs_hidden = 0;
     }
+    else if (strcmp(browser_command, "dot") == 0) {
+        DIR_show_hidden ^= 1;
+    }
     else {
         aw_message(GBS_global_string("Unknown browser command '%s'", browser_command));
     }
 }
 
-static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, AW_window *aws, AW_selection_list *selid) {
+static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, bool show_dots, AW_window *aws, AW_selection_list *selid) {
     // see awt_create_selection_box_cb for meaning of 'sort_order'
+
     DIR *dirp = opendir(fulldir);
+
+#if defined(TRACE_FILEBOX)
+    printf("awt_fill_selection_box_recursive for directory '%s'\n", fulldir);
+#endif // TRACE_FILEBOX
 
     if (!dirp) {
         aws->insert_selection(selid, GBS_global_string("x Your directory path is invalid (%s)", fulldir), "?");
@@ -205,18 +218,18 @@ static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, 
         else fullname                 = strdup(AWT_get_full_path(entry));
 
         if (AWT_is_dir(fullname)) {
-            if (!(entry[0] == '.' && (entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".."
+            if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
                     aws->insert_selection(selid, GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
                 if (recurse && !AWT_is_link(nontruepath)) { // don't follow links
-                    awt_fill_selection_box_recursive(nontruepath, skipleft, mask, recurse, showdir, aws, selid);
+                    awt_fill_selection_box_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, aws, selid);
                 }
             }
         }
         else {
             if (GBS_string_cmp(entry, mask, 0) == 0) { // entry matches mask
-                if (AWT_is_file(fullname)) { // regular existing file
+                if ((entry[0] != '.' || DIR_show_hidden) && AWT_is_file(fullname)) { // regular existing file
                     struct stat stt;
 
                     stat(fullname, &stt);
@@ -294,15 +307,24 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     char *filter  = aw_root->awar(cbs->def_filter)->read_string();
     char *name    = aw_root->awar(cbs->def_name)->read_string();
 
+#if defined(TRACE_FILEBOX)
+    printf("awt_create_selection_box_cb:\n"
+           "- diru   ='%s'\n"
+           "- fulldir='%s'\n"
+           "- filter ='%s'\n"
+           "- name   ='%s'\n" , diru, fulldir, filter, name);
+#endif // TRACE_FILEBOX
+
     const char *name_only = 0;
     {
         char *slash = strrchr(name, '/');
         name_only   = slash ? slash+1 : name;
     }
 
-    if (name[0] && AWT_is_dir(name)) {
-        free(fulldir); fulldir = strdup(name);
-        name_only       = "";
+    if (name[0] == '/' && AWT_is_dir(name)) {
+        free(fulldir);
+        fulldir   = strdup(name);
+        name_only = "";
     }
 
     DuplicateLinkFilter  unDup;
@@ -326,11 +348,10 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         if (filter[0] && !is_wildcard) {
             cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Search for\'     (*%s)", filter), "*" );
         }
+        if (strcmp("/", fulldir)) {
+            cbs->aws->insert_selection( cbs->id, "! \'PARENT DIR       (..)\'", ".." );
+        }
         if (DIR_subdirs_hidden == 0) {
-            if (strcmp("/", fulldir)) {
-                cbs->aws->insert_selection( cbs->id, "! \'PARENT DIR       (..)\'", ".." );
-            }
-
             show_soft_link(cbs->aws, cbs->id, cbs->pwd, unDup);
 
             if (cbs->pwdx) {        // additional directories
@@ -355,27 +376,30 @@ static void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
             show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", unDup);
             show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", unDup);
 
-            cbs->aws->insert_selection( cbs->id, "! \' Hide sub-directories\'", GBS_global_string("%s?hide?", name));
+            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories shown\'", GBS_global_string("%s?hide?", name));
         }
         else {
-            cbs->aws->insert_selection( cbs->id, "! \' Show sub-directories\'", GBS_global_string("%s?show?", name));
+            cbs->aws->insert_selection( cbs->id, "! \' Sub-directories hidden\'", GBS_global_string("%s?show?", name));
         }
     }
 
     cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
                                 GBS_global_string("%s?sort?", name));
 
+    cbs->aws->insert_selection( cbs->id, GBS_global_string("! \' Dot files/dirs\' (%s)", DIR_show_hidden ? "shown" : "hidden"),
+                                GBS_global_string("%s?dot?", name));
+
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
-            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, cbs->aws, cbs->id);
+            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->aws, cbs->id);
         }
         else {
-            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, cbs->aws, cbs->id);
+            awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->aws, cbs->id);
         }
     }
     else {
         char *mask = GBS_global_string_copy("*%s", filter);
-        awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir && !DIR_subdirs_hidden, cbs->aws, cbs->id);
+        awt_fill_selection_box_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->aws, cbs->id);
         free(mask);
     }
 
@@ -393,17 +417,20 @@ static bool filter_has_changed = false;
 
 void awt_create_selection_box_changed_filter(void *, struct adawcbstruct *) {
     filter_has_changed = true;
+#if defined(TRACE_FILEBOX)
+    printf("awt_create_selection_box_changed_filter: marked as changed\n");
+#endif // TRACE_FILEBOX
 }
 
 static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
 
-//     if (!fname[0]) { // no filename -> use '*'
-//         aw_root->awar(cbs->def_name)->write_string("*");
-//         free(fname);
-//         fname   = aw_root->awar(cbs->def_name)->read_string();
-//     }
+#if defined(TRACE_FILEBOX)
+    printf("awt_selection_box_changed_filename:\n"
+           "- fname='%s'\n", fname);
+    printf("- cbs->previous_filename='%s'\n", cbs->previous_filename);
+#endif // TRACE_FILEBOX
 
     if (fname[0]) {
         char *browser_command = 0;
@@ -454,6 +481,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
 
         if (newName) {
             if (AWT_is_dir(newName)) {
+                aw_root->awar(cbs->def_name)->write_string("");
                 aw_root->awar(cbs->def_dir)->write_string(newName);
                 if (cbs->previous_filename) {
                     const char *slash              = strrchr(cbs->previous_filename, '/');
@@ -464,6 +492,8 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                         aw_root->awar(cbs->def_name)->write_string(with_previous_name);
                     }
                     else {
+                        free(cbs->previous_filename);
+                        cbs->previous_filename = 0;
                         aw_root->awar(cbs->def_name)->write_string(newName);
                     }
 
