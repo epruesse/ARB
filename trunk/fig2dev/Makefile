@@ -2,7 +2,7 @@
 # $TOG: imake.c /main/97 1997/06/20 20:23:51 kaleb $
 
 # ----------------------------------------------------------------------
-# Makefile generated from "Imake.tmpl" and </tmp/IIf.U90i8Y>
+# Makefile generated from "Imake.tmpl" and </tmp/IIf.PIGK0k>
 # $TOG: Imake.tmpl /main/245 1997/05/20 10:05:47 kaleb $
 #
 #
