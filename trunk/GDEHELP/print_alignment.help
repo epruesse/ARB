@@ -1,0 +1,10 @@
+Print selection
+
+Sends the selected sequences to the chosen printer.  The sequences are printed
+in aligned form with the sequence short name and the current position number
+on the left.
+
+
+Printer choices need to be set up by your system's administrator.  These
+can be set in the .GDEmenus file in your local directory or in the GDE_HELP_DIR
+directory.

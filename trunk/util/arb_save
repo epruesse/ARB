@@ -1,0 +1,32 @@
+#!/bin/sh
+#watch out for DEPOT and DEPOT2
+name=`date '+arbsrc_%d_%m_%y.tgz'`
+rm -f arbsrc_*.tgz
+(	ls -d 	load  demo.arb README;\
+	find . 	-name DEPOT -prune -o -name DEPOT2 -prune -o 	\( \
+	   -name "Makefile" -o -name "*.makefile" \
+	-o -name "Imakefile" -o -name "*.script" \
+	-o -name "*.[chf]" -o -name "*.[ch]xx" \
+	-o -name "*.inc" -o -name "*.askjdfhajh" \
+	-o -name "*.bitmap" -o -name "*.icon" \
+	-o -name "*.aisc" -o -name "*.header" \
+	-o -name "*.pa" -o -name "*.README" -o -name "*.txt" \
+	-o -name "*.pl" -o -name "*.PL" \
+	-o -name "*.sh" -o -name "*.dat" \
+	-o -name "*.pod" -o -name "*.POD" \
+	-o -name "*.xs" -o -name "*.pm" -o -name "*.html" \
+	-o -name "typemap" \
+ 	-o \(	-name "C" -type l \) \
+	-o \(	-name "AISC" -type l \) \
+	\) -print; \
+	find MAKEBIN LIBLINK */LIBLINK etc SH \
+		./lib/*.dat ./lib/pictures ./lib/pixmaps ./lib/config.* \
+		./lib/submit ./lib/help ./lib/Makefile ./lib/macros \
+		./lib/import ./lib/export ./lib/sellists ./lib/arb_default \
+		./lib/macro.head	arb_* util GDEHELP -print; \
+	)|sort|uniq|cpio -oH tar |gzip - >$name
+
+rm -f arbsrc
+rm -f arbsrc.tgz
+ln -s $name arbsrc.tgz
+

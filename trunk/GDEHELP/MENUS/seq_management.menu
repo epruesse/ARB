@@ -1,0 +1,94 @@
+item:Assemble Contigs
+itemmethod:(sed "s////>/"<in1 >in1.tmp; CAP2 in1.tmp $OVERLAP $PMATCH > out1;/bin/rm -f in1.tmp)
+itemhelp:CAP2.help
+
+arg:OVERLAP
+argtype:slider
+arglabel:Minimum overlap?
+argmin:5
+argmax:100
+argvalue:20
+
+arg:PMATCH
+argtype:slider
+arglabel:Percent match required within overlap
+argmin:25
+argmax:100
+argvalue:90
+
+in:in1
+informat:flat
+
+out:out1
+outformat:gde
+outoverwrite:
+
+item:Map View
+itemmethod:(mapview in1 -pbl $PBL -npp $NPP; /bin/rm -f in1)&
+itemhelp:mapview.help
+
+in:in1
+informat:gde
+insave:
+
+arg:PBL
+arglabel:Pixel Between Lines
+argtype:slider
+argvalue:10
+argmin:1
+argmax:15
+
+arg:NPP
+arglabel:Nucleotides Per Pixel
+argtype:slider
+argvalue:1
+argmin:1
+argmax:20
+
+arg:LWIDTH
+arglabel:Line Thickness
+argtype:slider
+argvalue:2
+argmin:1
+argmax:5
+
+
+item:Restriction sites
+itemmethod:(cp $ENZ in1.tmp ; $PRE_EDIT Restriction in1.tmp in1 > out1 ; rm in1.tmp; cp out1 tmp );
+itemhelp:Restriction.help
+
+arg:ENZ
+argtype:text
+arglabel:Enzyme file
+argtext:$ARBHOME/GDEHELP/DATA_FILES/enzymes
+
+arg:PRE_EDIT
+argtype:chooser
+arglabel:Edit enzyme file first?
+argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.tmp;
+argchoice:No: 
+
+in:in1
+informat:flat
+
+out:out1
+outformat:colormask
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
