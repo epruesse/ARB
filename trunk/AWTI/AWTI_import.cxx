@@ -969,7 +969,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     if (ask_generate_names) {
         if (aw_message("You may generate short names using the full_name and accession entry of the species",
-                       "Generate new short names,use old names")==0)
+                       "Generate new short names (recommended),Use found names")==0)
         {
             aw_status("Pass 3: Generate unique names");
             error = AWTC_pars_names(GB_MAIN,1);
