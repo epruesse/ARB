@@ -346,6 +346,7 @@ first_target:
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
 		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
+		@echo ' doc         - create doxygen documentation
 ifeq ($(DEVELOPER),'RALF')
 		@echo ' export      - make tarfile and export to homepage'
 endif
@@ -863,6 +864,9 @@ show:
 		@echo 'for other targets inspect $(ARBHOME)/Makefile'
 		@echo ''
 		@echo $(SEP)
+
+doc:
+		doxygen
 
 mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
