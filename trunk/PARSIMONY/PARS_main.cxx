@@ -69,7 +69,7 @@ void AP_user_push_cb(AW_window *aww,AWT_canvas *ntw)
 void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
 {
     if (ap_main->user_push_counter<=0) {
-        aw_message("You cannot pop without push");
+        aw_message("No tree on stack.");
         return;
     }
     ap_main->user_pop();
@@ -79,6 +79,10 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
     (*ap_main->tree_root)->test_tree();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
     PARS_export_tree();
+
+    if (ap_main->user_push_counter <= 0) { // last tree was popped => push again
+        AP_user_push_cb(aww, ntw);
+    }
 }
 
 static void remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
@@ -997,6 +1001,14 @@ static GB_ERROR pars_check_size(AW_root *awr){
     return error;
 }
 
+static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
+    AW_root *awr = aww->get_root();
+    awr->awar(AWAR_BEST_PARSIMONY)->write_int(awr->awar(AWAR_PARSIMONY)->read_int());
+
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+    ntw->refresh();
+}
+
 /******************************************************
 
 ******************************************************/
@@ -1110,9 +1122,9 @@ static void pars_start_cb(AW_window *aww)
         awm->insert_separator();
         awm->insert_sub_menu(0, "Remove Species from Tree",		"R");
         {
-            awm->insert_menu_topic("tree_remove_deleted",	"Remove Zombies",		"Z","trm_del.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_DELETED );
-            awm->insert_menu_topic("tree_remove_marked", 	"Remove Marked",		"M","trm_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_MARKED );
-            awm->insert_menu_topic("tree_keep_marked",	"Keep Marked",			"K","tkeep_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED );
+            awm->insert_menu_topic("tree_remove_deleted",	"Remove Zombies",		"Z","trm_del.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_remove_marked", 	"Remove Marked",		"M","trm_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_keep_marked",	"Keep Marked",			"K","tkeep_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
         }
         awm->close_sub_menu();
         awm->insert_sub_menu(0, "Add Species to Tree",		"A");
@@ -1133,6 +1145,7 @@ static void pars_start_cb(AW_window *aww)
             awm->insert_menu_topic("kl_optimization",	"Global Optimization of Marked Visible Nodes",		"G","pa_optimizer.hlp",	AWM_ALL, 	(AW_CB)NT_optimize,	(AW_CL)ntw, 0 );
         }
         awm->close_sub_menu();
+        awm->insert_menu_topic("reset", "Reset optimal parsimony", "P", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->insert_separator();
         awm->insert_menu_topic("beautify_tree",		"Beautify Tree",		"B","resorttree.hlp",	AWM_TREE, 	(AW_CB)NT_resort_tree_cb,	(AW_CL)ntw, 0 );
         awm->insert_menu_topic("calc_branch_lenths",		"Calculate Branch Lengths",				"L","pa_branchlengths.hlp",AWM_ALL, 	(AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
@@ -1267,6 +1280,8 @@ static void pars_start_cb(AW_window *aww)
 
     aww->hide();
     awm->show();
+
+    AP_user_push_cb(aww, ntw); // push initial tree
 }
 
 static AW_window *create_pars_init_window(AW_root *awr)
