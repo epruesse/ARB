@@ -6,6 +6,7 @@ use strict;
 sub run_request() {
   my $plength = $probe_server::params{"plength"};
   if (not $plength) { return "Missing parameter 'plength'"; }
+  if ($plength eq 'all') { $plength=15; } # fake,fake..
   if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed 15..20)"; }
 
   my ($request_name,$result_name) = probe_server::generate_filenames($plength,0);
