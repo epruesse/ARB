@@ -1,5 +1,44 @@
 #!/bin/tcsh
 
+    
+# Liblink 
+
+ln -s ../LIBLINK LIBLINK/LIBLINK  
+ln -s ../ARBDBS/libARBDB.a LIBLINK/libARBDB.a  
+ln -s ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl  
+ln -s ../ARBDB/libARBDB.so LIBLINK/libARBDB.so  
+ln -s ../ARBDB/libARBDB.so.2.0 LIBLINK/libARBDB.so.2.0  
+ln -s ../ARBDBPP/libARBDBPP.a LIBLINK/libARBDBPP.a  
+ln -s ../ARBDBPP/libARBDBPP.sl LIBLINK/libARBDBPP.sl  
+ln -s ../ARBDBPP/libARBDBPP.so LIBLINK/libARBDBPP.so  
+ln -s ../ARBDBPP/libARBDBPP.so.2.0 LIBLINK/libARBDBPP.so.2.0  
+ln -s ../ARBDB2/libARBDB.a LIBLINK/libARBDO.a  
+ln -s ../ARBDB2/libARBDB.sl LIBLINK/libARBDO.sl  
+ln -s ../ARBDB2/libARBDB.so LIBLINK/libARBDO.so  
+ln -s ../ARBDB2/libARBDB.so.2.0 LIBLINK/libARBDO.so.2.0  
+ln -s ../WINDOW/libAW.a LIBLINK/libAW.a  
+ln -s ../WINDOW/libAW.sl LIBLINK/libAW.sl  
+ln -s ../WINDOW/libAW.so LIBLINK/libAW.so  
+ln -s ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0  
+ln -s ../AWT/libAWT.a LIBLINK/libAWT.a  
+ln -s ../AWT/libAWT.sl LIBLINK/libAWT.sl  
+ln -s ../AWT/libAWT.so LIBLINK/libAWT.so  
+ln -s ../AWT/libAWT.so.2.0 LIBLINK/libAWT.so.2.0  
+    
+# Motif stuff    
+ln -s ../Motif/libXm.a LIBLINK/libXm.a
+ln -s /usr/lib/Motif1.2/libXm.1 LIBLINK/libXm.sl  
+ln -s ../Motif/libXm.so.1.1 LIBLINK/libXm.so.1.1  
+ln -s ../Motif/libXm.so.1.2 LIBLINK/libXm.so.1.2  
+ln -s ../Motif/libXm.so.2 LIBLINK/libXm.so.2  
+
+# Links in bin directory 
+cd bin
+make all
+cd ..
+    
+# ...COMS
+    
 ln -s ../AISC_COM/AISC          NAMES_COM/AISC
 ln -s ../AISC_COM/C             NAMES_COM/C
 ln -s GENH/aisc_com.h           NAMES_COM/names_client.h
@@ -17,6 +56,8 @@ ln -s ../AISC_COM/C             ORS_COM/C
 ln -s GENH/aisc_com.h           ORS_COM/ors_client.h
 ln -s GENH/aisc_server_proto.h  ORS_COM/ors_prototypes.h
 ln -s GENH/aisc.h               ORS_COM/ors_server.h
+    
+# INCLUDE directory    
 
 ln -s ../AWT/BI_helix.hxx INCLUDE/BI_helix.hxx  
 ln -s ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx  
@@ -88,8 +129,8 @@ ln -s ../AISC_COM/C/server.h INCLUDE/server.h
 ln -s ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h  
 ln -s ../STAT/st_window.hxx INCLUDE/st_window.hxx  
 ln -s ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h  
-
-ln -s ../WINDOW/AW_preset.cxx AWT/AWT_preset.cxx  
+    
+# arbdb dirs    
 
 ln -s ../ARBDB/AD_MOBJECTS.h ARBDBS/AD_MOBJECTS.h  
 ln -s ../ARBDB/adReference.c ARBDBS/adReference.c  
@@ -174,4 +215,23 @@ ln -s ../ARBDB/arbdb.c ARBDB2/arbdb.c
 ln -s ../ARBDB/arbdb.h ARBDB2/arbdb.h  
 ln -s ../ARBDB/arbdbpp.cxx ARBDB2/arbdbpp.cxx  
 ln -s ../ARBDB/arbdbt.h ARBDB2/arbdbt.h  
+    
+# small dirs    
+    
+ln -s ../WINDOW/AW_preset.cxx AWT/AWT_preset.cxx  
 
+ln -s ../EDIT/edit_naligner.cxx EDIT4/edit_naligner.cxx  
+ln -s ../EDIT/edit_naligner.hxx EDIT4/edit_naligner.hxx  
+    
+ln -s ../AWT/BI_helix.cxx PROBE/BI_helix.cxx  
+ln -s ../AWT/BI_helix.hxx PROBE/BI_helix.hxx  
+
+ln -s ../AWT/BI_helix.cxx NALIGNER/BI_helix.cxx  
+ln -s ../AWT/BI_helix.hxx NALIGNER/BI_helix.hxx  
+ln -s ../LIBLINK          NALIGNER/LIBLINK
+    
+ln -s ../LIBLINK          TOOLS/LIBLINK
+    
+ln -s ../AISC/aisc             MAKEBIN/aisc  
+ln -s ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt  
+    
