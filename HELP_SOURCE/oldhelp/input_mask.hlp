@@ -9,11 +9,11 @@ SUB	input_mask_new.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Input masks
+TITLE		User masks
 
 OCCURRENCE	ARB_NT/Species/User Masks (if 'Species'-masks existing)
 
-DESCRIPTION	An input mask is a user-definable interface to the database.
+DESCRIPTION	A user mask is a user-definable interface to the database.
 
 NOTES		To define new users masks modify one of our examples and
 		save it with a different name.
