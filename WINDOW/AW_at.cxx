@@ -378,13 +378,6 @@ int AW_window::calculate_string_width( int columns ) {
     }
 }
 
-int AW_window::calculate_label_length()
-{
-    if (_at->length_of_label_for_inputfield) return _at->length_of_label_for_inputfield;
-    if (_at->label_for_inputfield) return strlen(_at->label_for_inputfield);
-    return 0;
-}
-
 int AW_window::calculate_string_height( int rows , int offset ) {
     if ( xfig_data ) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;

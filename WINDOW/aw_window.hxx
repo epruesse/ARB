@@ -207,7 +207,6 @@ public:
     void set_window_title_intern( char *title );
 
     int calculate_string_width( int columns );
-    int calculate_label_length(void);
     int calculate_string_height( int columns, int offset );
     char *align_string( const char *string, int columns );
 
