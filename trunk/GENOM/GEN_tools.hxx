@@ -1,8 +1,8 @@
 //  ==================================================================== // 
 //                                                                       // 
 //    File      : GEN_tools.hxx                                          // 
-//    Purpose   :                                                        // 
-//    Time-stamp: <Thu Jul/01/2004 08:52 MET Coder@ReallySoft.de>        // 
+//    Purpose   : general purpose toolkit for genome library             // 
+//    Time-stamp: <Wed Jul/14/2004 12:30 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2004             // 
