@@ -568,10 +568,12 @@ static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     AWUSE(id);
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
     if (!tcbs) return;
+    
     AW_root *root = tcbs->ar;
-    if (root->disable_callbacks && (tcbs->f != aw_message_timer_listen_event)) {
+    if (root->disable_callbacks) {
+        // delay the timer callback for 25ms
         XtAppAddTimeOut(p_global->context,
-                        (unsigned long)25,  // wait 25 msec = 1/40 sec
+                        (unsigned long)25, // wait 25 msec = 1/40 sec
                         (XtTimerCallbackProc)AW_timer_callback,
                         aw_timer_cb_struct );
     }else{
@@ -580,10 +582,26 @@ static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     }
 }
 
+static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
+    AWUSE(id);
+    AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
+    if (!tcbs) return;
+
+    tcbs->f(tcbs->ar,tcbs->cd1,tcbs->cd2);
+    delete tcbs;                // timer only once
+}
+
 void AW_root::add_timed_callback(int ms, void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
                     (unsigned long)ms,
                     (XtTimerCallbackProc)AW_timer_callback,
+                    (XtPointer) new  AW_timer_cb_struct( this, f, cd1, cd2) );
+}
+
+void AW_root::add_timed_callback_never_disabled(int ms, void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+    XtAppAddTimeOut(p_r->context,
+                    (unsigned long)ms,
+                    (XtTimerCallbackProc)AW_timer_callback_never_disabled,
                     (XtPointer) new  AW_timer_cb_struct( this, f, cd1, cd2) );
 }
 
@@ -633,7 +651,7 @@ static void aw_calculate_WM_offsets(AW_window *aww)
 
 /************** standard callback server *********************/
 
-static void macro_message_cb( AW_window *aw,AW_CL); 
+static void macro_message_cb( AW_window *aw,AW_CL);
 
 void    AW_cb_struct::run_callback(void){
     AW_PPP g;
