@@ -1,16 +1,18 @@
-#include <stdio.h>
-#include <iostream.h>
-// #include <malloc.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
 #include <memory.h>
-#include <math.h>
-#include <string.h>
+#include <iostream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <awt_tree.hxx>
+
 #include "AP_buffer.hxx"
 #include "parsimony.hxx"
 #include "AP_error.hxx"
 
+using namespace std;
 
 /*********************************************
 AP_ERR
