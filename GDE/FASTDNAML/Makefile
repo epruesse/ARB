@@ -13,5 +13,4 @@ depend:
 
 # DO NOT DELETE
 
-
-fastDNAml_1_2_1.o: fastDNAml_1_2_1.h
+fastDNAml_1_2_1.o:  fastDNAml_1_2_1.h

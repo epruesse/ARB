@@ -40,13 +40,13 @@ $(ARBHOME)/bin/Consto01mask: Consto01mask.c $(libs.o) $(MKFILE)
 	$(CC) $(cflags) -o $@ $(@F).c $(libs.o) $(SYSLIBS)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-Alloc.o: global_defs.h
-Consto01mask.o: global_defs.h
-DotPlotTool.o: global_defs.h plot.icon
-HGLfuncs.o: global_defs.h
-MakeCons.o: global_defs.h
-PrintStrat.o: global_defs.h
-Translate.o: global_defs.h
-heapsortHGL.o: global_defs.h
-mapview.o: global_defs.h
+Alloc.o:  global_defs.h 
+Consto01mask.o: global_defs.h  
+DotPlotTool.o: global_defs.h  
+DotPlotTool.o:  plot.icon
+HGLfuncs.o: global_defs.h  
+MakeCons.o:   global_defs.h
+PrintStrat.o: global_defs.h  
+Translate.o:  global_defs.h 
+heapsortHGL.o:  global_defs.h
+mapview.o:   global_defs.h

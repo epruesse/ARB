@@ -46,13 +46,15 @@ depend: $(ARCHS:.dummy=.depend)
 	@$(MAKE) -C $(@D) -r \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" depend;
-	@cat $(@D)/Makefile \
+	cat $(@D)/Makefile \
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/[^ 	]*\.h//g" \
-			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
+			-e "s&$(ARBHOME)&\\\$$(ARBHOME)/GDE&g" \
 			-e '/^[A-Za-z][A-Za-z0-9_]*\.o:[ ]*$$/d' \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.2 $(@D)/Makefile
+
+#			-e "s&/trance1/ARB/source/ARB/&\\\$$(ARBHOME)/&g" \
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
