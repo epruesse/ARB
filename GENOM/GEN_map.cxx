@@ -71,108 +71,108 @@ void GEN_create_genemap_awars(AW_root *aw_root,AW_default def) {
     GEN_create_nds_vars(aw_root, def, gb_main, GEN_NDS_changed);
 }
 
-//  --------------------------------------------------------------------------------------------
-//      void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *, GB_CB_TYPE gb_type)
-//  --------------------------------------------------------------------------------------------
-void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_ntw, GB_CB_TYPE gb_type) {
-    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+//  --------------------------------------------------------------------------------------------------
+//      void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_gmw, GB_CB_TYPE gb_type)
+//  --------------------------------------------------------------------------------------------------
+void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_gmw, GB_CB_TYPE gb_type) {
+    AWT_canvas *gmw = (AWT_canvas*)cl_gmw;
 
-    GEN_GRAPHIC->delete_gen_root(ntw);
-    GEN_GRAPHIC->reinit_gen_root(ntw);
+    GEN_GRAPHIC->delete_gen_root(gmw);
+    GEN_GRAPHIC->reinit_gen_root(gmw);
 
-    ntw->refresh();
+    gmw->refresh();
 }
 
 //  ----------------------------------------------------------------------------
 //      void GEN_gene_container_cb_installer(bool install, AWT_canvas *ntw)
 //  ----------------------------------------------------------------------------
-void GEN_gene_container_cb_installer(bool install, AWT_canvas *ntw) {
+void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw) {
     static GBDATA *last_added_gb_gene_data = 0;
 
     if (install) {
         GBDATA *gb_gene_data = GEN_get_current_gene_data(GEN_GRAPHIC->gb_main, GEN_GRAPHIC->aw_root);
         if (gb_gene_data) {
-            GB_add_callback(gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)ntw);
+            GB_add_callback(gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)gmw);
             last_added_gb_gene_data = gb_gene_data;
         }
     }
     else {
         if (last_added_gb_gene_data) {
-            GB_remove_callback(last_added_gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)ntw);
+            GB_remove_callback(last_added_gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)gmw);
             last_added_gb_gene_data = 0;
         }
     }
 }
 
 //  ------------------------------------------------------------
-//      void GEN_jump_cb(AW_window *dummy, AWT_canvas *ntw)
+//      void GEN_jump_cb(AW_window *dummy, AWT_canvas *gmw)
 //  ------------------------------------------------------------
-void GEN_jump_cb(AW_window */*dummy*/, AWT_canvas *ntw) {
+void GEN_jump_cb(AW_window */*dummy*/, AWT_canvas *gmw) {
     // @@@ Center on selected gene
     // analog NT_jump_cb
     GEN_GRAPHIC->change_flag = 1;
-    ntw->refresh();
+    gmw->refresh();
 }
 
 //  --------------------------------------------------------------
-//      void GEN_jump_cb_auto(AW_root *root, AWT_canvas *ntw)
+//      void GEN_jump_cb_auto(AW_root *root, AWT_canvas *gmw)
 //  --------------------------------------------------------------
-void GEN_jump_cb_auto(AW_root *root, AWT_canvas *ntw) {
+void GEN_jump_cb_auto(AW_root *root, AWT_canvas *gmw) {
     int jump = root->awar(AWAR_GENMAP_AUTO_JUMP)->read_int();
     if (jump) {
         AW_window *dummy = 0;
-        GEN_jump_cb(dummy, ntw);
+        GEN_jump_cb(dummy, gmw);
     }
 }
 
 //  -------------------------------------------------------------------------
-//      void GEN_organism_name_changed_cb(AW_root *awr, AWT_canvas *ntw)
+//      void GEN_organism_name_changed_cb(AW_root *awr, AWT_canvas *gmw)
 //  -------------------------------------------------------------------------
-void GEN_organism_name_changed_cb(AW_root *awr, AWT_canvas *ntw) {
-    GEN_GRAPHIC->reinit_gen_root(ntw);
-    GEN_jump_cb_auto(awr, ntw);
-    ntw->refresh();
+void GEN_organism_name_changed_cb(AW_root *awr, AWT_canvas *gmw) {
+    GEN_GRAPHIC->reinit_gen_root(gmw);
+    GEN_jump_cb_auto(awr, gmw);
+    gmw->refresh();
 }
 
 //  ------------------------------------------------------------------------
-//      void GEN_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw)
+//      void GEN_species_name_changed_cb(AW_root *awr, AWT_canvas *gmw)
 //  ------------------------------------------------------------------------
-void GEN_gene_name_changed_cb(AW_root *awr, AWT_canvas *ntw) {
-    GEN_GRAPHIC->reinit_gen_root(ntw);
-    GEN_jump_cb_auto(awr, ntw);
-    ntw->refresh();
+void GEN_gene_name_changed_cb(AW_root *awr, AWT_canvas *gmw) {
+    GEN_GRAPHIC->reinit_gen_root(gmw);
+    GEN_jump_cb_auto(awr, gmw);
+    gmw->refresh();
 }
 
 //  -------------------------------------------------------------------------
-//      void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *ntw)
+//      void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *gmw)
 //  -------------------------------------------------------------------------
-void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *ntw) {
-    ntw->zoom_reset();
-    ntw->refresh();
+void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *gmw) {
+    gmw->zoom_reset();
+    gmw->refresh();
 }
 
 //  --------------------------------------------------------------------------------------
-//      void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *ntw)
+//      void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *gmw)
 //  --------------------------------------------------------------------------------------
-void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *ntw) {
-    awr->awar_string(AWAR_ORGANISM_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_organism_name_changed_cb, (AW_CL)ntw);
-    awr->awar_string(AWAR_GENE_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_gene_name_changed_cb, (AW_CL)ntw);
+void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *gmw) {
+    awr->awar_string(AWAR_ORGANISM_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_organism_name_changed_cb, (AW_CL)gmw);
+    awr->awar_string(AWAR_GENE_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_gene_name_changed_cb, (AW_CL)gmw);
     awr->awar_string(AWAR_COMBINED_GENE_NAME,"",gb_main);
 
-    awr->awar(AWAR_GENMAP_ARROW_SIZE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_SHOW_HIDDEN)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_SHOW_ALL_NDS)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
+    awr->awar(AWAR_GENMAP_ARROW_SIZE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_SHOW_HIDDEN)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_SHOW_ALL_NDS)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
 
-    awr->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
+    awr->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
 
-    awr->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
+    awr->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
 
-    awr->awar(AWAR_GENMAP_RADIAL_INSIDE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
-    awr->awar(AWAR_GENMAP_RADIAL_OUTSIDE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
+    awr->awar(AWAR_GENMAP_RADIAL_INSIDE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
+    awr->awar(AWAR_GENMAP_RADIAL_OUTSIDE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)gmw);
 }
 
 //  -------------------------------------------------------------------------------------
@@ -659,7 +659,7 @@ GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
 // cl_mark == 0 -> unmark
 // cl_mark == 1 -> mark
 // cl_mark == 2 -> invert mark
-static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL) {
+static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
 
@@ -674,14 +674,19 @@ static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL) {
             GB_write_flag(gb_org, mark); // mark/unmark organism
         }
     }
+
+    AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
+    if (canvas) canvas->refresh();
 }
-//  ----------------------------------------------------------------------------
-//      static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL)
-//  ----------------------------------------------------------------------------
-// cl_mark == 0 -> unmark
-// cl_mark == 1 -> mark
-// cl_mark == 2 -> invert mark
-static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL) {
+
+//  --------------------------------------------------------------------------------------
+//      static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas)
+//  --------------------------------------------------------------------------------------
+//  cl_mark == 0 -> unmark
+//  cl_mark == 1 -> mark
+//  cl_mark == 2 -> invert mark
+
+static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
 
@@ -696,11 +701,14 @@ static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL) {
             GB_write_flag(gb_pseudo, mark); // mark/unmark gene-species
         }
     }
+
+    AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
+    if (canvas) canvas->refresh();
 }
-//  ------------------------------------------------------------------------------------
-//      static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL)
-//  ------------------------------------------------------------------------------------
-static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL) {
+//  ----------------------------------------------------------------------------------------------
+//      static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL)
+//  ----------------------------------------------------------------------------------------------
+static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL) {
     GB_transaction dummy(gb_main);
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
@@ -717,6 +725,8 @@ static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL) {
             }
         }
     }
+    AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
+    if (canvas) canvas->refresh();
 }
 //  ------------------------------------------------------------------------------------
 //      static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL)
@@ -913,10 +923,10 @@ static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window);
 }
-//  ----------------------------------------------------------------------------------
-//      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu)
-//  ----------------------------------------------------------------------------------
-void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu) {
+//  ------------------------------------------------------------------------------------------------------------
+//      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas)
+//  ------------------------------------------------------------------------------------------------------------
+void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas) {
     const char *title  = "Organisms";
     const char *hotkey = "O";
 
@@ -928,16 +938,16 @@ void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu) {
 
         awm->insert_separator();
 
-        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, 0);
-        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, 0);
-        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, 0);
+        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, (AW_CL)ntree_canvas);
+        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, (AW_CL)ntree_canvas);
+        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, (AW_CL)ntree_canvas);
     }
     if (submenu) awm->close_sub_menu();
 }
-//  --------------------------------------------------------------------------------------------
-//      void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
-//  --------------------------------------------------------------------------------------------
-void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu) {
+//  ----------------------------------------------------------------------------------------------------------------
+//      void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas)
+//  ----------------------------------------------------------------------------------------------------------------
+void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas) {
     const char *title  = "Gene-Species";
     const char *hotkey = "E";
 
@@ -945,9 +955,9 @@ void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu) {
     else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
 
     {
-        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, 0);
-        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, 0);
-        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, 0);
+        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, (AW_CL)ntree_canvas);
+        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, (AW_CL)ntree_canvas);
+        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, (AW_CL)ntree_canvas);
         awm->insert_separator();
         AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "S", "gene_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, 0, 0);
     }
@@ -955,11 +965,19 @@ void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu) {
     if (submenu) awm->close_sub_menu();
 }
 
+struct GEN_update_info {
+    AWT_canvas *canvas1;        // just canvasses of different windows (needed for updates)
+    AWT_canvas *canvas2;
+};
 
-//  -------------------------------------------------------------------------------------
-//      void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
-//  -------------------------------------------------------------------------------------
-void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
+
+
+//  ---------------------------------------------------------------------------------------------------------------
+//      void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas)
+//  ---------------------------------------------------------------------------------------------------------------
+void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas) {
+    gen_assert(ntree_canvas != 0);
+
     awm->create_menu(0,"Genes","G","no.hlp",	AWM_ALL);
     {
 #if defined(DEBUG)
@@ -968,11 +986,11 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
 #endif // DEBUG
 
         if (for_ARB_NTREE) {
-            AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, 0 );
+            AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, (AW_CL)ntree_canvas );
             awm->insert_separator();
 
-            GEN_create_gene_species_submenu(awm, true); // Gene-species
-            GEN_create_organism_submenu(awm, true); // Organisms
+            GEN_create_gene_species_submenu(awm, true, ntree_canvas); // Gene-species
+            GEN_create_organism_submenu(awm, true, ntree_canvas); // Organisms
             EXP_create_experiments_submenu(awm, true); // Experiments
             awm->insert_separator();
         }
@@ -1044,10 +1062,10 @@ void GEN_set_display_style(void *dummy, AWT_canvas *ntw, GEN_DisplayStyle type) 
 // ##########################################
 // ##########################################
 
-//  -----------------------------------------------------------
-//      AW_window *GEN_map_create_main_window(AW_root *awr)
-//  -----------------------------------------------------------
-AW_window *GEN_map_create_main_window(AW_root *awr) {
+//  --------------------------------------------------------------------------------------
+//      AW_window *GEN_map_create_main_window(AW_root *awr, AWT_canvas *ntree_canvas)
+//  --------------------------------------------------------------------------------------
+AW_window *GEN_map_create_main_window(AW_root *awr, AWT_canvas *ntree_canvas) {
     GB_transaction        dummy(gb_main);
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(awr, "ARB_GENE_MAP", "ARB_GENE_MAP", 800, 600, 10, 10);
@@ -1056,23 +1074,23 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     AW_gc_manager  aw_gc_manager;
     GEN_GRAPHIC        = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer);
-    AWT_canvas    *ntw = new AWT_canvas(gb_main, awm, GEN_GRAPHIC, aw_gc_manager, AWAR_SPECIES_NAME);
+    AWT_canvas    *gmw = new AWT_canvas(gb_main, awm, GEN_GRAPHIC, aw_gc_manager, AWAR_SPECIES_NAME);
 
-    GEN_add_awar_callbacks(awr, AW_ROOT_DEFAULT, ntw);
+    GEN_add_awar_callbacks(awr, AW_ROOT_DEFAULT, gmw);
 
-    GEN_GRAPHIC->reinit_gen_root(ntw);
+    GEN_GRAPHIC->reinit_gen_root(gmw);
 
-    ntw->recalc_size();
-    ntw->refresh();
-    ntw->set_mode(AWT_MODE_ZOOM); // Default-Mode
+    gmw->recalc_size();
+    gmw->refresh();
+    gmw->set_mode(AWT_MODE_ZOOM); // Default-Mode
 
     // File Menu
     awm->create_menu( 0, "File", "F", "no.hlp",  AWM_ALL );
     AWMIMT( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 
-    GEN_create_genes_submenu(awm, false); // Genes
-    GEN_create_gene_species_submenu(awm, false); // Gene-species
-    GEN_create_organism_submenu(awm, false); // Organisms
+    GEN_create_genes_submenu(awm, false, ntree_canvas); // Genes
+    GEN_create_gene_species_submenu(awm, false, ntree_canvas); // Gene-species
+    GEN_create_organism_submenu(awm, false, ntree_canvas); // Organisms
 
     EXP_create_experiments_submenu(awm, false); // Experiments
 
@@ -1088,8 +1106,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     AWMIMT("gene_save_props",	"Save Defaults (in ~/.arb_prop/ntree.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // Create mode buttons
-    awm->create_mode( 0, "zoom.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode( 0, "info.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOD);
+    awm->create_mode( 0, "zoom.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)gmw,(AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode( 0, "info.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)gmw,(AW_CL)AWT_MODE_MOD);
 
     awm->set_info_area_height( 250 );
     awm->at(11,2);
@@ -1115,7 +1133,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->at(start_x, second_line_y);
     awm->help_text("undo.hlp");
-    awm->callback((AW_CB)GEN_undo_cb,(AW_CL)ntw,(AW_CL)GB_UNDO_UNDO);
+    awm->callback((AW_CB)GEN_undo_cb,(AW_CL)gmw,(AW_CL)GB_UNDO_UNDO);
     awm->create_button("Undo", "Undo");
 
     awm->at_newline();
@@ -1129,7 +1147,6 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->set_info_area_height( cur_y+6 );
 
     // gene+species buttons:
-
     awm->button_length(20);
 
     awm->at(gene_x, first_line_y);
@@ -1151,11 +1168,11 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->at(dtype_x1, first_line_y);
     awm->help_text("gen_disp_radial.hlp");
-    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)ntw,(AW_CL)GEN_DISPLAY_STYLE_RADIAL);
+    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)gmw,(AW_CL)GEN_DISPLAY_STYLE_RADIAL);
     awm->create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.bitmap",0);
 
     awm->help_text("gen_disp_book.hlp");
-    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)ntw,(AW_CL)GEN_DISPLAY_STYLE_BOOK);
+    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)gmw,(AW_CL)GEN_DISPLAY_STYLE_BOOK);
     awm->create_button("RADIAL_DISPLAY_TYPE", "#gen_book.bitmap",0);
 
     awm->get_at_position( &cur_x,&cur_y );
@@ -1163,7 +1180,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->at(dtype_x1, second_line_y);
     awm->help_text("gen_disp_vertical.hlp");
-    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)ntw,(AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
+    awm->callback((AW_CB)GEN_set_display_style,(AW_CL)gmw,(AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
     awm->create_button("RADIAL_DISPLAY_TYPE", "#gen_vertical.bitmap",0);
 
     // jump button:
@@ -1172,7 +1189,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->at(jump_x, first_line_y);
     awm->help_text("gen_jump.hlp");
-    awm->callback((AW_CB)GEN_jump_cb,(AW_CL)ntw,(AW_CL)0);
+    awm->callback((AW_CB)GEN_jump_cb,(AW_CL)gmw,(AW_CL)0);
     awm->create_button("Jump", "Jump");
 
     // help buttons:
@@ -1192,10 +1209,10 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     return awm;
 }
 
-//  ----------------------------------------------
-//      AW_window *GEN_map(AW_root *aw_root)
-//  ----------------------------------------------
-AW_window *GEN_map(AW_root *aw_root) {
+//  -----------------------------------------------------------------
+//      AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas)
+//  -----------------------------------------------------------------
+AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas) {
     static AW_window *aw_gen = 0;
 
     if (!aw_gen) {              // do not open window twice
@@ -1204,7 +1221,7 @@ AW_window *GEN_map(AW_root *aw_root) {
             GEN_make_node_text_init(gb_main);
         }
 
-        aw_gen = GEN_map_create_main_window(aw_root);
+        aw_gen = GEN_map_create_main_window(aw_root, (AWT_canvas*)cl_nt_canvas);
         if (!aw_gen) {
             aw_message("Couldn't start Gene-Map");
             return 0;
