@@ -8,7 +8,7 @@ GENERATED_HEADERS= \
 	struct_man.h \
 	server.h \
 
-AISC_MKPT_FLAGS=-CP
+AISC_MKPT_FLAGS=-CPE
 
 proto: $(GENERATED_HEADERS)
 
