@@ -23,7 +23,7 @@ struct AW_var_target {
 };
 
 
-void aw_update_awar_window_geometrie(AW_root *awr);
+void aw_update_awar_window_geometry(AW_root *awr);
 
 
 #endif
