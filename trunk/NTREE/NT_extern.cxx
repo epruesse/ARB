@@ -104,32 +104,33 @@ void nt_changesecurity(AW_root *aw_root) {
 }
 
 void export_nds_cb(AW_window *aww,AW_CL print_flag) {
-    GB_transaction dummy(gb_main);
-    GBDATA *gb_species;
-    char *buf;
-    FILE *out;
-    char *name = aww->get_root()->awar(AWAR_EXPORT_NDS"/file_name")->read_string();
-    out = fopen(name,"w");
+    GB_transaction  dummy(gb_main);
+    GBDATA         *gb_species;
+    const char     *buf;
+    AW_root        *aw_root = aww->get_root();
+    char           *name    = aw_root->awar(AWAR_EXPORT_NDS"/file_name")->read_string();
+    FILE           *out     = fopen(name,"w");
+
     if (!out) {
         delete name;
         aw_message("Error: Cannot open and write to file");
         return;
     }
     make_node_text_init(gb_main);
-    int tabbed = aww->get_root()->awar(AWAR_EXPORT_NDS"/tabbed")->read_int();
+    int   tabbed    = aw_root->awar(AWAR_EXPORT_NDS"/tabbed")->read_int();
+    char *tree_name = aw_root->awar(AWAR_TREE)->read_string();
 
     for (gb_species = GBT_first_marked_species(gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        buf = make_node_text_nds(gb_main, gb_species,(tabbed ? 2 : 1),0);
+        buf = make_node_text_nds(gb_main, gb_species,(tabbed ? 2 : 1),0, tree_name);
         fprintf(out,"%s\n",buf);
     }
-    awt_refresh_selection_box(aww->get_root(), AWAR_EXPORT_NDS);
+    awt_refresh_selection_box(aw_root, AWAR_EXPORT_NDS);
     fclose(out);
-    if (print_flag){
-        GB_textprint(name);
-    }
+    if (print_flag) GB_textprint(name);
+    free(tree_name);
     free(name);
 }
 
@@ -1057,8 +1058,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    nt.tree         = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
+    nt.tree = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
+    
+    AP_tree_sort old_sort_type = nt.tree->tree_sort;
+    nt.tree->set_tree_type(AP_NO_NDS);
+    
     AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
+
+    nt.tree->set_tree_type(old_sort_type);
+
     {
         char *tree_name          = awr->awar_string(awar_tree)->read_string();
         char *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
@@ -1075,6 +1083,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         free(existing_tree_name);
         free(tree_name);
     }
+
     awr->awar( AWAR_SPECIES_NAME)->add_callback( (AW_RCB)NT_jump_cb_auto, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_VERICAL_DIST)->add_callback( (AW_RCB)AWT_resize_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
