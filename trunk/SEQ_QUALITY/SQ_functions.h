@@ -21,11 +21,11 @@
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
 
-GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBDATA* gb_name);
+GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node);
 
 GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
 
-GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main);
+GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node);
 
 GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
 
