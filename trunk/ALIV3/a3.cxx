@@ -8,7 +8,8 @@
 #include <cstdlib>
 
 #include "a3_arbdb.hxx"
-#include "a3_bihelix.hxx"
+#include <BI_helix.hxx>
+// #include "a3_bihelix.hxx"
 #include "a3_ali.hxx"
 
 using std::cout;
@@ -125,8 +126,8 @@ static void Usage ( void )
 //              if (!pre) error = 3;
 //              else
                 {
-                    A3_BI_Helix helix;
-                    str err = helix.init(db.gb_main);
+                    BI_helix helix;
+                    const char *err = helix.init(db.gb_main);
                     long pos = 0;
 
                     if (err) cout << err << ", " << helix.size;
