@@ -1,8 +1,9 @@
 #ifndef arbdbt_h_included
 #define arbdbt_h_included
 
-#define GBT_SPECIES_INDEX_SIZE 10000
-#define GBT_SAI_INDEX_SIZE 1000
+#define GBT_SPECIES_INDEX_SIZE       10000
+#define GBT_SAI_INDEX_SIZE           1000
+#define GB_COMPRESSION_TAGS_SIZE_MAX 100
 
 typedef float GBT_LEN;
 
