@@ -17,13 +17,13 @@ AD             *read_aisc(char ** in);
 char *read_aisc_file(char *path)
 {
     FILE *input;
-    int data_size;
+    int   data_size;
     char *buffer = 0;
     if ((input = fopen(path, "r")) == 0) {
-	printf(" file %s not found\n", path);
+	fprintf(stderr, " file %s not found\n", path);
     }else{
 	if (fseek(input,0,2)==-1){
-	    printf("file %s not seekable\n",path);
+	    fprintf(stderr, "file %s not seekable\n",path);
 	}else{
 	    data_size = (int)ftell(input) + 1;
 	    rewind(input);
@@ -520,7 +520,7 @@ int main(int argc,char ** argv)
     char		abuf[20];
     int erg;
     if (argc < 2) {
-	printf("Specify File name\n");
+	fprintf(stderr, "Specify File name\n");
 	exit(-1);
     }
     aisc_init();
@@ -542,8 +542,10 @@ int main(int argc,char ** argv)
 	    return 1;
 	}
 	erg = run_prg();
+        /* fprintf(stderr, "run_prg() returns %i\n", erg); */
 	if (erg) {
 	    aisc_remove_files();
+            fflush(stdout);
 	    exit (-1);
 	}
     }
