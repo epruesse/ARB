@@ -524,7 +524,7 @@ void crop(char *input,char *head,char *tail)
 		head[offset]=input[offset];
 	head[offset++] = '\0';
 	for(;offset<length && isspace(input[offset]);offset++);
-	for(end=length-1;isspace(input[end]) && end>offset;end--);
+	for(end=length-1;end>offset && isspace(input[end]);end--);
 
 	for(j=0,i=offset;i<=end;i++,j++)
 		tail[j]=input[i];

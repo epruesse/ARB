@@ -9,9 +9,9 @@ UP	treeadm.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Copy node info
+TITLE		Move node info
 
-OCCURRENCE	ARB_NT/Tree/Copy_Del.../Copy Node Info
+OCCURRENCE	ARB_NT/Tree/Copy_Del.../Move Node Info
 
 DESCRIPTION	Move the internal group labels from one tree to another. If
 		the trees are different, the program will try to guess where to
@@ -20,17 +20,17 @@ DESCRIPTION	Move the internal group labels from one tree to another. If
 
 		Select the (source) tree with the node labels in the left
 		selection list and the destination tree in the right selection
-		list. 
-		
-		If you press 'Copy node info' all nodes in the destination
-		tree get deleted and the new nodes are inserted instead. 
-	
-		If you press 'Add node info' the nodes in the destination tree
-		are renamed ('newname [was: oldname]') and non-existing nodes  
+		list.
+
+		If you press 'Copy info' all nodes in the destination
+		tree get deleted and the new nodes are inserted instead.
+
+		If you press 'Add info' the nodes in the destination tree
+		are renamed ('newname [was: oldname]') and non-existing nodes
 		from the source tree are inserted.
 
-		If you check 'only info containing marked species' only groups 
-		containing at least one marked species are moved to the 
+		If you check 'only info containing marked species' only groups
+		containing at least one marked species are moved to the
 		destination tree.
 
 NOTES		None

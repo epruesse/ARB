@@ -1230,25 +1230,25 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic()
 {
-    line_filter = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
-    vert_line_filter = AW_SCREEN|AW_PRINTER;
-    text_filter = AW_SCREEN|AW_CLICK|AW_PRINTER;
-    mark_filter = AW_SCREEN|AW_PRINTER_EXT;
-    ruler_filter = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE;
-    root_filter = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
+    line_filter       = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
+    vert_line_filter  = AW_SCREEN|AW_PRINTER;
+    text_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER;
+    mark_filter       = AW_SCREEN|AW_PRINTER_EXT;
+    ruler_filter      = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE;
+    root_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
     set_tree_type(AP_LIST_TREE);
     tree_root_display = 0;
-    tree_root = 0;
-    y_pos = 0;
-    tree_proto = 0;
-    tree_static = 0;
-    baselinewidth = 0;
-    species_name = 0;
-    this->aw_root = aw_rooti;
-    this->gb_main = gb_maini;
-    rot_ct.exists = AW_FALSE;
-    rot_cl.exists = AW_FALSE;
-
+    tree_root         = 0;
+    y_pos             = 0;
+    tree_proto        = 0;
+    tree_static       = 0;
+    baselinewidth     = 0;
+    species_name      = 0;
+    this->aw_root     = aw_rooti;
+    this->gb_main     = gb_maini;
+    rot_ct.exists     = AW_FALSE;
+    rot_cl.exists     = AW_FALSE;
+    nds_show_all      = true;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree(void)
@@ -1901,7 +1901,7 @@ void AWT_graphic_tree::show(AW_device *device)	{
     this->baselinewidth = (int)this->aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     this->show_circle = (int)this->aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     this->circle_zoom_factor = this->aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
-    delete (this->species_name);
+    free(this->species_name);
     this->species_name = this->aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     x_cursor = y_cursor = 0.0;
     switch (nsort) {

@@ -171,7 +171,7 @@ void aw_status_wait_for_open(int fd)
             erg = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,NULL,&timeout);
             if (!erg) aw_status_check_pipe();	// time out
         }
-        delete str;
+        free(str);
         cmd = aw_status_read_command(fd,0,str);
     }
     aw_stg.mode = AW_STATUS_OK;
@@ -256,7 +256,7 @@ void aw_insert_message_in_tmp_message(AW_root *awr,const char *message){
     aw_stg.line_cnt ++;
     str = GBS_strclose(stru,0);
     awr->awar("tmp/Message")->write_string(str );
-    delete str;
+    free(str);
 
 }
 
@@ -282,7 +282,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 awr->awar("tmp/Gauge")->write_string("----------------------------");
                 awr->awar("tmp/Text")->write_string("");
                 cmd = EOF;
-                delete str;
+                free(str);
                 continue; // break while loop
             case AW_STATUS_CMD_CLOSE:
                 aw_stg.mode	= AW_STATUS_OK;
@@ -292,7 +292,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 awr->awar("tmp/Text")->write_string(str);
                 break;
             case AW_STATUS_CMD_GAUGE:
-                delete gauge;
+                free(gauge);
                 gauge = str;
                 str = 0;
                 break;
@@ -303,12 +303,12 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
             default:
                 break;
         }
-        delete str;
+        free(str);
         cmd = aw_status_read_command( aw_stg.fd_to[0],1,str);
     }
     if (gauge){
         awr->awar("tmp/Gauge")->write_string(gauge);
-        delete gauge;
+        free(gauge);
     }
     if (delay>AW_STATUS_LISTEN_DELAY) delay = AW_STATUS_LISTEN_DELAY;
     awr->add_timed_callback(delay,aw_status_timer_listen_event, 0, 0);
@@ -319,7 +319,7 @@ void aw_clear_message_cb(AW_window *aww)
     int i;
     AW_root *awr = aww->get_root();
     for (i = 0; i< AW_MESSAGE_LINES; i++){
-        delete aw_stg.lines[i];
+        free(aw_stg.lines[i]);
         aw_stg.lines[i] = 0;
     };
     awr->awar("tmp/Message")->write_string("" );
@@ -570,7 +570,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
         {
             char *hmsg = GBS_string_eval(msg,"*/*= */*",0);
             aw_msg->create_button( 0,hmsg );
-            delete hmsg;
+            free(hmsg);
         }
 
         aw_msg->at_newline();
@@ -616,10 +616,10 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
 
         aw_msg->window_fit();
     }
-    delete hindex;
+    free(hindex);
     aw_msg->show_grabbed();
 
-    delete button_list;
+    free(button_list);
     aw_message_cb_result = -13;
 
     root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
@@ -1000,7 +1000,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
 static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit = false) {
     char *helpfile = awr->awar("tmp/aw_window/helpfile")->read_string();
     char *qualified = get_full_qualified_help_file_name(helpfile, path_for_edit);
-    delete helpfile;
+    free(helpfile);
     return qualified;
 }
 
@@ -1020,7 +1020,7 @@ void aw_help_edit_help(AW_window *aww)
     printf("%s\n",buffer);
     system(buffer);
 
-    delete helpfile;
+    free(helpfile);
 }
 char *aw_ref_to_title(char *ref){
     if (!ref) return 0;
@@ -1092,10 +1092,11 @@ void aw_help_new_helpfile(AW_root *awr){
                 char *h;
                 sprintf(comm,"*=%s#*1",help_file);
                 h = GBS_string_eval(aw_help_global.history,comm,0);
-                delete aw_help_global.history;
+                free(aw_help_global.history);
                 aw_help_global.history = h;
             }
-        }else{
+        }
+        else {
             aw_help_global.history = strdup(help_file);
         }
 
@@ -1111,11 +1112,10 @@ void aw_help_new_helpfile(AW_root *awr){
                 h2 = GBS_find_string(h2+1,"\nUP",0);
                 tok = strtok(h+3," \n\t");	// now I got UP
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(
-                                                              aw_help_global.upid,title,tok);
-                delete title;
+                if (tok) aw_help_global.aww->insert_selection(aw_help_global.upid,title,tok);
+                free(title);
             }
-            delete ptr;
+            free(ptr);
             aw_help_global.aww->insert_default_selection(aw_help_global.upid,"   ","");
             aw_help_global.aww->update_selection_list(aw_help_global.upid);
 
@@ -1128,9 +1128,9 @@ void aw_help_new_helpfile(AW_root *awr){
                 char *title = aw_ref_to_title(tok);
                 if (tok) aw_help_global.aww->insert_selection(
                                                               aw_help_global.downid,	title,tok);
-                delete title;
+                free(title);
             }
-            delete ptr;
+            free(ptr);
             aw_help_global.aww->insert_default_selection(aw_help_global.downid,"   ","");
             aw_help_global.aww->update_selection_list(aw_help_global.downid);
 
@@ -1139,8 +1139,8 @@ void aw_help_new_helpfile(AW_root *awr){
             ptr = GBS_string_eval(ptr,"{*\\:*}=*2",0);
 
             awr->awar("tmp/aw_window/helptext")->write_string(ptr);
-            delete ptr;
-            delete helptext;
+            free(ptr);
+            free(helptext);
         }else{
             sprintf(AW_ERROR_BUFFER,"I cannot find the help file '%s'\n\n"
                     "Please help us to complete the ARB-Help by submitting\n"
@@ -1149,7 +1149,7 @@ void aw_help_new_helpfile(AW_root *awr){
             awr->awar("tmp/aw_window/helptext")->write_string(AW_ERROR_BUFFER);
         }
     }
-    delete help_file;
+    free(help_file);
 }
 
 void aw_help_back(AW_window *aww)
@@ -1157,11 +1157,11 @@ void aw_help_back(AW_window *aww)
     if (!aw_help_global.history) return;
     if (!strchr(aw_help_global.history,'#') ) return;
     char *newhist = GBS_string_eval(aw_help_global.history,"*#*=*2",0);	// delete first
-    delete aw_help_global.history;
+    free(aw_help_global.history);
     aw_help_global.history = newhist;
     char *helpfile = GBS_string_eval(aw_help_global.history,"*#*=*1",0);	// first word
     aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfile);
-    delete helpfile;
+    free(helpfile);
 
 }
 
@@ -1309,7 +1309,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
         helpwindow->callback(aw_help_search);
         helpwindow->create_button("SEARCH", "SEARCH", "S");
     }
-    delete aw_help_global.history;
+    free(aw_help_global.history);
     aw_help_global.history = 0;
 
     awr->awar("tmp/aw_window/helpfile")->write_string("");

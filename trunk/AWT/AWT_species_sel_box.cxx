@@ -86,7 +86,7 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
         }else{
             aw_message(GBS_global_string("Cannot add '%s' to your key list",name));
         }
-        delete new_name;
+        free(new_name);
         if (error && !strncmp(error, "Fatal",5) ) return error;
     }
 

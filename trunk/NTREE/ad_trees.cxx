@@ -207,29 +207,41 @@ void tree_rename_cb(AW_window *aww){
 	}
 	if (error) aw_message(error);
 	else aww->hide();
-	delete source;
-	delete dest;
+	free(source);
+	free(dest);
+}
+
+void tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
+    GBDATA *gb_remark = GB_search(gb_tree, "remark", GB_STRING);
+    nt_assert(gb_remark);
+
+    char    *old_remark = GB_read_string(gb_remark);
+    GB_CSTR  new_remark = GBS_global_string("%s\n%s", old_remark, add_to_remark);
+
+    GB_write_string(gb_remark, new_remark);
+    free(old_remark);
 }
 
 void tree_copy_cb(AW_window *aww){
-	GB_ERROR error = 0;
-	char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-	char *dest = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
+	GB_ERROR  error  = 0;
+	char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+	char     *dest   = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
+
 	error = GBT_check_tree_name(dest);
 	if (!error) {
 		GB_begin_transaction(gb_main);
-		GBDATA *gb_tree_data =
-			GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-		GBDATA *gb_tree_name =
-			GB_find(gb_tree_data,source,0,down_level);
-		GBDATA *gb_dest =
-			GB_find(gb_tree_data,dest,0,down_level);
+		GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+		GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
+		GBDATA *gb_dest      = GB_find(gb_tree_data,dest,0,down_level);
 		if (gb_dest) {
 			error = "Sorry: Tree already exists";
-		}else 			if (gb_tree_name) {
+		}
+        else if (gb_tree_name) {
 			gb_dest = GB_create_container(gb_tree_data,dest);
-			error = GB_copy(gb_dest,gb_tree_name);
-		}else{
+			error   = GB_copy(gb_dest,gb_tree_name);
+            tree_append_remark(gb_dest, GBS_global_string("[created as copy of '%s']", source));
+		}
+        else {
 			error = "Please select a tree first";
 		}
 		if (!error) GB_commit_transaction(gb_main);
@@ -237,8 +249,8 @@ void tree_copy_cb(AW_window *aww){
 	}
 	if (error) aw_message(error);
 	else aww->hide();
-	delete source;
-	delete dest;
+	free(source);
+	free(dest);
 }
 
 void create_tree_last_window(AW_window *aww) {
@@ -473,15 +485,18 @@ void ad_move_tree_info(AW_window *aww,AW_CL mode){
     // move or add node-info writes a log file (containing errors)
     // compare_node_info only sets remark branches
 
-    if ( compare_node_info ) { delete log_file;log_file = 0; } // no log if compare_node_info
+    if ( compare_node_info ) {
+        free(log_file); // no log if compare_node_info
+        log_file = 0;
+    }
 
     AWT_move_info(gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
 
     if (log_file) GB_edit(log_file);
 
-    delete log_file;
-    delete t2;
-    delete t1;
+    free(log_file);
+    free(t2);
+    free(t1);
     aww->hide();
 }
 
@@ -566,7 +581,7 @@ void ad_tr_delete_cb(AW_window *aww){
 	    error = GB_delete(gb_tree_name);
 	    if (newname){
             aww->get_root()->awar(AWAR_TREE_NAME)->write_string(newname);
-            delete newname;
+            free(newname);
 	    }
 	}else{
         error = "Please select a tree first";
@@ -576,7 +591,7 @@ void ad_tr_delete_cb(AW_window *aww){
 	else	GB_abort_transaction(gb_main);
 
 	if (error) aw_message(error);
-	delete source;
+	free(source);
 }
 
 AW_window *create_trees_window(AW_root *aw_root)

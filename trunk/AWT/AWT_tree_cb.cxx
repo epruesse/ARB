@@ -546,7 +546,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
             default : awt_assert(0); break;
         }
     }
-    delete name;
+    free(name);
 }
 
 void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){	// jump only if auto jump is set
@@ -569,7 +569,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
     if (error) {
         aw_message(error);
     }
-    delete tree_name;
+    free(tree_name);
     ntw->zoom_reset();
     AWT_expose_cb(0,ntw,0);
     GB_pop_transaction(ntw->gb_main);

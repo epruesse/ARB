@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.4  2002/11/21 18:21:50  westram
+ * memory bugfixes
+ *
  * Revision 1.3  2001/08/17 19:57:45  westram
  * * AW_xfig.cxx: - implemented AW_xfig::add_line
  *            - implemented new constructor
@@ -490,7 +493,7 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
 
     this->size_x = maxx - minx;
     this->size_y = maxy - miny;
-    delete buffer;
+    free(buffer);
     free(expanded_filename);
 }
 

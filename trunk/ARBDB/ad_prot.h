@@ -15,6 +15,7 @@ char *GB_mergesort P_((void **array, long start, long end, gb_compare_two_items_
 /* adstring.c */
 char *GB_find_all_files P_((const char *dir, const char *mask, GB_BOOL filename_only));
 char *GB_find_latest_file P_((const char *dir, const char *mask));
+void GB_raise_critical_error P_((const char *msg));
 GB_ERROR GB_export_error P_((const char *templat, ...));
 GB_ERROR GB_export_IO_error P_((const char *action, const char *filename));
 GB_ERROR GB_print_error P_((void));

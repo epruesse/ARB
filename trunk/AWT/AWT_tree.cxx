@@ -486,7 +486,7 @@ GB_BOOL AP_tree_root::is_species_updated(void)
 
 AP_tree_root::~AP_tree_root()
 {
-    delete tree_name;
+    free(tree_name);
     if (this->gb_tree) {
         GB_transaction dummy(this->gb_tree);
         GB_remove_callback(this->gb_tree,GB_CB_DELETE, (GB_CB)AP_tree_tree_deleted,(int *)this);
@@ -531,8 +531,8 @@ AP_tree::AP_tree(AP_tree_root	*tree_rooti)
 
 AP_tree::~AP_tree(void)
 {
-    delete name;
-    delete remark_branch;
+    free(name);
+    free(remark_branch);
     delete leftson;
     delete rightson;
     delete sequence;

@@ -91,15 +91,14 @@ int main_load_and_startup_main_window(AW_root *aw_root)	// returns 0 when succes
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
     gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");
 
-    if (!gb_main) {
-        aw_message(GB_get_error(),"OK");
-        return -1;
-    }
+	if (!gb_main) {
+		aw_message(GB_get_error(),"OK");
+		return -1;
+	}
 
     aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
-    delete db_server;
-    nt_main_startup_main_window(aw_root);
-
+	free(db_server);
+	nt_main_startup_main_window(aw_root);
 
     return 0;
 }
@@ -235,7 +234,7 @@ int main(int argc, char **argv)
 {
     AW_root *aw_root;
     AW_default aw_default;
-	
+
     const char *db_server =":";
 
     unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");

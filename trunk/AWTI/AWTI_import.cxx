@@ -51,8 +51,8 @@ AW_BOOL  awtc_read_string_pair(FILE *in, char *&s1,char *&s2)
 	const int BUFSIZE = 8000;
 	char buffer[BUFSIZE];
 	char *res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
-	delete s1;
-	delete s2;
+	free(s1);
+	free(s2);
 	s1 = 0;
 	s2 = 0;
 	if (!res) return AW_TRUE;
@@ -188,24 +188,24 @@ input_format_struct::~input_format_struct(void)
 
 	for (pl1 = ifo->pl; pl1; pl1=pl2){
 		pl2 = pl1->next;
-		delete pl1->match;
-		delete pl1->srt;
-		delete pl1->aci;
-		delete pl1->tag;
-		delete pl1->append;
-		delete pl1->write;
-		delete pl1;
+		free(pl1->match);
+		free(pl1->srt);
+		free(pl1->aci);
+		free(pl1->tag);
+		free(pl1->append);
+		free(pl1->write);
+		free(pl1);
 	}
 
-	delete ifo->autodetect;
-	delete ifo->system;
-	delete ifo->new_format;
-	delete ifo->begin;
-	delete ifo->sequencestart;
-	delete ifo->sequenceend;
-	delete ifo->sequencesrt;
-	delete ifo->sequenceaci;
-	delete ifo->end;
+	free(ifo->autodetect);
+	free(ifo->system);
+	free(ifo->new_format);
+	free(ifo->begin);
+	free(ifo->sequencestart);
+	free(ifo->sequenceend);
+	free(ifo->sequencesrt);
+	free(ifo->sequenceaci);
+	free(ifo->end);
 	delete ifo->b1;
 	delete ifo->b2;
 }

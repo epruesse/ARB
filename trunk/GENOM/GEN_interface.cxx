@@ -332,7 +332,7 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
 GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root) {
     char   *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
     GBDATA *gb_species   = GBT_find_species(gb_main,species_name);
-    delete species_name;
+    free(species_name);
     return gb_species;
 }
 
@@ -358,7 +358,7 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
     if (gb_species) {
 		char *gene_name = aw_root->awar(AWAR_GENE_NAME)->read_string();
 		gb_gene         = GEN_find_gene(gb_species,gene_name);
-		delete gene_name;
+		free(gene_name);
     }
 
     return gb_gene;

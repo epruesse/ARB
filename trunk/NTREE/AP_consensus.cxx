@@ -723,9 +723,11 @@ void CON_calculate_cb(AW_window *aw )
 void create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
 	GB_transaction dummy(gb_main);
-	char *defali = GBT_get_default_alignment(gb_main);
-	aw_root->awar_string( "tmp/con/alignment", defali ,aw_def);
-	delete defali;
+    {
+        char *defali = GBT_get_default_alignment(gb_main);
+        aw_root->awar_string( "tmp/con/alignment", defali ,aw_def);
+        free(defali);
+    }
  	aw_root->awar_string( "tmp/con/which_species","marked",aw_def );
 	aw_root->awar_string( "con/group","off",aw_def);
 	aw_root->awar_string( "con/countgaps","on",aw_def);

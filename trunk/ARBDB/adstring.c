@@ -200,6 +200,18 @@ gb_status_func2_type gb_status_func2;
 					error handling
 ********************************************************************************************/
 
+void GB_raise_critical_error(const char *msg) {
+    fprintf(stderr, "------------------------------------------------------------\n");
+    fprintf(stderr, "A critical error occurred in ARB\nError-Message: %s\n", msg);
+#if defined(DEBUG)
+    fprintf(stderr, "Run the debugger to find the location where the error was raised.\n");
+#endif /* DEBUG */
+    fprintf(stderr, "------------------------------------------------------------\n");
+    gb_assert(0);
+    exit(-1);
+}
+
+
 static char *GB_error_buffer = 0;
 
 GB_ERROR GB_export_error(const char *templat, ...)
