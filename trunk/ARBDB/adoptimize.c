@@ -885,7 +885,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
     */
 
     printf("    uncompressed size = %li b\n"
-           "    compressed size = %li b\n"
+           "      compressed size = %li b\n"
            "    +%li (dict)     = %li b       (Ratio=%li%%)\n",
            uncompressed_sum, compressed_sum,
            dict_size, dict_size+compressed_sum,
@@ -2393,12 +2393,13 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
     return NULL;
 }
 
-static void readAndWrite(O_gbdByKey *gbkp) {
-    int i;
+static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
+    int      i;
+    GB_ERROR error = 0;
 
-    for (i=0; i<gbkp->cnt; i++) {
-        GBDATA *gbd = gbkp->gbds[i];
-        int type = GB_TYPE(gbd);
+    for (i=0; i<gbkp->cnt && !error; i++) {
+        GBDATA *gbd  = gbkp->gbds[i];
+        int     type = GB_TYPE(gbd);
 
         if (COMPRESSABLE(type)) {
             long size;
@@ -2409,28 +2410,29 @@ static void readAndWrite(O_gbdByKey *gbkp) {
 
                 data = gbm_get_mem(size, GBM_DICT_INDEX);
                 GB_MEMCPY(data, d, size);
+                ad_assert(data[size-1] == 0);
             }
 
             switch(type) {
                 case GB_STRING:
-                    GB_write_string(gbd, "");
-                    GB_write_string(gbd, data);
+                    error             = GB_write_string(gbd, "");
+                    if (!error) error = GB_write_string(gbd, data);
                     break;
                 case GB_LINK:
-                    GB_write_link(gbd, "");
-                    GB_write_link(gbd, data);
+                    error             = GB_write_link(gbd, "");
+                    if (!error) error = GB_write_link(gbd, data);
                     break;
                 case GB_BYTES:
-                    GB_write_bytes(gbd, 0, 0);
-                    GB_write_bytes(gbd, data, size);
+                    error             = GB_write_bytes(gbd, 0, 0);
+                    if (!error) error = GB_write_bytes(gbd, data, size);
                     break;
                 case GB_INTS:
-                    GB_write_ints(gbd, (GB_UINT4 *)0, 0);
-                    GB_write_ints(gbd, (GB_UINT4 *)data, size);
+                    error             = GB_write_ints(gbd, (GB_UINT4 *)0, 0);
+                    if (!error) error = GB_write_ints(gbd, (GB_UINT4 *)data, size);
                     break;
                 case GB_FLOATS:
-                    GB_write_floats(gbd, (float*)0, 0);
-                    GB_write_floats(gbd, (float*)data, size);
+                    error             = GB_write_floats(gbd, (float*)0, 0);
+                    if (!error) error = GB_write_floats(gbd, (float*)data, size);
                     break;
                 default:
                     ad_assert(0);
@@ -2440,6 +2442,7 @@ static void readAndWrite(O_gbdByKey *gbkp) {
             gbm_free_mem(data, size, GBM_DICT_INDEX);
         }
     }
+    return error;
 }
 
 GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
@@ -2460,35 +2463,35 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         printf("Creating dictionaries..\n");
 
 #ifdef DEBUG
-
         /* #define TEST_ONE */               /* test only key specified below */
         /*#define TEST_SOME*/ 	/* test some keys starting with key specified below */
-
-#endif
-
 #if defined(TEST_ONE) || defined(TEST_SOME)
-        for (idx=0; idx<gbdByKey_cnt; idx++) {	/* title author dew_author ebi_journal name ua_tax date full_name ua_title */
+        /* select wanted index */
+        for (idx=0; idx<gbdByKey_cnt; idx++) { /* title author dew_author ebi_journal name ua_tax date full_name ua_title */
             if (gbk[idx].cnt && strcmp(Main->keys[idx].key, "tree")==0) break;
         }
         ad_assert(idx<gbdByKey_cnt);
 #endif
-
-#ifndef TEST_ONE
-        for (
-# ifdef TEST_SOME
-             ; idx<gbdByKey_cnt; idx++
-# else
-                 idx=1; idx<gbdByKey_cnt; idx++
-# endif
-             )
 #endif
+
+#ifdef TEST_ONE
+        /* only create dictionary for index selected above (no loop) */
+#else
+#ifdef TEST_SOME
+        /* only create dictionaries for some indices, starting with index selected above */
+        for (       ; idx<gbdByKey_cnt && !error; ++idx)
+#else
+        /* create dictionaries for all indices (this is the normal operation) */
+        for (idx = 1; idx<gbdByKey_cnt && !error; ++idx)
+#endif
+#endif
+
         {
             GB_DICTIONARY *dict;
-            char *dict_buffer;
-            int dict_buffer_size;
-            int compression_mask;
-            GB_CSTR key_name = Main->keys[idx].key;
-            int type;
+            int            compression_mask;
+            GB_CSTR        key_name = Main->keys[idx].key;
+            int            type;
+            GBDATA        *gb_main  = (GBDATA*)Main->data;
 
 #ifndef TEST_ONE
             GB_status(idx/(double)gbdByKey_cnt);
@@ -2502,31 +2505,10 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #endif
 
             printf("dictionary for '%s' (idx=%i):\n", key_name, idx);
+            GB_begin_transaction(gb_main);
             dict = gb_create_dictionary(&(gbk[idx]), maxmem);
 
             if (dict) {
-                /* dictionary is saved in the following format:
-                 *
-                 * GB_NINT size
-                 * GB_NINT offsets[dict->words]
-                 * GB_NINT resort[dict->words]
-                 * char *text
-                 */
-
-                dict_buffer_size = sizeof(GB_NINT) * (1+dict->words*2) + dict->textlen;
-                dict_buffer = gbm_get_mem(dict_buffer_size, GBM_DICT_INDEX);
-
-                {
-                    GB_NINT *nint = (GB_NINT*)dict_buffer;
-                    int n;
-
-                    *nint++ = htonl(dict->words);
-                    for (n=0; n<dict->words; n++) *nint++ = htonl(dict->offsets[n]);
-                    for (n=0; n<dict->words; n++) *nint++ = htonl(dict->resort[n]);
-
-                    GB_MEMCPY(nint, dict->text, dict->textlen);
-                }
-
                 /* decompress with old dictionary and write
                    all data of actual type without compression: */
 
@@ -2536,32 +2518,73 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                     int old_compression_mask = Main->keys[idx].compression_mask;
 
                     Main->keys[idx].compression_mask &= ~GB_COMPRESSION_DICTIONARY;
-                    readAndWrite(&gbk[idx]);
-                    Main->keys[idx].compression_mask = old_compression_mask;
+                    error                             = readAndWrite(&gbk[idx]);
+                    Main->keys[idx].compression_mask  = old_compression_mask;
                 }
 
-                gb_save_dictionary((GBDATA*)Main->data, Main->keys[idx].key, dict_buffer, dict_buffer_size);
-                gbm_free_mem(dict_buffer, dict_buffer_size, GBM_DICT_INDEX);
+                if (!error) {
+                    /* dictionary is saved in the following format:
+                     *
+                     * GB_NINT size
+                     * GB_NINT offsets[dict->words]
+                     * GB_NINT resort[dict->words]
+                     * char *text
+                     */
 
-                /* compress all data with new dictionary */
+                    int   dict_buffer_size = sizeof(GB_NINT) * (1+dict->words*2) + dict->textlen;
+                    char *dict_buffer      = gbm_get_mem(dict_buffer_size, GBM_DICT_INDEX);
+                    long  old_dict_buffer_size;
+                    char *old_dict_buffer;
 
-                printf("  Compressing all with new dictionary ...\n");
-                readAndWrite(&gbk[idx]);
+                    {
+                        GB_NINT *nint = (GB_NINT*)dict_buffer;
+                        int n;
+
+                        *nint++ = htonl(dict->words);
+                        for (n=0; n<dict->words; n++) *nint++ = htonl(dict->offsets[n]);
+                        for (n=0; n<dict->words; n++) *nint++ = htonl(dict->resort[n]);
+
+                        GB_MEMCPY(nint, dict->text, dict->textlen);
+                    }
+
+                    error = gb_load_dictionary_data(gb_main, Main->keys[idx].key, &old_dict_buffer, &old_dict_buffer_size);
+                    if (!error) {
+                        gb_save_dictionary_data(gb_main, Main->keys[idx].key, dict_buffer, dict_buffer_size);
+
+                        /* compress all data with new dictionary */
+                        printf("  Compressing all with new dictionary ...\n");
+                        error = readAndWrite(&gbk[idx]);
+                        if (error) {
+                            /* critical state: new dictionary has been written, but transaction will be aborted below.
+                             * Solution: Write back old dictionary.
+                             */
+                            gb_save_dictionary_data(gb_main, Main->keys[idx].key, old_dict_buffer, old_dict_buffer_size);
+                        }
+                    }
+
+                    gbm_free_mem(dict_buffer, dict_buffer_size, GBM_DICT_INDEX);
+                    if (old_dict_buffer) gbm_free_mem(old_dict_buffer, old_dict_buffer_size, GBM_DICT_INDEX);
 
 #if defined(TEST_DICT)
-                {
-                    GB_DICTIONARY *dict_reloaded = gb_get_dictionary(Main, idx);
-                    test_dictionary(dict_reloaded,&(gbk[idx]), &uncompressed_sum, &compressed_sum);
-                }
+                    if (!error) {
+                        GB_DICTIONARY *dict_reloaded = gb_get_dictionary(Main, idx);
+                        test_dictionary(dict_reloaded,&(gbk[idx]), &uncompressed_sum, &compressed_sum);
+                    }
 #endif /* TEST_DICT */
+                }
             }
+
+            if (error) GB_abort_transaction(gb_main);
+            else GB_commit_transaction(gb_main);
         }
 
-#if 0
-        printf("    overall uncompressed size = %li b\n"
-               "    overall compressed size = %li b (Ratio=%li%%)\n",
-               uncompressed_sum, compressed_sum,
-               (compressed_sum*100)/uncompressed_sum);
+#ifdef DEBUG
+        if (!error) {
+            printf("    overall uncompressed size = %li b\n"
+                   "    overall   compressed size = %li b (Ratio=%li%%)\n",
+                   uncompressed_sum, compressed_sum,
+                   (compressed_sum*100)/uncompressed_sum);
+        }
 #endif
 
         printf("Done.\n");
@@ -2587,12 +2610,8 @@ GB_ERROR GB_optimize(GBDATA *gb_main) {
     else 			maxMem = LONG_MAX;
 
     GB_request_undo_type(gb_main,GB_UNDO_KILL);
-    GB_begin_transaction(gb_main);
 
     error = gb_create_dictionaries(GB_MAIN(gb_main), maxMem);
-
-    if (error) 	GB_abort_transaction(gb_main);
-    else	GB_commit_transaction(gb_main);
 
     GB_disable_quicksave(gb_main,"Database optimized");
     GB_request_undo_type(gb_main,undo_type);
