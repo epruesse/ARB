@@ -331,22 +331,27 @@ public:
 //  ----------------------------------------------------------------------------------------------------------------
 //      static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para)
 //  ----------------------------------------------------------------------------------------------------------------
-static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para) {
+// static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para) {
+static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const probe_config_data& para) {
     int     i;
     char    buffer[256];
 
-    if (aisc_put(pd_gl.link, PT_PDC, pdc,
-                 PDC_DTEDGE,        para.dtedge,
-                 PDC_DT,        para.dt,
-                 PDC_SPLIT,         para.split,
-                 0)) return false;
+    if (aisc_put(pd_gl.link,
+                 PT_PDC,     pdc,
+                 PDC_DTEDGE, para.dtedge,
+                 PDC_DT,     para.dt,
+                 PDC_SPLIT,  para.split,
+                 0
+                 )) return false;
 
     for (i=0;i<16;i++) {
         sprintf(buffer,"probe_design/bonds/pos%i",i);
-        if (aisc_put(pd_gl.link,PT_PDC, pdc,
+        if (aisc_put(pd_gl.link,
+                     PT_PDC,        pdc,
                      PT_INDEX,      i,
-                     PDC_BONDVAL,   para.bondval[i],
-                     0) ) return false;
+                     PDC_BONDVAL,   para.bonds[i],
+                     0
+                     )) return false;
     }
 
     return true;
@@ -357,7 +362,7 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_
 //  -----------------------------------------------------------------------------------------------------
 //  calls probe-match for 'for_probe' and inserts all matching species into PG_Group 'g'
 
-GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const char *for_probe) {
+GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const char *for_probe) {
     static PT_server_connection *my_server = 0;
     GB_ERROR             error     = 0;
 
@@ -390,13 +395,13 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
 
     // start probe-match:
     if (aisc_nput(pd_gl.link,
-                  PT_LOCS,          pd_gl.locs,
-                  LOCS_MATCH_REVERSED,      0,
-                  LOCS_MATCH_SORT_BY,       0,
-                  LOCS_MATCH_COMPLEMENT,    0,      //checked!!
-                  LOCS_MATCH_MAX_MISMATCHES,    0,  // no mismatches
-                  LOCS_MATCH_MAX_SPECIES,   MAX_SPECIES,
-                  LOCS_SEARCHMATCH,     for_probe,
+                  PT_LOCS,                      pd_gl.locs,
+                  LOCS_MATCH_REVERSED,          0,
+                  LOCS_MATCH_SORT_BY,           0,
+                  LOCS_MATCH_COMPLEMENT,        0, //checked!!
+                  LOCS_MATCH_MAX_MISMATCHES,    0, // no mismatches
+                  LOCS_MATCH_MAX_SPECIES,       MAX_SPECIES,
+                  LOCS_SEARCHMATCH,             for_probe,
                   0))
     {
         error = connection_lost;
@@ -404,18 +409,19 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
 
     if (!error) {
         // read_results:
-        T_PT_MATCHLIST   match_list;
-        long         match_list_cnt;
-        char        *locs_error = 0;
-        bytestring   bs;
+        T_PT_MATCHLIST  match_list;
+        long            match_list_cnt;
+        char           *locs_error = 0;
+        bytestring      bs;
 
         bs.data = 0;
 
-        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
+        if (aisc_get( pd_gl.link,
+                      PT_LOCS,              pd_gl.locs,
                       LOCS_MATCH_LIST,      &match_list,
                       LOCS_MATCH_LIST_CNT,  &match_list_cnt,
                       LOCS_MATCH_STRING,    &bs,
-                      LOCS_ERROR,       &locs_error,
+                      LOCS_ERROR,           &locs_error,
                       0))
         {
             error = connection_lost;
@@ -432,13 +438,13 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
         }
 
         if (!error) {
-            char toksep[2]     = { 1, 0 };
-            char    *hinfo = strtok(bs.data, toksep);
+            char toksep[2] = { 1, 0 };
+            char *hinfo = strtok(bs.data, toksep);
 
             if (hinfo) {
                 while (1) {
-                    char    *match_name = strtok(0, toksep); if (!match_name) break;
-                    char    *match_info = strtok(0, toksep); if (!match_info) break;
+                    char *match_name = strtok(0, toksep); if (!match_name) break;
+                    char *match_info = strtok(0, toksep); if (!match_info) break;
 
                     group.add(match_name);
                 }
