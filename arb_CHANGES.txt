@@ -2,6 +2,9 @@ ARB change log
 
 Major changes for next Beta:
 
+ - automatic formatting of alignments
+ - SECEDIT may use EDIT4 colors
+ - fixed bootstrapping (DNAPARS, PROTPARS, PROTML(experimental!))
  - updated clustalw to version 1.83
  - Restore window sizes for ALL windows (too small sizes are ignored)
  - new algorithm to add partial sequences to an existing tree
