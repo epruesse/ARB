@@ -1430,22 +1430,23 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     true, // use color groups
 
                                     "#ffffe0",
-                                    "STANDARD$black",                   // Standard Color showing sequences
-                                    "#SEQUENCES$navy",                  // Color for selected sequences
-                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",       "-COLOR 3$#0a0",
-                                    "+-COLOR 4$#80f",       "+-COLOR 5$#a90",       "-COLOR 6$grey",
-                                    "+-COLOR 7$red",        "+-COLOR 8$red",        "-COLOR 9$red",
+                                    "STANDARD$black",                                       // Standard Color showing sequences
+                                    "#SEQUENCES$navy",                                      // Color for selected sequences
+                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",           "-COLOR 3$#0a0",
+                                    "+-COLOR 4$#80f",           "+-COLOR 5$#a90",       "-COLOR 6$grey",
+                                    "+-COLOR 7$red",            "+-COLOR 8$red",        "-COLOR 9$red",
                                     "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
                                     "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
                                     "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
                                     "-RANGE 9$#303030",
 
-                                    "+-USER1$#B8E2F8",      "+-USER2$#B8E2F8",      "-PROBE$#B8E2F8", // see also SEC_graphic::init_devices
-                                    "+-PRIMER(l)$#A9FE54",  "+-PRIMER(r)$#A9FE54",  "-PRIMER(g)$#A9FE54",
-                                    "+-SIGNATURE(l)$#DBB0FF",     "+-SIGNATURE(r)$#DBB0FF",     "-SIGNATURE(g)$#DBB0FF",
+                                    "+-User1$#B8E2F8",          "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                                    "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
+                                    "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
                                     "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                    "+-MARKED$#FFFFBD",     "-SELECTED$#FFFF80",
+                                    "+-MARKED$#FFFFBD",         "-SELECTED$#FFFF80",
+
                                     0);
 
 #define ____________________________SEP awmm->insert_separator()
