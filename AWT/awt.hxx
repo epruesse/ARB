@@ -104,11 +104,12 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
 
 /***********************	FIELD INFORMATIONS 	************************/
-AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws,
-		const char *varname, long type_filter,
-		const char *scan_xfig_label,
-		const char *rescan_xfig_label = 0);
-			/* show fields of a species / extended !!!
+AW_CL awt_create_selection_list_on_scandb(GBDATA     *gb_main,AW_window *aws,
+                                          const char *varname, long type_filter,
+                                          const char *scan_xfig_label,
+                                          const char *rescan_xfig_label = 0,
+                                          const char *change_key_path   = 0);
+			/* show fields of a species / extended / gene !!!
 			type filter is a bitstring which controls what types are shown in
 			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
 			ints and strings */
@@ -199,22 +200,25 @@ class awt_query_struct {
 public:
     awt_query_struct(void);
 
-    GBDATA *gb_main;	// the main database
-    GBDATA *gb_ref;		// second reference database
-    AW_BOOL	look_in_ref_list; // for querys
-    AWAR	species_name;
-    AWAR	gene_name;
-    int	select_bit;	// one of 1 2 4 8 .. 128 (one for each query box)
+    GBDATA  *gb_main;	        // the main database
+    GBDATA  *gb_ref;		    // second reference database
+    AW_BOOL	 look_in_ref_list;  // for querys
+    AWAR	 species_name;      // AWAR containing current species name
 
-    int use_menu;	// put additional commands in menu
+    bool query_genes;           // true -> create gene query box
+    AWAR gene_name;             // AWAR containing current gene name
+
+    int	select_bit;	            // one of 1 2 4 8 .. 128 (one for each query box)
+    int use_menu;	            // put additional commands in menu
 
     const char *ere_pos_fig;	// rebuild enlarge reduce
-    const char *by_pos_fig;	// fit query dont fit, marked
+    const char *by_pos_fig;	    // fit query dont fit, marked
 
     const char *qbox_pos_fig;	// key box for queries
     const char *rescan_pos_fig;	// rescan label
     const char *key_pos_fig;	// the key
     const char *query_pos_fig;	// the query
+
 
     const char *result_pos_fig;	// the result box
     const char *count_pos_fig;
@@ -226,7 +230,7 @@ public:
     const char *do_set_pos_fig;	// multi set a key
     const char *open_parser_pos_fig;
     const char *do_refresh_pos_fig;
-    AW_CL	create_view_window;
+    AW_CL	    create_view_window;
 
     const char *info_box_pos_fig;
 

@@ -380,8 +380,8 @@ $(SECEDIT):	$(ARCHS_SECEDIT)
 
 #***********************************	arb_probe_group **************************************
 PROBE_GROUP = bin/arb_probe_group
-ARCHS_PROBE_GROUP = PROBE_GROUP/PROBE_GROUP.a SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC)
-$(PROBE_GROUP):	$(ARCHS_PROBE_GROUP)
+ARCHS_PROBE_GROUP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) PROBE_GROUP/PROBE_GROUP.a
+$(PROBE_GROUP):	$(ARCHS_PROBE_GROUP) PROBE_COM/server.a PROBE/PROBE.a
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
 
 #***********************************	arb_phylo **************************************

@@ -741,8 +741,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 	aws->callback( AW_POPUP_HELP,(AW_CL)"write_field_list.hlp");
 	aws->create_button("HELP", "HELP","H");
 
-	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey,
-                                        AWT_NDS_FILTER, "box",0);
+	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "box",0);
 	aws->at("create");
 	aws->callback((AW_CB)awt_do_set_list,(AW_CL)cbs,0);
 	aws->create_button("SET_SINGLE_FIELD_OF_LISTED","WRITE");
@@ -824,8 +823,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
 	aws->insert_toggle("5 ","5",5);
 	aws->insert_toggle("6 the truth","5",6);
 
-	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey,
-                                        AWT_NDS_FILTER, "list",0);
+	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "list",0);
 
 	aws->at("go");
 	aws->callback((AW_CB1)awt_do_set_protection,(AW_CL)cbs);
@@ -852,18 +850,20 @@ void awt_toggle_flag(AW_window *aww, struct adaqbsstruct *cbs) {
 /***************** Create the database query box and functions *************************/
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs)	// create the query box
 {
-	static int query_id = 0;
-	char buffer[256];
-	AW_root *aw_root = aws->get_root();
-	GBDATA *gb_main = awtqs->gb_main;
-	struct adaqbsstruct *cbs = (struct adaqbsstruct *)calloc(1,
-                                                             sizeof(struct adaqbsstruct));
-	cbs->gb_main	= awtqs->gb_main;
-	cbs->aws = aws;
-	cbs->gb_ref	= awtqs->gb_ref;
-	cbs->look_in_ref_list	= awtqs->look_in_ref_list;
-	cbs->select_bit	= awtqs->select_bit;
-	cbs->species_name	= strdup(awtqs->species_name);
+	static int query_id = awtqs->query_genes ? 1 : 0;
+
+	char                 buffer[256];
+	AW_root             *aw_root = aws->get_root();
+	GBDATA              *gb_main = awtqs->gb_main;
+	struct adaqbsstruct *cbs     = (struct adaqbsstruct *)calloc(1, sizeof(struct adaqbsstruct));
+
+	cbs->gb_main	      = awtqs->gb_main;
+	cbs->aws              = aws;
+	cbs->gb_ref	          = awtqs->gb_ref;
+	cbs->look_in_ref_list = awtqs->look_in_ref_list;
+	cbs->select_bit	      = awtqs->select_bit;
+	cbs->species_name	  = strdup(awtqs->species_name);
+
 	GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
 
@@ -890,9 +890,16 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	if (awtqs->ere_pos_fig){
 		aws->at(awtqs->ere_pos_fig);
 		aws->create_toggle_field(cbs->awar_ere,"","");
-		aws->insert_toggle("Search species that","G",(int)AWT_QUERY_GENERATE);
-		aws->insert_toggle("Add Species that","E",(int)AWT_QUERY_ENLARGE);
-		aws->insert_toggle("Keep Species that","R",(int)AWT_QUERY_REDUCE);
+        if (awtqs->query_genes) {
+            aws->insert_toggle("Search genes that","G",(int)AWT_QUERY_GENERATE);
+            aws->insert_toggle("Add genes that","E",(int)AWT_QUERY_ENLARGE);
+            aws->insert_toggle("Keep genes that","R",(int)AWT_QUERY_REDUCE);
+        }
+        else {
+            aws->insert_toggle("Search species that","G",(int)AWT_QUERY_GENERATE);
+            aws->insert_toggle("Add Species that","E",(int)AWT_QUERY_ENLARGE);
+            aws->insert_toggle("Keep Species that","R",(int)AWT_QUERY_REDUCE);
+        }
 		aws->update_toggle_field();
 	}
 	if (awtqs->by_pos_fig){
@@ -905,8 +912,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	}
 
 	if (awtqs->qbox_pos_fig){
-		awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_key,
-                                            AWT_NDS_FILTER, awtqs->qbox_pos_fig,awtqs->rescan_pos_fig);
+		awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_key, AWT_NDS_FILTER, awtqs->qbox_pos_fig,awtqs->rescan_pos_fig,
+                                            awtqs->query_genes ? CHANGE_KEY_PATH_GENES : CHANGE_KEY_PATH);
 	}
 	if (awtqs->key_pos_fig){
 		aws->at(awtqs->key_pos_fig);

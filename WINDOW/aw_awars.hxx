@@ -2,6 +2,7 @@
 #define aw_awars_hxx_included
 
 #define CHANGE_KEY_PATH             "presets/key_data"
+#define CHANGE_KEY_PATH_GENES       "presets/gene_key_data"
 #define CHANGEKEY                   "key"
 #define CHANGEKEY_NAME              "key_name"
 #define CHANGEKEY_TYPE              "key_type"

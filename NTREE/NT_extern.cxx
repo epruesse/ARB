@@ -738,9 +738,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
             AWMIMT( "species_submission", "Submission...",				"S",	"submission.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,	0 );
             awm->insert_separator();
-            AWMIMT( "gene_info", 	"Gene: Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
-            AWMIMT( "gene_search",	"Gene: Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
-            awm->insert_separator();
             AWMIMT("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
             AWMIMT("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
             AWMIMT("swap_marked",	"Swap Marked Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_invert_mark_all_cb,		(AW_CL)ntw, 0 );
@@ -772,6 +769,24 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
+        }
+        //  -------------
+        //      Genes
+        //  -------------
+
+        int is_genom_db = 0;
+        {
+            GB_transaction dummy(gb_main);
+            GBDATA *gb_main_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db);
+        }
+
+        if (is_genom_db) {
+            awm->create_menu(0,"Genes","G","genes.hlp",	AWM_ALL);
+            {
+                AWMIMT( "gene_info", 	"Gene: Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
+                AWMIMT( "gene_search",	"Gene: Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
+            }
         }
         // --------------------------------------------------------------------------------
         //     Sequence
