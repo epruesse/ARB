@@ -10,35 +10,34 @@ public class ProbesGUI extends Frame
     private TextArea                details;
     private ProbeList               probe_list;
     private int                     probeListWidth = 200;
-    private int                     treeLevels;
+//     private int                     treeLevels;
     private TreeDisplay             td;
     private TreeNode                root;
     private ProbeMenu               pm;
-    private ProbesGUIActionListener al;
+//     private ProbesGUIActionListener al;
     private ProbeListActionListener ll;
-    private Client                  boss;
+    private Client                  client;
 
-    public ProbesGUI(int levels, String title, Client b) throws Exception
+    public ProbesGUI(int levels, String title, Client cl) throws Exception
     {
         super(title);
         setVisible(true);
 
         Color backgroundColor = new Color(160, 180, 255);
         
-        //         setBackground(backgroundColor); // colors scrollbars etc. as well
-        // @@@ FIXME: need to ensure that size of ScrollPane is at least the height of window 
         setBackground(Color.lightGray);
         setLayout(new BorderLayout());
         setLocation(200, 200);
 
-        boss = b;
+        client = cl;
 
         td = new TreeDisplay( null, levels, backgroundColor);
         if (td == null) Toolkit.AbortWithError("constructor/ProbesGUI: no TreeDisplay received");
-        td.setBoss(b);
+        td.setClient(client);
 
-        al = new ProbesGUIActionListener(this);
-        setMenuBar(pm = new ProbeMenu(al));
+//         al = new ProbesGUIActionListener(this);
+//         setMenuBar(pm = new ProbeMenu(al));
+        setMenuBar(pm = new ProbeMenu(this));
 
         {
             Color panelColor = Color.white;
@@ -66,6 +65,7 @@ public class ProbesGUI extends Frame
         sc.getVAdjustable().setUnitIncrement(1);
         sc.getHAdjustable().setUnitIncrement(1);
         sc.setSize(600,600);
+        // sc.setWheelScrollingEnabled(true); // later - needs java 1.4 :(
 
         add(sc, BorderLayout.CENTER);
 
@@ -81,7 +81,7 @@ public class ProbesGUI extends Frame
     public Dimension getScrollPaneSize() { return sc.getViewportSize(); }
     public TreeDisplay getTreeDisplay() { return td; }
     public ProbeList getProbeList() { return probe_list; }
-    public Client getClient() { return boss; }
+    public Client getClient() { return client; }
     public TextArea getDetails() { return details; }
 
 }
