@@ -1,5 +1,5 @@
 /********************************************************************************************
-			Some Hash/Cash Procedures
+            Some Hash/Cash Procedures
 ********************************************************************************************/
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include "adlocal.h"
 /*#include "arbdb.h"*/
 
-		/* memory management */
+        /* memory management */
 
 struct gbs_hash_entry {
     char *key;
@@ -40,7 +40,7 @@ struct gbs_hashi_struct {
 };
 
 /********************************************************************************************
-					Some Hash Procedures for [string,long]
+                    Some Hash Procedures for [string,long]
 ********************************************************************************************/
 
 #define GB_CALC_HASH_INDEX(string,index,size) do {                          \
@@ -54,13 +54,13 @@ struct gbs_hashi_struct {
 } while(0)
 
 #define GB_CALC_HASH_INDEX_TO_UPPER(string,index,size) {                        \
-		register const char *_ptr = string;                                     \
-		register int _i;                                                        \
-		index = 0xffffffffL; while ( (_i = *(_ptr++))){                         \
-			index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8);  \
-		}                                                                       \
-		index = index % size;                                                   \
-	}
+        register const char *_ptr = string;                                     \
+        register int _i;                                                        \
+        index = 0xffffffffL; while ( (_i = *(_ptr++))){                         \
+            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8);  \
+        }                                                                       \
+        index = index % size;                                                   \
+    }
 
 
 GB_HASH *GBS_create_hash(long size,int upper_case){
@@ -99,7 +99,7 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-char *GBS_string_2_hashtab(GB_HASH *hash, char *data){	/* destroys data */
+char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  /* destroys data */
     char *p,*d,*dp;
     int c;
     char *nextp;
@@ -213,7 +213,7 @@ long GBS_write_hash(GB_HASH *hs,const char *key,long val)
 
 long GBS_write_hash_no_strdup(GB_HASH *hs,char *key,long val)
      /* does no GB_STRDUP, but the string is freed later in GBS_free_hash,
-	so the user have to 'malloc' the string and give control to the hash functions !!!! */
+    so the user have to 'malloc' the string and give control to the hash functions !!!! */
 {
     struct gbs_hash_entry *e;
     long i2;
@@ -369,7 +369,7 @@ void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
             if (e){
                 hs->loop_pos = i;
                 hs->loop_entry = e;
-                GBS_hash_next_element(hs,key,val);
+/*                 GBS_hash_next_element(hs,key,val); */
                 return;
             }
         }
@@ -435,7 +435,7 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_
 }
 
 /********************************************************************************************
-					Some Hash Procedures for [long,long]
+                    Some Hash Procedures for [long,long]
 ********************************************************************************************/
 
 long gbs_hashi_index(long key, long size)
@@ -532,7 +532,7 @@ long GBS_free_hashi(long hash)
 
 
 /********************************************************************************************
-			Cache Cache Cache
+            Cache Cache Cache
 ********************************************************************************************/
 
 void gb_init_cache(GB_MAIN_TYPE *Main){
