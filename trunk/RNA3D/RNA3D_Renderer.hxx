@@ -18,6 +18,7 @@ const float DEG2RAD = 3.14159/180;   // Used in circle drawing
 
 class Texture2D;
 class Structure3D;
+class OpenGLGraphics;
 
 class GLRenderer {
 public:
@@ -36,6 +37,8 @@ public:
     int iMapSpeciesDels, iMapSpeciesMiss, iMapSpeciesIns, iMapSpeciesInsInfo;
     int iDispCursorPos;
 
+    OpenGLGraphics *G;
+
     GLRenderer(void);
     virtual ~GLRenderer(void);
 
@@ -52,5 +55,5 @@ public:
 
     void BeginTexturizer();
     void EndTexturizer();
-    void TexturizeStructure(Texture2D *cImages);
+    void TexturizeStructure(Texture2D *cImages, Structure3D *cStructure);
 };
