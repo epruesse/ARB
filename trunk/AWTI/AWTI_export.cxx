@@ -13,10 +13,10 @@
 
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
+#include "aw_awars.hxx"
 
 #include "xml.hxx"
 
-// using namespace rs::xml;
 using std::string;
 
 export_format_struct::export_format_struct(void){
@@ -81,17 +81,27 @@ static const char *internal_export_commands[AWTI_EXPORT_COMMANDS] = {
 //      static GB_ERROR AWTI_XML_recursive(GBDATA *gbd)
 //  --------------------------------------------------------
 static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
-    GB_ERROR    error     = 0;
-    const char *key_name  = GB_read_key_pntr(gbd);
-    XML_Tag    *tag = 0;
+    GB_ERROR    error    = 0;
+    const char *key_name = GB_read_key_pntr(gbd);
+    XML_Tag    *tag      = 0;
 
     if (strncmp(key_name, "ali_", 4) == 0)
     {
-        tag = new XML_Tag("ali");
+        tag = new XML_Tag("ALIGNMENT");
         tag->add_attribute("name", key_name+4);
     }
     else {
-        tag = new XML_Tag(key_name);
+        {
+            char *upkey = strdup(key_name);
+            ARB_strupper(upkey);
+            tag         = new XML_Tag(upkey);
+            free(upkey);
+        }
+
+        GBDATA *gb_name = GB_find(gbd, "name", 0, down_level);
+        if (gb_name) {
+            tag->add_attribute("name", GB_read_char_pntr(gb_name));
+        }
     }
 
     switch (GB_read_type(gbd)) {
@@ -100,7 +110,11 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
                  gb_child && !error;
                  gb_child = GB_find(gb_child, 0, 0, this_level|search_next))
             {
-                error = AWTI_XML_recursive(gb_child);
+                const char *sub_key_name = GB_read_key_pntr(gb_child);
+
+                if (strcmp(sub_key_name, "name") != 0) { // do not recurse for "name" (is handled above)
+                    error = AWTI_XML_recursive(gb_child);
+                }
             }
             break;
         }
@@ -119,10 +133,10 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     return error;
 }
 
-// --------------------------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus, char **resulting_outname)
-// --------------------------------------------------------------------------------------------------------------------------------------------
-GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus, char **resulting_outname)
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, char *outname, int multiple, int openstatus, char **resulting_outname)
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------
+GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, char *outname, int multiple, int openstatus, char **resulting_outname)
     // if resulting_outname != NULL -> set *resulting_outname to filename with suffix appended
 {
     char            *fullformname = AWT_unfold_path(formname,"ARBHOME");
@@ -131,7 +145,8 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
     AWTI_EXPORT_CMD  cmd          = AWTI_EXPORT_BY_FORM;
 
     if (!form || form[0] == 0) {
-		error = "Form not found";
+        if (!formname || formname[0] == 0) error = GB_export_error("Please select a form");
+        else error                               = GB_export_IO_error("loading export form", fullformname);
 	}else{
 		char *form2 = GBS_string_eval(form,"*\nBEGIN*\n*=*3:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:",0);
 		if (!form2) error = (char *)GB_get_error();
@@ -141,8 +156,11 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 
 	if (openstatus) aw_openstatus("Exporting Data");
 
-	export_format_struct *efo = new export_format_struct;
-	error = awtc_read_export_format(efo,formname);
+    export_format_struct *efo = 0;
+    if (!error) {
+        efo   = new export_format_struct;;
+        error = awtc_read_export_format(efo,formname);
+    }
 
 	if (!error) {
 		if (efo->system && !efo->new_format) {
@@ -176,7 +194,7 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 				sprintf(intermediate,"/tmp/%s_%i",outname,getpid());
 
                 char *intermediate_resulting = 0;
-				error = AWTC_export_format(gb_main,efo->new_format, intermediate,0,0, &intermediate_resulting);
+				error = AWTI_export_format(aw_root, gb_main, efo->new_format, intermediate, 0, 0, &intermediate_resulting);
 
 				if (!error) {
 					sprintf(srt,"$<=%s:$>=%s",intermediate_resulting, outname);
@@ -191,9 +209,9 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 				}
                 free(intermediate_resulting);
 			}else{
-				error = AWTC_export_format(gb_main,efo->new_format, outname,multiple,0, 0);
+				error = AWTI_export_format(aw_root, gb_main, efo->new_format, outname, multiple, 0, 0);
 			}
-			goto end_of_AWTC_export_format;
+			goto end_of_AWTI_export_format;
 		}
 	}
 
@@ -207,7 +225,7 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
             if (!error && !multiple) {
                 char *existing_suffix = strrchr(outname, '.');
 
-                if (existing_suffix && stricmp(existing_suffix+1, efo->suffix) == 0) strcpy(buffer, outname);
+                if (existing_suffix && ARB_stricmp(existing_suffix+1, efo->suffix) == 0) strcpy(buffer, outname);
                 else sprintf(buffer, "%s.%s", outname, efo->suffix);
 
                 if (resulting_outname != 0) *resulting_outname = strdup(buffer);
@@ -266,8 +284,21 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
                     }
                     case AWTI_EXPORT_XML: {
                         if (!xml) {
-                            xml = new XML_Document("arb_export", "ARB_exp.dtd", out);
-                            XML_Comment("You have to create ARB_exp.dtd by yourself, because the ARB-database may contain any kind of fields");
+                            xml = new XML_Document("ARB_SEQ_EXPORT", "arb_seq_export.dtd", out);
+
+                            {
+                                char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
+                                xml->add_attribute("database", db_name);
+                                free(db_name);
+                            }
+                            xml->add_attribute("export_date", AWT_date_string());
+
+                            char *fulldtd = AWT_unfold_path("lib/dtd", "ARBHOME");
+                            XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
+                                                              "but you might need to expand it by yourself,\n"
+                                                              "because the ARB-database may contain any kind of fields.",
+                                                              fulldtd));
+                            free(fulldtd);
                         }
 
                         error = AWTI_XML_recursive(gb_species);
@@ -300,7 +331,7 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
         }
     }
 
- end_of_AWTC_export_format:
+ end_of_AWTI_export_format:
 	if (openstatus) aw_closestatus();
 
 	delete fullformname;
@@ -324,13 +355,13 @@ void AWTC_export_go_cb(AW_window *aww,GBDATA *gb_main){
 	char *outname      = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
     char *real_outname = 0;     // with suffix
 
-	error = AWTC_export_format(gb_main, formname, outname, multiple,1, &real_outname);
+	error = AWTI_export_format(awr, gb_main, formname, outname, multiple,1, &real_outname);
     if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
 
     awt_refresh_selection_box(awr, AWAR_EXPORT_FILE);
 
-	delete outname;
-	delete formname;
+	free(outname);
+	free(formname);
 
 	if (error) aw_message(error);
 }
