@@ -219,6 +219,11 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     awm->help_text("mg_trees.hlp");
     awm->create_button("TRANSFER_TREES", "Transfer Trees ...");
 
+    awm->at("configs");
+    awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_configs_cb);
+    awm->help_text("mg_configs.hlp");
+    awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
+
     if (save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
         awm->at("save");
         awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
@@ -345,6 +350,7 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
     awr->awar_string( AWAR_MERGE_DB"/file_name", fname_one,aw_def);
 
     MG_create_trees_awar(awr,aw_def);
+    MG_create_config_awar(awr,aw_def);
     MG_create_extendeds_var(awr,aw_def);
     MG_create_alignment_vars(awr,aw_def);
     MG_create_species_var(awr,aw_def);
