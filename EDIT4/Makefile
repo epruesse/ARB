@@ -73,7 +73,8 @@ ED4_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/gde.hxx ed4_class.hxx ed4_defs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx ed4_search.hxx
-ED4_main.o: ed4_awars.hxx ed4_edit_string.hxx ed4_nds.hxx edit_naligner.hxx
+ED4_main.o: ed4_awars.hxx ed4_edit_string.hxx ed4_nds.hxx
+ED4_main.o: ed4_visualizeSAI.hxx edit_naligner.hxx
 
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
