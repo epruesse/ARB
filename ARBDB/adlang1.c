@@ -81,7 +81,7 @@ static int gbl_param_bit(const char *str,int def, const char *help_text, struct 
 #define GBL_CHECK_FREE_PARAM(nr,cnt) if (nr+cnt >= GBL_MAX_ARGUMENTS) {\
 	return "Max Parameters exceeded";}
 
-GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
+static GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
     int i;
     int len;
     struct gbl_param *para;
@@ -182,10 +182,10 @@ static char *unEscapeString(const char *escapedString) {
 }
 
 
-GB_ERROR gbl_command(GBDATA *gb_species, char *com,
-                     int     argcinput, GBL *argvinput,
-                     int     argcparam,GBL *argvparam,
-                     int    *argcout, GBL **argvout)
+static GB_ERROR gbl_command(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+                            int     argcinput, GBL *argvinput,
+                            int     argcparam,GBL *argvparam,
+                            int    *argcout, GBL **argvout)
 {
     GBDATA *gb_main = (GBDATA*)GB_MAIN(gb_species)->data;
     int     i;
@@ -202,7 +202,7 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
 #endif /* DEBUG */
 
     for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
-        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species);
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species, cd->default_tree_name);
         if (!result) return GB_get_error();
 
         (*argvout)[(*argcout)++].str = result;
@@ -212,10 +212,10 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_eval(GBDATA *gb_species, char *com,
-                  int     argcinput, GBL *argvinput,
-                  int     argcparam,GBL *argvparam,
-                  int    *argcout, GBL **argvout)
+static GB_ERROR gbl_eval(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+                         int     argcinput, GBL *argvinput,
+                         int     argcparam,GBL *argvparam,
+                         int    *argcout, GBL **argvout)
 {
     GBDATA *gb_main = (GBDATA*)GB_MAIN(gb_species)->data;
     int     i;
@@ -228,14 +228,14 @@ GB_ERROR gbl_eval(GBDATA *gb_species, char *com,
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
 
     to_eval = unEscapeString(argvparam[0].str);
-    command = GB_command_interpreter(gb_main, "", to_eval, gb_species); // evaluate independent
+    command = GB_command_interpreter(gb_main, "", to_eval, gb_species, cd->default_tree_name); // evaluate independent
 #if defined(DEBUG)
     printf("evaluating '%s'\n", to_eval);
     printf("executing '%s'\n", command);
 #endif /* DEBUG */
 
     for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
-        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species);
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species, cd->default_tree_name);
         if (!result) return GB_get_error();
 
         (*argvout)[(*argcout)++].str = result;
@@ -246,10 +246,10 @@ GB_ERROR gbl_eval(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_origin(GBDATA *gb_species, char *com,
-                 int        argcinput, GBL *argvinput,
-                 int        argcparam,GBL *argvparam,
-                 int       *argcout, GBL **argvout)
+static GB_ERROR gbl_origin(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+                           int        argcinput, GBL *argvinput,
+                           int        argcparam,GBL *argvparam,
+                           int       *argcout, GBL **argvout)
 {
     int     i;
     GBDATA *gb_origin = 0;
@@ -272,7 +272,7 @@ GB_ERROR gbl_origin(GBDATA *gb_species, char *com,
     command = unEscapeString(argvparam[0].str);
 
     for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
-        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_origin);
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_origin, cd->default_tree_name);
         if (!result) return GB_get_error();
 
         (*argvout)[(*argcout)++].str = result; /* export result string */
@@ -282,14 +282,16 @@ GB_ERROR gbl_origin(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_count(GBDATA *gb_species, char *com,
-                   int     argcinput, GBL *argvinput,
-                   int     argcparam,GBL *argvparam,
-                   int    *argcout, GBL **argvout)	{
-    int                    i;
-    char                   tab[256];				/* if tab[char] count 'char' */
-    char                   result[100];
-    GBUSE(gb_species);GBUSE(com);
+static GB_ERROR gbl_count(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+                          int     argcinput, GBL *argvinput,
+                          int     argcparam,GBL *argvparam,
+                          int    *argcout, GBL **argvout)
+{
+    int  i;
+    char tab[256];		/* if tab[char] count 'char' */
+    char result[100];
+
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
     if (argcparam!=1) return "count syntax: count(\"characters to count\")";
 
@@ -311,17 +313,17 @@ GB_ERROR gbl_count(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_len(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)
+static GB_ERROR gbl_len(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                        int argcinput, GBL *argvinput,
+                        int argcparam,GBL *argvparam,
+                        int *argcout, GBL **argvout)
 {
     int i;
     char tab[256];				/* if tab[char] count 'char' */
     char result[100];
     const char *option;
 
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
     if (argcparam == 0) option = "";
     else option = argvparam[0].str;
@@ -345,14 +347,14 @@ GB_ERROR gbl_len(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_remove(GBDATA *gb_species, char *com,
-                    int argcinput, GBL *argvinput,
-                    int argcparam,GBL *argvparam,
-                    int *argcout, GBL **argvout)
+static GB_ERROR gbl_remove(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                           int argcinput, GBL *argvinput,
+                           int argcparam,GBL *argvparam,
+                           int *argcout, GBL **argvout)
 {
     int i;
     char tab[256];				/* if tab[char] count 'char' */
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
 
     if (argcparam!=1) return "remove syntax: remove(\"characters to remove\")";
@@ -378,13 +380,13 @@ GB_ERROR gbl_remove(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_keep(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)	{
     int  i;
     char tab[256];				/* if tab[char] != 0 then keep'char' */
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
 
     if (argcparam!=1) return "keep syntax: keep(\"characters not to remove\")";
@@ -413,15 +415,204 @@ GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_translate(GBDATA *gb_species, char *com,
-                       int argcinput, GBL *argvinput,
-                       int argcparam,GBL *argvparam,
-                       int *argcout, GBL **argvout)
+static int gbl_stricmp(const char *s1, const char *s2) {
+    /* case insensitive strcmp */
+    int i;
+    for (i = 0; ; ++i) {
+        char c1 = tolower(s1[i]);
+        char c2 = tolower(s2[i]);
+
+        if (c1 == c2) {
+            if (!c1) break; // equal strings
+        }
+        else {
+            if (c1<c2) return -1;
+            return 1;
+        }
+    }
+    return 0;
+}
+static int gbl_strincmp(const char *s1, const char *s2, int size2) {
+    /* case insensitive strcmp */
+    int i;
+    for (i = 0; i<size2; ++i) {
+        char c1 = tolower(s1[i]);
+        char c2 = tolower(s2[i]);
+
+        if (c1 == c2) {
+            if (!c1) break; // equal strings
+        }
+        else {
+            if (c1<c2) return -1;
+            return 1;
+        }
+    }
+    return 0;
+}
+static const char *gbl_stristr(const char *haystack, const char *needle) {
+    /* case insensitive strstr */
+    const char *hp          = haystack;
+    char        c1          = toupper(needle[0]);
+    char        c2          = tolower(c1);
+    int         needle_size = strlen(needle);
+
+    if (c1 == c2) {
+        hp = strchr(hp, c1);
+        while (hp) {            
+            if (gbl_strincmp(hp, needle, needle_size) == 0) return hp;
+            hp = strchr(hp+1, c1);
+        }
+    }
+    else {
+        while (hp) {
+            const char *h1 = strchr(hp, c1);
+            const char *h2 = strchr(hp, c2);
+
+            if (h1 && h2) {
+                if (h1<h2) {
+                    if (gbl_strincmp(h1, needle, needle_size) == 0) return h1;
+                    hp = h1+1;
+                }
+                else {
+                    gb_assert(h1>h2);
+                    if (gbl_strincmp(h2, needle, needle_size) == 0) return h2;
+                    hp = h2+1;
+                }
+            }
+            else {
+                if (h1) { hp = h1; }
+                else if (h2) { hp = h2; c1 = c2; }
+                else { hp = 0; }
+
+                while (hp) {
+                    if (gbl_strincmp(hp, needle, needle_size) == 0) return hp;
+                    hp = strchr(hp+1, c1);
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+typedef const char *(*search_function_type)(const char *, const char *);
+typedef int (*compare_function_type)(const char *, const char *);
+
+static GB_ERROR gbl_compare(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                            int     argcinput, GBL *argvinput,
+                            int     argcparam,GBL *argvparam,
+                            int    *argcout, GBL **argvout)
+{
+    const unsigned char   *str;
+    int                    ignore_case = 0;
+    compare_function_type  compare_function;
+    int                    i;
+
+    if (argcparam<1 || argcparam>2) return "compare syntax: compare(#string [, #ignore_case])";
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
+
+    str                             = (const unsigned char *)argvparam[0].str;
+    if (argcparam == 2) ignore_case = atoi(argvparam[1].str);
+    compare_function                = ignore_case ? gbl_stricmp : strcmp;
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        int result = compare_function(argvinput[i].str, str);
+
+        if (result<0) result      = -1;
+        else if (result>0) result = 1;
+
+        (*argvout)[(*argcout)++].str = GBS_global_string_copy("%i", result);
+        /* export result string */
+    }
+    return 0;
+
+}
+
+static GB_ERROR gbl_equals(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                           int argcinput, GBL *argvinput,
+                           int argcparam,GBL *argvparam,
+                           int *argcout, GBL **argvout)
+{
+    const unsigned char   *str;
+    int                    ignore_case = 0;
+    compare_function_type  compare_function;
+    int                    i;
+
+    if (argcparam<1 || argcparam>2) return "equals syntax: equals(#string [, #ignore_case])";
+
+    str                             = (const unsigned char *)argvparam[0].str;
+    if (argcparam == 2) ignore_case = atoi(argvparam[1].str);
+    compare_function                = ignore_case ? gbl_stricmp : strcmp;
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        int result = compare_function(argvinput[i].str, str);
+        result = !result;
+        (*argvout)[(*argcout)++].str = GBS_global_string_copy("%i", result);
+    }
+    return 0;
+}
+
+static GB_ERROR gbl_contains(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                             int argcinput, GBL *argvinput,
+                             int argcparam,GBL *argvparam,
+                             int *argcout, GBL **argvout)
+{
+    const  char          *str;
+    int                   ignore_case = 0;
+    int                   i;
+    search_function_type  search_function;
+
+    if (argcparam<1 || argcparam>2) return "contains syntax: contains(#string [, #ignore_case])";
+
+    str                             = argvparam[0].str;
+    if (argcparam == 2) ignore_case = atoi(argvparam[1].str);
+    search_function                 = ignore_case ? gbl_stristr : (search_function_type)strstr;
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        const char *found            = search_function(argvinput[i].str, str);
+        int         result           = found ? (found-argvinput[i].str+1) : 0;
+        (*argvout)[(*argcout)++].str = GBS_global_string_copy("%i", result);
+    }
+    return 0;
+}
+
+static GB_ERROR gbl_partof(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                           int     argcinput, GBL *argvinput,
+                           int     argcparam,GBL *argvparam,
+                           int    *argcout, GBL **argvout)
+{
+    const char           *str;
+    int                   ignore_case = 0;
+    int                   i;
+    search_function_type  search_function;
+
+    if (argcparam<1 || argcparam>2) return "partof syntax: partof(#string [, #ignore_case])";
+
+    str                             = argvparam[0].str;
+    if (argcparam == 2) ignore_case = atoi(argvparam[1].str);
+    search_function                 = ignore_case ? gbl_stristr : (search_function_type)strstr;
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        const char *found            = search_function(str, argvinput[i].str);
+        int         result           = found ? (found-str+1) : 0;
+        (*argvout)[(*argcout)++].str = GBS_global_string_copy("%i", result);
+    }
+    return 0;
+}
+
+
+static GB_ERROR gbl_translate(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                              int     argcinput, GBL *argvinput,
+                              int     argcparam,GBL *argvparam,
+                              int    *argcout, GBL **argvout)
 {
     unsigned char tab[256];
     int  i;
     char replace_other = 0;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
     if (argcparam<2 || argcparam>3) return "translate syntax: translate(#old, #new [,#other])";
 
@@ -470,14 +661,15 @@ GB_ERROR gbl_translate(GBDATA *gb_species, char *com,
 }
 
 
-GB_ERROR gbl_echo(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_echo(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int i;
     argcinput = argcinput;
     argvinput = argvinput;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcparam;i++) {		/* go through all in streams	*/
         char *p;
@@ -487,9 +679,10 @@ GB_ERROR gbl_echo(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR _gbl_mid(	int argcinput, GBL *argvinput,
-                    int *argcout, GBL **argvout,
-                    int start,int mstart,int end,int relend)	{
+static GB_ERROR _gbl_mid(int argcinput, GBL *argvinput,
+                         int *argcout, GBL **argvout,
+                         int start,int mstart,int end,int relend)
+{
     int i;
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
@@ -518,22 +711,27 @@ GB_ERROR _gbl_mid(	int argcinput, GBL *argvinput,
     return 0;
 }
 
-GB_ERROR gbl_dd(GBDATA *gb_species, char *com,
-                int argcinput, GBL *argvinput,
-                int argcparam,GBL *argvparam,
-                int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_dd(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                       int argcinput, GBL *argvinput,
+                       int argcparam,GBL *argvparam,
+                       int *argcout, GBL **argvout)
+{
     if (argcparam!=0) return "dd syntax: dd (no parameters)";
     argvparam = argvparam;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     return _gbl_mid(argcinput, argvinput,argcout, argvout, 0, 0, -1, 0);
 }
 
-GB_ERROR gbl_string_convert(GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam,GBL *argvparam, int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_string_convert(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                                   int argcinput, GBL *argvinput,
+                                   int argcparam, GBL *argvparam,
+                                   int *argcout, GBL **argvout)
+{
     int mode  = -1;
     int i;
     if (argcparam!=0) return "dd syntax: dd (no parameters)";
     argvparam = argvparam;
-    GBUSE(gb_species);
+    GBUSE(gb_species);GBUSE(cd);
 
     if (strcmp(com, "lower")      == 0) mode = 0;
     else if (strcmp(com, "upper") == 0) mode = 1;
@@ -570,62 +768,67 @@ GB_ERROR gbl_string_convert(GBDATA *gb_species, char *com, int argcinput, GBL *a
     return 0;
 }
 
-GB_ERROR gbl_head(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_head(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int start;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     if (argcparam!=1) return "head syntax: head(#start)";
     start = atoi(argvparam[0].str);
     return _gbl_mid(argcinput, argvinput,argcout, argvout, 0,0, start, -start);
 }
 
-GB_ERROR gbl_tail(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_tail(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int end;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     if (argcparam!=1) return "tail syntax: tail(#length_of_tail)";
     end = atoi(argvparam[0].str);
     return _gbl_mid(argcinput, argvinput,argcout, argvout, -1, end, -1, 0);
 }
 
-GB_ERROR gbl_mid0(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_mid0(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int start;
     int end;
     if (argcparam!=2) return "mid0 syntax: mid0(#start;#end)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     start = atoi(argvparam[0].str);
     end = atoi(argvparam[1].str);
     return _gbl_mid(argcinput, argvinput, argcout, argvout, start, -start, end, -end);
 }
 
-GB_ERROR gbl_mid(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_mid(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                        int argcinput, GBL *argvinput,
+                        int argcparam,GBL *argvparam,
+                        int *argcout, GBL **argvout)
+{
     int start;
     int end;
     if (argcparam!=2) return "mid syntax: mid(#start;#end)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     start = atoi(argvparam[0].str)-1;
     end = atoi(argvparam[1].str)-1;
     return _gbl_mid(argcinput, argvinput, argcout, argvout, start, -start, end, -end);
 }
 
-GB_ERROR gbl_tab(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_tab(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                        int argcinput, GBL *argvinput,
+                        int argcparam,GBL *argvparam,
+                        int *argcout, GBL **argvout)
+{
     int i,j;
     int tab;
     if (argcparam!=1) return "tab syntax: tab(#tab)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     tab = atoi(argvparam[0].str);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
@@ -644,14 +847,15 @@ GB_ERROR gbl_tab(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_pretab(GBDATA *gb_species, char *com,
-                 int     argcinput, GBL *argvinput,
-                 int     argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_pretab(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                           int     argcinput, GBL *argvinput,
+                           int     argcparam,GBL *argvparam,
+                           int *argcout, GBL **argvout)
+{
     int i,j;
     int tab;
     if (argcparam!=1) return "pretab syntax: pretab(#tab)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     tab = atoi(argvparam[0].str);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
@@ -672,14 +876,15 @@ GB_ERROR gbl_pretab(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_crop(GBDATA *gb_species, char *com,
-                 int     argcinput, GBL *argvinput,
-                 int     argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_crop(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int     argcinput, GBL *argvinput,
+                         int     argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int         i;
     const char *chars_to_crop;
 
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     if (argcparam != 1) return "crop syntax: pretab(chars_to_crop)";
 
     chars_to_crop = argvparam[0].str;
@@ -710,12 +915,13 @@ GB_ERROR gbl_crop(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_cut(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_cut(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                        int argcinput, GBL *argvinput,
+                        int argcparam,GBL *argvparam,
+                        int *argcout, GBL **argvout)
+{
     int i;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
     GBL_CHECK_FREE_PARAM(*argcout,argcparam);
     for (i=0; i<argcparam;i++) {
@@ -731,14 +937,15 @@ GB_ERROR gbl_cut(GBDATA *gb_species, char *com,
 					Extended String Functions
 ********************************************************************************************/
 
-GB_ERROR gbl_extract_words(GBDATA *gb_species, char *com,
-                           int argcinput, GBL *argvinput,
-                           int argcparam,GBL *argvparam,
-                           int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_extract_words(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                                  int argcinput, GBL *argvinput,
+                                  int argcparam,GBL *argvparam,
+                                  int *argcout, GBL **argvout)
+{
     int   i;
     float len;
     if (argcparam != 2) return "extract_words needs two parameters:\nextract_words(\"Characters\",min_characters)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     len = atof(argvparam[1].str);
 
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
@@ -750,16 +957,18 @@ GB_ERROR gbl_extract_words(GBDATA *gb_species, char *com,
     }
     return 0;
 }
-GB_ERROR gbl_extract_sequence(GBDATA *gb_species, char *com,
-                              int argcinput, GBL *argvinput,
-                              int argcparam,GBL *argvparam,
-                              int *argcout, GBL **argvout)	{
+
+static GB_ERROR gbl_extract_sequence(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                                     int argcinput, GBL *argvinput,
+                                     int argcparam, GBL *argvparam,
+                                     int *argcout, GBL **argvout)
+{
     int      i;
     float    len;
     GB_ERROR syntax_err = "extract_sequence needs two parameters:\nextract_words(\"Characters\",min_rel_characters [0.0-1.0])";
 
     if (argcparam != 2) return syntax_err;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     len = atof(argvparam[1].str);
     if (len <0.0 || len > 1.0) return syntax_err;
 
@@ -773,17 +982,18 @@ GB_ERROR gbl_extract_sequence(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_check(GBDATA *gb_species, char *com,
-                   int argcinput, GBL *argvinput,
-                   int argcparam,GBL *argvparam,
-                   int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_check(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                          int argcinput, GBL *argvinput,
+                          int argcparam, GBL *argvparam,
+                          int *argcout, GBL **argvout)
+{
     int i;
     GBL_BEGIN_PARAMS;
     GBL_PARAM_STRING(exclude,"exclude=","","Remove characters 'str' before calculating");
     GBL_PARAM_BIT(upper,"toupper",0,"Convert all characters to uppercase before calculating");
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
         char buf[100];
@@ -795,15 +1005,16 @@ GB_ERROR gbl_check(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_gcgcheck(GBDATA *gb_species, char *com,
-                      int argcinput, GBL *argvinput,
-                      int argcparam,GBL *argvparam,
-                      int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_gcgcheck(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                             int argcinput, GBL *argvinput,
+                             int argcparam,GBL *argvparam,
+                             int *argcout, GBL **argvout)
+{
     int i;
     GBL_BEGIN_PARAMS;
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
         char buf[100];
@@ -819,13 +1030,14 @@ GB_ERROR gbl_gcgcheck(GBDATA *gb_species, char *com,
 					SRT
 ********************************************************************************************/
 
-GB_ERROR gbl_srt(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_srt(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                        int argcinput, GBL *argvinput,
+                        int argcparam, GBL *argvparam,
+                        int *argcout, GBL **argvout)
+{
     int i;
     int j;
-    com = com;
+    GBUSE(com);GBUSE(cd);
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
         char *source = argvinput[i].str;
@@ -849,15 +1061,16 @@ GB_ERROR gbl_srt(GBDATA *gb_species, char *com,
 					Calculator Functions
 ********************************************************************************************/
 
-GB_ERROR gbl_calculator(GBDATA *gb_species, char *com,
-                        int argcinput, GBL *argvinput,
-                        int argcparam,GBL *argvparam,
-                        int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_calculator(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                               int argcinput, GBL *argvinput,
+                               int argcparam,GBL *argvparam,
+                               int *argcout, GBL **argvout)
+{
     int val1;
     int val2;
     int val =0;
     char result[100];
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
 
     if (argcparam>=2) return "calculator syntax: plus|minus|.. (arg1, arg2)";
     if (!argcinput) return "calculating function: missing input";
@@ -885,10 +1098,10 @@ GB_ERROR gbl_calculator(GBDATA *gb_species, char *com,
 /********************************************************************************************
 					Database Functions
 ********************************************************************************************/
-GB_ERROR gbl_readdb(GBDATA *gb_species, char *com,
-                    int argcinput, GBL *argvinput,
-                    int argcparam,GBL *argvparam,
-                    int *argcout, GBL **argvout)
+static GB_ERROR gbl_readdb(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                           int argcinput, GBL *argvinput,
+                           int argcparam,GBL *argvparam,
+                           int *argcout, GBL **argvout)
 {
     int i;
     void *strstr = GBS_stropen(1024);
@@ -898,6 +1111,7 @@ GB_ERROR gbl_readdb(GBDATA *gb_species, char *com,
     GBUSE(argvparam);
     GBUSE(argcinput);
     GBUSE(argvinput);
+    GBUSE(cd);
 
     for (i=0;i<argcparam;i++){
         GBDATA *gb = GB_search(gb_species,argvparam[i].str,GB_FIND);
@@ -950,11 +1164,264 @@ static gbt_item_type identify_gb_item(GBDATA *gb_item) {
     return GBT_ITEM_UNKNOWN;
 }
 
+/* -------------------------------------------------------------------------------- */
+/* taxonomy caching */
 
-GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or a gene */
-                      int     argcinput, GBL *argvinput,
-                      int     argcparam,GBL *argvparam,
-                      int    *argcout, GBL **argvout)
+struct cached_taxonomy {
+    char    *tree_name;         /* tree for which taxonomy is cached here */
+    GB_HASH *taxonomy; /* keys: "!species", ">XXXXgroup" and "<root>".
+                          Species and groups contain their first parent (i.e. '>XXXXgroup' or '<root>').
+                          Species not in hash are not members of tree.
+                          The 'XXXX' in groupname is simply a counter to avoid multiple groups with same name.
+                          The group-db-entries are stored in hash as pointers ('>>%p') and
+                          point to their own group entry ('>XXXXgroup')
+                       */
+};
+
+static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *parent_group, int *group_counter) {
+    if (node->is_leaf) {
+        GBDATA *gb_species = node->gb_node;
+        if (gb_species) { /* not zombie */
+            GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+            if (gb_name) {
+                const char *name       = GB_read_char_pntr(gb_name);
+                const char *hash_entry = GBS_global_string("!%s", name);
+
+                GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
+            }
+            else {
+                printf("species w/o name entry\n");
+            }
+        }
+    }
+    else {
+        if (node->name) {       /* named group */
+            char *hash_entry;
+            const char *hash_binary_entry;
+            (*group_counter)++;
+
+            hash_entry = GBS_global_string_copy(">%04x%s", *group_counter, node->name);
+            /* printf("hash_entry='%s' gb_node=%p\n", hash_entry, node->gb_node); */
+            GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
+
+            hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
+            /* printf("hash_entry='%s' gb_node=%p\n", hash_binary_entry, node->gb_node); */
+            GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
+
+            build_taxonomy_rek(node->leftson, tax_hash, hash_entry, group_counter);
+            build_taxonomy_rek(node->rightson, tax_hash, hash_entry, group_counter);
+            free(hash_entry);
+        }
+        else {
+            build_taxonomy_rek(node->leftson, tax_hash, parent_group, group_counter);
+            build_taxonomy_rek(node->rightson, tax_hash, parent_group, group_counter);
+        }
+    }
+}
+
+static GB_HASH *cached_taxonomies = 0;
+
+static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
+    long cached;
+    *error = 0;
+    if (!cached_taxonomies) {
+        cached_taxonomies = GBS_create_hash(20, 1);
+    }
+    cached = GBS_read_hash(cached_taxonomies, tree_name);
+    if (!cached) {
+        GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
+#if defined(DEBUG)
+        printf("Creating taxonomy hash for '%s'\n", tree_name);
+#endif /* DEBUG */
+        if (!tree) {
+            *error = GB_get_error();
+        }
+        else {
+            *error = GBT_link_tree(tree, gb_main, GB_FALSE);
+        }
+
+        if (!*error) {
+            struct cached_taxonomy *ct            = malloc(sizeof(*ct));
+            long                    nodes         = GBT_count_nodes(tree);
+            int                     group_counter = 0;
+
+            ct->tree_name = strdup(tree_name);
+            ct->taxonomy  = GBS_create_hash((int)(nodes*1.5), 1);
+
+            build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);
+            cached = (long)ct;
+            GBS_write_hash(cached_taxonomies, tree_name, (long)ct);
+        }
+
+        if (tree) GBT_delete_tree(tree);
+    }
+
+    if (!*error) {
+        struct cached_taxonomy *ct = (struct cached_taxonomy*)cached;
+        gb_assert(ct);
+        return ct;
+    }
+
+    return 0;
+}
+
+static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int depth, GB_ERROR *error) {
+    long  found;
+    char *result = 0;
+
+    gb_assert(depth>0);
+    gb_assert(!(group_key[0] == '>' && group_key[1] == '>')); // internal group-pointers not allowed here!
+
+    found = GBS_read_hash(tax_hash, group_key);
+    if (found) {
+        const char *parent_group_key            = (const char *)found;
+        if (strcmp(parent_group_key, "<root>") == 0) { // root reached
+            result = strdup(group_key+5); // return own group name
+        }
+        else {
+            if (depth>1) {
+                char *parent_name = get_taxonomy_string(tax_hash, parent_group_key, depth-1, error);
+                if (parent_name) {
+                    result = GBS_global_string_copy("%s/%s", parent_name, group_key+5);
+                    free(parent_name);
+                }
+                else {
+                    *error = GBS_global_string("In get_taxonomy_string(%s): %s", group_key, *error);
+                    result = 0;
+                }
+            }
+            else {
+                result = strdup(group_key+1); // return own group name
+            }
+        }
+    }
+    else {
+        *error = GBS_global_string("Not in tax_hash: '%s'", group_key);
+    }
+    return result;
+}
+
+static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_name, int is_current_tree, int depth, GB_ERROR *error) {
+    GBDATA                 *gb_main = GB_get_root(gb_species_or_group);
+    struct cached_taxonomy *tax     = get_cached_taxonomy(gb_main, tree_name, error);
+    const char             *result  = 0;
+
+    if (tax) {
+        GBDATA *gb_name       = GB_find(gb_species_or_group, "name", 0, down_level);
+        GBDATA *gb_group_name = GB_find(gb_species_or_group, "group_name", 0, down_level);
+
+        if (gb_name && !gb_group_name) { /* it's a species */
+            char *name = GB_read_string(gb_name);
+            if (name) {
+                GB_HASH    *tax_hash = tax->taxonomy;
+                long        found    = GBS_read_hash(tax_hash, GBS_global_string("!%s", name));
+
+                if (found) {
+                    const char *parent_group = (const char *)found;
+
+                    if (strcmp(parent_group, "<root>") == 0) {
+                        result = ""; /* not member of any group */
+                    }
+                    else {
+                        static char *parent = 0;
+                        if (parent) free(parent);
+                        parent              = get_taxonomy_string(tax_hash, parent_group, depth, error);
+                        result              = parent;
+                    }
+                }
+                else {
+                    result = GBS_global_string("Species '%s' not in '%s'", name, tree_name);
+                }
+                free(name);
+            }
+            else {
+                *error = GBS_global_string("Species without 'name' entry!");
+            }
+        }
+        else if (gb_group_name && !gb_name) { /* it's a group */
+            char *group_name = GB_read_string(gb_group_name);
+            if (group_name) {
+                if (is_current_tree) {
+                    GB_HASH *tax_hash = tax->taxonomy;
+                    long     found    = GBS_read_hash(tax_hash, GBS_global_string(">>%p", gb_species_or_group));
+
+                    if (found) {
+                        const char  *group_id   = (const char *)found;
+                        static char *full_group = 0;
+                        if (full_group) free(full_group);
+                        full_group              = get_taxonomy_string(tax_hash, group_id, depth, error);
+                        result                  = full_group;
+                    }
+                    else {
+                        result = GBS_global_string("Group '%s' not in '%s'", group_name, tree_name);
+                    }
+                }
+                else {
+                    *error = "It's not possible to specify the tree name in taxonomy() for groups";
+                }
+                free(group_name);
+            }
+            else {
+                *error = "Group without 'group_name' entry";
+            }
+        }
+        else if (gb_group_name) {
+            *error = "Container has 'name' and 'group_name' entry - can't detect container type";
+        }
+        else {
+            *error = "Container has neighter 'name' nor 'group_name' entry - can't detect container type";
+        }
+    }
+
+    return result;
+}
+
+static GB_ERROR gbl_taxonomy(GBDATA *gb_item, char *com, GBL_client_data *cd,
+                             int     argcinput, GBL *argvinput,
+                             int     argcparam,GBL *argvparam,
+                             int    *argcout, GBL **argvout)
+{
+    char     *tree_name = 0;
+    GB_ERROR  error     = 0;
+
+    GBUSE(com);GBUSE(argcinput); GBUSE(argvinput);
+
+    if (argcparam<1 || argcparam>2) {
+        error = "\"taxonomy\" syntax: \"taxonomy\"([tree_name,] count)";
+    }
+    else {
+        int is_current_tree = 0;
+        int count;
+
+        if (argcparam == 1) {   /* only 'count' */
+            if (cd->default_tree_name) tree_name = strdup(cd->default_tree_name);
+            else error = "Can't use taxonomy without tree_name (no known default tree)";
+            count = atoi(argvparam[0].str);
+            is_current_tree = 1;
+        }
+        else { /* 'tree_name', 'count' */
+            tree_name = strdup(argvparam[0].str);
+            count     = atoi(argvparam[1].str);
+        }
+
+        if (!error && count<1) {
+            error = GBS_global_string("Illegal count '%i' (allowed 1..n)", count);
+        }
+        if (!error) {
+            const char *taxonomy_string = get_taxonomy(gb_item, tree_name, is_current_tree, count, &error);
+            if (taxonomy_string) {
+                (*argvout)[(*argcout)++].str = strdup(taxonomy_string);
+            }
+        }
+    }
+    if (tree_name) free(tree_name);
+    return error;
+}
+
+static GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, GBL_client_data *cd, /* gb_item may be a species or a gene */
+                             int     argcinput, GBL *argvinput,
+                             int     argcparam,GBL *argvparam,
+                             int    *argcout, GBL **argvout)
 {
     char     *use;
     GBDATA   *gb_seq;
@@ -963,7 +1430,7 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or
     if (argcparam!=0) return "\"sequence\" syntax: \"sequence\" (no parameters)";
     argvparam = argvparam;
     com       = com;
-    GBUSE(argvinput);
+    GBUSE(argvinput);GBUSE(cd);
     if (argcinput==0) return "No input stream";
     GBL_CHECK_FREE_PARAM(*argcout,1);
 
@@ -996,14 +1463,14 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or
     return error;
 }
 
-GB_ERROR gbl_sequence_type(GBDATA *gb_species, char *com,
-                           int argcinput, GBL *argvinput,
-                           int argcparam,GBL *argvparam,
-                           int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_sequence_type(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                                  int argcinput, GBL *argvinput,
+                                  int argcparam,GBL *argvparam,
+                                  int *argcout, GBL **argvout)
+{
     char *use;
     if (argcparam!=0) return "\"sequence_type\" syntax: \"sequence\" (no parameters)";
-    argvparam = argvparam;
-    com = com;GBUSE(argvinput);
+    GBUSE(com);GBUSE(argvparam);GBUSE(argvinput);GBUSE(cd);
     GBL_CHECK_FREE_PARAM(*argcout,1);
     if (argcinput==0) return "No input stream";
     use = GBT_get_default_alignment(GB_get_root(gb_species));
@@ -1012,10 +1479,11 @@ GB_ERROR gbl_sequence_type(GBDATA *gb_species, char *com,
     return 0;
 }
 
-GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com,
-                             int argcinput, GBL *argvinput,
-                             int argcparam,GBL *argvparam,
-                             int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                                    int argcinput, GBL *argvinput,
+                                    int argcparam,GBL *argvparam,
+                                    int *argcout, GBL **argvout)
+{
     int i;
     void *strstruct;
     char	*p;
@@ -1031,7 +1499,7 @@ GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com,
     GBL_PARAM_STRING(nl,"nl="," ","Break line at characters 'str'");
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
-    GBUSE(gb_species);
+    GBUSE(gb_species);GBUSE(cd);
     if (argcinput==0) return "No input stream";
     GBL_CHECK_FREE_PARAM(*argcout,1);
 
@@ -1105,7 +1573,7 @@ GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com,
 					Filter Functions
 ********************************************************************************************/
 
-GBDATA *gbl_search_sai_species(const char *species, const char *sai) {
+static GBDATA *gbl_search_sai_species(const char *species, const char *sai) {
     GBDATA *gbd;
     if (sai) {
         GBDATA *gb_cont = GB_find(gb_local->gbl.gb_main,"extended_data",0,down_level);
@@ -1120,10 +1588,11 @@ GBDATA *gbl_search_sai_species(const char *species, const char *sai) {
 }
 
 
-GB_ERROR gbl_filter(GBDATA *gb_spec, char *com,
-                    int argcinput, GBL *argvinput,
-                    int argcparam,GBL *argvparam,
-                    int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_filter(GBDATA *gb_spec, char *com, GBL_client_data *cd,
+                           int argcinput, GBL *argvinput,
+                           int argcparam,GBL *argvparam,
+                           int *argcout, GBL **argvout)
+{
     int i;
     GBDATA	*gb_species;
     GBDATA *gb_seq;
@@ -1139,7 +1608,7 @@ GB_ERROR gbl_filter(GBDATA *gb_spec, char *com,
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
-    GBUSE(gb_spec);
+    GBUSE(gb_spec);GBUSE(cd);
     if (argcinput==0) return "No input stream";
     if (!exclude && ! include) return "Missing parameter: 'exclude=' or 'include='";
     if (!sai && !species) return "Missing parameter: 'SAI=' or 'species='";
@@ -1197,10 +1666,11 @@ GB_ERROR gbl_filter(GBDATA *gb_spec, char *com,
     return 0;
 }
 
-GB_ERROR gbl_diff(GBDATA *gb_spec, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_diff(GBDATA *gb_spec, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int i;
     GBDATA	*gb_species;
     GBDATA *gb_seq;
@@ -1214,7 +1684,7 @@ GB_ERROR gbl_diff(GBDATA *gb_spec, char *com,
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
-    GBUSE(gb_spec);
+    GBUSE(gb_spec);GBUSE(cd);
     if (argcinput==0) return "No input stream";
     if (!sai && !species) return "Missing parameter: 'SAI=' or 'species='";
     gb_species = gbl_search_sai_species(species,sai);
@@ -1250,10 +1720,11 @@ GB_ERROR gbl_diff(GBDATA *gb_spec, char *com,
     return 0;
 }
 
-GB_ERROR gbl_change_gc(GBDATA *gb_species, char *com,
-                       int argcinput, GBL *argvinput,
-                       int argcparam,GBL *argvparam,
-                       int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_change_gc(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                              int argcinput, GBL *argvinput,
+                              int argcparam,GBL *argvparam,
+                              int *argcout, GBL **argvout)
+{
     int i;
     GBDATA *gb_seq = 0;
     char *filter = 0;
@@ -1270,6 +1741,7 @@ GB_ERROR gbl_change_gc(GBDATA *gb_species, char *com,
     GBL_TRACE_PARAMS(argcparam,argvparam);
     GBL_END_PARAMS;
     GBL_CHECK_FREE_PARAM(*argcout,0);
+    GBUSE(cd);
     if (argcinput==0) return "No input stream";
     if (sai || species){
         if (!exclude && ! include) return "Missing parameter: 'exclude=' or 'include='";
@@ -1333,10 +1805,11 @@ GB_ERROR gbl_change_gc(GBDATA *gb_species, char *com,
 					Exec Functions
 ********************************************************************************************/
 
-GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
-                  int argcinput, GBL *argvinput,
-                  int argcparam,GBL *argvparam,
-                  int *argcout, GBL **argvout)	{
+static GB_ERROR gbl_exec(GBDATA *gb_species, char *com, GBL_client_data *cd,
+                         int argcinput, GBL *argvinput,
+                         int argcparam,GBL *argvparam,
+                         int *argcout, GBL **argvout)
+{
     int i;
     char fname[1024];
     void *str;
@@ -1346,7 +1819,7 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 
     sprintf(fname,"/tmp/arb_tmp_%s_%i",GB_getenv("USER"),getpid());
     if (argcparam==0) return "exec needs parameters:\nexec(command,...)";
-    GBUSE(gb_species);GBUSE(com);
+    GBUSE(gb_species);GBUSE(com);GBUSE(cd);
     out = fopen(fname,"w");
     if (!out) return GB_export_error("Cannot open temporary file '%s'",fname);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
@@ -1377,19 +1850,22 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 }
 
 
-struct GBL_command_table gbl_command_table[] = {
+static struct GBL_command_table gbl_command_table[] = {
     {"caps", gbl_string_convert } ,
     {"change", gbl_change_gc },
     {"checksum", gbl_check } ,
     {"command", gbl_command } ,
-    {"eval", gbl_eval } ,
+    {"compare", gbl_compare } ,
+    {"contains", gbl_contains } ,
     {"count", gbl_count } ,
-    {"cut", gbl_cut } ,
     {"crop", gbl_crop } ,
+    {"cut", gbl_cut } ,
     {"dd", gbl_dd } ,
     {"diff", gbl_diff },
     {"div", gbl_calculator } ,
     {"echo", gbl_echo } ,
+    {"equals", gbl_equals } ,
+    {"eval", gbl_eval } ,
     {"exec", gbl_exec } ,
     {"extract_sequence", gbl_extract_sequence } ,
     {"extract_words", gbl_extract_words } ,
@@ -1406,6 +1882,9 @@ struct GBL_command_table gbl_command_table[] = {
     {"mid0", gbl_mid0 } ,
     {"minus", gbl_calculator } ,
     {"mult", gbl_calculator } ,
+    {"origin_gene", gbl_origin } ,
+    {"origin_organism", gbl_origin } ,
+    {"partof", gbl_partof } ,
     {"per_cent", gbl_calculator } ,
     {"plus", gbl_calculator } ,
     {"pretab", gbl_pretab } ,
@@ -1418,9 +1897,8 @@ struct GBL_command_table gbl_command_table[] = {
     {"tab", gbl_tab } ,
     {"tail", gbl_tail } ,
     {"translate", gbl_translate } ,
+    {"taxonomy", gbl_taxonomy } ,
     {"upper", gbl_string_convert } ,
-    {"origin_organism", gbl_origin } ,
-    {"origin_gene", gbl_origin } ,
     {0,0}
 
 };
