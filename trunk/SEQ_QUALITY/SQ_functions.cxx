@@ -561,7 +561,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			if(backup->name) {
 			    SQ_GroupDataDictionary::iterator GDI = group_dict.find(backup->name);
 			    if( GDI != group_dict.end() ) {
-				SQ_GroupDataPtr GD_ptr = GDI->second;
+			        SQ_GroupDataPtr GD_ptr = GDI->second;
 				value = GD_ptr->SQ_test_against_consensus(rawSequence);
 			    }
 			}
@@ -748,8 +748,9 @@ void SQ_reset_counters(GBT_TREE *root) {
 }
 
 
-void create_multi_level_consensus(GBT_TREE *node, const SQ_GroupData *data) {
+void create_multi_level_consensus(GBT_TREE *node, SQ_GroupData *data) {
     SQ_GroupData *newData  = data->clone();  //save actual consensus
+    newData=data;
     group_dict[node->name] = newData;        //and link it with an name
 }
 
