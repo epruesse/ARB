@@ -35,7 +35,7 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
         aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
     }
     else {
-        aw_message(GBS_global_string("Illegal item_name '%s' in GEN_select_gene()"));
+        aw_message(GBS_global_string("Illegal item_name '%s' in GEN_select_gene()", item_name));
     }
     free(organism);
 }
