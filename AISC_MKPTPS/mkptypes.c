@@ -14,8 +14,9 @@
  */
 
 /*
- * many extension were made for use in ARB build process   
- */
+ * many extension were made for use in ARB build process
+ * by Ralf Westram <ralf@arb-home.de>
+*/
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -46,7 +47,8 @@ static void Version(void);
 #define MAXPARAM 20         /* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
-static int  dostatic            = 0;   /* do static functions? */
+static int  dostatic            = 0;   /* include static functions? */
+static int  doinline            = 0;   /* include inline functions? */
 static int  donum               = 0;   /* print line numbers? */
 static int  define_macro        = 1;   /* define macro for prototypes? */
 static int  use_macro           = 1;   /* use a macro for prototypes? */
@@ -1064,12 +1066,16 @@ static void getdecl(FILE *f){
             goto again;
         }
 
-        if (!dostatic && strcmp(buf, "static")==0) {
+        if (oktoprint && !dostatic && strcmp(buf, "static")==0) {
             oktoprint = 0;
         }
+        if (oktoprint && !doinline && strcmp(buf, "inline")==0) {
+            oktoprint = 0;
+        }
+        
         /* for the benefit of compilers that allow "inline" declarations */
-        if (strcmp(buf, "inline")==0 && !sawsomething) continue;
-        if (strcmp(buf, ";")==0) goto again;
+        /* if (strcmp(buf, "inline") == 0 && !sawsomething) continue; */
+        if (strcmp(buf, ";")      == 0) goto again;
 
         /* A left parenthesis *might* indicate a function definition */
         if (strcmp(buf, "(")==0) {
@@ -1118,6 +1124,7 @@ static void Usage(void){
     fputs("   -n: put line numbers of declarations as comments\n",stderr);
     fputs("   -p sym: use \"sym\" as the prototype macro (default \"P_\")\n", stderr);
     fputs("   -s: include declarations for static functions\n", stderr);
+    fputs("   -i: include declarations for inline functions\n", stderr);
     fputs("   -x: omit parameter names in prototypes\n", stderr);
     fputs("   -z: omit prototype macro definition\n", stderr);
     fputs("   -A: omit prototype macro; header files are strict ANSI\n", stderr);
@@ -1161,6 +1168,7 @@ int main(int argc, char **argv){
             else if (*t == 'g')         search__attribute__ = 1;
             else if (*t == 'n')         donum               = 1;
             else if (*t == 's')         dostatic            = 1;
+            else if (*t == 'i')         doinline            = 1;
             else if (*t == 'x')         no_parm_names       = 1; /* no parm names, only types (sg) */
             else if (*t == 'z')         define_macro        = 0;
             else if (*t == 'P')         promote_lines       = 1;
