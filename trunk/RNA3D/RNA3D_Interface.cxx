@@ -1,7 +1,6 @@
 #include "RNA3D_GlobalHeader.hxx"
 
 // The following includes are needed to use AW_window_Motif 
-
 #include "../WINDOW/aw_awar.hxx"
 #include "../WINDOW/aw_Xm.hxx"
 #include "../WINDOW/aw_click.hxx"
@@ -240,30 +239,30 @@ void RefreshOpenGLDisplay() {
     }
 }
 
-void SetOpenGLBackGroundColor() {
-	extern Widget _glw;
-	unsigned long bgColor;
-	XtVaGetValues( _glw, XmNbackground, &bgColor, NULL );
+// void SetOpenGLBackGroundColor() {
+// 	extern Widget _glw;
+// 	unsigned long bgColor;
+// 	XtVaGetValues( _glw, XmNbackground, &bgColor, NULL );
 
-    extern AWT_canvas *gl_Canvas;
-    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+//     extern AWT_canvas *gl_Canvas;
+//     Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
-    XColor xcolor;
-    xcolor.pixel = bgColor;
-    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
-    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+//     XColor xcolor;
+//     xcolor.pixel = bgColor;
+//     Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
+//     XQueryColor( XtDisplay( w ), colormap, &xcolor );
 
-    float r, g, b; r = g = b = 0.0;
-    r = (float) xcolor.red / 65535.0;
-    g = (float) xcolor.green / 65535.0;
-    b = (float) xcolor.blue / 65535.0;
+//     float r, g, b; r = g = b = 0.0;
+//     r = (float) xcolor.red / 65535.0;
+//     g = (float) xcolor.green / 65535.0;
+//     b = (float) xcolor.blue / 65535.0;
 
-    // set OpenGL Backgroud Color to the widget's backgroud     
-    glClearColor(r, g, b, 0);
+//     // set OpenGL Backgroud Color to the widget's backgroud     
+//     glClearColor(r, g, b, 1);
 
-    extern ColorRGBf ApplicationBGColor;
-    ApplicationBGColor = ColorRGBf(r, g, b);
-}
+//     extern ColorRGBf ApplicationBGColor;
+//     ApplicationBGColor = ColorRGBf(r, g, b);
+// }
 
 static void RefreshCanvas(AW_root *awr) {
     MapDisplayParameters(awr);

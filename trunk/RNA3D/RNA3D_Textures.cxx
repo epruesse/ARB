@@ -64,6 +64,9 @@ void Texture2D::LoadGLTextures(void) {
     if (!bPointSpritesSupported) {
        glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
     }
+    else {
+       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    }
 
 #ifdef DEBUG
         cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
