@@ -33,11 +33,14 @@ void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
     }
 }
 
-void AW_clip::reduceClipBorders(int top, int bottom, int left, int right) {
-    if (top    > clip_rect.t) 	clip_rect.t = top;
-    if (bottom < clip_rect.b) 	clip_rect.b = bottom;
-    if (left   > clip_rect.l) 	clip_rect.l = left;
-    if (right  < clip_rect.r) 	clip_rect.r = right;
+int AW_clip::reduceClipBorders(int top, int bottom, int left, int right) {
+    // return 0 if no clipping area left
+    if (top    > clip_rect.t) clip_rect.t = top;
+    if (bottom < clip_rect.b) clip_rect.b = bottom;
+    if (left   > clip_rect.l) clip_rect.l = left;
+    if (right  < clip_rect.r) clip_rect.r = right;
+
+    return !(clip_rect.b<clip_rect.t || clip_rect.r<clip_rect.l);
 }
 
 void AW_clip::reduce_top_clip_border(int top){
@@ -123,26 +126,32 @@ AW_clip::AW_clip(){
 
 /**********************************************************************/
 
+inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
+    if (val <= low) return low;
+    if (val >= high) return high;
+    return val;
+}
+
 int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out)
+// clip coordinates of a box
 {
-    if (x0 < clip_rect.r) x0out = x0; else x0out = clip_rect.r;
-    if (y0 < clip_rect.b) y0out = y0; else y0out = clip_rect.b;
+    if (x1<clip_rect.l || x0>clip_rect.r) return 0;
+    if (y1<clip_rect.t || y0>clip_rect.b) return 0;
 
-    if (x0 < clip_rect.l) x0out = clip_rect.l;
-    if (y0 < clip_rect.t) y0out = clip_rect.t;
+    if (clip_rect.l>clip_rect.r) return 0;
+    if (clip_rect.t>clip_rect.b) return 0;
 
-    if (x1 < clip_rect.r) x1out = x1; else x1out = clip_rect.r;
-    if (y1 < clip_rect.b) y1out = y1; else y1out = clip_rect.b;
-
-    if (x1 < clip_rect.l) x1out = clip_rect.l;
-    if (y1 < clip_rect.t) y1out = clip_rect.t;
-
-    if (x0out >= x1out || y0out >= y1out) return 0;
+    x0out = clip_in_range(clip_rect.l, x0, clip_rect.r);
+    x1out = clip_in_range(clip_rect.l, x1, clip_rect.r);
+    y0out = clip_in_range(clip_rect.t, y0, clip_rect.b);
+    y1out = clip_in_range(clip_rect.t, y1, clip_rect.b);
+    
     return 1;
 }
 /**********************************************************************/
 
 int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out)
+// clip coordinates of a line
 {
     int    outcodeout;
     AW_pos x = 0;
@@ -612,22 +621,13 @@ int AW_device::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filter
 }
 
 
-void AW_device::clear(void){;}
-
-void AW_device::clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height)
-{ AWUSE(x);AWUSE(y);AWUSE(width);AWUSE(height);}
-void AW_device::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(gc);AWUSE(string);AWUSE(x);AWUSE(y);AWUSE(filteri);AWUSE(cd1);AWUSE(cd2);AWUSE(alignment);
-}
-void AW_device::move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y )
-{ AWUSE(src_x);AWUSE(src_y);AWUSE(width);AWUSE(height);AWUSE(dest_x);AWUSE(dest_y);}
-
-void AW_device::fast(void){;}
-void AW_device::slow(void){;}
-void AW_device::flush(void){;}
-
-
+void AW_device::clear(AW_bitset /*filteri*/) {}
+void AW_device::clear_part(AW_pos /*x*/, AW_pos /*y*/, AW_pos /*width*/, AW_pos /*height*/, AW_bitset /*filteri*/) {}
+void AW_device::clear_text(int /*gc*/, const char */*string*/, AW_pos /*x*/, AW_pos /*y*/, AW_pos /*alignment*/, AW_bitset /*filteri*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {}
+void AW_device::move_region( AW_pos /*src_x*/, AW_pos /*src_y*/, AW_pos /*width*/, AW_pos /*height*/, AW_pos /*dest_x*/, AW_pos /*dest_y*/ ) {}
+void AW_device::fast(void) {}
+void AW_device::slow(void) {}
+void AW_device::flush(void) {}
 
 const char * AW_device::open(const char *path)
 {
