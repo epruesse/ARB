@@ -679,7 +679,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY", 0,0,500, 0 );
-    aws->create_menu(0,"MORE_FUNCTIONS","F");
+    aws->create_menu(0,"More functions","F");
     aws->load_xfig("ad_query.fig");
 
     awt_query_struct awtqs;
@@ -713,7 +713,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     AW_CL cbs             = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     gene_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "MORE_SEARCH",     "S" );
+    aws->create_menu(       0,   "More search",     "S" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
 
