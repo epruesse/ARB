@@ -9,6 +9,8 @@
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include "merge.hxx"
+#include <inline.h>
+
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"
@@ -949,86 +951,92 @@ const char *NEW_NAME_AWAR = "tmp/simple_import/new_species_name";
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     /** First big job:  Make the alignment names equal */
-    char ** M_alignment_names = GBT_get_alignment_names(gb_merge);
-    char ** D_alignment_names = GBT_get_alignment_names(gb_dest);
-    GB_ERROR error = 0;
-    char *type = 0;
-    char *dest = 0;
+    char **   M_alignment_names = GBT_get_alignment_names(gb_merge);
+    char **   D_alignment_names = GBT_get_alignment_names(gb_dest);
+    GB_ERROR  error             = 0;
+    char     *dest              = 0;
+    
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
-        goto mg_eq_end;
     }
-    type = GBT_get_alignment_type_string(gb_merge,M_alignment_names[0]);
-    int s;
-    int d;
-    for (s=0,d=0;D_alignment_names[s];s++){
-        char *type2 = GBT_get_alignment_type_string(gb_dest,D_alignment_names[s]);
-        if (strcmp(type, type2) == 0) {
-            D_alignment_names[d] = D_alignment_names[s];
-            if (d != s) D_alignment_names[s] = 0;
-            ++d;
+    else {
+        char *type = GBT_get_alignment_type_string(gb_merge,M_alignment_names[0]);
+        int   s;
+        int   d;
+        
+        for (s=0,d=0;D_alignment_names[s];s++){
+            char *type2 = GBT_get_alignment_type_string(gb_dest,D_alignment_names[s]);
+            if (strcmp(type, type2) == 0) {
+                D_alignment_names[d] = D_alignment_names[s];
+                if (d != s) D_alignment_names[s] = 0;
+                ++d;
+            }
+            else {
+                free(D_alignment_names[s]);
+                D_alignment_names[s] = 0;
+            }
+            free(type2);
         }
-        else {
-            free(D_alignment_names[s]);
-            D_alignment_names[s] = 0;
-        }
-        free(type2);
-    }
 
-    void *str;
-    char *b;
-    int aliid;
-    switch (d){
-        case 0:
-            error = GB_export_error("Cannot find a target alignment with a type of '%s'\n"
-                                    "You should create one first or select a different alignment type\n"
-                                    "during sequence import",type);
-            break;
-        case 1:
-            dest = D_alignment_names[0];
-            break;
+        void *str;
+        char *b;
+        int   aliid;
+        
+        switch (d) {
+            case 0:
+                error = GB_export_error("Cannot find a target alignment with a type of '%s'\n"
+                                        "You should create one first or select a different alignment type\n"
+                                        "during sequence import",type);
+                break;
+            case 1:
+                dest = D_alignment_names[0];
+                break;
 
-        default:
-            int i;
+            default:
+                int i;
 
-            if (autoselect_equal_alignment_name) {
-                for (i = 0; i<d; ++i) {
-                    if (strcmp(M_alignment_names[0], D_alignment_names[i]) == 0) {
-                        dest = D_alignment_names[i];
-                        break;
+                if (autoselect_equal_alignment_name) {
+                    for (i = 0; i<d; ++i) {
+                        if (ARB_stricmp(M_alignment_names[0], D_alignment_names[i]) == 0) {
+                            dest = D_alignment_names[i];
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (!dest) {
-                str = GBS_stropen(100);
+                if (!dest) {
+                    str = GBS_stropen(100);
 
-                for (i=0;i<d;i++){
-                    GBS_strcat(str,D_alignment_names[i]);
-                    GBS_chrcat(str,',');
+                    for (i=0;i<d;i++){
+                        GBS_strcat(str,D_alignment_names[i]);
+                        GBS_chrcat(str,',');
+                    }
+                    GBS_strcat(str,"ABORT");
+
+                    b = GBS_strclose(str);
+                    aliid = aw_message("There are more than one possible alignment targets\n"
+                                       "Choose one destination alignment or ABORT",b);
+                    free(b);
+                    if (aliid >= d) {
+                        error = "Operation Aborted";
+                        break;
+                    }
+                    dest = D_alignment_names[aliid];
                 }
-                GBS_strcat(str,"ABORT");
-
-                b = GBS_strclose(str);
-                aliid = aw_message("There are more than one possible alignment targets\n"
-                                   "Choose one destination alignment or ABORT",b);
-                free(b);
-                if (aliid >= d) {
-                    error = "Operation Aborted";
-                    break;
-                }
-                dest = D_alignment_names[aliid];
-            }
-            break;
-    };
-    if (!error && dest && strcmp(M_alignment_names[0],dest)){
-        error = GBT_rename_alignment(gb_merge,M_alignment_names[0],dest,1,1);
-        if (!error){
-            awt_add_new_changekey( gb_merge, GBS_global_string("%s/data",dest),GB_STRING);
+                break;
         }
+        if (!error && dest && strcmp(M_alignment_names[0], dest) != 0) {
+            error = GBT_rename_alignment(gb_merge,M_alignment_names[0], dest, 1, 1);
+            if (error) {
+                error = GBS_global_string("Failed to rename alignment '%s' to '%s' (Reason: %s)",
+                                          M_alignment_names[0], dest, error);
+            }
+            else {
+                awt_add_new_changekey( gb_merge, GBS_global_string("%s/data",dest),GB_STRING);
+            }
+        }
+        free(type);
     }
- mg_eq_end:
-    free(type);
     GBT_free_names(M_alignment_names);
     GBT_free_names(D_alignment_names);
 
