@@ -277,19 +277,17 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
             int mutations = INT_MAX;
 
             if (p[idx]&APP_GAP) { // contains a gap
+                mutations = 1; // count first gap as mutation
+
                 if (idx>0 && (p[idx-1]&APP_GAP)) { // last position also contained gap..
                     if (((c1&APP_GAP) && (p1[idx-1]&APP_GAP)) || // ..in same sequence
                         ((c2&APP_GAP) && (p2[idx-1]&APP_GAP)))
                     {
                         if (!(p1[idx-1]&APP_GAP) || !(p2[idx-1]&APP_GAP)) { // if one of the sequences had no gap at previous position
-                            continue; // skip multiple gaps
+                            mutations = 0; // skip multiple gaps
                         }
                     }
                 }
-
-                // because one subtree contains a gap (and the other does not)
-                // we count only one mutation (as in general for gaps):
-                mutations = 1;
             }
             else {
                 for (int t1 = 0; t1<PROTEINS_TO_TEST && mutations>1; ++t1) { // with all proteins to test
@@ -311,6 +309,13 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
 
             if (mutpsite) mutpsite[idx] += mutations; // count mutations per site (unweighted)
             result                      += mutations * (w ? w[idx] : 1); // count weighted or simple
+
+            // do not propagate mixed gaps upwards (they cause neg. branches)
+            if (p[idx] & APP_GAP) { // contains gap
+                if (p[idx] != APP_GAP) { // is not real gap
+                    p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
+                }
+            }
         }
         else {
             p[idx] = AP_PROTEINS(c1&c2); // store common proteins for both subtrees
