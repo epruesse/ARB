@@ -35,21 +35,19 @@ void SQ_GroupData::SQ_init_consensus(int size){
 
     // two dimensional array
     consensus = new Int7[size];
-    
+
     initialised=true;
 }
 
 
-void SQ_GroupData::SQ_add_consensus(int value, int row, int col) {
-
-    consensus[col].i[row] = consensus[col].i[row] + value; 
-//    consensus[row][col] = consensus[row][col] + value;
-
+void SQ_GroupData::SQ_add_consensus_column(int col, const Int7& val) {
+    consensus[col] += val;
 }
 
-Int7 *SQ_GroupData::SQ_get_consensus() {
+void SQ_GroupData::SQ_add_consensus(int value, int row, int col) {
 
-    return consensus;
+    consensus[col].i[row] = consensus[col].i[row] + value;
+//    consensus[row][col] = consensus[row][col] + value;
 
 }
 

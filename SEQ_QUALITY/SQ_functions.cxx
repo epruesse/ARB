@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Oct/14/2003 19:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Nov/14/2003 15:25 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -17,11 +17,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#include "SQ_GroupData.h"
 #include "SQ_consensus.h"
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
-#include "SQ_GroupData.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -348,8 +348,8 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    /*calculate consensus sequence*/
 		    {
 			bool init;
- 			int *pp;
-			int p;
+//  			int *pp;
+// 			int p;
 
 			init = globalData->SQ_is_initialised();
 			if (init==false){
@@ -357,13 +357,16 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 			}
 			SQ_consensus* consens = new SQ_consensus(sequenceLength);
 			consens->SQ_calc_consensus(rawSequence);
-			for(int i = 0; i < sequenceLength; i++) {
-			    for(int j = 0; j < 7; j++) {
- 				pp = consens->SQ_get_consensus(i,j);
- 				p = *pp;
-				globalData->SQ_add_consensus(p,i,j);
-			    }
-			}
+// 			for(int i = 0; i < sequenceLength; i++) {
+// 			    for(int j = 0; j < 7; j++) {
+//  				pp = consens->SQ_get_consensus(i,j);
+//  				p = *pp;
+// 				globalData->SQ_add_consensus(p,i,j);
+// 			    }
+// 			}
+                        for(int i = 0; i < sequenceLength; i++) {
+                            globalData->SQ_add_consensus_column(i, consens->SQ_get_consensus(i));
+                        }
 			delete consens;
 		    }
 

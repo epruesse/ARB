@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : We will see!                                           //
-//    Time-stamp: <Mon Sep/29/2003 19:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Nov/14/2003 15:23 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -19,11 +19,18 @@
 #include <cstddef>
 #endif
 
-struct Int7 { 
-  int i[7]; 
-  Int7() {
-    for (int j=0; j<7; ++j) i[j]=0; 
-  }
+struct Int7 {
+    int i[7];
+    Int7() {
+        for (int j=0; j<7; ++j) i[j]=0;
+    }
+
+    const Int7& operator += (const Int7& other) {
+        for (int j = 0; j<7; ++j) {
+            i[j] += other.i[j];
+        }
+        return *this;
+    }
 };
 
 class SQ_GroupData {
@@ -36,7 +43,10 @@ public:
     void SQ_set_avg_bases(int bases);
     void SQ_init_consensus(int size);
     void SQ_add_consensus(int value, int row, int col);
-    Int7 *SQ_get_consensus();
+    void SQ_add_consensus_column(int row, const Int7& val);
+    Int7 *SQ_get_consensus_PLEASE_DO_NOT_DUPLICATE_FUNCTION_NAMES() {
+        return consensus;
+    }
     int  SQ_print_on_screen();
     bool SQ_is_initialised();
     double SQ_test_against_consensus(const char *sequence);
