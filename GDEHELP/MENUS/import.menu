@@ -1,7 +1,5 @@
-/*
-item:Import Foreign Format (using GDE/readseq: dangerous !!) ...
-*/
-
+item:Import sequences from foreign format (Readseq) ...
+itemmeta: R
 itemmethod:arb_readseq $INPUTFILE -a -f2 > OUTPUTFILE
 itemhelp:readseq.help
 
@@ -11,9 +9,9 @@ arglabel:Name of foreign file?
 
 out:OUTPUTFILE
 outformat:genbank
- 
+
 
 out:OUTPUTFILE
 outformat:genbank
 
- 
+
