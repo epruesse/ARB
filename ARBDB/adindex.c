@@ -453,7 +453,7 @@ char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_
         }
         GBS_chrcat(res,'\n');
     }
-    return GBS_strclose(res,0);
+    return GBS_strclose(res);
 }
 
 /*****************************************************************************************

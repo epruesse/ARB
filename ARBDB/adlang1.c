@@ -146,7 +146,7 @@ GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
                 GBS_strcat(str,"\n");
             }
             GB_DELETE(params);
-            res = GBS_strclose(str,0);
+            res = GBS_strclose(str);
             err = GB_export_error("Unknown Parameter '%s' in command '%s'\n\tPARAMETERS:\n%s",argv[i].str,com,res);
             free(res);
             return err;
@@ -372,7 +372,7 @@ GB_ERROR gbl_remove(GBDATA *gb_species, char *com,
                 GBS_chrcat(strstruct,*p);
             }
         }
-        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
+        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct);
         /* export result string */
     }
     return 0;
@@ -407,7 +407,7 @@ GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
                 GBS_chrcat(strstruct,*p);
             }
         }
-        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
+        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct);
         /* export result string */
     }
     return 0;
@@ -463,7 +463,7 @@ GB_ERROR gbl_translate(GBDATA *gb_species, char *com,
         for  (p = argvinput[i].str;*p;p++){
             GBS_chrcat(strstruct, tab[(unsigned char)*p]);
         }
-        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
+        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct);
         /* export result string */
     }
     return 0;
@@ -907,7 +907,7 @@ GB_ERROR gbl_readdb(GBDATA *gb_species, char *com,
         GBS_strcat(strstr,val);
         free(val);
     }
-    (*argvout)[(*argcout)++].str = GBS_strclose(strstr,0);	/* export result string */
+    (*argvout)[(*argcout)++].str = GBS_strclose(strstr);	/* export result string */
     return 0;
 }
 
@@ -1097,7 +1097,7 @@ GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com,
 
         }
     }
-    (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
+    (*argvout)[(*argcout)++].str = GBS_strclose(strstruct);
     return 0;
 }
 
@@ -1362,7 +1362,7 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
     }
     GBS_strcat(str, "<");
     GBS_strcat(str, fname);
-    sys = GBS_strclose(str,0);
+    sys = GBS_strclose(str);
     if (! (in = popen(sys,"r"))) {
         free(com);
         unlink(fname);
@@ -1372,7 +1372,7 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
     str = GBS_stropen(1000);
     while ( (i=getc(in)) != EOF ) GBS_chrcat(str,i);
     pclose(in);
-    (*argvout)[(*argcout)++].str = GBS_strclose(str,1);
+    (*argvout)[(*argcout)++].str = GBS_strclose(str);
     return 0;
 }
 

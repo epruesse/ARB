@@ -95,7 +95,7 @@ long gbs_hash_to_strstruct(const char *key, long val){
 char *GBS_hashtab_2_string(GB_HASH *hash) {
     gbs_save_hash_strstruct = GBS_stropen(1024);
     GBS_hash_do_loop(hash, gbs_hash_to_strstruct);
-    return GBS_strclose(gbs_save_hash_strstruct,1);
+    return GBS_strclose(gbs_save_hash_strstruct);
 }
 
 
