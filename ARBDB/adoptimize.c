@@ -597,10 +597,17 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
 
 char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size)
 {
-    GB_DICTIONARY *dict = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
-    GB_BOOL append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
+    GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
+    GB_BOOL        append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
 
-    gb_assert(dict);
+    if (!dict) {
+        fprintf(stderr, "Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
+        if (GB_KEY_QUARK(gbd) == 0) { // illegal key
+            static char corrupt[] = "<data corrupted>";
+            return corrupt;
+        }
+        GB_CORE;
+    }
 
     return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero);
 }
