@@ -442,8 +442,6 @@ int aisc_s_send_bytes_queue(int socket)
     struct aisc_bytes_list *bl,*bl_next;
     for (bl = aisc_server_bytes_first;bl;bl=bl_next){
         bl_next = bl->next;
-#ifdef DEVEL_IDP
-#endif
         if (aisc_s_write(socket,(char *)bl->data,bl->size)) return 1;
         free((char *)bl);
     };

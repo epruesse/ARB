@@ -1188,9 +1188,7 @@ void AW_window::select_index(AW_selection_list *selection_list, const char *awar
 void AW_window::move_selection(AW_selection_list *selection_list, const char *awar_name, int offset) {
     int index = get_index_of_current_element(selection_list, awar_name);
     select_index(selection_list, awar_name, index+offset);
-#ifdef DEVEL_IDP
-    printf("\n\nMOVE_SELECTED!!!!!\n\n");
-#endif
+    
     //     int curr_idx;
     //     {
     //         char *curr_value = list_awar->read_string();
@@ -1586,8 +1584,8 @@ int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_st
 AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList){
 
     if (destinationList) clear_selection_list(destinationList);
-    else { 
-        printf(" Destination list not initialised!!\n");  
+    else {
+        printf(" Destination list not initialised!!\n");
         return 0; 
     }
 
