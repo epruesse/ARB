@@ -1096,7 +1096,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
 
             tmp_int_vector = *(genomembl.getSequenceHeader());
             tmp_str_vector.clear();
-            tmp_str_vector.push_back("sequence_lenght");
+            tmp_str_vector.push_back("sequence_length");
             tmp_str_vector.push_back("sequence_a");
             tmp_str_vector.push_back("sequence_c");
             tmp_str_vector.push_back("sequence_g");
@@ -1122,7 +1122,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         }
         else
         {
-            GB_warning("The Embl flatfile is uncomplete!");
+            GB_warning("The Embl flatfile is incomplete!");
         }
     }
     else if(extension == "gbk")
@@ -1241,7 +1241,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                     gellisary::writeInteger(gb_species,&field,tmp_int);
                 }
             }
-            field = "sequence_lenght";
+            field = "sequence_length";
             tmp_int = 0;
             for(int i = 0; i < (int)tmp_int_vector.size(); i++)
             {
@@ -1258,7 +1258,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         }
         else
         {
-            GB_warning("The GenBank flatfile is uncomplete!");
+            GB_warning("The GenBank flatfile is incomplete!");
         }
     }
     else if(extension == "ff")
@@ -1377,7 +1377,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                     gellisary::writeInteger(gb_species,&field,tmp_int);
                 }
             }
-            field = "sequence_lenght";
+            field = "sequence_length";
             tmp_int = 0;
             for(int i = 0; i < (int)tmp_int_vector.size(); i++)
             {
@@ -1394,7 +1394,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         }
         else
         {
-            GB_warning("The DDBJ flatfile : is uncomplete!");
+            GB_warning("The DDBJ flatfile : is incomplete!");
         }
     }
     return error;
