@@ -10,6 +10,7 @@
 
 #define AWAR_DB	                    "tmp/nt/arbdb/"
 #define AWAR_DB_PATH                AWAR_DB "file_name"
+#define AWAR_DB_NAME                AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
 #define AWAR_DEFAULT_ALIGNMENT      "presets/use"
 
 #define AWAR_TREE                   "focus/tree_name"
