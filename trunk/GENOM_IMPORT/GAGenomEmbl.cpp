@@ -16,7 +16,7 @@
 #ifndef _CCP_FSTREAM
 #include <fstream>
 #endif
-#ifndef _CCP_S STREAM
+#ifndef _CCP_SSTREAM
 #include <sstream>
 #endif
 
