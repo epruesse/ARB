@@ -7,6 +7,8 @@
 #define AWAR_BEST_PARSIMONY	"tmp/pars/best_parsimony"
 #define AWAR_STACKPOINTER	"tmp/pars/stackpointer"
 
+#define NNI_MODES // uncomment to hide NNI/K.L. mode buttons
+
 //#define AWAR_TREE AWAR_TREE
 
 #define AWAR_PARS_TYPE		"pars/pars_type"
@@ -21,7 +23,7 @@ private:
     class AP_main_stack	*stack;
     class AP_main_list	list;
     unsigned long		stack_level;
-	
+
 public:
     // *************** read only
     char	*use;
@@ -34,7 +36,7 @@ public:
 	  unsigned  int	calc_bootstrap:1;
 	  unsigned  int	quit:1;
     } commands;
-    
+
     unsigned long      	combineCount;
     AP_main(void);
     ~AP_main(void);
@@ -44,7 +46,7 @@ public:
     void set_tree_root(AP_tree *new_root);
 
     AP_BOOL buffer_cout;
-	
+
     void user_push(void);
     void user_pop(void);
     void push(void);
@@ -53,7 +55,7 @@ public:
     void clear(void);				// clears all buffers
 
 
-    
+
 } *ap_main;
 
 extern GBDATA *gb_main;
