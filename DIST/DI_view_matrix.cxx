@@ -31,19 +31,19 @@ void horizontal_change_cb(AW_window *aww,PH_dmatrix *dis)
 
 void redisplay_needed(AW_window *,PH_dmatrix *dis)
 {
-	dis->display();
+    dis->display();
 }
 
 void resize_needed(AW_window *,PH_dmatrix *dis)
 {
-	dis->init();
-	dis->resized();
-	dis->display();
+    dis->init();
+    dis->resized();
+    dis->display();
 }
 
 PH_dmatrix::PH_dmatrix()
 {
-	memset((char *) this,0,sizeof(PH_dmatrix));
+    memset((char *) this,0,sizeof(PH_dmatrix));
 }
 
 
@@ -109,8 +109,8 @@ void PH_dmatrix::init (PHMATRIX *matrix)
 }
 
 PHMATRIX *PH_dmatrix::get_matrix(){
-	if (ph_matrix) return ph_matrix;
-	return PHMATRIX::ROOT;
+    if (ph_matrix) return ph_matrix;
+    return PHMATRIX::ROOT;
 }
 
 void PH_dmatrix::resized(void)
@@ -157,9 +157,9 @@ void PH_dmatrix::display(void)   // draw area
     char            buf[BUFLEN];
     long            x, y, xpos, ypos;
     GB_transaction  dummy(gb_main);
-    if (!device)	return;
+    if (!device)    return;
     PHMATRIX       *m = get_matrix();
-    if (!m)	{
+    if (!m) {
         if (awm) awm->hide();
         return;
     }
@@ -380,7 +380,7 @@ void ph_view_create_awars(AW_root *aw_root, PH_dmatrix *dmatrix) {
 AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
     ph_view_create_awars(awr, dmatrix);
     AW_window_menu *awm = new AW_window_menu();
-    awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600,0,0);
+    awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600);
 
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
     dmatrix->awm = awm;
@@ -403,16 +403,16 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
                       0);
 
     awm->create_menu(0,"File","F");
-    awm->insert_menu_topic("save_matrix",	"Save Matrix to File",	"S","save_matrix.hlp",	AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)"tmp/dist/save_matrix" );
-    awm->insert_menu_topic("close",		"Close",	"C",0,	AWM_ALL,	(AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
+    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)"tmp/dist/save_matrix" );
+    awm->insert_menu_topic("close",     "Close",    "C",0,  AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
 
     awm->create_menu(0,"Props","P");
-    awm->insert_menu_topic("props_matrix",		"Matrix: Colors and Fonts ...",	"C","neprops_data.hlp"	,	AWM_ALL,	AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
-    awm->insert_menu_topic("show_dist_as_ascii",	"Show Dist in Ascii",			"A",0		,	AWM_ALL,	ph_view_set_max_d, 0, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_010",		"Show Dist [0,0.1]",			"1",0		,	AWM_ALL,	ph_view_set_max_d, 10, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_025",		"Show Dist [0,0.25]",			"3",0		,	AWM_ALL,	ph_view_set_max_d, 25, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_050",		"Show Dist [0,0.5]",			"5",0		,	AWM_ALL,	ph_view_set_max_d, 50, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_100",		"Show Dist [0,1.0]",			"0",0		,	AWM_ALL,	ph_view_set_max_d, 100, (AW_CL)dmatrix );
+    awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C","neprops_data.hlp"  ,   AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
+    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A",0       ,   AWM_ALL,    ph_view_set_max_d, 0, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1",0       ,   AWM_ALL,    ph_view_set_max_d, 10, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3",0       ,   AWM_ALL,    ph_view_set_max_d, 25, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5",0       ,   AWM_ALL,    ph_view_set_max_d, 50, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0",0       ,   AWM_ALL,    ph_view_set_max_d, 100, (AW_CL)dmatrix );
 
     int x, y;
     awm->get_at_position(&x, &y);

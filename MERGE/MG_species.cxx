@@ -664,7 +664,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     //  awt_selection_list_rescan(gb_merge,AWT_NDS_FILTER);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD",10,10 );
+    aws->init( aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
     aws->load_xfig("merge/mg_transfield.fig");
     aws->button_length(13);
 
@@ -781,7 +781,7 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     GB_transaction dummy(gb_merge);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD" ,10,10);
+    aws->init( aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
     aws->load_xfig("merge/mg_movefield.fig");
     aws->button_length(13);
 
@@ -915,7 +915,7 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
     aw_root->awar_string( AWAR_TAG_DEL1,"S*");
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS", 10,10 );
+    aws->init( aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS");
     aws->load_xfig("merge/mg_mergetaggedfield.fig");
     aws->button_length(13);
 
@@ -1183,7 +1183,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awr->awar_int(AWAR_REMAP_ENABLE, 0, gb_dest);
 
     aws = new AW_window_simple_menu;
-    aws->init( awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES", 0,0,10,10 );
+    aws->init( awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
     aws->load_xfig("merge/species.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);

@@ -2543,7 +2543,7 @@ void AWTC_set_reference_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping", 10, 10 );
+    aws->init( root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
     aws->load_xfig("awtc/islandhopping.fig");
 
     aws->at( "close" );
@@ -2635,7 +2635,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE, 10, 10 );
+    aws->init( root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE);
     aws->load_xfig("awtc/faligner.fig");
 
     aws->label_length( 10 );

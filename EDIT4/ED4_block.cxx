@@ -674,7 +674,7 @@ static void replace_in_block(AW_window*) {
 AW_window *ED4_create_replace_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "REPLACE", "Search & Replace", 100, 100);
+    aws->init(root, "REPLACE", "Search & Replace");
     aws->load_xfig("edit4/replace.fig");
 
     aws->at("close");

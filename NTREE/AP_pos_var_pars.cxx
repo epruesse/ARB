@@ -326,7 +326,7 @@ AW_window *AP_open_pos_var_pars_window( AW_root *root ){
     GB_transaction dummy(gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method",10,10);
+    aws->init( root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method");
     aws->load_xfig("cpro/parsimony.fig");
 
     root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY",AW_ROOT_DEFAULT);

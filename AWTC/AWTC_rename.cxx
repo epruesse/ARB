@@ -253,7 +253,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
     AWUSE(root);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES", 10, 10 );
+    aws->init( root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
 
     aws->load_xfig("awtc/autoren.fig");
 

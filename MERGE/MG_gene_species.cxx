@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Tue Dec/03/2002 15:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -601,7 +601,7 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     if (aws) return aws;
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "DEFINE_GENE_SPECIES_FIELDS", "DEFINE FIELDS EXPORTED WITH GENE SPECIES", 100, 100);
+    aws->init(aw_root, "DEFINE_GENE_SPECIES_FIELDS", "DEFINE FIELDS EXPORTED WITH GENE SPECIES");
     aws->load_xfig("merge/mg_def_gene_species_fields.fig");
 
     aws->at("close");

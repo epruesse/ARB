@@ -152,7 +152,7 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
 AW_window *create_alignment_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_ALIGNMENT", "ALIGNMENT COPY", 100, 100 );
+    aws->init( root, "COPY_ALIGNMENT", "ALIGNMENT COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -174,7 +174,7 @@ AW_window *create_alignment_copy_window(AW_root *root)
 AW_window *create_alignment_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME", 100, 100 );
+    aws->init( root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME" );
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -219,7 +219,7 @@ void aa_create_alignment(AW_window *aww)
 AW_window *create_alignment_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE", 100, 100 );
+    aws->init( root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -243,7 +243,7 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
 {
     AWUSE(aw_def);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION", 100, 0 );
+    aws->init( root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
     aws->load_xfig("ad_align.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);

@@ -734,7 +734,7 @@ AW_window *
 CON_showgroupswin_cb( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC", 590,10);
+    aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC");
     aws->load_xfig("consensus/groups.fig");
     aws->button_length( 7 );
 
@@ -748,7 +748,7 @@ AW_window *
 AP_open_con_expert_window( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES",10,10);
+    aws->init( aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES");
     aws->load_xfig("consensus/expert.fig");
     aws->button_length( 6 );
 
@@ -846,7 +846,7 @@ AW_window *
 AP_open_consensus_window( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS",10,10);
+    aws->init( aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS");
     aws->load_xfig("consensus/main.fig");
 
     GB_push_transaction(gb_main);
@@ -996,7 +996,7 @@ AW_window *
 AP_open_max_freq_window( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "MAX_FREQUENCY", "MAX FREQUENCY",10,10);
+    aws->init( aw_root, "MAX_FREQUENCY", "MAX FREQUENCY");
     aws->load_xfig("consensus/max_freq.fig");
 
     GB_push_transaction(gb_main);

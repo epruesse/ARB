@@ -78,7 +78,7 @@ void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     if(helpwindow) { helpwindow->show() ; return; }
 
     helpwindow = new AW_window_simple;
-    helpwindow->init(awr,"GDE_HELP", "GDE HELP",200,10);
+    helpwindow->init(awr,"GDE_HELP", "GDE HELP");
     helpwindow->load_xfig("gde_help.fig");
 
     //  helpwindow->button_length(10);
@@ -167,7 +167,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
     gb_assert(printed<=BUFSIZE);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root,bf,bf,10,10);
+    aws->init(aw_root,bf,bf);
 
     switch (gde_cgss.wt) {
         case CGSS_WT_DEFAULT:
@@ -487,7 +487,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 AW_window *AP_open_gde_window(AW_root *aw_root)
 {
     AW_window_menu_modes *awm = new AW_window_menu_modes;
-    awm->init(aw_root,"GDE","GDE",700,30,0,0);
+    awm->init(aw_root,"GDE","GDE",700,30);
     awm->at(10,100);awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("CLOSE", "CLOSE","C");
 

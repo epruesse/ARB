@@ -1320,7 +1320,7 @@ static void group_species2_cb(AW_window*, AW_CL cl_use_as_main_window, AW_CL cl_
 static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_window *use_as_main_window) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "CREATE_GROUP_USING_FIELD", "Create group using field", 600, 200 );
+    aws->init(aw_root, "CREATE_GROUP_USING_FIELD", "Create group using field");
     aws->load_xfig("edit4/choose_field.fig");
 
     aws->button_length(20);
@@ -1614,7 +1614,7 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
 AW_window *ED4_create_level_1_options_window(AW_root *root){
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "EDIT4_PROPS","EDIT4 Options", 100, 100 );
+    aws->init( root, "EDIT4_PROPS","EDIT4 Options");
     aws->load_xfig("edit4/options.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -1686,7 +1686,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
 static AW_window * CON_showgroupswin_cb( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC", 590,10);
+    aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC");
     aws->load_xfig("consensus/groups.fig");
     aws->button_length( 7 );
 
@@ -1700,7 +1700,7 @@ static AW_window * CON_showgroupswin_cb( AW_root *aw_root)
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition", 100, 100);
+    aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition");
     aws->load_xfig("edit4/consensus.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -1774,7 +1774,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
 
     if (aws) return (AW_window *)aws;
     aws = new AW_window_simple;
-    aws->init( awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION", 400, 200 );
+    aws->init( awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
     aws->at(10,10);
     aws->auto_space(0,0);
     awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_EDIT_CONFIGURATION);
@@ -1803,7 +1803,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     aws = new AW_window_simple;
-    aws->init( awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION", 400, 200 );
+    aws->init( awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
     aws->load_xfig("edit4/save_config.fig");
 
     aws->at("close");
@@ -2321,13 +2321,13 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
     int creation_mode = int(cl_creation_mode);
     switch (creation_mode) {
         case 0:
-            aws->init( root, "create_species","Create species", 100, 100 );
+            aws->init( root, "create_species","Create species");
             break;
         case 1:
-            aws->init( root, "create_species_from_consensus","Create species from konsensus", 100, 100 );
+            aws->init( root, "create_species_from_consensus","Create species from konsensus");
             break;
         case 2:
-            aws->init( root, "copy_species","Copy current species", 100, 100 );
+            aws->init( root, "copy_species","Copy current species");
             break;
         default:
             e4_assert(0);

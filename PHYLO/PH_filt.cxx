@@ -365,7 +365,7 @@ void create_filter_variables(AW_root *aw_root,AW_default default_file)
 AW_window *create_filter_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root,"PHYL_FILTER", "PHYL FILTER",10,10);
+    aws->init(aw_root,"PHYL_FILTER", "PHYL FILTER");
     aws->load_xfig("phylo/filter.fig");
     aws->button_length(10);
 

@@ -28,7 +28,7 @@ const char *ED4_decode_iupac(char iupac, GB_alignment_type ali) {
 void ED4_set_clipping_rectangle(AW_rectangle *rect)
 {
     // The following can't be replaced by set_cliprect (set_cliprect clears font overlaps):
-    
+
     ED4_ROOT->temp_device->set_top_clip_border(rect->t);
     ED4_ROOT->temp_device->set_bottom_clip_border(rect->b);
     ED4_ROOT->temp_device->set_left_clip_border(rect->l);
@@ -44,9 +44,9 @@ void ED4_aws_init(AW_root *root, AW_window_simple *aws, GB_CSTR macro_format, GB
 
     sprintf(macro_buffer, macro_format, typeId);
     sprintf(window_buffer, window_format, typeId);
-    
+
     char *macro = GBS_string_2_key(macro_buffer);
-    aws->init(root, macro, window_buffer, 100, 100);
+    aws->init(root, macro, window_buffer);
     delete macro;
 }
 

@@ -456,7 +456,7 @@ int BI_helix::show_helix( void *devicei, int gc1 , char *sequence,
 
 AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs){
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "HELIX_PROPS", "HELIX_PROPERTIES",400, 300 );
+    aws->init( awr, "HELIX_PROPS", "HELIX_PROPERTIES");
 
     aws->at           ( 10,10 );
     aws->auto_space(3,3);

@@ -124,7 +124,7 @@ void ph_save_matrix_cb(AW_window *aww)
 AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_MATRIX", "SAVE MATRIX TO FILE", 10, 10 );
+    aws->init( aw_root, "SAVE_MATRIX", "SAVE MATRIX TO FILE");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -146,7 +146,7 @@ AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
 AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "CANCEL_SELECT", "CANCEL SELECT", 10, 10 );
+    aws->init( aw_root, "CANCEL_SELECT", "CANCEL SELECT");
     aws->load_xfig("phylo/cancel.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -163,7 +163,7 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 
 AW_window *create_matrix_window(AW_root *aw_root)
 { AW_window_simple *aws = new AW_window_simple;
- aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable", 10, 10 );
+ aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable");
  aws->load_xfig("phylo/matrix.fig");
  aws->button_length( 10 );
 

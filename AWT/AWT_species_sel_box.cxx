@@ -267,7 +267,7 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
 #else
 		if (is_in_GENE_path((*name)+1)) {
 		    awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
-                }	
+                }
 #endif
             }
         }
@@ -348,7 +348,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     if (popup_list_in_window) {
         {
             AW_window_simple *aw_popup = new AW_window_simple;
-            aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY", 100, 100);
+            aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
             //         aw_popup->load_xfig(0, AW_TRUE);
 
             aw_popup->auto_space(10, 10);

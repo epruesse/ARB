@@ -110,7 +110,7 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
     awr->awar_string( AWAR_PRINT_TREE_2_FILE_FILTER, "fig", def);
 
     aws = new AW_window_simple;
-    aws->init( awr, "EXPORT_TREE_AS_XFIG" ,"EXPORT TREE TO XFIG", 10, 10 );
+    aws->init( awr, "EXPORT_TREE_AS_XFIG" ,"EXPORT TREE TO XFIG");
     aws->load_xfig("awt/export.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -163,7 +163,7 @@ AW_window * AWT_create_sec_export_window(AW_root *awr, AWT_canvas *ntw){
     awr->awar_string( AWAR_PRINT_TREE_2_FILE_FILTER, "fig", def);
 
     aws = new AW_window_simple;
-    aws->init( awr, "EXPORT_TREE_AS_XFIG" ,"EXPORT STRUCTURE TO XFIG", 10, 10 );
+    aws->init( awr, "EXPORT_TREE_AS_XFIG" ,"EXPORT STRUCTURE TO XFIG");
     aws->load_xfig("awt/secExport.fig");
 
     aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"tree2file.hlp");
@@ -487,7 +487,7 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     awt_page_size_check_cb(0,awr);
 
     aws = new AW_window_simple;
-    aws->init( awr, "PRINT_CANVAS", "PRINT GRAPHIC", 10, 10 );
+    aws->init( awr, "PRINT_CANVAS", "PRINT GRAPHIC");
     aws->load_xfig("awt/print.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);

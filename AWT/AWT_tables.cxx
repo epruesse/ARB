@@ -38,14 +38,14 @@ void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {
         GBDATA **new_order;
         int nitems = 0;
         GBDATA *gb_cnt;
-        for (	gb_cnt	= GB_find(gb_fields,0,0,down_level);
+        for (   gb_cnt  = GB_find(gb_fields,0,0,down_level);
                 gb_cnt;
                 gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
             nitems++;
         }
         new_order = new GBDATA *[nitems];
         nitems = 0;
-        for (	gb_cnt	= GB_find(gb_fields,0,0,down_level);
+        for (   gb_cnt  = GB_find(gb_fields,0,0,down_level);
                 gb_cnt;
                 gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
             if (gb_cnt == gb_source) continue;
@@ -65,27 +65,27 @@ void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {
 
 AW_window *create_ad_table_field_reorder_window(AW_root *root,awt_table *awtt)
 {
-	AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "REORDER_FIELDS", "REORDER FIELDS",600, 200 );
-	aws->load_xfig("ad_kreo.fig");
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "REORDER_FIELDS", "REORDER FIELDS");
+    aws->load_xfig("ad_kreo.fig");
 
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("doit");
-	aws->button_length(0);
-	aws->callback((AW_CB1)ad_table_field_reorder_cb,(AW_CL)awtt);
-	aws->help_text("spaf_reorder.hlp");
-	aws->create_button("MOVE_TO_NEW_POSITION", "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
+    aws->at("doit");
+    aws->button_length(0);
+    aws->callback((AW_CB1)ad_table_field_reorder_cb,(AW_CL)awtt);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_TO_NEW_POSITION", "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
 
-	aws->at("source");
-	awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_source);
+    aws->at("source");
+    awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_source);
 
-	aws->at("dest");
-	awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_dest);
+    aws->at("dest");
+    awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_dest);
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
 
 void awt_table_field_hide_cb(AW_window *aws,awt_table *awtt){
@@ -150,14 +150,14 @@ void awt_table_field_delete_cb(AW_window *aws,awt_table *awtt){
 }
 
 
-void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)	{
+void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)   {
     GB_push_transaction(awtt->gb_main);
     char *name = aws->get_root()->awar(awtt->awar_field_new_name)->read_string();
     GB_ERROR error = GB_check_key(name);
     GB_ERROR error2 = GB_check_hkey(name);
     if (error && !error2) {
         aw_message("Warning: Your key contain a '/' character,\n"
-                   "	that means it is a hierarchical key");
+                   "    that means it is a hierarchical key");
         error = 0;
     }
     GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,1);
@@ -183,34 +183,34 @@ void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)	{
 }
 
 AW_window *create_ad_table_field_create_window(AW_root *root, awt_table *awtt){
-	static AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "CREATE_FIELD","CREATE A NEW FIELD", 400, 100 );
-	aws->load_xfig("ad_fcrea.fig");
+    static AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "CREATE_FIELD","CREATE A NEW FIELD");
+    aws->load_xfig("ad_fcrea.fig");
 
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
-
-
-	aws->at("input");
-	aws->label("FIELD NAME");
-	aws->create_input_field(awtt->awar_field_new_name,15);
-
-	aws->at("type");
-	aws->create_toggle_field(awtt->awar_field_new_type,"FIELD TYPE","F");
-    aws->insert_toggle("Ascii Text","S",		(int)GB_STRING);
-    aws->insert_toggle("Link","L",			(int)GB_LINK);
-    aws->insert_toggle("Rounded Numerical","N",	(int)GB_INT);
-    aws->insert_toggle("Numerical","R",		(int)GB_FLOAT);
-    aws->insert_toggle("MASK = 01 Text","0",	(int)GB_BITS);
-	aws->update_toggle_field();
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
 
-	aws->at("ok");
-	aws->callback((AW_CB1)ad_table_field_create_cb,(AW_CL)awtt);
-	aws->create_button("CREATE","CREATE","C");
+    aws->at("input");
+    aws->label("FIELD NAME");
+    aws->create_input_field(awtt->awar_field_new_name,15);
 
-	return (AW_window *)aws;
+    aws->at("type");
+    aws->create_toggle_field(awtt->awar_field_new_type,"FIELD TYPE","F");
+    aws->insert_toggle("Ascii Text","S",        (int)GB_STRING);
+    aws->insert_toggle("Link","L",          (int)GB_LINK);
+    aws->insert_toggle("Rounded Numerical","N", (int)GB_INT);
+    aws->insert_toggle("Numerical","R",     (int)GB_FLOAT);
+    aws->insert_toggle("MASK = 01 Text","0",    (int)GB_BITS);
+    aws->update_toggle_field();
+
+
+    aws->at("ok");
+    aws->callback((AW_CB1)ad_table_field_create_cb,(AW_CL)awtt);
+    aws->create_button("CREATE","CREATE","C");
+
+    return (AW_window *)aws;
 }
 
 awt_table::awt_table(GBDATA *igb_main, AW_root *awr,const char *itable_name){
@@ -282,7 +282,7 @@ void create_ad_table_field_admin(AW_window *aww,GBDATA *gb_main,const char *tnam
     awt_table *awtt = new awt_table(gb_main,aw_root,table_name);
     aws = new AW_window_simple;
     const char *table_header = GBS_global_string("TABLE_ADMIN_%s",table_name);
-    aws->init( aw_root, table_header,table_header, 200, 0 );
+    aws->init( aw_root, table_header,table_header);
 
     aws->load_xfig("ad_table_fields.fig");
 
@@ -343,13 +343,13 @@ void create_ad_table_field_admin(AW_window *aww,GBDATA *gb_main,const char *tnam
 
 
 /***************************************************** TABLE ADMIN
-       ***********************************************/
+ ***********************************************/
 
 
 
-//#define AWAR_TABLE_IMPORT	"tmp/ad_table/import_table"
+//#define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
 
-void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)		// Map table vars to display objects
+void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)      // Map table vars to display objects
 {
     GB_push_transaction(gb_main);
     char *tablename = aw_root->awar(AWAR_TABLE_NAME)->read_string();
@@ -357,11 +357,11 @@ void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)		// Map table vars to
     if (!gb_table) {
         aw_root->awar(AWAR_TABLE_REM)->unmap();
     }else{
-        GBDATA *table_rem =	GB_search(gb_table,"description",	GB_STRING);
+        GBDATA *table_rem = GB_search(gb_table,"description",   GB_STRING);
         aw_root->awar(AWAR_TABLE_REM)->map((void*)table_rem);
     }
     char *fname = GBS_string_eval(tablename,"*=*1.table:table_*=*1",0);
-    aw_root->awar(AWAR_TABLE_EXPORT "/file_name")->write_string(fname);	// create default file name
+    aw_root->awar(AWAR_TABLE_EXPORT "/file_name")->write_string(fname); // create default file name
     delete fname;
     GB_pop_transaction(gb_main);
     free(tablename);
@@ -374,7 +374,7 @@ void table_rename_cb(AW_window *aww,GBDATA *gb_main){
     char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char *dest = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
     GB_begin_transaction(gb_main);
-    GBDATA *gb_table_dest =	GBT_open_table(gb_main,dest,1);
+    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,1);
     if (gb_table_dest) {
         error = "Sorry: Table already exists";
     }else{
@@ -400,7 +400,7 @@ void table_copy_cb(AW_window *aww,GBDATA *gb_main){
     char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
     char *dest = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
     GB_begin_transaction(gb_main);
-    GBDATA *gb_table_dest =	GBT_open_table(gb_main,dest,1);
+    GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,1);
     if (gb_table_dest) {
         error = "Sorry: Table already exists";
     }else{
@@ -450,155 +450,155 @@ void table_create_cb(AW_window *aww,GBDATA *gb_main){
 
 AW_window *create_table_rename_window(AW_root *root,GBDATA *gb_main)
 {
-	AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "RENAME_TABLE","TABLE RENAME", 100, 100 );
-	aws->load_xfig("ad_al_si.fig");
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "RENAME_TABLE","TABLE RENAME");
+    aws->load_xfig("ad_al_si.fig");
 
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("label");
-	aws->create_button(0,"Please enter the new name\nof the table");
+    aws->at("label");
+    aws->create_button(0,"Please enter the new name\nof the table");
 
-	aws->at("input");
-	aws->create_input_field(AWAR_TABLE_DEST,15);
+    aws->at("input");
+    aws->create_input_field(AWAR_TABLE_DEST,15);
 
-	aws->at("ok");
-	aws->callback((AW_CB1)table_rename_cb,(AW_CL)gb_main);
-	aws->create_button("GO","GO","G");
+    aws->at("ok");
+    aws->callback((AW_CB1)table_rename_cb,(AW_CL)gb_main);
+    aws->create_button("GO","GO","G");
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
 
 AW_window *create_table_copy_window(AW_root *root,GBDATA *gb_main)
 {
-	AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "COPY_TABLE", "TABLE COPY", 100, 100 );
-	aws->load_xfig("ad_al_si.fig");
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "COPY_TABLE", "TABLE COPY");
+    aws->load_xfig("ad_al_si.fig");
 
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("label");
-	aws->create_button(0,"Please enter the name\nof the new table");
+    aws->at("label");
+    aws->create_button(0,"Please enter the name\nof the new table");
 
-	aws->at("input");
-	aws->create_input_field(AWAR_TABLE_DEST,15);
+    aws->at("input");
+    aws->create_input_field(AWAR_TABLE_DEST,15);
 
-	aws->at("ok");
-	aws->callback((AW_CB1)table_copy_cb,(AW_CL)gb_main);
-	aws->create_button("GO","GO","G");
+    aws->at("ok");
+    aws->callback((AW_CB1)table_copy_cb,(AW_CL)gb_main);
+    aws->create_button("GO","GO","G");
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
 AW_window *create_table_create_window(AW_root *root,GBDATA *gb_main)
 {
-	AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "CREATE_TABLE", "TABLE CREATE", 100, 100 );
-	aws->load_xfig("ad_al_si.fig");
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "CREATE_TABLE", "TABLE CREATE");
+    aws->load_xfig("ad_al_si.fig");
 
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("label");
-	aws->create_button(0,"Please enter the name\nof the new table");
+    aws->at("label");
+    aws->create_button(0,"Please enter the name\nof the new table");
 
-	aws->at("input");
-	aws->create_input_field(AWAR_TABLE_DEST,15);
+    aws->at("input");
+    aws->create_input_field(AWAR_TABLE_DEST,15);
 
-	aws->at("ok");
-	aws->callback((AW_CB1)table_create_cb,(AW_CL)gb_main);
-	aws->create_button("GO","GO","G");
+    aws->at("ok");
+    aws->callback((AW_CB1)table_create_cb,(AW_CL)gb_main);
+    aws->create_button("GO","GO","G");
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
 void awt_table_delete_cb(AW_window *aww,GBDATA *gb_main){
-	GB_ERROR error = 0;
-	GB_begin_transaction(gb_main);
-	char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
-	GBDATA *gb_table =	GBT_open_table(gb_main,source,1);
+    GB_ERROR error = 0;
+    GB_begin_transaction(gb_main);
+    char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
+    GBDATA *gb_table =  GBT_open_table(gb_main,source,1);
 
-	if (gb_table) {
-	    error = GB_delete(gb_table);
-	}else{
-	    error = "Please select a table first";
-	}
+    if (gb_table) {
+        error = GB_delete(gb_table);
+    }else{
+        error = "Please select a table first";
+    }
 
-	if (!error) GB_commit_transaction(gb_main);
-	else	GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(gb_main);
+    else    GB_abort_transaction(gb_main);
 
-	if (error) aw_message(error);
-	delete source;
+    if (error) aw_message(error);
+    delete source;
 }
 
 void create_tables_var(GBDATA *gb_main, AW_root *aw_root){
-	aw_root->awar_string( AWAR_TABLE_NAME );
-	aw_root->awar_string( AWAR_TABLE_DEST );
-	aw_root->awar_string( AWAR_TABLE_REM,"no rem" );
+    aw_root->awar_string( AWAR_TABLE_NAME );
+    aw_root->awar_string( AWAR_TABLE_DEST );
+    aw_root->awar_string( AWAR_TABLE_REM,"no rem" );
 
-	aw_root->awar_string( AWAR_TABLE_EXPORT "/file_name", "tablefile");
-	aw_root->awar_string( AWAR_TABLE_EXPORT "/directory", "");
-	aw_root->awar_string( AWAR_TABLE_EXPORT "/filter", "table");
+    aw_root->awar_string( AWAR_TABLE_EXPORT "/file_name", "tablefile");
+    aw_root->awar_string( AWAR_TABLE_EXPORT "/directory", "");
+    aw_root->awar_string( AWAR_TABLE_EXPORT "/filter", "table");
 
-	aw_root->awar_string( AWAR_TABLE_IMPORT "/file_name", "tablefile");
-	aw_root->awar_string( AWAR_TABLE_IMPORT "/directory", "");
-	aw_root->awar_string( AWAR_TABLE_IMPORT "/filter", "table");
-	aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_");//->set_srt( GBT_TABLE_AWAR_SRT);
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/file_name", "tablefile");
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/directory", "");
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/filter", "table");
+    aw_root->awar_string( AWAR_TABLE_IMPORT "/table_name", "table_");//->set_srt( GBT_TABLE_AWAR_SRT);
 
-	aw_root->awar(AWAR_TABLE_NAME)->add_callback( (AW_RCB1)table_vars_callback,(AW_CL)gb_main);
-	table_vars_callback(aw_root,gb_main);
+    aw_root->awar(AWAR_TABLE_NAME)->add_callback( (AW_RCB1)table_vars_callback,(AW_CL)gb_main);
+    table_vars_callback(aw_root,gb_main);
 }
 
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root,GBDATA *gb_main)
 {
-	static AW_window_simple *aws = 0;
+    static AW_window_simple *aws = 0;
 
-	if (aws) return aws;
-	GB_transaction tscope(gb_main);
-	create_tables_var(gb_main,aw_root);
+    if (aws) return aws;
+    GB_transaction tscope(gb_main);
+    create_tables_var(gb_main,aw_root);
 
-	aws = new AW_window_simple;
-	aws->init( aw_root, "TABLE_ADMIN","TABLE ADMIN", 200, 0 );
-	aws->load_xfig("ad_table_admin.fig");
+    aws = new AW_window_simple;
+    aws->init( aw_root, "TABLE_ADMIN","TABLE ADMIN");
+    aws->load_xfig("ad_table_admin.fig");
 
-	aws->callback( AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->callback( AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->callback( AW_POPUP_HELP,(AW_CL)"tableadm.hlp");
-	aws->at("help");
-	aws->create_button("HELP","HELP","H");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"tableadm.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
 
-	aws->button_length(13);
+    aws->button_length(13);
 
-	aws->at("delete");
-	aws->callback((AW_CB1)awt_table_delete_cb,(AW_CL)gb_main);
-	aws->create_button("DELETE","DELETE","D");
+    aws->at("delete");
+    aws->callback((AW_CB1)awt_table_delete_cb,(AW_CL)gb_main);
+    aws->create_button("DELETE","DELETE","D");
 
-	aws->at("rename");
-	aws->callback(AW_POPUP,(AW_CL)create_table_rename_window,(AW_CL)gb_main);
-	aws->create_button("RENAME","RENAME","R");
+    aws->at("rename");
+    aws->callback(AW_POPUP,(AW_CL)create_table_rename_window,(AW_CL)gb_main);
+    aws->create_button("RENAME","RENAME","R");
 
-	aws->at("copy");
-	aws->callback(AW_POPUP,(AW_CL)create_table_copy_window,(AW_CL)gb_main);
-	aws->create_button("COPY","COPY","C");
+    aws->at("copy");
+    aws->callback(AW_POPUP,(AW_CL)create_table_copy_window,(AW_CL)gb_main);
+    aws->create_button("COPY","COPY","C");
 
-	aws->at("cmp");
-	aws->callback(AW_POPUP,(AW_CL)create_table_create_window,(AW_CL)gb_main);
-	aws->create_button("CREATE","CREATE","C");
+    aws->at("cmp");
+    aws->callback(AW_POPUP,(AW_CL)create_table_create_window,(AW_CL)gb_main);
+    aws->create_button("CREATE","CREATE","C");
 
-	aws->at("export");
-	aws->callback((AW_CB)create_ad_table_field_admin,(AW_CL)gb_main,0);
-	aws->create_button("ADMIN","ADMIN","C");
+    aws->at("export");
+    aws->callback((AW_CB)create_ad_table_field_admin,(AW_CL)gb_main,0);
+    aws->create_button("ADMIN","ADMIN","C");
 
-	aws->at("list");
-	awt_create_selection_list_on_tables(gb_main,(AW_window *)aws,AWAR_TABLE_NAME);
+    aws->at("list");
+    awt_create_selection_list_on_tables(gb_main,(AW_window *)aws,AWAR_TABLE_NAME);
 
-	aws->at("rem");
-	aws->create_text_field(AWAR_TABLE_REM);
+    aws->at("rem");
+    aws->create_text_field(AWAR_TABLE_REM);
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }

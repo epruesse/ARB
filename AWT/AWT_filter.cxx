@@ -327,7 +327,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_sel
     GB_push_transaction(acbs->gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "FILTER_SELECT", "Select Filter", 10, 10 );
+    aws->init( aw_root, "FILTER_SELECT", "Select Filter");
     aws->load_xfig("awt/filter.fig");
     aws->button_length( 10 );
 

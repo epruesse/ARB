@@ -801,7 +801,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW", 100, 100 );
+    aws->init( aw_root, "CONCATENATE_ALIGNMENTS", "CONCATENATION WINDOW");
     aws->load_xfig("concatenate.fig");
 
     aws->button_length(8);
@@ -887,7 +887,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, 
 
     AW_window_simple    *aws = new AW_window_simple;
 
-    aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW", 100, 100 );
+    aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW" );
     aws->load_xfig("merge_species.fig");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"merge_species.hlp");

@@ -26,7 +26,7 @@ void create_tool_variables(AW_root *root,AW_default db1)
     root->awar_int(    "tmp/tools/search/t_equal_u", 0,       db1);
     root->awar_int(    "tmp/tools/search/upper_eq_lower", 0,       db1);
     root->awar_int(    "tmp/tools/search/gaps", -1,       db1);
-    //-----------------------------------------------------------complement	
+    //-----------------------------------------------------------complement
     root->awar_int(    "tmp/tools/complement/action", 0,       db1);
     root->awar_int(    "tmp/tools/complement/gaps_points", 0,       db1);
     root->awar_int(    "tmp/tools/complement/left", 0,       db1);
@@ -38,7 +38,7 @@ void create_tool_variables(AW_root *root,AW_default db1)
 
 
 //**************************************************************************
-//	Search/Replace  Liefert alle Sequenzen eines Bereiches.		
+//	Search/Replace  Liefert alle Sequenzen eines Bereiches.
 //**************************************************************************
 void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 		      ADT_SEARCH *ptr_adt_search, ADT_EDIT *ptr_adt_edit ) {
@@ -54,7 +54,7 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 	}
 	//----------------------------------------selektierte sequence
 	if(get_area_current->is_selected != 0) {
-	    ptr_adt_edit->selection = 1;			
+	    ptr_adt_edit->selection = 1;
 	    // im Alignement selektierten String gefunden
 	}
 	//---------------------------------------------------end selec
@@ -77,18 +77,18 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 
 	} // end if (selection)
 	//---------------------------------------------end func aufruf
-		
+
 	//------------------------------------------REPLACE REST EDITOR
 	if(ptr_adt_search->replace_option == ADT_REPLACE_REST_EDITOR) {
 	    ptr_adt_edit->found_matchp = 0;
-	    ptr_adt_search->replace_loop_sequence = 
+	    ptr_adt_search->replace_loop_sequence =
 		ADT_DONT_STOPP_REPLACE;
 	}
 	//-----------------------------------------------------END REST
 
 	//-------------------------------------------get next Sequence
-	if( ptr_adt_edit->found_matchp == 0 ) {	
-	    if(ptr_adt_search->search_direction == 
+	if( ptr_adt_edit->found_matchp == 0 ) {
+	    if(ptr_adt_search->search_direction ==
 	       ADT_SEARCH_FORWARD) {
 		get_area_current = get_area_current->next;
 	    }
@@ -98,7 +98,7 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 
 	}
 	//----------matchpattern found
-	else {  				
+	else {
 	    break;
 	}
 	//------------------------------------------------------------
@@ -107,7 +107,7 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 
 
     //---------------------------------------------------Eintrag in Editor
-    if(ptr_adt_edit->found_matchp == 1) {	
+    if(ptr_adt_edit->found_matchp == 1) {
 	set_cursor_to( aedw,
 		       (int)ptr_adt_edit->actual_cursorpos_editor,
 		       get_area_current );
@@ -121,11 +121,11 @@ void search_get_area( AED_window *aedw, AED_area_entry  *get_area_current,
 
 
 //**************************************************************************
-//    Aufruf der Dialogbox > search/replace < + deren Funktionalitaeten		
+//    Aufruf der Dialogbox > search/replace < + deren Funktionalitaeten
 //**************************************************************************
 void edit_tool_search_cb(AW_window *aw, AED_window *aedwindow,
 			 ADT_BUTTON pressed_button ){
-	
+
     AW_root 		*awroot = aw->get_root();
     ADT_SEARCH	adt_search;
     ADT_EDIT		adt_edit;
@@ -186,7 +186,7 @@ void edit_tool_search_cb(AW_window *aw, AED_window *aedwindow,
     if(option >= 0) {
 	adt_search.replace_option = option;
     }
-    //Mehr oder gleichviele Fehler erlaubt 
+    //Mehr oder gleichviele Fehler erlaubt
     //als Suchstring lang?
     if( strlen(search) == 0 && option < 0 ) {
 	aw_message("*********   Please insert Matchpattern!   *********");
@@ -205,7 +205,7 @@ void edit_tool_search_cb(AW_window *aw, AED_window *aedwindow,
 */
 
 if( option >= 0 && adt_search.gaps >= 0 ) {
-    if( strlen(adt_search.matchpattern) !=	
+    if( strlen(adt_search.matchpattern) !=
 	strlen(adt_search.replace_string) ) {
 	aw_message("*********   WITHOUT GAPS   *********\n    Search_String length must be\n\n        >>>>   EQUAL   <<<<\n\n     as Replace_String length!");
 	free(search);
@@ -224,12 +224,12 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
  adt_search.mistakes_allowed = mismatches;
  //-------------------------------------------------------------------
 
-	//---------------------------------------Suchen ja, aber im Editor ist 
+	//---------------------------------------Suchen ja, aber im Editor ist
 						//noch nichts markiert!
- if(aedwindow->one_area_entry_is_selected == AW_FALSE) {		
-	
+ if(aedwindow->one_area_entry_is_selected == AW_FALSE) {
+
      //-------------------------------------no selection no replace
-     if( adt_search.replace_option != ADT_NO_REPLACE )   { 
+     if( adt_search.replace_option != ADT_NO_REPLACE )   {
 	 aw_message("There`s nothing  SELECTED !!");
 	 free(search);
 	 free(repl_str);
@@ -244,7 +244,7 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
  //--------------------------------------------------------------------
 
 	//-------------------------------------Hole Cursorposition der Sequenz;
- if(aedwindow->cursor_is_managed) {		
+ if(aedwindow->cursor_is_managed) {
      adt_edit.actual_cursorpos_editor = (long) aedwindow->cursor;
  }
  //--------------------------------------------------------------------
@@ -258,19 +258,19 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
  }
  else{
      adt_search.search_direction = direction;
-     adt_search.search_start_cursor_pos = 
+     adt_search.search_start_cursor_pos =
 	 adt_edit.actual_cursorpos_editor + adt_search.search_direction;
  }				// Cursorpos. +/-1
  //--------------------------------------------------------------------
 
 	//-------------------------------------------- t und u gleichbehandeln;
- if(t_equal_u) {			
+ if(t_equal_u) {
      adt_search.t_equal_u = 1;	// JA
  }
  //--------------------------------------------------------------------
 
 	//----------------------------------------------- GROSS/klein beachten;
- if(upper_eq_lower) {			
+ if(upper_eq_lower) {
      adt_search.upper_eq_lower = 1;	// JA
  }
  //--------------------------------------------------------------------
@@ -289,16 +289,16 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
  }
  // ========================================================== DB offen
 
-	//--------------------------------------------Funktionsaufrufe liefern 
-					//die Sequenzen der drei Bereiche:  
+	//--------------------------------------------Funktionsaufrufe liefern
+					//die Sequenzen der drei Bereiche:
 					//Top, Middle, Bottom, ab !! der
-					//markierten Sequenz  			
+					//markierten Sequenz
  if( adt_search.replace_option != ADT_NO_REPLACE ) {
      aw_openstatus("SEARCH & REPLACE");
  }
 
  if(adt_search.search_direction == ADT_SEARCH_FORWARD) {
-     search_get_area( aedwindow, aedwindow->area_top->first, 
+     search_get_area( aedwindow, aedwindow->area_top->first,
 		      &adt_search, &adt_edit );
 
      if( adt_edit.found_matchp == 0 ) {
@@ -311,20 +311,20 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
 	 search_get_area( aedwindow,
 			  aedwindow->area_bottom->first,
 			  &adt_search, &adt_edit );
-     }	
+     }
  }else {	// adt_search.search_direction == ADT_SEARCH_BACKWARD
-     search_get_area( aedwindow, aedwindow->area_bottom->last, 	
+     search_get_area( aedwindow, aedwindow->area_bottom->last,
 		      &adt_search, &adt_edit );
 
      if( adt_edit.found_matchp == 0 ) {
-	 search_get_area( aedwindow, aedwindow->area_middle->last, 
+	 search_get_area( aedwindow, aedwindow->area_middle->last,
 			  &adt_search, &adt_edit );
      }
 
      if( adt_edit.found_matchp == 0 ) {
-	 search_get_area( aedwindow, aedwindow->area_top->last, 
+	 search_get_area( aedwindow, aedwindow->area_top->last,
 			  &adt_search, &adt_edit );
-     }	
+     }
  }
 
  aw_closestatus();
@@ -359,7 +359,7 @@ if( option >= 0 && adt_search.gaps >= 0 ) {
 	//-------------------------------------------------Schreiben in Editor
 					//Schreibt Anzahl der gefundenen
 					//Fehler in den Editor
- awroot->awar("tmp/tools/search/mistakes_found")->write_int( adt_edit.mistakes_found); 
+ awroot->awar("tmp/tools/search/mistakes_found")->write_int( adt_edit.mistakes_found);
  //------------------------------------------------------end schreiben
 
 	//-------------------------------------------------Speicher freigeben
@@ -382,14 +382,14 @@ void compl_get_area(  AED_window *aedw, AED_area_entry  *get_area_current, ADT_C
     AD_ERR	*ad_err;
     AWUSE(aedw);
 
-    while(get_area_current != NULL) 
+    while(get_area_current != NULL)
     {
 	ADT_SEQUENCE 	*get_area_adt_sequence;
 	AD_SPECIES	*ptr_ad_species;
 
 	//----------------------------------------selektierte sequence
 	if(get_area_current->is_selected != 0) {
-	    ptr_adt_edit->selection = 1;			
+	    ptr_adt_edit->selection = 1;
 	    // im Alignement selektierten String gefunden
 	}
 	//---------------------------------------------------end selec
@@ -417,13 +417,13 @@ void compl_get_area(  AED_window *aedw, AED_area_entry  *get_area_current, ADT_C
 	    if((ptr_adt_complement->which_button == BUTTON_COMPL_BLOCK) ||
 	       (ptr_adt_complement->which_button == BUTTON_COMPL_REST_SEQUENCE) ||
 	       (ptr_adt_complement->which_button == BUTTON_COMPL_SEQUENCE))
-	    {	
+	    {
 		break;
 	    }
 	    //------------------------------------------------------------
 	} // end if (selection)
 	//---------------------------------------------end func aufruf
-		
+
 	get_area_current = get_area_current->next;
 
     } //===========================================end while: Sequenzsuche
@@ -439,7 +439,7 @@ void compl_get_area(  AED_window *aedw, AED_area_entry  *get_area_current, ADT_C
 //***************************************************************************
 void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
 			     ADT_BUTTON pressed_button ){
-	
+
     AW_root 			*awroot = aw->get_root();
     AD_ERR			*adt_error;
     ADT_COMPLEMENT		adt_complement;
@@ -476,7 +476,7 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     }
 
     if( (!(adt_complement.which_button ==  BUTTON_COMPL_ALL)) &&
-	(aedwindow->one_area_entry_is_selected == AW_FALSE)		
+	(aedwindow->one_area_entry_is_selected == AW_FALSE)
 	)  {
 	aw_message("**** ERROR:    no sequence selected !");
 	return;
@@ -486,7 +486,7 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     adt_complement.alignment_type = aedwindow->alignment->type();
     adt_complement.alignment_name = aedwindow->alignment->name();
     adt_complement.alignment_length = aedwindow->alignment->len();
-	
+
 
     //-----------------------------------------------------complement/invert
     long	action	= awroot->awar("tmp/tools/complement/action")->read_int();
@@ -507,7 +507,7 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     //------------------------------------------------end remove GAPS/points
 
 	//-------------------------------------Hole Cursorposition der Sequenz;
-    if(aedwindow->cursor_is_managed) {		
+    if(aedwindow->cursor_is_managed) {
 	adt_edit.actual_cursorpos_editor = (long) aedwindow->cursor;
     }
     else {
@@ -519,7 +519,7 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     if(adt_complement.take_borders == YES)  {
 	long	 left_border  = awroot->awar("tmp/tools/complement/left")->read_int();
 	long	 right_border = awroot->awar("tmp/tools/complement/right")->read_int();
-		
+
 	if(left_border < 0)  {
 	    aw_message("**** ERROR:     left border >= 0 !");
 	    return;
@@ -575,19 +575,19 @@ void edit_tool_complement_cb(AW_window *aw, AED_window *aedwindow,
     adt_edit.db_status = ADT_DB_OPEN;
     // ========================================================== DB offen
 
-    //--------------------------------------------Funktionsaufrufe liefern 
-    //die Sequenzen der drei Bereiche:  
+    //--------------------------------------------Funktionsaufrufe liefern
+    //die Sequenzen der drei Bereiche:
     //Top, Middle, Bottom, ab !! der
-    //markierten Sequenz  			
+    //markierten Sequenz
 
-    //soll entfallen	compl_get_area( aedwindow, aedwindow->area_top->first, 
+    //soll entfallen	compl_get_area( aedwindow, aedwindow->area_top->first,
     //						  &adt_complement, &adt_edit );
 
     compl_get_area( aedwindow, aedwindow->area_middle->first,
 		    &adt_complement, &adt_edit );
-		
+
     //soll entfallen	compl_get_area( aedwindow, aedwindow->area_bottom->first,
-    //						  &adt_complement, &adt_edit );	
+    //						  &adt_complement, &adt_edit );
     //-------------------------------------------------------------------
 
 	// ======================================================DB schliessen
@@ -656,7 +656,7 @@ AW_window *common_window_features( AW_window_simple *aws,
     aws->insert_default_option("a <> A","N",0);
     aws->insert_option("a = A ","Y",1);
     aws->update_option_menu();
-	
+
     aws->at("gaps");
     aws->create_option_menu("tmp/tools/search/gaps",0,"");
     aws->insert_default_option	(" 'A-A' <> 'AA'        ","D",-1);
@@ -677,7 +677,7 @@ AW_window *common_window_features( AW_window_simple *aws,
 AW_window *create_tool_search( AW_root *root, AED_window *aedwindow )
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "SEARCH_STRING","EDIT SEARCH", 80, 425 );
+    aws->init( root, "SEARCH_STRING","EDIT SEARCH");
     aws->load_xfig("ed_searc.fig");
 
     aws->label_length( 7 );
@@ -698,14 +698,14 @@ AW_window *create_tool_search( AW_root *root, AED_window *aedwindow )
 AW_window *create_tool_replace( AW_root *root, AED_window *aedwindow )
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "REPLACE_STRING", "EDIT REPLACE", 120, 435 );
+    aws->init( root, "REPLACE_STRING", "EDIT REPLACE");
     aws->load_xfig("ed_repla.fig");
 
     aws->label_length( 7 );
     aws->button_length( 14 );
 
     //	aws->at( "reopen" );
-    //	aws->callback     ( AW_POPUP, (AW_CL)create_tool_replace, 
+    //	aws->callback     ( AW_POPUP, (AW_CL)create_tool_replace,
     //							(AW_CL)aedwindow  );
     //	aws->create_button( "REOPEN", "R" );
 
@@ -715,7 +715,7 @@ AW_window *create_tool_replace( AW_root *root, AED_window *aedwindow )
     aws->button_length( 28 );
     aws->at("start_replace");
     aws->callback     ( (AW_CB)edit_tool_search_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_REPLACE_ONLY );	
+			(AW_CL)BUTTON_REPLACE_ONLY );
     aws->create_button( "REPLACE", "REPLACE", "4" );
 
     aws->at("replace_and_find_next");
@@ -751,7 +751,7 @@ AW_window *create_tool_replace( AW_root *root, AED_window *aedwindow )
 AW_window *create_tool_complement( AW_root *root, AED_window *aedwindow )
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COMPLEMENT_SEQUENCE", "COMPLEMENT  and  REVERS", 160, 445 );
+    aws->init( root, "COMPLEMENT_SEQUENCE", "COMPLEMENT  and  REVERS");
     aws->load_xfig("ed_compl.fig");
 
     aws->label_length( 7 );
@@ -782,27 +782,27 @@ AW_window *create_tool_complement( AW_root *root, AED_window *aedwindow )
     aws->button_length( 17 );
     aws->at("block");
     aws->callback     ( (AW_CB)edit_tool_complement_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_COMPL_BLOCK );	
+			(AW_CL)BUTTON_COMPL_BLOCK );
     aws->create_button( "COMPLEMENT_PART", "SEQUENCE PART", "P" );
 
     aws->at("rest_seq");
     aws->callback     ( (AW_CB)edit_tool_complement_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_COMPL_REST_SEQUENCE );	
+			(AW_CL)BUTTON_COMPL_REST_SEQUENCE );
     aws->create_button( "COMPLEMENT_REST", "REST SEQUENCE", "1" );
 
     aws->at("sequence");
     aws->callback     ( (AW_CB)edit_tool_complement_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_COMPL_SEQUENCE );	
+			(AW_CL)BUTTON_COMPL_SEQUENCE );
     aws->create_button( "COMPLEMENT_SEQUENCE", "SEQUENCE", "2" );
 
     aws->at("rest_text");
     aws->callback     ( (AW_CB)edit_tool_complement_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_COMPL_REST_TEXT );	
+			(AW_CL)BUTTON_COMPL_REST_TEXT );
     aws->create_button( "COMPLEMENT_REST_EDITOR", "REST EDITOR", "3" );
 
     aws->at("all");
     aws->callback     ( (AW_CB)edit_tool_complement_cb, (AW_CL)aedwindow,
-			(AW_CL)BUTTON_COMPL_ALL );	
+			(AW_CL)BUTTON_COMPL_ALL );
     aws->create_button( "COMPLEMENT_ALL", "ALL", "4" );
 
     return aws;
@@ -811,4 +811,4 @@ AW_window *create_tool_complement( AW_root *root, AED_window *aedwindow )
 
 
 
-          
+

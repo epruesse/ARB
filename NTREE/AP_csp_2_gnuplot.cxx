@@ -408,7 +408,7 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     GB_transaction dummy(gb_main);
     AWT_csp *csp = new AWT_csp(gb_main,root,AP_AWAR_CSP_NAME);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot", 10,10);
+    aws->init( root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", gb_main);

@@ -1314,7 +1314,7 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
 AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CPRO_STATISTIC", "SAVE STATISTIC", 10, 10 );
+    aws->init( aw_root, "SAVE_CPRO_STATISTIC", "SAVE STATISTIC");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -1335,7 +1335,7 @@ AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD_CPRO_STATISTIC", "LOAD STATISTIC", 10, 10 );
+    aws->init( aw_root, "LOAD_CPRO_STATISTIC", "LOAD STATISTIC");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -1494,7 +1494,7 @@ AW_window *CPRO_condensewindow_cb( AW_root *aw_root,AW_CL which_statistic )
     sprintf(buf,"CONDENSE STATISTIC %ld",(long)which_statistic+1);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root,buf, buf,10,10);
+    aws->init( aw_root,buf, buf);
     aws->load_xfig("cpro/condense.fig");
     aws->button_length( 8 );
 
@@ -1525,7 +1525,7 @@ AW_window *CPRO_xpert_cb( AW_root *aw_root )
     if(expertwindow) return(expertwindow);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "CPRO_EXPERT_PROPS","EXPERT PROPERTIES",500,10);
+    aws->init( aw_root, "CPRO_EXPERT_PROPS","EXPERT PROPERTIES");
     aws->load_xfig("cpro/expert.fig");
     aws->button_length( 8 );
 
@@ -1568,7 +1568,7 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
     char buf[20];
     sprintf(buf,"SHOW STATISTIC %d\n",(int)which_statistic+1);
     AW_window_simple *aws=new AW_window_simple;
-    aws->init( aw_root,buf,buf,400,(int)(10+which_statistic*300));
+    aws->init( aw_root,buf,buf /*,400,(int)(10+which_statistic*300)*/);
     aws->load_xfig("cpro/show.fig");
     aws->button_length(6);
 
@@ -1646,7 +1646,7 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root,AW_CL which_statistic)
     char buf[30];
     sprintf(buf,"CALCULATE STATISTIC %ld",(long)which_statistic+1);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root,buf,buf,10,10);
+    aws->init( aw_root,buf,buf);
     aws->load_xfig("cpro/calc.fig");
     aws->button_length( 10 );
 
@@ -1719,7 +1719,7 @@ AW_window *
 AP_open_cprofile_window( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "CPR_MAIN", "Conservation Profile: Distance Matrix",10,10);
+    aws->init( aw_root, "CPR_MAIN", "Conservation Profile: Distance Matrix");
     aws->load_xfig("cpro/main.fig");
     aws->button_length( 10 );
 

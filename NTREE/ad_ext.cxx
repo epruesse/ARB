@@ -107,7 +107,7 @@ void move_to_sepcies(AW_window *aww)
 AW_window *create_extended_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_SAI", "SAI RENAME", 100, 100 );
+    aws->init( root, "RENAME_SAI", "SAI RENAME");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -130,7 +130,7 @@ AW_window *create_extended_rename_window(AW_root *root)
 AW_window *create_extended_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_SAI", "SAI COPY", 100, 100 );
+    aws->init( root, "COPY_SAI", "SAI COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -230,7 +230,7 @@ void ad_ad_group(AW_window *aww){
 AW_window *create_extendeds_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION", 200, 0 );
+    aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");
     aws->load_xfig("ad_ext.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);

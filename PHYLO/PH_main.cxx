@@ -350,10 +350,10 @@ AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     AW_window_simple *aws = new AW_window_simple;
 
     if (multi_line) {
-        aws->init( root, "EXPORT_FREQUENCY_LINES", "Export Frequency Lines", 100, 100 );
+        aws->init( root, "EXPORT_FREQUENCY_LINES", "Export Frequency Lines");
     }
     else {
-        aws->init( root, "EXPORT_MARKER_LINE", "Export Marker Line", 100, 100 );
+        aws->init( root, "EXPORT_MARKER_LINE", "Export Marker Line");
     }
 
     aws->load_xfig("phylo/save_markerline.fig");
@@ -384,7 +384,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
 {
     AWUSE(awd);
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(aw_root,"ARB_PHYLO", "ARB_PHYLO", 830,630,0,0);
+    awm->init(aw_root,"ARB_PHYLO", "ARB_PHYLO", 830,630);
 
     // create menues and menu inserts with callbacks
     //
@@ -460,7 +460,7 @@ AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( aw_root,"SELECT_ALIGNMENT", "SELECT ALIGNMENT",10,10);
+    aws->init( aw_root,"SELECT_ALIGNMENT", "SELECT ALIGNMENT");
     aws->load_xfig("phylo/select_ali.fig");
     aws->button_length(10);
 

@@ -286,7 +286,7 @@ void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp){
 AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp){
     GB_transaction dummy(csp->gb_main);
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_CSP", "Select Column Statistic", 10, 10 );
+    aws->init( aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);

@@ -41,7 +41,7 @@ static AW_window *create_calltexe_window(AW_root *root, char *varname)
     AWUSE(root);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "SUBM_TEXTEDIT", "START TEXT EDITOR", 10, 10 );
+    aws->init( root, "SUBM_TEXTEDIT", "START TEXT EDITOR");
 
     aws->load_xfig("calltexe.fig");
     aws->label_length( 18 );
@@ -245,7 +245,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
     AWUSE(root);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "SUBMISSION", "SUBMISSION", 0, 0 );
+    aws->init( root, "SUBMISSION", "SUBMISSION");
 
     aws->load_xfig("submiss.fig");
     aws->label_length( 18 );

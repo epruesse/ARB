@@ -581,7 +581,7 @@ const char *getSaiColorString(AW_root *awr, int start, int end) {
 
 static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  // creates copy color tranlation table window
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "COPY_CLR_TR_TABLE", "Copy Color Translation Table", 10,10 );
+    aws->init( aw_root, "COPY_CLR_TR_TABLE", "Copy Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
@@ -603,7 +603,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  //
 
 static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ // creates create color tranlation table window
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "CREATE_CLR_TR_TABLE", "Create Color Translation Table", 10,10 );
+    aws->init( aw_root, "CREATE_CLR_TR_TABLE", "Create Color Translation Table");
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
@@ -628,7 +628,7 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
     if(aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "EDIT_CTT", "Color Translation Table", 400, 200 );
+    aws->init( aw_root, "EDIT_CTT", "Color Translation Table");
     aws->load_xfig("saiColorRange.fig");
 
     char at_name[] = "rangex";
@@ -652,7 +652,7 @@ static AW_window *ED4_openSelectSAI_window(AW_root *aw_root){
     if(aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_SAI", "SELECT SAI", 400, 200 );
+    aws->init( aw_root, "SELECT_SAI", "SELECT SAI");
     aws->load_xfig("selectSAI.fig");
 
     aws->at("selection");
@@ -673,7 +673,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
     aws = new AW_window_simple;
 
-    aws->init( aw_root, "VISUALIZE_SAI", "VISUALIZE SAI", 150, 150 );
+    aws->init( aw_root, "VISUALIZE_SAI", "VISUALIZE SAI");
     aws->load_xfig("visualizeSAI.fig");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"visualizeSAI.hlp");
