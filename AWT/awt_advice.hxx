@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.hxx                                         //
 //    Purpose   : general user advices                                   //
-//    Time-stamp: <Fri May/10/2002 17:39 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -18,7 +18,7 @@
 
 class AW_root;
 
-#ifndef aw_root_hxx_included
+#ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
 
