@@ -31,6 +31,8 @@ private TreeNode father;
 private Vector childNodes;
 private int noOfChildren = 0;
 private boolean grouped = false;
+private boolean marked = false;
+
 
     // test and internals
 public int level;
@@ -223,5 +225,25 @@ public float getMaxDepth()
         : ((TreeNode)getChilds().elementAt(1)).getMaxDepth();
 }
 
+public void setMarked(boolean marker)
+{
+    marked = marker;
+}
+
+public boolean isMarked()
+{
+    return marked;
+}
+
+public void markSubtree(boolean flag)
+{
+
+    marked = flag;
+    if (isLeaf != true)
+        {
+            ((TreeNode)childNodes.elementAt(0)).markSubtree(flag);
+            ((TreeNode)childNodes.elementAt(1)).markSubtree(flag);
+        }
+}
 
 }
