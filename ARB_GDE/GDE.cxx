@@ -368,8 +368,10 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             free(newawar);
             aw_root->awar("tmp/gde/alignment")->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
         }
-        if((AWinfo->gmenuitem->numargs<8) || GDE_odd(i)) aws->at_newline();
-        else aws->at_shift( 50,0 );
+
+        aws->at_newline();
+//         if((AWinfo->gmenuitem->numargs<8) || GDE_odd(i)) aws->at_newline();
+//         else aws->at_shift( 50,0 );
     }
     aws->at_newline();
 
