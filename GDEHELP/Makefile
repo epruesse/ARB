@@ -1,11 +1,16 @@
 
 TARGET = ARB_GDEmenus
 SOURCE = ARB_GDEmenus.source
-DEPEND_ON = $(wildcard MENUS/*.menu)
+
+MENUS=$(wildcard MENUS/*.menu)
+GENMENUS=$(MENUS:.menu=.genmenu)
 
 all: $(TARGET)
 
-$(TARGET) : $(SOURCE) $(DEPEND_ON)
+MENUS/%.genmenu : MENUS/%.menu
+		sed -e "s/^[ ]*//ig" < $< > $@
+
+$(TARGET) : $(SOURCE) $(GENMENUS)
 	-chmod a+w $(TARGET)
 	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
 	chmod a-w $(TARGET)
