@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Sat Sep/27/2003 16:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Sep/30/2003 19:07 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -12,10 +12,13 @@
 //                                                                       //
 //  ==================================================================== //
 
+// #define DUMP_SMART_PTRS
+
 #ifndef PG_SEARCH_HXX
 #include "pg_search.hxx"
 #endif
 
+#include <set>
 #include <deque>
 #include <algorithm>
 
@@ -61,9 +64,11 @@ using namespace std;
 GBDATA *gb_main = 0;
 
 
-typedef deque<SpeciesID>     SpeciesBag;
-typedef SmartPtr<SpeciesBag> SpeciesBagPtr;
+typedef set<SpeciesID>       SpeciesBag;
+typedef SmartPtr<SpeciesBag, Counted<SpeciesBag, auto_free_ptr<SpeciesBag> > > SpeciesBagPtr;
 typedef deque<SpeciesBagPtr> SpeciesBagStack;
+
+typedef enum { TS_LINKED_TO_SPECIES, TS_LINKED_TO_SUBTREES } TreeState;
 
 //  --------------------------
 //      class TreeTraversal
@@ -74,6 +79,7 @@ private:
     string           path;
     SpeciesBagPtr    species;
     SpeciesBagStack  stack;     // stores SpeciesBags of left branches
+    TreeState        treestate;
 
     void decentLeftmostSon() {
         int depth = 0;
@@ -84,13 +90,24 @@ private:
         path.append(depth, 'L');
 
         species = new SpeciesBag;
-        species->push_back(PG_SpeciesName2SpeciesID(currentSubTree->name));
+        SpeciesID id;
+        if (treestate == TS_LINKED_TO_SPECIES) {
+            id = PG_SpeciesName2SpeciesID(currentSubTree->name);
+        }
+        else {
+            GBDATA *pb_member = GB_find(currentSubTree->gb_node, "member", 0, down_level);
+            pg_assert(pb_member);
+            id                = GB_read_int(pb_member);
+        }
+        species->insert(id);
     }
 
 public:
 
-    TreeTraversal(GBT_TREE *rootnode) {
-        currentSubTree = rootnode;
+    TreeTraversal(GBT_TREE *rootnode, TreeState ts)
+        : currentSubTree(rootnode)
+        , treestate(ts)
+    {
         decentLeftmostSon();
     }
 
@@ -102,7 +119,9 @@ public:
         GBT_TREE *father = currentSubTree->father;
         if (father) {
             if (currentSubTree == father->leftson) {
+//                 cerr << "op++ [push1]\n";
                 stack.push_back(species); // store species from left subtree
+//                 cerr << "op++ [push2]\n";
 
                 currentSubTree   = father->rightson;
                 *(path.rbegin()) = 'R';
@@ -110,12 +129,20 @@ public:
             }
             else {              // we were in right branch
                 // add species from left branch
-                SpeciesBagPtr leftSpecies = stack.back();
-                stack.pop_back();
-                copy(leftSpecies->begin(), leftSpecies->end(), back_inserter(*species));
+//                 cerr << "op++ [copy1]\n";
+                {
+                    SpeciesBagPtr leftSpecies = stack.back();
+//                     cerr << "op++ [copy2]\n";
+                    copy(leftSpecies->begin(), leftSpecies->end(), inserter(*species, species->end()));
+//                     cerr << "op++ [copy3]\n";
+                    stack.pop_back();
+//                     cerr << "op++ [copy4]\n";
+                }
+//                 cerr << "op++ [copy5]\n";
 
                 currentSubTree = father;
-                path.erase(path.length()-1);
+                pg_assert(path.length()>0);
+                path.resize(path.length()-1);
             }
         }
         else { // at root -> done
@@ -182,15 +209,15 @@ GB_ERROR scanArguments(int argc,  char *argv[]) {
     GB_ERROR error = 0;
 
     if (argc >= 6) {
-        para.db_name = argv[1];
-        para.tree_name = argv[2];
-        para.pt_server_name = argv[3];
-        para.pb_length = atoi(argv[5]);
-        string name=strcat(argv[4],argv[5]);
-        para.db_out_name = name + "tmp.arb";
-        para.db_out_alt_name2 = name + "tmp2.arb";
-        para.db_out_alt_name = name + ".arb";
-        argc -= 5; argv += 5;
+        para.db_name           = argv[1];
+        para.tree_name         = argv[2];
+        para.pt_server_name    = argv[3];
+        para.pb_length         = atoi(argv[5]);
+        string name            = string(argv[4])+argv[5];
+        para.db_out_name       = name + "tmp.arb";
+        para.db_out_alt_name2  = name + "tmp2.arb";
+        para.db_out_alt_name   = name + ".arb";
+        argc                  -= 5; argv += 5;
 
 #if 0
         only needed for options:
@@ -480,9 +507,11 @@ static GB_ERROR collectProbes(GBDATA *pb_main) {
         out.put("Probes found: %i", probe_count);
     }
 
+    size_t max_possible_groups = probe_count; // not quite correct (but only used for % display)
+
     if (!error) {
-        out.put("Calculating probe-matches for found probes:");
-        out.setMaxPoints(probe_count);
+        out.put("Calculating probe-groups for found probes:");
+        out.setMaxPoints(max_possible_groups);
         indent i1(out);
 
         PG_init_find_probes(length, error);
@@ -539,7 +568,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main) {
 //     else GB_commit_transaction(pb_main);
 
     PG_exit_pt_server();
-    out.put("Overall groups found: %i (of %i possible groups)", group_count, probe_count);
+    out.put("Overall groups found: %i (of %i possible groups)", group_count, max_possible_groups);
 
     return error;
 }
@@ -577,9 +606,18 @@ static string PG_SpeciesBag_Content(const SpeciesBag& species) {
     return result;
 }
 
+static void PG_get_probes(GBDATA *pg_group, deque<string>& probes) {
+    for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
+         pg_probe;
+         pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
+    {
+        probes.push_back(GB_read_char_pntr(pg_probe));
+    }
+}
+
 static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *pba_main, GBDATA *pbb_main) {
     GB_ERROR      error               = 0;
-    TreeTraversal tt(gbt_tree);
+    TreeTraversal tt(gbt_tree, TS_LINKED_TO_SPECIES);
     int           statistic_size      = PG_NumberSpecies();
     int           statistic[statistic_size];
     int           count               = 1;
@@ -607,6 +645,8 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         subtreeCounter++;
         count++;
 
+//         fprintf(stderr, "path='%s'\n", tt.getPath().c_str());
+
         const SpeciesBag& species = tt.getSpecies();
 //         out.put("subtree '%s' = %s", tt.getPath().c_str(), PG_SpeciesBag_Content(species).c_str());
 
@@ -614,7 +654,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
             // path mapping stuff:
             GBDATA *pm_species = GB_create_container(pm_main,"species");
             GBDATA *pm_name    = GB_search(pm_species,"name",GB_STRING);
-            error              = GB_write_string(pm_name,PG_SpeciesID2SpeciesName(species.front()).c_str());
+            error              = GB_write_string(pm_name,PG_SpeciesID2SpeciesName(*species.begin()).c_str());
 
             if (!error) {
                 GBDATA *pm_path = GB_search(pm_species,"path",GB_STRING);
@@ -626,13 +666,16 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         }
 
         if (!error) {
-            deque<string> probes;
+            // deque<string> probes;
+            GBDATA *pb_group = 0;
 
             {
                 GB_transaction  dummy(pb_main);
-                GBDATA         *pbtree = GB_search(pb_main,"group_tree",GB_FIND);
-                GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
-                PG_find_probe_for_subtree(pbnode, species, probes);
+                GBDATA         *pb_tree    = GB_search(pb_main,"group_tree",GB_FIND);
+                // GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
+                // PG_find_probe_for_subtree(pbnode, species, probes);
+
+                pb_group = PG_find_probe_group_for_species(pb_tree, species);
             }
 
             // create 'subtree' for all nodes
@@ -642,10 +685,18 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
 
             if (current->is_leaf) {
                 GBDATA *st_member = GB_search(st_subtree, "member", GB_INT);
-                error             = GB_write_int(st_member, species.front());
+                error             = GB_write_int(st_member, *species.begin());
             }
 
-            if (!error && !probes.empty()) {
+            if (!error && pb_group) {
+                deque<string> probes;
+                {
+                    GB_transaction ta(pb_main);
+                    PG_get_probes(pb_group, probes);
+                }
+
+                pg_assert(probes.size());
+
                 statistic[species.size()-1]++;
 
                 probeSubtreeCounter++;
@@ -787,28 +838,112 @@ static int insertChildCounters(GBT_TREE *node, GB_ERROR& error) {
     return -1; // error
 }
 
-static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& hits, const char*& id) {
+static int combinations(int take, int from) {
+    // calculates the number of possible combinations to take 'take' elements out of 'from' elements
+    // (returns -1 as overflow indicator)
+
+    pg_assert(take <= from);
+    int num = min(take, from-take); // always valid: combinations(x, y) == combinations(y-x, y)
+
+    pg_assert(num <= (from/2));
+
+    int u = 1;
+    int d = 1;
+
+    for (int i = 1; i <= num; ++i) {
+        if ((u&1) == 0 && (d&1) == 0) {
+            u = u>>1;
+            d = d>>1;
+        }
+
+        u *= from;
+        d *= i;
+        from--;
+    }
+
+    if ((u%d) != 0) {
+        return -1;
+    }
+
+    return u/d;
+}
+
+static GB_ERROR setSubtreeCoverage(GBDATA *pb_subtree, int group_hits, const char *group_id) {
+    // writes a (better) coverage value to a subtree
+    // group_hits == number of species hit by probe_group
+    // group_id   == name of probe_group
+
+    GB_ERROR  error       = 0;
+    GBDATA   *pb_coverage = GB_find(pb_subtree, "coverage", 0, GB_INT);
+    bool      update      = true;
+
+    if (pb_coverage) {
+        int current_coverage = GB_read_int(pb_coverage);
+        if (current_coverage >= group_hits) {
+            update = false;     // already have a better coverage
+        }
+    }
+    else {
+        pb_coverage = GB_create(pb_subtree, "coverage", GB_INT);
+    }
+
+    if (update) {
+        error = GB_write_int(pb_coverage, group_hits);
+
+        if (!error) {
+            GBDATA *pb_coverage_id = GB_search(pb_subtree, "coverage_id", GB_STRING);
+            error                  = GB_write_string(pb_coverage_id, group_id);
+        }
+
+        if (!error) {
+            // calculate no of combinations needed to test in order to find a better coverage
+
+            GBDATA *pb_speccount = GB_find(pb_subtree, "speccount", 0, down_level);
+            pg_assert(pb_speccount); // all inner nodes must have 'speccount'
+            int     species      = GB_read_int(pb_speccount);
+            int     comb         = 0; // 0 means 'none possible'
+
+            if ((species-group_hits) >= 2) { // better coverage possible ?
+                for (int better = group_hits+1; better<species; ++better) {
+                    int this_comb  = combinations(better, species);
+                    if (this_comb == -1) {
+                        comb = -1; // too many!
+                        break;
+                    }
+                    comb += this_comb;
+                }
+            }
+
+            GBDATA *pb_comb = GB_search(pb_subtree, "comb", GB_INT);
+            error           = GB_write_int(pb_comb, comb);
+        }
+    }
+
+    return error;
+}
+
+static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& group_hits, const char*& group_id) {
     GB_ERROR  error      = 0;
     GBDATA   *pb_subtree = node->gb_node;
     GBDATA   *pb_exact   = GB_find(pb_subtree, "exact", 0, down_level);
 
     if (pb_exact) {             // have an exact probe_group here
         if (node->is_leaf) {
-            hits = 1;
+            group_hits = 1;
         }
         else {
             GBDATA *pb_speccount = GB_find(pb_subtree, "speccount", 0, down_level);
             pg_assert(pb_speccount); // all inner nodes must have 'speccount'
-            hits                 = GB_read_int(pb_speccount);
+            group_hits                 = GB_read_int(pb_speccount);
         }
 
         GBDATA *gb_path = GB_find(pb_subtree, "path", 0, down_level);
-        id              = GB_read_char_pntr(gb_path);
+        group_id              = GB_read_char_pntr(gb_path);
     }
     else {                      // no exact probe_group -> find best Groups
         if (node->is_leaf) {
-            hits = 0;
-            id   = 0;
+            group_hits = 0;
+            group_id   = 0;
         }
         else {
             int         leftHits, rightHits;
@@ -819,22 +954,16 @@ static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& hits, const char*& i
 
             if (!error) {
                 if (leftHits>rightHits) {
-                    hits = leftHits;
-                    id   = leftId;
+                    group_hits = leftHits;
+                    group_id   = leftId;
                 }
                 else {
-                    hits = rightHits;
-                    id   = rightId;
+                    group_hits = rightHits;
+                    group_id   = rightId;
                 }
 
-                if (hits) { // we have a subgroup
-                    GBDATA *pb_coverage = GB_search(pb_subtree, "coverage", GB_INT);
-                    error               = GB_write_int(pb_coverage, hits);
-
-                    if (!error) {
-                        GBDATA *pb_coverage_id = GB_search(pb_subtree, "coverage_id", GB_STRING);
-                        error                  = GB_write_string(pb_coverage_id, id);
-                    }
+                if (group_hits) {     // we have a subgroup with hits
+                    error = setSubtreeCoverage(pb_subtree, group_hits, group_id);
                 }
             }
         }
@@ -843,9 +972,75 @@ static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& hits, const char*& i
     return error;
 }
 
+static GB_ERROR searchBetterCoverage(GBT_TREE *tree, int max_comb) {
+    TreeTraversal tt(tree, TS_LINKED_TO_SUBTREES);
+    GB_ERROR      error = 0;
+
+    for (GBT_TREE *node = tt.getSubTree();
+         node && !error;
+         node = (++tt).getSubTree())
+    {
+        if (!node->is_leaf) {
+            GBDATA *pb_subtree = node->gb_node;
+
+#if defined(DEBUG)
+            const char *path;
+            {
+                GBDATA *pb_path = GB_find(pb_subtree, "path", 0, down_level);
+                path            = GB_read_char_pntr(pb_path);
+            }
+
+#endif // DEBUG
+
+            GBDATA *pb_comb = GB_find(pb_subtree, "comb", 0, down_level);
+            if (pb_comb) {
+                int comb = GB_read_int(pb_comb);
+                if (comb != 0) {
+                    if (comb <= max_comb) {
+                        const SpeciesBag& species = tt.getSpecies();
+                        int               old_coverage;
+
+                        {
+                            GBDATA *pb_coverage = GB_find(pb_subtree, "coverage", 0, down_level);
+                            old_coverage        = GB_read_int(pb_coverage);
+                        }
+
+                        fprintf(stderr, "searching better coverage for '%s' (current=%i of %i):\n", path, old_coverage, species.size());
+                        fprintf(stderr, "members of subtree: %s\n", PG_SpeciesBag_Content(species).c_str());
+
+                    }
+                    else {
+#if defined(DEBUG)
+                        fprintf(stderr, "skipping subtree '%s' (%i > %i)\n", path, comb, max_comb);
+#endif // DEBUG
+                    }
+                }
+                else {
+#if defined(DEBUG)
+                    fprintf(stderr, "skipping complete subtree '%s'\n", path);
+#endif // DEBUG
+                }
+            }
+        }
+    }
+
+    return error;
+}
+
+
 int main(int argc,char *argv[]) {
     out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
     GB_ERROR error = scanArguments(argc, argv);
+
+#if defined(DEBUG) && 0
+
+    for (int from = 1; from<50; ++from) {
+        for (int take = 1; take <= from; ++take) {
+            fprintf(stderr, "combinations(%i, %i)=%i\n", take, from, combinations(take, from));
+        }
+    }
+
+#endif // DEBUG
 
     {
         indent i(out);
@@ -896,6 +1091,10 @@ int main(int argc,char *argv[]) {
                     int         dummy1;
                     const char *dummy2;
                     error = propagateExactSubtrees(gbt_tree, dummy1, dummy2);
+                }
+
+                if (!error) {
+                    error = searchBetterCoverage(gbt_tree, 100);
                 }
             }
 
