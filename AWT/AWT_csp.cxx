@@ -43,16 +43,16 @@ AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
 }
 
 void AWT_csp::exit(){
-    delete weights; weights = NULL;
-    delete rates;   rates   = NULL;
-    delete ttratio; ttratio = NULL;
-    delete is_helix;is_helix= NULL;
-    delete mut_sum; mut_sum = NULL;
-    delete freq_sum;freq_sum= NULL;
+    delete [] weights; weights = NULL;
+    delete [] rates;   rates   = NULL;
+    delete [] ttratio; ttratio = NULL;
+    delete [] is_helix;is_helix= NULL;
+    delete [] mut_sum; mut_sum = NULL;
+    delete [] freq_sum;freq_sum= NULL;
     delete desc;    desc    = NULL;
     int i;
     for (i=0;i<256;i++){
-        delete frequency[i];
+        delete [] frequency[i];
         frequency[i] = NULL;
     }
 }
@@ -92,7 +92,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         if (!gb_ali) error = GB_export_error("Please select a valid Column Statist");
     }
     if (error) {
-        delete sai_name;
+        free(sai_name);
         return error;
     }
     if (filter)         seq_len = (size_t)filter->real_len;
@@ -101,12 +101,12 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
 
     unsigned long i;
     unsigned long j;
-    delete weights; weights = new GB_UINT4[seq_len];
-    delete rates;   rates   = new float[seq_len];
-    delete ttratio; ttratio = new float[seq_len];
-    delete is_helix;is_helix = new char[seq_len];
-    delete mut_sum; mut_sum = new GB_UINT4[seq_len];
-    delete freq_sum;freq_sum    = new GB_UINT4[seq_len];
+    delete [] weights; weights = new GB_UINT4[seq_len];
+    delete [] rates;   rates   = new float[seq_len];
+    delete [] ttratio; ttratio = new float[seq_len];
+    delete [] is_helix;is_helix = new char[seq_len];
+    delete [] mut_sum; mut_sum = new GB_UINT4[seq_len];
+    delete [] freq_sum;freq_sum    = new GB_UINT4[seq_len];
     delete desc;    desc = 0;
     for (i=0;i<256;i++) { delete frequency[i];frequency[i]=0;}
 
@@ -117,11 +117,12 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         weights[i] = 1;
     }
 
-    if (use_helix) {            // calculate weigths and helix filter
+    if (!error && use_helix) {            // calculate weigths and helix filter
         BI_helix helix;
         error = helix.init(this->gb_main,alignment_name);
         if (error){
             aw_message(error);
+            error = 0;
             goto no_helix;
         }
         error = 0;
@@ -212,18 +213,20 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         if (ttratio[j] > 5.0) ttratio[j] = 5.0;
         j++;
     }
-    //****** normalize rates
-                                                          double sum_rates = 0;
-                                                          for (i=0;i<seq_len;i++) sum_rates += rates[i];
-                                                          sum_rates/=seq_len;
-                                                          for (i=0;i<seq_len;i++) rates[i]/= sum_rates;
 
-                                                          free(transver);
-                                                          free(minmut);
-                                                          for (i=0;i<256;i++) free(freqi[i]);
-                                                          free(sai_name);
+    // ****** normalize rates
 
-                                                          return error;
+    double sum_rates                   = 0;
+    for (i=0;i<seq_len;i++) sum_rates += rates[i];
+    sum_rates                         /= seq_len;
+    for (i=0;i<seq_len;i++) rates[i]  /= sum_rates;
+
+    free(transver);
+    free(minmut);
+    for (i=0;i<256;i++) free(freqi[i]);
+    free(sai_name);
+
+    return error;
 }
 
 void AWT_csp::print(void) {
