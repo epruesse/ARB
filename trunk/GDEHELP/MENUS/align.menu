@@ -2,8 +2,8 @@
 item:ClustalW automatic
 itemmeta: W
 itemmethod:(tr '"%//' '>' <in1 >clus_in; \
-            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ; \
-                           cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -interactive ; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )); \
             /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
@@ -42,7 +42,7 @@ item:ClustalW Profile Alignment
 itemmeta: P
 itemmethod:(tr '"%//' '>' <in1 >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=clus_prf -align ; \
-                           cat clus_in.pir |sed "s/^>DL;/#/g"|sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )); \
             /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
@@ -57,56 +57,168 @@ outformat:flat
 
 // --------------------------------------------------------------------------------
 
-item:ClustalW DNA Alignment (experts only)
+item:ClustalW DNA Alignment (fast)
 itemmeta: N
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
-            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ \
-                                    -topdiags=$WIN_ -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA \
-                                    -pwdnamatrix=$PWDNAMATRIX_ -dnamatrix=$DNAMATRIX_; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )) ; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                    -quicktree \
+                                    -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
+                                    -window=$WINDOW -pairgap=$PAIRGAP \
+                                    -score=$SCORE \
+                                    -type=DNA -transweight=$TRANSWEIGHT \
+                                    -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
+                                    -dnamatrix=$DNAMATRIX; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
            /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
 
-arg:KTUP
+// parameters for fast pairwise alignment:
+
+arg:PAIRGAP
+arglabel:Gap penalty (pairwise ali)
 argtype:slider
-arglabel:K-tuple size for fast pairwise search
 argmin:1
-argmax:10
+argmax:500
+argvalue:5
+
+arg:KTUPLE
+arglabel:K-tuple size
+argtype:slider
+argmin:1
+argmax:4
 argvalue:2
 
-arg:WIN
+arg:TOPDIAGS
+arglabel:No. of top diagonals
 argtype:slider
-arglabel:Window size for fast pairwise search
 argmin:1
-argmax:10
+argmax:50
 argvalue:4
 
-arg:PWDNAMATRIX_
-argtype:choice_menu
-arglabel:Weighting matrix (pairwise)
-argchoice:CLUSTALW:CLUSTALW
-argchoice:IUB:IUB
+arg:WINDOW
+arglabel:Window size
+argtype:slider
+argmin:1
+argmax:50
+argvalue:4
 
-arg:DNAMATRIX_
-argtype:choice_menu
-arglabel:Weighting matrix (multiple)
-argchoice:CLUSTALW:CLUSTALW
-argchoice:IUB:IUB
+// parameters for multiple alignment:
 
-arg:FIXED_
+arg:DNAMATRIX
+argtype:choice_menu
+arglabel:Weighting matrix (multiple ali)
+argchoice:IUB:IUB
+argchoice:CLUSTALW:CLUSTALW
+
+arg:GOP
 argtype:slider
 arglabel:Gap Open Penalty
-argmin:1
+argmin:0
 argmax:100
-argvalue:8.7
+argvalue:15
 
-arg:FLOAT_
+arg:GEP
 arglabel:Gap Extend Penalty
 argtype:slider
-argmin:.001
-argmax:1
-argvalue:.1
+argmin:0
+argmax:10
+argvalue:6.66
+
+arg:MAXDIV
+arglabel:% indentidy for delay
+argtype:slider
+argmin:0
+argmax:100
+argvalue:30
+
+arg:TRANSWEIGHT
+arglabel:Transition weight
+argtype:slider
+argmin:0.0
+argmax:1.0
+argvalue:0.5
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+// --------------------------------------------------------------------------------
+
+item:ClustalW DNA Alignment (slow & accurate)
+itemmeta: N
+itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                    -pwdnamatrix=$PWDNAMATRIX \
+                                    -pwgapopen=$PWGOP -pwgapext=$PWGEP \
+                                    -type=DNA -transweight=$TRANSWEIGHT \
+                                    -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
+                                    -dnamatrix=$DNAMATRIX; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+           /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+// parameters for pairwise alignment:
+
+arg:PWDNAMATRIX
+argtype:choice_menu
+arglabel:Weighting matrix (pairwise ali)
+argchoice:IUB:IUB
+argchoice:CLUSTALW:CLUSTALW
+
+arg:PWGOP
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:0
+argmax:100
+argvalue:15
+
+arg:PWGEP
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:0
+argmax:10
+argvalue:6.66
+
+// parameters for multiple alignment:
+
+arg:DNAMATRIX
+argtype:choice_menu
+arglabel:Weighting matrix (multiple ali)
+argchoice:IUB:IUB
+argchoice:CLUSTALW:CLUSTALW
+
+arg:GOP
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:0
+argmax:100
+argvalue:15
+
+arg:GEP
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:0
+argmax:10
+argvalue:6.66
+
+arg:MAXDIV
+arglabel:% indentidy for delay
+argtype:slider
+argmin:0
+argmax:100
+argvalue:30
+
+arg:TRANSWEIGHT
+arglabel:Transition weight
+argtype:slider
+argmin:0.0
+argmax:1.0
+argvalue:0.5
 
 
 in:in1
@@ -118,60 +230,182 @@ outformat:flat
 
 // --------------------------------------------------------------------------------
 
-item:ClustalW Protein Alignment (experts only)
-itemmeta: o
-itemmethod:(tr '"%//' '>' <in1 >clus_in; \
-            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ \
-                                    -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN -pwmatrix=$PWMATRIX_ -matrix=$MATRIX_; \
-                           cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
-            /bin/rm -f clus_in* in1)
-
+item:ClustalW Protein Alignment (fast)
+itemmeta: N
+itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                    -quicktree \
+                                    -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
+                                    -window=$WINDOW -pairgap=$PAIRGAP \
+                                    -score=$SCORE \
+                                    -type=PROTEIN -transweight=$TRANSWEIGHT \
+                                    -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
+                                    -matrix=$MATRIX; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+           /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
 
-arg:KTUP_
+// parameters for fast pairwise alignment:
+
+arg:PAIRGAP
+arglabel:Gap penalty (pairwise ali)
 argtype:slider
-arglabel:K-tuple size for fast pairwise search
 argmin:1
-argmax:10
-argvalue:2
+argmax:500
+argvalue:3
 
-arg:WIN_
+arg:KTUPLE
+arglabel:K-tuple size
 argtype:slider
-arglabel:Window size and top diagonals for fast alignment
 argmin:1
-argmax:10
-argvalue:4
+argmax:2
+argvalue:1
 
-arg:PWMATRIX_
+arg:TOPDIAGS
+arglabel:No. of top diagonals
+argtype:slider
+argmin:1
+argmax:50
+argvalue:5
+
+arg:WINDOW
+arglabel:Window size
+argtype:slider
+argmin:1
+argmax:50
+argvalue:5
+
+// parameters for multiple alignment:
+
+arg:MATRIX
 argtype:choice_menu
-arglabel:Weighting matrix (pairwise)
-argchoice:BLOSUM:BLOSUM
-argchoice:PAM:PAM
-argchoice:GONNET:GONNET
-argchoice:ID:ID
+arglabel:Weighting matrix (multiple ali)
+argchoice:Gonnet series:GONNET
+argchoice:Blosum series:BLOSUM
+argchoice:PAM series:PAM
+argchoice:ID matrix:ID
 
-arg:MATRIX_
-argtype:choice_menu
-arglabel:Weighting matrix (multiple)
-argchoice:BLOSUM:BLOSUM
-argchoice:PAM:PAM
-argchoice:GONNET:GONNET
-argchoice:ID:ID
-
-arg:FIXED_
+arg:GOP
 argtype:slider
 arglabel:Gap Open Penalty
-argmin:1
+argmin:0
 argmax:100
-argvalue:8.7
+argvalue:10
 
-arg:FLOAT_
+arg:GEP
 arglabel:Gap Extend Penalty
 argtype:slider
-argmin:.001
-argmax:1
-argvalue:.1
+argmin:0
+argmax:10
+argvalue:0.2
+
+arg:MAXDIV
+arglabel:% indentidy for delay
+argtype:slider
+argmin:0
+argmax:100
+argvalue:30
+
+arg:TRANSWEIGHT
+arglabel:Transition weight
+argtype:slider
+argmin:0.0
+argmax:1.0
+argvalue:0.5
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+// --------------------------------------------------------------------------------
+
+item:ClustalW Protein Alignment (slow & accurate)
+itemmeta: N
+itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                    -pwmatrix=$PWMATRIX \
+                                    -pwgapopen=$PWGOP -pwgapext=$PWGEP \
+                                    -type=PROTEIN -transweight=$TRANSWEIGHT \
+                                    -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
+                                    -matrix=$MATRIX $NEGMATRIX; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
+           /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+// parameters for pairwise alignment:
+
+arg:PWMATRIX
+argtype:choice_menu
+arglabel:Weighting matrix (pairwise ali)
+argchoice:Gonnet series:GONNET
+argchoice:Blosum series:BLOSUM
+argchoice:PAM series:PAM
+argchoice:ID matrix:ID
+
+arg:PWGOP
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:0
+argmax:100
+argvalue:10
+
+arg:PWGEP
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:0
+argmax:10
+argvalue:0.1
+
+// parameters for multiple alignment:
+
+arg:MATRIX
+argtype:choice_menu
+arglabel:Weighting matrix (multiple ali)
+argchoice:Gonnet series:GONNET
+argchoice:Blosum series:BLOSUM
+argchoice:PAM series:PAM
+argchoice:ID matrix:ID
+
+arg:GOP
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:0
+argmax:100
+argvalue:10
+
+arg:GEP
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:0
+argmax:10
+argvalue:0.2
+
+arg:MAXDIV
+arglabel:% indentidy for delay
+argtype:slider
+argmin:0
+argmax:100
+argvalue:30
+
+arg:TRANSWEIGHT
+arglabel:Transition weight
+argtype:slider
+argmin:0.0
+argmax:1.0
+argvalue:0.5
+
+arg:NEGMATRIX
+arglabel:Use negative matrix
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-negative
+
 
 in:in1
 informat:flat
