@@ -371,16 +371,11 @@ endif
 # ---------------------------------------- check gcc version
 
 ifdef LINUX
-gcc.version:
-		@echo Generating gcc.version
-		@echo GCC_VERSION=`gcc --version | head -1` >gcc.version
-
-include gcc.version
+GCC_VERSION=$(shell gcc --version | head -1)
 endif
 
 check_GCC_VERSION:
 ifdef LINUX
-		@rm gcc.version
 ifeq ('2.95.3','$(GCC_VERSION)')
 		@echo "gcc version $(GCC_VERSION) used -- fine!"
 		@echo ''
@@ -392,7 +387,7 @@ else
 		@/bin/false
 endif
 else
-		@echo "gcc version check skipped (should be gcc 2.95.3)"
+		@echo "gcc version check skipped (should be gcc 2.95.3 if gcc is used on your machine)"
 endif
 
 checks: check_DEBUG check_DEVELOPER check_GCC_VERSION
