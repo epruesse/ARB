@@ -1412,7 +1412,7 @@ char *GBS_read_arb_tcp(const char *env)
         return GB_STRDUP(env);
     }
 
-    filename = GBS_find_lib_file("arb_tcp.dat","");
+    filename = GBS_find_lib_file("arb_tcp.dat","", 1);
     if (!filename) {
         GB_export_error("File $ARBHOME/lib/arb_tcp.dat not found");
         return 0;
@@ -1470,8 +1470,7 @@ char *GBS_read_arb_tcp(const char *env)
     }
 }
 
-char           *
-GBS_find_lib_file(const char *filename,const char *libprefix)
+char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
      /*
  * Searches in $CURRENTDIR $HOME $ARBHOME/lib
  */
@@ -1510,10 +1509,12 @@ GBS_find_lib_file(const char *filename,const char *libprefix)
         return GB_STRDUP(buffer);
     }
 
-    fprintf(stderr, "WARNING dont know where to find %s\n", filename);
-    fprintf(stderr, "   searched in .\n");
-    fprintf(stderr, "   searched in $(HOME)     (==%s)\n", home);
-    fprintf(stderr, "   searched in $(ARBHOME)/lib/%s   (==%s)\n", libprefix, arbhome);
+    if (warn_when_not_found) {
+        fprintf(stderr, "WARNING dont know where to find %s\n", filename);
+        fprintf(stderr, "   searched in .\n");
+        fprintf(stderr, "   searched in $(HOME)     (==%s)\n", home);
+        fprintf(stderr, "   searched in $(ARBHOME)/lib/%s   (==%s)\n", libprefix, arbhome);
+    }
     return 0;
 }
 
