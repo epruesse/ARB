@@ -1,3 +1,9 @@
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
@@ -7,14 +13,14 @@
 
 #include <arbdb.h>
 #include <aw_root.hxx>
-#include <aw_window.hxx> 
+#include <aw_window.hxx>
 
 #include "awtc_fast_aligner.hxx"
 #include "awtc_seq_search.hxx"
 #include "awtc_constructSequence.hxx"
 
 #define SAME_SEQUENCE (-1),(-1)
- 
+
 static inline int min(int i1, int i2) 			{return i1<i2 ? i1 : i2;}
 
 static inline int basesMatch(char c1, char c2)
@@ -25,7 +31,7 @@ static inline int inversBasesMatch(char c1, char c2)
 {
     c1 = toupper(c1);
     c2 = toupper(c2);
-    
+
     switch (c1) {
 	case 'A': return c2=='T' || c2=='U';
 	case 'C': return c2=='G';
@@ -35,7 +41,7 @@ static inline int inversBasesMatch(char c1, char c2)
 	case 'N': return 1;
 	default: awtc_assert(0);
     }
-    
+
     return c1==c2;
 }
 
@@ -67,7 +73,7 @@ static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
     int len = comp->length();
 
     awtc_assert(len);
-    
+
     if (len<=SHOWLEN)
     {
 	printf("'%s'\n", lstr(text,len));
@@ -98,7 +104,7 @@ class Way
     int my_length;
     int my_score;
     int my_maxlength;
-    
+
 public:
 
     Way(int maxlength) : my_length(0), my_score(0), my_maxlength(maxlength)	{my_way = new int[maxlength];}
@@ -109,9 +115,9 @@ public:
         my_maxlength 	= w.my_maxlength;
         my_length 	= w.my_length;
         my_score 	= w.my_score;
-	
+
         my_way 		= new int[my_maxlength];
-	
+
         memcpy(my_way, w.my_way, sizeof(my_way[0])*my_length);
     }
 
@@ -124,11 +130,11 @@ public:
                 delete [] my_way;
                 my_way = new int[w.my_maxlength];
             }
-	    
+
             my_maxlength 	= w.my_maxlength;
             my_length 		= w.my_length;
             my_score 		= w.my_score;
-	    
+
             memcpy(my_way, w.my_way, sizeof(my_way[0])*my_length);
         }
 
@@ -158,7 +164,7 @@ public:
         for (l=0; l<my_length; l++) {
             int reverse;
             int partNum = way(l, reverse);
-            printf(" %3i%c", partNum, reverse ? 'r' : ' '); 
+            printf(" %3i%c", partNum, reverse ? 'r' : ' ');
         }
 
         printf("\n");
@@ -173,7 +179,7 @@ class Overlap			// matrix which stores overlap data
 {
     int parts;			// no of parts
     int *ol;			// how much the both sequence parts overlap
-    int *sc;			// which score we calculated for this overlap 
+    int *sc;			// which score we calculated for this overlap
 
     int offset(int f,int fReverse, int t, int tReverse) const
     {
@@ -182,7 +188,7 @@ class Overlap			// matrix which stores overlap data
     }
 
     void findWayFrom(Way *w, Way *best, int partNum, int reverse, int *used, int minMatchingBases) const;
-    
+
 public:
 
     Overlap(int Parts)
@@ -199,7 +205,7 @@ public:
 	    ol[off] = UNIQUE_VALUE;
 	    sc[off] = UNIQUE_VALUE;
 	}
-#endif	
+#endif
     }
 
     ~Overlap() { delete [] ol; delete [] sc; }
@@ -209,7 +215,7 @@ public:
 
     void set(int off, int theOverlap, int theScore)
     {
-#ifdef TEST_UNIQUE_SET	
+#ifdef TEST_UNIQUE_SET
 	awtc_assert(ol[off]==UNIQUE_VALUE);
 	awtc_assert(sc[off]==UNIQUE_VALUE);
 #endif
@@ -217,11 +223,11 @@ public:
 	sc[off] = theScore;
     }
     void set(int f,int fReverse, int t, int tReverse, int theOverlap, int theScore) 	{set(offset(f,fReverse,t,tReverse), theOverlap, theScore);}
-    
+
     void setall(int f, int t, int theOverlap, int theScore)
     {
 	int off = offset(f,0,t,0);
-	
+
 	set(off, 		theOverlap, theScore);
 	set(off+1, 		theOverlap, theScore);
 	set(off+parts*2, 	theOverlap, theScore);
@@ -277,7 +283,7 @@ Way Overlap::findWay(int minMatchingBases) const
     for (l=0; l<parts; l++) {
 	used[l] = 0;
     }
-    
+
     for (l=0; l<parts; l++) {
 	int rev;
 	for (rev=0; rev<2; rev++) {
@@ -293,7 +299,7 @@ Way Overlap::findWay(int minMatchingBases) const
 
 void Overlap::dump() const
 {
-#ifdef DEBUG	
+#ifdef DEBUG
     printf("-------------------------------\n");
     for (int y=-1; y<parts; y++) {
 	for (int yR=0; yR<2; yR++) {
@@ -311,7 +317,7 @@ void Overlap::dump() const
 	}
     }
     printf("-------------------------------\n");
-#endif    
+#endif
 }
 
 // ------------------------------------------------------------------------------------------------------------------------
@@ -327,8 +333,8 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
 
     bestOverlap = 0;
     bestScore   = 0;
-	
-    if (reverse1) 	
+
+    if (reverse1)
     {
 	if (reverse2)	// both are reversed -> compare reverse start of comp1 with reverse end of comp2
 	{
@@ -392,19 +398,19 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
 	{
 	    int l;
 	    int mismatches = 0;
-		
+
 	    for (l=0; l<len; l++) {
 		if (!inversBasesMatch(end1[l],end2[-l])) {
 		    mismatches++;
 		}
 	    }
-		
+
 	    int score = calcScore(len, mismatches);
 	    if (score>=bestScore) {
 		bestOverlap = len;
 		bestScore   = score;
 	    }
-		
+
 	    len++;
 	    end1--;
 	}
@@ -418,13 +424,13 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
 	{
 	    int l;
 	    int mismatches = 0;
-		
+
 	    for (l=0; l<len; l++) {
 		if (!basesMatch(end1[l], start2[l])) {
 		    mismatches++;
 		}
 	    }
-		
+
 	    int score = calcScore(len, mismatches);
 	    if (score>=bestScore) {
 		bestOverlap = len;
@@ -465,7 +471,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
                     int score;
 
                     overlappingBases(comp[s], sR, comp[s2], s2R, overlap, score);
-		    
+
                     lap.set(s, sR, s2, s2R, overlap, score);
                     lap.set(s2, !s2R, s, !sR, overlap, score);
                 }
@@ -476,7 +482,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
     lap.dump();
 
     // find the best way through the array
-    
+
     Way w = lap.findWay(minMatchingBases);
     w.dump();
 
@@ -487,7 +493,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
     {
         int rev2;
         int part2 = w.way(s,rev2);
-	
+
         sequenceLength += comp[part2]->length();
 
         if (s)
@@ -507,7 +513,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
     {
         int rev2;
         int part2 = w.way(s,rev2);
-	
+
         sequenceLength += comp[part2]->length();
 
         if (s)
@@ -518,7 +524,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
             sequenceLength -= lap.overlap(part1, rev1, part2, rev2);
 
             // @@@@ hier fehlt noch fast alles
-	    
+
         }
     }
 
@@ -589,7 +595,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     srand(randSeed);
 
     int last_end = -1;
-    
+
     for (p=0; p<parts; p++)
     {
 	int start = p==0 ? 0 : last_end - (25+(rand()*75)/RAND_MAX);
@@ -598,7 +604,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
 	int llen = p<PARTS-1 ? (rand()*(basesInSeq/parts+200))/RAND_MAX : basesInSeq-start;
 	if (start+llen > basesInSeq) 	llen = basesInSeq-start;
-	
+
 	int end = start+llen-1;
 	awtc_assert(end<basesInSeq);
 
@@ -612,7 +618,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 	    if (strchr("-.",compressed[last_end+l])==NULL)
 		count++;
 	}
-	
+
 	printf("[%02i] start=%-5i llen=%-5i end=%-5i overlap=%-5i basesInOverlap=%-5i", p, start, llen, end, overlap, count);
 	last_end = end;
 	awtc_assert(start+llen<=basesInSeq);
@@ -682,7 +688,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     delete [] part;
 
     if (!neu) printf("AWTC_constructSequence() returned NULL\n");
-    
+
     return neu;
 }
 

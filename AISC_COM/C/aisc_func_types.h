@@ -1,7 +1,7 @@
 /*********************************************************************************
  *  Coded by Ralf Westram (coder@reallysoft.de) in 2000                          *
- *  Institute of mikrobiology (Technical University Munich)                      * 
- *  http://www.mikro.biologie.tu-muenchen.de/                                    * 
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
 #ifndef AISC_FUNC_TYPES_H

@@ -1,3 +1,9 @@
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
+
 #ifndef awtc_fast_aligner_hxx_included
 #define awtc_fast_aligner_hxx_included
 
@@ -13,7 +19,7 @@ struct AWTC_faligner_cd
 {
     int do_refresh;		// if do_refresh==TRUE then AWTC_start_faligning() does a refresh
     void (*refresh_display)();	// via calling refresh_display()
-    
+
     AWTC_get_consensus_func 		get_group_consensus;
     AWTC_get_selected_range 		get_selected_range;
     AWTC_get_first_selected_species	get_first_selected_species;
@@ -22,7 +28,7 @@ struct AWTC_faligner_cd
 
 // --------------------------------------------------------------------------------
 
-AW_window *AWTC_create_faligner_window(AW_root *awr, AW_CL cd2);    
+AW_window *AWTC_create_faligner_window(AW_root *awr, AW_CL cd2);
 void AWTC_create_faligner_variables(AW_root *root,AW_default db1);
 void AWTC_awar_set_actual_sequence(AW_root *root, AW_default db1);
 
