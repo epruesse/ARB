@@ -714,7 +714,6 @@ static void refreshTree(AWT_canvas *ntw)
 {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    //    AWT_TREE(ntw)->resort_tree(0);
     AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     ntw->zoom_reset();
     ntw->refresh();
@@ -961,13 +960,13 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
     awm->insert_menu_topic(0, "Sort tree by name", 		"S","",			AWM_ALL,		(AW_CB)TEST_sortTreeByName,		(AW_CL)ntw,	0 );
     awm->insert_menu_topic(0, "Build & dump chain", 		"c","",			AWM_ALL,		(AW_CB)TEST_buildAndDumpChain,		(AW_CL)ntw,	0 );
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Marked Species",		"d","pa_quick.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Add Marked Species",		"A","pa_quick.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 0 );
     awm->insert_menu_topic(0, "Add Marked Species + NNI",	"i","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_add_test, 		(AW_CL)ntw, 0 );
     awm->insert_menu_topic(0, "Remove & Add Marked Species","o","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_rquick_add_test, 	(AW_CL)ntw, 0 );
     awm->insert_menu_topic(0, "Remove & Add Marked + NNI",	"v","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_radd_test, 		(AW_CL)ntw, 0 );
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Selected Species",	"c","pa_quick_sel.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 1 );
-    awm->insert_menu_topic(0, "Add Selected Species + NNI",	"t","pa_add_sel.hlp",	AWM_ALL, 	(AW_CB)NT_add_test, 		(AW_CL)ntw, 1 );
+    awm->insert_menu_topic(0, "Add Selected Species",	"","pa_quick_sel.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 1 );
+    awm->insert_menu_topic(0, "Add Selected Species + NNI",	"","pa_add_sel.hlp",	AWM_ALL, 	(AW_CB)NT_add_test, 		(AW_CL)ntw, 1 );
 }
 
 
