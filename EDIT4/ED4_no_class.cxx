@@ -1083,7 +1083,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     ref_colStat_terminal->extension.size[WIDTH] = pixel_length;
 
     ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
-    ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
+    ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", /*0,*/ 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
     new_colStat_info_term->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
     new_seq_man->children->append_member(new_colStat_info_term);
