@@ -164,6 +164,7 @@ bool AWT_graphic_tree::tree_has_marks(AP_tree *at) {
     if (!at) return false;
 
     if (at->is_leaf) {
+        if (!at->gb_node) return false; // zombie
         int marked = GB_read_flag(at->gb_node);
         return marked;
     }
@@ -255,7 +256,7 @@ struct AWT_graphic_tree_group_state {
 void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son) {
     if (!at) return;
     if (at->is_leaf) {
-        if (GB_read_flag(at->gb_node)) state->marked_outside_groups++; // count marks
+        if (at->gb_node && GB_read_flag(at->gb_node)) state->marked_outside_groups++; // count marks
         return;                 // leave are never grouped
     }
 
