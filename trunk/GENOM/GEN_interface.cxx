@@ -26,21 +26,36 @@ using namespace std;
 //  --------------------------------------------------------------------------------------------------
 //      static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
 //  --------------------------------------------------------------------------------------------------
-static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
-    char *name  = GB_strdup(item_name);
-    char *slash = strchr(name, '/');
+static void gen_select_gene(GBDATA* gb_main, AW_root *aw_root, const char *item_name) {
+    char *organism  = GB_strdup(item_name);
+    char *gene = strchr(organism, '/');
 
-    if (slash) {
-        slash[0] = 0;
+    if (gene) {
+        gene[0] = 0;
+        ++gene;
 
-        // @@@ suchen nach pseudo-species
-        // falls gefunden -> AWAR_SPECIES_NAME auf Pseudo-Species setzen
-        // -> AWAR_ORGANISM_NAME + AWAR_GENE_NAME werden automatisch gesetzt
+        aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
+        aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
 
-        aw_root->awar(AWAR_ORGANISM_NAME)->write_string(name);
-        aw_root->awar(AWAR_GENE_NAME)->write_string(slash+1);
+//         // search for pseudo species
+//         GB_transaction  dummy(gb_main);
+//         GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene);
+
+//         if (gb_pseudo) {
+//             GBDATA *gb_name     = GB_find(gb_pseudo, "name", 0, down_level);
+//             char   *pseudo_name = GB_read_string(gb_name);
+
+//             aw_root->awar(AWAR_SPECIES_NAME)->write_string(pseudo_name);
+//             free(pseudo_name);
+//             // Note : AWAR_ORGANISM_NAME and AWAR_GENE_NAME are set by AWAR_SPECIES_NAME
+//         }
+//         else {
+//             aw_root->awar(AWAR_SPECIES_NAME)->write_string(organism);
+//             aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
+//             // Note : AWAR_ORGANISM_NAME is set by AWAR_SPECIES_NAME
+//         }
     }
-    free(name);
+    free(organism);
 }
 
 //  ------------------------------------------------------------------------------------------------------
@@ -212,17 +227,67 @@ void GEN_species_name_changed_cb(AW_root *awr) {
     free(species_name);
 }
 
+//  ----------------------------------------------------------------------------------------------------------------------------
+//      static void GB_auto_select_pseudo_species_cb(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene)
+//  ----------------------------------------------------------------------------------------------------------------------------
+static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene) {
+    GB_transaction  dummy(gb_main);
+    GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene); // search for pseudo species..
+
+    if (gb_pseudo) {
+        GBDATA *gb_name     = GB_find(gb_pseudo, "name", 0, down_level);
+        char   *pseudo_name = GB_read_string(gb_name);
+
+        awr->awar(AWAR_SPECIES_NAME)->write_string(pseudo_name); // ..and select it if found
+        free(pseudo_name);
+    }
+    else {
+        awr->awar(AWAR_SPECIES_NAME)->write_string(organism); // otherwise select organism
+    }
+}
+
 //  --------------------------------------------------
 //      void GEN_update_combined_cb(AW_root *awr)
 //  --------------------------------------------------
 void GEN_update_combined_cb(AW_root *awr) {
-    char       *organism = awr->awar(AWAR_ORGANISM_NAME)->read_string();
-    char       *gene     = awr->awar(AWAR_GENE_NAME)->read_string();
-    const char *combined = GBS_global_string("%s/%s", organism, gene);
-    awr->awar(AWAR_COMBINED_GENE_NAME)->write_string(combined);
+    char       *organism     = awr->awar(AWAR_ORGANISM_NAME)->read_string();
+    char       *gene         = awr->awar(AWAR_GENE_NAME)->read_string();
+    char       *old_combined = awr->awar(AWAR_COMBINED_GENE_NAME)->read_string();
+    const char *combined     = GBS_global_string("%s/%s", organism, gene);
+
+    if (strcmp(combined, old_combined) != 0) {
+        awr->awar(AWAR_COMBINED_GENE_NAME)->write_string(combined);
+        auto_select_pseudo_species(awr, gb_main, organism, gene);
+    }
+
+    free(old_combined);
     free(gene);
     free(organism);
 }
+
+//  -----------------------------------------------------------------
+//      bool GEN_is_genom_db(GBDATA *gb_main, int default_value)
+//  -----------------------------------------------------------------
+// default_value == 0 -> default to normal database
+//               == 1 -> default to GENOM database
+//               == -1 -> assume that type is already defined
+
+bool GEN_is_genom_db(GBDATA *gb_main, int default_value) {
+    GB_transaction  dummy(gb_main);
+    GBDATA         *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+
+    if (!gb_genom_db) {         // no DB-type entry -> create on with default
+        if (default_value == -1) {
+            GB_CORE;
+        }
+
+        gb_genom_db = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
+        GB_write_int(gb_genom_db, default_value);
+    }
+
+    return GB_read_int(gb_genom_db) != 0;
+}
+
 
 //  -------------------------------------------------------------------
 //      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
