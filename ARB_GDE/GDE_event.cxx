@@ -340,8 +340,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     static int fileindx = 0;
     char *Action,buffer[GBUFSIZ];
     i=0;k=0;
-    if(current_item->numinputs>0)
-    {
+    if (current_item->numinputs>0) {
         DataSet->gb_main = gb_main;
         GB_begin_transaction(DataSet->gb_main);
         delete DataSet->alignment_name;
@@ -353,56 +352,39 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         int stop;
         if (gde_cgss.get_sequences) {
             stop=ReadArbdb2(DataSet,filter2,compress);
-        }else{
+        }
+        else {
             stop=ReadArbdb(DataSet,marked,filter2,compress);
         }
         GB_commit_transaction(DataSet->gb_main);
 
         if(stop) goto startaction_end;
 
-        if(DataSet->numelements==0)
-        {
+        if (DataSet->numelements==0) {
             aw_message("no sequences selected");
             goto startaction_end;
         }
     }
 
     flag = AW_FALSE;
-    for(j=0;j<current_item->numinputs;j++)
-        if(current_item->input[j].format != STATUS_FILE)
+    for(j=0;j<current_item->numinputs;j++) {
+        if(current_item->input[j].format != STATUS_FILE) {
             flag = AW_TRUE;
-
-    if(flag && DataSet)
-        select_mode = ALL; //TestSelection();
+        }
+    }
+    if(flag && DataSet) select_mode = ALL; //TestSelection();
 
     //chdir(current_dir);
-    for(j=0;j<current_item->numinputs;j++)
-    {
+    for(j=0;j<current_item->numinputs;j++) {
         sprintf(buffer,"/tmp/gde%d_%d",(int)getpid(),fileindx++);
         current_item->input[j].name = String(buffer);
-        switch(current_item->input[j].format)
-        {
-            case COLORMASK:
-                WriteCMask(DataSet,buffer,select_mode,
-                           current_item->input[j].maskable);
-                break;
-            case GENBANK:
-                WriteGen(DataSet,buffer,select_mode,
-                         current_item->input[j].maskable);
-                break;
-            case NA_FLAT:
-                WriteNA_Flat(DataSet,buffer,select_mode,
-                             current_item->input[j].maskable);
-                break;
-            case STATUS_FILE:
-                WriteStatus(DataSet,buffer,select_mode);
-                break;
-            case GDE:
-                WriteGDE(DataSet,buffer,select_mode,
-                         current_item->input[j].maskable);
-                break;
-            default:
-                break;
+        switch(current_item->input[j].format) {
+            case COLORMASK:     WriteCMask(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
+            case GENBANK:       WriteGen(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
+            case NA_FLAT:       WriteNA_Flat(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
+            case STATUS_FILE:   WriteStatus(DataSet,buffer,select_mode); break;
+            case GDE:           WriteGDE(DataSet,buffer,select_mode, current_item->input[j].maskable); break;
+            default: break;
         }
     }
 
@@ -416,16 +398,20 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
      *	Create the command line for external the function call
      */
     Action = (char*)strdup(current_item->method);
-    if(Action == NULL)
-        Error("DO(): Error in duplicating method string");
-    for(j=0;j<current_item->numargs;j++)
-        Action = ReplaceArgs(aw_root,Action,AWinfo,j);
+    if(Action == NULL) Error("DO(): Error in duplicating method string");
 
-    for(j=0;j<current_item->numinputs;j++)
-        Action = ReplaceFile(Action,current_item->input[j]);
+    while (1) {
+        char *oldAction = strdup(Action);
 
-    for(j=0;j<current_item->numoutputs;j++)
-        Action = ReplaceFile(Action,current_item->output[j]);
+        for(j=0;j<current_item->numargs;j++) Action = ReplaceArgs(aw_root,Action,AWinfo,j);
+        bool changed = strcmp(oldAction, Action) != 0;
+        free(oldAction);
+
+        if (!changed) break;
+    }
+
+    for(j=0;j<current_item->numinputs;j++) Action = ReplaceFile(Action,current_item->input[j]);
+    for(j=0;j<current_item->numoutputs;j++) Action = ReplaceFile(Action,current_item->output[j]);
 
     filter_name = AWT_get_combined_filter_name(aw_root, "gde");
     Action = ReplaceString(Action,"$FILTER",filter_name);
