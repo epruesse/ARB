@@ -8,8 +8,8 @@
 
 using namespace std;
 
-OpenGLGraphics *G = new OpenGLGraphics();
-ColorRGBf ApplicationBGColor = ColorRGBf(0,0,0);
+// OpenGLGraphics *G = new OpenGLGraphics();
+// ColorRGBf ApplicationBGColor = ColorRGBf(0,0,0);
 
 GLRenderer::GLRenderer(void){
     fSkeletonSize = 0.5;
@@ -28,7 +28,9 @@ GLRenderer::GLRenderer(void){
     iMapSpecies = iMapSpeciesBase = iMapSpeciesPos = 0;
     iMapSpeciesDels = iMapSpeciesMiss = 0;
     iMapSpeciesIns = iMapSpeciesInsInfo = 0;
-} 
+
+    G                  = new OpenGLGraphics();
+}
 
 GLRenderer::~GLRenderer(void){
 }
@@ -117,7 +119,7 @@ void GLRenderer::DisplayMoleculeName(int w, int h){
     char *pSpeciesName;
 
     if(iMapSpecies) {
-        pSpeciesName = GLOBAL->root->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
+        pSpeciesName = RNA3D->root->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
     }
     else {
         pSpeciesName = (char *) "Eschericia Coli : Master Template"; 
@@ -199,7 +201,7 @@ void GLRenderer::BeginTexturizer(){
     glDisable(GL_LIGHTING);
     glDisable(GL_POINT_SMOOTH);
 
-   if (GLOBAL->bPointSpritesSupported) {
+   if (RNA3D->bPointSpritesSupported) {
        glEnable(GL_BLEND);
        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -224,7 +226,7 @@ void GLRenderer::BeginTexturizer(){
 void GLRenderer::EndTexturizer(){
     glDisable(GL_TEXTURE_2D);
 
-    if (GLOBAL->bPointSpritesSupported) {
+    if (RNA3D->bPointSpritesSupported) {
         float defaultAttenuation[3] = { 1.0f, 0.0f, 0.0f };
         glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, defaultAttenuation );
 
@@ -234,8 +236,8 @@ void GLRenderer::EndTexturizer(){
     glEnable(GL_POINT_SMOOTH);
 }
 
-void GLRenderer::TexturizeStructure(Texture2D *cImages) {
-    extern Structure3D *cStructure;
+void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure) {
+    // extern Structure3D *cStructure;
 
     if (cStructure->iMapEnable ) {
         glPointSize(ObjectSize*2);
@@ -259,13 +261,14 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages) {
 
     glPointSize(ObjectSize);
     if (iDisplayBases) 
-        {
-            switch(iBaseMode) {
-            case CHARACTERS:
+    {
+        switch(iBaseMode) {
+            case CHARACTERS: {
+                ColorRGBf& ApplicationBGColor = G->ApplicationBGColor;
                 if(iBaseHelix) {
                     glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
-                    glCallList(HELIX_A); glCallList(HELIX_G); glCallList(HELIX_C); glCallList(HELIX_U); 
+                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
+                    glCallList(HELIX_A); glCallList(HELIX_G); glCallList(HELIX_C); glCallList(HELIX_U);
 
                     G->SetColor(RNA3D_GC_BASES_HELIX);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(HELIX_A);
@@ -298,7 +301,7 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages) {
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(NON_HELIX_U);
                 }
                 break;
-
+            }
             case SHAPES:
                 if(iBaseHelix) {
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[iShapeHelix]);
