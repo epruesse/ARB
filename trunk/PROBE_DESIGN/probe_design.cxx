@@ -703,11 +703,11 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_float( "probe_design/DTEDGE", .5  ,    db1);
     root->awar_float( "probe_design/DT", .5  ,    db1);
 
-    root->awar_int( "probe_design/PROBELENGTH", 18  ,    db1)->set_minmax(15,25);
+    root->awar_int( "probe_design/PROBELENGTH", 18  ,    db1)->set_minmax(15,60);
 
     root->awar_float( "probe_design/MINTEMP", 30.0  ,    db1);
     root->awar("probe_design/MINTEMP")->set_minmax(0,1000);
-    root->awar_float( "probe_design/MAXTEMP", 100.0  ,    db1);
+    root->awar_float( "probe_design/MAXTEMP", 200.0  ,    db1);
     root->awar("probe_design/MAXTEMP")->set_minmax(0,1000);
 
     root->awar_float( "probe_design/MINGC", 50.0  ,    db1);
