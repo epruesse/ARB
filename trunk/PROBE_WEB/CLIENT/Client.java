@@ -22,6 +22,9 @@ class Client
 
     private TreeNode lastNode = null; // last node (for which probes were retrieved)
     private String   members  = null; // members hit by last selected probe
+    
+    private String       configFileName = ".arb_probe_library"; // name of config file
+    private ServerAnswer config;
 
     public Client() {
         Probe.groupCache = new GroupCache(this);
@@ -127,7 +130,7 @@ class Client
     {
         ProbeList list = display.getProbeList();
         list.removeAll();
-        
+
         // String testAnswer = Toolkit.askUser("Online-Warnung", "Sonden vom Server holen?", "Ja,Nein,Egal");
         // System.out.println("testAnswer='"+testAnswer+"'");
 
@@ -147,9 +150,9 @@ class Client
                 root.unmarkSubtree();
             }
             else {
-                list.selectProbe(0);
+                // list.selectProbe(0); // done by list.setContents
                 // list.requestFocus(); // doesn't work
-                matchProbes(list.getProbe(0)); // so we do the action manually
+                // matchProbes(list.getProbe(0)); // so we do the action manually
             }
         }
         catch (ClientException e) {
@@ -294,7 +297,7 @@ class Client
         int width  = (int)sr.getWidth();
         int height = (int)sr.getHeight();
 
-        // assume minimum size to ignore errors in detection: 
+        // assume minimum size to ignore errors in detection:
         if (width<640) width   = 640;
         if (height<480) height = 480;
 
@@ -305,6 +308,58 @@ class Client
         System.out.println("Rectangle "+name+": lu="+rect.x+"/"+rect.y+
                            " rl="+(rect.x+rect.width-1)+"/"+(rect.y+rect.height-1)+
                            " sz="+rect.width+"/"+rect.height);
+    }
+
+    private void createProbesGUI() throws Exception {
+        Point     wantedOrigin         = null;
+        Dimension wantedScrollPaneSize = null; 
+
+        if (config != null) {
+            try {
+                wantedScrollPaneSize = new Dimension(config.getIntValue("Width"), config.getIntValue("Height"));
+                wantedOrigin         = new Point(config.getIntValue("LocationX"), config.getIntValue("LocationY"));
+            }
+            catch (Exception e) {
+                System.out.println("Your config seems to be corrupted:");
+                System.out.println(e.getMessage());
+                
+                wantedScrollPaneSize = null;
+                wantedOrigin         = null;
+            }
+        }
+
+        Rectangle wantedBounds = null;
+        if (wantedOrigin != null && wantedScrollPaneSize != null) {
+            wantedBounds = new Rectangle(wantedOrigin.x, wantedOrigin.y, 640, 480); // size does not matter
+        }
+        else {
+            // no dimension from config -> try to guess a good size:
+
+            Dimension screenSize = detectScreenSize();
+            System.out.println("* detected screen size = "+screenSize.width+"/"+screenSize.height);
+
+            // test other screensizes:
+            Dimension fakedSize = null;
+            // fakedSize        = new Dimension(640, 480);
+            // fakedSize        = new Dimension(800, 600);
+            if (screenSize.width>1024) {
+                fakedSize    = new Dimension(1024, 768); // leave it for the moment (otherwise sizing has a bug!)
+            }
+            // fakedSize = new Dimension(1280, 1024);
+            if (fakedSize != null) {
+                screenSize = fakedSize;
+                System.out.println("* faked screen size = "+screenSize.width+"/"+screenSize.height);
+            }
+
+            int    dxborder = screenSize.width/7;
+            int    dyborder = screenSize.height/7;
+
+            wantedBounds = new Rectangle(dxborder/2, dyborder/2, screenSize.width-dxborder, screenSize.height-dyborder);
+            // showRect(wantedBounds, "Estimated application bounds:");
+        }
+
+        String title = Toolkit.clientName+" v"+Toolkit.client_version;
+        display      = new ProbesGUI(10, title, this, wantedBounds, wantedScrollPaneSize, 40);
     }
 
     public static void main(String[] args)
@@ -324,43 +379,13 @@ class Client
                 // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
             }
 
-            Dimension screenSize = detectScreenSize();
-            System.out.println("* detected screen size = "+screenSize.width+"/"+screenSize.height);
-
-            // test other screensizes:
-            Dimension fakedSize = null;
-            // fakedSize        = new Dimension(640, 480);
-            // fakedSize           = new Dimension(800, 600);
-            fakedSize        = new Dimension(1024, 768);
-            // fakedSize        = new Dimension(1280, 1024);
-            if (fakedSize != null) {
-                screenSize = fakedSize;
-                System.out.println("* faked screen size = "+screenSize.width+"/"+screenSize.height);
-            }
-
-            Dimension wantedScrollPaneSize = null; // shall be loaded from config
-            // // Dimension wantedScrollPaneSize = new Dimension(622, 724); // shall be loaded from config            
-            // // Dimension wantedScrollPaneSize = new Dimension(416, 634); // shall be loaded from config            
-            // Dimension wantedScrollPaneSize = new Dimension(438, 871); // shall be loaded from config            
-
-            int       dxborder     = screenSize.width/7;
-            int       dyborder     = screenSize.height/7;
-            String    title        = Toolkit.clientName+" v"+Toolkit.client_version;
-            Rectangle wantedBounds = new Rectangle(dxborder/2, dyborder/2, screenSize.width-dxborder, screenSize.height-dyborder);
-            showRect(wantedBounds, "wantedBounds");
-            // Point     origin = new Point(dxborder/2, dyborder/2);
-            // Dimension size   = new Dimension(screenSize.width-dxborder, screenSize.height-dyborder);
-            // System.out.println("* origin = "+origin.x+"/"+origin.y);
-            // System.out.println("* size = "+size.width+"/"+size.height);
-            // System.out.println("* origin+size = "+(origin.x+size.width)+"/"+(origin.y+size.height));
-
-            cl.display = new ProbesGUI(10, title, cl, wantedBounds, wantedScrollPaneSize, 40);
-            cl.iom     = new IOManager(cl.display);
+            cl.loadConfig();
+            cl.createProbesGUI();
+            cl.iom = new IOManager(cl.display);
 
             // check correctness of application placement:
             Rectangle resBounds = cl.display.getBounds(null);
-            showRect(resBounds, "resBounds (wrong value, but seems correct)");
-            // System.out.println("resBounds= "+resBounds.x+"/"+resBounds.y+"  w/h="+resBounds.width+"/"+resBounds.height+"");
+            // showRect(resBounds, "resBounds (wrong value, but seems correct)");
 
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
@@ -415,6 +440,7 @@ class Client
         }
         catch (Exception e) {
             System.out.println("Uncaught exception: "+e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -437,21 +463,42 @@ class Client
         save("details", display.getDetails().getText(), ask_for_name);
     }
 
-    public void saveConfig() // called at shutdown
+    public void saveConfig() throws Exception // called at shutdown
     {
-        Point location = display.getLocationOnScreen();
-        System.out.println("Current location on screen: x="+location.x+" y="+location.y);
+        Point     location = display.getLocationOnScreen();
+        Dimension psize    = display.getPreferredScrollPaneSize();
 
-        Dimension psize = display.getPreferredScrollPaneSize();
-        System.out.println("Scroll pane dimension:      width="+psize.width+" height="+psize.height+" (getPreferredScrollPaneSize)");
-        Dimension size = display.getScrollPaneViewportSize();
-        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height+" (getScrollPaneViewportSize)");
+        // System.out.println("Current location on screen: x="+location.x+" y="+location.y);
+        // System.out.println("Scroll pane dimension:      width="+psize.width+" height="+psize.height+" (getPreferredScrollPaneSize)");
 
-        Rectangle resBounds = display.getBounds(null);
-        System.out.println("resBounds= "+resBounds.x+"/"+resBounds.y+"  w/h="+resBounds.width+"/"+resBounds.height);
+        String configuration =
+            "LocationX="+location.x+"\n"+
+            "LocationY="+location.y+"\n"+
+            "Width="+psize.width+"\n"+
+            "Height="+psize.height+"\n";
 
-        System.out.println("Saving config to ... [not implemented yet]");
+        System.out.println("Saving config to "+configFileName);
+        iom.saveAs("config", configuration, configFileName);
     }
+
+    public void loadConfig() throws Exception {
+        try {
+            String           content = "";
+            FileReader       infile  = new FileReader(configFileName);
+            LineNumberReader in      = new LineNumberReader(infile);
+
+            while (true) {
+                String line  = in.readLine();
+                if (line == null) break;
+                content     += line+"\n";
+            }
+            config = new ServerAnswer(content, false, false);
+        }
+        catch (IOException e) {
+            System.out.println("Loading config: "+e.getMessage());
+        }
+    }
+
 
 }
 
