@@ -17,24 +17,24 @@ proto:	pro tpro lproto
 lproto: lpro tlpro
 
 lpro: $(GB_O:.o=.c)
-	rm -f ad_lpro.h
-	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h.tmp
+	../SOURCE_TOOLS/mv_if_diff ad_lpro.h.tmp ad_lpro.h
 
 tlpro: $(GB_T:.o=.c)
-	rm -f ad_t_lpro.h
-	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h
-
+	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h.tmp
+	../SOURCE_TOOLS/mv_if_diff ad_t_lpro.h.tmp ad_t_lpro.h
 
 pro: $(GB_O:.o=.c)
-	rm -f ad_prot.h
-	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_O:.o=.c) >ad_prot.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_O:.o=.c) >ad_prot.h.tmp
+	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 tpro: $(GB_T:.o=.c)
-	rm -f ad_t_prot.h
-	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_T:.o=.c) >ad_t_prot.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_T:.o=.c) >ad_t_prot.h.tmp
+	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 wc:
 	wc *.[ch]
+
 untouch:
 	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h ad_prot.h ad_t_prot.h
 
