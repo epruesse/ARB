@@ -12,21 +12,37 @@ TITLE		Export Tree to File
 
 OCCURRENCE	ARB_NT/Tree/Copy\Delete\Export\Import/EXPORT
 
-DESCRIPTION	Writes a tree to file in Newick formate
+DESCRIPTION	Writes a tree to file in Newick format
 
 		Press the 'EXPORT' button to display the 'TREE SAVE' window.
 
 		Select a tree file from the 'Directories and Files' subwindow or
 			type the file name to the 'FILE NAME' subwindow.
 
-		Select 'PLAIN FORMAT' or 'USE NDS' after pressing the 'PLAIN
-			FORMAT' button to write a Newick tree containg the
-			'names' only or the full information displayed at the
-			terminal nodes of the specified tree, respectively.
+        NEWICK TREE FORMAT
 
-        PLAIN FORMAT	Include only short names in the newick tree
+               Nodetype
 
-        USE NDS		Export only. Replace short names by nds selected fields.
+                      Species name
+
+                              This is the normal format using species names as leaf names.
+
+                      NDS
+
+                              (Export only!) This uses the current NDS tree settings as leaf names.
+
+               Save branch lengths
+
+                    if marked, branchlengths are written to the tree file.
+
+               Save bootstraps
+
+                    if marked, bootstraps are written to the tree file.
+
+               Save groupnames
+
+                    if marked, groupnames are written to the tree file.
+
 
         ORS TANSFER BINARY FORMAT
 
@@ -34,13 +50,19 @@ DESCRIPTION	Writes a tree to file in Newick formate
                         You need a special program to use it.
 
 
-NOTES		If a suffix is displayed in or typed to the 'SUFFIX' subwindow,
+NOTES           If you select both 'Save groupnames' and 'Save bootstraps', other programs may be
+                unable to load the tree or at least unable to interpret the bootstrap values correctly.
+
+                If a suffix is displayed in or typed to the 'SUFFIX' subwindow,
 		only the corresponding file names will be displayed. The suffix
 		is automatically appended to the file name typed to the 'FILE
 		NAME' subwindow.
 
 
-WARNINGS	!!! Tree data written with the 'USE NDS' option cannot be
-		reimported to the database.!!!
+WARNINGS	Tree data written with the 'NDS' option cannot be
+		reimported to the database without data loss!
+
+                It's possible to reload such a tree, but it's leafs
+                will not be linked to the correct species.
 
 BUGS		No bugs known
