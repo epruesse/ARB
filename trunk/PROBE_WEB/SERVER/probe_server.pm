@@ -35,8 +35,7 @@ BEGIN {
 our @EXPORT_OK;
 
 my $header_printed;
-my $root_dir='/home/westram/ARB/PROBE_SERVER';
-# my $root_dir='/trance1/ARB/source/ARB/PROBE_SERVER';
+my $root_dir;
 
 sub print_header() {
   print $probe_server::q->header(-type=>'text/plain');
