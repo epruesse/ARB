@@ -19,38 +19,45 @@ using namespace std;
 //
 // *** disk output ASCII **
 //
-bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) {
+bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) { // buffer MUST be at least 100 chars long
     unsigned int size;
     int          count;
     //
     // write num
     //
-    count = sprintf( buffer, "\nN[%i P{", num );
+    count = sprintf( buffer, "N[%i", num );
     _fb->put( buffer,count );
     //
     // write probes
     //
-    size  = (probes == 0) ? 0 : probes->size();
+    size = (probes == 0) ? 0 : probes->size();
     if (size) {
+        count = sprintf( buffer, " P{%i", size );
+        _fb->put( buffer, count );
 	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
             count = sprintf( buffer, " (%i_%i_%i)", (*i)->quality, (*i)->length, (*i)->GC_content );
 	    _fb->put( buffer, count );
 	}
+        _fb->put_char( '}' );
     }
     //
     // write children
     //
-    size = children.size();
-    count = sprintf( buffer, "} C{" );
-    _fb->put( buffer, count );
-    for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
-        i->second->saveASCII( _fb,buffer );
+    size  = children.size();
+    if (size) {
+        count = sprintf( buffer, " C<%i", size );
+        _fb->put( buffer, count );
+        for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
+            _fb->put_char( '\n' );
+            if (num == -1) _fb->put_char( '+' );
+            i->second->saveASCII( _fb,buffer );
+        }
+        _fb->put_char( '>' );
     }
     //
     // return true to signal success
     //
-    count = sprintf( buffer, "}]" );
-    _fb->put( buffer, count );
+    _fb->put_char( ']' );
     return true;
 }
 

@@ -27,7 +27,7 @@ public:
     
     void print();
 
-    PS_BitSet( bool _bias, long _capacity ) {
+    explicit PS_BitSet( bool _bias, long _capacity ) {
         data     = 0;
         size     = -1;
         capacity = 0;

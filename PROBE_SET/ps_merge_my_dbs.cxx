@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef PS_FILE_BUFFER_HXX
+#ifndef PS_FILEBUFFER_HXX
 #include "ps_filebuffer.hxx"
 #endif
 #ifndef PS_NODE_HXX
