@@ -25,20 +25,20 @@ protected:
 
     unsigned char *data;
     bool bias;                                                   // preset value for newly allocated memory
-    long size;                                                   // max. used index
+    long max_index;                                              // max. used index
     long capacity;                                               // number of allocated bits
 
     PS_BitSet( const PS_BitSet& );
     PS_BitSet();
-    PS_BitSet( const bool _bias, const long _size, const long _capacity ) {
-        bias     = _bias;
-        size     = _size;
-        capacity = _capacity;
+    PS_BitSet( const bool _bias, const long _max_index, const long _capacity ) {
+        bias      = _bias;
+        max_index = _max_index;
+        capacity  = _capacity;
     }
 
 public:
 
-    long getSize() { return size; }
+    long getMaxUsedIndex() { return max_index; }
 
     virtual bool get( const long _index );
     virtual bool set( const long _index, const bool _value );
@@ -49,16 +49,16 @@ public:
     virtual void invert();
     virtual void xor( const PS_BitSet *_other_set );
     
-    virtual void print( long _fill_index );
+    virtual void print( const bool _header, const long _fill_index );
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
-    explicit PS_BitSet( const bool _bias, const long _capacity ) : bias(_bias), size(-1), capacity(0) {
+    explicit PS_BitSet( const bool _bias, const long _capacity ) : bias(_bias), max_index(-1), capacity(0) {
         data = 0;
         reserve( _capacity );
     }
 
-    explicit PS_BitSet( PS_FileBuffer *_file ) : bias(false), size(-1), capacity(0) {
+    explicit PS_BitSet( PS_FileBuffer *_file ) : bias(false), max_index(-1), capacity(0) {
         data = 0;
         load( _file );
     }
@@ -75,17 +75,21 @@ public:
 class PS_BitSet_Fast : public PS_BitSet {
 private:
 
-    PS_BitSet_Fast();
     PS_BitSet_Fast( const PS_BitSet_Fast& );
+    PS_BitSet_Fast();
 
 public:
 
-    bool get( const long _index ) { return ((data[ _index/8 ] >> (_index % 8)) & 1 == 1); }
+    bool get( const long _index );
     bool set( const long _index, const bool _value );
     void setTrue(  const long _index );
     void setFalse( const long _index );
 
-    explicit PS_BitSet_Fast( bool _bias, long _capacity ) : PS_BitSet( _bias,_capacity ) {}
+    explicit PS_BitSet_Fast( bool _bias, long _capacity ) : PS_BitSet( _bias,_capacity ) {
+        // we just altered member functions so we dont do anything here
+        // but call correct base class constructor to prevent
+        // the call of PS_BitSet() without parameters
+    }
 };
 
 
@@ -110,7 +114,7 @@ bool PS_BitSet::set( const long _index, const bool _value ) {
     } else {
         data[ _index/8 ] |= ~(1 << (_index % 8));
     }        
-    if (_index > size) size = _index;
+    if (_index > max_index) max_index = _index;
     return previous_value;
 }
 
@@ -131,7 +135,7 @@ void PS_BitSet::setTrue( const long _index ) {
 //     }
 //     data[_index / 8] = byte;
     data[ _index/8 ] |= 1 << (_index % 8);
-    if (_index > size) size = _index;
+    if (_index > max_index) max_index = _index;
 }
 
 
@@ -151,7 +155,7 @@ void PS_BitSet::setFalse( const long _index ) {
 //     }
 //     data[_index / 8] = byte;
     data[ _index/8 ] |= ~(1 << (_index % 8));
-    if (_index > size) size = _index;
+    if (_index > max_index) max_index = _index;
 }
 
 
@@ -174,21 +178,19 @@ bool PS_BitSet::get( const long _index ) {
 // ************************************************************
 bool PS_BitSet::reserve( const long _capacity ) {
     unsigned char *new_data;
-    long _capacity_bytes = (_capacity/8)+1;
-    long  capacity_bytes = ( capacity/8)+1;
+    long new_capacity_bytes = (_capacity/8)+1;
+    long old_capacity_bytes = ( capacity/8)+1;
     if (capacity > 0) {
-        if (_capacity_bytes <= capacity_bytes) return true;      // smaller or same size requested ?
+        if (new_capacity_bytes <= old_capacity_bytes) return true;      // smaller or same size requested ?
     }
-    _capacity_bytes = ((_capacity_bytes / 128)+1)*128;           // adjust requested size to bigger chunks
-    new_data = (unsigned char *)malloc( _capacity_bytes );       // get new memory
+    new_capacity_bytes = ((new_capacity_bytes / 32)+1)*32;              // adjust requested size to bigger chunks
+    new_data = (unsigned char *)malloc( new_capacity_bytes );           // get new memory
     if (new_data == 0) return false;
-    //fprintf( stderr, "PS_BitSet(%p) malloc(%lu) = %p\n", this, _capacity_bytes, new_data );
-    memset( new_data,bias ? 0xFF : 0,_capacity_bytes );          // set memory to bias value
-    if (capacity > 0) memcpy( new_data,data,capacity_bytes );    // copy old values
-    //if (data) fprintf( stderr, "PS_BitSet(%p)   free(%p(%lu))\n", this, data, capacity_bytes );
-    if (data) free( data );                                      // free old memory
-    data = new_data;                                             // store new pointer
-    capacity = _capacity_bytes*8;                                // store new capacity
+    memset( new_data,bias ? 0xFF : 0,new_capacity_bytes );              // set memory to bias value
+    if (capacity > 0) memcpy( new_data,data,old_capacity_bytes );       // copy old values
+    if (data) free( data );                                             // free old memory
+    data     = new_data;                                                // store new pointer
+    capacity = new_capacity_bytes*8;                                    // store new capacity
     return true;
 }
 
@@ -197,7 +199,6 @@ bool PS_BitSet::reserve( const long _capacity ) {
 // * PS_BitSet::invert()
 // ************************************************************
 void PS_BitSet::invert() {
-    bias = (bias == false);
     for (long i = 0; i < capacity/8; ++i) {
         data[i] = ~data[i];
     }
@@ -209,30 +210,23 @@ void PS_BitSet::invert() {
 // ************************************************************
 void PS_BitSet::xor( const PS_BitSet *_other_set ) {
     for (long i = 0; i < capacity/8; ++i) {
-	printf( "PS_BitSet : xor %li\n",i );
         data[i] ^= _other_set->data[i];
     }
 }
 
 
 // ************************************************************
-// * PS_BitSet::print( _fill_index )
+// * PS_BitSet::print( _header, _fill_index )
 // ************************************************************
-void PS_BitSet::print( long _fill_index = -1 ) {
-    printf( "PS_BitSet : bias (%5s) size(%6li) capacity(%6li) ",(bias) ? "true" : "false", size,capacity );
-    for (long i = 0; i <= size; ++i) {
+void PS_BitSet::print( const bool _header = true, const long _fill_index = -1 ) {
+    if (_header) printf( "PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity );
+    for (long i = 0; i <= max_index; ++i) {
         printf( get(i) ? "+" : "_" );
     }
-    if (bias) {
-        for (long i = (size > 0) ? size+1 : 0; i <= _fill_index; ++i) {
-            printf( "+" );
-        }
-    } else {
-        for (long i = (size > 0) ? size+1 : 0; i <= _fill_index; ++i) {
-            printf( "_" );
-        }
+    for (long i = max_index+1; i <= _fill_index; ++i) {
+        printf( "." );
     }
-    printf( "\n" );
+    printf( " %li\n", max_index );
 }
 
 
@@ -241,12 +235,12 @@ void PS_BitSet::print( long _fill_index = -1 ) {
 // ************************************************************
 bool PS_BitSet::save( PS_FileBuffer *_file ) {
     if (_file->isReadonly()) return false;
-    // save size
-    _file->put_long( size );
+    // save max_index
+    _file->put_long( max_index );
     // save bias
     _file->put_char( (bias) ? '1' : '0' );
     // save bitset
-    long bytes = (size / 8)+1;
+    long bytes = (max_index / 8)+1;
     long i = 0;
     while ( (bytes-i) >= PS_FileBuffer::BUFFER_SIZE ) {
         _file->put( &(data[i]), PS_FileBuffer::BUFFER_SIZE );
@@ -261,15 +255,15 @@ bool PS_BitSet::save( PS_FileBuffer *_file ) {
 // * PS_BitSet::load( PS_FileBuffer *_file )
 // ************************************************************
 bool PS_BitSet::load( PS_FileBuffer *_file ) {
-    // load size
-    _file->get_long( size );
+    // load max_index
+    _file->get_long( max_index );
     // load bias
     bias = (_file->get_char() == '1');
     // initialize bitset
     capacity = 0;
-    if (!reserve( size )) return false;
+    if (!reserve( max_index )) return false;
     // load bitset
-    long bytes = (size / 8)+1;
+    long bytes = (max_index / 8)+1;
     long i = 0;
     while ( (bytes-i) >= PS_FileBuffer::BUFFER_SIZE ) {
         _file->get( &(data[i]), PS_FileBuffer::BUFFER_SIZE );
@@ -281,38 +275,11 @@ bool PS_BitSet::load( PS_FileBuffer *_file ) {
 
 
 // ************************************************************
-// * PS_BitSet_Fast::setTrue( _index )
+// * PS_BitSet_Fast::get( _index )
 // ************************************************************
-void PS_BitSet_Fast::setTrue( const long _index ) {
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
-    data[ _index/8 ] |= 1 << (_index % 8);
-    if (_index > size) size = _index;
-}
-
-
-// ************************************************************
-// * PS_BitSet_Fast::setFalse( _index )
-// ************************************************************
-void PS_BitSet_Fast::setFalse( const long _index ) {
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
-    data[ _index/8 ] |= ~(1 << (_index % 8));
-    if (_index > size) size = _index;
+bool PS_BitSet_Fast::get( const long _index ) {
+    if (_index > max_index) max_index = _index;
+    return ((data[ _index/8 ] >> (_index % 8)) & 1 == 1);
 }
 
 
@@ -320,26 +287,33 @@ void PS_BitSet_Fast::setFalse( const long _index ) {
 // * PS_BitSet_Fast::set( _index, _value )
 // ************************************************************
 bool PS_BitSet_Fast::set( const long _index, const bool _value ) {
-//     unsigned char byte   = data[_index / 8];
-//     unsigned char offset = _index % 8;
-//     unsigned char mask   = 1 << offset;
-//     if (_value == true) {
-//         byte = byte |  mask; 
-//     } else {
-//         byte = byte & ~mask;
-//     }
-//     data[_index / 8] = byte;
     bool previous_value = ((data[ _index/8 ] >> (_index % 8)) & 1 == 1); 
     if (_value) {
         data[ _index/8 ] |= 1 << (_index % 8);
     } else {
         data[ _index/8 ] |= ~(1 << (_index % 8));
     }        
-    if (_index > size) size = _index;
+    if (_index > max_index) max_index = _index;
     return previous_value;
 }
 
 
+// ************************************************************
+// * PS_BitSet_Fast::setTrue( _index )
+// ************************************************************
+void PS_BitSet_Fast::setTrue( const long _index ) {
+    data[ _index/8 ] |= 1 << (_index % 8);
+    if (_index > max_index) max_index = _index;
+}
+
+
+// ************************************************************
+// * PS_BitSet_Fast::setFalse( _index )
+// ************************************************************
+void PS_BitSet_Fast::setFalse( const long _index ) {
+    data[ _index/8 ] |= ~(1 << (_index % 8));
+    if (_index > max_index) max_index = _index;
+}
 #else
 #error ps_bitset.hxx included twice
 #endif
