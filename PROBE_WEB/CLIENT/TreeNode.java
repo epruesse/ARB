@@ -27,7 +27,7 @@ private String arbAccession;
 private String binaryPath;
 private String codedPath;
 private  static  final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    // data structure 
+    // data structure
 private boolean isLeaf;
 private TreeNode father;
 private Vector childNodes;
@@ -49,7 +49,7 @@ public TreeNode()
     nodeName = new StringBuffer();
     childNodes = new Vector();
     nodeSerial = nodeCounter;
-    System.out.println("TreeNode:node number " + nodeSerial + " generated"); 
+    System.out.println("TreeNode:node number " + nodeSerial + " generated");
     nodeCounter++;
 
 }
@@ -60,7 +60,7 @@ public TreeNode()
 //     nodeName = new StringBuffer(oldNode.getNodeName());
 //     childNodes = new Vector(oldNode.getChilds());
 //     nodeSerial = oldNode.nodeCounter;
-//     //    System.out.println("TreeNode:node number " + nodeSerial + " generated"); 
+//     //    System.out.println("TreeNode:node number " + nodeSerial + " generated");
 //     //    nodeCounter++;
 
 // }
@@ -160,7 +160,7 @@ public int getNoOfLeaves()
     //throws Exception e
 {
 //      try {
-//          return testLeaf() ? 1 : ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
+//          return testLeaf() ? 1 : ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
 //              +  ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
 //      }catch (Exception e)
 //          {
@@ -176,8 +176,8 @@ public int getNoOfLeaves()
              return 1;
          }
      else {
-         //  return noOfChildren = 1 + ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
-  return noOfChildren = ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
+         //  return noOfChildren = 1 + ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
+  return noOfChildren = ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
       +  ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
      }
 
@@ -224,7 +224,7 @@ public int getYOffset(){
 public float getMaxDepth()
 {
     return testLeaf() ? getTotalDist()
-        : ((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist() 
+        : ((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist()
         ?  ((TreeNode)getChilds().elementAt(0)).getMaxDepth()
         : ((TreeNode)getChilds().elementAt(1)).getMaxDepth();
 }
@@ -271,6 +271,10 @@ public String getCodedPath()
     return codedPath;
 }
 
+// -------------------------------------------------------------------
+// NOTE: if you change encodePath() please keep encodePath/decodePath()
+//       in ./PROBE_SERVER/WORKER/psw_main.cxx up-to-date
+
 private String encodePath(String path)
 {
     StringBuffer coded = new StringBuffer();
@@ -291,7 +295,7 @@ private String encodePath(String path)
                 //                System.out.println(path.charAt(position));
                  if (path.charAt(position) == '1')
                      {
-                     // value = value + (3 - (position%4))*2; 
+                     // value = value + (3 - (position%4))*2;
                          switch (position%4)
                              {
                              case 0:
@@ -306,24 +310,24 @@ private String encodePath(String path)
                              case 3:
                                  value += 1;
                                  break;
-                             default: 
+                             default:
                                  System.out.println("Error in binary string conversion");
                              }
 
                      };
                  //              System.out.println(value);
-                 if ((position%4) == 3) 
+                 if ((position%4) == 3)
                      {
-                         //                         System.out.println(value); 
-                         //                         System.out.println(hexToken[value]); 
-                         coded.append(hexToken[value]); 
+                         //                         System.out.println(value);
+                         //                         System.out.println(hexToken[value]);
+                         coded.append(hexToken[value]);
                          value = 0;
                      }
 
             }
 
-    //        System.out.println(hexToken[value]); 
-        coded.append(hexToken[value]); 
+    //        System.out.println(hexToken[value]);
+        coded.append(hexToken[value]);
         //                System.out.println("am Ende: " + binary);
     return coded.toString();
 }
