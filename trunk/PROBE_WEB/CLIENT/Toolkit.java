@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Thu Mar/18/2004 20:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Mar/19/2004 13:07 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -25,8 +25,16 @@ class Toolkit
     public static String interface_version = "1.1"; // if interface_version does not match, client terminates!
 
     private static String maintainer = "probeadmin@arb-home.de";
+    private static Client theClient  = null;
 
-    private static Client theClient = null;
+    private static boolean debug_mode = false; // debug mode turned on ?
+
+    public static void setDebugMode(boolean dm) {
+        if (!dm) showDebugMessage("Switching off debug mode.");
+        debug_mode = dm;
+        if (dm) showDebugMessage("Debug mode is on.");
+    }
+
     public static void registerClient(Client c) { theClient = c; }
     public static void unregisterClient() { theClient = null; }
 
@@ -39,6 +47,11 @@ class Toolkit
             System.out.println("Exception caught in showError(): ");
             e.printStackTrace();
             System.out.println("Message: "+e.getMessage());
+        }
+    }
+    public static void showDebugMessage(String message) {
+        if (debug_mode) {
+            System.out.println("> "+message);
         }
     }
     public static void showMessage(String message) {
