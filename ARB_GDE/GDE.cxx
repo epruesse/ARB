@@ -76,21 +76,21 @@ void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 
 	if(helpwindow) { helpwindow->show() ; return; }
 
-	helpwindow=new AW_window_simple;
-		helpwindow->init(awr,"GDE_HELP", "GDE HELP",200,10);
+	helpwindow = new AW_window_simple;
+    helpwindow->init(awr,"GDE_HELP", "GDE HELP",200,10);
+    helpwindow->load_xfig("gde_help.fig");
 
-	helpwindow->button_length(10);
-	helpwindow->at(10,10);helpwindow->callback((AW_CB0)AW_POPDOWN);
+// 	helpwindow->button_length(10);
+// 	helpwindow->at(10,10);
+ 	helpwindow->at("close");
+    helpwindow->callback((AW_CB0)AW_POPDOWN);
 	helpwindow->create_button("CLOSE", "CLOSE","C");
 
-	helpwindow->at(10,40);
-	//helpwindow->button_length(80);
-	//helpwindow->label_length(80);
-	helpwindow->create_text_field("tmp/gde/helptext",80,20);
+	helpwindow->at("text");
+	helpwindow->create_text_field("tmp/gde/helptext",10,10);
 
-	helpwindow->window_fit();
+// 	helpwindow->window_fit();
 	helpwindow->show();
-
 }
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
