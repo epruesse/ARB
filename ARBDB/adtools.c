@@ -1418,7 +1418,7 @@ void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale)
    structure size should be >0, see GBT_read_tree for more information
    if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
 */
-GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr)
+GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling)
 {
     FILE        *input;
     GBT_TREE    *tree;
@@ -1449,7 +1449,9 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr)
                 bootstrap_scale = 0.01;
             }
             if (max_found_branchlen >= 1.01) { // branchlengths had range [0;100]
-                branchlen_scale = 0.01;
+                if (allow_length_scaling) {
+                    branchlen_scale = 0.01;
+                }
             }
 
             GBT_scale_tree(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
