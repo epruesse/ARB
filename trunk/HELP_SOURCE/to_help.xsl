@@ -55,11 +55,11 @@
 
   <!--insert-link-->
   <xsl:template name="insert-link">
-
     <xsl:param name="address"/>
     <xsl:param name="linktext"/>
 
-    <xsl:value-of select="$linktext"/> [see: <xsl:value-of select="$address"/><xsl:text>]</xsl:text>
+    <xsl:copy-of select="$address"/>
+<!--    [see: <xsl:value-of select="$address"/><xsl:text>]</xsl:text>-->
   </xsl:template>
 
   <!--insert-email-link-->
@@ -83,25 +83,31 @@
 
   </xsl:template>
 
-  <!--MAIL-->
-  <xsl:template match="MAIL">
-    <xsl:call-template name="insert-email-link">
-      <xsl:with-param name="linktext" select="@text"/>
-      <xsl:with-param name="address" select="@to"/>
-      <xsl:with-param name="subject" select="@subj"/>
-    </xsl:call-template>
-  </xsl:template>
+  <!-- ======================== -->
+  <!--     link-to-document     -->
+  <!-- ======================== -->
+  <xsl:template name="link-to-document">
+    <xsl:param name="doc"/>
+    <xsl:param name="missing"/>
 
-  <!--LINK-->
-  <xsl:template match="LINK">
-    <xsl:call-template name="insert-link">
-      <xsl:with-param name="address" select="@href"/>
-      <xsl:with-param name="linktext">
-	<xsl:apply-templates/>
-      </xsl:with-param>
-    </xsl:call-template>
+    <xsl:choose>
+      <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
+        <value-of select="{concat($postscriptpath,$doc,'.gz')}"/>
+      </xsl:when>
+      <xsl:otherwise>
+          <xsl:choose>
+            <xsl:when test="$missing='1'">
+              <xsl:value-of select="concat('Missing Link to ',$doc,'.hlp')"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:for-each select="document(concat($xml_location,'/',$doc,'.xml'))">
+                <xsl:for-each select="PAGE/TITLE">TOPIC &acute;<xsl:copy-of select="normalize-space(text())"/>&acute;</xsl:for-each>
+              </xsl:for-each>
+            </xsl:otherwise>
+          </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
-
 
   <!-- =============== -->
   <!--     uplinks     -->
@@ -217,6 +223,8 @@
     <xsl:param name="text"/>
     <xsl:param name="prefix" select="''"/>
 
+<!--    <xsl:text>{</xsl:text><xsl:copy-of select="$text"/><xsl:text>}</xsl:text>-->
+
     <xsl:variable name="printlen"><xsl:value-of select="$width - string-length($indent)"/></xsl:variable>
     <xsl:variable name="textlen"><xsl:value-of select="string-length($text)"/></xsl:variable>
 
@@ -288,28 +296,74 @@
   </xsl:template>
 
   <xsl:template match="text()" mode="reflow">
-    <xsl:variable name="indent"><xsl:apply-templates mode="calc-indent" select=".."/></xsl:variable>
-    <xsl:variable name="prefix"><xsl:apply-templates mode="calc-prefix" select="../.."/></xsl:variable>
-
-    <xsl:call-template name="reflow-paragraph">
-      <xsl:with-param name="indent" select="$indent"/>
-      <xsl:with-param name="text" select="normalize-space(.)"/>
-      <xsl:with-param name="prefix" select="$prefix"/>
-    </xsl:call-template>
+    <xsl:call-template name="error"><xsl:with-param name="text">Illegal text in reflow-mode</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <xsl:template match="text()" mode="preformatted">
-    <xsl:variable name="indent"><xsl:apply-templates mode="calc-indent" select=".."/></xsl:variable>
-    <xsl:variable name="prefix"><xsl:apply-templates mode="calc-prefix" select="../.."/></xsl:variable><!--currently ignored-->
+    <xsl:call-template name="error"><xsl:with-param name="text">Illegal text in preformatted-mode</xsl:with-param></xsl:call-template>
+  </xsl:template>
 
-    <xsl:call-template name="indent-preformatted">
-      <xsl:with-param name="indent" select="$indent"/>
-      <xsl:with-param name="text" select="."/>
-      <xsl:with-param name="prefix" select="$prefix"/>
-    </xsl:call-template>
+  <xsl:template match="LINK" mode="expand-links">
+    <xsl:choose>
+      <xsl:when test="@type='help'">
+        <xsl:call-template name="link-to-document">
+          <xsl:with-param name="doc" select="@dest"/>
+          <xsl:with-param name="missing"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:when test="@type='www'">
+        <xsl:call-template name="insert-link">
+          <xsl:with-param name="linktext"><xsl:value-of select="@dest"/></xsl:with-param>
+          <xsl:with-param name="address"><xsl:value-of select="@dest"/></xsl:with-param>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:when test="@type='email'">
+        <xsl:call-template name="insert-email-link">
+          <xsl:with-param name="linktext"><xsl:value-of select="@dest"/></xsl:with-param>
+          <xsl:with-param name="address"><xsl:value-of select="@dest"/></xsl:with-param>
+          <xsl:with-param name="subject" select="concat('Concerning helppage ',$myname)"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="error"><xsl:with-param name="text">Unknown type '<xsl:value-of select="@type"/>'</xsl:with-param></xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="text()" mode="expand-links">
+    <xsl:value-of select="."/>
+  </xsl:template>
+
+  <xsl:template match="*" mode="expand-links">
+    <xsl:call-template name="error"><xsl:with-param name="text">Illegal content for expand-links</xsl:with-param></xsl:call-template>
   </xsl:template>
 
   <xsl:template match="T">
+    <xsl:variable name="indent"><xsl:apply-templates mode="calc-indent" select=".."/></xsl:variable>
+    <xsl:variable name="prefix"><xsl:apply-templates mode="calc-prefix" select="../.."/></xsl:variable>
+    <xsl:variable name="text"><xsl:apply-templates mode="expand-links"/></xsl:variable>
+
+    <xsl:choose>
+      <xsl:when test="@reflow='1'">
+        <xsl:call-template name="reflow-paragraph">
+          <xsl:with-param name="indent" select="$indent"/>
+          <xsl:with-param name="text" select="normalize-space($text)"/>
+          <xsl:with-param name="prefix" select="$prefix"/>
+        </xsl:call-template>
+        <xsl:text>&br;</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="indent-preformatted">
+          <xsl:with-param name="indent" select="$indent"/>
+          <xsl:with-param name="text" select="$text"/>
+          <xsl:with-param name="prefix" select="$prefix"/>
+        </xsl:call-template>
+        <xsl:text>&br;</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="T" mode="disabled">
     <xsl:choose>
       <xsl:when test="@reflow='1'"><xsl:apply-templates mode="reflow"/></xsl:when>
       <xsl:otherwise><xsl:apply-templates mode="preformatted"/></xsl:otherwise>
