@@ -523,7 +523,7 @@ void MG_transfer_fields_cb(AW_window *aww){
     }
     if (!strcmp(field,"name")) {
         delete field;
-        aw_message("ERROR: You are not allowed to transfer the names field");
+        aw_message("ERROR: You are not allowed to transfer the name field");
         return;
     }
 
@@ -549,7 +549,8 @@ void MG_transfer_fields_cb(AW_window *aww){
     MG_remaps rm(gb_merge,gb_dest,aww->get_root());
     for (gb_species1 = GBT_first_species(gb_merge);
          gb_species1;
-         gb_species1 = GBT_next_species(gb_species1)){
+         gb_species1 = GBT_next_species(gb_species1))
+    {
         if (IS_QUERIED(gb_species1)) {
             gb_name1 = GB_find(gb_species1,"name",0,down_level);
             if (!gb_name1) continue;	// no name what happend ???
@@ -681,7 +682,7 @@ void MG_move_field_cb(AW_window *aww){
 	}
 	if (!strcmp(field,"name")) {
 		delete field;
-		aw_message("ERROR: You are not allowed to transfer the names field");
+		aw_message("ERROR: You are not allowed to transfer the name field");
 		return;
 	}
 
@@ -1177,7 +1178,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.ere_pos_fig	      = "ere1";
     awtqs.by_pos_fig	      = "by1";
     awtqs.qbox_pos_fig	      = "qbox1";
-    awtqs.rescan_pos_fig	  = 0;
+    awtqs.rescan_pos_fig	  = "rescan1";
     awtqs.key_pos_fig	      = 0;
     awtqs.query_pos_fig	      = "content1";
     awtqs.result_pos_fig	  = "result1";
@@ -1211,7 +1212,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.ere_pos_fig	      = "ere2";
     awtqs.by_pos_fig	      = "by2";
     awtqs.qbox_pos_fig	      = "qbox2";
-    awtqs.rescan_pos_fig	  = 0;
+    awtqs.rescan_pos_fig	  = "rescan2";
     awtqs.key_pos_fig	      = 0;
     awtqs.query_pos_fig	      = "content2";
     awtqs.result_pos_fig	  = "result2";
@@ -1238,7 +1239,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
 
     aws->at("transsspec");
     aws->callback(MG_transfer_selected_species);
-    aws->create_button("TRANSFER_SELECTED_DELETE_DUOLICATED",
+    aws->create_button("TRANSFER_SELECTED_DELETE_DUPLICATED",
                        "TRANSFER\nSELECTED\nSPECIES\n\nDELETE\nDUPLICATE\nIN DB II","T");
 
     aws->at("translspec");
