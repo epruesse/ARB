@@ -6,43 +6,51 @@ using namespace std;
 
 SQ_GroupData::SQ_GroupData(){
     size = 0;
+    initialised=false;
 }
 
-void SQ_GroupData::SQ_init_consensus(size_t size){
+void SQ_GroupData::SQ_init_consensus(int size){
     this->size = size;
 
     // two dimensional array
     consensus = new int *[size];
-    for ( size_t i=0; i < size; i++ ){
-	consensus[i] = new int [6];
+    for (int i=0; i < size; i++ ){
+	consensus[i] = new int [7];
     }
-    for ( size_t i=0; i < size; i++ ){
-	for (int j = 0; i<6; i++) {
+    for (int i=0; i < size; i++ ){
+	for (int j=0; j<7; j++) {
 	    consensus[i][j] = 0;
 	}
     }
+    initialised=true;
 }
 
 
-void SQ_GroupData::SQ_add_consensus(int **consensus_add) {
+void SQ_GroupData::SQ_add_consensus(int value, int row, int col) {
 
-    for ( size_t i=0; i < size; i++ ){
-	for (int j = 0; i<6; i++) {
-	    consensus[i][j] = consensus[i][j] + consensus_add[i][j];
-	}
-    }
+    consensus[row][col] = consensus[row][col] + value;
+
 }
 
 int **SQ_GroupData::SQ_get_consensus() {
-    return (consensus);
+    
+    return consensus;
+
 }
 
 
-void SQ_GroupData::SQ_print_on_screen() {
+bool SQ_GroupData::SQ_is_initialised() {
+    
+    return initialised;
 
-    for ( size_t i=0; i < size; i++ ){
+}
 
-	printf("%i",consensus[i][0]);
-	
+
+int SQ_GroupData::SQ_print_on_screen() {
+    for (int i=0; i < size; i++ ){
+	for (int j = 0; j<7; j++) {
+	    printf("%i",consensus[i][j]);
+	}
     }
+    return (0);
 }

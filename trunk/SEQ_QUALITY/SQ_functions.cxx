@@ -158,6 +158,11 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 
 		    /*calculate consensus sequence*/
 		    {
+			bool init;
+			init = globalData.SQ_is_initialised();
+			if (init==false){
+			    globalData.SQ_init_consensus(sequenceLength);
+			}
 			SQ_consensus consens(sequenceLength);
 			consens.SQ_calc_consensus(rawSequence);
  			int consensus[sequenceLength][7];
@@ -168,8 +173,12 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 				consensus[i][j] = *pp;
 			    }
 			}
-			globalData.SQ_init_consensus(sequenceLength);
-			//globalData.SQ_add_consensus(consensus);
+			//globalData.SQ_init_consensus(sequenceLength);
+			for(int i = 0; i < sequenceLength; i++) {
+			    for(int j = 0; j < 7; j++) {
+				globalData.SQ_add_consensus(consensus[i][j],i,j);
+			    }
+			}
 			free(consensus);
 		    }
 
