@@ -18,6 +18,7 @@
 #include "GEN_gene.hxx"
 #include "GEN_local.hxx"
 #include "GEN_nds.hxx"
+#include "GEN_tools.hxx"
 
 // Standard fields of a gb_gene entry:
 // -----------------------------------
@@ -54,55 +55,43 @@ void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
     complement = gbd ? GB_read_byte(gbd) == 1 : false;
 
 }
-//  ------------------------------------------------
-//      void GEN_gene::load_positions(int part)
-//  ------------------------------------------------
-void GEN_gene::load_positions(int part) {
-    GBDATA *gbd;
 
-    if (part == 1) {
-        gbd  = GB_find(gb_gene, "pos_begin", 0, down_level);
-        pos1 = gbd ? GB_read_int(gbd) : -1L;
+GB_ERROR GEN_gene::load_positions(int part) {
+    gen_assert(part >= 1);
 
-        gbd  = GB_find(gb_gene, "pos_end", 0, down_level);
-        pos2 = gbd ? GB_read_int(gbd) : -1L;
-    }
-    else {
-        gen_assert(part>1);
+    const char *pos_begin_name = GEN_pos_begin_entry_name(part);
+    const char *pos_end_name   = GEN_pos_end_entry_name(part);
 
-        const char *real_field_name = GBS_global_string("pos_begin%i", part);
-        gbd                         = GB_find(gb_gene, real_field_name, 0, down_level);
-        pos1                        = gbd ? GB_read_int(gbd) : -1L;
+    GBDATA *gb_begin = GB_find(gb_gene, pos_begin_name, 0, down_level);
+    if (!gb_begin) return GBS_global_string("'%s' entry missing", pos_begin_name);
+    pos1             = GB_read_int(gb_begin);
 
-        real_field_name = GBS_global_string("pos_end%i", part);
-        gbd             = GB_find(gb_gene, real_field_name, 0, down_level);
-        pos2            = gbd ? GB_read_int(gbd) : -1L;
-    }
-}
-//  --------------------------------------------------------------
-//      GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_)
-//  --------------------------------------------------------------
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_) {
-    init(gb_gene_, root_);
-    load_positions(1);
+    GBDATA *gb_end = GB_find(gb_gene, pos_end_name, 0, down_level);
+    if (!gb_end) return GBS_global_string("'%s' entry missing", pos_end_name);
+    pos2           = GB_read_int(gb_end);
 
-    nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
+    return 0;
 }
 
-//  ------------------------------------------
-//      void GEN_gene::reinit_NDS() const
-//  ------------------------------------------
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, GB_ERROR& error) {
+    init(gb_gene_, root_);    
+    error = load_positions(1);
+    
+    if (!error) {
+        nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
+    }
+}
+
 void GEN_gene::reinit_NDS() const {
     nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }
-//  --------------------------------------------------------------------------------------------
-//      GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts)
-//  --------------------------------------------------------------------------------------------
-//  partNumber 1..n which part of a splitted gene
-//  maxParts   1..n of how many parts consists this gene?
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts) {
+
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts, GB_ERROR& error) {
+    //  partNumber 1..n which part of a splitted gene
+    //  maxParts   1..n of how many parts consists this gene?
+
     init(gb_gene_, root_);
-    load_positions(partNumber);
+    error = load_positions(partNumber);
 
     {
         char buffer[30];
@@ -160,16 +149,26 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                     }
 
                     if (show_this) {
-                        GBDATA *gbd    = GB_find(gb_gene, "pos_joined", 0, down_level);
-                        int     joined = gbd ? GB_read_int(gbd) : 0;
+                        GBDATA   *gbd     = GB_find(gb_gene, "pos_joined", 0, down_level);
+                        int       joined  = gbd ? GB_read_int(gbd) : 0;
+                        GB_ERROR  warning = 0;
 
                         if (joined) {
                             for (int j = 1; j <= joined; ++j) { // insert all parts
-                                gene_set.insert(GEN_gene(gb_gene, this, j, joined));
+                                GEN_gene gene(gb_gene, this, j, joined, warning);
+                                if (!warning) gene_set.insert(gene);
+                                else     break; // abort
                             }
                         }
-                        else {
-                            gene_set.insert(GEN_gene(gb_gene, this)); // insert normal (unsplitted) gene
+                        else { // insert normal (unsplitted) gene
+                            GEN_gene gene(gb_gene, this, warning);
+                            if (!warning) gene_set.insert(gene);
+                        }
+
+                        if (warning) {
+                            GBDATA     *gb_name = GB_find(gb_gene, "name", 0, down_level);
+                            const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unnamed>";
+                            aw_message(GBS_global_string("%s in gene '%s'", warning, name));
                         }
                     }
                     gb_gene = GEN_next_gene(gb_gene);
