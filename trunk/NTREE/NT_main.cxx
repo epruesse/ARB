@@ -32,19 +32,17 @@ GBDATA *gb_main;
 NT_global nt = { 0, 0, 0, AW_FALSE };
 
 
-void
-serve_db_interrupt(AW_root *awr){
+void serve_db_interrupt(AW_root *awr){
     GB_BOOL succes = GBCMS_accept_calls(gb_main,GB_FALSE);
     while (succes){
-	awr->check_for_remote_command((AW_default)gb_main,AWAR_NT_REMOTE_BASE);
-	succes = GBCMS_accept_calls(gb_main,GB_TRUE);
+        awr->check_for_remote_command((AW_default)gb_main,AWAR_NT_REMOTE_BASE);
+        succes = GBCMS_accept_calls(gb_main,GB_TRUE);
     }
 
     awr->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);
 }
 
-void
-check_db_interrupt(AW_root *awr){
+void check_db_interrupt(AW_root *awr){
     awr->check_for_remote_command((AW_default)gb_main,AWAR_NT_REMOTE_BASE);
     awr->add_timed_callback(NT_CHECK_DB_TIMER,(AW_RCB)check_db_interrupt,0,0);
 }
