@@ -1,7 +1,7 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx
 
-CPP_OBJECTS = SQ_main.o
+CPP_OBJECTS = SQ_main.o SQ_functions.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
