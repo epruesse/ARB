@@ -10,6 +10,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_imp_exp.hxx>
 #include <cat_tree.hxx>
@@ -121,7 +122,7 @@ enum ExportNodeType {
 };
 
 void update_filter_cb(AW_root *root){
-    const char     *filter_type = 0;
+    const char *filter_type = 0;
 
     switch (ExportTreeType(root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
         case AD_TREE_EXPORT_FORMAT_XML: filter_type = "xml"; break;
@@ -138,13 +139,6 @@ void update_filter_cb(AW_root *root){
 
     nt_assert(filter_type);
     root->awar(AWAR_TREE_EXPORT_FILTER)->write_string(filter_type);
-
-    //  switch(exportType){
-    //         case AD_TREE_EXPORT_NDS: root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("tree"); break;
-    //         case AD_TREE_EXPORT_ORS: root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("otb"); break;
-    //         case AD_TREE_EXPORT_PLAIN:   root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("ntree"); break;
-    //         default: nt_assert(0); break;
-    //  }
 }
 
 void create_trees_var(AW_root *aw_root, AW_default aw_def)
@@ -154,9 +148,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int(  AWAR_TREE_SECURITY,     0,  aw_def );
     aw_root->awar_string( AWAR_TREE_REM,        0,  aw_def );
 
-    aw_root->awar_string( AWAR_TREE_EXPORT "/file_name", "treefile",aw_def);
-    aw_root->awar_string( AWAR_TREE_EXPORT "/directory", "",    aw_def);
-    aw_root->awar_string( AWAR_TREE_EXPORT_FILTER, "tree",  aw_def);
+    aw_create_selection_box_awars(aw_root, AWAR_TREE_EXPORT, "", ".tree", "treefile", aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
     aw_root->awar_int(AWAR_TREE_EXPORT_NDS , AD_TREE_EXPORT_NODE_SPECIES_NAME, aw_def)-> add_callback(update_filter_cb);
 
@@ -165,9 +157,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS , 0, aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES , 1, aw_def);
 
-    aw_root->awar_string( AWAR_TREE_IMPORT "/file_name", "treefile",aw_def);
-    aw_root->awar_string( AWAR_TREE_IMPORT "/directory", "",    aw_def);
-    aw_root->awar_string( AWAR_TREE_IMPORT "/filter", "tree",   aw_def);
+    aw_create_selection_box_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
 
     aw_root->awar_string( AWAR_TREE_IMPORT "/tree_name", "tree_",   aw_def) ->set_srt( GBT_TREE_AWAR_SRT);
 
@@ -400,9 +390,9 @@ void tree_load_cb(AW_window *aww){
     if(strcmp(pcTreeFormat,"xml")==0) {
         char *tempFname = readXmlTree(fname);
         tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1);
-        char *command = GBS_global_string_copy("rm %s", tempFname); 
+        char *command = GBS_global_string_copy("rm %s", tempFname);
         system(command); //deleting the temporary file
-        free(command); 
+        free(command);
         free(tempFname);
     }
     else {
@@ -422,7 +412,7 @@ void tree_load_cb(AW_window *aww){
         aww->hide();
         aw_root->awar(AWAR_TREE)->write_string(tree_name);  // show new tree
     }
-    
+
     free(fname);
     free(tree_name);
     free(pcTreeFormat);
@@ -672,7 +662,7 @@ void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
     }
     else {
         aw_message("Not implemented yet.");
-        // @@@ FIXME: implement other cases 
+        // @@@ FIXME: implement other cases
     }
 }
 
