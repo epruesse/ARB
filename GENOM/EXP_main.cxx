@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Feb/25/2003 09:59 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 23:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -133,7 +133,8 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
     else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
 
     {
-        AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window, 0 );
+        AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,EXP_popup_experiment_window, 0, 0);
+//         AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window, 0 );
         AWMIMT( "experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
 
         EXP_create_mask_submenu(awm);
