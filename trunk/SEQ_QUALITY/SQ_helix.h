@@ -33,7 +33,7 @@ public:
 
 
 private:
-    const char * sequence;
+//    const char * sequence;
     int count_strong_helix;
     int count_weak_helix;
     int count_no_helix;
@@ -45,9 +45,9 @@ private:
 
 SQ_helix::SQ_helix(int size){
     this->size = size;
-    count_strong_helix      = 0;
-    count_weak_helix = 0;
-    count_no_helix   = 0;
+    count_strong_helix = 0;
+    count_weak_helix   = 0;
+    count_no_helix     = 0;
 }
 
 
@@ -112,21 +112,21 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char 
 }
 
 
-inline int SQ_helix::SQ_get_strong_helix() const {
+int SQ_helix::SQ_get_strong_helix() const {
     int i;
     i = count_strong_helix;
     return i;
 }
 
 
-inline int SQ_helix::SQ_get_weak_helix() const {
+int SQ_helix::SQ_get_weak_helix() const {
     int i;
     i = count_weak_helix;
     return i;
 }
 
 
-inline int SQ_helix::SQ_get_no_helix() const {
+int SQ_helix::SQ_get_no_helix() const {
     int i;
     i = count_no_helix;
     return i;

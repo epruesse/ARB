@@ -136,6 +136,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
 	    int value = SQ_get_value(gb_main, option);
 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
+	    //globalData->SQ_print_on_screen();
 	    delete globalData;
 	}
 

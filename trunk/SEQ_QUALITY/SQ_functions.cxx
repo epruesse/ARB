@@ -270,7 +270,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
-
     int avg_bases           = 0;
     int worked_on_sequences = 0;
 
@@ -348,8 +347,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    /*calculate consensus sequence*/
 		    {
 			bool init;
-//  			int *pp;
-// 			int p;
 
 			init = globalData->SQ_is_initialised();
 			if (init==false){
@@ -357,13 +354,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 			}
 			SQ_consensus* consens = new SQ_consensus(sequenceLength);
 			consens->SQ_calc_consensus(rawSequence);
-// 			for(int i = 0; i < sequenceLength; i++) {
-// 			    for(int j = 0; j < 7; j++) {
-//  				pp = consens->SQ_get_consensus(i,j);
-//  				p = *pp;
-// 				globalData->SQ_add_consensus(p,i,j);
-// 			    }
-// 			}
                         for(int i = 0; i < sequenceLength; i++) {
                             globalData->SQ_add_consensus_column(i, consens->SQ_get_consensus(i));
                         }
@@ -450,7 +440,6 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
-		    //int temp                = 0;
 		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);

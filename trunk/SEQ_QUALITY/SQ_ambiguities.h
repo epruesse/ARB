@@ -100,6 +100,10 @@ void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length, GBDATA 
     GBDATA *gb_result1 = GB_search(gb_quality, "iupac_value", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, iupac_value);
+
+    GBDATA *gb_result2 = GB_search(gb_quality, "number_of_ambiguities", GB_INT);
+    seq_assert(gb_result2);
+    GB_write_int(gb_result2, number);
 }
 
 
