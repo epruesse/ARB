@@ -148,15 +148,20 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
 
 /***********************	FIELD INFORMATIONS 	************************/
-AW_CL awt_create_selection_list_on_scandb(GBDATA     *gb_main,AW_window *aws,
-                                          const char *varname, long type_filter,
-                                          const char *scan_xfig_label,
-                                          const char *rescan_xfig_label,
-                                          const ad_item_selector *selector);
-			/* show fields of a species / extended / gene !!!
-			type filter is a bitstring which controls what types are shown in
-			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
-			ints and strings */
+AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
+                                          AW_window              *aws,
+                                          const char             *varname,
+                                          long                    type_filter,
+                                          const char             *scan_xfig_label,
+                                          const char             *rescan_xfig_label,
+                                          const ad_item_selector *selector,
+                                          size_t                  columns,
+                                          size_t                  visible_rows,
+                                          AW_BOOL                 sel_list = true);
+/* show fields of a species / extended / gene !!!
+   type filter is a bitstring which controls what types are shown in
+   the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
+   ints and strings */
 
 
 void awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
