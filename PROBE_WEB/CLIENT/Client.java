@@ -11,11 +11,12 @@ class Client
 {
 
 private ProbesGUI     display;
-private TreeDisplay   tree;
+// private TreeDisplay   tree;
 private TreeNode      root;
 private String        treeString;
 private String        baseurl;
 private HttpSubsystem webAccess;
+private GroupCache    groupCache;
 
 private HashMap knownOptions()
      {
@@ -138,6 +139,7 @@ public static void main(String[] args)
 public Client()
     {
         //        display = new ProbesGUI();
+        groupCache        = new GroupCache();
     }
 
 public ProbesGUI getDisplay()
@@ -145,8 +147,38 @@ public ProbesGUI getDisplay()
         return display;
     }
 
+public void matchProbes(String probeInfo) {
+    root.markSubtree(false);    // unmark all
+
+    if (probeInfo != null) {
+        int komma1 = probeInfo.indexOf(',');
+        int komma2 = probeInfo.indexOf(',', komma1+1);
+
+        if (komma1 == -1 || komma2 == -1) {
+            System.out.println("Kommas expected in '"+probeInfo+"'");
+        }
+        else {
+            String groupId = probeInfo.substring(komma2+1);
+            String members = groupCache.getGroupMembers(webAccess, groupId, komma1);
+
+            if (members == null) {
+                System.out.println("Error during probe match: "+groupCache.getError());
+            }
+            else {
+                System.out.println("Members='"+members+"'");
+                root.markSpecies(","+members+",");
+            }
+        }
+    }
+    display.getTreeDisplay().repaint();
+}
+
 public void updateNodeInformation(String encodedPath)
     {
+        ProbeList list = display.getProbeList();
+        list.clear();
+        list.add("wait..");
+
         String       answer       = webAccess.retrieveNodeInformation(encodedPath);
         ServerAnswer parsedAnswer = new ServerAnswer(answer, true, true);
 
@@ -155,7 +187,11 @@ public void updateNodeInformation(String encodedPath)
             System.out.println("Error while retrieving probe information: "+error);
         }
         else {
-            display.setProbeListContents(parsedAnswer);
+            list.setContents(parsedAnswer);
+
+            // testing only :
+            String probe_info = list.getProbeInfo(0); // simulate selection of first probe in list
+            matchProbes(probe_info);
         }
     }
 }
