@@ -23,19 +23,23 @@ $(GDE_HLP) : $(STD) Makefile
 
 copyright.hlp : $(ARBHOME)/arb_LICENSE.txt
 	cp $(STD) $@
+	echo "# BUILD FROM: $<" >>$@
 	cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
 
 changes.hlp : $(ARBHOME)/arb_CHANGES.txt
 	cp $(STD) $@
+	echo "# BUILD FROM: $<" >>$@
 	cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
 
 agde_%.hlp : $(GDEDIR)/%.help
 	cp $(STD) $@
+	echo "# BUILD FROM: $<" >>$@
 	echo "UP agde.hlp" >>$@
 	cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
 
 agde.hlp: $(GDE_HLP) agde.footer
 	cp $(STD) $@
+	echo "# BUILD FROM: $<" >>$@
 	ls agde_*.hlp | grep -v 'agde_.*_sub'| sed -e 's/^/SUB /' >>$@
 	cat agde.footer >>$@
 
