@@ -416,7 +416,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(10000,1);
+                    was_marked = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
                     for (GBDATA *gbd = GBT_first_marked_species(gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
@@ -506,7 +506,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     }
 
     GB_transaction dummy2(gb_main);     // open close transaction
-    GB_HASH *used = GBS_create_hash(10000,0);
+    GB_HASH *used = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);
     void *topfile = GBS_stropen(1000);
     void *topmid = GBS_stropen(10000);
     {

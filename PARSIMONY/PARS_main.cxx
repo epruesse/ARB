@@ -477,7 +477,7 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
             GBDATA *gb_species = GBT_find_species(gb_main,name);
             if (gb_species)
             {
-                hash = GBS_create_hash(1000,0);
+                hash = GBS_create_hash(10,0);
                 GBS_write_hash(hash,name,(long)gb_species);
             }
             else

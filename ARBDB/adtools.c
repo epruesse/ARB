@@ -2390,7 +2390,7 @@ GB_ERROR GBT_message(GBDATA *gb_main, const char *msg)
 
 GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ncase)
 {
-    GB_HASH *hash = GBS_create_hash(10000,ncase);
+    GB_HASH *hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,ncase);
     GBDATA *gb_species;
     GBDATA *gb_name;
     for (   gb_species = GBT_first_species(gb_main);
@@ -2405,7 +2405,7 @@ GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ncase)
 
 GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
 {
-    GB_HASH *hash = GBS_create_hash(10000,0);
+    GB_HASH *hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);
     GBDATA *gb_species;
     GBDATA *gb_name;
     for (   gb_species = GBT_first_marked_species(gb_main);
