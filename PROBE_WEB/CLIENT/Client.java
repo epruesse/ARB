@@ -61,7 +61,7 @@ class Client
             error = tr.getError();
 
             if (error != null) {
-                // System.out.println("Can't access the tree ("+error+")");
+                System.out.println("Can't access the tree ("+error+")");
                 localTreeVersion = "none";
             }
             else {
