@@ -288,7 +288,8 @@ void SAI_graphic::paint(AW_device *device) {
 
     if(g_pbdata){
         device->text(SAI_GC_FOREGROUND,  "Species",0,10, 0, 1, 0, 0, 0); 
-        list<const char*>::iterator i; char *tmp;
+        list<const char*>::iterator i;
+        char *tmp;
         if (!g_pbdata->probeSpecies.empty()) {
             for ( i = g_pbdata->probeSpecies.begin(); i != g_pbdata->probeSpecies.end(); ++i ) {
                 tmp = strdup((const char*) * i); 
@@ -313,13 +314,14 @@ void SAI_graphic::paint(AW_device *device) {
         if (!g_pbdata->probeSeq.empty()) {
             for(i=g_pbdata->probeSeq.begin();i!=g_pbdata->probeSeq.end();++i){
                 tmp1 = strdup((const char*)*i);
-                tmp2 = strtok(tmp1," "); int tag = 0;
-                while (tmp2 = strtok(0," ")) {
+                tmp2 = strtok(tmp1," ");
+                int tag = 0;
+                while ((tmp2 = strtok(0," "))) {
                     if(tag==5) startPosStr = strdup((const char*)tmp2);
                     probeRegion = strdup((const char*)tmp2); //getting only probe region
                     tag++;
                 }
-                probeRegion = strtok(probeRegion,"-"); 
+                probeRegion = strtok(probeRegion,"-");
 
 
 
@@ -334,7 +336,7 @@ void SAI_graphic::paint(AW_device *device) {
                 // probe region 
                 saiCols  = translateSAItoColors(aw_root, startPos, endPos, PROBE); 
                 bool bProbeReg = true;
-                while (probeRegion = strtok(0,"-")) {
+                while ((probeRegion = strtok(0,"-"))) {
                     pbRgTmp = strdup((const char*)probeRegion);
                     if (bProbeReg) {
                      for (unsigned int j = 0; j<strlen(pbRgTmp);j++) {
