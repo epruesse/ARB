@@ -37,10 +37,12 @@ AW_window *GEN_create_gene_window(AW_root *aw_root);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
 AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas);
 
-void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas);
+void       GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas);
 
 // --------------------------------------------------------------------------------
 // genes:
+
+#define ARB_HIDDEN "ARB_display_hidden"
 
 GBDATA* GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root); // uses AWAR_ORGANISM_NAME
 GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root); // uses AWAR_ORGANISM_NAME

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue May/21/2002 13:53 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/11/2002 18:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -117,6 +117,10 @@ static void EXP_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window);
 }
 
+static AW_window *EXP_create_experiment_colorize_window(AW_root *aw_root) {
+    return awt_create_item_colorizer(aw_root, gb_main, &EXP_item_selector);
+}
+
 #define AWMIMT awm->insert_menu_topic
 //  -------------------------------------------------------------------------------------
 //      void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu)
@@ -133,6 +137,9 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
         AWMIMT( "experiment_search",	"Search and Query",			"",	"experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
 
         EXP_create_mask_submenu(awm);
+
+        awm->insert_separator();
+        AWMIMT( "experiment_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
     }
     if (submenu) awm->close_sub_menu();
 }
