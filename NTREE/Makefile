@@ -29,8 +29,12 @@ nt_date_update:
 	echo '#define DATE_YEAR' `date '+"%Y"'`   >> nt_date.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_date.h.tmp nt_date.h
 
-#nt_date_dummy:
-#	$(MAKE) nt_date.h
+# explicit date dependencies
+
+NT_main.o: nt_date.h
+
+NT_extern.o: nt_date.h
+
 
 proto:
 	rm -f nt_internal.h
@@ -117,6 +121,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -143,6 +148,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -158,6 +164,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -171,6 +178,7 @@ AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -198,6 +206,7 @@ ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -286,6 +295,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -364,6 +374,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
