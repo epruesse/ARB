@@ -327,14 +327,20 @@ public:
     virtual     AP_tree *dup(void);
 
     virtual GB_ERROR insert(AP_tree *new_brother);
-    virtual GB_ERROR remove(void);          // no delete of father
-    virtual GB_ERROR swap_assymetric(AP_TREE_SIDE modus);   // 0=AP_LEFT_son  1=AP_RIGHT_son
-    void swap_sons(void);           // exchange sons
-    virtual GB_ERROR move(AP_tree *new_brother,AP_FLOAT rel_pos);   // move to new brother
+    virtual GB_ERROR remove(void); // no delete of father
+    virtual GB_ERROR swap_assymetric(AP_TREE_SIDE modus); // 0 = AP_LEFT_son  1=AP_RIGHT_son
+    void             swap_sons(void); // exchange sons
+    virtual GB_ERROR move(AP_tree *new_brother,AP_FLOAT rel_pos); // move to new brother
     virtual GB_ERROR set_root(void);
-    virtual void delete_tree(void);
+    virtual void     delete_tree(void);
     virtual GB_ERROR remove_leafs(GBDATA *gb_main,int awt_remove_type);
-    virtual void remove_bootstrap(GBDATA *);
+    
+    void remove_bootstrap(GBDATA *); // remove bootstrap values from subtree
+    void reset_branchlengths(GBDATA *); // reset branchlengths of subtree to 0.1
+    void scale_branchlengths(GBDATA *gb_main, double factor); 
+    void bootstrap2branchlen(GBDATA *); // copy bootstraps to branchlengths
+    void branchlen2bootstrap(GBDATA *); // copy branchlengths to bootstraps
+
     virtual void test_tree(void) const;
 
     virtual AP_FLOAT costs(void);       /* cost of a tree (number of changes ..)*/
