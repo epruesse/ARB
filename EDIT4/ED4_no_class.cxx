@@ -1918,6 +1918,42 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         char *new_species_name = 0;        
         char *acc = 0;
         
+        enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
+        enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
+        ED4_terminal *cursor_terminal = 0;
+	
+        if (!error) {
+            if (creation_mode==CREATE_FROM_CONSENSUS || creation_mode==COPY_SPECIES) { 
+                ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+	    
+                if (cursor->owner_of_cursor) {
+                    cursor_terminal = cursor->owner_of_cursor->to_terminal();
+		
+                    if (cursor_terminal->parent->parent->flag.is_consensus) {
+                        where_we_are = ON_KONSENSUS;
+                    }
+                    else {
+                        where_we_are = ON_SPECIES;
+                    }
+                }
+            }
+            
+            if (creation_mode==COPY_SPECIES || (creation_mode==CREATE_FROM_CONSENSUS && dataSource==COPY_FIELDS)) {
+                if (where_we_are==ON_SPECIES) {
+                    ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
+                    char *source_name = spec_name->resolve_pointer_to_string();
+                    GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);                    
+                    GBDATA *gb_acc = GB_search(gb_source, "acc", GB_FIND);
+                    
+                    if (gb_acc) { // if has accession
+                        acc = GB_read_string(gb_acc);
+                    }
+                }
+                else {
+                    error = "Please place cursor on a species";                    
+                }
+            }
+        }
         
         if (!error) {
             error = generate_one_name(gb_main, new_species_full_name, acc, new_species_name);        
@@ -1959,25 +1995,6 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         if (!error) {
             GBDATA *gb_new_species = 0;
             
-            enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
-            enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
-            ED4_terminal *cursor_terminal = 0;
-	
-            if (creation_mode==CREATE_FROM_CONSENSUS || creation_mode==COPY_SPECIES) { 
-                ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-	    
-                if (cursor->owner_of_cursor) {
-                    cursor_terminal = cursor->owner_of_cursor->to_terminal();
-		
-                    if (cursor_terminal->parent->parent->flag.is_consensus) {
-                        where_we_are = ON_KONSENSUS;
-                    }
-                    else {
-                        where_we_are = ON_SPECIES;
-                    }
-                }
-            }
-	
             if (!error) {                
                 if (creation_mode==CREATE_NEW_SPECIES) { 
                     GBDATA *gb_created_species = GBT_create_species(gb_main, new_species_name);
@@ -2225,39 +2242,30 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     }
                 }
                 else { // copy species or create from consensus (copy fields from one species)
-                    if (where_we_are!=ON_SPECIES) {
-                        if (creation_mode==COPY_SPECIES) {
-                            error = "Please place cursor on the sequence to copy";
+                    e4_assert(where_we_are==ON_SPECIES);
+                    
+                    ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
+                    char *source_name = spec_name->resolve_pointer_to_string();
+                    GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
+		    
+                    if (gb_source) {
+                        gb_new_species = GB_create_container(gb_species_data, "species");
+                        error = GB_copy(gb_new_species, gb_source);
+                        if (!error) {
+                            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING); 
+                            error = GB_write_string(gb_name, new_species_name);
                         }
-                        else  {
-                            e4_assert(creation_mode==CREATE_FROM_CONSENSUS && dataSource==COPY_FIELDS);
-                            error = "Please place cursor on the sequence from which the fields should be copied";
+                        if (!error) { 
+                            GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
+                            error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
+                        }
+                        if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
+                            ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                            error = createDataFromConsensus(gb_new_species, group_man);
                         }
                     }
                     else {
-                        ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
-                        char *source_name = spec_name->resolve_pointer_to_string();
-                        GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
-		    
-                        if (gb_source) {
-                            gb_new_species = GB_create_container(gb_species_data, "species");
-                            error = GB_copy(gb_new_species, gb_source);
-                            if (!error) {
-                                GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING); 
-                                error = GB_write_string(gb_name, new_species_name);
-                            }
-                            if (!error) { 
-                                GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
-                                error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
-                            }
-                            if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
-                                ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                                error = createDataFromConsensus(gb_new_species, group_man);
-                            }
-                        }
-                        else {
-                            error = GB_export_error("Can't find species '%s'", source_name);
-                        }
+                        error = GB_export_error("Can't find species '%s'", source_name);
                     }
                 }
             }
