@@ -784,6 +784,96 @@ char *GBS_remove_escape(char *com)  /* \ is the escape charakter
     return result;
 }
 
+/********************************************************************************************
+                    escape/unescape characters in strings
+********************************************************************************************/
+
+char *GBS_escape_string(const char *str, const char *chars_to_escape, char escape_char) {
+    // uses a special escape-method, which eliminates all 'chars_to_escape' completely
+    // from str (this makes further processing of the string more easy)
+    //
+    // escape_char is the character used for escaping. For performance reasons it
+    // should be a character rarely used in 'str'.
+    //
+    // 'chars_to_escape' may not contain 'A'-'Z' (these are used for escaping)
+    // and it may not be longer than 26
+    //
+    // RETURN VALUE : heap copy of escaped string
+
+    int   len    = strlen(str);
+    char *buffer = (char*)malloc(2*len+1);
+    int   j      = 0;
+    int   i;
+
+    ad_assert(strlen(chars_to_escape)              <= 26);
+    ad_assert(strchr(chars_to_escape, escape_char) == 0); // escape_char may not be included in chars_to_escape
+
+    for (i = 0; str[i]; ++i) {
+        if (str[i] == escape_char) {
+            buffer[j++] = escape_char;
+            buffer[j++] = escape_char;
+        }
+        else {
+            const char *found = strchr(chars_to_escape, str[i]);
+            if (found) {
+                buffer[j++] = escape_char;
+                buffer[j++] = (found-chars_to_escape+'A');
+
+                ad_assert(found[0]<'A' || found[0]>'Z'); // illegal character in chars_to_escape
+            }
+            else {
+
+                buffer[j++] = str[i];
+            }
+        }
+    }
+    buffer[j] = 0;
+
+    return buffer;
+}
+
+char *GBS_unescape_string(const char *str, const char *escaped_chars, char escape_char) {
+    // undoes GB_escape_string
+    int   len    = strlen(str);
+    char *buffer = (char*)malloc(len+1);
+    int   j      = 0;
+    int   i;
+
+#if defined(DEBUG)
+    int escaped_chars_len = strlen(escaped_chars);
+#endif // DEBUG
+
+    ad_assert(strlen(escaped_chars)              <= 26);
+    ad_assert(strchr(escaped_chars, escape_char) == 0); // escape_char may not be included in chars_to_escape
+
+    for (i = 0; str[i]; ++i) {
+        if (str[i] == escape_char) {
+            if (str[i+1] == escape_char) {
+                buffer[j++] = escape_char;
+            }
+            else {
+                int idx = str[i+1]-'A';
+
+                ad_assert(idx >= 0 && idx<escaped_chars_len);
+                buffer[j++] = escaped_chars[idx];
+            }
+            ++i;
+        }
+        else {
+            buffer[j++] = str[i];
+        }
+    }
+    buffer[j] = 0;
+
+    return buffer;
+}
+
+
+
+/********************************************************************************************
+                    String streams
+********************************************************************************************/
+
 struct GBS_strstruct {
     char *GBS_strcat_data;
     long  GBS_strcat_data_size;
@@ -887,13 +977,13 @@ void gbs_strensure_mem(void *strstruct,long len){
 
 void GBS_strcat(void *strstruct,const char *ptr)    /* this function adds many strings. first create a strstruct with gbs_open */
 {
-    long    len;
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    len = strlen(ptr);
+    long                  len    = strlen(ptr);
+
     gbs_strensure_mem(strstruct,len);
     GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
     strstr->GBS_strcat_pos += len;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
+    strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
 }
 
 void GBS_strncat(void *strstruct,const char *ptr,long len)  /* this function adds many strings. first create a strstruct with gbs_open */
@@ -1783,7 +1873,7 @@ void GB_internal_error(const char *templat, ...) {
         GB_CORE;
     }
 #if defined(DEBUG)
-    else {        
+    else {
         fprintf(stderr,"Debug file %s not found -> continuing operation \n",
                 "$(ARBHOME)/do_core");
     }
