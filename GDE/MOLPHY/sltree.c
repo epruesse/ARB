@@ -7,10 +7,9 @@
 
 #include "protml.h"
 
-
 Tree *
 new_stree(maxspc, maxibrnch, numptrn, seqconint)
-int maxspc, maxibrnch;
+int maxspc, maxibrnch, numptrn;
 imatrix seqconint;
 {
 	int n, i;
@@ -169,7 +168,7 @@ Node *np;
 		cpi = cp->paths;
 		for (i = 0; i < Maxspc; i++, npi++, cpi++) {
 			if (*cpi == TRUE) *npi = *cpi;
-			
+
 		}
 	}
 /*	for (i=0; i<Maxspc; i++) printf("%1d",np->paths[i]);
@@ -821,8 +820,8 @@ Tree *tr;
 	prtopology(Ctree);
 	/* resulttree(Ctree); */
 
-	for (i = 0; i < Numspc; i++)    elenvec[i] = tr->ebrnchp[i]->length;
-	for (i = 0; i < Numibrnch; i++) ilenvec[i] = tr->ibrnchp[i]->length;
+	for (i = 0; i <  Numspc; i++)    elenvec[i] = tr->ebrnchp[i]->length;
+	for (i = 0; i <= Numibrnch; i++) ilenvec[i] = tr->ibrnchp[i]->length;
 	Numibrnch++; Numbrnch++;
 	for (i = 0; i < notu; i++) pairlkl[i] = -1.0e+37;
 	rp = tr->rootp;
@@ -850,7 +849,7 @@ Tree *tr;
 				tr->ebrnchp[i]->kinp->length = elenvec[i];
 			}
 			for (i = 0; i < Numibrnch; i++) {
-				tr->ibrnchp[i]->length = ilenvec[i];
+				tr->ibrnchp[i]->length       = ilenvec[i];
 				tr->ibrnchp[i]->kinp->length = ilenvec[i];
 			}
 			ip->length = ip->kinp->length = ip->length * 0.9;
@@ -976,12 +975,12 @@ Tree *tr;
 
 	/*
 	for (k = pairord0; k < notu; k = pairord[k]) {
-		printf("%3d%3d%9.3f\n", k+1, pairnum[k]+1, pairrel[k]); 
+		printf("%3d%3d%9.3f\n", k+1, pairnum[k]+1, pairrel[k]);
 	}
-	printf("%3s%3s%9s%3d\n", "", "", "", pairord0+1); 
+	printf("%3s%3s%9s%3d\n", "", "", "", pairord0+1);
 	for (i = 0; i < notu; i++) {
 		if (i < pairnum[i])
-		printf("%3d%3d%9.3f%3d\n", i+1,pairnum[i]+1,pairrel[i],pairord[i]+1); 
+		printf("%3d%3d%9.3f%3d\n", i+1,pairnum[i]+1,pairrel[i],pairord[i]+1);
 	}
 	*/
 	if ( notu == 4  && (maxi == 1 || maxi == 2) ) maxi = 0;
