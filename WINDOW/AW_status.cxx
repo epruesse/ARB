@@ -515,11 +515,13 @@ void aw_set_local_message(){
 
 int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
+    //
     // the single buttons are seperated by kommas (i.e. "YES,NO")
     // If the button-name starts with ^ it starts a new row of buttons
     // (if a button named 'EXIT' is pressed the program terminates using exit(EXIT_FAILURE))
+    //
     // If fixedSizeButtons is true all buttons have the same size
-
+    // otherwise the size for every button is set depending on the text length
 
     if (!buttons){		        /* asynchronous message */
 #if defined(DEBUG)
@@ -588,7 +590,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
                 pos = komma+1;
             }
 
-            aw_msg->button_length(max_button_length);
+            aw_msg->button_length(max_button_length+1);
         }
 
         char *ret = strtok( button_list, "," );
@@ -603,7 +605,12 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
                 aw_msg->callback     ( message_cb, (AW_CL)counter++ );
             }
 
-            aw_msg->create_button( 0,ret, "1" );
+            if (fixedSizeButtons) {
+                aw_msg->create_button( 0,ret);
+            }
+            else {
+                aw_msg->create_autosize_button( 0,ret);
+            }
             ret = strtok( NULL, "," );
         }
 
