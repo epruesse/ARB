@@ -54,28 +54,37 @@ typedef enum {
 
 
 struct adaqbsstruct {
-    AW_window *aws;
-    GBDATA *gb_main;
-    GBDATA *gb_ref;		// second reference database
-    AW_BOOL	look_in_ref_list; // for querys
-    AWAR	species_name;
-    AWAR	awar_key;
-    AWAR	awar_setkey;
-    AWAR	awar_setprotection;
-    AWAR	awar_setvalue;
-    AWAR	awar_parskey;
-    AWAR	awar_parsvalue;
-    AWAR	awar_parspredefined;
-    AWAR	awar_query;
-    AWAR	awar_ere;
-    AWAR	awar_by;
-    AWAR	awar_use_tag;
-    AWAR	awar_double_pars;
-    AWAR	awar_deftag;
-    AWAR	awar_tag;
-    AWAR	awar_count;
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    GBDATA            *gb_ref;		// second reference database
+    AW_BOOL	           look_in_ref_list; // for querys
+    AWAR	           species_name;
+    AWAR	           awar_key;
+    AWAR	           awar_setkey;
+    AWAR	           awar_setprotection;
+    AWAR	           awar_setvalue;
+    AWAR	           awar_parskey;
+    AWAR	           awar_parsvalue;
+    AWAR	           awar_parspredefined;
+    AWAR	           awar_query;
+    AWAR	           awar_ere;
+    AWAR	           awar_by;
+    AWAR	           awar_use_tag;
+    AWAR	           awar_double_pars;
+    AWAR	           awar_deftag;
+    AWAR	           awar_tag;
+    AWAR	           awar_count;
     AW_selection_list *result_id;
-    int	select_bit;	// one of 1 2 4 8 .. 128 (one for each query box)
+    int	               select_bit; // one of 1 2 4 8 .. 128 (one for each query box)
+
+    bool query_genes;
+    AWAR gene_name;
+
+    GBDATA *(*get_item_container)(GBDATA *, AW_root *aw_root); // for species this is normally GBT_find_species_data
+    GBDATA *(*get_first_item)(GBDATA *); // for species this is normally GBT_first_species
+    GBDATA *(*get_next_item)(GBDATA *); // for species this is normally GBT_next_species
+    //... set the above functions everywhere where adaqbsstruct is created
+
 };
 
 #define AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE "tmp/table/%s/field/reorder_source"

@@ -22,20 +22,22 @@ void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 	GBDATA *gb_alignment;
 	GBDATA *gb_alignment_name;
 	GBDATA *gb_alignment_type;
-	char *alignment_name;
-	char *alignment_type;
+	char   *alignment_name;
+	char   *alignment_type;
 
 	AWUSE(dummy);
 
 	cbs->aws->clear_selection_list(cbs->id);
 
-	for (	gb_alignment = GB_search(cbs->gb_main,"presets/alignment",GB_FIND);
-		gb_alignment;
-		gb_alignment = GB_find(gb_alignment,"alignment",0,this_level|search_next)){
+	for (gb_alignment = GB_search(cbs->gb_main,"presets/alignment",GB_FIND);
+         gb_alignment;
+         gb_alignment = GB_find(gb_alignment,"alignment",0,this_level|search_next))
+    {
 		gb_alignment_type = GB_find(gb_alignment,"alignment_type",0,down_level);
 		gb_alignment_name = GB_find(gb_alignment,"alignment_name",0,down_level);
-		alignment_type = GB_read_string(gb_alignment_type);
-		alignment_name = GB_read_string(gb_alignment_name);
+		alignment_type    = GB_read_string(gb_alignment_type);
+		alignment_name    = GB_read_string(gb_alignment_name);
+
 		char *str = GBS_string_eval(alignment_type,cbs->comm,0);
 		if (!*str){
 			cbs->aws->insert_selection( cbs->id, alignment_name, alignment_name );
@@ -52,24 +54,23 @@ void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char 
 	// if comm is set then only those alignments are taken
 	// which can be parsed by comm
 {
-	AW_selection_list*	id;
-	GBDATA	*gb_presets;
+	AW_selection_list*	 id;
+	GBDATA	            *gb_presets;
 	struct adawcbstruct *cbs;
+
 	GB_push_transaction(gb_main);
 
-	id = aws->create_selection_list(varname,0,"",20,3);
-	cbs = new adawcbstruct;
-	cbs->aws = aws;
+	id           = aws->create_selection_list(varname,0,"",20,3);
+	cbs          = new adawcbstruct;
+	cbs->aws     = aws;
 	cbs->gb_main = gb_main;
-	cbs->id = id;
-	cbs->comm = 0;
-	if (comm)	cbs->comm = strdup(comm);
+	cbs->id      = id;
+	cbs->comm    = 0; if (comm) cbs->comm = strdup(comm);
 
 	awt_create_selection_list_on_ad_cb(0,cbs);
 
 	gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);
-	GB_add_callback(gb_presets,GB_CB_CHANGED,
-		(GB_CB)awt_create_selection_list_on_ad_cb, (int *)cbs);
+	GB_add_callback(gb_presets,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_ad_cb, (int *)cbs);
 
 	GB_pop_transaction(gb_main);
 }
@@ -256,11 +257,11 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 	struct adawcbstruct *cbs;
 	GB_push_transaction(gb_main);
 
-	id = aws->create_selection_list(varname,0,"",40,15);
-	cbs = new adawcbstruct;
-	cbs->aws = aws;
+	id           = aws->create_selection_list(varname,0,"",40,15);
+	cbs          = new adawcbstruct;
+	cbs->aws     = aws;
 	cbs->gb_main = gb_main;
-	cbs->id = id;
+	cbs->id      = id;
 
 	awt_create_selection_list_on_configurations_cb(0,cbs);
 

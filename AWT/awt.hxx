@@ -114,10 +114,11 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA     *gb_main,AW_window *aws,
 			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
 			ints and strings */
 
-void awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter);
-		/* rescan it */
-GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
+void 	awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void 	awt_selection_list_rescan(GBDATA *gb_main, long bitfilter);		/* rescan it */
+void 	awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
+
+GB_ERROR 		awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
 		/*	type == GB_TYPES
 			add a new FIELD to the FIELD LIST */
 
@@ -168,21 +169,21 @@ typedef enum {
 #define AWT_PARS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
 #define AWT_STRING_FILTER (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
 
-AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
-	const char *box_pos_fig,	/* the position for the box in the xfig file */
-	const char *delete_pos_fig,	/* create a delete button (which enables deleting) */
-	const char *edit_pos_fig,	/* the edit field (which enables editing) */
-	const char *edit_enable_pos_fig,	/* enable editing toggle */
-	AWT_SCANNERMODE mode,
-	const char *rescan_pos_fig,	// AWT_VIEWER only (create a rescan FIELDS button)
-	const char *mark_pos_fig,	// Create a toggle which show the database flag
-	long type_filter	// AWT_VIEWER BITFILTER for TYPES
-	);
+AW_CL awt_create_arbdb_scanner(GBDATA          *gb_main, AW_window *aws,
+                               const char      *box_pos_fig, /* the position for the box in the xfig file */
+                               const char      *delete_pos_fig, /* create a delete button (which enables deleting) */
+                               const char      *edit_pos_fig, /* the edit field (which enables editing) */
+                               const char      *edit_enable_pos_fig, /* enable editing toggle */
+                               AWT_SCANNERMODE  mode,
+                               const char      *rescan_pos_fig, // AWT_VIEWER only (create a rescan FIELDS button)
+                               const char      *mark_pos_fig, // Create a toggle which show the database flag
+                               long             type_filter, // AWT_VIEWER BITFILTER for TYPES
+                               const char      *change_key_path);
 
-void awt_map_arbdb_scanner(AW_CL arbdb_scanid,
-			GBDATA *gb_pntr, int show_only_marked_flag);
+void awt_map_arbdb_scanner(AW_CL  arbdb_scanid,
+			GBDATA               *gb_pntr, int show_only_marked_flag, const char *keypath);
 		/* map the Scanner to a database entry */
-GBDATA *awt_get_arbdb_scanner_gbdata(AW_CL arbdb_scanid);
+GBDATA                           *awt_get_arbdb_scanner_gbdata(AW_CL arbdb_scanid);
 		/* reverse mapping, should be used to keep track of deleted items */
 
 

@@ -6,6 +6,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <aw_awars.hxx>
 #include "merge.hxx"
 
 #define AWAR_EX_NAME1 "tmp/merge1/extended_name"
@@ -60,7 +61,7 @@ AW_window *MG_create_extended_rename_window1(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the new name\nof the SAI");
@@ -70,7 +71,7 @@ AW_window *MG_create_extended_rename_window1(AW_root *root)
 
 	aws->at("ok");
 	aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)gb_merge,1);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -83,7 +84,7 @@ AW_window *MG_create_extended_rename_window2(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the new name\nof the SAI");
@@ -93,7 +94,7 @@ AW_window *MG_create_extended_rename_window2(AW_root *root)
 
 	aws->at("ok");
 	aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)gb_dest,2);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -161,7 +162,7 @@ void MG_map_extended1(AW_root *aw_root, AW_CL scannerid)
 	char *source = aw_root->awar(AWAR_EX_NAME1)->read_string();
 	GB_push_transaction(gb_merge);
 	GBDATA *gb_extended = GBT_find_SAI(gb_merge,source);
-	awt_map_arbdb_scanner(scannerid,gb_extended,0);
+	awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_merge);
 	delete source;
 }
@@ -170,7 +171,7 @@ void MG_map_extended2(AW_root *aw_root, AW_CL scannerid)
 	char *source = aw_root->awar(AWAR_EX_NAME2)->read_string();
 	GB_push_transaction(gb_dest);
 	GBDATA *gb_extended = GBT_find_SAI(gb_dest,source);
-	awt_map_arbdb_scanner(scannerid,gb_extended,0);
+	awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_dest);
 	delete source;
 }
@@ -185,26 +186,21 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr){
 	aws->load_xfig("merge/extended.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"mg_extendeds.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->at("ex1");
 	awt_create_selection_list_on_extendeds(gb_merge,(AW_window *)aws,AWAR_EX_NAME1);
-	AW_CL scannerid=awt_create_arbdb_scanner(gb_merge, aws,
-		"info1",0,0,0,AWT_SCANNER,0,0,0);
-	aws->get_root()->awar(AWAR_EX_NAME1)->add_callback(
-		MG_map_extended1,scannerid);
+	AW_CL scannerid=awt_create_arbdb_scanner(gb_merge, aws, "info1",0,0,0,AWT_SCANNER,0,0,0, CHANGE_KEY_PATH);
+	aws->get_root()->awar(AWAR_EX_NAME1)->add_callback(MG_map_extended1,scannerid);
 
 	aws->at("ex2");
 	awt_create_selection_list_on_extendeds(gb_dest,(AW_window *)aws,AWAR_EX_NAME2);
-	scannerid=awt_create_arbdb_scanner(gb_dest, aws,
-		"info2",0,0,0,AWT_SCANNER,0,0,0);
-	aws->get_root()->awar(AWAR_EX_NAME2)->add_callback(
-		MG_map_extended2,scannerid);
-
+	scannerid = awt_create_arbdb_scanner(gb_dest, aws, "info2",0,0,0,AWT_SCANNER,0,0,0, CHANGE_KEY_PATH);
+	aws->get_root()->awar(AWAR_EX_NAME2)->add_callback(MG_map_extended2,scannerid);
 
 	aws->button_length(20);
 

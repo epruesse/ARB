@@ -713,6 +713,9 @@ void AWTC_import_go_cb(AW_window *aww)
     aw_openstatus("Checking and Scanning database");
     aw_status("First Pass: Check entries");
     awt_selection_list_rescan(GB_MAIN,AWT_NDS_FILTER);
+	if (is_genom_db) {
+		awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER);
+	}
     GBT_mark_all(GB_MAIN,1);
     sleep(1);
     aw_status("Second Pass: Check sequence lengths");

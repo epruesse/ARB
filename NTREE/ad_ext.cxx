@@ -9,6 +9,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <aw_awars.hxx>
 
 #define AWAR_EX_NAME "tmp/focus/extended_name"
 #define AWAR_EX_DEST "tmp/focus/extended_dest"
@@ -73,7 +74,7 @@ void extended_copy_cb(AW_window *aww){
 	delete source;
 	delete dest;
 }
-void move_to_sepcies(AW_window *aww) 
+void move_to_sepcies(AW_window *aww)
 	{
 	GB_ERROR error = 0;
 	char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
@@ -105,7 +106,7 @@ AW_window *create_extended_rename_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the new name\nof the SAI");
@@ -115,7 +116,7 @@ AW_window *create_extended_rename_window(AW_root *root)
 
 	aws->at("ok");
 	aws->callback(extended_rename_cb);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -128,7 +129,7 @@ AW_window *create_extended_copy_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the name\nof the new SAI");
@@ -138,7 +139,7 @@ AW_window *create_extended_copy_window(AW_root *root)
 
 	aws->at("ok");
 	aws->callback(extended_copy_cb);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -166,7 +167,7 @@ void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
 	char *source = aw_root->awar(AWAR_EX_NAME)->read_string();
 	GB_push_transaction(gb_main);
 	GBDATA *gb_extended = GBT_find_SAI(gb_main,source);
-	awt_map_arbdb_scanner(scannerid,gb_extended,0);
+	awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_main);
 	delete source;
 }
@@ -187,7 +188,7 @@ void ad_ad_remark(AW_window *aww){
 			delete error;
 		}else{
 			aw_message("Please select an alignment which is valid for the selected SAI");
-		}	
+		}
 		delete use;
 	}else{
 		aw_message("Please select a SAI first");
@@ -223,44 +224,42 @@ AW_window *create_extendeds_window(AW_root *aw_root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"ad_extended.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->button_length(13);
 
 	aws->at("delete");
 	aws->callback(ad_extended_delete_cb);
-	aws->create_button("DELETE","DELETE","D");			   
+	aws->create_button("DELETE","DELETE","D");
 
 	aws->at("rename");
 	aws->callback(AW_POPUP,(AW_CL)create_extended_rename_window,0);
-	aws->create_button("RENAME","RENAME","R");			   
+	aws->create_button("RENAME","RENAME","R");
 
 	aws->at("copy");
 	aws->callback(AW_POPUP,(AW_CL)create_extended_copy_window,0);
-	aws->create_button("COPY","COPY","C");			   
+	aws->create_button("COPY","COPY","C");
 
 	aws->at("remark");
 	aws->callback(ad_ad_remark);
-	aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");			   
+	aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");
 
 	aws->at("group");
 	aws->callback(ad_ad_group);
-	aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");			   
+	aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");
 
 	aws->at("makespec");
 	aws->callback((AW_CB0)move_to_sepcies);
-	aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");			   
+	aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
 
 	aws->at("list");
 	awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_EX_NAME);
 
-	AW_CL scannerid=awt_create_arbdb_scanner(gb_main, aws,
-		"info",0,0,0,AWT_SCANNER,0,0,0);
-	aws->get_root()->awar(AWAR_EX_NAME)->add_callback(
-		AD_map_extended,scannerid);
+	AW_CL scannerid=awt_create_arbdb_scanner(gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, CHANGE_KEY_PATH);
+	aws->get_root()->awar(AWAR_EX_NAME)->add_callback(AD_map_extended,scannerid);
 	return (AW_window *)aws;
 }

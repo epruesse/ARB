@@ -41,6 +41,7 @@ GBDATA *GBT_create_SAI P_((GBDATA *gb_main, const char *name));
 GBDATA *GBT_add_data P_((GBDATA *species, const char *ali_name, const char *key, GB_TYPES type));
 GB_ERROR GBT_write_sequence P_((GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence));
 GBDATA *GBT_gen_accession_number P_((GBDATA *gb_species, const char *ali_name));
+GBDATA *GBT_get_species_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_marked_species P_((GBDATA *gb_main));
 GBDATA *GBT_next_marked_species P_((GBDATA *gb_species));
