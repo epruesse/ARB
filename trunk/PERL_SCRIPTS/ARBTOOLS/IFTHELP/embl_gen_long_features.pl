@@ -4,7 +4,7 @@
 #    File      : embl_gen_long_features.pl                         #
 #    Purpose   : modifies embl feature table for easy scanning     #
 #                with ARBs ift                                     #
-#    Time-stamp: <Thu Mar/17/2005 16:07 MET Coder@ReallySoft.de>   #
+#    Time-stamp: <Fri Mar/18/2005 15:27 MET Coder@ReallySoft.de>   #
 #                                                                  #
 #    Coded by Ralf Westram (coder@reallysoft.de) in March 2005     #
 #    Institute of Microbiology (Technical University Munich)       #
@@ -25,7 +25,7 @@ eval {
     if (/^FT   /) {
       chomp;
       my $rest = $';
-      if ($rest =~ /^([a-zA-Z0-9_]+)([ ]+)([^ ].*)$/) { # new feature
+      if ($rest =~ /^([^ ]+)([ ]+)([^ ].*)$/) { # new feature
         my ($name,$spaces,$content) = ($1,$2,$3);
         $last_feature = $name.$spaces;
         if (defined $line_to_print) { print $line_to_print."\n"; $line_to_print=undef; }
@@ -44,7 +44,7 @@ eval {
             }
           }
           else {
-            die "Expected some content behind 'FT'";
+            die "Expected some content behind 'FT'\n";
           }
         }
         else {
@@ -60,5 +60,6 @@ eval {
   if (defined $line_to_print) { print $line_to_print."\n"; $line_to_print=undef; }
 };
 if ($@) {
+  chomp $@;
   die "$@ in line $line_number of inputfile\n";
 }
