@@ -1940,16 +1940,28 @@ GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name){
 /********************************************************************************************
 					mark and unmark species
 ********************************************************************************************/
-void
-GBT_mark_all(GBDATA *gb_main, int flag)
+void GBT_mark_all(GBDATA *gb_main, int flag)
 {
     GBDATA *gb_species;
     GB_push_transaction(gb_main);
 
-    for (	gb_species = GBT_first_species(gb_main);
-            gb_species;
-            gb_species = GBT_next_species(gb_species) ){
-        GB_write_flag(gb_species,flag);
+    if (flag == 2) {
+        for (gb_species = GBT_first_species(gb_main);
+             gb_species;
+             gb_species = GBT_next_species(gb_species) )
+        {
+            GB_write_flag(gb_species,!GB_read_flag(gb_species));
+        }
+    }
+    else {
+        gb_assert(flag == 0 || flag == 1);
+
+        for (gb_species = GBT_first_species(gb_main);
+             gb_species;
+             gb_species = GBT_next_species(gb_species) )
+        {
+            GB_write_flag(gb_species,flag);
+        }
     }
     GB_pop_transaction(gb_main);
 }

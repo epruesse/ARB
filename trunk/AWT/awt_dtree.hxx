@@ -26,6 +26,8 @@ typedef enum {
 	} AP_tree_sort;
 
 
+class AWT_graphic_tree_group_state;
+
 class AWT_graphic_tree : public AWT_graphic {
 	protected:
 
@@ -95,24 +97,35 @@ class AWT_graphic_tree : public AWT_graphic {
 	virtual	AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
 	virtual	void show(AW_device *device);
-	virtual void info(AW_device *device, AW_pos x, AW_pos y,
-				AW_clicked_line *cl, AW_clicked_text *ct);
-	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,
-				AW_pos x, AW_pos y,
-				AW_clicked_line *cl, AW_clicked_text *ct);
 
-	void mark_tree(struct AP_tree *at, int mark, int color_group);
-	int  group_tree(struct AP_tree *at, int mode, int color_group);
-	int  resort_tree(int mode, struct AP_tree *at = 0 );
-	AW_BOOL create_group(AP_tree * at);
-	void toggle_group(AP_tree * at);
-	void jump(AP_tree *at, const char *name);
-	AP_tree *search(AP_tree *root, const char *name);
-	GB_ERROR load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs);
-	GB_ERROR save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2);
-	int check_update(GBDATA *gb_main);	// reload tree if needed
-	void update(GBDATA *gb_main);
-	void set_tree_type(AP_tree_sort type);
+	virtual void info(AW_device *device, AW_pos x, AW_pos y,
+                      AW_clicked_line *cl, AW_clicked_text *ct);
+
+	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type,
+                         AW_pos x, AW_pos y,
+                         AW_clicked_line *cl, AW_clicked_text *ct);
+
+    void key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier, char key_char,
+                     AW_pos           x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+
+	void mark_tree(AP_tree *at, int mark, int color_group);
+	void mark_rest_tree(AP_tree *at, int mark, int color_group);
+    bool tree_has_marks(AP_tree *at);
+    bool rest_tree_has_marks(AP_tree *at);
+
+    void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state);
+
+	int       group_tree(struct AP_tree *at, int mode, int color_group);
+	int       resort_tree(int mode, struct AP_tree *at = 0 );
+	AW_BOOL   create_group(AP_tree * at);
+	void      toggle_group(AP_tree * at);
+	void      jump(AP_tree *at, const char *name);
+	AP_tree  *search(AP_tree *root, const char *name);
+	GB_ERROR  load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs);
+	GB_ERROR  save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2);
+	int       check_update(GBDATA *gb_main); // reload tree if needed
+	void      update(GBDATA *gb_main);
+	void      set_tree_type(AP_tree_sort type);
 
 };
 

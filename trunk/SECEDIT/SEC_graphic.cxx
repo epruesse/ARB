@@ -186,7 +186,7 @@ static GB_ERROR change_constraints(GB_CSTR constraint_type, GB_CSTR element_type
     return error;
 }
 
-void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
+void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AWUSE(cl);
     AW_pos world_x;
     AW_pos world_y;

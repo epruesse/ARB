@@ -12,8 +12,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:16  westram
- * Initial revision
+ * Revision 1.2  2002/12/17 10:36:40  westram
+ * valgrinded
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:16  westram
+ * Erster Import
  *
  * Revision 1.1  1995/03/13  15:49:36  jakobi
  * Initial revision
@@ -39,8 +42,8 @@ AW_window *tb_preset_tree_window(AW_root *root);
 void tb_reload(AW_root *, AWT_canvas *);
 AWT_graphic *tb_gen_gfx(void);
 
-// class AWT_graphic_testbed - provide the minimal necessary set of 
-// functions to use AWT 
+// class AWT_graphic_testbed - provide the minimal necessary set of
+// functions to use AWT
 class AWT_graphic_testbed  : public AWT_graphic {
      public:
         // graphic styles
@@ -51,9 +54,9 @@ class AWT_graphic_testbed  : public AWT_graphic {
         void info(AW_device *device, AW_pos x, AW_pos y,
                                 AW_clicked_line *cl, AW_clicked_text *ct);
 
-        void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,  
+        void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod modifier, AW_key_code keycode, AW_event_type type,
                                 AW_pos x, AW_pos y,
-                                AW_clicked_line *cl, AW_clicked_text *ct); 
+                                AW_clicked_line *cl, AW_clicked_text *ct);
 };
 
 // test parameters

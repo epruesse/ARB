@@ -343,6 +343,7 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 
 	aww->get_event( &event );
 	device = aww->get_device (AW_MIDDLE_AREA  );
+
 	device->set_filter(AW_SCREEN);
 	device->reset();
 
@@ -428,7 +429,8 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
     click_device->get_clicked_text(&ntw->clicked_text);
 
     ntw->tree_disp->command(device, ntw->mode,
-                            event.button, event.type, event.x,
+                            event.button, event.keymodifier, event.character,
+                            event.type, event.x,
                             event.y, &ntw->clicked_line,
                             &ntw->clicked_text );
     if (ntw->tree_disp->exports.save ) {
@@ -501,7 +503,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 					click_device->get_clicked_text(&ntw->clicked_text);
 			default:
 				ntw->tree_disp->command(device, ntw->mode,
-											event.button, AW_Mouse_Drag, event.x,
+                                        event.button, event.keymodifier, event.keycode, AW_Mouse_Drag, event.x,
 										event.y, &ntw->clicked_line,
 										&ntw->clicked_text );
 				if (ntw->gb_main) {
@@ -536,7 +538,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 				click_device->get_clicked_text(&ntw->clicked_text);
 			default:
 				ntw->tree_disp->command(device, ntw->mode,
-										event.button, AW_Mouse_Drag, event.x,
+										event.button, event.keymodifier, event.keycode, AW_Mouse_Drag, event.x,
 										event.y, &ntw->clicked_line,
 										&ntw->clicked_text );
 				if (ntw->gb_main) {
@@ -773,11 +775,13 @@ void AWT_graphic::push_transaction(GBDATA *gb_main)	{
 
 
 
-void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,AW_pos x, AW_pos y,
+void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type,AW_pos x, AW_pos y,
 	AW_clicked_line *cl, AW_clicked_text *ct){
 	AWUSE(device);
 	AWUSE(type);
 	AWUSE(button);
+	AWUSE(key_modifier);
+	AWUSE(key_char);
 	AWUSE(cmd);
 	AWUSE(x);
 	AWUSE(y);

@@ -38,18 +38,18 @@
 #define NAME_OF_REF_SEQ 		"REF"
 
 enum {
-	SEC_GC_LOOP=0,		SEC_GC_FIRST_FONT = SEC_GC_LOOP, 
+	SEC_GC_LOOP=0,		SEC_GC_FIRST_FONT = SEC_GC_LOOP,
 	SEC_GC_HELIX,
 	SEC_GC_NHELIX,
-	SEC_GC_DEFAULT, 
-	SEC_GC_BONDS, 
-	SEC_GC_ECOLI, 		SEC_GC_LAST_FONT = SEC_GC_ECOLI, 
-	
-	SEC_GC_CURSOR, 
-	
+	SEC_GC_DEFAULT,
+	SEC_GC_BONDS,
+	SEC_GC_ECOLI, 		SEC_GC_LAST_FONT = SEC_GC_ECOLI,
+
+	SEC_GC_CURSOR,
+
 	SEC_GC_SBACK_0,	// User 1  // Background for search //YADHU
 	SEC_GC_SBACK_1,  // User 2
-	SEC_GC_SBACK_2,  // Probe 
+	SEC_GC_SBACK_2,  // Probe
 	SEC_GC_SBACK_3,  // Primer (local)
 	SEC_GC_SBACK_4,  // Primer (region)
 	SEC_GC_SBACK_5,  // Primer (global)
@@ -59,7 +59,7 @@ enum {
 	SEC_SKELE_HELIX,  //skeleton helix color
 	SEC_SKELE_LOOP,  //skeleton loop color
 	SEC_SKELE_NHELIX,  //skeleton non-pairing helix color
-	SEC_GC_MBACK,      //mismatches 
+	SEC_GC_MBACK,      //mismatches
 	SEC_GC_MAX
 }; // AW_gc
 
@@ -77,16 +77,16 @@ enum {
 
 class SEC_bond_def {
     char bond[SEC_BOND_BASE_CHARS][SEC_BOND_BASE_CHARS];
-    
+
     int get_index(char c) const;
     void clear();
     int insert(const char *pairs, char character);
     char get_bond(char base1, char base2) const;
-    
-public:    
+
+public:
     SEC_bond_def() { clear(); }
     int update(AW_root *awr);
-    
+
     void paint(AW_device *device, SEC_root *root, char base1, char base2, double x1, double y1, double x2, double y2, double base_dist, double char_size) const;
 };
 
@@ -99,19 +99,19 @@ protected:
     AW_clicked_line old_rot_cl;
 
     AW_device *disp_device;	// device for  rekursiv Funktions
-    
+
 public:
-    
+
     GBDATA *gb_main;
     AW_root *aw_root;
     SEC_root *sec_root;
     SEC_bond_def bond;
-    
+
     int	change_flag;	// used to indicate resize ....
     GBDATA *gb_struct;	// used to save the structure
     GBDATA *gb_struct_ref; // used to save reference numbers
     long	last_saved; // the transaction serial id when we last saved everything
-     
+
     double x_cursor,y_cursor;
     // *********** public section
     SEC_graphic(AW_root *aw_root, GBDATA *gb_main);
@@ -121,17 +121,17 @@ public:
 
     virtual	void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, 
+    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type,
 			 AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
 
     GB_ERROR load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs);
     GB_ERROR save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2);
-    
+
     GB_ERROR write_data_to_db(const char *data, const char *x_string);
-    
+
     int check_update(GBDATA *gb_main);	// reload tree if needed
-//	void update(GBDATA *gb_main);	
-    
+//	void update(GBDATA *gb_main);
+
 };
 
 class SEC_font_info
@@ -140,16 +140,16 @@ class SEC_font_info
 	height,
 	ascent,
 	descent;
-    
+
     static int max_width;
     static int max_height;
     static int max_ascent;
     static int max_descent;
-    
+
 public:
-    
+
     SEC_font_info() {}
-    
+
     static void reset_maximas()
     {
 	max_width = 0;
@@ -157,7 +157,7 @@ public:
 	max_height = 0;
 	max_descent = 0;
     }
-    
+
     void update(AW_font_information *font_info)
     {
 	width = font_info->max_letter_width; 		if (width>max_width) max_width = width;
@@ -165,12 +165,12 @@ public:
 	ascent = font_info->max_letter_ascent;	 	if (ascent>max_ascent) max_ascent = ascent;
 	descent = font_info->max_letter_descent; 	if (descent>max_descent) max_descent = descent;
     }
-    
+
     int get_width() const { return width; } // this font
     int get_height() const { return height; }
     int get_ascent() const { return ascent; }
     int get_descent() const { return descent; }
-    
+
     static int get_max_width() { return max_width; }	// all update'd fonts
     static int get_max_height() { return max_height; }
     static int get_max_ascent() { return max_ascent; }

@@ -1202,12 +1202,11 @@ int AW_window::get_index_of_element(AW_selection_list *selection_list, const cha
 }
 
 /*-------------------- function to get value of entry in the selection list for the index passed  -------------------- */
-const char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index){
-
-    const char *element = 0;
+char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index) {
+    char *element = 0;
 
     if (index >= 0) {
-        int     element_index = 0;
+        int         element_index = 0;
         const char *listEntry     = selection_list->first_element();
 
         while (listEntry) {
@@ -1220,8 +1219,7 @@ const char *AW_window::get_element_of_index(AW_selection_list *selection_list, i
         }
     }
 
-    if(!element) return NULL;
-    else return element;
+    return element;
 }
 
 void AW_window::delete_selection_from_list( AW_selection_list *selection_list, const char *disp_string )

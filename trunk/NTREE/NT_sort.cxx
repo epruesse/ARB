@@ -162,7 +162,7 @@ NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3)
 		GB_mergesort((void **)gb_resort_data_list,0,gb_resort_data_count,(gb_compare_two_items_type)resort_data_by_customsub,0);
 	}
 	error = GB_resort_data_base(gb_main,gb_resort_data_list,gb_resort_data_count);
-	delete gb_resort_data_list;
+	free(gb_resort_data_list);
 
 	if (error){
 		GB_abort_transaction(gb_main);

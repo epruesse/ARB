@@ -85,20 +85,20 @@ void nt_main_startup_main_window(AW_root *aw_root){
     }
 }
 
-int main_load_and_startup_main_window(AW_root *aw_root)	// returns 0 when successfull
+int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when successfull
 {
 
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
     gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");
 
-	if (!gb_main) {
-		aw_message(GB_get_error(),"OK");
-		return -1;
-	}
+    if (!gb_main) {
+        aw_message(GB_get_error(),"OK");
+        return -1;
+    }
 
     aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
-	free(db_server);
-	nt_main_startup_main_window(aw_root);
+    free(db_server);
+    nt_main_startup_main_window(aw_root);
 
     return 0;
 }
@@ -183,7 +183,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->at("logo");
     aws->create_button(0,"#logo.bitmap");
 
-    // 	aws->button_length(25);
+    //  aws->button_length(25);
 
     aws->at("old");
     aws->callback(nt_intro_start_old);
@@ -257,26 +257,26 @@ int main(int argc, char **argv)
     aw_root->awar_string( AWAR_DB"directory", "", aw_default);
     aw_root->awar_string( AWAR_DB"filter", "arb", aw_default);
     aw_root->awar_string( AWAR_DB"type", "b", aw_default);
-    aw_root->awar_int( "NT/GB_NOVICE", 		0, aw_default)	->add_target_var(&GB_NOVICE);
+    aw_root->awar_int( "NT/GB_NOVICE",      0, aw_default)  ->add_target_var(&GB_NOVICE);
 
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
     init_Advisor(aw_root, AW_ROOT_DEFAULT);
 
-	createConcatenationAwars(aw_root, aw_default); // creating AWARS for concatenation and merge simlar species function
+    NT_createConcatenationAwars(aw_root, aw_default); // creating AWARS for concatenation and merge simlar species function
 
-	if (argc==3) {		// looks like merge
-	    MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
-	    nt_intro_start_merge(0,aw_root);
-	    aw_root->main_loop();
-	}
+    if (argc==3) {      // looks like merge
+        MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
+        nt_intro_start_merge(0,aw_root);
+        aw_root->main_loop();
+    }
 
     bool  abort            = false;
     bool  start_db_browser = true;
     char *browser_startdir = GB_strdup(".");
 
-	if (argc>=2) {
+    if (argc>=2) {
         start_db_browser = false;
 
         if (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0) {
@@ -296,21 +296,21 @@ int main(int argc, char **argv)
             exit(1);
         }
 
-		if ( strcmp(argv[1],"-export")==0) {
-			MG_create_all_awars(aw_root,aw_default,":","noname.arb");
-			gb_merge = GBT_open(":","rw",0);
-			if (!gb_merge) {
-				aw_message(GB_get_error(),"OK");
-				exit(0);
-			}
-			gb_dest = GBT_open("noname.arb","cw",0);
+        if ( strcmp(argv[1],"-export")==0) {
+            MG_create_all_awars(aw_root,aw_default,":","noname.arb");
+            gb_merge = GBT_open(":","rw",0);
+            if (!gb_merge) {
+                aw_message(GB_get_error(),"OK");
+                exit(0);
+            }
+            gb_dest = GBT_open("noname.arb","cw",0);
 
-			MG_start_cb2(0,aw_root);
-			aw_root->main_loop();
-		}
+            MG_start_cb2(0,aw_root);
+            aw_root->main_loop();
+        }
 
-		db_server = argv[1];
-		if (GBT_check_arb_file(db_server)) {
+        db_server = argv[1];
+        if (GBT_check_arb_file(db_server)) {
             int answer = -1;
             char *full_path = AWT_unfold_path(db_server);
             if (AWT_is_dir(full_path)) answer = 2; // autoselect browser
@@ -321,7 +321,7 @@ int main(int argc, char **argv)
                 answer = aw_message(msg, "Continue (dangerous),Start Converter,Browser,Exit");
             }
 
-			switch (answer) {
+            switch (answer) {
             case 0: {        // Continue
                 break;
             }
@@ -357,32 +357,32 @@ int main(int argc, char **argv)
             default: {
                 break;
             }
-			}
+            }
             free(full_path);
-		}
-	}
+        }
+    }
 
 
     if (start_db_browser) {
         aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
-	    char *latest = GB_find_latest_file(browser_startdir, "/\\.a[r0-9][b0-9]$/");
-	    if (latest){
+        char *latest = GB_find_latest_file(browser_startdir, "/\\.a[r0-9][b0-9]$/");
+        if (latest){
             int l = strlen(latest);
             latest[l-1] = 'b';
             latest[l-2] = 'r';
             latest[l-3] = 'a';
             aw_root->awar(AWAR_DB_PATH)->write_string(latest);
             free(latest);
-	    }
-	    AW_window *iws;
-	    if (nt.window_creator){
+        }
+        AW_window *iws;
+        if (nt.window_creator){
             iws = nt.window_creator(aw_root,0);
         }else{
             iws = nt_create_intro_window(aw_root);
-	    }
-	    iws->show();
-	    aw_root->main_loop();
-	}
+        }
+        iws->show();
+        aw_root->main_loop();
+    }
 
     if (abort) {
         printf("Aborting.\n");

@@ -68,7 +68,7 @@ public:
 
     virtual	void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
-    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+    virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
 
     virtual int GEN_graphic::check_update(GBDATA *gbdummy);
 };

@@ -29,9 +29,10 @@ void       nt_main_startup_main_window(AW_root *aw_root);
 void       nt_exit(AW_window *aw_window);
 AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name); // basename is awar_prefix
 
-#define AWAR_EXPORT_NDS "tmp/export_nds"
-#define AWAR_NT_REMOTE_BASE "tmp/remote/ARB_NT"
+#define AWAR_EXPORT_NDS                "tmp/export_nds"
+#define AWAR_NT_REMOTE_BASE            "tmp/remote/ARB_NT"
 #define AWAR_IMPORT_PROBE_GROUP_RESULT "tmp/pg_result"
+#define AWAR_MARKED_SPECIES_COUNTER    "tmp/disp_marked_species"
 
 
 #endif
