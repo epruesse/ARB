@@ -2,6 +2,9 @@ ARB change log
 
 Major changes for next version:
 
+ - CLUSTALW:
+   * separated menus for fast and slow alignment
+   * most parameters accessible from inside ARB now
  - upgraded to PHYLIP 3.6 (adds PROML)
  - fixed bugs in protml and integration of protml
  - rewrote ASCII database import
