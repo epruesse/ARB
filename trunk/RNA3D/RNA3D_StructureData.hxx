@@ -69,24 +69,33 @@ struct Vector3;
 
 class Structure3D {
 public:
-    float xCenter, yCenter, zCenter;
-    float xStrPoint, yStrPoint, zStrPoint;
+    Vector3 *strCen;
     
     Structure3D(void);
     virtual  ~Structure3D(void);
 
-    void PrepareStructureSkeleton(void);
-    void DrawStructureInfo(void);
+    void ReadCoOrdinateFile();
     void StoreCoordinates(float x, float y, float z, char base, unsigned int pos);
-    void ReadCoOrdinateFile(Vector3 *sCen);
 
     void GetSecondaryStructureInfo(void);
     void Store2Dinfo(char *info, int pos, int helixNr);
-    void BuildSecondaryStructureMask(void);
+    void PrepareSecondaryStructureData(void);
 
     void Combine2Dand3DstructureInfo(void);
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
-    void GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR);
 
-    void PrepareSecondaryStructureInfo(void);
+    void GenerateMoleculeSkeleton(void);
+    void ComputeBasePositions(int iInterval);
+
+    void PositionsToCoordinatesDispList(int listID, int *pos, int len);
+    void PointsToQuads(float x, float y, float z);
+    void StoreHelixNrInfo(float x, float y, float z, int helixNr);
+    
+    void GenerateDisplayLists(void);
+    void GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR);
+    void GenerateHelixNrDispList(void);
+    void GenerateSecStructureHelixRegions(void);
+    void GenerateSecStructureNonHelixRegions(void);
+    void GenerateSecStructureUnpairedHelixRegions(void);
+    void GenerateNonHelixBaseDispList(void);
 };

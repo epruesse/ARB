@@ -13,8 +13,6 @@ Structure3D    *cStructure = new Structure3D();
 Texture2D      *cTexture   = new Texture2D();
 GLRenderer     *cRenderer  = new GLRenderer();
 
-Vector3 sCen;
-
 float fAspectRatio;
 float fViewAngle = 90.0;
 float fClipNear  = 0.01;
@@ -117,11 +115,12 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
     // Prepare the structure Data  and Generate Display Lists  
 
-    cStructure->ReadCoOrdinateFile(&sCen);    // Reading Structure information
-    cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
-    cStructure->GetSecondaryStructureInfo();
-    cStructure->Combine2Dand3DstructureInfo();
-    cStructure->BuildSecondaryStructureMask();
+    cStructure->ReadCoOrdinateFile();    // Reading Structure information
+    cStructure->GetSecondaryStructureInfo();  // Getting Secondary Structure Information
+    cStructure->Combine2Dand3DstructureInfo(); // Combining Secondary Structure data with 3D Coordinates
+
+    //    cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
+    cStructure->GenerateDisplayLists(); // Generating Display Lists for Rendering
 
     // Generate Textures
     cTexture->LoadGLTextures();  // Load The Texture(s) 
@@ -258,19 +257,6 @@ void DrawStructure(){
             glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
             glColor4f(0,0,1,1);
             glCallList(STRUCTURE_BACKBONE_POINTS);
-
-            glColor4f(1,0,0,1);
-            glBegin(GL_QUADS);
-            glTexCoord2f(0,0);
-            glVertex3f(sCen.x, sCen.y, sCen.z);
-            glTexCoord2f(1,0);
-            glVertex3f(sCen.x + 2, sCen.y, sCen.z);
-            glTexCoord2f(1,1);
-            glVertex3f(sCen.x + 2, sCen.y + 2, sCen.z);
-            glTexCoord2f(0,1);
-            glVertex3f(sCen.x, sCen.y + 2, sCen.z);
-            glEnd();
-
             cRenderer->EndTexturizer();
         }
 	
@@ -300,7 +286,7 @@ void RenderOpenGLScene(Widget w){
     glPushMatrix();
     glMultMatrixf(rotation_matrix); 
 
-    glTranslatef(-sCen.x, -sCen.y, -sCen.z);
+    glTranslatef(-cStructure->strCen->x, -cStructure->strCen->y, -cStructure->strCen->z);
 
     DrawStructure();
     glPopMatrix();
