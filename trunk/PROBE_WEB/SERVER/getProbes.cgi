@@ -6,6 +6,7 @@ use strict;
 sub run_request() {
   my $plength = $probe_server::params{"plength"};
   if (not $plength) { return "Missing parameter 'plength'"; }
+  my $exact = $probe_server::params{"exact"};
 
   my @requested_lengths = ();
   if ($plength eq 'all') { @requested_lengths = probe_server::available_servers(); }
@@ -20,11 +21,13 @@ sub run_request() {
   my @result_name;
   my $dl;
   my $error;
+  my $request_command = 'getnonexactprobes';
+  if ($exact == 1) { $request_command = 'getexactprobes'; }
 
   # write all requests:
   for ($dl=0; $dl<$diff_lens and not $error; $dl++) {
     ($request_name[$dl],$result_name[$dl]) = probe_server::generate_filenames($requested_lengths[$dl],0);
-    $error = probe_server::write_std_request($request_name[$dl], 'getprobes');
+    $error = probe_server::write_std_request($request_name[$dl], $request_command);
   }
 
   if ($error) { # error occurred while writing request $dl
