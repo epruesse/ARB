@@ -14,6 +14,10 @@
  *
  * This should compile and run with any ANSI C compiler.
  *
+ * ------------------------------------------------------------
+ *
+ * Some slight modifications were done by ARB developers
+ *
  */
 
 
@@ -149,30 +153,29 @@ Local void ungetline(struct ReadSeqVars *V)
 }
 
 
-Local void 
-addseq(char *s, struct ReadSeqVars * V)
+Local void addseq(char *s, struct ReadSeqVars * V)
 {
-	char           *ptr;
-	int             count = 0;
-	if (V->addit){
-		for  (;*s != 0;s++,count++) {
-			if (count < 9 && V->isseqcharfirst8) {
-				if (!(V->isseqcharfirst8) (*s)) continue;
-			}else{
-				if (!(V->isseqchar) (*s)) continue;
-			}
-			if (V->seqlen >= V->maxseq) {
-				V->maxseq += kStartLength;
-				ptr = (char *) realloc(V->seq, V->maxseq + 1);
-				if (ptr == NULL) {
-					V->err = eMemFull;
-					return;
-				} else
-					V->seq = ptr;
-			}
-			V->seq[(V->seqlen)++] = *s;
-		}
-	}
+    char *ptr;
+    int   count = 0;
+    if (V->addit) {
+        for  (;*s != 0;s++,count++) {
+            if (count < 9 && V->isseqcharfirst8) {
+                if (!(V->isseqcharfirst8) (*s)) continue;
+            }else{
+                if (!(V->isseqchar) (*s)) continue;
+            }
+            if (V->seqlen >= V->maxseq) {
+                V->maxseq += kStartLength;
+                ptr = (char *) realloc(V->seq, V->maxseq + 1);
+                if (ptr == NULL) {
+                    V->err = eMemFull;
+                    return;
+                } else
+                    V->seq = ptr;
+            }
+            V->seq[(V->seqlen)++] = *s;
+        }
+    }
 }
 
 Local void countseq(char *s, struct ReadSeqVars *V)
@@ -328,28 +331,28 @@ Local boolean endGB( boolean *addend, boolean *ungetend, struct ReadSeqVars *V)
   return ((strstr(V->s,"//") != NULL) || *ungetend);
 }
 
-Local void 
-readGenBank(struct ReadSeqVars * V)
-{				/* GenBank -- many seqs/file */
-	V->isseqchar = isSeqNumChar;
-	V->isseqcharfirst8 = isSeqChar;
-	while (!V->allDone) {
-		strcpy(V->seqid, (V->s) + 12);
-		while (!(feof(V->f) || strstr(V->s, "ORIGIN") == V->s))
-			getline(V);
-		readLoop(0, false, endGB, V);
+Local void readGenBank(struct ReadSeqVars * V)
+{ /* GenBank -- many seqs/file */
 
-		if (!V->allDone) {
-			while (!(feof(V->f) || ((*V->s != 0)
-				       && (strstr(V->s, "LOCUS") == V->s))))
-				getline(V);
-		}
-		if (feof(V->f))
-			V->allDone = true;
-	}
+  V->isseqchar       = isSeqNumChar;
+  V->isseqcharfirst8 = isSeqChar;
 
-	V->isseqchar = isSeqChar;
-	V->isseqcharfirst8 = 0;
+  while (!V->allDone) {
+    strcpy(V->seqid, (V->s)+12);
+    while (! (feof(V->f) || strstr(V->s,"ORIGIN") == V->s))
+      getline(V);
+    readLoop(0, false, endGB, V);
+
+    if (!V->allDone) {
+     while (! (feof(V->f) || ((*V->s != 0)
+       && (strstr( V->s, "LOCUS") == V->s))))
+        getline(V);
+      }
+    if (feof(V->f)) V->allDone = true;
+  }
+
+  V->isseqchar = isSeqChar;
+  V->isseqcharfirst8 = 0;
 }
 
 
@@ -1491,8 +1494,12 @@ unsigned long CRC32checksum(const char *seq, const long seqlen, unsigned long *c
 {
   register unsigned long c = 0xffffffffL;
   register long n = seqlen;
-	if (!seq) return 0;
-  while (n--) c = crctab[((int)c ^ (to_upper(*seq++))) & 0xff] ^ (c >> 8);
+
+  if (!seq) return 0;
+  while (n--) {
+      c = crctab[((int)c ^ (to_upper(*seq))) & 0xff] ^ (c >> 8);
+      seq++; /* fixed aug'98 finally */
+  }
   c= c ^ 0xffffffffL;
   *checktotal += c;
   return c;
