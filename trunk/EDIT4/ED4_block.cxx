@@ -448,10 +448,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
         AW_pos termw_x, termw_y;
         seq_term->calc_world_coords(&termw_x, &termw_y);
 
-        AW_pos seq_relx;
-        ED4_index scr_pos;
-        ED4_cursor::calc_cursor_position(event->x-termw_x, &seq_relx, &scr_pos);
-
+        ED4_index scr_pos = ED4_ROOT->pixel2pos(event->x - termw_x);
         ED4_remap *remap = ED4_ROOT->root_group_man->remap();
         seq_pos = remap->screen_to_sequence(scr_pos);
     }
