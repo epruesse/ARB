@@ -7,6 +7,7 @@
 //#include <nt_edconf.hxx>
 #include "GEN_db.hxx"
 
+#define AWAR_GENE_NAME "blabla"
 
 static GBDATA *get_current_gene(AW_root *root) {
     GB_transaction dummy(gb_main);
@@ -36,7 +37,7 @@ AW_window *create_gene_rename_window(AW_root *root)
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
     aws->create_button(0,"Please enter the new name\nof the gene");
@@ -46,7 +47,7 @@ AW_window *create_gene_rename_window(AW_root *root)
     aws->at("ok");
     aws->callback(gene_rename_cb);
     //aws->callback(species_rename_cb);
-    aws->create_button("GO","GO","G");			   
+    aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
 }
@@ -59,7 +60,7 @@ AW_window *create_gene_copy_window(AW_root *root)
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
     aws->create_button(0,"Please enter the name\nof the new gene");
@@ -69,7 +70,7 @@ AW_window *create_gene_copy_window(AW_root *root)
 
     aws->at("ok");
     aws->callback(gene_copy_cb);
-    aws->create_button("GO","GO","G");			   
+    aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
 }
@@ -82,7 +83,7 @@ AW_window *create_gene_create_window(AW_root *root)
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
     aws->create_button(0,"Please enter the name\nof the new gene");
@@ -92,7 +93,7 @@ AW_window *create_gene_create_window(AW_root *root)
 
     aws->at("ok");
     aws->callback(gene_create_cb);
-    aws->create_button("GO","GO","G");			   
+    aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
 }
@@ -178,7 +179,7 @@ void gene_delete_cb(AW_window *aww){
 //     GB_begin_transaction(gb_main);
 //     GBDATA *gb_gene = get_current_gene(aw_root);
 
-	
+
 //     if (gb_gene) error = GB_delete(gb_gene);
 //     else		error = "Please select a gene first";
 
@@ -231,15 +232,15 @@ static AW_window_simple_menu *aws = 0;
 
     aws->at("close");
     aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("search");
     aws->callback(AW_POPUP, (AW_CL)GEN_create_gene_query_window, 0);
-    aws->create_button("SEARCH","SEARCH","S");			   
+    aws->create_button("SEARCH","SEARCH","S");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
-    aws->create_button("HELP","HELP","H");			   
+    aws->create_button("HELP","HELP","H");
 
 
     AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER);
@@ -258,7 +259,7 @@ static AW_window_simple_menu *aws = 0;
 
     aws->get_root()->awar(AWAR_SPECIES_NAME)->add_callback(	AD_map_species,scannerid);
     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(	GEN_map_gene,scannerid);
-	
+
     aws->show();
     AD_map_species(aws->get_root(),scannerid);
     return (AW_window *)aws;
@@ -303,7 +304,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     aws->create_menu(       0,   "MORE_SEARCH",     "S" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",	"W",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 1 );
-    
+
     aws->button_length(7);
 
     aws->at("close");
@@ -311,7 +312,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     aws->create_button("CLOSE","CLOSE","C");
     aws->at("help");
     aws->callback( AW_POPUP_HELP,(AW_CL)"gene_search.hlp");
-    aws->create_button("HELP","HELP","H");			   
+    aws->create_button("HELP","HELP","H");
 
     return (AW_window *)aws;
 
