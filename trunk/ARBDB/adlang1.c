@@ -311,7 +311,8 @@ GB_ERROR gbl_len(GBDATA *gb_species, char *com,
 GB_ERROR gbl_remove(GBDATA *gb_species, char *com,
                     int argcinput, GBL *argvinput,
                     int argcparam,GBL *argvparam,
-                    int *argcout, GBL **argvout)	{
+                    int *argcout, GBL **argvout)
+{
     int i;
     char tab[256];				/* if tab[char] count 'char' */
     GBUSE(gb_species);GBUSE(com);
@@ -344,16 +345,19 @@ GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
                   int argcinput, GBL *argvinput,
                   int argcparam,GBL *argvparam,
                   int *argcout, GBL **argvout)	{
-    int i;
-    char tab[256];				/* if tab[char] count 'char' */
+    int  i;
+    char tab[256];				/* if tab[char] != 0 then keep'char' */
     GBUSE(gb_species);GBUSE(com);
 
 
     if (argcparam!=1) return "keep syntax: keep(\"characters not to remove\")";
 
-    for (i=0;i<256;i++) {
-        if (strchr(argvparam[0].str,i)) tab[i] = 0;
-        else tab[i] = 1;
+    memset(tab, 0, 256); // keep none
+    {
+        unsigned char *keep = (unsigned char*)argvparam[0].str;
+        for (i = 0; keep[i]; ++i) {
+            tab[keep[i]] = 1; // keep all members of argument
+        }
     }
 
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
@@ -362,7 +366,7 @@ GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
         char *p;
         strstruct = GBS_stropen(1000);
         for  (p = argvinput[i].str;*p;p++){
-            if (!tab[(unsigned int)*p]) {
+            if (tab[(unsigned int)*p]) {
                 GBS_chrcat(strstruct,*p);
             }
         }
@@ -371,6 +375,63 @@ GB_ERROR gbl_keep(GBDATA *gb_species, char *com,
     }
     return 0;
 }
+
+GB_ERROR gbl_translate(GBDATA *gb_species, char *com,
+                       int argcinput, GBL *argvinput,
+                       int argcparam,GBL *argvparam,
+                       int *argcout, GBL **argvout)
+{
+    unsigned char tab[256];
+    int  i;
+    char replace_other = 0;
+    GBUSE(gb_species);GBUSE(com);
+
+    if (argcparam<2 || argcparam>3) return "translate syntax: translate(#old, #new [,#other])";
+
+    if (argcparam == 3) {
+        const char *other = argvparam[2].str;
+        if (other[0] == 0 || other[1] != 0) {
+            return "third parameter of translate has to be one character (i.e. \"-\")";
+        }
+        replace_other = other[0];
+    }
+
+    /* build translation table : */
+    {
+        const unsigned char *o = (const unsigned char *)argvparam[0].str;
+        const unsigned char *n = (const unsigned char *)argvparam[1].str;
+        char        used[256];
+
+        if (strlen((const char *)o) != strlen((const char *)n)) {
+            return "arguments 1 and 2 of translate should be strings with identical length";
+        }
+
+        for (i = 0; i<256; ++i) {
+            tab[i]  = replace_other ? replace_other : i; // replace unused or identity translation
+            used[i] = 0;
+        }
+
+        for (i = 0; o[i]; ++i) {
+            if (used[o[i]]) return GBS_global_string("character '%c' used twice in argument 1 of translate", o[i]);
+            used[o[i]] = 1;
+            tab[o[i]]  = n[i]; // real translation
+        }
+    }
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {		/* go through all orig streams	*/
+        void *strstruct;
+        char *p;
+        strstruct = GBS_stropen(1000);
+        for  (p = argvinput[i].str;*p;p++){
+            GBS_chrcat(strstruct, tab[(unsigned char)*p]);
+        }
+        (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
+        /* export result string */
+    }
+    return 0;
+}
+
 
 GB_ERROR gbl_echo(GBDATA *gb_species, char *com,
                   int argcinput, GBL *argvinput,
@@ -637,10 +698,9 @@ GB_ERROR gbl_extract_words(GBDATA *gb_species, char *com,
                            int argcinput, GBL *argvinput,
                            int argcparam,GBL *argvparam,
                            int *argcout, GBL **argvout)	{
-    int i;
+    int   i;
     float len;
-    if (argcparam==0) return "extract_words needs two parameters:\nextract_words(\"Characters\",min_characters";
-    if (argcparam>2) return "extract_words needs two parameters:\nextract_words(\"Characters\",min_characters";
+    if (argcparam != 2) return "extract_words needs two parameters:\nextract_words(\"Characters\",min_characters)";
     GBUSE(gb_species);GBUSE(com);
     len = atof(argvparam[1].str);
 
@@ -657,14 +717,14 @@ GB_ERROR gbl_extract_sequence(GBDATA *gb_species, char *com,
                               int argcinput, GBL *argvinput,
                               int argcparam,GBL *argvparam,
                               int *argcout, GBL **argvout)	{
-    int i;
-    float len;
-    GB_ERROR errs = "extract_sequence needs two parameters:\nextract_words(\"Characters\",min_rel_characters [0.0-1.0]";
-    if (argcparam==0) return errs;
-    if (argcparam>2) return errs;
+    int      i;
+    float    len;
+    GB_ERROR syntax_err = "extract_sequence needs two parameters:\nextract_words(\"Characters\",min_rel_characters [0.0-1.0])";
+
+    if (argcparam != 2) return syntax_err;
     GBUSE(gb_species);GBUSE(com);
     len = atof(argvparam[1].str);
-    if (len <0.0 || len > 1.0) return errs;
+    if (len <0.0 || len > 1.0) return syntax_err;
 
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
@@ -880,7 +940,7 @@ GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, /* gb_item may be a species or
             gb_seq = GBT_read_sequence(gb_item,use);
 
             if (gb_seq) (*argvout)[(*argcout)++].str = GB_read_string(gb_seq); /* export result string */
-            else        (*argvout)[(*argcout)++].str = GB_STRDUP("no sequence"); /* export result string */
+            else        (*argvout)[(*argcout)++].str = GB_STRDUP(""); /* if current alignment does not exist -> return empty string */
 
             free(use);
 
@@ -1282,7 +1342,6 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 
 struct GBL_command_table gbl_command_table[] = {
     {"caps", gbl_string_convert } ,
-    {"caps", gbl_string_convert } ,
     {"change", gbl_change_gc },
     {"checksum", gbl_check } ,
     {"command", gbl_command } ,
@@ -1320,6 +1379,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"srt", gbl_srt },
     {"tab", gbl_tab } ,
     {"tail", gbl_tail } ,
+    {"translate", gbl_translate } ,
     {"upper", gbl_string_convert } ,
     {"origin_organism", gbl_origin } ,
     {"origin_gene", gbl_origin } ,
