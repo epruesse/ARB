@@ -884,7 +884,7 @@ void AP_tree_nlen::parsimony_rek(void)
     AP_FLOAT mutations_for_combine = sequence->combine(Leftson()->sequence, Rightson()->sequence);
     mutation_rate                  = Leftson()->mutation_rate + Rightson()->mutation_rate + mutations_for_combine;
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     printf("mutation-rates: left=%f right=%f combine=%f overall=%f %s\n",
            Leftson()->mutation_rate, rightson->mutation_rate, mutations_for_combine, mutation_rate,
            fullname());

@@ -9,7 +9,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile strunk********
 TITLE		Print a Graphic to a Printer
 
-OCCURRENCE	ARB_NT/File/Print Tree
+OCCURRENCE	ARB_NT/Tree/Print Tree
 
 DESCRIPTION	Multi Page Printer
 
