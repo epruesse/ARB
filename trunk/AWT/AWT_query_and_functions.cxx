@@ -982,16 +982,13 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
 	delete str;
 }
 
-//  ------------------------------------------------------------------------
-//      static void awt_colorize(void *dummy, struct adaqbsstruct *cbs)
-//  ------------------------------------------------------------------------
-static void awt_colorize(void */*dummy*/, struct adaqbsstruct *cbs) {
-	GB_transaction trans_dummy(cbs->gb_main);
-    GB_ERROR       error = 0;
-
-    AW_root         *aw_root     = cbs->aws->get_root();
-    int              color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    AWT_QUERY_RANGE  range       = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+static void awt_colorize_listed(AW_window */*dummy*/, AW_CL cl_cbs) {
+    struct adaqbsstruct *cbs         = (struct adaqbsstruct *)cl_cbs;
+	GB_transaction       trans_dummy(cbs->gb_main);
+    GB_ERROR             error       = 0;
+    AW_root             *aw_root     = cbs->aws->get_root();
+    int                  color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    AWT_QUERY_RANGE      range       = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1002,7 +999,7 @@ static void awt_colorize(void */*dummy*/, struct adaqbsstruct *cbs) {
              gb_item       = cbs->selector->get_next_item(gb_item))
         {
             if (IS_QUERIED(gb_item,cbs)) {
-                AW_set_color_group(gb_item, color_group);
+                error = AW_set_color_group(gb_item, color_group);
             }
         }
     }
@@ -1010,9 +1007,75 @@ static void awt_colorize(void */*dummy*/, struct adaqbsstruct *cbs) {
     if (error) GB_export_error(error);
 }
 
-// --------------------------------------------------------------
-//      static const char *color_group_name(int color_group)
-// --------------------------------------------------------------
+struct color_mark_data {
+    const ad_item_selector *sel;
+    GBDATA                 *gb_main;
+};
+
+static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
+    const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
+    const ad_item_selector *sel         = cmd->sel;
+	GB_transaction          trans_dummy(cmd->gb_main);
+    GB_ERROR                error       = 0;
+    AW_root                *aw_root     = aww->get_root();
+    int                     color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    AWT_QUERY_RANGE         range       = AWT_QUERY_ALL_SPECIES; // @@@ FIXME: make customizable
+
+    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+         !error && gb_item_container;
+         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item       = sel->get_next_item(gb_item))
+        {
+            if (GB_read_flag(gb_item)) {
+                error = AW_set_color_group(gb_item, color_group);
+            }
+        }
+    }
+
+    if (error) GB_export_error(error);
+}
+static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
+{
+    const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
+    const ad_item_selector *sel         = cmd->sel;
+    int                     mode        = int(cl_mode); // 0 = unmark 1 = mark 2 = invert
+    GB_ERROR                error       = 0;
+    AW_root                *aw_root     = aww->get_root();
+    int                     color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    AWT_QUERY_RANGE         range       = AWT_QUERY_ALL_SPECIES; // @@@ FIXME: make customizable
+
+	GB_transaction trans_dummy(cmd->gb_main);
+
+    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+         !error && gb_item_container;
+         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item       = sel->get_next_item(gb_item))
+        {
+            long my_color = AW_find_color_group(gb_item, true);
+            if (my_color == color_group) {
+                bool marked = GB_read_flag(gb_item);
+
+                switch (mode) {
+                    case 0: marked = 0; break;
+                    case 1: marked = 1; break;
+                    case 2: marked = !marked; break;
+                    default : awt_assert(0); break;
+                }
+
+                error = GB_write_flag(gb_item, marked);
+            }
+        }
+    }
+
+    if (error) GB_export_error(error);
+}
+
 static const char *color_group_name(int color_group) {
     static char buf[30];
 
@@ -1025,16 +1088,35 @@ static const char *color_group_name(int color_group) {
 
     return buf;
 }
+// -------------------------------------------------------------------------------------------------------------------------------------------------
+//      static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, struct adaqbsstruct *cbs, const ad_item_selector *sel)
+// -------------------------------------------------------------------------------------------------------------------------------------------------
+// invoked by   'colorize listed'                   (sel != 0)
+// and          'colorize marked/mark colored'      (cbs != 0)
+//
+static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, struct adaqbsstruct *cbs, const ad_item_selector *sel) {
+    enum { AWT_COL_INVALID, AWT_COL_COLORIZE_LISTED, AWT_COL_COLORIZE_MARKED } mode = AWT_COL_INVALID;
 
-//  ------------------------------------------------------------------------------------
-//      AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs)
-//  ------------------------------------------------------------------------------------
-AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
+    awt_query_create_global_awars(aw_root, AW_ROOT_DEFAULT);
+
 	AW_window_simple *aws = new AW_window_simple;
 
+    if (cbs) {
+        awt_assert(mode == AWT_COL_INVALID);
+        mode = AWT_COL_COLORIZE_LISTED;
+    }
+    if (sel) {
+        awt_assert(mode == AWT_COL_INVALID);
+        mode = AWT_COL_COLORIZE_MARKED;
+    }
+    awt_assert(mode != AWT_COL_INVALID);
+
+    const ad_item_selector *Sel  = mode == AWT_COL_COLORIZE_LISTED ? cbs->selector : sel;
+    const char             *what = mode == AWT_COL_COLORIZE_LISTED ? "listed" : "marked";
+
     {
-        char *macro_name = strdup(GBS_global_string("COLORIZE_%s", cbs->selector->items_name));
-        char *window_name = strdup(GBS_global_string("Colorize listed %s", cbs->selector->items_name));
+        char *macro_name  = strdup(GBS_global_string("COLORIZE_%s", Sel->items_name));
+        char *window_name = strdup(GBS_global_string("Colorize %s %s", what, Sel->items_name));
 
         aws->init( aw_root, macro_name, window_name, 300, 0 );
 
@@ -1042,37 +1124,105 @@ AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
         free(macro_name);
     }
 
-    aws->at(10, 10);
-    aws->auto_space(5, 5);
+    aws->load_xfig("colorize.fig");
+
+    aws->auto_space(10, 10);
+
+    aws->at("close");
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP,(AW_CL)(mode == AWT_COL_COLORIZE_LISTED ? "set_color_of_listed.hlp" : "colorize.hlp"));
+	aws->create_button("HELP","HELP","H");
+
+    aws->at("colorize");
+
+    color_mark_data *cmd = 0; // do not free!
+    if (mode == AWT_COL_COLORIZE_MARKED) {
+        cmd          = new color_mark_data;
+        cmd->sel     = sel;
+        cmd->gb_main = gb_main;
+    }
+
+    if (mode == AWT_COL_COLORIZE_LISTED)    aws->callback(awt_colorize_listed, (AW_CL)cbs);
+    else                                    aws->callback(awt_colorize_marked, (AW_CL)cmd);
+
+    aws->create_autosize_button("COLORIZE", GB_strdup(GBS_global_string("Set color of %s %s to ...", what, Sel->items_name)), "S", 2);
 
     {
         int color_group;
 
-        aws->label(GBS_global_string("Set color of %s to", cbs->selector->items_name));
         aws->create_option_menu(AWAR_COLORIZE);
-        for (color_group = 0; color_group <= AW_COLOR_GROUPS; ++color_group) {
-            if (color_group == 0) aws->insert_default_option(color_group_name(0), "none", 0);
-            else aws->insert_option(color_group_name(color_group), "", color_group);
+        aws->insert_default_option(color_group_name(0), "none", 0);
+        for (color_group = 1; color_group <= AW_COLOR_GROUPS; ++color_group) {
+            aws->insert_option(color_group_name(color_group), "", color_group);
         }
         aws->update_option_menu();
     }
+
+    if (mode == AWT_COL_COLORIZE_MARKED) {
+        aws->at("mark");
+        aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)1);
+        aws->create_autosize_button("MARK_COLORED", GB_strdup(GBS_global_string("Mark all %s of ...", Sel->items_name)), "M", 2);
+
+        aws->at("unmark");
+        aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)0);
+        aws->create_autosize_button("UNMARK_COLORED", GB_strdup(GBS_global_string("Unmark all %s of ...", Sel->items_name)), "U", 2);
+
+        aws->at("invert");
+        aws->callback(awt_mark_colored, (AW_CL)cmd, (AW_CL)2);
+        aws->create_autosize_button("INVERT_COLORED", GB_strdup(GBS_global_string("Invert all %s of ...", Sel->items_name)), "I", 2);
+    }
+
     aws->at_newline();
-
-    aws->callback((AW_CB1)awt_colorize, (AW_CL)cbs);
-    aws->create_button("GO","GO", "G");
-
-    aws->callback((AW_CB0) AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE", "C");
-
-	aws->callback(AW_POPUP_HELP,(AW_CL)"set_color_of_listed.hlp");
-	aws->create_button("HELP","HELP","H");
-
-    aws->at_newline();
-
     aws->window_fit();
 
     return aws;
 }
+
+AW_window *create_awt_listed_items_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
+    return create_awt_colorizer_window(aw_root, cbs->gb_main, cbs, 0);
+}
+
+AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel) {
+    return create_awt_colorizer_window(aw_root, gb_main, 0, sel);
+}
+
+//     AW_window_simple *aws = new AW_window_simple;
+
+//     {
+//         char *macro_name = GB_strdup(GBS_global_string("COLORIZE_%s", sel->items_name));
+//         char *title      = GB_strdup(GBS_global_string("Colorize and mark %s", sel->items_name));
+
+//         aws->init(aw_root, macro_name, title, 100, 100);
+
+//         free(title);
+//         free(macro_name);
+//     }
+
+//     aws->load_xfig("colorize.fig");
+
+//     aws->at("close");
+//     aws->callback((AW_CB0)AW_POPDOWN);
+//     aws->create_button("CLOSE","CLOSE","C");
+
+//     aws->at("help");
+//     aws->callback( AW_POPUP_HELP,(AW_CL)"colorize_items.hlp");
+//     aws->create_button("HELP","HELP","H");
+
+// #if 0
+//     aws->at("color");
+//     aws->create_option_menu(AWAR_CURRENT_COLOR);
+//     for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
+//         aws->insert_option(AW_get_color_group_name(aw_root, i), 0, i);
+//     }
+//     aws->update_option_menu();
+// #endif
+
+//     return aws;
+// }
+
 
 AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 {
@@ -1791,7 +1941,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	    aws->insert_separator();
 
 
-	    sprintf(buffer, "Set Color of Listed %s", Items);    aws->insert_menu_topic("set_color_of_listed", buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_colorizer, (AW_CL)cbs);
+	    sprintf(buffer, "Set Color of Listed %s", Items);    aws->insert_menu_topic("set_color_of_listed", buffer,"C","set_color_of_listed.hlp",-1,AW_POPUP, (AW_CL)create_awt_listed_items_colorizer, (AW_CL)cbs);
 
 	    if (cbs->gb_ref){
             awt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES); // stuff below works only for species
