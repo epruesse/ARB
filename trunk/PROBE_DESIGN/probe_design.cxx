@@ -759,9 +759,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             char           *locs_error        = 0;
 
             if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                          LOCS_MATCH_LIST,        &match_list,        
-                          LOCS_MATCH_LIST_CNT,    &match_list_cnt,    
-                          LOCS_MATCH_STRING,      &bs,                
+                          LOCS_MATCH_LIST,        &match_list,
+                          LOCS_MATCH_LIST_CNT,    &match_list_cnt,
+                          LOCS_MATCH_STRING,      &bs,
                           LOCS_MATCHES_TRUNCATED, &matches_truncated, 
                           LOCS_ERROR,             &locs_error,        
                           0))
@@ -773,6 +773,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             free(locs_error);
 
             root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "> %li" : "%li", match_list_cnt));
+            if (matches_truncated) {
+                aw_message("Too many matches - list does not necessarily contain best matches.");
+            }
         }
 
         long mcount                = 0;
@@ -1023,7 +1026,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (error) last_line                  = GBS_global_string("****** Error: %s *******", error);
             else if (matches_truncated) last_line = "****** List is truncated *******";
             else        last_line                 = "****** End of List *******";
-            
+
             aww->insert_default_selection( selection_id, last_line, "" );
 
             if (show_status) aw_status("Formatting output");
@@ -1364,11 +1367,11 @@ AW_window *create_probe_design_window( AW_root *root, AW_CL cl_genome_db)  {
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at("lenout"  ); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
-    aws->at("mishit"  ); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6); 
-    aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6); 
-    aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6); 
+    aws->at("mishit"  ); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
+    aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6);
+    aws->at("minhits" ); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
-    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5); 
+    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);
     aws->at("mint"  ); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5); 
     aws->at("maxt"  ); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5); 
     aws->at("mingc" ); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5); 
