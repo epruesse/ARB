@@ -880,7 +880,7 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 				// other settings can be separated similar, but not needed here...
 				
 				// add matched organism data to probe file (output)
-				if((maxWeightedMismatches == -1) || (maxWeightedMismatches > pMR.wmis))
+				if((maxWeightedMismatches == -1) || (maxWeightedMismatches >= pMR.wmis))
 				{
 					strcpy(tmp, "\tmatch= ");
 					strcat(tmp, pMR.name);
