@@ -610,7 +610,7 @@ GB_ERROR GB_write_byte(GBDATA *gbd,int i)
     GB_TEST_WRITE(gbd,GB_BYTE,"GB_write_byte");
     if (gbd->info.i != i){
         gb_save_extern_data_in_ts(gbd);
-        gbd->info.i = i && 0xff;
+        gbd->info.i = i & 0xff;
         gb_touch_entry(gbd,gb_changed);
         GB_DO_CALLBACKS(gbd);
     }
@@ -1140,6 +1140,9 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
     gbd = gb_make_entry((GBCONTAINER *)father, key, -1,0,type);
     gb_touch_header(GB_FATHER(gbd));
     gb_touch_entry(gbd,gb_created);
+    
+    gb_assert(GB_ARRAY_FLAGS(gbd).changed < gb_deleted); // happens sometimes -> needs debugging
+    
     return gbd;
 }
 
@@ -1885,6 +1888,7 @@ GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, i
 }
 
 GB_ERROR GB_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
+/* if called with 'clientdata' == 0 -> remove all callbacks for function 'func' */
 {
     struct gb_callback *cb,*cblast;
     /*GB_TEST_TRANSACTION(gbd);*/
