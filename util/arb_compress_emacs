@@ -1,3 +1,0 @@
-#!/bin/sh
-rm -f arb_ale.tgz
-tar cfv - DEPOT2/emacs* DEPOT2/ALE |gzip >arb_ale.tgz
