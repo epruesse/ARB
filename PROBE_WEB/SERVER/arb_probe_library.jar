@@ -6,7 +6,7 @@ use strict;
 my $clientfile = probe_server::clientfilename();
 
 if (-f $clientfile) {
-  probe_server::print_download_header('application/gzip', probe_server::clientbasename());
+  probe_server::print_download_header('application/jar', probe_server::clientbasename());
   system("cat $clientfile");
 }
 else {
