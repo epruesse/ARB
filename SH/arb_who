@@ -3,5 +3,5 @@ host=`uname -n`
 if test -f /usr/ucb/ps; then
 	/usr/ucb/ps auxw | grep arb_ | grep -v 'sh' | grep -v grep |grep -v '/bin/sh' | sed -e "s/^/$host\:/g"
 else
-	ps -auxw | grep arb | grep -v 'sh' | grep -v grep |grep -v '/bin/sh' | sed -e "s/^/$host\:/g" 
+	ps auxw | grep arb_ | grep -v 'sh' | grep -v grep |grep -v '/bin/sh' | sed -e "s/^/$host\:/g" 
 fi
