@@ -46,6 +46,8 @@ pg_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pg_main.o: pg_search.hxx pg_def.hxx $(ARBHOME)/INCLUDE/arb_assert.h
 pg_main.o: pg_db.hxx $(ARBHOME)/INCLUDE/arbdb.h
 pg_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+pg_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+pg_main.o: $(ARBHOME)/INCLUDE/output.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pg_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ../global_defs.h ../common.h
 
