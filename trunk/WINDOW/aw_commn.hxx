@@ -2,7 +2,6 @@
 #define aw_commn_hxx_included
 
 #define _AW_COMMON_INCLUDED
-#define AW_MAP_GC(gc) common->gcs[gc]
 
 #define AW_INT(x) (  ((x)>=0) ? (int) ((x)+.5):(int )((x)-.5) )
 
@@ -22,7 +21,7 @@ public:
 	short			fontsize;
 	AW_font			fontnr;
 
-	AW_function function;			
+	AW_function function;
 	AW_pos			grey_level;
 	AW_GC_Xm(class AW_common	*common);
 	~AW_GC_Xm();
@@ -52,6 +51,16 @@ class AW_common {
 	AW_pos	x_alignment(AW_pos x_pos,AW_pos x_size,AW_pos alignment)
 		{ return x_pos- x_size*alignment; };
 };
+
+
+// #define AW_MAP_GC(gc) (aw_assert(gc<common->ngcs), common->gcs[gc])
+
+inline AW_GC_Xm *AW_MAP_GC_tested(AW_common *common, int gc) {
+    aw_assert(gc < common->ngcs);
+    aw_assert(common->gcs[gc]);
+    return common->gcs[gc];
+}
+#define AW_MAP_GC(gc) AW_MAP_GC_tested(common, gc)
 
 
 #endif
