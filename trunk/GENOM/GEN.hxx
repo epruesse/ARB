@@ -38,9 +38,9 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 AW_window *GEN_create_gene_window(AW_root *aw_root);
 void       GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL); // preferred over GEN_create_gene_window
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
-AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas);
+AW_window *GEN_map_first(AW_root *aw_root);
 
-void       GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas);
+void       GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
 
 // --------------------------------------------------------------------------------
 // genes:
