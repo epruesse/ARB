@@ -107,8 +107,7 @@ ORS_S_cf.o:
 ORS_S_cf.o:  
 ORS_S_cf.o:  
 ORS_S_cf.o:  
-ORS_S_cf.o: 
-ORS_S_cf.o: $(ARBHOME)/INCLUDE/ors_server.h
+ORS_S_cf.o:  $(ARBHOME)/INCLUDE/ors_server.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/ors_client.h ors_s.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/ad_prot.h

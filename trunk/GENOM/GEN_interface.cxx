@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <awt.hxx>
 #include <ntree.hxx>
 #include <aw_awars.hxx>
@@ -13,6 +14,116 @@
 // --------------------------------------------------------------------------------
 
 #define AD_F_ALL (AW_active)(-1)
+
+// --------------------------------------------------------------------------------
+
+static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
+    char *name  = strdup(item_name);
+    char *slash = strchr(name, '/');
+
+    if (slash) {
+        slash[0] = 0;
+        aw_root->awar(AWAR_SPECIES_NAME)->write_string(name);
+        aw_root->awar(AWAR_GENE_NAME)->write_string(slash+1);
+    }
+    free(name);
+}
+
+static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_gene) {
+    GBDATA *gb_name = GB_find(gb_gene, "name", 0, down_level);
+    if (!gb_name) return 0;     // gene w/o name -> skip
+
+    GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
+    GBDATA *gb_sp_name = GB_find(gb_species, "name", 0, down_level);
+    if (!gb_sp_name) return 0;  // species w/o name -> skip
+
+    char *species_name = GB_read_as_string(gb_sp_name);
+    char *gene_name = GB_read_as_string(gb_name);
+
+    char *result = (char*)malloc(strlen(species_name)+1+strlen(gene_name)+1);
+    strcpy(result, species_name);
+    strcat(result, "/");
+    strcat(result, gene_name);
+
+    free(gene_name);
+    free(species_name);
+
+    return result;
+}
+
+//  ---------------------------------------------------------------------------------------------------------
+//      static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)
+//  ---------------------------------------------------------------------------------------------------------
+static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
+    GBDATA *gb_species = 0;
+    switch (range) {
+        case AWT_QUERY_CURRENT_SPECIES: {
+            char *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+            gb_species         = GBT_find_species(gb_main, species_name);
+            free(species_name);
+            break;
+        }
+        case AWT_QUERY_MARKED_SPECIES: {
+            gb_species = GBT_first_marked_species(gb_main);
+            break;
+        }
+        case AWT_QUERY_ALL_SPECIES: {
+            gb_species = GBT_first_species(gb_main);
+            break;
+        }
+        default: {
+            gb_assert(0);
+            break;
+        }
+    }
+
+    return gb_species ? GEN_get_gene_data(gb_species) : 0;
+}
+//  -------------------------------------------------------------------------------------------
+//      static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range)
+//  -------------------------------------------------------------------------------------------
+static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+    GBDATA *gb_species = 0;
+    switch (range) {
+        case AWT_QUERY_CURRENT_SPECIES: {
+            break;
+        }
+        case AWT_QUERY_MARKED_SPECIES: {
+            GBDATA *gb_last_species = GB_get_father(gb_gene_data);
+            gb_species              = GBT_next_marked_species(gb_last_species);
+            break;
+        }
+        case AWT_QUERY_ALL_SPECIES: {
+            GBDATA *gb_last_species = GB_get_father(gb_gene_data);
+            gb_species              = GBT_next_species(gb_last_species);
+            break;
+        }
+        default: {
+            gb_assert(0);
+            break;
+        }
+    }
+
+    return gb_species ? GEN_get_gene_data(gb_species) : 0;
+}
+
+//  ----------------------------------------------------
+//      struct ad_item_selector GEN_item_selector =
+//  ----------------------------------------------------
+struct ad_item_selector GEN_item_selector         = {
+    AWT_QUERY_ITEM_GENES,
+    gen_select_gene,
+    gen_gene_result_name,
+    (AW_CB)awt_gene_field_selection_list_rescan_cb,
+    25,
+    CHANGE_KEY_PATH_GENES,
+    "gene",
+    "genes",
+    GEN_get_first_gene_data,
+    GEN_get_next_gene_data,
+    GEN_first_gene_rel_gene_data,
+    GEN_next_gene
+};
 
 // --------------------------------------------------------------------------------
 
@@ -78,16 +189,21 @@ void gene_rename_cb(AW_window *aww){
         GB_begin_transaction(gb_main);
 
         GBDATA *gb_gene_data = GEN_get_current_gene_data(gb_main, aww->get_root());
-        GBDATA *gb_source    = GEN_find_gene_rel_gene_data(gb_gene_data, source);
-        GBDATA *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
-        if (gb_dest) error         = "Sorry: gene already exists";
-        else if (!gb_source) error = "Please select a gene first";
+        if (!gb_gene_data) error = "Please select a species first";
         else {
-            GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
-            error           = GB_write_string(gb_name, dest);
-            if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+            GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
+            GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+
+            if (!gb_source) error   = "Please select a gene first";
+            else if (gb_dest) error = GB_export_error("Sorry: gene '%s' already exists", dest);
+            else {
+                GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
+                error           = GB_write_string(gb_name, dest);
+                if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+            }
         }
+
         if (!error){
             aww->hide();
             GB_commit_transaction(gb_main);
@@ -137,20 +253,26 @@ void gene_copy_cb(AW_window *aww){
     char     *source       = aww->get_root()->awar(AWAR_GENE_NAME)->read_string();
     char     *dest         = aww->get_root()->awar(AWAR_GENE_DEST)->read_string();
     GBDATA   *gb_gene_data = GEN_get_current_gene_data(gb_main, aww->get_root());
-    GBDATA   *gb_source    = GEN_find_gene_rel_gene_data(gb_gene_data, source);
-    GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
-    if (gb_dest) error         = "Sorry: gene already exists";
-    else if (!gb_source) error = "Please select a gene first";
+    if (!gb_gene_data) {
+        error = "Please select a species first.";
+    }
     else {
-        gb_dest = GB_create_container(gb_gene_data,"gene");
-        error = GB_copy(gb_dest, gb_source);
-        if (!error) {
-            GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
-            error = GB_write_string(gb_name,dest);
-        }
-        if (!error) {
-            aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+        GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
+        GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+
+        if (!gb_source) error   = "Please select a gene first";
+        else if (gb_dest) error = GB_export_error("Sorry: gene '%s' already exists", dest);
+        else {
+            gb_dest = GB_create_container(gb_gene_data,"gene");
+            error = GB_copy(gb_dest, gb_source);
+            if (!error) {
+                GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
+                error = GB_write_string(gb_name,dest);
+            }
+            if (!error) {
+                aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+            }
         }
     }
 
@@ -205,15 +327,9 @@ void gene_create_cb(AW_window *aww){
     GBDATA   *gb_gene_data = GEN_get_current_gene_data(gb_main, aw_root);
     GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
-    if (pos2<pos1) {
-        int p = pos1;
-        pos1  = pos2;
-        pos2  = p;
-    }
-
-    if (gb_dest) {
-        error = "Sorry: gene already exists";
-    }
+    if (!gb_gene_data) error = "Please select a species first";
+    else if (pos2<pos1) error     = "Illegal positions (endpos has to be greater than startpos)";
+    else if (gb_dest) error  = GB_export_error("Sorry: gene '%s' already exists", dest);
     else {
         gb_dest = GEN_create_gene_rel_gene_data(gb_gene_data, dest);
         if (gb_dest) {
@@ -280,8 +396,8 @@ void gene_delete_cb(AW_window *aww){
     GB_ERROR error    = 0;
     GBDATA   *gb_gene = GEN_get_current_gene(gb_main, aww->get_root()); // aw_root);
 
-    if (gb_gene)    error = GB_delete(gb_gene);
-    else error            = "Please select a gene first";
+    if (gb_gene) error = GB_delete(gb_gene);
+    else error         = "Please select a gene first";
 
     if (!error) GB_commit_transaction(gb_main);
     else GB_abort_transaction(gb_main);
@@ -306,10 +422,10 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 //      void GEN_create_field_items(AW_window *aws)
 //  ----------------------------------------------------
 void GEN_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...",	"r","spaf_reorder.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)CHANGE_KEY_PATH_GENES );
-//     aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...","D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_delete, 0 );
-    // @@@ aws->insert_menu_topic("create_field",		"Create Field ...",	"C","spaf_create.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_field_create, 0 );
-    // @@@ aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...", "r","spaf_reorder.hlp", AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector);
+    aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...", "D","spaf_delete.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector);
+    aws->insert_menu_topic("create_field",		"Create Field ...",	     "C","spaf_create.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&GEN_item_selector);
+    aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_gene_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 
@@ -339,7 +455,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     aws->create_button("HELP","HELP","H");
 
 
-    AW_CL scannerid       = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, CHANGE_KEY_PATH_GENES);
+    AW_CL scannerid       = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER, &GEN_item_selector);
     ad_global_scannerid   = scannerid;
     ad_global_scannerroot = aws->get_root();
 
@@ -360,6 +476,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
+
 //  ------------------------------------------------------------------
 //      AW_window *GEN_create_gene_query_window(AW_root *aw_root)
 //  ------------------------------------------------------------------
@@ -378,12 +495,13 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
 
     awtqs.gb_main		      = gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
-    awtqs.query_genes         = true;
-    awtqs.gene_name           = AWAR_GENE_NAME;
+//     awtqs.query_genes      = true;
+//     awtqs.gene_name        = AWAR_GENE_NAME;
     awtqs.select_bit	      = 1;
     awtqs.use_menu		      = 1;
-    awtqs.ere_pos_fig	      = "ere";
-    awtqs.by_pos_fig	      = "by";
+    awtqs.ere_pos_fig	      = "ere3";
+    awtqs.where_pos_fig	      = "where3";
+    awtqs.by_pos_fig	      = "by3";
     awtqs.qbox_pos_fig	      = "qbox";
     awtqs.rescan_pos_fig	  = 0;
     awtqs.key_pos_fig	      = 0;
@@ -398,8 +516,10 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
     awtqs.create_view_window  = (AW_CL)GEN_create_gene_window;
-    AW_CL cbs                 = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
-    gene_query_global_cbs     = cbs;
+    awtqs.selector            = &GEN_item_selector;
+
+    AW_CL cbs             = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
+    gene_query_global_cbs = cbs;
 
     aws->create_menu(       0,   "MORE_SEARCH",     "S" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",			"E",0,	-1, (AW_CB)awt_search_equal_entries, cbs, 0 );

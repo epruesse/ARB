@@ -50,8 +50,8 @@ CT_ntree.o:
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_ntree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx
-CT_ntree.o: CT_part.hxx CT_ntree.hxx
+CT_ntree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx CT_part.hxx
+CT_ntree.o: CT_ntree.hxx
 CT_rbtree.o:  
 CT_rbtree.o:  
 CT_rbtree.o:  
@@ -64,8 +64,8 @@ CT_rbtree.o:
 CT_rbtree.o:  $(ARBHOME)/INCLUDE/arbdb.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx
-CT_rbtree.o: CT_part.hxx CT_ntree.hxx CT_rbtree.hxx
+CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_mem.hxx CT_part.hxx
+CT_rbtree.o: CT_ntree.hxx CT_rbtree.hxx
 CT_dtree.o:  
 CT_dtree.o:  
 CT_dtree.o:  
@@ -78,8 +78,7 @@ CT_dtree.o:
 CT_dtree.o:  $(ARBHOME)/INCLUDE/arbdb.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_part.hxx
-CT_dtree.o: CT_hash.hxx
+CT_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_part.hxx CT_hash.hxx
 CT_ctree.o:  
 CT_ctree.o:  
 CT_ctree.o:  
@@ -92,8 +91,8 @@ CT_ctree.o:
 CT_ctree.o:  $(ARBHOME)/INCLUDE/arbdb.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdbt.h
-CT_ctree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_part.hxx
-CT_ctree.o: CT_hash.hxx CT_ntree.hxx CT_rbtree.hxx CT_dtree.hxx
+CT_ctree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h CT_part.hxx CT_hash.hxx
+CT_ctree.o: CT_ntree.hxx CT_rbtree.hxx CT_dtree.hxx
 CT_mem.o:  
 CT_mem.o:  
 CT_mem.o:  

@@ -10,12 +10,13 @@
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
 
-void create_species_var(AW_root *aw_root, AW_default aw_def);
+void       create_species_var(AW_root *aw_root, AW_default aw_def);
 AW_window *create_species_window(AW_root *aw_root);
 AW_window *ad_create_query_window(AW_root *aw_root);
-void ad_unquery_all();
-void ad_query_update_list();
-void ad_spec_create_field_items(AW_window *aws);
+void       ad_unquery_all();
+void       ad_query_update_list();
+void       ad_spec_create_field_items(AW_window *aws);
 
-AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_change_key_path);
-AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_change_key_path);
+AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
+AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
+AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);

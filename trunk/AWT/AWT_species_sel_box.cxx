@@ -18,7 +18,7 @@
 void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 {
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main, cbs->change_key_path, GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_key;
@@ -151,9 +151,15 @@ void awt_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilt
     awt_selection_list_rescan(gb_main,bitfilter);
 }
 
+void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
+{
+    AWUSE(dummy);
+    awt_gene_field_selection_list_rescan(gb_main,bitfilter);
+}
+
 AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter,
 										  const char *scan_xfig_label, const char *rescan_xfig_label,
-										  const char *change_key_path)
+										  const ad_item_selector *selector)
 {
     AW_selection_list*	id;
     GBDATA	*gb_key_data;
@@ -161,23 +167,23 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const 
     GB_push_transaction(gb_main);
 
     aws->at(scan_xfig_label);
-    id                   = aws->create_selection_list(varname,0,"",20,10);
-    cbs                  = new adawcbstruct;
-    cbs->aws             = aws;
-    cbs->gb_main         = gb_main;
-    cbs->id              = id;
-    cbs->def_filter      = (char *)type_filter;
-    cbs->change_key_path = strdup(change_key_path ? change_key_path : CHANGE_KEY_PATH);
+    id              = aws->create_selection_list(varname,0,"",20,10);
+    cbs             = new adawcbstruct;
+    cbs->aws        = aws;
+    cbs->gb_main    = gb_main;
+    cbs->id         = id;
+    cbs->def_filter = (char *)type_filter;
+    cbs->selector   = selector;
 
     if (rescan_xfig_label) {
         aws->at(rescan_xfig_label);
-        aws->callback((AW_CB)awt_selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
+        aws->callback(selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
         aws->create_button("RESCAN_DB", "RESCAN","R");
     }
 
     awt_create_selection_list_on_scandb_cb(0,cbs);
 
-    gb_key_data = GB_search(gb_main, cbs->change_key_path/*CHANGE_KEY_PATH*/, GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
     GB_pop_transaction(gb_main);
     return (AW_CL)cbs;
@@ -214,7 +220,7 @@ GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
 GB_BOOL awt_check_scanner_key_data(struct adawcbstruct *cbs,GBDATA *gbd)
 {
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main,cbs->change_key_path,GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main,cbs->selector->change_key_path,GB_CREATE_CONTAINER);
     return GB_check_father(gbd,gb_key_data);
 }
 
@@ -318,7 +324,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
                         awt_edit_changed_cb(0, cbs, GB_CB_CHANGED);
                     }
                 } else {
-                    GBDATA         *gb_key = awt_get_key(cbs->gb_main, key_name, cbs->change_key_path);
+                    GBDATA         *gb_key = awt_get_key(cbs->gb_main, key_name, cbs->selector->change_key_path);
                     error = GB_delete(gbd);
                     if (!error) {
                         cbs->aws->get_root()->awar(cbs->def_gbd)->write_int( (long) gb_key);
@@ -375,16 +381,17 @@ void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE 
 /* create an unmapped scanner box and optional some buttons,
    the return value is the id to further scanner functions */
 
-AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
-                               const char *box_pos_fig,	/* the position for the box in the xfig file */
-                               const char *delete_pos_fig,
-                               const char *edit_pos_fig,
-                               const char *edit_enable_pos_fig,
-                               AWT_SCANNERMODE scannermode,
-                               const char *rescan_pos_fig,	// AWT_VIEWER
-                               const char *mark_pos_fig,
-                               long type_filter,
-                               const char *change_key_path)
+
+AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
+                               const char             *box_pos_fig, /* the position for the box in the xfig file */
+                               const char             *delete_pos_fig,
+                               const char             *edit_pos_fig,
+                               const char             *edit_enable_pos_fig,
+                               AWT_SCANNERMODE         scannermode,
+                               const char             *rescan_pos_fig, // AWT_VIEWER
+                               const char             *mark_pos_fig,
+                               long                    type_filter,
+                               const ad_item_selector *selector)
 {
     static int           scanner_id = 0;
     struct adawcbstruct *cbs;
@@ -418,7 +425,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
     cbs->gb_user     = 0;
     cbs->gb_edit     = 0;
     cbs->scannermode = (char) scannermode;
-    cbs->change_key_path = strdup(change_key_path ? change_key_path : CHANGE_KEY_PATH);
+    cbs->selector    = selector;
 
     /*************** Create the delete button ****************/
     if (delete_pos_fig) {
@@ -458,8 +465,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
     /*************** Create the rescan button ****************/
     if (rescan_pos_fig) {
         aws->at(rescan_pos_fig);
-        aws->callback((AW_CB)awt_selection_list_rescan_cb,
-                      (AW_CL)cbs->gb_main,(AW_CL)type_filter);
+        aws->callback(cbs->selector->selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)type_filter);
         aws->create_button("RESCAN_DB", "RESCAN","R");
     }
 
@@ -565,7 +571,7 @@ void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
     int rest = 255;
     char *p;
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main, cbs->change_key_path, GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_key;

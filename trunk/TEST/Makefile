@@ -28,8 +28,8 @@ D_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 D_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 D_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 D_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
-D_main.o: $(ARBHOME)/INCLUDE/awt_preset.hxx d_classes.hxx
-D_main.o: d_main.hxx d_awt_graphic_designer.hxx
+D_main.o: $(ARBHOME)/INCLUDE/awt_preset.hxx d_classes.hxx d_main.hxx
+D_main.o: d_awt_graphic_designer.hxx
 D_classes.o:  
 D_classes.o:  
 D_classes.o:  

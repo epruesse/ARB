@@ -631,27 +631,109 @@ GB_ERROR gbl_readdb(GBDATA *gb_species, char *com,
 					Sequence Functions
 ********************************************************************************************/
 
+typedef enum enum_gbt_item_type {
+    GBT_ITEM_UNKNOWN,
+    GBT_ITEM_SPECIES,
+    GBT_ITEM_GENE
+} gbt_item_type;
 
-GB_ERROR gbl_sequence(GBDATA *gb_species, char *com,
-                      int argcinput, GBL *argvinput,
-                      int argcparam,GBL *argvparam,
-                      int *argcout, GBL **argvout)	{
-    char *use;
-    GBDATA *gb_seq;
+static gbt_item_type identify_gb_item(GBDATA *gb_item) {
+    // returns: GBT_ITEM_UNKNOWN    -> unknown database_item
+    //          GBT_ITEM_SPECIES    -> /species_data/species
+    //          GBT_ITEM_GENE       -> /species_data/species/gene_data/gene
+
+    GBDATA     *gb_father;
+    const char *key;
+
+    if (!gb_item) return GBT_ITEM_UNKNOWN;
+    gb_father = GB_get_father(gb_item);
+    if (!gb_father) return GBT_ITEM_UNKNOWN;
+
+    key = GB_KEY(gb_item);
+
+    if (strcmp(key, "species")                    == 0 &&
+        strcmp(GB_KEY(gb_father), "species_data") == 0) {
+        return GBT_ITEM_SPECIES;
+    }
+
+    if (strcmp(key, "gene")                        == 0 &&
+        strcmp(GB_KEY(gb_father), "gene_data")     == 0 &&
+        identify_gb_item(GB_get_father(gb_father)) == GBT_ITEM_SPECIES) {
+        return GBT_ITEM_GENE;
+    }
+
+    return GBT_ITEM_UNKNOWN;
+}
+
+
+
+GB_ERROR gbl_sequence(GBDATA *gb_item, char *com, // gb_item may be a species or a gene
+                      int     argcinput, GBL *argvinput,
+                      int     argcparam,GBL *argvparam,
+                      int    *argcout, GBL **argvout)
+{
+    char     *use;
+    GBDATA   *gb_seq;
+    GB_ERROR  error = 0;
+
     if (argcparam!=0) return "\"sequence\" syntax: \"sequence\" (no parameters)";
     argvparam = argvparam;
-    com = com;GBUSE(argvinput);
+    com       = com;
+    GBUSE(argvinput);
     if (argcinput==0) return "No input stream";
     GBL_CHECK_FREE_PARAM(*argcout,1);
-    use = GBT_get_default_alignment(GB_get_root(gb_species));
-    gb_seq = GBT_read_sequence(gb_species,use);
-    if (gb_seq) {
-        (*argvout)[(*argcout)++].str = GB_read_string(gb_seq);	/* export result string */
-    }else{
-        (*argvout)[(*argcout)++].str = GB_STRDUP("no sequence");	/* export result string */
+
+    switch (identify_gb_item(gb_item)) {
+        case GBT_ITEM_UNKNOWN: {
+            error = "'sequence' used for unknown item";
+            break;
+        }
+        case GBT_ITEM_SPECIES: {
+            use    = GBT_get_default_alignment(GB_get_root(gb_item));
+            gb_seq = GBT_read_sequence(gb_item,use);
+
+            if (gb_seq) (*argvout)[(*argcout)++].str = GB_read_string(gb_seq); /* export result string */
+            else        (*argvout)[(*argcout)++].str = GB_STRDUP("no sequence"); /* export result string */
+
+            free(use);
+
+            break;
+        }
+        case GBT_ITEM_GENE: {
+            GBDATA *gb_pos1 = GB_find(gb_item, "pos_begin", 0, down_level);
+            GBDATA *gb_pos2 = GB_find(gb_item, "pos_end", 0, down_level);
+            long    pos1    = gb_pos1 ? GB_read_int(gb_pos1) : -1;
+            long    pos2    = gb_pos2 ? GB_read_int(gb_pos2) : -1;
+
+            if (pos1<1 || pos2<1 || pos2<pos1) {
+                GBDATA     *gb_name   = GB_find(gb_item, "name", 0, down_level);
+                const char *gene_name = gb_name ? GB_read_char_pntr(gb_name) : "<unknown>";
+
+                error = GBS_global_string("Illegal sequence positions for gene '%s'", gene_name);
+            }
+            else {
+                GBDATA *gb_species = GB_get_father(GB_get_father(gb_item));
+
+                use    = GBT_get_default_alignment(GB_get_root(gb_species));
+                gb_seq = GBT_read_sequence(gb_species,use);
+
+                {
+                    const char *seq_data = GB_read_char_pntr(gb_seq);
+                    long        length   = pos2-pos1+1;
+                    char       *result   = (char*)malloc(length+1);
+
+                    memcpy(result, seq_data+pos1, length);
+                    result[length] = 0;
+
+                    (*argvout)[(*argcout)++].str = result;
+                }
+            }
+
+            break;
+        }
     }
-    free(use);
-    return 0;
+
+    return error;
 }
 
 GB_ERROR gbl_sequence_type(GBDATA *gb_species, char *com,

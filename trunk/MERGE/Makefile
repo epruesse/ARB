@@ -27,6 +27,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
 MG_main.o:  
 MG_main.o:  
@@ -47,8 +48,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx merge.hxx
-MG_main.o: mg_merge.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx merge.hxx mg_merge.hxx
 MG_trees.o:  
 MG_trees.o:  
 MG_trees.o:  
@@ -119,7 +119,8 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx merge.hxx
 MG_names.o:  
 MG_names.o:  
 MG_names.o:  

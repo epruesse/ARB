@@ -240,9 +240,9 @@ ali_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_sequence.hxx
 ali_main.o:   ali_pt.hxx
-ali_main.o: ali_tlist.hxx $(ARBHOME)/INCLUDE/client.h
-ali_main.o: ali_profile.hxx ali_prealigner.hxx ali_pathmap.hxx ali_tarray.hxx
-ali_main.o: ali_tstack.hxx ali_solution.hxx ali_aligner.hxx
+ali_main.o: ali_tlist.hxx $(ARBHOME)/INCLUDE/client.h ali_profile.hxx
+ali_main.o: ali_prealigner.hxx ali_pathmap.hxx ali_tarray.hxx ali_tstack.hxx
+ali_main.o: ali_solution.hxx ali_aligner.hxx
 BI_helix.o:  
 BI_helix.o:  
 BI_helix.o:  

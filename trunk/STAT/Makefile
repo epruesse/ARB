@@ -38,8 +38,8 @@ ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/awt_csp.hxx st_ml.hxx
-ST_quality.o: st_window.hxx st_quality.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/awt_csp.hxx st_ml.hxx st_window.hxx
+ST_quality.o: st_quality.hxx
 ST_ml.o:  
 ST_ml.o:  
 ST_ml.o:  
@@ -80,5 +80,5 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/awt_csp.hxx st_window.hxx
-ST_window.o: st_ml.hxx st_quality.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/awt_csp.hxx st_window.hxx st_ml.hxx
+ST_window.o: st_quality.hxx

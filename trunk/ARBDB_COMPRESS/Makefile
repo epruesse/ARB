@@ -40,8 +40,7 @@ AC_tree.o:
 AC_tree.o:   
 AC_tree.o:  
 AC_tree.o:  
-AC_tree.o: 
-AC_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
+AC_tree.o:  $(ARBHOME)/INCLUDE/arbdb.h
 AC_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AC_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AC_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ac.hxx

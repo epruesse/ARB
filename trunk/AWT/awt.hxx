@@ -26,6 +26,46 @@ int AWT_is_dir(const char *path);
 #include <arbdb.h>
 #endif
 
+// holds all stuff needed to make ad_.. functions work with species _and_ genes (and more..)
+
+typedef enum {
+    AWT_QUERY_ITEM_SPECIES,
+    AWT_QUERY_ITEM_GENES,
+
+    AWT_QUERY_ITEM_TYPES // how many different types do we have
+
+} AWT_QUERY_ITEM_TYPE;
+
+typedef enum {
+	AWT_QUERY_CURRENT_SPECIES,
+	AWT_QUERY_MARKED_SPECIES,
+	AWT_QUERY_ALL_SPECIES
+} AWT_QUERY_RANGE;
+
+struct ad_item_selector {
+    AWT_QUERY_ITEM_TYPE type;
+
+    // if user selects an item in the result list,
+    // this callback sets the appropriate AWARs
+    // - for species: AWAR_SPECIES_NAME is changed (item_name = 'species_name')
+    // - for genes: AWAR_GENE_NAME and AWAR_SPECIES_NAME are changed (item_name = 'species_name/gene_name')
+    void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
+    char *(*generate_item_name)(GBDATA *gb_main, AW_root *aw_root, GBDATA *gb_item);
+    AW_CB selection_list_rescan_cb;
+    int   item_name_length;
+
+    const char *change_key_path;
+    const char *item_name;      // "species" or "gene"
+    const char *items_name;     // "species" or "genes"
+
+    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // for species this is normally awt_get_species_data
+    GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // for species this is normally a function returning 0
+    GBDATA *(*get_first_item)(GBDATA *); // for species this is normally GBT_first_species_rel_species_data
+    GBDATA *(*get_next_item)(GBDATA *); // for species this is normally GBT_next_species
+};
+
+extern ad_item_selector AWT_species_selector;
+
 /**************************************************************************
 *********************		File Selection Boxes 	*******************
 ***************************************************************************/
@@ -108,22 +148,29 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA     *gb_main,AW_window *aws,
                                           const char *varname, long type_filter,
                                           const char *scan_xfig_label,
                                           const char *rescan_xfig_label,
-                                          const char *change_key_path);
+                                          const ad_item_selector *selector);
 			/* show fields of a species / extended / gene !!!
 			type filter is a bitstring which controls what types are shown in
 			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
 			ints and strings */
 
-void 	awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void 	awt_selection_list_rescan(GBDATA *gb_main, long bitfilter);		/* rescan it */
-void 	awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
 
-GB_ERROR 		awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
-		/*	type == GB_TYPES
-			add a new FIELD to the FIELD LIST */
+void awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter); /* rescan it */
 
-GBDATA *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path);
-GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path);
+void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
+
+
+GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
+/*	type == GB_TYPES
+    add a new FIELD to the FIELD LIST */
+GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath);
+// same as awt_add_new_changekey but with given keypath (with this you can add fields to any item (species, gene, ...))
+
+
+GBDATA   *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path);
+GB_TYPES  awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path);
 
 /***********************	FILTERS 	************************/
 AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
@@ -169,16 +216,16 @@ typedef enum {
 #define AWT_PARS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
 #define AWT_STRING_FILTER (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
 
-AW_CL awt_create_arbdb_scanner(GBDATA          *gb_main, AW_window *aws,
-                               const char      *box_pos_fig, /* the position for the box in the xfig file */
-                               const char      *delete_pos_fig, /* create a delete button (which enables deleting) */
-                               const char      *edit_pos_fig, /* the edit field (which enables editing) */
-                               const char      *edit_enable_pos_fig, /* enable editing toggle */
-                               AWT_SCANNERMODE  mode,
-                               const char      *rescan_pos_fig, // AWT_VIEWER only (create a rescan FIELDS button)
-                               const char      *mark_pos_fig, // Create a toggle which show the database flag
-                               long             type_filter, // AWT_VIEWER BITFILTER for TYPES
-                               const char      *change_key_path);
+AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
+                               const char             *box_pos_fig, /* the position for the box in the xfig file */
+                               const char             *delete_pos_fig, /* create a delete button (which enables deleting) */
+                               const char             *edit_pos_fig, /* the edit field (which enables editing) */
+                               const char             *edit_enable_pos_fig, /* enable editing toggle */
+                               AWT_SCANNERMODE         mode,
+                               const char             *rescan_pos_fig, // AWT_VIEWER only (create a rescan FIELDS button)
+                               const char             *mark_pos_fig, // Create a toggle which show the database flag
+                               long                    type_filter, // AWT_VIEWER BITFILTER for TYPES
+                               const ad_item_selector *selector);
 
 void awt_map_arbdb_scanner(AW_CL  arbdb_scanid,
 			GBDATA               *gb_pntr, int show_only_marked_flag, const char *keypath);
@@ -192,9 +239,10 @@ GBDATA                           *awt_get_arbdb_scanner_gbdata(AW_CL arbdb_scani
 *********************	Query Box		 	*******************
 ***************************************************************************/
 
-#define AWT_MAX_QUERY_LIST_LEN 1000
-#define IS_QUERIED(gb_species,cbs) (cbs->select_bit & GB_read_usr_private(gb_species))
-#define SET_QUERIED(gb_species,cbs) GB_write_usr_private(gb_species,cbs->select_bit | GB_read_usr_private(gb_species))
+
+#define AWT_MAX_QUERY_LIST_LEN        1000
+#define IS_QUERIED(gb_species,cbs)    (cbs->select_bit & GB_read_usr_private(gb_species))
+#define SET_QUERIED(gb_species,cbs)   GB_write_usr_private(gb_species,cbs->select_bit | GB_read_usr_private(gb_species))
 #define CLEAR_QUERIED(gb_species,cbs) GB_write_usr_private(gb_species,(~cbs->select_bit) & GB_read_usr_private(gb_species))
 
 class awt_query_struct {
@@ -206,13 +254,16 @@ public:
     AW_BOOL	 look_in_ref_list;  // for querys
     AWAR	 species_name;      // AWAR containing current species name
 
-    bool query_genes;           // true -> create gene query box
-    AWAR gene_name;             // AWAR containing current gene name
+    const ad_item_selector *selector;  // which kind of item do we handle?
+
+//     bool query_genes;           // true -> create gene query box
+//     AWAR gene_name;             // AWAR containing current gene name
 
     int	select_bit;	            // one of 1 2 4 8 .. 128 (one for each query box)
     int use_menu;	            // put additional commands in menu
 
     const char *ere_pos_fig;	// rebuild enlarge reduce
+    const char *where_pos_fig;	// current, marked or all species (used for sub-items of species)
     const char *by_pos_fig;	    // fit query dont fit, marked
 
     const char *qbox_pos_fig;	// key box for queries

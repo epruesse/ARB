@@ -25,8 +25,7 @@ PARS_main.o:
 PARS_main.o:  
 PARS_main.o:  
 PARS_main.o:  
-PARS_main.o: 
-PARS_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+PARS_main.o:  $(ARBHOME)/INCLUDE/arbdb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -180,9 +179,9 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-AP_tree_edge.o: AP_buffer.hxx parsimony.hxx ap_tree_nlen.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx AP_buffer.hxx
+AP_tree_edge.o: parsimony.hxx ap_tree_nlen.hxx 
 AP_tree_edge.o:  
 AP_tree_edge.o:  
-AP_tree_edge.o:  
+AP_tree_edge.o: 
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_root.hxx
