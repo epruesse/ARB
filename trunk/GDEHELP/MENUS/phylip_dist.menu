@@ -3,10 +3,11 @@ itemmeta: G
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW(($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;\
                            $DPGM;\
+                           mv infile infile.1; \
                            mv -f outfile infile;\
                            arb_echo $PROGRAM_FLAGS |$PROGRAM;\
                            $DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1)	)&
+            RM_LOCAL_FILES(in1 infile.1))&
 itemhelp:phylip.help
 
 arg:DISPLAY_FUNC
@@ -56,11 +57,11 @@ insave:
 
 item:Phylip Distance Matrix
 itemmeta: M
-itemmethod:(/bin/rm -f outtree infile outfile;\
-            arb_convert_aln -GenBank in1 -phylip infile;\
-            $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;\
-            arb_textedit outfile;\
-            /bin/rm -f in1 infile outfile)&
+itemmethod: GEN_INFILE(in1) ; \
+            RUN_IN_WINDOW(( $PREEDIT  \
+                            $DPGM ; \
+                            arb_textedit outfile & )) ; \
+            RM_LOCAL_FILES(in1)
 itemhelp:phylip.help
 
 arg:DPGM
@@ -73,7 +74,7 @@ arg:PREEDIT
 argtype:choice_menu
 arglabel:Edit input before running?
 argchoice:No:
-argchoice:Yes:arb_textedit infile;
+argchoice:Yes:arb_textedit infile ;
 
 in:in1
 informat:genbank

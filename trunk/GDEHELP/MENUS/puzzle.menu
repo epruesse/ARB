@@ -1,10 +1,10 @@
 item:TREEPUZZLE ...
 itemmeta: T
-itemmethod:(/bin/rm -f outfile infile treefile outtree;\
+itemmethod:(GOTO_LOCAL_DIR; \
             arb_convert_aln -GenBank in1 -phylip2 infile;\
             RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
-            rm in1 )&
-itemhelp:fastdnaml.help
+            RM_LOCAL_FILES(in1 outdist) )&
+itemhelp:treepuzzle.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu

@@ -1,13 +1,13 @@
-item:AxML + FastdnaML (max 150 Species)
+item:AxML + FastdnaML
 itemmeta: A
-itemmethod:(rm -f outfile infile treefile ; \
+itemmethod:(GOTO_LOCAL_DIR ; \
             arb_export_rates "$RATES" "T 2.0" "Y 1" "$QUICKADD" | \
                 arb_convert_aln -GenBank in1 -phylip2 infile; \
             RUN_IN_WINDOW((cp infile last.infile; \
                            time arb_fastdnaml $PROGRAM;$DISPLAY_FUNC)); \
-            rm in1 )&
+            RM_LOCAL_FILES(in1 last.infile) )&
 
-itemhelp:fastdnaml.help
+itemhelp:dnaml.help
 
 arg:RATES
 argtype:weights

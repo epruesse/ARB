@@ -1,4 +1,4 @@
-item:Phylip Distance Methods (Original Phylip, Interactiv)
+item:Phylip Distance Methods (Original Phylip, Interactive)
 itemmeta: I
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW(($DPGM;\
@@ -6,11 +6,12 @@ itemmethod:(GEN_INFILE(in1);\
                            $PROGRAM;\
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1))&
+itemhelp:phylip_distance.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ outtree "FILTER=$FILTER PKG=phylip")
+argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ outtree "PRG=$PROGRAM FILTER=$FILTER PKG=phylip (Interactive)")
 argchoice:TextEdit:arb_textedit outtree
 argchoice:Treetool:treetool outtree
 

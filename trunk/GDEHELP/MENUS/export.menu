@@ -1,4 +1,5 @@
-/* item:Export Foreign Format (using GDE/readseq: slow) ... */
+item:Export sequences to foreign format (Readseq) ...
+itemmeta: R
 itemmethod:arb_readseq in1 -pipe -all -form=$FORMAT > $OUTPUTFILE
 itemhelp:readseq.help
 
@@ -19,7 +20,7 @@ argchoice:Plain text:raw
 argchoice:ASN.1:asn
 argchoice:PIR:pir
 argchoice:MSF:msf
-argchoice:PAUP:paup
+argchoice:PAUP/NEXUS:paup
 argchoice:Pretty:pretty -nametop -nameleft=3 -numright -nameright -numtop
 
 arg:OUTPUTFILE
