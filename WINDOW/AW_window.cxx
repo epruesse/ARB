@@ -61,7 +61,7 @@
 #include <GL/glx.h>
 #include <GL/glut.h>
 
-#include "GLwMDrawA.h"
+// #include "GLwMDrawA.h"
 
 /* defined here by Yadhu inorder to make it more General */
 bool alpha_Size_Supported = false;
@@ -587,7 +587,7 @@ static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     AWUSE(id);
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
     if (!tcbs) return;
-    
+
     AW_root *root = tcbs->ar;
     if (root->disable_callbacks) {
         // delay the timer callback for 25ms
@@ -1415,7 +1415,7 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green
     unsigned   pixel  = (unsigned short)(gcm->color);
     GB_ERROR   error  = 0;
     XColor     query_color;
-    
+
     query_color.pixel = pixel;
     XQueryColor(p_global->display, p_global->colormap, &query_color);
     // @@@ FIXME: error handling!
@@ -1438,7 +1438,7 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
     unsigned   pixel  = (unsigned short)(gcm->color);
     GB_ERROR   error  = 0;
     XColor     query_color;
-    
+
     query_color.pixel = pixel;
     XQueryColor(p_global->display, p_global->colormap, &query_color);
     // @@@ FIXME: error handling!
@@ -3750,15 +3750,15 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
 //    XtSetArg(args[n], GLwNblueSize, 4); n++; printf("***************** args\n");
 
 	static int alpha_Attributes[] = {GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4, GLX_ALPHA_SIZE, 4, None};
- 
+
  	Widget tmp = XtCreateWidget("glw", glwMDrawingAreaWidgetClass,
 		form2, args, n);
- 
+
 	XVisualInfo *vi;
 	Display *dpy;
 	dpy = XtDisplay(tmp);
 	vi = glXChooseVisual(dpy, DefaultScreen( dpy ), alpha_Attributes);
-	if (vi) { 
+	if (vi) {
 		XtSetArg(args[n], GLwNalphaSize, 4); n++;
 		extern bool alpha_Size_Supported;
 		alpha_Size_Supported = true;
@@ -3775,7 +3775,7 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
 	XtSetArg(args[n], XmNtopWidget, p_w->areas[AW_INFO_AREA]->area); n++;
 	XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
 	XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
-	
+
     glw = XtCreateManagedWidget("glw", glwMDrawingAreaWidgetClass,
 				form2, args, n);
 
