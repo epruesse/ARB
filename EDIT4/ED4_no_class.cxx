@@ -1680,7 +1680,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->create_toggle(ED4_AWAR_FAST_CURSOR_JUMP);
 
     aws->at("checksum");
-    aws->label("Announce all checksum changes caused by editing commands.");
+    aws->label("Announce all checksum changes\ncaused by editing commands.");
     aws->create_toggle(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES);
 
     return (AW_window *)aws;
