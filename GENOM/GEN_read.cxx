@@ -320,6 +320,34 @@ public:
 //  ---------------------------
 //      class GenePosition
 //  ---------------------------
+// class GenePosition {
+// private:
+//     GeneBorder lower, upper;
+
+// public:
+//     // format of pos_string:
+//     //  ['<'|'>']<num>'...'['<'|'>']<num>
+//     GenePosition(const string& pos_string, const char *&error) {
+//         size_t points         = pos_string.find("..");
+//         if (points != string::npos) {
+//             error             = lower.parsePosString(pos_string.substr(0, points));
+//             if (!error) error = upper.parsePosString(pos_string.substr(points+2));
+//         }
+//         else {                  // lower equal upper border
+//             error             = lower.parsePosString(pos_string);
+//             if (!error) upper = lower;
+//         }
+//     }
+//     virtual ~GenePosition() {}
+
+//     const GeneBorder& getLower() const { return lower; }
+//     const GeneBorder& getUpper() const { return upper; }
+// };
+
+
+//  ---------------------------
+//      class GenePosition
+//  ---------------------------
 class GenePosition {
 private:
     GeneBorder lower, upper;
@@ -329,8 +357,10 @@ public:
     //  ['<'|'>']<num>'...'['<'|'>']<num>
     GenePosition(const string& pos_string, const char *&error) {
         size_t points         = pos_string.find("..");
+	//        size_t points         = pos_string.find("..");
         if (points != string::npos) {
             error             = lower.parsePosString(pos_string.substr(0, points));
+	    //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
             if (!error) error = upper.parsePosString(pos_string.substr(points+2));
         }
         else {                  // lower equal upper border
@@ -343,6 +373,7 @@ public:
     const GeneBorder& getLower() const { return lower; }
     const GeneBorder& getUpper() const { return upper; }
 };
+
 
 //  --------------------------------------------------------------------------
 //      GB_ERROR GEN_insert_warning(GBDATA *gb_item, const char *warning)
@@ -836,9 +867,9 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
 const char* SECTION_INDICATOR[] = {   "  ", "FT", "ID",   "XX",   "AC",  "SV",  "DT",  "DE",  "KW",  "OS",  "OC",  "RN",  "RA",  "RT",  "RL",  "RP",  "CC",  "FH",  "SQ" , "DR"};
 enum sc_section                 { SC_SQ2 = 0, SC_FT, SC_ID, SC_XX, SC_AC, SC_SV, SC_DT, SC_DE, SC_KW, SC_OS, SC_OC, SC_RN, SC_RA, SC_RT, SC_RL, SC_RP, SC_CC, SC_FH, SC_SQ, SC_DR, SC_MAX };
 
-const char* SUBSECTION_INDICATOR[] = { 	"Key", "source", "CDS", "misc_feature", "promoter", "protein_bind","stem_loop", "repeat_region", "tRNA",   "rRNA", "mRNA", "repeat_unit", "misc_difference", "misc_RNA", "5'UTR", "3'UTR", "RBS", "terminator", "intron", "LTR", "variation", "rep_origin", "D-loop", "mat_peptide", "exon", "gene", "snoRNA", " polyA_signal", "-35_signal", "-10_signal", "snRNA", "scRNA", "misc_structure" };
+const char* SUBSECTION_INDICATOR[] = { 	"Key", "source", "CDS", "misc_feature", "promoter", "protein_bind","stem_loop", "repeat_region", "tRNA",   "rRNA", "mRNA", "repeat_unit", "misc_difference", "misc_RNA", "5'UTR", "3'UTR", "RBS", "terminator", "intron", "LTR", "variation", "rep_origin", "D-loop", "mat_peptide", "exon", "gene", "snoRNA", " polyA_signal", "-35_signal", "-10_signal", "snRNA", "scRNA", "misc_structure", "sig_peptide", "primer_bind", "misc_signal", "conflict" };
 
-enum ss_sections              { SS_KEY = 0, SS_SOURCE, SS_CDS, SS_MISC_FEATURE, SS_PROMOTER, SS_PROTEIN_BIND, SS_STEM, SS_REPEAT_REGION, SS_TRNA, SS_RRNA, SS_MRNA, SS_REPEAT_UNIT, SS_MISC_DIFFERENCE, SS_MISC_RNA, SS_5UTR, SS_3UTR, SS_RBS, SS_TERMINATOR, SS_INTRON, SS_LTR, SS_VARIATION, SS_REP_ORI, SS_D_LOOP, SS_MAT_PEPTIDE, SS_EXON, SS_GENE, SS_SNORNA, SS_POLYA, SS_35_SIG, SS_10_SIG, SS_SNRNA, SS_SCRNA, SS_MISC_STRUCTURE, SS_MAX };
+enum ss_sections              { SS_KEY = 0, SS_SOURCE, SS_CDS, SS_MISC_FEATURE, SS_PROMOTER, SS_PROTEIN_BIND, SS_STEM, SS_REPEAT_REGION, SS_TRNA, SS_RRNA, SS_MRNA, SS_REPEAT_UNIT, SS_MISC_DIFFERENCE, SS_MISC_RNA, SS_5UTR, SS_3UTR, SS_RBS, SS_TERMINATOR, SS_INTRON, SS_LTR, SS_VARIATION, SS_REP_ORI, SS_D_LOOP, SS_MAT_PEPTIDE, SS_EXON, SS_GENE, SS_SNORNA, SS_POLYA, SS_35_SIG, SS_10_SIG, SS_SNRNA, SS_SCRNA, SS_MISC_STRUCTURE, SS_SIG_PEPTIDE, SS_PRIMER_BIND, SS_MISC_SIGNAL, SS_CONFLICT, SS_MAX };
 
 inline int parseLine_embl(const string& line, int& sub_section, string& content) {
     if (line.empty()) return 0;
@@ -1112,6 +1143,7 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
 			    //error = "No note found in rRNA feature";
 			    //return error;
                     }
+
                     else {
 		    gene_name = note->second;
                     //gene_name = product->second;
@@ -1124,6 +1156,40 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
                     handle_as_gene = true;
                 }
             }
+
+
+
+//                 else if (section_name == "rRNA") {
+//                     EntryMap::iterator note  = featureEntries.find("note");
+//                     EntryMap::iterator product  = featureEntries.find("product");
+// 		    EntryMap::iterator standard_name = featureEntries.find("standard_name");
+//                     if (note == featureEntries.end()) {
+// 			gene_name = product->second;
+// 			handle_as_gene = true;
+// 			    //error = "No note found in rRNA feature";
+// 			    //return error;
+//                     }
+
+//                     else if {
+// 		    gene_name = note->second;
+//                     //gene_name = product->second;
+//                     handle_as_gene = true;
+// 		    }
+		    
+// 		    else {
+// 		      gene_name = standard_name->second;
+// 		      handle_as_gene = true;
+// 		    }
+
+
+//                 }
+
+//                 else {
+//                     gene_name      = section_name;
+//                     subst          = gene_name_subst.find(gene_name);
+//                     handle_as_gene = true;
+//                 }
+//             }
 
             GBDATA *gb_gene          = GEN_create_gene(gb_species, gene_name.c_str()); // create or search gene
             GBDATA *gb_sub_container = 0;
