@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -112,7 +112,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 for (int i=0; i<10 ; i++){
                     char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
                     for(int c=0; awarString_next[c]; ++c){
-                        charUsed[awarString_next[c]] = i;
+                        charUsed[(unsigned char)awarString_next[c]] = i;
                     }
                     free(awarString_next);
                 }
@@ -120,7 +120,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 int   awarNo     = (int)cl_awarNo;
                 char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
                 for(int c=0; awarString[c]; ++c){
-                    charUsed[awarString[c]] = awarNo;
+                    charUsed[(unsigned char)awarString[c]] = awarNo;
                 }
                 free(awarString);
             }
@@ -551,7 +551,7 @@ const char *getSaiColorString(AW_root *awr, int start, int end) {
                         int   clrRange = ED4_G_CBACK_0 + i;
 
                         for (char *d = def; *d; ++d) {
-                            trans_table[*d] = clrRange;
+                            trans_table[(unsigned char)*d] = clrRange;
                         }
                         free(def);
                     }
@@ -559,7 +559,7 @@ const char *getSaiColorString(AW_root *awr, int start, int end) {
 
                 // translate SAI to colors
                 for (int i = start; i <= end; ++i) {
-                    saiColors[i-start] = trans_table[saiData[i]];
+                    saiColors[i-start] = trans_table[(unsigned char)saiData[i]];
                 }
 
                 visualize = true;
