@@ -617,39 +617,54 @@ void aw_calculate_WM_offsets(AW_window *aww)
 
 void    AW_cb_struct::run_callback(void){
     AW_PPP g;
-    if (this->next) this->next->run_callback(); // callback the whole list
+    if (next) next->run_callback(); // callback the whole list
 
-    AW_root *root = this->aw->get_root();
-    if (!this->f) return;
+    AW_root *root = aw->get_root();
+    if (!f) return;
 
     if (root->disable_callbacks) {
-        if( (this->f != (AW_CB)message_cb) &&
-            (this->f != (AW_CB)macro_message_cb) &&
-            (this->f != (AW_CB)input_cb) &&
-            (this->f != (AW_CB)aw_calculate_WM_offsets) )
+        //  the following callbacks are allowed even if disable_callbacks is true
+        if( (f != (AW_CB)message_cb)       &&
+            (f != (AW_CB)macro_message_cb) &&
+            (f != (AW_CB)input_cb)         &&
+            (f != (AW_CB)AW_POPUP_HELP)    &&
+            (f != (AW_CB)AW_POPDOWN)       &&
+
+            !aw->is_expose_callback(AW_MIDDLE_AREA, f) &&
+            !aw->is_resize_callback(AW_MIDDLE_AREA, f) &&
+            !aw->is_expose_callback(AW_INFO_AREA, f)   &&
+            !aw->is_resize_callback(AW_INFO_AREA, f)
+            )
         {
+            aw_message("That has been ignored. Answer the prompt first!");
             return;
         }
     }
 
 
-    if ( this->f == AW_POPUP ) {
-        if ( this->pop_up_window ) {
-            this->pop_up_window->show();
+    if ( f == AW_POPUP ) {
+        if ( pop_up_window ) {
+            pop_up_window->show();
         } else {
-            g = (AW_PPP)this->cd1;
+            g = (AW_PPP)cd1;
             if (g) {
-                this->pop_up_window = g( this->aw->get_root(), this->cd2,0 );
-                this->pop_up_window->show();
+                pop_up_window = g( aw->get_root(), cd2,0 );
+                pop_up_window->show();
             }else{
                 aw_message("Sorry Function not implemented");
             }
         }
-        if (this->pop_up_window && p_aww(this->pop_up_window)->popup_cb)
-            p_aww(this->pop_up_window)->popup_cb->run_callback();
+        if (pop_up_window && p_aww(pop_up_window)->popup_cb)
+            p_aww(pop_up_window)->popup_cb->run_callback();
     } else {
-        this->f(this->aw,this->cd1,this->cd2);
+        f(aw,cd1,cd2);
     }
+}
+
+AW_BOOL AW_cb_struct::contains(void (*g)(AW_window*,AW_CL ,AW_CL)) {
+    if (f == g) return AW_TRUE;
+    if (!next) return AW_FALSE;
+    return next->contains(g);
 }
 
 void    AW_root_Motif::set_cursor(Display *d, Window w, Cursor c)
@@ -670,7 +685,7 @@ void    AW_root_Motif::set_cursor(Display *d, Window w, Cursor c)
 
 void AW_root_Motif::normal_cursor(void)
 {
-    this->set_cursor(old_cursor_display, old_cursor_window, 0);
+    set_cursor(old_cursor_display, old_cursor_window, 0);
 }
 
 
@@ -793,10 +808,31 @@ void AW_area_management::set_expose_callback(AW_window *aww, void (*f)(AW_window
     expose_cb = new AW_cb_struct(aww, f, cd1, cd2, 0, expose_cb);
 }
 
+
 void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2){
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram) return;
     aram->set_expose_callback(this,f,cd1,cd2);
+}
+
+AW_BOOL AW_area_management::is_expose_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    if (!expose_cb) return AW_FALSE;
+    return expose_cb->contains(f);
+}
+AW_BOOL AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    AW_area_management *aram = MAP_ARAM(area);
+    if (!aram) return AW_FALSE;
+    return aram->is_expose_callback(this,f);
+}
+
+AW_BOOL AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    if (!resize_cb) return AW_FALSE;
+    return resize_cb->contains(f);
+}
+AW_BOOL AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
+    AW_area_management *aram = MAP_ARAM(area);
+    if (!aram) return AW_FALSE;
+    return aram->is_resize_callback(this,f);
 }
 
 void AW_window::set_window_size( int width, int height ) {
@@ -1054,26 +1090,26 @@ void AW_root::init_variables( AW_default database ) {
     int i;
     for (i=0;i<1000;i++) {
         if (aw_fb[i].awar == 0) break;
-        this->awar_string( aw_fb[i].awar, aw_fb[i].init , application_database);
+        awar_string( aw_fb[i].awar, aw_fb[i].init , application_database);
     }
     //PJ temporary site for vectorfont stuff
     vectorfont_lines        =NULL;                        // font data not yet loaded
 
-    this->awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
-    this->awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database);       // name for default font in lib/pictures
+    awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
+    awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database);       // name for default font in lib/pictures
     // from the filerequester
-    this->awar_int("vectorfont/active", 1,application_database); // zoomtext-calls: call text or use vectorfont (1)
+    awar_int("vectorfont/active", 1,application_database); // zoomtext-calls: call text or use vectorfont (1)
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    this->awar_string("vectorfont/directory", "lib/pictures", application_database);
-    this->awar_string("vectorfont/filter", ".vfont", application_database);
-    this->awar_string("vectorfont/file_name", vectorfont_name, application_database);
-    this->awar("vectorfont/file_name")->add_callback( (AW_RCB0)   aw_xfig_font_changefont_cb);
+    awar_string("vectorfont/directory", "lib/pictures", application_database);
+    awar_string("vectorfont/filter", ".vfont", application_database);
+    awar_string("vectorfont/file_name", vectorfont_name, application_database);
+    awar("vectorfont/file_name")->add_callback( (AW_RCB0)   aw_xfig_font_changefont_cb);
 }
 
 void *AW_root::get_aw_var_struct( char *awar ) {
     long vs;
-    vs = (long)GBS_read_hash( this->hash_table_for_variables, awar );
+    vs = (long)GBS_read_hash( hash_table_for_variables, awar );
     if (!vs) {
         AW_ERROR("AW_root::get_aw_var_struct: Variable %s not defined", awar);
     }
@@ -1081,7 +1117,7 @@ void *AW_root::get_aw_var_struct( char *awar ) {
 }
 void *AW_root::get_aw_var_struct_no_error( char *awar ) {
     long vs;
-    vs = (long)GBS_read_hash( this->hash_table_for_variables, awar );
+    vs = (long)GBS_read_hash( hash_table_for_variables, awar );
     return (void*)vs;
 }
 
@@ -1211,9 +1247,9 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
 
     p_r->screen_depth = PlanesOfScreen( XtScreen(p_r->toplevel_widget) );
     if (p_r->screen_depth == 1) {
-        this->color_mode = AW_MONO_COLOR;
+        color_mode = AW_MONO_COLOR;
     }else{
-        this->color_mode = AW_RGB_COLOR;
+        color_mode = AW_RGB_COLOR;
     }
     p_r->colormap = DefaultColormapOfScreen( XtScreen(p_r->toplevel_widget) );
     p_r->clock_cursor = XCreateFontCursor(XtDisplay(p_r->toplevel_widget),XC_watch);
@@ -2313,7 +2349,7 @@ void AW_window::set_vertical_scrollbar_bottom_indent(int indent) {
 void AW_root::set_sensitive( AW_active mask ) {
     AW_buttons_struct *list;
 
-    this->global_mask = mask;
+    global_mask = mask;
     for(list = p_r->button_list; list; list = list->next){
         if (!list->button) continue;
         if(  list->mask & mask) {
@@ -2747,10 +2783,10 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
-//     cbs->id = GBS_global_string_copy("%s/%s",this->window_defaults_name,id);
+//     cbs->id = GBS_global_string_copy("%s/%s",window_defaults_name,id);
     cbs->id = GBS_global_string_copy("%s",id);
-    GBS_write_hash(this->get_root()->prvt->action_hash,id,(long)cbs);
-    if(!(mask&this->get_root()->global_mask)){
+    GBS_write_hash(get_root()->prvt->action_hash,id,(long)cbs);
+    if(!(mask&get_root()->global_mask)){
         XtSetSensitive( button, False );
     }
     AW_INSERT_BUTTON_IN_SENS_LIST(root, id, mask, button);
@@ -2800,8 +2836,8 @@ void AW_window::insert_separator_help(void) {
 AW_area_management::AW_area_management(AW_root *awr,Widget formi, Widget widget)
 {
     memset((char *)this,0,sizeof(AW_area_management));
-    this->form = formi;
-    this->area = widget;
+    form = formi;
+    area = widget;
     XtAddEventHandler(area, EnterWindowMask, FALSE, (XtEventHandler)AW_root_focusCB,  (XtPointer)awr);
 }
 
@@ -2850,13 +2886,13 @@ void AW_window::show(void) {
         window_is_shown = AW_TRUE;
     }
     if (recalc_size_at_show == 1) {
-        this->window_fit();
+        window_fit();
         recalc_size_at_show = 0;
     }
     XtPopup(p_w->shell,XtGrabNone);
     XtVaSetValues(p_w->shell, XmNiconic, False ,0);
     if (p_w->WM_top_offset == -1000) {      // very bad hack
-        this->set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
+        set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
     }
 }
 
@@ -2868,7 +2904,7 @@ void AW_window::show_grabbed(void) {
     }
     XtPopup(p_w->shell,XtGrabExclusive);
     if (p_w->WM_top_offset == -1000) {      // very bad hack
-        this->set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
+        set_expose_callback(AW_INFO_AREA,(AW_CB)aw_calculate_WM_offsets,0,0);
     }
 }
 
@@ -2886,11 +2922,11 @@ AW_BOOL AW_window::get_show(void) {
 }
 
 void AW_root::window_show(){
-    this->active_windows++;
+    active_windows++;
 }
 
 void AW_root::window_hide(){
-    this->active_windows--;
+    active_windows--;
     if (active_windows<0){
         exit(0);
     }
@@ -2987,16 +3023,16 @@ void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 void AW_window::load_xfig(const char *file, AW_BOOL resize) {
 
     if (file) {
-        xfig_data = (void*)new AW_xfig( file, this->get_root()->font_height );
+        xfig_data = (void*)new AW_xfig( file, get_root()->font_height );
     }
     else {
-        xfig_data = (void*)new AW_xfig(this->get_root()->font_height ); // create an empty xfig
+        xfig_data = (void*)new AW_xfig(get_root()->font_height ); // create an empty xfig
     }
-    this->set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area,(AW_CL)xfig_data,0);
+    set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area,(AW_CL)xfig_data,0);
 
-    AW_device *device = this->get_device ( AW_INFO_AREA );
+    AW_device *device = get_device ( AW_INFO_AREA );
     AW_xfig *xfig = (AW_xfig *)xfig_data;
-    if (this->get_root()->color_mode){
+    if (get_root()->color_mode){
         xfig->create_gcs(device,8);
     }else{
         xfig->create_gcs(device,1);
@@ -3208,7 +3244,7 @@ GB_ERROR    AW_root::enable_execute_macro(FILE *mfile,const char *mname){
         if (!com || !strlen(com)) break;
         if (strcasecmp(com,"ACTION")==0){
             act = GBS_fread_string(mfile,0);
-            AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(this->prvt->action_hash,act);
+            AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash,act);
             if (cbs){
                 cbs->run_callback();
             }else{
@@ -3221,7 +3257,7 @@ GB_ERROR    AW_root::enable_execute_macro(FILE *mfile,const char *mname){
         if (strcasecmp(com,"AWAR")==0){
             awar = GBS_fread_string(mfile,0);
             value = GBS_fread_string(mfile,0);
-            AW_awar *aw = this->awar(awar);
+            AW_awar *aw = awar(awar);
             if (aw){
                 error = aw->write_as_string(value);
                 if (error)      break;
@@ -3269,7 +3305,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
     GB_pop_transaction(gb_main);
 
     if (action[0]){
-        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(this->prvt->action_hash,action);
+        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash,action);
         if (cbs){
             cbs->run_callback();
             GBT_write_string(gb_main,awar_result,"");
