@@ -374,9 +374,22 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
         }
 
         if (done && ((*width == 0) || (*height == 0))) {
-            err = "size detection failed";
+            if (strstr(buffer, "XPM") != NULL) {
+                fgets(buffer, MAX_LINE_LENGTH, in);
+                fgets(buffer, MAX_LINE_LENGTH, in);
+                char *temp = strtok(buffer+1, " ");
+                *width = atoi(temp);
+                temp = strtok(NULL,  " ");
+                *height = atoi(temp);
+#ifdef DEBUG               
+                printf("XPM file successfully parsed %d x %d !\n",*width, *height);
+#endif
+            }
+            else {
+                err = "size detection failed";
+            }
         }
-
+        
         free(name);
         fclose(in);
     }
