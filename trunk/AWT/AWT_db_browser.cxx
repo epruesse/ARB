@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Wed May/12/2004 21:27 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Wed May/19/2004 15:16 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -17,7 +17,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <ctype.h>
+#include <algorithm>
+#include <inline.h>
+// #include <ctype.h>
 
 using namespace std;
 
@@ -26,35 +28,129 @@ using namespace std;
 #define AWAR_DBB_BASE     "/dbbrowser"
 #define AWAR_DBB_TMP_BASE "/tmp" AWAR_DBB_BASE
 
-#define AWAR_DBB_DB     AWAR_DBB_BASE "/db"
-#define AWAR_DBB_PATH   AWAR_DBB_BASE "/path"
+#define AWAR_DBB_DB      AWAR_DBB_BASE "/db"
+#define AWAR_DBB_ORDER   AWAR_DBB_BASE "/order"
+#define AWAR_DBB_PATH    AWAR_DBB_BASE "/path"
+#define AWAR_DBB_HISTORY AWAR_DBB_BASE "/history"
+
 #define AWAR_DBB_BROWSE AWAR_DBB_TMP_BASE "/browse"
 #define AWAR_DBB_INFO   AWAR_DBB_TMP_BASE "/info"
 
-// browser commands:
+#define HISTORY_PSEUDO_PATH "*history*"
+#define ENTRY_MAX_LENGTH    1000
+#define HISTORY_MAX_LENGTH  20000
 
-#define BROWSE_CMD                 "browse_cmd___"
-#define BROWSE_CMD_GOTO_LEGAL_NODE BROWSE_CMD "goto_legal_node"
-#define BROWSE_CMD_GO_UP           BROWSE_CMD "go_up"
+enum SortOrder {
+    SORT_NONE,
+    SORT_NAME,
+    SORT_NAME_DB,
+    SORT_TYPE,
+    SORT_CONTENT,
 
-// --------------------- 
-//      create AWARs     
-// --------------------- 
+    SORT_COUNT
+};
+
+const char *sort_order_name[SORT_COUNT] = {
+    "None",
+    "Name",
+    "Name (DB)",
+    "Type",
+    "Content", 
+};
+
+
+
+// used to sort entries in list
+struct list_entry {
+    const char *key_name;
+    GB_TYPES    type;
+    int         childCount;     // -1 if only one child with key_name exists
+    GBDATA     *gbd;
+    string      content;
+
+    static SortOrder sort_order;
+
+    inline bool less_than_by_name(const list_entry& other) const {
+        int cmp = ARB_stricmp(key_name, other.key_name);
+        if (cmp != 0) return (cmp<0); // name differs!
+        return childCount<other.childCount; // equal names -> compare child count
+    }
+
+    inline int cmp_by_container(const list_entry& other) const {
+        return int(type != GB_DB) - int(other.type != GB_DB);
+    }
+
+    inline bool less_than_by_name_container(const list_entry& other) const {
+        int cmp = cmp_by_container(other);
+        if (cmp == 0) return less_than_by_name(other);
+        return cmp<0;
+    }
+
+    bool operator<(const list_entry& other) const {
+        bool is_less = false;
+        switch (sort_order) {
+            case SORT_NONE:
+                awt_assert(0);  // not possible
+                break;
+
+            case SORT_NAME:
+                is_less = less_than_by_name(other);
+                break;
+
+            case SORT_NAME_DB: 
+                is_less = less_than_by_name_container(other);
+                break;
+
+            case SORT_CONTENT: {
+                int cmp = ARB_stricmp(content.c_str(), other.content.c_str());
+
+                if (cmp != 0) is_less = cmp<0;
+                else is_less          = less_than_by_name_container(other);
+                
+                break;
+            }
+            case SORT_TYPE: {
+                int cmp = type-other.type;
+                
+                if (cmp == 0) is_less = less_than_by_name(other);
+                else is_less          = cmp<0;
+                
+                break;
+            }
+            default :
+                awt_assert(0);  // illegal 'sort_order'
+                break;
+        }
+        return is_less;
+    }
+};
+
+SortOrder list_entry::sort_order = SORT_NONE;
+
+// ---------------------
+//      create AWARs
+// ---------------------
 
 void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_DBB_DB, 0, aw_def); // index to internal order of announced databases
+    aw_root->awar_int(AWAR_DBB_ORDER, SORT_NAME_DB, aw_def); // sort order for "browse"-box
     aw_root->awar_string(AWAR_DBB_PATH, "/", aw_def); // path in database
     aw_root->awar_string(AWAR_DBB_BROWSE, "", aw_def); // selection in browser (= child name)
     aw_root->awar_string(AWAR_DBB_INFO, "<select an element>", aw_def); // information about selected item
+    aw_root->awar_string(AWAR_DBB_HISTORY, "", aw_def); // '\n'-separated string containing visited nodes
 }
 
-// @@@  this may go to ARBDB 
+// @@@  this may be moved to ARBDB-sources
 GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_enum*/ create) {
     if (str) {
+        if (str[0] == '/' && str[1] == 0) { // root
+            return GB_get_root(gbd);
+        }
+
         const char *first_bracket = strchr(str, '[');
         if (first_bracket) {
             const char *second_bracket = strchr(first_bracket+1, ']');
-            if (second_bracket) {
+            if (second_bracket && (second_bracket[1] == 0 || second_bracket[1] == '/')) {
                 int count = atoi(first_bracket+1);
                 if (count >= 0 && isdigit(first_bracket[1])) {
                     // we are sure we have sth with number in brackets (e.g. "/species_data/species[42]/name")
@@ -80,11 +176,11 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_e
                             free(parent_path);
                         }
                         else {
-                            gb_parent = gbd; 
+                            gb_parent = gbd;
                         }
                     }
 
-                    if (gb_parent) { 
+                    if (gb_parent) {
                         GBDATA *gb_son = 0;
                         {
                             int   key_name_len = first_bracket-previous_slash-1;
@@ -212,11 +308,33 @@ void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
 }
 
 // ---------------------------------------
-//      the browser window + callbacks
+//      browser window callbacks
 // ---------------------------------------
 
-AW_window *AWT_create_db_browser(AW_root *aw_root) {
-    return get_the_browser()->get_window(aw_root);
+static void toggle_tmp_cb(AW_window *aww) {
+    AW_awar *awar_path = aww->get_root()->awar(AWAR_DBB_PATH);
+    char    *path      = awar_path->read_string();
+    bool     done      = false;
+
+    if (ARB_strscmp(path, "/tmp") == 0) {
+        if (path[4] == '/') {
+            awar_path->write_string(path+4);
+            done = true;
+        }
+        else if (path[4] == 0) {
+            awar_path->write_string("/");
+            done = true;
+        }
+    }
+
+    if (!done) {
+        awar_path->write_string(GBS_global_string("/tmp%s", path));
+    }
+    free(path);
+}
+
+static void show_history_cb(AW_window *aww) {
+    aww->get_root()->awar(AWAR_DBB_PATH)->write_string(HISTORY_PSEUDO_PATH);
 }
 
 static void goto_root_cb(AW_window *aww) {
@@ -234,8 +352,71 @@ static void go_up_cb(AW_window *aww) {
         awar_path->write_string(path);
     }
 }
-static void goto_next_cb(AW_window *aww) {
-#warning implement me
+
+// --------------------------
+//      browser commands:
+// --------------------------
+
+#define BROWSE_CMD_PREFIX          "browse_cmd___"
+#define BROWSE_CMD_GOTO_VALID_NODE BROWSE_CMD_PREFIX "goto_valid_node"
+#define BROWSE_CMD_GO_UP           BROWSE_CMD_PREFIX "go_up"
+
+struct BrowserCommand {
+    const char *name;
+    GB_ERROR (*function)(AW_window *);
+};
+
+
+static GB_ERROR browse_cmd_go_up(AW_window *aww) {
+    go_up_cb(aww);
+    return 0;
+}
+static GB_ERROR browse_cmd_goto_valid_node(AW_window *aww) {
+    AW_root *aw_root   = aww->get_root();
+    AW_awar *awar_path = aw_root->awar(AWAR_DBB_PATH);
+    char    *path      = awar_path->read_string();
+    int      len       = strlen(path);
+    GBDATA  *gb_main   = get_the_browser()->gb_main();
+
+    {
+        GB_transaction t(gb_main);
+        while (len>0 && GB_search_numbered(gb_main, path, GB_FIND) == 0) {
+            path[--len] = 0;
+        }
+    }
+
+    awar_path->write_string(len ? path : "/");
+    aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
+    return 0;
+}
+
+static BrowserCommand browser_command_table[] = {
+    { BROWSE_CMD_GOTO_VALID_NODE, browse_cmd_goto_valid_node},
+    { BROWSE_CMD_GO_UP, browse_cmd_go_up},
+    { 0, 0 }
+};
+
+static void execute_browser_command(AW_window *aww, const char *command) {
+    int idx;
+    for (idx = 0; browser_command_table[idx].name; ++idx) {
+        if (strcmp(command, browser_command_table[idx].name) == 0) {
+            GB_ERROR error = browser_command_table[idx].function(aww);
+            if (error) aw_message(error);
+            break;
+        }
+    }
+
+    if (!browser_command_table[idx].name) {
+        aw_message(GBS_global_string("Unknown browser command '%s'", command));
+    }
+}
+
+// ----------------------------
+//      the browser window
+// ----------------------------
+
+AW_window *AWT_create_db_browser(AW_root *aw_root) {
+    return get_the_browser()->get_window(aw_root);
 }
 
 static void path_changed_cb(AW_root *aw_root); // prototype
@@ -257,25 +438,54 @@ struct counterPair {
     counterPair() : occur(0), count(0) {}
 };
 
+inline void insert_history_selection(AW_window *aww, AW_selection_list *sel, const char *entry, int wanted_db) {
+    char *colon = strchr(entry, ':');
+    if (colon && (atoi(entry) == wanted_db)) {
+        aww->insert_selection(sel, colon+1, colon+1);
+    }
+}
+
 static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL cl_id) {
     AW_window         *aww     = (AW_window*)cl_aww;
     AW_selection_list *id      = (AW_selection_list*)cl_id;
     DB_browser        *browser = get_the_browser();
     char              *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
-    GBDATA            *gb_main = browser->gb_main();
-    GB_transaction     dummy(gb_main);
-    GBDATA            *node    = (strcmp(path, "/") == 0) ? GB_get_root(gb_main) : GB_search_numbered(gb_main, path, GB_FIND);
+    bool               is_root;
+    GBDATA            *node;
 
-    set_callback_node(node, aw_root);
+    {
+        GBDATA         *gb_main = browser->gb_main();
+        GB_transaction  ta(gb_main);
+
+        is_root = (strcmp(path, "/") == 0);
+        node    = GB_search_numbered(gb_main, path, GB_FIND);
+        set_callback_node(node, aw_root);
+    }
 
     aww->clear_selection_list(id);
 
     if (node == 0) {
-        aww->insert_default_selection(id, "No such node!", "");
-        aww->insert_selection(id, "-> goto legal node", BROWSE_CMD_GOTO_LEGAL_NODE);
+        if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
+            char *history = aw_root->awar(AWAR_DBB_HISTORY)->read_string();
+            aww->insert_selection(id, "Previously visited nodes:", "");
+            char *start   = history;
+            int   curr_db = aw_root->awar(AWAR_DBB_DB)->read_int();
+
+            for (char *lf = strchr(start, '\n'); lf; start = lf+1, lf = strchr(start, '\n')) {
+                lf[0] = 0;
+                insert_history_selection(aww, id, start, curr_db);
+            }
+            insert_history_selection(aww, id, start, curr_db);
+            free(history);
+        }
+        else {
+            aww->insert_selection(id, "No such node!", "");
+            aww->insert_selection(id, "-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
+        }
     }
     else {
         map<string, counterPair> child_count;
+        GB_transaction           ta(browser->gb_main());
 
         for (GBDATA *child = GB_find(node, 0, 0, down_level);
              child;
@@ -299,6 +509,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
                 if (keylen>maxkeylen) maxkeylen = keylen;
             }
+
             {
                 GBDATA     *child     = GB_find(node, i->first.c_str(), 0, down_level); // find first child
                 const char *type_name = GB_get_type_name(child);
@@ -308,25 +519,34 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             }
         }
 
+        if (!is_root) aww->insert_selection(id, GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
+
+        // collect childs and sort them
+
+        vector<list_entry> sorted_childs;
 
         for (GBDATA *child = GB_find(node, 0, 0, down_level);
              child;
              child = GB_find(child, 0, 0, this_level|search_next))
         {
-            const char *key_name         = GB_read_key_pntr(child);
-            int         occurances       = child_count[key_name].occur;
-            char       *numbered_keyname = 0;
+            list_entry entry;
+            entry.key_name   = GB_read_key_pntr(child);
+            entry.childCount = -1;
+            entry.type       = GB_read_type(child);
+            entry.gbd        = child;
 
+            int occurances = child_count[entry.key_name].occur;
             if (occurances != 1) {
-                numbered_keyname = GBS_global_string_copy("%s[%i]", key_name, child_count[key_name].count);
-                child_count[key_name].count++;
+                entry.childCount = child_count[entry.key_name].count;
+                child_count[entry.key_name].count++;
             }
 
             char *content = 0;
-            if (GB_read_type(child) == GB_DB) {
-                const char *known_childs[] = { "name", 0 };
+            if (entry.type == GB_DB) {
+                // the childs listed here are displayed behind the container entry
+                const char *known_childs[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
                 for (int i = 0; known_childs[i]; ++i) {
-                    GBDATA *gb_known = GB_find(child, known_childs[i], 0, down_level);
+                    GBDATA *gb_known = GB_find(entry.gbd, known_childs[i], 0, down_level);
 
                     if (gb_known && GB_read_type(gb_known) != GB_DB &&
                         GB_find(gb_known, known_childs[i], 0, this_level|search_next) == 0) // exactly one child exits
@@ -336,98 +556,219 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
                     }
                 }
 
-                if (!content) content = strdup("[]");
+                if (!content) content = strdup("");
             }
             else {
-                content = GB_read_as_string(child);
+                content = GB_read_as_string(entry.gbd);
+            }
+
+            if (strlen(content)>(ENTRY_MAX_LENGTH+15)) {
+                content[ENTRY_MAX_LENGTH] = 0;
+                char *shortened_content   = GBS_global_string_copy("%s [rest skipped]", content);
+                free(content);
+                content                   = shortened_content;
+            }
+
+            entry.content = content;
+            free(content);
+
+            sorted_childs.push_back(entry);
+        }
+
+        list_entry::sort_order = (SortOrder)aw_root->awar(AWAR_DBB_ORDER)->read_int();
+        if (list_entry::sort_order != SORT_NONE) {
+            sort(sorted_childs.begin(), sorted_childs.end());
+        }
+
+        for (vector<list_entry>::iterator ch = sorted_childs.begin(); ch != sorted_childs.end(); ++ch) {
+            const list_entry&  entry            = *ch;
+            const char        *key_name         = entry.key_name;
+            char              *numbered_keyname = 0;
+
+            if (entry.childCount >= 0) {
+                numbered_keyname = GBS_global_string_copy("%s[%i]", key_name, entry.childCount);
             }
 
             key_name = numbered_keyname ? numbered_keyname : key_name;
-
-            const char *displayed = GBS_global_string("%-*s   %-*s   %s",
-                                                      maxkeylen, key_name,
-                                                      maxtypelen, GB_get_type_name(child),
-                                                      content);
-
+            const char *displayed = GBS_global_string("%-*s   %-*s   %s", maxkeylen, key_name, maxtypelen, GB_get_type_name(entry.gbd), entry.content.c_str());
             aww->insert_selection(id, displayed, key_name);
 
-            free(content);
             free(numbered_keyname);
         }
-        aww->insert_default_selection(id, "", "");
     }
-
+    aww->insert_default_selection(id, "", "");
     aww->update_selection_list(id);
 
     free(path);
 }
+
+static void order_changed_cb(AW_root *aw_root) {
+    DB_browser *browser = get_the_browser();
+    update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+}
+
 static void child_changed_cb(AW_root *aw_root) {
     static bool avoid_recursion = false;
 
     if (!avoid_recursion) {
         avoid_recursion = true;
 
-        char *path  = aw_root->awar(AWAR_DBB_PATH)->read_string();
         char *child = aw_root->awar(AWAR_DBB_BROWSE)->read_string();
-
-        char *fullpath;
-        if (strcmp(path, "/") == 0) {
-            fullpath = GBS_global_string_copy("/%s", child);
-        }
-        else if (child[0] == 0) {
-            fullpath = strdup(path);
+        if (strncmp(child, BROWSE_CMD_PREFIX, sizeof(BROWSE_CMD_PREFIX)-1) == 0) {
+            // a symbolic browser command
+            execute_browser_command(get_the_browser()->get_window(aw_root), child);
         }
         else {
-            fullpath = GBS_global_string_copy("%s/%s", path, child);
-        }
+            char *path = aw_root->awar(AWAR_DBB_PATH)->read_string();
 
-        DB_browser     *browser          = get_the_browser();
-        GBDATA         *gb_main          = browser->gb_main();
-        GB_transaction  dummy(gb_main);
-        GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
-
-        string info;
-        info += GBS_global_string("child='%s'\n", child);
-        info += GBS_global_string("path='%s'\n", path);
-        info += GBS_global_string("fullpath='%s'\n", fullpath);
-
-        if (gb_selected_node == 0) {
-            info += "Node does not exist.\n";
-        }
-        else {
-            info += "Node has been found.\n";
-
-            if (GB_read_type(gb_selected_node) == GB_DB) {
-                info += "Node is a container.\n";
-
-                aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
-                aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+            char *fullpath;
+            if (strcmp(path, "/") == 0) {
+                fullpath = GBS_global_string_copy("/%s", child);
             }
+            else if (strcmp(path, HISTORY_PSEUDO_PATH) == 0) {
+                fullpath = strdup(child);
+            }
+            else if (child[0] == 0) {
+                fullpath = strdup(path);
+            }
+            else {
+                fullpath = GBS_global_string_copy("%s/%s", path, child);
+            }
+
+            DB_browser     *browser          = get_the_browser();
+            GBDATA         *gb_main          = browser->gb_main();
+            GB_transaction  dummy(gb_main);
+            GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
+
+            string info;
+            info += GBS_global_string("child='%s'\n", child);
+            info += GBS_global_string("path='%s'\n", path);
+            info += GBS_global_string("fullpath='%s'\n", fullpath);
+
+            if (gb_selected_node == 0) {
+                info += "Node does not exist.\n";
+            }
+            else {
+                info += "Node has been found.\n";
+
+                if (GB_read_type(gb_selected_node) == GB_DB) {
+                    info += "Node is a container.\n";
+
+                    aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
+                    aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+                }
+            }
+
+            aw_root->awar(AWAR_DBB_INFO)->write_string(info.c_str());
+
+            free(fullpath);
+            free(path);
         }
-
-        aw_root->awar(AWAR_DBB_INFO)->write_string(info.c_str());
-
-        free(fullpath);
         free(child);
-        free(path);
 
         avoid_recursion = false;
     }
 }
-static void path_changed_cb(AW_root *aw_root) {
-    DB_browser *browser = get_the_browser();
-    {
-        char *path = aw_root->awar(AWAR_DBB_PATH)->read_string();
-        browser->set_path(path);
-        free(path);
+
+inline char *strmove(char *dest, char *source) {
+    return (char*)memmove(dest, source, strlen(source)+1);
+}
+
+static void add_to_history(AW_root *aw_root, const char *path) {
+    // adds 'path' to history
+
+    if (strcmp(path, HISTORY_PSEUDO_PATH) != 0) {
+        int      db           = aw_root->awar(AWAR_DBB_DB)->read_int();
+        AW_awar *awar_history = aw_root->awar(AWAR_DBB_HISTORY);
+        char    *old_history  = awar_history->read_string();
+        char    *entry        = GBS_global_string_copy("%i:%s", db, path);
+        int      entry_len    = strlen(entry);
+
+        char *found = strstr(old_history, entry);
+        while (found) {
+            if (found == old_history || found[-1] == '\n') { // found start of an entry
+                if (found[entry_len] == '\n') {
+                    strmove(found, found+entry_len+1);
+                    found = strstr(old_history, entry);
+                }
+                else if (found[entry_len] == 0) { // found as last entry
+                    if (found == old_history) { // which is also first entry
+                        old_history[0] = 0; // empty history
+                    }
+                    else {
+                        strmove(found, found+entry_len+1);
+                    }
+                    found = strstr(old_history, entry);
+                }
+                else {
+                    found = strstr(found+1, entry);
+                }
+            }
+            else {
+                found = strstr(found+1, entry);
+            }
+        }
+
+        if (old_history[0]) {
+            char *new_history = GBS_global_string_copy("%s\n%s", entry, old_history);
+
+            while (strlen(old_history)>HISTORY_MAX_LENGTH) { // shorten history
+                char *llf = strrchr(old_history, '\n');
+                if (!llf) break;
+                llf[0]    = 0;
+            }
+
+            awar_history->write_string(new_history);
+            free(new_history);
+        }
+        else {
+            awar_history->write_string(entry);
+        }
+
+        free(entry);
+        free(old_history);
     }
-    update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
-    child_changed_cb(aw_root);
+}
+
+static void path_changed_cb(AW_root *aw_root) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        avoid_recursion         = true;
+        DB_browser *browser     = get_the_browser();
+        char       *goto_child  = 0;
+
+        {
+            GBDATA         *gb_main   = browser->gb_main();
+            GB_transaction  t(gb_main);
+            AW_awar        *awar_path = aw_root->awar(AWAR_DBB_PATH);
+            char           *path      = awar_path->read_string();
+            GBDATA         *found     = GB_search_numbered(gb_main, path, GB_FIND);
+
+            if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
+                char *lslash = strrchr(path, '/');
+                if (lslash) {
+                    lslash[0]  = 0;
+                    awar_path->write_string(path);
+                    goto_child = strdup(lslash+1);
+                }
+            }
+
+            add_to_history(aw_root, path);
+            browser->set_path(path);
+            free(path);
+        }
+
+        update_browser_selection_list(aw_root, (AW_CL)browser->get_window(aw_root), (AW_CL)browser->get_browser_id());
+        aw_root->awar(AWAR_DBB_BROWSE)->write_string(goto_child ? goto_child : "");
+
+        avoid_recursion = false;
+    }
 }
 static void db_changed_cb(AW_root *aw_root) {
-    int selected = aw_root->awar(AWAR_DBB_DB)->read_int();
-    get_the_browser()->set_selected_db(selected);
-    path_changed_cb(aw_root);
+    int         selected = aw_root->awar(AWAR_DBB_DB)->read_int();
+    DB_browser *browser  = get_the_browser();
+    browser->set_selected_db(selected);
+    aw_root->awar(AWAR_DBB_PATH)->rewrite_string(browser->get_path());
 }
 
 AW_window *DB_browser::get_window(AW_root *aw_root) {
@@ -464,10 +805,19 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
 
         aws->at("db");
         aws->create_option_menu(AWAR_DBB_DB);
-        int idx = 0;
-        for (KnownDBiterator i = known_databases.begin(); i != known_databases.end(); ++i, ++idx) {
-            const KnownDB& db = *i;
-            aws->insert_option(db.get_description().c_str(), "", idx);
+        {
+            int idx = 0;
+            for (KnownDBiterator i = known_databases.begin(); i != known_databases.end(); ++i, ++idx) {
+                const KnownDB& db = *i;
+                aws->insert_option(db.get_description().c_str(), "", idx);
+            }
+        }
+        aws->update_option_menu();
+
+        aws->at("order");
+        aws->create_option_menu(AWAR_DBB_ORDER);
+        for (int idx = 0; idx<SORT_COUNT; ++idx) {
+            aws->insert_option(sort_order_name[idx], "", idx);
         }
         aws->update_option_menu();
 
@@ -478,9 +828,10 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->button_length(8);
 
         aws->at("navigation");
-        aws->callback(goto_next_cb); aws->create_button("goto_next", "Next");
         aws->callback(go_up_cb); aws->create_button("go_up", "Up");
         aws->callback(goto_root_cb); aws->create_button("goto_root", "Top");
+        aws->callback(show_history_cb); aws->create_button("history", "History");
+        aws->callback(toggle_tmp_cb); aws->create_button("toggle_tmp", "/tmp");
 
         aws->at("browse");
         browse_id = aws->create_selection_list(AWAR_DBB_BROWSE);
@@ -494,6 +845,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aw_root->awar(AWAR_DBB_BROWSE)->add_callback(child_changed_cb);
         aw_root->awar(AWAR_DBB_PATH)->add_callback(path_changed_cb);
         aw_root->awar(AWAR_DBB_DB)->add_callback(db_changed_cb);
+        aw_root->awar(AWAR_DBB_ORDER)->add_callback(order_changed_cb);
 
         db_changed_cb(aw_root); // force update
     }
