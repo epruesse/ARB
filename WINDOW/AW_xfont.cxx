@@ -3,6 +3,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <memory.h>
+#include <ctype.h>
 #include <X11/Xlib.h>
 
 #include <arbdb.h>
@@ -36,8 +37,8 @@ static Boolean	openwinfonts;
  * "Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both the copyright
- * notice and this permission notice appear in supporting documentation. 
- * No representations are made about the suitability of this software for 
+ * notice and this permission notice appear in supporting documentation.
+ * No representations are made about the suitability of this software for
  * any purpose.  It is provided "as is" without express or implied warranty."
  */
 
@@ -144,21 +145,35 @@ struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
 /* parse the point size of font 'name' */
 /* e.g. -adobe-courier-bold-o-normal--10-100-75-75-m-60-ISO8859-1 */
 
-static int
-parsesize(char	   *name)
+static int parsesize(char *name)
 {
     int		    s;
     char	   *np;
 
     for (np = name; *(np + 1); np++)
-	if (*np == '-' && *(np + 1) == '-')	/* look for the -- */
-	    break;
+        if (*np == '-' && *(np + 1) == '-')	/* look for the -- */
+            break;
     s = 0;
     if (*(np + 1)) {
-	np += 2;		/* point past the -- */
-	s = atoi(np);		/* get the point size */
-    } else
-	fprintf(stderr, "Can't parse '%s'\n", name);
+        np += 2;		/* point past the -- */
+        s = atoi(np);		/* get the point size */
+    }
+    else {
+        // no '--' found; search for first - followed by a number
+        s = 0;                  // return size == 0 if nothing detected
+        for (np = name; ; ++np) {
+            if (*np == '-') {
+                char *dw;
+                for (dw = np+1; isdigit(*dw); ++dw) ;
+                if (dw>(np+1) && *dw == '-') { // only digits found
+                    s = atoi(np+1);
+                    break;
+                }
+            }
+        }
+        if (!s) fprintf(stderr, "Can't parse '%s'\n", name);
+    }
+
     return s;
 }
 
@@ -179,84 +194,82 @@ void aw_root_init_font(Display *tool_d)
      * it.
      */
 
-    /* if the user hasn't disallowed off scalable fonts, check that the 
+    /* if the user hasn't disallowed off scalable fonts, check that the
        server really has them by checking for font of 0-0 size */
     openwinfonts = False;
     if (appres.SCALABLEFONTS) {
-	char	  **fontlist;
-	/* first look for OpenWindow style font names (e.g. times-roman) */
-	if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
-	    openwinfonts = True;	/* yes, use them */
-	    for (f=0; f<AW_NUM_FONTS; f++)	/* copy the OpenWindow font names */
-		x_fontinfo[f].templat = ps_fontinfo[f+1].name;
-	    XFreeFontNames(fontlist);
-	} else {
-	    strcpy(templat,x_fontinfo[0].templat);  /* nope, check for font size 0 */
-	    strcat(templat,"0-0-*-*-*-*-*-*");
-	    if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0){
-		XFreeFontNames(fontlist);
-	    }else{
-		appres.SCALABLEFONTS = False;	/* none, turn off request for them */
-	    }
-	}
+        char	  **fontlist;
+        /* first look for OpenWindow style font names (e.g. times-roman) */
+        if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
+            openwinfonts = True;	/* yes, use them */
+            for (f=0; f<AW_NUM_FONTS; f++)	/* copy the OpenWindow font names */
+                x_fontinfo[f].templat = ps_fontinfo[f+1].name;
+            XFreeFontNames(fontlist);
+        } else {
+            strcpy(templat,x_fontinfo[0].templat);  /* nope, check for font size 0 */
+            strcat(templat,"0-0-*-*-*-*-*-*");
+            if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0){
+                XFreeFontNames(fontlist);
+            }else{
+                appres.SCALABLEFONTS = False;	/* none, turn off request for them */
+            }
+        }
     }
 
-    /* no scalable fonts - query the server for all the font 
+    /* no scalable fonts - query the server for all the font
        names and sizes and build a list of them */
 
     if (!appres.SCALABLEFONTS) {
-	char	  **fontlist;
-	for (f = 0; f < AW_NUM_FONTS; f++) {
-	    nf = NULL;
-	    strcpy(templat,x_fontinfo[f].templat);
-	    strcat(templat,"*-*-*-*-*-*-");
-	    /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name */
-	    if (strstr(templat,"symbol") == NULL && 
-		strstr(templat,"zapfdingbats") == NULL)
-		strcat(templat,"ISO8859-*");
-	    else
-		strcat(templat,"*-*");
-	    /* don't free the Fontlist because we keep pointers into it */
-	    p = 0;
-	    if ((fontlist = XListFonts(tool_d, templat, MAXNAMES, &count))==0) {
-		/* no fonts by that name found, substitute the -normal font name */
-		flist[p].fn = NORMAL_FONT;
-		flist[p++].s = 12;	/* just set the size to 12 */
-	    } else {
-		fname = fontlist; /* go through the list finding point
-				   * sizes */
-		while (count--) {
-		    ss = parsesize(*fname);	/* get the point size from
-						 * the name */
-		    flist[p].fn = *fname++;	/* save name of this size
-						 * font */
-		    flist[p++].s = ss;	/* and save size */
-		}
-	    }
-	    for (ss = 4; ss <= 50; ss++) {
-		for (i = 0; i < p; i++)
-		    if (flist[i].s == ss)
-			break;
-		if (i < p && flist[i].s == ss) {
-		    newfont = (struct xfont *) malloc(sizeof(struct xfont));
-		    if (nf == NULL)
-			x_fontinfo[f].xfontlist = newfont;
-		    else
-			nf->next = newfont;
-		    nf = newfont;	/* keep current ptr */
-		    nf->size = ss;	/* store the size here */
-		    nf->fname = flist[i].fn;	/* keep actual name */
-		    nf->fstruct = NULL;
-		    nf->next = NULL;
-		}
-	    } /* next size */
-	} /* next font, f */
+        char	  **fontlist;
+        for (f = 0; f < AW_NUM_FONTS; f++) {
+            nf = NULL;
+            strcpy(templat,x_fontinfo[f].templat);
+            strcat(templat,"*-*-*-*-*-*-");
+            /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name */
+            if (strstr(templat,"symbol") == NULL &&
+                strstr(templat,"zapfdingbats") == NULL)
+                strcat(templat,"ISO8859-*");
+            else
+                strcat(templat,"*-*");
+            /* don't free the Fontlist because we keep pointers into it */
+            p = 0;
+            if ((fontlist = XListFonts(tool_d, templat, MAXNAMES, &count))==0) {
+                /* no fonts by that name found, substitute the -normal font name */
+                flist[p].fn = NORMAL_FONT;
+                flist[p++].s = 12;	/* just set the size to 12 */
+            } else {
+                fname = fontlist; /* go through the list finding point sizes */
+                while (count--) {
+                    ss = parsesize(*fname); /* get the point size from the name */
+
+                    flist[p].fn = *fname++; /* save name of this size font */
+                    flist[p++].s    = ss; /* and save size */
+                }
+            }
+            for (ss = 4; ss <= 50; ss++) {
+                for (i = 0; i < p; i++)
+                    if (flist[i].s == ss)
+                        break;
+                if (i < p && flist[i].s == ss) {
+                    newfont = (struct xfont *) malloc(sizeof(struct xfont));
+                    if (nf == NULL)
+                        x_fontinfo[f].xfontlist = newfont;
+                    else
+                        nf->next = newfont;
+                    nf = newfont;	/* keep current ptr */
+                    nf->size = ss;	/* store the size here */
+                    nf->fname = flist[i].fn;	/* keep actual name */
+                    nf->fstruct = NULL;
+                    nf->next = NULL;
+                }
+            } /* next size */
+        } /* next font, f */
     } /* !appres.SCALABLEFONTS */
 }
 
 
 /*
- * Lookup an X font, "f" corresponding to a Postscript font style that is 
+ * Lookup an X font, "f" corresponding to a Postscript font style that is
  * close in size to "s"
  */
 
@@ -275,12 +288,12 @@ lookfont(Display *tool_d, int f, int s)
     if (s < 0)
 	s = DEF_FONTSIZE;	/* default font size */
 
-    /* see if we've already loaded that font size 's' 
+    /* see if we've already loaded that font size 's'
        from the font family 'f' */
 
     found = False;
 
-    /* start with the basic font name (e.g. adobe-times-medium-r-normal-... 
+    /* start with the basic font name (e.g. adobe-times-medium-r-normal-...
        OR times-roman for OpenWindows fonts) */
 
     nf = x_fontinfo[f].xfontlist;
@@ -333,7 +346,7 @@ lookfont(Display *tool_d, int f, int s)
 	    /* attach pointsize to font name */
 	    strcat(templat,"%d-*-*-*-*-*-");
 	    /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name */
-	    if (strstr(templat,"symbol") == NULL && 
+	    if (strstr(templat,"symbol") == NULL &&
 		strstr(templat,"zapfdingbats") == NULL)
 		strcat(templat,"ISO8859-*");
 	    else
@@ -401,7 +414,7 @@ int AW_root::font_2_xfig(AW_font font_nr)
   CI_GET_CHAR_INFO_1D (fs, fs->default_char, NULL, cs)
 
 /*
- * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and 
+ * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
  * column.  This is used for fonts that have more than row zero.
  */
 #define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
@@ -428,7 +441,7 @@ int AW_root::font_2_xfig(AW_font font_nr)
     CI_GET_CHAR_INFO_2D (fs, r, c, NULL, cs); \
 }
 
-/* 
+/*
  * CI_GET_ROWZERO_CHAR_INFO_2D - do the same thing as CI_GET_CHAR_INFO_1D,
  * except that the font has more than one row.  This is special case of more
  * general version used in XTextExt16.c since row == 0.  This is used when
@@ -483,7 +496,7 @@ set_font(AW_font font_nr, int size)
 	    width_of_chars[i] = 0;
 	    descent_of_chars[i] = 0;
 	    ascent_of_chars[i] = 0;
-	}	   
+	}
     }
     fontinfo.max_letter_ascent = xfs->max_bounds.ascent;
     fontinfo.max_letter_descent = xfs->max_bounds.descent;
