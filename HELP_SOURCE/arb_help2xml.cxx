@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Fri Oct/18/2002 16:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Nov/09/2002 15:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -180,7 +180,7 @@ public:
 
     void readHelp(istream& in, const string& filename);
     void writeXML(FILE *out, const string& page_name, const string& path1, const string& path2);
-    void checkConsistency();
+    void extractInternalLinks();
 };
 
 inline bool isWhite(char c) { return c == ' '; }
@@ -210,8 +210,9 @@ static void display(const Sections& sections, const string& title, FILE *out) {
 //      inline bool isEmptyOrComment(const char *s)
 //  ----------------------------------------------------
 inline bool isEmptyOrComment(const char *s) {
+    if (s[0] == '#') return true;
     for (int off = 0; ; ++off) {
-        if (s[off] == 0 || s[off] == '#') return true;
+        if (s[off] == 0) return true;
         if (!isWhite(s[off])) break;
     }
 
@@ -948,6 +949,42 @@ ParagraphTree* ParagraphTree::format_indentations() {
     return this;
 }
 
+static void print_XML_Text_expanding_links(const string& text) {
+    size_t found = text.find("LINK{", 0);
+    if (found != string::npos) {
+        size_t inside_link = found+5;
+        size_t close = text.find('}', inside_link);
+
+        if (close != string::npos) {
+            string link_target = text.substr(inside_link, close-inside_link);
+            string type        = "unknown";
+            string dest        = link_target;
+
+            if (link_target.find("http://") != string::npos) { type = "www"; }
+            else if (link_target.find("ftp://") != string::npos) { type = "www"; }
+            else if (link_target.find('@') != string::npos) { type = "email"; }
+            else {
+                type = "help";
+                dest = cutoff_hlp_extension(link_target);
+            }
+
+            {
+                XML_Text t(text.substr(0, found));
+            }
+            {
+                XML_Tag link("LINK");
+                link.set_on_extra_line(false);
+                link.add_attribute("type", type);
+                link.add_attribute("dest", dest);
+            }
+
+            return print_XML_Text_expanding_links(text.substr(close+1));
+        }
+    }
+
+    XML_Text t(text);
+}
+
 //  -----------------------------------------------------------------------------------
 //      void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry)
 //  -----------------------------------------------------------------------------------
@@ -988,7 +1025,10 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                         usedText = text;
                     }
 //                     XML_Text t(usedText.substr(1)); // skip first char (\n)
-                    XML_Text t(usedText);
+
+                    print_XML_Text_expanding_links(usedText);
+
+//                     XML_Text t(usedText);
                 }
             }
             if (son) {
@@ -1088,11 +1128,49 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
     }
 }
 //  ------------------------------------------
-//      void Helpfile::checkConsistency()
+//      void Helpfile::extractInternalLinks()
 //  ------------------------------------------
-void Helpfile::checkConsistency() {
-    // @@@ perform some consistency check
-    // (i.e. does title exist etc.)
+void Helpfile::extractInternalLinks() {
+    for (NamedSections::const_iterator named_sec = sections.begin(); named_sec != sections.end(); ++named_sec) {
+        try {
+            const Section& s = named_sec->getSection();
+            for (Section::const_iterator li = s.begin(); li != s.end(); ++li) {
+                const string& line = *li;
+                size_t        start = 0;
+
+                while (1) {
+                    size_t found = line.find("LINK{", start);
+                    if (found == string::npos) break;
+                    found += 5;
+                    size_t close = line.find('}', found);
+                    if (close == string::npos) break;
+
+                    string link_target = line.substr(found, close-found);
+
+                    if (link_target.find("http://") == string::npos &&
+                        link_target.find("ftp://")  == string::npos &&
+                        link_target.find('@')       == string::npos)
+                    {
+                        string rest_noext = cutoff_hlp_extension(link_target);
+
+                        try {
+                            check_duplicates(rest_noext, uplinks, references);
+                            references.push_back(rest_noext);
+                        }
+                        catch (string& err) {
+                            cout << "Duplicated reference ingnored (" << err << ")\n";
+                        }
+                    }
+                    // printf("link_target='%s'\n", link_target.c_str());
+
+                    start = close+1;
+                }
+            }
+        }
+        catch (string& err) {
+            throw string("'"+err+"' while scanning LINK{} in SECTION '"+named_sec->getName()+'\'');
+        }
+    }
 }
 // -------------------------------------------------------------------
 //      static void show_err(string err, const string& helpfile )
@@ -1130,7 +1208,7 @@ int main(int argc, char *argv[]) {
             help.readHelp(in, arb_help);
         }
 
-        help.checkConsistency();
+        help.extractInternalLinks();
 
         {
             FILE *out = std::fopen(xml_output.c_str(), "wt");
