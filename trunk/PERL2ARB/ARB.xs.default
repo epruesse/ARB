@@ -13,6 +13,7 @@ extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "debug.h"
 #include "arbdb.h"
 #include "arbdbt.h"
 #include "ARB_ext.c"
