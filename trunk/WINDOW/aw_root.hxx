@@ -158,9 +158,10 @@ public:
     GB_HASH    *hash_for_windows;
 
     /* PJ - vectorfont stuff */
-    float                      vectorfont_userscale; // user scaling
-    char                      *vectorfont_name; // name of font
-    int                        vectorfont_zoomtext; // zoomtext calls: 0 = Xfont, 1 = vectorfont
+    float  vectorfont_userscale; // user scaling
+    char  *vectorfont_name;     // name of font
+    int    vectorfont_zoomtext; // zoomtext calls: 0 = Xfont, 1 = vectorfont
+    
     struct AW_xfig_vectorfont *vectorfont_lines; // graphic data of the font
 
     /************************* the real public section *************************/
@@ -175,15 +176,17 @@ public:
     void process_events(void);
     AW_ProcessEventType peek_key_event(AW_window *);
 
-    void add_timed_callback(    int ms, void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_focus_callback(        void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);   /* any focus callback in any window */
+    void add_timed_callback               (int ms, void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void add_timed_callback_never_disabled(int ms, void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+
+    void set_focus_callback(void(*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
 
     class AW_awar           *awar(const char *awar);
     class AW_awar           *awar_no_error(const char *awar);
 
-    AW_awar *awar_string( const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_int( const char *var_name, long default_value = 0 , AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_float( const char *var_name, float default_value = 0.0, AW_default default_file = AW_ROOT_DEFAULT );
+    AW_awar *awar_string(const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_int   (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_float (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
 
     AW_default  open_default(const char *default_name, bool create_if_missing = true);
     AW_error   *save_default( const char *awar_name );
@@ -198,12 +201,12 @@ public:
     void set_insensitive( const char *id );
 
 
-    GB_ERROR    start_macro_recording(const char *file,const char *application_id, const char *stop_action_name);
-    GB_ERROR    stop_macro_recording();
-    GB_ERROR    execute_macro(const char *file);
-    void    stop_execute_macro(); // Starts macro window main loop, delayed return
-    GB_ERROR    enable_execute_macro(FILE *mfile,const char *mname); // leave macro window main loop, returns stop_execute_macro
-    GB_ERROR    check_for_remote_command(AW_default gb_main,const char *rm_base);
+    GB_ERROR start_macro_recording(const char *file,const char *application_id, const char *stop_action_name);
+    GB_ERROR stop_macro_recording();
+    GB_ERROR execute_macro(const char *file);
+    void     stop_execute_macro(); // Starts macro window main loop, delayed return
+    GB_ERROR enable_execute_macro(FILE *mfile,const char *mname); // leave macro window main loop, returns stop_execute_macro
+    GB_ERROR check_for_remote_command(AW_default gb_main,const char *rm_base);
 
     /*************************************************************************
                                           Fonts
@@ -303,7 +306,7 @@ public:
     GB_ERROR write_float(double aw_double);
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value);};
 
-    // same as write_-versions above, but always touches the database field 
+    // same as write_-versions above, but always touches the database field
     GB_ERROR rewrite_string(const char *aw_string);
     GB_ERROR rewrite_as_string(const char *aw_string);
     GB_ERROR rewrite_int(long aw_int);
