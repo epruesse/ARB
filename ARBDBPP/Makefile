@@ -1,57 +1,76 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .c .cxx
-CPP_OBJECTS = adtsequence.o adt_edit.o adtali.o adextended.o adseq.o adspecies.o admain.o adali.o  liste.o 
+.SUFFIXES: .o .c .cxx .depend
+CPP_OBJECTS = adtsequence.o adt_edit.o adtali.o adextended.o adseq.o adspecies.o admain.o adali.o  liste.o
 $(MAIN): $(CPP_OBJECTS)
 	$(ARLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(CPP_OBJECTS)
 	touch $@
-.cxx.o: 
+.cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 adtsequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 adtsequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtsequence.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx
 adtsequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx adtools.hxx
+
 adt_edit.o: $(ARBHOME)/INCLUDE/arbdb.h
 adt_edit.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adt_edit.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx
 adt_edit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx adtools.hxx
+
 adtali.o: $(ARBHOME)/INCLUDE/arbdb.h
 adtali.o: $(ARBHOME)/INCLUDE/arb_assert.h
-adtali.o: $(ARBHOME)/INCLUDE/ad_prot.h adtools.hxx
-adtali.o: arbdb++.hxx $(ARBHOME)/INCLUDE/aw_keysym.hxx
+adtali.o: $(ARBHOME)/INCLUDE/ad_prot.h adtools.hxx arbdb++.hxx
+adtali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+
 adextended.o: $(ARBHOME)/INCLUDE/arbdb.h
 adextended.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adextended.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adextended.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adextended.o: $(ARBHOME)/INCLUDE/ad_t_prot.h arbdb++.hxx
 adextended.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+
 adseq.o: $(ARBHOME)/INCLUDE/arbdb.h
 adseq.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adseq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adseq.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adseq.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 adseq.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx arbdb++.hxx
+
 adspecies.o: $(ARBHOME)/INCLUDE/arbdb.h
 adspecies.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adspecies.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adspecies.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adspecies.o: $(ARBHOME)/INCLUDE/ad_t_prot.h arbdb++.hxx
 adspecies.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-admain.o:  $(ARBHOME)/INCLUDE/arbdb.h
+
+admain.o: $(ARBHOME)/INCLUDE/arbdb.h
 admain.o: $(ARBHOME)/INCLUDE/arb_assert.h
 admain.o: $(ARBHOME)/INCLUDE/ad_prot.h
 admain.o: $(ARBHOME)/INCLUDE/arbdbt.h
 admain.o: $(ARBHOME)/INCLUDE/ad_t_prot.h arbdb++.hxx
 admain.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-adali.o:  $(ARBHOME)/INCLUDE/arbdb.h
+
+adali.o: $(ARBHOME)/INCLUDE/arbdb.h
 adali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adali.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h arbdb++.hxx
 adali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+
 liste.o: $(ARBHOME)/INCLUDE/arbdb.h
 liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 liste.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx

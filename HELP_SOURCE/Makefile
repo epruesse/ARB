@@ -1,5 +1,5 @@
 
-.SUFFIXES: .o .c .cxx .source .hlp .xml .html
+.SUFFIXES: .o .c .cxx .source .hlp .xml .html .depend
 
 # --------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 
 # choose conversion mode:
-CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that's intended for now!)
+CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that IS intended for now!)
 # if set to 0 the helpfiles in oldhelp are ignored and only XML is used as source (not intended for now)
 
 # needed tools:
@@ -211,7 +211,19 @@ $(ARBHOME)/bin/%: %.c
 $(ARBHOME)/bin/%: %.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
 
-depend:
-	$(MAKEDEPEND) -o '' -p $(ARBHOME)/bin/ $(MAKEDEPENDINC) $(OBJECT:.o=.c*)
+DEPENDS = $(TOOL_OBJECT:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
+
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

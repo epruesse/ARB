@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .cxx
+.SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = DI_mldist.o DI_protdist.o DI_compress_matrix.o DI_view_matrix.o DI_save_matr.o DI_main.o DI_matr.o distanalyse.o
 
@@ -8,11 +8,22 @@ $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-DI_mldist.o:  $(ARBHOME)/INCLUDE/arbdb.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -29,6 +40,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/awt_csp.hxx di_matr.hxx di_mldist.hxx
+
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -47,6 +59,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/awt_csp.hxx di_matr.hxx
 DI_protdist.o: di_protdist.hxx
+
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -62,7 +75,8 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx dist.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx di_matr.hxx
-DI_compress_matrix.o: ./di_view_matrix.hxx
+DI_compress_matrix.o: di_view_matrix.hxx
+
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -78,8 +92,9 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx dist.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx di_matr.hxx
-DI_view_matrix.o: ./di_view_matrix.hxx
-DI_save_matr.o:  $(ARBHOME)/INCLUDE/arbdb.h
+DI_view_matrix.o: di_view_matrix.hxx
+
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -95,7 +110,8 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx di_matr.hxx
-DI_main.o:  $(ARBHOME)/INCLUDE/arbdb.h
+
+DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -105,6 +121,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -123,7 +140,8 @@ DI_matr.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx di_matr.hxx di_protdist.hxx
-DI_matr.o: ./di_view_matrix.hxx
+DI_matr.o: di_view_matrix.hxx
+
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdb.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h

@@ -44,21 +44,23 @@ SUB_ACC=$(ACC:-W -Wall=-w)
 
 $(MAIN): $(ARCHS)
 
-depend: $(ARCHS:.dummy=.depend)
+depends: $(ARCHS:.dummy=.depend)
 
 %.depend:
+	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
-		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
+		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" \
-		depend;
-	cat $(@D)/Makefile \
-		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
-			-e "s/\/usr\/[^ 	]*\.h//g" \
+		"ARBHOME=$(ARBHOME)" \
+		depends;
+	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null # check whether sub Makefile has dependencies
+	@cat $(@D)/Makefile | sed \
 			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
-			-e '/^[A-Za-z][A-Za-z0-9_]*\.o:[ ]*$$/d' \
+			-e "s/[ /t]\.\// /g" \
 		>$(@D)/Makefile.2
-	@mv $(@D)/Makefile.2 $(@D)/Makefile
+	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
+	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
@@ -74,3 +76,5 @@ depend: $(ARCHS:.dummy=.depend)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)"
+
+# DO NOT DELETE

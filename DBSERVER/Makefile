@@ -1,16 +1,25 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .c .cxx
+.SUFFIXES: .o .c .cxx .depend
 OBJECTS = db_server.o
 
 $(MAIN): $(OBJECTS)
 	$(AR) $(MAIN) $(OBJECTS)
 $(OBJECTS): $(LOCALS) $(ARBDBH) $(SERVERCNTRLH)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECTS:.o=.cxx)
-
-.cxx.o: 
+.cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

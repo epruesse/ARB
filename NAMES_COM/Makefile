@@ -17,7 +17,10 @@ server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c)
 				"AISC_SAVE = $(AISC_SAVE)" "COMPILER = $(COMPILER)" \
 				"CLIENTCOMPILER = $(CLIENTCOMPILER)" "AR = $(AR)"
 
-depend:
-	@echo "MGR COM no automatic dependencies"
+depends:
+	@echo "no automatic dependencies for NAMES_COM - skipped"
+
 clean:
 	$(MAKE) $(makeflags) -f AISC/Makefile clean
+
+# DO NOT DELETE

@@ -86,7 +86,7 @@ endif
    AR = ld -r -o#			# Archive Linker
    ARLIB = ld -r -o#			# The same for shared libs.
    XAR = $(AR)# 			# Linker for archives containing templates
-   MAKEDEPEND = $(FORCEMASK);makedepend $(dflags)
+   MAKEDEPEND = $(FORCEMASK);makedepend
    SHARED_LIB_SUFFIX = so#		# shared lib suffix
    F77 = f77
 
@@ -348,18 +348,17 @@ first_target:
 		@echo ''
 		@echo 'Development targets:'
 		@echo ''
-		@echo ' depend      - create dependencies               (recommended for people not using our CVS)'
-		@echo ' XXX/.depend - create dependencies for dir XXX   (recommended for ARB developers)'
-		@echo ' tags        - create tags for xemacs'
-		@echo ' rmbak       - remove all "*%" and cores'
-		@echo ' show        - show available shortcuts (aka subtargets)'
+		@echo ' depends      - create or update dependencies'
+		@echo ' tags         - create tags for xemacs'
+		@echo ' rmbak        - remove all "*%" and cores'
+		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' tarfile     - make rebuild and create "arb.tar.gz" (tarfile_ignore to skip rebuild)'
-		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
+		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_ignore" to skip rebuild)'
+#		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
-		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
+#		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' doc         - create doxygen documentation'
 ifeq ($(DEVELOPER), "RALF")
@@ -476,7 +475,7 @@ DEST_BIN = bin
 
 AINCLUDES = 	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
 CPPINCLUDES =	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
-MAKEDEPENDINC = -I. -I$(DIR)/DUMMYINC -I$(DIR)/INCLUDE
+MAKEDEPENDFLAGS = -- $(cflags) -I. -Y$(DIR)/INCLUDE --
 
 #*****		List of all Directories
 ARCHS = \
@@ -649,7 +648,7 @@ TREEGEN = bin/arb_treegen
 ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
 
-$(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy) shared_libs
+$(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN)
 
@@ -837,6 +836,9 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ARBDB_COMPRESS/ARBDB_COMPRESS.a -lARBDB
 
+#***********************************	OTHER EXECUTABLES   ********************************************
+
+
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
 # the following lib is not provided with the source
@@ -878,26 +880,23 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 #***************************************************************************************
 #			Rekursiv calls to submakefiles
 #***************************************************************************************
-:
-%.depend:
-	@$(GMAKE) -C $(@D) -r \
+
+%.depends:
+	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
+	@$(MAKE) -C $(@D) -r \
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
-		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
+		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" \
 		"ARBHOME=$(ARBHOME)" \
-		depend;
-	@(grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null && cat $(@D)/Makefile \
-		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
-			-e "s/\/usr\/[^ 	]*\.h//g" \
+		depends;
+	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
+	@cat $(@D)/Makefile \
+		| sed \
 			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
-			-e '/^[A-Za-z][A-Za-z0-9_]*\.o:[ ]*$$/d' \
-		>$(@D)/Makefile.2 && \
-		mv $(@D)/Makefile.2 $(@D)/Makefile) || echo nop
-
-#
-#			-e "s/^[A-Za-z0-9_]+\.o: *$/\#deleted/g" \
-#			-e "s/\/[^ 	]*\/INCLUDE/\\\$$(ARBHOME)\/INCLUDE/g"
-
+			-e "s/[ /t]\.\// /g" \
+		>$(@D)/Makefile.2
+	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
+	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
 	@echo $(SEP) Making $(@F:.dummy=.a) in $(@D)
@@ -1031,7 +1030,8 @@ xml:	XML/XML.dummy
 
 #********************************************************************************
 
-depend: $(ARCHS:.a=.depend)
+depends: $(ARCHS:.a=.depends) \
+		HELP_SOURCE/HELP_SOURCE.depends \
 
 #********************************************************************************
 
@@ -1143,7 +1143,6 @@ endif
 	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
 	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK;export LD_LIBRARY_PATH;echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH;echo calling bin/arb_proto_2_xsub ...;bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
 	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl -I ../lib/perl5 ${MACH}.PL;echo -------- calling MakeMaker makefile;make
-#	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl ${MACH}.PL;echo calling make;make
 	echo -------- end of MakeMaker-Makefile
 	cp PERL2ARB/blib/arch/auto/ARB/ARB.so lib
 	cp PERL2ARB/ARB.pm lib
@@ -1199,4 +1198,3 @@ save:	rmbak
 savedepot: rmbak
 	util/arb_save_depot
 
-# DO NOT DELETE

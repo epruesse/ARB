@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .cxx
+.SUFFIXES: .o .cxx .depend
 
 CPPINCLUDES = $(CPPINCLUDES) #-I~/STL
 
@@ -16,7 +16,7 @@ CPP_OBJECTS =   \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(XAR) $(MAIN) $(CPP_OBJECTS)
-#	$(MAKE) ./prd_test
+#	$(MAKE) prd_test
 
 ./prd_test: $(MAIN) PRD_main.o
 	$(CPP) $(lflags) -o $@ PRD_main.o $(MAIN)
@@ -31,26 +31,39 @@ clean:
 #.IGNORE:
 #	clean
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
-
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
-PRD_Pair.o: PRD_Pair.hxx PRD_Item.hxx PRD_Globals.hxx 
-PRD_Item.o: PRD_Item.hxx PRD_Globals.hxx 
-PRD_Item.o: PRD_SequenceIterator.hxx
-PRD_Node.o: PRD_Node.hxx PRD_Globals.hxx 
-PRD_Range.o: PRD_Range.hxx PRD_Globals.hxx 
-PRD_SequenceIterator.o: PRD_SequenceIterator.hxx
-PRD_SearchFIFO.o: PRD_SearchFIFO.hxx PRD_Globals.hxx 
-PRD_SearchFIFO.o: PRD_Node.hxx PRD_Range.hxx
-PRD_Design.o: PRD_Globals.hxx  
-PRD_Design.o: PRD_Design.hxx PRD_Range.hxx PRD_Node.hxx PRD_Item.hxx
-PRD_Design.o: PRD_Pair.hxx $(ARBHOME)/INCLUDE/arbdb.h
+PRD_Pair.o: PRD_Pair.hxx PRD_Item.hxx PRD_Globals.hxx
+
+PRD_Item.o: PRD_Item.hxx PRD_Globals.hxx PRD_SequenceIterator.hxx
+
+PRD_Node.o: PRD_Node.hxx PRD_Globals.hxx
+
+PRD_Range.o: PRD_Range.hxx PRD_Globals.hxx
+
+PRD_SequenceIterator.o: PRD_SequenceIterator.hxx PRD_Globals.hxx
+
+PRD_SearchFIFO.o: PRD_SearchFIFO.hxx PRD_Globals.hxx PRD_Node.hxx
+PRD_SearchFIFO.o: PRD_Range.hxx
+
+PRD_Design.o: PRD_Globals.hxx PRD_Design.hxx PRD_Range.hxx PRD_Node.hxx
+PRD_Design.o: PRD_Item.hxx PRD_Pair.hxx $(ARBHOME)/INCLUDE/arbdb.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
-PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PRD_Design.o: PRD_SequenceIterator.hxx PRD_SearchFIFO.hxx
+PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h PRD_SequenceIterator.hxx
+PRD_Design.o: PRD_SearchFIFO.hxx
+
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -64,7 +77,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/awt.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/adGene.h
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-primer_design.o: primer_design.hxx PRD_Design.hxx PRD_Range.hxx
-primer_design.o: PRD_Globals.hxx 
-primer_design.o: PRD_Node.hxx PRD_Item.hxx PRD_Pair.hxx
+primer_design.o: primer_design.hxx PRD_Design.hxx PRD_Globals.hxx
+primer_design.o: PRD_Range.hxx PRD_Node.hxx PRD_Item.hxx PRD_Pair.hxx
 primer_design.o: PRD_SequenceIterator.hxx
