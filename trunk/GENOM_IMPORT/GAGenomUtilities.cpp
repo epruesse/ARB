@@ -845,7 +845,7 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
     string target_str;
     bool next = true;
     int pointer = 0;
-    bool point = false;
+    // bool point = false;
     std::ostringstream sout;
     std::ostringstream sout1;
     std::string tstring1 = *source_str;
