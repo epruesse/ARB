@@ -22,7 +22,7 @@ CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that IS i
 TOOL_OBJECT = \
 	 arb_help2xml.o
 
-# I use Sablotron 0.71
+# We use Sablotron 1.0 and RXP 1.2
 XSLT = sabcmd
 VALIDATE = rxp -v -V -V
 
@@ -95,7 +95,9 @@ XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML_TMP2=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
 XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 
-$(XML) : $(HELP2XML)
+XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
+
+$(XML) : $(XML_DEPEND)
 
 xml : $(XML)
 
@@ -205,7 +207,7 @@ clean:
 		-rm $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
 		-rm html.list `find $(HTML_LOCATION) -name "*.html"`
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
-		-rm dummy `find $(XML_LOCATION) -name "*.xml"`
+		-rm $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
 endif
 		(cd $(HLP_GENERATED);$(MAKE) clean)
 
@@ -216,6 +218,9 @@ tools: $(TOOL_OBJECT:%.o=$(ARBHOME)/bin/%)
 LIBS=../XML/XML.a
 
 $(HELP2XML): $(LIBS)
+
+$(XML_DEPEND) : arb_help2xml.cxx
+	touch $(XML_DEPEND)
 
 $(HELP2XML): arb_help2xml.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIBS)
