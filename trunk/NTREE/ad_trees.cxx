@@ -254,33 +254,6 @@ void tree_copy_cb(AW_window *aww){
     free(dest);
 }
 
-void create_tree_last_window(AW_window *aww) {
-    GB_ERROR  error  = 0;
-    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-
-    GB_begin_transaction(gb_main);
-
-    GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
-
-    if (!gb_tree_name) {
-        error = GB_export_error("No tree selected.");
-    }
-    else {
-        GBDATA *gb_dest   = GB_create_container(gb_tree_data,source);
-        error             = GB_copy(gb_dest,gb_tree_name);
-        if (!error) error = GB_delete(gb_tree_name);
-    }
-
-    if (!error) GB_commit_transaction(gb_main);
-    else GB_abort_transaction(gb_main);
-
-    if (error) aw_message(error);
-
-    free(source);
-
-}
-
 void tree_save_cb(AW_window *aww){
     AW_root  *aw_root   = aww->get_root();
     GB_ERROR  error     = 0;
@@ -379,7 +352,7 @@ char *readXmlTree(char *fname) {
     //create a temp file
     char tempFile[]  = "newickXXXXXX";
     int createTempFile = mkstemp(tempFile);
-    
+
     if(createTempFile) {
         char *tmpFname = strdup(fname); char *tmp = 0;
         void *buf  = GBS_stropen(strlen(fname));
@@ -387,24 +360,24 @@ char *readXmlTree(char *fname) {
         // extract path from fname inorder to place a copy of dtd file required to validate xml file
         for (char *tok = strtok(tmpFname,"/"); tok; ) {
             tmp = tok;
-            tok = strtok(0,"/");            
+            tok = strtok(0,"/");
             if (tok) {
                 GBS_strcat(buf,"/");
                 GBS_strcat(buf,tmp);
             }
         }
-        char *path = GBS_strclose(buf);        
+        char *path = GBS_strclose(buf);
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
-        GB_xcmd(command,false, true); 
+        GB_xcmd(command,false, true);
 
         //execute xml2newick to convert xml format tree to newick format tree
         command = GBS_global_string_copy("xml2newick %s %s", fname, tempFile);
         GB_xcmd(command,false, true);
 
         free(command);
-        free(path); 
+        free(path);
 
         // return newick format tree file
         return strdup(tempFile);
@@ -425,7 +398,7 @@ void tree_load_cb(AW_window *aww){
     GBT_TREE *tree;
 
     if(strcmp(pcTreeFormat,"xml")==0) {
-        char *tempFname = readXmlTree(fname); 
+        char *tempFname = readXmlTree(fname);
         tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1);
         char *command = GBS_global_string_copy("rm %s", tempFname); 
         system(command); //deleting the temporary file
@@ -663,6 +636,46 @@ void ad_tr_delete_cb(AW_window *aww){
     free(source);
 }
 
+static void create_tree_last_window(AW_window *aww) {
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+
+    GB_begin_transaction(gb_main);
+
+    GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
+
+    if (!gb_tree_name) {
+        error = GB_export_error("No tree selected.");
+    }
+    else {
+        GBDATA *gb_dest   = GB_create_container(gb_tree_data,source);
+        error             = GB_copy(gb_dest,gb_tree_name);
+        if (!error) error = GB_delete(gb_tree_name);
+    }
+
+    if (!error) GB_commit_transaction(gb_main);
+    else GB_abort_transaction(gb_main);
+
+    if (error) aw_message(error);
+
+    free(source);
+}
+
+void move_tree_pos(AW_window *aww, AW_CL cl_offset) {
+    // moves the tree in the list of trees
+    int   offset = (int)cl_offset;
+    // char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+
+    if (offset == 9999) {
+        create_tree_last_window(aww);
+    }
+    else {
+        aw_message("Not implemented yet.");
+        // @@@ FIXME: implement other cases 
+    }
+}
+
 AW_window *create_trees_window(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
@@ -683,35 +696,54 @@ AW_window *create_trees_window(AW_root *aw_root)
 
         aws->at("delete");
         aws->callback(ad_tr_delete_cb);
-        aws->create_button("DELETE","DELETE","D");
+        aws->create_button("DELETE","Delete","D");
 
         aws->at("rename");
         aws->callback(AW_POPUP,(AW_CL)create_tree_rename_window,0);
-        aws->create_button("RENAME","RENAME","R");
+        aws->create_button("RENAME","Rename","R");
 
         aws->at("copy");
         aws->callback(AW_POPUP,(AW_CL)create_tree_copy_window,0);
-        aws->create_button("COPY","COPY","C");
+        aws->create_button("COPY","Copy","C");
 
         aws->at("move");
         aws->callback(AW_POPUP,(AW_CL)create_tree_cmp_window,0);
-        aws->create_button("MOVE_NODE_INFO","MOVE NODE INFO","C");
+        aws->create_button("MOVE_NODE_INFO","Move node info","C");
 
         aws->at("cmp");
         aws->callback(AW_POPUP,(AW_CL)create_tree_diff_window,0);
-        aws->create_button("CMP_TOPOLOGY","COMPARE TOPOLOGY","T");
+        aws->create_button("CMP_TOPOLOGY","Compare topology","T");
 
         aws->at("export");
         aws->callback(AW_POPUP,(AW_CL)create_tree_export_window,0);
-        aws->create_button("EXPORT","EXPORT","E");
+        aws->create_button("EXPORT","Export","E");
 
         aws->at("import");
         aws->callback(AW_POPUP,(AW_CL)create_tree_import_window,0);
-        aws->create_button("IMPORT","IMPORT","I");
+        aws->create_button("IMPORT","Import","I");
 
-        aws->at("last");
-        aws->callback(create_tree_last_window);
-        aws->create_button("PUT_TO_END","PUT TO END","P");
+        // aws->at("last");
+        // aws->callback(create_tree_last_window);
+        // aws->create_button("PUT_TO_END","Put to end","P");
+
+        aws->button_length(0);
+
+        aws->at("upall");
+        aws->callback(move_tree_pos, (AW_CL)-9999);
+        aws->create_button("allup", "#moveUpAll.bitmap", 0);
+
+        aws->at("up");
+        aws->callback(move_tree_pos, (AW_CL)-1);
+        aws->create_button("allup", "#moveUp.bitmap", 0);
+
+        aws->at("down");
+        aws->callback(move_tree_pos, (AW_CL)1);
+        aws->create_button("allup", "#moveDown.bitmap", 0);
+
+        aws->at("downall");
+        aws->callback(move_tree_pos, (AW_CL)9999);
+        aws->create_button("allup", "#moveDownAll.bitmap", 0);
+
 
         aws->at("list");
         awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,AWAR_TREE_NAME);
