@@ -12,6 +12,7 @@ Client.class : ProbeList.java
 Client.class : ProbesGUI.java
 Client.class : ServerAnswer.java
 Client.class : Toolkit.java
+Client.class : TreeDisplay.java
 Client.class : TreeNode.java
 Client.class : TreeParser.java
 Client.class : TreeReader.java
