@@ -705,12 +705,12 @@ int main(int argc,char *argv[]) {
                                     }
                                     else {
                                         if (current_node->name) {
-                                            char *newName      = GBS_global_string_copy("%s,p=%i", current_node->name, probes_found);
+                                            char *newName      = GBS_global_string_copy("%s,em=%i", current_node->name, probes_found);
                                             free(current_node->name);
                                             current_node->name = newName;
                                         }
                                         else {
-                                            current_node->name = GBS_global_string_copy("p=%i", probes_found);
+                                            current_node->name = GBS_global_string_copy("em=%i", probes_found);
                                         }
                                     }
                                 }
