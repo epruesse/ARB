@@ -17,7 +17,7 @@
 #include <awt.hxx>
 #include <awt_advice.hxx>
 #include <GEN.hxx>
-#include <GenomImport.h>
+#include <GAGenomImport.h>
 #include "awti_import.hxx"
 #include "awtc_rename.hxx"
 #include "awti_imp_local.hxx"
@@ -852,7 +852,8 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                     try {
 #ifdef DEVEL_ARTEM
                         printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
-                        error_this_file = Genom_read_embl_universal(GB_MAIN, fnames[count], ali_name);
+                        //error_this_file = Genom_read_embl_universal(GB_MAIN,fnames[count], ali_name);
+			error_this_file = gellisary::GAGenomImport::executeQuery(GB_MAIN,fnames[count], ali_name);
 #else
                         // Importfunktionen je nach Togglestellung aufrufen
                         if (toggle_value==0) {
@@ -1065,6 +1066,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->insert_toggle("Import genome data in GENBANK format","g",0);
     aws->insert_toggle("Import genome data in EMBL format","e",1);
     aws->insert_toggle("Import selected format","f",2);
+//    aws->insert_toggle("Import genome data in EMBL uni format","u",3);
     aws->update_toggle_field();
 
     aws->at("go");
