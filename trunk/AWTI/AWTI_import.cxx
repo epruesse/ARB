@@ -217,10 +217,9 @@ void awtc_check_input_format(AW_window *aww)
 	char **file;
 	char	buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
 	for (file = files; *file; file++) {
-		char *fname = 	AWT_fold_path(*file,"ARBHOME");
-		root->awar(AWAR_FORM"/file_name")->write_string(fname);
+		root->awar(AWAR_FORM"/file_name")->write_string(*file);
 
-		GB_ERROR error = awtc_read_import_format(fname);
+		GB_ERROR error     = awtc_read_import_format(*file);
 		if (error) {
 			aw_message(error);
 		}
