@@ -1,54 +1,85 @@
 import java.util.*;
 import java.awt.*;
+import java.awt.event.*;
 
-class ProbeList
-    extends java.awt.List
-{
-    private int        count  = 0;
-    private NodeProbes probes = null;
-    private String     error  = null;
+class ProbeList extends java.awt.List {
+    private int             count = 0;
+    private NodeProbes      probes;
+    private String          error;
+    private ProbesGUI gui;
 
-    // private java.util.Vector info;
-    // private int              preferredHeight;
-    // private int              preferredWidth;
-
-    // public ProbeList(int width, int height)
-    public ProbeList()
-    {
-        //         preferredHeight = height;
-        //         preferredWidth  = width;
-//         count                      = 0;
-//         error                      = null;
-//         probes                     = null;
+    public ProbeList(ProbesGUI gui, Color back_color) {
+        this.gui = gui;
+        setBackground(back_color);
         setVisible(true);
+        addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        try {
+                            selectProbe(getSelectedIndex());
+                        }
+                        catch (ClientException ce) {
+                            Toolkit.showError(ce.getMessage());
+                        }
+                        catch (Exception ex) {
+                            Toolkit.showError("in itemStateChanged: "+ex.getMessage());
+                            ex.printStackTrace();
+                        }
+                    }
+
+                }
+            });
     }
 
     public int length() { return count; }
 
+    public boolean hasError() { return error != null; }
+    public String getError() { return error; }
+
+    public ProbesGUI getGUI() { return gui; }
+
+//     public int getSelectedIndex() { return getSelectedIndex(); }
     public Probe getProbe(int index) {
-        if (probes == null) return null;
-        return probes.getProbe(index);
+        return probes == null
+            ? null
+            : probes.getProbe(index);
     }
 
-    private void rebuildList()
-    {
+    public void showOverlap(Probe p) throws Exception {
+        if (Probe.setOverlapProbe(p)) {
+            System.out.println("showOverlap refreshes List");
+            int index = getSelectedIndex();
+            
+            refreshList();
+            select(index);
+        }
+    }
+
+
+    public void selectProbe(int index) throws Exception {
+        Probe p = getProbe(index);
+        select(index);
+        getGUI().getClient().matchProbes(p);
+    }
+
+    private void refreshList() throws Exception {
+        if (count != length()) {
+            throw new Exception("count does not match listsize in 'refreshList'");
+        }
+
+        setVisible(false);
+        for (int i = 0; i<count; i++) {
+            add(getProbe(i).getDisplayString(), i);
+            remove(i+1);
+        }
+        setVisible(true);
+    }
+
+    private void rebuildList() throws Exception {
         removeAll();
         if (count>0) {
             for (int i = 0; i<count; i++) {
-                Probe probe = getProbe(i);
-
-                if (probe != null) {
-                    add(probe.getDisplayString());
-                }
-                else {
-                    add("--- Error: No probe! ---");
-                }
-
-//                 String pinfo = getProbeInfo(i);
-//                 int    komma = pinfo.indexOf(',');
-//
-//                 if (komma != -1) add(pinfo.substring(0, komma));
-//                 else add(pinfo);
+                add(getProbe(i).getDisplayString());
             }
         }
         else {
@@ -62,60 +93,35 @@ class ProbeList
         rebuildList();
     }
 
-    //     public void setContents(ServerAnswer parsed) throws Exception
-    //     {
-    //         if (parsed.hasError()) {
-    //             error = parsed.getError();
-    //         }
-    //         else {
-    //             error        = null;
-    //             String found = parsed.getValue("found");
-    //             count        = Integer.parseInt(found);
-
-    //             info = new Vector(count);
-
-    //             for (int i = 0; i<count; i++) {
-    //                 String probe = parsed.getValue("probe"+i);
-    //                 // System.out.println("probe='"+probe+"' index="+i);
-    //                 info.addElement(probe);
-    //             }
-    //         }
-
-    //         rebuildList();
-    //     }
-
-    public boolean hasError()
-    {
-        return error != null;
+    public void clearContents() {
+        probes = null;
+        count  = 0;
+        removeAll();
     }
 
-    public String getError()
-    {
-        return error;
+    public void resort() throws Exception {
+        if (probes != null) {
+            probes.resortProbes();
+            refreshList();
+            // @@@ FIXME: select previously selected probe!
+        }
     }
-
-    // overloading of java.awt.component method, is called from layout manager to determine optimal size of widget
-    // public Dimension getPreferredSize()
-    //     {
-    //         return new Dimension(preferredWidth, preferredHeight);
-    //     }
-
-
-    public String getProbesAsString(){
-	StringBuffer pstrb = new StringBuffer();
-            for (int i = 0; i<count; i++) {
-                Probe probe = getProbe(i);
-
-                if (probe != null) {
-                    pstrb.append(probe.getDisplayString() + "\n");
-                }
-                else {
-                    pstrb.append("--- Error: No probe! ---" + "\n");
-                }
-	    }
-	    return pstrb.toString();
-
+    public void setSort(int mode) throws Exception {
+        Probe.setCompareOrder(mode);
+        resort();
     }
-
+    public String getProbesAsString() throws Exception {
+        StringBuffer pstrb = new StringBuffer();
+        for (int i = 0; i<count; i++) {
+            Probe probe = getProbe(i);
+            if (probe != null) {
+                pstrb.append(probe.getDisplayString() + "\n");
+            }
+            else {
+                pstrb.append("--- Error: No probe! ---" + "\n");
+            }
+        }
+        return pstrb.toString();
+    }
 
 }
