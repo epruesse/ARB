@@ -260,18 +260,24 @@ private:
 
     GBQUARK keyquark;
 
-public:
+    void init() {
+        op    = ILLEGAL;
+        key   = 0;
+        query = 0;
+        Not   = AW_FALSE;
+        next  = 0;
 
-    awt_query() {
-        op         = ILLEGAL;
-        key        = 0;
-        query      = 0;
-        Not        = AW_FALSE;
-        next       = 0;
         rek        = AW_FALSE;
         all_fields = AW_FALSE;
+
+        keyquark = 0;
     }
+
+public:
+
+    awt_query() { init(); }
     awt_query(struct adaqbsstruct *cbs);
+
     virtual ~awt_query() {
         free(key);
         free(query);
@@ -313,6 +319,8 @@ public:
 //      awt_query::awt_query(struct adaqbsstruct *cbs)
 //  -------------------------------------------------------
 awt_query::awt_query(struct adaqbsstruct *cbs) {
+    init(); // set defaults
+
     AW_root *aw_root = cbs->aws->get_root();
 
     op    = OR; // before hit is false
