@@ -1028,6 +1028,7 @@ void ED4_set_col_stat_threshold(AW_window */*aww*/, AW_CL cl_do_refresh, AW_CL) 
                 ED4_ROOT->refresh_all_windows(1);
             }
         }
+        free(input);
     }
 }
 
@@ -1226,14 +1227,16 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     ED4_ROOT->temp_ed4w   = ED4_ROOT->first_window->get_matching_ed4w(use_as_main_window);
 
     if (!use_field) {
-        char group_name[GB_GROUP_NAME_MAX];
+        char group_name[GB_GROUP_NAME_MAX+1];
         {
             char *dummy = aw_input("Enter name for new group:", 0);
             if (!dummy) {
                 error = "Input canceled";
             }
             else {
+                e4_assert(strlen(dummy) <= GB_GROUP_NAME_MAX);
                 strcpy(group_name, dummy);
+                free(dummy);
             }
         }
 
