@@ -12,6 +12,7 @@ DEST_EXECUTABLES = \
 	$(ARBHOME)/PROBE_SET/bin/ps_arb2asciipaths \
 	$(ARBHOME)/PROBE_SET/bin/ps_my2asciipaths \
 	$(ARBHOME)/PROBE_SET/bin/ps_my2ascii \
+	$(ARBHOME)/PROBE_SET/bin/ps_get_probes \
 	$(ARBHOME)/PROBE_SET/bin/ps_eval \
 	$(ARBHOME)/PROBE_SET/bin/ps_find \
 	$(ARBHOME)/PROBE_SET/bin/ps_detect \
@@ -56,6 +57,11 @@ PROBE_SET_CORE5_OBJECTS = ps_eval_candidates.o
 $(ARBHOME)/PROBE_SET/bin/ps_eval : $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS) $(LIBS)
 #	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS) $(LIBS)
+
+PROBE_SET_CORE6_OBJECTS = ps_get_probes.o
+$(ARBHOME)/PROBE_SET/bin/ps_get_probes : $(SHARED_OBJECTS) $(PROBE_SET_CORE6_OBJECTS)
+	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE6_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE6_OBJECTS) $(LIBS)
 
 PROBE_SET_AUX1_OBJECTS = ps_my2ascii.o
 $(ARBHOME)/PROBE_SET/bin/ps_my2ascii : $(SHARED_OBJECTS) $(PROBE_SET_AUX1_OBJECTS)
