@@ -564,6 +564,8 @@ AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
                 case AWT_MODE_KERNINGHAN:
                 case AWT_MODE_NNI:
                 case AWT_MODE_OPTIMIZE:
+	    case AWT_MODE_PROINFO:
+	    case AWT_MODE_STRETCH:
 
                     dx = event.x - ntw->zoom_drag_ex;
                     dy = event.y - ntw->zoom_drag_ey;
@@ -676,6 +678,7 @@ AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollb
 	    this->shift_y_to_fit -= dy/this->trans_to_fit;
 	    AWT_expose_cb(aww, this,  0);
 	}
+	this->refresh();
 }
 
 void
