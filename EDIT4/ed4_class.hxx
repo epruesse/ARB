@@ -312,7 +312,7 @@ class ED4_cursor
     ED4_CursorType     ctype;
     ED4_CursorShape   *cursor_shape;
 
-    ED4_returncode  draw_cursor( AW_pos x, AW_pos y, /*ED4_gc gc,*/ ED4_base *target_terminal );
+    ED4_returncode  draw_cursor( AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor( AW_pos del_mark , ED4_base *target_terminal);
     //    ED4_returncode    draw_cursor_pos_box(/*ED4_gc gc,*/ ED4_base *terminal);
     ED4_returncode  get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal));
@@ -336,9 +336,9 @@ public:
 
     ED4_returncode HideCursor(); // deletes cursor and does refresh
     ED4_returncode move_cursor( AW_event *event );
-    static void calc_cursor_position(AW_pos x, AW_pos *corrected_x, ED4_index *scr_pos);
-    ED4_returncode  show_clicked_cursor( AW_event *event , ED4_base *target_terminal);
-    ED4_returncode  ShowCursor(ED4_index offset_x, ED4_cursor_move move, int move_pos = 1);
+    ED4_returncode show_clicked_cursor(AW_pos click_xpos, ED4_base *target_terminal);
+    ED4_returncode show_cursor_at( ED4_base *target_terminal, ED4_index what_pos);
+    ED4_returncode ShowCursor(ED4_index offset_x, ED4_cursor_move move, int move_pos = 1);
 
     int get_sequence_pos() const;
     int get_sequence_pos_set() const { return last_seq_position==-1 ? get_sequence_pos() : last_seq_position; }
@@ -1155,9 +1155,11 @@ public:
     ED4_returncode      deselect_all( void );
 
     //functions concerning coordinate transformation
-    ED4_returncode  world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
-    ED4_returncode      win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos *y );
-    ED4_returncode  get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos y);
+    ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
+    ED4_returncode win_to_world_coords( AW_window *aww, AW_pos *x, AW_pos *y );
+    ED4_returncode get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos y);
+
+    ED4_index pixel2pos(AW_pos click_x);
 
     ED4_root();
     ~ED4_root();
