@@ -835,65 +835,12 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
 }
 
 
-void    probe_design_save_default(AW_window *aw,AW_default aw_def)
+void probe_design_save_default(AW_window *aw,AW_default aw_def)
 {
     AW_root *aw_root = aw->get_root();
     aw_root->save_default(aw_def,0);
 }
 
-char *pd_ptid_to_choice(int i){
-    char search_for[256];
-    char choice[256];
-    char    *fr;
-    char *file;
-    char *server;
-    char empty[] = "";
-    sprintf(search_for,"ARB_PT_SERVER%i",i);
-
-    server = GBS_read_arb_tcp(search_for);
-    if (!server) return 0;
-    fr = server;
-    file = server;              /* i got the machine name of the server */
-    if (*file) file += strlen(file)+1;  /* now i got the command string */
-    if (*file) file += strlen(file)+1;  /* now i got the file */
-    if (strrchr(file,'/')) file = strrchr(file,'/')-1;
-    if (!(server = strtok(server,":"))) server = empty;
-    sprintf(choice,"%-8s: %s",server,file+2);
-    free(fr);
-
-    return strdup(choice);
-}
-
-void probe_design_build_pt_server_choices(AW_window *aws,const char *var, AW_BOOL sel_list )
-{
-    AW_selection_list *id = 0;
-    if (sel_list) {
-        id = aws->create_selection_list(var);
-    }else{
-        aws->create_option_menu( var, NULL , "" );
-    }
-
-    {
-        int i;
-        char *choice;
-
-        for (i=0;i<1000;i++) {
-            choice = pd_ptid_to_choice(i);
-            if (!choice) break;
-            if (sel_list) {
-                aws->insert_selection(id,choice,(long)i);
-            }else{
-                aws->insert_option( choice, "", i );
-            }
-            free(choice);
-        }
-    }
-    if (sel_list) {
-        aws->update_selection_list(id);
-    }else{
-        aws->update_option_menu();
-    }
-}
 
 AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     AWUSE(def);
@@ -932,7 +879,7 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     aws->create_button("EXPERT","EXPERT","S");
 
     aws->at( "pt_server" );
-    probe_design_build_pt_server_choices(aws,AWAR_PT_SERVER,AW_FALSE);
+    awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at("lenout");
     aws->create_input_field( "probe_design/CLIPRESULT" , 6 );
@@ -1150,7 +1097,7 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->create_button("EXPERT","EXPERT","S");
 
     aws->at( "pt_server" );
-    probe_design_build_pt_server_choices(aws,AWAR_PT_SERVER,AW_FALSE);
+    awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at( "complement" );
     aws->create_toggle( "probe_match/complement" );
@@ -1229,7 +1176,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
         aw_openstatus("Kill a server");
         GB_ERROR error;
         for (i= min ; i <=max ; i++) {
-            char *choice = pd_ptid_to_choice((int)i);
+            char *choice = GBS_ptserver_id_to_choice((int)i);
             if (!choice) break;
             sprintf(AW_ERROR_BUFFER,"Try to call '%s'",choice);
             aw_status(AW_ERROR_BUFFER);
@@ -1347,7 +1294,7 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->button_length(18);
 
     aws->at( "pt_server" );
-    probe_design_build_pt_server_choices(aws,AWAR_PROBE_ADMIN_PT_SERVER,AW_TRUE);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_FALSE);
 
     aws->at( "kill" );
     aws->callback(pd_kill_pt_server,0);
