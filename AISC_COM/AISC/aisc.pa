@@ -102,7 +102,7 @@ FOR $(STRUCT.dll_public)
 	P $2struct struct_dllheader_ext $5*first;
 	P }$1dllpublic_ext;
 NEXT
-	PP WARNING struct dll_public is missing
+	ERROR struct dll_public is missing
 ENDFOR
 
 FOR $(STRUCT.dll_header)
@@ -113,7 +113,7 @@ FOR $(STRUCT.dll_header)
 	P	$2struct struct_dllheader_ext $5*previous, *next;
 	P } dllheader_ext;
 NEXT
-	PP WARNING struct dll_header is missing
+	ERROR struct dll_header is missing
 ENDFOR
 
 P extern const char *aisc_server_error;
