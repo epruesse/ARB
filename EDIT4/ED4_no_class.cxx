@@ -26,13 +26,13 @@
 //*************************************************
 //* functions concerning no class   beginning *
 //* Most functions are callback functions     *
-//*************************************************
+  //*************************************************
 
 void ED4_calc_terminal_extentions(){
-    AW_font_information *seq_font_info   = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
-    AW_font_information *info_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
-    int                  seq_char_width  = seq_font_info->max_letter_width;
-    int                  info_char_width = info_font_info->max_letter_width;
+    const AW_font_information *seq_font_info   = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
+    const AW_font_information *info_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
+    int                        seq_char_width  = seq_font_info->max_letter_width;
+    int                        info_char_width = info_font_info->max_letter_width;
 
     TERMINALHEIGHT = seq_font_info->max_letter_height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
     {
@@ -401,7 +401,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
 
     aww->get_event(&event);
 
-#if defined(DEBUG) && 1
+#if defined(DEBUG) && 0
     printf("event.type=%i event.keycode=%i event.character='%c' event.keymodifier=%i\n", event.type, event.keycode, event.character, event.keymodifier);
 #endif
 
@@ -1076,7 +1076,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     printf("max_seq_terminal_length=%li\n", max_seq_terminal_length);
 #endif
 
-    AW_pos font_height = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_ascent();
+    AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
     AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5/* reserve a bit more space*/)*COLUMN_STAT_ROW_HEIGHT(font_height));
     ED4_columnStat_terminal *ref_colStat_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat();
     ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
