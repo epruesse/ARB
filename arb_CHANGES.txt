@@ -1,6 +1,9 @@
 Major changes for next Beta:
 ----------------------------
 
+ - Field transfer definitions for exporting gene-species
+ - File Selection: - recursive search available
+ - The ARB_NTREE macro recording/execution has been fixed
  - Colorize species (see demo.arb)
  - Fixed missing-character-bug in Xfig, Print and Edit4-Info-Display
  - 'IslandHopper' -- a new integrated aligner
@@ -10,7 +13,8 @@ Major changes for next Beta:
  - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
  - updated fastDNAml to 1.2.1
- - tree export to XML ( DTD is provided in ./lib/dtd )
+ - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )
+   (reloading of these XML files is planned for the future)
  - fixed problems with phylip-tree import/export (bootstrap values,comments,...)
  - search in all database fields possible ('[all fields]')
  - up to 10 quicksaves are kept

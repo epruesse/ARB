@@ -1,7 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .cxx
-
+.SUFFIXES: .o .cxx .c
 
 CPP_OBJECTS =   \
 	GEN_read.o \
@@ -23,6 +22,9 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
+.c.o:
+	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
+
 clean:
 	rm *.o
 	rm *.a
@@ -43,7 +45,8 @@ GEN_read.o:  $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_read.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_read.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx GEN_local.hxx GEN.hxx
+GEN_read.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
+GEN_read.o: $(ARBHOME)/INCLUDE/inline.h GEN_local.hxx GEN.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_db.o: $(ARBHOME)/INCLUDE/arbdb.h 

@@ -112,6 +112,7 @@ ln -s ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx
 ln -s ../DIST/dist.hxx INCLUDE/dist.hxx
 ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
 ln -s ../GENOM/EXP.hxx INCLUDE/EXP.hxx
+ln -s ../GENOM/GEN_extern.h INCLUDE/GEN_extern.h
 ln -s ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx
 ln -s ../NAMES_COM/names_client.h INCLUDE/names_client.h
 ln -s ../NAMES_COM/names_prototypes.h INCLUDE/names_prototypes.h
@@ -141,6 +142,7 @@ ln -s ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx
 ln -s ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx
 ln -s ../XML/xml.hxx INCLUDE/xml.hxx
 ln -s ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h
+ln -s ../ARBDB/adGene.h INCLUDE/adGene.h
 
 # arbdb dirs
 
@@ -186,6 +188,8 @@ ln -s ../ARBDB/arbdb.h ARBDBS/arbdb.h
 ln -s ../ARBDB/arbdbpp.cxx ARBDBS/arbdbpp.cxx
 ln -s ../ARBDB/arbdbt.h ARBDBS/arbdbt.h
 ln -s ../ARBDB/adRevCompl.c ARBDBS/adRevCompl.c
+ln -s ../ARBDB/adGene.c ARBDBS/adGene.c
+ln -s ../ARBDB/adGene.h ARBDBS/adGene.h
 
 ln -s ../ARBDB/AD_MOBJECTS.h ARBDB2/AD_MOBJECTS.h
 ln -s ../ARBDB/adReference.c ARBDB2/adReference.c
@@ -229,6 +233,8 @@ ln -s ../ARBDB/arbdb.h ARBDB2/arbdb.h
 ln -s ../ARBDB/arbdbpp.cxx ARBDB2/arbdbpp.cxx
 ln -s ../ARBDB/arbdbt.h ARBDB2/arbdbt.h
 ln -s ../ARBDB/adRevCompl.c ARBDB2/adRevCompl.c
+ln -s ../ARBDB/adGene.c ARBDB2/adGene.c
+ln -s ../ARBDB/adGene.h ARBDB2/adGene.h
 
 # small dirs
 

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue May/21/2002 14:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jul/05/2002 15:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -195,7 +195,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
                 if (!in_advice) {
                     in_advice = true;
                     AWT_advice("You have disabled an advice.\n"
-                               "In order disable it PERMANENTLY save properties.", AWT_ADVICE_TOGGLE);
+                               "In order to disable it PERMANENTLY, save properties.", AWT_ADVICE_TOGGLE);
                     in_advice = false;
                 }
             }
