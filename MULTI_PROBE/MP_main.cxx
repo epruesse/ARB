@@ -41,7 +41,7 @@ MP_Main::~MP_Main()
     aw_root->awar_int(MP_AWAR_QUALITY)->remove_callback(MP_gen_quality,(AW_CL)0,(AW_CL)0);
     aw_root->awar_int(MP_AWAR_SINGLEMISMATCHES)->remove_callback(MP_gen_singleprobe,(AW_CL)0,(AW_CL)0);
     aw_root->awar_int(MP_AWAR_MISMATCHES)->remove_callback(MP_modify_selected,(AW_CL)0,(AW_CL)0);
-    
+
     delete p_eval;
     delete stc;
     delete mp_window;
@@ -69,8 +69,8 @@ void MP_Main::create_awars()
         aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->add_target_var(& mp_gl_awars.manual_sequence);
 	aw_root->awar_string(MP_AWAR_SELECTEDPROBES)->add_target_var(& mp_gl_awars.selected_probes);
 	aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
-	aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);	
-	aw_root->awar_int(MP_AWAR_COMPLEMENT,1)->add_target_var(& mp_gl_awars.complement);	
+	aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);
+	aw_root->awar_int(MP_AWAR_COMPLEMENT,1)->add_target_var(& mp_gl_awars.complement);
 	aw_root->awar_int(MP_AWAR_MISMATCHES)->add_target_var(& mp_gl_awars.no_of_mismatches)->add_callback(MP_modify_selected,(AW_CL)0,(AW_CL)0);
 	remembered_mismatches = 0;		//derselbe initiale Wert wie mp_gl_awars.no_of_mismatches
 	aw_root->awar_int(MP_AWAR_PTSERVER)->add_target_var( & mp_gl_awars.ptserver);
@@ -85,7 +85,8 @@ void MP_Main::create_awars()
 	aw_root->awar_int(MP_AWAR_EMPHASIS)->add_target_var( & mp_gl_awars.emphasis )->write_int(0);
 	aw_root->awar_float(MP_AWAR_GREYZONE)->add_target_var( & mp_gl_awars.greyzone )->write_float(0.0);
 	aw_root->awar_int(MP_AWAR_ECOLIPOS)->add_target_var( & mp_gl_awars.ecolipos )->write_int(0);
-	
+
+	aw_root->awar_int(MP_AWAR_AUTOADVANCE,1);
 }
 
 
@@ -114,13 +115,13 @@ AW_window *MP_main(AW_root *root, AW_default def)
     }
 
     create_tables();
-    
+
     mp_main = new MP_Main(root, (AWT_canvas *)def);
 
     mp_main->get_mp_window()->get_window()->show();
 
 //    alex_main();	//normal erst spaeter aufrufen !!!
-    
+
     return (AW_window *)mp_main->get_mp_window()->get_window();
 }
 
