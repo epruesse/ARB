@@ -34,11 +34,13 @@ GB_ERROR GBT_insert_character P_((GBDATA *Main, char *alignment_name, long pos, 
 GB_ERROR GBT_delete_tree P_((GBT_TREE *tree));
 GB_ERROR GBT_write_group_name P_((GBDATA *gb_group_name, const char *new_group_name));
 GB_ERROR GBT_write_tree P_((GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree));
+GB_ERROR GBT_write_plain_tree P_((GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree));
 GB_ERROR GBT_write_tree_rem P_((GBDATA *gb_main, const char *tree_name, const char *remark));
 GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size));
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
 long GBT_count_nodes P_((GBT_TREE *tree));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
+void GBT_unlink_tree P_((GBT_TREE *tree));
 void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
 GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr, int allow_length_scaling));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
