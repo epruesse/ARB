@@ -277,7 +277,7 @@ public:
     ~AW_root_Motif() {};
 };
 
-void create_help_entry(AW_window *aww);
+// void create_help_entry(AW_window *aww);
 
 
 /**********************************************************************/
@@ -328,7 +328,7 @@ void        AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str);
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
 void        aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 void        message_cb( AW_window *aw, AW_CL cd1 );
-void        macro_message_cb( AW_window *aw, AW_CL cd1 );
+// void        macro_message_cb( AW_window *aw, AW_CL cd1 );
 void        input_cb( AW_window *aw, AW_CL cd1 );
 
 
