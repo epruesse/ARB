@@ -909,7 +909,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genom_db) GEN_create_genes_submenu(awm, true);
+        if (is_genom_db) GEN_create_genes_submenu(awm, true, ntw);
 
         // --------------------------------------------------------------------------------
         //     Sequence
@@ -1274,7 +1274,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (is_genom_db) {
         awm->button_length(4);
-        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map, 0);
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map, (AW_CL)ntw);
         awm->help_text("gene_map.hlp");
         awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
     }

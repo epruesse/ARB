@@ -4,6 +4,8 @@
 #include <arbdb.h>
 #include <aw_window.hxx>
 
+class AWT_canvas;
+
 // --------------------------------------------------------------------------------
 // this header is visible ARB-wide (so here are only things needed somewhere else)
 // see GEN_local.hxx for local stuff
@@ -32,9 +34,9 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 
 AW_window *GEN_create_gene_window(AW_root *aw_root);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
-AW_window *GEN_map(AW_root *aw_root);
+AW_window *GEN_map(AW_root *aw_root, AW_CL cl_nt_canvas);
 
-void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
+void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas);
 
 // --------------------------------------------------------------------------------
 // genes:
