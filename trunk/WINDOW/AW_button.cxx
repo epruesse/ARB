@@ -26,6 +26,8 @@
 #include "aw_awar.hxx"
 #include "aw_window_Xm.hxx"
 
+#include <inline.h>
+
 #if defined(DEVEL_RALF)
 // #define DUMP_BUTTON_CREATION
 #endif // DEVEL_RALF
@@ -335,7 +337,7 @@ static char *pixmapPath(const char *pixmapName) {
 #define MAX_LINE_LENGTH 200
 static const char *detect_bitmap_size(const char *pixmapname, int *width, int *height) {
     const char *err = 0;
-    
+
     *width  = 0;
     *height = 0;
 
@@ -398,7 +400,7 @@ inline void calculate_textsize(const char *str, int *width, int *height) {
     int textwidth  = 0;
     int textheight = 1;
     int linewidth  = 0;
-    
+
     for (int p = 0; str[p]; ++p) {
         if (str[p] == '\n') {
             if (linewidth>textwidth) textwidth = linewidth;
@@ -1869,16 +1871,17 @@ GBDATA_SET *AW_window::selection_list_to_species_set(GBDATA *gb_main,AW_selectio
     return set;
 }
 
-static int AW_sort_backward = 0;
-
-
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
-int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) {
-    int cmp = strcmp(t1->displayed,t2->displayed);
-    return AW_sort_backward ? -cmp : cmp;
+int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) { return strcmp(t1->displayed, t2->displayed); }
+int AW_isort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) { return ARB_stricmp(t1->displayed, t2->displayed); }
+int AW_sort_AW_select_table_struct_backward(AW_select_table_struct *t1,AW_select_table_struct *t2) { return strcmp(t2->displayed, t1->displayed); }
+int AW_isort_AW_select_table_struct_backward(AW_select_table_struct *t1,AW_select_table_struct *t2) { return ARB_stricmp(t2->displayed, t1->displayed); }
+#ifdef __cplusplus
 }
+#endif
+
 
 AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList){
 
@@ -1902,7 +1905,7 @@ AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, A
 }
 
 
-void AW_window::sort_selection_list( AW_selection_list * selection_list, int backward) {
+void AW_window::sort_selection_list( AW_selection_list * selection_list, int backward, int case_sensitive) {
 
     AW_select_table_struct *list_table;
 
@@ -1918,8 +1921,19 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
         tables[count] = list_table;
         count ++;
     }
-    AW_sort_backward = backward;
-    GB_mergesort((void**)tables,0,count, (gb_compare_two_items_type)AW_sort_AW_select_table_struct,0);
+
+    gb_compare_two_items_type comparator;
+    if (backward) {
+        if (case_sensitive) comparator = (gb_compare_two_items_type)AW_sort_AW_select_table_struct_backward;
+        else comparator                = (gb_compare_two_items_type)AW_isort_AW_select_table_struct_backward;
+    }
+    else {
+        if (case_sensitive) comparator = (gb_compare_two_items_type)AW_sort_AW_select_table_struct;
+        else comparator                = (gb_compare_two_items_type)AW_isort_AW_select_table_struct;
+    }
+
+    GB_mergesort((void**)tables, 0, count, comparator, 0);
+
     long i;
     for (i=0;i<count-1;i++) {
         tables[i]->next = tables[i+1];
