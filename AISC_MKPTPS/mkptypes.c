@@ -13,7 +13,7 @@
  * (and then complain to the supplier of the defective compiler)
  */
 
-#include <stddef.h> 
+#include <stddef.h>
 #include <stdlib.h>
 
 #ifndef EXIT_SUCCESS
@@ -36,28 +36,28 @@
 #define MAXPARAM 20 		/* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
-int dostatic = 0;		/* do static functions? */
-int donum    = 0;		/* print line numbers? */
-int define_macro   = 1;		/* define macro for prototypes? */
-int use_macro   = 1;		/* use a macro for prototypes? */
-char /*const*/ *macro_name = "P_";	/*   macro to use for prototypes */
-int no_parm_names = 0;		/* no parm names - only types */
-int print_extern = 0;		/* use "extern" before function declarations */
-int dont_promote = 0;		/* don't promote prototypes */
-int aisc = 0;			/* aisc compatible output */
-int cansibycplus = 0;		/* produce extern "C" { */
-int promote_extern_c = 0;	/* produce extern "C" into prototype */
-int extern_c_seen = 0;		/* true, if extern "C" was parsed */
-char /*const*/ *ourname; 		/* our name, from argv[] array */
-int inquote = 0;		/* in a quote?? */
-int newline_seen = 1;		/* are we at the start of a line */
-long linenum  = 1L;		/* line number in current file */
-int glastc   = ' ';		/* last char. seen by getsym() */
+int         dostatic         = 0; /* do static functions? */
+int         donum            = 0; /* print line numbers? */
+int         define_macro     = 1; /* define macro for prototypes? */
+int         use_macro        = 1; /* use a macro for prototypes? */
+char const *macro_name       = "P_"; /*   macro to use for prototypes */
+int         no_parm_names    = 0; /* no parm names - only types */
+int         print_extern     = 0; /* use "extern" before function declarations */
+int         dont_promote     = 0; /* don't promote prototypes */
+int         aisc             = 0; /* aisc compatible output */
+int         cansibycplus     = 0; /* produce extern "C" */
+int         promote_extern_c = 0; /* produce extern "C" into prototype */
+int extern_c_seen            = 0; /* true, if extern "C" was parsed */
+char                            const *ourname; 		/* our name, from argv[] array */
+int  inquote      = 0;		    /* in a quote?? */
+int  newline_seen = 1;		    /* are we at the start of a line */
+long linenum      = 1L;		    /* line number in current file */
+int  glastc       = ' ';		/* last char. seen by getsym() */
 
-/* char *sym_part = 0;*/		/* create only prototypes starting with 'sym_start' */ 
+/* char *sym_part = 0;*/		/* create only prototypes starting with 'sym_start' */
 /* int sym_part_len = 0; */
 
-typedef struct sym_part { 
+typedef struct sym_part {
     char *part;
     int len; /* strlen(part) */
     struct sym_part *next;
@@ -69,41 +69,41 @@ void addSymParts(const char *parts) {
     char *p = strdup(parts);
     const char *sep = ",";
     char *s = strtok(p, sep);
-    
+
     while (s) {
         SymPart *sp = malloc(sizeof(*sp));
-        
+
         sp->part = strdup(s);
         sp->len = strlen(s);
         sp->next = symParts;
-        
+
         symParts = sp;
-        
+
         s = strtok(0, sep);
     }
-    
+
     free(p);
 }
 
 int containsSymPart(const char *name) {
     SymPart *sp = symParts;
     int contains = 0;
-    
+
     while (sp && !contains) {
         contains = strstr(name, sp->part)!=0;
         sp = sp->next;
     }
-    
+
     return contains;
 }
 
 void freeSymParts() {
     SymPart *next = symParts;
-    
+
     while (next) {
         SymPart *del = next;
         next = del->next;
-        
+
         free(del->part);
         free(del);
     }
@@ -176,7 +176,7 @@ Word *word_append(Word *w1, Word *w2){
 
     return r;
 }
-	
+
 /* see if the last entry in w2 is in w1 */
 
 int foundin(Word *w1, Word *w2){
@@ -196,7 +196,7 @@ int foundin(Word *w1, Word *w2){
 void addword(Word *w, const char *s){
     while (w->next) w = w->next;
     w->next = word_alloc(s);
-    
+
     DEBUG_PRINT("addword: '");
     DEBUG_PRINT(s);
     DEBUG_PRINT("'\n");
@@ -304,7 +304,7 @@ int fnextch(FILE *f){
 int nextch(FILE *f){
     int c, n;
     char *p, numbuf[10];
-    
+
     c = fnextch(f);
 
     /* skip preprocessor directives */
@@ -350,18 +350,18 @@ int nextch(FILE *f){
     if (c == '\'' || c == '\"') {
         char buffer[11];
         int index = 0;
-	
+
         DEBUG_PRINT("nextch: in a quote\n");
         inquote = c;
         while ( (c = fnextch(f)) >= 0 ) {
             if (c == inquote) {
                 DEBUG_PRINT("nextch: out of quote\n");
                 buffer[index] = 0;
-		
+
                 DEBUG_PRINT("buffer='");
                 DEBUG_PRINT(buffer);
                 DEBUG_PRINT("'\n");
-		
+
                 if (inquote=='\"' && strcmp(buffer, "C")==0) {
                     inquote = 0;
                     return '$';
@@ -443,7 +443,7 @@ int skipit(char *buf, FILE *f){
 
     do {
         DEBUG_PRINT("in skipit loop\n");
-	
+
         i = getsym(buf, f);
         if (i < 0) return i;
 
@@ -623,7 +623,7 @@ Word *getparamlist(FILE *f){
             else sawsomething = 1;
         }
     }
-    
+
     /* Now take the info we have and build a prototype list */
 
     /* empty parameter list means "void" */
@@ -631,12 +631,12 @@ Word *getparamlist(FILE *f){
 
     plist = tlist = word_alloc("");
     for (i = 0; i < np; i++) {
-        /* If no type provided, make it an "int" */        
+        /* If no type provided, make it an "int" */
         {
             Word *pn_list = pname[i];
             int cnt = 0;
             int is_void = 0;
-            
+
             while (pn_list) { /* count words */
                 if (pn_list->string[0]) {
                     ++cnt;
@@ -648,12 +648,12 @@ Word *getparamlist(FILE *f){
                 addword(tlist, "int"); /* add int to tlist before adding pname[i] */
             }
         }
-        
+
         while (tlist->next) tlist = tlist->next;
         tlist->next = pname[i];
         if (i < np - 1) addword(tlist, ",");
     }
-    
+
     /* debugging output */
 #if 0
     printf("/* ");
@@ -663,8 +663,8 @@ Word *getparamlist(FILE *f){
         tlist = tlist->next;
     }
     printf(" */\n");
-#endif    
-    
+#endif
+
     return plist;
 }
 
@@ -685,7 +685,7 @@ void emit(Word *wlist, Word *plist, long startline){
             if (strcmp(w->string, "static")==0) isstatic = 1;
         }
     }
-    
+
     if (aisc) {
         if (count < 2) {
             printf("int\t");
@@ -824,7 +824,7 @@ void getdecl(FILE *f){
         DEBUG_PRINT("getdecl: '");
         DEBUG_PRINT(buf);
         DEBUG_PRINT("'\n");
-	
+
         /* try to guess when a declaration is not an external function definition */
         if (strcmp(buf, ",")==0 ||
             strcmp(buf, "=")==0 ||
@@ -834,36 +834,36 @@ void getdecl(FILE *f){
             skipit(buf, f);
             goto again;
         }
-	
+
         if (strcmp(buf, "{}")==0) {
             if (!extern_c_seen) skipit(buf, f);
             goto again;
         }
-	
+
         if (strcmp(buf, "extern")==0) {
             if (getsym(buf, f)<0) {
                 DEBUG_PRINT("EOF in getdecl loop\n");
                 return;
             }
-		
+
             DEBUG_PRINT("test auf extern \"C\": '");
             DEBUG_PRINT(buf);
             DEBUG_PRINT("'\n");
-	    
-            if (strcmp(buf, "$")==0) { /* symbol used if "C" was found */ 
+
+            if (strcmp(buf, "$")==0) { /* symbol used if "C" was found */
                 extern_c_seen = 1;
                 if (promote_extern_c) {
                     addword(wlist, "extern");
                     addword(wlist, "\"C\" ");
                     sawsomething = 1;
                 }
-                continue; 
+                continue;
             }
-	    
+
             skipit(buf, f);
             goto again;
         }
-	
+
         if (!dostatic && strcmp(buf, "static")==0) {
             oktoprint = 0;
         }
@@ -882,34 +882,32 @@ void getdecl(FILE *f){
                 goto again;
 
             /* It seems to have been what we wanted */
-            
+
             if (oktoprint) { /* check function-name */
                 Word *w;
-                int count = 0;
-                
+
                 for (w=wlist; w->next && oktoprint; w=w->next)  {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
-                    /* printf("#%i='%s'\n", count++, w->string); */
                 }
-                
+
                 if (oktoprint &&symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
                     oktoprint = 0; /* => do not emit prototype */
                 }
             }
-	    
+
             if (oktoprint)
                 emit(wlist, plist, startline);
             word_free(plist);
             goto again;
         }
-	
+
         addword(wlist, buf);
         sawsomething = 1;
     }
 }
 
 void Usage(void){
-    fprintf(stderr, 
+    fprintf(stderr,
             "Usage: %s [-e][-n][-p sym][-s][-x][-z][-A][-W][-F sym_part[,sym_part]*][files ...]\n", ourname);
     fputs("   -a: make a funcion list for aisc_includes\n",stderr);
     fputs("   -e: put an explicit \"extern\" keyword in declarations\n",
@@ -1018,7 +1016,7 @@ int main(int argc, char **argv){
                 printf("#endif\n\n");
             }
             else {
-                printf("#ifndef %s\n",macro_name);		
+                printf("#ifndef %s\n",macro_name);
                 printf("# error %s is not defined\n", macro_name);
                 printf("#endif\n\n");
             }
@@ -1041,7 +1039,7 @@ int main(int argc, char **argv){
             }
             if (iobuf)
                 setvbuf(f, iobuf, _IOFBF, NEWBUFSIZ);
-            if (aisc) 
+            if (aisc)
                 printf("\n#%s\n", *argv);
             else
                 printf("\n/* %s */\n", *argv);
@@ -1068,9 +1066,9 @@ int main(int argc, char **argv){
             printf("\n#undef %s\n", macro_name);	/* clean up namespace */
         }
     }
-    
+
     freeSymParts();
-    
+
     return 0;
 }
 

@@ -156,11 +156,11 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     struct arb_params *erg;
     int	s,d;
 
-    erg = (struct arb_params *)calloc(sizeof(struct arb_params),1);
-    erg->db_server =	":";
-    erg->job_server =	"ARB_JOB_SERVER";
-    erg->mgr_server =	"ARB_MGR_SERVER";
-    erg->pt_server = 	"ARB_PT_SERVER";
+    erg             = (struct arb_params *)calloc(sizeof(struct arb_params),1);
+    erg->db_server  = GB_strdup(":");
+    erg->job_server = GB_strdup("ARB_JOB_SERVER");
+    erg->mgr_server = GB_strdup("ARB_MGR_SERVER");
+    erg->pt_server  = GB_strdup("ARB_PT_SERVER");
 
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {

@@ -44,12 +44,14 @@ depend: $(ARCHS:.dummy=.depend)
 
 %.depend:
 	@$(MAKE) -C $(@D) -r \
+		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" depend;
+		"MAKEDEPEND=$(MAKEDEPEND)" \
+		depend;
 	cat $(@D)/Makefile \
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/[^ 	]*\.h//g" \
-			-e "s&$(ARBHOME)&\\\$$(ARBHOME)/GDE&g" \
+			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
 			-e '/^[A-Za-z][A-Za-z0-9_]*\.o:[ ]*$$/d' \
 		>$(@D)/Makefile.2
 	@mv $(@D)/Makefile.2 $(@D)/Makefile
