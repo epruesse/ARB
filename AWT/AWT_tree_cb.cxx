@@ -590,19 +590,76 @@ void NT_remove_leafs(void *dummy, AWT_canvas *ntw, long mode) // if dummy == 0 -
     ntw->refresh();
 }
 
-void NT_remove_bootstrap(void *dummy, AWT_canvas *ntw) // delete all bootstrap values
+void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstrap values
 {
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
+    AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
+    GB_transaction  gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    if (AWT_TREE(ntw)->tree_root){
-        AWT_TREE(ntw)->tree_root->remove_bootstrap(ntw->gb_main);
-        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    if (tree_root) {
+        tree_root->remove_bootstrap(ntw->gb_main);
+        tree_root->compute_tree(ntw->gb_main);
         AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     }
     ntw->zoom_reset();
     ntw->refresh();
+}
+void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchlengths to 0.1
+{
+    AWT_canvas     *ntw = (AWT_canvas*)cl_ntw;
+    GB_transaction  gb_dummy(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    if (tree_root){
+        tree_root->reset_branchlengths(ntw->gb_main);
+        tree_root->compute_tree(ntw->gb_main);
+        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    }
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
+void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy branchlengths to bootstraps (or vice versa)
+{
+    AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
+    int             direction = (int)cl_direction;
+    GB_transaction  gb_dummy(ntw->gb_main);
+
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+    if (tree_root){
+        if (direction == 0) tree_root->bootstrap2branchlen(ntw->gb_main);
+        else                tree_root->branchlen2bootstrap(ntw->gb_main);
+
+        tree_root->compute_tree(ntw->gb_main);
+        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    }
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
+void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
+{
+    char *answer = aw_input("Enter scale factor", "Scale branchlengths by factor:", 0, "100");
+    if (answer) {
+        AWT_canvas *ntw    = (AWT_canvas*)cl_ntw;
+        double      factor = atof(answer);
+        GB_transaction ta(ntw->gb_main);
+
+        AP_tree *tree_root = AWT_TREE(ntw)->tree_root;
+        if (tree_root){
+            tree_root->scale_branchlengths(ntw->gb_main, factor);
+            tree_root->compute_tree(ntw->gb_main);
+            AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        }
+        ntw->zoom_reset();
+        ntw->refresh();
+
+        free(answer);
+    }
 }
 
 void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
