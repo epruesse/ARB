@@ -11,7 +11,6 @@
 #include "ad_spec.hxx"
 #include "GEN.hxx"
 
-
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
 	gb_dest = gb_main;
 	AW_window *aww = ad_create_query_window(awr);

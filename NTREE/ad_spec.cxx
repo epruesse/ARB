@@ -17,7 +17,7 @@
 #include <ntree.hxx>
 
 extern GBDATA *gb_main;
-#define AD_F_ALL (AW_active)-1
+#define AD_F_ALL (AW_active)(-1)
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
@@ -233,7 +233,6 @@ void AD_map_species(AW_root *aw_root, AW_CL scannerid)
     GB_pop_transaction(gb_main);
     delete source;
 }
-
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 {
     GB_push_transaction(gb_main);
