@@ -275,6 +275,7 @@ AW_awar *AW_awar::set_minmax(float min, float max){
     }else{
         pp.f.min = min;
         pp.f.max = max;
+        update(); // corrects wrong default value
     }
     return this;
 }
