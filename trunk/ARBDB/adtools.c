@@ -10,6 +10,8 @@
 #include "adlocal.h"
 /* #include "arbdb.h" */
 #include "arbdbt.h"
+#include "bugex.h"
+#include "aw_awars.hxx"
 
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
@@ -2211,7 +2213,7 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
         if (unmark_all) GB_write_flag(gb_species, 0);
     }
 
-    return GBS_strclose(out, 1);
+    return GBS_strclose(out);
 }
 
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
@@ -2546,23 +2548,28 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 }
 
 /********************************************************************************************
-                send a message to the db server to tmp/message
+                send a message to the db server to AWAR_ERROR_MESSAGES ('tmp/message')
 ********************************************************************************************/
 
 GB_ERROR GBT_message(GBDATA *gb_main, const char *msg)
 {
-    GBDATA     *gb_msg;
-    const char *old_message;
-    char       *new_message;
+    GBDATA *gb_msg;
+    GBDATA *gb_root;
+
+    gb_assert(msg);
 
     GB_push_transaction(gb_main);
-    gb_main     = GB_get_root(gb_main);
-    gb_msg      = GB_search(gb_main,"tmp/message",GB_STRING);
-    old_message = GB_read_char_pntr(gb_msg);
-    new_message = GBS_global_string_copy("%s\n%s", msg, old_message); // insert at start of message queue
-    GB_write_string(gb_msg, new_message);
+
+    gb_root = GB_get_root(gb_main);
+    gb_msg  = GB_search(gb_root, AWAR_ERROR_MESSAGES, GB_STRING);
+
+    // Note : it is NOT possible to read gb_msg and see whether db-server
+    // has received the message.
+    
+    GB_write_string(gb_msg, msg);
+
     GB_pop_transaction(gb_main);
-    free(new_message);
+
     return 0;
 }
 
