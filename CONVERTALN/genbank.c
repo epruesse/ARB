@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "convert.h"
 #include "global.h"
+#include <assert.h>
 
 #define NOPERIOD	0
 #define PERIOD		1
@@ -74,12 +75,12 @@ init_genbank()	{
 */
 char
 genbank_in(fp)
-FILE	*fp; 
+FILE	*fp;
 {
     char	line[LINENUM], key[TOKENNUM], temp[LINENUM];
     char	*Fgetline(),*eof, eoen;
     char	*genbank_one_entry_in();
-    char	*genbank_source(), *genbank_reference(); 
+    char	*genbank_source(), *genbank_reference();
     char	*genbank_comments(), *genbank_origin();
     char	*genbank_skip_unidentified();
     void	genbank_key_word(), warning(), error();
@@ -92,63 +93,63 @@ FILE	*fp;
     /* end-of-entry, set to be 'y' after '//' is read */
     for(eof=Fgetline(line, LINENUM, fp);eof!=NULL&&eoen!='y'; ) {
 
-	if(Lenstr(line)<=1) {
-	    eof=Fgetline(line, LINENUM, fp); 
-	    continue;	/* empty line, skip */
-	}
+        if(Lenstr(line)<=1) {
+            eof=Fgetline(line, LINENUM, fp);
+            continue;	/* empty line, skip */
+        }
 
-	genbank_key_word(line, 0, key, TOKENNUM);
+        genbank_key_word(line, 0, key, TOKENNUM);
 
-	eoen='n';
+        eoen='n';
 
-	if((Cmpstr(key, "LOCUS"))==EQ)	{
+        if((Cmpstr(key, "LOCUS"))==EQ)	{
 
-	    eof = genbank_one_entry_in(&data.gbk.locus, line, fp);
-	    if(Lenstr(data.gbk.locus)<61) warning(14, "LOCUS data might be incomplete");
+            eof = genbank_one_entry_in(&data.gbk.locus, line, fp);
+            if(Lenstr(data.gbk.locus)<61) warning(14, "LOCUS data might be incomplete");
 
-	} else if((Cmpstr(key, "DEFINITION"))==EQ)	{
+        } else if((Cmpstr(key, "DEFINITION"))==EQ)	{
 
-	    eof = genbank_one_entry_in(&data.gbk.definition, line, fp);
+            eof = genbank_one_entry_in(&data.gbk.definition, line, fp);
 
-	    /* correct missing '.' at the end */
-	    Append_char(&(data.gbk.definition), '.');
+            /* correct missing '.' at the end */
+            Append_char(&(data.gbk.definition), '.');
 
-	} else if((Cmpstr(key, "ACCESSION"))==EQ)	{
+        } else if((Cmpstr(key, "ACCESSION"))==EQ)	{
 
-	    eof = genbank_one_entry_in(&data.gbk.accession, line, fp);
+            eof = genbank_one_entry_in(&data.gbk.accession, line, fp);
 
-	    genbank_verify_accession();
+            genbank_verify_accession();
 
-	} else if((Cmpstr(key, "KEYWORDS"))==EQ)	{
+        } else if((Cmpstr(key, "KEYWORDS"))==EQ)	{
 
-	    eof = genbank_one_entry_in(&data.gbk.keywords, line, fp);
-	    genbank_verify_keywords();
+            eof = genbank_one_entry_in(&data.gbk.keywords, line, fp);
+            genbank_verify_keywords();
 
-	} else if((Cmpstr(key, "SOURCE"))==EQ)		{
-	    eof = genbank_source(line, fp);
-	    /* correct missing '.' at the end */
-	    Append_char(&(data.gbk.source), '.');
-	    Append_char(&(data.gbk.organism), '.');
-	} else if((Cmpstr(key, "REFERENCE"))==EQ)	{
-	    eof = genbank_reference(line, fp);
-	} else if((Cmpstr(key, "COMMENTS"))==EQ)	{
-	    eof = genbank_comments(line, fp);
-	} else if((Cmpstr(key, "COMMENT"))==EQ)	{
-	    eof = genbank_comments(line, fp);
-	} else if((Cmpstr(key, "ORIGIN"))==EQ)		{
-	    eof = genbank_origin(line, fp);
-	    eoen = 'y';
-	} else {	/* unidentified key word */
-	    eof = genbank_skip_unidentified(line, fp, 2);
-	}
-	/* except "ORIGIN", at the end of all the other cases,
-	   /* a new line has already read in, so no further read
-	      /* is necessary*/
+        } else if((Cmpstr(key, "SOURCE"))==EQ)		{
+            eof = genbank_source(line, fp);
+            /* correct missing '.' at the end */
+            Append_char(&(data.gbk.source), '.');
+            Append_char(&(data.gbk.organism), '.');
+        } else if((Cmpstr(key, "REFERENCE"))==EQ)	{
+            eof = genbank_reference(line, fp);
+        } else if((Cmpstr(key, "COMMENTS"))==EQ)	{
+            eof = genbank_comments(line, fp);
+        } else if((Cmpstr(key, "COMMENT"))==EQ)	{
+            eof = genbank_comments(line, fp);
+        } else if((Cmpstr(key, "ORIGIN"))==EQ)		{
+            eof = genbank_origin(line, fp);
+            eoen = 'y';
+        } else {	/* unidentified key word */
+            eof = genbank_skip_unidentified(line, fp, 2);
+        }
+        /* except "ORIGIN", at the end of all the other cases,
+           /* a new line has already read in, so no further read
+           /* is necessary*/
     }	/* for loop to read an entry line by line */
 
     if(eoen=='n') {
-	warning(86, "Reach EOF before sequence data is read.");
-	return(EOF);
+        warning(86, "Reach EOF before sequence data is read.");
+        return(EOF);
     }
     if(eof==NULL)	return(EOF);
     else	return(EOF+1);
@@ -160,7 +161,7 @@ FILE	*fp;
 */
 void
 genbank_key_word(line, index, key, length)
-char	*line; 
+char	*line;
 int	index;
 char	*key;
 int	length;
@@ -171,8 +172,8 @@ int	length;
 
     for(indi=index, indj=0;
 	(index-indi)<length&&line[indi]!=' '&&line[indi]!='\t'
-	    &&line[indi]!='\n'&&line[indi]!='\0'&&indi<12; 
-	indi++, indj++)	
+	    &&line[indi]!='\n'&&line[indi]!='\0'&&indi<12;
+	indi++, indj++)
 	key[indj] = line[indi];
 
     key[indj] = '\0';
@@ -184,7 +185,7 @@ int	length;
 */
 int
 genbank_comment_subkey_word(line, index, key, length)
-char	*line; 
+char	*line;
 int	index;
 char	*key;
 int	length;
@@ -193,13 +194,14 @@ int	length;
 
 	if(line==NULL)	{ key[0]='\0'; return(index);	}
 
-	for(indi=index, indj=0; (index-indi)<length
-	&&line[indi]!=':'&&line[indi]!='\t'&&line[indi]!='\n'
-	&&line[indi]!='\0'&&line[indi]!='('; indi++, indj++)
+	for(indi = index, indj=0;
+        (index-indi)<length && line[indi] != ':' && line[indi]!='\t' && line[indi]!='\n' && line[indi]!='\0' && line[indi]!='(';
+        indi++, indj++)
+    {
 		key[indj] = line[indi];
+    }
 
 	if(line[indi]==':') key[indj++] = ':';
-
 	key[indj] = '\0';
 
 	return(indi+1);
@@ -215,11 +217,11 @@ char	*line;
 int	numb;
 {
 	int	blank=1, indi, indk;
-	
+
 	for(indi=0; blank&&indi<numb; indi++) {
 		if(line[indi]!=' '&&line[indi]!='\t') blank=0;
-		if(line[indi]=='\t') { 
-			indk=indi/8+1; indi=8*indk+1; 
+		if(line[indi]=='\t') {
+			indk=indi/8+1; indi=8*indk+1;
 		}
 	}
 
@@ -227,7 +229,7 @@ int	numb;
 }
 /* ---------------------------------------------------------------- */
 /*	Function genbank_continue_line().
-/*		if there are (numb) of blanks at the beginning 
+/*		if there are (numb) of blanks at the beginning
 /*			of line, it is a continue line of the
 /*			current command.
 */
@@ -237,13 +239,13 @@ char	**string, *line;
 int	numb;	/* number of blanks needed to define a continue line */
 FILE	*fp;
 {
-	int	Lenstr(), ind; 
+	int	Lenstr(), ind;
 	int	genbank_check_blanks(), Skip_white_space();
 	char	*Fgetline(), *eof, temp[LINENUM];
 	void	Cpystr(), Append_rp_eoln();
 
 	/* check continue lines */
-	for(eof=Fgetline(line, LINENUM, fp); 
+	for(eof=Fgetline(line, LINENUM, fp);
 	eof!=NULL&&(genbank_check_blanks(line, numb)
 	||line[0]=='\n'); eof=Fgetline(line, LINENUM, fp)) {
 
@@ -314,7 +316,7 @@ FILE	*fp;
 	char    *genbank_one_entry_in();
 	char    *dummy, key[TOKENNUM];
 	void    Freespace(), genbank_key_word();
-  
+
   	eof = genbank_one_entry_in(&(data.gbk.source), line, fp);
   	genbank_key_word(line, 2, key, TOKENNUM);
   	if(Cmpstr(key, "ORGANISM")==EQ) {
@@ -351,7 +353,7 @@ FILE	*fp;
 
 	sscanf(line+12, "%d", &refnum);
 	if(refnum <= data.gbk.numofref)	{
-		sprintf(temp, 
+		sprintf(temp,
 			"Might redefine reference %d", refnum);
 		warning(17, temp);
 		eof = genbank_skip_unidentified(line, fp, 12);
@@ -409,7 +411,7 @@ FILE	*fp;
 			if(jcount==0) jcount=1;
 			else	{
 
-				sprintf(temp, 
+				sprintf(temp,
 			"JOURNAL of REFERENCE %d is redefined", refnum);
 
 				warning(12, temp);
@@ -423,14 +425,14 @@ FILE	*fp;
 			if(scount==0) scount=1;
 			else	{
 
-				sprintf(temp, 
+				sprintf(temp,
 		"STANDARD of REFERENCE %d is redefined", refnum);
 
 				warning(13, temp);
 			}
 		} else {
 
-		sprintf(temp, 
+		sprintf(temp,
 		"Unidentified REFERENCE subkeyword: %s#", key);
 
 			warning(18,temp);
@@ -463,9 +465,7 @@ FILE	*fp;
 /* make up data to match the logic reasoning for next statment */
 	for(indi=0; indi<12; line[indi++]=' ') ; eof = "NONNULL";
 
-	for( ;eof!=NULL&&(genbank_check_blanks(line, 12)
-	||line[0]=='\n'); ) {
-
+	for( ;eof!=NULL&&(genbank_check_blanks(line, 12) ||line[0]=='\n'); ) {
 		if(line[0]=='\n') {	/* skip empty line */
 			eof=Fgetline(line, LINENUM, fp);
 			continue;
@@ -474,82 +474,81 @@ FILE	*fp;
 		ptr = index = 12;
 
 		index = Skip_white_space(line, index);
-		index = genbank_comment_subkey_word
-				(line, index, key, TOKENNUM);
+#if defined(DEBUG)
+        if (index >= TOKENNUM) {
+            printf("big index %i after Skip_white_space\n", index);
+        }
+#endif /* DEBUG */
+		index = genbank_comment_subkey_word (line, index, key, TOKENNUM);
+#if defined(DEBUG)
+        if (index >= TOKENNUM) {
+            printf("big index %i after genbank_comment_subkey_word\n", index);
+        }
+#endif /* DEBUG */
 
 		if(Cmpstr(key, "Source of strain:")==EQ) {
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.source), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.source), line, index, fp);
 
 		} else if(Cmpstr(key, "Culture collection:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.cc), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.cc), line, index, fp);
 
 		} else if(Cmpstr(key, "Former name:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.formname), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.formname), line, index, fp);
 
 		} else if(Cmpstr(key, "Alternate name:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.nickname), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.nickname), line, index, fp);
 
 		} else if(Cmpstr(key, "Common name:")==EQ) {
-			
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.commname), line, index, fp);
+
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.commname), line, index, fp);
 
 		} else if(Cmpstr(key, "Host organism:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.orginf.hostorg), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.orginf.hostorg), line, index, fp);
 
 		} else if(Cmpstr(key, "RDP ID:")==EQ) {
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.seqinf.RDPid), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.seqinf.RDPid), line, index, fp);
 
-		} else if(Cmpstr(key, 
-			"Corresponding GenBank entry:")==EQ) {
+		} else if(Cmpstr(key,
+                         "Corresponding GenBank entry:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.seqinf.gbkentry), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.seqinf.gbkentry), line, index, fp);
 
 		} else if(Cmpstr(key, "Sequencing methods:")==EQ) {
 
-			eof = genbank_one_comment_entry
-		(&(data.gbk.comments.seqinf.methods), line, index, fp);
+			eof = genbank_one_comment_entry (&(data.gbk.comments.seqinf.methods), line, index, fp);
 
 		} else if(Cmpstr(key, "5' end complete:")==EQ) {
 			sscanf(line+index, "%s", key);
-			if(key[0]=='Y') 
-				data.gbk.comments.seqinf.comp5 = 'y';
+			if(key[0]=='Y') data.gbk.comments.seqinf.comp5 = 'y';
 			else data.gbk.comments.seqinf.comp5 = 'n';
 			eof=Fgetline(line, LINENUM, fp);
 		} else if(Cmpstr(key, "3' end complete:")==EQ) {
 			sscanf(line+index, "%s", key);
-			if(key[0]=='Y') 
-				data.gbk.comments.seqinf.comp3 = 'y';
+			if(key[0]=='Y') data.gbk.comments.seqinf.comp3 = 'y';
 			else data.gbk.comments.seqinf.comp3 = 'n';
 			eof=Fgetline(line, LINENUM, fp);
-		} else if(Cmpstr(key, 
-			"Sequence information ")==EQ) {
-		/* do nothing */
+		} else if(Cmpstr(key,
+                         "Sequence information ")==EQ) {
+            /* do nothing */
 			data.gbk.comments.seqinf.exist = 1;
 			eof=Fgetline(line, LINENUM, fp);
 		} else if(Cmpstr(key, "Organism information")==EQ) {
-		/* do nothing */
+            /* do nothing */
 			data.gbk.comments.orginf.exist = 1;
 			eof=Fgetline(line, LINENUM, fp);
 		} else {	/* other comments */
 
-			if(data.gbk.comments.others == NULL)	{
-				data.gbk.comments.others
-					=(char*)Dupstr(line+ptr);
-
-			} else	Append(&(data.gbk.comments.others),
-					line+ptr);
+            assert(ptr == 12);
+			if(data.gbk.comments.others == NULL) {
+				data.gbk.comments.others =(char*)Dupstr(line+ptr);
+			}
+            else {
+                Append(&(data.gbk.comments.others), line+ptr);
+            }
 
 			eof=Fgetline(line, LINENUM, fp);
 		}
@@ -572,28 +571,28 @@ FILE	*fp;
 
 	data.seq_length = 0;
 	/* read in whole sequence data */
-	for(eof=Fgetline(line, LINENUM, fp); 
-        eof!=NULL&&line[0]!='/'&&line[1]!='/'; 
-        eof=Fgetline(line, LINENUM, fp)) 
+	for(eof=Fgetline(line, LINENUM, fp);
+        eof!=NULL&&line[0]!='/'&&line[1]!='/';
+        eof=Fgetline(line, LINENUM, fp))
 	{
 		/* empty line, skip */
 		if(Lenstr(line)<=1) continue;
-		for(index=9; line[index]!='\n'&&line[index]!='\0'; 
+		for(index=9; line[index]!='\n'&&line[index]!='\0';
             index++)
 		{
 			if(line[index]!=' ' && data.seq_length>=data.max) {
 				data.max += 100;
 
-				data.sequence = (char*)Reallocspace(data.sequence, 
-                                                    (unsigned)(sizeof(char)*data.max)); 
+				data.sequence = (char*)Reallocspace(data.sequence,
+                                                    (unsigned)(sizeof(char)*data.max));
 			}
 			if(line[index]!=' ') data.sequence[data.seq_length++] = line[index];
 		}
         if(data.seq_length>=data.max) {
             data.max += 100;
 
-            data.sequence = (char*)Reallocspace(data.sequence, 
-                                                (unsigned)(sizeof(char)*data.max)); 
+            data.sequence = (char*)Reallocspace(data.sequence,
+                                                (unsigned)(sizeof(char)*data.max));
         }
 		data.sequence[data.seq_length] = '\0';
 	}
@@ -616,7 +615,7 @@ int	blank_num;
 	for(eof=Fgetline(line, LINENUM, fp);
 	eof!=NULL&&genbank_check_blanks(line, blank_num);
 	eof=Fgetline(line, LINENUM, fp))	;
-	
+
 	return(eof);
 }
 /* --------------------------------------------------------------- */
@@ -636,7 +635,7 @@ genbank_verify_accession()
 		if(warning_out)
 			fprintf(stderr,
 			"\nACCESSION: %s", data.gbk.accession);
-		warning(136, 
+		warning(136,
 	"Each accession number should be a six-character identifier.");
 	}
 	for(indi=count=0; indi<len-1; indi++)	{
@@ -652,12 +651,12 @@ genbank_verify_accession()
 				data.gbk.accession[indi-1]='\n';
 				data.gbk.accession[indi]='\0';
 				data.gbk.accession = (char*)Reallocspace
-					(data.gbk.accession, 
+					(data.gbk.accession,
 					(unsigned)(sizeof(char)*indi));
 				return;
 			}
 			if(!isalpha(data.gbk.accession[indi]))	{
-				sprintf(temp, 
+				sprintf(temp,
 		"The %d(th) accession number must start with a letter.",
 					count);
 				warning(138, temp);
@@ -681,7 +680,7 @@ genbank_verify_accession()
 			{
 				if(warning_out) fprintf(stderr,
 				"\nACCESSION: %s", data.gbk.accession);
-				warning(139, 
+				warning(139,
 			"Accesssion numbers should be separated by a space.");
 				data.gbk.accession[indi]=' ';
 			}
@@ -721,7 +720,7 @@ genbank_verify_keywords()	{
 */
 char
 genbank_in_locus(fp)
-FILE	*fp; 
+FILE	*fp;
 {
 	char	line[LINENUM], key[TOKENNUM];
 	char	*Fgetline(), *eof, eoen;
@@ -740,9 +739,9 @@ FILE	*fp;
 		} else eof=Fgetline(line, LINENUM, fp);
 	}	/* for loop to read an entry line by line */
 
-	if(eoen=='n') 
+	if(eoen=='n')
 		error(9, "Reach EOF before one entry is read, Exit");
-	
+
 	if(eof==NULL)	return(EOF);
 	else	return(EOF+1);
 
@@ -789,7 +788,7 @@ FILE	*fp;
 	fprintf(fp, "SOURCE      No information.\n  ORGANISM  ");
 			genbank_print_lines(fp, data.gbk.organism,
 				SEPNODEFINED, "");
-		} else	fprintf(fp, 
+		} else	fprintf(fp,
 	"SOURCE      No information.\n  ORGANISM  No information.\n");
 
 	if(data.gbk.numofref>0) {
@@ -811,7 +810,7 @@ FILE	*fp;
 			if(Lenstr(data.gbk.reference[indi].title)>1)
 			{
 				fprintf(fp, "  TITLE     ");
-				genbank_print_lines(fp, 
+				genbank_print_lines(fp,
 				data.gbk.reference[indi].title,
 					SEPNODEFINED, "");
 			}
@@ -838,7 +837,7 @@ FILE	*fp;
 	if(data.gbk.comments.orginf.exist==1||
 	data.gbk.comments.seqinf.exist == 1 ||
 	Lenstr(data.gbk.comments.others)>0)
-	{ 
+	{
 		fprintf(fp, "COMMENTS    ");
 
 		if(data.gbk.comments.orginf.exist==1)	{
@@ -850,12 +849,12 @@ FILE	*fp;
 
 		genbank_out_one_comment(fp,
 			data.gbk.comments.orginf.cc,
-			"Culture collection: ", 
+			"Culture collection: ",
 			COMMSKINDENT, COMMCNINDENT);
 
 		genbank_out_one_comment(fp,
 			data.gbk.comments.orginf.formname,
-			"Former name: ", 
+			"Former name: ",
 			COMMSKINDENT, COMMCNINDENT);
 
 		genbank_out_one_comment(fp,
@@ -864,17 +863,17 @@ FILE	*fp;
 			COMMSKINDENT, COMMCNINDENT);
 
 		genbank_out_one_comment(fp,
-			data.gbk.comments.orginf.commname, 
-			"Common name: ", 
+			data.gbk.comments.orginf.commname,
+			"Common name: ",
 			COMMSKINDENT, COMMCNINDENT);
 
 		genbank_out_one_comment(fp,
-			data.gbk.comments.orginf.hostorg, 
-			"Host organism: ", 
+			data.gbk.comments.orginf.hostorg,
+			"Host organism: ",
 			COMMSKINDENT, COMMCNINDENT);
 
 		if(data.gbk.comments.seqinf.exist == 1 ||
-		Lenstr(data.gbk.comments.others)>0) 
+		Lenstr(data.gbk.comments.others)>0)
 			fprintf(fp, "            ");
 		}	/* organism information */
 
@@ -885,19 +884,19 @@ FILE	*fp;
 				data.seq_length);
 		}
 
-		genbank_out_one_comment(fp, 
-			data.gbk.comments.seqinf.RDPid, 
-			"RDP ID: ", 
+		genbank_out_one_comment(fp,
+			data.gbk.comments.seqinf.RDPid,
+			"RDP ID: ",
 			COMMSKINDENT, COMMCNINDENT);
 
-		genbank_out_one_comment(fp, 
+		genbank_out_one_comment(fp,
 			data.gbk.comments.seqinf.gbkentry,
-			"Corresponding GenBank entry: ", 
+			"Corresponding GenBank entry: ",
 			COMMSKINDENT, COMMCNINDENT);
 
-		genbank_out_one_comment(fp, 
+		genbank_out_one_comment(fp,
 			data.gbk.comments.seqinf.methods,
-			"Sequencing methods: ", 
+			"Sequencing methods: ",
 			COMMSKINDENT, COMMCNINDENT);
 
 		if(data.gbk.comments.seqinf.comp5=='n')
@@ -917,7 +916,7 @@ FILE	*fp;
 			"             3' end complete: Yes\n");
 
 		/* print 12 spaces of the first line */
-		if(Lenstr(data.gbk.comments.others)>0) 
+		if(Lenstr(data.gbk.comments.others)>0)
 			fprintf(fp, "            ");
 
 		if(Lenstr(data.gbk.comments.others)>0) {
@@ -942,9 +941,9 @@ FILE	*fp;
 	/* don't write 0 others in this base line */
 	if(base_other>0)
 		fprintf(fp,
-		"BASE COUNT  %6d a %6d c %6d g %6d t %6d others\n", 
+		"BASE COUNT  %6d a %6d c %6d g %6d t %6d others\n",
 			base_a, base_c, base_g, base_t, base_other);
-	else fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t\n", 
+	else fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t\n",
 		base_a, base_c, base_g, base_t);
 
 	genbank_out_origin(fp);
@@ -988,7 +987,7 @@ int	skindent, cnindent;	/* subkeyword indent and
 	void	genbank_print_comment();
 
 	if(Lenstr(string)>1)
-		genbank_print_comment(fp, key, 
+		genbank_print_comment(fp, key,
 			string, skindent, cnindent);
 }
 /* -------------------------------------------------------------- */
@@ -1027,7 +1026,7 @@ char	*separators;
 			else if(string[indi+indj+1]==' ') indj++;
 
 			/* print left margine */
-			if(!first_time)	
+			if(!first_time)
 				fprintf(fp, "            ");
 			else first_time = 0;
 
@@ -1035,7 +1034,7 @@ char	*separators;
 				fprintf(fp, "%c", string[indi+indk]);
 
 		/* leave out the last space, if there is any */
-			if(string[indi+indj]!=' '&&string[indi+indj]!='\n') 
+			if(string[indi+indj]!=' '&&string[indi+indj]!='\n')
 				fprintf(fp, "%c", string[indi+indj]);
 			fprintf(fp, "\n");
 
@@ -1091,7 +1090,7 @@ int	offset, indent;
 				fprintf(fp, "%c", string[indi+indk]);
 
 		/* leave out the last space, if there is any */
-			if(string[indi+indj]!=' ') 
+			if(string[indi+indj]!=' ')
 				fprintf(fp, "%c", string[indi+indj]);
 			fprintf(fp, "\n");
 
@@ -1104,7 +1103,7 @@ int	offset, indent;
 /*		Output sequence data in genbank format.
 */
 void
-genbank_out_origin(fp)	
+genbank_out_origin(fp)
 FILE	*fp;
 {
 
@@ -1121,7 +1120,7 @@ FILE	*fp;
 		/* blank space follows every 10 bases,
 		/* but not before '\n' */
 		if((indk % 60)==0) { fprintf(fp, "\n"); indj=0; }
-		else if(indj==10&&indi!=(data.seq_length-1)) 
+		else if(indj==10&&indi!=(data.seq_length-1))
 			{ fprintf(fp, " "); indj=0; }
 		indk++;
 	}

@@ -116,10 +116,10 @@ char	*string;
 
 	if(string==NULL) return(NULL);
 	else	{
-		size = sizeof(char)*strlen(string);
+		size = strlen(string);
 		if((temp=(char*)calloc(1,size+1))==NULL)	{
 			warning(888, "Run out of memory");
-	fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
+            fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
 			scanf("%c", &answer);
 			if(answer=='y') return(NULL);
 			else exit(888);
@@ -132,7 +132,7 @@ char	*string;
 /*	Function Catstr().
 /*		Append string s2 to string s1.
 */
-char	
+char
 *Catstr(s1, s2)
 char	*s1, *s2;
 {
@@ -183,7 +183,7 @@ char	*line;
 int	index;
 {
 	int	length, Lenstr();
-	
+
 	length = Lenstr(line);
 
 	/* skip to white space */
@@ -253,7 +253,7 @@ int	linenum;
 }
 /* ---------------------------------------------------------------- */
 /*	Function Append_char().
-/*		Append a char before '\n' if there is no such char.  
+/*		Append a char before '\n' if there is no such char.
 /*			(Assume there is '\n' at the end of string
 /*			already and length of string except '\n' must
 /*			greater than 1.)
@@ -288,10 +288,10 @@ char	**string1, *string2;
 
 	length = Lenstr(*string1);
 
-	if(((length>1)&&(*string1)[length-1]=='\n') ||(*string1)[0]=='\n') 
+	if(((length>1)&&(*string1)[length-1]=='\n') ||(*string1)[0]=='\n')
 		length--;
 
-	(*string1)=(char*)Reallocspace((*string1), 
+	(*string1)=(char*)Reallocspace((*string1),
 		(unsigned int)(sizeof(char)*(Lenstr(string2)+length+1)));
 
 	(*string1)[length]='\0';
@@ -334,7 +334,7 @@ char	**string1, *string2;
 	length = Lenstr(*string1);
 	if(length==0&&Lenstr(string2)==0)	return;
 
-	(*string1)=(char*)Reallocspace((*string1), 
+	(*string1)=(char*)Reallocspace((*string1),
 		(unsigned int)(sizeof(char)* (Lenstr(string2)+Lenstr(*string1)+1)));
 	(*string1)[length]='\0';
 
@@ -352,14 +352,14 @@ char *text, *pattern;
 	int	same_char(), Lenstr(), stop;
 
 	stop = Lenstr(text)-Lenstr(pattern)+1;
-	for(indi=0; indi<stop; indi++)	
+	for(indi=0; indi<stop; indi++)
 	{
 		index = -2;
 		for(indj=0; index==-2&&pattern[indj]!='\0'; indj++)
-			if(same_char(text[indi+indj], 
+			if(same_char(text[indi+indj],
 				pattern[indj])==0)
 				index = -1;
-		if(index == -2) return(indi);	
+		if(index == -2) return(indi);
 		/* find PARTIALLY matched pattern */
 	}
 	return(-1);
@@ -421,7 +421,7 @@ char	ch, *separators;
 	int	indi, len, Lenstr(), index;
 
 	for(indi=index=0, len=Lenstr(separators); indi<len&&index==0;
-	indi++) 
+	indi++)
 		if(ch==separators[indi]) index=1;
 
 	return(index);
