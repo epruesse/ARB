@@ -28,7 +28,7 @@ ARB-Input-Mask
                 "artificial",       "artificial-value",       \
                 "real",             Allow_Edit,  15,  "real-value" )
 
-    TEXT("Publications2:")
+    TEXT("Publications:")
 
     TEXTFIELD(   "Author  ",  "author" ,  70  )
     TEXTFIELD(   "Title   ",  "title" ,  70  )

@@ -20,16 +20,37 @@ ARB-Input-Mask
 
 @MASK_BEGIN
 
-    TEXT("Switch to..") CHANGEMASK("Expert","expert.mask") OPENMASK("Basic fields","basic_fields.mask")
+    GLOBAL(MY_NAME,"Insert your name here")
+    GLOBAL(MY_INITIALS,"??")
+    LOCAL(LOC_VALUE,"Insert a value here")
+
+#    ID(OOPS)
+
+    TEXT("Switch to..") CHANGEMASK("Expert","expert.mask") \
+        OPENMASK("Basic fields","basic_fields.mask") \
 
     NEW_SECTION()
     TEXT("You are editing") SELF()
 
     NEW_SECTION()
+
+    SCRIPT(S_CHECKSUM,"sequence|\"ARB_\";checksum(exclude=.-n;toupper)")
+    SHOW(     "Current checksum ",S_CHECKSUM,20)
+    TEXTFIELD("Stored checksum  ","seqcheck",20) ID(CHECK) ASSIGN(CHECK,S_CHECKSUM,"Store current")
+
     NUMFIELD( "number (-10..10)", "number", 3, -10, 10)
     NEW_SECTION()
 
     TEXTFIELD(   "Name (Fullname)",  "full_name" ,63  )
+
+    NEW_SECTION()
+
+    TEXT("Publications:")
+
+    TEXTFIELD(   "Author  ",  "author" ,  30  ) ID(AUTHOR) ASSIGN(AUTHOR,MY_NAME,"Me!") \
+        OPENMASK("Edit user info","userInfo.mask")
+    TEXTFIELD(   "Title   ",  "title" ,  70  )
+    TEXTFIELD(   "Journal ",  "journal" ,  70  )
 
     NEW_SECTION()
 
@@ -44,6 +65,17 @@ ARB-Input-Mask
                 "artificial",       "artificial-value",        \
                 "real",             "real-value" )     TEXTFIELD("", "class", 30)
 
-    RADIO ("Partial sequence", "partial_seq", 2, x, "yes","1","no","0")
+    GLOBAL(DEF_PARTIAL_SEQ,"1")
+    RADIO ("Partial sequence", "partial_seq", 2, x, "yes","1","no","0") ID(PARTIAL_SEQ) \
+        ASSIGN(PARTIAL_SEQ,DEF_PARTIAL_SEQ,"Default") \
+        ASSIGN(DEF_PARTIAL_SEQ,PARTIAL_SEQ,"Set as default")
+
+    NEW_SECTION()
+
+    TEXT("Some tests:")
+    SHOW("My name     ",MY_NAME,30)
+    SHOW("My initials ",MY_INITIALS,5)
+    SHOW("Local value ",LOC_VALUE,30)
+    SHOW("Author (ID) ",AUTHOR,30)
 
 @MASK_END
