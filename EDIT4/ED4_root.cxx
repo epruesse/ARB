@@ -1416,7 +1416,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
         copy_window_struct( first_window, *new_window );
     }
 
-
+    AW_init_color_group_defaults("arb_edit4");
 
     aw_gc_manager	= AW_manage_GC(	awmm,							//Window
 					*device,				//device-handle of window
@@ -1426,7 +1426,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
 					ED4_expose_cb,						//callback function
 					1,						// AW_CL for callback function
 					0,						// AW_CL for callback function
-					false, // no color groups
+					true, // use color groups
 
 					"#ffffe0",
 					"STANDARD$black",					// Standard Color showing sequences
