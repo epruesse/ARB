@@ -323,15 +323,21 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress)
 
 	GBDATA **the_species;
 	long numberspecies=0;
+	long missingdata=0;
 
 	if(marked) gb_species=GBT_first_marked_species_rel_species_data(gb_species_data);
 	else gb_species=GBT_first_species_rel_species_data(gb_species_data);
 	while(gb_species)
 	{
 		if(GBT_read_sequence(gb_species,dataset->alignment_name)) numberspecies++;
-		if(marked) gb_species=GBT_next_marked_species(gb_species);
-		else gb_species=GBT_next_species(gb_species);
+                else missingdata++;
+		if(marked) gb_species = GBT_next_marked_species(gb_species);
+		else gb_species       = GBT_next_species(gb_species);
 	}
+
+        if (missingdata) {
+            aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset->alignment_name));
+        }
 
 	the_species=(GBDATA**)calloc((unsigned int)numberspecies+1,sizeof(GBDATA*));
 
