@@ -1,5 +1,15 @@
 
-The following rpms are needed by arb:
+Other software needed to run ARB:
+---------------------------------
 
-	<nothing yet>
+- xview
+- motif
+
+
+Other software needed to compile ARB:
+-------------------------------------
+
+- rxp
+- sablotron
+
 
