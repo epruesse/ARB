@@ -1,5 +1,5 @@
 class AWT_graphic_parsimony: public AWT_graphic_tree {
-	virtual AW_gc_manager init_devices(AW_window *,AW_device *,class AWT_canvas *ntw,AW_CL cd2);
+	virtual AW_gc_manager init_devices(AW_window *,AW_device *, AWT_canvas *ntw,AW_CL cd2);
 			/* init gcs, if any gc is changed you may call
 				AWT_expose_cb(aw_window,ntw,cd2);
 				or AWT_resize_cb(aw_window,ntw,cd2);
@@ -8,7 +8,7 @@ class AWT_graphic_parsimony: public AWT_graphic_tree {
 
 	virtual	void show(AW_device *device);
 	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button,
-				AW_event_type type,AW_pos x, AW_pos y, 
+				AW_event_type type,AW_pos x, AW_pos y,
 				AW_clicked_line *cl, AW_clicked_text *ct);
 	public:
 		AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main);

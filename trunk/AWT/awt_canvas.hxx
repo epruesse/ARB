@@ -63,7 +63,7 @@ class AWT_graphic {
 	virtual void show(AW_device *device) = 0;
 	virtual void info(AW_device *device, AW_pos x, AW_pos y,		/* double click */
 				AW_clicked_line *cl, AW_clicked_text *ct)= 0;
-	virtual AW_gc_manager init_devices(AW_window *,AW_device *,class AWT_canvas *ntw,AW_CL cd2) = 0;
+	virtual AW_gc_manager init_devices(AW_window *,AW_device *, AWT_canvas *ntw,AW_CL cd2) = 0;
 			/* init gcs, if any gc is changed you may call
 				AWT_expose_cb(aw_window,ntw,cd2);
 				or AWT_resize_cb(aw_window,ntw,cd2);

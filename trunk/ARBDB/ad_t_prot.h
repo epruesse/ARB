@@ -85,7 +85,7 @@ char *GBT_get_alignment_type_string P_((GBDATA *gb_main, const char *use));
 GB_alignment_type GBT_get_alignment_type P_((GBDATA *gb_main, const char *use));
 GB_BOOL GBT_is_alignment_protein P_((GBDATA *gb_main, const char *alignment_name));
 GB_ERROR GBT_check_arb_file P_((const char *name));
-char **GBT_scan_db P_((GBDATA *gbd));
+char **GBT_scan_db P_((GBDATA *gbd, const char *datapath));
 GB_ERROR GBT_message P_((GBDATA *gb_main, const char *msg));
 GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ncase));
 GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
