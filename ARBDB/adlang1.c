@@ -197,6 +197,9 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
 
     command = unEscapeString(argvparam[0].str);
+#if defined(DEBUG)
+    printf("executing command '%s'\n", command);
+#endif /* DEBUG */
 
     for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
         char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species);
@@ -209,10 +212,44 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
     return 0;
 }
 
+GB_ERROR gbl_eval(GBDATA *gb_species, char *com,
+                  int     argcinput, GBL *argvinput,
+                  int     argcparam,GBL *argvparam,
+                  int    *argcout, GBL **argvout)
+{
+    GBDATA *gb_main = (GBDATA*)GB_MAIN(gb_species)->data;
+    int     i;
+    char   *command;
+    char   *to_eval;
+    GBUSE(com);
+
+    if (argcparam!=1) return "eval syntax: eval(\"escaped command evaluating to command\")";
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+
+    to_eval = unEscapeString(argvparam[0].str);
+    command = GB_command_interpreter(gb_main, "", to_eval, gb_species); // evaluate independent
+#if defined(DEBUG)
+    printf("evaluating '%s'\n", to_eval);
+    printf("executing '%s'\n", command);
+#endif /* DEBUG */
+
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_species);
+        if (!result) return GB_get_error();
+
+        (*argvout)[(*argcout)++].str = result;
+        /* export result string */
+    }
+    free(to_eval);
+    free(command);
+    return 0;
+}
+
 GB_ERROR gbl_origin(GBDATA *gb_species, char *com,
-                 int argcinput, GBL *argvinput,
-                 int argcparam,GBL *argvparam,
-                 int *argcout, GBL **argvout)
+                 int        argcinput, GBL *argvinput,
+                 int        argcparam,GBL *argvparam,
+                 int       *argcout, GBL **argvout)
 {
     int     i;
     GBDATA *gb_origin = 0;
@@ -1345,6 +1382,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"change", gbl_change_gc },
     {"checksum", gbl_check } ,
     {"command", gbl_command } ,
+    {"eval", gbl_eval } ,
     {"count", gbl_count } ,
     {"cut", gbl_cut } ,
     {"crop", gbl_crop } ,
