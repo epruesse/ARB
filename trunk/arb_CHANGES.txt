@@ -8,7 +8,7 @@ Major changes for next Beta:
  - small changes to status window (unhide behavior/time estimation)
  - menus and menu-hotkeys reorganized
  - colored buttons in color config windows
- - alignment concatenation (i.e. several different genes)
+ - alignment concatenation (e.g. several different genes)
  - merging data of similar species (according selected database field)
  - keyboard commands for ARB_NTREE (mark/unmark/invert, collapse/expand)
  - expanded sellists
@@ -51,7 +51,7 @@ Major changes for next Beta:
    (=> selected gene can be highlighted in primary editor)
  - PCR primer-design for single genes
  - when selecting a gene, the corresponding gene-species is selected (if found)
- - save configuration for several windows (i.e. Search&Query, WWW, NDS, ...)
+ - save configuration for several windows (e.g. Search&Query, WWW, NDS, ...)
  - highlight search occurances in ARB_SECEDIT
  - file selection box in import window
  - mark item with double click works in all search&query windows
