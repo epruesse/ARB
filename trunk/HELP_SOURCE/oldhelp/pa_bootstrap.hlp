@@ -10,9 +10,10 @@ OCCURRENCE	ARB_NT/Tree/Parsimony
 DESCRIPTION	Given a large tree, traditional ways to calculate bootstrap
 		values are by magnitudes to slow. So a faster algorithm was
 		developed:
-		the bootstrap values for each branch is caclualted under
-		the assumption that all other branches have a 100% value.
-		Doing this we get an upper limit for the real bootstrap values.
+
+                        the bootstrap values for each branch is caclualted under
+                        the assumption that all other branches have a 100% value.
+                        Doing this we get an upper limit for the real bootstrap values.
 
 
 NOTES		The program does not use the traditional Monte Carlo method to
@@ -30,14 +31,16 @@ SECTION         ALGORITHM
 		       /	B      \
                       c                 d
 
-		exchange a with b      ( or a with d )
-		and count all coloums in the alignment
+		exchange a with b ( or a with d ) and count all coloums in the alignment
 		with a greater/smaller/equal minimal number of mutations
 		than the original tree.
+
 		result:		n_plus, n_minus, n_equal
 				freq_n_plus = n_plus/ (seq_len)
 				...
+
 		Bootstrap value = sum of
+
 			for all i = 1.. seqlen do
 				for all combinations of np, nm,ne with np - nm == i do
 					sum +=	freq_n_plus  ^ np *
@@ -51,7 +54,7 @@ SECTION         PUBLIC
 
                 This algorithm is not published and I am not going to publish
 		it. If you feel the strong need to to this, please don't forget
-		to mention me (strunk@mikro.biologie.tu-muenchen.de)
+		to mention me (Oliver Strunk <strunk@mikro.biologie.tu-muenchen.de>)
 
 WARNINGS	Use filters to exclude superfluous gaps and to
 		increase bootstrap values

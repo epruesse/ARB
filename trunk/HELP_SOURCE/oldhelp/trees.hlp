@@ -23,7 +23,7 @@ DESCRIPTION	A tree consists of two types of 'nodes':
 			(and in the binary case to two children).
 			A group_name may be assigned to an inner node; in this
 			case, the node and all its children become a group.
-			< ARB_NT/INFO_MODE/M >
+			<ARB_NT/INFO_MODE/M>
 
 		There are significant differences between
 		phylogenetic trees and binary trees:

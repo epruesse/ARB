@@ -9,7 +9,7 @@ SUB	arb_db.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real strunk ********
-TITLE		ARB: Basic Commands
+TITLE		ARB: Basic ARB-Shell Commands
 
 OCCURRENCE	shell
 

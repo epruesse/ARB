@@ -18,7 +18,7 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 		species, targets and additional information are ranked and
 		displayed according to the degree of similarity.
 
-		Select a 'PT_SERVER' from the menu dispalyed after pressing the
+		Select a 'PT_SERVER' from the menu displayed after pressing the
 			'PT_SERVER' button of the 'PROBE MATCH' window.
 
 		Define whether similar (not perfectly matched) sites should be

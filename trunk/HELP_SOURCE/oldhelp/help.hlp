@@ -11,8 +11,12 @@ TITLE		Using online help
 
 DESCRIPTION
 
-        This is about the help module inside ARB
-        (just in case you are currently reading the HTML version)
+        There are two versions of ARB help:
+
+              - an HTML version (in lib/help_html)
+              - an embedded version (press any 'HELP' button inside ARB)
+
+    The following is about the embedded help module:
 
 	Format:
 
@@ -69,7 +73,7 @@ DESCRIPTION
 
 
 
-	OLINE HELP is available by clicking on the 'HELP' prompts (flat) or
+	ONLINE HELP is available by clicking on the 'HELP' prompts (flat) or
 		buttons (raised) located in the upper right of the windows.
 
 		Clicking on the <HELP> button displays the 'HELP WINDOW'
@@ -82,10 +86,11 @@ DESCRIPTION
 			or prompt to display the 'HELP WINDOW' containing
 			online help.
 
-	    	There are two formates of online 'HELP' texts:
+    	There are two formates of online 'HELP' texts:
 
 		Normally, ARB uses simple ASCII texts displayed within the
-			'HELP WINDOWS'.
+                'HELP WINDOWS'.
+
 			The titles of help texts on related main- and subtopics
 			linked to the current help file are displayed in the
 			subwindows in the lower part of the 'HELP WINDOW' and
@@ -95,9 +100,9 @@ DESCRIPTION
 				WINDOW' to display the former help text.
 
 		Some 'HELP' texts are stored as postscript files and displayed
-			using the public domain software 'ghostview'.
+                using the public domain software 'ghostview'.
 
-			 Press <Ghostview/Page/Next> to display the folowing
+                                Press <Ghostview/Page/Next> to display the following
 				page(s), <Ghostview/File/Print> to print the
 				help text. <Ghostview/File/Quit> to leave
 				ghostview.
@@ -108,7 +113,8 @@ NOTES		The 'HELP' texts for foreign programs or tools which have been
 
 		The ASCII texts can be edited by clicking on the <EDIT> button
 		of the 'HELP WINDOW' and can be modified by the user. Write
-		permission is needed for '$ARBHOME/lib/help'.
+		permission is needed for '$ARBHOME/lib/help'. (This only works
+                if you build arb from source)
 
 BUGS		In the current release, the 'open question pointer' is reset to
 		the original symbol when moved to a menu item.
