@@ -792,12 +792,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GBDATA *gb_arb_presets =	GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
 
-    bool is_genom_db = false; //  is this a genome database ?
-    {
-        GB_transaction  dummy(gb_main);
-        GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-        if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
-    }
+    bool is_genom_db = GEN_is_genom_db(gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
+//     {
+//         GB_transaction  dummy(gb_main);
+//         GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+//         if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
+//     }
 
     // --------------------------------------------------------------------------------
     //     File
