@@ -3,7 +3,7 @@
 
 CPP_OBJECTS = AWTC_next_neighbours.o AWTC_rename.o AWTC_names_admin.o \
 	AWTC_seq_search.o AWTC_fast_aligner.o AWTC_ClustalV.o AWTC_constructSequence.o \
-	AWTC_submission.o
+	AWTC_submission.o 
 # AWTC_names_client.o
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)

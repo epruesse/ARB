@@ -796,8 +796,10 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
-                            int old_refresh = faligner_client_data.do_refresh;
+                            int old_refresh                 = faligner_client_data.do_refresh;
                             faligner_client_data.do_refresh = 0;
+
+                            ED4_init_faligner_data(&faligner_client_data);
 
                             AWTC_awar_set_actual_sequence(ED4_ROOT->aw_root, ED4_ROOT->db);
                             AW_clock_cursor(ED4_ROOT->aw_root);

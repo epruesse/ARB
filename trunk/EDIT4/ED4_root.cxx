@@ -931,13 +931,14 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
 
 struct AWTC_faligner_cd faligner_client_data =
 {
-    1,			// default is to do a refresh
-        ED4_timer_refresh,	// with this function
-        get_group_consensus,	// aligner fetches consensus of group of species via this function
-        get_selected_range,		// aligner fetches column range of selection via this function
-        get_first_selected_species, // aligner fetches first and..
-        get_next_selected_species	// .. following selected species via this functions
-        };
+ 1,			                    // default is to do a refresh
+ ED4_timer_refresh,	            // with this function
+ get_group_consensus,	        // aligner fetches consensus of group of species via this function
+ get_selected_range,		    // aligner fetches column range of selection via this function
+ get_first_selected_species,    // aligner fetches first and..
+ get_next_selected_species, 	    // .. following selected species via this functions
+ 0 // BI_helix (needed for island_hopping)
+ };
 
 static GB_ERROR ED4_delete_temp_entries(GBDATA *species, void **alignment_char_ptr)
 {
@@ -1339,6 +1340,41 @@ void ED4_no_dangerous_modes(void)
     }
 }
 
+void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
+    GB_push_transaction(gb_main);
+
+    const char *err              = 0;
+    char       *helix_name       = GBT_get_default_helix(gb_main);
+    char       *alignment_name   = GBT_get_default_alignment(gb_main);
+    GBDATA     *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+
+    long size2        = GBT_get_alignment_len(gb_main,alignment_name);
+    if (size2<=0) err = (char *)GB_get_error();
+
+    if (!err) {
+        GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
+        GBDATA *gb_helix = 0;
+
+        if (gb_helix_con) gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
+
+        if (!gb_helix) err = "Cannot find the helix";
+        if (!err) {
+            if (faligner_data->helix_string) delete faligner_data->helix_string;
+            faligner_data->helix_string = GB_read_string(gb_helix);
+        }
+    }
+
+
+    delete helix_name;
+    delete alignment_name;
+
+    GB_pop_transaction(gb_main);
+}
+
+static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {
+    ED4_init_faligner_data((AWTC_faligner_cd*)cd);
+    AWTC_create_faligner_window(awr, cd);
+}
 
 ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_window)
 {
@@ -1528,7 +1564,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     ____________________________SEP;
 
-    awmm->insert_menu_topic("fast_aligner",FAST_ALIGNER_TITLE "... [Ctrl-A]","F","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)AWTC_create_faligner_window,(AW_CL)&faligner_client_data);
+    awmm->insert_menu_topic("fast_aligner",FAST_ALIGNER_TITLE "... [Ctrl-A]","F","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
     awmm->insert_menu_topic("align_sequence","Old aligner from ARB_EDIT...", "2","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("del_ali_tmp", "Remove all aligner entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
 
