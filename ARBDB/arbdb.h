@@ -325,10 +325,13 @@ extern "C" {
 
 struct gb_data_base_type2;
 class GB_transaction {
-    GBDATA *gbd;
+    GBDATA *ta_main;
+    bool    aborted;
 public:
     GB_transaction(GBDATA *gb_main);
     ~GB_transaction();
+
+    void abort() { aborted = true; }
 };
 
 int GB_info(struct gb_data_base_type2 *gbd);
