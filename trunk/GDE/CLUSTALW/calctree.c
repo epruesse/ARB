@@ -6,6 +6,8 @@
 #include <ctype.h>
 #include "clustalw.h"
 
+#define MAXERRS 10
+
 /*
  *   Prototypes
  */
@@ -854,10 +856,10 @@ sint calc_similarities(sint nseqs)
 {
    sint depth = 0, i,j, k, n;
    sint found;
-   sint nerrs, *seq1,*seq2;
+   sint nerrs, seq1[MAXERRS],seq2[MAXERRS];
    treeptr p, *path2root;
    float dist;
-   float *dist2node, *bad_dist;
+   float *dist2node, bad_dist[MAXERRS];
    double **dmat;
    char err_mess[1024],err1[MAXLINE],reply[MAXLINE];
 
@@ -866,9 +868,6 @@ sint calc_similarities(sint nseqs)
    dmat = (double **)ckalloc((nseqs) * sizeof(double *));
    for (i=0;i<nseqs;i++)
      dmat[i] = (double *)ckalloc((nseqs) * sizeof(double));
-   seq1 = (sint *)ckalloc((nseqs) * sizeof(sint));
-   seq2 = (sint *)ckalloc((nseqs) * sizeof(sint));
-   bad_dist = (float *)ckalloc((nseqs) * sizeof(float));
 
    if (nseqs >= 2)
     {
@@ -924,7 +923,7 @@ sint calc_similarities(sint nseqs)
                {
                   if (dmat[i][j] < 0.01) dmat[i][j] = 0.01;
                   if (dmat[i][j] > 1.0) {
-                  	if (dmat[i][j] > 1.1) {
+                  	if (dmat[i][j] > 1.1 && nerrs<MAXERRS) {
                   		seq1[nerrs] = i;
                   		seq2[nerrs] = j;
                   		bad_dist[nerrs] = dmat[i][j];
@@ -980,9 +979,6 @@ sint calc_similarities(sint nseqs)
    for (i=0;i<nseqs;i++) dmat[i]=ckfree((void *)dmat[i]);
    dmat=ckfree((void *)dmat);
 
-   seq1=ckfree((void *)seq1);
-   seq2=ckfree((void *)seq2);
-   bad_dist=ckfree((void *)bad_dist);
    return((sint)1);
 }
 

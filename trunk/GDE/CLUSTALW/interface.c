@@ -1,6 +1,8 @@
 /* command line interface for Clustal W  */
 /* DES was here MARCH. 1994 */
 /* DES was here SEPT.  1994 */
+/* Fixed memory allocation bug in check_param() . Alan Bleasby Dec 2002 */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -18,6 +20,8 @@
 FILE    *open_path(char *);
 #endif
 
+
+char *nameonly(char *s) ;
 
 static sint check_param(char **args,char *params[], char *param_arg[]);
 static void set_optional_param(void);
@@ -74,7 +78,10 @@ extern sint	*seq_weight;
 
 extern Boolean 	lowercase; /* Flag for GDE output - set on comm. line*/
 extern Boolean 	cl_seq_numbers;
-extern Boolean 	output_clustal, output_nbrf, output_phylip, output_gcg, output_gde, output_nexus;
+
+extern Boolean seqRange; /*Ramu */
+
+extern Boolean 	output_clustal, output_nbrf, output_phylip, output_gcg, output_gde, output_nexus, output_fasta;
 extern Boolean 	output_tree_clustal, output_tree_phylip, output_tree_distances, output_tree_nexus;
 extern sint     bootstrap_format;
 extern Boolean 	tossgaps, kimura;
@@ -89,6 +96,7 @@ extern unsigned sint boot_ran_seed;
 
 extern FILE 	*tree;
 extern FILE 	*clustal_outfile, *gcg_outfile, *nbrf_outfile, *phylip_outfile, *nexus_outfile;
+extern FILE     *fasta_outfile; /* Ramu */
 extern FILE 	*gde_outfile;
 
 extern char 	hyd_residues[];
@@ -121,14 +129,16 @@ char 	outfile_name[FILENAMELEN+1]="";
 
 static char 	clustal_outname[FILENAMELEN+1], gcg_outname[FILENAMELEN+1];
 static char  	phylip_outname[FILENAMELEN+1],nbrf_outname[FILENAMELEN+1];
-static char  	gde_outname[FILENAMELEN+1],nexus_outname[FILENAMELEN+1];
-
+static char  	gde_outname[FILENAMELEN+1], nexus_outname[FILENAMELEN+1];
+static char     fasta_outname[FILENAMELEN+1];  /* Ramu */
 char     clustal_tree_name[FILENAMELEN+1]="";
 char     dist_tree_name[FILENAMELEN+1]="";
 char 	phylip_tree_name[FILENAMELEN+1]="";
 char 	nexus_tree_name[FILENAMELEN+1]="";
 char 	p1_tree_name[FILENAMELEN+1]="";
 char 	p2_tree_name[FILENAMELEN+1]="";
+
+char pim_name[FILENAMELEN+1]=""; /* Ramu */
 
 static char *params[MAXARGS];
 static char *param_arg[MAXARGS];
@@ -173,15 +183,16 @@ MatMenu pw_matrix_menu = {5,
                 "User defined",""
 		};
 
+
 void init_interface(void)
 {
-	empty=TRUE;
-     
-	profile1_empty = TRUE;     /*  */
-	profile2_empty = TRUE;     /*  */
-
-        lin2 = (char *)ckalloc( (MAXLINE+1) * sizeof (char) );
-
+  empty=TRUE;
+  
+  profile1_empty = TRUE;     /*  */
+  profile2_empty = TRUE;     /*  */
+  
+  lin2 = (char *)ckalloc( (MAXLINE+1) * sizeof (char) );
+	
 }
 
 
@@ -197,11 +208,13 @@ static sint check_param(char **args,char *params[], char *param_arg[])
 */
         sint     len,i,j,k,s,n,match[MAXARGS];
 		Boolean 	name1 = FALSE;
-
+		sint ajb;
 
 	if(args[0]==NULL) return;
 
-	params[0]=(char *)ckalloc(strlen(args[0])*sizeof(char));
+
+
+	params[0]=(char *)ckalloc((strlen(args[0])+1)*sizeof(char));
 	if (args[0][0]!=COMMANDSEP)
 	{
 		name1 = TRUE;
@@ -212,87 +225,90 @@ static sint check_param(char **args,char *params[], char *param_arg[])
 
         for (i=1;i<MAXARGS;i++) {
 		if(args[i]==NULL) break;
-		params[i]=(char *)ckalloc(strlen(args[i])*sizeof(char));
+		params[i]=(char *)ckalloc((strlen(args[i])+1)*sizeof(char));
+		ajb=0;
 		for(j=0;j<strlen(args[i])-1;j++)
-			if(isprint(args[i][j+1])) params[i][j]=args[i][j+1];
+			if(isprint(args[i][j+1])) params[i][ajb++]=args[i][j+1];
+		params[i][ajb]='\0';
         }
+
         if (i==MAXARGS) {
 		fprintf(stdout,"Error: too many command line arguments\n");
  		return(-1);
 	}
 /*
     special case - first parameter is input filename
-*/
-	s = 0;
-	if(name1 == TRUE) {
-		strcpy(seqname, params[0]);
-/*  JULIE
-    convert to lower case now
-*/
+  */
+  s = 0;
+  if(name1 == TRUE) {
+    strcpy(seqname, params[0]);
+    /*  JULIE
+	convert to lower case now
+    */
 #ifndef UNIX
-		for(k=0;k<(sint)strlen(params[0]);++k) seqname[k]=tolower(params[0][k]);
+    for(k=0;k<(sint)strlen(params[0]);++k) seqname[k]=tolower(params[0][k]);
 #else
-		for(k=0;k<(sint)strlen(params[0]);++k) seqname[k]=params[0][k];
+    for(k=0;k<(sint)strlen(params[0]);++k) seqname[k]=params[0][k];
 #endif 
-		s++;
-	}
-	
-	n = i;
-    for (i=s;i<n;i++) {
-        param_arg[i] = NULL;
-		len = (sint)strlen(params[i]);
-		for(j=0; j<len; j++)
-			if(params[i][j] == '=') {
-				param_arg[i] = (char *)ckalloc((len-j) * sizeof(char));
-				strncpy(param_arg[i],&params[i][j+1],len-j-1);
-				params[i][j] = EOS;
-/*  JULIE
-    convert keywords to lower case now
-*/
-				for(k=0;k<j;++k) params[i][k]=tolower(params[i][k]);
-				param_arg[i][len-j-1] = EOS;
-				break;
-			}
-	}
-	
-/*
+    s++;
+  }
+  
+  n = i;
+  for (i=s;i<n;i++) {
+    param_arg[i] = NULL;
+    len = (sint)strlen(params[i]);
+    for(j=0; j<len; j++)
+      if(params[i][j] == '=') {
+	param_arg[i] = (char *)ckalloc((len-j) * sizeof(char));
+	strncpy(param_arg[i],&params[i][j+1],len-j-1);
+	params[i][j] = EOS;
+	/*  JULIE
+	    convert keywords to lower case now
+	*/
+	for(k=0;k<j;++k) params[i][k]=tolower(params[i][k]);
+	param_arg[i][len-j-1] = EOS;
+	break;
+      }
+  }
+  
+  /*
     for each parameter given on the command line, first search the list of recognised optional 
     parameters....
-*/
+  */
 
-    for (i=0;i<n;i++) {
-		if ((i==0) && (name1 == TRUE)) continue;
-		j = 0;
-		match[i] = -1;
-		for(;;) {
-			if (cmd_line_para[j].str[0] == '\0') break;
-			if (!strcmp(params[i],cmd_line_para[j].str)) {
-				match[i] = j;
-				*cmd_line_para[match[i]].flag = i;
-				if ((cmd_line_para[match[i]].type != NOARG) &&
-                                    (param_arg[i] == NULL)) {
-					fprintf(stdout,
-                       				 "Error: parameter required for /%s\n",params[i]);
-					exit(1);
-				}
-/*  JULIE
-    convert parameters to lower case now, unless the parameter is a filename
-*/
-#ifdef UNIX
-				else if (cmd_line_para[match[i]].type != FILARG
-				         && param_arg[i] != NULL)
-#endif 
-				if (param_arg[i]!=0)
-					{
-					for(k=0;k<strlen(param_arg[i]);++k)
-param_arg[i][k]=tolower(param_arg[i][k]);
-					}
-				break;
-			}
-			j++;
-		}
+  for (i=0;i<n;i++) {
+    if ((i==0) && (name1 == TRUE)) continue;
+    j = 0;
+    match[i] = -1;
+    for(;;) {
+      if (cmd_line_para[j].str[0] == '\0') break;
+      if (!strcmp(params[i],cmd_line_para[j].str)) {
+	match[i] = j;
+	*cmd_line_para[match[i]].flag = i;
+	if ((cmd_line_para[match[i]].type != NOARG) &&
+	    (param_arg[i] == NULL)) {
+	  fprintf(stdout,
+		  "Error: parameter required for /%s\n",params[i]);
+	  exit(1);
 	}
-/*
+	/*  JULIE
+	    convert parameters to lower case now, unless the parameter is a filename
+	*/
+#ifdef UNIX
+	else if (cmd_line_para[match[i]].type != FILARG
+		 && param_arg[i] != NULL)
+#endif 
+	  if (param_arg[i]!=0)
+	    {
+	      for(k=0;k<strlen(param_arg[i]);++k)
+		param_arg[i][k]=tolower(param_arg[i][k]);
+	    }
+	break;
+      }
+      j++;
+    }
+  }
+  /*
     ....then the list of recognised input files,.... 
 */
     for (i=0;i<n;i++) {
@@ -354,54 +370,53 @@ param_arg[i][k]=tolower(param_arg[i][k]);
 
 static void set_optional_param(void)
 {
-	int i,temp;
-	int c;
-	float ftemp;
-	char tstr[100];
-
-/****************************************************************************/
-/* look for parameters on command line  e.g. gap penalties, k-tuple etc.    */
-/****************************************************************************/
-
-/*** ? /score=percent or /score=absolute */
-        if(setscore != -1)
-                if(strlen(param_arg[setscore]) > 0) {
-     			temp = find_match(param_arg[setscore],score_arg,2);
-                        if(temp == 0)
-                                percent = TRUE;
-                        else if(temp == 1)
-                                percent = FALSE;
-                        else
-                                fprintf(stdout,"\nUnknown SCORE type: %s\n",
-                                param_arg[setscore]);
-                }
-
-/*** ? /seed=n */
-        if(setseed != -1) {
-                temp = 0;
-                if(strlen(param_arg[setseed]) > 0)
-                         if (sscanf(param_arg[setseed],"%d",&temp)!=1) {
-                         	fprintf(stdout,"Bad option for /seed (must be integer)\n");
-                         	temp = 0;
-                         }
-                if(temp > 0) boot_ran_seed = temp;
-        fprintf(stdout,"\ntemp = %d; seed = %u;\n",(pint)temp,boot_ran_seed);
-        }
-
-
-
+  int i,temp;
+  int c;
+  float ftemp;
+  char tstr[100];
+  
+  /****************************************************************************/
+  /* look for parameters on command line  e.g. gap penalties, k-tuple etc.    */
+  /****************************************************************************/
+  
+  /*** ? /score=percent or /score=absolute */
+  if(setscore != -1)
+    if(strlen(param_arg[setscore]) > 0) {
+      temp = find_match(param_arg[setscore],score_arg,2);
+      if(temp == 0)
+	percent = TRUE;
+      else if(temp == 1)
+	percent = FALSE;
+      else
+	fprintf(stdout,"\nUnknown SCORE type: %s\n",
+		param_arg[setscore]);
+    }
+  
+  /*** ? /seed=n */
+  if(setseed != -1) {
+    temp = 0;
+    if(strlen(param_arg[setseed]) > 0)
+      if (sscanf(param_arg[setseed],"%d",&temp)!=1) {
+	fprintf(stdout,"Bad option for /seed (must be integer)\n");
+	temp = 0;
+      }
+    if(temp > 0) boot_ran_seed = temp;
+    fprintf(stdout,"\ntemp = %d; seed = %u;\n",(pint)temp,boot_ran_seed);
+  }
+  
 
 /*** ? /output=PIR, GCG, GDE or PHYLIP */
 		if(setoutput != -1)
 		if(strlen(param_arg[setoutput]) > 0) {
-			temp = find_match(param_arg[setoutput],output_arg,5);
-			if (temp >= 0 && temp <= 3) {
+			temp = find_match(param_arg[setoutput],output_arg,6);
+			if (temp >= 0 && temp <= 5) {
 				output_clustal = FALSE;
 				output_gcg     = FALSE;
 				output_phylip  = FALSE;
 				output_nbrf    = FALSE;
 				output_gde     = FALSE;
 				output_nexus   = FALSE;
+				output_fasta   = FALSE;
 			}
 			switch (temp) {
 				case 0: /* GCG */
@@ -416,8 +431,11 @@ static void set_optional_param(void)
 				case 3: /* PHYLIP */
 					output_phylip  = TRUE;
 					break;
-				case 4: /* PHYLIP */
+				case 4: /* NEXUS */
 					output_nexus   = TRUE;
+					break;
+				case 5: /* NEXUS */
+					output_fasta   = TRUE;
 					break;
 				default:
 					fprintf(stdout,"\nUnknown OUTPUT type: %s\n",
@@ -449,146 +467,146 @@ static void set_optional_param(void)
 		}
 
 /*** ? /profile (sets type of second input file to profile) */
-	if(setprofile != -1)
-		profile_type = PROFILE;
-
-/*** ? /sequences (sets type of second input file to list of sequences)  */
-	if(setsequences != -1)
-		profile_type = SEQUENCE;
-
-
-
-/*** ? /ktuple=n */
-        if(setktuple != -1) {
-                temp = 0;
-                if(strlen(param_arg[setktuple]) > 0)
-			 		if (sscanf(param_arg[setktuple],"%d",&temp)!=1) {
-                         fprintf(stdout,"Bad option for /ktuple (must be integer)\n");
-                         temp = 0;
-                    }
-                if(temp > 0) {
-                        if(dnaflag) {
-                                if(temp <= 4) {
-                                        ktup         = temp;
-                                        dna_ktup     = ktup;
-                                        wind_gap     = ktup + 4;
-                                        dna_wind_gap = wind_gap;
-                                }
-                        }
-                        else {
-                                if(temp <= 2) {
-                                        ktup          = temp;
-                                        prot_ktup     = ktup;
-                                        wind_gap      = ktup + 3;
-                                        prot_wind_gap = wind_gap;
-                                }
-                        }
-                }
-        }
-
-/*** ? /pairgap=n */
-        if(setpairgap != -1) {
-                temp = 0;
-                if(strlen(param_arg[setpairgap]) > 0)
-			 		if (sscanf(param_arg[setpairgap],"%d",&temp)!=1) {
-                         fprintf(stdout,"Bad option for /pairgap (must be integer)\n");
-                         temp = 0;
-                    }
-                if(temp > 0)
-                        if(dnaflag) {
-                                if(temp > ktup) {
-                                        wind_gap     = temp;
-                                        dna_wind_gap = wind_gap;
-                                }
-                        }
-                        else {
-                                if(temp > ktup) {
-                                        wind_gap      = temp;
-                                        prot_wind_gap = wind_gap;
-                                }
-                        }
-        }
-
-
+  if(setprofile != -1)
+    profile_type = PROFILE;
+  
+  /*** ? /sequences (sets type of second input file to list of sequences)  */
+  if(setsequences != -1)
+    profile_type = SEQUENCE;
+  
+  
+  
+  /*** ? /ktuple=n */
+  if(setktuple != -1) {
+    temp = 0;
+    if(strlen(param_arg[setktuple]) > 0)
+      if (sscanf(param_arg[setktuple],"%d",&temp)!=1) {
+	fprintf(stdout,"Bad option for /ktuple (must be integer)\n");
+	temp = 0;
+      }
+    if(temp > 0) {
+      if(dnaflag) {
+	if(temp <= 4) {
+	  ktup         = temp;
+	  dna_ktup     = ktup;
+	  wind_gap     = ktup + 4;
+	  dna_wind_gap = wind_gap;
+	}
+      }
+      else {
+	if(temp <= 2) {
+	  ktup          = temp;
+	  prot_ktup     = ktup;
+	  wind_gap      = ktup + 3;
+	  prot_wind_gap = wind_gap;
+	}
+      }
+    }
+  }
+  
+  /*** ? /pairgap=n */
+  if(setpairgap != -1) {
+    temp = 0;
+    if(strlen(param_arg[setpairgap]) > 0)
+      if (sscanf(param_arg[setpairgap],"%d",&temp)!=1) {
+	fprintf(stdout,"Bad option for /pairgap (must be integer)\n");
+	temp = 0;
+      }
+    if(temp > 0)
+      if(dnaflag) {
+	if(temp > ktup) {
+	  wind_gap     = temp;
+	  dna_wind_gap = wind_gap;
+	}
+      }
+      else {
+	if(temp > ktup) {
+	  wind_gap      = temp;
+	  prot_wind_gap = wind_gap;
+	}
+      }
+  }
+  
+  
 /*** ? /topdiags=n   */
-        if(settopdiags != -1) {
-                temp = 0;
-                if(strlen(param_arg[settopdiags]) > 0)
-			 		if (sscanf(param_arg[settopdiags],"%d",&temp)!=1) {
-                         fprintf(stdout,"Bad option for /topdiags (must be integer)\n");
-                         temp = 0;
-                    }
-                if(temp > 0)
-                        if(dnaflag) {
-                                if(temp > ktup) {
-                                        signif       = temp;
-                                        dna_signif   = signif;
-                                }
-                        }
-                        else {
-                                if(temp > ktup) {
-                                        signif        = temp;
-                                        prot_signif   = signif;
-                                }
-                        }
-        }
-
+  if(settopdiags != -1) {
+    temp = 0;
+    if(strlen(param_arg[settopdiags]) > 0)
+      if (sscanf(param_arg[settopdiags],"%d",&temp)!=1) {
+	fprintf(stdout,"Bad option for /topdiags (must be integer)\n");
+	temp = 0;
+      }
+    if(temp > 0)
+      if(dnaflag) {
+	if(temp > ktup) {
+	  signif       = temp;
+	  dna_signif   = signif;
+	}
+      }
+      else {
+	if(temp > ktup) {
+	  signif        = temp;
+	  prot_signif   = signif;
+	}
+      }
+  }
+	
 
 /*** ? /window=n  */
-        if(setwindow != -1) {
-                temp = 0;
-                if(strlen(param_arg[setwindow]) > 0)
-			 		if (sscanf(param_arg[setwindow],"%d",&temp)!=1) {
-                         fprintf(stdout,"Bad option for /window (must be integer)\n");
-                         temp = 0;
-                    }
-                if(temp > 0)
-                        if(dnaflag) {
-                                if(temp > ktup) {
-                                        window       = temp;
-                                        dna_window   = window;
-                                }
-                        }
-                        else {
-                                if(temp > ktup) {
-                                        window        = temp;
-                                        prot_window   = window;
-                                }
-                        }
-        }
-
+  if(setwindow != -1) {
+    temp = 0;
+    if(strlen(param_arg[setwindow]) > 0)
+      if (sscanf(param_arg[setwindow],"%d",&temp)!=1) {
+	fprintf(stdout,"Bad option for /window (must be integer)\n");
+	temp = 0;
+      }
+    if(temp > 0)
+      if(dnaflag) {
+	if(temp > ktup) {
+	  window       = temp;
+	  dna_window   = window;
+	}
+      }
+      else {
+	if(temp > ktup) {
+	  window        = temp;
+	  prot_window   = window;
+	}
+      }
+  }
+  
 /*** ? /kimura */
-	if(setkimura != -1)
-		kimura = TRUE;
-
-/*** ? /tossgaps */
-	if(settossgaps != -1)
-		tossgaps = TRUE;
-
-
-/*** ? /negative  */
-	if(setnegative != -1)
-		neg_matrix = TRUE;
-
-/*** ? /noweights */
-	if(setnoweights!= -1)
-		no_weights = TRUE;
-
-
-/*** ? /pwmatrix=ID (user's file)  */
-	if(setpwmatrix != -1)
-	{
-		temp=strlen(param_arg[setpwmatrix]);
-		if(temp > 0) {
-			for(i=0;i<temp;i++)
-				if (isupper(param_arg[setpwmatrix][i]))
-					tstr[i]=tolower(param_arg[setpwmatrix][i]);
-				else
-					tstr[i]=param_arg[setpwmatrix][i];
-			tstr[i]='\0';
-                        if (strcmp(tstr,"blosum")==0) {
-                                strcpy(pw_mtrxname, tstr);
-                                pw_matnum = 1;
+  if(setkimura != -1)
+    kimura = TRUE;
+  
+  /*** ? /tossgaps */
+  if(settossgaps != -1)
+    tossgaps = TRUE;
+  
+  
+  /*** ? /negative  */
+  if(setnegative != -1)
+    neg_matrix = TRUE;
+  
+  /*** ? /noweights */
+  if(setnoweights!= -1)
+    no_weights = TRUE;
+  
+  
+  /*** ? /pwmatrix=ID (user's file)  */
+  if(setpwmatrix != -1)
+    {
+      temp=strlen(param_arg[setpwmatrix]);
+      if(temp > 0) {
+	for(i=0;i<temp;i++)
+	  if (isupper(param_arg[setpwmatrix][i]))
+	    tstr[i]=tolower(param_arg[setpwmatrix][i]);
+	  else
+	    tstr[i]=param_arg[setpwmatrix][i];
+	tstr[i]='\0';
+	if (strcmp(tstr,"blosum")==0) {
+	  strcpy(pw_mtrxname, tstr);
+	  pw_matnum = 1;
                         }
                         else if (strcmp(tstr,"pam")==0) {
                                 strcpy(pw_mtrxname, tstr);
@@ -789,6 +807,42 @@ static void set_optional_param(void)
 				fprintf(stdout,"\nUnknown SEQNO option %s\n",
 				param_arg[setseqno]);
 		}
+
+
+
+	if(setseqno_range != -1) 
+		if(strlen(param_arg[setseqno_range]) > 0) {
+			temp = find_match(param_arg[setseqno_range],seqno_range_arg,2);
+			printf("\n comparing  "); 
+			printf("\nparam_arg[setseqno_range]= %s", param_arg[setseqno_range]);
+			/* printf("\nseqno_range_arg = %s ",seqno_range_arg); */
+			printf("\n comparing \n "); 
+
+			if(temp == 0) {
+				seqRange = FALSE;
+			}
+			else if(temp == 1) {
+				seqRange = TRUE;
+
+			}
+			else
+				fprintf(stdout,"\nUnknown Sequence range  option %s\n",
+				param_arg[setseqno_range]);
+		}
+
+
+/*** ? /range=n:m */
+	if(setrange != -1) {
+		temp = 0;
+		if(strlen(param_arg[setrange]) > 0)
+			if (sscanf(param_arg[setrange],"%d:%d",&temp,&temp)!=2) {
+                 fprintf(stdout,"setrange:  Syntax Error: Cannot set range, should be from:to \n");
+                 temp = 0;
+            }
+	}
+
+/*** ? /range=n:m */
+
 
 
 /*** ? /gapopen=n  */
@@ -1214,6 +1268,7 @@ static void show_aln(void)         /* Alignment screen display procedure */
         else if(output_phylip) strcpy(file_name,phylip_outname);
         else if(output_gde) strcpy(file_name,gde_outname);
         else if(output_nexus) strcpy(file_name,nexus_outname);
+        else if(output_fasta) strcpy(file_name,fasta_outname);
 
 #ifdef VMS
         if((file=fopen(file_name,"r","rat=cr","rfm=var"))==NULL) {
@@ -1673,7 +1728,7 @@ void parse_params(Boolean xmenus)
 		make_tree(phylip_tree_name);
 
 	else if(do_tree)
-		phylogenetic_tree(phylip_tree_name,clustal_tree_name,dist_tree_name,nexus_tree_name);
+		phylogenetic_tree(phylip_tree_name,clustal_tree_name,dist_tree_name,nexus_tree_name,pim_name);
 
 	else if(do_boot)
 		bootstrap_tree(phylip_tree_name,clustal_tree_name,nexus_tree_name);
@@ -2166,12 +2221,7 @@ FILE *  open_explicit_file(char *file_name)
 }
 
 
-
-
-
-
-
-
+/* Ramu void */
 
 void align(char *phylip_name)
 { 
@@ -2265,8 +2315,8 @@ void align(char *phylip_name)
 	
 	create_alignment_output(1,nseqs);
         if (showaln && usemenu) show_aln();
-
 	phylip_name[0]=EOS;
+	return ;
 }
 
 
@@ -2630,13 +2680,6 @@ void get_tree(char *phylip_name)
 
 
 
-
-
-
-
-
-
-
 void profile_align(char *p1_tree_name,char *p2_tree_name)
 {
 	char path[FILENAMELEN+1];
@@ -2798,360 +2841,677 @@ profiles - used to set parameters for the final alignment */
 
 
 
-void clustal_out(FILE *clusout, sint fres, sint len, sint fseq, sint lseq)
-{
-	static char *seq1;
-	static sint *seq_no;
-	static sint *print_seq_no;
-	char *ss_mask1, *ss_mask2;
-	char 	    temp[MAXLINE];
-	char c;
-	sint val;
-	sint ii,lv1,catident1[NUMRES],catident2[NUMRES],ident,chunks;
-	sint i,j,k,l;
-	sint pos,ptr;
-	sint line_length;
 
-/*
- stop doing this ...... opens duplicate files in VMS  DES
-fclose(clusout);
-if ((clusout=fopen(clustal_outname,"w")) == NULL)
-  {
-    fprintf(stdout,"Error opening %s\n",clustal_outfile);
-    return;
+ typedef struct rangeNum {
+   int start;
+   int end;
+ } rangeNum;
+ 
+
+/**** ********************************************************************************
+ *
+ *
+ *
+ *   INPUT:  
+ * 
+ *   RETURNS:  the range objects with the from, to range for each seqs.
+ *
+ *             the best things is to couple this up with the seqnames
+ *             structure (there is no struct for seqnames yet!)
+ */
+
+
+void fillrange(rangeNum *rnum, sint fres, sint len, sint fseq)
+{  
+  sint val;
+  sint i,ii;
+  sint j,slen;	
+
+  char tmpName[FILENAMELEN+15];
+  int istart =0;
+  int iend = 0; /* to print sequence start-end with names */
+  int found =0;
+  int ngaps=0;
+  int tmpStart=0; 
+  int tmpEnd=0;
+  int ntermgaps=0;
+  int pregaps=0;
+  int tmpk=0;
+  int isRange=0;
+  int formula =0;
+
+  tmpName[0] = '\0';
+  slen = 0;
+
+  ii = fseq ;
+  i = output_index[ii];
+  if( (sscanf(names[i],"%[^/]/%d-%d",tmpName, &tmpStart, &tmpEnd) == 3)) {
+    isRange = 1;
   }
-*/
-	seq_no = (sint *)ckalloc((nseqs+1) * sizeof(sint));
-	print_seq_no = (sint *)ckalloc((nseqs+1) * sizeof(sint));
-	for (i=fseq;i<=lseq;i++)
-        {
-		print_seq_no[i] = seq_no[i] = 0;
-                for(j=1;j<fres;j++) {
-			val = seq_array[i][j];
-			if((val >=0) || (val <=max_aa)) seq_no[i]++;
-		}
-        }
+  for(tmpk=1; tmpk<fres; tmpk++) { /* do this irrespective of above sscanf */
+    val = seq_array[i][tmpk];
+    if ((val < 0) || (val > max_aa)) { /*it is gap */
+      pregaps++;
+    }
+  }
+  for(j=fres; j<fres+len; j++) {
+    val = seq_array[i][j];
+    if((val == -3) || (val == 253))
+      break;
+    else if((val < 0) || (val > max_aa)) {
+      /* residue = '-'; */
+      ngaps++;
+    }
+    else {
+      /* residue = amino_acid_codes[val]; */
+      found = j;
+    }
+    if ( found && (istart == 0) ) {
+      istart = found;
+      ntermgaps = ngaps;
+    }
+    slen++;
+  }
+  if( seqRange) {
+    printf("Name : %s ",names[i]);
+    printf("\n  fres = %d ",fres);
+    printf("   len = %d ",len);
+    printf("\n  istart = %d ",istart);
+    printf("\n  tmpStart = %d ",tmpStart);
+    printf("\n  ngaps = %d ",ngaps);
+    printf("\n  pregaps = %d ",pregaps);
+    if (!isRange)
+      formula = istart - pregaps;
+    else
+      formula = istart - pregaps +  ( tmpStart == 1 ? 0: tmpStart-1) ;
 
+    printf("\n\nsuggestion  istart - pregaps + tmpStart - ntermgaps = %d - %d + %d - %d",istart,
+	   pregaps,tmpStart,ntermgaps);
+    printf(" formula %d ",formula);
+  }
+  else {
+    printf("\n no range found .... strange,  istart = %d",istart);
+    formula = 1;
+  }
+  if (pregaps == fres-1) /* all gaps -  now the conditions........ */ 
+    formula = tmpStart ; /* keep the previous start... */
+  formula = (formula <= 0) ? 1: formula;
+  if (pregaps ==0 && tmpStart == 0) {
+    formula = fres;
+  }
+  iend = formula + len - ngaps -1;
 
-	seq1 = (char *)ckalloc((max_aln_length+1) * sizeof(char));
-
-	if (struct_penalties1 == SECST && use_ss1 == TRUE) {
-		ss_mask1 = (char *)ckalloc((seqlen_array[1]+10) * sizeof(char));
-		for (i=0;i<seqlen_array[1];i++)
-			ss_mask1[i] = sec_struct_mask1[i];
-		print_sec_struct_mask(seqlen_array[1],sec_struct_mask1,ss_mask1);
-	}
-	if (struct_penalties2 == SECST && use_ss2 == TRUE) {
-		ss_mask2 = (char *)ckalloc((seqlen_array[profile1_nseqs+1]+10) * sizeof(char));
-		for (i=0;i<seqlen_array[profile1_nseqs+1];i++)
-			ss_mask2[i] = sec_struct_mask2[i];
-		print_sec_struct_mask(seqlen_array[profile1_nseqs+1],sec_struct_mask2,ss_mask2);
-	}
-	
-	fprintf(clusout,"CLUSTAL %s multiple sequence alignment\n\n",
-				 revision_level);
-
-/* decide the line length for this alignment - maximum is LINELENGTH */
-	line_length=PAGEWIDTH-max_names;
-	line_length=line_length-line_length % 10; /* round to a multiple of 10*/
-	if (line_length > LINELENGTH) line_length=LINELENGTH;
-
-	chunks = len/line_length;
-	if(len % line_length != 0)
-		++chunks;
-		
-	for(lv1=1;lv1<=chunks;++lv1) {
-		pos = ((lv1-1)*line_length)+1;
-		ptr = (len<pos+line_length-1) ? len : pos+line_length-1;
-
-		fprintf(clusout,"\n");
-		
-		if (output_struct_penalties == 0 || output_struct_penalties == 2) {
-			if (struct_penalties1 == SECST && use_ss1 == TRUE) {
-				for(i=pos;i<=ptr;++i) {
-					val=ss_mask1[i+fres-2];
-					if (val == gap_pos1 || val == gap_pos2)
-						temp[i-pos]='-';
-					else
-						temp[i-pos]=val;
-				}
-				temp[ptr-pos+1]=EOS;
-				fprintf(clusout,"!SS_%-*s  %s\n",max_names,ss_name1,temp);
-				}
-		}
-		if (output_struct_penalties == 1 || output_struct_penalties == 2) {
-			if (struct_penalties1 != NONE && use_ss1 == TRUE) {
-				for(i=pos;i<=ptr;++i) {
-					val=gap_penalty_mask1[i+fres-2];
-					if (val == gap_pos1 || val == gap_pos2)
-						temp[i-pos]='-';
-					else
-						temp[i-pos]=val;
-				}
-				temp[ptr-pos+1]=EOS;
-				fprintf(clusout,"!GM_%-*s  %s\n",max_names,ss_name1,temp);
-				}
-		}
-		if (output_struct_penalties == 0 || output_struct_penalties == 2) {
-			if (struct_penalties2 == SECST && use_ss2 == TRUE) {
-				for(i=pos;i<=ptr;++i) {
-					val=ss_mask2[i+fres-2];
-					if (val == gap_pos1 || val == gap_pos2)
-						temp[i-pos]='-';
-					else
-						temp[i-pos]=val;
-				}
-				temp[ptr-pos+1]=EOS;
-				fprintf(clusout,"!SS_%-*s  %s\n",max_names,ss_name2,temp);
-			}
-		}
-		if (output_struct_penalties == 1 || output_struct_penalties == 2) {
-			if (struct_penalties2 != NONE && use_ss2 == TRUE) {
-				for(i=pos;i<=ptr;++i) {
-					val=gap_penalty_mask2[i+fres-2];
-					if (val == gap_pos1 || val == gap_pos2)
-						temp[i-pos]='-';
-					else
-						temp[i-pos]=val;
-				}
-				temp[ptr-pos+1]=EOS;
-				fprintf(clusout,"!GM_%-*s  %s\n",max_names,ss_name2,temp);
-			}
-		}
-		
-		for(ii=fseq;ii<=lseq;++ii) {
-                        i=output_index[ii];
-			print_seq_no[i] = 0;
-			for(j=pos;j<=ptr;++j) {
-				if (j+fres-1<=seqlen_array[i])
-					val = seq_array[i][j+fres-1];
-				else val = -3;
-				if((val == -3) || (val == 253)) break;
-				else if((val < 0) || (val > max_aa))
-                                        seq1[j]='-';
-				else {
-					seq1[j]=amino_acid_codes[val];
-					seq_no[i]++;
-					print_seq_no[i]=1;
-				}
-			}
-			for(;j<=ptr;++j) seq1[j]='-';
-			strncpy(temp,&seq1[pos],ptr-pos+1);
-			temp[ptr-pos+1]=EOS;
-			fprintf(clusout,"%-*s %s",max_names+5,names[i],temp);
-			if (cl_seq_numbers && print_seq_no[i])
-					fprintf(clusout," %d",seq_no[i]);
-			fprintf(clusout,"\n");
-		}
-	
-		for(i=pos;i<=ptr;++i) {
-			seq1[i]=' ';
-			ident=0;
-			for(j=1;res_cat1[j-1]!=NULL;j++) catident1[j-1] = 0;
-			for(j=1;res_cat2[j-1]!=NULL;j++) catident2[j-1] = 0;
-			for(j=fseq;j<=lseq;++j) {
-				if((seq_array[fseq][i+fres-1] >=0) && 
-				   (seq_array[fseq][i+fres-1] <= max_aa)) {
-					if(seq_array[fseq][i+fres-1] == seq_array[j][i+fres-1])
-					++ident;
-					for(k=1;res_cat1[k-1]!=NULL;k++) {
-					        for(l=0;(c=res_cat1[k-1][l]);l++) {
-							if (amino_acid_codes[seq_array[j][i+fres-1]]==c)
-							{
-								catident1[k-1]++;
-								break;
-							}
-						}
-					}
-					for(k=1;res_cat2[k-1]!=NULL;k++) {
-					        for(l=0;(c=res_cat2[k-1][l]);l++) {
-							if (amino_acid_codes[seq_array[j][i+fres-1]]==c)
-							{
-								catident2[k-1]++;
-								break;
-							}
-						}
-					}
-				}
-			}
-			if(ident==lseq-fseq+1)
-				seq1[i]='*';
-			else if (!dnaflag) {
-				for(k=1;res_cat1[k-1]!=NULL;k++) {
-					if (catident1[k-1]==lseq-fseq+1) {
-						seq1[i]=':';
-						break;
-					}
-				}
-				if(seq1[i]==' ')
-					for(k=1;res_cat2[k-1]!=NULL;k++) {
-						if (catident2[k-1]==lseq-fseq+1) {
-							seq1[i]='.';
-							break;
-						}
-					}
-			}
-		}
-		strncpy(temp,&seq1[pos],ptr-pos+1);
-		temp[ptr-pos+1]=EOS;
-		for(k=0;k<max_names+6;k++) fprintf(clusout," ");
-		fprintf(clusout,"%s\n",temp);
-	}
-		
-
-	seq1=ckfree((void *)seq1);
-	if (struct_penalties1 == SECST && use_ss1 == TRUE) ckfree(ss_mask1);
-	if (struct_penalties2 == SECST && use_ss2 == TRUE) ckfree(ss_mask2);
-/* DES	ckfree(output_index); */
-	
+  rnum->start = formula;
+  rnum->end = iend;
+  printf("\n check... %s %d - %d",names[i],rnum->start,rnum->end);
+  printf(" Done checking.........");
 }
 
 
+void fasta_out(FILE *fastaout, sint fres, sint len, sint fseq, sint lseq)
+{
+
+    char *seq, residue;
+    sint val;
+    sint i,ii;
+    sint j,slen;	
+    sint line_length;
+
+    rangeNum  *rnum;  
+    int tmpk;
+
+    seq = (char *)ckalloc((len+1) * sizeof(char)); 
+    
+    line_length=PAGEWIDTH-max_names;
+    line_length=line_length-line_length % 10; /* round to a multiple of 10*/
+    if (line_length > LINELENGTH) line_length=LINELENGTH;
+
+    if(seqRange) {
+      rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    }
+
+    for(ii=fseq; ii<=lseq; ii++) {
+      i = output_index[ii];
+      slen = 0;
+      for(j=fres; j<fres+len; j++) {
+	val = seq_array[i][j];
+	if((val == -3) || (val == 253))
+	  break;
+	else if((val < 0) || (val > max_aa)) {
+	  residue = '-';
+	}
+	else {
+	  residue = amino_acid_codes[val];
+	}
+	if (lowercase) 
+	  seq[j-fres] = (char)tolower((int)residue);
+	else
+	  seq[j-fres] = residue;
+	slen++;
+      }
+      fprintf(fastaout, ">%-s",nameonly(names[i]));
+      if(seqRange) {
+	fillrange(rnum,fres, len, ii);
+	fprintf(fastaout,"/%d-%d",rnum->start, rnum->end);
+      }
+      fprintf(fastaout,"\n");
+      for(j=1; j<=slen; j++) {
+	fprintf(fastaout,"%c",toupper(seq[j-1]));
+	if((j % line_length == 0) || (j == slen)) 
+	  fprintf(fastaout,"\n");
+      }
+    }
+    seq=ckfree((void *)seq);
+
+    if(seqRange) 
+      if (rnum) 
+	free(rnum);
+    /* just try and see 
+    printf("\n Now....  calculating percentage identity....\n\n");
+    calc_percidentity();*/
+
+}
+
+
+void clustal_out(FILE *clusout, sint fres, sint len, sint fseq, sint lseq)
+{
+    static char *seq1;
+    static sint *seq_no;
+    static sint *print_seq_no;
+    char *ss_mask1, *ss_mask2;
+    char  temp[MAXLINE];
+    char c;
+    sint val;
+    sint ii,lv1,catident1[NUMRES],catident2[NUMRES],ident,chunks;
+    sint i,j,k,l;
+    sint pos,ptr;
+    sint line_length;
+
+    rangeNum *rnum;
+    char tmpStr[FILENAMELEN+15];
+    int tmpk;
+
+    /*
+      stop doing this ...... opens duplicate files in VMS  DES
+      fclose(clusout);
+      if ((clusout=fopen(clustal_outname,"w")) == NULL)
+      {
+      fprintf(stdout,"Error opening %s\n",clustal_outfile);
+      return;
+      }
+    */
+
+    if(seqRange) {
+      rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+      if ( rnum ==NULL ) {
+	printf("cannot alloc memory for rnum");
+      }
+    }
+
+    seq_no = (sint *)ckalloc((nseqs+1) * sizeof(sint));
+    print_seq_no = (sint *)ckalloc((nseqs+1) * sizeof(sint));
+    for (i=fseq;i<=lseq;i++)
+      {
+	print_seq_no[i] = seq_no[i] = 0;
+	for(j=1;j<fres;j++) {
+	  val = seq_array[i][j];
+	  if((val >=0) || (val <=max_aa)) seq_no[i]++;
+	}
+      }
+
+    seq1 = (char *)ckalloc((max_aln_length+1) * sizeof(char));
+    
+    if (struct_penalties1 == SECST && use_ss1 == TRUE) {
+      ss_mask1 = (char *)ckalloc((seqlen_array[1]+10) * sizeof(char));
+      for (i=0;i<seqlen_array[1];i++)
+	ss_mask1[i] = sec_struct_mask1[i];
+      print_sec_struct_mask(seqlen_array[1],sec_struct_mask1,ss_mask1);
+    }
+    if (struct_penalties2 == SECST && use_ss2 == TRUE) {
+      ss_mask2 = (char *)ckalloc((seqlen_array[profile1_nseqs+1]+10) * sizeof(char));
+      for (i=0;i<seqlen_array[profile1_nseqs+1];i++)
+	ss_mask2[i] = sec_struct_mask2[i];
+      print_sec_struct_mask(seqlen_array[profile1_nseqs+1],sec_struct_mask2,ss_mask2);
+    }
+    
+    fprintf(clusout,"CLUSTAL %s multiple sequence alignment\n\n",
+	    revision_level);
+    
+    /* decide the line length for this alignment - maximum is LINELENGTH */
+    line_length=PAGEWIDTH-max_names;
+    line_length=line_length-line_length % 10; /* round to a multiple of 10*/
+    if (line_length > LINELENGTH) line_length=LINELENGTH;
+    
+    chunks = len/line_length;
+    if(len % line_length != 0)
+      ++chunks;
+    
+    for(lv1=1;lv1<=chunks;++lv1) {
+      pos = ((lv1-1)*line_length)+1;
+      ptr = (len<pos+line_length-1) ? len : pos+line_length-1;
+      
+      fprintf(clusout,"\n");
+      
+      if (output_struct_penalties == 0 || output_struct_penalties == 2) {
+	if (struct_penalties1 == SECST && use_ss1 == TRUE) {
+	  for(i=pos;i<=ptr;++i) {
+	    val=ss_mask1[i+fres-2];
+	    if (val == gap_pos1 || val == gap_pos2)
+	      temp[i-pos]='-';
+	    else
+	      temp[i-pos]=val;
+	  }
+	  temp[ptr-pos+1]=EOS;
+	  if(seqRange) /*Ramu*/
+	    fprintf(clusout,"!SS_%-*s  %s\n",max_names+15,ss_name1,temp);
+	  else
+	    fprintf(clusout,"!SS_%-*s  %s\n",max_names,ss_name1,temp);
+	}
+      }
+      if (output_struct_penalties == 1 || output_struct_penalties == 2) {
+	if (struct_penalties1 != NONE && use_ss1 == TRUE) {
+	  for(i=pos;i<=ptr;++i) {
+	    val=gap_penalty_mask1[i+fres-2];
+	    if (val == gap_pos1 || val == gap_pos2)
+	      temp[i-pos]='-';
+	    else
+	      temp[i-pos]=val;
+	  }
+	  temp[ptr-pos+1]=EOS;
+	  fprintf(clusout,"!GM_%-*s  %s\n",max_names,ss_name1,temp);
+	}
+      }
+      if (output_struct_penalties == 0 || output_struct_penalties == 2) {
+	if (struct_penalties2 == SECST && use_ss2 == TRUE) {
+	  for(i=pos;i<=ptr;++i) {
+	    val=ss_mask2[i+fres-2];
+	    if (val == gap_pos1 || val == gap_pos2)
+	      temp[i-pos]='-';
+	    else
+	      temp[i-pos]=val;
+	  }
+	  temp[ptr-pos+1]=EOS;
+	  if (seqRange )
+	    fprintf(clusout,"!SS_%-*s  %s\n",max_names+15,ss_name2,temp);
+	  else
+	    fprintf(clusout,"!SS_%-*s  %s\n",max_names,ss_name2,temp);
+	}
+      }
+      if (output_struct_penalties == 1 || output_struct_penalties == 2) {
+	if (struct_penalties2 != NONE && use_ss2 == TRUE) {
+	  for(i=pos;i<=ptr;++i) {
+	    val=gap_penalty_mask2[i+fres-2];
+	    if (val == gap_pos1 || val == gap_pos2)
+	      temp[i-pos]='-';
+	    else
+	      temp[i-pos]=val;
+	  }
+	  temp[ptr-pos+1]=EOS;
+	  fprintf(clusout,"!GM_%-*s  %s\n",max_names,ss_name2,temp);
+	}
+      }
+      
+      for(ii=fseq;ii<=lseq;++ii) {
+	i=output_index[ii];
+	print_seq_no[i] = 0;
+	for(j=pos;j<=ptr;++j) {
+	  if (j+fres-1<=seqlen_array[i])
+	    val = seq_array[i][j+fres-1];
+	  else val = -3;
+	  if((val == -3) || (val == 253)) break;
+	  else if((val < 0) || (val > max_aa)){
+	    seq1[j]='-';
+	  }
+	  else {
+	    seq1[j]=amino_acid_codes[val];
+	    seq_no[i]++;
+	    print_seq_no[i]=1;
+	  } 
+	}
+	for(;j<=ptr;++j) seq1[j]='-';
+	strncpy(temp,&seq1[pos],ptr-pos+1);
+	temp[ptr-pos+1]=EOS;
+	if (!seqRange) {
+	  fprintf(clusout,"%-*s",max_names+5,names[i]); 
+	}
+	else {
+	  fillrange(rnum,fres, len, ii);
+	  sprintf(tmpStr,"%s/%d-%d", nameonly(names[i]), rnum->start, rnum->end);
+	  fprintf(clusout,"%-*s",max_names+15,tmpStr);
+	}
+	fprintf(clusout," %s",temp);
+	if (cl_seq_numbers && print_seq_no[i])
+	  fprintf(clusout," %d",seq_no[i]);
+	fprintf(clusout,"\n");
+      }
+      
+      for(i=pos;i<=ptr;++i) {
+	seq1[i]=' ';
+	ident=0;
+	for(j=1;res_cat1[j-1]!=NULL;j++) catident1[j-1] = 0;
+	for(j=1;res_cat2[j-1]!=NULL;j++) catident2[j-1] = 0;
+	for(j=fseq;j<=lseq;++j) {
+	  if((seq_array[fseq][i+fres-1] >=0) && 
+	     (seq_array[fseq][i+fres-1] <= max_aa)) {
+	    if(seq_array[fseq][i+fres-1] == seq_array[j][i+fres-1])
+	      ++ident;
+	    for(k=1;res_cat1[k-1]!=NULL;k++) {
+	      for(l=0;(c=res_cat1[k-1][l]);l++) {
+		if (amino_acid_codes[seq_array[j][i+fres-1]]==c)
+		  {
+		    catident1[k-1]++;
+		    break;
+		  }
+	      }
+	    }
+	    for(k=1;res_cat2[k-1]!=NULL;k++) {
+	      for(l=0;(c=res_cat2[k-1][l]);l++) {
+		if (amino_acid_codes[seq_array[j][i+fres-1]]==c)
+		  {
+		    catident2[k-1]++;
+		    break;
+		  }
+	      }
+	    }
+	  }
+	}
+	if(ident==lseq-fseq+1)
+	  seq1[i]='*';
+	else if (!dnaflag) {
+	  for(k=1;res_cat1[k-1]!=NULL;k++) {
+	    if (catident1[k-1]==lseq-fseq+1) {
+	      seq1[i]=':';
+	      break;
+	    }
+	  }
+	  if(seq1[i]==' ')
+	    for(k=1;res_cat2[k-1]!=NULL;k++) {
+	      if (catident2[k-1]==lseq-fseq+1) {
+		seq1[i]='.';
+		break;
+	      }
+	    }
+	}
+      }
+      strncpy(temp,&seq1[pos],ptr-pos+1);
+      temp[ptr-pos+1]=EOS;
+      for(k=0;k<max_names+6;k++) fprintf(clusout," ");
+      if(seqRange) /*<ramu>*/
+	fprintf(clusout,"          "); /*</ramu>*/
+      fprintf(clusout,"%s\n",temp);
+    }
+        
+    seq1=ckfree((void *)seq1);
+    if (struct_penalties1 == SECST && use_ss1 == TRUE) ckfree(ss_mask1);
+    if (struct_penalties2 == SECST && use_ss2 == TRUE) ckfree(ss_mask2);
+    /* DES	ckfree(output_index); */
+
+    if(seqRange) 
+      if (rnum) 
+	free(rnum);
+} 
 
 
 
 
 void gcg_out(FILE *gcgout, sint fres, sint len, sint fseq, sint lseq)
 {
-/*        static char *aacids = "XCSTPAGNDEQHRKMILVFYW";*/
-/*	static char *nbases = "XACGT";	*/
-	char *seq, residue;
-	sint val;
-	sint *all_checks;
-	sint i,ii,chunks,block;
-	sint j,k,pos1,pos2;	
-	long grand_checksum;
+  /*        static char *aacids = "XCSTPAGNDEQHRKMILVFYW";*/
+  /*	static char *nbases = "XACGT";	*/
+  char *seq, residue;
+  sint val;
+  sint *all_checks;
+  sint i,ii,chunks,block;
+  sint j,k,pos1,pos2;	
+  long grand_checksum;
+  
+  /*<ramu>*/
+  rangeNum *rnum;
+  char tmpStr[FILENAMELEN+15];
+  int tmpk;
 
-	seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
-	all_checks = (sint *)ckalloc((lseq+1) * sizeof(sint));
-	
-	for(i=fseq; i<=lseq; i++) {
-		for(j=fres; j<=fres+len-1; j++) {
-			val = seq_array[i][j];
-			if((val == -3) || (val == 253)) break;
-			else if((val < 0) || (val > max_aa))
-				residue = '.';
-                        else {
-				residue = amino_acid_codes[val];
-			}
-			seq[j-fres+1] = residue;
-		}
-/* pad any short sequences with gaps, to make all sequences the same length */
-		for(; j<=fres+len-1; j++) 
-			seq[j-fres+1] = '.';
-		all_checks[i] = SeqGCGCheckSum(seq+1, (int)len);
-	}	
+  if(seqRange) {
+    rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    if ( rnum ==NULL ) {
+      printf("cannot alloc memory for rnum");
+    }
+  }
 
-	grand_checksum = 0;
-	for(i=1; i<=nseqs; i++) grand_checksum += all_checks[output_index[i]];
-	grand_checksum = grand_checksum % 10000;
-        fprintf(gcgout,"PileUp\n\n");
-	fprintf(gcgout,"\n\n   MSF:%5d  Type: ",(pint)len);
-	if(dnaflag)
-		fprintf(gcgout,"N");
-	else
-		fprintf(gcgout,"P");
-	fprintf(gcgout,"    Check:%6ld   .. \n\n", (long)grand_checksum);
-	for(ii=fseq; ii<=lseq; ii++)  {
-                i = output_index[ii];
-/*		for(j=0; j<max_names; j++) 
-			if(names[i][j] == ' ')  names[i][j] = '_';     */
-		fprintf(gcgout,
-			" Name: %s oo  Len:%5d  Check:%6ld  Weight:  %.1f\n",
-			names[i],(pint)len,(long)all_checks[i],(float)seq_weight[i-1]*100.0/(float)INT_SCALE_FACTOR);
-        }
-	fprintf(gcgout,"\n//\n");  
-
-	chunks = len/GCG_LINELENGTH;
-	if(len % GCG_LINELENGTH != 0) ++chunks;
-
-	for(block=1; block<=chunks; block++) {
-		fprintf(gcgout,"\n\n");
-		pos1 = ((block-1) * GCG_LINELENGTH) + 1;
-		pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
-		for(ii=fseq; ii<=lseq; ii++) {
-                        i = output_index[ii];
-			fprintf(gcgout,"\n%-*s ",max_names+5,names[i]);
-			for(j=pos1, k=1; j<=pos2; j++, k++) {
-/*
-    JULIE -
-    check for sint sequences - pad out with '.' characters to end of alignment
-*/
-				if (j+fres-1<=seqlen_array[i])
-					val = seq_array[i][j+fres-1];
-				else val = -3;
-				if((val == -3) || (val == 253))
-					residue = '.';
-				else if((val < 0) || (val > max_aa))
-					residue = '.';
-				else {
-					residue = amino_acid_codes[val];
-				}
-				fprintf(gcgout,"%c",residue);
-				if(j % 10 == 0) fprintf(gcgout," ");
-			}
-		}
+  seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
+  all_checks = (sint *)ckalloc((lseq+1) * sizeof(sint));
+  
+  for(i=fseq; i<=lseq; i++) {
+    for(j=fres; j<=fres+len-1; j++) {
+      val = seq_array[i][j];
+      if((val == -3) || (val == 253)) break;
+      else if((val < 0) || (val > max_aa))
+	residue = '.';
+      else {
+	residue = amino_acid_codes[val];
+      }
+      seq[j-fres+1] = residue;
+    }
+    /* pad any short sequences with gaps, to make all sequences the same length */
+    for(; j<=fres+len-1; j++) 
+      seq[j-fres+1] = '.';
+    all_checks[i] = SeqGCGCheckSum(seq+1, (int)len);
+  }	
+  
+  grand_checksum = 0;
+  for(i=1; i<=nseqs; i++) grand_checksum += all_checks[output_index[i]];
+  grand_checksum = grand_checksum % 10000;
+  fprintf(gcgout,"PileUp\n\n");
+  fprintf(gcgout,"\n\n   MSF:%5d  Type: ",(pint)len);
+  if(dnaflag)
+    fprintf(gcgout,"N");
+  else
+    fprintf(gcgout,"P");
+  fprintf(gcgout,"    Check:%6ld   .. \n\n", (long)grand_checksum);
+  for(ii=fseq; ii<=lseq; ii++)  {
+    i = output_index[ii];
+    fprintf(gcgout,
+	    " Name: %s oo  Len:%5d  Check:%6ld  Weight:  %.1f\n",
+	    names[i],(pint)len,(long)all_checks[i],(float)seq_weight[i-1]*100.0/(float)INT_SCALE_FACTOR);
+  }
+  fprintf(gcgout,"\n//\n");  
+  
+  chunks = len/GCG_LINELENGTH;
+  if(len % GCG_LINELENGTH != 0) ++chunks;
+  
+  for(block=1; block<=chunks; block++) {
+    fprintf(gcgout,"\n\n");
+    pos1 = ((block-1) * GCG_LINELENGTH) + 1;
+    pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
+    for(ii=fseq; ii<=lseq; ii++) {
+      i = output_index[ii];
+      if (!seqRange) {
+	fprintf(gcgout,"\n%-*s ",max_names+5,names[i]);
+      }
+      else {
+	fillrange(rnum,fres, len, ii);
+	sprintf(tmpStr,"%s/%d-%d",nameonly(names[i]),rnum->start,rnum->end);
+	fprintf(gcgout,"\n%-*s",max_names+15,tmpStr);
+      }
+      for(j=pos1, k=1; j<=pos2; j++, k++) {
+	/*
+	  JULIE -
+	  check for sint sequences - pad out with '.' characters to end of alignment
+	*/
+	if (j+fres-1<=seqlen_array[i])
+	  val = seq_array[i][j+fres-1];
+	else val = -3;
+	if((val == -3) || (val == 253))
+	  residue = '.';
+	else if((val < 0) || (val > max_aa))
+	  residue = '.';
+	else {
+	  residue = amino_acid_codes[val];
 	}
-/* DES	ckfree(output_index); */
+	fprintf(gcgout,"%c",residue);
+	if(j % 10 == 0) fprintf(gcgout," ");
+      }
+    }
+  }
+  /* DES	ckfree(output_index); */
+  
+  seq=ckfree((void *)seq);
+  all_checks=ckfree((void *)all_checks);
+  fprintf(gcgout,"\n\n");
 
-	seq=ckfree((void *)seq);
-	all_checks=ckfree((void *)all_checks);
-	
-	fprintf(gcgout,"\n\n");
+
+  if(seqRange) if (rnum) free(rnum);
 }
 
 
+/* <Ramu> */
+/************************************************************************
+ *
+ *
+ *    Removes the sequence range from sequence name
+ *
+ *
+ *    INPUT: Sequence name
+ *           (e.g. finc_rat/1-200 )
+ *
+ *
+ *    RETURNS:  pointer to string
+ */
+
+char *nameonly(char *s)
+{
+    static char tmp[FILENAMELEN+1];
+    int i =0;
+
+    while (*s != '/' && *s != '\0') {
+	tmp[i++] = *s++;
+    }
+    tmp[i] = '\0';
+    return &tmp[0];
+}
+
+
+int startFind(char *s)
+{
+    int i = 0;
+    sint val;
+    printf("\n Debug.....\n %s",s);
+
+    while( *s ) {
+	val = *s;
+	if ( (val <0 ) || (val > max_aa)) {
+	    i++;
+	    *s++;
+	    printf("%c",amino_acid_codes[val]);
+	}
+    }
+    return i;
+}
+
+/*
+void fasta_out(FILE *fastaout, sint fres, sint len, sint fseq, sint lseq)
+{
+	char residue;
+	sint val;
+	sint i,ii;
+	sint j,k;	
+	
+	for(ii=fseq; ii<=lseq; ii++)  {
+	    i = output_index[ii];
+	    fprintf(fastaout,">%-s",names[i],len);
+	    j = 1;
+	    while(j<len) {
+		if ( ! (j%80) ) {
+		    fprintf(fastaout,"\n");
+			}
+		val = seq_array[i][j];
+		if((val < 0) || (val > max_aa))
+		    residue = '-';
+		else {
+		    residue = amino_acid_codes[val];
+		}
+		fprintf(fastaout,"%c",residue);
+		j++;
+	    }
+	    fprintf(fastaout,"\n");
+	}
+
+}
+*/
+
+/* </Ramu> */
 
 void nexus_out(FILE *nxsout, sint fres, sint len, sint fseq, sint lseq)
 {
 /*      static char *aacids = "XCSTPAGNDEQHRKMILVFYW";*/
 /*		static char *nbases = "XACGT";	*/
-	char residue;
-	sint val;
-	sint i,ii,chunks,block;	
-	sint j,k,pos1,pos2;	
-	
-	chunks = len/GCG_LINELENGTH;
-	if(len % GCG_LINELENGTH != 0) ++chunks;
+  char residue;
+  sint val;
+  sint i,ii,chunks,block;	
+  sint j,k,pos1,pos2;	
+  
 
-	fprintf(nxsout,"#NEXUS\n");
+  /*<ramu>*/
+  rangeNum *rnum;
+  char tmpStr[FILENAMELEN+15];
+  int tmpk;
 
-	fprintf(nxsout,"BEGIN DATA;\n");
-	fprintf(nxsout,"dimensions ntax=%d nchar=%d;\n",(pint)nseqs,(pint)len);
-	fprintf(nxsout,"format missing=?\n");
-	fprintf(nxsout,"symbols=\"");
-	for(i=0;i<=max_aa;i++)
-		fprintf(nxsout,"%c",amino_acid_codes[i]);
-	fprintf(nxsout,"\"\n");
-	fprintf(nxsout,"interleave datatype=");
-	fprintf(nxsout, dnaflag ? "DNA " : "PROTEIN ");
-	fprintf(nxsout,"gap= -;\n");
-	fprintf(nxsout,"\nmatrix");
+  if(seqRange) {
+    rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    if ( rnum ==NULL ) {
+      printf("cannot alloc memory for rnum");
+    }
+  }
 
-	for(block=1; block<=chunks; block++) {
-		pos1 = ((block-1) * GCG_LINELENGTH)+1;
-		pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
-		for(ii=fseq; ii<=lseq; ii++)  {
-                        i = output_index[ii];
-			fprintf(nxsout,"\n%-*s ",max_names+1,names[i]);
-			for(j=pos1, k=1; j<=pos2; j++, k++) {
-				if (j+fres-1<=seqlen_array[i])
-					val = seq_array[i][j+fres-1];
-				else val = -3;
-				if((val == -3) || (val == 253))
-					break;
-				else if((val < 0) || (val > max_aa))
-					residue = '-';
-				else {
-					residue = amino_acid_codes[val];
-				}
-				fprintf(nxsout,"%c",residue);
-			}
-		}
-		fprintf(nxsout,"\n");
+
+  chunks = len/GCG_LINELENGTH;
+  if(len % GCG_LINELENGTH != 0) ++chunks;
+  
+  fprintf(nxsout,"#NEXUS\n");
+  fprintf(nxsout,"BEGIN DATA;\n");
+  fprintf(nxsout,"dimensions ntax=%d nchar=%d;\n",(pint)nseqs,(pint)len);
+  fprintf(nxsout,"format missing=?\n");
+  fprintf(nxsout,"symbols=\"");
+  for(i=0;i<=max_aa;i++)
+    fprintf(nxsout,"%c",amino_acid_codes[i]);
+  fprintf(nxsout,"\"\n");
+  fprintf(nxsout,"interleave datatype=");
+  fprintf(nxsout, dnaflag ? "DNA " : "PROTEIN ");
+  fprintf(nxsout,"gap= -;\n");
+  fprintf(nxsout,"\nmatrix");
+  
+  for(block=1; block<=chunks; block++) {
+    pos1 = ((block-1) * GCG_LINELENGTH)+1;
+    pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
+    for(ii=fseq; ii<=lseq; ii++)  {
+      i = output_index[ii];
+      if (!seqRange) {
+	fprintf(nxsout,"\n%-*s ",max_names+1,names[i]);
+      }
+      else {
+	fillrange(rnum,fres, len, ii);
+	sprintf(tmpStr,"%s/%d-%d",nameonly(names[i]),rnum->start,rnum->end);
+	fprintf(nxsout,"\n%-*s",max_names+15,tmpStr);
+      }
+      for(j=pos1, k=1; j<=pos2; j++, k++) {
+	if (j+fres-1<=seqlen_array[i])
+	  val = seq_array[i][j+fres-1];
+	else val = -3;
+	if((val == -3) || (val == 253))
+	  break;
+	else if((val < 0) || (val > max_aa))
+	  residue = '-';
+	else {
+	  residue = amino_acid_codes[val];
 	}
-	fprintf(nxsout,";\nend;\n");
-/* DES	ckfree(output_index); */
+	fprintf(nxsout,"%c",residue);
+      }
+    }
+    fprintf(nxsout,"\n");
+  }
+  fprintf(nxsout,";\nend;\n");
+  /* DES	ckfree(output_index); */
+
+  if(seqRange) if (rnum) free(rnum);
 
 }
 
@@ -3162,75 +3522,99 @@ void phylip_out(FILE *phyout, sint fres, sint len, sint fseq, sint lseq)
 {
 /*      static char *aacids = "XCSTPAGNDEQHRKMILVFYW";*/
 /*		static char *nbases = "XACGT";	*/
-	char residue;
-	sint val;
-	sint i,ii,chunks,block;	
-	sint j,k,pos1,pos2;	
-	sint name_len;
-	Boolean warn;
-	char **snames;
-	
-	snames=(char **)ckalloc((lseq-fseq+2)*sizeof(char *));
-	name_len=0;
-	for(i=fseq; i<=lseq; i++)  {
-		snames[i]=(char *)ckalloc((11)*sizeof(char));
-		ii=strlen(names[i]);
-		strncpy(snames[i],names[i],10);
-		if(name_len<ii) name_len=ii;
+  char residue;
+  sint val;
+  sint i,ii,chunks,block;	
+  sint j,k,pos1,pos2;	
+  sint name_len;
+  Boolean warn;
+  char **snames;
+  
+  /*<ramu>*/
+  rangeNum *rnum;
+  char tmpStr[FILENAMELEN+15];
+  int tmpk;
+
+
+  if(seqRange) {
+    rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    if ( rnum ==NULL ) {
+      printf("cannot alloc memory for rnum");      
+    }
+  }
+
+  snames=(char **)ckalloc((lseq-fseq+2)*sizeof(char *));
+  name_len=0;
+  for(i=fseq; i<=lseq; i++)  {
+    snames[i]=(char *)ckalloc((11)*sizeof(char));
+    ii=strlen(names[i]);
+    strncpy(snames[i],names[i],10);
+    if(name_len<ii) name_len=ii;
+  }
+  if(name_len>10) {
+    warn=FALSE;
+    for(i=fseq; i<=lseq; i++)  {
+      for(j=i+1;j<=lseq;j++) {
+	if (strcmp(snames[i],snames[j]) == 0) 
+	  warn=TRUE;
+      }
+    }
+    if(warn)
+      warning("Truncating sequence names to 10 characters for PHYLIP output.\n"
+	      "Names in the PHYLIP format file are NOT unambiguous.");
+    else
+      warning("Truncating sequence names to 10 characters for PHYLIP output.");
+  }
+  
+  
+  chunks = len/GCG_LINELENGTH;
+  if(len % GCG_LINELENGTH != 0) ++chunks;
+  
+  fprintf(phyout,"%6d %6d",(pint)nseqs,(pint)len);
+  
+  for(block=1; block<=chunks; block++) {
+    pos1 = ((block-1) * GCG_LINELENGTH)+1;
+    pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
+    for(ii=fseq; ii<=lseq; ii++)  {
+      i = output_index[ii];
+      if(block == 1)  {
+	if(!seqRange) {
+	  fprintf(phyout,"\n%-10s ",snames[i]);
 	}
-	if(name_len>10) {
-		warn=FALSE;
-		for(i=fseq; i<=lseq; i++)  {
-                	for(j=i+1;j<=lseq;j++) {
-                        	if (strcmp(snames[i],snames[j]) == 0) 
-					warn=TRUE;
-                	}
-        	}
-		if(warn)
-			warning("Truncating sequence names to 10 characters for PHYLIP output.\n"
-			"Names in the PHYLIP format file are NOT unambiguous.");
-		else
-			warning("Truncating sequence names to 10 characters for PHYLIP output.");
+	else
+	  {
+	    fillrange(rnum,fres, len, ii);
+	    sprintf(tmpStr,"%s/%d-%d",nameonly(names[i]),rnum->start,rnum->end);
+	    fprintf(phyout,"\n%-*s",max_names+15,tmpStr);
+	  }
+      }
+      else
+	fprintf(phyout,"\n           ");
+      for(j=pos1, k=1; j<=pos2; j++, k++) {
+	if (j+fres-1<=seqlen_array[i])
+	  val = seq_array[i][j+fres-1];
+	else val = -3;
+	if((val == -3) || (val == 253))
+	  break;
+	else if((val < 0) || (val > max_aa))
+	  residue = '-';
+	else {
+	  residue = amino_acid_codes[val];
 	}
+	fprintf(phyout,"%c",residue);
+	if(j % 10 == 0) fprintf(phyout," ");
+      }
+    }
+    fprintf(phyout,"\n");
+  }
+  /* DES	ckfree(output_index); */
+  
+  for(i=fseq;i<=lseq;i++)
+    ckfree(snames[i]);
+  ckfree(snames);
+  
+  if(seqRange) if (rnum) free(rnum);
 
-
-	chunks = len/GCG_LINELENGTH;
-	if(len % GCG_LINELENGTH != 0) ++chunks;
-
-	fprintf(phyout,"%6d %6d",(pint)nseqs,(pint)len);
-
-	for(block=1; block<=chunks; block++) {
-		pos1 = ((block-1) * GCG_LINELENGTH)+1;
-		pos2 = (len<pos1+GCG_LINELENGTH-1)? len : pos1+GCG_LINELENGTH-1;
-		for(ii=fseq; ii<=lseq; ii++)  {
-                        i = output_index[ii];
-			if(block == 1)  {
-				fprintf(phyout,"\n%-10s ",snames[i]);
-			}
-			else
-				fprintf(phyout,"\n           ");
-			for(j=pos1, k=1; j<=pos2; j++, k++) {
-				if (j+fres-1<=seqlen_array[i])
-					val = seq_array[i][j+fres-1];
-				else val = -3;
-				if((val == -3) || (val == 253))
-					break;
-				else if((val < 0) || (val > max_aa))
-					residue = '-';
-				else {
-					residue = amino_acid_codes[val];
-				}
-				fprintf(phyout,"%c",residue);
-				if(j % 10 == 0) fprintf(phyout," ");
-			}
-		}
-		fprintf(phyout,"\n");
-	}
-/* DES	ckfree(output_index); */
-
-	for(i=fseq;i<=lseq;i++)
-		ckfree(snames[i]);
-	ckfree(snames);
 }
 
 
@@ -3247,40 +3631,63 @@ void nbrf_out(FILE *nbout, sint fres, sint len, sint fseq, sint lseq)
 	sint j,slen;	
 	sint line_length;
 
-	seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
-	
-/* decide the line length for this alignment - maximum is LINELENGTH */
-	line_length=PAGEWIDTH-max_names;
-	line_length=line_length-line_length % 10; /* round to a multiple of 10*/
-	if (line_length > LINELENGTH) line_length=LINELENGTH;
 
-	for(ii=fseq; ii<=lseq; ii++) {
-                i = output_index[ii];
-		fprintf(nbout, dnaflag ? ">DL;" : ">P1;");
-		fprintf(nbout, "%s\n%s\n", names[i], titles[i]);
-		slen = 0;
-		for(j=fres; j<fres+len; j++) {
-			val = seq_array[i][j];
-			if((val == -3) || (val == 253))
-				break;
-			else if((val < 0) || (val > max_aa))
-				residue = '-';
-			else {
-				residue = amino_acid_codes[val];
-			}
-			seq[j-fres] = residue;
-			slen++;
-		}
-		for(j=1; j<=slen; j++) {
-			fprintf(nbout,"%c",seq[j-1]);
-			if((j % line_length == 0) || (j == slen)) 
-				fprintf(nbout,"\n");
-		}
-		fprintf(nbout,"*\n");
-	}	
-/* DES	ckfree(output_index);  */
+  /*<ramu>*/
+  rangeNum *rnum;
+  char tmpStr[FILENAMELEN+15];
+  int tmpk;
 
-	seq=ckfree((void *)seq);
+  if(seqRange) {
+    rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    if ( rnum ==NULL ) {
+      printf("cannot alloc memory for rnum");
+    }
+  }
+
+  seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
+  
+  /* decide the line length for this alignment - maximum is LINELENGTH */
+  line_length=PAGEWIDTH-max_names;
+  line_length=line_length-line_length % 10; /* round to a multiple of 10*/
+  if (line_length > LINELENGTH) line_length=LINELENGTH;
+  
+  for(ii=fseq; ii<=lseq; ii++) {
+    i = output_index[ii];
+    fprintf(nbout, dnaflag ? ">DL;" : ">P1;");
+    if (!seqRange) {
+      fprintf(nbout, "%s\n%s\n", names[i], titles[i]);
+    }
+    else {
+      fillrange(rnum,fres, len, ii);
+      sprintf(tmpStr,"%s/%d-%d",nameonly(names[i]),rnum->start,rnum->end);
+      fprintf(nbout,"%s\n%s\n",tmpStr,titles[i]);
+    }
+    slen = 0;
+    for(j=fres; j<fres+len; j++) {
+      val = seq_array[i][j];
+      if((val == -3) || (val == 253))
+	break;
+      else if((val < 0) || (val > max_aa))
+	residue = '-';
+      else {
+	residue = amino_acid_codes[val];
+      }
+      seq[j-fres] = residue;
+      slen++;
+    }
+    for(j=1; j<=slen; j++) {
+      fprintf(nbout,"%c",seq[j-1]);
+      if((j % line_length == 0) || (j == slen)) 
+	fprintf(nbout,"\n");
+    }
+    fprintf(nbout,"*\n");
+  }	
+  /* DES	ckfree(output_index);  */
+  
+  seq=ckfree((void *)seq);
+
+  if(seqRange) if (rnum) free(rnum);
+
 }
 
 
@@ -3295,529 +3702,690 @@ void gde_out(FILE *gdeout, sint fres, sint len, sint fseq, sint lseq)
 	sint j,slen;	
 	sint line_length;
 
-	seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
 
-/* decide the line length for this alignment - maximum is LINELENGTH */
-	line_length=PAGEWIDTH-max_names;
-	line_length=line_length-line_length % 10; /* round to a multiple of 10*/
-	if (line_length > LINELENGTH) line_length=LINELENGTH;
+  /*<ramu>*/
+  rangeNum *rnum;
+  char tmpStr[FILENAMELEN+15];
+  int tmpk;
 
-	if (struct_penalties1 == SECST && use_ss1 == TRUE) {
-		ss_mask1 = (char *)ckalloc((seqlen_array[1]+10) * sizeof(char));
-		for (i=0;i<seqlen_array[1];i++)
-			ss_mask1[i] = sec_struct_mask1[i];
-		print_sec_struct_mask(seqlen_array[1],sec_struct_mask1,ss_mask1);
-	}
-	if (struct_penalties2 == SECST && use_ss2 == TRUE) {
-		ss_mask2 = (char *)ckalloc((seqlen_array[profile1_nseqs+1]+10) *
-sizeof(char));
-		for (i=0;i<seqlen_array[profile1_nseqs+1];i++)
-			ss_mask2[i] = sec_struct_mask2[i];
-                print_sec_struct_mask(seqlen_array[profile1_nseqs+1],sec_struct_mask2,ss_mask2);
+  if(seqRange) {
+    rnum = (struct rangeNum *) malloc(sizeof(struct rangeNum));
+    if ( rnum ==NULL ) {
+      printf("cannot alloc memory for rnum");
+    }
+  }
 
-
-			}
+  seq = (char *)ckalloc((max_aln_length+1) * sizeof(char));
+  
+  /* decide the line length for this alignment - maximum is LINELENGTH */
+  line_length=PAGEWIDTH-max_names;
+  line_length=line_length-line_length % 10; /* round to a multiple of 10*/
+  if (line_length > LINELENGTH) line_length=LINELENGTH;
+  
+  if (struct_penalties1 == SECST && use_ss1 == TRUE) {
+    ss_mask1 = (char *)ckalloc((seqlen_array[1]+10) * sizeof(char));
+    for (i=0;i<seqlen_array[1];i++)
+      ss_mask1[i] = sec_struct_mask1[i];
+    print_sec_struct_mask(seqlen_array[1],sec_struct_mask1,ss_mask1);
+  }
+  if (struct_penalties2 == SECST && use_ss2 == TRUE) {
+    ss_mask2 = (char *)ckalloc((seqlen_array[profile1_nseqs+1]+10) *
+			       sizeof(char));
+    for (i=0;i<seqlen_array[profile1_nseqs+1];i++)
+      ss_mask2[i] = sec_struct_mask2[i];
+    print_sec_struct_mask(seqlen_array[profile1_nseqs+1],sec_struct_mask2,ss_mask2);  
+  }
 
 	
-	for(ii=fseq; ii<=lseq; ii++) {
-                i = output_index[ii];
-		fprintf(gdeout, dnaflag ? "#" : "%%");
-		fprintf(gdeout, "%s\n", names[i]);
-		slen = 0;
-		for(j=fres; j<fres+len; j++) {
-			val = seq_array[i][j];
-			if((val == -3) || (val == 253))
-				break;
-			else if((val < 0) || (val > max_aa))
-				residue = '-';
-			else {
-				residue = amino_acid_codes[val];
-			}
-			if (lowercase)
-				seq[j-fres] = (char)tolower((int)residue);
-			else
-				seq[j-fres] = residue;
-			slen++;
-		}
-		for(j=1; j<=slen; j++) {
-			fprintf(gdeout,"%c",seq[j-1]);
-			if((j % line_length == 0) || (j == slen)) 
-				fprintf(gdeout,"\n");
-		}
-	}	
-/* DES	ckfree(output_index); */
+  for(ii=fseq; ii<=lseq; ii++) {
+    i = output_index[ii];
+    fprintf(gdeout, dnaflag ? "#" : "%%");
+    if(!seqRange) {
+      fprintf(gdeout, "%s\n", names[i]);
+    }
+    else {
+      fillrange(rnum,fres, len, ii);
+      fprintf(gdeout,"%s/%d-%d\n",nameonly(names[i]),rnum->start,rnum->end);
+    }
+    slen = 0;
+    for(j=fres; j<fres+len; j++) {
+      val = seq_array[i][j];
+      if((val == -3) || (val == 253))
+	break;
+      else if((val < 0) || (val > max_aa))
+	residue = '-';
+      else {
+	residue = amino_acid_codes[val];
+      }
+      if (lowercase)
+	seq[j-fres] = (char)tolower((int)residue);
+      else
+	seq[j-fres] = residue;
+      slen++;
+    }
+    for(j=1; j<=slen; j++) {
+      fprintf(gdeout,"%c",seq[j-1]);
+      if((j % line_length == 0) || (j == slen)) 
+	fprintf(gdeout,"\n");
+    }
+  }
+  /* DES	ckfree(output_index); */
+  
+  if (output_struct_penalties == 0 || output_struct_penalties == 2) {
+    if (struct_penalties1 == SECST && use_ss1 == TRUE) {
+      fprintf(gdeout,"\"SS_%-*s\n",max_names,ss_name1);
+      for(i=fres; i<fres+len; i++) {
+	val=ss_mask1[i-1];
+	if (val == gap_pos1 || val == gap_pos2)
+	  seq[i-fres]='-';
+	else
+	  seq[i-fres]=val;
+      }
+      seq[i-fres]=EOS;
+      for(i=1; i<=len; i++) {
+	fprintf(gdeout,"%c",seq[i-1]);
+	if((i % line_length == 0) || (i == len)) 
+	  fprintf(gdeout,"\n");
+      }
+    }
+    
+    if (struct_penalties2 == SECST && use_ss2 == TRUE) {
+      fprintf(gdeout,"\"SS_%-*s\n",max_names,ss_name2);
+      for(i=fres; i<fres+len; i++) {
+	val=ss_mask2[i-1];
+	if (val == gap_pos1 || val == gap_pos2)
+	  seq[i-fres]='-';
+	else
+	  seq[i-fres]=val;
+      }
+      seq[i]=EOS;
+      for(i=1; i<=len; i++) {
+	fprintf(gdeout,"%c",seq[i-1]);
+	if((i % line_length == 0) || (i == len)) 
+	  fprintf(gdeout,"\n");
+      }
+    }
+  }
+  if (output_struct_penalties == 1 || output_struct_penalties == 2) {
+    if (struct_penalties1 != NONE && use_ss1 == TRUE) {
+      fprintf(gdeout,"\"GM_%-*s\n",max_names,ss_name1);
+      for(i=fres; i<fres+len; i++) {
+	val=gap_penalty_mask1[i-1];
+	if (val == gap_pos1 || val == gap_pos2)
+	  seq[i-fres]='-';
+	else
+	  seq[i-fres]=val;
+      }
+      seq[i]=EOS;
+      for(i=1; i<=len; i++) {
+	fprintf(gdeout,"%c",seq[i-1]);
+	if((i % line_length == 0) || (i == len)) 
+	  fprintf(gdeout,"\n");
+      }
+    }
+    if (struct_penalties2 != NONE && use_ss2 == TRUE) {
+      fprintf(gdeout,"\"GM_%-*s\n",max_names,ss_name2);
+      for(i=fres; i<fres+len; i++) {
+	val=gap_penalty_mask2[i-1];
+	if (val == gap_pos1 || val == gap_pos2)
+	  seq[i-fres]='-';
+	else
+	  seq[i-fres]=val;
+      }
+      seq[i]=EOS;
+      for(i=1; i<=len; i++) {
+	fprintf(gdeout,"%c",seq[i-1]);
+	if((i % line_length == 0) || (i == len)) 
+	  fprintf(gdeout,"\n");
+      }
+    }
+  }
+  
+  if (struct_penalties1 == SECST && use_ss1 == TRUE) ckfree(ss_mask1);
+  if (struct_penalties2 == SECST && use_ss2 == TRUE) ckfree(ss_mask2);
+  seq=ckfree((void *)seq);
+  
 
-	if (output_struct_penalties == 0 || output_struct_penalties == 2) {
-		if (struct_penalties1 == SECST && use_ss1 == TRUE) {
-			fprintf(gdeout,"\"SS_%-*s\n",max_names,ss_name1);
-			for(i=fres; i<fres+len; i++) {
-				val=ss_mask1[i-1];
-				if (val == gap_pos1 || val == gap_pos2)
-					seq[i-fres]='-';
-				else
-					seq[i-fres]=val;
-			}
-			seq[i-fres]=EOS;
-			for(i=1; i<=len; i++) {
-				fprintf(gdeout,"%c",seq[i-1]);
-				if((i % line_length == 0) || (i == len)) 
-					fprintf(gdeout,"\n");
-			}
-		}
-		
-		if (struct_penalties2 == SECST && use_ss2 == TRUE) {
-			fprintf(gdeout,"\"SS_%-*s\n",max_names,ss_name2);
-			for(i=fres; i<fres+len; i++) {
-				val=ss_mask2[i-1];
-				if (val == gap_pos1 || val == gap_pos2)
-					seq[i-fres]='-';
-				else
-					seq[i-fres]=val;
-			}
-			seq[i]=EOS;
-			for(i=1; i<=len; i++) {
-				fprintf(gdeout,"%c",seq[i-1]);
-				if((i % line_length == 0) || (i == len)) 
-					fprintf(gdeout,"\n");
-			}
-		}
-	}
-	if (output_struct_penalties == 1 || output_struct_penalties == 2) {
-		if (struct_penalties1 != NONE && use_ss1 == TRUE) {
-			fprintf(gdeout,"\"GM_%-*s\n",max_names,ss_name1);
-			for(i=fres; i<fres+len; i++) {
-				val=gap_penalty_mask1[i-1];
-				if (val == gap_pos1 || val == gap_pos2)
-					seq[i-fres]='-';
-				else
-					seq[i-fres]=val;
-			}
-			seq[i]=EOS;
-			for(i=1; i<=len; i++) {
-				fprintf(gdeout,"%c",seq[i-1]);
-				if((i % line_length == 0) || (i == len)) 
-					fprintf(gdeout,"\n");
-			}
-		}
-		
-		if (struct_penalties2 != NONE && use_ss2 == TRUE) {
-			fprintf(gdeout,"\"GM_%-*s\n",max_names,ss_name2);
-			for(i=fres; i<fres+len; i++) {
-				val=gap_penalty_mask2[i-1];
-				if (val == gap_pos1 || val == gap_pos2)
-					seq[i-fres]='-';
-				else
-					seq[i-fres]=val;
-			}
-			seq[i]=EOS;
-			for(i=1; i<=len; i++) {
-				fprintf(gdeout,"%c",seq[i-1]);
-				if((i % line_length == 0) || (i == len)) 
-					fprintf(gdeout,"\n");
-			}
-		}
-	}
-		
-	if (struct_penalties1 == SECST && use_ss1 == TRUE) ckfree(ss_mask1);
-	if (struct_penalties2 == SECST && use_ss2 == TRUE) ckfree(ss_mask2);
+  if(seqRange) if (rnum) free(rnum);
 
-	seq=ckfree((void *)seq);
 }
 
 
 Boolean open_alignment_output(char *path)
 {
 
-	if(!output_clustal && !output_nbrf && !output_gcg &&
-		 !output_phylip && !output_gde && !output_nexus) {
-                error("You must select an alignment output format");
-                return FALSE;
-        }
-
-	if(output_clustal) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(clustal_outname,outfile_name);
-			if((clustal_outfile = open_explicit_file(
-			clustal_outname))==NULL) return FALSE;
-		}
-		else {
-/* DES DEBUG 
-fprintf(stdout,"\n\n path = %s\n clustal_outname = %s\n\n",
-path,clustal_outname);
-*/
-		   	if((clustal_outfile = open_output_file(
-		    	"\nEnter a name for the CLUSTAL output file ",path,
-			clustal_outname,"aln"))==NULL) return FALSE;
-/* DES DEBUG 
-fprintf(stdout,"\n\n path = %s\n clustal_outname = %s\n\n",
-path,clustal_outname);
-*/
-		}
-	if(output_nbrf) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(nbrf_outname,outfile_name);
-			if((nbrf_outfile = open_explicit_file(
-			nbrf_outname))==NULL) return FALSE;
-		}
-		else
-			if((nbrf_outfile = open_output_file(
-		    	"\nEnter a name for the NBRF/PIR output file",path,
-			nbrf_outname,"pir"))==NULL) return FALSE;
-	if(output_gcg) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(gcg_outname,outfile_name);
-			if((gcg_outfile = open_explicit_file(
-			gcg_outname))==NULL) return FALSE;
-		}
-		else
-			if((gcg_outfile = open_output_file(
-		    	"\nEnter a name for the GCG output file     ",path,
-			gcg_outname,"msf"))==NULL) return FALSE;
-	if(output_phylip) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(phylip_outname,outfile_name);
-			if((phylip_outfile = open_explicit_file(
-			phylip_outname))==NULL) return FALSE;
-		}
-		else
-			if((phylip_outfile = open_output_file(
-		    	"\nEnter a name for the PHYLIP output file  ",path,
-			phylip_outname,"phy"))==NULL) return FALSE;
-	if(output_gde) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(gde_outname,outfile_name);
-			if((gde_outfile = open_explicit_file(
-			gde_outname))==NULL) return FALSE;
-		}
-		else
-			if((gde_outfile = open_output_file(
-		    	"\nEnter a name for the GDE output file     ",path,
-			gde_outname,"gde"))==NULL) return FALSE;
-	if(output_nexus) 
-		if (outfile_name[0]!=EOS) {
-			strcpy(nexus_outname,outfile_name);
-			if((nexus_outfile = open_explicit_file(
-			nexus_outname))==NULL) return FALSE;
-		}
-		else
-			if((nexus_outfile = open_output_file(
-		    	"\nEnter a name for the NEXUS output file   ",path,
-			nexus_outname,"nxs"))==NULL) return FALSE;
-	return TRUE;
+  if(!output_clustal && !output_nbrf && !output_gcg &&
+     !output_phylip && !output_gde && !output_nexus && !output_fasta) {
+    error("You must select an alignment output format");
+    return FALSE;
+  }
+  
+  if(output_clustal) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(clustal_outname,outfile_name);
+      if((clustal_outfile = open_explicit_file(
+					       clustal_outname))==NULL) return FALSE;
+    }
+    else {
+      /* DES DEBUG 
+	 fprintf(stdout,"\n\n path = %s\n clustal_outname = %s\n\n",
+	 path,clustal_outname);
+      */
+      if((clustal_outfile = open_output_file(
+					     "\nEnter a name for the CLUSTAL output file ",path,
+					     clustal_outname,"aln"))==NULL) return FALSE;
+      /* DES DEBUG 
+	 fprintf(stdout,"\n\n path = %s\n clustal_outname = %s\n\n",
+	 path,clustal_outname);
+      */
+    }
+  if(output_nbrf) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(nbrf_outname,outfile_name);
+      if( (nbrf_outfile = open_explicit_file(nbrf_outname))==NULL) 
+	return FALSE;
+    }
+    else
+      if((nbrf_outfile = open_output_file(
+					  "\nEnter a name for the NBRF/PIR output file",path,
+					  nbrf_outname,"pir"))==NULL) return FALSE;
+  if(output_gcg) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(gcg_outname,outfile_name);
+      if((gcg_outfile = open_explicit_file( gcg_outname))==NULL) 
+	return FALSE;
+    }
+    else
+      if((gcg_outfile = open_output_file(
+					 "\nEnter a name for the GCG output file     ",path,
+					 gcg_outname,"msf"))==NULL) return FALSE;
+  if(output_phylip) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(phylip_outname,outfile_name);
+      if((phylip_outfile = open_explicit_file(
+					      phylip_outname))==NULL) return FALSE;
+    }
+    else
+      if((phylip_outfile = open_output_file(
+					    "\nEnter a name for the PHYLIP output file  ",path,
+					    phylip_outname,"phy"))==NULL) return FALSE;
+  if(output_gde) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(gde_outname,outfile_name);
+      if((gde_outfile = open_explicit_file(
+					   gde_outname))==NULL) return FALSE;
+    }
+    else
+      if((gde_outfile = open_output_file(
+					 "\nEnter a name for the GDE output file     ",path,
+					 gde_outname,"gde"))==NULL) return FALSE;
+  if(output_nexus) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(nexus_outname,outfile_name);
+      if((nexus_outfile = open_explicit_file(
+					     nexus_outname))==NULL) return FALSE;
+    }
+    else
+      if((nexus_outfile = open_output_file(
+					   "\nEnter a name for the NEXUS output file   ",path,
+					   nexus_outname,"nxs"))==NULL) return FALSE;
+  
+  /* Ramu */
+  if(output_fasta) 
+    if (outfile_name[0]!=EOS) {
+      strcpy(fasta_outname,outfile_name);
+      if((fasta_outfile = open_explicit_file(
+					     fasta_outname))==NULL) return FALSE;
+    }
+    else
+      if((fasta_outfile = open_output_file(
+					   "\nEnter a name for the Fasta output file   ",path,
+					   fasta_outname,"fasta"))==NULL) return FALSE;
+  
+  return TRUE;
 }
-
 
 
 
 
 void create_alignment_output(sint fseq, sint lseq)
 {
-	sint i,length;
+  sint i,length;
+  
+  sint ifres; /* starting sequence range - Ramu          */
+  sint ilres; /* ending sequence range */
+  char ignore; 
+  Boolean rangeOK;
 
-	length=0;
-        for (i=fseq;i<=lseq;i++)
-                if (length < seqlen_array[i])
-                        length = seqlen_array[i];
-	if (usemenu) info("Consensus length = %d",(pint)length);
+  length=0;
 
-	if(output_clustal) {
-		clustal_out(clustal_outfile, 1, length, fseq, lseq);
+  ifres = 1;
+  ilres = 0;
+  rangeOK = FALSE;
+  for (i=fseq;i<=lseq;i++)
+    if (length < seqlen_array[i])
+      length = seqlen_array[i];
+  ilres=length;
+
+
+  if (setrange != -1 ) {
+    /* printf("\n ==================== seqRange is set \n"); */
+    if ( sscanf(param_arg[setrange],"%d%[ :,-]%d",&ifres,&ignore,&ilres) !=3) {
+      info("seqrange numers are not set properly, using default....");
+      ifres = 1;
+      ilres = length;
+    }
+    else
+      rangeOK = TRUE;
+  }
+  if ( rangeOK && ilres > length ) {
+    ilres = length; /* if asked for more, set the limit, Ramui */
+    info("Seqrange %d is more than the %d  setting it to %d ",ilres,length,length);
+  }
+
+  /* if (usemenu) info("Consensus length = %d",(pint)length);*/
+
+  if (usemenu) info("Consensus length = %d",(pint)ilres);  /* Ramu */
+
+  /*
+  printf("\n creating output ....... normal.... setrange = %d \n",setrange);
+  printf(" ---------> %d   %d \n\n ",ifres,ilres);
+  printf(" ---------> %d  \n\n ",length);
+  */
+  
+  if(output_clustal) {
+    clustal_out(clustal_outfile, ifres, ilres,  fseq, lseq);
 		fclose(clustal_outfile);
 		info("CLUSTAL-Alignment file created  [%s]",clustal_outname);
-	}
-	if(output_nbrf)  {
-		nbrf_out(nbrf_outfile, 1, length, fseq, lseq);
-		fclose(nbrf_outfile);
-		info("NBRF/PIR-Alignment file created [%s]",nbrf_outname);
-	}
-	if(output_gcg)  {
-		gcg_out(gcg_outfile, 1, length, fseq, lseq);
-		fclose(gcg_outfile);
-		info("GCG-Alignment file created      [%s]",gcg_outname);
-	}
-	if(output_phylip)  {
-		phylip_out(phylip_outfile, 1, length, fseq, lseq);
-		fclose(phylip_outfile);
-		info("PHYLIP-Alignment file created   [%s]",phylip_outname);
-	}
-	if(output_gde)  {
-		gde_out(gde_outfile, 1, length, fseq, lseq);
-		fclose(gde_outfile);
-		info("GDE-Alignment file created      [%s]",gde_outname);
-	}
-	if(output_nexus)  {
-		nexus_out(nexus_outfile, 1, length, fseq, lseq);
-		fclose(nexus_outfile);
-		info("NEXUS-Alignment file created    [%s]",nexus_outname);
-	}
+  }
+  if(output_nbrf)  {
+    nbrf_out(nbrf_outfile, ifres, ilres, /*1, length */ fseq, lseq);
+    fclose(nbrf_outfile);
+    info("NBRF/PIR-Alignment file created [%s]",nbrf_outname);
+  }
+  if(output_gcg)  {
+    gcg_out(gcg_outfile, ifres, ilres, /*1, length */ fseq, lseq);
+    fclose(gcg_outfile);
+    info("GCG-Alignment file created      [%s]",gcg_outname);
+  }
+  if(output_phylip)  {
+    phylip_out(phylip_outfile, ifres, ilres, /*1, length */ fseq, lseq);
+    fclose(phylip_outfile);
+    info("PHYLIP-Alignment file created   [%s]",phylip_outname);
+  }
+  if(output_gde)  {
+    gde_out(gde_outfile, ifres, ilres /*1, length */, fseq, lseq);
+    fclose(gde_outfile);
+    info("GDE-Alignment file created      [%s]",gde_outname);
+  }
+  if(output_nexus)  {
+    nexus_out(nexus_outfile, ifres, ilres /*1, length */, fseq, lseq);
+    fclose(nexus_outfile);
+    info("NEXUS-Alignment file created    [%s]",nexus_outname);
+  }
+  /*  Ramu */
+  if(output_fasta)  {
+    fasta_out(fasta_outfile, ifres, ilres /*1, length */, fseq, lseq);
+    fclose(fasta_outfile);
+    info("Fasta-Alignment file created    [%s]",fasta_outname);
+  }
 }
 
 
-
-
-
-
-
 static void reset_align(void)   /* remove gaps from older alignments (code =
-gap_pos1) */
+				   gap_pos1) */
 {		      				/* EXCEPT for gaps that were INPUT with the seqs.*/
-	register sint sl;   		     /* which have  code = gap_pos2  */
-	sint i,j;
-	
-	for(i=1;i<=nseqs;++i) {
-		sl=0;
-		for(j=1;j<=seqlen_array[i];++j) {
-			if(seq_array[i][j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
-			++sl;
-			seq_array[i][sl]=seq_array[i][j];
-		}
-		seqlen_array[i]=sl;
-	}
-	
-			
+  register sint sl;   		     /* which have  code = gap_pos2  */
+  sint i,j;
+  
+  for(i=1;i<=nseqs;++i) {
+    sl=0;
+    for(j=1;j<=seqlen_array[i];++j) {
+      if(seq_array[i][j] == gap_pos1 && 
+	 ( reset_alignments_new ||
+	   reset_alignments_all)) continue;
+      if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
+      ++sl;
+      seq_array[i][sl]=seq_array[i][j];
+    }
+    seqlen_array[i]=sl;
+  }
 }
 
 
 
 static void reset_prf1(void)   /* remove gaps from older alignments (code =
-gap_pos1) */
+				  gap_pos1) */
 {		      				/* EXCEPT for gaps that were INPUT with the seqs.*/
-	register sint sl;   		     /* which have  code = gap_pos2  */
-	sint i,j;
-	
-	if (struct_penalties1 != NONE) {
-		sl=0;
-		for (j=0;j<seqlen_array[1];++j) {
-			if (gap_penalty_mask1[j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if (gap_penalty_mask1[j] == gap_pos2 && (reset_alignments_all)) continue;
-			gap_penalty_mask1[sl]=gap_penalty_mask1[j];
-			++sl;
-		}
-	}
-	
-	if (struct_penalties1 == SECST) {
-		sl=0;
-		for (j=0;j<seqlen_array[1];++j) {
-			if (sec_struct_mask1[j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if (sec_struct_mask1[j] == gap_pos2 && (reset_alignments_all)) continue;
-			sec_struct_mask1[sl]=sec_struct_mask1[j];
-			++sl;
-		}
-	}
-	
-	for(i=1;i<=profile1_nseqs;++i) {
-		sl=0;
-		for(j=1;j<=seqlen_array[i];++j) {
-			if(seq_array[i][j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
-			++sl;
-			seq_array[i][sl]=seq_array[i][j];
-		}
-		seqlen_array[i]=sl;
-	}
-	
-			
+  register sint sl;   		     /* which have  code = gap_pos2  */
+  sint i,j;
+  
+  if (struct_penalties1 != NONE) {
+    sl=0;
+    for (j=0;j<seqlen_array[1];++j) {
+      if (gap_penalty_mask1[j] == gap_pos1 && (reset_alignments_new ||
+					       reset_alignments_all)) continue;
+      if (gap_penalty_mask1[j] == gap_pos2 && (reset_alignments_all)) continue;
+      gap_penalty_mask1[sl]=gap_penalty_mask1[j];
+      ++sl;
+    }
+  }
+  
+  if (struct_penalties1 == SECST) {
+    sl=0;
+    for (j=0;j<seqlen_array[1];++j) {
+      if (sec_struct_mask1[j] == gap_pos1 && (reset_alignments_new ||
+					      reset_alignments_all)) continue;
+      if (sec_struct_mask1[j] == gap_pos2 && (reset_alignments_all)) continue;
+      sec_struct_mask1[sl]=sec_struct_mask1[j];
+      ++sl;
+    }
+  }
+  
+  for(i=1;i<=profile1_nseqs;++i) {
+    sl=0;
+    for(j=1;j<=seqlen_array[i];++j) {
+      if(seq_array[i][j] == gap_pos1 && (reset_alignments_new ||
+					 reset_alignments_all)) continue;
+      if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
+      ++sl;
+      seq_array[i][sl]=seq_array[i][j];
+    }
+    seqlen_array[i]=sl;
+  }
+  
+  
 }
 
 
 
 static void reset_prf2(void)   /* remove gaps from older alignments (code =
-gap_pos1) */
+				  gap_pos1) */
 {		      				/* EXCEPT for gaps that were INPUT with the seqs.*/
-	register sint sl;   		     /* which have  code = gap_pos2  */
-	sint i,j;
-	
-	if (struct_penalties2 != NONE) {
-		sl=0;
-		for (j=0;j<seqlen_array[profile1_nseqs+1];++j) {
-			if (gap_penalty_mask2[j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if (gap_penalty_mask2[j] == gap_pos2 && (reset_alignments_all)) continue;
-			gap_penalty_mask2[sl]=gap_penalty_mask2[j];
-			++sl;
-		}
-	}
-	
-	if (struct_penalties2 == SECST) {
-		sl=0;
-		for (j=0;j<seqlen_array[profile1_nseqs+1];++j) {
-			if (sec_struct_mask2[j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if (sec_struct_mask2[j] == gap_pos2 && (reset_alignments_all)) continue;
+  register sint sl;   		     /* which have  code = gap_pos2  */
+  sint i,j;
+  
+  if (struct_penalties2 != NONE) {
+    sl=0;
+    for (j=0;j<seqlen_array[profile1_nseqs+1];++j) {
+      if (gap_penalty_mask2[j] == gap_pos1 && (reset_alignments_new ||
+					       reset_alignments_all)) continue;
+      if (gap_penalty_mask2[j] == gap_pos2 && (reset_alignments_all)) continue;
+      gap_penalty_mask2[sl]=gap_penalty_mask2[j];
+      ++sl;
+    }
+  }
+  
+  if (struct_penalties2 == SECST) {
+    sl=0;
+    for (j=0;j<seqlen_array[profile1_nseqs+1];++j) {
+      if (sec_struct_mask2[j] == gap_pos1 && (reset_alignments_new ||
+					      reset_alignments_all)) continue;
+      if (sec_struct_mask2[j] == gap_pos2 && (reset_alignments_all)) continue;
 			sec_struct_mask2[sl]=sec_struct_mask2[j];
 			++sl;
-		}
-	}
-	
-	for(i=profile1_nseqs+1;i<=nseqs;++i) {
-		sl=0;
-		for(j=1;j<=seqlen_array[i];++j) {
-			if(seq_array[i][j] == gap_pos1 && (reset_alignments_new ||
-reset_alignments_all)) continue;
-			if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
-			++sl;
-			seq_array[i][sl]=seq_array[i][j];
-		}
-		seqlen_array[i]=sl;
-	}
-	
-			
+    }
+  }
+  
+  for(i=profile1_nseqs+1;i<=nseqs;++i) {
+    sl=0;
+    for(j=1;j<=seqlen_array[i];++j) {
+      if(seq_array[i][j] == gap_pos1 && (reset_alignments_new ||
+					 reset_alignments_all)) continue;
+      if(seq_array[i][j] == gap_pos2 && (reset_alignments_all)) continue;
+      ++sl;
+      seq_array[i][sl]=seq_array[i][j];
+    }
+    seqlen_array[i]=sl;
+  }
+  
+  
 }
 
 
 
 void fix_gaps(void)   /* fix gaps introduced in older alignments (code = gap_pos1) */
 {		      				
-	sint i,j;
-	
-	if (struct_penalties1 != NONE) {
-		for (j=0;j<seqlen_array[1];++j) {
-			if (gap_penalty_mask1[j] == gap_pos1)
-				gap_penalty_mask1[j]=gap_pos2;
-		}
-	}
-	
-	if (struct_penalties1 == SECST) {
-		for (j=0;j<seqlen_array[1];++j) {
-			if (sec_struct_mask1[j] == gap_pos1)
-				sec_struct_mask1[j]=gap_pos2;
-		}
-	}
-	
-	for(i=1;i<=nseqs;++i) {
-		for(j=1;j<=seqlen_array[i];++j) {
-			if(seq_array[i][j] == gap_pos1)
-				seq_array[i][j]=gap_pos2;
-		}
-	}
+  sint i,j;
+  
+  if (struct_penalties1 != NONE) {
+    for (j=0;j<seqlen_array[1];++j) {
+      if (gap_penalty_mask1[j] == gap_pos1)
+	gap_penalty_mask1[j]=gap_pos2;
+    }
+  }
+  
+  if (struct_penalties1 == SECST) {
+    for (j=0;j<seqlen_array[1];++j) {
+      if (sec_struct_mask1[j] == gap_pos1)
+	sec_struct_mask1[j]=gap_pos2;
+    }
+  }
+  
+  for(i=1;i<=nseqs;++i) {
+    for(j=1;j<=seqlen_array[i];++j) {
+      if(seq_array[i][j] == gap_pos1)
+	seq_array[i][j]=gap_pos2;
+    }
+  }
 }
 
 static sint find_match(char *probe, char *list[], sint n)
 {
-	sint i,j,len;
-	sint count,match=0;
-
-	len = (sint)strlen(probe);
-	for (i=0;i<len;i++) {
-		count = 0;
-		for (j=0;j<n;j++) {
-			if (probe[i] == list[j][i]) {
-				match = j;
-				count++;
-			}
-		}
-		if (count == 0) return((sint)-1);
-		if (count == 1) return(match);
-	}
-	return((sint)-1);
+  sint i,j,len;
+  sint count,match=0;
+  
+  len = (sint)strlen(probe);
+  for (i=0;i<len;i++) {
+    count = 0;
+    for (j=0;j<n;j++) {
+      if (probe[i] == list[j][i]) {
+	match = j;
+	count++;
+      }
+    }
+    if (count == 0) return((sint)-1);
+    if (count == 1) return(match);
+  }
+  return((sint)-1);
 }
 
 static void create_parameter_output(void)
 {
-	char parname[FILENAMELEN+1], temp[FILENAMELEN+1];
-	char path[FILENAMELEN+1];
-	FILE *parout;
-
-        get_path(seqname,path);
-        strcpy(parname,path);
-        strcat(parname,"par");
-
-	if(usemenu) {
-        	fprintf(stdout,"\nEnter a name for the parameter output file [%s]: ",
-                                           parname);
-               	gets(temp);
-               	if(*temp != EOS)
-                       	strcpy(parname,temp);
-       	}
+  char parname[FILENAMELEN+1], temp[FILENAMELEN+1];
+  char path[FILENAMELEN+1];
+  FILE *parout;
+  
+  get_path(seqname,path);
+  strcpy(parname,path);
+  strcat(parname,"par");
+  
+  if(usemenu) {
+    fprintf(stdout,"\nEnter a name for the parameter output file [%s]: ",
+	    parname);
+    gets(temp);
+    if(*temp != EOS)
+      strcpy(parname,temp);
+  }
 
 /* create a file with execute permissions first */
-	remove(parname);
-/*
-	fd = creat(parname, 0777);
-	close(fd);
-*/
-
-        if((parout = open_explicit_file(parname))==NULL) return;
-
-        fprintf(parout,"clustalw \\\n");
-	if (!empty && profile1_empty) fprintf(parout,"-infile=%s \\\n",seqname);
-	if (!profile1_empty) fprintf(parout,"-profile1=%s\\\n",profile1_name);
-	if (!profile2_empty) fprintf(parout,"-profile2=%s \\\n",profile2_name);
-	if (dnaflag == TRUE) fprintf(parout,"-type=dna \\\n");
-	else                 fprintf(parout,"-type=protein \\\n");
-
-	if (quick_pairalign) {
-		fprintf(parout,"-quicktree \\\n");
-		fprintf(parout,"-ktuple=%d \\\n",(pint)ktup);
-     		fprintf(parout,"-window=%d \\\n",(pint)window);
-     		fprintf(parout,"-pairgap=%d \\\n",(pint)wind_gap);
-     		fprintf(parout,"-topdiags=%d \\\n",(pint)signif);    
-     		if (percent) fprintf(parout,"-score=percent \\\n");      
-     		else         fprintf(parout,"-score=absolute \\\n");      
-	}
-	else {
-		if (!dnaflag) {
-			fprintf(parout,"-pwmatrix=%s \\\n",pw_mtrxname);
-			fprintf(parout,"-pwgapopen=%.2f \\\n",prot_pw_go_penalty);
-			fprintf(parout,"-pwgapext=%.2f \\\n",prot_pw_ge_penalty);
-		}
-		else {
-			fprintf(parout,"-pwgapopen=%.2f \\\n",pw_go_penalty);
-			fprintf(parout,"-pwgapext=%.2f \\\n",pw_ge_penalty);
-		}
-	}
-
-	if (!dnaflag) {
-		fprintf(parout,"-matrix=%s \\\n",mtrxname);
-		fprintf(parout,"-gapopen=%.2f \\\n",prot_gap_open);
-		fprintf(parout,"-gapext=%.2f \\\n",prot_gap_extend);
-	}
-	else {
-		fprintf(parout,"-gapopen=%.2f \\\n",dna_gap_open);
-		fprintf(parout,"-gapext=%.2f \\\n",dna_gap_extend);
-	}
-
-	fprintf(parout,"-maxdiv=%d \\\n",(pint)divergence_cutoff);
-	if (!use_endgaps) fprintf(parout,"-endgaps \\\n");    
-
-	if (!dnaflag) {
-     		if (neg_matrix) fprintf(parout,"-negative \\\n");   
-     		if (no_pref_penalties) fprintf(parout,"-nopgap \\\n");     
-     		if (no_hyd_penalties) fprintf(parout,"-nohgap \\\n");     
-     		if (no_var_penalties) fprintf(parout,"-novgap \\\n");     
-    		fprintf(parout,"-hgapresidues=%s \\\n",hyd_residues);
-     		fprintf(parout,"-gapdist=%d \\\n",(pint)gap_dist);     
-	}
-	else {
-		fprintf(parout,"-transweight=%.2f \\\n",transition_weight);
-	}
-
-     	if (output_gcg) fprintf(parout,"-output=gcg \\\n");
-     	else if (output_gde) fprintf(parout,"-output=gde \\\n");
-     	else if (output_nbrf) fprintf(parout,"-output=pir \\\n");
-     	else if (output_phylip) fprintf(parout,"-output=phylip \\\n");
-     	else if (output_nexus) fprintf(parout,"-output=nexus \\\n");
-	if (outfile_name[0]!=EOS) fprintf(parout,"-outfile=%s \\\n",outfile_name);
-     	if (output_order==ALIGNED) fprintf(parout,"-outorder=aligned \\\n");  
-     	else                      fprintf(parout,"-outorder=input \\\n");  
-     	if (output_gde)
-		if (lowercase) fprintf(parout,"-case=lower \\\n");
-		else           fprintf(parout,"-case=upper \\\n");
-
-
-        fprintf(parout,"-interactive\n");
-
-/*
-  	if (kimura) fprintf(parout,"-kimura \\\n");     
-	if (tossgaps) fprintf(parout,"-tossgaps \\\n");   
-	fprintf(parout,"-seed=%d \\\n",(pint)boot_ran_seed);
-	fprintf(parout,"-bootstrap=%d \\\n",(pint)boot_ntrials);
-*/
-	fclose(parout);
+  remove(parname);
+  /*
+    fd = creat(parname, 0777);
+    close(fd);
+  */
+  
+  if((parout = open_explicit_file(parname))==NULL) return;
+  
+  fprintf(parout,"clustalw \\\n");
+  if (!empty && profile1_empty) fprintf(parout,"-infile=%s \\\n",seqname);
+  if (!profile1_empty) fprintf(parout,"-profile1=%s\\\n",profile1_name);
+  if (!profile2_empty) fprintf(parout,"-profile2=%s \\\n",profile2_name);
+  if (dnaflag == TRUE) 
+    fprintf(parout,"-type=dna \\\n");
+  else
+    fprintf(parout,"-type=protein \\\n");
+  
+  if (quick_pairalign) {
+    fprintf(parout,"-quicktree \\\n");
+    fprintf(parout,"-ktuple=%d \\\n",(pint)ktup);
+    fprintf(parout,"-window=%d \\\n",(pint)window);
+    fprintf(parout,"-pairgap=%d \\\n",(pint)wind_gap);
+    fprintf(parout,"-topdiags=%d \\\n",(pint)signif);    
+    if (percent) fprintf(parout,"-score=percent \\\n");      
+    else
+      fprintf(parout,"-score=absolute \\\n");      
+  }
+  else {
+    if (!dnaflag) {
+      fprintf(parout,"-pwmatrix=%s \\\n",pw_mtrxname);
+      fprintf(parout,"-pwgapopen=%.2f \\\n",prot_pw_go_penalty);
+      fprintf(parout,"-pwgapext=%.2f \\\n",prot_pw_ge_penalty);
+    }
+    else {
+      fprintf(parout,"-pwgapopen=%.2f \\\n",pw_go_penalty);
+      fprintf(parout,"-pwgapext=%.2f \\\n",pw_ge_penalty);
+    }
+  }
+  
+  if (!dnaflag) {
+    fprintf(parout,"-matrix=%s \\\n",mtrxname);
+    fprintf(parout,"-gapopen=%.2f \\\n",prot_gap_open);
+    fprintf(parout,"-gapext=%.2f \\\n",prot_gap_extend);
+  }
+  else {
+    fprintf(parout,"-gapopen=%.2f \\\n",dna_gap_open);
+    fprintf(parout,"-gapext=%.2f \\\n",dna_gap_extend);
+  }
+  
+  fprintf(parout,"-maxdiv=%d \\\n",(pint)divergence_cutoff);
+  if (!use_endgaps) fprintf(parout,"-endgaps \\\n");    
+  
+  if (!dnaflag) {
+    if (neg_matrix) fprintf(parout,"-negative \\\n");   
+    if (no_pref_penalties) fprintf(parout,"-nopgap \\\n");     
+    if (no_hyd_penalties) fprintf(parout,"-nohgap \\\n");     
+    if (no_var_penalties) fprintf(parout,"-novgap \\\n");     
+    fprintf(parout,"-hgapresidues=%s \\\n",hyd_residues);
+    fprintf(parout,"-gapdist=%d \\\n",(pint)gap_dist);     
+  }
+  else {
+    fprintf(parout,"-transweight=%.2f \\\n",transition_weight);
+  }
+  
+  if (output_gcg) fprintf(parout,"-output=gcg \\\n");
+  else if (output_gde) fprintf(parout,"-output=gde \\\n");
+  else if (output_nbrf) fprintf(parout,"-output=pir \\\n");
+  else if (output_phylip) fprintf(parout,"-output=phylip \\\n");
+  else if (output_nexus) fprintf(parout,"-output=nexus \\\n");
+  if (outfile_name[0]!=EOS) fprintf(parout,"-outfile=%s \\\n",outfile_name);
+  if (output_order==ALIGNED) fprintf(parout,"-outorder=aligned \\\n");  
+  else                      fprintf(parout,"-outorder=input \\\n");  
+  if (output_gde)
+    if (lowercase) fprintf(parout,"-case=lower \\\n");
+    else           fprintf(parout,"-case=upper \\\n");
+  
+  
+  fprintf(parout,"-interactive\n");
+  
+  /*
+    if (kimura) fprintf(parout,"-kimura \\\n");     
+    if (tossgaps) fprintf(parout,"-tossgaps \\\n");   
+    fprintf(parout,"-seed=%d \\\n",(pint)boot_ran_seed);
+    fprintf(parout,"-bootstrap=%d \\\n",(pint)boot_ntrials);
+  */
+  fclose(parout);
 }
 
+
+#define isgap(val1) ( (val1 < 0) || (val1 > max_aa) )
+#define isend(val1) ((val1 == -3)||(val1 == 253) )
+
+void calc_percidentity(FILE *pfile)
+{
+  double **pmat;
+  char residue;
+  
+  float ident;
+  int nmatch;
+  
+  sint val1, val2;
+  
+  sint i,j,k, length_longest;
+  sint length_shortest;
+  
+  int rs=0, rl=0;
+  /* findout sequence length, longest and shortest ; */
+  length_longest=0;
+  length_shortest=0;
+
+  for (i=1;i<=nseqs;i++) {
+    /*printf("\n %d :  %d ",i,seqlen_array[i]);*/
+    if (length_longest < seqlen_array[i]){
+      length_longest = seqlen_array[i];
+      rs = i;
+    }
+    if (length_shortest > seqlen_array[i]) {
+      length_shortest = seqlen_array[i];
+      rl = i;
+    }
+  }
+  /*
+  printf("\n shortest length  %s %d ",names[rs], length_shortest);
+  printf("\n longest est length  %s %d",names[rl], length_longest);
+  */  
+
+  pmat = (double **)ckalloc((nseqs+1) * sizeof(double *));
+  for (i=0;i<=nseqs;i++)
+    pmat[i] = (double *)ckalloc((nseqs+1) * sizeof(double));
+  for (i = 0; i <= nseqs; i++)
+    for (j = 0; j <= nseqs; j++)
+      pmat[i][j] = 0.0;
+
+  nmatch = 0;
+
+  for (i=1; i <= nseqs; i++) {
+    /*printf("\n %5d:  comparing %s with  ",i,names[i]); */
+    for (j=i; j<=nseqs ;  j++) {
+      printf("\n           %s ",names[j]);
+      ident = 0;
+      nmatch = 0;
+      for(k=1;  k<=length_longest; k++) {
+	val1 = seq_array[i][k];
+	val2 = seq_array[j][k];
+	if ( isend(val1) || isend(val2)) break;  /* end of sequence ????? */
+	if ( isgap(val1)  || isgap(val2) ) continue; /* residue = '-'; */
+	if (val1 == val2) {
+	  ident++ ;
+	  nmatch++;
+	  /*	residue = amino_acid_codes[val1]; 
+	printf("%c:",residue);
+	residue = amino_acid_codes[val2]; 
+	printf("%c  ",residue);*/
+	}
+	else {
+	  nmatch++ ;
+	    }
+      }
+      ident = ident/nmatch * 100.0 ;
+      pmat[i][j] = ident;
+      pmat[j][i]= ident;
+      /*      printf("  %d x %d .... match %d %d \n",i,j,ident,pmat[i][j]);  */
+    }
+
+  }
+  /*  printf("\n nmatch = %d\n ", nmatch);*/
+  fprintf(pfile,"#\n#\n#  Percent Identity  Matrix - created by Clustal%s \n#\n#\n",revision_level);
+  for(i=1;i<=nseqs;i++) {
+    fprintf(pfile,"\n %5d: %-*s",i,max_names,names[i]);
+    for(j=1;j<=nseqs;j++) {
+      fprintf(pfile,"%8.0f",pmat[i][j]);
+    }
+  }
+  fprintf(pfile,"\n");
+
+  for (i=0;i<nseqs;i++) 
+    pmat[i]=ckfree((void *)pmat[i]);
+  pmat=ckfree((void *)pmat);
+
+}

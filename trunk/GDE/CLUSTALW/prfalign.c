@@ -155,6 +155,7 @@ lint prfalign(sint *group, sint *aligned)
           }
 
   pcid = pcid/(float)count;
+
 if (debug > 0) fprintf(stdout,"mean tmat %3.1f\n", pcid);
 
 
@@ -181,8 +182,8 @@ fprintf(stdout,"%s\n",names[i+1]);
              for (j=0;j<len;j++)
                alignment[nseqs1][j] = seq_array[i+1][j+1];
 		for(j=len;j<prf_length1;j++)
-			alignment[nseqs1][j+1]=gap_pos1;
-             alignment[nseqs1][prf_length1+1] = ENDALN;
+			alignment[nseqs1][j]=gap_pos1;
+             alignment[nseqs1][j] = ENDALN;
              aln_len[nseqs1] = prf_length1;
              aln_weight[nseqs1] = seq_weight[i];
              nseqs1++;
@@ -213,7 +214,7 @@ fprintf(stdout,"%s\n",names[i+1]);
              for (j=0;j<len;j++)
                alignment[nseqs1+nseqs2][j] = seq_array[i+1][j+1];
 		for(j=len;j<prf_length2;j++)
-			alignment[nseqs1+nseqs2][j+1]=gap_pos1;
+			alignment[nseqs1+nseqs2][j]=gap_pos1;
              alignment[nseqs1+nseqs2][j] = ENDALN;
              aln_len[nseqs1+nseqs2] = prf_length2;
              aln_weight[nseqs1+nseqs2] = seq_weight[i];
@@ -644,7 +645,7 @@ static void add_ggaps(void)
        alignment[j] = (char *)realloc(alignment[j], (len+2) * sizeof (char));
        for (i=0;i<len;i++)
          alignment[j][i] = ta[i];
-       alignment[j][i] = ENDALN;
+       alignment[j][len] = ENDALN;
        aln_len[j] = len;
       }
 
@@ -679,7 +680,7 @@ static void add_ggaps(void)
        alignment[j] = (char *) realloc(alignment[j], (len+2) * sizeof (char) );
        for (i=0;i<len;i++)
          alignment[j][i] = ta[i];
-       alignment[j][i] = ENDALN;
+       alignment[j][len] = ENDALN;
        aln_len[j] = len;
       }
       
@@ -1082,9 +1083,9 @@ static sint gap_penalty1(sint i, sint j, sint k)
 
    g = profile2[j][GAPCOL] + profile1[i][GAPCOL];
    for (ix=0;ix<k && ix+j<prf_length2;ix++)
-      h = profile2[ix+j][LENCOL];
+      h += profile2[ix+j][LENCOL];
 
-   gp = g + h * k;
+   gp = g + h;
    return(gp);
 }
 /* calculate the score for opening a gap at residues A[i] and B[j]       */
@@ -1124,8 +1125,8 @@ static sint gap_penalty2(sint i, sint j, sint k)
 
    g = profile1[i][GAPCOL] + profile2[j][GAPCOL];
    for (ix=0;ix<k && ix+i<prf_length1;ix++)
-      h = profile1[ix+i][LENCOL];
+      h += profile1[ix+i][LENCOL];
 
-   gp = g + h * k;
+   gp = g + h;
    return(gp);
 }
