@@ -83,7 +83,7 @@ public class TreeDisplay extends Canvas
             setRootNode(root);
         }
 
-        setNewSize(400, 600);
+        setNewSize(100, 100); // just any initial size (resized by parent)
         setBackground(backgroundColor);
     }
 
@@ -143,7 +143,8 @@ public class TreeDisplay extends Canvas
 
         // avoid tree displays >= 32768 by autofolding the tree
 
-        int max_display_ysize    = 32768-1;
+        // int max_display_ysize    = 32768-1; // doesn't work with Win98
+        int max_display_ysize    = 28000;
         // int max_display_ysize = 3000; // for testing
         int max_loop             = 20;
         while (yPointer>max_display_ysize && max_loop>0) {
@@ -759,4 +760,5 @@ public class TreeDisplay extends Canvas
         lastMatchedNode = null;
         unmarkNodes();
     }
+
 }
