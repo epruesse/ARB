@@ -15,27 +15,46 @@ OCCURRENCE	ARB_EDIT4
 DESCRIPTION	The ARB_EDIT4 editor uses two tables to translate the
 		original sequence into a colored displayed sequence:
 
-	First Step:	Each character in each sequence is translated into
-		a new character and a color index (0..9) using the 
-		<OPTIONS/Sequence Colors> options. This window shows different
-		sets (S_0 .. S_#) of color shemes, one coloumn for one set.
-		In the first row you may choose one set which is used for
-		translation.
+                First Step:
 
-		The first coloumn shows the character which should be 
-		translated/replaced. The nth + 1 coloumn holds  the data  for
-		translation set n. Each of its fields has two characters:
-		1. the character which should replace the original  value,
-		or '=' if no translation should be performed.
-		2. A color index for this character, between 0 and 9.
+                      Each character in each sequence is translated into
+                      a new character and a color index (0..9) using the definitions
+                      from the 'SEQUENCE COLORS' subwindow.
 
-	Second Step:
-		To get the real color, the color index is translated to a
-		color using the <Properties/Data> window.
-		
+                      - There are different sets (S_0 .. S_#) of color shemes,
+                        one column for each set.
+
+                      - In the first row you may choose which set is used for translation.
+
+                      - The first coloumn shows the characters which should be
+                        translated/replaced.
+
+                      - The nth + 1 coloumn holds the data for translation set n.
+                        Each of its fields has two characters:
+
+                           1. the character which should replace the original value,
+                           or '=' if no translation should be performed.
+
+                           2. A color index for this character, between 0 and 9.
+
+                Second Step:
+
+                       Each of the color indices (0..9) corresponds to one of
+                       the colors defined in <Properties/Change colors & fonts>,
+                       namely to
+
+                              index     corresponding color
+                              0         SEQUENCES
+                              1         HELIX(1)
+                              2         COLOR 2
+                              3         COLOR 3
+                              .         .
+                              .         .
+                              9         COLOR 9
+
 
 EXAMPLES	You may use this feature to show:
-			
+
 		- A simplified version of your amino acid alignment.
 		- Only YR instead of ACGTU
 		- Only ambigous symbols
