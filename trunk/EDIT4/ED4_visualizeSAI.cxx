@@ -256,6 +256,7 @@ static void refresh_display_cb(GBDATA *, int *, GB_CB_TYPE cb_type) {
 static void saiChanged_callback(AW_root *awr) {
     bool old_inCallback = inCallback;
     inCallback          = true;
+    char *saiName       = 0;
     {
         static GBDATA *gb_last_SAI = 0;
 
@@ -265,7 +266,7 @@ static void saiChanged_callback(AW_root *awr) {
             gb_last_SAI = 0;
         }
 
-        char *saiName      = awr->awar(AWAR_SAI_SELECT)->read_string();
+        saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
         char *transTabName = 0;
 
         if (saiName[0]) {
@@ -284,7 +285,6 @@ static void saiChanged_callback(AW_root *awr) {
         }
         awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->write_string(transTabName ? transTabName : "");
         free(transTabName);
-        free(saiName);
 
         clrDefinitionsChanged = true; // SAI changed -> update needed
     }
@@ -292,7 +292,10 @@ static void saiChanged_callback(AW_root *awr) {
 
     if (!inCallback && clrDefinitionsChanged) {
         ED4_ROOT->refresh_all_windows(1); //refresh editor
+        // SAI changed notify Global SAI Awar AWAR_SAI_GLOBAL
+        awr->awar(AWAR_SAI_GLOBAL)->write_string(saiName); 
     }
+    free(saiName);
 }
 
 static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_id) {
