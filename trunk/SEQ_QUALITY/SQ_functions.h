@@ -80,6 +80,8 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
       for the final result.
     */
 
+int round(double value);
+
 #else
 #error SQ_functions.h included twice
 #endif
