@@ -766,97 +766,98 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
             if (!at) {
                 // many commands work on whole tree if mouse does not point to subtree
                 at = tree_root;
-                awt_assert(at);
             }
 
             // -------------------------------------
             //      command working with tree :
             // -------------------------------------
 
-            switch (key_char) {
-                case 'm':  {    // m = mark/unmark (sub)tree
-                    mark_species_in_tree(at, !tree_has_marks(at));
-                    break;
-                }
-                case 'M':  {    // M = mark/unmark all but (sub)tree
-                    mark_species_in_rest_of_tree(at, !rest_tree_has_marks(at));
-                    break;
-                }
+            if (at) {
+                switch (key_char) {
+                    case 'm':  {    // m = mark/unmark (sub)tree
+                        mark_species_in_tree(at, !tree_has_marks(at));
+                        break;
+                    }
+                    case 'M':  {    // M = mark/unmark all but (sub)tree
+                        mark_species_in_rest_of_tree(at, !rest_tree_has_marks(at));
+                        break;
+                    }
 
-                case 'i':  {    // i = invert (sub)tree
-                    mark_species_in_tree(at, 2);
-                    break;
-                }
-                case 'I':  {    // I = invert all but (sub)tree
-                    mark_species_in_rest_of_tree(at, 2);
-                    break;
-                }
-                case 'c':
-                case 'x':  {
-                    AWT_graphic_tree_group_state state;
-                    detect_group_state(at, &state, 0);
+                    case 'i':  {    // i = invert (sub)tree
+                        mark_species_in_tree(at, 2);
+                        break;
+                    }
+                    case 'I':  {    // I = invert all but (sub)tree
+                        mark_species_in_rest_of_tree(at, 2);
+                        break;
+                    }
+                    case 'c':
+                    case 'x':  {
+                        AWT_graphic_tree_group_state state;
+                        detect_group_state(at, &state, 0);
 
-                    if (!state.has_groups()) { // somewhere inside group
-                    do_parent:
-                        at = at->father;
-                        while (at) {
-                            if (at->gb_node) break;
+                        if (!state.has_groups()) { // somewhere inside group
+                        do_parent:
                             at = at->father;
+                            while (at) {
+                                if (at->gb_node) break;
+                                at = at->father;
+                            }
+
+                            if (at) {
+                                state.clear();
+                                detect_group_state(at, &state, 0);
+                            }
                         }
 
                         if (at) {
-                            state.clear();
-                            detect_group_state(at, &state, 0);
+                            int next_group_mode;
+
+                            if (key_char == 'x')  { // expand
+                                next_group_mode = state.next_expand_mode();
+                            }
+                            else { // collapse
+                                if (state.all_closed()) goto do_parent;
+                                next_group_mode = state.next_collapse_mode();
+                            }
+
+                            /*int result = */
+                            group_tree(at, next_group_mode, 0);
+
+                            save    = true;
+                            resize  = true;
+                            compute = true;
                         }
+                        break;
                     }
+                    case 'C':
+                    case 'X':  {
+                        AP_tree *root_node                  = at;
+                        while (root_node->father) root_node = root_node->father; // search father
 
-                    if (at) {
+                        awt_assert(root_node);
+
+                        AWT_graphic_tree_group_state state;
+                        detect_group_state(root_node, &state, at);
+
                         int next_group_mode;
-
-                        if (key_char == 'x')  { // expand
+                        if (key_char == 'X')  { // expand
                             next_group_mode = state.next_expand_mode();
                         }
                         else { // collapse
-                            if (state.all_closed()) goto do_parent;
                             next_group_mode = state.next_collapse_mode();
                         }
 
                         /*int result = */
-                        group_tree(at, next_group_mode, 0);
+                        group_rest_tree(at, next_group_mode, 0);
 
                         save    = true;
                         resize  = true;
                         compute = true;
+
+
+                        break;
                     }
-                    break;
-                }
-                case 'C':
-                case 'X':  {
-                    AP_tree *root_node                  = at;
-                    while (root_node->father) root_node = root_node->father; // search father
-
-                    awt_assert(root_node);
-
-                    AWT_graphic_tree_group_state state;
-                    detect_group_state(root_node, &state, at);
-
-                    int next_group_mode;
-                    if (key_char == 'X')  { // expand
-                        next_group_mode = state.next_expand_mode();
-                    }
-                    else { // collapse
-                        next_group_mode = state.next_collapse_mode();
-                    }
-
-                    /*int result = */
-                    group_rest_tree(at, next_group_mode, 0);
-
-                    save    = true;
-                    resize  = true;
-                    compute = true;
-
-
-                    break;
                 }
             }
         }
@@ -867,13 +868,13 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
         exports.save = 1;
     }
 
-    if (compute) {
+    if (compute && tree_root) {
         tree_root->compute_tree(gb_main);
         resize     = true;
         calc_color = false;
     }
 
-    if (update_timer) {
+    if (update_timer && tree_static) {
         tree_static->update_timers(); // do not reload the tree
     }
 
@@ -882,7 +883,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
         refresh        = true;
     }
 
-    if (calc_color) {
+    if (calc_color && tree_root) {
         tree_root->calc_color();
         refresh = true;
     }
