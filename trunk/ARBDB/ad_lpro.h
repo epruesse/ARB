@@ -28,6 +28,7 @@ void gbl_install_standard_commands P_((GBDATA *gb_main));
 /* adstring.c */
 GB_ERROR gb_scan_directory P_((char *basename, struct gb_scandir *sd));
 void gbs_uppercase P_((char *str));
+int gbs_stricmp P_((const char *s1, const char *s2));
 void gbs_memcopy P_((char *dest, const char *source, long len));
 char *gbs_malloc_copy P_((const char *source, long len));
 char *gbs_add_path P_((char *path, char *name));
