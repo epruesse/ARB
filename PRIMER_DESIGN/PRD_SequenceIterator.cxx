@@ -3,6 +3,9 @@
 
 using namespace std;
 
+const int SequenceIterator::FORWARD;
+const int SequenceIterator::BACKWARD;
+
 //
 // Constructor
 //
@@ -43,7 +46,7 @@ void SequenceIterator::restart ( PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos s
 //
 // get next base if not at the end of sequence or already delivered max_length bases
 //
-char SequenceIterator::nextBase ()
+unsigned char SequenceIterator::nextBase ()
 {
   if (((max_length != IGNORE) && (delivered >= max_length)) ||
       ((stop_position != IGNORE) && (pos == stop_position))) return EOS;
