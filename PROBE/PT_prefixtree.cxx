@@ -492,7 +492,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 */*ptmain*/ , char ** 
         wp = PT_WRITE_CHAIN_ENTRY(wp,mainapos,name-lastname,apos,rpos);
         int size = wp -buffer;
         if (1 !=fwrite(buffer,size,1,out) ) {
-            fprintf(stderr,"Write Error (Disc Full ???)\n");
+            fprintf(stderr,"Write Error (Disc Full ?\?\?)\n");
             exit(EXIT_FAILURE);
         }
         *ppos += size;
