@@ -8,7 +8,6 @@
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
 #define AUTO_FLUSH(device) (device)->flush()
-//#define AUTO_FLUSH(device)
 #else
 #define AUTO_FLUSH(device)
 #endif
@@ -67,12 +66,10 @@ enum {
     AW_SCREEN_BOLD                 = 42,
     AW_CLEAN_MEDIUM                = 43,
     AW_CLEAN_BOLD                  = 44,
-    AW_BIWIDTH_MEDIUM              = 45,
-    AW_BIWIDTH_BOLD                = 46,
-    AW_TERMINAL_MEDIUM             = 47,
-    AW_TERMINAL_BOLD               = 48,
+    AW_TERMINAL_MEDIUM             = 45,
+    AW_TERMINAL_BOLD               = 46,
 
-    AW_NUM_FONTS = 49,
+    AW_NUM_FONTS = 47,
 
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
     AW_DEFAULT_BOLD_FONT   = AW_LUCIDA_SANS_BOLD,
@@ -202,7 +199,7 @@ public:
     void reduce_left_clip_border(int left);
     void reduce_right_clip_border(int right);
 
-    void reduceClipBorders(int top, int bottom, int left, int right);
+    int reduceClipBorders(int top, int bottom, int left, int right);
 
     AW_clip();
     virtual ~AW_clip() {}
@@ -370,8 +367,8 @@ class AW_device: public AW_matrix, public AW_gc {
 
 
      // ********* X11 Device only ********
-     virtual void    clear(void);
-     virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height);
+     virtual void    clear(AW_bitset filteri);
+     virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
      virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
      virtual void    move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
      virtual void    fast(void);                                     // e.g. zoom linewidth off
