@@ -1,12 +1,13 @@
 #include <vector.h>
 
-// to use to display SAI in the probe match section
-#define AWAR_PROBE_SAI_MATCH  "tmp/probe_design/probe_sai_match"
-#define AWAR_PROBE_LIST       "tmp/probe_design/probe_list"
-#define AWAR_SAI_2_PROBE      "tmp/probe_design/sai_2_probe"
-#define AWAR_DISP_SAI         "tmp/probe_design/disp_sai"
+#define sai_assert(cond) arb_assert(cond)
 
-#define AWAR_SAI_COLOR        "tmp/probeSai/color_0"
+#define AWAR_PROBE_LIST "tmp/probe_design/probe_list"
+
+#define AWAR_SAI_2_PROBE "sai_visualize/sai_2_probe"
+#define AWAR_DISP_SAI    "sai_visualize/disp_sai"
+#define AWAR_SAI_COLOR   "sai_visualize/probeSai/color_0"
+
 #define SAI_CLR_COUNT 10
 
 enum {
@@ -25,10 +26,44 @@ enum {
     SAI_GC_MAX
 };
 
-struct saiProbeData {
-    const char *probeTarget;
+// global data for interaction with probe match result list:
+
+class saiProbeData {
+    char   *probeTarget;
+    size_t  probeTargetLen;
+    char   *headline;           // needed for ProbeMatchParser
+
+public:
+
     std::vector<const char*> probeSpecies;
     std::vector<const char*> probeSeq;
+
+    saiProbeData() : probeTarget(strdup("<notarget>")), probeTargetLen(0), headline(0) {}
+    ~saiProbeData() {
+        free(probeTarget);
+        free(headline);
+    }
+
+    const char *getProbeTarget() const {
+        // sai_assert(probeTarget); // always need a target
+        return probeTarget;
+    }
+    size_t getProbeTargetLen() const {
+        return probeTargetLen;
+    }
+    const char *getHeadline() const { return headline; }
+
+    void setProbeTarget(const char *target) {
+        sai_assert(target);
+        free(probeTarget);
+        probeTarget    = strdup(target);
+        probeTargetLen = strlen(probeTarget);
+    }
+    void setHeadline(const char *hline) {
+        sai_assert(hline);
+        free(headline);
+        headline = strdup(hline);
+    }
 };
 
 class SAI_graphic: public AWT_graphic {
