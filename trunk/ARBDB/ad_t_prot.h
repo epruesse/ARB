@@ -39,7 +39,7 @@ GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, lon
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
 long GBT_count_nodes P_((GBT_TREE *tree));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
-void GBT_scale_bootstraps P_((GBT_TREE *tree, double scale));
+void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
 GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));
