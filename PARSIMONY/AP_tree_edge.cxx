@@ -665,7 +665,7 @@ void ap_calc_bootstrap_remark(AP_tree_nlen *son_node,AP_BL_MODE mode){
         }
         const char *text = 0;
         if (one < 1.0){ // was: < 0.99
-            text = GBS_global_string("%i%%",int(100.0 * one));
+            text = GBS_global_string("%i%%",int(100.0 * one + 0.5));
         }
         else {
             text = "100%";
