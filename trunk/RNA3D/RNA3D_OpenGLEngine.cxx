@@ -36,6 +36,10 @@ RNA3D_Global::RNA3D_Global(){
     cStructure = new Structure3D();
     cTexture   = new Texture2D();
     cRenderer  = new GLRenderer();
+
+    Viewer = Vector3(0.0, 0.0, -2);
+    Center = Vector3(0.0, 0.0, 0.0);
+    Up     = Vector3(0.0, 1.0, 0.0);
 }
 
 RNA3D_Global::~RNA3D_Global() {
@@ -84,10 +88,6 @@ static int SingleBuffer[] = { GLX_RGBA,
 
 static GLfloat rotation_matrix[16];
 static GLfloat rot_x = 0.0, rot_y = 0.0;
-
-static Vector3 Viewer = Vector3(0.0, 0.0, -2);
-static Vector3 Center = Vector3(0.0, 0.0, 0.0);
-static Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 
 static int iScreenWidth, iScreenHeight;
 
@@ -444,9 +444,9 @@ void RenderOpenGLScene(Widget w){
 
     glLoadIdentity();
 
-    gluLookAt(Viewer.x, Viewer.y, Viewer.z,
-              Center.x, Center.y, Center.z,
-              Up.x,     Up.y,     Up.z);
+    gluLookAt(RNA3D->Viewer.x, RNA3D->Viewer.y, RNA3D->Viewer.z,
+              RNA3D->Center.x, RNA3D->Center.y, RNA3D->Center.z,
+              RNA3D->Up.x,     RNA3D->Up.y,     RNA3D->Up.z);
 
     {// Displaying Molecule Name
         RNA3D->cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);

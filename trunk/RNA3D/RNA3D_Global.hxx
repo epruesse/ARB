@@ -107,6 +107,10 @@ public:
     Texture2D      *cTexture;
     GLRenderer     *cRenderer;
 
+    Vector3 Viewer;
+    Vector3 Center;
+    Vector3 Up;
+
     RNA3D_Global();
     ~RNA3D_Global();
 };

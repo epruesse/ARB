@@ -95,16 +95,16 @@ void KeyReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, cha
 
     switch(keysym) {
     case XK_Up:
-        RNA3D->bRotateMolecule = false;   
+        //        RNA3D->bRotateMolecule = false;   
         break;
     case XK_Down:
-        RNA3D->bRotateMolecule = false;   
+        //      RNA3D->bRotateMolecule = false;   
         break;
     case XK_Left:
-        RNA3D->bRotateMolecule = false;   
+        //        RNA3D->bRotateMolecule = false;   
         break;
     case XK_Right:
-        RNA3D->bRotateMolecule = false;   
+        //        RNA3D->bRotateMolecule = false;   
         break;
     }
 
@@ -120,8 +120,8 @@ void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
     int    count;
     float fRotationFactor = 2.0f;
 
-    RNA3D->saved_x = evt->x;
-    RNA3D->saved_y = evt->y;
+//     RNA3D->saved_x = evt->x;
+//     RNA3D->saved_y = evt->y;
 
     // Converting keycode to keysym
     count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
@@ -135,24 +135,28 @@ void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
         exit(0); 
         break;
     case XK_Up:
-        RNA3D->bRotateMolecule = true;   
-        RNA3D->saved_y += fRotationFactor;
-        ComputeRotationXY(evt->x, evt->y);
+        RNA3D->Center.y -= 0.1;
+//         RNA3D->bRotateMolecule = true;   
+//         RNA3D->saved_y += fRotationFactor;
+//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Down:
-        RNA3D->bRotateMolecule = true;   
-        RNA3D->saved_y -= fRotationFactor;
-        ComputeRotationXY(evt->x, evt->y);
+        RNA3D->Center.y += 0.1;
+//         RNA3D->bRotateMolecule = true;   
+//         RNA3D->saved_y -= fRotationFactor;
+//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Left:
-        RNA3D->bRotateMolecule = true;   
-        RNA3D->saved_x += fRotationFactor;
-        ComputeRotationXY(evt->x, evt->y);
+        RNA3D->Center.x -= 0.1;
+//         RNA3D->bRotateMolecule = true;   
+//         RNA3D->saved_x += fRotationFactor;
+//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Right:
-        RNA3D->bRotateMolecule = true;   
-        RNA3D->saved_x -= fRotationFactor;
-        ComputeRotationXY(evt->x, evt->y);
+        RNA3D->Center.x += 0.1;
+//         RNA3D->bRotateMolecule = true;   
+//         RNA3D->saved_x -= fRotationFactor;
+//         ComputeRotationXY(evt->x, evt->y);
         break;
     }
 
@@ -330,6 +334,14 @@ static void RefreshMappingDisplay(AW_window *aw) {
     // Colors related to Search Strings changed in RNA3D Application 
     // and not updated automatically
     MapSearchStringsToEcoliTemplateChanged_CB(RNA3D->root);
+
+    // Resetting the Molecule Transformations 
+    // 1.Reset the Molecule view to Center of the viewer (default view).
+    // 2.Zoom the Molecule to fit to window (default zoom).
+    RNA3D->Center = Vector3(0.0, 0.0, 0.0);
+    RNA3D->scale = 0.01;
+
+    RefreshCanvas(RNA3D->root);
 }
 
 static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
