@@ -171,6 +171,8 @@ extern struct probe_struct_global   {
 struct gene_struct {
   char gene_name[9];
   char full_name[128];
+  char arb_gene_name[128];
+  char arb_species_name[128];
 };
 
 extern list<gene_struct*> names_list;

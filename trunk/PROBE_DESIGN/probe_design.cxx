@@ -1461,6 +1461,9 @@ static void pg_result_selected(AW_window */*aww*/) {
                         GB_write_flag(gb_species, 1); // mark species
                         if (!marked) { // select first species
                             aw_root->awar(AWAR_SPECIES_NAME)->write_string(name);
+#ifdef DEVEL_IDP
+			    //			    aw_root->awar(AWAR_GENE_NAME)->write_string(
+#endif
                         }
                         marked++;
                     }

@@ -456,7 +456,7 @@ extern "C" char *get_match_hinfo(PT_probematch  *ml) {
 #ifdef DEVEL_IDP
       //Hier wird der Headerstring gesetzt
       if (gene_flag) {
-	return (char*)GBS_global_string("   UnserK     Kurzname                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
+	return (char*)GBS_global_string("    species  genename                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
       }
       else {
 #endif

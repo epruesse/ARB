@@ -45,7 +45,7 @@ extern "C" char *virt_name(PT_probematch *ml)
       exit(1);
     }
     else {
-      return (*gene_iterator)->full_name;
+      return (*gene_iterator)->arb_species_name;
     }
   }
   else {
@@ -56,11 +56,39 @@ extern "C" char *virt_name(PT_probematch *ml)
 }
 
 extern "C" char *virt_fullname(PT_probematch * ml) {
-    if (psg.data[ml->name].fullname) {
-        return psg.data[ml->name].fullname;
-    } else {
-        return (char*)"";
+#ifdef DEVEL_IDP
+  if (gene_flag) {
+
+    list<gene_struct*>::iterator gene_iterator;
+    gene_iterator = names_list.begin();
+    
+    while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list.end()) {
+      gene_iterator++;
     }
+
+    if (gene_iterator == names_list.end()) {
+      printf("Error in Name Resolution\n");
+      exit(1);
+    }
+    else {
+      return (*gene_iterator)->arb_gene_name;
+    }
+  }
+  else {
+
+    if (psg.data[ml->name].fullname) {
+      return psg.data[ml->name].fullname;
+    } else {
+      return (char*)"";
+    }
+    
+  }
+#endif
+  if (psg.data[ml->name].fullname) {
+    return psg.data[ml->name].fullname;
+  } else {
+    return (char*)"";
+  }
 }
 
 /* copy one mismatch table to a new one allocating memory */
