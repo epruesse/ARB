@@ -87,10 +87,12 @@ const char *SEC_root::getSearchResults(int startPos,int endPos){                
     if (seqTerminal) {                                                                        //if seqTerminal is initialised and selected
         const char *searchColResults = 0;
 
-        if(display_sai && ED4_ROOT->visualizeSAI)
-            searchColResults = getSaiColorString(startPos, endPos);
-        else
-            searchColResults = seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);  // buildColorString builds the background color of each base
+        if (display_sai && ED4_ROOT->visualizeSAI) {
+            searchColResults = getSaiColorString(SEC_GRAPHIC->aw_root, startPos, endPos); // returns 0 if sth went wrong
+        }
+        if (!searchColResults) {
+            searchColResults = seqTerminal->results().buildColorString(seqTerminal, startPos, endPos); // buildColorString builds the background color of each base
+        }
 
         return searchColResults;                                                                       // returning the color strings
     }
