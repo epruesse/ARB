@@ -14,6 +14,8 @@
 //  **************************************************
 PS_NodePtr __ROOT;
 int        __PROBE_LENGTH;
+SpeciesID  __MIN_ID;
+SpeciesID  __MAX_ID;
 
 //  ----------------------------------------------------
 //      void PS_detect_probe_length( GBDATA *_ARB_node )
@@ -97,7 +99,7 @@ PS_NodePtr PS_assert_path( const int  _caller_ID,
     int c = 0; 
     IDVectorCIter i = _path->begin();
     next_path_ID = (i == _path->end()) ? -1 : *i;
-    for (SpeciesID current_ID = 0; current_ID <= _caller_ID; ++current_ID,++c) {
+    for (SpeciesID current_ID = __MIN_ID; current_ID <= _caller_ID; ++current_ID,++c) {
         //if ((c % 20) == 0) printf( "\n" );
         if (current_ID != next_path_ID) {
             //printf( "  %3i",*i );
@@ -279,7 +281,9 @@ int main(  int  _argc,
             printf( "[ %2i ] %s\n", i->first, i->second.c_str() );
         }
     }
-    printf( "(enter to continue)\n" );
+    __MIN_ID = __ID2NAME_MAP.begin()->first;
+    __MAX_ID = __ID2NAME_MAP.rbegin()->first;
+    printf( "IDs %i .. %i\n(enter to continue)\n", __MIN_ID, __MAX_ID );
 //  getchar();
 
     //
@@ -315,7 +319,7 @@ int main(  int  _argc,
     IDVector *inverse_path = new IDVector;
     for (; first_level_node; ++c) {
         if (c % 200 == 0) printf( "1st level node #%u\n", c+1 );
-        PS_extract_probe_data( first_level_node, species_count, 0, -1, inverse_path );
+        PS_extract_probe_data( first_level_node, species_count, 0, __MIN_ID-1, inverse_path );
         first_level_node = PS_get_next_node( first_level_node );
     }
     printf( "done after %u 1st level nodes\n",c );
