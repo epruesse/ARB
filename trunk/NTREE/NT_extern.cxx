@@ -968,7 +968,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0,"Primer Design ...","");
             {
                 AWMIMT( "primer_design_new",		"Primer Design ...", "P", "primer_new.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0 );
-                AWMIMT("primer_design",		"Primer Design (old)",		"","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
+                AWMIMT("primer_design",		"Primer Design (sequencing primers)",		"","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
             }
             awm->close_sub_menu();
 
