@@ -45,7 +45,7 @@
   <!-- =============== -->
 
   <xsl:template name="error">
-    <xsl:param name="text" select="Unknown error"/>
+    <xsl:param name="text" select="'Unknown error'"/>
     <xsl:message terminate="yes"><xsl:value-of select="$text"/></xsl:message>
   </xsl:template>
 
@@ -434,7 +434,7 @@ TITLE&tab;<xsl:value-of select="normalize-space($title)"/>
   <xsl:template match="text()|*">
    <xsl:choose>
      <xsl:when test="string-length(name())>0">
-       <xsl:call-template name="error"><xsl:with-param name="text">Unbekannter TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
+       <xsl:call-template name="error"><xsl:with-param name="text">Unknown TAG <xsl:value-of select="name()"/></xsl:with-param></xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
 <!--        <xsl:value-of select="."/>-->
