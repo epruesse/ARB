@@ -8,6 +8,11 @@
 #define AWAR_DISP_SAI    "sai_visualize/disp_sai"
 #define AWAR_SAI_COLOR   "sai_visualize/probeSai/color_0"
 
+#define AWAR_DB_FIELD_NAME   "sai_visualize/db_field_name"
+#define AWAR_DB_FIELD_WIDTH  "sai_visualize/db_field_width"
+#define AWAR_ACI_COMMAND     "sai_visualize/aci_command"
+#define AWAR_SELECTED_PROBE  "sai_visualize/selected_probe"
+
 #define SAI_CLR_COUNT 10
 
 enum {
@@ -17,6 +22,7 @@ enum {
 };
 
 enum {
+    SAI_GC_HIGHLIGHT,  SAI_GC_HIGHLIGHT_FONT  = SAI_GC_HIGHLIGHT,
     SAI_GC_FOREGROUND, SAI_GC_FOREGROUND_FONT = SAI_GC_FOREGROUND,
     SAI_GC_PROBE,      SAI_GC_PROBE_FONT      = SAI_GC_PROBE,
 
