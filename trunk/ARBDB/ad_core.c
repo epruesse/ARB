@@ -9,7 +9,7 @@
 
 #ifndef __cplusplus
 void ad_use(int dummy, ...)  {
-
+    dummy = 0;
 }
 #endif
 
