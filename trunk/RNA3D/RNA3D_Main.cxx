@@ -1,11 +1,43 @@
 #include "RNA3D_GlobalHeader.hxx"
+#include "RNA3D_Global.hxx"
 #include "RNA3D_Main.hxx"
 #include "RNA3D_Interface.hxx"
 
 using namespace std;
 
+static void  CreateRNA3DAwars(AW_root *root){
+    // Display Base Section
+    root->awar_int(AWAR_3D_DISPLAY_BASES, 0, AW_ROOT_DEFAULT); 
+    root->awar_float(AWAR_3D_DISPLAY_SIZE, 10, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_BASES_MODE, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_BASES_HELIX, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_BASES_UNPAIRED_HELIX, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_BASES_NON_HELIX, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_HELIX, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_UNPAIRED_HELIX, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_NON_HELIX, 0, AW_ROOT_DEFAULT); 
+
+    //Display Helix Section
+    root->awar_int(AWAR_3D_DISPLAY_HELIX, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_HELIX_BACKBONE, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_HELIX_MIDPOINT, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_HELIX_FROM, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_HELIX_TO, 50, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_HELIX_NUMBER, 0, AW_ROOT_DEFAULT); 
+    root->awar_float(AWAR_3D_HELIX_SIZE, 0.5, AW_ROOT_DEFAULT); 
+
+    // Genral Molecule Display Section
+    root->awar_int(AWAR_3D_MOL_BACKBONE, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MOL_COLORIZE, 0, AW_ROOT_DEFAULT); 
+    root->awar_float(AWAR_3D_MOL_SIZE, 0.5, AW_ROOT_DEFAULT); 
+
+    //Display SAI Section
+    root->awar_string( AWAR_3D_SAI_SELECTED, "", AW_ROOT_DEFAULT);
+}
 
 void RNA3D_StartApplication(AW_root *awr){
+
+    CreateRNA3DAwars(awr);
 
     // Creating and Initialising Motif/OpenGL window and 
     // rendering the structure

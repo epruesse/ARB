@@ -532,7 +532,6 @@ void Structure3D::PrepareStructureSkeleton(void){
 
     glNewList(STRUCTURE_BACKBONE, GL_COMPILE);
     {   
-        glLineWidth(SKELETON_SIZE);
         glBegin(GL_LINE_STRIP);
         temp = start3D;    
         while (temp != NULL) {
@@ -545,7 +544,6 @@ void Structure3D::PrepareStructureSkeleton(void){
 
     glNewList(STRUCTURE_BACKBONE_CLR, GL_COMPILE);
     {   
-        glLineWidth(SKELETON_SIZE);
         glBegin(GL_LINE_STRIP);
         temp = start3D;    
         while (temp != NULL) {

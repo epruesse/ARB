@@ -19,11 +19,8 @@ char* Texture2D::GetImageFile(int ImageId){
      case CIRCLE:
          sprintf(ImageFileName, "%s/Circle.png",Path);
          break;
-     case RECTANGLE:
-         sprintf(ImageFileName, "%s/Rectangle.png",Path);
-         break;
-     case RECTANGLE_ROUND:
-         sprintf(ImageFileName, "%s/RectangleRound.png",Path);
+     case DIAMOND:
+         sprintf(ImageFileName, "%s/Diamond.png",Path);
          break;
      case POLYGON:
          sprintf(ImageFileName, "%s/Polygon.png",Path);
@@ -31,11 +28,14 @@ char* Texture2D::GetImageFile(int ImageId){
      case STAR:
          sprintf(ImageFileName, "%s/Star.png",Path);
          break;
+     case RECTANGLE:
+         sprintf(ImageFileName, "%s/Rectangle.png",Path);
+         break;
+     case RECTANGLE_ROUND:
+         sprintf(ImageFileName, "%s/RectangleRound.png",Path);
+         break;
      case STAR_SMOOTH:
          sprintf(ImageFileName, "%s/StarSmooth.png",Path);
-         break;
-     case DIAMOND:
-         sprintf(ImageFileName, "%s/Diamond.png",Path);
          break;
      case CONE_UP:
          sprintf(ImageFileName, "%s/ConeUp.png",Path);
@@ -77,8 +77,12 @@ void Texture2D::LoadGLTextures(void) {
                 cout<<"Error loading file : "<<ImageFile<<" !!!"<<endl;
                 exit(0);
             }
+
+#ifdef DEBUG
             cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
                 <<info.Depth<<", Alpha = "<<info.Alpha<<endl;
         }
+#endif
+
 }
 

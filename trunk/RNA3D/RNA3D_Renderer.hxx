@@ -1,3 +1,5 @@
+#define CHARACTERS 0
+#define SHAPES     1
 
 enum {
     BASES,
@@ -24,25 +26,34 @@ const GLfloat WHITE[4]   = { 1.0, 1.0, 1.0, 1.0 };
 
 const GLfloat DEFAULT[4] = { 0.5, 0.5, 0.5, 1.0 }; // grey
 
-class OpenGLGraphics;
 class Texture2D;
 
 class GLRenderer {
 public:
-    int StartHelix, EndHelix;
-    float HelixWidth;
     float ObjectSize;
+    int iDisplayBases, iBaseMode;
+    int iBaseHelix,  iBaseUnpairHelix,  iBaseNonHelix;
+    int iShapeHelix, iShapeUnpairHelix, iShapeNonHelix;
+    int iDisplayHelix, iHelixMidPoint, iHelixBackBone, iHelixNrs;
+    int iStartHelix, iEndHelix;
+    float fHelixSize;
+    float fSkeletonSize;
+    int iColorise, iBackBone;
 
     GLRenderer(void);
     virtual ~GLRenderer(void);
 
+    void DisplayMolecule(void);
+    void DoHelixMapping(void);
     void DisplayHelices();
     void DisplayHelixBackBone(void);
     void DisplayHelixNumbers(void);
     void DisplayPositions(void);
+    void DisplayHelixMidPoints(Texture2D *cImages);
 
     void BeginTexturizer();
     void EndTexturizer();
-    void TexturizeStructure(int mode, Texture2D *cImages, OpenGLGraphics *cGraphics);
+    void TexturizeStructure(Texture2D *cImages);
     void DrawTexturizedStructure(Texture2D *cImages, int Structure );
+    void SetColor(int gc);
 };

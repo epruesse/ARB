@@ -1,12 +1,12 @@
 
 enum {
     CIRCLE,  
-    RECTANGLE, 
-    RECTANGLE_ROUND, 
+    DIAMOND,
     POLYGON,
     STAR,
+    RECTANGLE, 
+    RECTANGLE_ROUND, 
     STAR_SMOOTH, 
-    DIAMOND,
     CONE_UP,
     CONE_DOWN,
     FREEFORM_1,

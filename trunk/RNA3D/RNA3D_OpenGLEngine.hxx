@@ -31,3 +31,4 @@ void RenderOpenGLScene(Widget w);
 void InitializeOpenGLWindow( Widget w );
 void RotateMolecule(int x, int y);
 void CalculateRotationMatrix();
+void MapDisplayParameters(AW_root *aw_root);
