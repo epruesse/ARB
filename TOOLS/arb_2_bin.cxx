@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		fprintf(stderr,
                 "\n"
                 "Purpose: Converts a database to binary format\n"
-                "Syntax:  arb_2_bin [-m] [-c][tree_xxx] database [newdatabase]\n"
+                "Syntax:  arb_2_bin [-m] [-r] [-c][tree_xxx] database [newdatabase]\n"
                 "Options: -m            create map file too\n"
                 "         -r            try to repair destroyed database\n"
                 "         -c[tree_xxx]	optimize database using tree_xxx or largest tree\n"
