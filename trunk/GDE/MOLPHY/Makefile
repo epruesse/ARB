@@ -213,7 +213,9 @@ getseq.o: molphy.h
 getseq.o: prot_tml.h
 getseq.o: protml.h
 
+matrixut.o: ../../INCLUDE/arb_assert.h
 matrixut.o: matrixut.h
+matrixut.o: mo_assert.h
 
 mlklhd.o: ../../INCLUDE/arb_assert.h
 mlklhd.o: matrixut.h

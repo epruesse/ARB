@@ -72,11 +72,14 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arbdb.h
 
+AW_nawar.o: aw_device.hxx
 AW_nawar.o: aw_nawar.hxx
 AW_nawar.o: aw_root.hxx
+AW_nawar.o: aw_window.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_nawar.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 AW_preset.o: aw_color_groups.hxx
 AW_preset.o: aw_device.hxx
@@ -109,6 +112,7 @@ AW_size.o: aw_root.hxx
 AW_size.o: aw_size.hxx
 AW_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
+AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
 AW_status.o: aw_root.hxx
 AW_status.o: aw_window.hxx
