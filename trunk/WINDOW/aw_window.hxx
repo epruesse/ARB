@@ -184,7 +184,11 @@ public:
     long           color_table_size;
     unsigned long *color_table;
 
-    int recalc_size_at_show;    // 0 = do not resize, 1 = do resize, 2 = keep user size
+    int recalc_size_at_show;
+    // 0 = do not resize
+    // 1 = do resize to default size
+    // 2 = do resize to user size (or default size if that is bigger)
+
     int number_of_timed_title_changes;
 
     void /*AW_xfig*/    *xfig_data;
