@@ -43,20 +43,31 @@ template <class T>
 //     class Counted
 // --------------------------------------------------------------------------------
 class Counted {
+public:
+#ifdef TEST_SMART_COUNTERS
+    static long smartPtrCounter;
+#endif
 private:
-    unsigned counter;
-    T *const pointer;
+    unsigned    counter;
+    T *const    pointer;
+
 
     Counted(T *p) : counter(0), pointer(p) { tpl_assert(p); }
     ~Counted() { tpl_assert(counter==0); delete pointer; }
 
     unsigned new_reference() {
         //cout << "new reference to pointer" << int(pointer) << " (now there are " << counter+1 << " references)" << "\n";
+#if defined(TEST_SMART_COUNTERS)
+        ++smartPtrCounter;
+#endif // TEST_SMART_COUNTERS
         return ++counter;
     }
     unsigned free_reference() {
         //cout << "removing reference to pointer " << int(pointer) << " (now there are " << counter-1 << " references)\n";
         tpl_assert(counter!=0);
+#if defined(TEST_SMART_COUNTERS)
+        --smartPtrCounter;
+#endif // TEST_SMART_COUNTERS
         return --counter;
     }
 
