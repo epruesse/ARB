@@ -75,19 +75,21 @@ void NT_show_message(AW_root *awr)
 {
     GB_transaction dummy(gb_main); // lock database to avoid insertion of new messages
 
-    char *msg = awr->awar("tmp/message")->read_string();
-    while (msg[0]){
-        char *last_nl = strrchr(msg, '\n');
-        if (!last_nl) {
-            aw_message(msg);
-            msg[0] = 0;
+    char *msg = awr->awar(AWAR_ERROR_MESSAGES)->read_string();
+    if (msg[0]) {
+        while (msg[0]){
+            char *last_nl = strrchr(msg, '\n');
+            if (!last_nl) {
+                aw_message(msg);
+                msg[0] = 0;
+            }
+            else {
+                if (last_nl[1]) aw_message(last_nl+1);
+                last_nl[0] = 0;
+            }
         }
-        else {
-            if (last_nl[1]) aw_message(last_nl+1);
-            last_nl[0] = 0;
-        }
+        // awr->awar(AWAR_ERROR_MESSAGES)->write_string("");    
     }
-    awr->awar("tmp/message")->write_string(msg);
     free(msg);
 }
 
@@ -235,7 +237,7 @@ void create_all_awars(AW_root *awr, AW_default def)
     create_check_gcg_awars(awr,def);
     awt_create_dtree_awars(awr,gb_main);
 
-    awr->awar_string( "tmp/message", "", gb_main);
+    awr->awar_string( AWAR_ERROR_MESSAGES, "", gb_main);
     awr->awar_string( AWAR_DB_COMMENT, "<no description>", gb_main);
 
     AWTC_create_submission_variables(awr, gb_main);
@@ -247,7 +249,7 @@ void create_all_awars(AW_root *awr, AW_default def)
     awt_create_aww_vars(awr,def);
 
     if (GB_read_clients(gb_main) >=0) { // no i am the server
-        awr->awar("tmp/message")->add_callback( NT_show_message);
+        awr->awar(AWAR_ERROR_MESSAGES)->add_callback( NT_show_message);
     }
 }
 
@@ -1114,8 +1116,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
-            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0); 
-            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,   0); 
+            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
+            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,   0);
             SEP________________________SEP();
 
             awm->insert_sub_menu(0, "Edit Sequences","E");
@@ -1150,7 +1152,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
 
             AWMIMT("seq_quality", "Check Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
-            AWMIMT("seq_quality", "Chimere Check [broken!]",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
+            AWMIMT("seq_quality", "Chimere Check [broken!]",   "m", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
 
             SEP________________________SEP();
 
@@ -1181,7 +1183,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                     AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                0);
                     AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_EXP, AW_POPUP,      (AW_CL)AP_open_csp_2_gnuplot_window,     0);
 #ifdef DEVEL_YADHU
-                    //                    AWMIMT("conservation_profile",  "Display Conservation Profile (Using GNUPLOT)", "D", "conser_profile.hlp", AWM_EXP, AW_POPUP,      (AW_CL)AP_openConservationProfileWindow, 0); // spelling fixed [ralf]
+#error forgotten?
+                    // AWMIMT("conservation_profile",  "Display Conservation Profile (Using GNUPLOT)", "D", "conser_profile.hlp", AWM_EXP, AW_POPUP,      (AW_CL)AP_openConservationProfileWindow, 0); // spelling fixed [ralf]
 #endif
                 }
                 awm->close_sub_menu();
