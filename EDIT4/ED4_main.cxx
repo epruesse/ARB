@@ -380,6 +380,7 @@ void ED4_create_awars(AW_root *root, const char *config_name) { // cursor awars 
 
     root->awar_string(ED4_AWAR_GAP_CHARS, ".-~?")->add_callback(ED4_gap_chars_changed);
     ED4_gap_chars_changed(root);
+    root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
     create_gde_var(ED4_ROOT->aw_root, ED4_ROOT->db, ED4_create_sequences_for_gde, CGSS_WT_EDIT4, 0);
 

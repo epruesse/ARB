@@ -23,6 +23,7 @@
 #define ED4_AWAR_SCROLL_SPEED_Y			        "scrolling/speed_y"
 
 #define ED4_AWAR_GAP_CHARS 			            "sequence/gap_chars"
+#define ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES      "sequence/announce_checksum_changes"
 
 //	Expert Options
 
