@@ -158,7 +158,7 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
                 bootstrap = GB_strdup(boot);
             }
         }
-        bool hide_this_group = false;
+        bool folded = false;
         if (tree->name) {
             char *buf;
 
@@ -169,11 +169,13 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             groupname = GB_strdup(buf);
 
             GBDATA *gb_grouped = GB_find(tree->gb_node, "grouped", 0, down_level);
-            if (gb_grouped) hide_this_group = GB_read_byte(gb_grouped);
+            if (gb_grouped) {
+                folded = GB_read_byte(gb_grouped);
+            }
         }
 
         if (my_length || bootstrap || groupname ) {
-            if (!skip_folded) hide_this_group = false; // hide folded groups only if skip_folded is true
+            bool hide_this_group = skip_folded && folded; // hide folded groups only if skip_folded is true
 
             XML_Tag branch_tag(hide_this_group ? "FOLDED_GROUP" : "BRANCH");
             string  my_id = buildNodeIdentifier(parent_id, parent_son_counter);
@@ -192,6 +194,10 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
                 branch_tag.add_attribute("groupname", groupname);
                 free(groupname);
                 groupname = 0;
+                if (folded) branch_tag.add_attribute("folded", "1");
+            }
+            else {
+                awt_assert(!folded);
             }
 
             int my_son_counter = 0;
