@@ -69,7 +69,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
   string tmpString;
   StrL fileContent;
   const char* fileName;
-  fileName = "unixnames.txt";
+  fileName = "lib/unixnames.txt";
   DescList myDescs;
   // file select dialog goes here
 
