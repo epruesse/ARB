@@ -668,8 +668,9 @@ ED4_returncode	ED4_manager::handle_move( ED4_move_info *mi )					// handles a mo
             return ED4_R_BREAK;
         }
 
+		ED4_base *parent_man = object->get_parent(ED4_L_MULTI_SPECIES);
         object->parent->children->delete_member( object );
-        object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->invalidate_species_counters();
+        parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
         object->extension.position[Y_POS] = rel_y; // was: rel_y + y_off;
