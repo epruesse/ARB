@@ -78,7 +78,7 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
 void Structure3D::ReadCoOrdinateFile() {
     // const char DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb";
     char *DataFile           = find_data_file("Ecoli_1M5G_16SrRNA.pdb");
-    const char ErrorMsg[]        = "\n *** Error Opening File : ";
+    // const char ErrorMsg[]        = "\n *** Error Opening File : ";
     char      buf[256];
 
     float X, Y, Z;
@@ -162,7 +162,7 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 void Structure3D::GetSecondaryStructureInfo(void) {
     // const char DataFile[] = "data/ECOLI_SECONDARY_STRUCTURE_INFO";
     char *DataFile        = find_data_file("ECOLI_SECONDARY_STRUCTURE_INFO");
-    const char ErrorMsg[] = "\n *** Error Opening File : ";
+    // const char ErrorMsg[] = "\n *** Error Opening File : ";
     char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
@@ -434,7 +434,7 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
     // const char DataFile[] = "data/ECOLI_Tertiary_Interaction.data";
     char           *DataFile = find_data_file("ECOLI_Tertiary_Interaction.data");
-    const char ErrorMsg[]    = "\n *** Error Opening File : ";
+    // const char ErrorMsg[]    = "\n *** Error Opening File : ";
     char            buf[256];
 
     ifstream readData;
@@ -1043,7 +1043,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
     GBDATA *gbTemplate = GBT_find_SAI(gb_main,"ECOLI");
 
     if (!gbTemplate) {
-        aw_message("ECOLI SAI not found");
+        aw_message("SAI:ECOLI not found");
     }
     else {
         char *pSpeciesName = awr->awar(AWAR_SPECIES_NAME)->read_string();
@@ -1051,35 +1051,40 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
             ED4_SeqTerminal   = ED4_find_seq_terminal(pSpeciesName); // initializing the seqTerminal to get the current terminal
             GBDATA *gbSpecies = GBT_find_species(gb_main, pSpeciesName);
             if(gbSpecies) {
-                char   *gbAliName            = GBT_get_default_alignment(gb_main);
-                GBDATA *gbAlignment          = GB_find(gbTemplate, gbAliName, 0, down_level);
-                GBDATA *gbTemplateSeqData    = GB_find(gbAlignment, "data", 0, down_level);
-                const char *pTemplateSeqData = GB_read_char_pntr(gbTemplateSeqData);
-
-                if(!bEColiRefInitialised) {
-                    EColiRef = new BI_ecoli_ref();
-                    EColiRef->init(gb_main);
-                    bEColiRefInitialised = true;
+                char   *ali_name          = GBT_get_default_alignment(gb_main);
+                GBDATA *gbAlignment       = GB_find(gbTemplate, ali_name, 0, down_level);
+                GBDATA *gbTemplateSeqData = gbAlignment ? GB_find(gbAlignment, "data", 0, down_level) : 0;
+                
+                if (!gbTemplateSeqData) {
+                    aw_message(GBS_global_string("Mapping impossible, since SAI:ECOLI has no data in alignment '%s'", ali_name));
                 }
+                else {
+                    const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
 
-                char buf[100];
-                char *pSpFullName = GB_read_string(GB_find(gbSpecies, "full_name", 0, down_level));
-                sprintf(buf, "%s : %s", pSpeciesName, pSpFullName);
-                awr->awar(AWAR_3D_SELECTED_SPECIES)->write_string(buf); 
-
-                GBDATA *gbSeqData    = GBT_read_sequence(gbSpecies, gbAliName);
-                const char *pSeqData = GB_read_char_pntr(gbSeqData); 
-                int iSeqCount = 0;
-
-                if (pSeqData && pTemplateSeqData) {
-                    int iSeqLen = strlen(pTemplateSeqData); 
-
-                    if(bOldSpecesDataExists) {
-                        DeleteOldSpeciesData();
+                    if(!bEColiRefInitialised) {
+                        EColiRef = new BI_ecoli_ref();
+                        EColiRef->init(gb_main);
+                        bEColiRefInitialised = true;
                     }
 
-                    for(int i = 0; i<iSeqLen; i++) {
-                        if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-'))
+                    char buf[100];
+                    char *pSpFullName = GB_read_string(GB_find(gbSpecies, "full_name", 0, down_level));
+                    sprintf(buf, "%s : %s", pSpeciesName, pSpFullName);
+                    awr->awar(AWAR_3D_SELECTED_SPECIES)->write_string(buf); 
+
+                    GBDATA *gbSeqData    = GBT_read_sequence(gbSpecies, ali_name);
+                    const char *pSeqData = GB_read_char_pntr(gbSeqData); 
+                    int iSeqCount = 0;
+
+                    if (pSeqData && pTemplateSeqData) {
+                        int iSeqLen = strlen(pTemplateSeqData); 
+
+                        if(bOldSpecesDataExists) {
+                            DeleteOldSpeciesData();
+                        }
+
+                        for(int i = 0; i<iSeqLen; i++) {
+                            if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-'))
                             { 
                                 if (!bStartPosStored) {
                                     iStartPos = i; 
@@ -1090,20 +1095,21 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                                 }
                                 iSeqCount++;
                             }
-                    }
+                        }
 
-                    for(int i = iSeqLen; i>0; i--) {
-                        if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){ 
-                            if (!bEndPosStored) {
-                                iEndPos = i; 
-                                bEndPosStored = true;
-                                break;
+                        for(int i = iSeqLen; i>0; i--) {
+                            if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){ 
+                                if (!bEndPosStored) {
+                                    iEndPos = i; 
+                                    bEndPosStored = true;
+                                    break;
+                                }
                             }
                         }
                     }
+                    free(pSpFullName);
                 }
-                free(pSpFullName);
-                free(gbAliName);
+                free(ali_name);
             }
             GenerateBaseDifferenceDisplayList();
         }
