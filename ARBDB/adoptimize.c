@@ -6,11 +6,10 @@
 #include <netinet/in.h>
 
 #include "adlocal.h"
-/*#include "arbdb.h"*/
 #include "arbdbt.h"
 
 #if defined(DEBUG)
-#define TEST_DICT
+/* #define TEST_DICT */
 #endif /* DEBUG */
 
 typedef unsigned char unsigned_char;
@@ -371,12 +370,13 @@ GB_INLINE int ALPHA_DICT_OFFSET(int idx, GB_DICTIONARY *dict) {
 #endif
 
 #ifdef DEBUG
-#define COUNT_CHUNKS
-long uncompressedBlocks[64];
-long compressedBlocks[MAX_LONGLEN];
+/* #define COUNT_CHUNKS */
 
+#if defined(COUNT_CHUNKS)
 
-#if defined(TEST_DICT)
+static long uncompressedBlocks[64];
+static long compressedBlocks[MAX_LONGLEN];
+
 static void clearChunkCounters(void) {
     int i;
 
@@ -393,7 +393,7 @@ static void dumpChunkCounters(void) {
     for (i=0; i<MAX_LONGLEN; i++) if (compressedBlocks[i]) printf("  size=%i used=%li\n", i, compressedBlocks[i]);
     printf("------------------------------\n");
 }
-#endif /* TEST_DICT */
+#endif /* COUNT_CHUNKS */
 
 static cu_str lstr(cu_str s, int len) {
 #define BUFLEN 10000
@@ -795,7 +795,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
 
     for (i=0; i<256; i++) char_count[i] = 0;
 
-    printf("  Test compression..\n");
+    printf("  * Testing compression..\n");
 
 #ifdef COUNT_CHUNKS
     clearChunkCounters();
@@ -870,30 +870,23 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
     dumpChunkCounters();
 #endif
 
-    /*
-          printf("\nVerteilung der Characters:\n");
-          for (i=0; i<256; i++)
-          {
-          if (char_count[i])
-          printf("  char=%c (=%3i)  used=%4li (=%2li.%02li%%)\n",
-          (char)i, i,
-          char_count[i],
-          (char_count[i]*100L)/compressed_sum,
-          ((char_count[i]*10000L)/compressed_sum)%100
-          );
-          }
-    */
+    {
+        long  compressed_plus_dict = compressed_sum+dict_size;
+        char *dict_text            = GBS_global_string_copy("+dict %li b", dict_size);
+        long  ratio                = (compressed_plus_dict*100)/uncompressed_sum;
 
-    printf("    uncompressed size = %li b\n"
-           "      compressed size = %li b\n"
-           "    +%li (dict)     = %li b       (Ratio=%li%%)\n",
-           uncompressed_sum, compressed_sum,
-           dict_size, dict_size+compressed_sum,
-           ((dict_size+compressed_sum)*100)/uncompressed_sum
-           );
+        printf("    uncompressed size = %10li b\n"
+               "      compressed size = %10li b\n"
+               "    %17s = %10li b (Ratio=%li%%)\n",
+               uncompressed_sum,
+               compressed_sum,
+               dict_text, compressed_plus_dict, ratio);
+
+        free(dict_text);
+    }
 
     *uncompSum += uncompressed_sum;
-    *compSum += compressed_sum+dict_size;
+    *compSum   += compressed_sum+dict_size;
 }
 
 #endif /* TEST_DICT */
@@ -2504,7 +2497,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             if (strcmp(key_name,"quality")==0) continue;
 #endif
 
-            printf("dictionary for '%s' (idx=%i):\n", key_name, idx);
+            printf("- dictionary for '%s' (idx=%i)\n", key_name, idx);
             GB_begin_transaction(gb_main);
             dict = gb_create_dictionary(&(gbk[idx]), maxmem);
 
@@ -2512,7 +2505,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                 /* decompress with old dictionary and write
                    all data of actual type without compression: */
 
-                printf("  Uncompressing all with old dictionary ...\n");
+                printf("  * Uncompressing all with old dictionary ...\n");
 
                 {
                     int old_compression_mask = Main->keys[idx].compression_mask;
@@ -2552,7 +2545,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                         gb_save_dictionary_data(gb_main, Main->keys[idx].key, dict_buffer, dict_buffer_size);
 
                         /* compress all data with new dictionary */
-                        printf("  Compressing all with new dictionary ...\n");
+                        printf("  * Compressing all with new dictionary ...\n");
                         error = readAndWrite(&gbk[idx]);
                         if (error) {
                             /* critical state: new dictionary has been written, but transaction will be aborted below.
@@ -2578,14 +2571,14 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             else GB_commit_transaction(gb_main);
         }
 
-#ifdef DEBUG
+#ifdef TEST_DICT
         if (!error) {
             printf("    overall uncompressed size = %li b\n"
                    "    overall   compressed size = %li b (Ratio=%li%%)\n",
                    uncompressed_sum, compressed_sum,
                    (compressed_sum*100)/uncompressed_sum);
         }
-#endif
+#endif /* TEST_DICT */
 
         printf("Done.\n");
 
