@@ -140,9 +140,9 @@ date :
 	../SOURCE_TOOLS/mv_if_diff date.xsl.tmp date.xsl
 
 date.xsl.tmp :
-		cat date.xsl.head >$@
+		cat date.xsl.header >$@
 		(export LC_TIME=c;date '+%d.%b %Y') >>$@
-		cat date.xsl.foot >>$@
+		cat date.xsl.footer >>$@
 
 date.xsl : date
 
