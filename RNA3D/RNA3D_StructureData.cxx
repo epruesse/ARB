@@ -505,18 +505,26 @@ void GenerateDisplayLists(int dispLstID, char BASE){
 void Structure3D::PrepareStructureSkeleton(void){
     Struct3Dinfo *temp;
     // drawing structure 
+    extern bool bPointSpritesSupported;
 
-    glNewList(STRUCTURE_BACKBONE_POINTS, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp = start3D;    
-        while (temp != NULL) {
-            glVertex3f(temp->x, temp->y, temp->z);
-            temp = temp->next;
+    if (!bPointSpritesSupported) {
+        glNewList(STRUCTURE_BACKBONE_POINTS, GL_COMPILE);
+        {
+            //        glBegin(GL_POINTS);
+            temp = start3D;    
+            while (temp != NULL) {
+                glBegin(GL_QUADS);
+                glTexCoord2f(0,0); glVertex3f(temp->x, temp->y, temp->z);
+                glTexCoord2f(1,0); glVertex3f(temp->x + 2, temp->y, temp->z);
+                glTexCoord2f(1,1); glVertex3f(temp->x + 2, temp->y +2, temp->z);
+                glTexCoord2f(0,1); glVertex3f(temp->x + 2, temp->y, temp->z);
+                glEnd();
+                temp = temp->next;
+            }
+            //        glEnd();
         }
-        glEnd();
+        glEndList();
     }
-    glEndList();
 
     glNewList(STRUCTURE_BACKBONE_POINTS_CLR, GL_COMPILE);
     {
