@@ -1405,14 +1405,6 @@ static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
     AW_save_specific_defaults(aw, ED4_propertyName(mode));
 }
 
-#ifdef DEVEL_YADHU
-// void ED4_RNA3D_start(AW_window *aw)
-// {
-//     createRNA3DMainWindow(aw->aw_root);
-//     //    GBCMC_system(gb_main, "arb_rna3d");
-// }
-#endif
-
 ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
@@ -1617,9 +1609,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
-#ifdef DEVEL_YADHU
-    //    awmm->insert_menu_topic("rna_3D", "3 Dimensional Structure of ribosomal RNA", "", 0, AWM_ALL, ED4_RNA3D_start, 0, 0);
-#endif
+
     // ------------------------------
     //  Block
     // ------------------------------

@@ -473,7 +473,7 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
                     t = start2D3D;
                     while (t != NULL) {
                         if (t->pos == R[i]) {
-                            sprintf(POS, "%d", t->pos);
+                            glVertex3f(t->x, t->y, t->z);
                             i++;
                             break;
                         }
