@@ -32,6 +32,10 @@ void AW_save_defaults( AW_window *aw ) {
     aw->get_root()->save_default(  "window/font" );
 }
 
+void AW_save_specific_defaults( AW_window *aw, const char *filename) { // special version for EDIT4
+    aw->get_root()->save_default(  "window/font", filename);
+}
+
 void aw_message_reload(AW_root *){
     aw_message( "Sorry, to activate new colors:\n"
                 "   save properties\n"
@@ -242,11 +246,12 @@ struct AW_MGC_cb_struct {   // one for each window
 AW_MGC_cb_struct::AW_MGC_cb_struct( AW_window *awi,
                                     void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i ) {
     memset((char*)this,0,sizeof(AW_MGC_cb_struct));
-    aw = awi;
-    f = g;
+    aw  = awi;
+    f   = g;
     cd1 = cd1i;
     cd2 = cd2i;
-    window_awar_name = GBS_string_2_key(awi->get_window_title());
+
+    window_awar_name = strdup(awi->get_window_id());
 }
 
 struct AW_MGC_awar_cb_struct {  // one for each awar
