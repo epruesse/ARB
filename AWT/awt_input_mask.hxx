@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Aug/17/2001 10:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/17/2001 21:44 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -99,7 +99,7 @@ public:
     GBDATA *get_gb_main() { return gb_main; }
     const string& get_awar_root() const { return awar_root; }
     awt_item_type get_itemtype() const { return itemtype; }
-    const awt_item_type_selector *get_selector() const { assert(sel); return sel; }
+    const awt_item_type_selector *get_selector() const { aw_assert(sel); return sel; }
 };
 
 
@@ -182,8 +182,8 @@ public:
     virtual void awar_changed();
     virtual void db_changed();
 
-    virtual string awar2db(const string& awar_content) { return awar_content; }
-    virtual string db2awar(const string& db_content) { return db_content; }
+    virtual string awar2db(const string& awar_content) const { return awar_content; }
+    virtual string db2awar(const string& db_content) const { return db_content; }
 
     virtual void build_widget(AW_window *aws) = 0; // builds the widget at the current position
 };
@@ -197,15 +197,33 @@ private:
     int    field_width;
 
 public:
-    awt_input_field(awt_input_mask_global *global_, const string& child_path_, const string& label_, int field_width_)
-        : awt_string_handler(global_, child_path_, "", GB_STRING, label_)
+    awt_input_field(awt_input_mask_global *global_, const string& child_path_, const string& label_, int field_width_, const string& default_value, GB_TYPES default_type)
+        : awt_string_handler(global_, child_path_, default_value, default_type, label_)
         , field_width(field_width_)
-    {
-    }
+    { }
     virtual ~awt_input_field() {}
 
     virtual void build_widget(AW_window *aws);
 };
+
+//  ---------------------------------------------------------------
+//      class awt_numeric_input_field : public awt_input_field
+//  ---------------------------------------------------------------
+class awt_numeric_input_field : public awt_input_field {
+private:
+    long min, max;
+
+public:
+    awt_numeric_input_field(awt_input_mask_global *global_, const string& child_path_, const string& label_, int field_width_, long default_value, long min_, long max_)
+        : awt_input_field(global_, child_path_, label_, field_width_, GBS_global_string("%li", default_value), GB_FLOAT)
+        , min(min_)
+        , max(max_)
+    {}
+    virtual ~awt_numeric_input_field() {}
+
+    virtual string awar2db(const string& awar_content) const;
+};
+
 
 //  --------------------------------------------------------
 //      class awt_check_box : public awt_string_handler
@@ -219,8 +237,8 @@ public:
     {}
     virtual ~awt_check_box() {}
 
-    virtual string awar2db(const string& awar_content);
-    virtual string db2awar(const string& db_content);
+    virtual string awar2db(const string& awar_content) const;
+    virtual string db2awar(const string& db_content) const;
 
     virtual void build_widget(AW_window *aws);
 };
@@ -243,12 +261,12 @@ public:
         , buttons(buttons_)
         , values(values_)
     {
-        assert(buttons.size() == values.size());
+        aw_assert(buttons.size() == values.size());
     }
     virtual ~awt_radio_button() {}
 
-    virtual string awar2db(const string& awar_content);
-    virtual string db2awar(const string& db_content);
+    virtual string awar2db(const string& awar_content) const;
+    virtual string db2awar(const string& db_content) const;
 
     virtual void build_widget(AW_window *aws);
 };
@@ -280,6 +298,7 @@ public:
 
     virtual ~awt_input_mask() { }
 
+    void show() { aws->show(); }
     void hide() { aws->hide(); }
 
     void set_reload_on_reinit(bool dest) { shall_reload_on_reinit = dest; }
