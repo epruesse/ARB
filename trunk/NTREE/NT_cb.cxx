@@ -16,6 +16,7 @@
 #include "ad_trees.hxx"
 #include "ntree.hxx"
 #include "nt_internal.h"
+#include "nt_cb.hxx"
 
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
