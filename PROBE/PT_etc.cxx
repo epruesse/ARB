@@ -30,65 +30,53 @@ void pt_export_error(PT_local *locs, const char *error)
 /* get the name with a virtual function */
 extern "C" char *virt_name(PT_probematch *ml)
 {
-#ifdef DEVEL_IDP
-  if (gene_flag) {
-
-    list<gene_struct*>::iterator gene_iterator;
-    gene_iterator = names_list_idp.begin();
+    if (gene_flag) {
+        list<gene_struct*>::iterator gene_iterator;
+        gene_iterator = names_list_idp.begin();
     
-    while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
-      gene_iterator++;
-    }
+        while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
+            gene_iterator++;
+        }
 
-    if (gene_iterator == names_list_idp.end()) {
-      printf("Error in Name Resolution\n");
-      exit(1);
+        if (gene_iterator == names_list_idp.end()) {
+            printf("Error in Name Resolution\n");
+            exit(1);
+        }
+        else {
+            return (*gene_iterator)->arb_species_name;
+        }
     }
     else {
-      return (*gene_iterator)->arb_species_name;
+        return psg.data[ml->name].name;
     }
-  }
-  else {
-    return psg.data[ml->name].name;
-    }
-#endif
-  return psg.data[ml->name].name; 
 }
 
 extern "C" char *virt_fullname(PT_probematch * ml) {
-#ifdef DEVEL_IDP
-  if (gene_flag) {
-
-    list<gene_struct*>::iterator gene_iterator;
-    gene_iterator = names_list_idp.begin();
+    if (gene_flag) {
+        list<gene_struct*>::iterator gene_iterator;
+        gene_iterator = names_list_idp.begin();
     
-    while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
-      gene_iterator++;
-    }
+        while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
+            gene_iterator++;
+        }
 
-    if (gene_iterator == names_list_idp.end()) {
-      printf("Error in Name Resolution\n");
-      exit(1);
+        if (gene_iterator == names_list_idp.end()) {
+            printf("Error in Name Resolution\n");
+            exit(1);
+        }
+        else {
+            return (*gene_iterator)->arb_gene_name;
+        }
     }
     else {
-      return (*gene_iterator)->arb_gene_name;
-    }
-  }
-  else {
 
-    if (psg.data[ml->name].fullname) {
-      return psg.data[ml->name].fullname;
-    } else {
-      return (char*)"";
-    }
+        if (psg.data[ml->name].fullname) {
+            return psg.data[ml->name].fullname;
+        } else {
+            return (char*)"";
+        }
     
-  }
-#endif
-  if (psg.data[ml->name].fullname) {
-    return psg.data[ml->name].fullname;
-  } else {
-    return (char*)"";
-  }
+    }
 }
 
 /* copy one mismatch table to a new one allocating memory */
@@ -115,50 +103,49 @@ char *ptpd_read_names(PT_local * locs, char *names_listi, char *checksumsi)
 {
     char *names_list;
     char *checksums = 0;
-    long             i;
-    char           *name;
-#ifdef DEVEL_IDP
-    if (gene_flag) {
-      char *temp;
-      int j = 0;
-      int k = 0;
-      char *listi_copy;
-      char *temp_listi;
-      char bit;
-      list<gene_struct*>::iterator gene_iterator;
-      gene_iterator = names_list_idp.begin();
-      bit = names_listi[k];
-      while (bit != '\0') {
-	if (bit=='#') j++;
-	k++;
-	bit = names_listi[k];
-      }
-      j++;
-      temp_listi = new char[j*9+2];
-      listi_copy = new char[strlen(names_listi)+1];
-      strcpy(temp_listi,"");
-      strcpy(listi_copy,names_listi);
-      temp = strtok(listi_copy,"#");
-      while (temp) {
-	while (strcmp((*gene_iterator)->arb_gene_name,temp) && gene_iterator != names_list_idp.end()) {
-	  gene_iterator++;
-	}
-	
-	if (gene_iterator == names_list_idp.end()) {
-	  printf("Error in Name Resolution\n");
-	  exit(1);
-	}
-	else {
-	  strcat(temp_listi,(*gene_iterator)->gene_name);
-	  strcat(temp_listi,"#");
-	}
-	temp = strtok(NULL,"#");
-      }
-      //  temp_listi[strlen(temp_listi)] = '\0';
-      names_listi = temp_listi;
-    }
+    long  i;
+    char *name;
     
-#endif
+    if (gene_flag) {
+        char *temp;
+        int   j = 0;
+        int   k = 0;
+        char *listi_copy;
+        char *temp_listi;
+        char bit;        
+        list<gene_struct*>::iterator gene_iterator;
+        gene_iterator = names_list_idp.begin();
+        bit           = names_listi[k];
+        while (bit != '\0') {
+            if (bit=='#') j++;
+            k++;
+            bit = names_listi[k];
+        }
+        j++;
+        temp_listi = new char[j*9+2];
+        listi_copy = new char[strlen(names_listi)+1];
+        strcpy(temp_listi,"");
+        strcpy(listi_copy,names_listi);
+        temp = strtok(listi_copy,"#");
+        while (temp) {
+            while (strcmp((*gene_iterator)->arb_gene_name,temp) && gene_iterator != names_list_idp.end()) {
+                gene_iterator++;
+            }
+
+            if (gene_iterator == names_list_idp.end()) {
+                printf("Error in Name Resolution\n");
+                exit(1);
+            }
+            else {
+                strcat(temp_listi,(*gene_iterator)->gene_name);
+                strcat(temp_listi,"#");
+            }
+            temp = strtok(NULL,"#");
+        }
+        //  temp_listi[strlen(temp_listi)] = '\0';
+        names_listi = temp_listi;
+    }
+
     /* delete is_group */
     for (i = 0; i < psg.data_count; i++)
         psg.data[i].is_group = 0;

@@ -15,14 +15,14 @@
 #define MAX_TRY 10
 #define TIME_OUT 1000*60*60*24
 
-struct probe_struct_global psg;
-char *pt_error_buffer = new char[1024];
-ulong physical_memory = 0;
-#ifdef DEVEL_IDP
-int gene_flag = 0;
-list<gene_struct *> names_list_idp;
-GBDATA *map_ptr_idp;
-#endif
+struct probe_struct_global  psg;
+char                       *pt_error_buffer = new char[1024];
+ulong                       physical_memory = 0;
+
+// globals of gene-pt-server
+int                  gene_flag = 0;
+list<gene_struct *>  names_list_idp;
+GBDATA              *map_ptr_idp;
 
 /*****************************************************************************
         Communication
@@ -69,92 +69,89 @@ void PT_init_psg(){
     }
 }
 
-#ifdef DEVEL_IDP
-
 
 void PT_get_names (const char **fullstring, char *first, char *second, char *third) {
-  const char *first_ptr;
-  const char *second_ptr;
-  const char *third_ptr;
-  int         flag = 0;
+    const char *first_ptr;
+    const char *second_ptr;
+    const char *third_ptr;
+    int         flag = 0;
 
-  first_ptr = *fullstring;
-  second_ptr = strchr(first_ptr,';'); //Get first ';'
-  if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(1);}
-  strncpy(first,first_ptr,second_ptr-first_ptr);  //Copy String until ';'
-  first[second_ptr-first_ptr] = 0;
+    first_ptr = *fullstring;
+    second_ptr = strchr(first_ptr,';'); // Get first ';'
+    if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(1);}
+    strncpy(first,first_ptr,second_ptr-first_ptr);  // Copy String until ';'
+    first[second_ptr-first_ptr] = 0;
 
-  second_ptr++;  //Point after the ';'
+    second_ptr++;  // Point after the ';'
 
-  third_ptr = strchr(second_ptr,';'); //Get next ';'
-  if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(1);}
-  strncpy(second,second_ptr,third_ptr-second_ptr);  //Copy String until ';'
-  second[third_ptr-second_ptr] = 0;
+    third_ptr = strchr(second_ptr,';'); // Get next ';'
+    if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(1);}
+    strncpy(second,second_ptr,third_ptr-second_ptr);  // Copy String until ';'
+    second[third_ptr-second_ptr] = 0;
 
-  third_ptr++;  //Point after the ';'
+    third_ptr++;  // Point after the ';'
 
-  first_ptr = strchr(third_ptr,';');  //Get next ';'
-  if(first_ptr+1 == 0) {
-    flag = 1;
-  } //Get last String
-  strncpy(third,third_ptr,first_ptr-third_ptr); //Copy second String
-  third[first_ptr-third_ptr] = 0;
+    first_ptr = strchr(third_ptr,';');  // Get next ';'
+    if(first_ptr+1 == 0) {
+        flag = 1;
+    } // Get last String
+    strncpy(third,third_ptr,first_ptr-third_ptr); // Copy second String
+    third[first_ptr-third_ptr] = 0;
 
-  if (!flag) first_ptr++; // Point to next Pair
-  if (flag) *fullstring=NULL;
-  else *fullstring = first_ptr;  //Return Pointer to next Pair
+    if (!flag) first_ptr++; //  Point to next Pair
+    if (flag) *fullstring=NULL;
+    else *fullstring = first_ptr;  // Return Pointer to next Pair
 }
 
 void PT_init_map(){
-  GB_begin_transaction(psg.gb_main);
-  map_ptr_idp = NULL;
-  map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
+    GB_begin_transaction(psg.gb_main);
+    map_ptr_idp = NULL;
+    map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
 
-  if (map_ptr_idp != NULL) {
-    gene_flag               = 1;
-    GBDATA *    map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
-    const char *map_str;
-//     map_str              = new char[GB_read_count(map_ptr_str)+1];
-//     strcpy (map_str,GB_read_char_pntr(map_ptr_str));
-    map_str                 = GB_read_char_pntr(map_ptr_str);
+    if (map_ptr_idp != NULL) {
+        gene_flag               = 1;
+        GBDATA *    map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
+        const char *map_str;
+        //     map_str              = new char[GB_read_count(map_ptr_str)+1];
+        //     strcpy (map_str,GB_read_char_pntr(map_ptr_str));
+        map_str                 = GB_read_char_pntr(map_ptr_str);
 
-//     char *gene_name_str;
-//     char *full_name_str;
-//     char *arb_gene_name_str;
-//     char *arb_species_name_str;
-    char  temp1[128];
-    char  temp2[128];
-    char  temp3[128];
+        //     char *gene_name_str;
+        //     char *full_name_str;
+        //     char *arb_gene_name_str;
+        //     char *arb_species_name_str;
+        char  temp1[128];
+        char  temp2[128];
+        char  temp3[128];
 
-    gene_struct *tempstruct;
+        gene_struct *tempstruct;
 
-    PT_get_names(&map_str,temp1,temp2,temp3);
+        PT_get_names(&map_str,temp1,temp2,temp3);
 
-    tempstruct = new gene_struct;
+        tempstruct = new gene_struct;
 
-    strcpy(tempstruct->gene_name,temp1);
-    strcpy(tempstruct->arb_species_name,temp2);
-    strcpy(tempstruct->arb_gene_name,temp3);
+        strcpy(tempstruct->gene_name,temp1);
+        strcpy(tempstruct->arb_species_name,temp2);
+        strcpy(tempstruct->arb_gene_name,temp3);
 
-    names_list_idp.push_back(tempstruct);
+        names_list_idp.push_back(tempstruct);
 
-    while (map_str != NULL && *map_str != 0)
-      {
+        while (map_str != NULL && *map_str != 0)
+        {
 
-	PT_get_names(&map_str,temp1,temp2,temp3);
+            PT_get_names(&map_str,temp1,temp2,temp3);
 
-	tempstruct = new gene_struct;
+            tempstruct = new gene_struct;
 
-	strcpy(tempstruct->gene_name,temp1);
-	strcpy(tempstruct->arb_species_name,temp2);
-	strcpy(tempstruct->arb_gene_name,temp3);
+            strcpy(tempstruct->gene_name,temp1);
+            strcpy(tempstruct->arb_species_name,temp2);
+            strcpy(tempstruct->arb_gene_name,temp3);
 
-	names_list_idp.push_back(tempstruct);
+            names_list_idp.push_back(tempstruct);
 
-      }
-  }
+        }
+    }
 }
-#endif
 
 extern int aisc_core_on_error;
 
@@ -170,10 +167,6 @@ int main(int argc, char **argv)
     int                build_flag;
     struct arb_params *params;
     char              *command_flag;
-
-#ifdef DEVEL_IDP
-
-#endif
 
     params             = arb_trace_argv(&argc,argv);
     PT_init_psg();
@@ -288,9 +281,9 @@ int main(int argc, char **argv)
         exit(0);
     }
     enter_stage_3_load_tree(aisc_main,tname);
-#ifdef DEVEL_IDP
+    
     PT_init_map();
-#endif
+    
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
     aisc_server_shutdown(so);
