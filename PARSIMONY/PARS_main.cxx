@@ -1432,7 +1432,14 @@ static void pars_start_cb(AW_window *aww)
     AW_gc_manager aw_gc_manager = 0;
     nt->tree                    = (AWT_graphic_tree*)PARS_generate_tree(awr);
 
-    AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
+    AWT_canvas *ntw;
+    {
+        AP_tree_sort  old_sort_type = nt->tree->tree_sort;
+        nt->tree->set_tree_type(AP_NO_NDS); // avoid NDS warnings during startup
+        ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
+        nt->tree->set_tree_type(old_sort_type);
+    }
+
     {
         aw_openstatus("load tree");
         NT_reload_tree_event(awr,ntw,GB_TRUE);          // load first tree and set delete callbacks
