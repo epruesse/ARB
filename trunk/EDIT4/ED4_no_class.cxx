@@ -29,12 +29,30 @@
   //*************************************************
 
 void ED4_calc_terminal_extentions(){
-    const AW_font_information *seq_font_info   = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
-    const AW_font_information *info_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
-    int                        seq_char_width  = seq_font_info->max_letter.width;
-    int                        info_char_width = info_font_info->max_letter.width;
+    const AW_font_information *seq_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '=' );
+    const AW_font_information *info_font_info = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
+    
+    int info_char_width = info_font_info->max_letter.width;
+    int seq_term_descent;
 
-    TERMINALHEIGHT = seq_font_info->max_letter.height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
+    if (ED4_ROOT->helix->is_enabled()) { // display helix ?
+        ED4_ROOT->helix_spacing =
+            seq_font_info->this_letter.ascent // the ascent of '='
+            + ED4_ROOT->helix_add_spacing; // xtra user-defined spacing
+
+        seq_term_descent = ED4_ROOT->helix_spacing;
+    }
+    else {
+        ED4_ROOT->helix_spacing = 0;
+        seq_term_descent  = seq_font_info->max_letter.descent;
+    }
+
+    // for wanted_seq_term_height ignore descent, because it additionally allocates 'ED4_ROOT->helix_spacing' space:
+    int wanted_seq_term_height = seq_font_info->max_letter.ascent + seq_term_descent + ED4_ROOT->terminal_add_spacing;
+    int wanted_seq_info_height = info_font_info->max_letter.height + ED4_ROOT->terminal_add_spacing;
+
+    TERMINALHEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
+
     {
         int maxchars;
         int maxbrackets;
@@ -45,8 +63,20 @@ void ED4_calc_terminal_extentions(){
             maxbrackets*BRACKETWIDTH; // brackets defined in NDS window
     }
     MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
-    MAXCHARWIDTH = max(seq_char_width, info_char_width); // @@@ FIXME:  check where MAXCHARWIDTH is used and set it properly here
-    MAXLETTERDESCENT = max(seq_font_info->max_letter.descent, info_font_info->max_letter.descent);
+    
+    INFO_TERM_TEXT_YOFFSET = info_font_info->max_letter.ascent - 1;
+    SEQ_TERM_TEXT_YOFFSET  = seq_font_info->max_letter.ascent - 1;
+
+    if (INFO_TERM_TEXT_YOFFSET<SEQ_TERM_TEXT_YOFFSET) INFO_TERM_TEXT_YOFFSET = SEQ_TERM_TEXT_YOFFSET;
+
+#if defined(DEBUG) && 0
+    printf("seq_term_descent= %i\n", seq_term_descent);
+    printf("TERMINALHEIGHT  = %i\n", TERMINALHEIGHT);
+    printf("MAXSPECIESWIDTH = %i\n", MAXSPECIESWIDTH);
+    printf("MAXINFOWIDTH    = %i\n", MAXINFOWIDTH);
+    printf("INFO_TERM_TEXT_YOFFSET= %i\n", INFO_TERM_TEXT_YOFFSET);
+    printf("SEQ_TERM_TEXT_YOFFSET= %i\n", SEQ_TERM_TEXT_YOFFSET);
+#endif // DEBUG
 }
 
 void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -68,15 +98,27 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     }
     else                                        // this case is needed every time, except the first
     {
+        ED4_ROOT->recalc_font_group();
         ED4_calc_terminal_extentions();
 
         ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
         if (cursor->owner_of_cursor) cursor->set_abs_x();
 
+#if defined(DEBUG)
+#warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy
+#endif // DEBUG
+
         ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
-        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]  = TERMINALHEIGHT;
+        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
         ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
-        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH]   = MAXCHARWIDTH*MAXSEQUENCECHARACTERLENGTH + 100;
+        
+        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
+            ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
+            (ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH)+3);
+
+        ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
+
+        ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
 
         ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
         ED4_ROOT->resize_all();
@@ -156,7 +198,7 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
 
     if ((object->dynamic_prop & ED4_P_CURSOR_ALLOWED) &&
         !species_manager->flag.is_consensus &&
-        (object->dynamic_prop & ED4_P_CONSENSUS_RELEVANT))
+        (object->dynamic_prop & ED4_P_ALIGNMENT_DATA)) // edit all aligned data - even if not consensus relevant
     {
         new_work_info.event            = work_info->event;
         new_work_info.char_position    = work_info->char_position;
@@ -261,7 +303,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     if (terminal->is_sequence_terminal()) {
         work_info->mode        = awar_edit_modus;
-        work_info->direction   = aww->get_root()->awar(AWAR_EDIT_DIRECTION)->read_int();
+        work_info->direction   = awar_edit_direction;
         work_info->is_sequence = 1;
     }
     else {
@@ -1543,7 +1585,11 @@ void ED4_compression_changed_cb(AW_root *awr){
     if (ED4_ROOT->root_group_man) {
         ED4_remap *remap = ED4_ROOT->root_group_man->remap();
         remap->set_mode(mode, percent);
-        ED4_ROOT->refresh_all_windows(1);
+
+        ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
+        // @@@ need sth that recalcs the scrollbars
+        
+        // ED4_ROOT->refresh_all_windows(1);
     }
 }
 
@@ -1653,12 +1699,12 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     //  --------------
     //      Layout
 
-//     aws->at("leftcol");
-//     aws->create_input_field(ED4_AWAR_COMPRESS_LEFT_COLUMN);
-
-    aws->at( "name_width" );
-    aws->create_input_field(ED4_AWAR_SPECIES_NAME_WIDTH);
-
+    aws->at("seq_helix");
+    aws->create_input_field(AWAR_EDIT_HELIX_SPACING);
+    
+    aws->at("seq_seq");
+    aws->create_input_field(AWAR_EDIT_TERMINAL_SPACING);
+    
     //  --------------------
     //      Scroll-Speed
 
