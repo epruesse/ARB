@@ -944,7 +944,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             error = gb_read_bin_rek_V2(in,gbd,nodecnt,version,reversed,0);
             break;
         default:
-            GB_internal_error("Sorry: This ARB Version does not support database format V%i",version);
+            GB_internal_error("Sorry: This ARB Version does not support database format V%li",version);
             error = 1;
     }
 
