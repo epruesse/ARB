@@ -244,6 +244,7 @@ GB_CSTR GB_getenvHOME P_((void));
 GB_CSTR GB_getenvARBHOME P_((void));
 GB_CSTR GB_getenvARBMACROHOME P_((void));
 GB_CSTR GB_getenvGS P_((void));
+GB_CSTR GB_getenvDOCPATH P_((void));
 GB_CSTR GB_getenv P_((const char *env));
 int GB_host_is_local P_((const char *hostname));
 GB_ULONG GB_get_physical_memory P_((void));
