@@ -1,8 +1,9 @@
-#define AWAR_FILE_BASE "tmp/import/pattern"
-#define AWAR_FILE AWAR_FILE_BASE"/file_name"
-#define AWAR_FORM "tmp/import/form"
-#define AWAR_ALI "tmp/import/alignment"
-#define AWAR_ALI_TYPE "tmp/import/alignment_type"
+#define AWAR_FILE_BASE      "tmp/import/pattern"
+#define AWAR_FILE           AWAR_FILE_BASE"/file_name"
+#define AWAR_FORM           "tmp/import/form"
+#define AWAR_ALI            "tmp/import/alignment"
+#define AWAR_ALI_TYPE       "tmp/import/alignment_type"
+#define AWAR_ALI_PROTECTION "tmp/import/alignment_protection"
 
 #define GB_MAIN awtcig.gb_main
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
