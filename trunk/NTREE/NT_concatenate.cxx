@@ -685,21 +685,21 @@ void mergeSimilarSpecies(AW_window *aws){
     GB_ERROR    error2          = GB_check_key(new_field_name);
 
 	error = NT_resort_data_base(0,merge_field_name,0,0); // sorting the database entries
-    if (error) goto ERROR;
+    if (error) goto ERROR2;
 
-    GB_push_transaction(gb_main);  //open database for transaction
+    GB_begin_transaction(gb_main);  //open database for transaction
 
     if (!error2) error2 = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
     if (error2) {
         aw_message(GBS_global_string("\"%s\" field found! Please enter a new field name!",new_field_name));
-        goto ERROR;
+        goto ERROR1;
     }
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
 		GBDATA  *gb_species_field         = GB_find(gb_species, merge_field_name, 0, down_level);
 		if (!gb_species_field) {
             aw_message("Selected ENTRY doesnt contain any data!. Please select a VALID DATABASE FIELD ENTRY!");
-            goto ERROR;
+            goto ERROR1;
         }
 		GB_CSTR  gb_species_field_content  = GB_read_string(gb_species_field);
         int similar_species = 0;
@@ -747,10 +747,11 @@ void mergeSimilarSpecies(AW_window *aws){
 	aw_message(GBS_global_string("%i new species created by taking \"%s\" as a criterion!",
                                  GBT_count_marked_species(gb_main),merge_field_name));
 
- ERROR:
-	if (!error)  GB_pop_transaction(gb_main);
+ ERROR1:
+	if (!error)  GB_commit_transaction(gb_main);
 	else	     GB_abort_transaction(gb_main);
 
+ ERROR2:
     free(merge_field_name);
     free(new_field_name);
 	if (error) aw_message(error);
