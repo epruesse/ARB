@@ -13,6 +13,7 @@
 #include <aw_awars.hxx>
 #include <awtc_fast_aligner.hxx>
 #include <awt.hxx>
+#include <awt_config_manager.hxx>
 
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"
@@ -35,8 +36,7 @@ const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
 
 typedef struct S_SearchAwarList // contains names of awars
 {
-    const char
-	*pattern,
+    const char *pattern,
         *min_mismatches,
         *max_mismatches,
         *case_sensitive,
@@ -54,18 +54,18 @@ typedef struct S_SearchAwarList // contains names of awars
 
 class SearchSettings
 {
-    char *pattern;
-    int min_mismatches;
-    int max_mismatches;
-    ED4_SEARCH_CASE case_sensitive;
-    ED4_SEARCH_TU tu;
-    ED4_SEARCH_GAPS pat_gaps;
-    ED4_SEARCH_GAPS seq_gaps;
-    int reverse;
-    int complement;
-    int exact;
-    int open_folded;
-    int autoJump;
+    char            *pattern;
+    int              min_mismatches;
+    int              max_mismatches;
+    ED4_SEARCH_CASE  case_sensitive;
+    ED4_SEARCH_TU    tu;
+    ED4_SEARCH_GAPS  pat_gaps;
+    ED4_SEARCH_GAPS  seq_gaps;
+    int              reverse;
+    int              complement;
+    int              exact;
+    int              open_folded;
+    int              autoJump;
 
     SearchSettings(const SearchSettings&) { e4_assert(0); } // forbidden
 
@@ -76,18 +76,18 @@ public:
         AW_root *root = ED4_ROOT->aw_root;
 
         delete pattern;
-        pattern = root->awar(awarList->pattern)->read_string();
+        pattern        = root->awar(awarList->pattern)->read_string();
         min_mismatches = root->awar(awarList->min_mismatches)->read_int();
         max_mismatches = root->awar(awarList->max_mismatches)->read_int();
         case_sensitive = ED4_SEARCH_CASE(root->awar(awarList->case_sensitive)->read_int());
-        tu = ED4_SEARCH_TU(root->awar(awarList->tu)->read_int());
-        pat_gaps = ED4_SEARCH_GAPS(root->awar(awarList->pat_gaps)->read_int());
-        seq_gaps = ED4_SEARCH_GAPS(root->awar(awarList->seq_gaps)->read_int());
-        open_folded = root->awar(awarList->openFolded)->read_int();
-        autoJump = root->awar(awarList->autoJump)->read_int();
-        reverse = root->awar(awarList->reverse)->read_int();
-        complement = root->awar(awarList->complement)->read_int();
-        exact = root->awar(awarList->exact)->read_int();
+        tu             = ED4_SEARCH_TU(root->awar(awarList->tu)->read_int());
+        pat_gaps       = ED4_SEARCH_GAPS(root->awar(awarList->pat_gaps)->read_int());
+        seq_gaps       = ED4_SEARCH_GAPS(root->awar(awarList->seq_gaps)->read_int());
+        open_folded    = root->awar(awarList->openFolded)->read_int();
+        autoJump       = root->awar(awarList->autoJump)->read_int();
+        reverse        = root->awar(awarList->reverse)->read_int();
+        complement     = root->awar(awarList->complement)->read_int();
+        exact          = root->awar(awarList->exact)->read_int();
 
         if (complement) {
             if (IS_AMINO) {
@@ -371,15 +371,16 @@ SearchTree::SearchTree(const SearchSettings *s)
         }
     }
 
-#define ROOT(tok,com)							\
-		do {							\
-		    if (root) {						\
-			root = root->insert_unified_pattern(tok, com);	\
-		    }							\
-		    else {						\
-			root = new SearchTreeNode(tok, com);		\
-		    }							\
-		} while(0)
+#define ROOT(tok,com)                                       \
+    do {                                                    \
+        if (root) {                                         \
+			root = root->insert_unified_pattern(tok, com);  \
+        }                                                   \
+        else {                                              \
+			root = new SearchTreeNode(tok, com);            \
+        }                                                   \
+    } while(0)
+
 
     {
         char *pattern = strdup(sett->get_pattern());
@@ -612,32 +613,32 @@ void SearchTree::findMatches(GB_CSTR seq, int len, reportMatch report)
 
 #define AWAR_NAME(t,s)  ED4_AWAR_##t##_SEARCH_##s
 
-#define AWAR_LIST(t)				\
-    AWAR_NAME(t,PATTERN),			\
-    AWAR_NAME(t,MIN_MISMATCHES),		\
-    AWAR_NAME(t,MAX_MISMATCHES),		\
-    AWAR_NAME(t,CASE),				\
-    AWAR_NAME(t,TU),				\
-    AWAR_NAME(t,PAT_GAPS),			\
-    AWAR_NAME(t,SEQ_GAPS),			\
-    AWAR_NAME(t,REVERSE),			\
-    AWAR_NAME(t,COMPLEMENT),			\
-    AWAR_NAME(t,EXACT),				\
-    AWAR_NAME(t,SHOW),				\
-    AWAR_NAME(t,OPEN_FOLDED),			\
+#define AWAR_LIST(t)                            \
+AWAR_NAME(t,PATTERN),                           \
+    AWAR_NAME(t,MIN_MISMATCHES),                \
+    AWAR_NAME(t,MAX_MISMATCHES),                \
+    AWAR_NAME(t,CASE),                          \
+    AWAR_NAME(t,TU),                            \
+    AWAR_NAME(t,PAT_GAPS),                      \
+    AWAR_NAME(t,SEQ_GAPS),                      \
+    AWAR_NAME(t,REVERSE),                       \
+    AWAR_NAME(t,COMPLEMENT),                    \
+    AWAR_NAME(t,EXACT),                         \
+    AWAR_NAME(t,SHOW),                          \
+    AWAR_NAME(t,OPEN_FOLDED),                   \
     AWAR_NAME(t,AUTO_JUMP)
 
 static struct S_SearchAwarList awar_list[SEARCH_PATTERNS] = {
     { AWAR_LIST(USER1) },
-        { AWAR_LIST(USER2) },
-            { AWAR_LIST(PROBE) },
-                { AWAR_LIST(PRIMER1) },
-                    { AWAR_LIST(PRIMER2) },
-                        { AWAR_LIST(PRIMER3) },
-                            { AWAR_LIST(SIG1) },
-                                { AWAR_LIST(SIG2) },
-                                    { AWAR_LIST(SIG3) },
-                                        };
+    { AWAR_LIST(USER2) },
+    { AWAR_LIST(PROBE) },
+    { AWAR_LIST(PRIMER1) },
+    { AWAR_LIST(PRIMER2) },
+    { AWAR_LIST(PRIMER3) },
+    { AWAR_LIST(SIG1) },
+    { AWAR_LIST(SIG2) },
+    { AWAR_LIST(SIG3) },
+};
 
 static inline int resultsAreShown(ED4_SearchPositionType type)
 {
@@ -645,12 +646,12 @@ static inline int resultsAreShown(ED4_SearchPositionType type)
 }
 
 enum search_params_changed_action {
-    REFRESH_IF_SHOWN	=1,
-    REFRESH_ALWAYS	=2,
-    RECALC_SEARCH_TREE	=4,
-    TEST_MIN_MISMATCH	=8,
-    TEST_MAX_MISMATCH	=16,
-    DO_AUTO_JUMP	=32
+    REFRESH_IF_SHOWN   = 1,
+    REFRESH_ALWAYS	   = 2,
+    RECALC_SEARCH_TREE = 4,
+    TEST_MIN_MISMATCH  = 8,
+    TEST_MAX_MISMATCH  = 16,
+    DO_AUTO_JUMP	   = 32
 };
 
 // --------------------------------------------------------------------------------
@@ -756,7 +757,10 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     }
 
     if (action & REFRESH_ALWAYS) {
+        bool old_update                        = ED4_update_global_cursor_awars_allowed;
+        ED4_update_global_cursor_awars_allowed = false;
         ED4_refresh_window(ED4_ROOT->temp_aww, 0, 0);
+        ED4_update_global_cursor_awars_allowed = old_update;
     }
 }
 
@@ -1186,7 +1190,7 @@ char *ED4_SearchResults::buildColorString(ED4_sequence_terminal *seq_terminal, i
     int i;
     int st_shown = 0;
 
-    e4_assert(start<=end);                  //confirming the condition 
+    e4_assert(start<=end);                  //confirming the condition
     for (i=0; i<SEARCH_PATTERNS; i++) {
         if (shown[i]) {
             st_shown = 1;
@@ -1380,7 +1384,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
 
     ED4_terminal *start_terminal = terminal;
     int start_pos = pos;
-    int last_loop = 0; 
+    int last_loop = 0;
 
     while (terminal) {
         if (terminal->is_sequence_terminal()) {
@@ -1670,6 +1674,44 @@ static AW_window *save_search_parameters(AW_root *root, AW_CL cl_type) {
 }
 
 
+//  ------------------------------------------------------------------------
+//      static void search_init_config(AW_window *aww, int search_type)
+//  ------------------------------------------------------------------------
+static void search_init_config(AW_window *aww, int search_type) {
+    SearchAwarList awarList = &awar_list[search_type];
+    AWT_reset_configDefinition(aww->get_root());
+
+    AWT_add_configDefinition(awarList->show, "show");
+    AWT_add_configDefinition(awarList->openFolded, "openFolded");
+    AWT_add_configDefinition(awarList->autoJump, "autoJump");
+    AWT_add_configDefinition(awarList->pattern, "pattern");
+    AWT_add_configDefinition(awarList->min_mismatches, "min_mismatches");
+    AWT_add_configDefinition(awarList->max_mismatches, "max_mismatches");
+    AWT_add_configDefinition(awarList->seq_gaps, "seq_gaps");
+    AWT_add_configDefinition(awarList->pat_gaps, "pat_gaps");
+    AWT_add_configDefinition(awarList->tu, "tu");
+    AWT_add_configDefinition(awarList->case_sensitive, "case_sensitive");
+    AWT_add_configDefinition(awarList->reverse, "reverse");
+    AWT_add_configDefinition(awarList->complement, "complement");
+    AWT_add_configDefinition(awarList->exact, "exact");
+}
+
+//  -------------------------------------------------------------------------
+//      static char *search_store_config(AW_window *aww, AW_CL , AW_CL )
+//  -------------------------------------------------------------------------
+static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL ) {
+    search_init_config(aww, int(cl_search_type));
+    return AWT_store_configDefinition();
+}
+//  -----------------------------------------------------------------------------------------------------
+//      static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL )
+//  -----------------------------------------------------------------------------------------------------
+static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL ) {
+    search_init_config(aww, int(cl_search_type));
+    AWT_restore_configDefinition(stored_string);
+}
+
+
 AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     ED4_SearchPositionType type = ED4_SearchPositionType(cl);
     SearchAwarList awarList = &awar_list[type];
@@ -1746,6 +1788,8 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     aws->at("exact");
     aws->create_toggle(awarList->exact);
 
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", search_store_config, search_restore_config, (AW_CL)type, 0);
 
     return (AW_window *)aws;
 }
@@ -1753,13 +1797,13 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
 static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
     if (base->is_sequence_terminal()) {
 	ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
-	const char *species_name = (const char *)cl_species_name;	
+	const char *species_name = (const char *)cl_species_name;
 	return species_name && seq_term && seq_term->species_name && strcmp(species_name, seq_term->species_name)==0;
     }
     return 0;
 }
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  //yadhu 
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  //yadhu
     ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
     ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
 
