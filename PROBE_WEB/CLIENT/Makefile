@@ -50,8 +50,8 @@ all:
 		@echo "$<" >>$(BUILDLIST)
 
 compile:
-		@echo javac `cat $(BUILDLIST)`
-		@javac `cat $(BUILDLIST)`
+		@echo javac -deprecation `cat $(BUILDLIST)`
+		@javac -deprecation `cat $(BUILDLIST)`
 
 $(JAR) : $(CLASSES) $(JAVAS) Makefile $(MANIFEST)
 		test \! -f $(BUILDLIST) || ($(MAKE) compile && rm $(BUILDLIST))
