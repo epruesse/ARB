@@ -4,7 +4,7 @@ itemmethod:(GEN_INFILE(in1);\
             cat infile |tr '?' '-' >in1.in;\
             mv in1.in infile;\
             RUN_IN_WINDOW((arb_protml $MODEL $SEARCH $REARRANGE $CALCLENGTH infile ;\
-                           $DISPLAY_FUNC));\
+                           (test -f treefile && $DISPLAY_FUNC)));\
             RM_LOCAL_FILES(in1))&
 itemhelp:protml.help
 
