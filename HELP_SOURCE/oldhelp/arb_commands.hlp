@@ -57,16 +57,26 @@ SECTION         COMMANDS
 	'arb_2_ascii filename [dest_filename]'
 
 		Converts any ARB database to ASCII format.
-		Also tries to recover corrupt files.
 
-	'arb_2_bin [-m] filename [dest_filename]'
+		Also tries to recover corrupt files (if dest_filename is skipped).
+                Backup first!!!
+
+        'arb_2_bin [-m] [-c][tree_xxx] database [newdatabase]'
 
 		Converts any ARB database to binary format.
 
-                        '-m'	create a fast load file as well.
+                Options: -m            create map file too
+                         -r            try to repair destroyed database
+                         -c[tree_xxx]  optimize database using tree_xxx or largest tree
+
 
 NOTES		It is very useful to start a performance meter to see
 		whether there are running background jobs (fastdnaml, phylip...)
+
+                All arb_... commands show some basic usage info if you call
+                them with parameter '--help'
+
+                        i.e.    arb_ntree --help
 
 WARNINGS	Don't destroy an existing arb file with arb_panic.
 
