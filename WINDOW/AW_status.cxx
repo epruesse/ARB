@@ -1470,13 +1470,13 @@ static void aw_help_new_helpfile(AW_root *awr) {
         sys[0] = 0;
 
         if (stat(help_file, &st) == 0) { // *.ps exists
-            sprintf(sys,"%s %s &",GB_getenvGS(), help_file);
+            sprintf(sys,"%s %s &",GB_getenvARB_GS(), help_file);
         }
         else {
             char *compressed = GBS_global_string_copy("%s.gz", help_file);
 
             if (stat(compressed, &st) == 0) { // *.ps.gz exists
-                sprintf(sys,"(gunzip <%s | %s -) &", compressed, GB_getenvGS());
+                sprintf(sys,"(gunzip <%s | %s -) &", compressed, GB_getenvARB_GS());
             }
             else {
                 sprintf(AW_ERROR_BUFFER, "Neither %s nor %s where found", help_file, compressed);
@@ -1485,6 +1485,7 @@ static void aw_help_new_helpfile(AW_root *awr) {
             free(compressed);
         }
 
+        GB_information("executing '%s'", sys);
         if (system(sys)){
             sprintf(AW_ERROR_BUFFER,"Error calling: %s",sys);
             aw_message();
