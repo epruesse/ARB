@@ -1,3 +1,18 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_ambiguities.h                                       //
+//    Purpose   : Class used for evaluation of iupac ambiguities         //
+//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Huber in July - October 2003                        //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
+
 #include "awt_iupac.hxx"
 
 class SQ_ambiguities {
