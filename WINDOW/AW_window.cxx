@@ -1567,7 +1567,11 @@ Widget aw_create_shell(
                        int width, int height,
                        int posx, int posy)  {
     AW_root *root = aww->get_root();
-    Widget shell;
+    Widget   shell;
+
+    // set minimum window size to size provided by init
+    if (width>aww->_at->max_x_size) aww->_at->max_x_size  = width;
+    if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
 
     if ( !GBS_read_hash(root->hash_for_windows,aww->window_name)) {
         GBS_write_hash(root->hash_for_windows,aww->window_name,(long)aww);
@@ -1625,10 +1629,11 @@ Widget aw_create_shell(
         // create the window big enough to ensure that all widgets
         // are created in visible area (otherwise widget are crippled).
         // window will be resized later (on show)
+
         width  = 4000;
         height = 3000;
 
-        if (aww->recalc_size_at_show == 0) aww->recalc_size_at_show = 1;
+        if (!aww->recalc_size_at_show) aww->recalc_size_at_show = 1;
     }
 
     Widget father = p_global->toplevel_widget;
@@ -1748,9 +1753,7 @@ void aw_realize_widget(AW_window *aww) {
     p_aww(aww)->WM_top_offset = -1000;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname,
-                                int width, int height,
-                                int posx, int posy) {
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
     Widget      main_window;
     Widget      help_popup;
     Widget      help_label;
@@ -1770,9 +1773,10 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
+    int posx = 50;
+    int posy = 50;
 
-    p_w->shell= aw_create_shell(this,AW_TRUE,
-                                width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget( "mainWindow1",
                                            xmMainWindowWidgetClass,
@@ -1972,9 +1976,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 }
 
 
-void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname,
-                          int width, int height,
-                          int posx, int posy) {
+void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, int width, int height) {
     Widget main_window;
     Widget help_popup;
     Widget help_label;
@@ -1994,8 +1996,10 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_TRUE,
-                                width, height, posx, posy);
+    int posx = 50;
+    int posy = 50;
+
+    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget( "mainWindow1",
                                            xmMainWindowWidgetClass,
@@ -2182,12 +2186,16 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     set_icon(window_defaults_name);
 }
 
-void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname,int posx, int posy) {
+void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     //Arg args[10];
-    root = root_in; // for makro
-    int width = 1000;
-    int height = 1000;
-    window_name = strdup(windowname);
+    root = root_in;             // for makro
+
+    int width  = 100;            // this is only the minimum size!
+    int height = 100;
+    int posx   = 50;
+    int posy   = 50;
+
+    window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
     p_w->shell= aw_create_shell(this,AW_TRUE,width, height, posx, posy);
@@ -2214,21 +2222,23 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
 }
 
 
-void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname,
-                                 int width, int height,
-                                 int posx, int posy) {
+void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname) {
     //  Arg args[10];
 
     root = root_in; // for makro
 
-    const char *help_button = "HELP";
+    const char *help_button   = "HELP";
     const char *help_mnemonic = "H";
-    AW_active mask = AWM_ALL;
-    window_name = strdup(windowname);
-    window_defaults_name = GBS_string_2_key(wid);
+    AW_active   mask          = AWM_ALL;
+    window_name               = strdup(windowname);
+    window_defaults_name      = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_TRUE,
-                                width, height, posx, posy);
+    int width  = 100;
+    int height = 100;
+    int posx   = 50;
+    int posy   = 50;
+
+    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
 
     Widget main_window;
     Widget help_popup;
@@ -2302,17 +2312,22 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
 }
 
 
-void AW_window_message::init(AW_root *root_in, const char *windowname, int width, int height, int posx, int posy) {
+void AW_window_message::init(AW_root *root_in, const char *windowname) {
     //  Arg args[10];
 
-    root = root_in; // for makro
+    root = root_in;             // for makro
+
+    int width  = 100;
+    int height = 100;
+    int posx   = 50;
+    int posy   = 50;
 
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(window_name);
 
     // create shell for message box
 
-    p_w->shell= aw_create_shell(this,AW_FALSE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE, width, height, posx, posy);
 
     p_w->areas[AW_INFO_AREA] =
         new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
@@ -2412,14 +2427,19 @@ void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs){
     cbs->run_callback();
 }
 
+#define MODE_BUTTON_OFFSET 34
+inline int yoffset_for_mode_button(int button_number) {
+    return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
+}
 
 int AW_window::create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     char path[256]; memset(path,0,256);
     sprintf(path,"%s/lib/pixmaps/%s",GB_getenvARBHOME(),pixmap);
-    int y = p_w->number_of_modes*34 + (p_w->number_of_modes/4)*8 + 2;
-    button = XtVaCreateManagedWidget( "",
+//     int y = p_w->number_of_modes*MODE_BUTTON_OFFSET + (p_w->number_of_modes/4)*8 + 2;
+    int  y   = yoffset_for_mode_button(p_w->number_of_modes);
+    button   = XtVaCreateManagedWidget( "",
                                       xmPushButtonWidgetClass,
                                       p_w->mode_area,
                                       XmNx, 0,
@@ -2448,7 +2468,12 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
     }
 
     AW_INSERT_BUTTON_IN_SENS_LIST ( root, id, mask, button );
-    return (p_w->number_of_modes++);
+    p_w->number_of_modes++;
+
+    int ynext = yoffset_for_mode_button(p_w->number_of_modes);
+    if (ynext > _at->max_y_size) _at->max_y_size = ynext;
+
+    return p_w->number_of_modes;
 }
 
 // ------------------------
@@ -3049,8 +3074,15 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
     }else{
         xfig->create_gcs(device,1);
     }
-    _at->max_x_size = xfig->maxx - xfig->minx;
-    _at->max_y_size = xfig->maxy - xfig->miny;
+
+    int xsize = xfig->maxx - xfig->minx;
+    int ysize = xfig->maxy - xfig->miny;
+
+    if (xsize>_at->max_x_size) _at->max_x_size = xsize;
+    if (ysize>_at->max_y_size) _at->max_y_size = ysize;
+
+//     _at->max_x_size = xfig->maxx - xfig->minx;
+//     _at->max_y_size = xfig->maxy - xfig->miny;
 
     if (resize) {
         if (recalc_size_at_show == 0) recalc_size_at_show = 1;
@@ -3145,7 +3177,7 @@ void aw_macro_message( const char *templat, ... )
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "MESSAGE", 1000, 1000, 300, 300 );
+        aw_msg->init( root, "MESSAGE");
         aw_msg->load_xfig("macro_message.fig");
 
         aw_msg->at("clear");
