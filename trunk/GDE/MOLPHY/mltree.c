@@ -32,7 +32,7 @@ Node **v;
 
 Tree *
 new_tree(maxspc, maxibrnch, numptrn, seqconint)
-int maxspc, maxibrnch;
+int maxspc, maxibrnch, numptrn;
 imatrix seqconint;
 {
 	int n, i;
@@ -249,7 +249,7 @@ int buftree;
 		/* printf("%s\n", line); */
 		if (*line == '#') continue; /* comment line */
 		for (cp = line; *cp != '\0'; ) {
-			switch(*cp) { 
+			switch(*cp) {
 
 			case ';':
 					if (np == strtree) goto next;
@@ -368,7 +368,7 @@ char *st;
 			dvg++;
 			np = internalnode(tr, cpp, ninode, st);
 			np->isop = xp->isop;
-			xp->isop = np; 
+			xp->isop = np;
 			xp = np;
 		}
 		if (Debug) printf("internal2: %c\n", **cpp);
@@ -455,7 +455,7 @@ cvector strtree;
 			dvg++;
 			np = internalnode(tr, &cp, &ninode, strtree);
 			np->isop = xp->isop;
-			xp->isop = np; 
+			xp->isop = np;
 			xp = np;
 		}
 		if (Debug) printf("roottre0: %c\n", *cp);
@@ -475,7 +475,7 @@ cvector strtree;
 } /*_ constructtree */
 
 
-void 
+void
 prcurtree(tr)
 Tree *tr;
 {
@@ -597,7 +597,7 @@ Tree *tr;
 
 
 #if 0
-static void 
+static void
 leastsquares(am, ym)
 dmatrix am;
 dvector ym;
@@ -643,7 +643,7 @@ dvector ym;
 #endif
 
 
-static void 
+static void
 luequation(amat, yvec, size)
 dmatrix amat;
 dvector yvec;
@@ -1147,7 +1147,7 @@ int ns;
 						}
 					}
 					yv[i] /= ny;
-					sy += yv[i]; 
+					sy += yv[i];
 				}
 #if				DEBUGFM
 				printf("\nint. baranch %3d", cp->num+1);
@@ -1422,9 +1422,9 @@ Tree *tr;
 			if (n == Numspc - 3) {
 				printf("%7s%11.2f", "TBL :",tr->tblength * 1.0);
 				printf("%7s %d", "iter:", Numit);
-				if (!Converg) 
+				if (!Converg)
 					printf("%s", "        non convergence!");
-				else if (Converg == 2) 
+				else if (Converg == 2)
 					printf("%s", " just before convergence");
 				putchar('\n');
 			} else if (n == Numspc - 2) {

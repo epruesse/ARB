@@ -4,12 +4,13 @@
  */
 
 #include "protml.h"
+#include "prot_tml.h"
 
 #define ENJ 0
 
 Tree *
 new_njtree(maxspc, maxibrnch, numptrn, seqconint)
-int maxspc, maxibrnch;
+int maxspc, maxibrnch, numptrn;
 imatrix seqconint;
 {
 	int n, i;
