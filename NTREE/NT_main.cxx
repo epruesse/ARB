@@ -25,6 +25,7 @@
 
 AW_HEADER_MAIN
 
+#define nt_assert(bed) arb_assert(bed)
 
 #define NT_SERVE_DB_TIMER 50
 #define NT_CHECK_DB_TIMER 200
@@ -215,11 +216,18 @@ void AD_set_default_root(AW_root *aw_root);
 //      static void AWAR_DB_PATH_changed_cb(AW_root *awr)
 //  ----------------------------------------------------------
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
-    char    *value        = awr->awar(AWAR_DB_PATH)->read_string();
-    char    *lslash       = strrchr(value, '/');
+    char *value  = awr->awar(AWAR_DB_PATH)->read_string();
+    char *lslash = strrchr(value, '/');
+
+    if (lslash) { // update value of directory
+        lslash[0] = 0;
+        awr->awar(AWAR_DB"directory")->write_string(value);
+        lslash[0] = '/';
+    }
 
     lslash = lslash ? lslash+1 : value;
     awr->awar(AWAR_DB_NAME)->write_string(lslash);
+    free(value);
 }
 
 //  ---------------------------------------
@@ -264,7 +272,14 @@ int main(int argc, char **argv)
 	    nt_intro_start_merge(0,aw_root);
 	    aw_root->main_loop();
 	}
+
+    bool  abort            = false;
+    bool  start_db_browser = true;
+    char *browser_startdir = GB_strdup(".");
+
 	if (argc>=2) {
+        start_db_browser = false;
+
         if (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0) {
             fprintf(stderr,
                     "\n"
@@ -298,28 +313,68 @@ int main(int argc, char **argv)
 
 		db_server = argv[1];
 		if (GBT_check_arb_file(db_server)) {
-			char msg[1024];
-			sprintf(msg,"Your file is not an original arb file\n%s",
-                    GB_get_error());
-			switch(aw_message(msg,	"Continue (dangerous),Start Converter,Exit")) {
-				case 0:	break;
-				case 2: return 0;
-				case 1:
+            int answer = -1;
+            char *full_path = AWT_unfold_path(db_server);
+            if (AWT_is_dir(full_path)) answer = 2; // autoselect browser
+
+            if (answer == -1) {
+                char msg[1024];
+                sprintf(msg,"Your file is not an original arb file\n%s", GB_get_error());
+                answer = aw_message(msg, "Continue (dangerous),Start Converter,Browser,Exit");
+            }
+
+			switch (answer) {
+				case 0: {        // Continue
+                    break;
+                }
+				case 1: {        // Start converter
                     aw_root->awar_int(AWAR_READ_GENOM_DB, 2);
 					gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
 					aw_root->main_loop();
-				default:	break;
+                    break;
+                }
+				case 2: {        // Browse
+                    char *dir = GB_strdup(full_path);
+                    while (dir && !AWT_is_dir(dir)) {
+                        char *updir = AWT_extract_directory(dir);
+                        free(dir);
+                        dir         = updir;
+                    }
+
+                    if (dir) {
+                        nt_assert(AWT_is_dir(dir));
+
+                        free(browser_startdir);
+                        browser_startdir = dir;
+                        dir              = 0;
+                        start_db_browser = true;
+                    }
+                    free(dir);
+                    break;
+                }
+				case 3: {        // Exit
+                    abort = true;
+                    break;
+                }
+				default: {
+                    break;
+                }
 			}
+            free(full_path);
 		}
-	}else{
-	    char *latest = GB_find_latest_file(".","/\\.a[r0-9][b0-9]$/");
+	}
+
+
+    if (start_db_browser) {
+        aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
+	    char *latest = GB_find_latest_file(browser_startdir, "/\\.a[r0-9][b0-9]$/");
 	    if (latest){
             int l = strlen(latest);
             latest[l-1] = 'b';
             latest[l-2] = 'r';
             latest[l-3] = 'a';
             aw_root->awar(AWAR_DB_PATH)->write_string(latest);
-            delete latest;
+            free(latest);
 	    }
 	    AW_window *iws;
 	    if (nt.window_creator){
@@ -331,10 +386,14 @@ int main(int argc, char **argv)
 	    aw_root->main_loop();
 	}
 
-	aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
-
-	if (main_load_and_startup_main_window(aw_root)) return -1;
-	aw_root->main_loop();
+    if (abort) {
+        printf("Aborting.\n");
+    }
+    else {
+        aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
+        if (main_load_and_startup_main_window(aw_root)) return -1;
+        aw_root->main_loop();
+    }
 
 	return 0;
 }
