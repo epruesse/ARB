@@ -221,17 +221,17 @@ AW_window *NT_build_resort_window(AW_root *awr) {
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_1",
 			NT_RESORT_FILTER,
-			"key1",0, &AWT_species_selector);
+			"key1",0, &AWT_species_selector, 20, 10);
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_2",
 			NT_RESORT_FILTER,
-			"key2",0, &AWT_species_selector);
+			"key2",0, &AWT_species_selector, 20, 10);
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_3",
 			NT_RESORT_FILTER,
-			"key3",0, &AWT_species_selector);
+			"key3",0, &AWT_species_selector, 20, 10);
 
 	return (AW_window *)aws;
 

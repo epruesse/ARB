@@ -1111,9 +1111,8 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 		}
     }
 
-    if (gb_verbose_mode){	
-	GB_information("Loading '%s'%s%s",
-		   path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
+    if (gb_verbose_mode){
+        GB_information("Loading '%s'%s%s", path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
     }
 
     gbm_init_mem();

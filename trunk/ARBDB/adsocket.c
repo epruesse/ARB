@@ -721,7 +721,7 @@ GB_ULONG GB_last_saved_time(GBDATA *gb_main){
 
 void GB_edit(const char *path){
     char buffer[1024];
-    const char *ae = GB_getenv("ARB_TEXTEDIT");
+    const char *ae = GB_getenv("ARB_TEXTEDIT"); // doc in arb_envar.hlp
     char *fpath = GBS_eval_env(path);
     if (!ae) ae = "xedit";
     sprintf(buffer, "%s %s &",ae,fpath);
@@ -746,7 +746,7 @@ GB_CSTR GB_getcwd(void){
 
 void GB_xterm(void){
     char buffer[1024];
-    const char *xt = GB_getenv("ARB_XTERM");
+    const char *xt = GB_getenv("ARB_XTERM"); // doc in arb_envar.hlp
     if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
     sprintf(buffer, "%s &",xt);
     system(buffer);
@@ -754,7 +754,7 @@ void GB_xterm(void){
 
 void GB_xcmd(const char *cmd, GB_BOOL background){
     void *strstruct = GBS_stropen(1024);
-    const char *xt = GB_getenv("ARB_XCMD");
+    const char *xt = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
     char *sys;
     if (!xt) xt = "xterm -sl 1000 -sb -geometry 140x30 -e";
     GBS_strcat(strstruct, "(");
@@ -809,7 +809,7 @@ GB_CSTR GB_getenvHOME(void){
 GB_CSTR GB_getenvARBHOME(void){
     static char *arbhome = 0;
     if (!arbhome) {
-        arbhome = getenv("ARBHOME");
+        arbhome = getenv("ARBHOME"); // doc in arb_envar.hlp
         if (!arbhome){
             fprintf(stderr,	"ERROR: Environment Variable ARBHOME not found !!!\n"
                     "	Please set 'ARBHOME' to the installation path of ARB\n");
@@ -822,7 +822,7 @@ GB_CSTR GB_getenvARBHOME(void){
 GB_CSTR GB_getenvARBMACROHOME(void){
     static const char *amh = 0;
     if (!amh) {
-        char *res = getenv("ARBMACROHOME");
+        char *res = getenv("ARBMACROHOME"); // doc in arb_envar.hlp
         if (res) amh = res;
         else     amh = GBS_eval_env("$(ARBHOME)/lib/macros");
     }
@@ -830,15 +830,15 @@ GB_CSTR GB_getenvARBMACROHOME(void){
 }
 
 GB_CSTR GB_getenvGS(void){
-    char *gs = getenv("ARB_GS");
+    char *gs = getenv("ARB_GS"); // doc in arb_envar.hlp
     if (gs) return gs;
-    return "ghostview";
+    return "gv"; /* more recent than "ghostview" */
 }
 
 GB_CSTR GB_getenvDOCPATH(void){
     static const char *dp = 0;
     if (!dp) {
-        char *res = getenv("ARB_DOC");
+        char *res = getenv("ARB_DOC"); // doc in arb_envar.hlp
         if (res) dp = res;
         else     dp = GBS_eval_env("$(ARBHOME)/lib/help");
     }
@@ -846,10 +846,13 @@ GB_CSTR GB_getenvDOCPATH(void){
 }
 
 GB_CSTR GB_getenv(const char *env){
-    if (strncmp(env, "ARB", 3)          == 0) {
+    if (strncmp(env, "ARB", 3) == 0) {
+
+        // doc in arb_envar.hlp
+
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
         if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
-        if (strcmp(env, "ARB_GS")      == 0) return GB_getenvGS();
+        if (strcmp(env, "ARB_GS")       == 0) return GB_getenvGS();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
     }
     else {
@@ -876,9 +879,7 @@ GB_ULONG GB_get_physical_memory(void){
     long memsize = pagesize/1024 * pages;
     long nettomemsize = memsize- 10000;	/* kernel size */
     return nettomemsize * 70 / 100; /* maximum 70 % of memory */
-#elif defined(DIGITAL)
-    return 80000;		/* 80 megabyte */
 #else
-    return 80000;		/* 80 megabyte default memory */
+    return 128*1024;		/* 128 Mb default memory */
 #endif
 }
