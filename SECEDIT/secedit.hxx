@@ -61,7 +61,7 @@ private:
 
 public:
     int * abspos_array;
-    
+
     SEC_region(int start=3, int end=4);
     ~SEC_region();
 
@@ -75,8 +75,8 @@ public:
     //selector-methods
     int get_sequence_start() 	{ return sequence_start; }
     int get_sequence_end() 		{ return sequence_end; }
-    int get_base_count() 		{ return base_count; } 
-    
+    int get_base_count() 		{ return base_count; }
+
     void set_sequence_start(int sequence_start_) 	{ sequence_start = sequence_start_; }
     void set_sequence_end(int sequence_end_) 		{ sequence_end = sequence_end_; }
     void set_base_count(int base_count_) 		{ base_count = base_count_; }
@@ -98,12 +98,12 @@ class SEC_helix_strand : public SEC_Base {
     double fixpoint_x;  //coordinates, where strand meets it's loop
     double fixpoint_y;
     double attachp1_x, attachp1_y, attachp2_x, attachp2_y;   // 2 points where the segments meet this strand from left and right
-    
+
 public:
     //data for the drag operation
     double start_angle;
     double old_delta;
-    
+
     SEC_helix_strand(SEC_root *root_=NULL, SEC_loop *loop=NULL, SEC_helix_strand *other_strand=NULL, SEC_helix *helix_info=NULL, SEC_segment *next_segment=NULL, int start=10, int end=11);
     virtual ~SEC_helix_strand();
 
@@ -126,20 +126,20 @@ public:
     //    void paint_this_strand(AW_device *device, double *v, double &length_of_v);
     //    void paint_other_strand(AW_device *device, double *v, double &length_of_v);
     void paint_strands(AW_device *device, double *v, double &length_of_v);
-    
+
     void paint_constraints(AW_device *device, double *v, double &length_of_v);
     int connect_one(SEC_segment *segment_before, SEC_segment *segment_after);
     int connect_many(SEC_segment *segment_before, SEC_segment *segment_after);
 
     //selector-methods
     SEC_BASE_TYPE getType();
-    
+
     SEC_segment * get_next_segment() 	{ return next_segment; }
     SEC_loop * get_loop() 			{ return loop; }
     SEC_helix_strand * get_other_strand() 	{ return other_strand; }
     SEC_helix * get_helix_info() 		{ return helix_info; }
     SEC_region * get_region() 		{ return &region; }
-    
+
     double get_fixpoint_x () 	{ return fixpoint_x; }
     double get_fixpoint_y () 	{ return fixpoint_y; }
     double get_attachp1_x () 	{ return attachp1_x; }
@@ -147,12 +147,12 @@ public:
     double get_attachp2_x () 	{ return attachp2_x; }
     double get_attachp2_y () 	{ return attachp2_y; }
 
-    
+
     void set_loop(SEC_loop *loop_) 				{ loop = loop_; }
     void set_other_strand(SEC_helix_strand *other_strand_) 	{ other_strand = other_strand_; }
     void set_helix_info(SEC_helix *helix_info_) 		{ helix_info = helix_info_; }
     void set_next_segment(SEC_segment *next_segment_) 		{ next_segment=next_segment_; }
-    
+
     void set_fixpoint_x(double fixpoint_x_) 	{ fixpoint_x = fixpoint_x_; }
     void set_fixpoint_y(double fixpoint_y_) 	{ fixpoint_y = fixpoint_y_; }
     void set_fixpoints(double x, double y) 	{ fixpoint_x = x; fixpoint_y = y; }
@@ -167,7 +167,7 @@ class BI_ecoli_ref;
 
 struct SEC_base_position { // stores a base position and the last position where the base was drawn
     int pos; // -1 -> not initialised
-    AW_pos x;	
+    AW_pos x;
     AW_pos y;
 };
 
@@ -176,19 +176,19 @@ private:
 
     //redundant values
     int max_index;
-    
+
     SEC_segment *root_segment;
     double distance_between_strands;
-    
+
     int cursor;
     SEC_base_position before_cursor;
     SEC_base_position after_cursor;
     SEC_base_position min_position;
     SEC_base_position max_position;
-    
+
     int cursor_x1, cursor_x2, cursor_y1, cursor_y2;
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
-    
+
 public:
 
     //variables needed for the IO-procedures
@@ -196,7 +196,7 @@ public:
     int *number_found;
     char *x_string;	// needed to write data
     int x_string_len;
-    int *ap;
+    int *ap; // array containing absolute positions of helices
     int ap_length;
 
     //variables needed for the paint-functionality
@@ -208,7 +208,7 @@ public:
     int show_constraints;
     int drag_recursive;   //indicates, if a drag will recursively alter the angles of the following strands
 
-    
+
     /* ******* Sequences */
 
     GBDATA *gb_template;
@@ -221,7 +221,7 @@ public:
 
     BI_helix *helix;
     BI_ecoli_ref *ecoli;
-    
+
     SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
     ~SEC_root();
 
@@ -247,16 +247,16 @@ public:
     double get_distance_between_strands() 	{ return distance_between_strands; }
     SEC_segment * get_root_segment () 		{ return root_segment; }
     int get_cursor() 				{ return cursor; }
-    
+
     void announce_base_position(int base_pos, AW_pos x, AW_pos y);
     void clear_base_positions();
-    
+
     void set_max_index(int max_index_) 						{ max_index = max_index_; }
     void set_root_segment(SEC_segment *root_segment_) 				{ root_segment = root_segment_; }
     void set_distance_between_strands (double distance_between_strands_) 	{ distance_between_strands = distance_between_strands_; }
     void set_cursor(int cursor_) 						{ cursor = cursor_; }
     void set_show_constraints(int show_constraints_) 				{ show_constraints = show_constraints_; }
-    
+
     void set_last_drawed_cursor_position(double x1, double y1, double x2, double y2) { cursor_x1 = int(x1); cursor_y1 = int(y1); cursor_x2 = int(x2); cursor_y2 = int(y2); }
     void get_last_drawed_cursor_position(double &x1, double &y1, double &x2, double &y2) const { x1 = cursor_x1; y1 = cursor_y1; x2 = cursor_x2; y2 = cursor_y2; }
     void clear_last_drawed_cursor_position() { set_last_drawed_cursor_position(0, 0, 0, 0); }
@@ -268,7 +268,7 @@ public:
 
 class SEC_segment : public SEC_Base {
 private:
-    
+
     //redundant values
     double alpha;                              //angle of segment
     double x, y;					//coordinates of segment
@@ -278,9 +278,9 @@ private:
     SEC_region region;
     SEC_loop *loop;
     SEC_root *root;
-    
+
 public:
-    
+
     SEC_segment(SEC_root *root_=NULL, double alpha=0, SEC_helix_strand *next_helix_strand=NULL, SEC_loop *loop=NULL);
     virtual ~SEC_segment();
 
@@ -295,16 +295,16 @@ public:
     void print_ecoli_pos(long ecoli_pos, double base_x, double base_y, AW_device *device);
     void generate_x_string();
     void prepare_paint(SEC_helix_strand *previous_strand_pointer, double &gamma, double &eta, double &radius, int &base_count, double &angle_step);
-    
+
     int is_endings_segment() {
 	int seq_start = region.get_sequence_start();
 	int seq_end = region.get_sequence_end();
-	
+
 	return seq_start>seq_end; // rw: changed to allow segments with length==0
-	
+
 // 	if (seq_start > seq_end) return(1);
 // 	if (seq_start < seq_end) return(0);
-	
+
 // 	return(2); // seq_start == seq_end
     }
 
@@ -361,15 +361,15 @@ public:
     //selector methods
     SEC_helix_strand * get_previous_strand();
     SEC_BASE_TYPE getType();
-    
+
     SEC_helix_strand * get_next_helix() 	{ return next_helix_strand; }
     SEC_loop * get_loop() 			{ return loop; }
     SEC_region * get_region() 		{ return &region; }
-    
+
     double get_alpha () 	{ return alpha; }
     double get_x() 		{ return x; }
     double get_y() 		{ return y; }
-    
+
     void set_next_helix_strand(SEC_helix_strand *strand) 	{ next_helix_strand = strand; }
     void set_loop(SEC_loop *loop_) 				{ loop = loop_; }
 };
@@ -385,13 +385,13 @@ private:
     int umfang;  //number of bases in whole loop
     double x, y;          //coordinates of central point
     double radius;
-    
+
     SEC_segment *segment;
     double max_radius, min_radius; // constraints
     SEC_root *root;
-    
+
 public:
-    
+
     SEC_loop(SEC_root *root_=NULL, SEC_segment *segment=NULL, double max_radius=0, double min_radius=0);
     virtual ~SEC_loop();    //Destruktor
 
@@ -420,10 +420,10 @@ public:
     double get_y() 			{ return y; }
     double get_radius() 		{ return radius; }
     int get_umfang () 		{ return umfang; }
-    
+
     double& get_max_radius_ref() { return max_radius; }
     double& get_min_radius_ref() { return min_radius; }
-    
+
     void set_segment(SEC_segment *segment_) 	{ segment = segment_; }
     void set_max_radius(double max_radius_) 	{ max_radius = max_radius_; }
     void set_min_radius(double min_radius_) 	{ min_radius = min_radius_; }
@@ -439,12 +439,12 @@ private:
 
     //redundant values
     double length;
-    
+
     double delta;
     double max_length, min_length; // constraints
-    
+
 public:
-    
+
     SEC_helix(double delta=7.7, double max_length=0, double min_length=0);
     ~SEC_helix();
 
@@ -455,15 +455,15 @@ public:
     //selector methods
     double get_max_length () 	{ return max_length; }
     double get_min_length()		{ return min_length; }
-    
+
     double get_length() 		{ return length; }
     double get_delta () 		{ return delta; }
-    
+
     double& get_max_length_ref() 	{ return max_length; }
     double& get_min_length_ref() 	{ return min_length; }
-    
+
     void set_length(double length_) 	{ length = length_; }
-   
+
     void set_delta (double delta_) {
 	while(delta_ >= (2*M_PI)) {
 	    delta_ -= (2*M_PI);
@@ -480,7 +480,7 @@ SEC_root *create_test_root();
 
 AW_window *SEC_create_main_window(AW_root *awr);
 void SEC_create_awars(AW_root *root,AW_default def);
-void SEC_add_awar_callbacks(AW_root *aw_root, AW_default def, AWT_canvas *ntw); 
+void SEC_add_awar_callbacks(AW_root *aw_root, AW_default def, AWT_canvas *ntw);
 
 void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_pair_def_changed_cb(AW_root *awr, AW_CL cl_ntw);

@@ -352,7 +352,6 @@ void ED4_create_awars(AW_root *root, const char *config_name) { // cursor awars 
     root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);
 
     root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(ED4_selected_species_changed_cb);
-    root->awar_int(AWAR_COLUMNS_CHANGED, 0, gb_main)->add_callback(ED4_columns_changed_cb);
 
     root->awar_string(AWAR_EDIT_CONFIGURATION,config_name,gb_main);
     ed4_changesecurity(root,0);

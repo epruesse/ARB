@@ -1761,7 +1761,6 @@ extern "C" {
     void	ED4_species_container_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE gbtype);
     void 	ED4_sequence_changed_cb(GBDATA *gb_seq, int *cl, GB_CB_TYPE gbtype);
     void	ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
-    void    ED4_columns_changed_cb(AW_root *aw_root);
 }
 
 #endif

@@ -388,20 +388,6 @@ ED4_returncode	ED4_root::add_to_selected( ED4_terminal *object )
     return ( ED4_R_IMPOSSIBLE );
 }
 
-
-// ED4_returncode ED4_root::show_all( void )
-// {
-//     if (main_manager->update_info.delete_requested) {
-// 	main_manager->delete_requested_childs();
-//     }
-
-// //    ED4_ROOT->temp_ed4w->redraw();
-//     ED4_ROOT->refresh_all_windows();
-
-//     return ( ED4_R_OK );
-// }
-
-
 ED4_returncode ED4_root::resize_all( void )
 {
     while ( main_manager->update_info.resize ) {
@@ -423,7 +409,6 @@ static ED4_returncode change_char_table_length(void **new_length_intPtr, void **
 }
 
 void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_TYPE gbtype) // callback from database
-    // see also ED4_columns_changed_cb
 {
     e4_assert(gbtype==GB_CB_CHANGED);
     int new_length = GB_read_int(gb_alignment_len);
@@ -432,9 +417,18 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
     printf("alignment_length_changed from %i to %i\n", MAXSEQUENCECHARACTERLENGTH, new_length);
 #endif
 
-    MAXSEQUENCECHARACTERLENGTH = new_length;
-    ED4_ROOT->main_manager->route_down_hierarchy((void**)&new_length, 0, change_char_table_length);
-    ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
+    if (MAXSEQUENCECHARACTERLENGTH!=new_length) { // otherwise we already did this (i.e. we were called by changed_by_database)
+        MAXSEQUENCECHARACTERLENGTH = new_length;
+
+        const char *err = ED4_ROOT->helix->init(gb_main); // reload helix
+        if (err) { aw_message(err); err = 0; }
+
+        err = ED4_ROOT->ecoli_ref->init(gb_main); // reload ecoli
+        if (err) { aw_message(err); err = 0; }
+
+        ED4_ROOT->main_manager->route_down_hierarchy((void**)&new_length, 0, change_char_table_length);
+        ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
+    }
 }
 
 ED4_returncode ED4_root::init_alignment() {
@@ -812,27 +806,6 @@ void ED4_reload_ecoli_cb(AW_window *aww,AW_CL cd1, AW_CL cd2)
     if (err) aw_message(err);
     ED4_refresh_window(aww,cd1,cd2);
 }
-
-extern "C" {
-    //  ------------------------------------------------------
-    //      void ED4_columns_changed_cb(AW_root *aw_root)
-    //  ------------------------------------------------------
-    // This is called when AWAR_COLUMNS_CHANGED is set to a new value.
-    // - some other duties are done by ED4_alignment_length_changed
-    // - the difference is: this function may also be invoked if the
-    //   alignment length does not change
-
-    void ED4_columns_changed_cb(AW_root *aw_root) {
-        const char *err = ED4_ROOT->helix->init(gb_main); // reload helix
-        if (err) { aw_message(err); err = 0; }
-
-        err = ED4_ROOT->ecoli_ref->init(gb_main); // reload ecoli
-        if (err) { aw_message(err); err = 0; }
-
-        ED4_ROOT->root_group_man->remap()->mark_compile_needed_force(); // mapping neu berechnen
-    }
-}
-
 
 // --------------------------------------------------------------------------------
 // 	recursion through all species

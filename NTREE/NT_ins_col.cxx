@@ -40,9 +40,6 @@ void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
 			GB_abort_transaction(gb_main);
 			aw_message(error);
 		}else{
-            //root->awar(AWAR_COLUMNS_CHANGED)->write_int(root->awar(AWAR_COLUMNS_CHANGED)->read_int()+1);
-            root->awar(AWAR_COLUMNS_CHANGED)->touch();
-
 			GBT_check_data(gb_main,0);
 			GB_commit_transaction(gb_main);
 		}

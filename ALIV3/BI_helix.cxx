@@ -27,7 +27,7 @@ struct helix_stack {
 	struct helix_stack *next;
 	long	pos;
 	BI_PAIR_TYPE type;
-	char	c;	
+	char	c;
 };
 
 struct {
@@ -194,14 +194,14 @@ char *BI_helix::init(char *helix_nr, char *helix, long size)
 			}
 		}
 		c = helix[pos];
-		if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){	// push 
+		if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){	// push
 			laststack = (struct helix_stack *)GBS_read_hash(hash,ident);
 			stack = new struct helix_stack;
 			stack->next = laststack;
 			stack->pos = pos;
 			stack->c = c;
 			GBS_write_hash(hash,ident,(long)stack);
-		}else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){	// pop 
+		}else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){	// pop
 			stack = (struct helix_stack *)GBS_read_hash(hash,ident);
 			if (!stack) {
 				sprintf(error,"Too many '%c' in Helix '%s' pos %li",c,ident,pos);
@@ -217,7 +217,7 @@ char *BI_helix::init(char *helix_nr, char *helix, long size)
 					goto helix_end;
 				}
 				if (isalpha(c)) {
-					entries[pos].pair_type = 
+					entries[pos].pair_type =
 						(BI_PAIR_TYPE)(HELIX_NON_STANDART0+c-'a');
 					entries[stack->pos].pair_type =
 						(BI_PAIR_TYPE)(HELIX_NON_STANDART0+c-'a');
@@ -235,7 +235,7 @@ char *BI_helix::init(char *helix_nr, char *helix, long size)
 				sident = new char[strlen(ident)+2];
 				sprintf(sident,"-%s",ident);
 			}
-			entries[pos].helix_nr = sident+1;			
+			entries[pos].helix_nr = sident+1;
 			entries[stack->pos].helix_nr = sident;
 		}
 	}
@@ -277,15 +277,12 @@ char *BI_helix::init(GBDATA *gb_main, char *alignment_name, char *helix_nr_name,
 	long size = GBT_get_alignment_len(gb_main,alignment_name);
 	if (size<=0) err = GB_get_error();
 	if (!err) {
-		GBDATA *gb_helix_nr_con =
-			GBT_find_extended(gb_extended_data, helix_nr_name);
+		GBDATA *gb_helix_nr_con = GBT_find_extended(gb_extended_data, helix_nr_name);
 		GBDATA *gb_helix_con = GBT_find_extended(gb_extended_data, helix_name);
 		GBDATA *gb_helix = 0;
 		GBDATA *gb_helix_nr = 0;
-		if (gb_helix_nr_con)
-			gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
-		if (gb_helix_con)
-			gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
+		if (gb_helix_nr_con) gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
+		if (gb_helix_con) gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
 		err = init(gb_helix_nr, gb_helix, size);
 	}
 	GB_pop_transaction(gb_main);
@@ -417,14 +414,14 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
 	aws->create_button( "CLOSE", "CLOSE", "C" );
 	aws->at_newline();
 
-	aws->label_length( 18 );	
+	aws->label_length( 18 );
 	int i;
 	int j;
 	int ex,ey;
 	char awar[256];
 	for (j=0; helix_awars[j].awar; j++){
 
-		aws->label_length( 25 );	
+		aws->label_length( 25 );
 		i = helix_awars[j].pair_type;
 
 		if (i != HELIX_DEFAULT && i!= HELIX_NO_MATCH ) {
