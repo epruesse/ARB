@@ -754,11 +754,13 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key){
 
 GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed){
     char *data;
-
     int	last_flag = GB_COMPRESSION_LAST;
+
     if (pre_compressed){
         last_flag = 0;
     }
+
+    ad_assert(1);
 
     if (max_compr & GB_COMPRESSION_SORTBYTES){
         source = gb_compress_longs(source,size,last_flag);
@@ -805,6 +807,7 @@ GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, l
     }
 
     *msize = size;
+    ad_assert(1);
     if (last_flag) return 0;					/* no compression */
     return (char *)source;
 }

@@ -11,7 +11,7 @@ depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECTS:.o=.cxx)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-names.o:  $(ARBHOME)/INCLUDE/names_server.h
+names.o: $(ARBHOME)/INCLUDE/names_server.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h names.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h

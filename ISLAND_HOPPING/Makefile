@@ -15,6 +15,7 @@ depend:
 
 island_hopping.o: island_hopping.h 
 island_hopping.o: i-hopper.h defs.h memory.h
+island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 i-hopper.o:  
 i-hopper.o:  
 i-hopper.o: 

@@ -14,7 +14,7 @@ depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-MG_checkfield.o:  $(ARBHOME)/INCLUDE/arbdb.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -35,7 +35,8 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx merge.hxx mg_merge.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx merge.hxx
+MG_main.o: mg_merge.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -54,7 +55,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
-MG_species.o:  $(ARBHOME)/INCLUDE/arbdb.h
+MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h

@@ -48,11 +48,11 @@ PRD_SearchFIFO.o: PRD_Node.hxx PRD_Range.hxx
 PRD_Design.o: PRD_Globals.hxx  
 PRD_Design.o: PRD_Design.hxx PRD_Range.hxx PRD_Node.hxx PRD_Item.hxx
 PRD_Design.o: PRD_Pair.hxx $(ARBHOME)/INCLUDE/arbdb.h
-PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h 
-PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h PRD_SequenceIterator.hxx
-PRD_Design.o: PRD_SearchFIFO.hxx
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PRD_Design.o: PRD_SequenceIterator.hxx PRD_SearchFIFO.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
-primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h 
+primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
