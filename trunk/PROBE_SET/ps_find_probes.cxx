@@ -1,27 +1,28 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
 #include <sys/times.h>
 
-#ifndef PS_DATABASE_HXX
+#include "ps_tools.hxx"
 #include "ps_database.hxx"
-#endif
-#ifndef PS_BITMAP_HXX
 #include "ps_bitmap.hxx"
-#endif
-#ifndef PS_CANDIDATE_HXX
 #include "ps_candidate.hxx"
-#endif
 
-template<class T>void PS_print_set_ranges( const char *_set_name, const set<T> &_set, const bool _cr_at_end = true ) {
+using namespace std;
+
+template<class T>
+void PS_print_set_ranges( const char *_set_name, const set<T> &_set, const bool _cr_at_end = true ) {
     fflush( stdout );
     printf( "%s size (%3i) : ", _set_name, _set.size() );
     if (_set.size() == 0) {
         printf( "(empty)" );
     } else {
-        set<T>::const_iterator range_begin = _set.begin();
-        set<T>::const_iterator range_end   = range_begin;
-        set<T>::const_iterator it = _set.begin();
+        typename set<T>::const_iterator range_begin = _set.begin();
+        typename set<T>::const_iterator range_end   = range_begin;
+        typename set<T>::const_iterator it = _set.begin();
         for ( ++it;
               it != _set.end();
               ++it ) {
@@ -45,16 +46,17 @@ template<class T>void PS_print_set_ranges( const char *_set_name, const set<T> &
 }
 
 
-template<class T1,class T2>void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const bool _compare_keys = true, const bool _cr_at_end = true ) {
+template<class T1,class T2>
+void PS_print_map_ranges( const char *_map_name, const map<T1,T2> &_map, const bool _compare_keys = true, const bool _cr_at_end = true ) {
     fflush( stdout );
     if (_map.size() == 0) {
         printf( "%s size (  0) : (empty)", _map_name );
     } else {
         if (_compare_keys) {
             printf( "%s size (%3i) : ", _map_name, _map.size() );
-            map<T1,T2>::const_iterator range_begin = _map.begin();
-            map<T1,T2>::const_iterator range_end   = range_begin;
-            map<T1,T2>::const_iterator it = _map.begin();
+            typename map<T1,T2>::const_iterator range_begin = _map.begin();
+            typename map<T1,T2>::const_iterator range_end   = range_begin;
+            typename map<T1,T2>::const_iterator it = _map.begin();
             for ( ++it;
                   it != _map.end();
                   ++it ) {
@@ -82,7 +84,7 @@ template<class T1,class T2>void PS_print_map_ranges( const char *_map_name, cons
             range.first  = _map.begin()->first;
             range.second = range.first;
             T2 cur_value = _map.begin()->second;
-            map<T1,T2>::const_iterator it = _map.begin();
+            typename map<T1,T2>::const_iterator it = _map.begin();
             for ( ++it;
                   it != _map.end();
                   ++it ) {
@@ -105,13 +107,13 @@ template<class T1,class T2>void PS_print_map_ranges( const char *_map_name, cons
             }
             value2indices[ cur_value ].insert( range );
             value2count[ cur_value ] += range.second - range.first +1;
-            for ( map<T2,set<pair<T1,T1> > >::const_iterator value = value2indices.begin();
+            for ( typename map<T2,set<pair<T1,T1> > >::const_iterator value = value2indices.begin();
                   value != value2indices.end();
                   ++value ) {
                 if (value != value2indices.begin()) cout << "\n";
                 printf( "%s size (%3i) : value (", _map_name, _map.size() );
                 cout << value->first << ") count (" << value2count[ value->first ] << ") [";
-                for ( set<pair<T1,T1> >::const_iterator indices = value->second.begin();
+                for ( typename set<pair<T1,T1> >::const_iterator indices = value->second.begin();
                       indices != value->second.end();
                       ++indices ) {
                     if (indices != value->second.begin()) cout << " ";
@@ -125,26 +127,6 @@ template<class T1,class T2>void PS_print_map_ranges( const char *_map_name, cons
     if (_cr_at_end) cout << "\n";
     fflush( stdout );
 }
-
-
-void PS_print_time_diff( const struct tms *_since ) {
-    struct tms now;
-    times( &now );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)\n",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-}
-
 
 //
 // common globals
@@ -337,7 +319,7 @@ void PS_find_probe_for_sets( const PS_NodePtr      _ps_node,
     // append ID to path
     //
     __PATH.insert( id );
-    
+
     //
     // dont look at path until ID is greater than lowest ID in the sets of IDs
     // also dont use a node if its already used as candidate
@@ -349,7 +331,9 @@ void PS_find_probe_for_sets( const PS_NodePtr      _ps_node,
         float distance_to_perfect_match;
         if (PS_test_sets_on_path( distance_to_perfect_match )) {
             unsigned long gain = PS_test_candidate_on_bitmap();   // no -> calc gain and make new candidate node
-            int status = (gain < (unsigned)__SPECIES_COUNT / 100) ? 0 : _candidate_parent->addChild( distance_to_perfect_match, gain, _ps_node, __PATH );
+            int status = (gain < (unsigned)__SPECIES_COUNT / 100)
+                ? 0
+                : _candidate_parent->addChild( static_cast<unsigned long>(distance_to_perfect_match), gain, _ps_node, __PATH );
             if (status > 0) {
                 if (status == 2) {
 //                     printf( " PS_find_probe_for_sets() : new candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
@@ -465,7 +449,7 @@ void PS_calc_next_speciesid_sets() {
         if (count < lowest_count)  lowest_count  = count;
     }
     treshold = ( ((__SPECIES_COUNT-lowest_count) * __TRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET) / 100.0 ) + lowest_count;
-    printf( "PS_calc_next_speciesid_sets() : SOURCE count 1's [%i..%i]  treshold (%.3f)", lowest_count, highest_count, treshold ); 
+    printf( "PS_calc_next_speciesid_sets() : SOURCE count 1's [%i..%i]  treshold (%.3f)", lowest_count, highest_count, treshold );
 
     // second pass -- get IDs where count is below or equal treshold
     __SOURCE_ID_SET.clear();
@@ -509,7 +493,7 @@ void PS_calc_next_speciesid_sets() {
         if (count_per_id->second > highest_count) highest_count = count_per_id->second;
         if (count_per_id->second < lowest_count)  lowest_count  = count_per_id->second;
     }
-    printf( "PS_calc_next_speciesid_sets() : TARGET count 0's [%i..%i]", lowest_count, highest_count ); 
+    printf( "PS_calc_next_speciesid_sets() : TARGET count 0's [%i..%i]", lowest_count, highest_count );
 
     // third -- put all IDs in __TARGET_ID_SET that are needed most by species from __SOURCE_ID_SET
     __TARGET_ID_SET.clear();
@@ -660,7 +644,7 @@ void PS_GNUPlot( const char     *_out_prefix,
     file->put( buffer, size );
     size = sprintf( buffer, "plot '%s' index 2 title 'count/species' with impulses 2,'%s' index 3 title 'species/count' with points 1", data_name, data_name );
     file->put( buffer, size );
-    
+
     delete file;
     free( title );
     free( data_name );
@@ -737,7 +721,7 @@ void PS_descend(       PS_CandidatePtr _candidate_parent,
             __CANDIDATES_FINISHED,
             __CANDIDATES_TODO,
             __CANDIDATES_TODO-__CANDIDATES_FINISHED ); fflush( stdout );
-    
+
     //
     // descend down each (of the max 3) candidate(s)
     //
@@ -828,7 +812,7 @@ void PS_make_map_for_candidate( PS_CandidatePtr _candidate ) {
 //         if (count < lowest_count)  lowest_count  = count;
 //         if (count > highest_count) highest_count = count;
 //     }
-//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : SOURCE count 1's [%i..%i]\n", lowest_count, highest_count ); 
+//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : SOURCE count 1's [%i..%i]\n", lowest_count, highest_count );
 
 //     // second pass -- get IDs where count is equal to lowest_count or highest_count
 //     IDSet highest_count_src_ids;
@@ -884,7 +868,7 @@ void PS_make_map_for_candidate( PS_CandidatePtr _candidate ) {
 //         if (count_per_id->second > highest_count) highest_count = count_per_id->second;
 //         if (count_per_id->second < lowest_count)  lowest_count  = count_per_id->second;
 //     }
-//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : TARGET count 0's [%i..%i]\n", lowest_count, highest_count ); 
+//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : TARGET count 0's [%i..%i]\n", lowest_count, highest_count );
 
 //     // third -- put all IDs in __TARGET_ID_SET that are needed most by species from lowest_count_src_ids
 //     if (_candidate->target_set) {
@@ -1008,7 +992,7 @@ void PS_get_next_candidates_descend( PS_NodePtr       _ps_node,
     // append ID to path
     //
     __PATH.insert( id );
-    
+
     //
     // dont look at path until ID is greater than lowest ID in the sets of IDs
     // also dont use a node if its already used as candidate
@@ -1291,7 +1275,7 @@ int main( int   argc,
     }
     printf( "cleaning up... candidates file\n" ); fflush( stdout );
     delete candidates_file;
-    
+
     //
     // scan candidates-tree for leaf candidates
     //
@@ -1362,7 +1346,7 @@ int main( int   argc,
     free( __PATH_IN_CANDIDATES );
     printf( "cleaning up... database\n" ); fflush( stdout );
     delete db;
-    printf( "cleaning up... bitmaps\n" ); fflush( stdout );    
+    printf( "cleaning up... bitmaps\n" ); fflush( stdout );
     delete __PRESET_MAP;
     delete __MAP;
 
