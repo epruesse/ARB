@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Sun Feb/29/2004 12:54 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 20:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -27,7 +27,7 @@
 #include <smartptr.h>
 #include <output.h>
 
-#include <arbdb.h>
+// #include <arbdb.h>
 #include <arbdbt.h>
 
 #define NEED_encodeTreeNode 
@@ -183,7 +183,9 @@ struct Parameter {
     string db_out_name;
     string db_out_alt_name;
     string db_out_alt_name2;
-    int pb_length;
+    int    pb_length;
+
+    bool dont_match_probes;
 };
 
 static Parameter para;
@@ -194,7 +196,7 @@ static Parameter para;
 void helpArguments() {
     fprintf(stderr,
             "\n"
-            "Usage: arb_probe_group <db_name> <tree_name> <pt_server> <db_out> <pb_length>\n"
+            "Usage: arb_probe_group [options] <db_name> <tree_name> <pt_server> <db_out> <pb_length>\n"
             "\n"
             "db_name        name of ARB-database to build groups for\n"
             "tree_name      name of tree to use for distance calculations\n"
@@ -202,7 +204,10 @@ void helpArguments() {
             "db_out         name of Probe-Group-database to create\n"
             "pb_length      probe length\n"
             "\n"
-            //             "options: [none yet]\n"
+            "options:\n"
+            "\n"
+            "-noprobe       do not rebuild probe database (only recalc groups)\n"
+            "\n"
             );
 }
 
@@ -212,7 +217,23 @@ void helpArguments() {
 GB_ERROR scanArguments(int argc,  char *argv[]) {
     GB_ERROR error = 0;
 
-    if (argc >= 6) {
+    para.dont_match_probes = false; // default is to match probes
+
+    while (argc > 2) {
+        if (argv[1][0] != '-') break;        
+
+        if (strcmp(argv[1], "-noprobe") == 0) {
+            para.dont_match_probes = true;
+            argc--; argv++;
+        }
+        else {
+            return GBS_global_string("Unknown option '%s'", argv[1]);
+        }
+    }
+
+    const int fixed_args = 5;
+
+    if (argc == (fixed_args+1)) {
         para.db_name           = argv[1];
         para.tree_name         = argv[2];
         para.pt_server_name    = argv[3];
@@ -228,10 +249,11 @@ GB_ERROR scanArguments(int argc,  char *argv[]) {
 //                 string arg = argv[1];
 //                 argc--; argv++;
 //             }
-        
+
     }
     else {
-        error = "Missing arguments";
+        if (argc<(fixed_args+1)) error = "Missing arguments";
+        else error                     = "Too many arguments";
     }
 
     if (error) helpArguments();
@@ -383,12 +405,23 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
         }
     }
 
-    // open probe-group-database:
+    const char *mode;
+    const char *task;
+    if (para.dont_match_probes) {
+        mode = "rwhN"; // re-use existing databases
+        task = "Opening";
+    }
+    else {
+        mode = "wchN";          // recalcutate databases from scratch
+        task = "Creating";
+    }
+
+    // create or re-use probe-group-database:
     if (!error) {
         const char *name = para.db_out_name.c_str();
 
-        out.put("Create probe-group-database '%s'..", name);
-        pb_main = GB_open(name, "wcN");//"rwch");
+        out.put("%s probe-group-database '%s'..", task, name);
+        pb_main = GB_open(name, mode); // "wcN"); //"rwch");
         if (!pb_main) {
             error             = GB_get_error();
             if (!error) error = GB_export_error("Can't open database '%s'", name);
@@ -396,15 +429,15 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
         else {
             error = GB_request_undo_type(pb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         }
-        if (!error) error = setDatabaseState(pb_main, "probe_group_db", "empty");
+        if (!error && !para.dont_match_probes) error = setDatabaseState(pb_main, "probe_group_db", "empty");
     }
 
-    //open path-mapping-database:
+    // create or re-use path-mapping-database:
     if (!error) {
         const char *name = para.db_out_alt_name2.c_str();
 
-        out.put("Create path-mapping-database '%s'..",name);
-        pbb_main = GB_open(name,"wch");
+        out.put("%s path-mapping-database '%s'..", task, name);
+        pbb_main = GB_open(name, mode); // "wch");
         if (!pbb_main){
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'..",name);
@@ -412,15 +445,15 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
         else {
             error = GB_request_undo_type(pbb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         }
-        if (!error) error = setDatabaseState(pbb_main, "probe_group_mapping_db", "empty");
+        if (!error && !para.dont_match_probes) error = setDatabaseState(pbb_main, "probe_group_mapping_db", "empty");
     }
 
-    //open probe-group-subtree-result-database:
+    // create probe-group-subtree-result-database:
     if (!error) {
         const char *name = para.db_out_alt_name.c_str();
 
-        out.put("Create probe-group-subtree-result-database '%s'..",name);
-        pba_main = GB_open(name,"wch");
+        out.put("Creating probe-group-subtree-result-database '%s'..", name);
+        pba_main = GB_open(name, "wchN"); // "wch");
         if (!pba_main){
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'",name);
@@ -1083,6 +1116,14 @@ static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& group_hits, const ch
 
         GBDATA *gb_path = GB_find(pb_subtree, "path", 0, down_level);
         path            = GB_read_char_pntr(gb_path);
+
+        // recurse into exact subtrees (search for non-exact subbranches)
+        if (!node->is_leaf) {
+            int         leftHits, rightHits;
+            const char *leftPath, *rightPath;
+            error             = propagateExactSubtrees(node->leftson, leftHits, leftPath);
+            if (!error) error = propagateExactSubtrees(node->rightson, rightHits, rightPath);
+        }
     }
     else {                      // no exact probe_group -> find best Groups
         if (node->is_leaf) {
@@ -1271,7 +1312,7 @@ GB_ERROR searchLeastMishitGroups() {
 }
 
 int main(int argc,char *argv[]) {
-    out.put("arb_probe_group v2.1 -- (C) 2001-2004 by Tina Lai & Ralf Westram");
+    out.put("arb_probe_group v2.2 -- (C) 2001-2004 by Tina Lai & Ralf Westram");
 
     GB_ERROR          error = 0;
     probe_config_data probe_config;
@@ -1320,7 +1361,14 @@ int main(int argc,char *argv[]) {
                 free(ali_name);
             }
 
-            if (!error) error = collectProbes(pb_main, probe_config, ali_type);
+            if (!error) {
+                if (para.dont_match_probes) {
+                    out.put("[skipping creation of probe database.. reusing existing database]");
+                }
+                else {
+                    error = collectProbes(pb_main, probe_config, ali_type);
+                }
+            }
             if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);
             if (!error) {
                 GB_transaction dummy(gb_main);
