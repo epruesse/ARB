@@ -138,7 +138,7 @@ ln -s ../DIST/dist.hxx INCLUDE/dist.hxx
 ln -s ../GENOM/EXP.hxx INCLUDE/EXP.hxx
 ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
 ln -s ../GENOM/GEN_extern.h INCLUDE/GEN_extern.h
-ln -s ../GENOM_IMPORT/GenomImport.h INCLUDE/GenomImport.h
+ln -s ../GENOM_IMPORT/GAGenomImport.h INCLUDE/GAGenomImport.h
 ln -s ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h
 ln -s ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx
 ln -s ../NAMES_COM/names_client.h INCLUDE/names_client.h
