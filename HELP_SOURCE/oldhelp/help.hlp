@@ -7,7 +7,7 @@ UP	arb.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Using online help
+TITLE		Using embedded help
 
 DESCRIPTION
 
@@ -21,6 +21,40 @@ DESCRIPTION
                 Please note that the online version may be more recent than your ARB version!
 
     The following is about the embedded help module:
+
+	The embedded help is available by clicking on the 'HELP' menu
+	(flat) or buttons (raised) located in most windows.
+
+		Clicking on a <HELP> button displays the 'HELP
+		WINDOW' with help for that window.
+
+		Clicking on the 'HELP' menu and choosing 'Click here
+		and then on the questionable button/menu/...' switches
+		to the context-sensitive help mode (indicated by the
+		'open question cursor'). Then click on any button or
+		prompt to display the 'HELP WINDOW' showing help for
+		the pressed button/menu/...
+
+    	There are two formates of embedded 'HELP' texts:
+
+		Normally, ARB uses simple ASCII texts displayed within the
+                'HELP WINDOWS'.
+
+			The titles of help texts on related main- and subtopics
+			linked to the current help file are displayed in the
+			subwindows in the lower part of the 'HELP WINDOW' and
+			are activated by clicking on the tile prompts.
+
+			Press the <BACK> button in the upper part of the 'HELP
+				WINDOW' to display the former help text.
+
+		Some 'HELP' texts are stored as postscript files and displayed
+                using the public domain software 'ghostview'.
+
+                                Press <Ghostview/Page/Next> to display the following
+				page(s), <Ghostview/File/Print> to print the
+				help text. <Ghostview/File/Quit> to leave
+				ghostview.
 
 	Format:
 
@@ -57,11 +91,11 @@ DESCRIPTION
 	  Mouse buttons communicate commands to the program:
 
 		"Left mouse button" is used exclusively for clicking on prompts,
-			checkboxes and buttoms.
+			checkboxes and buttons.
 			!!! Exception: current version of 'ARB_PHYL' (see LINK{phyl.hlp})
 
-		"Middle and right mouse buttons" are used for modifying the tree
-			display (see LINK{mode.hlp})
+		"Middle and right mouse buttons" are used for modifying the main display
+			(see LINK{mode.hlp})
 
 		"Press" means hold down the mous button while completeing an
 			operation.
@@ -75,40 +109,6 @@ DESCRIPTION
 		"Choose" from a menu means clicking on the desired menu option.
 
 
-
-	ONLINE HELP is available by clicking on the 'HELP' prompts (flat) or
-		buttons (raised) located in the upper right of the windows.
-
-		Clicking on the <HELP> button displays the 'HELP WINDOW'
-			containing online help.
-
-		Clicking on the 'HELP' prompt displays the 'HELP' menu. Choose
-			the 'Press this menu and the button you want help for'
-			to switch to the online help mode (indicated by the
-			'open question cursor'). Then click on any button
-			or prompt to display the 'HELP WINDOW' containing
-			online help.
-
-    	There are two formates of online 'HELP' texts:
-
-		Normally, ARB uses simple ASCII texts displayed within the
-                'HELP WINDOWS'.
-
-			The titles of help texts on related main- and subtopics
-			linked to the current help file are displayed in the
-			subwindows in the lower part of the 'HELP WINDOW' and
-			are activated by clicking on the tile prompts.
-
-			Press the <BACK> button in the upper part of the 'HELP
-				WINDOW' to display the former help text.
-
-		Some 'HELP' texts are stored as postscript files and displayed
-                using the public domain software 'ghostview'.
-
-                                Press <Ghostview/Page/Next> to display the following
-				page(s), <Ghostview/File/Print> to print the
-				help text. <Ghostview/File/Quit> to leave
-				ghostview.
 
 NOTES		The 'HELP' texts for foreign programs or tools which have been
 		incorporated into ARB (see LINK{arb.hlp}) are usually (parts of)
