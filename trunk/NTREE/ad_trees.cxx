@@ -84,8 +84,8 @@ void tree_import_callback(AW_root *aw_root) {
     char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1",0);
     aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
-    delete fname;
-    delete treename;
+    free(fname);
+    free(treename);
 }
 
 
@@ -389,8 +389,8 @@ void tree_load_cb(AW_window *aww){
         aww->hide();
         aw_root->awar(AWAR_TREE)->write_string(tree_name);  // show new tree
     }
-    delete fname;
-    delete tree_name;
+    free(fname);
+    free(tree_name);
 }
 
 AW_window *create_tree_import_window(AW_root *root)
