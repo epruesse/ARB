@@ -9,6 +9,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <inline.h>
 
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
@@ -118,10 +119,11 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     return error;
 }
 
-//  -----------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus)
-//  -----------------------------------------------------------------------------------------------------------------
-GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus)
+// --------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus, char **resulting_outname)
+// --------------------------------------------------------------------------------------------------------------------------------------------
+GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, int openstatus, char **resulting_outname)
+    // if resulting_outname != NULL -> set *resulting_outname to filename with suffix appended
 {
     char            *fullformname = AWT_unfold_path(formname,"ARBHOME");
     GB_ERROR         error        = 0;
@@ -172,9 +174,12 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 				char intermediate[1024];
 				char srt[1024];
 				sprintf(intermediate,"/tmp/%s_%i",outname,getpid());
-				error = AWTC_export_format(gb_main,efo->new_format, intermediate,0,0);
+
+                char *intermediate_resulting = 0;
+				error = AWTC_export_format(gb_main,efo->new_format, intermediate,0,0, &intermediate_resulting);
+
 				if (!error) {
-					sprintf(srt,"$<=%s:$>=%s",intermediate, outname);
+					sprintf(srt,"$<=%s:$>=%s",intermediate_resulting, outname);
 					char *sys = GBS_string_eval(efo->system,srt,0);
 					sprintf(AW_ERROR_BUFFER,"exec '%s'",efo->system);
 					aw_status(AW_ERROR_BUFFER);
@@ -184,8 +189,9 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
 					}
 					delete sys;
 				}
+                free(intermediate_resulting);
 			}else{
-				error = AWTC_export_format(gb_main,efo->new_format, outname,multiple,0);
+				error = AWTC_export_format(gb_main,efo->new_format, outname,multiple,0, 0);
 			}
 			goto end_of_AWTC_export_format;
 		}
@@ -199,7 +205,13 @@ GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	
             XML_Document *xml   = 0;
 
             if (!error && !multiple) {
-                sprintf(buffer, "%s.%s", outname, efo->suffix);
+                char *existing_suffix = strrchr(outname, '.');
+
+                if (existing_suffix && stricmp(existing_suffix+1, efo->suffix) == 0) strcpy(buffer, outname);
+                else sprintf(buffer, "%s.%s", outname, efo->suffix);
+
+                if (resulting_outname != 0) *resulting_outname = strdup(buffer);
+
                 out = fopen(buffer,"w");
                 if (!out) {
                     sprintf(AW_ERROR_BUFFER,"Error: I Cannot write to file %s",outname);
@@ -309,11 +321,17 @@ void AWTC_export_go_cb(AW_window *aww,GBDATA *gb_main){
 	int	multiple = (int)awr->awar(AWAR_EXPORT_MULTIPLE_FILES)->read_int();
 	GB_ERROR error = 0;
 
-	char *outname = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
-	error = AWTC_export_format(gb_main, formname, outname, multiple,1);
+	char *outname      = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
+    char *real_outname = 0;     // with suffix
+
+	error = AWTC_export_format(gb_main, formname, outname, multiple,1, &real_outname);
+    if (real_outname) aww->get_root()->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
+
 	aww->get_root()->awar(AWAR_EXPORT_FILE"/directory")->touch();
+
 	delete outname;
 	delete formname;
+
 	if (error) aw_message(error);
 }
 
