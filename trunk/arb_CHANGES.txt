@@ -1,10 +1,16 @@
 
-Major changes since Beta 20010724:
-----------------------------------
+Major changes in Beta 20011107:
+-------------------------------
 
  - printing of multi-page-trees works again
  - implemented user defineable masks to access database fields
  - fixed bugs in pt-server (lockup, unknown species just after building pt-server)
  - improved performance during pt-server-build
  - several programs coming along with ARB where updated (PHYLIP,...)
+ - reads EMBL genom files
+ - support for experiments (genom databases only)
 
+Major changes in Beta 20010724:
+-------------------------------
+
+ - basic support for genoms (Gene Map, reads Genebank files)
