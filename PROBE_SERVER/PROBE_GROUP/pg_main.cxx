@@ -11,11 +11,14 @@
 #ifndef __SET__
 #include <set>
 #endif
-
 #include <algorithm>
+
+#include <arbdb.h>
+#include <arbdbt.h>
 
 #include "../global_defs.h"
 #define SKIP_GETDATABASESTATE
+#define SKIP_DECODETREENODE
 #include "../common.h"
 
 #define SAVE_AFTER_XXX_NEW_GROUPS 10000
@@ -41,8 +44,6 @@
 #define UC  CU
 #define UG  GU
 #define UU  0
-
-#include <arbdbt.h>
 
 using namespace std;
 
@@ -311,17 +312,53 @@ int percent(int part, int all) {
     return 0;
 }
 
-GB_ERROR PG_tree_name2id(GBT_TREE *node) {
+inline void convert_kommas_to_underscores(char *s) {
+    if (s) {
+        for (int i = 0; s[i]; ++i) {
+            if (s[i] == ',') s[i] = '_';
+        }
+    }
+}
+
+GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
     if (!node->is_leaf) {
-        GB_ERROR error    = PG_tree_name2id(node->leftson);
-        if (!error) error = PG_tree_name2id(node->rightson);
+        if (node->name) { // write group name as remark branch
+            node->remark_branch = encodeTreeNode(node->name);
+        }
+
+        GB_ERROR error    = PG_tree_change_node_info(node->leftson);
+        if (!error) error = PG_tree_change_node_info(node->rightson);
         return error;
     }
 
     // leaf
     SpeciesID id = PG_SpeciesName2SpeciesID(node->name);
+
+    char *fullname = 0;
+    char *acc      = 0;
+
+    if (node->gb_node) {
+        GBDATA *gb_fullname = GB_find(node->gb_node, "full_name", 0, down_level);
+        if (gb_fullname) {
+            fullname = GB_read_string(gb_fullname);
+            convert_kommas_to_underscores(fullname);
+        }
+        GBDATA *gb_acc = GB_find(node->gb_node, "acc", 0, down_level);
+        if (gb_acc) {
+            acc = GB_read_string(gb_acc);
+            convert_kommas_to_underscores(acc);
+        }
+    }
+
     free(node->name);
-    node->name   = GBS_global_string_copy("%i", id);
+    node->name = encodeTreeNode(GBS_global_string("%i,%s,%s",
+                                                  id,
+                                                  fullname ? fullname : "<none>",
+                                                  acc ? acc : "<none>"));
+
+    free(acc);
+    free(fullname);
+
     return 0;
 }
 
@@ -647,8 +684,10 @@ int main(int argc,char *argv[]) {
                 }
 
                 if (!error) {
-                    // GBT_unlink_tree(gbt_tree);
-                    error = PG_tree_name2id(gbt_tree); // exchange species-names against species ids in tree
+                    GB_push_transaction(gb_main);
+                    error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
+                    GB_pop_transaction(gb_main);
+
                     if (!error) {
                         error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
                     }
