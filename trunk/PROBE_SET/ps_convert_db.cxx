@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/times.h>
 
 #ifndef PS_DATABASE_HXX
 #include "ps_database.hxx"
@@ -16,6 +17,32 @@ PS_NodePtr __ROOT;
 int        __PROBE_LENGTH;
 SpeciesID  __MIN_ID;
 SpeciesID  __MAX_ID;
+
+void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
+    struct tms now;
+    times( &now );
+    if (_before) printf( "%s", _before );
+    printf( "time used : user (" );
+    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
+    unsigned int hours   = minutes / 60; 
+    minutes -= hours * 60;
+    if (hours > 0) printf( "%uh ", hours );
+    if (minutes > 0) printf( "%um ", minutes );
+    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
+    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
+    hours    = minutes / 60; 
+    minutes -= hours * 60;
+    if (hours > 0) printf( "%uh ", hours );
+    if (minutes > 0) printf( "%um ", minutes );
+    printf( "%.3fs)",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
+    if (_after) {
+        printf( "%s", _after );
+    } else {
+        printf( "\n" );
+    }
+    fflush( stdout );
+}
+
 
 //  ----------------------------------------------------
 //      void PS_detect_probe_length( GBDATA *_ARB_node )
@@ -244,13 +271,16 @@ int main(  int  _argc,
     //
     // open and check ARB database
     //
-    printf( "Opening probe-group-database '%s'..", DB_name );
+    struct tms before;
+    times( &before );
+    printf( "Opening probe-group-database '%s'..\n  ", DB_name );
     ARB_main = GB_open( DB_name, "rwcN" );//"rwch");
     if (!ARB_main) {
         error             = GB_get_error();
         if (!error) error = GB_export_error( "Can't open database '%s'", DB_name );
     }
-    printf( "loaded database (enter to continue)\n" );
+    printf( "..loaded database (enter to continue)  " );
+    PS_print_time_diff( &before );
 //  getchar();
 
     GB_transaction dummy( ARB_main );
@@ -270,6 +300,7 @@ int main(  int  _argc,
     //
     // read Name <-> ID mappings
     //
+    times( &before );
     printf( "init Species <-> ID - Map\n" );
     PG_initSpeciesMaps( ARB_main );
     int species_count = PG_NumberSpecies();
@@ -283,7 +314,8 @@ int main(  int  _argc,
     }
     __MIN_ID = __ID2NAME_MAP.begin()->first;
     __MAX_ID = __ID2NAME_MAP.rbegin()->first;
-    printf( "IDs %i .. %i\n(enter to continue)\n", __MIN_ID, __MAX_ID );
+    printf( "IDs %i .. %i\n(enter to continue)  ", __MIN_ID, __MAX_ID );
+    PS_print_time_diff( &before );
 //  getchar();
 
     //
@@ -309,6 +341,7 @@ int main(  int  _argc,
     //
     // extract data from ARB database
     //
+    times( &before );
     printf( "extracting probe-data...\n" );
     PS_detect_probe_length( group_tree );
     printf( "probe_length = %d\n",__PROBE_LENGTH );
@@ -317,22 +350,38 @@ int main(  int  _argc,
     first_level_node = PS_get_first_node( group_tree );
     unsigned int  c  = 0;
     IDVector *inverse_path = new IDVector;
+    struct tms before_first_level_node;
     for (; first_level_node; ++c) {
-        if (c % 200 == 0) printf( "1st level node #%u\n", c+1 );
+        if (c % 100 == 0) {
+            times( &before_first_level_node );
+            printf( "1st level node #%u  ", c+1 );
+        }
         PS_extract_probe_data( first_level_node, species_count, 0, __MIN_ID-1, inverse_path );
         first_level_node = PS_get_next_node( first_level_node );
+        if (c % 100 == 0) {
+            PS_print_time_diff( &before_first_level_node, "this node ", "  " );
+            PS_print_time_diff( &before, "total ", "\n" );
+        }
     }
     printf( "done after %u 1st level nodes\n",c );
-    printf( "(enter to continue)\n" );
+    printf( "(enter to continue)  " );
+    PS_print_time_diff( &before );
 //  getchar();
 
     //
     // write database to file
     //
-    printf( "writing probe-data to %s\n",output_DB_name.c_str() );
+    times( &before );
+    printf( "writing probe-data to %s..\n",output_DB_name.c_str() );
     ps_db->save();
+    printf( "..done saving (enter to continue)  " );
+    PS_print_time_diff( &before );
 
     delete inverse_path;
     delete ps_db;
+    before.tms_utime = 0;
+    before.tms_stime = 0;
+    printf( "total " );
+    PS_print_time_diff( &before );
     return 0;
 }
