@@ -51,8 +51,20 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
 GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBDATA *after){
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
-       if (val) search only for strings with the value 'val' (case-insensitive!!!)
-       if key_quark <0 search everything */
+
+       if (val != 0) search for entry with value 'val':
+       GB_STRING/GB_LINK: compares string case-insensitive!
+       GB_INT: compares values
+       GB_FLOAT: dito (val must be a 'double*')
+       others: not implemented yet
+
+       Note: to search for non-char*-values cast adress of value to (const char *)
+             example for GB_INT
+                   int lookFor = 7;
+                   GB_find(.., .., (const char*)&lookFor, ..)
+
+       if key_quark<0 search everything
+    */
 
     register int end, index;
     register GBCONTAINER *gbf = (GBCONTAINER*)father;
@@ -84,8 +96,31 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
                     GB_internal_error("Cannot unfold data");
                     continue;
                 }
-                if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue;
-                if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
+
+                switch (GB_TYPE(gb)) {
+                    case GB_STRING:
+                    case GB_LINK:
+                        if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
+                        break;
+                    case GB_INT: {
+                        int i = GB_read_int(gb);
+                        if (i != *(int*)val) continue;
+                        break;
+                    }
+                    case GB_FLOAT: {
+                        double d = GB_read_float(gb);
+                        if (d != *(double*)val) continue;
+                        break;
+                    }
+                    default: {
+                        const char *err = GBS_global_string("Value search not supported for data type %i", GB_TYPE(gb));
+                        GB_internal_error(err);
+                        continue;
+                    }
+                }
+
+                /* if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue; */
+                /* if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue; */
             }
             return gb;
         }
@@ -185,6 +220,8 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
      /* searches from 'gdb' for the first entry 'key'
       * if 'str' != 0 then we search for the first entry 'key' that is equal to 'str' (case-insensitive!!)
       *
+      * It's as well possible to search values of other types than GB_STRING
+      * (see GB_find_sub_by_quark for more info)
       */
 {
     GBCONTAINER *gbc;
