@@ -9,7 +9,8 @@
 #define nmlngth         10   /* number of characters in species name   */
 
 #define ibmpc0          false
-#define ansi0           true
+#define ansi0           false /* avoid screen clearing */
+/* #define ansi0           true */
 #define vt520           false
 
 typedef Char naym[nmlngth];
@@ -193,22 +194,22 @@ void getoptions()
 	   break;
     if (strchr("ADEJRI120",ch)){
       switch (ch) {
-	
+
       case 'D':
 	if (data == genefreqs)
 	  data = seqs;
 	else
 	  data = (datatype)((long)data + 1);
 	break;
-	
+
       case 'A':
 	all = !all;
 	break;
-	
+
       case 'E':
 	enzymes = !enzymes;
 	break;
-	
+
       case 'J':
 	if (permute)
 	  permute = false;
@@ -218,7 +219,7 @@ void getoptions()
 	} else
 	  jackknife = true;
 	break;
-	
+
       case 'R':
 	done1 = true;
 	reps0 = reps;
@@ -237,7 +238,7 @@ void getoptions()
       case 'I':
 	interleaved = !interleaved;
 	break;
-	
+
       case '0':
 	if (ibmpc) {
 	  ibmpc = false;
@@ -252,11 +253,11 @@ void getoptions()
 	    ibmpc = true;
 	}
 	break;
-	
+
       case '1':
 	printdata = !printdata;
 	break;
-	
+
       case '2':
 	progress = !progress;
 	break;
@@ -312,14 +313,14 @@ Local Void inputfactors()
 {
   long i, j, factor_run=0;
   Char ch, prevch;
-  
+
 
   for (i = 2; i <= nmlngth; i++)
     ch = getc(infile);
   prevch = ' ';
   j = 0;
   for (i = 0; i < (sites); i++) {
-    
+
     do {    /* Get rid of any white space, */
       if (eoln(infile)) {
 	fscanf(infile, "%*[^\n]");
@@ -660,7 +661,7 @@ Local Void inputdata()
 	  putc(charstate, outfile);
 	  if ((k + 1) % 10 == 0 && (k + 1) % 60 != 0)
 	    putc(' ', outfile);
-	
+
 	}
       }
       putc('\n', outfile);
@@ -763,7 +764,7 @@ Local Void bootweights()
 
 void sppermute(n)
 long n;
-{ 
+{
 
   long i, j, k;
   for (i = 1; i <= (spp - 1); i++) {

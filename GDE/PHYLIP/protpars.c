@@ -11,7 +11,8 @@
 #define down            2
 
 #define ibmpc0          false
-#define ansi0           true
+#define ansi0           false /* avoid clearing of screen */
+/* #define ansi0           true */
 #define vt520           false
 
 
@@ -419,7 +420,7 @@ void getoptions()
       break;
     if (strchr("JOTUMI1234560",ch)){
       switch (ch) {
-	
+
       case 'J':
 	jumble = !jumble;
 	if (jumble) {
@@ -441,7 +442,7 @@ void getoptions()
 	}
 	else njumble = 1;
 	break;
-	
+
       case 'O':
 	outgropt = !outgropt;
 	if (outgropt) {
@@ -458,7 +459,7 @@ void getoptions()
 	  } while (done1 != true);
 	} else outgrno = 1;
 	break;
-	
+
       case 'T':
 	thresh = !thresh;
 	if (thresh) {
@@ -475,7 +476,7 @@ void getoptions()
 	  } while (done1 != true);
 	}
 	break;
-	
+
       case 'M':
 	mulsets = !mulsets;
 	if (mulsets) {
@@ -490,15 +491,15 @@ void getoptions()
 	  } while (done1 != true);
 	}
 	break;
-	
+
       case 'I':
 	interleaved = !interleaved;
 	break;
-	
+
       case 'U':
 	usertree = !usertree;
 	break;
-	
+
       case '0':
 	if (ibmpc) {
 	  ibmpc = false;
@@ -513,27 +514,27 @@ void getoptions()
 	    ibmpc = true;
 	}
 	break;
-	
+
       case '1':
 	printdata = !printdata;
 	break;
-	
+
       case '2':
 	progress = !progress;
 	break;
-	
+
       case '3':
 	treeprint = !treeprint;
 	break;
-	
+
       case '4':
 	stepbox = !stepbox;
 	break;
-	
+
       case '5':
 	ancseq = !ancseq;
 	break;
-	
+
       case '6':
 	trout = !trout;
 	break;
