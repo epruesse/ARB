@@ -25,7 +25,7 @@ extern GBDATA *gb_main;
 
 #define AWAR_SQ_TREE AWAR_SQ_TEMP "tree_name"
 
-#define AWAR_SQ_MARKED           AWAR_SQ_PERM "marked"
+//#define AWAR_SQ_MARKED           AWAR_SQ_PERM "marked"
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
 #define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
@@ -39,7 +39,7 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
         aw_root->awar_string(AWAR_SQ_TREE, default_tree, aw_def);
         free(default_tree);
     }
-    aw_root->awar_int(AWAR_SQ_MARKED, 1, aw_def);
+    //    aw_root->awar_int(AWAR_SQ_MARKED, 1, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
@@ -116,12 +116,9 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
           for the final result.
         */
 
-        bool marked_only = aw_root->awar(AWAR_SQ_MARKED)->read_int(); // whether to analyse marked or all species
-
-        //SQ_traverse_through_tree(gb_main, tree, marked_only);
+	//        bool marked_only = aw_root->awar(AWAR_SQ_MARKED)->read_int(); // whether to analyse marked or all species
 
 	if(tree==0){
-	  //SQ_GroupDataSeq globalData();
 	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
 	    SQ_pass1(globalData, gb_main);
 	    int value = SQ_get_value_no_tree(gb_main, option);
@@ -132,7 +129,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	else {
 	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
 	    SQ_pass1(globalData, gb_main);
-	    SQ_pass2(globalData, gb_main, marked_only);
+	    SQ_pass2(globalData, gb_main);
 	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
 	    int value = SQ_get_value(gb_main, option);
 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
@@ -161,12 +158,12 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"seq_quality.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->at("what");
-    aws->label("Species to analyse:");
-    aws->create_toggle_field(AWAR_SQ_MARKED, 1);
-    aws->insert_toggle("all", "a", 0);
-    aws->insert_default_toggle("marked", "m", 1);
-    aws->update_toggle_field();
+//     aws->at("what");
+//     aws->label("Species to analyse:");
+//     aws->create_toggle_field(AWAR_SQ_MARKED, 1);
+//     aws->insert_toggle("all", "a", 0);
+//     aws->insert_default_toggle("marked", "m", 1);
+//     aws->update_toggle_field();
 
     aws->at("base");
     aws->create_input_field(AWAR_SQ_WEIGHT_BASES, 3);

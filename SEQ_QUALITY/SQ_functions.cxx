@@ -344,29 +344,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
                         if (!globalData->SQ_is_initialized()) {
 			    globalData->SQ_init_consensus(sequenceLength);
                         }
-
                         globalData->SQ_add_sequence(rawSequence);
-
-//  			int *pp;
-// 			int p;
-
-// 			init = globalData->SQ_is_initialised();
-// 			if (init==false){
-// 			    globalData->SQ_init_consensus(sequenceLength);
-// 			}
-// 			SQ_consensus* consens = new SQ_consensus(sequenceLength);
-// 			consens->SQ_calc_consensus(rawSequence);
-
-//                         globalData->SQ_add(consens);
-
-// 			for(int i = 0; i < sequenceLength; i++) {
-// 			    for(int j = 0; j < 7; j++) {
-//  				pp = consens->SQ_get_consensus(i,j);
-//  				p = *pp;
-// 				globalData->SQ_add_consensus(p,i,j);
-// 			    }
-// 			}
-// 			delete consens;
 		    }
 
 
@@ -389,7 +367,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
 
-GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
+GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
@@ -403,21 +381,12 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
     GB_ERROR error = 0;
 
 
-
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
-
-
-    if (marked_only) {
-	getFirst = GBT_first_marked_species;
-	getNext  = GBT_next_marked_species;
-    }
-    else {
-	getFirst = GBT_first_species;
-	getNext  = GBT_next_species;
-    }
+    getFirst = GBT_first_species;
+    getNext  = GBT_next_species;
 
 
     /*second pass operations*/
@@ -445,7 +414,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		if (read_sequence) {
 		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
-		    //double value            = 0;
+		    double value            = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
@@ -471,7 +440,8 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
 
-		    // value = globalData->SQ_test_against_consensus(rawSequence);
+		    value = globalData->SQ_test_against_consensus(rawSequence);
+		    //printf("Value: %f ",value);
 		}
 	    }
 	}
