@@ -311,7 +311,7 @@ const char *aisc_client_open_socket(char *path, int delay, int do_connect, int *
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = socket_id;	/* @@@ = pb_socket  */
+        so_ad.sin_port = htons(socket_id);	/* @@@ = pb_socket  */
         if (do_connect){
             /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id);*/
             if (connect(*psocket, (struct sockaddr *)&so_ad, 16)) {
