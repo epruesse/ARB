@@ -13,8 +13,24 @@ LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
 # get the machine type
 include config.makefile
 
-#********************* Default set and gcc static enviroments *****************
+# ********************************************************************************
+#
+# The ARB source code is aware of the following defines
+#
+# GNU					activates __attribute__ definitions
+# HAVE_BOOL				should be true if compiler supports the type 'bool'
+# $(MACH)				name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
+# NO_INLINE				for machines w/o keyword 'inline' (needs code fixes, cause we have no such machine)
+# NO_REGEXPR			for machines w/o regular expression library
+#
+# DEBUG					compiles the DEBUG sections
+# NDEBUG				doesnt compile the DEBUG sections
+# DEBUG_GRAPHICS		all X-graphics are flushed immediately (for debugging)
+# DEVEL_$(DEVELOPER)	developer-dependent flag (you may comment out sections to avoid confusion of other developers; see config.makefile)
+#
 
+#********************* Default set and gcc static enviroments *****************
+#
 FORCEMASK = umask 002
 
 #---------------------- Some compiler-specific defaults
@@ -37,7 +53,7 @@ ifeq ($(DEBUG_GRAPHICS),1)
 else
 		dflags = -DDEBUG
 endif
-		cflags = $(dflag1) $(dflags)
+		cflags = $(dflag1) $(dflags) -DDEVEL_$(DEVELOPER)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
 		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
@@ -114,7 +130,7 @@ endif
 #********************* Linux and gcc enviroments *****************
 ifdef LINUX
 
-   LINUX_SPECIALS = -DNO_REGEXPR
+   LINUX_SPECIALS = -DNO_REGEXPR -DGNU
    SITE_DEPENDEND_TARGETS = perl
    CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings) $(extended_cpp_warnings)
    ACC := $(ACC) $(LINUX_SPECIALS) $(extended_warnings)
@@ -560,7 +576,7 @@ ARCHS_SECEDIT = \
 
 $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
 
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
@@ -573,7 +589,7 @@ ARCHS_PROBE_GROUP = \
 
 $(PROBE_GROUP):	$(ARCHS_PROBE_GROUP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
@@ -584,7 +600,7 @@ ARCHS_CHIP = \
 
 $(CHIP):	$(ARCHS_CHIP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
