@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : output.h                                               //
 //    Purpose   : class for indented output to FILE                      //
-//    Time-stamp: <Sat Oct/11/2003 11:15 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/13/2004 17:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -15,6 +15,10 @@
 
 #ifndef OUTPUT_H
 #define OUTPUT_H
+
+#ifndef _STDARG_H
+#include <stdarg.h>
+#endif
 
 //  ---------------------
 //      class output
