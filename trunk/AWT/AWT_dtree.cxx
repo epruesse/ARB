@@ -2407,13 +2407,12 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
 }
 
 void AWT_graphic_tree::show(AW_device *device)  {
-    AP_tree_sort nsort = tree_sort;
     if (tree_static && tree_static->gb_tree) {
         check_update(gb_main);
     }
-    if (!tree_root_display) { // have no tree
-        if (sort_is_tree_style(nsort)) { // if display style needs tree
-            nsort = AP_LIST_NDS;  // display as list
+    if (!tree_root_display) { // if there is no tree
+        if (sort_is_tree_style(tree_sort)) { // but display style needs tree
+            set_tree_type(AP_LIST_NDS); // => switch display style
         }
     }
 
@@ -2431,7 +2430,7 @@ void AWT_graphic_tree::show(AW_device *device)  {
     free(species_name);
     species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     x_cursor = y_cursor = 0.0;
-    switch (nsort) {
+    switch (tree_sort) {
         case AP_TREE_NORMAL:
             if (!tree_root_display)   return;
             y_pos = 0.05;
@@ -2458,7 +2457,7 @@ void AWT_graphic_tree::show(AW_device *device)  {
     if (x_cursor != 0.0 || y_cursor != 0.0) {
         NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
     }
-    if (sort_is_tree_style(nsort)) { // show rulers in tree-style display modes
+    if (sort_is_tree_style(tree_sort)) { // show rulers in tree-style display modes
         show_ruler(device, AWT_GC_CURSOR);
     }
 }
