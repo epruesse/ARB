@@ -3238,6 +3238,13 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
             }
 
             if (!error) {
+                long seq_length = GB_read_count(gb_seq);
+                if (pos2>seq_length) { // positions are [1..n]
+                    error = GBS_global_string("Illegal gene position(s): endpos = %li, seq.length=%li", pos2, seq_length);
+                }
+            }
+
+            if (!error) {
                 const char *seq_data = GB_read_char_pntr(gb_seq);
                 long        length   = pos2-pos1+1;
 
