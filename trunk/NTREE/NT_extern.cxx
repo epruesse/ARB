@@ -864,6 +864,34 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
     }
 }
 //--------------------------------------------------------------------------------------------------
+#if defined(DEBUG)
+void NT_rename_test(AW_window *, AW_CL cl_gb_main) {
+    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
+    GBDATA   *gbd     = GBT_find_species(gb_main, "MssVanni");
+    GB_ERROR  error   = 0;
+
+    if (gbd) {
+        GBDATA *gb_remark = GB_find(gbd, "remark", 0, down_level);
+        if (gb_remark) {
+            if (GB_rename(gb_remark, "new_remark") != 0) {
+                error = "Can't rename MssVanni/remark";
+            }
+        }
+        else {
+            error = "MssVanni has no entry 'remark'";
+        }
+    }
+    else {
+        error = "MssVanni not found";
+    }
+
+    if (error) {
+        aw_message(error);
+    }
+}
+#endif // DEBUG
+
+//--------------------------------------------------------------------------------------------------
 
 // ##########################################
 // ##########################################
@@ -1120,7 +1148,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                     AWMIMT("pos_var_dist",  "Positional variability (distance method)",     "P","pos_variability.ps", AWM_EXP, AW_POPUP, (AW_CL)AP_open_cprofile_window, 0 );
                     AWMIMT("count_different_chars","Count different chars/column",          "C","count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars", 0);
                     AWMIMT("export_pos_var",    "Export Column Statistic (GNUPLOT format)",    "E","csp_2_gnuplot.hlp",  AWM_EXP, AW_POPUP, (AW_CL)AP_open_csp_2_gnuplot_window, 0 );
-#ifdef DEVEL_YADHU                    
+#ifdef DEVEL_YADHU
                     AWMIMT("conservation_profile", "Display Conservation Profile (Using GNUPLOT)",    "D","conser_profile.hlp",  AWM_EXP, AW_POPUP, (AW_CL)AP_openConservationPorfileWindow, 0 );
 #endif
                 }
@@ -1282,6 +1310,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("fix_db",          "Fix database",            "F", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
             AWMIMT("debug_arbdb",     "Print debug information", "d",0   ,       AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)gb_main, 0 );
             AWMIMT("test_compr",      "Test compression",        "c",0   ,       AWM_ALL, (AW_CB)GBT_compression_test, (AW_CL)gb_main, 0 );
+            AWMIMT("test_rename",     "Test rename",             "",0   ,       AWM_ALL, NT_rename_test, (AW_CL)gb_main, 0 );
             SEP________________________SEP();
             AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "T","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)gb_main);
         }
