@@ -98,9 +98,9 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
         const char *str = 0;
         if (!irs_gl.is_size_device){
             if (node->gb_node && GB_read_flag(node->gb_node)){
-                NT_scalebox(gc,x, irs_gl.y, (int)NT_BOX_WIDTH);
+                NT_scalebox(gc,x, irs_gl.y, NT_BOX_WIDTH);
             }
-            str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
+            str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
             irs_gl.device->text(gc,str, x, y,0.0,-1, (AW_CL)node,0);
         }
         return irs_gl.y;
@@ -111,7 +111,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     const char *node_string = 0;
     if (node->gb_node){
         if (!irs_gl.is_size_device){
-            node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
+            node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree(), tree_name);
         }else{
             node_string = "0123456789";
         }
@@ -240,7 +240,7 @@ int AWT_graphic_tree::draw_slot(int x_offset, GB_BOOL draw_at_tips){
     if (!draw_at_tips) no_compress = 1;
     for (i=0;i<irs_gl.nodes_ntip;i++){
         AP_tree *tip = irs_gl.nodes_id[i];
-        const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree());
+        const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree(), tree_name);
         int len = irs_gl.device->get_string_size(tip->gr.gc,str,0);
         int x = 0;
         int y = irs_gl.nodes_ypos[i]+ irs_gl.font_height_2;
