@@ -91,9 +91,11 @@ else
 	ARBHOME="${ARBHOMEI}";
 fi
 
-
 cwd=`pwd`
 if test -d $ARBHOME; then
+    echo 'Creating backup copy of arb_tcp.dat ..'
+    cp $ARBHOME/lib/arb_tcp.dat arb_tcp_`date +%Y%m%d`.dat
+
 	if test -w $ARBHOME; then
 		seperator
 		echo 'The destination directory already exists'
@@ -187,6 +189,7 @@ echo '			  (Default location).'
 echo '			- (updating ARB)'
 echo '			  using the previous location'
 echo '		2. "Path" to link pt_server data directory to'
+echo "		    (if you choose this option you won't loose your PT-Servers when doing future software updates)"
 echo 'Enter path:'
 read pt_dir
 echo
@@ -348,60 +351,74 @@ seperator
 echo ">>> Installation Complete"
 
 seperator
-echo "Finally, we have to tell your system where to find arb:"
-echo ""
-echo "You may either:"
-echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash,"
-echo "       which is the default shell for Linux)"
-echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
-echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
-echo "Enter your decision (1/2/3)"
+SHELL_ANS=0
 
-	read var
+    while [ "$SHELL_ANS" == "0" ]; do
 
-	echo '';
-	echo '******************************************************';
-	echo 'Follow the steps below with care!!!';
-	echo '******************************************************';
-	echo '';
-	case "$var" in
-	  1)
-	     echo '******************************************************';
-	     echo "add the following lines to your ~/.profile";
-	     echo "or to your ~/.bashrc for bash-users";
-	     echo '******************************************************';
-	     echo "	ARBHOME=$ARBHOME;export ARBHOME";
-	     echo '	LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}';
-	     echo '	export LD_LIBRARY_PATH';
-	     echo '	PATH=${ARBHOME}/bin:${PATH}';
-	     echo '	export PATH';
-	     echo ' '
-	     echo 'enter the following command:';
-	     echo '	. ~/.profile';;
-	  2)
-	     echo '******************************************';
-	     echo "add the following lines to your ~/.cshrc";
-	     echo '******************************************';
-	     echo "	setenv ARBHOME $ARBHOME";
-	     if test "X${LD_LIBRARY_PATH}" != "X"; then
-	       echo '	setenv LD_LIBRARY_PATH $ARBHOME/lib\:$LD_LIBRARY_PATH';
-	     else
-	       echo '        setenv LD_LIBRARY_PATH $ARBHOME/lib';
-	     fi
-	     echo '	setenv PATH $ARBHOME/bin\:$PATH';
-	     echo ' '
-	     echo 'enter the following command:';
-	     echo '	source ~/.cshrc';;
-	  *)
-	     echo '**************************************************';
-	     echo "add one of the following lines to your init file";
-	     echo '**************************************************';
-	     echo "	alias arb=$ARBHOME/bin/arb";
-	     echo "	alias arb '$ARBHOME/bin/arb'";
-	     echo "and reread the file or"
-	     echo "type one of these lines at the command prompt."
-	     rm -f /usr/lib/libAW.so;;
-	esac
+    echo "Finally, you have to tell your system where to find arb."
+    echo "First find out which shell you are using, by opening a shell and typing"
+    echo "        echo $$shell"
+    echo ""
+    echo "Depending on what is your shell there are three choices:"
+    echo ""
+    echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash,"
+    echo "       which is the default shell for Linux)"
+    echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
+    echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
+    echo ""
+
+        echo "Enter (1,2 or 3) to achieve further installation instructions:"
+
+        read var
+
+        echo '';
+        echo '**********************************************************************************************';
+        echo 'Follow the steps below with care!!!';
+        echo '';
+        case "$var" in
+          1)
+             echo '******************************************************';
+             echo "add the following lines to your ~/.profile";
+             echo "or to your ~/.bashrc for bash-users";
+             echo '******************************************************';
+             echo "	ARBHOME=$ARBHOME;export ARBHOME";
+             echo '	LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}';
+             echo '	export LD_LIBRARY_PATH';
+             echo '	PATH=${ARBHOME}/bin:${PATH}';
+             echo '	export PATH';
+             echo ' '
+             echo 'enter the following command:';
+             echo '	. ~/.profile'
+             SHELL_ANS=1 ;;
+          2)
+             echo '******************************************';
+             echo "add the following lines to your ~/.cshrc";
+             echo '******************************************';
+             echo "	setenv ARBHOME $ARBHOME";
+             if test "X${LD_LIBRARY_PATH}" != "X"; then
+               echo '	setenv LD_LIBRARY_PATH $ARBHOME/lib\:$LD_LIBRARY_PATH';
+             else
+               echo '        setenv LD_LIBRARY_PATH $ARBHOME/lib';
+             fi
+             echo '	setenv PATH $ARBHOME/bin\:$PATH';
+             echo ' '
+             echo 'enter the following command:';
+             echo '	source ~/.cshrc'
+             SHELL_ANS=1 ;;
+          3)
+             echo '**************************************************';
+             echo "add one of the following lines to your init file";
+             echo '**************************************************';
+             echo "	alias arb=$ARBHOME/bin/arb";
+             echo "	alias arb '$ARBHOME/bin/arb'";
+             echo "and reread the file or"
+             echo "type one of these lines at the command prompt."
+             rm -f /usr/lib/libAW.so
+             SHELL_ANS=1 ;;
+          *)
+             echo 'Wrong answer';;
+        esac
+    done
 
 	echo ""
 	echo "Note for sysadmins: You might want to edit the global init files"
