@@ -333,7 +333,6 @@ GBDATA *GB_search_last_son P_((GBDATA *gbd));
 long GB_number_of_marked_subentries P_((GBDATA *gbd));
 GBDATA *GB_first_marked P_((GBDATA *gbd, const char *keystring));
 GBDATA *GB_next_marked P_((GBDATA *gbd, const char *keystring));
-void GB_install_command_table P_((GBDATA *gb_main, struct GBL_command_table *table));
 char *GB_command_interpreter P_((GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name));
 
 /* ad_save_load.c */

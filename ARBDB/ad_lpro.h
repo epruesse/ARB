@@ -210,6 +210,7 @@ GBDATA *gb_find_by_nr P_((GBDATA *father, int index));
 void gb_init_ctype_table P_((void));
 GBDATA *gb_search P_((GBDATA *gbd, const char *str, long create, int internflag));
 GBDATA *gb_search_marked P_((GBCONTAINER *gbc, GBQUARK key_quark, int firstindex));
+void gb_install_command_table P_((GBDATA *gb_main, struct GBL_command_table *table));
 char *gbs_search_second_x P_((const char *str));
 char *gbs_search_second_bracket P_((const char *source));
 char *gbs_search_next_seperator P_((const char *source, const char *seps));
