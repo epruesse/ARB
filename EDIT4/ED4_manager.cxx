@@ -321,7 +321,7 @@ ED4_returncode ED4_manager::check_bases( const char *old_sequence, int old_len, 
 {
     ED4_manager *walk_up = this;
 
-#ifndef NDEBUG
+#ifdef DEBUG
     if (end_pos==-1) {
         printf("check_bases does not know update range - maybe an error?\n");
     }
@@ -335,7 +335,7 @@ ED4_returncode ED4_manager::check_bases( const char *old_sequence, int old_len, 
                 }
             }
 
-#ifndef NDEBUG
+#if defined(DEBUG) && 0
             printf("check_bases(..., %i, %i)\n", start_pos, end_pos);
 #endif
 

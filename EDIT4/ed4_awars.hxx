@@ -13,7 +13,7 @@
 #define ED4_AWAR_COMPRESS_SEQUENCE_GAPS 	    "sequence/compression_type_gaps"
 #define ED4_AWAR_COMPRESS_SEQUENCE_HIDE 	    "sequence/compression_type_hide"
 #define ED4_AWAR_COMPRESS_SEQUENCE_PERCENT 	    "sequence/compression_type_hide_percent"
-#define ED4_AWAR_COMPRESS_LEFT_COLUMN 	        "sequence/compression_left_column"
+// #define ED4_AWAR_COMPRESS_LEFT_COLUMN 	        "sequence/compression_left_column"
 
 #define ED4_AWAR_DIGITS_AS_REPEAT		        "edit/digits_as_repeat"
 #define ED4_AWAR_FAST_CURSOR_JUMP 		        "edit/fast_cursor_jump"
