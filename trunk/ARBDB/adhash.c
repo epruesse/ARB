@@ -261,18 +261,18 @@ long GBS_get_a_prime(long above_or_equal_this) {
     }
 
 
-GB_HASH *GBS_create_hash(long user_size,int upper_case){
+GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
     /* Create a hash of size size, this hash is using linked list to avoid collisions,
-     *  if upper_case            = 0 then 'a!=A'
-     *  else if upper_case       = 1 then 'a==A'
-     *  */
+     *  ignore_case == 0 -> 'a != A'
+     *  ignore_case != 0 -> 'a == A'
+     */
     struct gbs_hash_struct *hs;
-    long                    size = GBS_get_a_prime(user_size); // use next prime number for hash size
+    long                    size    = GBS_get_a_prime(user_size); // use next prime number for hash size
 
     hs             = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
     hs->size       = size;
     hs->nelem      = 0;
-    hs->upper_case = upper_case;
+    hs->upper_case = ignore_case;
     hs->entries    = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *),(size_t)size);
     return hs;
 }
