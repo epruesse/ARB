@@ -44,7 +44,7 @@ private TreeNode father;
 private Vector   childNodes;
 private int      noOfChildren = 0;
 private boolean  grouped      = false;
-private boolean  marked       = false;
+private int  marked           = 0; // 0 = none marked, 1 = has marked, 2 = all marked (1 and 2 only differ for internal nodes)
 
     // test and internals
 public int         level;
@@ -57,10 +57,11 @@ public boolean     verbose     = false;
 
 public TreeNode(boolean is_leaf)
 {
-    isLeaf     = is_leaf;
-    childNodes = new Vector();
-    nodeSerial = nodeCounter;
-    father     = null;
+    isLeaf      = is_leaf;
+    childNodes  = new Vector();
+    nodeSerial  = nodeCounter;
+    father      = null;
+    maxCoverage = 100;
 
     if (verbose) System.out.println("TreeNode:node number " + nodeSerial + " generated");
 
@@ -171,11 +172,26 @@ public int getMinNonGroupHits() { return minNonGroupHits; }
 public int getMaxCoverage() { return maxCoverage; }
 
 public String getNodeInformation() { // the string displayed in window
-    if (isLeaf) {
-        return "["+getExactMatches()+"] "+getFullName()+", "+getAccessionNumber();
+    String result;
+
+    if (getExactMatches() != 0) {
+        result = "["+getExactMatches()+"]";
+    }
+    else if ((getMinNonGroupHits() != 0) || (getMaxCoverage() != 100)) {
+        result = "["+getMinNonGroupHits()+","+getMaxCoverage()+"%]";
+    }
+    else {
+        result = "";
     }
 
-    return "blabla";
+    if (isLeaf) {
+        if (result.length() != 0) {
+            result += " ";
+        }
+        result = result+getFullName()+", "+getAccessionNumber();
+    }
+
+    return result;
 }
 
 public void setFather(TreeNode f) throws Exception
@@ -275,26 +291,73 @@ public double getMaxDepth()
         : ((TreeNode)getChilds().elementAt(1)).getMaxDepth();
 }
 
-public void setMarked(boolean marker)
+public void setMarked(int marker)
 {
     marked = marker;
 }
 
-public boolean isMarked()
+public int isMarked()
 {
     return marked;
 }
 
+private void markSubtree_rek(boolean flag) {
+    marked = flag ? 2 : 0;
+    if (!isLeaf) {
+        ((TreeNode)childNodes.elementAt(0)).markSubtree_rek(flag);
+        ((TreeNode)childNodes.elementAt(1)).markSubtree_rek(flag);
+    }
+}
+
+private int recalcMarkedState() {
+    // Note: does NOT do a complete recalculation for the whole tree!
+    if (isLeaf) {
+        return marked;
+    }
+
+    int upState = ((TreeNode)childNodes.elementAt(0)).recalcMarkedState();
+    if (upState == 1) { // marked partially -> no need to check other subtree
+        return upState;
+    }
+
+    int downState = ((TreeNode)childNodes.elementAt(1)).recalcMarkedState();
+    if (downState == 1 || downState == upState) {
+        return downState;
+    }
+
+    // now one state is 2(=all marked) and the other is 0(=none marked)
+    return 1; // partially marked
+}
+
+private void propagateMarkUpwards() {
+    if (father != this) { // not at root
+        if (marked == 1) {          // partially marked
+            father.setMarked(1);
+        }
+        else {
+            int      myIdx   = (TreeNode)(father.childNodes.elementAt(0)) == this ? 0 : 1;
+            TreeNode brother = (TreeNode)(father.childNodes.elementAt(1-myIdx));
+
+            int bmarked = brother.recalcMarkedState();
+
+            if (bmarked == marked) {
+                father.setMarked(marked);
+            }
+            else {
+                father.setMarked(1); // partially marked
+            }
+        }
+        father.propagateMarkUpwards();
+    }
+}
+
 public void markSubtree(boolean flag)
 {
-
-    marked = flag;
-    if (isLeaf != true)
-        {
-            ((TreeNode)childNodes.elementAt(0)).markSubtree(flag);
-            ((TreeNode)childNodes.elementAt(1)).markSubtree(flag);
-        }
+    markSubtree_rek(flag);
+    propagateMarkUpwards();
 }
+
+
 
 public void setPath(String path)
 {
