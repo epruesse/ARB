@@ -128,7 +128,7 @@ public:
     const char *next_element();
 };
 
-class AW_window { 
+class AW_window {
 	private:
 
 	protected:
@@ -178,7 +178,7 @@ class AW_window {
 		void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color );
 		void update_toggle_field( int toggle_field_number );
 		void update_selection_list_intern( AW_selection_list *selection_list );
-#ifdef __AW_WINDOW_XM_INCLUDED		
+#ifdef __AW_WINDOW_XM_INCLUDED
 		Widget _aw_create_toggle_entry(Widget toggle_field,
 					const char *label,const char *mnemonic,
 					AW_variable_update_struct *awus,
@@ -248,8 +248,7 @@ class AW_window {
 // ************** Create the menu buttons *********
 	void create_menu(	const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
 	void insert_sub_menu(	const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-	void insert_menu_topic(	const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask,
-				void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+	void insert_menu_topic(	const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
 	void close_sub_menu(void);
 
 	void insert_separator(void);
@@ -301,7 +300,7 @@ class AW_window {
 
 // *** local modifiers: ********
 	void at( int x, int y );			// abs pos of a button (>10,10)
-	void at_x( int x );				// abs x pos	
+	void at_x( int x );				// abs x pos
 	void at_y( int y );				// abs y pos
 	void at_shift( int x, int y );			// rel pos of a button
 	void at_newline( void );			// in auto_space mode only: newline
@@ -373,20 +372,20 @@ class AW_window {
     // for float
     void insert_selection(  AW_selection_list * selection_list, const char *displayed, float value );
     void insert_default_selection(  AW_selection_list * selection_list, const char *displayed, float value );
-    
+
     void delete_selection_from_list(  AW_selection_list * selection_list, const char *displayed_string );
     void conc_list( AW_selection_list * from_list_id,  AW_selection_list * to_list_id);
-    
+
     // --- selection list iterator:
     void init_list_entry_iterator(AW_selection_list *selection_list);
     void iterate_list_entry(int offset);
     // --- the following functions work on the currently iterated element:
-    const char *get_list_entry_char_value(); 
+    const char *get_list_entry_char_value();
     const char *get_list_entry_displayed();
     void set_list_entry_char_value(const char *new_char_value);
     void set_list_entry_displayed(const char *new_displayed);
     // ---------------------------------------------------------
-    
+
     void clear_selection_list(  AW_selection_list * selection_list );
     void update_selection_list(  AW_selection_list * selection_list );
     int get_no_of_entries(  AW_selection_list * selection_list );
@@ -402,7 +401,7 @@ class AW_window {
 };
 
 
-class AW_window_menu_modes : public AW_window { 
+class AW_window_menu_modes : public AW_window {
 	private:
 		void	*AW_window_menu_modes_private;    // Do not use !!!
 	public:
@@ -414,7 +413,7 @@ class AW_window_menu_modes : public AW_window {
 };
 
 
-class AW_window_menu : public AW_window { 
+class AW_window_menu : public AW_window {
 	private:
 	public:
 		AW_window_menu(void);
@@ -424,7 +423,7 @@ class AW_window_menu : public AW_window {
 			int posx, int posy);
 };
 
-class AW_window_simple_menu : public AW_window { 
+class AW_window_simple_menu : public AW_window {
 	private:
 	public:
 		AW_window_simple_menu(void);
@@ -435,7 +434,7 @@ class AW_window_simple_menu : public AW_window {
 };
 
 
-class AW_window_simple : public AW_window { 
+class AW_window_simple : public AW_window {
 	private:
 	public:
 		AW_window_simple(void);
@@ -444,7 +443,7 @@ class AW_window_simple : public AW_window {
 };
 
 
-class AW_window_message : public AW_window { 
+class AW_window_message : public AW_window {
 	private:
 	public:
 		AW_window_message(void);

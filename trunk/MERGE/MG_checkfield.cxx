@@ -6,6 +6,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 #include <awt.hxx>
 #include "merge.hxx"
 
@@ -120,7 +121,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
 					toinspos[0] = toins;
 					*corrrected = 1;
 					do { c1= *(s1++); } while (tab[c1] < 0); /* eat s1 */
-					continue;					 
+					continue;
 				}
 			}
 			if (count >=0){
@@ -167,7 +168,7 @@ void mg_check_field_cb(AW_window *aww){
 	long ToUpper = root->awar(AWAR_TOUPPER)->read_int();
 	long correct = root->awar(AWAR_CORRECT)->read_int();
 	char *tag = root->awar(AWAR_ETAG)->read_string();
-		
+
 	if (!strlen(source)) {
 		delete source;
 		delete dest;
@@ -312,11 +313,11 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
 	aws->load_xfig("merge/seqcheck.fig");
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"checkfield.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 
 	aws->at("exclude");
@@ -332,16 +333,16 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
 	aws->create_input_field(AWAR_ETAG,6);
 
 	awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_SOURCE_FIELD,
-			AWT_STRING_FILTER, "source",0);
-	
+			AWT_STRING_FILTER, "source",0, CHANGE_KEY_PATH);
+
 	awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_DEST_FIELD,
-			(1<<GB_STRING)|(1<<GB_INT), "dest",0);
+			(1<<GB_STRING)|(1<<GB_INT), "dest",0, CHANGE_KEY_PATH);
 
 
 	aws->at("go");
 	aws->highlight();
 	aws->callback(mg_check_field_cb);
-	aws->create_button("GO","GO");			   
+	aws->create_button("GO","GO");
 
 	return (AW_window *)aws;
 }

@@ -14,7 +14,6 @@
 // --------------------------------------------------------------------------------
 
 #define AWAR_GENE_NAME "tmp/gene/name"
-#define AWAR_GENE_DEST "tmp/gene/dest"
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
 

@@ -7,6 +7,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -151,9 +152,9 @@ void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 		aws->create_button("CLOSE", "CLOSE","C");
 
 		awt_create_selection_list_on_scandb((GBDATA *)cgb_main,
-			(AW_window*)aws,"tmp/viewkey/key_text",
-			AWT_NDS_FILTER,
-			"scandb","rescandb");
+                                            (AW_window*)aws,"tmp/viewkey/key_text",
+                                            AWT_NDS_FILTER,
+                                            "scandb","rescandb", CHANGE_KEY_PATH);
 		//aw_root->awar(key_text)->add_callback((AW_RCB1)awt_pop_down_select_nds,(AW_CL)aws);
 
 		win =  (AW_window*)aws;
@@ -281,25 +282,25 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 	aws->at(showx,closey);
 
 	aws->at_x(fieldselectx);
-	aws->create_button(0,"SEL");	
+	aws->create_button(0,"SEL");
 
 	aws->at_x(showx);
-	aws->create_button(0,"SHOW");	
+	aws->create_button(0,"SHOW");
 
 	aws->at_x(fieldx);
 	aws->create_button(0,"FIELD");
 
 	aws->at_x(inheritx);
-	aws->create_button(0,"INH.");	
+	aws->create_button(0,"INH.");
 
 	aws->at_x(columnx);
-	aws->create_button(0,"WIDTH");	
+	aws->create_button(0,"WIDTH");
 
 	aws->at_x(srtx);
-	aws->create_button(0,"SRT");	
+	aws->create_button(0,"SRT");
 
 	aws->at_x(srtux);
-	aws->create_button(0,"ACI SRT PROGRAMM");	
+	aws->create_button(0,"ACI SRT PROGRAMM");
 
 
 	return (AW_window *)aws;
@@ -534,7 +535,7 @@ make_node_text_list(GBDATA * gbd, FILE *fp)
 			}
 			fprintf(fp,"%18s  %s\n","", bp);
 			if (cp>=60) bp[60] = c;
-		}			
+		}
 	}
 	*bp = 0;
 	return awt_nds_ms->buf;

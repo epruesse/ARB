@@ -128,9 +128,9 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
     names = GBT_scan_db(gb_species_data);
-    awt_add_new_gene_changekey(gb_main,"name",GB_STRING);
-    awt_add_new_gene_changekey(gb_main,"pos_begin",GB_STRING);
-    awt_add_new_gene_changekey(gb_main,"pos_end",GB_STRING);
+    awt_add_new_gene_changekey(gb_main,"name", GB_STRING);
+    awt_add_new_gene_changekey(gb_main,"pos_begin", GB_INT);
+    awt_add_new_gene_changekey(gb_main,"pos_end", GB_INT);
 
     for (name = names; *name; name++) {
         if ( (1<<(**name)) & bitfilter ) {		// look if already exists
@@ -214,7 +214,7 @@ GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
 GB_BOOL awt_check_scanner_key_data(struct adawcbstruct *cbs,GBDATA *gbd)
 {
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main,cbs->change_key_path,GB_CREATE_CONTAINER);
     return GB_check_father(gbd,gb_key_data);
 }
 
@@ -318,7 +318,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
                         awt_edit_changed_cb(0, cbs, GB_CB_CHANGED);
                     }
                 } else {
-                    GBDATA         *gb_key = awt_get_key(cbs->gb_main, key_name);
+                    GBDATA         *gb_key = awt_get_key(cbs->gb_main, key_name, cbs->change_key_path);
                     error = GB_delete(gbd);
                     if (!error) {
                         cbs->aws->get_root()->awar(cbs->def_gbd)->write_int( (long) gb_key);
@@ -339,18 +339,17 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
 }
 /********************* get the container of a species key description ***************/
 
-GBDATA *awt_get_key(GBDATA *gb_main, char *key)
+GBDATA *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path)
 {
-    GBDATA *gb_key_data =
-        GB_search(gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find(gb_key_data,CHANGEKEY_NAME,key,down_2_level);
+    GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
+    GBDATA *gb_key_name = GB_find(gb_key_data, CHANGEKEY_NAME, key, down_2_level);
     GBDATA *gb_key = 0;
     if (gb_key_name) gb_key = GB_get_father(gb_key_name);
     return gb_key;
 }
 
-GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name){
-    GBDATA *gbd = awt_get_key(gb_main,field_name);
+GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path) {
+    GBDATA *gbd = awt_get_key(gb_main,field_name, change_key_path);
     if(!gbd) return GB_NONE;
     GBDATA *gb_key_type = GB_find(gbd,CHANGEKEY_TYPE,0,down_level);
     if (!gb_key_type) return GB_NONE;

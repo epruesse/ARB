@@ -19,7 +19,7 @@ void st_ok_cb(AW_window *aww,ST_ML *st_ml){
 	char *tree_name = root->awar_string(AWAR_TREE,"tree_stat",st_ml->gb_main)			->read_string();
 	int marked_only = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 	GB_ERROR error = st_ml->init(tree_name,alignment_name,(char *)0,marked_only,(char *)0, st_ml->awt_csp);
-	
+
 	if (error) {
 	    aw_message(error);
 	}
@@ -39,11 +39,11 @@ AW_window *st_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_fun
 
 	aws->callback( AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"st_ml.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	root->awar_string( ST_ML_AWAR_CSP, "");
 	root->awar_int( ST_ML_AWAR_CQ_MARKED_ONLY, 1);
@@ -58,19 +58,19 @@ AW_window *st_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_fun
 
 	aws->at("GO");
 	aws->callback( (AW_CB1)st_ok_cb,(AW_CL)st_ml);
-	aws->create_button("GO","GO","G");			   
-	
+	aws->create_button("GO","GO","G");
+
 	aws->at("awt_csp");
 	aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)st_ml->awt_csp);
 	aws->button_length(20);
 	aws->create_button( "SELECT_CSP", ST_ML_AWAR_CSP );
-	
+
 	aws->at("marked");
 	aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..", "");
 	aws->insert_toggle("All species", "A", 0);
 	aws->insert_toggle("Marked species", "M", 1);
 	aws->update_toggle_field();
-	
+
 	return aws;
 }
 
@@ -90,7 +90,7 @@ AP_tree *st_ml_convert_species_name_to_node(ST_ML *st_ml,const char *species_nam
     AP_tree *node;
     if (!st_ml->hash_2_ap_tree) return 0;
     node = (AP_tree *)GBS_read_hash(st_ml->hash_2_ap_tree,species_name);
-    return node; 
+    return node;
 }
 
 int st_is_inited(ST_ML *st_ml){
@@ -135,11 +135,11 @@ AW_window *st_create_quality_check_window(AW_root *root,GBDATA *gb_main){
 
 	aws->callback( AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"check_quality.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	root->awar_string( ST_ML_AWAR_CSP, "");
 	root->awar_string(AWAR_DEFAULT_ALIGNMENT,"-none-",gb_main);
@@ -155,7 +155,7 @@ AW_window *st_create_quality_check_window(AW_root *root,GBDATA *gb_main){
 
 	root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 	root->awar_string(ST_ML_AWAR_CQ_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-	
+
 	awt_csp = new AWT_csp(gb_main,root,ST_ML_AWAR_CSP);
 	//AW_CL filter_cl =
 	awt_create_select_filter(root,gb_main,ST_ML_AWAR_CQ_FILTER_NAME);
@@ -167,7 +167,7 @@ AW_window *st_create_quality_check_window(AW_root *root,GBDATA *gb_main){
 	    aws->insert_option("Only marked and in tree","m",1);
 	    aws->update_option_menu();
 	}
-	
+
 	aws->at("report");
 	{
 	    aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
@@ -176,7 +176,7 @@ AW_window *st_create_quality_check_window(AW_root *root,GBDATA *gb_main){
 	    aws->insert_option("R. to sequence","s",2);
 	    aws->update_option_menu();
 	}
-	
+
 	aws->at("awt_csp");
 	aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)awt_csp);
 	aws->create_button( "SELECT_CSP", ST_ML_AWAR_CSP );
@@ -184,10 +184,10 @@ AW_window *st_create_quality_check_window(AW_root *root,GBDATA *gb_main){
 	aws->at("sb");
 	aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-	
-	awt_create_selection_list_on_scandb(gb_main,aws,ST_ML_AWAR_CQ_DEST_FIELD, 1 << GB_STRING, "dest",0);
+
+	awt_create_selection_list_on_scandb(gb_main,aws,ST_ML_AWAR_CQ_DEST_FIELD, 1 << GB_STRING, "dest",0, CHANGE_KEY_PATH);
 	aws->at("GO");
 	aws->callback( (AW_CB)st_check_cb,(AW_CL)gb_main,(AW_CL)awt_csp);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 	return aws;
 }

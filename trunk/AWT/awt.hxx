@@ -107,8 +107,8 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 AW_CL awt_create_selection_list_on_scandb(GBDATA     *gb_main,AW_window *aws,
                                           const char *varname, long type_filter,
                                           const char *scan_xfig_label,
-                                          const char *rescan_xfig_label = 0,
-                                          const char *change_key_path   = 0);
+                                          const char *rescan_xfig_label,
+                                          const char *change_key_path);
 			/* show fields of a species / extended / gene !!!
 			type filter is a bitstring which controls what types are shown in
 			the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
@@ -122,8 +122,8 @@ GB_ERROR 		awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
 		/*	type == GB_TYPES
 			add a new FIELD to the FIELD LIST */
 
-GBDATA *awt_get_key(GBDATA *gb_main, char *key);
-GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name);
+GBDATA *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path);
+GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path);
 
 /***********************	FILTERS 	************************/
 AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);

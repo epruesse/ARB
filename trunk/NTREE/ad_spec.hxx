@@ -16,3 +16,6 @@ AW_window *ad_create_query_window(AW_root *aw_root);
 void ad_unquery_all();
 void ad_query_update_list();
 void ad_spec_create_field_items(AW_window *aws);
+
+AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_change_key_path);
+AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_change_key_path);
