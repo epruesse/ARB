@@ -1558,21 +1558,21 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     }
     awmm->close_sub_menu();
     ____________________________SEP;
-    awmm->insert_sub_menu(0, "Cursor Position ", "c");
+    awmm->insert_sub_menu(0, "Cursor position ", "p");
     awmm->insert_menu_topic( "store_curpos",   "Store cursor position", "S", 0, AWM_ALL, ED4_store_curpos, 0, 0 );
     awmm->insert_menu_topic( "restore_curpos", "Restore cursor position ", "R", 0, AWM_ALL, ED4_restore_curpos, 0, 0 );
     awmm->insert_menu_topic( "clear_curpos",   "Clear stored positions", "C", 0, AWM_ALL, ED4_clear_stored_curpos, 0, 0 );
     awmm->close_sub_menu();
 
     ____________________________SEP;
-    awmm->insert_menu_topic( "change_cursor", "Change Cursor Type", "u", 0, AWM_ALL, ED4_change_cursor, 0, 0);
-    awmm->insert_menu_topic( "show_all", "Show All Bases ", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
-    awmm->insert_menu_topic( "show_diff", "Show Only Differences to Selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
+    awmm->insert_menu_topic( "change_cursor", "Change cursor type", "t", 0, AWM_ALL, ED4_change_cursor, 0, 0);
+    awmm->insert_menu_topic( "show_all", "Show all bases ", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
+    awmm->insert_menu_topic( "show_diff", "Show only differences to selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
     ____________________________SEP;
-    awmm->insert_menu_topic( "enable_col_stat", "Activate Column Statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
-    awmm->insert_menu_topic( "disable_col_stat", "Disable Column Statistics", "", "st_ml.hlp",AWM_ALL,disable_col_stat, 0, 0);
-    awmm->insert_menu_topic( "detail_col_stat", "Detailed Column Statistics", "", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
-    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
+    awmm->insert_menu_topic( "enable_col_stat", "Activate column statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
+    awmm->insert_menu_topic( "disable_col_stat", "Disable column statistics", "i", "st_ml.hlp",AWM_ALL,disable_col_stat, 0, 0);
+    awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "x", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
+    awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "x", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     ____________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0);
 
