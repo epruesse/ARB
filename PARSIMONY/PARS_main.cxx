@@ -1435,7 +1435,7 @@ static void pars_start_cb(AW_window *aww)
     AWT_canvas *ntw;
     {
         AP_tree_sort  old_sort_type = nt->tree->tree_sort;
-        nt->tree->set_tree_type(AP_NO_NDS); // avoid NDS warnings during startup
+        nt->tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
         ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
         nt->tree->set_tree_type(old_sort_type);
     }
@@ -1660,11 +1660,11 @@ static void pars_start_cb(AW_window *aww)
     awm->button_length(7);
 
     awm->at_x(db_treex);
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_RADIAL_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
     awm->help_text("tr_type_radial.hlp");
     awm->create_button("RADIAL_TREE", "#radial.bitmap",0);
 
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_TREE);
+    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE", "#list.bitmap",0);
 
@@ -1833,6 +1833,18 @@ static void create_all_awars(AW_root *awr, AW_default aw_def)
     free(dali);
 }
 
+static AW_root *AD_map_viewer_aw_root = 0;
+void AD_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype)
+{
+    if (vtype == ADMVT_SELECT && AD_map_viewer_aw_root) {
+        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+        if (gb_name) {
+            const char *species_name = GB_read_char_pntr(gb_name);
+            AD_map_viewer_aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     AW_root *aw_root;
@@ -1841,12 +1853,13 @@ int main(int argc, char **argv)
 
     aw_initstatus();
 
-    aw_root = new AW_root;
+    aw_root = new AW_root;    
     aw_default = aw_root->open_default(".arb_prop/pars.arb");
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_PARS");
 
-
+    AD_map_viewer_aw_root = aw_root;
+    
     ap_main = new AP_main;
 
     nt = (NT_global *)calloc(sizeof(NT_global),1);
@@ -1913,7 +1926,3 @@ int main(int argc, char **argv)
 }
 
 
-void AD_map_viewer(GBDATA *dummy,AD_MAP_VIEWER_TYPE )
-{
-    AWUSE(dummy);
-}
