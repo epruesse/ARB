@@ -1905,9 +1905,9 @@ void ED4_multi_species_manager::mark_selected_species(int mark) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
                     GB_ERROR error =
-#endif // DEBUG
+#endif // ASSERTION_USED
                         GB_write_flag(gbd, mark ? 1 : 0);
                     e4_assert(!error);
 

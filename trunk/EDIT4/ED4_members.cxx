@@ -366,7 +366,7 @@ ED4_index ED4_members::search_member( ED4_extension *location, ED4_properties pr
     return ( no_of_members );                                                         // reached this position => no hit, return no_of_members
 }
 
-#ifdef DEBUG
+#ifdef ASSERTION_USED
 int ED4_members::members_ok() const {
     int m;
     int error = 0;
@@ -382,7 +382,7 @@ int ED4_members::members_ok() const {
 
     return !error;
 }
-#endif
+#endif // ASSERTION_USED
 
 ED4_members::ED4_members(ED4_manager *the_owner)
 {

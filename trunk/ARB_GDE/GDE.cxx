@@ -161,9 +161,9 @@ char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
 AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 #define BUFSIZE 200
     char bf[BUFSIZE+1];
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int printed =
-#endif // DEBUG
+#endif // ASSERTION_USED
         sprintf(bf,"GDE / %s / %s",AWinfo->gmenu->label,AWinfo->gmenuitem->label);
     gb_assert(printed<=BUFSIZE);
 
