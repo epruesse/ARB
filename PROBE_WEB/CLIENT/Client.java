@@ -21,6 +21,7 @@ private HashMap knownOptions()
      {
          HashMap hm = new HashMap();
          hm.put("server", "=URL        Specify server URL manually (note: needs leading /)");
+         hm.put("tree",   "=reload       Force tree reload");
          return hm;
      }
 
@@ -29,20 +30,28 @@ private HashMap knownOptions()
     // private Communicationsubsystem
 
 
-public static String readTree(HttpSubsystem webAccess)
+public static String readTree(HttpSubsystem webAccess, boolean forceReload)
     {
-        String     localTreeFile     = new String("probetree.gz");
-        TreeReader tr                = new TreeReader(localTreeFile);
-        String     error             = tr.getError();
         String     localTreeVersion  = null;
         String     serverTreeVersion = webAccess.getNeededTreeVersion();
+        String     error             = null;
+        String     localTreeFile     = new String("probetree.gz");
+        TreeReader tr                = null;
 
-        if (error != null) {
-            System.out.println("Can't access the tree ("+error+")");
-            localTreeVersion = "corrupt";
+        if (forceReload) {
+            localTreeVersion = "reload forced";
         }
         else {
-            localTreeVersion = tr.getVersionString();
+            tr    = new TreeReader(localTreeFile);
+            error = tr.getError();
+
+            if (error != null) {
+                System.out.println("Can't access the tree ("+error+")");
+                localTreeVersion = "missing or corrupt";
+            }
+            else {
+                localTreeVersion = tr.getVersionString();
+            }
         }
 
         if (!serverTreeVersion.equals(localTreeVersion))
@@ -101,8 +110,11 @@ public static void main(String[] args)
         }
 
         // load and parse the most recent tree
-        cl.treeString = readTree(cl.webAccess); // terminates on failure
-        cl.root = (new TreeParser(cl.treeString)).getRootNode();
+        {
+            boolean reload_tree = cmdline.getOption("tree") && cmdline.getOptionValue("tree").equals("reload");
+            cl.treeString       = readTree(cl.webAccess, reload_tree); // terminates on failure
+            cl.root             = (new TreeParser(cl.treeString)).getRootNode();
+        }
 
         if (cl.root == null)
             {
@@ -126,22 +138,16 @@ public static void main(String[] args)
 public Client()
     {
         //        display = new ProbesGUI();
-
-
     }
 
- public ProbesGUI getDisplay()
- {
-     return display;
- }
+public ProbesGUI getDisplay()
+    {
+        return display;
+    }
 
 public String getNodeInformation(String nodePath)
     {
         return webAccess.retrieveNodeInformation(nodePath);
-
     }
-
-
-
 }
 
