@@ -3,8 +3,8 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
 SUB	input_mask_format.hlp
+SUB	input_mask_new.hlp
 
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
@@ -13,13 +13,17 @@ TITLE		Input masks
 
 OCCURRENCE	ARB_NT/Species/User Masks (if 'Species'-masks existing)
 
-DESCRIPTION	An input mask is a user-definable interface to the database.		
+DESCRIPTION	An input mask is a user-definable interface to the database.
 
 NOTES		To define new users masks modify one of our examples and
 		save it with a different name.
 
 EXAMPLES	See $(ARBHOME)/lib/inputMasks
 
-WARNINGS	None
+WARNINGS	If there is an 'Edit enable' toggle at top of the mask, you'll
+                need to check this switch before you make changes to any fields.
+
+                If there is no such toggle or if the toggle is checked, all changes
+                will be written to the database without any confirmations.
 
 BUGS		No bugs known.
