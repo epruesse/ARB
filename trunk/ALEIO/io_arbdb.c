@@ -21,15 +21,15 @@ void            give_help(void);
 void            give_version(void);
 void            print_and_die(const char *message);
 void            arbdb_print_and_die(void);
-void 
+void
 put(char *keys_filename,
     char *annotations_filename,
     char *sequences_filename);
-void 
+void
 get(char *keys_filename,
     char *annotations_filename,
     char *sequences_filename);
-void 
+void
 choose(char *choose_filename,
        char *keys_filename,
        char *annotations_filename,
@@ -144,7 +144,7 @@ main(int argc, char **argv)
 	}
 
 	/* Open the GDBM file.  */
-	/* g = GBT_open(arbdb_filename, "rw", "$(ARBHOME)/lib/pts/*"); */
+	/* g = GBT_open(arbdb_filename, "rw", "$(ARBHOME)/lib/pts/\*"); */
 	g = GBT_open(":", "rw", "$(ARBHOME)/lib/pts/*");
 	if (!g)
 		arbdb_print_and_die();
