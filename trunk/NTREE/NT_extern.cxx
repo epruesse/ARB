@@ -158,7 +158,6 @@ void create_all_awars(AW_root *awr, AW_default def)
 	}
 	awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
 	awr->awar_string( AWAR_SPECIES_NAME, "" ,	gb_main);
-    awr->awar_int(AWAR_COLUMNS_CHANGED, 0, gb_main);
 
 	awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
 #include <memory.h>
 #include <malloc.h>
 
@@ -37,28 +37,28 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
 
     static char *buffer;
     static size_t buffer_size = 0;
-	
+
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
     calc_update_intervall(&left_index, &right_index );
-    text_x = x + CHARACTEROFFSET;							// don't change 
+    text_x = x + CHARACTEROFFSET;							// don't change
     text_y = y + height - MAXLETTERDESCENT;
-	
+
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     rm->clip_screen_range(&left_index, &right_index);
     int seq_start = rm->screen_to_sequence(left_index);
     int seq_end = rm->screen_to_sequence(right_index);
-	
+
     char *cons = GB_give_buffer(seq_end+1);
     cons = get_parent( ED4_L_GROUP )->to_group_manager()->table().build_consensus_string(seq_start, seq_end, cons);
-	
+
     if ( size_t(right_index) >= buffer_size){
         delete buffer;
         buffer_size = right_index + 10;
         buffer = new char[buffer_size];
         memset(buffer, 0 , buffer_size);
     }
-		
+
     {
         int pos;
         for (pos = left_index; pos < right_index; pos++){
@@ -70,10 +70,10 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
             }
         }
     }
-    if (buffer_size) {	
+    if (buffer_size) {
         ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index);
     }
-	
+
     return ( ED4_R_OK );
 }
 
@@ -85,7 +85,7 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     char *buffer = GB_give_buffer(size+1);
     register long i,j,k;
-    
+
     for (k=0; size_t(k)<size; k++) {
         i = rm->screen_to_sequence(k+start);
         if ( size_t(i)<THIS->size && THIS->entries[i].pair_type) {
@@ -94,8 +94,7 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
             if (j < real_sequence_length){
                 pairing_character = opt_string[j];
             }
-            buffer[k] = THIS->get_symbol(opt_string[i],pairing_character,
-                                         THIS->entries[i].pair_type);
+            buffer[k] = THIS->get_symbol(opt_string[i],pairing_character, THIS->entries[i].pair_type);
         }else{
             buffer[k] = ' ';
         }
@@ -115,30 +114,30 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     static char	**colored_strings = 0;
     static int	len_of_colored_strings = 0;
     AW_device *device = ED4_ROOT->temp_device;
-    
+
     {
         AW_pos		world_x, world_y;
         calc_world_coords( &world_x, &world_y );
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
 
-        text_x = world_x + CHARACTEROFFSET;							// don't change 
+        text_x = world_x + CHARACTEROFFSET;							// don't change
         text_y = world_y + height - MAXLETTERDESCENT - ED4_ROOT->helix_spacing;
     }
-	
+
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len);
-    
+
     long left,right;
     calc_update_intervall(&left, &right );
     rm->clip_screen_range(&left, &right);
-    
+
     {
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
-	
+
         if (right>max_seq_len) right = max_seq_pos;
-        if (left>right) return ED4_R_OK; 
+        if (left>right) return ED4_R_OK;
     }
-    
+
     if (right > len_of_colored_strings){
         len_of_colored_strings = right + 256;
         if (!colored_strings) {
@@ -151,51 +150,51 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             memset(colored_strings[i],' ',len_of_colored_strings);
         }
     }
-    
+
     int seq_start = rm->screen_to_sequence(left); // real start of sequence
     int seq_end = rm->screen_to_sequence(right);
 
     // mark all strings as unused
-    memset(color_is_used,0,sizeof(color_is_used));	
-    
+    memset(color_is_used,0,sizeof(color_is_used));
+
     // transform strings, compress if needed
     {
         AWT_reference *ref = ED4_ROOT->reference;
-	
+
         ref->expand_to_length(seq_end);
         char *char_2_char = ED4_ROOT->sequence_colors->char_2_char;
         char *char_2_gc = ED4_ROOT->sequence_colors->char_2_gc;
         int scr_pos;
         int is_ref = ref->reference_species_is(species_name);
-	
+
         for (scr_pos=left; scr_pos<right; scr_pos++) {
             int seq_pos = rm->screen_to_sequence(scr_pos);
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];
-	    
+
             color_is_used[gc] = scr_pos+1;
             colored_strings[gc][scr_pos] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
         }
     }
-    
+
     // Set background
-    
+
     {
         GB_transaction dummy(gb_main);
         ST_ML_Color *colors = 0;
         char *searchColors = results().buildColorString(this, seq_start, seq_end);
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        int is_marked = GB_read_flag(spec_man->get_species_pointer()); 
+        int is_marked = GB_read_flag(spec_man->get_species_pointer());
         int selection_col1, selection_col2;
         int is_selected = ED4_get_selected_range(this, &selection_col1, &selection_col2);
-	
+
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
             (st_ml_node || (st_ml_node = st_ml_convert_species_name_to_node(ED4_ROOT->st_ml,this->species_name))))
         {
             colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
         }
-	
+
         if (colors || searchColors || is_marked || is_selected) {
             int i;
             AW_pos font_height = ED4_ROOT->font_info[ED4_G_HELIX].get_ascent();
@@ -207,17 +206,17 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             AW_pos y2 = text_y - font_height;
             int old_color = ED4_G_STANDARD;
             int color = ED4_G_STANDARD;
-	    
+
             if (is_selected && selection_col2<0) {
                 selection_col2 = rm->screen_to_sequence(real_right);
             }
-	    
+
             e4_assert(height<40);
             e4_assert(height>0);
-	    
+
             for ( i = real_left; i < real_right; i++,x2 += width) {
                 int new_pos = rm->screen_to_sequence(i);
-		
+
                 if (searchColors && searchColors[new_pos]) {
                     color = searchColors[new_pos];
                 }
@@ -234,7 +233,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 else {
                     color = ED4_G_STANDARD;
                 }
-		
+
                 if (color != old_color) {	// draw till oldcolor
                     if (x2>old_x){
                         if (old_color!=ED4_G_STANDARD) {
@@ -253,7 +252,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             }
         }
     }
-    
+
     // output helix
     if (ED4_ROOT->helix->size)
     {	// should do a remap
@@ -291,7 +290,7 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
     AW_pos		text_x, text_y;
-    text_x = x + CHARACTEROFFSET;							// don't change 
+    text_x = x + CHARACTEROFFSET;							// don't change
     text_y = y + height - MAXLETTERDESCENT;
     char buffer[10];
     if (gbdata){
@@ -322,7 +321,7 @@ ED4_returncode ED4_text_terminal::Show(int refresh_all, int is_cleared)
     }
     draw();
     ED4_ROOT->temp_device->pop_clip_scale();
-    
+
     ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
     if (this == cursor->owner_of_cursor){
         ED4_ROOT->temp_device->push_clip_scale();
@@ -330,7 +329,7 @@ ED4_returncode ED4_text_terminal::Show(int refresh_all, int is_cleared)
         ED4_ROOT->temp_device->pop_clip_scale();
         //	cursor->calc_cursor_pos_box(/*ED4_G_DRAG,*/ this);
     }
-    
+
     return ED4_R_OK;
 }
 
@@ -345,44 +344,44 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
-    text_x = x + CHARACTEROFFSET;							// don't change 
-    text_y = y + height - MAXLETTERDESCENT; 
+    text_x = x + CHARACTEROFFSET;							// don't change
+    text_y = y + height - MAXLETTERDESCENT;
 
     if (is_species_name_terminal()) {
         GB_CSTR real_name = to_species_name_terminal()->get_displayed_text();
-	
+
         int is_marked = 0;
         int width_of_char;
         int height_of_char = -1;
         int paint_box = !parent->flag.is_consensus && !parent->parent->parent->flag.is_SAI; // do not paint marked-boxes for consensi and SAIs
-	    
+
         if (paint_box) {
             ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
             GBDATA *gbd = species_man->get_species_pointer();
-	    
+
             if (gbd) {
                 is_marked = GB_read_flag(gbd);
             }
 
             width_of_char = ED4_ROOT->font_info[ED4_G_STANDARD].get_width();
             height_of_char = ED4_ROOT->font_info[ED4_G_STANDARD].get_height();
-#define MIN_MARK_BOX_SIZE 8	    
+#define MIN_MARK_BOX_SIZE 8
             if (width_of_char<MIN_MARK_BOX_SIZE) width_of_char = MIN_MARK_BOX_SIZE;
             if (height_of_char<MIN_MARK_BOX_SIZE) height_of_char = MIN_MARK_BOX_SIZE;
-#undef MIN_MARK_BOX_SIZE		
+#undef MIN_MARK_BOX_SIZE
         }
         else {
             width_of_char = 0;
         }
-	
+
         if (flag.selected) {
             ED4_ROOT->temp_device->box(ED4_G_SELECTED, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0);
-            ED4_ROOT->temp_device->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);	
+            ED4_ROOT->temp_device->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
         }
         else {
-            ED4_ROOT->temp_device->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);	
+            ED4_ROOT->temp_device->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
         }
-	
+
         if (paint_box) {
             int xsize = (width_of_char*6)/10;
             int ysize = (height_of_char*6)/10;
@@ -390,8 +389,8 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
             int yoff = ysize>>1;
             int bx = int(text_x+xoff);
             int by = int(text_y-(yoff+ysize));
-	    
-            ED4_ROOT->temp_device->box(ED4_G_STANDARD, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0); 
+
+            ED4_ROOT->temp_device->box(ED4_G_STANDARD, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
             if (!is_marked && xsize>2 && ysize>2) {
                 ED4_ROOT->temp_device->clear_part(bx+1, by+1, xsize-2, ysize-2);
             }
@@ -399,9 +398,9 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
     }
     else {
         char *db_pointer = resolve_pointer_to_string();
-    
+
         if (is_sequence_info_terminal()) {
-            ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);	
+            ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);
         }
         else if (is_pure_text_terminal()) { // normal text (i.e. remark)
             ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, 1, 0, 0, 0);
@@ -410,11 +409,11 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
             GB_CORE;
         }
     }
-		
+
     return ( ED4_R_OK );
 }
 
-ED4_text_terminal::ED4_text_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) : 
+ED4_text_terminal::ED4_text_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_terminal( temp_id, x, y, width, height, temp_parent )
 {
 }

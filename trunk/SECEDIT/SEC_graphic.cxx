@@ -53,35 +53,6 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
 
 }
 
-//  ---------------------------------------------------------
-//      static void SEC_columns_changed_cb(AW_root *awr)
-//  ---------------------------------------------------------
-// This is called when AWAR_COLUMNS_CHANGED is set to a new value.
-// Reloads all column-specific stuff (helix, ecoli)
-static void SEC_columns_changed_cb(AW_root *awr) { // !!!
-    SEC_graphic *sec_graphic = SEC_GRAPHIC;
-    sec_graphic->load(sec_graphic->gb_main, 0, 0, 0);
-}
-
-void SEC_add_awar_callbacks(AW_root *aw_root,AW_default /*def*/, AWT_canvas *ntw) {
-    aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->add_callback(SEC_distance_between_strands_changed_cb, (AW_CL)ntw);
-    aw_root->awar(AWAR_COLUMNS_CHANGED)->add_callback(SEC_columns_changed_cb);
-
-#define CALLBACK_PAIR(type)                                                                             \
-    aw_root->awar(AWAR_SECEDIT_##type##_PAIRS)    ->add_callback(SEC_pair_def_changed_cb, (AW_CL)ntw);  \
-    aw_root->awar(AWAR_SECEDIT_##type##_PAIR_CHAR)->add_callback(SEC_pair_def_changed_cb, (AW_CL)ntw)
-
-    CALLBACK_PAIR(STRONG);
-    CALLBACK_PAIR(NORMAL);
-    CALLBACK_PAIR(WEAK);
-    CALLBACK_PAIR(NO);
-    CALLBACK_PAIR(USER);
-
-#undef CALLBACK_PAIR
-
-    SEC_GRAPHIC->bond.update(SEC_GRAPHIC->aw_root);
-}
-
 // required dummy for AWT, even if you don't use trees...
 #if defined(FREESTANDING)
 void AD_map_viewer(gb_data_base_type *dummy, AD_MAP_VIEWER_TYPE)
@@ -595,6 +566,18 @@ void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *sec, GB_CB_TYPE type)
     sec->load(gb_main,0,0,0); 	// reload everything
 }
 
+//  ---------------------------------------------------------
+//      static void SEC_alignment_length_changed(AW_root *awr)
+//  ---------------------------------------------------------
+// This is called when ... is set to a new value.
+// Reloads all column-specific stuff (helix, ecoli)
+static void SEC_alignment_length_changed(AW_root *awr) {
+    SEC_graphic *sec_graphic = SEC_GRAPHIC;
+    sec_graphic->gb_struct = NULL;
+    sec_graphic->gb_struct_ref = NULL;
+    sec_graphic->load(sec_graphic->gb_main, 0, 0, 0);
+}
+
 /** read awar AWAR_HELIX_NAME to get the name */
 GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, AW_CL insert_delete_cbs) {
     AWUSE(dummy);
@@ -957,3 +940,28 @@ void SEC_bond_def::paint(AW_device *device, SEC_root *root, char base1, char bas
         }
     }
 }
+
+void SEC_add_awar_callbacks(AW_root *aw_root,AW_default /*def*/, AWT_canvas *ntw) {
+    aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->add_callback(SEC_distance_between_strands_changed_cb, (AW_CL)ntw);
+
+    char *ali_name = GBT_get_default_alignment(gb_main);
+    GBDATA *gb_alignment = GBT_get_alignment(gb_main,ali_name);
+    if (!gb_alignment) aw_message("You can't edit without an existing alignment", "EXIT");
+    GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
+    GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)SEC_alignment_length_changed, 0);
+
+#define CALLBACK_PAIR(type)                                                                             \
+    aw_root->awar(AWAR_SECEDIT_##type##_PAIRS)    ->add_callback(SEC_pair_def_changed_cb, (AW_CL)ntw);  \
+    aw_root->awar(AWAR_SECEDIT_##type##_PAIR_CHAR)->add_callback(SEC_pair_def_changed_cb, (AW_CL)ntw)
+
+    CALLBACK_PAIR(STRONG);
+    CALLBACK_PAIR(NORMAL);
+    CALLBACK_PAIR(WEAK);
+    CALLBACK_PAIR(NO);
+    CALLBACK_PAIR(USER);
+
+#undef CALLBACK_PAIR
+
+    SEC_GRAPHIC->bond.update(SEC_GRAPHIC->aw_root);
+}
+

@@ -37,7 +37,6 @@
 #define AWAR_SPECIES_NAME           "tmp/focus/species_name"	    /* string: name of selected species */
 #define AWAR_HELIX_NAME             "tmp/focus/helix_name"		    /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
 #define AWAR_ERROR_MESSAGES         "tmp/Message"		            /* error: messages */
-#define AWAR_COLUMNS_CHANGED        "tmp/columns_changed"           /* if this is set to a new value edit 4 reload some column dependent stuff */
 
 
 

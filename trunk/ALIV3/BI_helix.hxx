@@ -47,20 +47,18 @@ class BI_helix {
 
 	// ***** read and write
 #ifdef _USE_AW_WINDOW
-	BI_helix(AW_root *aw_root); 
+	BI_helix(AW_root *aw_root);
 #else
 	BI_helix(void);
 #endif
-	~BI_helix(void);	
+	~BI_helix(void);
 
 	char *init(GBDATA *gb_main);
-	char *init(GBDATA *gb_main, char *alignment_name,
-		char *helix_nr_name, char *helix_name);
+	char *init(GBDATA *gb_main, char *alignment_name, char *helix_nr_name, char *helix_name);
 	char *init(GBDATA *gb_helix_nr,GBDATA *gb_helix,long size);
 	char *init(char *helix_nr, char *helix, long size);
 
-	int check_pair(char left, char right, BI_PAIR_TYPE pair_type);
-		// returns 1 if bases form a pair
+	int check_pair(char left, char right, BI_PAIR_TYPE pair_type); // returns 1 if bases form a pair
 
 #ifdef _USE_AW_WINDOW
 	char get_symbol(char left, char right, BI_PAIR_TYPE pair_type);
