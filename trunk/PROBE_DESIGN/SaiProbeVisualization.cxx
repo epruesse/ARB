@@ -424,9 +424,11 @@ void SAI_graphic::paint(AW_device *device) {
         const AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
         const AW_font_information *hlFontInfo = device->get_font_information(SAI_GC_HIGHLIGHT_FONT, 0);
 
-        xStep      = MAX(fgFontInfo->this_letter_width,   MAX(pbFontInfo->this_letter_width,   hlFontInfo->this_letter_width  ));
-        yStep      = MAX(fgFontInfo->max_letter_height,  MAX(pbFontInfo->max_letter_height,  hlFontInfo->max_letter_height ));
-        maxDescent = MAX(fgFontInfo->max_letter_descent, MAX(pbFontInfo->max_letter_descent, hlFontInfo->max_letter_descent));
+        AW_font_limits font_limits(AW_font_limits(fgFontInfo->max_letter, pbFontInfo->max_letter), hlFontInfo->max_letter); // calculates max. limits
+
+        xStep      = font_limits.width;
+        yStep      = font_limits.height;
+        maxDescent = font_limits.descent;
     }
 
     AW_pos fgX,fgY,pbRgX1,pbRgX2,pbY,pbX,lineXpos;
