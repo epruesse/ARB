@@ -11,16 +11,14 @@ public class ProbesGUI extends Frame
     private TreeNode    root;
     private TextArea    details;
     private ProbeList   probe_list;
-    // private int         probeListWidth = 200;
     private ProbeMenu   pm;
     private Client      client;
     
-    boolean                 fakeScrollPaneSize = true;
+    private boolean         fakeScrollPaneSize = true;
     private Dimension       estimatedScrollPaneSize;
     private final Dimension wantedScrollPaneSize;
 
 
-    // public ProbesGUI(int levels, String title, Client cl, Point origin, Dimension size, int textWidth) throws Exception
     public ProbesGUI(int levels, String title, Client cl, Rectangle frame_bounds, Dimension wantedScrollPaneSize_, int textWidth) throws Exception
     {
         super(title);
@@ -30,10 +28,13 @@ public class ProbesGUI extends Frame
         client                  = cl;
 
         Color backgroundColor = new Color(160, 180, 255);
+        Font  fixedFont       = new Font("Monospaced", Font.PLAIN, 14); // used 4 probe list
+        // Font  normalFont      = new Font("SansSerif", Font.PLAIN, 18); // used everywhere else
 
         setVisible(false);
         setBackground(Color.lightGray);
         setLayout(new BorderLayout());
+        // setFont(normalFont);
 
         // if (wantedScrollPaneSize == null) {
             setBounds(frame_bounds);
@@ -52,13 +53,15 @@ public class ProbesGUI extends Frame
         {
             Color rightPanelColor = Color.white;
             Panel rightPanel      = new Panel();
+
+            // rightPanel.setFont(fixedFont); // valid for all childs
             rightPanel.setLayout(new BorderLayout());
 
-            probe_list = new ProbeList(this, rightPanelColor);
-            showHelp();
+            probe_list = new ProbeList(this, rightPanelColor, fixedFont);
             rightPanel.add(probe_list, BorderLayout.CENTER);
 
             rightPanel.add(new ProbeToolbar(this), BorderLayout.NORTH);
+
             details = new TextArea("Detail information", 20, textWidth, TextArea.SCROLLBARS_BOTH);
             details.setBackground(rightPanelColor);
             rightPanel.add(details, BorderLayout.SOUTH);
@@ -160,11 +163,9 @@ public class ProbesGUI extends Frame
         System.out.println("toggleOverlap!");
         if (overlapping != selected) {
             // show overlaps with current probe
-            System.out.println("overlapping != selected => set selected");
             probe_list.showOverlap(selected);
         }
         else {
-            System.out.println("clear overlap");
             probe_list.showOverlap(null); // hide overlaps
         }
 
@@ -172,9 +173,11 @@ public class ProbesGUI extends Frame
     }
 
     public void showHelp() {
-        probe_list.removeAll();
-        probe_list.add("Left click a branch to unfold or step.");
-        probe_list.add("Right click a branch to display probes.");
+        Toolkit.showMessage("Quick help:\n");
+        Toolkit.showMessage("Left click to unfold or step into.");
+        Toolkit.showMessage("Right click to display probes.");
+        Toolkit.showMessage("Click squares to collapse.\n");
+        Toolkit.showMessage("more help is available online at\nhttp://www.arb-home.de/probeclient.html");
     }
 
     public void initTreeDisplay(TreeNode root)  throws Exception {
