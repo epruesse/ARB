@@ -25,7 +25,7 @@
 #define MAXLINES  30
 #define MAXPOINTS (2*MAXLINES)
 
-class CursorShape {
+class ED4_CursorShape {
     int points;
     int xpos[MAXPOINTS];
     int ypos[MAXPOINTS];
@@ -34,10 +34,16 @@ class CursorShape {
     int start[MAXLINES];
     int end[MAXLINES];
 
+    bool reverse;
 
     int point(int x, int y) {
         e4_assert(points<MAXPOINTS);
-        xpos[points] = x;
+        if (reverse) {
+            xpos[points] = -x-1;
+        }
+        else {
+            xpos[points] = x;
+        }
         ypos[points] = y;
         return points++;
     }
@@ -57,20 +63,20 @@ class CursorShape {
 
 public:
 
-    CursorShape(ED4_CursorType type, int x, int y, int term_height, int character_width);
-    ~CursorShape() {}
+    ED4_CursorShape(ED4_CursorType type, /*int x, int y, */int term_height, int character_width, bool reverse_cursor);
+    ~ED4_CursorShape() {}
 
-    void draw(AW_device *device) const {
+    void draw(AW_device *device, int x, int y) const {
         e4_assert(lines);
         for (int l=0; l<lines; l++) {
             int p1 = start[l];
             int p2 = end[l];
-            device->line(ED4_G_CURSOR, xpos[p1], ypos[p1], xpos[p2], ypos[p2], 1, 0, 0);
+            device->line(ED4_G_CURSOR, xpos[p1]+x, ypos[p1]+y, xpos[p2]+x, ypos[p2]+y, 1, 0, 0);
         }
         device->flush();
     }
 
-    void get_bounding_box(int &xmin, int &ymin, int &xmax, int &ymax) const {
+    void get_bounding_box(int x, int y, int &xmin, int &ymin, int &xmax, int &ymax) const {
         e4_assert(points);
         xmin = ymin = INT_MAX;
         xmax = ymax = INT_MIN;
@@ -80,23 +86,30 @@ public:
             if (ypos[p]<ymin) 		{ ymin = ypos[p]; }
             else if (ypos[p]>ymax) 	{ ymax = ypos[p]; }
         }
+
+        xmin += x; xmax +=x;
+        ymin += y; ymax +=y;
     }
 
 
 };
 
-CursorShape::CursorShape(ED4_CursorType typ, int x, int y, int term_height, int character_width)
+ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_height, int character_width, bool reverse_cursor)
 {
-    lines = 0;
-    points = 0;
+    lines    = 0;
+    points   = 0;
+    reverse  = reverse_cursor;
+
+    int x = 0;
+    int y = 0;
 
     switch (typ) {
-        case ED4_RIGHT_ORIENTED_CURSOR:  {
-
 #define UPPER_OFFSET	(-1)
 #define LOWER_OFFSET 	(term_height-1)
 #define CWIDTH 		(character_width)
 
+        case ED4_RIGHT_ORIENTED_CURSOR_THIN:
+        case ED4_RIGHT_ORIENTED_CURSOR: {
             // --CWIDTH--
             //
             // 0--------1 		UPPER_OFFSET (from top)
@@ -112,13 +125,17 @@ CursorShape::CursorShape(ED4_CursorType typ, int x, int y, int term_height, int 
             //
             //  x
 
-            int p0 = point(x, y+UPPER_OFFSET);
-            int p3 = point(x+1, y+UPPER_OFFSET+1);
+            if (typ == ED4_RIGHT_ORIENTED_CURSOR) { // non-thin version
+                int p0 = point(x-1, y+UPPER_OFFSET);
 
-            line(p0, point(x+CWIDTH-1, y+UPPER_OFFSET)); 	// 0->1
-            line(p3, point(x+CWIDTH-1, y+UPPER_OFFSET+1));	// 3->4
-            line(p0, point(x, y+LOWER_OFFSET));			// 0->2
-            line(p3, point(x+1, y+LOWER_OFFSET));		// 3->5
+                line(p0, point(x+CWIDTH-1, y+UPPER_OFFSET)); // 0->1
+                line(p0, point(x-1, y+LOWER_OFFSET)); // 0->2
+            }
+
+            int p3 = point(x, y+UPPER_OFFSET+1);
+                
+            line(p3, point(x+CWIDTH-1, y+UPPER_OFFSET+1)); // 3->4
+            line(p3, point(x, y+LOWER_OFFSET)); // 3->5
 
             break;
 
@@ -127,31 +144,52 @@ CursorShape::CursorShape(ED4_CursorType typ, int x, int y, int term_height, int 
 #undef CWIDTH
 
         }
+        case ED4_TRADITIONAL_CURSOR_CONNECTED:
+        case ED4_TRADITIONAL_CURSOR_BOTTOM:
         case ED4_TRADITIONAL_CURSOR: {
+            int small_version = (term_height <= 10) ? 1 : 0;
 
-#define UPPER_OFFSET	1
+
+#define UPPER_OFFSET	0
 #define LOWER_OFFSET 	(term_height-1)
 #define CWIDTH 		3
 
             //  -----2*CWIDTH----
             //
             //	0---------------1 	UPPER_OFFSET (from top)
-            //	2---------------3
-            //
-            //	      10/10
+            //	   4---------5
             //	      8---9
+            //         C/C
+            //
+            //	       D/D 
+            //	      A---B
             //	   6---------7
-            //	4---------------5	LOWER_OFFSET (from top)
+            //	2---------------3	LOWER_OFFSET (from top)
 
-            horizontal_line(x, y+UPPER_OFFSET, CWIDTH);
-            horizontal_line(x, y+UPPER_OFFSET+1, CWIDTH);
+            bool draw_upper = typ != ED4_TRADITIONAL_CURSOR_BOTTOM;
 
-            horizontal_line(x, y+LOWER_OFFSET, CWIDTH);
-            horizontal_line(x, y+LOWER_OFFSET-1, (CWIDTH*2)/3);
-            horizontal_line(x, y+LOWER_OFFSET-2, CWIDTH/3);
+            if (draw_upper) horizontal_line(x, y+UPPER_OFFSET, CWIDTH-small_version); // 0/1
+            horizontal_line(x, y+LOWER_OFFSET, CWIDTH-small_version); // 2/3
 
-            int p = point(x, y+LOWER_OFFSET-3);
-            line(p,p);
+            if (draw_upper) horizontal_line(x, y+UPPER_OFFSET+1, (CWIDTH*2)/3-small_version); // 4/5
+            horizontal_line(x, y+LOWER_OFFSET-1, (CWIDTH*2)/3-small_version); // 6/7
+
+            if (!small_version) {
+                if (draw_upper) horizontal_line(x, y+UPPER_OFFSET+2, CWIDTH/3); // 8/9
+                horizontal_line(x, y+LOWER_OFFSET-2, CWIDTH/3); // A/B
+            }
+
+            int pu = point(x, y+UPPER_OFFSET+3-small_version);
+            int pl = point(x, y+LOWER_OFFSET-3+small_version);
+
+            if (draw_upper) line(pu,pu);    // C/C
+            line(pl,pl);    // D/D
+
+            if (typ == ED4_TRADITIONAL_CURSOR_CONNECTED) {
+                int pu2 = point(x, y+UPPER_OFFSET+5-small_version);
+                int pl2 = point(x, y+LOWER_OFFSET-5+small_version);
+                line(pu2, pl2); 
+            }
 
             break;
 
@@ -225,10 +263,17 @@ CursorShape::CursorShape(ED4_CursorType typ, int x, int y, int term_height, int 
 
 ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y, /*ED4_gc gc,*/ED4_base *target_terminal)
 {
-    CursorShape(ctype, int(x), int(y),
-                int(target_terminal->extension.size[HEIGHT]),
-                ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES))
-        .draw(ED4_ROOT->temp_device);
+    if (cursor_shape) {
+        delete cursor_shape;
+        cursor_shape = 0;
+    }
+
+    cursor_shape = new ED4_CursorShape(ctype,
+                                       SEQ_TERM_TEXT_YOFFSET+2, 
+                                       ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES),
+                                       !awar_edit_direction);
+
+    cursor_shape->draw(ED4_ROOT->temp_device, int(x), int(y));
 
     return ED4_R_OK;
 }
@@ -238,7 +283,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     AW_pos x, y;
     ED4_base *temp_parent;
 
-    e4_assert(is_visible());
+    e4_assert(is_partly_visible());
     target_terminal->calc_world_coords( &x, &y );
     temp_parent = target_terminal->get_parent( ED4_L_SPECIES );
     if (!temp_parent || temp_parent->flag.hidden) {
@@ -294,16 +339,11 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     dev->push_clip_scale();
 
     int xmin, xmax, ymin, ymax;
-    CursorShape shape(ctype, int(x), int(y),
-                      int(target_terminal->extension.size[HEIGHT]),
-                      ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES));
-    shape.get_bounding_box(xmin, ymin, xmax, ymax);
 
-#if !defined(NDEBUG) && 0
-    dev->box(2, xmin, ymin, xmax-xmin+1, ymax-ymin+1, (AW_bitset)-1, 0, 0);
-#else
-    dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1);
-#endif
+    e4_assert(cursor_shape);
+    cursor_shape->get_bounding_box(int(x), int(y), xmin, ymin, xmax, ymax);
+
+    dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, (AW_bitset)-1);
 
     dev->set_top_font_overlap(1);
     dev->set_bottom_font_overlap(1);
@@ -311,15 +351,13 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     dev->set_right_font_overlap(1);
 
 #define EXPAND_SIZE 0
-    ED4_ROOT->temp_device->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE);
-
-    // refresh terminal
-
-    int old_allowed_to_draw = allowed_to_draw;
-    allowed_to_draw = 0;
-    ED4_ROOT->refresh_window(0);
-    allowed_to_draw = old_allowed_to_draw;
-
+    if (ED4_ROOT->temp_device->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {
+        // refresh terminal
+        int old_allowed_to_draw = allowed_to_draw;
+        allowed_to_draw = 0;
+        ED4_ROOT->refresh_window(1);
+        allowed_to_draw = old_allowed_to_draw;
+    }
     dev->pop_clip_scale();
 
     return ( ED4_R_OK );
@@ -330,18 +368,20 @@ ED4_cursor::ED4_cursor()
 {
     init();
     allowed_to_draw = 1;
+    cursor_shape    = 0;
 
     ctype = (ED4_CursorType)(ED4_ROOT->aw_root->awar(ED4_AWAR_CURSOR_TYPE)->read_int()%ED4_CURSOR_TYPES);
 }
 void ED4_cursor::init() // used by ED4_terminal-d-tor
 {
-    owner_of_cursor = NULL;
-    abs_x = 0;
-    screen_position = 0;
+    owner_of_cursor   = NULL;
+    cursor_abs_x      = 0;
+    screen_position   = 0;
     last_seq_position = 0;
 }
 ED4_cursor::~ED4_cursor()
 {
+    delete cursor_shape;
 }
 
 ED4_window *ED4_cursor::window() const
@@ -736,8 +776,8 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
 ED4_returncode ED4_cursor::HideCursor()
 {
     if (owner_of_cursor) {
-        if (is_visible()) {
-            delete_cursor(abs_x, owner_of_cursor);
+        if (is_partly_visible()) {
+            delete_cursor(cursor_abs_x, owner_of_cursor);
         }
         owner_of_cursor = 0;
     }
@@ -910,13 +950,13 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
     AW_pos terminal_x, terminal_y;
     owner_of_cursor->calc_world_coords(&terminal_x, &terminal_y);
 
-    if (!is_visible()) {
+    if (!is_partly_visible()) {
         ED4_terminal *term = owner_of_cursor->to_terminal();
 
         allowed_to_draw = 0;
         int set = term->setCursorTo(this, get_sequence_pos(), 0);
         allowed_to_draw = old_allowed_to_draw;
-        if (!set || !is_visible()) return;
+        if (!set || !is_partly_visible()) return;
     }
 
     int cursor_diff = new_cursor_screen_pos-screen_position;
@@ -925,7 +965,7 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
     int terminal_pixel_length = aww->get_device(AW_MIDDLE_AREA)->get_string_size(ED4_G_SEQUENCES, 0, owner_of_cursor->to_text_terminal()->get_length());
     // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
     int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-    int x_pos_cursor_new = abs_x+cursor_diff*length_of_char;
+    int x_pos_cursor_new = cursor_abs_x+cursor_diff*length_of_char;
 
     if (x_pos_cursor_new > terminal_x+terminal_pixel_length+CHARACTEROFFSET ||
         x_pos_cursor_new < terminal_x+CHARACTEROFFSET) {
@@ -948,16 +988,16 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
 
     if (cursor_diff >= 0) { // move cursor to the right
         if (!scroll_horizontal || inside_left_margin) { // move cursor without scrolling or enter margin
-            delete_cursor( abs_x , owner_of_cursor);
+            delete_cursor( cursor_abs_x , owner_of_cursor);
             allowed_to_draw = 1;
             ShowCursor( cursor_diff*length_of_char, ED4_C_RIGHT, ABS(cursor_diff));
             allowed_to_draw = old_allowed_to_draw;
         }
         else  { // we have to scroll to the right
-            int diff_cursor_margin = (ED4_ROOT->temp_ed4w->coords.window_right_clip_point - margin) - abs_x; // difference between old cursor position & right margin
+            int diff_cursor_margin = (ED4_ROOT->temp_ed4w->coords.window_right_clip_point - margin) - cursor_abs_x; // difference between old cursor position & right margin
 
-            delete_cursor(abs_x, owner_of_cursor);
-            abs_x += cursor_diff*length_of_char;
+            delete_cursor(cursor_abs_x, owner_of_cursor);
+            cursor_abs_x += cursor_diff*length_of_char;
             aww->set_horizontal_scrollbar_position(aww->slider_pos_horizontal + length_of_char*cursor_diff - diff_cursor_margin);
 
             allowed_to_draw = 0;
@@ -971,17 +1011,17 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
     {
         if (!scroll_horizontal || inside_right_margin) // move cursor without scrolling or enter margin
         {
-            delete_cursor(abs_x, owner_of_cursor);
+            delete_cursor(cursor_abs_x, owner_of_cursor);
             allowed_to_draw = 1;
             ShowCursor( cursor_diff * length_of_char, ED4_C_LEFT, ABS( cursor_diff ) );
             allowed_to_draw = old_allowed_to_draw;
         }
         else // we have to scroll to the left
         {
-            int diff_cursor_margin = abs_x - (ED4_ROOT->temp_ed4w->coords.window_left_clip_point + margin);
+            int diff_cursor_margin = cursor_abs_x - (ED4_ROOT->temp_ed4w->coords.window_left_clip_point + margin);
 
-            delete_cursor(abs_x, owner_of_cursor);
-            abs_x -= ABS(cursor_diff) * length_of_char;
+            delete_cursor(cursor_abs_x, owner_of_cursor);
+            cursor_abs_x -= ABS(cursor_diff) * length_of_char;
             if ( aww->slider_pos_horizontal - length_of_char*ABS(cursor_diff) < 0) {
                 aww->slider_pos_horizontal = 0;
             }
@@ -1065,11 +1105,12 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
     }
 
     owner_of_cursor->calc_world_coords( &x, &y );
-    x_screen = abs_x;
+    x_screen = cursor_abs_x;
     y_screen = y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x_screen, &y_screen );
     area_level = owner_of_cursor->get_area_level();
-    if (! is_visible()) return ED4_R_BREAK;
+    
+    if (!is_partly_visible()) return ED4_R_BREAK; // @@@ maybe a bad idea
 
     switch (event->keycode) {
         case AW_KEY_UP: {
@@ -1090,7 +1131,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
             if (target_terminal) {
                 target_terminal->calc_world_coords( &target_x, &target_y );
                 scroll_diff = target_y - y;
-                target_event.x = (int) abs_x;
+                target_event.x = (int) cursor_abs_x;
                 target_event.y = (int) target_y;
 
                 if (! (target_terminal->is_visible( 0, target_y, ED4_D_VERTICAL )) && ED4_ROOT->temp_aww->slider_pos_vertical > 0) {
@@ -1126,7 +1167,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
             if (target_terminal) {
                 target_terminal->calc_world_coords( &target_x, &target_y );
                 scroll_diff = target_y - y;
-                target_event.x = (int)ED4_ROOT->temp_ed4w->cursor.abs_x;
+                target_event.x = (int)ED4_ROOT->temp_ed4w->cursor.cursor_abs_x;
                 target_event.y = (int)target_y;
 
                 if (! target_terminal->is_visible( 0, target_y, ED4_D_VERTICAL_ALL ) && area_level == ED4_A_MIDDLE_AREA) {
@@ -1152,24 +1193,29 @@ void ED4_cursor::set_abs_x()
 {
     AW_pos x, y;
     owner_of_cursor->calc_world_coords( &x, &y );
-    // abs_x = int(get_sequence_pos()*ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width() + CHARACTEROFFSET + x);
-    abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
+    cursor_abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
 }
 
 void ED4_cursor::calc_cursor_position(AW_pos x, AW_pos *corrected_x_Ptr, ED4_index *scr_pos_Ptr) // x is pixelposition in terminal (relative to start of terminal)
 {
-    // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
-    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-    ED4_index scr_pos = (int)((x-CHARACTEROFFSET)/length_of_char);
+    int       length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+    ED4_index scr_pos        = (int)((x-CHARACTEROFFSET)/length_of_char);
+
+    int sub = 0; // subtract that many char-widths from corrected position
+
+    if (!awar_edit_direction) { // reverse
+        scr_pos++;              // set behind clicked base
+        sub--; // 
+    }
+
     int max_scrpos = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
-    int sub = 0;
 
     if (scr_pos>max_scrpos) {
-        sub = (scr_pos-max_scrpos)*length_of_char;
+        sub += (scr_pos-max_scrpos);
         scr_pos = max_scrpos;
     }
 
-    AW_pos corrected_x = (AW_pos) ((((int)((x-sub-CHARACTEROFFSET)/length_of_char)) * length_of_char) + CHARACTEROFFSET); //CHARACTEROFFSET is drawing offset of text
+    AW_pos corrected_x = (AW_pos) ((((int)((x-CHARACTEROFFSET)/length_of_char)-sub) * length_of_char) + CHARACTEROFFSET); //CHARACTEROFFSET is drawing offset of text
 
     if (corrected_x_Ptr) *corrected_x_Ptr = corrected_x;
     if (scr_pos_Ptr) *scr_pos_Ptr = scr_pos;
@@ -1199,11 +1245,7 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
 
     updateAwars();
 
-    if (! is_visible()) {
-        return ED4_R_BREAK;
-    }
-
-    x_help =  abs_x + offset_x;
+    x_help = cursor_abs_x + offset_x;
     y_help = y;
 
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x_help, &y_help );
@@ -1212,73 +1254,44 @@ ED4_returncode ED4_cursor::ShowCursor(ED4_index offset_x, ED4_cursor_move move, 
         draw_cursor(x_help, y_help, owner_of_cursor);
     }
 
-    abs_x += offset_x;
+    cursor_abs_x += offset_x;
 
     return ( ED4_R_OK );
 }
 
 
-bool ED4_cursor::is_visible() const
-{
-    ED4_AREA_LEVEL	area_level;
-    AW_pos		x,y;
-    int			cursor_offset = 0;			// maximum HALFCURSORWIDTH
+bool ED4_cursor::is_partly_visible() const {
+    e4_assert(owner_of_cursor);
 
+    AW_pos x,y;
     owner_of_cursor->calc_world_coords( &x, &y );
-    area_level = owner_of_cursor->get_area_level(0);
+    
+    int x1, y1, x2, y2;
+    cursor_shape->get_bounding_box(cursor_abs_x, int(y), x1, y1, x2, y2);
 
-    switch (area_level)
-    {
+    bool visible = false;
+
+    switch (owner_of_cursor->get_area_level(0)) {
         case ED4_A_TOP_AREA:
-            if (!owner_of_cursor->is_visible(abs_x+cursor_offset, 0, ED4_D_HORIZONTAL)) return 0;
-            if (!owner_of_cursor->is_visible(abs_x-cursor_offset, 0, ED4_D_HORIZONTAL)) return 0;
+            visible = 
+                owner_of_cursor->is_visible(x1, 0, ED4_D_HORIZONTAL) ||
+                owner_of_cursor->is_visible(x2, 0, ED4_D_HORIZONTAL);
             break;
         case ED4_A_MIDDLE_AREA:
-            if (!owner_of_cursor->is_visible(abs_x+cursor_offset, y, ED4_D_ALL_DIRECTION)) return 0; // right border
-            if (!owner_of_cursor->is_visible(abs_x-cursor_offset, y, ED4_D_ALL_DIRECTION)) return 0; // left border
+            visible = owner_of_cursor->is_visible(x1, y1, x2, y2, ED4_D_ALL_DIRECTION);
             break;
         default:
-            return 0;
+            break;
     }
 
-    return 1;
+    return visible;
 }
-
-// static void scrollWindowToCenterPos(AW_window *aww, AW_pos world_x, AW_pos world_y, int win_xsize, int win_ysize)
-// {
-//     AW_pos wanted_world_x = world_x - win_xsize/2; 		// world coords which should be displayed in the upper-left corner
-//     AW_pos wanted_world_y = world_y - win_ysize/2;
-
-//     if (wanted_world_x<0) wanted_world_x = 0;
-//     if (wanted_world_y<0) wanted_world_y = 0;
-
-//     int pic_xsize = aww->get_scrolled_picture_width();		// size of scrolled picture = size of sliderrange
-//     int pic_ysize = aww->get_scrolled_picture_height();
-
-//     int slider_xsize = win_xsize;
-//     int slider_ysize = win_ysize;
-
-//     int slider_pos_xrange = pic_xsize - slider_xsize;	// allowed positions for slider
-//     int slider_pos_yrange = pic_ysize - slider_ysize;
-
-//     int slider_pos_x = wanted_world_x;
-//     int slider_pos_y = wanted_world_y;
-
-//     if (slider_pos_x>slider_pos_xrange) slider_pos_x = slider_pos_xrange;	// new slider positions
-//     if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
-
-//     aww->set_vertical_scrollbar_position(slider_pos_y);
-//     ED4_vertical_change_cb(aww, 0, 0);
-
-//     aww->set_horizontal_scrollbar_position(slider_pos_x);
-//     ED4_horizontal_change_cb(aww, 0, 0);
-// }
 
 ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos)
 {
     if (owner_of_cursor) {
-        if (is_visible()) {
-            delete_cursor(abs_x, owner_of_cursor);
+        if (is_partly_visible()) {
+            delete_cursor(cursor_abs_x, owner_of_cursor);
         }
 
         owner_of_cursor->set_refresh(); // we have to refresh old owner of cursor
@@ -1343,7 +1356,7 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
     AW_pos win_y = world_y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &win_x, &win_y );
 
-    abs_x = (long int)world_x;
+    cursor_abs_x = (long int)world_x;
     owner_of_cursor = terminal;
 
     draw_cursor(win_x, win_y, terminal);
@@ -1357,8 +1370,8 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
 ED4_returncode ED4_cursor::show_clicked_cursor( AW_event *event, ED4_base *target_terminal )
 {
     if (owner_of_cursor) {
-        if (is_visible()) {
-            delete_cursor(abs_x, owner_of_cursor);
+        if (is_partly_visible()) {
+            delete_cursor(cursor_abs_x, owner_of_cursor);
         }
 
         owner_of_cursor->set_refresh(); // we have to refresh old owner of cursor
@@ -1384,7 +1397,7 @@ ED4_returncode ED4_cursor::show_clicked_cursor( AW_event *event, ED4_base *targe
     AW_pos win_y = world_y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &win_x, &win_y );
 
-    abs_x = (long int)world_x;
+    cursor_abs_x = (long int)world_x;
     owner_of_cursor = target_terminal;
 
     draw_cursor(win_x, win_y, target_terminal);
