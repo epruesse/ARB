@@ -81,7 +81,7 @@ void        aw_macro_message(const char *temp,...); // gives control to the user
 // Read a string from the user :
 char *aw_input( const char *title, const char *prompt, const char *awar_value, const char *default_input);
 char *aw_input(const char *prompt, const char *awar_value, const char *default_input = 0);
-char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons);
+char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
 int   aw_string_selection_button(); // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 
 void AW_ERROR(const char *templat, ...);
