@@ -4,46 +4,46 @@
 #define _A3_ARBDB_HXX
 
 // -----------------------------------------------------------------------------
-//	Include-Dateien
+//  Include-Dateien
 // -----------------------------------------------------------------------------
 
 #include <arbdb.h>
 #include <arbdbt.h>
 
 // -----------------------------------------------------------------------------
-//	Datentypen
+//  Datentypen
 // -----------------------------------------------------------------------------
 
 class A3Arbdb
 {
-	private:
+    private:
 
-		char   *alignment;
+        char   *alignment;
 
-	public:
+    public:
 
-		GBDATA *gb_main;
+        GBDATA *gb_main;
 
-				A3Arbdb				(void)	{ alignment	= 0;
-											  gb_main	= 0; };
-		
-			   ~A3Arbdb				(void);
+                A3Arbdb             (void)  { alignment = 0;
+                                              gb_main   = 0; };
+        
+               ~A3Arbdb             (void);
 
-		int		open				( char *name,
-									  char *use_alignment = 0 );
+        int     open                ( char *name,
+                                      char *use_alignment = 0 );
 
-		void	close				( void );
+        void    close               ( void );
 
     void begin_transaction(void) {GB_begin_transaction(gb_main);};
 
     void commit_transaction(void) {GB_commit_transaction(gb_main);};
 
-		char   *get_sequence_string	( char *name,
-									  int	and_mark = 0 );
+        char   *get_sequence_string ( char *name,
+                                      int   and_mark = 0 );
 
-		int	  	put_sequence_string	( char *name,
-									  char *sequence,
-									  char *info = 0 );
+        int     put_sequence_string ( char *name,
+                                      char *sequence,
+                                      char *info = 0 );
 };
 
 // -----------------------------------------------------------------------------

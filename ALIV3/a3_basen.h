@@ -7,12 +7,12 @@
    Makros und Definitionen
 ---------------------------------------------------------------------------- */
 
-#define	BASEN		  6
-#define	BASENPUR	  4
-#define	CHARS		256
+#define BASEN         6
+#define BASENPUR      4
+#define CHARS       256
 
-#define	INVALID		-1
-#define	INSERT		-2
+#define INVALID     -1
+#define INSERT      -2
 
 /* ----------------------------------------------------------------------------
    Datentypen
@@ -20,12 +20,12 @@
 
 typedef enum
 {
-	ADENIN	=  0,
-	CYTOSIN	=  1,
-	GUANIN	=  2,
-	URACIL	=  3,
-	ONE		=  4,
-	ANY		=  5
+    ADENIN  =  0,
+    CYTOSIN =  1,
+    GUANIN  =  2,
+    URACIL  =  3,
+    ONE     =  4,
+    ANY     =  5
 }
 Base;
 
@@ -35,7 +35,7 @@ Base;
 
 extern const int    BCharacter [BASEN];
 extern const double BComplement[BASEN][BASEN];
-extern const Base   BIndex	   [CHARS];
+extern const Base   BIndex     [CHARS];
 
 /* ------------------------------------------------------------------------- */
 
