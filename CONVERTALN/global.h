@@ -11,5 +11,5 @@
 #define COMMCNINDENT	6	/* indent for continue line of RDP defined comment */
 #define SEPDEFINED	1	/* define a particular char as print line separator */
 #define SEPNODEFINED	0	/* no particular line separator is defined, use
-				/* general rule to separate lines. */
+				general rule to separate lines. */
 #define	p_nonkey_start 	5

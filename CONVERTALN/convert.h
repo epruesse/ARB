@@ -76,34 +76,34 @@ typedef struct	{
 } GenBank;
 /* Macke data structure */
 typedef	struct	{
-	char	*seqabbr;	/* seq. abbrev. */
-	char	*name;		/* seq. full name */
-	int	rna_or_dna;	/* rna or dna */
-	char	*atcc;		/* CC# of seq. */
-	char	*rna;		/* Sequence methods, old version entry */
-	char	*date;		/* date of modification */
-	char	*nbk;		/* GenBank information -old version entry */
-	char	*acs;		/* accession number */
-	char	*author;	/* author of the first reference */
-	char	*journal;	/* journal of the first reference */
-	char	*title;		/* title of the first reference */
-	char	*who;		/* who key in the data */
-	char	*strain;	/* strain */
-	char	*subspecies;	/* subspecies */
-	int	numofrem;	/* num. of remarks */
-	char	**remarks;	/* remarks */
+	char  *seqabbr;	            /* seq. abbrev. */
+	char  *name;		        /* seq. full name */
+	int	   rna_or_dna;	        /* rna or dna */
+	char  *atcc;		        /* CC# of seq. */
+	char  *rna;		            /* Sequence methods, old version entry */
+	char  *date;		        /* date of modification */
+	char  *nbk;		            /* GenBank information -old version entry */
+	char  *acs;		            /* accession number */
+	char  *author;	            /* author of the first reference */
+	char  *journal;	            /* journal of the first reference */
+	char  *title;		        /* title of the first reference */
+	char  *who;		            /* who key in the data */
+	char  *strain;	            /* strain */
+	char  *subspecies;	        /* subspecies */
+	int	   numofrem;	        /* num. of remarks */
+	char **remarks;	            /* remarks */
 } Macke;
 /* Paup data structure */
 typedef struct	{
-	int	ntax;		/* number of sequences */
-	int	nchar;		/* max number of chars per seq. */
-	int	labelpos;	/* Label start from left or right */
-	int	missing;
-	char	*equate;	/* equal meaning char */
-	int	interleave;	/* interleave or sequential */
-	int	datatype;	/* rna in this case */
-	char	gap;		/* char of gap, default is '-' */
-	int	gapmode;
+	int	        ntax;		    /* number of sequences */
+	int	        nchar;		    /* max number of chars per seq. */
+	int	        labelpos;	    /* Label start from left or right */
+	int	        missing;
+	const char *equate;	        /* equal meaning char */
+	int	        interleave;	    /* interleave or sequential */
+	int	        datatype;	    /* rna in this case */
+	char	    gap;		    /* char of gap, default is '-' */
+	int	        gapmode;
 	/* if sequence data is not too large, read into memory at once */
 	/* otherwise, read in one by one. */
 } Paup;

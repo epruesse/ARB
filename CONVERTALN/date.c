@@ -1,33 +1,34 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/time.h> 
+#include <time.h>
+#include <sys/time.h>
 #include "convert.h"
 #include "global.h"
 
 #define SIZE	128
-static char	*mon[12] = {"JAN", "FEB", "MAR", "APR", "MAY",
+static const char	*mon[12] = {"JAN", "FEB", "MAR", "APR", "MAY",
 		"JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 
-/* -------------------------------------------------------------------- */
-/*	Function genbank_date().
-/*		Convert the date to be in genbank date form.
+/* --------------------------------------------------------------------
+*	Function genbank_date().
+*		Convert the date to be in genbank date form.
 */
 char
 *genbank_date(other_date)
 char	*other_date;
 {
-	char	*gdate, token[SIZE], temp[SIZE], *Dupstr();
+	char	*gdate, /*token[SIZE],*/ temp[SIZE];
 	int	day, month, year;
-	int	length, Lenstr(), index=0, is_genbank_date();
-	void	find_date(), find_date_long_form(), warning();
+	int	length /*, index=0*/;
 
 	length = Lenstr(other_date);
 	if(other_date[length-1]=='\n')	{
 		length--;
 		other_date[length]='\0';
 	}
-	
+
 	if(length<=10&&length>=6)	{
 		find_date(other_date, &month, &day, &year);
 	} else	if(length>10)	{
@@ -52,18 +53,18 @@ char	*other_date;
 	else sprintf(temp, "%d-%s-19%d", day, mon[month-1], year);
 	gdate = (char*)Dupstr(temp);
 	return(gdate);
-	
+
 }
-/* ----------------------------------------------------------- */
-/*	Function find_date().
-/*		Find day, month, year from date string.
+/* -----------------------------------------------------------
+*	Function find_date().
+*		Find day, month, year from date string.
 */
 void
 find_date(date_string, month, day, year)
 char	*date_string;
 int	*month, *day, *year;
 {
-	int	two_char(), Lenstr();
+/* 	int	two_char(), Lenstr(); */
 	int	index, indi, count, nums[3];
 	char	token[20], determ;
 
@@ -88,15 +89,15 @@ int	*month, *day, *year;
 		return;
 	}
 }
-/* ------------------------------------------------------------------ */
-/*	Function two_char().
-/*		Return true if string has two determinator char.
+/* ------------------------------------------------------------------
+*	Function two_char().
+*		Return true if string has two determinator char.
 */
 int
-two_char(string, determ)	
+two_char(string, determ)
 char	*string, determ;
 {
-	int	len, Lenstr(), indi;
+	int	len, indi;
 
 	int	count = 0;
 
@@ -106,18 +107,17 @@ char	*string, determ;
 	if(count==2)	return(1);
 	else	return(0);
 }
-/* ----------------------------------------------------------------- */
-/*	Function find_date_long_term().
-/*		Find day, month, year in the long term date string
-/*			like day-of-week, month, day, time, year.
+/* -----------------------------------------------------------------
+*	Function find_date_long_term().
+*		Find day, month, year in the long term date string
+*			like day-of-week, month, day, time, year.
 */
 void
 find_date_long_form(date_string, month, day, year)
 char	*date_string;
 int	*month, *day, *year;
 {
-	int	indi, index, length, count, nums[3], num;
-	int	Lenstr(), ismonth(), isdatenum();
+	int	indi, index, length, /*count,*/ nums[3], num;
 	char	token[SIZE];
 
 	nums[0]=nums[1]=nums[2]=0;
@@ -144,16 +144,16 @@ int	*month, *day, *year;
 	*year=nums[2];
 	return;
 }
-/* -------------------------------------------------------------------- */
-/*	Function ismonth().
-/*		Return true if the char string is one of 12 months.
-/*			Case insensitive.
+/* --------------------------------------------------------------------
+*	Function ismonth().
+*		Return true if the char string is one of 12 months.
+*			Case insensitive.
 */
 int
 ismonth(string)
 char	*string;
 {
-	int	num=0, Cmpcasestr();
+	int	num=0;
 
 	if(Cmpcasestr(string, "JAN")==0)
 		num=1;
@@ -181,48 +181,51 @@ char	*string;
 		num=12;
 	return(num);
 }
-/* ------------------------------------------------------------------ */
-/*	Function isdatenum().
-/*		Return number of day or year the string represents.
-/*			If not day or year, return 0.
+/* ------------------------------------------------------------------
+*	Function isdatenum().
+*		Return number of day or year the string represents.
+*			If not day or year, return 0.
 */
 int
 isdatenum(string)
 char	*string;
 {
-	int	length, Lenstr(), num, indi;
+	int	length, num, indi;
 
-	length = Lenstr(string);
+	length                              = Lenstr(string);
 	if(length>4||length<1) return(0);
-	for(indi=0, num=1; indi<length&&num==1; indi++)
-		if(!isdigit(string[indi]))  num=0;
-	if(num=1)	num=atoi(string);
+	for(indi=0, num=1; indi<length&&num==1; indi++) {
+        if(!isdigit(string[indi]))  {
+            num = 0;
+        }
+    }
+	if(num == 1)	num = atoi(string);
 	return(num);
 }
-/* ------------------------------------------------------------------ */
-/*	Function is_genbank_date().
-/*		Return true if it is genbank form of date, which is
-/*			day(2 digits)-MONTH(in letters)-year(4 digits).
+/* ------------------------------------------------------------------
+*	Function is_genbank_date().
+*		Return true if it is genbank form of date, which is
+*			day(2 digits)-MONTH(in letters)-year(4 digits).
 */
 int
 is_genbank_date(string)
 char	*string;
 {
-	int	Lenstr();
+/* 	int	Lenstr(); */
 
 	if(Lenstr(string)>=11&&string[2]=='-'&&string[6]=='-') return(1);
 	else return(0);
 }
-/* ---------------------------------------------------------------- */
-/*	Function today_date().
-/*		Get today's date.  
+/* ----------------------------------------------------------------
+*	Function today_date().
+*		Get today's date.
 */
 char
 *today_date()	{
-	struct tm	*local_tm, *localtime();
+/* 	struct tm	*local_tm, *localtime(); */
 	struct timeval	tp;
 	struct timezone	tzp;
-	char	line[SIZE], *return_value, *Dupstr();
+	char	line[SIZE], *return_value;
 
 	(void)gettimeofday(&tp, &tzp);
 
@@ -232,17 +235,17 @@ char
 
 	return(return_value);
 }
-/* --------------------------------------------------------------- */
-/*	Function gcg_date().
-/*		Create gcg format of date.
+/* ---------------------------------------------------------------
+*	Function gcg_date().
+*		Create gcg format of date.
 */
 char
 *gcg_date(date_string)
 char	*date_string;
 {
 	static char	date[128], temp[128], time[128];
-	int	day, year, Cmpstr();
-	char *	Catstr();
+	int	day, year;
+/* 	char *	Catstr(); */
 
 	temp[0]='\0';
 	date_string[7]='\0';

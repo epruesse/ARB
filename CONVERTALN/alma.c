@@ -7,15 +7,11 @@ extern int	warning_out;
 
 FILE	*infile, *outfile;	/* sequence data file */
 
-/* -------------------------------------------------------------- */
-/*	Function init_alma().
-/*		Init. ALMA data.
+/* --------------------------------------------------------------
+*	Function init_alma().
+*		Init. ALMA data.
 */
-void
-init_alma()	{
-	
-	void	Freespace(); 
-
+void init_alma()	{
 	Freespace(&(data.alma.id));
 	Freespace(&(data.alma.filename));
 	Freespace(&(data.alma.sequence));
@@ -26,31 +22,31 @@ init_alma()	{
 	Freespace(&(data.nbrf.id));
 	Freespace(&(data.nbrf.description));
 }
-/* ---------------------------------------------------------------- */
-/*	Function alma_to_macke().
-/*		Convert from ALMA format to Macke format.
+/* ----------------------------------------------------------------
+*	Function alma_to_macke().
+*		Convert from ALMA format to Macke format.
 */
 void
 alma_to_macke(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp, *ofp, *fopen();
-	char	temp[TOKENNUM], alma_in(); 
-	void	init(), init_macke(), init_alma();
-	void	init_seq_data(); 
-	void	macke_out_header(), macke_out0();
-	void	macke_out1(), macke_out2();
-	void	error();
-	int	indi, atom(), total_num, Lenstr();
+	FILE	*ifp, *ofp;
+	char	temp[TOKENNUM];
+/* 	void	init(), init_macke(), init_alma(); */
+/* 	void	init_seq_data(); */
+/* 	void	macke_out_header(), macke_out0(); */
+/* 	void	macke_out1(), macke_out2(); */
+/* 	void	error(); */
+	int	indi, total_num;
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
-		sprintf(temp, 
+		sprintf(temp,
 		"Cannot open input file %s, EXIT.", inf);
 		error(46, temp);
 	}
 	if(Lenstr(outf)<=0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
-		sprintf(temp, 
+		sprintf(temp,
 		"Cannot open output file %s, EXIT.", outf);
 		error(47, temp);
 	}
@@ -65,7 +61,7 @@ char	*inf, *outf;
 		init_alma();
 		while(alma_in(ifp)!=EOF)	{
 			data.numofseq++;
-			if(atom()) { 
+			if(atom()) {
 			/* convert from alma form to macke form */
 				switch(indi)	{
 				case 0:
@@ -82,7 +78,7 @@ char	*inf, *outf;
 					break;
 				default: ;
 				}
-			} else error(48, 
+			} else error(48,
 			"Conversion from alma to macke fails, Exit.");
 			init_alma();
 			init_macke();
@@ -91,7 +87,7 @@ char	*inf, *outf;
 		if(indi==0)	{
 			fprintf(ofp, "#-\n");
 			/* no warning messages for next loop */
-			warning_out = 0; 
+			warning_out = 0;
 		}
 	}	/* for each seq; loop */
 	warning_out = 1;	/* resume warning messages */
@@ -102,19 +98,19 @@ char	*inf, *outf;
 			total_num);
 #endif
 }
-/* ---------------------------------------------------------------- */
-/*	Function alma_to_genbank().
-/*		Convert from ALMA format to GenBank format.
+/* ----------------------------------------------------------------
+*	Function alma_to_genbank().
+*		Convert from ALMA format to GenBank format.
 */
 void
 alma_to_genbank(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp, *ofp, *fopen();
-	char	temp[TOKENNUM], alma_in(); 
-	void	init(), init_macke(), init_genbank(), init_alma();
-	void	init_seq_data(), genbank_out(), error();
-	int	atom(), mtog();
+	FILE	*ifp, *ofp;
+	char	temp[TOKENNUM];
+/* 	void	init(), init_macke(), init_genbank(), init_alma(); */
+/* 	void	init_seq_data(), genbank_out(), error(); */
+/* 	int	atom(), mtog(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
@@ -135,7 +131,7 @@ char	*inf, *outf;
 	init_alma();
 	while(alma_in(ifp)!=EOF)	{
 		data.numofseq++;
-		if(atom()&&mtog()) { 
+		if(atom()&&mtog()) {
 			genbank_out(ofp);
 			init_alma();
 			init_macke();
@@ -144,25 +140,25 @@ char	*inf, *outf;
 	}	/* for each seq; loop */
 
 #ifdef log
-	fprintf(stderr, 
+	fprintf(stderr,
 		"Total %d sequences have been processed\n",
 			data.numofseq);
 #endif
 }
-/* ---------------------------------------------------------------- */
-/*	Function alma_in().
-/*		Read in one ALMA sequence data.
+/* ----------------------------------------------------------------
+*	Function alma_in().
+*		Read in one ALMA sequence data.
 */
 char
 alma_in(fp)
 FILE	*fp;
 {
-	char	eoen, *eof, *Fgetline(), line[LINENUM];
-	char	temp[LINENUM];
-	char	*alma_in_gaps(), key[TOKENNUM], *format;
-	int	indi, len, Lenstr(), Cmpstr(), index;
-	int	alma_key_word();
-	void	alma_one_entry(), Freespace(), error();
+	char	eoen, *eof, line[LINENUM];
+/* 	char	temp[LINENUM]; */
+	char	key[TOKENNUM], *format;
+	int	indi, len, index;
+/* 	int	alma_key_word(); */
+/* 	void	alma_one_entry(), Freespace(), error(); */
 
 	/* end-of-entry; set to be 'y' after reaching end of entry */
 	format=NULL;
@@ -198,7 +194,7 @@ FILE	*fp;
 			else if((Cmpstr(format, "STADEN"))==EQ)
 				data.alma.format=STADEN;
 			else	{
-				sprintf(line, 
+				sprintf(line,
 		"Unidentified file format %s in ALMA format, Exit.",
 				format);
 				error(49, line);
@@ -208,7 +204,7 @@ FILE	*fp;
 			/* skip white spaces */
 			for(;line[index]!='['&&line[index]!='\n'
 			&&line[index]!='\0'; index++) ;
-			if(line[index]=='[') 
+			if(line[index]=='[')
 				data.alma.defgap = line[index+1];
 		} else if((Cmpstr(key, "GAPS"))==EQ)	{
 			eof=alma_in_gaps(fp);
@@ -221,13 +217,13 @@ FILE	*fp;
 	if(eof==NULL) return(EOF);
 	else return(EOF+1);
 }
-/* ---------------------------------------------------------------- */
-/*	Function alma_key_word().
-/*		Get the key_word from line beginning at index.
+/* ----------------------------------------------------------------
+*	Function alma_key_word().
+*		Get the key_word from line beginning at index.
 */
 int
 alma_key_word(line, index, key, length)
-char	*line; 
+char	*line;
 int	index;
 char	*key;
 int	length;
@@ -237,16 +233,16 @@ int	length;
 	if(line==NULL)	{ key[0]='\0'; return(index); }
 	for(indi=index, indj=0;
 	(index-indi)<length&&line[indi]!='>'
-	&&line[indi]!='\n'&&line[indi]!='\0'; 
-	indi++, indj++)	
+	&&line[indi]!='\n'&&line[indi]!='\0';
+	indi++, indj++)
 		key[indj] = line[indi];
 	key[indj] = '\0';
 	if(line[indi]=='>')	return(indi+1);
 	else return(indi);
 }
-/* -------------------------------------------------------------- */
-/*	Function alma_one_entry().
-/*		Read in one ALMA entry lines.
+/* --------------------------------------------------------------
+*	Function alma_one_entry().
+*		Read in one ALMA entry lines.
 */
 void
 alma_one_entry(line, index, datastring)
@@ -254,8 +250,8 @@ char	*line;
 int	index;
 char	**datastring;
 {
-	int	indi, Skip_white_space(), Lenstr(), length;
-	void	replace_entry();
+	int	indi, length;
+/* 	void	replace_entry(); */
 
 	index = Skip_white_space(line, index);
 
@@ -265,9 +261,9 @@ char	**datastring;
 
 	replace_entry(datastring, line+index);
 }
-/* ------------------------------------------------------------- */
-/*	Function alma_in_gaps().
-/*		Get sequence data and merge with gaps(alignment).
+/* -------------------------------------------------------------
+*	Function alma_in_gaps().
+*		Get sequence data and merge with gaps(alignment).
 */
 char
 *alma_in_gaps(fp)
@@ -276,8 +272,8 @@ FILE	*fp;
 	int	return_num, gaps, residues, count=0;
 	int	indi, numofseq, bases_not_matching;
 	char	line[LINENUM], gap_chars[LINENUM];
-	char	*eof, *Fgetline(), *Reallocspace();
-	void	alma_in_sequence(), warning();
+	char	*eof;
+/* 	void	alma_in_sequence(), warning(); */
 
 	alma_in_sequence();
 
@@ -289,7 +285,7 @@ FILE	*fp;
 	return_num!=0&&gaps!=-1;
 	return_num=fscanf(fp, "%d %d %s", &gaps, &residues, gap_chars))
 	{
-		data.alma.sequence 
+		data.alma.sequence
 			= (char*)Reallocspace(data.alma.sequence,
 	   		(unsigned)(sizeof(char)*(numofseq+gaps+1)));
 
@@ -319,16 +315,16 @@ FILE	*fp;
 	}	/* for loop */
 
 	if(bases_not_matching)	{
-		sprintf(line, 
+		sprintf(line,
 	"Bases number in ALMA file is larger than that in data file %s",
 		data.alma.filename);
 
 		warning(142, line);
 	}
-	
+
 	if(count<data.seq_length)	{
 
-		sprintf(line, 
+		sprintf(line,
 	"Bases number in ALMA file is less than that in data file %s",
 		data.alma.filename);
 
@@ -368,20 +364,20 @@ FILE	*fp;
 
 	return(eof);
 }
-/* ------------------------------------------------------------- */
-/*	Function alma_in_sequence().
-/*		Read in sequence data.
+/* -------------------------------------------------------------
+*	Function alma_in_sequence().
+*		Read in sequence data.
 */
 void
 alma_in_sequence()	{
-	
-	char	temp[LINENUM], embl_in();
-	void	error(), init_embl(), nbrf_in();
-	void	gcg_in(), staden_in();
-	FILE	*fopen();
+
+	char	temp[LINENUM];
+/* 	void	error(), init_embl(), nbrf_in(); */
+/* 	void	gcg_in(), staden_in(); */
+/* 	FILE	*fopen(); */
 
 	if((infile=fopen(data.alma.filename, "r"))==NULL) {
-		sprintf(temp, "Cannot open file %s, Exit.", 
+		sprintf(temp, "Cannot open file %s, Exit.",
 			data.alma.filename);
 		error(51, temp);
 	}
@@ -395,29 +391,29 @@ alma_in_sequence()	{
 	} else if(data.alma.format==STADEN)	{
 		staden_in(infile);
 	} else {
-		sprintf(temp, 
+		sprintf(temp,
 		"Unidentified file format %d in ALMA file, Exit.",
 			data.alma.format);
 		error(50, temp);
 	}
 	fclose(infile);
 }
-/* -------------------------------------------------------------- */
-/*	Function nbrf_in().
-/*		Read in nbrf data.
+/* --------------------------------------------------------------
+*	Function nbrf_in().
+*		Read in nbrf data.
 */
 void
 nbrf_in(fp)
 FILE	*fp;
 {
-	int	length, Lenstr(), index, reach_end;
+	int	length, index, reach_end;
 	char	line[LINENUM], temp[TOKENNUM], *eof;
-	char	*Fgetline(), *Dupstr();
-	char	*Reallocspace();
-	void	Cpystr(), replace_entry(), error();
-	
+/* 	char	*Fgetline(), *Dupstr(); */
+/* 	char	*Reallocspace(); */
+/* 	void	Cpystr(), replace_entry(), error(); */
+
 	if((eof=Fgetline(line, LINENUM, fp))==NULL)
-		error(52, 
+		error(52,
 		"Cannot find id line in NBRF file, Exit.");
 	Cpystr(temp, line+4);
 	length=Lenstr(temp);
@@ -426,7 +422,7 @@ FILE	*fp;
 	replace_entry(&(data.nbrf.id), temp);
 
 	if((eof=Fgetline(line, LINENUM, fp))==NULL)
-		error(54, 
+		error(54,
 		"Cannot find description line in NBRF file, Exit.");
 
 	replace_entry(&(data.nbrf.description), line);
@@ -458,16 +454,16 @@ FILE	*fp;
 		data.sequence[data.seq_length] = '\0';
 	}	/* for each line */
 }
-/* ---------------------------------------------------------------- */
-/*	Function gcg_in().
-/*		Read in one data entry in UWGCG format.
+/* ----------------------------------------------------------------
+*	Function gcg_in().
+*		Read in one data entry in UWGCG format.
 */
 void
 gcg_in(fp)
 FILE	*fp;
 {
 	int	two_dots, ch;
-	char	*genbank_origin(), line[LINENUM];
+	char	line[LINENUM];
 
 	two_dots = 0;
 	while(!two_dots&&(ch=fgetc(fp))!=EOF)	{
@@ -475,16 +471,16 @@ FILE	*fp;
 	}
 	genbank_origin(line, fp);
 }
-/* ---------------------------------------------------------------- */
-/*	Fnction staden_in().
-/*		Read in sequence data in STADEN format.
+/* ----------------------------------------------------------------
+*	Fnction staden_in().
+*		Read in sequence data in STADEN format.
 */
 void
 staden_in(fp)
 FILE	*fp;
 {
-	char	*Fgetline(), *Reallocspace(), line[LINENUM];
-	int	len, Lenstr(), start, indi;
+	char	line[LINENUM];
+	int	len, start, indi;
 
 	data.seq_length=0;
 	while(Fgetline(line, LINENUM, fp)!=NULL)	{
@@ -506,16 +502,16 @@ FILE	*fp;
 			data.sequence[start+indi] = line[indi];
 	}
 }
-/* ------------------------------------------------------------- */
-/*	Function atom().
-/*		Convert one ALMA entry to Macke entry.
+/* -------------------------------------------------------------
+*	Function atom().
+*		Convert one ALMA entry to Macke entry.
 */
 int
 atom()
 {
-	int	indi, len, Lenstr();
-	char	*Dupstr(), *Reallocspace();
-	void	replace_entry(), error();
+/* 	int	indi, len; */
+/* 	char	*Dupstr(), *Reallocspace(); */
+/* 	void	replace_entry(), error(); */
 
 	if(data.alma.format==NBRF)	{
 		data.macke.numofrem=1;
@@ -529,7 +525,7 @@ atom()
 	} else if(data.alma.format==GCG)	{
 	} else if(data.alma.format==STADEN)	{
 	} else {
-		error(53, 
+		error(53,
 		"Unidentified format type in ALMA file, Exit.");
 	}
 
@@ -537,20 +533,20 @@ atom()
 
 	return(1);
 }
-/* ------------------------------------------------------------- */
-/*	Function embl_to_alma().
-/*		Convert from EMBL to ALMA.
+/* -------------------------------------------------------------
+*	Function embl_to_alma().
+*		Convert from EMBL to ALMA.
 */
 void
 embl_to_alma(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp, *ofp, *fopen();
-	char	embl_in(), temp[TOKENNUM];
-	char	*Dupstr();
-	void	init(), init_alma(), alma_out_header();
-	void	alma_out(), init_embl(), error();
-	int	etoa();
+	FILE	*ifp, *ofp;
+	char	temp[TOKENNUM];
+/* 	char	*Dupstr(); */
+/* 	void	init(), init_alma(), alma_out_header(); */
+/* 	void	alma_out(), init_embl(), error(); */
+/* 	int	etoa(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
@@ -583,28 +579,28 @@ char	*inf, *outf;
 	fprintf(ofp, "END FILE>\n");
 
 #ifdef log
-	fprintf(stderr, 
+	fprintf(stderr,
 		"Total %d sequences have been processed\n",
 			data.numofseq);
 #endif
 
 	fclose(ifp);	fclose(ofp);
 }
-/* ------------------------------------------------------------ */
-/*	Function genbank_to_alma().
-/*		Convert from GenBank to ALMA.
+/* ------------------------------------------------------------
+*	Function genbank_to_alma().
+*		Convert from GenBank to ALMA.
 */
 void
 genbank_to_alma(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp, *ofp, *fopen();
-	char	genbank_in(), temp[TOKENNUM];
-	char	*Dupstr();
-	void	init(), init_alma(), alma_out_header();
-	void	alma_out();
-	void	init_genbank(), init_embl(), error();
-	int	gtoe(), etoa();
+	FILE	*ifp, *ofp;
+	char	temp[TOKENNUM];
+/* 	char	*Dupstr(); */
+/* 	void	init(), init_alma(), alma_out_header(); */
+/* 	void	alma_out(); */
+/* 	void	init_genbank(), init_embl(), error(); */
+/* 	int	gtoe(), etoa(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
@@ -646,20 +642,20 @@ char	*inf, *outf;
 
 	fclose(ifp);	fclose(ofp);
 }
-/* ------------------------------------------------------------- */
-/*	Function macke_to_alma().
-/*		Convert from MACKE to ALMA.
+/* -------------------------------------------------------------
+*	Function macke_to_alma().
+*		Convert from MACKE to ALMA.
 */
 void
 macke_to_alma(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp1, *ifp2, *ifp3, *ofp, *fopen();
-	char	macke_in(), temp[TOKENNUM];
-	char	*Dupstr();
-	void	init(), init_alma(), alma_out_header(), alma_out();
-	void	init_macke(), init_embl(), init_genbank(), error();
-	int	mtog(), gtoe(), partial_mtoe(), etoa();
+	FILE	*ifp1, *ifp2, *ifp3, *ofp;
+	char	temp[TOKENNUM];
+/* 	char	*Dupstr(); */
+/* 	void	init(), init_alma(), alma_out_header(), alma_out(); */
+/* 	void	init_macke(), init_embl(), init_genbank(), error(); */
+/* 	int	mtog(), gtoe(), partial_mtoe(), etoa(); */
 
 	if((ifp1=fopen(inf, "r"))==NULL
 	||(ifp2=fopen(inf, "r"))==NULL
@@ -705,17 +701,17 @@ char	*inf, *outf;
 	fclose(ifp1);	fclose(ifp2);
 	fclose(ifp3);	fclose(ofp);
 }
-/* ------------------------------------------------------------- */
-/*	Function etoa().
-/*		Convert from EMBL to ALMA format.
+/* -------------------------------------------------------------
+*	Function etoa().
+*		Convert from EMBL to ALMA format.
 */
 int
 etoa()
 {
 	char	temp[TOKENNUM], t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
-	char	*Dupstr(), *Catstr();
-	void	embl_key_word(), Cpystr();
-	void	replace_entry();
+/* 	char	*Dupstr(), *Catstr(); */
+/* 	void	embl_key_word(), Cpystr(); */
+/* 	void	replace_entry(); */
 
 	embl_key_word(data.embl.id, 0, temp, TOKENNUM);
 	if(Lenstr(data.embl.dr)>1)      {
@@ -733,9 +729,9 @@ etoa()
 
 	return(1);
 }
-/* ------------------------------------------------------------- */
-/*	Function alma_out_header().
-/*		Output alma format header.
+/* -------------------------------------------------------------
+*	Function alma_out_header().
+*		Output alma format header.
 */
 void
 alma_out_header(fp)
@@ -746,8 +742,8 @@ FILE	*fp;
 	fprintf(fp, "LINK COLUMN>   10\n");
 	fprintf(fp, "INFO LINE>   24\n");
 	fprintf(fp, "ACTIVE WINDOW>    1    1\n");
-	fprintf(fp, 
-	"SEQUENCE WINDOW>    1    1    1   23   12   80\n"); 
+	fprintf(fp,
+	"SEQUENCE WINDOW>    1    1    1   23   12   80\n");
 	fprintf(fp, "SCROLL DISTANCE>    1    1   50\n");
 	fprintf(fp, "SEQ NUMBERS>    1    1    0    0\n");
 	fprintf(fp, "CURSOR SCREEN>    1    1   11   54\n");
@@ -775,7 +771,7 @@ FILE	*fp;
 	fprintf(fp, "PAGE LENGTH>    0\n");
 	fprintf(fp, "SKIP LINES>    0\n");
 	fprintf(fp, "COLOURING>    0\n");
-	fprintf(fp, 
+	fprintf(fp,
 "COLOUR ACTIVE>    0    0    0    0    0    0    0    0    0    0\n");
 	fprintf(fp, "RESIDUE B(LINK)>\n");
 	fprintf(fp, "RESIDUE R(EVERSE)>\n");
@@ -805,19 +801,19 @@ FILE	*fp;
 	fprintf(fp, "HOMOEF_S>    0\n");
 	fprintf(fp, "HOMOEF_T>    0\n");
 }
-/* ------------------------------------------------------------- */
-/*	Function alma_out().
-/*		Output one alma entry.
+/* -------------------------------------------------------------
+*	Function alma_out().
+*		Output one alma entry.
 */
 void
 alma_out(fp, format)
 FILE	*fp;
 int	format;
 {
-	int	indi, len, Lenstr();
-	char	filename[TOKENNUM], *Catstr();
-	void	alma_out_entry_header(), alma_out_gaps();
-	void	Cpystr();
+	int	indi, len;
+	char	filename[TOKENNUM];
+/* 	void	alma_out_entry_header(), alma_out_gaps(); */
+/* 	void	Cpystr(); */
 
 	Cpystr(filename, data.alma.id);
 	for(indi=0, len=Lenstr(filename); indi<len; indi++)
@@ -826,9 +822,9 @@ int	format;
 	alma_out_entry_header(fp, data.alma.id, filename, format);
 	alma_out_gaps(fp);
 }
-/* -------------------------------------------------------------- */
-/*	Function alma_out_entry_header().
-/*		Output one ALMA entry header.
+/* --------------------------------------------------------------
+*	Function alma_out_entry_header().
+*		Output one ALMA entry header.
 */
 void
 alma_out_entry_header(fp, entry_id, filename, format_type)
@@ -836,9 +832,9 @@ FILE	*fp;
 char	*entry_id, *filename;
 int	format_type;
 {
-	FILE	*fopen();
+/* 	FILE	*fopen(); */
 	char	temp[TOKENNUM];
-	void	warning(), error();
+/* 	void	warning(), error(); */
 
 	fprintf(fp, "NXT ENTRY>S\n");
 	fprintf(fp, "ENTRY ID>%s\n", entry_id);
@@ -869,10 +865,10 @@ int	format_type;
 	fprintf(fp, "DEFGAP>[-]\n");
 	fprintf(fp, "PARAMS>1\n");
 	fprintf(fp, "GAPS>\n");
-}	
-/* -------------------------------------------------------------- */
-/*	Function alma_out_gaps().
-/*		Output gaps information of one ALMA entry.
+}
+/* --------------------------------------------------------------
+*	Function alma_out_gaps().
+*		Output gaps information of one ALMA entry.
 */
 void
 alma_out_gaps(fp)
@@ -900,7 +896,7 @@ FILE	*fp;
 			gnum++; data.seq_length--;
 		} else	{
 			residue=1;
-			rnum++;	
+			rnum++;
 			data.sequence[index++]
 				=data.sequence[indi];
 		}

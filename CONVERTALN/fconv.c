@@ -1,35 +1,36 @@
 /* ------------- File format converting subroutine ------------- */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "convert.h"
 #include "global.h"
 
-/* ------------------------------------------------------------- */
-/*	Function convert().
-/*		For given input file and type, convert the file
-/*			to desired out type and save the result in
-/*			the out file.
-*/
-convert(inf, outf, intype, outype)	
-char	*inf, *outf;
-int	intype, outype;
+/* -------------------------------------------------------------
+ *	Function convert().
+ *		For given input file and  type, convert the file
+ *			to desired out type and save the result in
+ *			the out file.
+ */
+void convert(inf, outf, intype, outype)
+     char *inf, *outf;
+     int   intype, outype;
 {
-	void	genbank_to_macke(), genbank_to_genbank(); 
-	void	genbank_to_embl();
-	void	embl_to_macke(), embl_to_genbank();
-	void	embl_to_embl();
-	void	macke_to_genbank(), macke_to_embl();
-	void	to_gcg(), to_paup(), to_phylip(), to_printable();
-	void	alma_to_macke(), alma_to_genbank();
-	void	embl_to_alma(), macke_to_alma(), genbank_to_alma();
-	int	Cmpstr();
+/* 	void	genbank_to_macke(), genbank_to_genbank(); */
+/* 	void	genbank_to_embl(); */
+/* 	void	embl_to_macke(), embl_to_genbank(); */
+/* 	void	embl_to_embl(); */
+/* 	void	macke_to_genbank(), macke_to_embl(); */
+/* 	void	to_gcg(), to_paup(), to_phylip(), to_printable(); */
+/* 	void	alma_to_macke(), alma_to_genbank(); */
+/* 	void	embl_to_alma(), macke_to_alma(), genbank_to_alma(); */
+/* 	int	Cmpstr(); */
 	int	dd;		/* copy stdin to outfile after first line */
 	dd = 0;
 	if (outype == PHYLIP2){
 	    outype = PHYLIP;
 	    dd = 1;
 	}
-	
+
 	if(Cmpstr(inf, outf)==EQ)
 		error(45, "Input file and output file must be different file.\n");
 	       if(intype==GENBANK&&outype==MACKE)	{
@@ -130,10 +131,10 @@ int	intype, outype;
 
 /* ------------------- COMMON SUBROUTINES ----------------------- */
 
-/* -------------------------------------------------------------- */
-/*	Function init().
-/*	Initialize data structure at the very beginning of running
-/*		any program.
+/* --------------------------------------------------------------
+*	Function init().
+*	Initialize data structure at the very beginning of running
+*		any program.
 */
 void
 init()	{
@@ -226,9 +227,9 @@ init()	{
 	data.ids=NULL;
 	data.seqs=NULL;
 }
-/* -------------------------------------------------------------- */
-/*	Function init_seq_data().
-/*		Init. seq. data.
+/* --------------------------------------------------------------
+*	Function init_seq_data().
+*		Init. seq. data.
 */
 void
 init_seq_data()	{

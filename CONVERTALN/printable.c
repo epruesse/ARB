@@ -4,28 +4,29 @@
 
 #define PRTLENGTH	62
 
-/* --------------------------------------------------------------- */
-/*	Function to_printable()
-/*		Convert from some format to PRINTABLE format.
+/* ---------------------------------------------------------------
+*	Function to_printable()
+*		Convert from some format to PRINTABLE format.
 */
 void
 to_printable(inf, outf, informat)
 char	*inf, *outf;
 int	informat;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr(), length;
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq, length;
 	int	out_of_memory, indi, index, *base_nums, base_count, start;
-	int	alma_key_word();
-	char	alma_in(), genbank_in_locus();
-	char	macke_in_name(), embl_in_id();
+/* 	int	alma_key_word(); */
+/* 	char	alma_in(), genbank_in_locus(); */
+/* 	char	macke_in_name(), embl_in_id(); */
 	char	temp[TOKENNUM], eof;
-	char	*Dupstr(), *Reallocspace(), *name, *today_date(), *today;
-	void	init(), init_seq_data();
-	void	init_alma(), init_genbank(), init_macke(), init_embl();
-	void	printable_print_line(), to_printable_1x1();
-	void	Freespace(), error(), Cpystr();
-	void	genbank_key_word(), embl_key_word();
+	char	*name;
+/* 	char	*Dupstr(), *Reallocspace(), *name, *today_date(), *today; */
+/* 	void	init(), init_seq_data(); */
+/* 	void	init_alma(), init_genbank(), init_macke(), init_embl(); */
+/* 	void	printable_print_line(), to_printable_1x1(); */
+/* 	void	Freespace(), error(), Cpystr(); */
+/* 	void	genbank_key_word(), embl_key_word(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -37,7 +38,7 @@ int	informat;
 		error(117, temp);
 	}
 	maxsize = 1;
-	out_of_memory = 0; 
+	out_of_memory = 0;
 	name = NULL;
 	init();
 	total_seq = 0;
@@ -71,7 +72,7 @@ int	informat;
 		total_seq++;
 		if((name = Dupstr(temp))==NULL&&temp!=NULL)
 			{ out_of_memory=1; break; }
-		if(data.seq_length>maxsize) 
+		if(data.seq_length>maxsize)
 			maxsize = data.seq_length;
 		data.ids=(char**)Reallocspace((char *)data.ids,
 			sizeof(char*)*total_seq);
@@ -85,9 +86,9 @@ int	informat;
 		data.seqs[total_seq-1]=(char*)Dupstr(data.sequence);
 		base_nums[total_seq-1]=0;
 	} while(!out_of_memory);
-	
+
 	if(out_of_memory)	{	/* cannot hold all seqs into mem. */
-		fprintf(stderr, 
+		fprintf(stderr,
 		"Rerun the conversion throught one seq. by one seq. base.\n");
 		fclose(ifp); fclose(ofp);
 		to_printable_1x1(inf, outf, informat);
@@ -97,13 +98,13 @@ int	informat;
 	while(maxsize>current)	{
 		for(indi=0; indi<total_seq; indi++)	{
 			length = Lenstr(data.seqs[indi]);
-			for(index=base_count=0; 
+			for(index=base_count=0;
 			index<PRTLENGTH&&(current+index)<length; index++)
 				if(data.seqs[indi][index+current]!='~'&&
 				data.seqs[indi][index+current]!='-'&&
 				data.seqs[indi][index+current]!='.')
 					base_count++;
-			
+
 			/* check if the first char is base or not */
 			if(current<length&&data.seqs[indi][current]!='~'&&
 			data.seqs[indi][current]!='-'&&
@@ -127,21 +128,22 @@ int	informat;
 
 	fclose(ifp); fclose(ofp);
 }
-/* --------------------------------------------------------------- */
-/*	Function to_printable_1x1()
-/*		Convert from one foramt to PRINTABLE format, one seq by one seq.
+/* ---------------------------------------------------------------
+*	Function to_printable_1x1()
+*		Convert from one foramt to PRINTABLE format, one seq by one seq.
 */
 void
 to_printable_1x1(inf, outf, informat)
 char 	*inf, *outf;
 int	informat;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr();
-	int	base_count, count, index;
-	int	alma_key_word();
-	char	temp[TOKENNUM], eof, alma_in();
-	char	*Dupstr(), *name, *today_date(), *today;
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq;
+	int	base_count, /*count,*/ index;
+/* 	int	alma_key_word(); */
+	char	temp[TOKENNUM], eof;
+	char	*name;
+/* 	char	*Dupstr(), *name, *today_date(), *today; */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -152,7 +154,7 @@ int	informat;
 		sprintf(temp, "Cannot open output file %s, exit\n", outf);
 		error(126, temp);
 	}
-	maxsize = 1; current = 0; 
+	maxsize = 1; current = 0;
 	name = NULL;
 	while(maxsize>current)	{
 		init();
@@ -171,7 +173,7 @@ int	informat;
 			} else if(informat==MACKE)	{
 				init_macke();
 				eof=macke_in_name(ifp);
-			} else error(129, 
+			} else error(129,
 		"UNKNOW input format when converting to PRINTABLE format.");
 			if(eof==EOF) break;
 			if(informat==ALMA)	{
@@ -182,11 +184,11 @@ int	informat;
 				embl_key_word(data.embl.id, 0, temp, TOKENNUM);
 			} else if(informat==MACKE)	{
 				macke_key_word(data.macke.name, 0, temp, TOKENNUM);
-			} else error(131, 
+			} else error(131,
 		"UNKNOW input format when converting to PRINTABLE format.");
 			Freespace(&name);
 			name = Dupstr(temp);
-			if(data.seq_length>maxsize) 
+			if(data.seq_length>maxsize)
 				maxsize = data.seq_length;
 			for(index=base_count=0;
 			index<current&&index<data.seq_length; index++) {
@@ -200,16 +202,17 @@ int	informat;
 			&&data.sequence[current]!='-') base_count++;
 
 			/* find if there any non-gap char in the next 62
-			/* char of the seq. data */
-			/* #### count no need to be the first base num 
+			* char of the seq. data
+			* #### count no need to be the first base num
 			for(index=current, count=0;
 			count==0&&index<data.seq_length
 			&&index<(current+PRTLENGTH); index++)
 				if(data.sequence[index]!='~'
 				&&data.sequence[index]!='.'
-				&&data.sequence[index]!='-') 
+				&&data.sequence[index]!='-')
 					{ base_count++; count++; }
 			*/
+
 			printable_print_line(name, data.sequence, current,
 				base_count, ofp);
 			total_seq++;
@@ -225,9 +228,9 @@ int	informat;
 #endif
 
 }
-/* ------------------------------------------------------------ */
-/*	Function printable_print_line().
-/*		print one printable line.
+/* ------------------------------------------------------------
+*	Function printable_print_line().
+*		print one printable line.
 */
 void
 printable_print_line(id, sequence, start, base_count, fp)
@@ -236,9 +239,9 @@ int	start;
 int	base_count;
 FILE	*fp;
 {
-	int	indi, index, count, bnum, length, Lenstr(), seq_length;
+	int	indi, index, count, bnum, /*length,*/ seq_length;
 
-	fprintf(fp, " ");	
+	fprintf(fp, " ");
 	if((bnum=Lenstr(id))>10)	{
 		/* truncate if length of id is greater than 10 */
 		for(indi=0; indi<10; indi++)
@@ -250,7 +253,7 @@ FILE	*fp;
 	}
 	/* fill in the blanks to make up 10 chars id spaces */
 	seq_length = Lenstr(sequence);
-	if(start<seq_length) 
+	if(start<seq_length)
 		for(indi=0; indi<bnum; indi++)
 			fprintf(fp, " ");
 	else {	fprintf(fp, "\n"); return;	}
