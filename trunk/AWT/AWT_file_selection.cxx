@@ -118,7 +118,7 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     const char *home            = GB_getenvHOME();
     const char *arbhome         = GB_getenvARBHOME();
     const char *workingdir      = GB_getenv("ARB_WORKDIR"); // doc in arb_envar.hlp
-    if (!workingdir) workingdir = home; // if no working dir -> use home dir
+    if (!workingdir) workingdir = home; // if no working dir -> default to home
 
     char buffer[GB_PATH_MAX];	memset(buffer,0,GB_PATH_MAX);
     char buffer2[GB_PATH_MAX];	memset(buffer2,0,GB_PATH_MAX);
