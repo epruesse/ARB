@@ -43,7 +43,9 @@ GB_ERROR SQ_calc_seq_quality(GBDATA *gb_main, const char *tree_name) {
 
     SQ_calc_sequence_structure(gb_main);
     SQ_calc_average_structure(gb_main);
+    SQ_calc_helix_conformance(gb_main);
     SQ_evaluate(gb_main, weight_bases, weight_diff_from_average);
+
 
     int value = SQ_get_value(gb_main, option);
 
