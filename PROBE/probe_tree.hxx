@@ -309,7 +309,14 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
         wcep += 4;
     }
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
-    if (rpos < 0x7fff) {		/* write the rpos */
+
+    /* tell about old decompression error */
+    if (rpos < 0x7fff && rpos > 0x3fff) {
+	printf("REMARK: Was wrong data (name = %d, apos = %d, rpos = %d)\n", name, apos, rpos);
+    }
+
+    if (rpos < 0x3fff) {		/* write the rpos */ 
+	       /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/ 
         PT_WRITE_SHORT(wcep,rpos);
         *wcep |= isapos;
         wcep += 2;
