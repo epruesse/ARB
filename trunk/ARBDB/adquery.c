@@ -44,7 +44,7 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
 }
 
 /********************************************************************************************
-					QUERIES
+                    QUERIES
 ********************************************************************************************/
 
 
@@ -63,32 +63,32 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
     header = GB_DATA_LIST_HEADER(gbf->d);
     if (after) index = (int)after->index+1; else index = 0;
 
-    for (	; index < end; index++) {
-		if ( (key_quark<0) || ((int)header[index].flags.key_quark  == key_quark) )
-		{
-			if ( (int)header[index].flags.changed >= gb_deleted) continue;
-			if (!(gb=GB_HEADER_LIST_GBD(header[index])))
-			{
-				gb_unfold( gbf, 0, index);
-				header = GB_DATA_LIST_HEADER(gbf->d);
-				gb = GB_HEADER_LIST_GBD(header[index]);
-				if (!gb){
+    for (   ; index < end; index++) {
+        if ( (key_quark<0) || ((int)header[index].flags.key_quark  == key_quark) )
+        {
+            if ( (int)header[index].flags.changed >= gb_deleted) continue;
+            if (!(gb=GB_HEADER_LIST_GBD(header[index])))
+            {
+                gb_unfold( gbf, 0, index);
+                header = GB_DATA_LIST_HEADER(gbf->d);
+                gb = GB_HEADER_LIST_GBD(header[index]);
+                if (!gb){
                     const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
-					GB_internal_error(err);
-/* 					GB_internal_error("Database entry is missing"); */
-					continue;
-				}
-			}
-			if (val){
-				if (!gb){
-					GB_internal_error("Cannot unfold data");
-					continue;
-				}
-				if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue;
-				if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
-			}
-			return gb;
-		}
+                    GB_internal_error(err);
+                    /*                  GB_internal_error("Database entry is missing"); */
+                    continue;
+                }
+            }
+            if (val){
+                if (!gb){
+                    GB_internal_error("Cannot unfold data");
+                    continue;
+                }
+                if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue;
+                if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
+            }
+            return gb;
+        }
     }
     return 0;
 }
@@ -110,72 +110,72 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
     key_quark = -1;
 
     /******* look for any hash index tables *********/
-    /******* no wildcards allowed		********/
+    /******* no wildcards allowed       ********/
     if (!Main->local_mode) {
-		if (gbf->flags2.folded_container){
-			/* do the query in the server */
-			if (GB_ARRAY_FLAGS(gbf).changed){
-				if (!gbf->flags2.update_in_server){
-					GB_update_server((GBDATA *)gbf);
-				}
-			}
-		}
-		if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
-			if (after) {
-				res = GBCMC_find(after,key,val,
-								 (enum gb_search_types)(down_level|search_next));
-			}else{
-				res = GBCMC_find(father,key,val,down_2_level);
-			}
-			return res;
-		}
+        if (gbf->flags2.folded_container){
+            /* do the query in the server */
+            if (GB_ARRAY_FLAGS(gbf).changed){
+                if (!gbf->flags2.update_in_server){
+                    GB_update_server((GBDATA *)gbf);
+                }
+            }
+        }
+        if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
+            if (after) {
+                res = GBCMC_find(after,key,val,
+                                 (enum gb_search_types)(down_level|search_next));
+            }else{
+                res = GBCMC_find(father,key,val,down_2_level);
+            }
+            return res;
+        }
     }
-    if (	val &&
-			(ifs=GBCONTAINER_IFS(gbf))!=NULL &&
-			(!strchr(val, '*')) &&
-			(!strchr(val, '?')))
+    if (    val &&
+            (ifs=GBCONTAINER_IFS(gbf))!=NULL &&
+            (!strchr(val, '*')) &&
+            (!strchr(val, '?')))
     {
-		for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs))
-		{
-			if (ifs->key != sub_key_quark)
-				continue;
-			/****** We found the index table ******/
-			res = gb_index_find(gbf, ifs, sub_key_quark, val, index);
-			return res;
-		}
+        for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs))
+        {
+            if (ifs->key != sub_key_quark)
+                continue;
+            /****** We found the index table ******/
+            res = gb_index_find(gbf, ifs, sub_key_quark, val, index);
+            return res;
+        }
     }
 
-    if (after) 	gb = after;
-    else		gb = NULL;
+    if (after)  gb = after;
+    else        gb = NULL;
 
-    for (	; index < end; index++)
+    for (   ; index < end; index++)
     {
-		if ( key_quark<0 || (int)header[index].flags.key_quark == key_quark )
-		{
-			GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
+        if ( key_quark<0 || (int)header[index].flags.key_quark == key_quark )
+        {
+            GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
 
-			if ( (int)header[index].flags.changed >= gb_deleted) continue;
-			if (!gbn)
-			{
-				if (!Main->local_mode)
-				{
-					if (gb)
-					{
-						res = GBCMC_find(gb,key,val,
-										 (enum gb_search_types)(down_level|search_next));
-					}else{
-						res = GBCMC_find(father,key,val,down_2_level);
-					}
-					return res;
-				}
-				GB_internal_error("Empty item in server");
-				continue;
-			}
-			gb = gbn;
-			if (GB_TYPE(gb) != GB_DB) continue;
-			res = GB_find_sub_by_quark(gb,sub_key_quark,val,0);
-			if (res) return res;
-		}
+            if ( (int)header[index].flags.changed >= gb_deleted) continue;
+            if (!gbn)
+            {
+                if (!Main->local_mode)
+                {
+                    if (gb)
+                    {
+                        res = GBCMC_find(gb,key,val,
+                                         (enum gb_search_types)(down_level|search_next));
+                    }else{
+                        res = GBCMC_find(father,key,val,down_2_level);
+                    }
+                    return res;
+                }
+                GB_internal_error("Empty item in server");
+                continue;
+            }
+            gb = gbn;
+            if (GB_TYPE(gb) != GB_DB) continue;
+            res = GB_find_sub_by_quark(gb,sub_key_quark,val,0);
+            if (res) return res;
+        }
     }
     return 0;
 }
@@ -192,39 +192,39 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
     if ( gbd == NULL ) return NULL;
 
     if (gbs & this_level) {
-		gbs &= ~this_level;
-		gbs |= down_level;
-		gbc = GB_FATHER(gbd);
-		if (gbs & search_next) {
-			after = gbd;
-			gbs &= ~search_next;
-		}
+        gbs &= ~this_level;
+        gbs |= down_level;
+        gbc = GB_FATHER(gbd);
+        if (gbs & search_next) {
+            after = gbd;
+            gbs &= ~search_next;
+        }
     }else{
-		if (gbs & search_next)
-		{
-			after = gbd;
-			gbc = GB_FATHER(gbd);
-			gbs = down_2_level;
-		}else{
-			if (GB_TYPE(gbd) != GB_DB) return 0;
-			gbc = (GBCONTAINER *)gbd;
-		}
+        if (gbs & search_next)
+        {
+            after = gbd;
+            gbc = GB_FATHER(gbd);
+            gbs = down_2_level;
+        }else{
+            if (GB_TYPE(gbd) != GB_DB) return 0;
+            gbc = (GBCONTAINER *)gbd;
+        }
     }
 
     if (key) {
-		key_quark = GB_key_2_quark(gbd,key);
+        key_quark = GB_key_2_quark(gbd,key);
     }else{
-		key_quark = -1;
+        key_quark = -1;
     }
 
-	switch (gbs) {
-		case down_level:
-			return GB_find_sub_by_quark((GBDATA*)gbc, key_quark, str, after);
-		case down_2_level:
-			return GB_find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, str, after);
-		default:	GB_internal_error("Unknown seach type %i",gbs);
-			return 0;
-	}
+    switch (gbs) {
+        case down_level:
+            return GB_find_sub_by_quark((GBDATA*)gbc, key_quark, str, after);
+        case down_2_level:
+            return GB_find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, str, after);
+        default:    GB_internal_error("Unknown seach type %li",gbs);
+            return 0;
+    }
 }
 /* get a subentry by its internal number:
    Warning: This subentry must exists, otherwise internal error */
@@ -234,43 +234,43 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index){
     register struct gb_header_list_struct *header;
     GBDATA *gb;
     if (GB_TYPE(father) != GB_DB) {
-		GB_internal_error("type is not GB_DB");
-		return 0;
+        GB_internal_error("type is not GB_DB");
+        return 0;
     }
     header = GB_DATA_LIST_HEADER(gbf->d);
     if (index >= gbf->d.nheader || index <0){
-		GB_internal_error("Index '%i' out of range [%i:%i[",index,0,gbf->d.nheader);
-		return 0;
+        GB_internal_error("Index '%i' out of range [%i:%i[",index,0,gbf->d.nheader);
+        return 0;
     }
-	if ( (int)header[index].flags.changed >= gb_deleted || !header[index].flags.key_quark){
-		GB_internal_error("Entry already deleted");
-		return 0;
-	}
-	if (!(gb=GB_HEADER_LIST_GBD(header[index])))
-	{
-		gb_unfold( gbf, 0, index);
-		header = GB_DATA_LIST_HEADER(gbf->d);
-		gb = GB_HEADER_LIST_GBD(header[index]);
-		if (!gb) {
-			GB_internal_error("Could not unfold data");
-			return 0;
-		}
-	}
-	return gb;
+    if ( (int)header[index].flags.changed >= gb_deleted || !header[index].flags.key_quark){
+        GB_internal_error("Entry already deleted");
+        return 0;
+    }
+    if (!(gb=GB_HEADER_LIST_GBD(header[index])))
+    {
+        gb_unfold( gbf, 0, index);
+        header = GB_DATA_LIST_HEADER(gbf->d);
+        gb = GB_HEADER_LIST_GBD(header[index]);
+        if (!gb) {
+            GB_internal_error("Could not unfold data");
+            return 0;
+        }
+    }
+    return gb;
 }
 
 /********************************************************************************************
-					Another Query Procedure
+                    Another Query Procedure
 ********************************************************************************************/
 char  gb_ctype_table[256];
 void gb_init_ctype_table(){
     int i;
     for (i=0;i<256;i++){
-		if (islower(i) || isupper(i) || isdigit(i) || i=='_' || i=='@' ){
-			gb_ctype_table[i] = 1;
-		}else{
-			gb_ctype_table[i] = 0;
-		}
+        if (islower(i) || isupper(i) || isdigit(i) || i=='_' || i=='@' ){
+            gb_ctype_table[i] = 1;
+        }else{
+            gb_ctype_table[i] = 0;
+        }
     }
 }
 
@@ -278,12 +278,12 @@ static GB_INLINE char *gb_first_non_key_character(const char *str){
     const char *s = str;
     int c;
     while(1){
-		c = *s;
-		if (!gb_ctype_table[c]){
-			if (c ==0) break;
-			return (char *)(s);
-		}
-		s++;
+        c = *s;
+        if (!gb_ctype_table[c]){
+            if (c ==0) break;
+            return (char *)(s);
+        }
+        s++;
     }
     return 0;
 }
@@ -301,129 +301,129 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 
     char            *s1, *s2;
     GBDATA          *gbp, *gbsp;
-    int		len;
-    int		seperator = 0;
-    char	buffer[GB_PATH_MAX];
+    int     len;
+    int     seperator = 0;
+    char    buffer[GB_PATH_MAX];
 
     /*fprintf(stderr, "gb_search(%p, %s, %li, %i)\n", gbd, str, create, internflag);*/
 
     GB_TEST_TRANSACTION(gbd);
     if (!str) {
-		return GB_find(gbd,0,0,down_level);
+        return GB_find(gbd,0,0,down_level);
     }
     if (*str == '/') {
-		gbd = GB_get_root(gbd);
-		str++;
+        gbd = GB_get_root(gbd);
+        str++;
     }
 
-	if (!gb_first_non_key_character(str)) {
-		gbsp = GB_find(gbd,str,0,down_level);
-		if (gbsp && create && create != GB_TYPE(gbsp)){ /* force type */
-			GB_delete(gbsp);
-			GB_internal_error("Inconsistent Type1 '%s', repairing database",str);
-			gbsp = GB_find(gbd,str,0,down_level);
-		}
-		if (!gbsp && create) {
-			if (internflag){
-				if (create == GB_CREATE_CONTAINER) {
-					gbsp = gb_create_container(gbd,str);
-				}else{
-					gbsp = gb_create(gbd,str,(GB_TYPES)create);
-				}
-			}else{
-				if (create == GB_CREATE_CONTAINER) {
-					gbsp = GB_create_container(gbd,str);
-				}else{
-					gbsp = gb_create(gbd,str,(GB_TYPES)create);
-				}
-			}
-			if (!gbsp) GB_print_error();
-		}
-		return gbsp;
-	}
-	{
-		len = strlen(str)+1;
-		if (len > GB_PATH_MAX) {
-			GB_internal_error("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
-			return 0;
-		}
-		GB_MEMCPY(buffer,str,len);
-	}
+    if (!gb_first_non_key_character(str)) {
+        gbsp = GB_find(gbd,str,0,down_level);
+        if (gbsp && create && create != GB_TYPE(gbsp)){ /* force type */
+            GB_delete(gbsp);
+            GB_internal_error("Inconsistent Type1 '%s', repairing database",str);
+            gbsp = GB_find(gbd,str,0,down_level);
+        }
+        if (!gbsp && create) {
+            if (internflag){
+                if (create == GB_CREATE_CONTAINER) {
+                    gbsp = gb_create_container(gbd,str);
+                }else{
+                    gbsp = gb_create(gbd,str,(GB_TYPES)create);
+                }
+            }else{
+                if (create == GB_CREATE_CONTAINER) {
+                    gbsp = GB_create_container(gbd,str);
+                }else{
+                    gbsp = gb_create(gbd,str,(GB_TYPES)create);
+                }
+            }
+            if (!gbsp) GB_print_error();
+        }
+        return gbsp;
+    }
+    {
+        len = strlen(str)+1;
+        if (len > GB_PATH_MAX) {
+            GB_internal_error("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
+            return 0;
+        }
+        GB_MEMCPY(buffer,str,len);
+    }
 
-	gbp = gbd;
-	for ( s1 = buffer;s1; s1 = s2) {
+    gbp = gbd;
+    for ( s1 = buffer;s1; s1 = s2) {
 
-		s2 = gb_first_non_key_character(s1);
-		if (s2) {
-			seperator = *s2;
-			*(s2++) = 0;
-			if (seperator == '-') {
-				if ((*s2)  != '>'){
-					GB_export_error("Invalid key for gb_search '%s'",str);
-					GB_print_error();
-					return 0;
-				}
-				s2++;
-			}
-		}
+        s2 = gb_first_non_key_character(s1);
+        if (s2) {
+            seperator = *s2;
+            *(s2++) = 0;
+            if (seperator == '-') {
+                if ((*s2)  != '>'){
+                    GB_export_error("Invalid key for gb_search '%s'",str);
+                    GB_print_error();
+                    return 0;
+                }
+                s2++;
+            }
+        }
 
-		if (strcmp("..", s1) == 0) {
-			gbsp = GB_get_father(gbp);
-		} else {
-			gbsp = GB_find(gbp, s1, 0, down_level);
-			if (gbsp && seperator == '-'){ /* follow link !!! */
-				if (GB_TYPE(gbsp) != GB_LINK){
-					if (create){
-						GB_export_error("Cannot create links on the fly in GB_search");
-						GB_print_error();
-					}
-					return 0;
-				}
-				gbsp = GB_follow_link(gbsp);
-				seperator = 0;
-				if (!gbsp) return 0; /* cannot resolve link  */
-			}
-			while (gbsp && create )    {
-				if (s2){ /* non terminal */
-					if (GB_DB == GB_TYPE(gbsp)) break;
-				}else{	/* terminal */
-					if ( create == GB_TYPE(gbsp)) break;
-				}
-				GB_internal_error("Inconsistent Type %i:%i '%s':'%s', repairing database",create,GB_TYPE(gbsp),str,s1);
-				GB_print_error();
-				GB_delete(gbsp);
-				gbsp = GB_find(gbd,s1,0,down_level);
-			}
-		}
-		if (!gbsp) {
-			if(!create) return 0; /* read only mode */
-			if (seperator == '-'){
-				GB_export_error("Cannot create linked objects");
-				return 0; /* do not create linked objects */
-			}
-			if(internflag){
-				if ( s2 || (create ==GB_CREATE_CONTAINER) ) {	/* not last key */
-					gbsp = gb_create_container(gbp, s1);
-				}else{
-					gbsp = gb_create(gbp, s1,(GB_TYPES)create);
-					if (create == GB_STRING) {
-						GB_write_string(gbsp,"");
-					}
-				}
-			}else{
-				if ( s2 || (create == GB_CREATE_CONTAINER) ) {	/* not last key */
-					gbsp = GB_create_container(gbp, s1);
-				}else{
-					gbsp = GB_create(gbp, s1,(GB_TYPES)create);
-					if (create == GB_STRING) {   GB_write_string(gbsp,"");}
-				}
-			}
+        if (strcmp("..", s1) == 0) {
+            gbsp = GB_get_father(gbp);
+        } else {
+            gbsp = GB_find(gbp, s1, 0, down_level);
+            if (gbsp && seperator == '-'){ /* follow link !!! */
+                if (GB_TYPE(gbsp) != GB_LINK){
+                    if (create){
+                        GB_export_error("Cannot create links on the fly in GB_search");
+                        GB_print_error();
+                    }
+                    return 0;
+                }
+                gbsp = GB_follow_link(gbsp);
+                seperator = 0;
+                if (!gbsp) return 0; /* cannot resolve link  */
+            }
+            while (gbsp && create )    {
+                if (s2){ /* non terminal */
+                    if (GB_DB == GB_TYPE(gbsp)) break;
+                }else{  /* terminal */
+                    if ( create == GB_TYPE(gbsp)) break;
+                }
+                GB_internal_error("Inconsistent Type %li:%i '%s':'%s', repairing database",create,GB_TYPE(gbsp),str,s1);
+                GB_print_error();
+                GB_delete(gbsp);
+                gbsp = GB_find(gbd,s1,0,down_level);
+            }
+        }
+        if (!gbsp) {
+            if(!create) return 0; /* read only mode */
+            if (seperator == '-'){
+                GB_export_error("Cannot create linked objects");
+                return 0; /* do not create linked objects */
+            }
+            if(internflag){
+                if ( s2 || (create ==GB_CREATE_CONTAINER) ) {   /* not last key */
+                    gbsp = gb_create_container(gbp, s1);
+                }else{
+                    gbsp = gb_create(gbp, s1,(GB_TYPES)create);
+                    if (create == GB_STRING) {
+                        GB_write_string(gbsp,"");
+                    }
+                }
+            }else{
+                if ( s2 || (create == GB_CREATE_CONTAINER) ) {  /* not last key */
+                    gbsp = GB_create_container(gbp, s1);
+                }else{
+                    gbsp = GB_create(gbp, s1,(GB_TYPES)create);
+                    if (create == GB_STRING) {   GB_write_string(gbsp,"");}
+                }
+            }
 
-			if (!gbsp) return 0;
-		}
-		gbp = gbsp;
-	}
-	return gbp;
+            if (!gbsp) return 0;
+        }
+        gbp = gbsp;
+    }
+    return gbp;
 }
 
 
@@ -433,7 +433,7 @@ GBDATA *GB_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 
 
 /********************************************************************************************
-											     Search for select syb entries
+                                                 Search for select syb entries
 ********************************************************************************************/
 
 GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
@@ -445,17 +445,17 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
 
     for (index = firstindex; index<end; index++)
     {
-		GBDATA *gb;
+        GBDATA *gb;
 
-		if ( ! (userbit & header[index].flags.flags) ) continue;
-		if ( (key_quark>=0) && ((int)header[index].flags.key_quark  != key_quark) ) continue;
-		if ((int)header[index].flags.changed >= gb_deleted) continue;
-		if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL) {
-			gb_unfold( gbc, 0, index);
-			header = GB_DATA_LIST_HEADER(gbc->d);
-			gb = GB_HEADER_LIST_GBD(header[index]);
-		}
-		return gb;
+        if ( ! (userbit & header[index].flags.flags) ) continue;
+        if ( (key_quark>=0) && ((int)header[index].flags.key_quark  != key_quark) ) continue;
+        if ((int)header[index].flags.changed >= gb_deleted) continue;
+        if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL) {
+            gb_unfold( gbc, 0, index);
+            header = GB_DATA_LIST_HEADER(gbc->d);
+            gb = GB_HEADER_LIST_GBD(header[index]);
+        }
+        return gb;
     }
     return 0;
 }
@@ -467,14 +467,14 @@ GBDATA *GB_search_last_son(GBDATA *gbd){
     GBDATA *gb;
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
     for (index = end-1; index>=0; index--){
-		if ((int)header[index].flags.changed >= gb_deleted) continue;
-		if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL)
-		{
-			gb_unfold( gbc, 0, index);
-			header = GB_DATA_LIST_HEADER(gbc->d);
-			gb = GB_HEADER_LIST_GBD(header[index]);
-		}
-		return gb;
+        if ((int)header[index].flags.changed >= gb_deleted) continue;
+        if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL)
+        {
+            gb_unfold( gbc, 0, index);
+            header = GB_DATA_LIST_HEADER(gbc->d);
+            gb = GB_HEADER_LIST_GBD(header[index]);
+        }
+        return gb;
     }
     return 0;
 }
@@ -489,9 +489,9 @@ long GB_number_of_marked_subentries(GBDATA *gbd){
 
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (index = 0; index<end; index++) {
-		if ( ! (userbit & header[index].flags.flags) ) continue;
-		if ((int)header[index].flags.changed >= gb_deleted) continue;
-		count++;
+        if ( ! (userbit & header[index].flags.flags) ) continue;
+        if ((int)header[index].flags.changed >= gb_deleted) continue;
+        count++;
     }
     return count;
 }
@@ -500,9 +500,9 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring){
     register GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     GBQUARK key_quark;
     if (keystring) {
-		key_quark = GB_key_2_quark(gbd,keystring);
+        key_quark = GB_key_2_quark(gbd,keystring);
     }else{
-		key_quark = -1;
+        key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
     return gb_search_marked(gbc,key_quark, 0);
@@ -515,9 +515,9 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
     GBQUARK key_quark;
 
     if (keystring) {
-		key_quark = GB_key_2_quark(gbd,keystring);
+        key_quark = GB_key_2_quark(gbd,keystring);
     }else{
-		key_quark = -1;
+        key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
     return gb_search_marked(gbc,key_quark, (int)gbd->index+1);
@@ -528,7 +528,7 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
 
 
 /********************************************************************************************
-					Command Interpreter
+                    Command Interpreter
 ********************************************************************************************/
 
 void GB_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
@@ -537,7 +537,7 @@ void GB_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
     if (!Main->command_hash) Main->command_hash = GBS_create_hash(1024,1);
 
     for (; table->command_identifier; table++) {
-		GBS_write_hash(Main->command_hash,table->command_identifier,(long)table->function);
+        GBS_write_hash(Main->command_hash,table->command_identifier,(long)table->function);
     }
 }
 
@@ -547,12 +547,12 @@ char *gbs_search_second_x(const char *str)
 {
     register int c;
     for (;(c=*str);str++) {
-		if (c=='\\') {		/* escaped characters */
-			str++;
-			if (!(c=*str)) return 0;
-			continue;
-		}
-		if (c=='"') return (char *)str;
+        if (c=='\\') {      /* escaped characters */
+            str++;
+            if (!(c=*str)) return 0;
+            continue;
+        }
+        if (c=='"') return (char *)str;
     }
     return 0;
 }
@@ -561,20 +561,20 @@ char *gbs_search_second_bracket(const char *source)
 {
     register int c;
     int deep = 0;
-    if (*source != '(') deep --;	/* first bracket */
+    if (*source != '(') deep --;    /* first bracket */
     for (;(c=*source);source++){
-		if (c=='\\') {		/* escaped characters */
-			source++;
-			if (!*source) break;
-			continue;
-		}
-		if(c=='(') deep--;
-		else if (c==')') deep++;
-		if (!deep) return (char *)source;
-		if (c=='"') {		/* search the second " */
-			source = gbs_search_second_x(source);
-			if (!source) return 0;
-		}
+        if (c=='\\') {      /* escaped characters */
+            source++;
+            if (!*source) break;
+            continue;
+        }
+        if(c=='(') deep--;
+        else if (c==')') deep++;
+        if (!deep) return (char *)source;
+        if (c=='"') {       /* search the second " */
+            source = gbs_search_second_x(source);
+            if (!source) return 0;
+        }
     }
     if (!c) return 0;
     return (char *)source;
@@ -588,53 +588,53 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
     register int c;
     register const char *p;
     if (!flag) {
-		flag = 1;
-		memset(tab,0,256);
+        flag = 1;
+        memset(tab,0,256);
     }
     for (p = seps; (c=*p);p++) tab[c] = 1; /* tab[seps[x]] = 1 */
-    tab['('] = 1;				/* exclude () pairs */
-    tab['"'] = 1;				/* exclude " pairs */
-    tab['\\'] = 1;				/* exclude \-escaped chars */
+    tab['('] = 1;               /* exclude () pairs */
+    tab['"'] = 1;               /* exclude " pairs */
+    tab['\\'] = 1;              /* exclude \-escaped chars */
 
     for (;(c=*source);source++){
-		if (tab[c]) {
-			if (c=='\\') {
+        if (tab[c]) {
+            if (c=='\\') {
                 source++;
                 continue;
             }
-			if (c=='(') {
-				source = gbs_search_second_bracket(source);
-				if (!source) break;
-				continue;
-			}
-			if (c=='"') {
-				source = gbs_search_second_x(source+1);
-				if (!source) break;
-				continue;
-			}
-			for (p = seps; (c=*p);p++) tab[c] = 0;
-			return (char *)source;
-		}
+            if (c=='(') {
+                source = gbs_search_second_bracket(source);
+                if (!source) break;
+                continue;
+            }
+            if (c=='"') {
+                source = gbs_search_second_x(source+1);
+                if (!source) break;
+                continue;
+            }
+            for (p = seps; (c=*p);p++) tab[c] = 0;
+            return (char *)source;
+        }
     }
-    for (p = seps; (c=*p);p++) tab[c] = 0;	/* clear tab */
+    for (p = seps; (c=*p);p++) tab[c] = 0;  /* clear tab */
     return 0;
 }
 
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd ){
     /* simple command interpreter returns 0 on error (+ GB_export_error) */
     /* if first character is == ':' run string parser
-	   if first character is == '/' run regexpr
-		else command interpreter
-	*/
+       if first character is == '/' run regexpr
+       else command interpreter
+    */
     int strmalloc = 0;
     int len;
     char *buffer;
     GB_ERROR error;
     char *error2 = 0;
-    int	i;
-    int	argcinput;
-    int	argcparam;
-    int	argcout;
+    int i;
+    int argcinput;
+    int argcparam;
+    int argcout;
     char *bracket;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
 
@@ -647,25 +647,25 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     GBL *out = & mout[0];
 
     if (!str) {
-		if (!gbd) {
-			GB_internal_error("ARB_command_interpreter no input streams found");
-			return GB_STRDUP("????");
-		}
-		str = GB_read_as_string(gbd);
-		strmalloc = 1;
+        if (!gbd) {
+            GB_internal_error("ARB_command_interpreter no input streams found");
+            return GB_STRDUP("????");
+        }
+        str = GB_read_as_string(gbd);
+        strmalloc = 1;
     }
     /*********************** empty command -> do not modify string ***************/
-    if (!commands || !commands[0]) {	/* empty command -> return GB_STRDUP(str) */
-		if (!strmalloc) return GB_STRDUP(str);
-		return (char *)str;
+    if (!commands || !commands[0]) {    /* empty command -> return GB_STRDUP(str) */
+        if (!strmalloc) return GB_STRDUP(str);
+        return (char *)str;
     }
 
     /*********************** ':' -> string parser ********************/
     if (commands[0] == ':') {
-		return GBS_string_eval(str,commands+1,gbd);
+        return GBS_string_eval(str,commands+1,gbd);
     }
     if (commands[0] == '/'){
-		char *result = GBS_regreplace(str,commands,gbd);
+        char *result = GBS_regreplace(str,commands,gbd);
         if (!result) {
             GB_ERROR err = GB_get_error();
 
@@ -689,34 +689,34 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
     /*********************** remove all spaces and tabs ********************/
     {
-		const char *s1;
-		char *s2;
-		s1 = commands;
-		s2 = buffer;
-		{
-			register int c;
-			for (; (c= *s1); s1++){
-				if (c=='\\') {
-					*(s2++) = c;
-					if (!(c=*s1)) { break; }
-					*(s2++) = c;
-					continue;
-				}
+        const char *s1;
+        char *s2;
+        s1 = commands;
+        s2 = buffer;
+        {
+            register int c;
+            for (; (c= *s1); s1++){
+                if (c=='\\') {
+                    *(s2++) = c;
+                    if (!(c=*s1)) { break; }
+                    *(s2++) = c;
+                    continue;
+                }
 
-				if (c=='"' ) {		/* search the second " */
-					const char *hp = gbs_search_second_x(s1+1);
-					if (!hp){
-						GB_export_error("unbalanced '\"' in '%s'",commands);
-						return 0;
-					}
-					while (s1 <= hp) *(s2++) = *(s1++);
-					s1--;
-					continue;
-				}
-				if (c!=' ' && c!='\t') *(s2++) = c;
-			}
-		}
-		*s2 = 0;
+                if (c=='"' ) {      /* search the second " */
+                    const char *hp = gbs_search_second_x(s1+1);
+                    if (!hp){
+                        GB_export_error("unbalanced '\"' in '%s'",commands);
+                        return 0;
+                    }
+                    while (s1 <= hp) *(s2++) = *(s1++);
+                    s1--;
+                    continue;
+                }
+                if (c!=' ' && c!='\t') *(s2++) = c;
+            }
+        }
+        *s2 = 0;
     }
 
 
@@ -726,62 +726,62 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     memset( (char *)out,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
 
     if (strmalloc) {
-		orig[0].str = (char *)str;
+        orig[0].str = (char *)str;
     }else{
-		orig[0].str = GB_STRDUP(str);
+        orig[0].str = GB_STRDUP(str);
     }
     argcinput = 1;
     argcout = 0;
     error = 0;
     {
-		char *s1,*s2;
-		s1 = buffer;
-		if (*s1 == '|') s1++;
+        char *s1,*s2;
+        s1 = buffer;
+        if (*s1 == '|') s1++;
 
-		/*** loop over all commands ***/
-		for (s1 = s1; s1 ; s1 = s2) {
-			int seperator;
-			GBL_COMMAND command;
-			s2= gbs_search_next_seperator(s1,"|;,");
-			if (s2) {
-				seperator = *(s2);
-				*(s2++) = 0;
-			}else{
-				seperator = 0;
-			}
-			/* collect the parameters */
-			memset((char*)in,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
-			if (*s1 == '"') {			/* copy "text" to out */
-				char *end = gbs_search_second_x(s1+1);
-				if (!end) {
-					error = "Missing second '\"'";
-					break;
-				}
-				*end = 0;
-				out[argcout++].str = GB_STRDUP(s1+1);
-			}else{
+        /*** loop over all commands ***/
+        for (s1 = s1; s1 ; s1 = s2) {
+            int seperator;
+            GBL_COMMAND command;
+            s2= gbs_search_next_seperator(s1,"|;,");
+            if (s2) {
+                seperator = *(s2);
+                *(s2++) = 0;
+            }else{
+                seperator = 0;
+            }
+            /* collect the parameters */
+            memset((char*)in,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
+            if (*s1 == '"') {           /* copy "text" to out */
+                char *end = gbs_search_second_x(s1+1);
+                if (!end) {
+                    error = "Missing second '\"'";
+                    break;
+                }
+                *end = 0;
+                out[argcout++].str = GB_STRDUP(s1+1);
+            }else{
 
-				argcparam = 0;
-				bracket = strchr(s1,'(');
-				if (bracket){		/* I got the parameter list */
-					int slen;
-					*(bracket++) = 0;
-					slen  = strlen(bracket);
-					if (bracket[slen-1] != ')') {
-						error = "Missing ')'";
-					}else{
-						/* go through the parameters */
-						char *p1,*p2;
-						bracket[slen-1] = 0;
-						for (p1 = bracket; p1 ; p1 = p2) {
-							p2 = gbs_search_next_seperator(p1,";,");
-							if (p2) {
-								*(p2++) = 0;
-							}
-							if (p1[0] == '"') {	/* remove "" pairs */
-								int len2;
-								p1++;
-								len2 = strlen(p1)-1;
+                argcparam = 0;
+                bracket = strchr(s1,'(');
+                if (bracket){       /* I got the parameter list */
+                    int slen;
+                    *(bracket++) = 0;
+                    slen  = strlen(bracket);
+                    if (bracket[slen-1] != ')') {
+                        error = "Missing ')'";
+                    }else{
+                        /* go through the parameters */
+                        char *p1,*p2;
+                        bracket[slen-1] = 0;
+                        for (p1 = bracket; p1 ; p1 = p2) {
+                            p2 = gbs_search_next_seperator(p1,";,");
+                            if (p2) {
+                                *(p2++) = 0;
+                            }
+                            if (p1[0] == '"') { /* remove "" pairs */
+                                int len2;
+                                p1++;
+                                len2 = strlen(p1)-1;
 
                                 if (p1[len2] != '\"')  {
                                     error = "Missing '\"'";
@@ -789,89 +789,89 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                                 else {
                                     p1[len2] = 0;
                                 }
-							}
-							in[argcparam++].str = GB_STRDUP(p1);
-						}
-					}
-					if (error) break;
-				}
-				if (!error && ( bracket || *s1) ) {
-					char *p = s1;
-					int c;
-					while ( (c = *p) ) {		/* command to lower case */
-						if (c>='A' && c<='Z') {
-							c += 'a'-'A';
-							*p = c;
-						}
-						p++;
-					}
+                            }
+                            in[argcparam++].str = GB_STRDUP(p1);
+                        }
+                    }
+                    if (error) break;
+                }
+                if (!error && ( bracket || *s1) ) {
+                    char *p = s1;
+                    int c;
+                    while ( (c = *p) ) {        /* command to lower case */
+                        if (c>='A' && c<='Z') {
+                            c += 'a'-'A';
+                            *p = c;
+                        }
+                        p++;
+                    }
 
-					command = (GBL_COMMAND)GBS_read_hash(Main->command_hash,s1);
-					if (!command) {
-						error = "Unknown Command";
-						error2 = GB_STRDUP(s1);
-					}else{
-						error = command(gbd,s1,argcinput,orig,argcparam,in, &argcout, &out);
-					}
-				}
+                    command = (GBL_COMMAND)GBS_read_hash(Main->command_hash,s1);
+                    if (!command) {
+                        error = "Unknown Command";
+                        error2 = GB_STRDUP(s1);
+                    }else{
+                        error = command(gbd,s1,argcinput,orig,argcparam,in, &argcout, &out);
+                    }
+                }
 
-				for (i=0;i<argcparam;i++) {		/* free intermediate arguments */
-					if (in[i].str) free(in[i].str);
-				}
-			}
+                for (i=0;i<argcparam;i++) {     /* free intermediate arguments */
+                    if (in[i].str) free(in[i].str);
+                }
+            }
 
-			if (error) break;
+            if (error) break;
 
-			if (seperator == '|') {			/* swap in and out in pipes */
-				GBL *h;
-				for (i=0;i<argcinput;i++) {
-					if (orig[i].str)	free(orig[i].str);
-				}
-				memset((char*)orig,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
-				argcinput = 0;
+            if (seperator == '|') {         /* swap in and out in pipes */
+                GBL *h;
+                for (i=0;i<argcinput;i++) {
+                    if (orig[i].str)    free(orig[i].str);
+                }
+                memset((char*)orig,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
+                argcinput = 0;
 
-				h = out;			/* swap orig and out */
-				out = orig;
-				orig = h;
+                h = out;            /* swap orig and out */
+                out = orig;
+                orig = h;
 
-				argcinput = argcout;
-				argcout = 0;
-			}
+                argcinput = argcout;
+                argcout = 0;
+            }
 
-		}
+        }
     }
     for (i=0;i<argcinput;i++) {
-		if (orig[i].str) free((char *)(orig[i].str));
+        if (orig[i].str) free((char *)(orig[i].str));
     }
 
     {
-		char *s1;
-		if (!argcout) {
-			s1 = GB_STRDUP("<NULL>");
-		}else if (argcout ==1) {
-			s1 = out[0].str;
-		}else{				/* concatenate output strings */
-			void *strstruct = GBS_stropen(1000);
-			for (i=0;i<argcout;i++) {
-				if (out[i].str){
-					GBS_strcat(strstruct,out[i].str);
-					free(out[i].str);
-				}
-			}
-			s1 = GBS_strclose(strstruct,1);
-		}
-		free(buffer);
+        char *s1;
+        if (!argcout) {
+            s1 = GB_STRDUP("<NULL>");
+        }else if (argcout ==1) {
+            s1 = out[0].str;
+        }else{              /* concatenate output strings */
+            void *strstruct = GBS_stropen(1000);
+            for (i=0;i<argcout;i++) {
+                if (out[i].str){
+                    GBS_strcat(strstruct,out[i].str);
+                    free(out[i].str);
+                }
+            }
+            s1 = GBS_strclose(strstruct,1);
+        }
+        free(buffer);
 
 
-		if (!error) return s1;
-		if (s1) free(s1);
+        if (!error) return s1;
+        if (s1) free(s1);
     }
 
     if (error2){
-		GB_export_error("%s:%s in '%s'",error,error2, commands);
-		free(error2);
+        GB_export_error("%s:%s in '%s'",error,error2, commands);
+        free(error2);
     }else{
-		GB_export_error("%s in '%s'",error,commands);
+        GB_export_error("%s in '%s'",error,commands);
     }
     return 0;
 }
