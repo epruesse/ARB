@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : ProbeToolbar.java                                      // 
 //    Purpose   : Toolbar for application                                // 
-//    Time-stamp: <Thu Mar/11/2004 00:40 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sun Mar/14/2004 22:29 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -39,6 +39,7 @@ class ProbeToolbar extends Panel {
                         if (cmd.equals("Clear"))                client().clearMatches();
                         else if (cmd.equals("Save"))            client().saveProbes(true);
                         else if (cmd.equals("Overlap"))         gui().toggleOverlap();
+                        else if (cmd.equals("Cache"))           tree_display().getLastMatchedNode().cacheAllHits();
                         
                         else if (cmd.equals("ABC"))             probe_list().setSort(Probe.SORT_BY_SEQUENCE);
                         else if (cmd.equals("Len"))             probe_list().setSort(Probe.SORT_BY_LENGTH);
@@ -64,6 +65,7 @@ class ProbeToolbar extends Panel {
         toAdd = new Button("Clear");    toAdd.addActionListener(buttonListener); row.add(toAdd);
         toAdd = new Button("Save");     toAdd.addActionListener(buttonListener); row.add(toAdd);
         toAdd = new Button("Overlap");  toAdd.addActionListener(buttonListener); row.add(toAdd);
+        toAdd = new Button("Cache");    toAdd.addActionListener(buttonListener); row.add(toAdd);
 
         add(row, BorderLayout.NORTH);
         row = new Panel(); row.setLayout(new FlowLayout(FlowLayout.LEFT));
