@@ -203,6 +203,7 @@ public:
     GBDATA *gb_ref;		// second reference database
     AW_BOOL	look_in_ref_list; // for querys
     AWAR	species_name;
+    AWAR	gene_name;
     int	select_bit;	// one of 1 2 4 8 .. 128 (one for each query box)
 
     int use_menu;	// put additional commands in menu
