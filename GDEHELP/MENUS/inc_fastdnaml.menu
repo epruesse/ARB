@@ -1,6 +1,6 @@
 item:AxML + FastdnaML (max 500 Species) ...
-itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates $RATES "Y" "Q" "R" "G 0 0" "T 2.0" |arb_convert_aln -GenBank in1 -phylip2 infile;arb_export_tree $TREE >>infile;RUN_IN_WINDOW ((arb_fastdnaml $PROGRAM;$DISPLAY_FUNC)); rm in1 )&
-itemhelp:phylip.help
+itemmethod:(/bin/rm -f outfile infile treefile ;arb_export_rates "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" |arb_convert_aln -GenBank in1 -phylip2 infile;arb_export_tree $TREE >>infile;RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM;$DISPLAY_FUNC)); rm in1 )&
+itemhelp:fastdnaml.help
 
 arg:RATES
 argtype:weights
@@ -10,18 +10,18 @@ argchoice:POS_VAR_BY_PARS
 arg:TREE
 argtype:tree
 arglabel:Base Tree
-argchoice:tree_main
+argchoice:
 
 arg:PROGRAM
 argtype:chooser
 arglabel:Select program to use
-argchoice:AxML:"axml"
-argchoice:FastdnaML:"fastdnaml"
+argchoice:AxML:axml
+argchoice:FastdnaML:fastdnaml
 
 arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM BASETREE=$TREE FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
 argchoice:Treetool:treetool treefile
 
 
