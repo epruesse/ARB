@@ -9,7 +9,7 @@
             find Xlib ! -type d; \
             find lib ! -type d | grep -v "/pts/") \
         | grep -v "/CVS/" \
-        | grep -v "^.#" \
+        | grep -v '/.#[^/]*$' \
         ` \
     |gzip >arb.tgz
 
