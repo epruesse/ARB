@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Mar/11/2004 13:39 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/06/2004 11:32 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -340,7 +340,7 @@ string awt_script::get_value() const
         GBDATA         *gb_main = mask_global()->get_gb_main();
         GB_transaction  tscope(gb_main);
 
-        char *val = GB_command_interpreter(gb_main, species_name, script.c_str(), gbd);
+        char *val = GB_command_interpreter(gb_main, species_name, script.c_str(), gbd, 0);
         if (!val) {
             aw_message(GB_get_error());
             result = "<error>";
