@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -200,6 +201,18 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
     return error;
 }
 
+// --------------------------------------------
+//      const char * AWT_date_string(void)
+// --------------------------------------------
+const char * AWT_date_string(void) {
+    struct timeval date;
+    struct tm *p;
+
+    gettimeofday(&date, 0);
+    p = localtime(&date.tv_sec);
+    return asctime(p);
+}
+
 // --------------------------------------------------------------------------------------------------------------------------------------
 //      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path)
 // --------------------------------------------------------------------------------------------------------------------------------------
@@ -227,7 +240,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
 
                 xml_doc.add_attribute("database", db_name);
                 xml_doc.add_attribute("treename", tree_name);
-                xml_doc.add_attribute("export_date", "heute");
+                xml_doc.add_attribute("export_date", AWT_date_string());
 
                 if (tree_remark) {
                     char *remark = GB_read_string(tree_remark);

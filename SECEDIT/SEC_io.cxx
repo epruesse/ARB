@@ -21,15 +21,15 @@ void SEC_root::generate_x_string(void) {
     x_string[template_length] = '\0';
     x_string_len = template_length;
     number_found = new int[template_length];
-    
+
     //"erase" both strings to prevent false x's
-    
-//     int i;
-//     for (i=template_length-1; i>=0; i--) {
-// 	x_string[i] = '.';
-// 	number_found[i] = 0;
-//     }
-    
+
+    //     int i;
+    //     for (i=template_length-1; i>=0; i--) {
+    // 	x_string[i] = '.';
+    // 	number_found[i] = 0;
+    //     }
+
     memset(x_string,     '.', template_length*sizeof(*x_string));
     memset(number_found, 0,   template_length*sizeof(*number_found));
 
@@ -40,13 +40,13 @@ void SEC_root::generate_x_string(void) {
     number = 0;
     int i;
     for (i=0; i<template_length; i++) {
-	if (x_string[i] == 'x') {
-	    number_found[i] = number;
-	    number++;
-	}
-	else {
-	    number_found[i] = number;
-	}
+        if (x_string[i] == 'x') {
+            number_found[i] = number;
+            number++;
+        }
+        else {
+            number_found[i] = number;
+        }
     }
 }
 
@@ -58,7 +58,7 @@ void SEC_segment::generate_x_string(void) {
 
     if (sequence_start < root->x_string_len) x_string[sequence_start] = 'x';
     if (sequence_end   < root->x_string_len) x_string[sequence_end]   = 'x';
-//    if (sequence_end   <= root->x_string_len) x_string[sequence_end-1] = 'x';
+    //    if (sequence_end   <= root->x_string_len) x_string[sequence_end-1] = 'x';
 }
 
 
@@ -67,17 +67,17 @@ void SEC_helix_strand::generate_x_string(void) {
 
     int sequence_start = region.get_sequence_start();
     int sequence_end = region.get_sequence_end();
-    
+
     if (sequence_start < root->x_string_len) x_string[sequence_start] = 'x';
     if (sequence_end   < root->x_string_len) x_string[sequence_end]   = 'x';
-//    if (sequence_end <= root->x_string_len) x_string[sequence_end-1] = 'x';
+    //    if (sequence_end <= root->x_string_len) x_string[sequence_end-1] = 'x';
 
     sequence_start = other_strand->region.get_sequence_start();
     sequence_end = other_strand->region.get_sequence_end();
 
     if (sequence_start < root->x_string_len) x_string[sequence_start] = 'x';
     if (sequence_end   < root->x_string_len) x_string[sequence_end] = 'x';
-//    if (sequence_end <= root->x_string_len) x_string[sequence_end-1] = 'x';
+    //    if (sequence_end <= root->x_string_len) x_string[sequence_end-1] = 'x';
 
     other_strand->loop->generate_x_string(other_strand);
 }
@@ -87,24 +87,24 @@ void SEC_loop::generate_x_string(SEC_helix_strand *caller) {
 
     int is_root = 0;
     if (caller == NULL) {
-	is_root = 1;
-	caller = segment->get_next_helix();
+        is_root = 1;
+        caller = segment->get_next_helix();
     }
 
     SEC_segment *segment_pointer = caller->get_next_segment();
     SEC_helix_strand *strand_pointer = segment_pointer->get_next_helix();
 
     while (strand_pointer != caller) {
-	segment_pointer->generate_x_string();
-	strand_pointer->generate_x_string();
+        segment_pointer->generate_x_string();
+        strand_pointer->generate_x_string();
 
-	segment_pointer = strand_pointer->get_next_segment();
-	strand_pointer = segment_pointer->get_next_helix();
+        segment_pointer = strand_pointer->get_next_segment();
+        strand_pointer = segment_pointer->get_next_helix();
     }
     segment_pointer->generate_x_string();
 
     if (is_root) {
-	caller->generate_x_string();
+        caller->generate_x_string();
     }
 
 }
@@ -114,8 +114,8 @@ SEC_helix_strand * SEC_segment::get_previous_strand(void) {
     SEC_segment *segment_pointer = strand_pointer->get_next_segment();
 
     while (segment_pointer != this) {
-	strand_pointer = segment_pointer->get_next_helix();
-	segment_pointer = strand_pointer->get_next_segment();
+        strand_pointer = segment_pointer->get_next_helix();
+        segment_pointer = strand_pointer->get_next_segment();
     }
     return strand_pointer;
 }
@@ -124,42 +124,42 @@ char * SEC_root::write_data(void) {
     delete x_string;
     x_string = 0;
     if (template_sequence != 0) {
-	generate_x_string();
+        generate_x_string();
     }
 
     ostrstream out;
     out << "MAX_INDEX=" << max_index << "\n";
     SEC_loop *root_loop = root_segment->get_loop();
     root_loop->save(out, NULL, 0);
-    
+
     out << '\0';
-    
+
     delete number_found;
     number_found = 0;
 
     return out.str();
 }
-    
-   
+
+
 void SEC_segment::save(ostream & out, int indent) {
     int i;
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "SEGMENT={\n";
     region.save(out, (indent+1), root);
 
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
-    
+
     out << "}\n";    //close brackets for block SEGMENT
 }
 
 
 void SEC_region::save(ostream & out, int indent, SEC_root *root) {
     for (int i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "SEQ=" << root->number_found[sequence_start] << ":" << root->number_found[sequence_end-1] << "\n";
 }
@@ -168,41 +168,41 @@ void SEC_region::save(ostream & out, int indent, SEC_root *root) {
 void SEC_loop::save(ostream & out, SEC_helix_strand *caller, int indent) {
     int is_root = 0;
     if (caller == NULL) {
-	is_root = 1;
-	caller = segment->get_previous_strand();
-    }  
+        is_root = 1;
+        caller = segment->get_previous_strand();
+    }
     int i;
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "LOOP={\n";
 
     indent++;
-    
+
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
-    
+
     out << "RADIUS=" << min_radius << ":" << max_radius << "\n";
     SEC_segment *next_segment;
     SEC_helix_strand *next_strand;
     next_segment = caller->get_next_segment();
     next_segment->save(out, indent);
     next_strand = next_segment->get_next_helix();
-    
+
     while (next_strand != caller) {
-	next_strand->save_all(out, indent);
-	next_segment = next_strand->get_next_segment();  //returns pointer to following segment
-	next_segment->save(out, indent);
-	next_strand = next_segment->get_next_helix();       //returns pointer to following helix_strand
+        next_strand->save_all(out, indent);
+        next_segment = next_strand->get_next_segment();  //returns pointer to following segment
+        next_segment->save(out, indent);
+        next_strand = next_segment->get_next_helix();       //returns pointer to following helix_strand
     }
 
     if (is_root) {    				//if root_loop then save caller-strand, which is otherwise omitted
-	next_strand->save_all(out, indent);
+        next_strand->save_all(out, indent);
     }
     indent--;
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "}\n";   //Close brackets for block LOOP
 }
@@ -211,11 +211,11 @@ void SEC_loop::save(ostream & out, SEC_helix_strand *caller, int indent) {
 void SEC_helix::save(ostream & out, int indent) {
     int i;
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "DELTA=" << delta << "\n";
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "LENGTH=" << min_length << ":" << max_length << "\n";;
 }
@@ -223,11 +223,11 @@ void SEC_helix::save(ostream & out, int indent) {
 
 void SEC_helix_strand::save_all(ostream & out, int indent) {
     int i;
-    
+
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
-    
+
     out << "STRAND={\n";
     region.save(out, (indent+1), root);
     helix_info->save(out, (indent+1));
@@ -236,7 +236,7 @@ void SEC_helix_strand::save_all(ostream & out, int indent) {
     other_strand->save_core(out, (indent+1));     //save information about second strand and return to calling method
 
     for (i=0; i<indent; i++) {
-	out << "\t";
+        out << "\t";
     }
     out << "}\n";    //close brackets for block STRAND
 }
@@ -250,7 +250,7 @@ void SEC_helix_strand::save_core(ostream & out, int indent) {
 /********************************
  *Konstruktoren
  ********************************/
- 
+
 SEC_segment::SEC_segment(SEC_root *root_, double alpha_, SEC_helix_strand *next_helix_strand_, SEC_loop *loop_)
 {
     next_helix_strand = next_helix_strand_;
@@ -302,7 +302,7 @@ SEC_loop::SEC_loop(SEC_root *root_, SEC_segment *segment_, double max_radius_, d
 }
 
 
-SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double min_length_) 
+SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double min_length_)
 {
     delta = delta_;
     deltaIn = deltaIn_;
@@ -325,7 +325,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     cursor = 0;
     show_constraints = 0;
     fresh_sequence = 1;
-    
+
     seqTerminal = 0;//seqTerminal pointer is initialised to 0 --yadhu
 
     drag_recursive = 0;
@@ -335,7 +335,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     number = 0;
     ap = NULL;
     ap_length = 0;
-    
+
     gb_template = NULL;
     template_length = 0;		// length of template string
     template_sequence = NULL;
@@ -365,20 +365,20 @@ SEC_segment::~SEC_segment() {
 
 SEC_helix_strand::~SEC_helix_strand() {
     if(next_segment != NULL) {
-	next_segment->delete_pointer_2(this);
+        next_segment->delete_pointer_2(this);
     }
-    
+
     delete helix_info;
-    
+
     if (other_strand != NULL) {
-	other_strand->loop->set_segment(next_segment);  //now every loop-element can be reached by loop-destructor
-	if (other_strand->next_segment != NULL) {
-	    other_strand->next_segment->delete_pointer_2(other_strand);
-	}
-	other_strand->helix_info = NULL;
-	other_strand->other_strand = NULL;
-	other_strand->next_segment = NULL;
-	delete other_strand;
+        other_strand->loop->set_segment(next_segment);  //now every loop-element can be reached by loop-destructor
+        if (other_strand->next_segment != NULL) {
+            other_strand->next_segment->delete_pointer_2(other_strand);
+        }
+        other_strand->helix_info = NULL;
+        other_strand->other_strand = NULL;
+        other_strand->next_segment = NULL;
+        delete other_strand;
     }
 
     root = NULL;
@@ -392,42 +392,42 @@ SEC_region::~SEC_region() {
 
 SEC_loop::~SEC_loop() {
     if (segment != NULL) {
-	root = NULL;
-	//save the segments of the loop in an array
-	SEC_segment *segment_buffer[BUFFERLENGTH];
-	SEC_segment *segment_pointer = segment;
-	SEC_helix_strand *strand_pointer;
-	int i = 0;
-	do {
-	    segment_buffer[i++] = segment_pointer;
-	    strand_pointer = segment_pointer->get_next_helix();
-	    if (strand_pointer != NULL) {
-		segment_pointer = strand_pointer->get_next_segment();
-	    }
-	    else {
-		segment_pointer = segment;    //to break the while-loop
-	    }
-	}
-	while (segment_pointer != segment);
+        root = NULL;
+        //save the segments of the loop in an array
+        SEC_segment *segment_buffer[BUFFERLENGTH];
+        SEC_segment *segment_pointer = segment;
+        SEC_helix_strand *strand_pointer;
+        int i = 0;
+        do {
+            segment_buffer[i++] = segment_pointer;
+            strand_pointer = segment_pointer->get_next_helix();
+            if (strand_pointer != NULL) {
+                segment_pointer = strand_pointer->get_next_segment();
+            }
+            else {
+                segment_pointer = segment;    //to break the while-loop
+            }
+        }
+        while (segment_pointer != segment);
 
-	//delete all strands connected to loop
-	int j;
-	for (j=0; j<i; j++) {
-	    strand_pointer = segment_buffer[j]->get_next_helix();
-	    if (strand_pointer != NULL) {
-		strand_pointer->set_loop(NULL);
-		delete strand_pointer;
-	    }
-	}
+        //delete all strands connected to loop
+        int j;
+        for (j=0; j<i; j++) {
+            strand_pointer = segment_buffer[j]->get_next_helix();
+            if (strand_pointer != NULL) {
+                strand_pointer->set_loop(NULL);
+                delete strand_pointer;
+            }
+        }
 
-	//delete alle segments connected to loop
-	segment = NULL;
-	for (j=0; j<i; j++) {
-	    if (segment_buffer[j] != NULL) {
-		segment_buffer[j]->set_loop(NULL);
-		delete segment_buffer[j];
-	    }
-	}
+        //delete alle segments connected to loop
+        segment = NULL;
+        for (j=0; j<i; j++) {
+            if (segment_buffer[j] != NULL) {
+                segment_buffer[j]->set_loop(NULL);
+                delete segment_buffer[j];
+            }
+        }
     }
 }
 
@@ -442,9 +442,3 @@ SEC_helix::~SEC_helix() {
 SEC_root::~SEC_root() {
     delete (root_segment->get_loop());
 }
-
-
-
-
-
-

@@ -185,9 +185,9 @@ void SEC_region::count_bases(SEC_root *root) {
                     }
                 }
                 if (i<root->template_length) {
-      if (root->template_sequence[i] != '-' && root->template_sequence[i] != '.') {
+                    if (root->template_sequence[i] != '-' && root->template_sequence[i] != '.') {
                         goto take_pos;
-      }
+                    }
                 }
                 else {
                     goto take_pos;
