@@ -223,7 +223,7 @@ public void updateDetails (String probeInfo, String shortNames)
         else
             {
                 String probeSequenz = probeInfo.substring(0,komma1);
-                ta.append("Detailed hit list for probe: " + probeSequenz + "\n");
+                ta.append("Details for probe: " + probeSequenz + "\n");
                 int tm = 0;
                 for (int i = 0; i < probeSequenz.length(); i ++)
                     {
@@ -238,14 +238,30 @@ public void updateDetails (String probeInfo, String shortNames)
                     }
                 ta.append("%GC-Content:  " + (gc*100)/probeSequenz.length() + "%\n");
 
-                if (shortNames.length() != 0)
+                int snlen = shortNames.length();
+                
+                if (snlen != 0)
                     {
-                        int komma = 0;
-                        int begin = 0;
-                        while (begin < shortNames.length())
+                        int komma       = 0;
+                        int begin       = 0;
+                        int hit_count = 0;
+                        
+                        while (begin < snlen) { // detect number of hits
+                            komma                  = shortNames.indexOf(',', begin);                            
+                            if (komma == -1) komma = snlen;
+                            hit_count++;
+                            begin                  = komma+1;
+                        }
+                        
+                        ta.append("\nNumber of hits: "+hit_count+"\n");
+                        
+                        komma = 0;
+                        begin = 0;
+                        while (begin < snlen)
                             {
-                                komma = shortNames.indexOf(',', begin);
-                                if (komma == -1) komma = shortNames.length();
+                                komma                  = shortNames.indexOf(',', begin);
+                                if (komma == -1) komma = snlen;
+                                
                                 String sn = shortNames.substring(begin,komma);
                                 String details;
 
@@ -256,6 +272,9 @@ public void updateDetails (String probeInfo, String shortNames)
                                 begin = komma + 1;
                             }
                     }
+                else {
+                    ta.append("Error: probe does not match any species (internal error)");
+                }
 
                 // System.out.println("probeInfo:  " + probeInfo);
                 // System.out.println("probe sequence: " + probeSequenz);
