@@ -15,7 +15,7 @@
 
 void
 maerror(message)
-char *message;
+const char *message;
 /* memory allocation error handler */
 {
 	fprintf(stderr, "\nmemory allocation failure %s\n", message);

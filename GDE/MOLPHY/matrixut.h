@@ -17,10 +17,10 @@ typedef char *cvector, **cmatrix, ***ccube;
 
 
 /* Function Prototype Declarations */
- 
+
 #if defined(__STDC__) || defined(ANSI) /* GCC Ver.2.x */
 
-void maerror(char *message);
+void maerror(const char *message);
 fvector new_fvector(int n);
 fmatrix new_fmatrix(int nrow, int ncol);
 fcube new_fcube(int ntri, int nrow, int ncol);
