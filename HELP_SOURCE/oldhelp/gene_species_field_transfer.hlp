@@ -43,4 +43,6 @@ EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		No bugs known
+BUGS		When you export gene-species to a new database this database is marked as 'Arb-Genome-Database'.
+                We need to implement some kind of Database-Admin-Tool to change the database type.
+

@@ -310,14 +310,14 @@
       </xsl:call-template>
       <BODY LEFTMARGIN="10" TEXT="{$fontColor}" BGCOLOR="{$backgroundColor}" LINK="{$linkColor}" VLINK="{$visitedLinkColor}" ALINK="{$activeLinkColor}">
         <P align="right"><FONT size="-1">
-          This page was converted by <I>arb_help2xml</I> and may look strange.<BR/>
-          If you think it's really bad, please send a
+          This page was converted by <I>arb_help2xml</I> and may have a strange layout.<BR/>
+          If you think it&acute;s really bad, please send a mail to our
       <xsl:call-template name="insert-email-link">
-        <xsl:with-param name="linktext">mail</xsl:with-param>
+        <xsl:with-param name="linktext">help keeper</xsl:with-param>
         <xsl:with-param name="address">helpfeedback</xsl:with-param>
         <xsl:with-param name="subject" select="concat('Helppage ',$myname,' looks weird')"/>
       </xsl:call-template>
-          to our help keeper.
+          .
         </FONT></P>
         <TABLE border="{$tableBorder}" width="98%" align="center">
           <TR bgcolor="{$linkSectionsColor}">
