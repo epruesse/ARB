@@ -349,7 +349,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             awt_create_selection_list_on_trees(gb_main,aws,newawar);
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==CHOICE_SAI) {
             char *defopt=itemarg.textvalue;
@@ -357,7 +357,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             awt_create_selection_list_on_extendeds(gb_main,aws,newawar);
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==CHOICE_WEIGHTS) {
             char *defopt=itemarg.textvalue;
@@ -365,7 +365,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             void *id = awt_create_selection_list_on_extendeds(gb_main,aws,newawar,gde_filter_weights);
-            delete newawar;
+            free(newawar);
             aw_root->awar("tmp/gde/alignment")->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
         }
         if((AWinfo->gmenuitem->numargs<8) || GDE_odd(i)) aws->at_newline();
