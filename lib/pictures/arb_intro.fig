@@ -7,25 +7,22 @@ A4
 Single
 -2
 1200 2
-6 5040 2475 9225 3645
-4 1 -1 0 0 18 12 0.0000 4 180 4125 7140 2865 Oliver Strunk, Ralf Westram, Wolfgang Ludwig\001
-4 1 -1 0 0 18 10 0.0000 4 120 645 7140 2595 Authors:\001
-4 1 -1 0 0 18 10 0.0000 4 150 3210 7140 3255 M.May, S.Hermann, N.Stuckmann, O.Gross\001
-4 1 -1 0 0 18 10 0.0000 4 150 3165 7140 3600 W.Foerster, T.Ginhart, A.Vilbig, S.Gerbers\001
-4 1 -1 0 0 18 10 0.0000 4 150 2835 7140 3435 B.Nonhoff, M.Lenke, R.Jost, B.Reichel\001
-4 1 -1 0 0 18 10 0.0000 4 150 3390 7140 3075 Dr.Harald Meier, Gangolf Jobb, Lothar Richter\001
--6
 6 1485 2520 4005 3690
 4 1 -1 0 0 18 10 0.0000 4 150 1800 2745 2655 ARB is developed at the\001
 4 1 -1 0 0 18 12 0.0000 4 180 2460 2745 2880 Lehrstuhl fuer Mikrobiologie\001
 4 1 -1 0 0 18 10 0.0000 4 150 2295 2745 3060 Technical University of Munich\001
-4 1 -1 0 0 18 12 0.0000 4 180 2310 2745 3645 http://www.arb-home.de/\001
+4 1 -1 0 0 18 12 0.0000 4 180 2265 2745 3645 http://www.arb-home.de/\001
 4 1 -1 0 0 18 10 0.0000 4 150 675 2745 3240 Germany\001
 -6
 6 8025 4845 9300 5145
 4 0 -1 0 0 18 12 0.0000 4 135 540 8025 5070 Suffix\001
 4 0 -1 0 0 18 12 0.0000 4 165 525 8550 5145 $filter\001
 4 2 -1 0 0 18 12 0.0000 4 165 765 9300 5145 $to:filter\001
+-6
+6 5220 3150 9090 3690
+4 1 -1 0 0 18 10 0.0000 4 150 3825 7140 3300 M.May, S.Hermann, G.Jobb, N.Stuckmann, O.Gross\001
+4 1 -1 0 0 18 10 0.0000 4 150 3165 7140 3645 W.Foerster, T.Ginhart, A.Vilbig, S.Gerbers\001
+4 1 -1 0 0 18 10 0.0000 4 150 2835 7140 3480 B.Nonhoff, M.Lenke, R.Jost, B.Reichel\001
 -6
 2 1 0 2 -1 -1 0 0 -1 0.000 0 0 -1 0 0 2
 	 2700 2250 8190 2250
@@ -40,7 +37,7 @@ Single
 4 0 -1 0 0 18 12 0.0000 4 165 570 1425 1050 $close\001
 4 2 -1 0 0 18 12 0.0000 4 180 465 9450 1050 $help\001
 4 1 -1 0 0 18 12 0.0000 4 180 465 5400 975 $logo\001
-4 1 -1 0 0 18 14 0.0000 4 210 5190 5400 2175 ARB - A Software Environment for Sequence Data\001
+4 1 -1 0 0 18 14 0.0000 4 210 5130 5400 2175 ARB - A Software Environment for Sequence Data\001
 4 2 -1 0 0 18 12 0.0000 4 165 960 9375 9720 $to:XY:box\001
 4 0 -1 0 0 18 12 0.0000 4 165 690 9150 10170 $novice\001
 4 0 -1 0 0 18 12 0.0000 4 135 1800 7350 10095 Enable Novice Mode\001
@@ -50,3 +47,6 @@ Single
 4 0 -1 0 0 18 12 0.0000 4 165 540 4725 10118 $Y:del\001
 4 0 -1 0 0 18 12 0.0000 4 180 1320 1620 4455 $new_complex\001
 4 0 -1 0 0 18 12 0.0000 4 180 660 4455 4455 $merge\001
+4 1 -1 0 0 18 12 0.0000 4 180 4125 7140 2865 Oliver Strunk, Ralf Westram, Wolfgang Ludwig\001
+4 1 -1 0 0 18 10 0.0000 4 120 645 7140 2595 Authors:\001
+4 1 -1 0 0 18 11 0.0000 4 165 4005 7140 3075 Dr.Harald Meier, Yadhukumar, Lothar Richter\001
