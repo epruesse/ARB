@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <string.h>
 #include <ctype.h>
+#include <iostream>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -22,6 +23,8 @@
 
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
+
+using namespace std;
 
 #define PROBE_PREFIX_LENGTH 9
 #define PROBE_SUFFIX_LENGTH 9
@@ -52,7 +55,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                       (AW_CL)ntw,
                       cd2,
                       false,
-                      "#005500", 
+                      "#005500",
                       "Selected Probe$#FF0000",
                       "Foreground$#FFAA00",
                       "Probe$#FFFF00",
@@ -111,14 +114,14 @@ void SAI_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
 }
 
 static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
-    if (!in_colorDefChanged_callback) { 
+    if (!in_colorDefChanged_callback) {
         in_colorDefChanged_callback = true;
         unsigned char charUsed[256]; memset(charUsed,255,256);
         {
             for (int i=0; i<10 ; i++){
                 char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
                 for(int c=0; awarString_next[c]; ++c){
-                    charUsed[awarString_next[c]] = i;
+                    charUsed[(unsigned char)awarString_next[c]] = i;
                 }
                 free(awarString_next);
             }
@@ -126,7 +129,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
             char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
 
             for (int c = 0; awarString[c]; ++c) {
-                charUsed[awarString[c]] = awarNo;
+                charUsed[(unsigned char)awarString[c]] = awarNo;
             }
             free(awarString);
 
@@ -152,7 +155,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     awr->awar(AWAR_DISP_SAI)->touch(); // refreshes the display
 }
 
-static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) { 
+static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
     // repaints the canvas
     AWUSE(awr);
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
@@ -162,7 +165,7 @@ static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
 static void createSaiProbeAwars(AW_root *aw_root) {
     // creating awars specific for the painting routine
     aw_root->awar_int(AWAR_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
-   
+
     for (int i = 0; i < 10; i++){   // initialising 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"", AW_ROOT_DEFAULT);
        def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
@@ -170,7 +173,7 @@ static void createSaiProbeAwars(AW_root *aw_root) {
 }
 
 static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
-    // adding callbacks to the awars to refresh the display if recieved any changes 
+    // adding callbacks to the awars to refresh the display if recieved any changes
     awr->awar(AWAR_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_PROBE_LIST)    ->add_callback(refreshCanvas, (AW_CL)ntw);
@@ -195,7 +198,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
         saiColors = (char*)malloc(seqBufferSize);
         saiValues = (char*)malloc(seqBufferSize);
     }
-    
+
     memset(saiColors, '0'-1, seqSize);
     memset(saiValues, '0'-1, seqSize);
 
@@ -237,7 +240,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
                 {
 
                     // @@@ FIXME: build trans_table ONCE for each refresh only (not for each translation)
-                    
+
                     // build the translation table
                     memset(trans_table, '0'-1, 256);
                     for (int i = 0; i < SAI_CLR_COUNT; ++i) {
@@ -245,7 +248,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
                         int   clrRange = i + '0'; // configured values use '0' to '9' (unconfigured use '0'-1)
 
                         for (const char *d = def; *d; ++d) {
-                            trans_table[*d] = clrRange;
+                            trans_table[(unsigned char)*d] = clrRange;
                         }
                         free(def);
                     }
@@ -255,7 +258,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
                 int i, j;
                 for ( i = start, j = 0 ; i <= end; ++i) {
                     if ((seqData[i] != '.') && (seqData[i] != '-')) {
-                        saiColors[j] = trans_table[saiData[i]];
+                        saiColors[j] = trans_table[(unsigned char)saiData[i]];
                         saiValues[j] = saiData[i];
                         ++j;
                     }
