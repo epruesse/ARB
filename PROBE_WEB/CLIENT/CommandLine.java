@@ -76,19 +76,4 @@ public class CommandLine
         return (String) hm.get(optionName);
     }
 
-    public void printArgs() {
-        Set keys = hm.keySet();
-        System.out.println("OPTIONS:");
-        for (Iterator it = keys.iterator();it.hasNext();) {
-            System.out.println((String) it.next());
-        }
-
-        Set values = hm.entrySet();
-        System.out.println("VALUES:");
-        for (Iterator it = values.iterator();it.hasNext();) {
-            Object o = it.next();
-            if (o != null) System.out.println( o);
-            else System.out.println("Object null");
-        }
-    }
 }
