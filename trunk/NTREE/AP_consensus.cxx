@@ -923,6 +923,8 @@ AP_open_consensus_window( AW_root *aw_root)
  * -----------------------------------------------------------------
  */
 
+#define X() do { printf("X %s %i\n", __FILE__, __LINE__); fflush(stdout); } while(0)
+
 void CON_calc_max_freq_cb(AW_window *aw){
 
 	AW_root *awr=aw->get_root();
@@ -932,41 +934,49 @@ void CON_calc_max_freq_cb(AW_window *aw){
 	int onlymarked=1,isamino=1;
 	long no_gaps;
 
+    X();
 	GB_push_transaction(gb_main);
 
-	char *align=GBT_get_default_alignment(gb_main);
-	maxalignlen=GBT_get_alignment_len(gb_main,align);
-	no_gaps = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
+    X();
+	char *align = GBT_get_default_alignment(gb_main);
+	maxalignlen = GBT_get_alignment_len(gb_main,align);
+	no_gaps     = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
 
+    X();
 	if(maxalignlen<=0) {
 		GB_pop_transaction(gb_main);
 		aw_message("alignment doesn't exist!");
 		delete align;
 		return;
 	}
+    X();
 	isamino = GBT_is_alignment_protein(gb_main,align);
 
+    X();
 	aw_openstatus("Max. Frequency");
 	long nrofspecies;
 
+    X();
 	CON_maketables(convtable,statistic,maxalignlen,isamino);
-	nrofspecies =CON_makestatistic(statistic,convtable,align,onlymarked);
+	nrofspecies = CON_makestatistic(statistic,convtable,align,onlymarked);
 
-	int end = MAX_BASES;
-	if (isamino) end = MAX_AMINOS;
-	int pos;
-	char *result = new char[maxalignlen+1];
-	char *result2 = new char[maxalignlen+1];
-	result[maxalignlen] = 0;
+    X();
+	int   end            = MAX_BASES;
+	if (isamino) end     = MAX_AMINOS;
+	int   pos;
+	char *result         = new char[maxalignlen+1];
+	char *result2        = new char[maxalignlen+1];
+	result[maxalignlen]  = 0;
 	result2[maxalignlen] = 0;
 
+    X();
 	for (pos = 0 ; pos < maxalignlen; pos++ ){
-		int sum = 0;
-		int max = 0;
+		int sum                               = 0;
+		int max                               = 0;
 		for (i=0;i<end;i++) {
 			if (no_gaps && (i == convtable['-']) ) continue;
-			sum += statistic[i][pos];
-			if (statistic[i][pos] > max) max = statistic[i][pos];
+			sum                              += statistic[i][pos];
+			if (statistic[i][pos] > max) max  = statistic[i][pos];
 		}
 		if (sum == 0){
 			result[pos] = '=';
@@ -976,16 +986,19 @@ void CON_calc_max_freq_cb(AW_window *aw){
 			result2[pos] = "01234567890"[((100*max)/sum)%10];
 		}
 	}
-	GB_ERROR error = 0;
-	char *savename = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_string();
-	GBDATA *gb_extended = GBT_create_SAI(gb_main,savename);
+    X();
+	GB_ERROR  error       = 0;
+	char     *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_string();
+	GBDATA   *gb_extended = GBT_create_SAI(gb_main,savename);
 	delete savename;
-	GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
-	GBDATA *gb_data2 = GBT_add_data(gb_extended, align,"dat2", GB_STRING);
-	error = GB_write_string(gb_data,result);
-	if (!error) error = GB_write_string(gb_data2,result2);
-	GBDATA *gb_options= GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
+	GBDATA   *gb_data     = GBT_add_data(gb_extended, align,"data", GB_STRING);
+	GBDATA   *gb_data2    = GBT_add_data(gb_extended, align,"dat2", GB_STRING);
+	error                 = GB_write_string(gb_data,result);
+	if (!error) error     = GB_write_string(gb_data2,result2);
+	GBDATA   *gb_options  = GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
 	delete result;
+
+    X();
 	if (!error) {
 		char	buffer[2000];
 		sprintf (buffer,"MFQ: [species: %li] [exclude gaps: %li]",
@@ -994,12 +1007,16 @@ void CON_calc_max_freq_cb(AW_window *aw){
 	}
 
 
+    X();
 	GB_pop_transaction(gb_main);
 
+    X();
 	CON_cleartables(statistic,isamino);
 	aw_closestatus();
 	delete align;
 	if (error) aw_message(error);
+    X();
+
 }
 
 AW_window *
