@@ -21,10 +21,17 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
     register GBCONTAINER *gbc_father;
 
     gbd->flags2.update_in_server = 0;
+#if defined(DEBUG)
+    {
+    struct gb_header_flags *flags = &(GB_ARRAY_FLAGS(gbd));
+#endif                          /* DEBUG */
     if ( val > (GB_CHANGED)(int)GB_ARRAY_FLAGS(gbd).changed) {
         GB_ARRAY_FLAGS(gbd).changed = val;
         GB_ARRAY_FLAGS(gbd).ever_changed = 1;
     }
+#if defined(DEBUG)
+    }
+#endif /* DEBUG */
     gbc = GB_FATHER(gbd);
 
     if ((!gbc->index_of_touched_one_son) || gbc->index_of_touched_one_son == gbd->index+1) {
