@@ -8,8 +8,8 @@
 
 
 GB_ERROR SQ_calc_seq_quality(GBDATA *gb_main, const char *tree_name) {
-    const char *option = "value_of_evaluation";
-    // char *option = "value_of_evaluation"; // illegal! Bitte Warnungen NICHT ignorieren!
+
+    const char *option = "number_of_helix";//"value_of_evaluation";
 
     /*
       "option" is variable which is passed to function "SQ_get_value()".
@@ -23,6 +23,9 @@ GB_ERROR SQ_calc_seq_quality(GBDATA *gb_main, const char *tree_name) {
       percent_of_spaces
       percent_of_dots
       diff_from_average
+      number_of_helix
+      number_of_weak_helix
+      number_of_no_helix
       value_of_evaluation
     */
 
