@@ -79,7 +79,7 @@ depends: $(ARCHS:.dummy=.depend)
 		"AR = $(AR)" "ARLIB = $(ARLIB)" \
 		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" \
+		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)"
