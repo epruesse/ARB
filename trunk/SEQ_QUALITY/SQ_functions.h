@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.h                                         //
 //    Purpose   : Functions used for calculation of alignment quality    //
-//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Nov/23/2003 12:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -11,24 +11,21 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
-/* #ifndef SQ_GroupData */
-/* #include "SQ_GroupData.h" */
-/* #endif */
-#ifndef SQ_GROUPDATASEQ_H
-#include "SQ_GroupDataSeq.h"
-#endif
-
 #ifndef SQ_FUNCTIONS_H
 #define SQ_FUNCTIONS_H
+
+#ifndef SQ_GROUPADTA_H
+#include "SQ_GroupData.h"
+#endif
 
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
 
-GB_ERROR SQ_calc_sequence_structure(SQ_GroupDataSeq& globalData, GBDATA *gb_main, bool marked_only);
+GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only);
 
-GB_ERROR SQ_pass1(SQ_GroupDataSeq* globalData, GBDATA *gb_main);
+GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main);
 
-GB_ERROR SQ_pass2(SQ_GroupDataSeq* globalData, GBDATA *gb_main, bool marked_only);
+GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only);
 
 void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
 
@@ -60,4 +57,6 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
       for the final result.
     */
 
+#else
+#error SQ_functions.h included twice
 #endif
