@@ -33,12 +33,19 @@ menu:SAI
 menu:Incremental phylogeny
 #include <inc_fastdnaml.genmenu>
 
-menu:Phylogeny
-#include <desoete.genmenu>
+menu:Phylogeny_DistMatrix
 #include <phylip_dist_org.genmenu>
 #include <phylip_dist.genmenu>
+
+menu:Phylogeny_MaxParsimony
 #include <phylip_pars.genmenu>
-#include <phylip_ml.genmenu>
+
+menu:Phylogeny_MaxLikelyhood
 #include <fastdnaml.genmenu>
-#include <puzzle.genmenu>
+#include <phylip_ml.genmenu>
 #include <molphy.genmenu>
+
+menu:Phylogeny_Other
+#include <puzzle.genmenu>
+#include <desoete.genmenu>
+
