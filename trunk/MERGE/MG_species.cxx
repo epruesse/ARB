@@ -1104,11 +1104,12 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
     }
 
  end:
-    if(error){
+    if (error) {
         GB_abort_transaction(gb_merge);
         GB_abort_transaction(gb_dest);
         aw_message(error);
-    }else{
+    }
+    else {
         MG_transfer_fields_info();
         GB_commit_transaction(gb_merge);
         GB_commit_transaction(gb_dest);

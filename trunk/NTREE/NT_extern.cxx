@@ -202,8 +202,8 @@ void create_all_awars(AW_root *awr, AW_default def)
 
     awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
-#if defined(DEBUG)
-    awr->awar( AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
+#if defined(DEBUG) && 0
+    awr->awar(AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
 #endif // DEBUG
 
     create_insertchar_variables(awr,def);
