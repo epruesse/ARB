@@ -4,9 +4,11 @@ Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
 All rights reserved.
 */
 #define USE_ARB
-#ifndef GB_INCLUDED
-	typedef int *GBDATA;
-#endif
+// #ifndef GB_INCLUDED
+// typedef int *GBDATA;
+// #endif
+
+struct GBDATA;
 
 #define OWTOOLKIT_WARNING_DISABLED
 #include <xview/font.h>

@@ -22,8 +22,8 @@ typedef char    *GB_CPNTR;      /* points into a piece of mem */
 
 #define GBS_SPECIES_HASH_SIZE 100000L
 
-#ifndef GB_INCLUDED
-#define GB_INCLUDED
+// #ifndef GB_INCLUDED
+// #define GB_INCLUDED
 
 #define GB_CORE *(long *)0 =0
 #define GB_KEY_LEN_MAX  64 /* max. length of a key (a whole key path may be longer) */
@@ -285,7 +285,7 @@ extern "C" {
 }
 #endif
 
-#endif /*GB_INCLUDED*/
+// #endif /*GB_INCLUDED*/
 
 #define GB_INLINE
 
