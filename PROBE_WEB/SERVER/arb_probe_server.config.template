@@ -3,5 +3,5 @@
 
 # uncomment the following lines and set the correct values:
 # root_dir=/trance1/ARB/source/ARB/PROBE_SERVER
-# running_servers=15 16 17 18 19 20
+# running_servers=15,16,17,18,19,20
 
