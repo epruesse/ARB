@@ -59,52 +59,91 @@ int parse_species_file(char *filename)
     char buffer[256];
     buffer[255]= 0; // last byte NULL, avoids overflows
 
-    char *name, flag, comment; // pointers to the substrings in the buffer
+    char *name, *flag, *comment; // pointers to the substrings in the buffer
 
     ifstream iS;
-    iS.open(filename, ios_base::out);
+    iS.open(filename);
 
     if(iS) // file.open succeeded
     {
        while(!iS.eof()) // while there is unread data, do...
         {
+	    buffer[0]= 0;
+	    
 	    // read a line to:  char *buffer
-	    buffer= iS.getline(buffer, 255);
+	    iS.getline(buffer, 255);
 
 	    // the following lines split the buffer into 3 substrings by
 	    // exchanging the delimiter ':' with NULL.
 
-	    name= buffer;
+	    name= buffer; // first entry equals name
+	    flag= 0;
+	    comment= 0;
 	    
 	    if(name)
 	    {
-		flag= strchr(buffer, ':');
+		flag= strchr(buffer, ':'); // find dividing caracter
 
 		if(flag)
 		{
 		    flag[0]= 0;
-		    flag++;
+		    flag++; // set position of our flat string
 
-		    comment= strchr(flag, ':');
+		    comment= strchr(flag, ':'); // find next entry
 
 		    if(comment)
 		    {
 			comment[0]= 0;
-			comment++;
+			comment++; // set position of comment string
 		    }
 		}
 	    }
 	    
 	    //
-	    if(name && flag && buffer) // if the parsing worked, do...
+	    if(name && flag) // if the parsing worked, do...
 	    {
+
+		GBDATA *species = GB_find(GBT_get_species_data(gb_main), "species", 0, down_level);
+		
+		while(species)
+		{
+		    GBDATA *gb_name = GB_find(species, "name", 0, down_level);
+		    char *species_name = GB_read_string(gb_name);
+		    
+		    if(!strcmp(species_name, name))
+		    {	    
+			if (flag[0] == '1')
+			{
+			    GB_write_flag(species, 1);
+
+			    if(comment[0])
+			    {
+				GBDATA *ca_comment= GB_find(species, "ca_comment", 0, down_level);
+				if(!ca_comment) ca_comment= GB_create(species,"ca_comment",GB_STRING);
+			        GB_write_string(ca_comment, comment);
+			    }
+			}
+			else
+			{
+			    GB_write_flag(species, 0);
+
+			    if(comment[0])
+			    {
+				GBDATA *ca_comment= GB_find(species, "ca_comment", 0, down_level);
+				if(!ca_comment) ca_comment= GB_create(species,"ca_comment",GB_STRING);
+			        GB_write_string(ca_comment, comment);
+			    }
+			}
+		    }
+		    species = GB_find(species, "species", 0, this_level|search_next);
+		}
 	    }
 	}
     }
     else // failed to open file
     {
 	printf("error: unable to open file: %s\n", filename);
-	print_usage();
+	print_usage("ca_mark");
 	return -1;
     }
     
@@ -133,55 +172,8 @@ int main(int argc,char **argv)
 	return -1;
     }
 
-    // call return parse_species_file(argv[1]); here !!!
+    // call return parse_species_file here...
+    int retval= parse_species_file(argv[1]);
     
-
-    // gain access to the ARB database
-    GBDATA *gb_main = GB_open(":","r");
-    if (!gb_main)
-    {
-	printf("%s: error: you have to start an arbdb server first.\n", argv[0]);
-	return -1;
-    }
-
-    printf("%s: connected to arbdb server.\n", argv[0]);
-
-    GB_begin_transaction(gb_main);
-
-    GBDATA *species = GB_find(GBT_get_species_data(gb_main), "species", 0, down_level);
-
-    while(species)
-    {
-	//GBDATA *gb_name = GB_find(species, "name", 0, down_level);
-	//char *text = GB_read_string(gb_name);
-
-	//printf(" - species %s: ", text);
-
-	if (GB_read_flag(species))
-	{
-	    GBDATA *ca_comment= GB_find(species, "ca_comment", 0, down_level);
-	    if(!ca_comment) ca_comment= GB_create(species,"ca_comment",GB_STRING);
-	    GB_write_string(ca_comment,"I am UNmarked...");
-
-	    GB_write_flag(species, 0);
-	    //printf("UNmarked.\n");
-	}
-	else
-	{
-	    GBDATA *ca_comment= GB_find(species, "ca_comment", 0, down_level);
-	    if(!ca_comment) ca_comment= GB_create(species,"ca_comment",GB_STRING);
-	    GB_write_string(ca_comment,"I am marked...");
-
-	    GB_write_flag(species, 1);
-	    //printf("marked.\n");
-	}
-
-	species = GB_find(species, "species", 0, this_level|search_next);
-    }
-
-    GB_commit_transaction(gb_main);
-
-    GB_close(gb_main);
-
-    return 0;
+    return retval;
 }
