@@ -258,27 +258,24 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
     SEC_root *sec_root = SEC_GRAPHIC->sec_root;
     AWUSE(aws);
     const char *text = 0;
-    //    static int story = 0;
+
+    sec_root->show_constraints = 0;
 
     switch(mode){
         case AWT_MODE_ZOOM: {
             text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
-            sec_root->show_constraints = 0;
             break;
         }
         case AWT_MODE_MOVE: {
             text="HELIX MODE    LEFT: build helix   RIGHT: remove helix";
-            sec_root->show_constraints = 0;
             break;
         }
         case AWT_MODE_SETROOT: {
             text="SET ROOT MODE    LEFT: Set logical center of secondary structure";
-            sec_root->show_constraints = 0;
             break;
         }
         case AWT_MODE_ROT: {
             text="ROTATE MODE    LEFT: Rotate SUBhelix RIGHT: rotate strand";
-            sec_root->show_constraints = 0;
             break;
         }
         case AWT_MODE_MOD: {
@@ -288,7 +285,6 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
         }
         case AWT_MODE_LINE: {
             text="SET CURSOR MODE    LEFT: Set Cursor in ARB_EDIT4";
-            sec_root->show_constraints = 0;
             break;
         }
         default: {

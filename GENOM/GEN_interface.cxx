@@ -76,7 +76,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
             break;
         }
         default: {
-            gb_assert(0);
+            gen_assert(0);
             break;
         }
     }
@@ -103,7 +103,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
             break;
         }
         default: {
-            gb_assert(0);
+            gen_assert(0);
             break;
         }
     }
@@ -464,13 +464,13 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     ad_global_scannerroot = aws->get_root();
 
     aws->create_menu(       0,   "GENE",     "E", "spa_gene.hlp",  AD_F_ALL );
-    aws->insert_menu_topic("gene_delete",	"Delete",	"D","genadm_delete.hlp",	    AD_F_ALL,	(AW_CB)gene_delete_cb, 0, 0);
-    aws->insert_menu_topic("gene_rename",	"Rename ...",	"R","genadm_rename.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_gene_rename_window, 0);
-    aws->insert_menu_topic("gene_copy",		"Copy ...",	"C","genadm_copy.hlp",	        AD_F_ALL,	AW_POPUP, (AW_CL)create_gene_copy_window, 0);
-    aws->insert_menu_topic("gene_create",	"Create ...",	"R","genadm_create.hlp",	AD_F_ALL, 	AW_POPUP, (AW_CL)create_gene_create_window, 0);
+    aws->insert_menu_topic("gene_delete",	"Delete",	"D","spa_delete.hlp",	    AD_F_ALL,	(AW_CB)gene_delete_cb, 0, 0);
+    aws->insert_menu_topic("gene_rename",	"Rename ...",	"R","spa_rename.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_gene_rename_window, 0);
+    aws->insert_menu_topic("gene_copy",		"Copy ...",	"C","spa_copy.hlp",	        AD_F_ALL,	AW_POPUP, (AW_CL)create_gene_copy_window, 0);
+    aws->insert_menu_topic("gene_create",	"Create ...",	"R","spa_create.hlp",	AD_F_ALL, 	AW_POPUP, (AW_CL)create_gene_create_window, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "I", "gena_fields.hlp",  AD_F_ALL );
+    aws->create_menu(       0,   "FIELDS",     "I", "gene_fields.hlp",  AD_F_ALL );
     GEN_create_field_items(aws);
 
     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);

@@ -44,13 +44,13 @@ GEN_gene::~GEN_gene() {
 //  -----------------------------------------------------------------------------------------------------------------------------
 //      GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment)
 //  -----------------------------------------------------------------------------------------------------------------------------
-GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment, int lines) {
+GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment) {
     gb_main      = gb_main_;
     species_name = species_name_;
     gene_name    = gene_name_;
     error_reason = "";
-    length       = -1L;
-    bp_per_line  = -1L;
+//     length       = -1L;
+//     bp_per_line  = -1L;
 
     {
         GB_transaction  dummy(gb_main);
@@ -66,10 +66,10 @@ GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb
                 error_reason = GBS_global_string("Species '%s' has no gene-information", species_name.c_str());
             }
             else {
-                GBDATA *gb_seq = GBT_read_sequence(gb_species, genom_alignment);
-
-                length      = GB_read_count(gb_seq);// get sequence length
-                bp_per_line = length/lines;
+//                 GBDATA *gb_seq = GBT_read_sequence(gb_species, genom_alignment);
+//
+//                 length      = GB_read_count(gb_seq);// get sequence length
+//                 bp_per_line = length/lines;
 
                 while (gb_gene) {
                     gene_set.insert(GEN_gene(gb_gene, this));
