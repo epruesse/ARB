@@ -653,7 +653,9 @@ public:
 
     GBDATA *get_species_pointer() const { return species_pointer; }
     void set_species_pointer(GBDATA *gbd, int *clientdata);
-    void notify_deleted() { species_pointer=0; }
+    void notify_deleted() {
+        species_pointer=0;
+    }
 };
 
 // --------------------------------------------------------------------------------
@@ -702,7 +704,7 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual void remove_deleted_childs();
+    virtual bool remove_deleted_childs();
 
     // functions concerned with graphic output
     virtual ED4_returncode	adjust_clipping_rectangle(void);	//sets scrolling area in AW_MIDDLE_AREA
@@ -868,7 +870,7 @@ public:
     virtual void changed_by_database();
     virtual void deleted_from_database();
 
-    virtual void  remove_deleted_childs();
+    virtual bool  remove_deleted_childs();
 
     //functions concerned with graphics
     virtual ED4_returncode 	Show(int refresh_all=0, int is_cleared=0);
@@ -969,7 +971,7 @@ public:
     virtual void changed_by_database(void);
     virtual void deleted_from_database(void);
 
-    virtual void  remove_deleted_childs();
+    virtual bool  remove_deleted_childs();
 
     //functions concerning graphic output
     virtual ED4_returncode 	Show(int refresh_all=0, int is_cleared=0)=0;
@@ -1608,6 +1610,8 @@ public:
     const GBDATA *data() const { return gbdata; }
 
     int get_length() const { return 1+strlen(id); }
+
+    virtual bool remove_deleted_childs();
 };
 
 // --------------------------------------------------------------------------------
