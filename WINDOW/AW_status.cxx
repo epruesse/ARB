@@ -70,6 +70,7 @@ struct {
     int        hide;
     int        hide_delay;      // in seconds
     pid_t      pid;
+    AW_BOOL    is_child; // true in status window process 
     int        pipe_broken;
     int        err_no;
     AW_window *aws;
@@ -88,6 +89,7 @@ struct {
     0,                          // hide
     0,                          // hide_delay
     0,                          // pid
+    AW_FALSE,                   // is_child
     0,                          // pipe_broken
     0,                          // errno
     0,                          // aws
@@ -289,18 +291,14 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
         char *p = buffer;
         int   i = 0;
 
-        gauge = gauge*AW_GAUGE_SIZE/AW_GAUGE_GRANULARITY; // was : /256;
-
-        for (;i<gauge && i<AW_GAUGE_SIZE;++i) *p++ = '*';
+        int rough_gauge = (gauge*AW_GAUGE_SIZE)/AW_GAUGE_GRANULARITY;
+        for (;i<rough_gauge && i<AW_GAUGE_SIZE;++i) *p++ = '*';
         for (;i<AW_GAUGE_SIZE;++i) *p++ = '-';
 
-        //         for (;i<AW_GAUGE_SIZE;i++){
-        //             if (i<gauge) {
-        //                 *(p++) = '*';
-        //             }else{
-        //                 *(p++) = '-';
-        //             }
-        //         }
+        if (rough_gauge<AW_GAUGE_SIZE) {
+            int fine_gauge = (gauge*AW_GAUGE_SIZE*4)/AW_GAUGE_GRANULARITY;
+            buffer[rough_gauge]  = "-\\|/"[fine_gauge%4];
+        }
 
         *p  = 0;
         str = strdup(buffer);
@@ -355,10 +353,7 @@ static void aw_status_wait_for_open(int fd)
 }
 
 
-static void aw_status_timer_hide_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
-{
-    AWUSE(awr);AWUSE(cl1);AWUSE(cl2);
-
+static void aw_status_timer_hide_event(AW_root *, AW_CL, AW_CL) {
     if (aw_stg.hide) {
         aw_stg.aws->show();
         aw_stg.hide = 0;
@@ -384,15 +379,19 @@ static void aw_status_hide(AW_window *aws)
 }
 
 
-static void aw_status_timer_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
+static void aw_status_timer_event(AW_root *, AW_CL, AW_CL)
 {
-    AWUSE(awr);AWUSE(cl1);AWUSE(cl2);
-
-    if(aw_stg.mode == AW_STATUS_ABORT){
-        if(aw_message("Couldn't quit properly in time.\nDo you prefer to wait for the abortion or shall I kill the calculating process?",
-                      "WAIT,KILL") == 0){
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "in aw_status_timer_event\n"); fflush(stdout);
+#endif // TRACE_STATUS
+    if (aw_stg.mode == AW_STATUS_ABORT) {
+        if (aw_message("Couldn't quit properly in time.\n"
+                       "Do you prefer to wait for the abortion or shall I kill the calculating process?",
+                       "WAIT,KILL") == 0)
+        {
             return;
-        }else{
+        }
+        else {
             char buf[255];
             sprintf(buf, "kill -9 %i", aw_stg.pid);
             system(buf);
@@ -415,8 +414,10 @@ static void aw_status_kill(AW_window *aws)
     aw_stg.mode = AW_STATUS_ABORT;
 
     /** install timer event **/
-    aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY,
-                                        aw_status_timer_event, 0, 0);
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "add aw_status_timer_event with delay = %i\n", AW_STATUS_KILL_DELAY); fflush(stdout);
+#endif // TRACE_STATUS
+    aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0);
 }
 
 static void aw_refresh_tmp_message_display(AW_root *awr) {
@@ -514,7 +515,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     int         gaugeValue = 0;
 
 #if defined(TRACE_STATUS)
-    fprintf(stderr, "in aw_status_timer_listen_event\n"); fflush(stdout);
+    fprintf(stderr, "in aw_status_timer_listen_event (aw_stg.is_child=%i)\n", (int)aw_stg.is_child); fflush(stdout);
 #endif // TRACE_STATUS
 
     if (aw_stg.need_refresh && aw_stg.last_refresh_time != aw_stg.last_message_time) {
@@ -623,7 +624,7 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 #if defined(TRACE_STATUS)
     fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
 #endif // TRACE_STATUS
-    awr->add_timed_callback(delay,aw_status_timer_listen_event, 0, 0);
+    awr->add_timed_callback_never_disabled(delay,aw_status_timer_listen_event, 0, 0);
 }
 
 void aw_clear_message_cb(AW_window *aww)
@@ -673,7 +674,9 @@ void aw_initstatus( void )
         fprintf(stderr, "Forked status! (i am the child)\n"); fflush(stderr);
 #endif // TRACE_STATUS
 
-//         aw_status_wait_for_open(aw_stg.fd_to[0]);
+        aw_stg.is_child = AW_TRUE; // mark as child
+
+        //         aw_status_wait_for_open(aw_stg.fd_to[0]);
 
         AW_root *aw_root;
         aw_root = new AW_root;
@@ -743,9 +746,8 @@ void aw_initstatus( void )
 
         aw_status_wait_for_open(aw_stg.fd_to[0]);
 
-        // install irq
-        // aws->get_root()->add_timed_callback(AW_STATUS_LISTEN_DELAY, aw_status_timer_listen_event, 0, 0);
-        aws->get_root()->add_timed_callback(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
+        // install callback
+        aws->get_root()->add_timed_callback_never_disabled(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
 
         aw_root->main_loop(); // never returns
     }
@@ -836,11 +838,14 @@ void message_cb( AW_window *aw, AW_CL cd1 ) {
 
 void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "in aw_message_timer_listen_event\n"); fflush(stdout);
+#endif // TRACE_STATUS
+
     AW_window *aww = ((AW_window *)cl1);
     if (aww->get_show()){
         aww->show();
-        awr->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,
-                                aw_message_timer_listen_event, cl1, cl2);
+        awr->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, cl1, cl2);
     }
 }
 
@@ -979,7 +984,10 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
     free(button_list);
     aw_message_cb_result = -13;
 
-    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
+#endif // TRACE_STATUS
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
     while (aw_message_cb_result == -13) {
         root->process_events();
@@ -1034,11 +1042,11 @@ void input_cb( AW_window *aw, AW_CL cd1 ) {
 
     aw_input_cb_result        = 0;
     aw_string_selected_button = int(cd1);
-    
+
     if (cd1<0) return; // cancel button -> no result
 
     // create heap-copy of result -> client will get the owner
-    aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string(); 
+    aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
 
     return;
 }
@@ -1102,7 +1110,7 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,   aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
     while (aw_input_cb_result == dummy) {
         root->process_events();
@@ -1229,7 +1237,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,   aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
 
     char *last_input = root->awar(AW_INPUT_AWAR)->read_string();
@@ -1324,7 +1332,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
     char dummy[] = "";
     aw_input_cb_result = dummy;
 
-    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,   aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
     while (aw_input_cb_result == dummy) {
         root->process_events();
