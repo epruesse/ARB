@@ -241,45 +241,7 @@ extern "C" {
 
 extern long GB_NOVICE;
 
-    /*********** Commands ***********/
-#define GBL_MAX_ARGUMENTS   50
-
-/*
-#define GBL_COMMAND GB_ERROR (*)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, \
-        int argcparam,GBL *argvparam, \
-        int *argcout, GBL **argvout)
-
-#define GBL_COMMAND_DECL(x) GB_ERROR (*x)(GBDATA *gb_ref, char *com, int argcinput, GBL *argvinput, \
-        int argcparam,GBL *argvparam, \
-        int *argcout, GBL **argvout)
-*/
-
-typedef struct gbl_struct {
-    char *str;
-} GBL;
-
-typedef struct gbl_client_data {
-    const char *default_tree_name;
-} GBL_client_data;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-    typedef GB_ERROR (*GBL_COMMAND)(GBDATA *gb_ref, char *com, GBL_client_data *cd, int argcinput, GBL *argvinput,
-                                    int argcparam,GBL *argvparam,
-                                    int *argcout, GBL **argvout);
-
-#ifdef __cplusplus
-}
-#endif
-
-struct GBL_command_table {
-    const char *command_identifier;
-    GBL_COMMAND function;
-};
+struct GBL_command_table;
 
 typedef struct GBDATA_SET_STRUCT {
     long nitems;
