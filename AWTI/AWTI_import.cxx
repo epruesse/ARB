@@ -580,9 +580,9 @@ void AWTC_import_go_cb(AW_window *aww)
 {
     char buffer[1024];
     AW_root *awr = aww->get_root();
-    bool is_genom_db;
+    int db_import_format;
     {
-        bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
+        int read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
 
         {
             GB_transaction dummy(GB_MAIN);
@@ -592,11 +592,11 @@ void AWTC_import_go_cb(AW_window *aww)
                 gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
                 GB_write_int(gb_genom_db, read_genom_db);
             }
-            is_genom_db = GB_read_int(gb_genom_db);
+            db_import_format = GB_read_int(gb_genom_db);
         }
 
-        if (read_genom_db!=is_genom_db) {
-            if (is_genom_db) {
+        if (read_genom_db!=db_import_format) {
+            if (db_import_format < 2) {
                 aw_message("You can only import whole genom sequences (GENBANK/EMBL-format) into a genom database.");
             }
             else {
@@ -608,7 +608,7 @@ void AWTC_import_go_cb(AW_window *aww)
 
     GB_ERROR error = 0;
     char *file = 0;
-    if (!is_genom_db) {
+    if (!db_import_format) {
         file = awr->awar(AWAR_FORM"/file_name")->read_string();
         if (!strlen(file)) {
             delete file;
@@ -651,7 +651,7 @@ void AWTC_import_go_cb(AW_window *aww)
         char *ali_type;
         ali_type = awr->awar(AWAR_ALI_TYPE)->read_string();
 
-        if (is_genom_db && strcmp(ali_type, "dna")!=0) {
+        if (db_import_format && strcmp(ali_type, "dna")!=0) {
             error = "You must set the alignment type to dna when importing genom sequences.";
         }
         else {
@@ -659,10 +659,10 @@ void AWTC_import_go_cb(AW_window *aww)
         }
         delete ali_type;
     }
-
+    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int());
     bool noautonames = false; // strange name!
     if (!error) {
-          if (is_genom_db) {
+          if (db_import_format < 2) {
               char *mask   = awr->awar(AWAR_FILE)->read_string();
               char **fnames = GBS_read_dir(mask, 0);
 
@@ -673,7 +673,10 @@ void AWTC_import_go_cb(AW_window *aww)
                   aw_openstatus("Reading input files");
                   for (int count = 0; !error && fnames[count]; ++count) {
                       aw_status(GBS_global_string("Reading %s", fnames[count]));
-                      error = GEN_read(GB_MAIN, fnames[count], ali_name);
+		      if (toggle_value==0)
+			  error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
+		      if (toggle_value==1)
+			  error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
                   }
                   aw_closestatus();
               }
@@ -727,7 +730,7 @@ void AWTC_import_go_cb(AW_window *aww)
     aw_openstatus("Checking and Scanning database");
     aw_status("First Pass: Check entries");
     awt_selection_list_rescan(GB_MAIN,AWT_NDS_FILTER);
-	if (is_genom_db) {
+	if (db_import_format) {
 		awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER);
 	}
     GBT_mark_all(GB_MAIN,1);
@@ -754,7 +757,7 @@ void AWTC_import_go_cb(AW_window *aww)
     GB_change_my_security(GB_MAIN,0,"");
     GB_commit_transaction(GB_MAIN);
 
-//     if (!is_genom_db) {
+//     if (!db_import_format) {
         awtcig.func(awr, awtcig.cd1,awtcig.cd2);
 //     }
 }
