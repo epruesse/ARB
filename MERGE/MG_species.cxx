@@ -965,6 +965,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         char *type2 = GBT_get_alignment_type_string(gb_dest,D_alignment_names[s]);
         if (!strcmp(type, type2)){
             D_alignment_names[d++] = D_alignment_names[s];
+            D_alignment_names[s]   = 0;
         }else{
             free(D_alignment_names[s]);
             D_alignment_names[s] = 0;
@@ -1009,12 +1010,12 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 b = GBS_strclose(str,0);
                 aliid = aw_message("There are more than one possible alignment targets\n"
                                    "Choose one destination alignment or ABORT",b);
+                free(b);
                 if (aliid >= d) {
                     error = "Operation Aborted";
                     break;
                 }
                 dest = D_alignment_names[aliid];
-                free(b);
             }
             break;
     };
