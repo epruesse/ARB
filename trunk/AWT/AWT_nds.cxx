@@ -16,133 +16,205 @@
 #include "awt_config_manager.hxx"
 
 #define NDS_COUNT 10
+
+#if defined(DEBUG)
+#define NDS_STRING_SIZE 200
+#else
 #define NDS_STRING_SIZE 4000
+#endif // DEBUG
 
 struct make_node_text_struct {
-    char  buf[NDS_STRING_SIZE];
-    char  zbuf[NDS_COUNT];
-    long  lengths[NDS_COUNT];
-    long  rek[NDS_COUNT];
-    char *dkeys[NDS_COUNT];
-    char *parsing[NDS_COUNT];
-    long  inherit[NDS_COUNT];
-    long  count;
-    int   errorclip;
+    char  buf[NDS_STRING_SIZE]; // buffer used to generate output
+    char *bp;
+    int   space_left;
+
+    long count;
+    int  show_errors;           // how many errors to show
+
+    long  lengths[NDS_COUNT];   // length of generated string
+    char *dkeys[NDS_COUNT];     // database field name (may be empty)
+    bool  rek[NDS_COUNT];       // 1->key is hierarchical (e.g. 'ali_16s/data')
+    char *parsing[NDS_COUNT];   // ACI/SRT program
+    bool  at_group[NDS_COUNT];  // whether string shall appear at group NDS entries
+    bool  at_leaf[NDS_COUNT];   // whether string shall appear at leaf NDS entries
+
+    // long  inherit[NDS_COUNT];
+    // char  zbuf[NDS_COUNT];
+
+    void init_buffer() {
+        bp         = buf;
+        space_left = NDS_STRING_SIZE-1;
+    }
+    char *get_buffer() {
+        bp[0] = 0;
+        return buf;
+    }
+
+    void insert_overflow_warning() {
+        awt_assert(space_left >= 0); // <0 means 'already warned'
+        while (space_left) {
+            *bp++ = ' ';
+            space_left--;
+        }
+
+        static const char *warning  = ".. <string too long - truncated>";
+        static int         warn_len = 0;
+        if (!warn_len) warn_len = strlen(warning);
+
+        strcpy(buf+(NDS_STRING_SIZE-warn_len-1), warning);
+    }
+
+    void append(char c) {
+        if (space_left >= 1) {
+            *bp++ = c;
+            space_left--;
+        }
+        else if (!space_left) {
+            insert_overflow_warning();
+        }
+    }
+    void append(const char *str, int length = -1) {
+        awt_assert(str);
+        if (length == -1) length = strlen(str);
+        awt_assert(int(strlen(str)) == length);
+
+        if (space_left >= length) {
+            strcpy(bp, str);
+            bp         += length;
+            space_left -= length;
+        }
+        else if (space_left >= 0) {
+            insert_overflow_warning();
+        }
+    }
 
 } *awt_nds_ms = 0;
 
-void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main)
-{
-    GBDATA *gb_arb_presets;
-    GBDATA *gb_viewkey = 0;
-    GBDATA *gb_inherit;
-    GBDATA *gb_flag1;
-    GBDATA *gb_len1;
-    GBDATA *gb_pars;
-    GBDATA *gb_key_text;
+inline const char *viewkeyAwarName(int i, const char *name) {
+    return GBS_global_string("tmp/viewkeys/viewkey_%i/%s", i, name);
+}
 
+inline AW_awar *viewkeyAwar(AW_root *aw_root,AW_default awdef,int i, const char *name, bool string_awar) {
+    const char *awar_name = viewkeyAwarName(i, name);
+    AW_awar    *awar      = 0;
+    if (string_awar) awar = aw_root->awar_string(awar_name, "", awdef);
+    else        awar      = aw_root->awar_int(awar_name, 0, awdef);
+    return awar;
+}
+
+void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
     GB_push_transaction(gb_main);
-    gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
-    int i;
-    for (   i=0;i<NDS_COUNT; i++) {
-        char buf[256];
-        memset(buf,0,256);
 
-        if (gb_viewkey) {
-            gb_viewkey = GB_find(gb_viewkey,"viewkey",0,this_level|search_next);
-        }else{
-            gb_viewkey = GB_find(gb_arb_presets,"viewkey",0,down_level);
-        }
-        if (!gb_viewkey){
-            gb_viewkey = GB_create_container(gb_arb_presets,"viewkey");
-        }
+    GBDATA *gb_viewkey     = 0;
+    GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
 
-        gb_key_text = GB_find( gb_viewkey, "key_text",0,down_level);
-        if (!gb_key_text) {
-            gb_key_text = GB_create(gb_viewkey,"key_text",GB_STRING);
-            switch(i){
-                case 1:
-                    GB_write_string(gb_key_text,"full_name");
-                    break;
-                case 2:
-                    GB_write_string(gb_key_text,"group_name");
-                    break;
-                case 3:
-                    GB_write_string(gb_key_text,"acc");
-                    break;
-                case 4:
-                    GB_write_string(gb_key_text,"date");
-                    break;
-                default:
-                    GB_write_string(gb_key_text,"name");
-                    break;
+    for (int i = 0; i<NDS_COUNT; ++i) {
+        gb_viewkey = gb_viewkey
+            ? GB_find(gb_viewkey,"viewkey",0,this_level|search_next)
+            : GB_find(gb_arb_presets,"viewkey",0,down_level);
+
+        if (!gb_viewkey) gb_viewkey = GB_create_container(gb_arb_presets,"viewkey");
+
+        {
+            int  group             = 0;
+            int  leaf              = 0;
+            bool was_group_name    = false;
+            int  default_len       = 30;
+
+            GBDATA *gb_key_text = GB_find(gb_viewkey, "key_text", 0, down_level);
+            if (!gb_key_text) {
+                gb_key_text        = GB_create(gb_viewkey,"key_text",GB_STRING);
+                const char *wanted = "";
+                switch(i){
+                    case 0: wanted = "name"; default_len = 12; leaf = 1; break;
+                    case 1: wanted = "full_name"; leaf = 1; break;
+                    case 2: wanted = ""; was_group_name = true; break;
+                    case 3: wanted = "acc"; default_len = 20; leaf = 1; break;
+                    case 4: wanted = "date"; break;
+                }
+                GB_write_string(gb_key_text, wanted);
             }
-        }
-        sprintf(buf,"tmp/viewkey_%i/key_text",i);
-        aw_root->awar_string(buf,"",awdef);
-        aw_root->awar(buf)->map((void *)gb_key_text);
 
-        gb_pars = GB_find( gb_viewkey, "pars",0,down_level);
-        if (!gb_pars) {
-            gb_pars = GB_create(gb_viewkey,"pars",GB_STRING);
-            GB_write_string(gb_pars,"");
-        }
-        sprintf(buf,"tmp/viewkey_%i/pars",i);
-        aw_root->awar_string(buf,"",awdef);
-        aw_root->awar(buf)->map((void *)gb_pars);
-
-        gb_flag1 = GB_find( gb_viewkey, "flag1",0,down_level);
-        if (!gb_flag1) {
-            gb_flag1 = GB_create(gb_viewkey,"flag1",GB_INT);
-            if (i<=2){
-                GB_write_int(gb_flag1,1);
-            }else{
-                GB_write_int(gb_flag1,0);
+            if (strcmp(GB_read_char_pntr(gb_key_text), "group_name") == 0) {
+                GB_write_string(gb_key_text, "");
+                was_group_name = true; // means: change group/leaf + add 'taxonomy(1)' to ACI
             }
-        }
-        sprintf(buf,"tmp/viewkey_%i/flag1",i);
-        aw_root->awar_int(buf,0,awdef);
-        aw_root->awar(buf)->map((void *)gb_flag1);
 
-        gb_len1 = GB_find( gb_viewkey, "len1",0,down_level);
-        if (!gb_len1) {
-            gb_len1 = GB_create(gb_viewkey,"len1",GB_INT);
-            GB_write_int(gb_len1,30);
-        }
-        sprintf(buf,"tmp/viewkey_%i/len1",i);
-        aw_root->awar_int(buf,0,awdef);
-        aw_root->awar(buf)->set_minmax(0,NDS_STRING_SIZE);
-        aw_root->awar(buf)->map((void *)gb_len1);
+            GBDATA *gb_len1  = GB_find( gb_viewkey, "len1",  0, down_level);
+            GBDATA *gb_pars  = GB_find( gb_viewkey, "pars",  0, down_level);
 
-        gb_inherit = GB_find( gb_viewkey, "inherit",0,down_level);
-        if (!gb_inherit) {
-            gb_inherit = GB_create(gb_viewkey,"inherit",GB_INT);
-            GB_write_int(gb_inherit,0);
+            if (!gb_len1)  { gb_len1 = GB_create(gb_viewkey, "len1",  GB_INT   ); GB_write_int(gb_len1, default_len); }
+            if (!gb_pars ) { gb_pars  = GB_create(gb_viewkey, "pars",  GB_STRING); GB_write_string(gb_pars, ""); }
+
+            if (was_group_name) {
+                group = 1;
+                leaf  = 0;
+
+                const char *pars = GB_read_char_pntr(gb_pars);
+
+                if (pars[0] == 0) pars        = "taxonomy(1)"; // empty ACI/SRT
+                else if (pars[0] == ':') pars = GBS_global_string("taxonomy(1)|%s", pars); // was an SRT -> unsure what to do
+                else if (pars[0] == '|') pars = GBS_global_string("taxonomy(1)%s", pars); // was an ACI -> prefix taxonomy
+                else pars                     = GBS_global_string("taxonomy(1)|%s", pars); // other ACIs -> same
+
+                GB_write_string(gb_pars, pars);
+            }
+
+            {
+                GBDATA *gb_flag1 = GB_find( gb_viewkey, "flag1", 0, down_level);
+                if (gb_flag1) {
+                    if (GB_read_int(gb_flag1)) { // obsolete
+                        leaf = 1;
+                    }
+                    GB_ERROR error = GB_delete(gb_flag1);
+                    if (error) aw_message(error);
+                }
+            }
+
+            {
+                GBDATA *gb_inherit = GB_find(gb_viewkey, "inherit", 0, down_level);
+                if (gb_inherit) { // 'inherit' is old NDS style -> convert & delete
+                    if (was_group_name && GB_read_int(gb_inherit)) leaf = 1;
+                    GB_ERROR error = GB_delete(gb_inherit);
+                    if (error) aw_message(error);
+                }
+            }
+
+            GBDATA *gb_group = GB_find(gb_viewkey, "group", 0, down_level);
+            GBDATA *gb_leaf  = GB_find(gb_viewkey, "leaf", 0, down_level);
+            if (!gb_group) { gb_group = GB_create(gb_viewkey, "group", GB_INT); GB_write_int(gb_group, group ); }
+            if (!gb_leaf)  { gb_leaf = GB_create(gb_viewkey, "leaf",  GB_INT); GB_write_int(gb_leaf,  leaf ); }
+
+            // create awars mapped to above db-entries:
+
+            AW_awar *Awar;
+            Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true ); Awar->map((void*)gb_key_text);
+            Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true ); Awar->map((void*)gb_pars    );
+            Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map((void*)gb_len1    );
+            Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map((void*)gb_group   );
+            Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map((void*)gb_leaf    );
         }
-        sprintf(buf,"tmp/viewkey_%i/inherit",i);
-        aw_root->awar_int(buf,0,awdef);
-        aw_root->awar(buf)->map((void *)gb_inherit);
     }
+
+    // delete any additional viewkeys (should not occur)
     GBDATA *gb_next;
     while ( (gb_next = GB_find(gb_viewkey,"viewkey",0,this_level|search_next)) ) {
         GB_ERROR error = GB_delete(gb_next);
-        if (error) {
-            aw_message(error);
-            break;
-        }
+        if (error) { aw_message(error); break; }
     }
-    aw_root->awar_string("tmp/viewkey/key_text","",awdef);
+    aw_root->awar_string("tmp/viewkeys/key_text_select","",awdef);
     GB_pop_transaction(gb_main);
 }
+
 void awt_pop_down_select_nds(AW_root *,AW_window *aww){
     aww->hide();
 }
 
-void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
+static void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 {
     static AW_window *win = 0;
     AW_root *aw_root = aww->get_root();
-    aw_root->awar("tmp/viewkey/key_text")->map(key_text);
+    aw_root->awar("tmp/viewkeys/key_text_select")->map(key_text);
     if (!win) {
         AW_window_simple *aws = new AW_window_simple;
         aws->init( aw_root, "NDS", "NDS_SELECT");
@@ -154,7 +226,7 @@ void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
         aws->create_button("CLOSE", "CLOSE","C");
 
         awt_create_selection_list_on_scandb((GBDATA *)cgb_main,
-                                            (AW_window*)aws,"tmp/viewkey/key_text",
+                                            (AW_window*)aws,"tmp/viewkeys/key_text_select",
                                             AWT_NDS_FILTER,
                                             "scandb","rescandb", &AWT_species_selector, 20, 10);
         //aw_root->awar(key_text)->add_callback((AW_RCB1)awt_pop_down_select_nds,(AW_CL)aws);
@@ -217,12 +289,11 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
 static void nds_init_config(AW_window *aww) {
     AWT_reset_configDefinition(aww->get_root());
     for (int i = 0; i<NDS_COUNT; ++i) {
-        char buf[256];
-        sprintf(buf,"tmp/viewkey_%i/flag1",i); AWT_add_configDefinition(buf, "active", i);
-        sprintf(buf,"tmp/viewkey_%i/key_text",i); AWT_add_configDefinition(buf, "key_text", i);
-        sprintf(buf,"tmp/viewkey_%i/inherit",i); AWT_add_configDefinition(buf, "inherit", i);
-        sprintf(buf,"tmp/viewkey_%i/len1",i); AWT_add_configDefinition(buf, "len1", i);
-        sprintf(buf,"tmp/viewkey_%i/pars",i); AWT_add_configDefinition(buf, "pars", i);
+        AWT_add_configDefinition(viewkeyAwarName(i, "flag1"), "active", i);
+        AWT_add_configDefinition(viewkeyAwarName(i, "key_text"), "key_text", i);
+        AWT_add_configDefinition(viewkeyAwarName(i, "inherit"), "inherit", i);
+        AWT_add_configDefinition(viewkeyAwarName(i, "len1"), "len1", i);
+        AWT_add_configDefinition(viewkeyAwarName(i, "pars"), "pars", i);
     }
 }
 
@@ -263,64 +334,76 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
     aws->at_newline();
 
 
-    int showx,fieldselectx,fieldx, inheritx,columnx,srtx,srtux;
+    // int showx,fieldselectx,fieldx, inheritx,columnx,srtx,srtux;
+    int leafx, groupx, fieldselectx, fieldx, columnx, srtx, srtux;
 
     aws->auto_space(10,0);
 
     int i;
     for (   i=0;i<NDS_COUNT; i++) {
-        char buf[256];
+        // aws->get_at_position( &showx,&dummy );
+        // aws->create_toggle(viewkeyAwarName(i, "flag1"));
 
-        sprintf(buf,"tmp/viewkey_%i/flag1",i);
-        aws->get_at_position( &showx,&dummy );
-        aws->create_toggle(buf);
+        aws->get_at_position( &leafx,&dummy );
+        aws->create_toggle(viewkeyAwarName(i, "leaf"));
 
-        aws->button_length(20);
-        sprintf(buf,"tmp/viewkey_%i/key_text",i);
-        aws->get_at_position( &fieldx,&dummy );
-        aws->create_input_field(buf,15);
+        aws->get_at_position( &groupx,&dummy );
+        aws->create_toggle(viewkeyAwarName(i, "group"));
 
-        aws->button_length(0);
-        aws->callback((AW_CB)AWT_create_select_nds_window, (AW_CL)strdup(buf),cgb_main);
-        aws->get_at_position( &fieldselectx,&dummy );
-        aws->create_button("SELECT_NDS","S");
+        {
+            const char *awar_name = viewkeyAwarName(i, "key_text");
 
-        sprintf(buf,"tmp/viewkey_%i/inherit",i);
-        aws->get_at_position( &inheritx,&dummy );
-        aws->create_toggle(buf);
+            aws->button_length(20);
+            aws->get_at_position( &fieldx,&dummy );
+            aws->create_input_field(awar_name,15);
 
-        sprintf(buf,"tmp/viewkey_%i/len1",i);
+            aws->button_length(0);
+            aws->callback((AW_CB)AWT_create_select_nds_window, (AW_CL)strdup(awar_name),cgb_main);
+            aws->get_at_position( &fieldselectx,&dummy );
+            aws->create_button("SELECT_NDS","S");
+        }
+
+        // aws->get_at_position( &inheritx,&dummy );
+        // aws->create_toggle(viewkeyAwarName(i, "inherit"));
+
         aws->get_at_position( &columnx,&dummy );
-        aws->create_input_field(buf,4);
+        aws->create_input_field(viewkeyAwarName(i, "len1"),4);
 
-        sprintf(buf,"tmp/viewkey_%i/pars",i);
-        aws->get_at_position( &srtx,&dummy );
+        {
+            const char *awar_name = viewkeyAwarName(i, "pars");
 
-        aws->button_length(0);
+            aws->get_at_position( &srtx,&dummy );
+            aws->button_length(0);
+            aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(awar_name),0);
+            aws->create_button("SELECT_SRTACI", "S","S");
 
-        aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(buf),0);
-        aws->create_button("SELECT_SRTACI", "S","S");
+            aws->get_at_position( &srtux,&dummy );
+            aws->at_set_to(AW_TRUE, AW_FALSE, -7, 30);
+            aws->create_input_field(awar_name,40);
+        }
 
-        aws->get_at_position( &srtux,&dummy );
-        aws->at_set_to(AW_TRUE, AW_FALSE, -7, 30);
-        aws->create_input_field(buf,40);
         aws->at_unset_to();
-
         aws->at_newline();
     }
-    aws->at(showx,closey);
 
-    aws->at_x(fieldselectx);
-    aws->create_button(0,"SEL");
+    aws->at(leafx,closey);
 
-    aws->at_x(showx);
-    aws->create_button(0,"SHOW");
+    aws->at_x(leafx);
+    aws->create_button(0,"LEAF");
+    aws->at_x(groupx);
+    aws->create_button(0,"GRP.");
+
+    // aws->at_x(showx);
+    // aws->create_button(0,"SHOW");
 
     aws->at_x(fieldx);
     aws->create_button(0,"FIELD");
 
-    aws->at_x(inheritx);
-    aws->create_button(0,"INH.");
+    aws->at_x(fieldselectx);
+    aws->create_button(0,"SEL");
+
+    // aws->at_x(inheritx);
+    // aws->create_button(0,"INH.");
 
     aws->at_x(columnx);
     aws->create_button(0,"WIDTH");
@@ -338,12 +421,8 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 
 
 void make_node_text_init(GBDATA *gb_main){
-    GBDATA     *gbz,*gbe;
-    const char *sf, *sl;
-    int         count;
-
-    sf = "flag1";
-    sl = "len1";
+    GBDATA *gbz,*gbe;
+    int     count;
 
     if (!awt_nds_ms) awt_nds_ms = (struct make_node_text_struct *) GB_calloc(sizeof(struct make_node_text_struct),1);
 
@@ -355,17 +434,19 @@ void make_node_text_init(GBDATA *gb_main){
          gbz  = GB_find(gbz, "viewkey", NULL, this_level + search_next))
     {
         /* toggle set ? */
-        if (GB_read_int(GB_find(gbz, sf, NULL, down_level))) {
+        bool at_leaf = GB_read_int(GB_find(gbz, "leaf", NULL, down_level));
+        bool at_group = GB_read_int(GB_find(gbz, "group", NULL, down_level));
+
+
+        if (at_leaf || at_group) {
             if (awt_nds_ms->dkeys[count]) free(awt_nds_ms->dkeys[count]);
             awt_nds_ms->dkeys[count] = GB_read_string(GB_find(gbz, "key_text", NULL, down_level));
-            if (GB_first_non_key_char(awt_nds_ms->dkeys[count])) {
-                awt_nds_ms->rek[count] = 1;
-            }
-            else {
-                awt_nds_ms->rek[count] = 0;
-            }
-            awt_nds_ms->lengths[count] = GB_read_int(GB_find(gbz, sl, NULL, down_level));
-            awt_nds_ms->inherit[count] = GB_read_int(GB_find(gbz, "inherit", NULL, down_level));
+
+            awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
+            awt_nds_ms->lengths[count]  = GB_read_int(GB_find(gbz, "len1", NULL, down_level));
+            awt_nds_ms->at_leaf[count]  = at_leaf;
+            awt_nds_ms->at_group[count] = at_group;
+
             gbe = GB_find(gbz, "pars", NULL, down_level);
             if (awt_nds_ms->parsing[count]) {
                 free(awt_nds_ms->parsing[count]);
@@ -375,8 +456,8 @@ void make_node_text_init(GBDATA *gb_main){
             count++;
         }
     }
-    awt_nds_ms->errorclip = 0;
-    awt_nds_ms->count = count;
+    awt_nds_ms->show_errors = 10;
+    awt_nds_ms->count       = count;
 }
 
 enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
@@ -385,171 +466,272 @@ enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
 // #define QUOTE_NDS_STRING
 #endif // DEBUG
 
-char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species)
+    // GBT_TREE *father;
+//         if (!gbe && awt_nds_ms->inherit[i] && species ) {
+//             for (   father = species->father; father && !gbe; father = father->father) {
+//                 if (father->gb_node){
+//                     gbe = GB_find(father->gb_node, awt_nds_ms->dkeys[i], NULL, down_level);
+//                 }
+//             }
+//         }
+    // char *p;
+    // long  j;
+
+//         if (gbe) {
+//             field_was_printed = true;
+
+//             switch (GB_read_type(gbe)) {
+//                 case GB_INT:
+//                     if (mode == MNTN_SPACED) {
+//                         sprintf(bp, "%-*li", int(awt_nds_ms->lengths[i]), GB_read_int(gbe));
+//                     }
+//                     else {
+//                         sprintf(bp, "%li", GB_read_int(gbe));
+//                     }
+//                     bp += strlen(bp);
+//                     break;
+//                 case GB_BYTE:
+//                     if (mode == MNTN_SPACED) {
+//                         sprintf(bp, "%-*i", int(awt_nds_ms->lengths[i]), GB_read_byte(gbe));
+//                     }
+//                     else {
+//                         sprintf(bp, "%i", GB_read_byte(gbe));
+//                     }
+//                     bp += strlen(bp);
+//                     break;
+//                 case GB_STRING:
+//                     {
+//                         long  post;
+//                         long  dlen;
+//                         char *pars = 0;
+
+//                         if (awt_nds_ms->parsing[i]) {
+//                             p = GB_read_string(gbe);
+//                             pars = GB_command_interpreter(gb_main,p, awt_nds_ms->parsing[i],gbd, tree_name);
+//                             free(p);
+//                             if (!pars){
+//                                 pars = strdup("<error>");
+//                                 if (!awt_nds_ms->errorclip++) {
+//                                     aw_message(GB_get_error());
+//                                 }
+//                             }
+//                             p = pars;
+//                         }else{
+//                             p = GB_read_char_pntr(gbe);
+//                         }
+
+//                         dlen = awt_nds_ms->lengths[i];
+//                         if (dlen + (bp - awt_nds_ms->buf) +256 > NDS_STRING_SIZE) {
+//                             dlen = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
+//                         }
+
+//                         if (dlen> 0){
+//                             int len = strlen(p);
+//                             j = len;
+//                             if (j > dlen)   j = dlen;
+//                             for (; j; j--) *bp++ = *p++;
+//                             if (mode == MNTN_SPACED) {
+//                                 post = dlen - len;
+//                                 while (post-- > 0) *(bp++) = ' ';
+//                             }
+//                         }
+//                         if (pars) free(pars);
+//                     }
+//                     break;
+//                 case GB_FLOAT:
+//                     if (mode == MNTN_SPACED) {
+//                         char buf[20];
+//                         sprintf(buf, "%4.4f", GB_read_float(gbe));
+//                         sprintf(bp, "%-*s", int(awt_nds_ms->lengths[i]), buf);
+//                     }
+//                     else {
+//                         sprintf(bp, "%4.4f", GB_read_float(gbe));
+//                         if (mode == MNTN_TABBED) { // '.' -> ','
+//                             char *dot     = strchr(bp, '.');
+//                             if (dot) *dot = ',';
+//                         }
+//                     }
+//                     bp += strlen(bp);
+//                     break;
+//                 default:
+//                     break;
+//             }
+//         }
+//         else if (mode == MNTN_SPACED) { // fill with spaces till start of next column
+//             j = awt_nds_ms->lengths[i];
+//             if (j + (bp - awt_nds_ms->buf) + 256 > NDS_STRING_SIZE) {
+//                 j = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
+//             }
+//             for (; j > 0; j--)  *(bp++) = ' ';
+//         }
+//     }
+
+//     *bp = 0;
+
+//     //     if (mode == MNTN_COMPRESSED) { // remove leading and trailing commas in compressed mode
+//     //
+//     //     }
+
+//     return awt_nds_ms->buf;
+
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name)
 {
     // mode == MNTN_COMPRESSED      compress info (no tabbing, seperate single fields by komma)
     // mode == MNTN_SPACED          format info (using spaces)
     // mode == MNTN_TABBED          format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
 
-    char     *bp, *p;
-    GBDATA   *gbe;
-    long      i, j;
-    GBT_TREE *father;
-    bool      field_was_printed = false;
+    awt_nds_ms->init_buffer();
 
-    bp = awt_nds_ms->buf;
     if (!gbd) {
-        static char hae[] = "??????";
-        if (!species) return hae;
-        sprintf(awt_nds_ms->buf,"<%s>",species->name);
+        if (!species) return "<internal error: no tree-node, no db-entry>";
+        if (!species->name) return "<internal error: node w/o name>";
+        sprintf(awt_nds_ms->buf,"<%s>",species->name); // zombie
         return awt_nds_ms->buf;
     }
 
 #if defined(QUOTE_NDS_STRING)
-    *bp++ = '\'';
+    awt_nds_ms->append('\'');
+    // *bp++ = '\'';
 #endif // QUOTE_NDS_STRING
 
-    for (i = 0; i < awt_nds_ms->count; i++) {
-        if (awt_nds_ms->rek[i]) {       /* hierarchical key */
-            gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
-        }else{              /* flat entry */
-            gbe = GB_find(gbd, awt_nds_ms->dkeys[i], NULL, down_level);
+    bool  field_was_printed = false;
+    bool  is_leaf           = species ? species->is_leaf : true;
+
+    for (int i = 0; i < awt_nds_ms->count; i++) {
+        if (is_leaf) { if (!awt_nds_ms->at_leaf[i]) continue; }
+        else         { if (!awt_nds_ms->at_group[i]) continue; }
+
+        char *str        = 0;   // the generated string
+        bool  apply_aci  = false; // whether aci shall be applied
+        bool  align_left = true; // otherwise align right
+
+        {
+            const char *field_output = "";
+            const char *field_name   = awt_nds_ms->dkeys[i];
+
+            if (field_name[0] == 0) { // empty field_name -> only do ACI/SRT
+                apply_aci = true;
+            }
+            else { // non-empty field_name
+                GBDATA *gbe;
+                if (awt_nds_ms->rek[i]) {       /* hierarchical key */
+                    gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
+                }
+                else {              /* flat entry */
+                    gbe = GB_find(gbd, awt_nds_ms->dkeys[i], NULL, down_level);
+                }
+                // silently ignore missing fields (and leave apply_aci false!)
+                if (gbe) {
+                    apply_aci = true;
+                    switch (GB_read_type(gbe)) {
+                        case GB_INT: field_output  = GBS_global_string("%li", GB_read_int(gbe)); align_left = false; break;
+                        case GB_BYTE: field_output = GBS_global_string("%i", GB_read_byte(gbe)); align_left = false; break;
+
+                        case GB_FLOAT: {
+                            const char *format = "%5.4f";
+                            if (mode == MNTN_TABBED) { // '.' -> ','
+                                char *dotted  = GBS_global_string_copy(format, GB_read_float(gbe));
+                                char *dot     = strchr(dotted, '.');
+                                if (dot) *dot = ',';
+                                field_output  = GBS_global_string("%s", dotted);
+                                free(dotted);
+                            }
+                            else {
+                                field_output = GBS_global_string(format, GB_read_float(gbe));
+                            }
+                            align_left = false;
+                            break;
+                        }
+                        case GB_STRING:
+                            field_output = GB_read_char_pntr(gbe);
+                            break;
+
+                        default : {
+                            char *as_string = GB_read_as_string(gbe);
+                            field_output    = GBS_global_string("%s", as_string);
+                            free(as_string);
+                        }
+                    }
+                }
+            }
+            str = strdup(field_output);
         }
 
-        if (!gbe && awt_nds_ms->inherit[i] && species ) {
-            for (   father = species->father; father && !gbe; father = father->father) {
-                if (father->gb_node){
-                    gbe = GB_find(father->gb_node, awt_nds_ms->dkeys[i], NULL, down_level);
+        // apply ACI/SRT program
+
+        GB_ERROR error = 0;
+        if (apply_aci) {
+            const char *aci_srt = awt_nds_ms->parsing[i];
+            if (aci_srt) {
+                char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
+                if (aci_result) {
+                    free(str);
+                    str = aci_result;
+                }
+                else {          // error
+                    const char *plain_error = GB_get_error();
+                    error                   = GBS_global_string("While applying '%s' on '%s': %s", aci_srt, str, plain_error);
+
+                    free(str);
+                    str = GBS_global_string_copy("<error: %s>", plain_error);
                 }
             }
         }
 
-        if (mode == MNTN_COMPRESSED && !gbe) continue;
+        bool skip_display = (mode == MNTN_COMPRESSED && str[0] == 0);
+        if (!skip_display) {
+            switch (mode) {
+                case MNTN_COMPRESSED:
+                    if (!field_was_printed) break; // no komma no space if nothing printed yet
+                    awt_nds_ms->append(','); // seperate single fields by komma in compressed mode
+                    // *bp++ = ','; // seperate single fields by komma in compressed mode
+                    // no break here!!!
+                case MNTN_SPACED:
+                    awt_nds_ms->append(' '); // print at least one space if not using tabs
+                    // *bp++ = ' '; // print at least one space if not using tabs
+                    break;
+                case MNTN_TABBED:
+                    if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
+                    // if (i != 0) *bp++ = '\t'; // tabbed output for star-calc/excel/...
+                    break;
+                default :
+                    awt_assert(0);
+                    break;
+            }
 
-        switch (mode) {
-            case MNTN_COMPRESSED:
-                if (!field_was_printed) break; // no komma no space if nothing printed yet
-                *bp++ = ','; // seperate single fields by komma in compressed mode
-                // no break here!!!
-            case MNTN_SPACED:
-                *bp++ = ' ';    // print at least one space if not using tabs
-                break;
-            case MNTN_TABBED:
-                if (i != 0) *bp++ = '\t'; // tabbed output for star-calc/excel/...
-                break;
-            default :
-                awt_assert(0);
-                break;
-        }
-
-        //         if (mode == 0 && first) (*bp++) = ',';
-        //         if (mode != 2)          (*bp++) = ' '; // print at least one space if not using tabs
-        //         first++;
-
-        if (gbe) {
             field_was_printed = true;
 
-            switch (GB_read_type(gbe)) {
-                case GB_INT:
-                    if (mode == MNTN_SPACED) {
-                        //                         char buf[20];
-                        //                         sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
-                        //                         sprintf(bp, buf, GB_read_int(gbe));
-                        sprintf(bp, "%-*li", int(awt_nds_ms->lengths[i]), GB_read_int(gbe));
-                    }
-                    else {
-                        sprintf(bp, "%li", GB_read_int(gbe));
-                    }
-                    bp += strlen(bp);
-                    break;
-                case GB_BYTE:
-                    if (mode == MNTN_SPACED) {
-                        //                         char buf[20];
-                        //                         sprintf(buf,"%%%lii", awt_nds_ms->lengths[i]);
-                        //                         sprintf(bp, buf, GB_read_byte(gbe));
-                        sprintf(bp, "%-*i", int(awt_nds_ms->lengths[i]), GB_read_byte(gbe));
-                    }
-                    else {
-                        sprintf(bp, "%i", GB_read_byte(gbe));
-                    }
-                    bp += strlen(bp);
-                    break;
-                case GB_STRING:
-                    {
-                        long  post;
-                        long  dlen;
-                        char *pars = 0;
+            int str_len = strlen(str);
+            int nds_len = awt_nds_ms->lengths[i];
+            if (str_len>nds_len) { // string is too long -> shorten
+                str[nds_len] = 0;
+                str_len      = nds_len;
+            }
 
-                        if (awt_nds_ms->parsing[i]) {
-                            p = GB_read_string(gbe);
-                            pars = GB_command_interpreter(gb_main,p, awt_nds_ms->parsing[i],gbd);
-                            free(p);
-                            if (!pars){
-                                pars = strdup("<error>");
-                                if (!awt_nds_ms->errorclip++) {
-                                    aw_message(GB_get_error());
-                                }
-                            }
-                            p = pars;
-                        }else{
-                            p = GB_read_char_pntr(gbe);
-                        }
-
-                        dlen = awt_nds_ms->lengths[i];
-                        if (dlen + (bp - awt_nds_ms->buf) +256 > NDS_STRING_SIZE) {
-                            dlen = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
-                        }
-
-                        if (dlen> 0){
-                            int len = strlen(p);
-                            j = len;
-                            if (j > dlen)   j = dlen;
-                            for (; j; j--) *bp++ = *p++;
-                            if (mode == MNTN_SPACED) {
-                                post = dlen - len;
-                                while (post-- > 0) *(bp++) = ' ';
-                            }
-                        }
-                        if (pars) free(pars);
-                    }
-                    break;
-                case GB_FLOAT:
-                    if (mode == MNTN_SPACED) {
-                        char buf[20];
-                        sprintf(buf, "%4.4f", GB_read_float(gbe));
-                        sprintf(bp, "%-*s", int(awt_nds_ms->lengths[i]), buf);
-                    }
-                    else {
-                        sprintf(bp, "%4.4f", GB_read_float(gbe));
-                        if (mode == MNTN_TABBED) { // '.' -> ','
-                            char *dot     = strchr(bp, '.');
-                            if (dot) *dot = ',';
-                        }
-                    }
-                    bp += strlen(bp);
-                    break;
-                default:
-                    break;
+            if (mode == MNTN_SPACED) { // may need alignment
+                const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
+                awt_nds_ms->append(spaced, nds_len);
+            }
+            else {
+                awt_nds_ms->append(str, str_len);
             }
         }
-        else if (mode == MNTN_SPACED) { // fill with spaces till start of next column
-            j = awt_nds_ms->lengths[i];
-            if (j + (bp - awt_nds_ms->buf) + 256 > NDS_STRING_SIZE) {
-                j = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
-            }
-            for (; j > 0; j--)  *(bp++) = ' ';
+
+        // show first XXX errors
+        if (error && awt_nds_ms->show_errors>0) {
+            awt_nds_ms->show_errors--;
+            aw_message(error);
         }
+
+        free(str);
     }
+
 #if defined(QUOTE_NDS_STRING)
-    *bp++ = '\'';
+    awt_nds_ms->append('\'');
+    // *bp++ = '\'';
 #endif // QUOTE_NDS_STRING
-    *bp = 0;
 
-    //     if (mode == MNTN_COMPRESSED) { // remove leading and trailing commas in compressed mode
-    //
-    //     }
-
-    return awt_nds_ms->buf;
+    return awt_nds_ms->get_buffer();
 }
 
 char *make_node_text_list(GBDATA * gbd, FILE *fp)
