@@ -1155,7 +1155,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb");
     awm->button_length(20);
     awm->help_text("saveas.hlp");
-    awm->create_button("SAVE_AS",AWAR_DB_PATH);
+    awm->create_button("SAVE_AS",AWAR_DB_NAME);
 
     int db_treex;
     awm->get_at_position( &db_treex, &first_liney);
@@ -1286,7 +1286,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     //  -----------------------------------
 #if defined(DEBUG)
     if (strcmp(GB_getenvUSER(), "westram") == 0) {
-        NT_test_input_mask(awm->get_root());
+        // NT_test_input_mask(awm->get_root());
     }
 #endif // DEBUG
 
