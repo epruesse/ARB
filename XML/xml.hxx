@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Wed Oct/24/2001 21:51 MET Coder@ReallySoft.de>
+// Time-stamp: <Sun Nov/25/2001 14:44 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -49,7 +49,7 @@
 //     namespace xml {
 
         class                XML_Document;
-        extern XML_Document *theDocument; // there can only be one at a time
+        extern XML_Document *the_XML_Document; // there can only be one at a time
 
         //  ----------------------------
         //      class XML_Attribute
@@ -158,10 +158,10 @@
         /// an entire xml document
         class XML_Document {
         private:
-            std::string    dtd;
-            XML_Tag  *root;
-            XML_Node *latest_son;
-            FILE     *out;
+            std::string  dtd;
+            XML_Tag     *root;
+            XML_Node    *latest_son;
+            FILE        *out;
 
         public:
             /** Create and stream (at destruction) a xml document
@@ -174,6 +174,9 @@
 
             /// true -> tags w/o content or attributes are skipped (default = false)
             bool skip_empty_tags;
+
+            /// how many columns are used per indentation level (defaults to 1)
+            size_t indentation_per_level;
 
             XML_Node* LatestSon() { return latest_son; }
             void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
