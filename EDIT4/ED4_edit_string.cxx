@@ -1063,11 +1063,13 @@ ED4_Edit_String::~ED4_Edit_String()
 
 void ED4_Edit_String::edit(ED4_work_info *info)
 {
+    e4_assert(info->working_terminal != 0);
+
     info->out_seq_position = remap->screen_to_sequence(info->char_position);
-    info->refresh_needed = false;
-    info->center_cursor = false;
-    info->cannot_handle = false;
-    old_seq = 0;
+    info->refresh_needed   = false;
+    info->center_cursor    = false;
+    info->cannot_handle    = false;
+    old_seq                = 0;
 
     if (info->string){
         seq = info->string;
@@ -1075,8 +1077,12 @@ void ED4_Edit_String::edit(ED4_work_info *info)
     }
     else {
         e4_assert(info->gb_data);
-        seq = GB_read_string(info->gb_data);
-        seq_len = GB_read_string_count(info->gb_data);
+        int seq_len_int;
+        seq = info->working_terminal->resolve_pointer_to_string_copy(&seq_len_int);
+        seq_len = seq_len_int;
+
+        //         seq     = GB_read_string(info->gb_data);
+        //         seq_len = GB_read_string_count(info->gb_data);
     }
 
     int map_key = ED4_ROOT->edk->map_key(info->event.character);
@@ -1165,21 +1171,28 @@ void ED4_Edit_String::edit(ED4_work_info *info)
     if (!err){
         if (info->gb_data){
             if (info->refresh_needed){
+                e4_assert(info->working_terminal->get_species_pointer() == info->gb_data);
 
-                old_seq     = GB_read_string(info->gb_data);
-                old_seq_len = GB_read_string_count(info->gb_data);
-                err         = GB_write_string(info->gb_data,seq);
+                int old_seq_len_int;
+                old_seq     = info->working_terminal->resolve_pointer_to_string_copy(&old_seq_len_int);
+                old_seq_len = old_seq_len_int;
 
-                if (ED4_ROOT->aw_root->awar(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES)->read_int()) {
-                    long old_checksum = GBS_checksum(old_seq, 1, "-.");
-                    long new_checksum = GBS_checksum(seq, 1, "-.");
+                err = info->working_terminal->write_sequence(seq, seq_len);
 
-                    if (old_checksum != new_checksum) {
-                        if (aw_message("Checksum changed!", "Allow, Reject") == 1) {
-                            GB_write_string(info->gb_data, old_seq);
-                        }
-                    }
-                }
+                //                 old_seq     = GB_read_string(info->gb_data);
+//                 old_seq_len = GB_read_string_count(info->gb_data);
+//                 err         = GB_write_string(info->gb_data,seq);
+
+//                 if (ED4_ROOT->aw_root->awar(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES)->read_int()) {
+//                     long old_checksum = GBS_checksum(old_seq, 1, "-.");
+//                     long new_checksum = GBS_checksum(seq, 1, "-.");
+
+//                     if (old_checksum != new_checksum) {
+//                         if (aw_message("Checksum changed!", "Allow, Reject") == 1) {
+//                             GB_write_string(info->gb_data, old_seq);
+//                         }
+//                     }
+//                 }
 
                 if (err) {
                     info->out_seq_position = remap->screen_to_sequence(info->char_position);	// correct cursor_pos if protection error occurred
