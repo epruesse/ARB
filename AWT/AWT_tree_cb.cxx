@@ -255,15 +255,15 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw) {
     awm->insert_separator();
     awm->insert_menu_topic("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, (AW_CL)1 );
     awm->insert_menu_topic("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)1 );
-    NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);
-    awm->insert_separator();
+//     NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);       done by colorize
+//     awm->insert_separator();
     awm->insert_menu_topic("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, 0 );
     awm->insert_menu_topic("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)0 );
-    NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
-    awm->insert_separator();
+//     NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
+//     awm->insert_separator();
     awm->insert_menu_topic("swap_marked",	"Swap marks of all Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, (AW_CL)2 );
     awm->insert_menu_topic("swap_marked",	"Swap marks of Species in Tree",		"p","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)2 );
-    NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
+//     NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
 }
 
 // ---------------------------------------
