@@ -1,6 +1,7 @@
 Major changes for next Beta:
 ----------------------------
 
+ - tree export to XML ( DTD is provided in ./lib/dtd )
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
  - updated fastDNAml to 1.2.1
  - fixed tree import/export problems (bootstrap values,comments,...)
