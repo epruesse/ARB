@@ -4,20 +4,28 @@ ToDo for arb_probe_library CLIENT:
 
 - list of probes:
         ** restrict to probes in specified temperature- and/or gccontent-range
+        ** should define minimum height (curr. it disappears sometimes)
+        ** autoscroll to selection
+        ** Bug in Overlap:
+                overlap seq = ACCCA
+                seq = CCC
+                => CCC is not striped-out
+                * WICHTIG!
 
 - list of selected probes:
         ** 'Add' button to add current selected probe from normal probe list
         ** 'Del' button
-        ** 'Match all' -> mark species hit by ANY probe 
+        ** 'Match all' -> mark species hit by ANY probe
 
 - tree display:
         ** show group names left of unfolded branch?
-        ** autofold if tree height > 32000
+        ** calculate text-length for ALL nodes (as attribute of node)
+                *** use in calc. of tree-width
+                *** use to size group-boxes
 
 - details:
         ** missing information:
-        *** probe length
-        *** % of subtree (and total # of species in subtree)
+                *** probe length
 
 - Don't send request, if result is known to be empty
         (e.g. if node has no probes etc.)
