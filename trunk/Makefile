@@ -191,6 +191,7 @@ else
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 endif
 
+   GLLIBS = -L$(XHOME)/lib -lGLEW -lGLw -lGL -lglut -lglpng
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
@@ -523,7 +524,7 @@ $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)  \
 		)
 
 #*********************************** arb_rna3d **************************************
@@ -535,8 +536,8 @@ ARCHS_RNA3D = \
 $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) -lGLEW -lGL -lglut -lglpng ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) -lGLEW -lGL -lglut -lglpng ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) \
 		)
 
 #***********************************	arb_edit **************************************
@@ -1237,7 +1238,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip 
+arbxtras: tg ps pc pst chip 3d
 
 tryxtras:
 		@echo $(SEP)
