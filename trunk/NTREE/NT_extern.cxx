@@ -633,11 +633,14 @@ class nt_item_type_species_selector : public awt_item_type_selector {
 public:
     virtual ~nt_item_type_species_selector() {}
 
+    virtual const char *get_self_awar() const {
+        return AWAR_SPECIES_NAME;
+    }
     virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
-        root->awar(AWAR_SPECIES_NAME)->add_callback(f, cl_mask);
+        root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
     virtual GBDATA *current(AW_root *root) const { // give the current item
-        char           *species_name = root->awar(AWAR_SPECIES_NAME)->read_string();
+        char           *species_name = root->awar(get_self_awar())->read_string();
         GBDATA         *gb_species   = 0;
 
         if (species_name[0]) {
@@ -661,14 +664,14 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
 
-#if defined(DEBUG)
-    printf("NT_open_mask_window id=%i\n", id);
-#endif // DEBUG
+// #if defined(DEBUG)
+//     printf("NT_open_mask_window id=%i\n", id);
+// #endif // DEBUG
 
     assert(descriptor);
     if (descriptor) {
         AWT_initialize_input_mask(aww->get_root(), gb_main,
-                                  item_type_species, descriptor->get_maskname());
+                                  &item_type_species, descriptor->get_maskname());
     }
 }
 
@@ -682,21 +685,21 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
         const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
         if (!descriptor) break;
 
-        if (strcmp(descriptor->get_itemtypename(), "Species") == 0) {
+        awt_item_type item_type = AWT_getItemType(descriptor->get_itemtypename());
+
+        if (item_type == AWT_IT_SPECIES) {
             if (!found) awm->insert_sub_menu(0, "User Masks", "");
 
             found               = true;
             char *macroname2key = GBS_string_2_key(descriptor->get_maskname());
 #if defined(DEBUG)
-            printf("insert '%s' with id=%i\n", descriptor->get_maskname(), id);
+            printf("found species user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
 #endif // DEBUG
-            awm->insert_menu_topic(macroname2key,
-                                   descriptor->get_title(),
-                                   "",
-                                   "input_mask.hlp",
-                                   AWM_ALL,
-                                   NT_open_mask_window, (AW_CL)id, (AW_CL)0);
+            awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, NT_open_mask_window, (AW_CL)id, (AW_CL)0);
             free(macroname2key);
+        }
+        else if (item_type == AWT_IT_UNKNOWN) {
+            aw_message(GBS_global_string("Unkown User-Mask '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_maskname()));
         }
     }
 
@@ -708,7 +711,7 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
 //      void NT_test_input_mask(AW_root *root)
 //  -----------------------------------------------
 void NT_test_input_mask(AW_root *root) {
-    AWT_initialize_input_mask(root, gb_main, item_type_species, "test.mask");
+    AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask");
 }
 
 #define AWMIMT awm->insert_menu_topic
@@ -1283,9 +1286,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->set_bottom_area_height( 0 );
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
-// #if defined(DEBUG)
-//     NT_test_input_mask(awm->get_root());
-// #endif // DEBUG
+#if defined(DEBUG)
+    NT_test_input_mask(awm->get_root());
+#endif // DEBUG
 
     GB_pop_transaction(gb_main);
 

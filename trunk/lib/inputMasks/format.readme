@@ -19,6 +19,10 @@ This document describes the structure of input masks (*.mask files)
 <widget-name>       ::= name of the widget (i.e. 'EDIT')
 <widget-parameters> ::= <widget-parameter>[','<widget-parameter>]*
 
+<widget-parameter>  ::= <numeric-parameter> | <text-parameter>
+<numeric-parameter> ::= [0-9]+
+<text-parameter>    ::= "text"
+
 <cr>                ::= a newline character
 
 
@@ -34,23 +38,40 @@ Parameter lines:
     X_SPACING               no          x-spacing between mask elements (default: 5)
     Y_SPACING               no          y-spacing --------- " --------- (default: 3)
 
+    EDIT                    no          0|1 (1 => show edit/reload buttons)
+
 ------------------------------------------------------------------------------------------------------------------------
 Known Widgets:
 ------------------------------------------------------------------------------------------------------------------------
     <widget-name>           <widget-parameters>     mandatory?      allowed values
 ------------------------------------------------------------------------------------------------------------------------
-    TEXTFIELD               <label>                 yes             Label appearing in front of input-field
-                            <field-path>            yes             path-name of the database entry
+    TEXT                (text)
+
+                            <text>                  yes             Text appearing
+
+    TEXTFIELD           (label,db-path,width)
+
+                            <label>                 yes             Label appearing in front of input-field
+                            <db-path>               yes             path-name of the database entry
                                                                     (i.e. 'full_name' or 'ali_23s/data')
                             <width>                 yes             width of input field (1..n)
 
-    TEXT                    <text>                  yes             Text appearing
+    CHECKBOX            (label,db-path,checked)
 
-    CHECKBOX                <label>                 yes             <like above>
-                            <field-path>            yes             <like above>
-                            <checked>               yes             if box is checked by default ('1' or '0')
+                            <label>                 yes             <like above>
+                            <db-path>               yes             <like above>
+                            <checked>               yes             0 or 1 (value is used if database entry is missing)
 
+    RADIO               (label,db-path,default,orientation,text,db-value[,text,db-value]*)
 
+                            <label>                 yes             <like above>
+                            <db-path>               yes             <like above>
+                            <default>               yes             1 .. n (which radio button is active if database entry is missing)
+                            <orientation>           yes             H,V,X,Y (horizontal or vertical)
+                            <text>                  yes             text showing up in window
+                            <db-value>              yes             text used as database content
+
+------------------------------------------------------------------------------------------------------------------------
 Examples for Widgets:
 
     TEXTFIELD(   "Name   ",  "full_name" , 50  )
@@ -62,3 +83,5 @@ Examples for Widgets:
     TEXTFIELD(   "Remark ",  "remark2" ,  50  )
 
     CHECKBOX(   "Checked ",  "checked" ,  0  ) TEXTFIELD("by","checked_by",8)
+
+------------------------------------------------------------------------------------------------------------------------

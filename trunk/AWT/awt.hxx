@@ -328,7 +328,7 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
 // open database viewer using input-mask-file
 class awt_item_type_selector;
-void  AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector& sel, const char* mask_name);
+void  AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name);
 
 //  ----------------------------------------
 //      class awt_input_mask_descriptor
