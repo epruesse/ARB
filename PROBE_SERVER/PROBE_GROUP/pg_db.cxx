@@ -55,7 +55,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
         }
 
         // create string from mapping and save in db
-        pb_mapping = GB_create(pb_main, "species_mapping", GB_STRING);
+        pb_mapping = GB_search(pb_main, "species_mapping", GB_STRING);
         if (pb_mapping) {
 #define PER_ENTRY (8+20)            // estimated length/mapping in string
             string mapping;
@@ -204,30 +204,28 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
         char      buffer[20];
         sprintf(buffer, "%i", id);
 
-        GBDATA 	*pb_num  = GB_find(pb_current_node, "num", buffer, down_2_level);
-        GBDATA 	*pb_node = 0;
+        GBDATA *pb_num  = GB_find(pb_current_node, "num", buffer, down_2_level);
+        GBDATA *pb_node = 0;
 
         if (pb_num) {
-	    pb_node = GB_get_father(pb_num);
-	}
-	else {
-            if (!create) return 0;	// not found
+            pb_node = GB_get_father(pb_num);
+        }
+        else {
+            if (!create) return 0; // not found
 
             pb_node = GB_create_container(pb_current_node, "node");
 #if defined(DEBUG)
-	    if (!pb_node) fprintf(stderr, "Error: %s\n", GB_get_error());
+            if (!pb_node) fprintf(stderr, "Error: %s\n", GB_get_error());
 #endif // DEBUG
-	    pg_assert(pb_node);
+            pg_assert(pb_node);
 
             pb_num = GB_create(pb_node, "num", GB_STRING);
-
-	    pg_assert(pb_num);
-
+            pg_assert(pb_num);
             GB_write_string(pb_num, buffer);
 
             created = true;
         }
-	pg_assert(pb_node);
+        pg_assert(pb_node);
         pb_current_node = pb_node;
     }
 
@@ -235,7 +233,7 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
     if (!pb_group) {
         pb_group = GB_create_container(pb_current_node, "group");
         created  = true;
-	*numSpecies=size();
+        *numSpecies=size();
     }
     return pb_group;
 }
