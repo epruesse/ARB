@@ -52,8 +52,11 @@ Tree
                         all members of the subtree.
                         [all nodes, optional(=0 if missing), has to be 0 if em!=0]
 
+        ngi=id          id of the probe group that reaches the min. number of non group hits
+
         mc=num          the maximum coverage of the subtree reached by any probe in percent.
                         [inner nodes only, optional(=100 if missing), has to be 100 if em!=0]
 
+        mci=id          id of the probe group that reaches the max. coverage
 
 
