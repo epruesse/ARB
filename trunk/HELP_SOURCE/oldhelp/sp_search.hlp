@@ -45,7 +45,9 @@ DESCRIPTION	Searches for a (set of) species (not SAIs)
 
 		Press the <SEARCH> button.
 
-NOTES		None
+NOTES           If you select the '[any field]' pseudo search field, all direct database subentries of
+                the species are search for the expression.
+                This does NOT work for subcontainers (i.e. ali16s/data is not searched).
 
 EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 

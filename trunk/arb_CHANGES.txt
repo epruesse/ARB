@@ -1,6 +1,8 @@
 Major changes for next Beta:
 ----------------------------
 
+ - search in all database fields possible
+ - up to 10 quicksaves may exist at the same time
  - new ACI functions: upper, lower, caps
  - variables for import filter programming
  - extract gene-species: creates acc; extraction to existing alignments
