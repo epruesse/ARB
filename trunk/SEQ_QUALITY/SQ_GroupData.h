@@ -5,7 +5,7 @@
 //    Time-stamp: <Wed Nov/26/2003 11:59 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - October 2003                        //
+//  Coded by Juergen Huber in July - December 2003                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //

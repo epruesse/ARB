@@ -29,7 +29,10 @@
 #include "SQ_physical_layout.h"
 
 static int globalcounter  = 0;
-static int globalcounter2 = 0;
+static int groupcounter   = 0;
+static int globalcounter_notree = 0;
+static int pass1_counter_notree = 0;
+static int pass2_counter_notree = 0;
 
 enum { CS_CLEAR, CS_PASS1 };
 
@@ -448,7 +451,8 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
                         }
                         globalData->SQ_add_sequence(rawSequence);
 		    }
-
+		    pass1_counter_notree++;
+		    aw_status(double(globalcounter_notree)/pass1_counter_notree);
 
 		}
 	    }
@@ -620,6 +624,84 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    //not useful without tree -> new function has to be made
 		    value = globalData->SQ_test_against_consensus(rawSequence);
 		    //printf("Value: %f ",value);
+		    pass2_counter_notree++;
+		    aw_status(double(globalcounter_notree)/pass2_counter_notree);
+		}
+	    }
+	}
+    }
+    free(alignment_name);
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
+
+
+int SQ_count_nr_of_groups(GBT_TREE *node, GBDATA *gb_main) {
+
+    if (node->is_leaf){
+	return groupcounter;
+    }
+
+    else {
+        int i = SQ_count_nr_of_groups(node->leftson, gb_main);
+	int j = SQ_count_nr_of_groups(node->rightson, gb_main);
+
+	if (node->name) {  //  group identified!
+	    groupcounter++;
+	}
+	return groupcounter;
+    }
+}
+
+
+GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main) {
+
+
+    char *alignment_name;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*) = 0;
+    GB_ERROR error = 0;
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+    getFirst = GBT_first_species;
+    getNext  = GBT_next_species;
+
+
+    /*second pass operations*/
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
+
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+
+        if (!gb_name) error = GB_get_error();
+
+	else {
+
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+
+	    if (!gb_ali) {
+		error = no_data_error(gb_species, alignment_name);
+	    }
+	    else {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (!gb_quality) error = GB_get_error();
+		read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+		if (read_sequence) {
+		    globalcounter_notree++;
 		}
 	    }
 	}
@@ -641,8 +723,6 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	}
 	SQ_GroupData *data = new SQ_GroupData_RNA;
 	SQ_pass1(data, gb_main, node);
-	globalcounter++;
-	aw_status(GBS_global_string("1st pass: %i Sequence(s) finished\n2nd pass: %i Sequence(s) finished", globalcounter, globalcounter2));
 	return data;
     }
 
@@ -659,16 +739,14 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	}
 
 	//add up consensi -> automatic weighting
-	SQ_GroupData *data = new SQ_GroupData_RNA;
-//  	data->SQ_add(leftData);
-//  	data->SQ_add(rightData);
-	delete leftData;
+  	leftData->SQ_add(*leftData);
 	delete rightData;
 
 	if (node->name) {  //  group identified!
-	  SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
-	  globalcounter2++;
+	  SQ_pass2(leftData, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
+	  globalcounter++;
+	  aw_status(double(globalcounter)/groupcounter);
 	}
-	return data;
+	return leftData;
     }
 }
