@@ -150,6 +150,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 
 MG_trees.o: merge.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h

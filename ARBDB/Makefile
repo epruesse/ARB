@@ -68,12 +68,15 @@ ad_core.o: arbdb.h
 
 ad_load.o: ad_lpro.h
 ad_load.o: ad_prot.h
+ad_load.o: ad_t_lpro.h
+ad_load.o: ad_t_prot.h
 ad_load.o: adlmacros.h
 ad_load.o: adlocal.h
 ad_load.o: admap.h
 ad_load.o: adtune.h
 ad_load.o: arb_assert.h
 ad_load.o: arbdb.h
+ad_load.o: arbdbt.h
 
 ad_save_load.o: ad_lpro.h
 ad_save_load.o: ad_prot.h

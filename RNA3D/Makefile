@@ -145,6 +145,13 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_awar.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_click.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_commn.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_print.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_size.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_window_Xm.hxx
+RNA3D_OpenGLGraphics.o: ../WINDOW/aw_Xm.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_Global.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_GlobalHeader.hxx
 RNA3D_OpenGLGraphics.o: RNA3D_OpenGLGraphics.hxx
@@ -234,6 +241,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Textures.o: RNA3D_Global.hxx
 RNA3D_Textures.o: RNA3D_GlobalHeader.hxx
+RNA3D_Textures.o: RNA3D_OpenGLEngine.hxx
 RNA3D_Textures.o: RNA3D_Textures.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
