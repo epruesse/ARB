@@ -211,7 +211,9 @@ void probe_read_alignments()
     {
         gb_name = GB_find(gb_species,"name",0,down_level);
         if (!gb_name) continue;
+        
         psg.data[count].name = GB_read_string(gb_name);
+        
         gb_name = GB_find(gb_species,"full_name",0,down_level);
         if (gb_name) {
             psg.data[count].fullname = GB_read_string(gb_name);
