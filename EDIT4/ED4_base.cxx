@@ -874,15 +874,14 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
 
 void ED4_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_rectangle *rect, long *left_index, long *right_index) { // rect contains win-coords
     AW_pos x ,y;
-    int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width(),
-        rel_left_x,
-        rel_right_x;
+    // int    length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_ed4w->aww, &x, &y);
 
-    rel_left_x =  (int)(rect->l-x);
-    rel_right_x = (int)(rect->r-x);
+    int rel_left_x =  (int)(rect->l-x);
+    int rel_right_x = (int)(rect->r-x);
 
     *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); // - 1;
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
@@ -894,18 +893,17 @@ void ED4_sequence_terminal::calc_intervall_displayed_in_rectangle(AW_rectangle *
 void ED4_sequence_terminal::calc_update_intervall(long *left_index, long *right_index )
 {
     AW_pos x ,y;
-    int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width(),
-        rel_left_x,
-        rel_right_x;
+    // int    length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int    length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     calc_world_coords( &x, &y );
     AW_device *dev = ED4_ROOT->temp_device;
     ED4_coords *coords = &ED4_ROOT->temp_ed4w->coords;
 
-    rel_left_x =  (int)( (dev->clip_rect.l-x) // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles
+    int rel_left_x =  (int)( (dev->clip_rect.l-x) // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles
                          + (coords->window_left_clip_point-x)); // Verschiebung der Sequenz (durch Scrollen) == slider Position
 
-    rel_right_x = (int)( (dev->clip_rect.r-x) + (coords->window_left_clip_point-x) );
+    int rel_right_x = (int)( (dev->clip_rect.r-x) + (coords->window_left_clip_point-x) );
 
     *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); // - 1;
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
