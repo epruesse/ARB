@@ -35,7 +35,6 @@
 #include "ed4_visualizeSAI.hxx"
 #include "edit_naligner.hxx"
 
-#include "../NTREE/NT_tipsAndTricks.cxx" /* to display tips and tricks associated with the primary structure editor */
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 
@@ -1676,11 +1675,6 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->at("help");
     awmm->callback(AW_POPUP_HELP,(AW_CL)"e4.hlp");
     awmm->create_button("HELP","HELP");
-
-    awmm->button_length(0);
-    awmm->at("tips"); 
-    awmm->callback(AW_POPUP, (AW_CL)createTipsAndTricks_window, (AW_CL)0);
-    awmm->create_button("TIPS", "#edit/tips.bitmap");
 
     awmm->button_length(0);
     awmm->at("fold");
