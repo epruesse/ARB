@@ -1,0 +1,5 @@
+count Nucleotides,					nuc#|sequence|count("agctuAGCTU")
+calculate G+C content,					GC#|sequence|count("gcGC");count("agctuAGCTU")|"G+C:";per_cent
+calculate G+C content helical parts only,		GCH#|sequence|filter(SAI=HELIX;exclude=.-)|count("gcGC");count("agctuAGCTU")|"GCH=";per_cent;"(";cut(2);")"
+calculate G+C content non helical parts only,		GCN#|sequence|filter(SAI=HELIX;include=.-)|count("gcGC");count("agctuAGCTU")|"GCN=";per_cent;"(";cut(2);")"
+
