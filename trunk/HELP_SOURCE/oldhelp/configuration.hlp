@@ -22,6 +22,8 @@ DESCRIPTION	Each species is either marked or unmarked. All species that are
                         - STORE (save a (new) configuration)
                         - EXTRACT (= unmark all, then mark those from configuration)
                         - MARK/UNMARK/INVERT (mix currently marked species with those marked in configuration)
+                        - COMBINE (unmarks all that are not in configuration. This does an intersection
+                          between the currently marked species and the selected configuration)
                         - DELETE (delete a configuration)
                         - RENAME (rename a configuration)
 
