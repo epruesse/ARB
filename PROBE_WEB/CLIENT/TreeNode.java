@@ -167,6 +167,7 @@ public void setProbeInfo(int no_of_exact_matches, int min_non_group_hits, int ma
 public String getShortName() { return shortName; }
 public String getFullName() { return fullName; }
 public String getAccessionNumber() { return accession_number; }
+public String getGroupName() { return groupName; }
 public int getExactMatches() { return exactMatches; }
 public int getMinNonGroupHits() { return minNonGroupHits; }
 public int getMaxCoverage() { return maxCoverage; }
@@ -188,7 +189,15 @@ public String getNodeInformation() { // the string displayed in window
         if (result.length() != 0) {
             result += " ";
         }
-        result = result+getFullName()+", "+getAccessionNumber();
+        result += getFullName()+", "+getAccessionNumber();
+    }
+    else {
+        if (groupName != null && groupName.length() != 0) {
+            if (result.length() != 0) {
+                result += " ";
+            }
+            result += groupName;
+        }
     }
 
     return result;
