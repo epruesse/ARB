@@ -11,7 +11,7 @@
  *					AW_STRING, "tmp/con/alignment"     : name of alignment
  *  				AW_STRING, "tmp/con/which_species" : only marked species ?
  *  				AW_STRING, "con/group"         : allow Sgrouping ?
- *  				AW_STRING, "con/countgaps"     
+ *  				AW_STRING, "con/countgaps"
  *  				AW_DOUBLE, "con/fupper"
  *  				AW_INT, "con/lower"
  *  				AW_INT, "con/gapbound"  : result is '-' if more than
@@ -22,10 +22,10 @@
  *  				AW_STRING, "tmp/con/name"   : save with this name
  *  				AW_STRING, "con/result" : result has one or more lines ?
  *
- * Global Structures:             x            
+ * Global Structures:             x
  *
  * Private Classes:               .
- *             
+ *
  * Private Functions:             .
  *
  * Private Variables:             .
@@ -35,14 +35,14 @@
  * Description: This module calculates the consensus of sequencies of
  *              bases or amino acids. The result can be one or more lines
  *              of characters and it is written to the extended data of
- *              the alignment. 
- * 
+ *              the alignment.
+ *
  * Integration Notes: To use this module the main function must have a
  *                    callback to the function
  *                    AW_window *AP_open_consensus_window( AW_root *aw_root)
  *                    and the function void create_consensus_var
  *                    (AW_root *aw_root, AW_default aw_def) has to be called.
- *                     
+ *
  * -----------------------------------------------------------------
  */
 #include <stdio.h>
@@ -73,28 +73,28 @@ enum {
 };
 
 /* -----------------------------------------------------------------
- * Function:                     CON_evaluatestatistic 
+ * Function:                     CON_evaluatestatistic
  *
  * Arguments:                    int **statistic,char **groupflags,
- *                               char *groupnames 
+ *                               char *groupnames
  * Returns:                      char *result
  *
  * Description:       This function creates one or more result strings out
- *                    of table statistic. Memory for result is allocated 
- *                    and later freeded in function CON_calculate_cb 
+ *                    of table statistic. Memory for result is allocated
+ *                    and later freeded in function CON_calculate_cb
  *
  * NOTE:              Usage of groupflags and groupnames see function
  *                    CON_makegrouptable.
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 void CON_evaluatestatistic(char *&result,int **statistic,char **groupflags,
@@ -157,7 +157,7 @@ void CON_evaluatestatistic(char *&result,int **statistic,char **groupflags,
 				highestgr=j;
 			}
 		}
-		
+
 		if((highestfr*100.0/numentries)>=fupper)  {
 			result[column]=groupnames[highestgr];
 		} else if((highestfr*100/numentries)>=lower){
@@ -168,8 +168,8 @@ void CON_evaluatestatistic(char *&result,int **statistic,char **groupflags,
 			result[column]=c;
 		} else {
 			result[column]='.';
-		} 
-	} 		
+		}
+	}
 }
 
 
@@ -185,20 +185,20 @@ void CON_evaluatestatistic(char *&result,int **statistic,char **groupflags,
  *                    CON_evaluatestatistic. E.g. gf[10][3]=1 means, that
  *                    all characters c with convtable[c]==3 are members
  *                    of group 10.
- *                    Table groupnames is also created. 
+ *                    Table groupnames is also created.
  *                    E.g. c=groupnames[5] gives abbrev of 5th group.
  *
  * NOTE:                         .
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 int CON_makegrouptable(char **gf,char *groupnames,
@@ -210,7 +210,7 @@ int CON_makegrouptable(char **gf,char *groupnames,
 	if(!isamino)
 	{
 		strcpy(groupnames,"-ACGUMRWSYKVHDBN\0");
-		for(int i=1;i<MAX_BASES;i++) { 
+		for(int i=1;i<MAX_BASES;i++) {
 			gf[i][i]=1; }
 		if(groupallowed)
 		{
@@ -230,7 +230,7 @@ int CON_makegrouptable(char **gf,char *groupnames,
 		}
 		return(5);
 	}
-	else 
+	else
 	{
 		strcpy(groupnames,"-ABCDEFGHI*KLMN.PQRST.VWXYZADHIF\0");
 		for(int i=1;i<MAX_AMINOS;i++) {
@@ -253,11 +253,11 @@ int CON_makegrouptable(char **gf,char *groupnames,
 #undef SC
 		return(27);
 	}
-}		
+}
 
 
 /* -----------------------------------------------------------------
- * Function:                     CON_makestatistic 
+ * Function:                     CON_makestatistic
  *
  * Arguments:                    int *convtable
  *
@@ -274,13 +274,13 @@ int CON_makegrouptable(char **gf,char *groupnames,
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 
@@ -290,7 +290,7 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
 	long maxalignlen=GBT_get_alignment_len(gb_main,align);
 	GBDATA *gb_species,*alidata;
 	int i,nrofspecies=0;
-	
+
 	aw_status("reading database");
 
 	if (onlymarked) {
@@ -307,43 +307,43 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
 
 	long count = 0;
 	while(gb_species)
-	{	   	
+	{
 		if( (alidata=GBT_read_sequence(gb_species,align)) )
 		{
 			char *data,c;
 			data=GB_read_char_pntr(alidata);
 			aw_status( (double)count++/(double)nrofspecies);
-	   		i=0;	      
+	   		i=0;
 	   		while( (c=data[i]) ){
-                if( (c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z')) 
+                if( (c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
                     || (c=='*') ){
                     if ( i > maxalignlen) break;
                     statistic[convtable[c]][i] += 1;
 				}
 				i++;
-	   		}  
+	   		}
 		}
    		if (onlymarked) {
 			gb_species = GBT_next_marked_species(gb_species);
 	   	}else{
 			gb_species = GBT_next_species(gb_species);
-   	   	}	
+   	   	}
 	}
 	return(nrofspecies);
-}	         
+}
 
 
 /* -----------------------------------------------------------------
- * Function:          CON_maketables           
+ * Function:          CON_maketables
  *
  * Arguments:         long maxalignlen,int isamino
  *
  * Returns:           return parameters: int *convtable,int **statistic
  *
- * Description:       Creates tables convtable and statistic, that are 
- *                    used by function CON_makestatistic. The memory 
- *                    allocated for both tables is freed in the 
- *                    function CON_calculate_cb. 
+ * Description:       Creates tables convtable and statistic, that are
+ *                    used by function CON_makestatistic. The memory
+ *                    allocated for both tables is freed in the
+ *                    function CON_calculate_cb.
  *                    E.g. convtable['c']=k means that the character c
  *                    is counted in table statistic in row k.
  *
@@ -351,13 +351,13 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 void CON_maketables(int *convtable,int **statistic,long maxalignlen,int isamino)
@@ -374,7 +374,7 @@ void CON_maketables(int *convtable,int **statistic,long maxalignlen,int isamino)
 		convtable['t']=BAS_T;	convtable['T']=BAS_T;
 		convtable['u']=BAS_T;	convtable['U']=BAS_T;
 
-		
+
 		for(i=0;i<MAX_BASES;i++)  {
 			statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen,sizeof(int));
 		}
@@ -412,14 +412,14 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 	const char *countgapsstring=off;
 	if(countgaps) countgapsstring=on;
 	const char *simplifystring=off;
-	if(groupallowed) simplifystring=on;	 
+	if(groupallowed) simplifystring=on;
 
 	sprintf(buffer,"CON: [species: %s]  [number: %ld]  [count gaps: %s] "
 			"[threshold for gaps: %d]  [simplify: %s] "
 			"[threshold for character: %f]  [upper: %f]  [lower: %d]",
             allvsmarked,nrofspecies,countgapsstring,
             gapbound,simplifystring,
-            fconsidbound,fupper,lower); 
+            fconsidbound,fupper,lower);
 
 	err=GB_write_string(gb_options,buffer);
 
@@ -438,7 +438,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 			gb_species = GBT_first_species(gb_main);
 		}
 		while(gb_species)
-		{	   	
+		{
 			if(GBT_read_sequence(gb_species,align))
 			{
 		 		gb_speciesname=GB_search(gb_species,"name",GB_FIND);
@@ -450,7 +450,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 				gb_species = GBT_next_marked_species(gb_species);
 	   		}else{
 				gb_species = GBT_next_species(gb_species);
-   	   		}	
+   	   		}
 		}
 		gb_names=GB_search(GB_get_father(gb_options),"_SPECIES",GB_STRING);
 		char *allnames = GBS_strclose(strstruct,0);
@@ -464,11 +464,11 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 	}
 	/* export additional information */
 	if(resultiscomplex)
-	{	
+	{
 		GBDATA *gb_graph = GBT_add_data(gb_extended, align,"FREQUENCIES", GB_DB);
 		char *charname=(char *)GB_calloc(5,sizeof(char));
 
-		float **additional=0;	
+		float **additional=0;
 		/* problem : aminos, especially '*' -> new order*/
 
 		int *allreadycounted=(int*)GB_calloc((unsigned int)256,sizeof(char));
@@ -476,7 +476,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 		int k;
 		int numdiffchars=1;  /* first additional row (nr. 0) is max-row */
 		for(int c=0;c<256;c++)
-		{		
+		{
 			if( (k=convtable[c]) )
 			{
 				if(!(allreadycounted[k]))
@@ -489,8 +489,8 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 
 		additional=(float**)GB_calloc((unsigned int)numdiffchars,sizeof(float*));
 		int group;
-		for(group=0;group<numdiffchars;group++) 
-		{  
+		for(group=0;group<numdiffchars;group++)
+		{
 			additional[group]=(float*)GB_calloc((unsigned int)maxalignlen,
                                                 sizeof(float));
 		}
@@ -498,8 +498,8 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 		int *absolutrow=(int*)GB_calloc((unsigned int)maxalignlen,sizeof(int));
 		long col;
 		for(col=0;col<maxalignlen;col++)
-		{	
-			int group2=1;  
+		{
+			int group2=1;
 			int colsum=0;
 			while(neworder[group2])
 			{
@@ -526,7 +526,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 			    additional[0][col]=0.0;
 			}
 		}
-		
+
 		GBDATA *gb_relativ=GB_search(gb_graph,"MAX",GB_FLOATS);
 		err=GB_write_floats(gb_relativ,additional[0],maxalignlen);
 
@@ -538,18 +538,18 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 			gb_relativ=GB_search(gb_graph,charname,GB_FLOATS);
 			err=GB_write_floats(gb_relativ,additional[group],maxalignlen);
 		}
-		
+
 		delete charname;
 		delete neworder;
 		delete allreadycounted;
 		for(group=0;group<numdiffchars;group++)
 			delete additional[group];
-		delete additional;		
+		delete additional;
 	}
 	delete buffer;
 	return(err);
 }
-	
+
 
 void 	CON_cleartables(int **statistic, int isamino){
 	int i;
@@ -582,18 +582,18 @@ void 	CON_cleartables(int **statistic, int isamino){
  *                               statistic and function CON_evaluatestatistic
  *                               evaluates the statistic. Then the result
  *                               string(s) are written to the extended data of
- *                               the alignment. 
+ *                               the alignment.
  * NOTE:                         .
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
- * AWARs referenced:    
+ * AWARs referenced:
  *					AW_STRING, "tmp/con/alignment"     : name of alignment
  *  				AW_STRING, "tmp/con/which_species" : only marked species ?
  *  				AW_STRING, "con/group"         : allow grouping ?
- *  				AW_STRING, "con/countgaps"     
+ *  				AW_STRING, "con/countgaps"
  *  				AW_DOUBLE, "con/fupper"
  *  				AW_INT, "con/lower"
  *  				AW_INT, "con/gapbound"  : result is '-' if more than
@@ -605,11 +605,11 @@ void 	CON_cleartables(int **statistic, int isamino){
  *  				AW_STRING, "con/result" : result has one or more lines ?
  *
  * AWARs modified:               x
- * 
+ *
  * Dependencies:                 CON_maketables
  *                               CON_makestatistic
  *                               CON_makegrouptable
- *                               CON_evaluatestatistic  
+ *                               CON_evaluatestatistic
  * -----------------------------------------------------------------
  */
 void CON_calculate_cb(AW_window *aw )
@@ -629,7 +629,7 @@ void CON_calculate_cb(AW_window *aw )
 	int resultiscomplex=1;
 	if(strcmp("complex",complexresult)) resultiscomplex=0;
 
-	if( (faultmessage=GB_push_transaction(gb_main)) ) 
+	if( (faultmessage=GB_push_transaction(gb_main)) )
 	{
 		aw_message(faultmessage,"OK,EXIT");
 		return;
@@ -647,22 +647,22 @@ void CON_calculate_cb(AW_window *aw )
 	isamino = GBT_is_alignment_protein(gb_main,align);
 
 
-    /* creating the table for characters and allocating memory for 'statistc' */	
+    /* creating the table for characters and allocating memory for 'statistc' */
 	CON_maketables(convtable,statistic,maxalignlen,isamino);
 
-    /* filling the statistic table */	
+    /* filling the statistic table */
 	aw_openstatus("Consensus");
 	long nrofspecies=CON_makestatistic(statistic,convtable,align,onlymarked);
 
 	GB_pop_transaction(gb_main);
-	
+
 	double fupper=awr->awar("con/fupper")->read_float();
 	int lower=(int)awr->awar("con/lower")->read_int();
 	double fconsidbound= awr->awar("con/fconsidbound")->read_float();
-	int gapbound=(int)awr->awar("con/gapbound")->read_int();		         
+	int gapbound=(int)awr->awar("con/gapbound")->read_int();
 	char *group=awr->awar("con/group")->read_string();
 	char *countgaps=awr->awar("con/countgaps")->read_string();
-	
+
 	if(fupper>100.0) fupper=100;
 	if(fupper<0) fupper=0;
 	if(lower>fupper) {
@@ -679,7 +679,7 @@ void CON_calculate_cb(AW_window *aw )
 	if(fconsidbound<0) fconsidbound=0;
 	if(gapbound<0) gapbound=0;
 	if(gapbound>100) gapbound=100;
-	
+
 	int groupallowed=1;
 	if(strcmp("on",group)) groupallowed=0;
 	int countgap=1;
@@ -711,7 +711,7 @@ void CON_calculate_cb(AW_window *aw )
 	aw_closestatus();
 	CON_cleartables(statistic,isamino);
 	delete result;
-	for (i=0;i<MAX_GROUPS;i++)	{	
+	for (i=0;i<MAX_GROUPS;i++)	{
 		delete groupflags[i];  }
 	delete countgaps;
 	delete group;
@@ -719,7 +719,7 @@ void CON_calculate_cb(AW_window *aw )
 	delete complexresult;
 	delete marked;
 }
-		
+
 void create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
 	GB_transaction dummy(gb_main);
@@ -747,11 +747,11 @@ CON_showgroupswin_cb( AW_root *aw_root)
 {
 	AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC", 590,10);
-  	aws->load_xfig("con/groups.fig");
+  	aws->load_xfig("consensus/groups.fig");
   	aws->button_length( 7 );
 
 	aws->at("ok");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","O");			   
+	aws->create_button("CLOSE","CLOSE","O");
 
 	return (AW_window *)aws;
 }
@@ -761,14 +761,14 @@ AP_open_con_expert_window( AW_root *aw_root)
 {
 	AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES",10,10);
-  	aws->load_xfig("con/expert.fig");
+  	aws->load_xfig("consensus/expert.fig");
   	aws->button_length( 6 );
 
 	aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"consensus.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->button_length( 10);
 	aws->at("showgroups");aws->callback(AW_POPUP,(AW_CL)CON_showgroupswin_cb,0);
@@ -789,7 +789,7 @@ AP_open_con_expert_window( AW_root *aw_root)
 
     /* activation of consensus calculation by button ... */
 	aws->at("calculate");aws->callback((AW_CB0)CON_calculate_cb);
-    aws->create_button("GO","GO","G");			   
+    aws->create_button("GO","GO","G");
 
 	aws->at("group");
 	aws->create_toggle_field("con/group", NULL ,"" );
@@ -805,7 +805,7 @@ AP_open_con_expert_window( AW_root *aw_root)
 
 	aws->at("upper");
 	aws->create_input_field("con/fupper",4);
-	
+
 	aws->at("lower");
 	aws->create_input_field("con/lower",4);
 
@@ -832,25 +832,25 @@ AP_open_con_expert_window( AW_root *aw_root)
 
 
 /* -----------------------------------------------------------------
- * Function:           AP_open_consensus_window( AW_root *aw_root) 
+ * Function:           AP_open_consensus_window( AW_root *aw_root)
  *
- * Arguments:                    
+ * Arguments:
  *
- * Returns:                      
+ * Returns:
  *
  * Description:       Draws window, initializes callback for most important
- *                    function, CON_calculate_cb.  
- *                               
- * NOTE:              
+ *                    function, CON_calculate_cb.
  *
- * Global Variables referenced:   
+ * NOTE:
  *
- * Global Variables modified: 
+ * Global Variables referenced:
  *
- * AWARs referenced:             
+ * Global Variables modified:
  *
- * AWARs modified:               
- * 
+ * AWARs referenced:
+ *
+ * AWARs modified:
+ *
  * Dependencies:      Needs xfig files consens.fig and CON_groups.fig
  * -----------------------------------------------------------------
  */
@@ -859,17 +859,17 @@ AP_open_consensus_window( AW_root *aw_root)
 {
 	AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS",10,10);
-  	aws->load_xfig("con/main.fig");
+  	aws->load_xfig("consensus/main.fig");
 
 	GB_push_transaction(gb_main);
 
   	aws->button_length( 6 );
 
 	aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
-	
+	aws->create_button("CLOSE","CLOSE","C");
+
 	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"consensus.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->button_length( 15);
 	aws->at("showgroups");aws->callback(AW_POPUP,(AW_CL)CON_showgroupswin_cb,0);
@@ -890,7 +890,7 @@ AP_open_consensus_window( AW_root *aw_root)
 
     /* activation of consensus calculation by button ... */
 	aws->at("calculate");aws->callback((AW_CB0)CON_calculate_cb);
-    aws->create_button("CALCULATE","CALCULATE","C");			   
+    aws->create_button("CALCULATE","CALCULATE","C");
 
 	aws->at("expert");aws->callback(AW_POPUP,(AW_CL)AP_open_con_expert_window,0);
     aws->create_button("EXPERT", "expert...","e");
@@ -914,11 +914,11 @@ AP_open_consensus_window( AW_root *aw_root)
 
 
 /* -----------------------------------------------------------------
- * Function:           CON_calc_max_freq_cb( AW_window *aw) 
+ * Function:           CON_calc_max_freq_cb( AW_window *aw)
  *
- * Description:       Gets the maximum frequence for each columns.  
- *                               
- * NOTE:              
+ * Description:       Gets the maximum frequence for each columns.
+ *
+ * NOTE:
  *
  * -----------------------------------------------------------------
  */
@@ -997,7 +997,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
 	GB_pop_transaction(gb_main);
 
 	CON_cleartables(statistic,isamino);
-	aw_closestatus();	
+	aw_closestatus();
 	delete align;
 	if (error) aw_message(error);
 }
@@ -1007,21 +1007,21 @@ AP_open_max_freq_window( AW_root *aw_root)
 {
 	AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "MAX_FREQUENCY", "MAX FREQUENCY",10,10);
-  	aws->load_xfig("con/max_freq.fig");
+  	aws->load_xfig("consensus/max_freq.fig");
 
 	GB_push_transaction(gb_main);
 
   	aws->button_length( 6 );
 
 	aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
-	
+	aws->create_button("CLOSE","CLOSE","C");
+
 	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"max_freq.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
     /* activation of consensus calculation by button ... */
 	aws->at("go");aws->callback((AW_CB0)CON_calc_max_freq_cb);
-    aws->create_button("GO","GO","C");			   
+    aws->create_button("GO","GO","C");
 
 	aws->at("save");
 	aws->create_input_field(AWAR_MAX_FREQ_SAI_NAME,1);
