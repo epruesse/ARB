@@ -366,7 +366,21 @@ public void markSubtree(boolean flag)
     propagateMarkUpwards();
 }
 
+public void markSpecies(String speciesList)
+{
+    // speciesList contains sth like ",name1,name2,name3,name4,"
 
+    if (isLeaf) {
+        if (speciesList.indexOf(","+shortName+",") != -1) {
+            marked = 2;
+            propagateMarkUpwards();
+        }
+    }
+    else {
+        ((TreeNode)childNodes.elementAt(0)).markSpecies(speciesList);
+        ((TreeNode)childNodes.elementAt(1)).markSpecies(speciesList);
+    }
+}
 
 public void setPath(String path)
 {
