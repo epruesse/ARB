@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Sun Nov/25/2001 14:44 MET Coder@ReallySoft.de>
+// Time-stamp: <Sat Jun/01/2002 12:51 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -182,6 +182,10 @@
             void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
 
             XML_Tag& getRoot() { return *root; }
+
+            void add_attribute(const std::string& name_, const std::string& content_) {
+                getRoot().add_attribute(name_, content_);
+            }
 
             FILE *Out() { return out; }
         };
