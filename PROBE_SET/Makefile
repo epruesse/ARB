@@ -127,6 +127,7 @@ ps_find_probes.o:  ps_database.hxx ps_defs.hxx
 ps_find_probes.o: ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_find_probes.o: ps_filebuffer.hxx 
+ps_find_probes.o: ps_candidate.hxx 
 ps_find_probes.o: ps_bitmap.hxx ps_bitset.hxx
 ps_my2ascii.o:  ps_filebuffer.hxx 
 ps_my2ascii.o: ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
