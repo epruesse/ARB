@@ -22,6 +22,8 @@
 #include "awtc_rename.hxx"
 #include "awti_imp_local.hxx"
 
+#define awti_assert(cond) arb_assert(cond)
+
 using namespace std;
 
 struct awtcig_struct awtcig;
@@ -743,22 +745,21 @@ GB_ERROR awtc_read_data(char *ali_name)
     return 0;
 }
 
-void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-Sequenzdatenbanken + Aufruf der Importfunktion für  Gen/Genom Sequenzdateien
+void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing database
 {
     char     buffer[1024];
     AW_root *awr         = aww->get_root();
     bool      is_genom_db = false;
     {
-        bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
-
+        bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
         is_genom_db = GEN_is_genome_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
-                aw_message("You can only import whole genom sequences (GENBANK/EMBL-format) into a genom database.");
+                aw_message("You can only import whole genom sequences into a genom database.");
             }
             else {
-                aw_message("You can't import whole genom sequences (GENBANK/EMBL-format) into a non-genom ARB database.");
+                aw_message("You can't import whole genom sequences into a non-genom ARB database.");
             }
             return;
         }
@@ -813,18 +814,21 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
             error = "You must set the alignment type to dna when importing genom sequences.";
         }
         else {
-            GBT_create_alignment(GB_MAIN,ali_name,2000,0,4,ali_type);
+            int ali_protection = awr->awar(AWAR_ALI_PROTECTION)->read_int();
+            GBT_create_alignment(GB_MAIN,ali_name,2000,0,ali_protection,ali_type);
         }
         free(ali_type);
     }
 
 #ifndef DEVEL_ARTEM
-    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle is obsolete for Artems new importer
+    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle value is not necessary for Artems new importer
 #endif
     bool ask_generate_names = true;
 
-    if (!error) {                               //Falls Formatchecks erfolgreich
-        if (is_genom_db) {      //Falls Genomdatenbank
+    if (!error) {
+        if (is_genom_db) {
+            // import genome flatfile into ARB-genome database :
+
             char  *mask   = awr->awar(AWAR_FILE)->read_string();
             char **fnames = GBS_read_dir(mask, 0);
 
@@ -853,21 +857,21 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
 
                     try {
 #ifdef DEVEL_ARTEM
-                        printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
+                        // printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
                         error_this_file = GI_importGenomeFile(GB_MAIN,fnames[count], ali_name);
 #else
                         // Importfunktionen je nach Togglestellung aufrufen
-                        if (toggle_value==0) {
+                        if (toggle_value==IMP_GENOME_GENEBANK) {
                             error_this_file = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
                         }
-                        else if (toggle_value==1) {
+                        else if (toggle_value==IMP_GENOME_EMBL) {
                             error_this_file = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
                         }
 #endif
 
                     }
-                    catch (...) {                               // Beim Import einer Datei aufgetretenen Fehler auffangen
-                        error_this_file = GB_export_error("Error: %s not imported", fnames[count]);
+                    catch (...) {
+                        error_this_file = GB_export_error("Error: %s not imported (Unknown exception occurred)", fnames[count]);
                     }
 
                     if (!error_this_file) {
@@ -875,7 +879,7 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                         GB_warning("File '%s' successfully imported", fnames[count]);
                         successfull_imports++;
                     }
-                    else {                              //Wird bei Fehler der Importfunktionen durchgeführt
+                    else { // error occurred during import
                         error_this_file = GBS_global_string("'%s' not imported (Reason: %s)", fnames[count], error_this_file);
                         GB_warning("Import error: %s", error_this_file);
                         GB_abort_transaction(GB_MAIN);
@@ -899,7 +903,9 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
             GBT_free_names(fnames);
             free(mask);
         }
-        else {                  // import to non-genome DB
+        else {
+            // import to non-genome ARB-db :
+
             char *f          = awr->awar(AWAR_FILE)->read_string();
             awtcig.filenames = GBS_read_dir(f,0);
             free(f);
@@ -980,31 +986,49 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
     awtcig.func(awr, awtcig.cd1,awtcig.cd2);
 }
 
-//  ------------------------------------------------------
-//      static void genom_flag_changed(AW_root *root)
-//  ------------------------------------------------------
-static void genom_flag_changed(AW_root *awr) {
-    if (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2) {
-        awr->awar(AWAR_ALI)->write_string("ali_genom");
-        awr->awar(AWAR_ALI_TYPE)->write_string("dna");
-        awr->awar_string(AWAR_FORM"/filter",".fit");        // *hack* to hide normal import filters
-    }
-    else {
-        char *ali = awr->awar(AWAR_ALI)->read_string();
+class AliNameAndType {
+    string name_, type_;
+public:
+    AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
+    AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
+    
+    const char *name() const { return name_.c_str(); }
+    const char *type() const { return type_.c_str(); }
+};
 
-        if (strstr(ali, "genom") != 0) { // contains 'genom'
-            awr->awar(AWAR_ALI)->write_string("ali_16s");
-            awr->awar(AWAR_ALI_TYPE)->write_string("rna");
-        }
-        awr->awar_string(AWAR_FORM"/filter",".ift");
+static AliNameAndType last_ali("ali_16s", "rna"); // last selected ali for plain import (aka non-flatfile import)
 
-        free(ali);
-    }
-}
 
 void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type) {
-    awr->awar(AWAR_ALI)->write_string(ali_name);
-    awr->awar(AWAR_ALI_TYPE)->write_string(ali_type);
+    bool switching_to_GENOM_ALIGNMENT = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
+
+    AW_awar *awar_name = awr->awar(AWAR_ALI);
+    AW_awar *awar_type = awr->awar(AWAR_ALI_TYPE);
+
+    if (switching_to_GENOM_ALIGNMENT) {
+        // read and store current settings
+        char *curr_ali_name = awar_name->read_string();
+        char *curr_ali_type = awar_type->read_string();
+
+        last_ali = AliNameAndType(curr_ali_name, curr_ali_type);
+
+        free(curr_ali_name);
+        free(curr_ali_type);
+    }
+
+    awar_name->write_string(ali_name);
+    awar_type->write_string(ali_type);
+}
+
+static void genom_flag_changed(AW_root *awr) {
+    if (awr->awar(AWAR_READ_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
+        AWTC_import_set_ali_and_type(awr, last_ali.name(), last_ali.type());
+        awr->awar_string(AWAR_FORM"/filter",".ift");
+    }
+    else {
+        AWTC_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna");
+        awr->awar_string(AWAR_FORM"/filter",".fit"); // *hack* to hide normal import filters
+    }
 }
 
 
@@ -1022,6 +1046,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 
     awr->awar_string(AWAR_ALI,"ali_16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
+    awr->awar_int(AWAR_ALI_PROTECTION, 4);
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
 
@@ -1061,17 +1086,26 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->insert_option("protein","p","ami");
     aws->update_option_menu();
 
+    aws->at("protect");
+    aws->create_option_menu(AWAR_ALI_PROTECTION);
+    aws->insert_option("0", "0", 0);
+    aws->insert_option("1", "1", 1);
+    aws->insert_option("2", "2", 2);
+    aws->insert_option("3", "3", 3);
+    aws->insert_default_option("4", "4", 4);
+    aws->insert_option("5", "5", 5);
+    aws->insert_option("6", "6", 6);
+    aws->update_option_menu();
 
     aws->at("genom");
     aws->create_toggle_field(AWAR_READ_GENOM_DB);
 #ifdef DEVEL_ARTEM
-    aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e",1);
+    aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format","e", IMP_GENOME_FLATFILE);
 #else
-    aws->insert_toggle("Import genome data in GENBANK format","g",0);
-    aws->insert_toggle("Import genome data in EMBL format","e",1);
+    aws->insert_toggle("Import genome data in GENBANK format","g",IMP_GENOME_GENEBANK);
+    aws->insert_toggle("Import genome data in EMBL format","e",IMP_GENOME_EMBL);
 #endif
-	aws->insert_toggle("Import selected format","f",2);
-//    aws->insert_toggle("Import genome data in EMBL uni format","u",3);
+    aws->insert_toggle("Import selected format","f",IMP_PLAIN_SEQUENCE);
     aws->update_toggle_field();
 
     aws->at("go");
