@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Tue Feb/11/2003 17:54 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Oct/29/2003 23:55 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -972,6 +972,7 @@ static void print_XML_Text_expanding_links(const string& text) {
 
             if (link_target.find("http://") != string::npos) { type = "www"; }
             else if (link_target.find("ftp://") != string::npos) { type = "www"; }
+            else if (link_target.find("file://") != string::npos) { type = "www"; }
             else if (link_target.find('@') != string::npos) { type = "email"; }
             else {
                 type = "help";
@@ -1159,6 +1160,7 @@ void Helpfile::extractInternalLinks() {
 
                     if (link_target.find("http://") == string::npos &&
                         link_target.find("ftp://")  == string::npos &&
+                        link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
                         string rest_noext = cutoff_hlp_extension(link_target);
@@ -1225,7 +1227,6 @@ int main(int argc, char *argv[]) {
             if (!out) throw string("Can't open '")+xml_output+'\'';
 
             try {
-
                 help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8)), "oldhelp/", "genhelp/"); // cut off 'oldhelp/' and '.hlp'
                 fclose(out);
             }
