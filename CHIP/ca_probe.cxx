@@ -748,6 +748,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 		    correctIllegalChars(match_name);
 		    strcat(probe_match, match_name);
 		    strcat(probe_match, ", ");  
+		    correctIllegalChars(match_longname);
 		    strcat(probe_match, match_longname);
 		    strcat(probe_match, "\n");
 		    fputs(probe_match, pFile); 
