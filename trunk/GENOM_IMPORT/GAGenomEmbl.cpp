@@ -4,6 +4,7 @@
  * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
 #include "GAGenomEmbl.h"
+
 #include "GAGenomUtilities.h"
 
 #ifndef _CCP_IOSTREAM
