@@ -1,9 +1,9 @@
 #ifndef cat_tree_hxx_included
 #define cat_tree_hxx_included
 
-#ifndef GB_INCLUDED
-struct GBDATA;
-#endif
+// #ifndef GB_INCLUDED
+typedef struct gb_data_base_type GBDATA;
+// #endif
 
 enum {				// COLOR SCHEME (orable)
 	T2J_COLOR_UNKNOWN = 0,
