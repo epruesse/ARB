@@ -14,8 +14,9 @@
                version="1.0"
                >
 
-<!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
-  <xsl:output method="html" indent="no"/>
+  <!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
+  <!--<xsl:output method="html" indent="no"/>-->
+  <xsl:output method="html" encoding="iso-8859-1" indent="yes"/>
 
   <xsl:param name="myname"/>
   <xsl:param name="xml_location"/>
@@ -120,12 +121,14 @@
   <!-- ============================== -->
   <!--     insert document header     -->
   <!-- ============================== -->
-  <xsl:template name="header">
+  <xsl:template name="header" >
     <xsl:param name="title" select="'Untitled'"/>
     <xsl:comment>Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de) </xsl:comment>
-    <HEAD xml:space="preserve">
+    <HEAD>
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
+      <!--<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>   this is added automatically   --> 
+      <!--<meta http-equiv="expires" content="86400"/>-->
       <TITLE>ARB help: <xsl:value-of select="$title"/></TITLE>
     </HEAD>
   </xsl:template>
