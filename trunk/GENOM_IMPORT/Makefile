@@ -75,13 +75,13 @@ endif
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
-	@@cat $(DEPENDS) | grep -v '^#' >>Makefile
-	@@rm $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .cpp.depend:
-	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@@
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
@@ -284,4 +284,3 @@ GAGenomReferenceGenBank.o: GAParser.h
 GAGenomUtilities.o: GAGenomUtilities.h
 
 GAParser.o: GAParser.h
-
