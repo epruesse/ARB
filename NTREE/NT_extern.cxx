@@ -1059,13 +1059,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
     nt.tree = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
-    
-    AP_tree_sort old_sort_type = nt.tree->tree_sort;
-    nt.tree->set_tree_type(AP_NO_NDS);
-    
-    AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
 
-    nt.tree->set_tree_type(old_sort_type);
+    AWT_canvas *ntw;
+    {
+        AP_tree_sort  old_sort_type = nt.tree->tree_sort;
+        nt.tree->set_tree_type(AP_NO_NDS); // avoid NDS warnings during startup
+        ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
+        nt.tree->set_tree_type(old_sort_type);
+    }
 
     {
         char *tree_name          = awr->awar_string(awar_tree)->read_string();
