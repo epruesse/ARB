@@ -21,4 +21,13 @@ else {
 
 my $workers = `ps -auxw | grep bin/arb_probe_server_worker | grep -v grep | wc -l`;
 $workers =~ s/ //ig;
+chomp $workers;
 print "running_workers=$workers\n";
+
+my @servers = probe_server::available_servers();
+my $lengths = '';
+foreach (@servers) {
+  $lengths .= "$_,";
+}
+chop $lengths;
+print "probe_lengths=$lengths\n";
