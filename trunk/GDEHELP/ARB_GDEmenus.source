@@ -5,15 +5,18 @@
 #include <warning.menu>
 
 lmenu:export
-item:Export Sequences Only to Foreign Format (using readseq: slow) ...
+item:Export sequences only to foreign format (using Readseq: slow) ...
+itemmeta: R
 #include <export.menu>
 
 lmenu:pretty_print
-item:Pretty Print Sequences (slow) ...
+item:Pretty print sequences (slow) ...
+itemmeta: P
 #include <pretty_print.menu>
 
 lmenu:import
-item:Import Sequences in Foreign Format (using readseq: slow !!) ...
+item:Import sequences in foreign format (using Readseq: slow !!) ...
+itemmeta: R
 #include <import.menu>
 
 menu:align
@@ -36,7 +39,7 @@ menu:Seq management
 menu:SAI
 #include <dnamlrates.menu>
 
-menu:Incremental_Phylogeny
+menu:Incremental phylogeny
 #include <inc_fastdnaml.menu>
 
 menu:Phylogeny
