@@ -5,6 +5,12 @@
 #include <stdio.h>
 #endif
 
+#ifndef NDEBUG
+#define aw_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
+#else
+#define aw_assert(bed)
+#endif
+
 #define AW_ROOT_DEFAULT (aw_main_root_default)
 class AW_root;
 class AW_window;
@@ -65,7 +71,7 @@ typedef struct {
 
 typedef char *AW_error;
 
-int         aw_message( const char *msg, const char *buttons );
+int         aw_message( const char *msg, const char *buttons, bool fixedSizeButtons = true);
 void        aw_set_local_message(); // no message window, AWAR tmp/Message instead
 // interactive message: buttons = "OK,CANCEL,...."
 void        aw_message(const char *msg);

@@ -1,12 +1,6 @@
 #ifndef aw_device_hxx_included
 #define aw_device_hxx_included
 
-#ifndef NDEBUG
-#define aw_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-#else
-#define aw_assert(bed)
-#endif
-
 #define _AW_DEVICE_INCLUDED
 
 #ifndef _AW_COMMON_INCLUDED
