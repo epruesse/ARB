@@ -22,8 +22,9 @@ LDFLAGS = -lm
 else
 
 CC 		= $(ACC)
-TARGET 	= $(ARBHOME)/bin/arb_axml
+TARGET 	= $(ARBHOME)/bin/axml
 LDFLAGS = $(LIB) -lm
+CFLAGS  = $(cflags)
 
 $(MAIN) : all
 
