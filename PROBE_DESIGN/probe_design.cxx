@@ -1044,7 +1044,7 @@ static void selected_match_changed_cb(AW_root *root) {
 
     {
         bool prev               = allow_probe_match_event;
-        allow_probe_match_event = false;
+        allow_probe_match_event = false; // avoid recursion
         root->awar(AWAR_TARGET_STRING)->touch(); // forces editor to jump to probe match in gene
         allow_probe_match_event = prev;
     }
