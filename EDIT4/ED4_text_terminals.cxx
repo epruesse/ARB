@@ -400,20 +400,23 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
 ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 {
-    AW_pos  x, y,
-        //  width  = extension.size[WIDTH] - 1,
-        height = extension.size[HEIGHT] - 1;
+    AW_pos x, y;
+    AW_pos height = extension.size[HEIGHT] - 1;
+
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
-    AW_pos      text_x, text_y;
-    text_x = x + CHARACTEROFFSET;                           // don't change
-    text_y = y + height - MAXLETTERDESCENT;
-    char buffer[10];
+
+    AW_pos  text_x = x + CHARACTEROFFSET; // don't change
+    AW_pos  text_y = y + height - MAXLETTERDESCENT;
+    char    buffer[10];
+    GBDATA *gbdata = data();
+
     if (gbdata){
         GB_push_transaction(gbdata);
         buffer[0] = '0' + GB_read_security_write(gbdata);
         GB_pop_transaction(gbdata);
-    }else{
+    }
+    else {
         buffer[0] = '-';
     }
     strncpy(&buffer[1],this->id,8);
