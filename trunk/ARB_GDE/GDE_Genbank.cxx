@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
+#include <time.h>
 
 //#include <xview/xview.h>
 //#include <xview/panel.h>
@@ -164,7 +165,7 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
 		    }
                     for(j=start_col;(c = in_line[j]) != '\0';j++)
 		    {
-			if((c != '\n') &&  
+			if((c != '\n') &&
 			   ((j-start_col + 1) % 11 !=0))
 			    buffer[len++] = c;
 		    }
@@ -304,7 +305,7 @@ int WriteGen(NA_Alignment *aln,char *filename,int method,int maskable)
 	    if(aln->element[j].elementtype == MASK &&
 	       aln->element[j].selected)
 		mask = j;
- 
+
     for(j=0;j<aln->numelements;j++)
     {
 	this_elem = &(aln->element[j]);

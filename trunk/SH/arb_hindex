@@ -1,3 +1,4 @@
+#!/bin/sh
 cd $ARBHOME/lib/help
 file=index
 

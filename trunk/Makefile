@@ -83,10 +83,15 @@ ifdef LINUX
    ARCPPLIB = g++ -Wall -shared $(LINUX_SPECIALS) -o
    ARLIB = gcc -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
-   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
-
    SYSLIBS = -lm
+ifndef DEBIAN
+   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+else
+   XINCLUDES = -I/usr/X11R6/include
+   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+endif
+
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11 $(SYSLIBS) -lc
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
@@ -584,7 +589,12 @@ tags2:
 
 #********************************************************************************
 
+ifndef DEBIAN
 links: SOURCE_TOOLS/generate_all_links.stamp
+else
+links:
+	@echo ARB authors do some stuff with symlinks here.  This is not necessary with Debian.
+endif
 
 SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 	-SOURCE_TOOLS/generate_all_links.sh
@@ -624,12 +634,20 @@ binlink:
 all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
+ifndef DEBIAN
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX) \
 	lib/libXm.so.2
+else
+libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
+	lib/libAW.$(SHARED_LIB_SUFFIX) \
+	lib/libAWT.$(SHARED_LIB_SUFFIX)
+endif
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
