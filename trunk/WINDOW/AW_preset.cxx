@@ -240,7 +240,7 @@ class aw_gc_manager {
     AW_MGC_awar_cb_struct *font_change_cb_parameter;
     struct aw_gc_manager  *next;
 
-    ~aw_gc_manager() {} // unused
+    ~aw_gc_manager();           // unused
 public:
     aw_gc_manager(const char *field_, const char *default_value_)
         : field(field_)
