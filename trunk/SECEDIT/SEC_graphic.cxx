@@ -74,6 +74,7 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      (AW_CB)AWT_resize_cb,
                      (AW_CL)ntw,
                      cd2,
+                     false, // no color groups
                      "#777777",
                      "Loop$#ffffaa",
                      "Helix$#5cb1ff",

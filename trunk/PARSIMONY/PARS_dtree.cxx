@@ -264,6 +264,7 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
     AW_gc_manager preset_window =
         AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_CURSOR+7, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
+                     false, // no color groups
                      "#AAAA55",
                      "CURSOR$#FFFFFF",
                      "unused1",

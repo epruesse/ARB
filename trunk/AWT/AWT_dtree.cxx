@@ -29,6 +29,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
     AW_gc_manager preset_window =
         AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
+                     true, // define color groups
                      "#3be",
                      "CURSOR$white",
                      "BRANCHES$green",

@@ -201,10 +201,10 @@ static void aed_quit(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     AWUSE(aw);AWUSE(cd2);
     AED_root *root = (AED_root *)cd1;
     root->ad_main->close();
-    exit(0);	
+    exit(0);
 }
 
-void AED_window::calculate_size(AW_window *awmm) 
+void AED_window::calculate_size(AW_window *awmm)
 {
     AW_device			*device;
     AW_device			*size_device;
@@ -221,7 +221,7 @@ void AED_window::calculate_size(AW_window *awmm)
     display_struct.top_indent			= 0;
     display_struct.bottom_indent			= 0;
     display_struct.left_indent			= 0;
-    display_struct.slider_pos_horizontal		= 0;	
+    display_struct.slider_pos_horizontal		= 0;
     display_struct.slider_pos_vertical		= 0;
     display_struct.picture_l			= 0;
     display_struct.picture_t			= 0;
@@ -229,7 +229,7 @@ void AED_window::calculate_size(AW_window *awmm)
     size_device->reset();
     show_bottom_data( size_device, awmm, display_struct );
     size_device->get_size_information( &size_information );
-    awmm->set_vertical_scrollbar_bottom_indent( (int)(size_information.b - size_information.t +5.0) );																
+    awmm->set_vertical_scrollbar_bottom_indent( (int)(size_information.b - size_information.t +5.0) );
     size_device->reset();
     show_top_data( size_device, awmm, display_struct );
     size_device->get_size_information( &size_information );
@@ -324,7 +324,7 @@ int AED_window::load_data(void) {
 	}else 	if (area_bottom->read_hash(name)){
 	    area_bottom->append(help_area_entry);
 	}else{
-	    area_middle->append(help_area_entry);		
+	    area_middle->append(help_area_entry);
 	}
     }
     ex.exit();
@@ -351,7 +351,7 @@ int AED_window::load_data(void) {
 	}else 	if (area_bottom->read_hash(name)){
 	    area_bottom->append(help_area_entry);
 	}else{
-	    area_middle->append(help_area_entry);		
+	    area_middle->append(help_area_entry);
 	}
 	i++;
 	if (i== AED_MAX_SPECIES) {
@@ -400,7 +400,7 @@ static GB_ERROR species_copy_cb(const char *source, char *dest){
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data,source);
     GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data,dest);
-	
+
     if (gb_dest) {
 	error = "Sorry: species already exists";
     }else 	if (gb_species) {
@@ -610,7 +610,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
     AW_pos width;
     AW_pos height;
     AW_rectangle screen;
-    AW_font_information *font_information; 
+    AW_font_information *font_information;
     char left_text[100];
     AW_BOOL tmp;
 
@@ -694,7 +694,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
 	if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
 	    edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
 				   area_entry->adt_sequence->show_get(), 0.0,
-				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING, 
+				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
 				   AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
 	}
 	device->text( 	AED_GC_SEQUENCE, area_entry->adt_sequence->show_get(), 0, *y, 0.0,
@@ -756,7 +756,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
     AW_pos width;
     AW_pos height;
     AW_rectangle screen;
-    AW_font_information *font_information; 
+    AW_font_information *font_information;
     char left_text[100];
     AW_BOOL tmp;
 
@@ -844,7 +844,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 	if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
 	    edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
 				   area_entry->adt_sequence->show_get(), 0.0,
-				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING, 
+				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
 				   AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
 	}
 	if (st_ml && st_is_inited(st_ml) && device->type() == AW_DEVICE_SCREEN ){
@@ -868,7 +868,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 	AW_pos help;
 	help = ( alignment->len()+50) * font_information->max_letter_width;
 	//		printf("width %f\n",help);
-	device->invisible( AED_GC_NAME, help, *y, AED_F_ALL, (AW_CL)0, (AW_CL)0 );	
+	device->invisible( AED_GC_NAME, help, *y, AED_F_ALL, (AW_CL)0, (AW_CL)0 );
     }
 
 
@@ -878,7 +878,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
 void AED_window::show_bottom_data(AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct ) {
     AW_pos y = 0;
- 
+
     area_bottom->current = area_bottom->first;
     while ( area_bottom->current != NULL ) {
 	this->show_single_bottom_data( device, awmm, area_bottom->current, display_struct, &y );
@@ -972,7 +972,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 	if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
 	    edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
 				   area_entry->adt_sequence->show_get(), 0.0,
-				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING, 
+				   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
 				   AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
 	}
 	device->text( 	AED_GC_SEQUENCE, area_entry->adt_sequence->show_get(), 0, *y, 0.0,
@@ -999,7 +999,7 @@ void AED_window::show_data( AW_device *device, AW_window *awmm, AW_BOOL visibili
     display_struct.top_indent			= awmm->top_indent_of_vertical_scrollbar;
     display_struct.bottom_indent			= awmm->bottom_indent_of_vertical_scrollbar;
     display_struct.left_indent			= awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal		= awmm->slider_pos_horizontal;	
+    display_struct.slider_pos_horizontal		= awmm->slider_pos_horizontal;
     display_struct.slider_pos_vertical		= awmm->slider_pos_vertical;
     display_struct.picture_l			= awmm->picture->l;
     display_struct.picture_t			= awmm->picture->t;
@@ -1201,7 +1201,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     display_struct.top_indent					= awmm->top_indent_of_vertical_scrollbar;
     display_struct.bottom_indent					= awmm->bottom_indent_of_vertical_scrollbar;
     display_struct.left_indent					= awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal				= awmm->slider_pos_horizontal;	
+    display_struct.slider_pos_horizontal				= awmm->slider_pos_horizontal;
     display_struct.slider_pos_vertical				= awmm->slider_pos_vertical;
     display_struct.picture_l					= awmm->picture->l;
     display_struct.picture_t					= awmm->picture->t;
@@ -1294,7 +1294,7 @@ void AED_window::show_single_area_entry( AW_device *device, AW_window *awmm, AED
     display_struct.top_indent			= awmm->top_indent_of_vertical_scrollbar;
     display_struct.bottom_indent			= awmm->bottom_indent_of_vertical_scrollbar;
     display_struct.left_indent			= awmm->left_indent_of_horizontal_scrollbar;
-    display_struct.slider_pos_horizontal		= awmm->slider_pos_horizontal;	
+    display_struct.slider_pos_horizontal		= awmm->slider_pos_horizontal;
     display_struct.slider_pos_vertical		= awmm->slider_pos_vertical;
     display_struct.picture_l			= awmm->picture->l;
     display_struct.picture_t			= awmm->picture->t;
@@ -1379,7 +1379,7 @@ void AED_dlist::insert_before_entry(AED_area_entry *add_before_this, AED_area_en
     to_be_inserted->previous					= add_before_this->previous;
     add_before_this->previous					= to_be_inserted;
 
-    size++;		
+    size++;
     to_be_inserted->in_area = this;
     this->insert_hash(to_be_inserted->ad_species->name());
 }
@@ -1615,7 +1615,7 @@ static void change_direction(AW_window *aww,AED_window *aedw)
 	case 1:		aedw->edit_direction = 0;break;
 	default:	aedw->edit_direction = 1;break;
     }
-    aww->get_root()->awar(AWAR_EDIT_DIRECTION)->write_int(aedw->edit_direction); 
+    aww->get_root()->awar(AWAR_EDIT_DIRECTION)->write_int(aedw->edit_direction);
 }
 
 static void change_insert_mode(AW_window *aww,AED_window *aedw)
@@ -1625,7 +1625,7 @@ static void change_insert_mode(AW_window *aww,AED_window *aedw)
 	case AED_INSERT:	aedw->edit_modus = AED_REPLACE;break;
 	case AED_REPLACE:	aedw->edit_modus = AED_ALIGN;break;
     }
-    aww->get_root()->awar(AWAR_EDIT_MODE)->write_int(aedw->edit_modus); 
+    aww->get_root()->awar(AWAR_EDIT_MODE)->write_int(aedw->edit_modus);
 }
 
 static void aed_double_click( AW_window *aw, AED_window			*aedw ) {
@@ -1682,7 +1682,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 	    case AED_REPLACE:	area_entry->adt_sequence->changemode(AD_replace);break;
 	}
 	switch (event.keycode) {
-	    case AW_KEY_F1: 
+	    case AW_KEY_F1:
 		break;
 	    case AW_KEY_UP:
 		direction = -1;
@@ -1733,7 +1733,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 		    for ( 	area_entry = first_entry;
 				area_entry != last_entry;
 				area_entry = area_entry->next){
-			aedw->show_single_area_entry(device, awmm, area_entry);				
+			aedw->show_single_area_entry(device, awmm, area_entry);
 		    }
 		    aedw->show_cursor( device, awmm );
 		}
@@ -1761,7 +1761,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 		    aedw->deselect_area_entry();
 		    aedw->show_single_area_entry( device, awmm, help_area_entry );
 		}
-		aedw->select_area_entry( new_selected_area_entry, clicked_text.cursor );				
+		aedw->select_area_entry( new_selected_area_entry, clicked_text.cursor );
 		aedw->show_single_area_entry(device, awmm, new_selected_area_entry);
 		aedw->cursor_is_managed = AW_FALSE;
 	    }
@@ -1796,7 +1796,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 
 	    aedw->show_data( click_device, awmm, AW_FALSE );
 	    click_device->get_clicked_text(&clicked_text);
-	
+
 	    AW_rectangle	screen;
 	    device->get_area_size(&screen);
 	    if (event.x > 0 && event.x < screen.r && event.y > 0 && event.y < screen.b) {        // man ist innerhalb der draw area
@@ -1805,7 +1805,7 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 		    if( strcmp(destination_area_entry->ad_species->name(),aedw->selected_area_entry->ad_species->name()) != 0 ) {
 			// nicht auf sich selber abgelegt
 			aedw->selected_area_entry->in_area->remove_entry(aedw->selected_area_entry);
-			if( clicked_text.distance > 0 ) 
+			if( clicked_text.distance > 0 )
 			    destination_area_entry->in_area->insert_after_entry(destination_area_entry, aedw->selected_area_entry);
 			else
 			    destination_area_entry->in_area->insert_before_entry(destination_area_entry, aedw->selected_area_entry);
@@ -1923,7 +1923,7 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
 	    ar->check_for_remote_command((AW_default)gb_main,"ARB_EDIT");
 	    aedw->root->ad_main->commit_transaction();
 	}
-	
+
 	aw->get_root()->add_timed_callback(500,aed_timer,cd1,cd2);
     }
 } // end: aed_timer
@@ -2115,15 +2115,16 @@ void aed_create_window(AED_root *aedr) {
     aed_window = new AED_window;
     aed_window->init(aedr);
 
-    aed_window->aww = awmm = new AW_window_menu;	
+    aed_window->aww = awmm = new AW_window_menu;
     awmm->init(aedr->aw_root,"ARB_EDIT", "ARB_EDIT",800,600,10,10);
 
     create_edit_variables(awmm->get_root(),aed_window->root->db,aed_window);
 
-    AW_gc_manager preset_window = 
+    AW_gc_manager preset_window =
         AW_manage_GC (awmm,awmm->get_device(AW_MIDDLE_AREA), AED_GC_NAME, AED_GC_NAME_DRAG, AW_GCM_DATA_AREA,
                       (AW_CB)aed_resize,(AW_CL)aed_window,0,
-                      "#CCF177", 
+                      false,
+                      "#CCF177",
                       "NAMES$#0000B9",
                       "SELECTED$#FF0000",
                       "#SEQUENCES$black",
@@ -2135,7 +2136,7 @@ void aed_create_window(AED_root *aedr) {
                       "-CS_4$#bbb",
                       "-CS_5$#aaa",
                       "-CS_6$#999",
-                      "-CS_7$#888", 
+                      "-CS_7$#888",
                       "-CS_8$#777",
                       "-CS_9$#666",
                       0);
@@ -2170,7 +2171,7 @@ void aed_create_window(AED_root *aedr) {
     awmm->create_menu(0,"EDIT","E");
     awmm->insert_menu_topic("search",	"Search ...",				"S","ne_search.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)create_tool_search, (AW_CL)aed_window);
     awmm->insert_menu_topic("replace",	"Replace ...",			"R","ne_replace.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)create_tool_replace, (AW_CL)aed_window);
-    awmm->insert_menu_topic("complement",	"Complement ...",			"C","ne_compl.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)create_tool_complement, (AW_CL)aed_window );	
+    awmm->insert_menu_topic("complement",	"Complement ...",			"C","ne_compl.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)create_tool_complement, (AW_CL)aed_window );
     awmm->insert_separator();
     awmm->insert_menu_topic("create_sequence","Create Sequence ...",		"e","ne_new_sequence.hlp",	AWM_ALL,AW_POPUP, (AW_CL)create_new_seq_window, (AW_CL)aed_window);
     awmm->insert_menu_topic("open_sequence","Open Existing Sequence ...",		"O","ne_new_sequence.hlp",	AWM_ALL,AW_POPUP, (AW_CL)create_old_seq_window, (AW_CL)aed_window);
@@ -2195,14 +2196,14 @@ void aed_create_window(AED_root *aedr) {
     awmm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)AW_preset_window, 	0 );
     awmm->insert_menu_topic("props_seq",	"Sequences: Colors and Fonts ...",	"C","neprops_data.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
     awmm->insert_menu_topic("props_etc",	"ETC ...",			"E","neprops.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)create_edit_preset_window, (AW_CL)0 );
-    //	awmm->insert_menu_topic(0,"NDS ...",			"N","neprops_nds.hlp",	AWM_ALL, aed_popup_config_window, (AW_CL)aed_window, AW_TRUE );	
-    awmm->insert_menu_topic("props_key_map","Key Mappings ...",		"K","nekey_map.hlp",	AWM_ALL, 	AW_POPUP, (AW_CL)create_key_map_window, 0 );	
+    //	awmm->insert_menu_topic(0,"NDS ...",			"N","neprops_nds.hlp",	AWM_ALL, aed_popup_config_window, (AW_CL)aed_window, AW_TRUE );
+    awmm->insert_menu_topic("props_key_map","Key Mappings ...",		"K","nekey_map.hlp",	AWM_ALL, 	AW_POPUP, (AW_CL)create_key_map_window, 0 );
     awmm->insert_menu_topic("props_helix",	"Helix Symbols ...",		"H","helixsym.hlp",	AWM_ALL, 	AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)
-			    new AW_cb_struct(awmm,(AW_CB)aed_resize,(AW_CL)aed_window,0) );	
+			    new AW_cb_struct(awmm,(AW_CB)aed_resize,(AW_CL)aed_window,0) );
     awmm->insert_separator();
     awmm->insert_menu_topic("save_props",	"Save Properties (in ~/.arb_prop/edit.arb)","S","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
     awmm->create_menu(0,"ETC","C");
-    awmm->insert_menu_topic("synchronize",	"Synchronize Cursor Position",		"S","exportcursor.hlp",	AWM_ALL,	aed_use_focus, (AW_CL)aed_window, AW_TRUE );	
+    awmm->insert_menu_topic("synchronize",	"Synchronize Cursor Position",		"S","exportcursor.hlp",	AWM_ALL,	aed_use_focus, (AW_CL)aed_window, AW_TRUE );
     awmm->insert_menu_topic("unsynchronize","Don't Synchronize Cursor",			"D","exportcursor.hlp",	AWM_ALL,	aed_use_focus, (AW_CL)aed_window, AW_FALSE );
     awmm->insert_menu_topic("refresh_helix","Reload Helix (SAI 'HELIXNR/HELIX')",		"H","helix.hlp",	AWM_ALL,	(AW_CB)reload_helix, (AW_CL)aed_window, 0 );
     awmm->insert_menu_topic("refresh_ecoli","Reload Reference (SAI 'ECOLI')",		"R","ecoliref.hlp",	AWM_ALL,	(AW_CB)reload_ref, (AW_CL)aed_window, 0 );
@@ -2278,7 +2279,7 @@ void aed_create_window(AED_root *aedr) {
 
     awmm->callback( AW_help_entry_pressed );
     awmm->create_button(0,"?");
-	
+
     awmm->set_info_area_height( 30 );
     awmm->set_bottom_area_height( 0 );
 

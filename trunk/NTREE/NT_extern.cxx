@@ -626,6 +626,9 @@ GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl
 }
 
 #define AWMIMT awm->insert_menu_topic
+//  --------------------------------------------------------------------
+//      AW_window * create_nt_main_window(AW_root *awr, AW_CL clone)
+//  --------------------------------------------------------------------
 AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GB_push_transaction(gb_main);
     AW_gc_manager  aw_gc_manager;
@@ -938,6 +941,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
             AWMIMT("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
             AWMIMT("props_tree",	"Tree: Colors and Fonts ...",	"C","nt_props_data.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+//             AWMIMT("props_tree",	"Tree: Colors groups ...",	"G","nt_color_groups.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_color_groups_window, (AW_CL)aw_gc_manager );
             AWMIMT("props_tree2",	"Tree Settings ...",		"T","nt_tree_settings.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
             AWMIMT("props_www",	"WWW  ...",			"W","props_www.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
             awm->insert_separator();

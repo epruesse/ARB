@@ -3,5 +3,4 @@
 
 AW_window *AWT_preset_window( AW_root *root ) ;
 
-
 #endif

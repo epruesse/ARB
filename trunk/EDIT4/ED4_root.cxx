@@ -1388,6 +1388,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
                                     ED4_expose_cb,						//callback function
                                     1,						// AW_CL for callback function
                                     0,						// AW_CL for callback function
+                                    false, // no color groups
 
                                     "#ffffe0",
                                     "STANDARD$black",					// Standard Color showing sequences
