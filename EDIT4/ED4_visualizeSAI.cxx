@@ -244,14 +244,18 @@ void deleteColorTranslationTable(AW_window *aws){
     if(answer) return;
 
     char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+
     if(clrTabName[0]!='?') {
         aws->delete_selection_from_list(clrTransTableLst, clrTabName);
         aws->insert_default_selection(clrTransTableLst, "????", "????");
         aws->update_selection_list(clrTransTableLst);
     }
+
+    aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
     free(clrTabName);
 
-    colorDefTabNameChanged_callback(aw_root);    
+    //refresh editor
+    ED4_ROOT->refresh_all_windows(1);
 }
 
 AW_selection_list *buildClrTransTabNamesList(AW_window *aws, AW_selection_list *clrTransTabNamesList){
