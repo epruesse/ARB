@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <arbdb.h>
 #include <stdarg.h>
 #include <aw_root.hxx>
@@ -839,16 +840,38 @@ char *aw_ref_to_title(char *ref){
 }
 void aw_help_new_helpfile(AW_root *awr){
     char *help_file = get_full_qualified_help_file_name(awr);
+
     if (!strlen(help_file)) {
         awr->awar("tmp/aw_window/helptext")->write_string("no help\0");
-    } else if (!GBS_string_cmp(help_file,"*.ps",0) ){	// Postscript file
-        char sys[1024];
-        sprintf(sys,"%s %s &",GB_getenvGS(), help_file);
+    }
+    else if (!GBS_string_cmp(help_file,"*.ps",0) ){ // Postscript file
+        struct stat st;
+        char        sys[1024];
+
+        sys[0] = 0;
+
+        if (stat(help_file, &st) == 0) { // *.ps exists
+            sprintf(sys,"%s %s &",GB_getenvGS(), help_file);
+        }
+        else {
+            char *compressed = strdup(GBS_global_string("%s.gz", help_file));
+
+            if (stat(compressed, &st) == 0) { // *.ps.gz exists
+                sprintf(sys,"(gunzip <%s | %s -) &", compressed, GB_getenvGS());
+            }
+            else {
+                sprintf(AW_ERROR_BUFFER, "Neither %s nor %s where found", help_file, compressed);
+                aw_message();
+            }
+            free(compressed);
+        }
+
         if (system(sys)){
             sprintf(AW_ERROR_BUFFER,"Error calling: %s",sys);
             aw_message();
         }
-    }else{
+    }
+    else{
         if (aw_help_global.history){
             if (strncmp(help_file,aw_help_global.history,strlen(help_file))){
                 char comm[1024];
