@@ -1327,7 +1327,7 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment)
         if (gb_name) {
             error = GB_delete(gb_name);
 #if defined(DEBUG)
-            printf("deleted '%s' of '%s'\n", QUALITY_NAME, GBT_read_name(gb_species));
+            printf("deleted '%s' of '%s' (gb_name=%p)\n", QUALITY_NAME, GBT_read_name(gb_species), gb_name);
 #endif
         }
 
@@ -1336,7 +1336,7 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment)
             if (gb_name) {
                 error = GB_delete(gb_name);
 #if defined(DEBUG)
-                printf("deleted '%s' of '%s'\n", INSERTS_NAME, GBT_read_name(gb_species));
+                printf("deleted '%s' of '%s' (gb_name=%p)\n", INSERTS_NAME, GBT_read_name(gb_species), gb_name);
 #endif
             }
         }
@@ -2193,7 +2193,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
  int                             get_consensus = 0;
  int                             pt_server_id  = -1;
 
- awtc_assert(cd->helix_string != 0);
+//  awtc_assert(cd->helix_string != 0);
 
  AWTC_get_first_selected_species get_first_selected_species = 0;
  AWTC_get_next_selected_species  get_next_selected_species  = 0;
@@ -2435,7 +2435,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, FAST_ALIGNER_TITLE, FAST_ALIGNER_TITLE, 10, 10 );
+    aws->init( root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE, 10, 10 );
     aws->load_xfig("awtc/faligner.fig");
 
     aws->label_length( 10 );

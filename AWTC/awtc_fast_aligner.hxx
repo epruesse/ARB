@@ -10,7 +10,7 @@
 #define _USE_AW_WINDOW
 #include <BI_helix.hxx>
 
- #define FAST_ALIGNER_TITLE "Fast Aligner V1.03"
+#define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
  typedef char* 	(*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
  typedef int 	(*AWTC_get_selected_range)(int *firstColumn, int *lastColumn);
