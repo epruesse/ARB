@@ -18,58 +18,70 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 		species, targets and additional information are ranked and
 		displayed according to the degree of similarity.
 
-		Select a 'PT_SERVER' from the menu displayed after pressing the
-			'PT_SERVER' button of the 'PROBE MATCH' window.
+		Select a 'PT_SERVER' from the menu displayed after
+		pressing the 'PT_SERVER' button of the 'PROBE MATCH'
+		window.
 
-		Define whether similar (not perfectly matched) sites should be
-			displayed by pressing the 'Search depth' button and
-			selecting the number of mismatches (1 - 5) from the
-			menu.
+		Define whether similar (not perfectly matched) sites
+		should be displayed by pressing the 'Search depth'
+		button and selecting the number of mismatches (1 - 20)
+		from the menu.
 
 		Enable the 'Use weighted mismatches' toggle to use the
-			weights defined via 'EXPERT' button (see LINK{pd_spec_param.hlp}).
+		weights defined via 'EXPERT' button (see
+		LINK{pd_spec_param.hlp}).
 
-		Define whether the species which contain the target or probe
-			(or similar) sequence should be marked (see LINK{mark.hlp})
-                        by enabling the 'Mark in database' toggle.
+		Define whether the species which contain the target or
+		probe (or similar) sequence should be marked (see
+		LINK{mark.hlp}) by enabling the 'Mark in database'
+		toggle.
 
 		Define if probe AND target sequence should be searched
-			by enabling the 'Check rev.compl. too' toggle.
+		by enabling the 'Check rev.compl. too' toggle.
 
-		Press the 'EXPERT' button to display the 'PD SPECIAL' window if
-			base pairings should be individually weighed (see LINK{pd_spec_param.hlp}).
+		Press the 'EXPERT' button to display the 'PD SPECIAL'
+		window if base pairings should be individually weighed
+		(see LINK{pd_spec_param.hlp}).
 
 		Press the 'MATCH' button to perform the search.
 
-                Enabling the 'Auto (match)' toggle will automatically start a probe match
-                whenever the target string is changed [Unstable!].
+                Enabling the 'Auto (match)' toggle will automatically
+                start a probe match whenever the target string is
+                changed. Try it when you design probes.
 
+		The results will be displayed within the display area,
+		ranked according to the degree of similarity between
+		probe string and database entries.
 
-		The results will be displayed within the display area, ranked
-			according to the degree of similarity between probe
-			string and database entries.
+                Brief description of the listed columns:
 
-			Name and full name of the species are shown in the first
-				and second columns, respectively.
+                  - name: short name of the matched species
+                  - fullname: full name of the matched species
+                  - mis: number of mismatches
+                  - N_mis: number of pairings with ambiguous residues (N)
+                  - wmis: mismatch weights
+                  - pos: alignment position of match
+                  - rev: 0=normal match; 1=reverse complement match
 
-			The number of mismatches, pairings of ambiguous residues
-				(N), and mismatch weights are listed in columns
-				3 - 5, respectively.
+                Results from gene PT_servers consist of different columns:
 
-			Column 6 indicates whether the probe string (0) or its
-				reversed complement (1) was found.
+                  - organism: short name of the matched organism
+                  - genename: short name of the gene
+                  - mis, N_mis, wmis, rev (same meaning as with normal PT_server)
+                  - pos: position of match in genome sequence
+                  - gpos: position of match in gene sequence
 
-			Sequence sections containing stretches identical or
-				similar to the probe string or its reversed
-				complement are shown between dashes in the last
-				column.
-				Perfectly matched positions are indicated by
-				double dashes, mismatches by base symbols.
-				The (hybrid destabilizing) quality of mismatches
-				is indicated by upper and lower case letters.
+                Sequence sections containing stretches identical or
+                similar to the probe string or its reversed complement
+                are shown between dashes in the last column:
 
-		To write the results to an ascii file press the 'SAVE' button to
-			display the 'SELECTION BOX' window.
+                    Perfectly matched positions are indicated by
+                    double dashes, mismatches by base symbols.  The
+                    (hybrid destabilizing) quality of mismatches is
+                    indicated by upper and lower case letters.
+
+#		To write the results to an ascii file press the 'SAVE'
+#		button to display the 'SELECTION BOX' window.
 
 
 NOTES		Unlike the 'ARB_PROBE_DESIGN' tool, the 'ARB_PROBE_MATCH' tool
@@ -82,5 +94,4 @@ EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Ambiguities do not work yet.
-		( Will be changed in future )
+BUGS		The number of results is currently limited to 10000 hits.
