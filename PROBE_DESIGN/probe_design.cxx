@@ -1285,6 +1285,75 @@ void pd_export_pt_server(AW_window *aww)
     }
 }
 
+#ifdef DEVEL_IDP
+void pd_export_gene_pt_server(AW_window *aww)
+{
+    AW_root *awr = aww->get_root();
+    char pt_server[256];
+    int i;
+    char *server;
+    char *file;
+    char *tempfile;
+    char command [1024];
+    GB_ERROR error;
+    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    if (aw_message(
+                   "This function will send your currently loaded data as the new data to the pt_server !!!\n"
+                   "The server will need a long time (up to several hours) to analyse the data.\n"
+                   "Until the new server has analyzed all data, no server functions are available.\n\n"
+                   "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
+                   "Note 2: The server will do the job in background,\n"
+                   "        quitting this program won't affect the server","Cancel,Do it")){
+        aw_openstatus("Export db to server");
+        aw_status("Search server to kill");
+        arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
+        server = GBS_read_arb_tcp(pt_server);
+        file = server;              /* i got the machine name of the server */
+        if (*file) file += strlen(file)+1;  /* now i got the command string */
+        if (*file) file += strlen(file)+1;  /* now i got the file */
+        if (*file == '-') file += 2;
+	tempfile = (char*) malloc((strlen(file)+5));
+	strcpy (tempfile,file);
+	for (i = strlen(tempfile);i>0;i--) {
+	  if (tempfile[i] == '/') break;
+	}
+	i++;
+	tempfile[i++] = 't';
+	tempfile[i++] = '.';
+	tempfile[i++] = 'a';
+	tempfile[i++] = 'r';
+	tempfile[i++] = 'b';
+	tempfile[i++] = '\0';
+
+
+        aw_status("Exporting the database");
+        error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
+
+        if (!error) { // set pt-server database file to same permissions as pts directory
+	  sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
+	  system(command);
+            char *dir = strrchr(file,'/');
+            if (dir) {
+                *dir = 0;
+                long modi = GB_mode_of_file(file);
+                *dir = '/';
+                modi &= 0666;
+                error = GB_set_mode_of_file(file,modi);
+            }
+        }
+
+        if (!error ) {
+	  aw_status("Start new server");
+	  error = arb_start_server(pt_server,gb_main,0);
+        }
+        if (error) {
+            aw_message(error);
+        }
+        aw_closestatus();
+    }
+}
+#endif
+
 void pd_edit_arb_tcp(AW_window *aww){
     awt_edit(aww->get_root(),"$(ARBHOME)/lib/arb_tcp.dat",900,400);
 }
@@ -1332,6 +1401,12 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp);
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
+
+#ifdef DEVEL_IDP
+    aws->at( "idp" );
+    aws->callback(pd_export_gene_pt_server);
+    aws->create_button("idp","IDP");
+#endif
 
     return aws;
 }
