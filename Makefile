@@ -1186,10 +1186,11 @@ endif
 	rm -f PERL2ARB/ARB.xs
 	rm -f PERL2ARB/proto.h
 	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h ARBDB/adGene.h >PERL2ARB/proto.h
-	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK; \
-		export LD_LIBRARY_PATH; \
-		echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH; \
-		echo calling bin/arb_proto_2_xsub ...; \
+#	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK; \
+#		export LD_LIBRARY_PATH; \
+#		echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH; \
+#		echo calling bin/arb_proto_2_xsub ...; \
+
 		bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
 	echo "#undef DEBUG" >PERL2ARB/debug.h
 	echo "#undef NDEBUG" >>PERL2ARB/debug.h
