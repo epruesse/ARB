@@ -73,7 +73,7 @@ typedef list<PositionPair> PositionPairList;
 
 struct ltNonOverlap {
     // sorting with this operator identifies all overlapping PositionPair's as "equal"
-    bool operator ()(const PositionPair& p1, const PositionPair& p2) {
+    bool operator ()(const PositionPair& p1, const PositionPair& p2) const {
         return p1.end < p2.begin;
     }
 };
