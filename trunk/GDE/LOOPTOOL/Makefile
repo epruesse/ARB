@@ -13,15 +13,9 @@ depend:
 	makedepend $(MAKEDEPENDINC) $(OBJECTS:.o=.c)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-Draw.o:  globals.h
-Draw.o: loop.h
-ReadData.o:  globals.h
-ReadData.o: loop.h
-Window.o:  globals.h
-Window.o: loop.h
-WriteData.o: globals.h loop.h
-main.o:  globals.h
-main.o: loop.h
-menu.o:  globals.h
-menu.o: loop.h
+main.o:   loop.h globals.h
+Window.o:  loop.h globals.h
+menu.o:  loop.h globals.h
+ReadData.o:  loop.h globals.h
+Draw.o:  loop.h globals.h
+WriteData.o:  loop.h globals.h

@@ -15,17 +15,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-amenu.o:  clustalv.h
+clustalv.o:  clustalv.h general.h matrices.h
+amenu.o:   clustalv.h
 amenu.o: general.h
-clustalv.o: clustalv.h general.h matrices.h
-myers.o:  clustalv.h
-myers.o: general.h
-sequence.o: clustalv.h general.h
-showpair.o: clustalv.h general.h
-trees.o:  clustalv.h
-trees.o: general.h
-upgma.o:  clustalv.h
-upgma.o: general.h
-util.o:  clustalv.h
-util.o: general.h
+myers.o:  clustalv.h general.h
+sequence.o:   clustalv.h
+sequence.o: general.h
+showpair.o:  clustalv.h general.h
+upgma.o:  clustalv.h general.h
+util.o: clustalv.h general.h
+trees.o:  clustalv.h general.h

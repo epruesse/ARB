@@ -62,6 +62,13 @@ static IslandHopping *island_hopper = 0;
 #define FA_AWAR_SUBST_PARA_CT (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_ct")
 #define FA_AWAR_SUBST_PARA_GT (FA_AWAR_ISLAND_HOPPING_ROOT "subst_para_gt")
 
+#define FA_AWAR_EXPECTED_DISTANCE (FA_AWAR_ISLAND_HOPPING_ROOT "expected_dist")
+#define FA_AWAR_STRUCTURE_SUPPLEMENT (FA_AWAR_ISLAND_HOPPING_ROOT "struct_suppl")
+#define FA_AWAR_THRESHOLD (FA_AWAR_ISLAND_HOPPING_ROOT "threshold")
+#define FA_AWAR_GAP_A (FA_AWAR_ISLAND_HOPPING_ROOT "gapa")
+#define FA_AWAR_GAP_B (FA_AWAR_ISLAND_HOPPING_ROOT "gapb")
+#define FA_AWAR_GAP_C (FA_AWAR_ISLAND_HOPPING_ROOT "gapc")
+
 // --------------------------------------------------------------------------------
 
 static inline GB_ERROR species_not_found(GB_CSTR species_name) {
@@ -2203,6 +2210,24 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping();
         island_hopper->set_helix(cd->helix_string);
+        island_hopper->set_parameters(root->awar(FA_AWAR_ESTIMATE_BASE_FREQ)->read_int(),
+                                      root->awar(FA_AWAR_BASE_FREQ_T)->read_float(),
+                                      root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
+                                      root->awar(FA_AWAR_BASE_FREQ_A)->read_float(),
+                                      root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_CT)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_AT)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_GT)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_AC)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_CG)->read_float(),
+                                      root->awar(FA_AWAR_SUBST_PARA_AG)->read_float(),
+                                      root->awar(FA_AWAR_EXPECTED_DISTANCE)->read_float(),
+                                      root->awar(FA_AWAR_STRUCTURE_SUPPLEMENT)->read_float(),
+                                      root->awar(FA_AWAR_GAP_A)->read_float(),
+                                      root->awar(FA_AWAR_GAP_B)->read_float(),
+                                      root->awar(FA_AWAR_GAP_C)->read_float(),
+                                      root->awar(FA_AWAR_THRESHOLD)->read_float()
+                                      );
     }
 
     switch (alignWhat=root->awar(FA_AWAR_TO_ALIGN)->read_int()) {
@@ -2356,6 +2381,13 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_float(FA_AWAR_SUBST_PARA_CT,		4.0,  	db1);
     root->awar_float(FA_AWAR_SUBST_PARA_GT,		1.0,  	db1);
 
+    root->awar_float(FA_AWAR_EXPECTED_DISTANCE,     0.3,  	db1);
+    root->awar_float(FA_AWAR_STRUCTURE_SUPPLEMENT,  0.5,  	db1);
+    root->awar_float(FA_AWAR_THRESHOLD,		        0.005,  	db1);
+
+    root->awar_float(FA_AWAR_GAP_A,		8.0,  	db1);
+    root->awar_float(FA_AWAR_GAP_B,		4.0,  	db1);
+    root->awar_float(FA_AWAR_GAP_C,		7.0,  	db1);
 }
 
 void AWTC_awar_set_actual_sequence(AW_root *root, AW_default db1)
@@ -2386,7 +2418,7 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
     aws->callback     ( AW_POPUP_HELP, (AW_CL) "islandhopping.hlp"  );
     aws->create_button( "HELP", "HELP" );
 
-    aws->at("estimate");
+    aws->at("freq");
     aws->create_toggle_field(FA_AWAR_ESTIMATE_BASE_FREQ,"Base freq.","B");
     aws->insert_default_toggle("Estimate","E",1);
     aws->insert_toggle("Define here: ","D",0);
@@ -2427,6 +2459,34 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
 
 #undef XOFF
 #undef YOFF
+
+    aws->label_length(22);
+
+    aws->at("dist");
+    aws->label("Expected distance");
+    aws->create_input_field(FA_AWAR_EXPECTED_DISTANCE, 5);
+
+    aws->at("supp");
+    aws->label("Structure supplement");
+    aws->create_input_field(FA_AWAR_STRUCTURE_SUPPLEMENT, 5);
+
+    aws->at("thres");
+    aws->label("Threshold");
+    aws->create_input_field(FA_AWAR_THRESHOLD, 5);
+
+    aws->label_length(10);
+
+    aws->at("gapA");
+    aws->label("Gap A");
+    aws->create_input_field(FA_AWAR_GAP_A, 5);
+
+    aws->at("gapB");
+    aws->label("Gap B");
+    aws->create_input_field(FA_AWAR_GAP_B, 5);
+
+    aws->at("gapC");
+    aws->label("Gap C");
+    aws->create_input_field(FA_AWAR_GAP_C, 5);
 
     return (AW_window *)aws;
 }

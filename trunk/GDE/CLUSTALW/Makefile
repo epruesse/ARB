@@ -17,25 +17,23 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-alnscore.o: clustalw.h general.h
-amenu.o:  clustalw.h
-amenu.o: general.h
-calcgapcoeff.o: clustalw.h general.h
-calcprf1.o: clustalw.h general.h
-calcprf2.o: clustalw.h general.h
-calctree.o: clustalw.h general.h
-clustalw.o: clustalw.h general.h
-interface.o: clustalw.h general.h param.h
-malign.o:  clustalw.h
+interface.o:  clustalw.h general.h param.h
+sequence.o:   clustalw.h
+sequence.o: general.h
+showpair.o:  clustalw.h general.h
+malign.o:   clustalw.h
 malign.o: general.h
-pairalign.o: clustalw.h general.h
-prfalign.o: clustalw.h general.h
-readmat.o:  clustalw.h
-readmat.o: general.h matrices.h
-sequence.o: clustalw.h general.h
-showpair.o: clustalw.h general.h
-trees.o:  clustalw.h
-trees.o: dayhoff.h general.h
-util.o:  clustalw.h
-util.o: general.h
+util.o: clustalw.h general.h
+trees.o:  clustalw.h general.h dayhoff.h
+prfalign.o:  clustalw.h general.h
+pairalign.o:  clustalw.h general.h
+calcgapcoeff.o:   clustalw.h
+calcgapcoeff.o: general.h
+calcprf1.o:  clustalw.h general.h
+calcprf2.o:  clustalw.h general.h
+calctree.o:   clustalw.h
+calctree.o: general.h
+readmat.o:  clustalw.h general.h matrices.h
+alnscore.o: clustalw.h general.h
+clustalw.o:  clustalw.h general.h
+amenu.o:  clustalw.h general.h

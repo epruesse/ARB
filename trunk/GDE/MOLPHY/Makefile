@@ -175,42 +175,640 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-Dpstree.o: matrixut.h molphy.h protml.h
-Ndistan.o: matrixut.h molphy.h protml.h
-Njdist.o: matrixut.h molphy.h tridist.h
-Nmlklhd.o: matrixut.h molphy.h protml.h
-Nseqstat.o: matrixut.h molphy.h protst.h
-Ntranprb.o: matrixut.h molphy.h protml.h
-Nucml.o: matrixut.h molphy.h protml.h
-Nucst.o: matrixut.h molphy.h protst.h
-Nuctpm.o: matrixut.h molphy.h protml.h
-Prottpm.o: matrixut.h molphy.h protml.h
-altree.o: matrixut.h molphy.h protml.h
-distan.o: matrixut.h molphy.h protml.h
-distproc.o: matrixut.h molphy.h tridist.h
-dyhfjtt.o: matrixut.h molphy.h protml.h
-getseq.o: matrixut.h molphy.h prot_tml.h protml.h
-matrixut.o: matrixut.h
-mlklhd.o: matrixut.h molphy.h protml.h
-mltree.o: matrixut.h molphy.h protml.h
-mtrev22.o: matrixut.h molphy.h protml.h
-mtrev24.o: matrixut.h molphy.h protml.h
-mygetopt.o: molphy.h
-njmtree.o: matrixut.h molphy.h protml.h
-njproc.o: matrixut.h molphy.h tridist.h
-njtree.o: matrixut.h molphy.h protml.h
-nucproc.o: matrixut.h molphy.h protml.h
-protml.o: matrixut.h molphy.h protml.h
-protproc.o: matrixut.h molphy.h protml.h
-protst.o: matrixut.h molphy.h protst.h
-prtree.o: matrixut.h molphy.h protml.h
-pstree.o: matrixut.h molphy.h protml.h
-qltree.o: matrixut.h molphy.h protml.h
-seqproc.o: matrixut.h molphy.h protml.h
-seqstat.o: matrixut.h molphy.h protst.h
-sltree.o: matrixut.h molphy.h protml.h
-totalml.o: matrixut.h molphy.h totalml.h
-tranprb.o: matrixut.h molphy.h protml.h
-tridist.o: matrixut.h molphy.h tridist.h
-triproc.o: matrixut.h molphy.h tridist.h
+../../bin/Dpstree.o: protml.h molphy.h 
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o:  
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o: 
+../../bin/Dpstree.o:   matrixut.h
+../../bin/Ndistan.o: protml.h molphy.h 
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o:  
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o: 
+../../bin/Ndistan.o:   matrixut.h
+../../bin/Njdist.o: tridist.h molphy.h 
+../../bin/Njdist.o:  
+../../bin/Njdist.o: 
+../../bin/Njdist.o: 
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o: 
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o:  
+../../bin/Njdist.o: 
+../../bin/Njdist.o: 
+../../bin/Njdist.o: 
+../../bin/Njdist.o:   matrixut.h
+../../bin/Nmlklhd.o: protml.h molphy.h 
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o:  
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o: 
+../../bin/Nmlklhd.o:   matrixut.h
+../../bin/Nseqstat.o: protst.h molphy.h 
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o:  
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o: 
+../../bin/Nseqstat.o:   matrixut.h
+../../bin/Ntranprb.o: protml.h molphy.h 
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o:  
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o: 
+../../bin/Ntranprb.o:   matrixut.h
+../../bin/Nucml.o: protml.h molphy.h 
+../../bin/Nucml.o:  
+../../bin/Nucml.o: 
+../../bin/Nucml.o: 
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o: 
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o:  
+../../bin/Nucml.o: 
+../../bin/Nucml.o: 
+../../bin/Nucml.o: 
+../../bin/Nucml.o:   matrixut.h
+../../bin/Nucst.o: protst.h molphy.h 
+../../bin/Nucst.o:  
+../../bin/Nucst.o: 
+../../bin/Nucst.o: 
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o: 
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o:  
+../../bin/Nucst.o: 
+../../bin/Nucst.o: 
+../../bin/Nucst.o: 
+../../bin/Nucst.o:   matrixut.h
+../../bin/Nuctpm.o: protml.h molphy.h 
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o:  
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o: 
+../../bin/Nuctpm.o:   matrixut.h
+../../bin/Prottpm.o: protml.h molphy.h 
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o:  
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o: 
+../../bin/Prottpm.o:   matrixut.h
+../../bin/altree.o: protml.h molphy.h 
+../../bin/altree.o:  
+../../bin/altree.o: 
+../../bin/altree.o: 
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o: 
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o:  
+../../bin/altree.o: 
+../../bin/altree.o: 
+../../bin/altree.o: 
+../../bin/altree.o:   matrixut.h
+../../bin/distan.o: protml.h molphy.h 
+../../bin/distan.o:  
+../../bin/distan.o: 
+../../bin/distan.o: 
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o: 
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o:  
+../../bin/distan.o: 
+../../bin/distan.o: 
+../../bin/distan.o: 
+../../bin/distan.o:   matrixut.h
+../../bin/distproc.o: tridist.h molphy.h 
+../../bin/distproc.o:  
+../../bin/distproc.o: 
+../../bin/distproc.o: 
+../../bin/distproc.o:  
+../../bin/distproc.o:  
+../../bin/distproc.o:  
+../../bin/distproc.o: 
+../../bin/distproc.o:  
+../../bin/distproc.o:  
+../../bin/distproc.o:  
+../../bin/distproc.o:  
+../../bin/distproc.o: 
+../../bin/distproc.o:  
+../../bin/distproc.o: 
+../../bin/distproc.o: 
+../../bin/distproc.o:   matrixut.h
+../../bin/dyhfjtt.o: protml.h molphy.h 
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o:  
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o: 
+../../bin/dyhfjtt.o:   matrixut.h
+../../bin/getseq.o: protml.h molphy.h 
+../../bin/getseq.o:  
+../../bin/getseq.o: 
+../../bin/getseq.o: 
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o: 
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o:  
+../../bin/getseq.o: 
+../../bin/getseq.o: 
+../../bin/getseq.o: 
+../../bin/getseq.o:   matrixut.h
+../../bin/getseq.o: prot_tml.h
+../../bin/matrixut.o:  
+../../bin/matrixut.o:  
+../../bin/matrixut.o: 
+../../bin/matrixut.o:  
+../../bin/matrixut.o:  
+../../bin/matrixut.o:  
+../../bin/matrixut.o: 
+../../bin/matrixut.o:  matrixut.h
+../../bin/mlklhd.o: protml.h molphy.h 
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o:  
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o: 
+../../bin/mlklhd.o:   matrixut.h
+../../bin/mltree.o: protml.h molphy.h 
+../../bin/mltree.o:  
+../../bin/mltree.o: 
+../../bin/mltree.o: 
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o: 
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o:  
+../../bin/mltree.o: 
+../../bin/mltree.o: 
+../../bin/mltree.o: 
+../../bin/mltree.o:   matrixut.h
+../../bin/mtrev22.o: protml.h molphy.h 
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o:  
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o: 
+../../bin/mtrev22.o:   matrixut.h
+../../bin/mtrev24.o: protml.h molphy.h 
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o:  
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o: 
+../../bin/mtrev24.o:   matrixut.h
+../../bin/mygetopt.o: molphy.h  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o: 
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o: 
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o: 
+../../bin/mygetopt.o:  
+../../bin/mygetopt.o: 
+../../bin/mygetopt.o: 
+../../bin/mygetopt.o:  
+../../bin/njmtree.o: protml.h molphy.h 
+../../bin/njmtree.o:  
+../../bin/njmtree.o: 
+../../bin/njmtree.o: 
+../../bin/njmtree.o:  
+../../bin/njmtree.o:  
+../../bin/njmtree.o:  
+../../bin/njmtree.o: 
+../../bin/njmtree.o:  
+../../bin/njmtree.o:  
+../../bin/njmtree.o:  
+../../bin/njmtree.o:  
+../../bin/njmtree.o: 
+../../bin/njmtree.o:  
+../../bin/njmtree.o: 
+../../bin/njmtree.o: 
+../../bin/njmtree.o:   matrixut.h
+../../bin/njproc.o: tridist.h molphy.h 
+../../bin/njproc.o:  
+../../bin/njproc.o: 
+../../bin/njproc.o: 
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o: 
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o:  
+../../bin/njproc.o: 
+../../bin/njproc.o: 
+../../bin/njproc.o: 
+../../bin/njproc.o:   matrixut.h
+../../bin/njtree.o: protml.h molphy.h 
+../../bin/njtree.o:  
+../../bin/njtree.o: 
+../../bin/njtree.o: 
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o: 
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o:  
+../../bin/njtree.o: 
+../../bin/njtree.o: 
+../../bin/njtree.o: 
+../../bin/njtree.o:   matrixut.h
+../../bin/nucproc.o: protml.h molphy.h 
+../../bin/nucproc.o:  
+../../bin/nucproc.o: 
+../../bin/nucproc.o: 
+../../bin/nucproc.o:  
+../../bin/nucproc.o:  
+../../bin/nucproc.o:  
+../../bin/nucproc.o: 
+../../bin/nucproc.o:  
+../../bin/nucproc.o:  
+../../bin/nucproc.o:  
+../../bin/nucproc.o:  
+../../bin/nucproc.o: 
+../../bin/nucproc.o:  
+../../bin/nucproc.o: 
+../../bin/nucproc.o: 
+../../bin/nucproc.o:   matrixut.h
+../../bin/protml.o: protml.h molphy.h 
+../../bin/protml.o:  
+../../bin/protml.o: 
+../../bin/protml.o: 
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o: 
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o:  
+../../bin/protml.o: 
+../../bin/protml.o: 
+../../bin/protml.o: 
+../../bin/protml.o:   matrixut.h
+../../bin/protproc.o: protml.h molphy.h 
+../../bin/protproc.o:  
+../../bin/protproc.o: 
+../../bin/protproc.o: 
+../../bin/protproc.o:  
+../../bin/protproc.o:  
+../../bin/protproc.o:  
+../../bin/protproc.o: 
+../../bin/protproc.o:  
+../../bin/protproc.o:  
+../../bin/protproc.o:  
+../../bin/protproc.o:  
+../../bin/protproc.o: 
+../../bin/protproc.o:  
+../../bin/protproc.o: 
+../../bin/protproc.o: 
+../../bin/protproc.o:   matrixut.h
+../../bin/protst.o: protst.h molphy.h 
+../../bin/protst.o:  
+../../bin/protst.o: 
+../../bin/protst.o: 
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o: 
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o:  
+../../bin/protst.o: 
+../../bin/protst.o: 
+../../bin/protst.o: 
+../../bin/protst.o:   matrixut.h
+../../bin/prtree.o: protml.h molphy.h 
+../../bin/prtree.o:  
+../../bin/prtree.o: 
+../../bin/prtree.o: 
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o: 
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o:  
+../../bin/prtree.o: 
+../../bin/prtree.o: 
+../../bin/prtree.o: 
+../../bin/prtree.o:   matrixut.h
+../../bin/pstree.o: protml.h molphy.h 
+../../bin/pstree.o:  
+../../bin/pstree.o: 
+../../bin/pstree.o: 
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o: 
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o:  
+../../bin/pstree.o: 
+../../bin/pstree.o: 
+../../bin/pstree.o: 
+../../bin/pstree.o:   matrixut.h
+../../bin/qltree.o: protml.h molphy.h 
+../../bin/qltree.o:  
+../../bin/qltree.o: 
+../../bin/qltree.o: 
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o: 
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o:  
+../../bin/qltree.o: 
+../../bin/qltree.o: 
+../../bin/qltree.o: 
+../../bin/qltree.o:   matrixut.h
+../../bin/seqproc.o: protml.h molphy.h 
+../../bin/seqproc.o:  
+../../bin/seqproc.o: 
+../../bin/seqproc.o: 
+../../bin/seqproc.o:  
+../../bin/seqproc.o:  
+../../bin/seqproc.o:  
+../../bin/seqproc.o: 
+../../bin/seqproc.o:  
+../../bin/seqproc.o:  
+../../bin/seqproc.o:  
+../../bin/seqproc.o:  
+../../bin/seqproc.o: 
+../../bin/seqproc.o:  
+../../bin/seqproc.o: 
+../../bin/seqproc.o: 
+../../bin/seqproc.o:   matrixut.h
+../../bin/seqstat.o: protst.h molphy.h 
+../../bin/seqstat.o:  
+../../bin/seqstat.o: 
+../../bin/seqstat.o: 
+../../bin/seqstat.o:  
+../../bin/seqstat.o:  
+../../bin/seqstat.o:  
+../../bin/seqstat.o: 
+../../bin/seqstat.o:  
+../../bin/seqstat.o:  
+../../bin/seqstat.o:  
+../../bin/seqstat.o:  
+../../bin/seqstat.o: 
+../../bin/seqstat.o:  
+../../bin/seqstat.o: 
+../../bin/seqstat.o: 
+../../bin/seqstat.o:   matrixut.h
+../../bin/sltree.o: protml.h molphy.h 
+../../bin/sltree.o:  
+../../bin/sltree.o: 
+../../bin/sltree.o: 
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o: 
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o:  
+../../bin/sltree.o: 
+../../bin/sltree.o: 
+../../bin/sltree.o: 
+../../bin/sltree.o:   matrixut.h
+../../bin/totalml.o: totalml.h molphy.h 
+../../bin/totalml.o:  
+../../bin/totalml.o: 
+../../bin/totalml.o: 
+../../bin/totalml.o:  
+../../bin/totalml.o:  
+../../bin/totalml.o:  
+../../bin/totalml.o: 
+../../bin/totalml.o:  
+../../bin/totalml.o:  
+../../bin/totalml.o:  
+../../bin/totalml.o:  
+../../bin/totalml.o: 
+../../bin/totalml.o:  
+../../bin/totalml.o: 
+../../bin/totalml.o: 
+../../bin/totalml.o:   matrixut.h
+../../bin/tranprb.o: protml.h molphy.h 
+../../bin/tranprb.o:  
+../../bin/tranprb.o: 
+../../bin/tranprb.o: 
+../../bin/tranprb.o:  
+../../bin/tranprb.o:  
+../../bin/tranprb.o:  
+../../bin/tranprb.o: 
+../../bin/tranprb.o:  
+../../bin/tranprb.o:  
+../../bin/tranprb.o:  
+../../bin/tranprb.o:  
+../../bin/tranprb.o: 
+../../bin/tranprb.o:  
+../../bin/tranprb.o: 
+../../bin/tranprb.o: 
+../../bin/tranprb.o:   matrixut.h
+../../bin/tridist.o: tridist.h molphy.h 
+../../bin/tridist.o:  
+../../bin/tridist.o: 
+../../bin/tridist.o: 
+../../bin/tridist.o:  
+../../bin/tridist.o:  
+../../bin/tridist.o:  
+../../bin/tridist.o: 
+../../bin/tridist.o:  
+../../bin/tridist.o:  
+../../bin/tridist.o:  
+../../bin/tridist.o:  
+../../bin/tridist.o: 
+../../bin/tridist.o:  
+../../bin/tridist.o: 
+../../bin/tridist.o: 
+../../bin/tridist.o:   matrixut.h
+../../bin/triproc.o: tridist.h molphy.h 
+../../bin/triproc.o:  
+../../bin/triproc.o: 
+../../bin/triproc.o: 
+../../bin/triproc.o:  
+../../bin/triproc.o:  
+../../bin/triproc.o:  
+../../bin/triproc.o: 
+../../bin/triproc.o:  
+../../bin/triproc.o:  
+../../bin/triproc.o:  
+../../bin/triproc.o:  
+../../bin/triproc.o: 
+../../bin/triproc.o:  
+../../bin/triproc.o: 
+../../bin/triproc.o: 
+../../bin/triproc.o:   matrixut.h
