@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Mon Sep/22/2003 13:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 14:09 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -127,8 +127,10 @@ static GB_ERROR checkDatabaseType(GBDATA *gb_main, const char *db_name, const ch
 //       :   <-> _c
 //       '   <-> _q
 
+#if !(defined(SKIP_ENCODETREENODE) && defined(SKIP_DECODETREENODE))
 static const char *PG_tree_node_escaped_chars = "_,;:'";
 static const char *PG_tree_node_replace_chars = "_.scq";
+#endif
 
 #ifndef SKIP_ENCODETREENODE
 static char *encodeTreeNode(const char *str) {
