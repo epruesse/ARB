@@ -149,9 +149,13 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode)	// run on father !!!
 
 int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on father !!!
 {
-    /* mode	0	to top
+    /* mode
+
+       0	to top
        1	to bottom
-       2	center
+       2	center (to top)
+       3	center (to bottom; don't use this - it's used internal)
+
     */
     static char *leafname;
 
@@ -159,7 +163,8 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
         GB_transaction dummy(this->gb_main);
         at = this->tree_root;
         if(!at) return 0;
-        at->arb_tree_leafsum();
+        at->arb_tree_set_leafsum_viewsum();
+
         this->resort_tree(mode,at);
         at->compute_tree(this->gb_main);
         return 0;
@@ -174,7 +179,7 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
     int leftsize = at->leftson->gr.leave_sum;
     int rightsize = at->rightson->gr.leave_sum;
 
-    if ( (mode &1) == 0 ){
+    if ( (mode &1) == 0 ) { // to top
         if (rightsize >leftsize ) {
             at->swap_sons();
         }
@@ -183,20 +188,6 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
             at->swap_sons();
         }
     }
-    if (leftleafname && rightleafname) {
-        if (strcmp(leftleafname,rightleafname) <0) {
-            leafname = leftleafname;
-        }else{
-            if (rightsize == leftsize){
-                at->swap_sons();
-            }
-            leafname = rightleafname;
-        }
-    }else{
-        if (leftleafname) leafname = leftleafname;
-        else leafname = rightleafname;
-    }
-
 
     int lmode = mode;
     int rmode = mode;
@@ -209,6 +200,21 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
     leftleafname = leafname;
     resort_tree(rmode,at->rightson);
     rightleafname = leafname;
+
+    if (leftleafname && rightleafname) {
+        if (strcmp(leftleafname,rightleafname) <0) {
+            leafname = leftleafname;
+        }else{
+            leafname = rightleafname;
+            if (rightsize == leftsize){
+                at->swap_sons();
+            }
+        }
+    }else{
+        if (leftleafname) leafname = leftleafname;
+        else leafname = rightleafname;
+    }
+
     return 0;
 }
 
