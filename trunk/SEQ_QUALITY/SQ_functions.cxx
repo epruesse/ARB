@@ -456,10 +456,51 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
 
+// void SQ_applyGroupData()  {
+//   //wert für aktuelle untergruppe berechnen
+//   //sequenzen der gruppe mit aktuellem consensus vergl. und wert speichern
+//   //Gewichtung nach anzahl der söhne ->nein
+//   //SQ_testagainstconsensus();
+//   //bei höherer gruppe genauso
+// }
 
 
+// SQ_GroupDataSeq *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 
+//     if (node->is_leaf){
+// 	if (!node->gb_node) return 0;
 
+// 	SQ_GroupData *data = new SQ_GroupDataSeq();
+
+//         //  ... sq_pass1 ohne for
+// 	//alter pass1 wird ohne tree
+// 	//neuer pass1 braucht calcstate!
+// 	// SQ_add_sequence
+
+// 	return data;
+//     }
+//     else {
+// 	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
+// 	//??   SQ_GroupData *rightData = SQ_GroupData.clone();
+// 	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
+
+// 	if (!leftData)  return rightData;
+// 	if (!rightData) return leftData;
+
+// 	//ansonsten zusammenaddieren = automat. gewichtung??
+// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq;
+// 	data.SQ_add(rightData);
+// 	data.SQ_add(leftData);
+// 	delete leftData;
+// 	delete rightData;
+
+// 	if (node->name) { //  gruppe!
+// 	    SQ_applyGroupData();
+// 	}
+
+// 	return data;
+//     }
+// }
 
 
 
@@ -485,7 +526,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 // 	SQ_GroupDataSeq *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
 // 	SQ_GroupDataSeq *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
 
-// 	if (!leftData) return rightData;
+// 	if (!leftData)  return rightData;
 // 	if (!rightData) return leftData;
 
 
@@ -500,4 +541,3 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 // 	return data;
 //     }
 // }
-
