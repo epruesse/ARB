@@ -1874,6 +1874,7 @@ void GB_internal_error(const char *templat, ...) {
     }
 #if defined(DEBUG)
     else {
+        gb_assert(0);
         fprintf(stderr,"Debug file %s not found -> continuing operation \n",
                 "$(ARBHOME)/do_core");
     }
