@@ -142,8 +142,11 @@ ifdef LINUX
    SITE_DEPENDEND_TARGETS = perl
    CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings) $(extended_cpp_warnings)
    ACC := $(ACC) $(LINUX_SPECIALS) $(extended_warnings)
-   CCLIB = $(ACC) -fpic
-   CCPLIB = $(CPP) -fpic	#			# Same for c++
+##   CCLIB = $(ACC) -fpic  ##Lothar
+##   CCPLIB = $(CPP) -fpic	#			# Same for c++
+   CCLIB = $(ACC) -fPIC
+   CCPLIB = $(CPP) -fPIC	#			# Same for c++
+
    f77_flags = $(fflags) -W -N9 -e
    F77LIB = -lU77
 
