@@ -7,44 +7,47 @@
 
 struct AWT_Codon_Code_Definition {
     const char *name;
-    const char *aa; // amino-codes
+    const char *aa;             // amino-codes
     const char *starts;
+    int         embl_feature_transl_table; // number of transl_table-entry in EMBL/GENEBANK features list
 };
 
-#define AWT_CODON_CODES 14 // number of different Amino-Translation-Codes
-#define AWT_MAX_CODONS 64  // maximum of possible codon (= 4^3)
+#define AWT_CODON_TABLES 17     // number of different Amino-Translation-Tables
+#define AWT_MAX_CODONS 64       // maximum of possible codon (= 4^3)
 
-extern struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_CODES+1];
+extern struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1];
+
+const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of the bacterial code table
 
 // --------------------------------------------------------------------------------
 
 class AWT_allowedCode {
-    char allowed[AWT_CODON_CODES];
-    
+    char allowed[AWT_CODON_TABLES];
+
     void copy(const AWT_allowedCode& other) {
-	for (int a=0; a<AWT_CODON_CODES; a++) {
-	    allowed[a] = other.allowed[a];
-	}
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            allowed[a] = other.allowed[a];
+        }
     }
     void set(int val) {
-	for (int a=0; a<AWT_CODON_CODES; a++) {
-	    allowed[a] = val;
-	}
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            allowed[a] = val;
+        }
     }
     void legal(int nr) const {
-	if (nr<0 || nr>=AWT_CODON_CODES) {
-	    *((char*)0)=0; // throw exception
-	}
+        if (nr<0 || nr>=AWT_CODON_TABLES) {
+            *((char*)0)=0; // throw exception
+        }
     }
 public:
-    AWT_allowedCode() { set(1); }  
-    AWT_allowedCode(const AWT_allowedCode& other) { copy(other); } 
+    AWT_allowedCode() { set(1); }
+    AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
     AWT_allowedCode& operator=(const AWT_allowedCode& other)  { copy(other); return *this; }
-    
-    int is_allowed(int nr) const { legal(nr); return allowed[nr]!=0; } 
+
+    int is_allowed(int nr) const { legal(nr); return allowed[nr]!=0; }
     void allow(int nr) { legal(nr); allowed[nr]=1; }
-    void forbid(int nr) { legal(nr); allowed[nr]=0; } 
-    
+    void forbid(int nr) { legal(nr); allowed[nr]=0; }
+
     void forbidAll() { set(0); }
     void allowAll() { set(1); }
 };
@@ -53,7 +56,9 @@ public:
 
 void AWT_initialize_codon_tables();
 
-int AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left);
+int AWT_embl_transl_table_2_arb_code_nr(int embl_index);
+
+int         AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left);
 const char *AWT_get_codons(char protein, int code_nr);
 
 const char *AWT_get_protein_name(char protein);
