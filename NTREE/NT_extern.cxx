@@ -231,6 +231,7 @@ void create_all_awars(AW_root *awr, AW_default def)
     AWTC_create_submission_variables(awr, gb_main);
     NT_createConcatenationAwars(awr,def);
     NT_createValidNamesAwars(awr,def); // lothar
+    SQ_create_awars(awr, def);
 
     ARB_init_global_awars(awr, def, gb_main);
     awt_create_aww_vars(awr,def);
@@ -858,16 +859,6 @@ void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
     aws->show();
 }
 
-//--------------------------------------------------------------------------------------------------
-
-void NT_calc_sequence_quality(AW_window *aww, AW_CL, AW_CL) {
-    //Jürgen
-    const char *treename = aww->get_root()->awar(AWAR_TREE)->read_string();
-
-    GB_ERROR error = SQ_calc_seq_quality(gb_main, treename);
-    if (error) aw_message(error);
-}
-
 //--------------------------------------- to increase the area of display --------------------
 static int windowHeight = 0;
 static void title_mode_changed(AW_root *aw_root, AW_window *aww)
@@ -1114,7 +1105,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
 
 #if defined(DEVEL_RALF) || defined(DEVEL_JUERGEN)
-            AWMIMT("seq_quality", "Calc Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  NT_calc_sequence_quality,        0, 0);
+            AWMIMT("seq_quality", "Calc Sequence Quality [debug only]",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
 #endif //
 
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
