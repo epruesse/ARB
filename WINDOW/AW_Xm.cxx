@@ -14,7 +14,6 @@
 #include "aw_commn.hxx"
 #include <aw_Xm.hxx>
 
-
 //*****************************************************************************************
 //			device_Xm
 //*****************************************************************************************
@@ -55,6 +54,9 @@ int	drawflag = 0;
 				gcm->gc,(int)CX0,(int)CY0,(int)CX1,(int)CY1);
 		}
 	}
+    
+    AUTO_FLUSH(this);
+    
 	return drawflag;
 }
 
@@ -68,6 +70,9 @@ int AW_draw_string_on_screen(AW_device *device, int gc,const  char *str, size_t 
     aw_assert(size <= strlen(str));
 	XDrawString(device->common->display, device->common->window_id, device->common->gcs[gc]->gc,
                 AW_INT(X), AW_INT(Y), str + start , (int)size);
+    
+    AUTO_FLUSH(device);
+    
 	return 1;
 }
 
@@ -101,6 +106,9 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
 			((int)CX1)-((int)CX0), ((int)CY1)-((int)CY0) );
 		}
 	}
+    
+    AUTO_FLUSH(this);
+    
 	return 0;
 }
 
@@ -139,11 +147,16 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
             }
 		}
 	}
+    
+    AUTO_FLUSH(this);
+    
 	return 0;
 }
 
 void AW_device_Xm::clear() {
 	XClearWindow(common->display,common->window_id);
+    
+    AUTO_FLUSH(this);
 }
 
 void AW_device_Xm::clear_part( AW_pos x, AW_pos y,AW_pos width, AW_pos height ) {
@@ -169,6 +182,8 @@ AW_pos X,Y;									// Transformed pos
 	if ( width <= 0 || height <= 0 ) return;
 
 	XClearArea(common->display,common->window_id,(int)X,(int)Y,(int)width,(int)height,False);
+    
+    AUTO_FLUSH(this);    
 }
 
 
@@ -199,7 +214,9 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
 	if ( width <= 0 || height <= 0 ) return;
 
 	XClearArea(common->display, common->window_id,
-		(int)X,(int)Y-(int)xfs->max_bounds.ascent,(int)width,(int)height,False);
+               (int)X,(int)Y-(int)xfs->max_bounds.ascent,(int)width,(int)height,False);
+    
+    AUTO_FLUSH(this);
 }
 
 
@@ -220,10 +237,10 @@ void AW_device_Xm::flush(void) {
 
 
 void AW_device_Xm::move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y ) {
-	int gc = 0;
+	int             gc  = 0;
 	class AW_GC_Xm *gcm = AW_MAP_GC(gc);
 	XCopyArea( common->display, common->window_id, common->window_id,	 gcm->gc,
-		(int)src_x, (int)src_y, (int)width, (int)height,
-		(int)dest_x, (int)dest_y );
-
+               (int)src_x, (int)src_y, (int)width, (int)height,
+               (int)dest_x, (int)dest_y );
+    AUTO_FLUSH(this);
 }
