@@ -1440,9 +1440,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
                                     "-RANGE 9$#303030",
 
-                                    "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
-                                    "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
-                                    "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
+                                    "+-USER1$#B8E2F8",      "+-USER2$#B8E2F8",      "-PROBE$#B8E2F8", // see also SEC_graphic::init_devices
+                                    "+-PRIMER(l)$#A9FE54",  "+-PRIMER(r)$#A9FE54",  "-PRIMER(g)$#A9FE54",
+                                    "+-SIGNATURE(l)$#DBB0FF",     "+-SIGNATURE(r)$#DBB0FF",     "-SIGNATURE(g)$#DBB0FF",
 
                                     "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
                                     "+-MARKED$#FFFFBD",     "-SELECTED$#FFFF80",
@@ -1494,8 +1494,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "load_actual", "Load current species [GET]","G","", AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0 );
     awmm->insert_menu_topic( "load_marked", "Load marked species","m","", AWM_ALL, ED4_get_marked_from_menu, 0, 0 );
     ____________________________SEP;
-    awmm->insert_menu_topic( "refresh_helix", "Reload Helix", "H", 0, AWM_ALL, ED4_reload_helix_cb, 0, 0 );
     awmm->insert_menu_topic( "refresh_ecoli", "Reload Ecoli Sequence", "E", 0, AWM_ALL, ED4_reload_ecoli_cb, 0, 0 );
+    awmm->insert_menu_topic( "refresh_helix", "Reload Helix", "H", 0, AWM_ALL, ED4_reload_helix_cb, 0, 0 );
+    awmm->insert_menu_topic( "helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0, AWM_ALL, ED4_helix_jump_opposite, 0, 0);
     ____________________________SEP;
 
     awmm->insert_sub_menu("SET_PROTECTION", "Set protection of current ", "p");
@@ -1510,23 +1511,24 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         }
     }
     awmm->close_sub_menu();
-    ____________________________SEP;
-    awmm->insert_menu_topic( "show_all", "Show All Bases ", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
-    awmm->insert_menu_topic( "show_diff", "Show Only Differences to Selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
 
 #if !defined(NDEBUG) && 0
     awmm->insert_menu_topic("turn_sequence", "Turn Sequence", "T", 0, AWM_ALL, ED4_turnSpecies, 1, 0);
     awmm->insert_menu_topic(0, "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
     ____________________________SEP;
-    awmm->insert_menu_topic( "helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0, AWM_ALL, ED4_helix_jump_opposite, 0, 0);
+    awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
+    awmm->insert_menu_topic("fast_align_set_ref", "Set Aligner Reference [Ctrl-R]","","faligner.hlp",AWM_ALL, (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
+    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "2","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
+    awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
+    ____________________________SEP;
     awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, 0, 0);
 
     // ------------------------------
-    //  Options
+    //  View
     // ------------------------------
 
-    awmm->create_menu(0, "Options", "O", 0, AWM_ALL);
+    awmm->create_menu(0, "View", "V", 0, AWM_ALL);
     awmm->insert_sub_menu(0, "Search", "S");
     {
         int s;
@@ -1560,12 +1562,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "restore_curpos", "Restore cursor position ", "R", 0, AWM_ALL, ED4_restore_curpos, 0, 0 );
     awmm->insert_menu_topic( "clear_curpos",   "Clear stored positions", "C", 0, AWM_ALL, ED4_clear_stored_curpos, 0, 0 );
     awmm->close_sub_menu();
-    awmm->insert_menu_topic( "change_cursor", "Change Cursor Type", "u", 0, AWM_ALL, ED4_change_cursor, 0, 0);
+
     ____________________________SEP;
-    awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
-    awmm->insert_menu_topic("fast_align_set_ref", "Set Aligner Reference [Ctrl-R]","","faligner.hlp",AWM_ALL, (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
-    awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "2","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
-    awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
+    awmm->insert_menu_topic( "change_cursor", "Change Cursor Type", "u", 0, AWM_ALL, ED4_change_cursor, 0, 0);
+    awmm->insert_menu_topic( "show_all", "Show All Bases ", "a",     "set_reference.hlp",    AWM_ALL, ED4_set_reference_species, 1, 0 );
+    awmm->insert_menu_topic( "show_diff", "Show Only Differences to Selected","d","set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0 );
     ____________________________SEP;
     awmm->insert_menu_topic( "enable_col_stat", "Activate Column Statistics", "v", "st_ml.hlp",AWM_ALL,ED4_activate_col_stat, 0, 0);
     awmm->insert_menu_topic( "disable_col_stat", "Disable Column Statistics", "", "st_ml.hlp",AWM_ALL,disable_col_stat, 0, 0);
