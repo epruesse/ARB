@@ -1422,8 +1422,8 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         AW_pos q[8];
         q[0] = x_son;	q[1] = ny0;
         q[2] = x_son;	q[3] = ny1;
-        q[4] = nx1;	q[5] = ny1;
-        q[6] = nx0;	q[7] = ny0;
+        q[4] = nx1;	    q[5] = ny1;
+        q[6] = nx0;	    q[7] = ny0;
 
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter, (AW_CL)at,0);
@@ -1446,10 +1446,10 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
         return (ny0+ny1)*.5;
     }
-    nx0 =  (x_son +  at->leftlen) ;
-    nx1 =  (x_son +  at->rightlen) ;
+    nx0 = (x_son +  at->leftlen) ;
+    nx1 = (x_son +  at->rightlen) ;
     ny0 = show_list_tree_rek(at->leftson,x_son, nx0);
-    ry = (double) y_pos-.5*scale;
+    ry  = (double) y_pos-.5*scale;
     ny1 = (double) show_list_tree_rek(at->rightson,x_son, nx1);
 
     if (at->name) {
@@ -1459,12 +1459,6 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     if (at->leftson->remark_branch ) {
         bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
 
-        //         disp_device->text(AWT_GC_BRANCH_REMARK, at->leftson->remark_branch ,
-        //                           (AW_pos) nx0,(AW_pos) ny0-scale*.1,
-        //                           (AW_pos) 1 , text_filter,
-        //                           (AW_CL) at , (AW_CL) 0 );
-
-
         if (show_circle && bootstrap_shown){
             AWT_show_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor,at->leftlen,nx0, ny0, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
         }
@@ -1472,11 +1466,6 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
     if (at->rightson->remark_branch ) {
         bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
-
-        //         disp_device->text(AWT_GC_BRANCH_REMARK,at->rightson->remark_branch ,
-        //                           (AW_pos) nx1,(AW_pos) ny1-scale*.1,
-        //                           (AW_pos) 1 , text_filter,
-        //                           (AW_CL) at , (AW_CL) 0 );
 
         if (show_circle && bootstrap_shown){
             AWT_show_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, at->rightlen,nx1, ny1, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
@@ -1486,31 +1475,23 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
     int lw = at->gr.left_linewidth+baselinewidth;
     disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
-    disp_device->line(at->leftson->gr.gc, x_son, ny0, nx0, ny0,
-                      line_filter,
-                      (AW_CL)at->leftson,0);
+    disp_device->line(at->leftson->gr.gc, x_son, ny0, nx0, ny0, line_filter, (AW_CL)at->leftson,0);
 
     int rw = at->gr.right_linewidth+baselinewidth;
     disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
-    disp_device->line(at->rightson->gr.gc,x_son, ny1, nx1, ny1,
-                      line_filter,
-                      (AW_CL)at->rightson,0);
+    disp_device->line(at->rightson->gr.gc,x_son, ny1, nx1, ny1, line_filter, (AW_CL)at->rightson,0);
 
-    if (lw == rw) {
-        disp_device->line(at->gr.gc, x_son, ny0, x_son, ny1,
-                          vert_line_filter,
-                          (AW_CL)at,0);
-    }else{
+//     if (lw == rw) {
+//         disp_device->line(at->gr.gc, x_son, ny0, x_son, ny1,
+//                           vert_line_filter,
+//                           (AW_CL)at,0);
+//     }else{
         disp_device->set_line_attributes(at->gr.gc,lw,AW_SOLID);
-        disp_device->line(at->gr.gc, x_son, ny0, x_son, ry,
-                          vert_line_filter,
-                          (AW_CL)at,0);
+        disp_device->line(at->leftson->gr.gc, x_son, ny0, x_son, ry, vert_line_filter, (AW_CL)at,0);
 
         disp_device->set_line_attributes(at->gr.gc,rw,AW_SOLID);
-        disp_device->line(at->gr.gc, x_son, ry, x_son, ny1,
-                          vert_line_filter,
-                          (AW_CL)at,0);
-    }
+        disp_device->line(at->rightson->gr.gc, x_son, ry, x_son, ny1, vert_line_filter, (AW_CL)at,0);
+//     }
     return ry;
 }
 
@@ -1538,9 +1519,7 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
     double l,r,w,z,l_min,l_max;
 
     disp_device->set_line_attributes(at->gr.gc,linewidth+baselinewidth,AW_SOLID);
-    disp_device->line(at->gr.gc, x_root, y_root, x_center, y_center,
-                      line_filter,
-                      (AW_CL)at,0);
+    disp_device->line(at->gr.gc, x_root, y_root, x_center, y_center, line_filter, (AW_CL)at,0);
 
     // draw mark box
     if (at->gb_node && GB_read_flag(at->gb_node)) {
@@ -1573,13 +1552,16 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
         l_min = at->gr.min_tree_depth;
         l_max = at->gr.tree_depth;
 
-        r = l = 0.5;
+        r    = l = 0.5;
         AW_pos q[6];
-        q[0] = x_center;		q[1] = y_center;
-        w = tree_orientation + r*0.5*tree_spread+ at->gr.right_angle;
-        q[2] = x_center+l_min*cos(w);	q[3] = y_center+l_min*sin(w);
-        w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
-        q[4] = x_center+l_max*cos(w);	q[5] = y_center+l_max*sin(w);
+        q[0] = x_center;
+        q[1] = y_center;
+        w    = tree_orientation + r*0.5*tree_spread+ at->gr.right_angle;
+        q[2] = x_center+l_min*cos(w);
+        q[3] = y_center+l_min*sin(w);
+        w    = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
+        q[4] = x_center+l_max*cos(w);
+        q[5] = y_center+l_max*sin(w);
 
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter, (AW_CL)at,0);
@@ -1767,7 +1749,7 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
     AW_pos	     offset;
     long	     max_strlen = 0;
 
-    disp_device->text(AWT_GC_CURSOR,
+    disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
                       nds_show_all ? "NDS List of all species:" : "NDS List of marked species:",
                       (AW_pos) scale * 2, (AW_pos) 0,
                       (AW_pos) 0, text_filter,
@@ -1784,6 +1766,11 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
             y_cursor = y_position + NT_SELECTED_WIDTH;
         }
 
+        bool is_marked = GB_read_flag(gb_species);
+        if (is_marked) {
+            NT_scalebox(AWT_GC_SELECTED,scale, y_position+NT_SELECTED_WIDTH, (int)NT_BOX_WIDTH);
+        }
+
         {
             AW_pos xs = 0;
             AW_pos X,Y;
@@ -1795,12 +1782,18 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
         }
 
         if (disp_device->type() != AW_DEVICE_SIZE){ // tree below cliprect bottom can be cut
-            const char *data     = make_node_text_nds(gb_main, gb_species, 1, 0);
-            long        slen     = strlen(data);
-            offset               = scale * 0.5;
+            const char *data = make_node_text_nds(gb_main, gb_species, 1, 0);
+            long        slen = strlen(data);
+            offset           = scale * 0.5;
 
-            disp_device->text(GB_read_flag(gb_species) ? AWT_GC_SELECTED : AWT_GC_NSELECTED,
-                              data,
+            int gc = AWT_GC_NSELECTED;
+            if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
+            else {
+                int color_group     = AW_find_color_group(gb_species);
+                if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
+            }
+
+            disp_device->text(gc, data,
                               (AW_pos) scale * 2, (AW_pos) y_position + offset,
                               (AW_pos) 0, text_filter,
                               (AW_CL) gb_species, (AW_CL) "species", slen);
