@@ -1,7 +1,8 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx
 CPP_OBJECTS =   MG_checkfield.o MG_main.o MG_trees.o MG_alignment.o \
-	MG_species.o MG_extendeds.o MG_names.o MG_gene_species.o MG_configs.o
+	MG_species.o MG_extendeds.o MG_names.o MG_gene_species.o \
+	MG_configs.o MG_preserves.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
@@ -101,3 +102,13 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/ad_prot.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+MG_preserves.o: $(ARBHOME)/INCLUDE/awt.hxx merge.hxx
