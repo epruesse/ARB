@@ -16,6 +16,7 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_question.hxx>
 #include <awt_canvas.hxx>
 #include <awt.hxx>
 #include <awtc_rename.hxx>
@@ -322,6 +323,25 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
+//  -----------------------------------------------------------------------------------------------------
+//      static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const char *value)
+//  -----------------------------------------------------------------------------------------------------
+static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const char *value) {
+    GB_ERROR  error = 0;
+    GB_clear_error();
+    GBDATA   *gbd   = GB_find(gb_pseudo, key, 0, down_level);
+
+    if (!gbd) {
+        gbd               = GB_create(gb_pseudo, key, GB_STRING);
+        error             = GB_get_error();
+        if (!error) error = GB_write_string(gbd, value);
+    }
+    return error;
+}
+
+static AW_repeated_question *ask_about_existing_gene_species = 0;
+static AW_repeated_question *ask_to_overwrite_alignment      = 0;
+
 //  ----------------------------------------------------------------------------------------------------
 //      void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const char *ali)
 //  ----------------------------------------------------------------------------------------------------
@@ -357,67 +377,119 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
         char acc[100];
         sprintf(acc, "ARB_GENE_%lX", id);
 
-        char     *short_name = 0;
-        GB_ERROR  error      = AWTC_generate_one_name(gb_main, full_name, acc, short_name, false);
+        // test if this gene has been already extracted to a gene-species
 
-        if (!error) {           // name was created
-            if (!nameIsUnique(short_name, gb_species_data)) {
-                char *uniqueName = AWTC_makeUniqueShortName(short_name, gb_species_data);
-                free(short_name);
-                short_name       = uniqueName;
-                if (!short_name) error = "No short name created.";
+        GBDATA   *gb_exist_geneSpec       = GEN_find_pseudo_species(gb_main, species_name, gene_name);
+        bool      create_new_gene_species = true;
+        char     *short_name              = 0;
+        GB_ERROR  error                   = 0;
+
+        if (gb_exist_geneSpec) {
+            GBDATA *gb_name       = GB_find(gb_exist_geneSpec, "name", 0, down_level);
+            char   *existing_name = GB_read_string(gb_name);
+
+            gen_assert(ask_about_existing_gene_species);
+            gen_assert(ask_to_overwrite_alignment);
+
+            char *question = strdup(GBS_global_string("Already have a gene-species for %s/%s ('%s')", species_name, gene_name, existing_name));
+            int   answer   = ask_about_existing_gene_species->get_answer(question, "Overwrite species,Insert new alignment,Skip,Create new", "all", true);
+
+            create_new_gene_species = false;
+
+            switch (answer) {
+                case 0: {   // Overwrite species
+                    // @@@ delete species
+                    create_new_gene_species = true;
+                    short_name = strdup(existing_name);
+                    break;
+                }
+                case 1: {     // Insert new alignment or overwrite alignment
+                    GBDATA *gb_ali = GB_find(gb_exist_geneSpec, ali, 0, down_level);
+                    if (gb_ali) { // the alignment already exists
+                        char *question2        = strdup(GBS_global_string("Gene-species '%s' already has data in '%s'", existing_name, ali));
+                        int   overwrite_answer = ask_to_overwrite_alignment->get_answer(question2, "Overwrite data,Skip", "all", true);
+
+                        if (overwrite_answer == 1) error      = GBS_global_string("Skipped gene-species '%s' (already had data in alignment)", existing_name); // Skip
+                        else if (overwrite_answer == 2) error = "Aborted."; // Abort
+
+                        free(question2);
+                    }
+                    break;
+                }
+                case 2: {       // Skip existing ones
+                    error = GBS_global_string("Skipped gene-species '%s'", existing_name);
+                    break;
+                }
+                case 3: {   // Create with new name
+                    create_new_gene_species = true;
+                    break;
+                }
+                case 4: {   // Abort
+                    error = "Aborted.";
+                    break;
+                }
+                default : gen_assert(0);
             }
-        }
-
-        if (error) {            // try to make a random name
-            error      = 0;
-            short_name = AWTC_generate_random_name(gb_species_data);
-
-            if (!short_name) {
-                error = GBS_global_string("Failed to create a new name for pseudo gene-species '%s'", full_name);
-            }
+            free(question);
+            free(existing_name);
         }
 
         if (!error) {
-            GBDATA *gb_new_species = GBT_create_species(gb_main, short_name);
+            if (create_new_gene_species) {
+                if (!short_name) { // create a new name
+                    error = AWTC_generate_one_name(gb_main, full_name, acc, short_name, false);
+                    if (!error) { // name was created
+                        if (!nameIsUnique(short_name, gb_species_data)) {
+                            char *uniqueName = AWTC_makeUniqueShortName(short_name, gb_species_data);
+                            free(short_name);
+                            short_name       = uniqueName;
+                            if (!short_name) error = "No short name created.";
+                        }
+                    }
+                    if (error) {            // try to make a random name
+                        error      = 0;
+                        short_name = AWTC_generate_random_name(gb_species_data);
+                        if (!short_name) error = GBS_global_string("Failed to create a new name for pseudo gene-species '%s'", full_name);
+                    }
+                }
 
-            if (!gb_new_species) {
-                error = GB_export_error("Failed to create pseudo-species '%s'", short_name);
+                if (!error) { // create the species
+                    gen_assert(short_name);
+                    gb_exist_geneSpec = GBT_create_species(gb_main, short_name);
+                    if (!gb_exist_geneSpec) error = GB_export_error("Failed to create pseudo-species '%s'", short_name);
+                }
+            }
+            else {
+                gen_assert(gb_exist_geneSpec); // do not generate new or skip -> should only occur when gene-species already existed
             }
 
-            if (!error) {
-                GBDATA *gb_full_name    = GB_search(gb_new_species, "full_name", GB_STRING);
-                if (gb_full_name) error = GB_write_string(gb_full_name, full_name);
-                else    error           = GB_export_error("Can't create full_name-entry for %s", full_name);
-            }
-
-            if (!error) {
-                GBDATA *gb_ali = GB_search(gb_new_species, ali, GB_DB);
-                if (gb_ali) {
-                    GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-                    error = GB_write_string(gb_data, sequence);
+            if (!error) { // write sequence data
+                GBDATA *gb_data = GBT_add_data(gb_exist_geneSpec, ali, "data", GB_STRING);
+                if (gb_data) {
+                    size_t sequence_length = strlen(sequence);
+                    error                  = GBT_write_sequence(gb_data, ali, sequence_length, sequence);
                 }
                 else {
-                    error = GB_export_error("Can't create alignment '%s' for '%s'", ali, full_name);
+                    error = GB_get_error();
                 }
+
+//                 GBDATA *gb_ali = GB_search(gb_exist_geneSpec, ali, GB_DB);
+//                 if (gb_ali) {
+//                     GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
+//                     error           = GB_write_string(gb_data, sequence);
+//                     GBT_write_sequence(...);
+//                 }
+//                 else {
+//                     error = GB_export_error("Can't create alignment '%s' for '%s'", ali, short_name);
+//                 }
             }
 
-            // the next two entries are used to identify the origin gene- and species-name:
-            if (!error) {
-                GBDATA *gb_species_origin    = GB_search(gb_new_species, "ARB_origin_species", GB_STRING);
-                if (gb_species_origin) error = GB_write_string(gb_species_origin, species_name);
-                else    error                = GB_export_error("Can't create ARB_origin_species-entry for %s", full_name);
-            }
-
-            if (!error) {
-                GBDATA *gb_gene_origin    = GB_search(gb_new_species, "ARB_origin_gene", GB_STRING);
-                if (gb_gene_origin) error = GB_write_string(gb_gene_origin, gene_name);
-                else    error             = GB_export_error("Can't create ARB_origin_gene-entry for %s", full_name);
-            }
-
-
+            // write other entries (does not overwrite existing ones)
+            if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "full_name", full_name);
+            if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "ARB_origin_species", species_name);
+            if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "ARB_origin_gene", gene_name);
+            if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "acc", acc);
         }
-
         if (error) aw_message(error);
 
         free(short_name);
@@ -451,7 +523,9 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
             case GEN_INVERT_MARKED:     mark_flag = !mark_flag; break;
             case GEN_COUNT_MARKED:     if (mark_flag) ++gen_count_marked_genes; break;
             case GEN_EXTRACT_MARKED: {
-                if (mark_flag) GEN_extract_gene_2_pseudoSpecies(gb_species, gb_gene, (const char *)cl_user);
+                if (mark_flag) {
+                    GEN_extract_gene_2_pseudoSpecies(gb_species, gb_gene, (const char *)cl_user);
+                }
                 break;
             }
             default: {
@@ -606,8 +680,10 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
     GB_ERROR  error = GBT_check_alignment_name(ali);
 
     if (!error) {
-        GB_transaction dummy(gb_main);
-        if (!GBT_create_alignment(gb_main,ali,0,0,0,"dna")) {
+        GB_transaction  dummy(gb_main);
+        GBDATA         *gb_ali = GBT_get_alignment(gb_main, ali);
+
+        if (!gb_ali && !GBT_create_alignment(gb_main,ali,0,0,0,"dna")) {
             error = GB_get_error();
         }
     }
@@ -616,9 +692,17 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
         aw_message(error);
     }
     else {
+        ask_about_existing_gene_species = new AW_repeated_question();
+        ask_to_overwrite_alignment      = new AW_repeated_question();
+
         aw_openstatus("Extracting pseudo-species");
         GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_EXTRACT_MARKED, (AW_CL)ali);
         aw_closestatus();
+
+        delete ask_to_overwrite_alignment;
+        delete ask_about_existing_gene_species;
+        ask_to_overwrite_alignment      = 0;
+        ask_about_existing_gene_species = 0;
     }
     free(ali);
 }
@@ -659,9 +743,15 @@ GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
 // cl_mark == 0 -> unmark
 // cl_mark == 1 -> mark
 // cl_mark == 2 -> invert mark
+// cl_mark == 3 -> mark organisms, unmark rest
 static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
+
+    if (mark == 3) {
+        GBT_mark_all(gb_main, 0); // unmark all species
+        mark = 1;
+    }
 
     for (GBDATA *gb_org = GEN_first_organism(gb_main);
          gb_org;
@@ -685,10 +775,16 @@ static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
 //  cl_mark == 0 -> unmark
 //  cl_mark == 1 -> mark
 //  cl_mark == 2 -> invert mark
+//  cl_mark == 3 -> mark gene-species, unmark rest
 
 static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL cl_canvas) {
     GB_transaction dummy(gb_main);
     int            mark = (int)cl_mark;
+
+    if (mark == 3) {
+        GBT_mark_all(gb_main, 0); // unmark all species
+        mark = 1;
+    }
 
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
          gb_pseudo;
@@ -722,6 +818,51 @@ static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL cl_canvas, A
             if (GB_read_flag(gb_gene)) {
                 GBDATA *gb_pseudo = GEN_find_pseudo(gb_species, gb_gene);
                 if (gb_pseudo) GB_write_flag(gb_pseudo, 1);
+            }
+        }
+    }
+    AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
+    if (canvas) canvas->refresh();
+}
+//  ---------------------------------------------------------------------------------------------
+//      static void mark_organisms_with_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL)
+//  ---------------------------------------------------------------------------------------------
+static void mark_organisms_with_marked_genes(AW_window *aww, AW_CL cl_canvas, AW_CL) {
+    GB_transaction dummy(gb_main);
+
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
+        for (GBDATA *gb_gene = GEN_first_gene(gb_species);
+             gb_gene;
+             gb_gene = GEN_next_gene(gb_gene))
+        {
+            if (GB_read_flag(gb_gene)) {
+                GB_write_flag(gb_species, 1);
+                break; // continue with next organism
+            }
+        }
+    }
+    AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
+    if (canvas) canvas->refresh();
+}
+//  ------------------------------------------------------------------------------------------------------
+//      static void mark_gene_species_using_current_alignment(AW_window *aww, AW_CL cl_canvas, AW_CL)
+//  ------------------------------------------------------------------------------------------------------
+static void mark_gene_species_using_current_alignment(AW_window *aww, AW_CL cl_canvas, AW_CL) {
+    GB_transaction  dummy(gb_main);
+    char           *ali = GBT_get_default_alignment(gb_main);
+
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+         gb_pseudo;
+         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
+    {
+        GBDATA *gb_ali = GB_find(gb_pseudo, ali, 0, down_level);
+        if (gb_ali) {
+            GBDATA *gb_data = GB_find(gb_ali, "data", 0, down_level);
+            if (gb_data) {
+                GB_write_flag(gb_pseudo, 1);
             }
         }
     }
@@ -938,9 +1079,12 @@ void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_ca
 
         awm->insert_separator();
 
-        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, (AW_CL)ntree_canvas);
-        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, (AW_CL)ntree_canvas);
-        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, (AW_CL)ntree_canvas);
+        AWMIMT("mark_organisms", "Mark All organisms", "A", "organism_mark.hlp", AWM_ALL, mark_organisms, 1, (AW_CL)ntree_canvas);
+        AWMIMT("mark_organisms_unmark_rest", "Mark all organisms, unmark Rest", "R", "organism_mark.hlp", AWM_ALL, mark_organisms, 3, (AW_CL)ntree_canvas);
+        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "organism_mark.hlp", AWM_ALL, mark_organisms, 0, (AW_CL)ntree_canvas);
+        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "organism_mark.hlp", AWM_ALL, mark_organisms, 2, (AW_CL)ntree_canvas);
+        awm->insert_separator();
+        AWMIMT("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, mark_organisms_with_marked_genes, (AW_CL)ntree_canvas, 0);
     }
     if (submenu) awm->close_sub_menu();
 }
@@ -955,11 +1099,14 @@ void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu, AW
     else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
 
     {
-        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, (AW_CL)ntree_canvas);
-        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, (AW_CL)ntree_canvas);
-        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, (AW_CL)ntree_canvas);
+        AWMIMT("mark_gene_species", "Mark All gene-species", "A", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 1, (AW_CL)ntree_canvas);
+        AWMIMT("mark_gene_species_unmark_rest", "Mark all gene-species, unmark Rest", "R", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 3, (AW_CL)ntree_canvas);
+        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 0, (AW_CL)ntree_canvas);
+        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "I", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 2, (AW_CL)ntree_canvas);
         awm->insert_separator();
-        AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "S", "gene_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, 0, 0);
+        AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "M", "gene_species_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, (AW_CL)ntree_canvas, 0);
+        awm->insert_separator();
+        AWMIMT("mark_gene_species", "Mark all gene-species using Current alignment", "C", "gene_species_mark.hlp", AWM_ALL, mark_gene_species_using_current_alignment, (AW_CL)ntree_canvas, 0);
     }
 
     if (submenu) awm->close_sub_menu();
