@@ -17,9 +17,10 @@
 #define gen_assert(bed) arb_assert(bed)
 
 // to create new genes:
-#define AWAR_GENE_DEST "tmp/gene/dest"
-#define AWAR_GENE_POS1 "tmp/gene/pos1"
-#define AWAR_GENE_POS2 "tmp/gene/pos2"
+#define AWAR_GENE_DEST       "tmp/gene/dest"
+#define AWAR_GENE_POS1       "tmp/gene/pos1"
+#define AWAR_GENE_POS2       "tmp/gene/pos2"
+#define AWAR_GENE_COMPLEMENT "tmp/gene/compl"
 
 // contains the path to the gene:  "organism_name;gene_name"
 // writing this awar has no effect
