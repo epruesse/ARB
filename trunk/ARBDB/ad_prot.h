@@ -300,6 +300,7 @@ char *GB_command_interpreter P_((GBDATA *gb_main, const char *str, const char *c
 
 /* ad_save_load.c */
 GB_ERROR GB_save P_((GBDATA *gb, const char *path, const char *savetype));
+GB_ERROR GB_create_directory P_((const char *path));
 GB_ERROR GB_save_in_home P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_save_as P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_delete_database P_((GB_CSTR filename));

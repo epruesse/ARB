@@ -887,6 +887,17 @@ GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
     return GB_save_as(gb,path,savetype);
 }
 
+/*  -------------------------------------------------------  */
+/*      GB_ERROR GB_create_directory(const char *path)       */
+/*  -------------------------------------------------------  */
+GB_ERROR GB_create_directory(const char *path) {
+    char     *mkdir = GB_give_buffer(1024);
+    GB_ERROR  error = 0;
+    sprintf(mkdir, "mkdir -p %s", path);
+    if (system(mkdir)) error = GB_export_error("Cannot create directory %s",path);
+    return error;
+}
+
 GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
      /*
  *	savetype 'a' 	ascii
@@ -901,7 +912,7 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
     char *buffer;
     const char *env;
     char *slash;
-    char *buf2;
+/*     char *buf2; */
 
     env = GB_getenvHOME();
     if(!path) path = GB_MAIN(gb)->path;
@@ -909,13 +920,14 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
     buffer = (char *)GB_calloc(sizeof(char),strlen(env)+ strlen(path) + 2);
 
     sprintf(buffer,"%s/%s",env,path);
-    slash = strrchr(buffer,'/');
-    *slash = 0;
-    buf2 = GB_give_buffer(1024);
-    sprintf(buf2,"mkdir -p %s",buffer);
-    if (system(buf2)) error = GB_export_error("Cannot create directory %s",buffer);
-    *slash = '/';
-    if (!error) error =  GB_save_as(gb,buffer,savetype);
+    slash             = strrchr(buffer,'/');
+    *slash            = 0;
+    /*     buf2 = GB_give_buffer(1024); */
+    /*     sprintf(buf2,"mkdir -p %s",buffer); */
+    /*     if (system(buf2)) error = GB_export_error("Cannot create directory %s",buffer); */
+    error             = GB_create_directory(buffer);
+    *slash            = '/';
+    if (!error) error = GB_save_as(gb,buffer,savetype);
     if (buffer) free(buffer);
     return error;
 }
