@@ -18,10 +18,10 @@
 struct probe_struct_global psg;
 char *pt_error_buffer = new char[1024];
 ulong physical_memory = 0;
-	
+
 /*****************************************************************************
 		Communication
-*******************************************************************************/ 
+*******************************************************************************/
 char *pt_init_main_struct(PT_main *main, char *filename)
 {
     main = main;
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 {
     int i;
     struct Hs_struct *so;
-    char *name;
+     char *name;
     char *error;
     char *aname,*tname;
     const char *suffix;
@@ -94,12 +94,14 @@ int main(int argc, char **argv)
         static char flag[] = "-boot";
         command_flag = flag;
     }
+
     if (!(name = params->tcp)) {
-        if( !(name=(char *)GBS_read_arb_tcp("ARB_PT_SERVER")) ){
+        if( !(name=(char *)GBS_read_arb_tcp("ARB_PT_SERVER0")) ){
             GB_print_error();
             exit(-1);
         }
     }
+
     aisc_main = create_PT_main();
     aname = params->db_server;
     suffix = ".pt";
@@ -183,6 +185,6 @@ int main(int argc, char **argv)
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
     aisc_server_shutdown(so);
-	
+
     return 0;		// never reached
 }
