@@ -132,6 +132,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 
 GEN_interface.o: ../NTREE/ad_spec.hxx
