@@ -21,12 +21,15 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
 
 typedef enum {
-    AP_LIST_TREE,
-    AP_RADIAL_TREE,
-    AP_IRS_TREE,
-    AP_NDS_TREE,
-    AP_NO_NDS // simple display only showing name (used at startup to avoid NDS error messages)
+    AP_TREE_NORMAL, // normal tree display
+    AP_TREE_RADIAL, // radial tree display
+    AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
+    AP_LIST_NDS,
+    AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
 } AP_tree_sort;
+
+inline bool sort_is_list_style(AP_tree_sort sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
+inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(sort); }
 
 
 class AWT_graphic_tree_group_state;
@@ -39,6 +42,7 @@ protected:
     AP_tree * tree_proto;
     double y_pos;
     double list_tree_ruler_y;
+    double irs_tree_ruler_scale_factor;
     double scale;
     AW_pos  grey_level;
     // internal command exec. var.
@@ -136,6 +140,7 @@ public:
     void      update(GBDATA *gb_main);
     void      set_tree_type(AP_tree_sort type);
 
+    double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
 };
 
 AWT_graphic *NT_generate_tree( AW_root *root,GBDATA *gb_main );
