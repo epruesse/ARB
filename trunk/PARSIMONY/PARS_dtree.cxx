@@ -262,17 +262,23 @@ AW_gc_manager
 AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
     AW_gc_manager preset_window =
-        AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_CURSOR+7, AW_GCM_DATA_AREA,
+        AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_MAX, /*AWT_GC_CURSOR+7,*/ AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
-                     false, // no color groups
+                     true,      // uses color groups
                      "#AAAA55",
                      "CURSOR$#FFFFFF",
                      "unused1",
                      "unused2",
-                     "Selected$#FFC671",
-                     "Sel.Branch$#FFC671",
-                     "Non.sel$#F1F1A2",
-                     "Zombies$#797924",
+                     "Marked$#FFC671",
+                     "Some marked$#FFC671",
+                     "Not marked$#F1F1A2",
+                     "Zombies etc.$#797924",
+
+                     "--unused", "--unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
+                     "--unused", "--unused", // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
+                     "--unused", "--unused",
+                     "--unused", "--unused",
+
                      0 );
     return preset_window;
 }
