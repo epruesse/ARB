@@ -503,6 +503,7 @@ struct gb_callback
     GB_CB                   func;
     enum gb_call_back_type  type;
     int                    *clientdata;
+    int                     priority;
 };
 
 struct gb_callback_list {
