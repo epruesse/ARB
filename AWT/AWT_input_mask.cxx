@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Tue May/21/2002 14:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jun/28/2002 19:14 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1205,22 +1205,27 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 //     return id;
 // }
 
-//  ----------------------------------------------
-//      inline char *inputMaskDir(bool local)
-//  ----------------------------------------------
-inline char *inputMaskDir(bool local) {
-    if (local) return AWT_unfold_path(".arb_prop/inputMasks", "HOME");
-    return AWT_unfold_path("lib/inputMasks", "ARBHOME");
+// -----------------------------------------------------
+//      inline const char *inputMaskDir(bool local)
+// -----------------------------------------------------
+inline const char *inputMaskDir(bool local) {
+    if (local) {
+        static char *local_mask_dir;
+        if (!local_mask_dir) local_mask_dir = AWT_unfold_path(".arb_prop/inputMasks", "HOME");
+        return local_mask_dir;
+    }
+
+    static char *global_mask_dir;
+    if (!global_mask_dir) global_mask_dir = AWT_unfold_path("lib/inputMasks", "ARBHOME");
+    return global_mask_dir;
 }
 
 //  -----------------------------------------------------------------------------
 //      inline string inputMaskFullname(const string& mask_name, bool local)
 //  -----------------------------------------------------------------------------
 inline string inputMaskFullname(const string& mask_name, bool local) {
-    char   *dir      = inputMaskDir(local);
-    string  fullname = string(dir)+'/'+mask_name;
-    free(dir);
-    return fullname;
+    const char *dir = inputMaskDir(local);
+    return string(dir)+'/'+mask_name;
 }
 
 #define ARB_INPUT_MASK_ID "ARB-Input-Mask"
@@ -2454,8 +2459,8 @@ static void scan_existing_input_masks() {
     awt_assert(!scanned_existing_input_masks);
 
     for (int scope = 0; scope <= 1; ++scope) {
-        char *dirname = inputMaskDir(scope == AWT_SCOPE_LOCAL);
-        DIR *dirp     = opendir(dirname);
+        const char *dirname = inputMaskDir(scope == AWT_SCOPE_LOCAL);
+        DIR        *dirp    = opendir(dirname);
 
         if (!dirp) {
             fprintf(stderr, "The path '%s' is invalid.\n", dirname);
@@ -2483,7 +2488,6 @@ static void scan_existing_input_masks() {
             }
             closedir(dirp);
         }
-        free(dirname);
     }
     scanned_existing_input_masks = true;
 }
