@@ -103,7 +103,8 @@ else
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
-        valgrind --tool=memcheck -v --error-limit=no --num-callers=10 $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
+        VG_CALLERS=$[$CALLERS+5]
+        valgrind --tool=memcheck -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
         echo 'valgrind done.'
     fi
 fi
