@@ -11,7 +11,8 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
-#include <awt_assert.hxx>
+// #include <awt_assert.hxx>
+#include <awt.hxx>
 
 
 void
@@ -85,71 +86,195 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
     ntw->set_mode(mode);
 }
 
-void NT_mark_all_cb(void *dummy, AWT_canvas *ntw)
+// ---------------------------------------
+//      Basic mark/unmark callbacks :
+// ---------------------------------------
+
+void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
 {
     AWUSE(dummy);
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     GB_push_transaction(ntw->gb_main);
-    GBT_mark_all(ntw->gb_main,1);
-    ntw->refresh();
+
+    GBDATA *gb_species_data = GB_search(ntw->gb_main,"species_data",GB_CREATE_CONTAINER);
+    long    count           = GB_number_of_marked_subentries(gb_species_data);
+
     GB_pop_transaction(ntw->gb_main);
-}
 
-
-
-void NT_unmark_all_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_push_transaction(ntw->gb_main);
-    GBT_mark_all(ntw->gb_main,0);
-    ntw->refresh();
-    GB_pop_transaction(ntw->gb_main);
-}
-
-void NT_invert_mark_all_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_push_transaction(ntw->gb_main);
-    GBDATA *gb_species;
-    for (	gb_species = GBT_first_species(ntw->gb_main);
-            gb_species;
-            gb_species = GBT_next_species(gb_species) ){
-        long flag = GB_read_flag(gb_species);
-        GB_write_flag(gb_species,1-flag);
-    }
-    ntw->refresh();
-    GB_pop_transaction(ntw->gb_main);
-}
-
-void NT_count_mark_all_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_push_transaction(ntw->gb_main);
-    long count=0;
-    GBDATA *gb_species_data =
-        GB_search(ntw->gb_main,"species_data",GB_CREATE_CONTAINER);
-    count = GB_number_of_marked_subentries(gb_species_data);
-    GB_pop_transaction(ntw->gb_main);
     char buf[256];
     sprintf(buf,"There are %li marked species",count);
     aw_message(buf);
-    ntw=ntw;
 }
 
-void NT_mark_tree_cb(void *dummy, AWT_canvas *ntw)
+// void NT_mark_all_cb(void *dummy, AWT_canvas *ntw)
+// {
+//     AWUSE(dummy);
+//     GB_push_transaction(ntw->gb_main);
+//     GBT_mark_all(ntw->gb_main,1);
+//     ntw->refresh();
+//     GB_pop_transaction(ntw->gb_main);
+// }
+
+
+
+// void NT_unmark_all_cb(void *dummy, AWT_canvas *ntw)
+// {
+//     AWUSE(dummy);
+//     GB_push_transaction(ntw->gb_main);
+//     GBT_mark_all(ntw->gb_main,0);
+//     ntw->refresh();
+//     GB_pop_transaction(ntw->gb_main);
+// }
+
+// void NT_invert_mark_all_cb(void *dummy, AWT_canvas *ntw)
+// {
+//     AWUSE(dummy);
+//     GB_push_transaction(ntw->gb_main);
+//     GBDATA *gb_species;
+//     for (	gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+//         long flag = GB_read_flag(gb_species);
+//         GB_write_flag(gb_species,1-flag);
+//     }
+//     ntw->refresh();
+//     GB_pop_transaction(ntw->gb_main);
+// }
+
+
+void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 {
-    AWUSE(dummy);
+    AWT_canvas *ntw       = (AWT_canvas*)cl_ntw;
+    int         mark_mode = (int)cl_mark_mode;
+
     GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->mark_tree(AWT_TREE(ntw)->tree_root, 1);
+
+    if (mark_mode == 1 || mark_mode == 0) {
+        GBT_mark_all(ntw->gb_main,mark_mode);
+    }
+    else {
+        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_flag(gb_species, !GB_read_flag(gb_species));
+        }
+    }
+
     ntw->refresh();
 }
+
+void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
+{
+    AWT_canvas *ntw       = (AWT_canvas*)cl_ntw;
+    int         mark_mode = (int)cl_mark_mode;
+
+    GB_transaction gb_dummy(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    AWT_TREE(ntw)->mark_tree(AWT_TREE(ntw)->tree_root, mark_mode, 0);
+    ntw->refresh();
+}
+
+void NT_mark_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
+{
+    AWT_canvas *ntw       = (AWT_canvas*)cl_ntw;
+    int         mark_mode = (int)cl_mark_mode;
+
+    GB_transaction gb_dummy(ntw->gb_main);
+
+    int color_group = mark_mode>>4;
+    awt_assert(mark_mode&(4|8)); // either 4 or 8 has to be set
+    bool mark_matching = (mark_mode&4) == 4;
+    mark_mode    = mark_mode&3;
+
+    for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+        int my_color_group = AW_find_color_group(gb_species, AW_TRUE);
+
+        if (mark_matching == (color_group == my_color_group)) {
+            switch (mark_mode) {
+                case 0: GB_write_flag(gb_species, 0); break;
+                case 1: GB_write_flag(gb_species, 1); break;
+                case 2: GB_write_flag(gb_species, !GB_read_flag(gb_species)); break;
+                default : awt_assert(0); break;
+            }
+        }
+    }
+
+    ntw->refresh();
+}
+
+
+void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode) {
+#define MAXLABEL 40
+#define MAXENTRY 20
+    awm->insert_sub_menu(0, menuname, "");
+
+    char        label_buf[MAXLABEL+1];
+    char        entry_buf[MAXENTRY+1];
+    char hotkey[]       = "x";
+    const char *hotkeys = "N1234567890  ";
+
+    const char *label_base;
+    switch (mark_basemode) {
+        case 0: label_base = "all_unmark_color"; break;
+        case 1: label_base = "all_mark_color"; break;
+        case 2: label_base = "all_invert_mark_color"; break;
+        default : awt_assert(0); break;
+    }
+
+    for (int all_but = 0; all_but <= 1; ++all_but) {
+        const char *entry_prefix;
+        if (all_but) entry_prefix = "all but";
+        else        entry_prefix  = "all of";
+
+        for (int i = 0; i <= AW_COLOR_GROUPS; ++i) {
+            sprintf(label_buf, "%s_%i", label_base, i);
+
+            if (i) {
+                const char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
+                sprintf(entry_buf, "%s '%s'", entry_prefix, color_group_name);
+            }
+            else {
+                sprintf(entry_buf, "%s no color group", entry_prefix);
+            }
+
+            hotkey[0] = hotkeys[i];
+            if (hotkey[0] == ' ' || all_but) hotkey[0] = 0;
+
+            awm->insert_menu_topic(label_buf, entry_buf, hotkey, "markcolor.hlp", AWM_ALL,
+                                   NT_mark_color_cb,
+                                   (AW_CL)ntree_canvas,
+                                   (AW_CL)mark_basemode|((all_but == 0) ? 4 : 8)|(i*16));
+        }
+        if (!all_but) awm->insert_separator();
+    }
+
+    awm->close_sub_menu();
+#undef MAXLABEL
+#undef MAXENTRY
+}
+
+void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw) {
+    awm->insert_menu_topic("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
+    awm->insert_separator();
+    awm->insert_menu_topic("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, (AW_CL)1 );
+    awm->insert_menu_topic("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)1 );
+    NT_insert_color_mark_submenu(awm, ntw, "Mark colored species", 1);
+    awm->insert_separator();
+    awm->insert_menu_topic("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, 0 );
+    awm->insert_menu_topic("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)0 );
+    NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
+    awm->insert_separator();
+    awm->insert_menu_topic("swap_marked",	"Swap marks of all Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, (AW_CL)2 );
+    awm->insert_menu_topic("swap_marked",	"Swap marks of Species in Tree",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)2 );
+    NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
+}
+
+// ---------------------------------------
+//      Automated collapse/expand tree
+// ---------------------------------------
 
 void NT_group_tree_cb(void *dummy, AWT_canvas *ntw)
 {
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 0);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 0, 0);
     AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     ntw->zoom_reset();
     ntw->refresh();
@@ -160,7 +285,7 @@ void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw)
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 1);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 1, 0);
     AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     ntw->zoom_reset();
     ntw->refresh();
@@ -170,11 +295,77 @@ void NT_group_terminal_cb(void *dummy, AWT_canvas *ntw)
     AWUSE(dummy);
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 2);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 2, 0);
     AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     ntw->zoom_reset();
     ntw->refresh();
 }
+
+void NT_ungroup_all_cb(void *dummy, AWT_canvas *ntw)
+{
+    AWUSE(dummy);
+    GB_transaction gb_dummy(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 4, 0);
+    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
+void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
+    AWT_canvas     *ntw      = (AWT_canvas*)cl_ntw;
+    int             colornum = (int)cl_colornum;
+    GB_transaction  gb_dummy(ntw->gb_main);
+
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 8, colornum);
+    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+    ntw->zoom_reset();
+    ntw->refresh();
+}
+
+// ----------------------------------------------------------------------------------------------------
+//      void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas)
+// ----------------------------------------------------------------------------------------------------
+void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
+#define MAXLABEL 30
+#define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+9)
+
+    awt_assert(ntree_canvas != 0);
+
+    awm->insert_sub_menu(0, "Group all except Color ...", "C");
+
+    char        label_buf[MAXLABEL+1];
+    char        entry_buf[MAXENTRY+1];
+    char hotkey[]       = "x";
+    const char *hotkeys = "N1234567890  ";
+
+    for (int i = 0; i <= AW_COLOR_GROUPS; ++i) {
+        sprintf(label_buf, "tree_group_not_color_%i", i);
+
+        if (i) {
+            const char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
+            sprintf(entry_buf, "group '%s'", color_group_name);
+        }
+        else {
+            strcpy(entry_buf, "No color group");
+        }
+
+        hotkey[0]                       = hotkeys[i];
+        if (hotkey[0] == ' ') hotkey[0] = 0;
+
+        awm->insert_menu_topic(label_buf, entry_buf, hotkey, "tgroupcolor.hlp", AWM_ALL, NT_group_not_color_cb, (AW_CL)ntree_canvas, (AW_CL)i);
+    }
+
+    awm->close_sub_menu();
+
+#undef MAXLABEL
+#undef MAXENTRY
+}
+
+// ------------------------
+//      tree sorting :
+// ------------------------
 
 void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw,int type)
 {
@@ -188,17 +379,6 @@ void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw,int type)
         default:stype = 1; break;
     }
     AWT_TREE(ntw)->resort_tree(stype);
-    AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-    ntw->zoom_reset();
-    ntw->refresh();
-}
-
-void NT_ungroup_all_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->tree_root, 4);
     AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
     ntw->zoom_reset();
     ntw->refresh();
@@ -223,14 +403,6 @@ void NT_reset_pzoom_cb(void *dummy, AWT_canvas *ntw)
     ntw->refresh();
 }
 
-void NT_unmark_all_tree_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
-    GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->mark_tree(AWT_TREE(ntw)->tree_root, 0);
-    ntw->refresh();
-}
 void NT_set_tree_style(void *dummy, AWT_canvas *ntw, AP_tree_sort type)
 {
     AWUSE(dummy);
