@@ -11,6 +11,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_tree.hxx>
 #include <awt_csp.hxx>
@@ -427,9 +428,7 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     root->awar_string(AP_AWAR_FILTER_ALIGNMENT);
     root->awar(AP_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // csp of the correct al.
 
-    root->awar_string(AP_AWAR_CSP_SUFFIX, "gc_gnu", AW_ROOT_DEFAULT);
-    root->awar_string(AP_AWAR_CSP_DIRECTORY);
-    root->awar_string(AP_AWAR_CSP_FILENAME, "noname.gc_gnu", AW_ROOT_DEFAULT);
+    aw_create_selection_box_awars(root, AP_AWAR_CSP, "", ".gc_gnu", "noname.gc_gnu");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
@@ -447,16 +446,6 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
         aws->insert_selection(selid, plotTypeDescription[pt], plotTypeName[pt]);
     }
-    //     aws->insert_selection(selid, "G+C Ratio",   "gc_gnu");
-    //     aws->insert_selection(selid, "G+A Ratio",   "ga_gnu");
-    //     aws->insert_selection(selid, "Rate",        "rate_gnu");
-    //     aws->insert_selection(selid, "TT Ratio",    "tt_gnu");
-    //     aws->insert_selection(selid, "Most Frequent Base","f1_gnu");
-    //     aws->insert_selection(selid, "Second Frequent Base","f2_gnu");
-    //     aws->insert_selection(selid, "Third Frequent Base","f3_gnu");
-    //     aws->insert_selection(selid, "Least Frequent Base","f4_gnu");
-    //     aws->insert_selection(selid, "All Frequencies","all");
-    //     aws->insert_selection(selid, "Helix",       "helix_gnu");
     aws->update_selection_list(selid);
 
     AW_CL filter = awt_create_select_filter(root,gb_main,AP_AWAR_FILTER_NAME);
