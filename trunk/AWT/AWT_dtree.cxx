@@ -1025,12 +1025,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
                     at = (AP_tree *)ct->client_data1;
                 }
                 if (!at) break;
-                if (button == AWT_M_RIGHT) {
-                    if (this->tree_static->gb_tree) {
-                        this->create_group(at);
-                    }
-                    this->exports.refresh = 1;
-                }
+//                 if (button == AWT_M_RIGHT) {
+//                     if (this->tree_static->gb_tree) {
+//                         this->create_group(at);
+//                     }
+//                     this->exports.refresh = 1;
+//                 }
                 //this->exports.refresh = 1;		// No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node,ADMVT_INFO);
             }
@@ -1044,12 +1044,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
                     at = (AP_tree *)ct->client_data1;
                 }
                 if (!at) break;
-                if (button == AWT_M_RIGHT) {
-                    if (this->tree_static->gb_tree) {
-                        this->create_group(at);
-                    }
-                    this->exports.refresh = 1;
-                }
+//                 if (button == AWT_M_RIGHT) {
+//                     if (this->tree_static->gb_tree) {
+//                         this->create_group(at);
+//                     }
+//                     this->exports.refresh = 1;
+//                 }
                 //this->exports.refresh = 1;		// No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node,ADMVT_WWW);
             }
