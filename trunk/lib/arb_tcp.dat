@@ -54,4 +54,5 @@ ARB_PT_SERVER8		localhost:3037		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_WL.arb
 ARB_PT_SERVER9 		localhost:3040		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_WL.arb
 ARB_PT_SERVER10		localhost:3044		arb_pt_server	-D$(ARBHOME)/lib/pts/PRB_WL.arb
 ARB_PT_SERVER11		localhost:3039		arb_pt_server	-D$(ARBHOME)/lib/pts/develop.arb
+ARB_PT_SERVER12		localhost:3041		arb_pt_server	-D$(ARBHOME)/lib/pts/brettske.arb
 
