@@ -10,16 +10,26 @@
 #ifndef NT_VALID_NAMEPARSER
 #define NT_VALID_NAMEPARSER
 
+#ifndef __LIST__
+#include <list>
+#endif
+#ifndef __STRING__
+#include <string>
+#endif
+#ifndef __VECTOR__
+#include <vector>
+#endif
+
 namespace validNames {
-  
-    typedef list<string> LineSet;
+
+    typedef std::list<std::string> LineSet;
     typedef LineSet* LineSetPtr;
 
-    typedef vector<string> TokL;
+    typedef std::vector<std::string> TokL;
     typedef TokL *TokLPtr;
 
     typedef enum {
-        VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN, 
+        VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN,
         VALSPEC, HETSPEC, HOMSPEC, RENSPEC, CORSPEC,
         NOTYPE, VAL, HET, HOM, REN, COR
     } DESCT;
@@ -28,41 +38,37 @@ namespace validNames {
     private:
         DESCT type;
         bool isCorrected;
-        string firstgen;
-        string firstspec;
-        string firstsub;
-        string secondgen;
-        string secondspec;
-        string secondsub;
-    
-    public:
-        inline  Desco(DESCT type_ , bool isCorrected_, string firstgen_,string firstspec_,string firstsub_, 
-                      string secondgen_ ,string secondspec_, string secondsub_){
-            type = type_;
-            isCorrected = isCorrected_;
-            firstgen = firstgen_;
-            firstspec = firstspec_;
-            firstsub = firstsub_;
-            secondgen = secondgen_;
-            secondspec = secondspec_;
-            secondsub = secondsub_;
-        };
+        std::string firstgen;
+        std::string firstspec;
+        std::string firstsub;
+        std::string secondgen;
+        std::string secondspec;
+        std::string secondsub;
 
-        string getFirstName();
-        string getSecondName();
-        inline DESCT getType(){return type;}
+    public:
+        Desco(DESCT       type_ , bool isCorrected_,
+              std::string firstgen_, std::string firstspec_, std::string firstsub_,
+              std::string secondgen_, std::string secondspec_, std::string secondsub_)
+            : type(type_) , isCorrected(isCorrected_)
+            , firstgen(firstgen_) , firstspec(firstspec_) , firstsub(firstsub_)
+            , secondgen(secondgen_) , secondspec(secondspec_) , secondsub(secondsub_)
+        { }
+
+        std::string getFirstName();
+        std::string getSecondName();
+        DESCT getType() const { return type; }
     };
-  
+
 
 
 
     LineSet* readFromFile(const char* infile, LineSet* listOfLines);
 
-    TokLPtr tokenize(const string& description, TokLPtr tokenLP);
+    TokLPtr tokenize(const std::string& description, TokLPtr tokenLP);
 
-    Desco determineType(const string& descriptionString);
+    Desco determineType(const std::string& descriptionString);
 
-    bool isUpperCase(const string& input);
+    bool isUpperCase(const std::string& input);
 }; /* end namespace */
 
 #endif
