@@ -358,7 +358,7 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 
 	aws->at("len");
 	sprintf(buffer,"tmp/merge%li/alignment_len",db_nr);
-	aws->create_input_field(buffer,5);
+	aws->create_input_field(buffer,8);
 
 	aws->at("type");
 	sprintf(buffer,"tmp/merge%li/alignment_type",db_nr);
