@@ -62,7 +62,7 @@ class Client
             error = tr.getError();
 
             if (error != null) {
-                System.out.println("Can't access the tree ("+error+")");
+                Toolkit.showError("Can't access the tree ("+error+")");
                 localTreeVersion = "none";
             }
             else {
@@ -121,10 +121,10 @@ class Client
         }
 
         if (needUpdate) {
-            display.getTreeDisplay().repaint();
+            display.getTreeDisplay().myRepaint();
         }
         else {
-            System.out.println("Marks did not change.");
+            Toolkit.showDebugMessage("Marks did not change.");
         }
     }
 
@@ -133,9 +133,6 @@ class Client
         ProbeList list = display.getProbeList();
         list.removeAll();
 
-        // String testAnswer = Toolkit.askUser("Online-Warnung", "Sonden vom Server holen?", "Ja,Nein,Egal");
-        // System.out.println("testAnswer='"+testAnswer+"'");
-
         list.add("retrieving probes..");
 
         String emptyMessage = null;
@@ -143,18 +140,17 @@ class Client
             lastNode          = clickedNode;
             NodeProbes probes = clickedNode.getNodeProbes();
 
-            // Toolkit.clickOK("Nachricht", "Die Sonden wurden geholt");
-
             list.setContents(probes, preferredProbe);
-
             if (list.length() == 0) {
                 root.unmarkSubtree();
+                display.getTreeDisplay().myRepaint();
             }
-            else {
+
+            // else {
                 // list.selectProbe(0); // done by list.setContents
                 // list.requestFocus(); // doesn't work
                 // matchProbes(list.getProbe(0)); // so we do the action manually
-            }
+            // }
         }
         catch (ClientException e) {
             Toolkit.showError(e.getMessage());
@@ -170,6 +166,7 @@ class Client
             list.removeAll();
             list.add(emptyMessage);
             root.unmarkSubtree();
+            display.getTreeDisplay().myRepaint();
         }
     }
 
@@ -321,8 +318,7 @@ class Client
                 wantedOrigin         = new Point(config.getIntValue("LocationX"), config.getIntValue("LocationY"));
             }
             catch (Exception e) {
-                System.out.println("Your config seems to be corrupted:");
-                System.out.println(e.getMessage());
+                Toolkit.showError("Your config seems to be corrupted: "+e.getMessage());
 
                 wantedScrollPaneSize = null;
                 wantedOrigin         = null;
@@ -337,7 +333,7 @@ class Client
             // no dimension from config -> try to guess a good size:
 
             Dimension screenSize = detectScreenSize();
-            System.out.println("* detected screen size = "+screenSize.width+"/"+screenSize.height);
+            Toolkit.showDebugMessage("* detected screen size = "+screenSize.width+"/"+screenSize.height);
 
             // test other screensizes:
             Dimension fakedSize = null;
@@ -349,7 +345,7 @@ class Client
             // fakedSize = new Dimension(1280, 1024);
             if (fakedSize != null) {
                 screenSize = fakedSize;
-                System.out.println("* faked screen size = "+screenSize.width+"/"+screenSize.height);
+                Toolkit.showDebugMessage("* faked screen size = "+screenSize.width+"/"+screenSize.height);
             }
 
             int    dxborder = screenSize.width/7;
@@ -370,7 +366,7 @@ class Client
                 Toolkit.setDebugMode(true);
             }
             else {
-                System.out.println("Warning: Unknown parameter for 'debug': '"+debug+"'");
+                Toolkit.showError("Warning: Unknown parameter for 'debug': '"+debug+"'");
             }
         }
 
@@ -545,7 +541,7 @@ class Client
         }
 
         String configuration = configBuf.toString();
-        System.out.println("Saving config to "+configFileName);
+        Toolkit.showMessage("Saving config to "+configFileName);
 
         iom.saveAs("config", configuration, configFileName);
     }
