@@ -119,7 +119,7 @@ extern "C" const char *virt_name P_((PT_probematch *ml));
 extern "C" const char *virt_fullname P_((PT_probematch *ml));
 int *table_copy P_((int *mis_table, int length));
 void table_add P_((int *mis_tabled, int *mis_tables, int length));
-char *ptpd_read_names P_((PT_local *locs, const char *names_list, const char *checksums));
+char *ptpd_read_names P_((PT_local *locs, const char *names_list, const char *checksums, const char *&error));
 char *ptpd_read_names_old P_((PT_local *locs, char *names_listi, char *checksumsi));
 extern "C" bytestring *PT_unknown_names P_((struct_PT_pdc *pdc));
 int get_clip_max_from_length P_((int length));
@@ -131,7 +131,6 @@ void PT_inc_base_string_count P_((char *str, char initval, char maxval, int size
 /* PT_buildtree.cxx */
 POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end));
 long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos));
-int ptd_string_shorter_than P_((const char *s, int len));
 void enter_stage_1_build_tree P_((PT_main *main, char *tname));
 void enter_stage_3_load_tree P_((PT_main *main, char *tname));
 int PT_chain_debug P_((int name, int apos, int rpos, long height));
