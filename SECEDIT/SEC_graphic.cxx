@@ -74,7 +74,7 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      (AW_CB)AWT_resize_cb,
                      (AW_CL)ntw,
                      cd2,
-		      false, // no color groups   -- yadhu set it to true
+		      false,
                      "#777777",
                      "Loop$#ffffaa",
                      "Helix$#5cb1ff",
@@ -84,7 +84,7 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      "EcoliPos$#ffffff",
                      "-Cursor$#ff0000",
 
-		     "+-User1$#B8E2F8",  //YADHU
+		     "+-User1$#B8E2F8",  //used in secondary editor to change search pattern COLORS
 		     "+-User2$#B8E2F8",
 		     "-Probe$#B8E2F8",
 		     "+-Primer(l)$#A9FE54",
@@ -189,6 +189,10 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             break;
         }
         /* ******************************************************** */
+        case AWT_MODE_LZOOM: {
+            break;
+        }
+	//***************************************************************************
         case AWT_MODE_MOVE: { // helix<->loop-exchange-modus
             if(button==AWT_M_MIDDLE) {
                 break;
@@ -642,7 +646,7 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
             /********** Load structure **************/
             char *strct = GB_read_string(gb_struct);
             char *ref = GB_read_string(gb_struct_ref);
-            err = sec_root->read_data(strct,ref);
+            err = sec_root->read_data(strct,ref,ali_len);
             delete strct;
             delete ref;
 

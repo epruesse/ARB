@@ -18,7 +18,7 @@ class SEC_graphic;
 #ifndef NDEBUG
 # define sec_assert(bed) do { if (!(bed)) { *(char*)0 = 0; } } while(0)
 #else
-# define sec_assert(bed)
+# define sec_a3ssert(bed)
 #endif
 
 class SEC_segment;
@@ -99,8 +99,8 @@ class SEC_helix_strand : public SEC_Base {
     double fixpoint_y;
     double attachp1_x, attachp1_y, attachp2_x, attachp2_y;   // 2 points where the segments meet this strand from left and right
 
-    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;
-    int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;
+    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;               //these variables are used for prainting searchbackground in the 
+    int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;  // secondary editor
     char   thisBase[2],otherBase[2];
 
 public:
@@ -175,10 +175,8 @@ struct SEC_base_position { // stores a base position and the last position where
     AW_pos y;
 };
 
-//***********yadhu`s modification**********************************************************************//
 class ED4_sequence_terminal; //to access ED4_sequence_terminal class with in the other classes 
 
-//*********************************************************************************************************/
 class SEC_root {
 private:
 
@@ -230,12 +228,10 @@ public:
     BI_helix *helix;
     BI_ecoli_ref *ecoli;
 
-    //******************yadhu ***************** ************************* 
     ED4_sequence_terminal *seqTerminal;     //declaring a pointer class
     const  char *getSearchResults(int startPos,int endPos); // defining a function to build color string 
     void paintSearchBackground(AW_device *device, const char* searchCols, int absPos, double x, double y, double next_x, double next_y, double radius,int otherStrand);
-    //used in SEC_paint.cxx
-    //*****************************************************************
+    //used in SEC_paint.cxx 
 
     SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
     ~SEC_root();
@@ -243,7 +239,7 @@ public:
     //methods
     void init_sequences(AW_root *awr, AWT_canvas *ntw);
     char * write_data();
-    GB_ERROR read_data(char *filename, char *x_string_in);
+    GB_ERROR read_data(char *filename, char *x_string_in, long current_ali_len);
     void find(int pos, SEC_segment **found_segment, SEC_helix_strand **found_strand);
     void update(double angle_difference=0);
     void split_loop (int start1, int end1, int start2, int end2);
