@@ -2,18 +2,30 @@ OBJECT = readseq.o ureadseq.o
 
 .SUFFIXES: .o .c .cxx
 
-ifndef DEBIAN
-all: $(ARBHOME)/bin/arb_readseq
-else
+ifdef DEBIAN
 all:
 	@echo Do not compile readseq.  Instead use the Debian package.
+else
+all: $(ARBHOME)/bin/arb_readseq
 endif
 
+# --------------------------------------------------------------------------------
+
+ifeq (1,1)
+# no warnings in this directory
+SUB_CPP=$(CPP:-W -Wall=-w)
+SUB_ACC=$(ACC:-W -Wall=-w)
+else
+SUB_CPP=$(CPP)
+SUB_ACC=$(ACC)
+endif
+
+
 $(ARBHOME)/bin/arb_readseq:  $(OBJECT)
-	$(ACC) $(cflags) -o $@ $(OBJECT)
+	$(SUB_ACC) $(cflags) -o $@ $(OBJECT)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(SUB_ACC) $(cflags) -c $< $(AINCLUDES)
 
 depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(OBJECT:.o=.c*)
