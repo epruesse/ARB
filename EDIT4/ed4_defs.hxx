@@ -30,23 +30,24 @@ extern GBDATA       *gb_main;
 extern ED4_root     *ED4_ROOT;
 extern ED4_database *main_db;
 
-extern int          TERMINALHEIGHT;                     // this variable replaces the define
-extern int          MAXLETTERDESCENT;                   // Important for drawing text on the screen
-extern int          MAXSEQUENCECHARACTERLENGTH;             // greatest # of characters in a sequence string terminal
-extern int          MAXSPECIESWIDTH;
-extern int          MAXINFOWIDTH;
-extern int          MAXCHARWIDTH;
-extern int          MARGIN;                         // sets margin for cursor moves in characters
-extern long         ED4_counter;
-extern long         all_found;                      // nr of species which haven't been found
-extern long         species_read;                       // nr of species read; important during loading
+extern int TERMINALHEIGHT;      // this variable replaces the define
+extern int INFO_TERM_TEXT_YOFFSET;
+extern int SEQ_TERM_TEXT_YOFFSET;
+
+extern int           MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+extern int           MAXSPECIESWIDTH;
+extern int           MAXINFOWIDTH;
+extern int           MARGIN;    // sets margin for cursor moves in characters
+extern long          ED4_counter;
+extern long          all_found; // nr of species which haven't been found
+extern long          species_read; // nr of species read; important during loading
 extern void         *not_found_message;
-extern long         max_seq_terminal_length;                // global maximum of sequence terminal length
-extern ED4_EDITMODI     awar_edit_modus;
-extern long         awar_edit_direction;
-extern bool         move_cursor;                        //only needed for editing in consensus
-extern bool         DRAW;
-extern bool         last_window_reached;                    //only needed for refreshing all windows
+extern long          max_seq_terminal_length; // global maximum of sequence terminal length
+extern ED4_EDITMODI  awar_edit_modus;
+extern long          awar_edit_direction;
+extern bool          move_cursor; //only needed for editing in consensus
+extern bool          DRAW;
+extern bool          last_window_reached; //only needed for refreshing all windows
 
 extern double           status_add_count;                   //only needed for loading configuration
 extern double           status_total_count;
@@ -98,8 +99,9 @@ extern bool         loading;
 
 #define AWAR_FIELD_CHOSEN           "tmp/edit4/field_chosen"        // used for field selection box
 
-#define AWAR_EDIT_TITLE_MODE            "edit4/title_mode"
-#define AWAR_EDIT_HELIX_SPACING         "edit4/helix_spacing"
+#define AWAR_EDIT_TITLE_MODE       "edit4/title_mode"
+#define AWAR_EDIT_HELIX_SPACING    "edit4/helix_add_spacing"
+#define AWAR_EDIT_TERMINAL_SPACING "edit4/terminal_add_spacing"
 
 #define CHARACTEROFFSET     5           // spacer-width left of text-terminal
 #define CONSENSUS       "Consensusfunktion"
@@ -250,7 +252,8 @@ typedef enum
 //  ED4_P_SCROLL_HORIZONTAL = 1024,
 //  ED4_P_SCROLL_VERTICAL   = 2048,
     ED4_P_IS_FOLDED     = 4096,                 // Flag whether group is folded or not
-    ED4_P_CONSENSUS_RELEVANT= 8192,
+    ED4_P_CONSENSUS_RELEVANT= 8192, // contains information relevant for consensus
+    ED4_P_ALIGNMENT_DATA= 16384, // contains aligned data (also SAIs)
     ED4_P_ALL       = 0x7fffffff
 }   ED4_properties;
 
