@@ -65,10 +65,11 @@ ln -s ../AISC_COM/C/client.h INCLUDE/client.h
 ln -s ../AISC_COM/C/client_privat.h INCLUDE/client_privat.h
 ln -s ../AISC_COM/C/server.h INCLUDE/server.h
 ln -s ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h
+ln -s ../ARBDB/adGene.h INCLUDE/adGene.h
 ln -s ../ARBDB/ad_prot.h INCLUDE/ad_prot.h
 ln -s ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h
-ln -s ../ARBDB/arbdb.h INCLUDE/arbdb.h
 ln -s ../ARBDB/arb_assert.h INCLUDE/arb_assert.h
+ln -s ../ARBDB/arbdb.h INCLUDE/arbdb.h
 ln -s ../ARBDB/arbdbt.h INCLUDE/arbdbt.h
 ln -s ../ARBDBPP/adtools.hxx INCLUDE/adtools.hxx
 ln -s ../ARBDBPP/arbdb++.hxx INCLUDE/arbdb++.hxx
@@ -111,9 +112,10 @@ ln -s ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx
 ln -s ../CAT/cat_tree.hxx INCLUDE/cat_tree.hxx
 ln -s ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx
 ln -s ../DIST/dist.hxx INCLUDE/dist.hxx
-ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
 ln -s ../GENOM/EXP.hxx INCLUDE/EXP.hxx
+ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
 ln -s ../GENOM/GEN_extern.h INCLUDE/GEN_extern.h
+ln -s ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h
 ln -s ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx
 ln -s ../NAMES_COM/names_client.h INCLUDE/names_client.h
 ln -s ../NAMES_COM/names_prototypes.h INCLUDE/names_prototypes.h
@@ -123,27 +125,26 @@ ln -s ../ORS_CGI/ors_lib.h INCLUDE/ors_lib.h
 ln -s ../ORS_COM/ors_client.h INCLUDE/ors_client.h
 ln -s ../ORS_COM/ors_prototypes.h INCLUDE/ors_prototypes.h
 ln -s ../ORS_COM/ors_server.h INCLUDE/ors_server.h
+ln -s ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx
 ln -s ../PROBE_COM/PT_com.h INCLUDE/PT_com.h
 ln -s ../PROBE_COM/PT_server.h INCLUDE/PT_server.h
 ln -s ../PROBE_COM/PT_server_prototypes.h INCLUDE/PT_server_prototypes.h
 ln -s ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx
-ln -s ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx
 ln -s ../SECEDIT/sec_graphic.hxx INCLUDE/sec_graphic.hxx
 ln -s ../SECEDIT/secedit.hxx INCLUDE/secedit.hxx
 ln -s ../SEER/seer.hxx INCLUDE/seer.hxx
 ln -s ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h
 ln -s ../STAT/st_window.hxx INCLUDE/st_window.hxx
 ln -s ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx
+ln -s ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx
 ln -s ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx
+ln -s ../WINDOW/aw_global_awars.hxx INCLUDE/aw_global_awars.hxx
 ln -s ../WINDOW/aw_keysym.hxx INCLUDE/aw_keysym.hxx
 ln -s ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx
+ln -s ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx
 ln -s ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx
 ln -s ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx
-ln -s ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx
-ln -s ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx
 ln -s ../XML/xml.hxx INCLUDE/xml.hxx
-ln -s ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h
-ln -s ../ARBDB/adGene.h INCLUDE/adGene.h
 
 # arbdb dirs
 
