@@ -3,18 +3,6 @@
 #define CREATED     1
 #define NOT_CREATED 0
 
-static int MODE = 3;
-
-static int iStructurize      = 1;
-static int dispBackBone      = 1;
-static int dispNonHelixBases = 0;
-static int dispBases         = 1;
-static int dispHelices       = 1;
-static int dispPositions     = 1;
-static int dispHelixNrs      = 0;
-static int dispHelixBackbone = 1;
-static int showCursor        = 0;
-
 enum {
     HELIX_1,HELIX_2,HELIX_3,HELIX_4,HELIX_5,HELIX_6,HELIX_7,HELIX_8,HELIX_9,HELIX_10,
     HELIX_11,HELIX_12,HELIX_13,HELIX_14,HELIX_15,HELIX_16,HELIX_17,HELIX_18,HELIX_19,HELIX_20,
@@ -32,3 +20,8 @@ void InitializeOpenGLWindow( Widget w );
 void RotateMolecule(int x, int y);
 void CalculateRotationMatrix();
 void MapDisplayParameters(AW_root *aw_root);
+void DisplayPostionsIntervalChanged_CB(AW_root *awr);
+void MapSelectedSpeciesChanged_CB(AW_root *awr);
+void CursorPositionChanged_CB(AW_root *awr);
+void DisplayHelixNrsChanged_CB(AW_root *awr);
+void MapSaiToEcoliTemplateChanged_CB(AW_root *awr);

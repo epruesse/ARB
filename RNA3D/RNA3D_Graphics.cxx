@@ -11,21 +11,31 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
-                      RNA3D_GC_MOL_BACKBONE,
+                      RNA3D_GC_FOREGROUND,
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
                       (AW_CB)AWT_resize_cb,
                       (AW_CL)ntw,
                       cd2,
                       false,
-                      "#000000",
-                      "-MOLECULE Skeleton$#606060",
-                      "-BASE: Helix$#55AAFF",
-                      "-BASE: Unpaired$#AAFF00",
-                      "-BASE: Non-Helix$#FFAA55",
-                      "-HELIX$#FF0000",
-                      "-HELIX Skeleton$#606060",
-                      "-HELIX MidPoint$#FFFFFF",
+                      "#000000", 
+                      "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000", 
+                      "+-BASE: Deletion$#FF0000", "+-BASE: Positions$#FFAA00",   "-BASE: Helix$#55AAFF",    
+                      "+-BASE: Unpaired$#AAFF00", "+-BASE: Non-Helix$#FFAA55",   "-HELIX$#FF0000", 
+                      "+-HELIX Skeleton$#606060", "+-HELIX MidPoint$#FFFFFF",    "-Cursor$#FFFFFF",
+
+                      // colors used to Paint search patterns
+                      // (do not change the names of these gcs)
+                      "+-User1$#B8E2F8",          "+-User2$#B8E2F8",         "-Probe$#B8E2F8",
+                      "+-Primer(l)$#A9FE54",      "+-Primer(r)$#A9FE54",     "-Primer(g)$#A9FE54",
+                      "+-Sig(l)$#DBB0FF",         "+-Sig(r)$#DBB0FF",        "-Sig(g)$#DBB0FF",
+
+                      // Color Ranges to paint SAIs
+                      "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
+                      "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
+                      "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
+                      "+-RANGE 9$#303030", 
+
                       0 );
 
     return preset_window;

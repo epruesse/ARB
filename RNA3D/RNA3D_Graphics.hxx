@@ -6,13 +6,39 @@
 
 
 enum {
-    RNA3D_GC_MOL_BACKBONE,
+    RNA3D_GC_FOREGROUND,
+    RNA3D_GC_MOL_BACKBONE,    
+    RNA3D_GC_MAPPED_SPECIES,
+    RNA3D_GC_DELETION,
+    RNA3D_GC_MOL_POS,
     RNA3D_GC_BASES_HELIX,
     RNA3D_GC_BASES_UNPAIRED_HELIX,
     RNA3D_GC_BASES_NON_HELIX,
     RNA3D_GC_HELIX,
     RNA3D_GC_HELIX_SKELETON,
     RNA3D_GC_HELIX_MIDPOINT,
+    RNA3D_GC_CURSOR_POSITION,
+
+    RNA3D_GC_SBACK_0, // User 1  // Background for search 
+    RNA3D_GC_SBACK_1,  // User 2
+    RNA3D_GC_SBACK_2,  // Probe
+    RNA3D_GC_SBACK_3,  // Primer (local)
+    RNA3D_GC_SBACK_4,  // Primer (region)
+    RNA3D_GC_SBACK_5,  // Primer (global)
+    RNA3D_GC_SBACK_6,  // Signature (local)
+    RNA3D_GC_SBACK_7,  // Signature (region)
+    RNA3D_GC_SBACK_8,  // Signature (global)
+
+    RNA3D_GC_CBACK_0, 	// Ranges for SAI visualization
+    RNA3D_GC_CBACK_1,
+    RNA3D_GC_CBACK_2,
+    RNA3D_GC_CBACK_3,
+    RNA3D_GC_CBACK_4,
+    RNA3D_GC_CBACK_5,
+    RNA3D_GC_CBACK_6,
+    RNA3D_GC_CBACK_7,
+    RNA3D_GC_CBACK_8,
+    RNA3D_GC_CBACK_9,
 
     RNA3D_GC_MAX
 };

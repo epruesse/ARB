@@ -1,17 +1,32 @@
 #include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
 #include "RNA3D_OpenGLGraphics.hxx"
+#include "RNA3D_Graphics.hxx"
 #include "RNA3D_StructureData.hxx"
 
+#include "../EDIT4/ed4_class.hxx"
+#include "../EDIT4/ed4_defs.hxx"  //for background colors
+#include "../EDIT4/ed4_visualizeSAI.hxx"
+
+#define COLORLINK (ED4_G_SBACK_0 - RNA3D_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
+#define SAICOLORS (ED4_G_CBACK_0 - RNA3D_GC_CBACK_0)
+
 using namespace std;
+extern GBDATA *gb_main;
 
 inline float _min(float a, float b) { return (a>b)? b:a; }
 inline float _max(float a, float b) { return (a<b)? b:a; }
 
 OpenGLGraphics *GRAPHICS = new OpenGLGraphics();
+bool bEColiRefInitialised = false;
 
 Structure3D::Structure3D(void) {
     strCen = new Vector3(0.0, 0.0, 0.0);
+    ED4_SeqTerminal = 0;
+    iInterval = 25;
+    iMapSAI = 0;
+    iStartPos = 0;
+    iEndPos   = 0;
 }
 
 Structure3D::~Structure3D(void) {
@@ -62,6 +77,8 @@ void Structure3D::ReadCoOrdinateFile() {
 
     int cntr = 0;
 
+    static bool bStarPosStored = false;
+
     while (!readData.eof()) {
         readData.getline(buf,100);  
         string tmp, atom, line = string(buf);
@@ -79,9 +96,15 @@ void Structure3D::ReadCoOrdinateFile() {
                 
                 strCen->x += X; strCen->y += Y; strCen->z += Z;
                 cntr++;
+
+                if(!bStarPosStored) { 
+                    iStartPos = pos;
+                    bStarPosStored = true;
+                }
             }
         }
     }
+    iEndPos = pos; cout<<iStartPos<<" - "<<iEndPos<<endl;
 
     strCen->x = strCen->x/cntr; 
     strCen->y = strCen->y/cntr; 
@@ -207,28 +230,6 @@ void Structure3D::Combine2Dand3DstructureInfo(void) {
         }
         temp3D = temp3D->next;
         temp2D = temp2D->next;
-    }
-}
-
-HelixNrInfo *start = NULL;
-
-void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
-    HelixNrInfo *data, *temp;
-    data = new HelixNrInfo;
-    data->helixNr = helixNr;;
-    data->x       = x;
-    data->y       = y;
-    data->z       = z;
-    data->next    = NULL;
-
-    if (start == NULL)
-        start = data;
-    else {
-        temp = start;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->next = data;
     }
 }
 
@@ -368,22 +369,26 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
     PositionsToCoordinatesDispList(UNPAIRED_HELIX_U, baseU, u);
 }
 
-void Structure3D::GenerateNonHelixBaseDispList(void) {
-    Struct2Dplus3D *temp;
+HelixNrInfo *start = NULL;
 
-    glNewList(NON_HELIX_BASES, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp = start2D3D;
-        while (temp != NULL) { 
-            if ((temp->helixNr >= 0) && (temp->mask == '.')) { 
-                glVertex3f(temp->x, temp->y, temp->z);
-            }
+void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
+    HelixNrInfo *data, *temp;
+    data = new HelixNrInfo;
+    data->helixNr = helixNr;;
+    data->x       = x;
+    data->y       = y;
+    data->z       = z;
+    data->next    = NULL;
+
+    if (start == NULL)
+        start = data;
+    else {
+        temp = start;
+        while (temp->next != NULL) {
             temp = temp->next;
         }
-        glEnd();
+        temp->next = data;
     }
-    glEndList();
 }
 
 void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
@@ -448,31 +453,39 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
     glEndList();
 }
 
-void Structure3D::GenerateHelixNrDispList(void) {
+void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
     HelixNrInfo *t;
 
     glNewList(HELIX_NUMBERS, GL_COMPILE);
     {
         char POS[50];
-        t = start;    
-        while (t != NULL) {
-            sprintf(POS, "%d", t->helixNr);
-            GRAPHICS->PrintString(t->x, t->y, t->z, POS, GLUT_BITMAP_HELVETICA_10);
-            t = t->next;
+        for(int i = startHx; i <= endHx; i++) {
+            t = start;    
+            while (t != NULL) {
+                if (t->helixNr == i) {
+                    sprintf(POS, "%d", t->helixNr);
+                    GRAPHICS->PrintString(t->x, t->y, t->z, POS, GLUT_BITMAP_8_BY_13);
+                }
+                t = t->next;
+            }
         }
     }
     glEndList();
 
     glNewList(HELIX_NUMBERS_POINTS, GL_COMPILE);
     {
-        t = start;    
         extern bool bPointSpritesSupported;
         if (bPointSpritesSupported) {
             glBegin(GL_POINTS);
         }
-        while (t != NULL) {
-            PointsToQuads(t->x, t->y, t->z);
-            t = t->next;
+        for(int i = startHx; i <= endHx; i++) {
+            t = start;    
+            while (t != NULL) {
+                if (t->helixNr == i) {
+                    PointsToQuads(t->x, t->y, t->z);
+                }
+                t = t->next;
+            }
         }
         if (bPointSpritesSupported) {
             glEnd();
@@ -484,27 +497,77 @@ void Structure3D::GenerateHelixNrDispList(void) {
 void Structure3D::GenerateDisplayLists(void){
 
     GenerateMoleculeSkeleton();
-    //    ComputeBasePositions(int iInterval);
+    ComputeBasePositions();
 
     for (int i = 1; i <= 50;i++) {
         GenerateHelixDispLists(i, i);
     }
+    //    GenerateHelixNrDispList(1,50);
 
     GenerateSecStructureHelixRegions();
     GenerateSecStructureNonHelixRegions();
     GenerateSecStructureUnpairedHelixRegions();
-    GenerateHelixNrDispList();
 }
 
 void Structure3D::GenerateMoleculeSkeleton(void){
-    Struct3Dinfo *temp;
+    Struct2Dplus3D *t;
 
     glNewList(STRUCTURE_BACKBONE, GL_COMPILE);
     {   
         glBegin(GL_LINE_STRIP);
+        t = start2D3D;    
+        while (t != NULL) {
+            glVertex3f(t->x, t->y, t->z);
+            t = t->next;
+        }
+        glEnd();
+    }
+    glEndList();
+
+    glNewList(STRUCTURE_BACKBONE_CLR, GL_COMPILE);
+    {   
+        glBegin(GL_LINE_STRIP);
+        t = start2D3D;    
+        while (t != NULL) 
+            {
+                if (t->helixNr > 0) {
+                    if ((t->mask == '[') || (t->mask == ']') || 
+                        (t->mask == '<') || (t->mask == '>') ) 
+                        {
+                            GRAPHICS->SetColor(RNA3D_GC_BASES_HELIX);
+                            glVertex3f(t->x, t->y, t->z);
+                        }
+                    if (t->mask == '.') {
+                        GRAPHICS->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
+                        glVertex3f(t->x, t->y, t->z);
+                    }
+                }
+                 if (t->helixNr == 0) {
+                     GRAPHICS->SetColor(RNA3D_GC_BASES_NON_HELIX);
+                     glVertex3f(t->x, t->y, t->z);
+                 }
+                 t = t->next;
+            }
+        glEnd();
+    }
+    glEndList();
+}
+
+void Structure3D::GenerateCursorPositionDispList(long pos){
+    Struct3Dinfo *temp;
+
+    glNewList(ECOLI_CURSOR_POSITION, GL_COMPILE); 
+    {
+        glBegin(GL_POINTS);
         temp = start3D;    
         while (temp != NULL) {
-            glVertex3f(temp->x, temp->y, temp->z);
+            if(temp->pos == pos) {
+#ifdef DEBUG
+                cout<<"Cursor Position : "<<pos<<endl;
+#endif
+                glVertex3f(temp->x, temp->y, temp->z);
+                break;
+            }
             temp = temp->next;
         }
         glEnd();
@@ -512,7 +575,7 @@ void Structure3D::GenerateMoleculeSkeleton(void){
     glEndList();
 }
 
-void Structure3D::ComputeBasePositions(int iInterval){
+void Structure3D::ComputeBasePositions(){
     Struct3Dinfo *temp;
 
     char POS[50];
@@ -650,3 +713,315 @@ void Structure3D::PrepareSecondaryStructureData(void) {
 }
 
 
+CurrSpecies *startSp = NULL;
+bool bOldSpecesDataExists = false;
+
+void Structure3D::StoreCurrSpeciesDifference(char base, int pos){
+    Struct2Dplus3D *st;
+    st = start2D3D;
+    while (st != NULL) {
+        if(st->pos == pos) {
+            CurrSpecies *data, *temp;
+            data = new CurrSpecies;
+            data->base = base; 
+            data->pos  = pos;
+            data->x = st->x;
+            data->y = st->y;
+            data->z = st->z;
+            data->next = NULL;
+
+            if (startSp == NULL){
+                startSp = data;
+                bOldSpecesDataExists = true;
+            }
+            else {
+                temp = startSp;
+                while (temp->next != NULL) {
+                    temp = temp->next;
+                }
+                temp->next = data;
+            }
+            break;
+        }
+        st = st->next;
+    }
+}
+
+void Structure3D::DeleteOldSpeciesData(){
+    CurrSpecies *tmp, *data;
+
+    for(data = startSp; data != NULL; data = tmp) {
+        tmp = data->next;
+        delete data;
+    }
+    startSp = NULL; 
+
+    bOldSpecesDataExists = false;
+}
+
+void Structure3D::GenerateBaseDifferencePositionDisplayList(){
+    CurrSpecies *t;
+    Struct3Dinfo *temp;
+
+    char POS[50];
+    float spacer = 1.5;
+    
+    glNewList(MAP_SPECIES_BASE_DIFFERENCE_POS, GL_COMPILE);
+    {
+        for(t = startSp; t != NULL; t = t->next) 
+            {
+                for(temp = start3D; temp != NULL; temp = temp->next) 
+                    {
+                        if(temp->pos == t->pos) {
+                            sprintf(POS, "%d", temp->pos);
+                            GRAPHICS->PrintString(temp->x-spacer, temp->y, temp->z-spacer, POS, GLUT_BITMAP_HELVETICA_10);
+                        }
+                    }
+            }
+    }
+    glEndList();
+
+    glNewList(MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR, GL_COMPILE);
+    {
+        glLineWidth(0.5);
+        glBegin(GL_LINES);
+
+        for(t = startSp; t != NULL; t = t->next) 
+            {
+                for(temp = start3D; temp != NULL; temp = temp->next) 
+                    {
+                        if(temp->pos == t->pos) {
+                            glVertex3f(temp->x, temp->y, temp->z);
+                            glVertex3f(temp->x-spacer, temp->y, temp->z-spacer);
+                        }
+                    }
+            }
+        glEnd();
+    }
+    glEndList();
+}
+
+void Structure3D::BuildDisplayList(int listID, int *pos, int len){
+    CurrSpecies *t;
+    int tmpPos = 0;
+
+    glNewList(listID, GL_COMPILE);
+    {   
+        extern bool bPointSpritesSupported;
+        if (bPointSpritesSupported) {
+            glBegin(GL_POINTS);
+        }
+        for(int i = 0; i < len; i++) 
+            {
+                tmpPos = pos[i];
+                t = startSp;
+                while (t != NULL) {
+                    if (t->pos == tmpPos) {
+                        PointsToQuads(t->x, t->y, t->z);
+                        break;
+                    }
+                    t = t->next;
+                }
+            }
+        if (bPointSpritesSupported){
+            glEnd();
+        }
+    }
+    glEndList();
+}
+
+void Structure3D::GenerateBaseDifferenceDisplayList(){
+    CurrSpecies *t;
+
+    glNewList(MAP_SPECIES_BASE_DIFFERENCE, GL_COMPILE);
+    {   
+        extern bool bPointSpritesSupported;
+        if (bPointSpritesSupported) {
+            glBegin(GL_POINTS);
+        }
+        t = startSp;
+        while (t != NULL) {
+            //            cout<<t->pos<<": "<<t->base<<endl;
+            PointsToQuads(t->x, t->y, t->z);
+            t = t->next;
+        }
+        if (bPointSpritesSupported){
+            glEnd();
+        }
+    }
+    glEndList();
+
+    const int MAX_BASE = 400;
+    int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], 
+        baseU[MAX_BASE], deletion[MAX_BASE], miss[MAX_BASE];
+    int a,g,c,u,d,m; a=g=c=u=d=m=0;
+
+    {
+        t = startSp;
+        while (t != NULL) {
+            switch (t->base) 
+                {
+                case 'A' : baseA[a++]    = t->pos; break;
+                case 'G' : baseG[g++]    = t->pos; break;
+                case 'C' : baseC[c++]    = t->pos; break;
+                case 'U' : baseU[u++]    = t->pos; break;
+                case '-' : deletion[d++] = t->pos; break;
+                case '.' : miss[m++] = t->pos; break;
+                }
+            t = t->next;
+        }
+        BuildDisplayList(MAP_SPECIES_BASE_A, baseA, a);
+        BuildDisplayList(MAP_SPECIES_BASE_U, baseU, u);
+        BuildDisplayList(MAP_SPECIES_BASE_G, baseG, g);
+        BuildDisplayList(MAP_SPECIES_BASE_C, baseC, c);
+        BuildDisplayList(MAP_SPECIES_DELETION, deletion, d);
+        BuildDisplayList(MAP_SPECIES_MISSING, miss, m);
+        GenerateBaseDifferencePositionDisplayList();
+    }
+}
+
+int igSeqLen = 0;
+bool bStartPosStored = false;
+int igStartPos;
+bool bEndPosStored = false;
+int igEndPos;
+
+void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
+
+    GB_push_transaction(gb_main);
+
+    GBDATA *gbTemplate = GBT_find_SAI(gb_main,"ECOLI");
+
+    if (!gbTemplate) {
+        aw_message("ECOLI SAI not found");
+    }
+    else {
+        char *pSpeciesName = awr->awar(AWAR_SPECIES_NAME)->read_string();
+        if (pSpeciesName) {
+            ED4_SeqTerminal = ED4_find_seq_terminal(pSpeciesName); // initializing the seqTerminal to get the current terminal
+            GBDATA *gbSpecies = GBT_find_species(gb_main, pSpeciesName);
+            if(gbSpecies) {
+                char   *gbAliName            = GBT_get_default_alignment(gb_main);
+                GBDATA *gbAlignment          = GB_find(gbTemplate, gbAliName, 0, down_level);
+                GBDATA *gbTemplateSeqData    = GB_find(gbAlignment, "data", 0, down_level);
+                const char *pTemplateSeqData = GB_read_char_pntr(gbTemplateSeqData);
+
+                if(!bEColiRefInitialised) {
+                    EColiRef = new BI_ecoli_ref();
+                    EColiRef->init(gb_main);
+                    bEColiRefInitialised = true;
+                }
+
+                char buf[100];
+                char *pSpFullName = GB_read_string(GB_find(gbSpecies, "full_name", 0, down_level));
+                sprintf(buf, "%s : %s", pSpeciesName, pSpFullName);
+                awr->awar(AWAR_3D_SELECTED_SPECIES)->write_string(buf); 
+
+                GBDATA *gbSeqData   = GBT_read_sequence(gbSpecies, gbAliName);
+                const char *pSeqData = GB_read_char_pntr(gbSeqData); 
+                int iSeqCount = 0;
+
+                if (pSeqData && pTemplateSeqData) {
+                    int iSeqLen = strlen(pTemplateSeqData); 
+                    igSeqLen = iSeqLen; cout<<iSeqLen<<endl;
+
+                    if(bOldSpecesDataExists) {
+                        DeleteOldSpeciesData();
+#ifdef DEBUG                        
+                        cout<<"Freeing old memory...!!"<<endl;
+#endif
+                    }
+
+                    for(int i = 0; i<iSeqLen; i++){
+                        if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){ if (!bStartPosStored) {igStartPos = i; bStartPosStored = true;}
+                            if(pTemplateSeqData[i] != pSeqData[i])
+                                StoreCurrSpeciesDifference(pSeqData[i],iSeqCount);
+                            iSeqCount++;
+                        }
+                    }
+
+                    for(int i = iSeqLen; i>0; i--){
+                        if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){ 
+                            if (!bEndPosStored) {
+                                igEndPos = i; 
+                                bEndPosStored = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                free(pSpFullName);
+                free(gbAliName);
+            }
+            GenerateBaseDifferenceDisplayList();
+        }
+        free(pSpeciesName);
+    }
+    GB_pop_transaction(gb_main);
+}
+
+int Structure3D::ValidateSearchColor(int iColor){
+    if (iMapSAI) {
+        if ((iColor >= RNA3D_GC_CBACK_0) && (iColor < RNA3D_GC_MAX))  return 1;
+        else                                                          return 0;
+    }
+    else {
+        if ((iColor >= RNA3D_GC_SBACK_0) && (iColor < RNA3D_GC_MAX)) return 1;
+        else                                                         return 0;
+    }
+}
+
+void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
+    if (ED4_SeqTerminal) {                                                                        //if seqTerminal is initialised and selected
+        const char *pSearchColResults = 0;
+        int endPos   = igEndPos;
+        int startPos = igStartPos;cout<<igSeqLen<<" : "<<igStartPos<<" - "<<igEndPos<<endl;
+
+        if (iMapSAI && ED4_ROOT->visualizeSAI) {
+            // returns 0 if sth went wrong
+            pSearchColResults = getSaiColorString(awr, startPos, endPos);
+        }
+        if (!pSearchColResults) {
+            // buildColorString builds the background color of each base
+            pSearchColResults = ED4_SeqTerminal->results().buildColorString(ED4_SeqTerminal, startPos, endPos); 
+        }
+
+        if(pSearchColResults) {
+            int iColor = 0;
+            extern OpenGLGraphics *cGraphics;
+
+            glNewList(MAP_SAI_TO_STRUCTURE, GL_COMPILE);
+            {
+                glBegin(GL_POINTS);
+                for (int i = startPos; i < endPos; i++) {
+                    if(bEColiRefInitialised) {
+                        long absPos = (long) i;
+                        long EColiPos, dummy;
+                        EColiRef->abs_2_rel(absPos, EColiPos, dummy);
+
+                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next) 
+                            {
+                                if (t->pos == EColiPos) {
+                                    if(iMapSAI) iColor = pSearchColResults[i] - SAICOLORS;
+                                    else        iColor = pSearchColResults[i] - COLORLINK;
+                                    if(ValidateSearchColor(iColor)) {
+                                    //                   cout<<iColor<<";";
+                                    cGraphics->SetColor(iColor);
+                                    glVertex3f(t->x, t->y, t->z);
+                                    }
+                                    break;
+                                }
+                            }
+                    }
+                }
+                glEnd();
+            }
+            glEndList();
+
+            extern bool bMapSaiDispListCreated;
+            bMapSaiDispListCreated = true;
+        }
+        else cout<<"BuildColorString did not get the colors : SAI cannot be Visualized!"<<endl;                                                     
+    }
+    else cout<<"Problem with initialization : SAI cannot be Visualized!"<<endl;  
+}

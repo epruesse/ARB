@@ -7,6 +7,7 @@
 #include "RNA3D_Renderer.hxx"
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_Interface.hxx"
+//#include "RNA3D_Main.hxx"
 
 OpenGLGraphics *cGraphics  = new OpenGLGraphics();
 Structure3D    *cStructure = new Structure3D();
@@ -45,6 +46,13 @@ bool rotateMolecule = false;
 bool autoRotate     = false;
 bool bPointSpritesSupported = false;
 float scale = 0.01;
+int iScreenWidth, iScreenHeight;
+int iRotateMolecule; // Used for Rotation of Molecule
+
+static bool bMapSpDispListCreated     = false;
+static bool bCursorPosDispListCreated = false;
+static bool bHelixNrDispListCreated   = false;
+bool bMapSaiDispListCreated    = false;
 
 using namespace std;
 
@@ -79,17 +87,20 @@ void initExtensions() {
 		printf("Molecule Display: Quality of Rendering is LOW!!\n");
 		bPointSpritesSupported = false;
 	} else {		
-		#ifdef _DEBUG
+#ifdef _DEBUG
 			printf("DEBUG: All extra extensions seem to be ok as well.\n");
-		#endif // _DEBUG
+#endif // _DEBUG
 		bPointSpritesSupported = true ;
 	}
 }
 
 void ReshapeOpenGLWindow( GLint width, GLint height ) {
+	iScreenWidth  = width; 
+    iScreenHeight = height;
+
 	extern float fAspectRatio;
 	fAspectRatio = (float) width / (float) height;
-	
+
 	glViewport( 0, 0, width, height );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
@@ -100,6 +111,9 @@ void ReshapeOpenGLWindow( GLint width, GLint height ) {
 
 void InitializeOpenGLEngine(GLint width, GLint height ) {
     cout<<"Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
+
+    saved_x = saved_y = 2.0f;
+    RotateMolecule(1,1);
     
 	//Get Information about Vendor & Version
 	ShowVendorInformation();
@@ -129,7 +143,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     glClearDepth(1.0);			     // Enables Clearing Of The Depth Buffer
     glDepthFunc(GL_LESS);		     // The Type Of Depth Test To Do
     glEnable(GL_DEPTH_TEST);	   	 // Enables Depth Testing
-    glShadeModel(GL_FLAT);			 
+    glShadeModel(GL_SMOOTH);			 
 
     glPointSize(1.0);
     if (!glIsEnabled(GL_POINT_SMOOTH)) {
@@ -192,9 +206,19 @@ void CalculateRotationMatrix(){
 
 void MapDisplayParameters(AW_root *root){
     // General Molecule Display Section
-    cRenderer->iBackBone     = root->awar(AWAR_3D_MOL_BACKBONE)->read_int();
-    cRenderer->iColorise     = root->awar(AWAR_3D_MOL_COLORIZE)->read_int();
-    cRenderer->fSkeletonSize = root->awar(AWAR_3D_MOL_SIZE)->read_float();
+    cRenderer->iBackBone       = root->awar(AWAR_3D_MOL_BACKBONE)->read_int();
+    cRenderer->iColorise       = root->awar(AWAR_3D_MOL_COLORIZE)->read_int();
+    cRenderer->fSkeletonSize   = root->awar(AWAR_3D_MOL_SIZE)->read_float();
+    cRenderer->iDispPos        = root->awar(AWAR_3D_MOL_DISP_POS)->read_int();
+    cStructure->iInterval      = root->awar(AWAR_3D_MOL_POS_INTERVAL)->read_int();
+    cStructure->iMapSAI        = root->awar(AWAR_3D_MAP_SAI)->read_int();
+    cRenderer->iMapSpecies     = root->awar(AWAR_3D_MAP_SPECIES)->read_int();
+    cRenderer->iMapSpeciesBase = root->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->read_int();
+    cRenderer->iMapSpeciesPos  = root->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->read_int();
+    cRenderer->iMapSpeciesDels = root->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->read_int();
+    cRenderer->iMapSpeciesMiss = root->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->read_int();
+    cRenderer->iDispCursorPos  = root->awar(AWAR_3D_CURSOR_POSITION)->read_int();
+    iRotateMolecule            = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
 
     // Display Bases Section
     cRenderer->iDisplayBases     = root->awar(AWAR_3D_DISPLAY_BASES)->read_int();
@@ -231,43 +255,103 @@ void MapDisplayParameters(AW_root *root){
     else if(cRenderer->iEndHelix < cRenderer->iStartHelix) {
         root->awar(AWAR_3D_HELIX_TO)->write_int(cRenderer->iStartHelix + 1);
     }
+
+    if(cStructure->iInterval < 1) {
+        cout<<"WARNING: Invalid POSITION Interval!! Setting it to Default Value (25)."<<endl;
+        root->awar(AWAR_3D_MOL_POS_INTERVAL)->write_int(25);
+    }
+
+    if(!bMapSpDispListCreated && cRenderer->iMapSpecies) {
+        cStructure->MapCurrentSpeciesToEcoliTemplate(root);
+        bMapSpDispListCreated = true;
+    }
+
+    if (!bHelixNrDispListCreated && (cRenderer->iHelixNrs || cRenderer->iHelixMidPoint)) {
+        cStructure->GenerateHelixNrDispList(cRenderer->iStartHelix, cRenderer->iEndHelix);
+        bHelixNrDispListCreated = true;
+    }
+
+    if (!bMapSaiDispListCreated && cStructure->iMapSAI) {
+        cStructure->MapSaiToEcoliTemplate(root);
+    }
+}
+
+void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
+    MapDisplayParameters(awr);
+    glDeleteLists(STRUCTURE_POS,2);
+    cStructure->ComputeBasePositions();
+    RefreshOpenGLDisplay();
+}
+
+void MapSelectedSpeciesChanged_CB(AW_root *awr) {
+    MapDisplayParameters(awr);
+
+    if (bMapSpDispListCreated) {
+        glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
+        cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
+    }
+    RefreshOpenGLDisplay();
+}
+
+void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
+    MapDisplayParameters(awr);
+
+    if (bMapSaiDispListCreated) {
+        bMapSaiDispListCreated = false;
+        glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
+        cStructure->MapSaiToEcoliTemplate(awr);
+    }
+    RefreshOpenGLDisplay();
+}
+
+void CursorPositionChanged_CB(AW_root *awr) {
+    extern bool bEColiRefInitialised;
+    if(bEColiRefInitialised) {
+        long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
+        long EColiPos, dummy;
+        cStructure->EColiRef->abs_2_rel(iCursorPos, EColiPos, dummy);
+
+        if (!bCursorPosDispListCreated) {
+            cStructure->GenerateCursorPositionDispList(EColiPos);
+            bMapSpDispListCreated = true;
+        }
+        else {
+            glDeleteLists(ECOLI_CURSOR_POSITION,1);
+            cStructure->GenerateCursorPositionDispList(EColiPos);
+        }
+        RefreshOpenGLDisplay();
+    }
+}
+
+void DisplayHelixNrsChanged_CB(AW_root *awr) {
+    MapDisplayParameters(awr);
+    
+    int iStart = cRenderer->iStartHelix;
+    int iEnd   = cRenderer->iEndHelix;
+    if (!bHelixNrDispListCreated) {
+        cStructure->GenerateHelixNrDispList(iStart, iEnd);
+        bHelixNrDispListCreated = true;
+    }
+    else {
+        glDeleteLists(HELIX_NUMBERS, 2);
+        cStructure->GenerateHelixNrDispList(iStart, iEnd);
+    }
+    RefreshOpenGLDisplay();
 }
 
 void DrawStructure(){
-
     glPushMatrix();
     cRenderer->DoHelixMapping();
     glPopMatrix();
 
     glPushMatrix();
-    cRenderer->DisplayMolecule();
+    cRenderer->DisplayMolecule(cStructure);
     glPopMatrix();
 
     // Texture Mapping
-    if(bPointSpritesSupported){
-        cRenderer->BeginTexturizer();
-        cRenderer->TexturizeStructure(cTexture);
-        cRenderer->EndTexturizer();
-    }
-
-    if(!bPointSpritesSupported)
-        {
-            cRenderer->BeginTexturizer();
-            
-            glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
-            glColor4f(0,0,1,1);
-            glCallList(STRUCTURE_BACKBONE_POINTS);
-            cRenderer->EndTexturizer();
-        }
-	
-//     glPushMatrix();
-//     glLineWidth(cRenderer->ObjectSize/2);
-//     glColor4fv(BLUE);
-//     glBegin(GL_LINE_STRIP);
-//     glCallList(STRUCTURE_SEARCH);
-//     glEnd();
-//     glPopMatrix();
-
+    cRenderer->BeginTexturizer();
+    cRenderer->TexturizeStructure(cTexture);
+    cRenderer->EndTexturizer();
 }
 
 void RenderOpenGLScene(Widget w){
@@ -278,6 +362,10 @@ void RenderOpenGLScene(Widget w){
     gluLookAt(Viewer.x, Viewer.y, Viewer.z,
               Center.x, Center.y, Center.z,
               Up.x,     Up.y,     Up.z);
+
+    {// Displaying Molecule Name
+        cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);
+    }
 
     glScalef(scale,scale,scale);
 

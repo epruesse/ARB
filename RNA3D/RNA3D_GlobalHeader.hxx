@@ -21,6 +21,7 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
+#include <BI_helix.hxx>
 
 // Xt/Motif Header files
 #include <X11/keysym.h>

@@ -3,30 +3,20 @@
 enum { 
     CIRCLE_LIST = 51,     
     STRUCTURE_BACKBONE,   
-    STRUCTURE_BACKBONE_CLR,
-    STRUCTURE_BACKBONE_POINTS,     
-    STRUCTURE_BACKBONE_POINTS_CLR, 
-    STRUCTURE_BACKBONE_POINTS_A,     
-    STRUCTURE_BACKBONE_POINTS_G,  
-    STRUCTURE_BACKBONE_POINTS_C,  
-    STRUCTURE_BACKBONE_POINTS_U,
-    STRUCTURE_SEARCH,
-    STRUCTURE_SEARCH_POINTS,
-    STRUCTURE_POS,
-    STRUCTURE_POS_ANCHOR,
-    STRUCTURE_2D_MASK,
-    STRUCTURE_2D_MASK_HELIX_START,
-    STRUCTURE_2D_MASK_HELIX_END,
-    STRUCTURE_2D_MASK_HELIX_FORWARD_STRAND,
-    STRUCTURE_2D_MASK_HELIX_BACKWARD_STRAND,
-    STRUCTURE_2D_MASK_NON_HELIX,
-    NON_HELIX_BASES,
+    STRUCTURE_BACKBONE_CLR,   
     HELIX_NUMBERS,
     HELIX_NUMBERS_POINTS,
-    LOOP_A, LOOP_G, LOOP_C, LOOP_U,
     HELIX_A, HELIX_G, HELIX_C, HELIX_U,
     UNPAIRED_HELIX_A, UNPAIRED_HELIX_G, UNPAIRED_HELIX_C, UNPAIRED_HELIX_U,
-    NON_HELIX_A, NON_HELIX_G, NON_HELIX_C, NON_HELIX_U
+    NON_HELIX_A, NON_HELIX_G, NON_HELIX_C, NON_HELIX_U,
+    STRUCTURE_POS,
+    STRUCTURE_POS_ANCHOR,
+    MAP_SPECIES_BASE_DIFFERENCE, 
+    MAP_SPECIES_BASE_DIFFERENCE_POS, MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR,
+    MAP_SPECIES_BASE_A, MAP_SPECIES_BASE_G, MAP_SPECIES_BASE_C, MAP_SPECIES_BASE_U,
+    MAP_SPECIES_DELETION, MAP_SPECIES_MISSING,
+    MAP_SAI_TO_STRUCTURE,
+    ECOLI_CURSOR_POSITION
 };
 
 struct Struct2Dplus3D {
@@ -65,11 +55,29 @@ struct HelixNrInfo {
     struct HelixNrInfo *next;
 };
 
+struct CurrSpecies {
+    float x;
+    float y;
+    float z;
+    int pos;
+    char base;
+    struct CurrSpecies *next;
+};
+
 struct Vector3;
+
+class ED4_sequence_terminal; 
 
 class Structure3D {
 public:
     Vector3 *strCen;
+
+    int iInterval;
+    int iMapSAI;
+    int iStartPos, iEndPos;
+    
+    BI_ecoli_ref *EColiRef;
+    ED4_sequence_terminal *ED4_SeqTerminal;
     
     Structure3D(void);
     virtual  ~Structure3D(void);
@@ -85,7 +93,7 @@ public:
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
 
     void GenerateMoleculeSkeleton(void);
-    void ComputeBasePositions(int iInterval);
+    void ComputeBasePositions();
 
     void PositionsToCoordinatesDispList(int listID, int *pos, int len);
     void PointsToQuads(float x, float y, float z);
@@ -93,9 +101,20 @@ public:
     
     void GenerateDisplayLists(void);
     void GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR);
-    void GenerateHelixNrDispList(void);
+    void GenerateHelixNrDispList(int startHx, int endHx);
     void GenerateSecStructureHelixRegions(void);
     void GenerateSecStructureNonHelixRegions(void);
     void GenerateSecStructureUnpairedHelixRegions(void);
-    void GenerateNonHelixBaseDispList(void);
+
+    void MapCurrentSpeciesToEcoliTemplate(AW_root *awr);
+    void StoreCurrSpeciesDifference(char base, int pos);
+    void DeleteOldSpeciesData();
+    void BuildDisplayList(int listID, int *pos, int len);
+    void GenerateBaseDifferenceDisplayList();
+    void GenerateBaseDifferencePositionDisplayList();
+
+    void GenerateCursorPositionDispList(long pos);
+
+    void MapSaiToEcoliTemplate(AW_root *awr);
+    int  ValidateSearchColor(int iColor);
 };
