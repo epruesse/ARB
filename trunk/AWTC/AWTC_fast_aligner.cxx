@@ -44,6 +44,7 @@ static IslandHopping *island_hopper = 0;
 #define FA_AWAR_MIRROR			   (FA_AWAR_ROOT "mirror")
 #define FA_AWAR_INSERT			   (FA_AWAR_ROOT "insert")
 #define FA_AWAR_SHOW_GAPS_MESSAGES (FA_AWAR_ROOT "show_gaps")
+#define FA_AWAR_USE_SECONDARY      (FA_AWAR_ROOT "use_secondary")
 #define FA_AWAR_NEXT_RELATIVES     (FA_AWAR_ROOT "next_relatives")
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT "island_hopping/"
@@ -2209,7 +2210,8 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     awtc_assert(island_hopper == 0);
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping();
-        island_hopper->set_helix(cd->helix_string);
+        if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) island_hopper->set_helix(cd->helix_string);
+
         island_hopper->set_parameters(root->awar(FA_AWAR_ESTIMATE_BASE_FREQ)->read_int(),
                                       root->awar(FA_AWAR_BASE_FREQ_T)->read_float(),
                                       root->awar(FA_AWAR_BASE_FREQ_C)->read_float(),
@@ -2360,6 +2362,7 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(	FA_AWAR_MIRROR, 			1, 	db1);
     root->awar_int(	FA_AWAR_INSERT, 			0, 	db1);
     root->awar_int(	FA_AWAR_SHOW_GAPS_MESSAGES,		1, 	db1);
+    root->awar_int(	FA_AWAR_USE_SECONDARY,		0, 	db1);
     root->awar_int(	AWAR_PT_SERVER, 			-1, 	db1);
     root->awar_int(	FA_AWAR_NEXT_RELATIVES,			1, 	db1)->set_minmax(1,100);
 
@@ -2417,6 +2420,10 @@ AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL ) {
     aws->at( "help" );
     aws->callback     ( AW_POPUP_HELP, (AW_CL) "islandhopping.hlp"  );
     aws->create_button( "HELP", "HELP" );
+
+    aws->at("use_secondary");
+    aws->label("Use secondary structure (only for re-align)");
+    aws->create_toggle(FA_AWAR_USE_SECONDARY);
 
     aws->at("freq");
     aws->create_toggle_field(FA_AWAR_ESTIMATE_BASE_FREQ,"Base freq.","B");
