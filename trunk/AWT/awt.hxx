@@ -309,6 +309,7 @@ public:
     GBDATA  *gb_ref;            // second reference database
     AW_BOOL  look_in_ref_list;  // for querys
     AWAR     species_name;      // AWAR containing current species name
+    AWAR     tree_name;         // AWAR containing current tree name
 
     const ad_item_selector *selector;  // which kind of item do we handle?
 
