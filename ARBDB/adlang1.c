@@ -262,6 +262,80 @@ static const char *gbl_stristr(const char *haystack, const char *needle) {
 }
 
 /********************************************************************************************
+          Binary operators:
+********************************************************************************************/
+/*
+ * Binary operators work on pairs of values.
+ * Three different operational modes are implemented for all binary operators:
+ *
+ * 1. inputstreams|operator
+ *
+ *    The number of inputstreams has to be even and the operator will be
+ *    applied to pairs of them.
+ *
+ *    Example : a;b;c;d;e;f | plus
+ *    Result  : a+b;c+d;e+f
+ *
+ * 2. inputstreams|operator(x)
+ *
+ *    The number of inputstreams has to be at least 1.
+ *    The operator is applied to each inputstream.
+ *
+ *    Example : a;b;c | plus(d)
+ *    Result  : a+d;b+d;c+d
+ *
+ * 3. operator(x, y)
+ *
+ *    Inputstreams will be ignored and the operator is applied
+ *    to the arguments
+ *
+ *    Example : a;b | plus(c,d)
+ *    Result  : c+d
+ */
+
+typedef char* (*gbl_binary_operator)(const char *arg1, const char *arg2, void *client_data);
+
+static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binary_operator op, void *client_data)
+{
+    GB_ERROR  error  = 0;
+
+    switch (args->cparam) {
+        case 0:
+            if (args->cinput == 0) error = "Expect at least two input streams if called with 0 parameters";
+            else if (args->cinput%2) error = "Expect an even number of input streams if called with 0 parameters";
+            else {
+                int inputpairs = args->cinput/2;
+                int i;
+                for (i = 0; i<inputpairs; ++i) {
+                    (*args->voutput)[(*args->coutput)++].str = op(args->vinput[i*2].str, args->vinput[i*2+1].str, client_data);
+                }
+            }
+            break;
+
+        case 1:
+            if (args->cinput == 0) error = "Expect at least one input stream if called with 1 parameter";
+            else {
+                int         i;
+                const char *argument = args->vparam[0].str;
+                for (i = 0; i<args->cinput; ++i) {
+                    (*args->voutput)[(*args->coutput)++].str = op(args->vinput[i].str, argument, client_data);
+                }
+            }
+            break;
+
+        case 2:
+            (*args->voutput)[(*args->coutput)++].str = op(args->vparam[0].str, args->vparam[1].str, client_data);
+            break;
+
+        default :
+            error = "0 to 2 arguments expected";
+            break;
+    }
+
+    return error;
+}
+
+/********************************************************************************************
           the commands themselves:
 ********************************************************************************************/
 
@@ -277,11 +351,11 @@ static GB_ERROR gbl_command(GBL_command_arguments *args)
 
     command = unEscapeString(args->vparam[0].str);
 #if defined(DEBUG)
-    printf("executing command '%s'\n", args->command);
+    printf("executing command '%s'\n", command);
 #endif /* DEBUG */
 
     for (i=0;i<args->cinput;i++) { /* go through all orig streams       */
-        char *result = GB_command_interpreter(gb_main, args->vinput[0].str, command, args->gb_ref, args->default_tree_name);
+        char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
         if (!result) return GB_get_error();
 
         (*args->voutput)[(*args->coutput)++].str = result; /* export result string */
@@ -309,7 +383,7 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args)
 #endif /* DEBUG */
 
     for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        char *result = GB_command_interpreter(gb_main, args->vinput[0].str, command, args->gb_ref, args->default_tree_name);
+        char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
         if (!result) return GB_get_error();
 
         (*args->voutput)[(*args->coutput)++].str = result;
@@ -343,7 +417,7 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args)
         int   i;
 
         for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-            char *result = GB_command_interpreter(gb_main, args->vinput[0].str, command, gb_origin, args->default_tree_name);
+            char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, gb_origin, args->default_tree_name);
             if (!result) return GB_get_error();
 
             (*args->voutput)[(*args->coutput)++].str = result; /* export result string */
@@ -470,102 +544,45 @@ static GB_ERROR gbl_keep(GBL_command_arguments *args)
     return 0;
 }
 
-typedef const char *(*search_function_type)(const char *, const char *);
-typedef int (*compare_function_type)(const char *, const char *);
+static char *binop_compare(const char *arg1, const char *arg2, void *client_data) {
+    int case_sensitive = (int)client_data;
+    int result;
 
-static GB_ERROR gbl_compare(GBL_command_arguments *args)
-{
-    const unsigned char   *str;
-    int                    ignore_case = 0;
-    compare_function_type  compare_function;
-    int                    i;
+    if (case_sensitive) result = strcmp(arg1, arg2);
+    else result                = gbl_stricmp(arg1, arg2);
 
-    if (args->cparam<1 || args->cparam>2) return "compare syntax: compare(#string [, #ignore_case])";
+    return GBS_global_string_copy("%i", result<0 ? -1 : (result>0 ? 1 : 0));
+}
+static char *binop_equals(const char *arg1, const char *arg2, void *client_data) {
+    int case_sensitive = (int)client_data;
+    int result;
 
-    str                             = (const unsigned char *)args->vparam[0].str;
-    if (args->cparam == 2) ignore_case = atoi(args->vparam[1].str);
-    compare_function                = ignore_case ? gbl_stricmp : strcmp;
+    if (case_sensitive) result = strcmp(arg1, arg2);
+    else result                = gbl_stricmp(arg1, arg2);
 
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        int result = compare_function(args->vinput[i].str, str);
+    return GBS_global_string_copy("%i", result == 0 ? 1 : 0);
+}
+static char *binop_contains(const char *arg1, const char *arg2, void *client_data) {
+    int         case_sensitive = (int)client_data;
+    const char *found          = 0;
 
-        if (result<0) result      = -1;
-        else if (result>0) result = 1;
+    if (case_sensitive) found = strstr(arg1, arg2);
+    else found                = gbl_stristr(arg1, arg2);
 
-        (*args->voutput)[(*args->coutput)++].str = GBS_global_string_copy("%i", result);
-        /* export result string */
-    }
-    return 0;
-
+    return GBS_global_string_copy("%i", found == 0 ? 0 : (found-arg1)+1);
+}
+static char *binop_partof(const char *arg1, const char *arg2, void *client_data) {
+    return binop_contains(arg2, arg1, client_data);
 }
 
-static GB_ERROR gbl_equals(GBL_command_arguments *args)
-{
-    const unsigned char   *str;
-    int                    ignore_case = 0;
-    compare_function_type  compare_function;
-    int                    i;
-
-    if (args->cparam<1 || args->cparam>2) return "equals syntax: equals(#string [, #ignore_case])";
-
-    str                             = (const unsigned char *)args->vparam[0].str;
-    if (args->cparam == 2) ignore_case = atoi(args->vparam[1].str);
-    compare_function                = ignore_case ? gbl_stricmp : strcmp;
-
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        int result = compare_function(args->vinput[i].str, str);
-        result = !result;
-        (*args->voutput)[(*args->coutput)++].str = GBS_global_string_copy("%i", result);
-    }
-    return 0;
-}
-
-static GB_ERROR gbl_contains(GBL_command_arguments *args)
-{
-    const  char          *str;
-    int                   ignore_case = 0;
-    int                   i;
-    search_function_type  search_function;
-
-    if (args->cparam<1 || args->cparam>2) return "contains syntax: contains(#string [, #ignore_case])";
-
-    str                             = args->vparam[0].str;
-    if (args->cparam == 2) ignore_case = atoi(args->vparam[1].str);
-    search_function                 = ignore_case ? gbl_stristr : (search_function_type)strstr;
-
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        const char *found            = search_function(args->vinput[i].str, str);
-        int         result           = found ? (found-args->vinput[i].str+1) : 0;
-        (*args->voutput)[(*args->coutput)++].str = GBS_global_string_copy("%i", result);
-    }
-    return 0;
-}
-
-static GB_ERROR gbl_partof(GBL_command_arguments *args)
-{
-    const char           *str;
-    int                   ignore_case = 0;
-    int                   i;
-    search_function_type  search_function;
-
-    if (args->cparam<1 || args->cparam>2) return "partof syntax: partof(#string [, #ignore_case])";
-
-    str                             = args->vparam[0].str;
-    if (args->cparam == 2) ignore_case = atoi(args->vparam[1].str);
-    search_function                 = ignore_case ? gbl_stristr : (search_function_type)strstr;
-
-    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
-    for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
-        const char *found            = search_function(str, args->vinput[i].str);
-        int         result           = found ? (found-str+1) : 0;
-        (*args->voutput)[(*args->coutput)++].str = GBS_global_string_copy("%i", result);
-    }
-    return 0;
-}
-
+static GB_ERROR gbl_compare  (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_compare,  (void*)1); }
+static GB_ERROR gbl_icompare (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_compare,  (void*)0); }
+static GB_ERROR gbl_equals   (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_equals,   (void*)1); }
+static GB_ERROR gbl_iequals  (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_equals,   (void*)0); }
+static GB_ERROR gbl_contains (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_contains, (void*)1); }
+static GB_ERROR gbl_icontains(GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_contains, (void*)0); }
+static GB_ERROR gbl_partof   (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_partof,   (void*)1); }
+static GB_ERROR gbl_ipartof  (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, binop_partof,   (void*)0); }
 
 static GB_ERROR gbl_translate(GBL_command_arguments *args)
 {
@@ -838,11 +855,188 @@ static GB_ERROR gbl_cut(GBL_command_arguments *args)
 
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cparam);
     for (i=0; i<args->cparam;i++) {
-        int j = atoi(args->vparam[i].str)-1;
-        if (j<0) continue;
-        if (j>= args->cinput) continue;
-        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[j].str);/* export result string */
+        int j = atoi(args->vparam[i].str);
+        if (j<1 || j>args->cinput) {
+            return GBS_global_string("Illegal stream number '%i'", j);
+        }
+        --j; // user numbers streams from 1 to N
+        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[j].str); /* export result string */
     }
+    return 0;
+}
+static GB_ERROR gbl_drop(GBL_command_arguments *args)
+{
+    int       i;
+    int      *dropped;
+    GB_ERROR  error    = 0;
+
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput-args->cparam);
+
+    dropped = malloc(args->cinput*sizeof(dropped));
+    for (i=0; i<args->cinput;++i) {
+        dropped[i] = 0;
+    }
+
+    for (i=0; i<args->cparam;++i) {
+        int j = atoi(args->vparam[i].str);
+        if (j<1 || j>args->cinput) {
+            error = GBS_global_string("Illegal stream number '%i'", j);
+            break;
+        }
+        --j; // user numbers streams from 1 to N
+        dropped[j] = 1;
+    }
+
+    if (!error) {
+        for (i=0; i<args->cinput;++i) {
+            if (dropped[i] == 0) {
+                (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
+            }
+        }
+    }
+    free(dropped);
+
+    return error;
+}
+
+static GB_ERROR gbl_dropempty(GBL_command_arguments *args)
+{
+    int i;
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
+    if (args->cparam != 0) return "expect no parameters";
+
+    for (i=0; i<args->cinput;++i) {
+        if (args->vinput[i].str[0]) { /* if non-empty */
+            (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
+        }
+    }
+    return 0;
+}
+
+static GB_ERROR gbl_dropzero(GBL_command_arguments *args)
+{
+    int i;
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
+    if (args->cparam != 0) return "expect no parameters";
+
+    for (i=0; i<args->cinput;++i) {
+        if (atoi(args->vinput[i].str)) { /* if non-zero */
+            (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
+        }
+    }
+    return 0;
+}
+
+static GB_ERROR gbl_swap(GBL_command_arguments *args)
+{
+    int swap1;
+    int swap2;
+    int firstout = *args->coutput;
+    int i;
+
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
+    if (args->cinput<2) return "need at least two input streams";
+
+    if (args->cparam == 0) {
+        swap1 = args->cinput-1;
+        swap2 = args->cinput-2;
+    }
+    else if (args->cparam == 2) {
+        int illegal = 0;
+
+        swap1 = atoi(args->vparam[0].str);
+        swap2 = atoi(args->vparam[1].str);
+
+        if (swap1<1 || swap1>args->cinput) illegal      = swap1;
+        else if (swap2<1 || swap2>args->cinput) illegal = swap2;
+
+        if (illegal) return GBS_global_string("illegal stream number '%i'", illegal);
+
+        swap1--;
+        swap2--;
+    }
+    else {
+        return "expected 0 or 2 parameters";
+    }
+
+    for (i = 0; i<args->cinput; ++i) {
+        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
+    }
+
+    if (swap1 != swap2) {
+        char *temp                           = (*args->voutput)[firstout+swap1].str;
+        (*args->voutput)[firstout+swap1].str = (*args->voutput)[firstout+swap2].str;
+        (*args->voutput)[firstout+swap2].str = temp;
+    }
+
+    return 0;
+}
+
+static GB_ERROR gbl_toback(GBL_command_arguments *args)
+{
+    int i;
+    int put_back;
+    int firstout = *args->coutput;
+
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
+    if (args->cinput<1) return "need at least one input stream";
+    if (args->cparam != 1) return "expecting one parameter";
+
+    put_back = atoi(args->vparam[0].str);
+    if (put_back<1 || put_back>args->cinput) {
+        return GBS_global_string("Illegal stream number '%i'", put_back);
+    }
+    --put_back;
+
+    for (i = 0; i<args->cinput; ++i) {
+        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
+    }
+
+    if (put_back<(args->cinput-1)) { /* not last */
+        char *new_last = (*args->voutput)[firstout+put_back].str;
+        for (i = put_back+1; i<args->cinput; ++i) {
+            (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str;
+        }
+        (*args->voutput)[firstout+args->cinput-1].str = new_last;
+    }
+    return 0;
+}
+static GB_ERROR gbl_tofront(GBL_command_arguments *args)
+{
+    return "not implemented yet";
+}
+
+static GB_ERROR gbl_merge(GBL_command_arguments *args)
+{
+    const char *separator;
+
+    switch (args->cparam) {
+        case 0: separator = 0; break;
+        case 1: separator = args->vparam[0].str; break;
+        default : return "expect 0 or 1 parameter";
+    }
+
+    GBL_CHECK_FREE_PARAM(*args->coutput, 1);
+
+    if (args->cinput) {
+        int   i;
+        void *str;
+
+        str = GBS_stropen(1000);
+        GBS_strcat(str, args->vinput[0].str);
+
+        for (i = 1; i<args->cinput; ++i) {
+            if (separator) GBS_strcat(str, separator);
+            GBS_strcat(str, args->vinput[i].str);
+        }
+
+        (*args->voutput)[(*args->coutput)++].str = GBS_strclose(str);
+    }
+
+    if ((*args->coutput) == 0) {
+        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(""); // return at least one empty output stream
+    }
+
     return 0;
 }
 
@@ -890,10 +1084,10 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
 static GB_ERROR gbl_check(GBL_command_arguments *args)
 {
     int i;
-    
+
     GBL_BEGIN_PARAMS;
-    GBL_PARAM_STRING(exclude, "exclude=", "", "Remove characters 'str' before calculating"            ); 
-    GBL_PARAM_BIT   (upper,   "toupper",  0,  "Convert all characters to uppercase before calculating"); 
+    GBL_PARAM_STRING(exclude, "exclude=", "", "Remove characters 'str' before calculating"            );
+    GBL_PARAM_BIT   (upper,   "toupper",  0,  "Convert all characters to uppercase before calculating");
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
     GBL_END_PARAMS;
 
@@ -911,7 +1105,7 @@ static GB_ERROR gbl_check(GBL_command_arguments *args)
 static GB_ERROR gbl_gcgcheck(GBL_command_arguments *args)
 {
     int i;
-    
+
     GBL_BEGIN_PARAMS;
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
     GBL_END_PARAMS;
@@ -954,80 +1148,36 @@ static GB_ERROR gbl_srt(GBL_command_arguments *args)
     return 0;
 }
 
-/* ********** Binary operators **********
- *
- * Binary operators work on pairs of values.
- * Three different operational modes are implemented for all binary operators:
- *
- * 1. inputstreams|operator
- *
- *    The number of inputstreams has to be even and the operator will be
- *    applied to pairs of them.
- *
- *    Example : a;b;c;d;e;f | plus
- *    Result  : a+b;c+d;e+f
- *
- * 2. inputstreams|operator(x)
- *
- *    The number of inputstreams has to be at least 1.
- *    The operator is applied to each inputstream.
- *
- *    Example : a;b;c | plus(d)
- *    Result  : a+d;b+d;c+d
- *
- * 3. operator(x, y)
- *
- *    Inputstreams will be ignored and the operator is applied
- *    to the arguments
- *
- *    Example : a;b | plus(c,d)
- *    Result  : c+d
- */
-
-typedef char* (*gbl_binary_operator)(const char *arg1, const char *arg2);
-
-static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binary_operator op)
-{
-#warning binary operator needs implementation    
-    return "not implemented";
-}
-
-
 /********************************************************************************************
                                         Calculator Functions
 ********************************************************************************************/
-static GB_ERROR gbl_calculator(GBL_command_arguments *args)
-{
-    int val1;
-    int val2;
-    int val =0;
-    char result[100];
 
-    if (args->cparam>=2) return "calculator syntax: plus|minus|.. (arg1, arg2)";
-    if (!args->cinput) return "calculating function: missing input";
+/* numeric binary operators */
 
-    val1 = atoi(args->vinput[0].str);
+typedef int (*numeric_binary_operator)(int i1, int i2);
+static char *apply_numeric_binop(const char *arg1, const char *arg2, void *client_data) {
+    int                     i1     = atoi(arg1);
+    int                     i2     = atoi(arg2);
+    numeric_binary_operator nbo    = (numeric_binary_operator)client_data;
+    int                     result = nbo(i1, i2);
 
-    if (args->cparam==1){
-        val2 = atoi(args->vparam[0].str);
-    }else{
-        if (args->cinput<=1) return "calculating function: missing second input";
-        val2 = atoi(args->vinput[1].str);
-    }
-    if (!strcmp(args->command,"plus")) val = val1+val2;
-    else if (!strcmp(args->command,"minus")) val = val1-val2;
-    else if (!strcmp(args->command,"mult")) val = val1*val2;
-    else if (!strcmp(args->command,"div")) { if (val2) val = val1/val2;else val = 0; }
-    else if (!strcmp(args->command,"per_cent")) { if (val2) val = val1*100/val2; else val =0; }
-    else {
-        return GBS_global_string("Unknown command '%s' in gbl_calculator", args->command);
-    }
-
-    sprintf(result,"%i",val);
-    GBL_CHECK_FREE_PARAM(*args->coutput,1);
-    (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(result); /* export result string */
-    return 0;
+    return GBS_global_string_copy("%i", result);
 }
+
+static int binop_plus(int i1, int i2) { return i1+i2; }
+static int binop_minus(int i1, int i2) { return i1-i2; }
+static int binop_mult(int i1, int i2) { return i1*i2; }
+static int binop_div(int i1, int i2) { return i2 ? i1/i2 : 0; }
+static int binop_rest(int i1, int i2) { return i2 ? i1%i2 : 0; }
+static int binop_per_cent(int i1, int i2) { return i2 ? (i1*100)/i2 : 0; }
+
+static GB_ERROR gbl_plus    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_plus    ); }
+static GB_ERROR gbl_minus   (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_minus   ); }
+static GB_ERROR gbl_mult    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_mult    ); }
+static GB_ERROR gbl_div     (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_div     ); }
+static GB_ERROR gbl_rest    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_rest    ); }
+static GB_ERROR gbl_per_cent(GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_per_cent); }
+
 
 /********************************************************************************************
                                         Database Functions
@@ -1843,15 +1993,21 @@ static struct GBL_command_table gbl_command_table[] = {
     {"checksum",         gbl_check },
     {"command",          gbl_command },
     {"compare",          gbl_compare },
+    {"icompare",         gbl_icompare },
     {"contains",         gbl_contains },
+    {"icontains",        gbl_icontains },
     {"count",            gbl_count },
     {"crop",             gbl_crop },
     {"cut",              gbl_cut },
     {"dd",               gbl_dd },
     {"diff",             gbl_diff },
-    {"div",              gbl_calculator },
+    {"div",              gbl_div },
+    {"drop",             gbl_drop },
+    {"dropempty",        gbl_dropempty },
+    {"dropzero",         gbl_dropzero },
     {"echo",             gbl_echo },
     {"equals",           gbl_equals },
+    {"iequals",          gbl_iequals },
     {"eval",             gbl_eval },
     {"exec",             gbl_exec },
     {"extract_sequence", gbl_extract_sequence },
@@ -1865,26 +2021,32 @@ static struct GBL_command_table gbl_command_table[] = {
     {"left",             gbl_head },
     {"len",              gbl_len },
     {"lower",            gbl_string_convert },
+    {"merge",            gbl_merge },
     {"mid",              gbl_mid },
     {"mid0",             gbl_mid0 },
-    {"minus",            gbl_calculator },
-    {"mult",             gbl_calculator },
+    {"minus",            gbl_minus },
+    {"mult",             gbl_mult },
     {"origin_gene",      gbl_origin },
     {"origin_organism",  gbl_origin },
     {"partof",           gbl_partof },
-    {"per_cent",         gbl_calculator },
-    {"plus",             gbl_calculator },
+    {"ipartof",          gbl_ipartof },
+    {"per_cent",         gbl_per_cent },
+    {"plus",             gbl_plus },
     {"pretab",           gbl_pretab },
     {"readdb",           gbl_readdb },
     {"remove",           gbl_remove },
+    {"rest",             gbl_rest },
     {"right",            gbl_tail },
     {"sequence",         gbl_sequence },
     {"sequence_type",    gbl_sequence_type },
     {"srt",              gbl_srt },
+    {"swap",             gbl_swap },
     {"tab",              gbl_tab },
     {"tail",             gbl_tail },
-    {"translate",        gbl_translate },
     {"taxonomy",         gbl_taxonomy },
+    {"toback",           gbl_toback },
+    {"tofront",          gbl_tofront },
+    {"translate",        gbl_translate },
     {"upper",            gbl_string_convert },
     {0,0}
 
