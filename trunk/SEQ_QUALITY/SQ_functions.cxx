@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Thu Feb/05/2004 11:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/19/2004 18:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -247,83 +247,111 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights) {
 	    else {
 		int bases      = 0;
 		int dfa        = 0;
-		int result     = 0;
 		int noh        = 0;
 		int cos        = 0;
 		int iupv       = 0;
 		int gcprop     = 0;
 		int value2     = 0;
 		double value   = 0;
+		double result  = 0;
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 
 		//evaluate the percentage of bases the actual sequence consists of
 		GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);
 		bases = GB_read_int(gb_result1);
-		if (bases < 5) result = 0;
+		if (bases < 4) result = 0;
 		else {
-	  	    if (bases < 8) result = 1;
+	  	    if (bases < 6) result = 1;
 		    else { result = 2;}
 		}
-		result = result * weights.bases;
+		if (result != 0 ) result = (result * weights.bases) / 2;
 		value += result;
 
 		//evaluate the difference in number of bases from sequence to group
 		GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
 		dfa = GB_read_int(gb_result2);
-		if (abs(dfa) < 2) result = 2;
+		if (abs(dfa) < 2) result = 5;
 		else {
-	  	    if (abs(dfa) < 4) result = 1;
-		    else { result = 0;}
+	  	    if (abs(dfa) < 4) result = 4;
+		    else {
+			if (abs(dfa) < 6) result = 3;
+			else {
+			    if (abs(dfa) < 8) result = 2;
+			    else {
+				if (abs(dfa) < 10) result = 1;
+				else { result = 0;}
+			    }
+			}
+		    }
 		}
-		result = result * weights.diff_from_average;
+		if (result != 0 ) result = (result * weights.diff_from_average) / 5;
 		value += result;
 
 		//evaluate the number of positions where no helix can be built
 		GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
 		noh = GB_read_int(gb_result3);
-		if (noh < 450) result = 2;
+		if (noh < 20) result = 5;
 		else {
-	  	    if (noh < 550) result = 1;
-		    else { result = 0;}
+	  	    if (noh < 50) result = 4;
+		    else {
+			if (noh < 125) result = 3;
+			else {
+			    if (noh < 250) result = 2;
+			    else {
+				if (noh < 500) result = 1;
+				else { result = 0;}
+			    }
+			}
+		    }
 		}
-		result = result * weights.helix;
+		if (result != 0 ) result = (result * weights.helix) / 5;
 		value += result;
 
 		//evaluate the consensus
  		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
  		cos = GB_read_int(gb_result4);
 		result = cos;
-		result = result * weights.consensus;
+		if (result != 0) result = (result * weights.consensus) / 12;
 		value += result;
 
 		//evaluate the number of iupacs in a sequence
 		GBDATA *gb_result5 = GB_search(gb_quality, "iupac_value", GB_INT);
 		iupv = GB_read_int(gb_result5);
-		if (iupv < 1) result = 2;
+		if (iupv < 1) result = 3;
 		else {
-	  	    if (iupv < 20) result = 1;
-		    else { result = 0;}
+	  	    if (iupv < 5) result = 2;
+		    else {
+			if (iupv < 10) result = 1;
+			else { result = 0;}
+		    }
 		}
-		result = result * weights.iupac;
+		if (result != 0 ) result = (result * weights.iupac) / 3;
 		value += result;
 
 		//evaluate the difference in the GC proportion from sequence to group
 		GBDATA *gb_result6 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
 		gcprop = GB_read_int(gb_result6);
-		if (abs(gcprop) < 6) result = 2;
+		if (abs(gcprop) < 1) result = 5;
 		else {
-		    if (abs(gcprop) < 12) result = 1;
-		    else { result = 0;}
+		    if (abs(gcprop) < 2) result = 4;
+		    else {
+			if (abs(gcprop) < 4) result = 3;
+			else {
+			    if (abs(gcprop) < 8) result = 2;
+			    else {
+				if (abs(gcprop) < 16) result = 1;
+				else { result = 0;}
+			    }
+			}
+		    }
 		}
-		result = result * weights.gc;
+		if (result != 0 ) (result = result * weights.gc) / 5;
 		value += result;
 
 		/*write the final value of the evaluation*/
-		if (value !=0 )	{
-		    value = value / 2;
-		}
 		value2 = round(value);
+		if (value2 < 60) printf("%i ",value2);
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value2);
@@ -648,15 +676,39 @@ GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *nod
 				//if you parse the upper two values in the evaluate() function cut the following out
 				//for time reasons i do the evaluation here, as i still have the upper two values
 				//-------------cut this-----------------
-				if (value1 > 0.95) eval += 2;
+				if (value1 > 0.95) eval += 5;
 				else {
-				    if (value1 > 0.5) eval += 1;
-				    else { eval += 0;}
+				    if (value1 > 0.8) eval += 4;
+				    else {
+					if (value1 > 0.6) eval += 3;
+					else {
+					    if (value1 > 0.4) eval += 2;
+					    else {
+						if (value1 > 0.25) eval += 1;
+						else { eval += 0;}
+					    }
+					}
+				    }
 				}
 				if (value2 > 0.6) eval += 0;
 				else {
 				    if (value2 > 0.4) eval += 1;
-				    else { eval += 2;}
+				    else {
+					if (value2 > 0.2) eval += 2;
+					else {
+					    if (value2 > 0.1) eval += 3;
+					    else {
+						if (value2 > 0.05) eval += 4;
+						else {
+						    if (value2 > 0.025) eval += 5;
+						    else {
+							if (value2 > 0.01) eval += 6;
+							else { eval += 7;}
+						    }
+						}
+					    }
+					}
+				    }
 				}
 				whilecounter++;
 				//---------to this and scroll down--------
@@ -676,7 +728,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *nod
 
 		    //--------also cut this------
 		    if (eval != 0) {
-			eval = eval / (2 * whilecounter);
+			eval = eval / whilecounter;
 			evaluation = round(eval);
 		    }
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
@@ -819,15 +871,39 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 		    //if you parse the upper two values in the evaluate() function cut the following out
 		    //for time reasons i do the evaluation here, as i still have the upper two values
 		    //-------------cut this-----------------
-		    if (value1 > 0.95) eval += 2;
+		    if (value1 > 0.95) eval += 5;
 		    else {
-			if (value1 > 0.5) eval += 1;
-			else { eval += 0;}
+			if (value1 > 0.8) eval += 4;
+			else {
+			    if (value1 > 0.6) eval += 3;
+			    else {
+				if (value1 > 0.4) eval += 2;
+				else {
+				    if (value1 > 0.25) eval += 1;
+				    else { eval += 0;}
+				}
+			    }
+			}
 		    }
 		    if (value2 > 0.6) eval += 0;
 		    else {
 			if (value2 > 0.4) eval += 1;
-			else { eval += 2;}
+			else {
+			    if (value2 > 0.2) eval += 2;
+			    else {
+				if (value2 > 0.1) eval += 3;
+				else {
+				    if (value2 > 0.05) eval += 4;
+				    else {
+					if (value2 > 0.025) eval += 5;
+					else {
+					    if (value2 > 0.01) eval += 6;
+					    else { eval += 7;}
+					}
+				    }
+				}
+			    }
+			}
 		    }
 		    //---------to this and scroll down--------
 
@@ -843,7 +919,6 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 
 		    //--------also cut this------
 		    if (eval != 0) {
-			eval = eval / 2;
 			evaluation = round(eval);
 		    }
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
