@@ -247,13 +247,14 @@ void probe_read_alignments()
             }
         }
     }
+    printf("\n");
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
     if (data_missing) {
         printf("%i species were ignored because of missing data.\n", data_missing);
     }
     else {
-        printf("All species contain data in alignment.\n");
+        printf("All species contain data in alignment '%s'.\n", psg.alignment_name);
     }
 }
 
