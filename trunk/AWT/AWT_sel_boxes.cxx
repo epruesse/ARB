@@ -529,7 +529,7 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
         awt_refresh_selection_box(aw_root, awar_prefix);
         aws->hide();
     }
-    delete filename;
+    free(filename);
 }
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
@@ -550,7 +550,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
     sprintf(file_name,"%s/file_name",base_name);
     char *suffix = aw_root->awar(filter)->read_string();
     aw_root->awar_string( file_name, GBS_global_string("noname.%s",suffix));
-    delete suffix;
+    free(suffix);
 
     sprintf(directory,"%s/directory",base_name);
     aw_root->awar_string( directory, ".");
