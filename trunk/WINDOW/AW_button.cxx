@@ -1125,40 +1125,90 @@ int AW_window::get_no_of_entries( AW_selection_list *selection_list )
 
     return count;
 }
-/*-------------------- function to get index of an entry in the selection lists -------------------- */
-int AW_window::get_index_of_element(AW_selection_list *selection_list, const char *selected_element){
-    int no_of_elements = get_no_of_entries(selection_list);
-    int element_index = 0;
- 
-    const char *listEntry = selection_list->first_element(); 
-    if(!listEntry || !listEntry[0] || listEntry == NULL) return element_index = -1;
 
-    for (int i=1;i<no_of_elements;i++){
-        if (GBS_strscmp(listEntry,selected_element) == 0){
-            element_index = i;
-            return element_index;
-        }
-        listEntry = selection_list->next_element();             
+int AW_window::move_selection(AW_selection_list *selection_list, AW_awar *list_awar, int offset) {
+    int curr_idx;
+    {
+        char *curr_value = list_awar->read_string();
+
+        curr_idx = get_index_of_element(selection_list, curr_value);
+        free(curr_value);
     }
-    return element_index = -1;
+
+    if (curr_idx == -1) {
+        curr_idx = 0;
+    }
+    else {
+        curr_idx += offset;
+    }
+
+    const char *new_value = get_element_of_index(selection_list, curr_idx);
+    if (new_value) {
+        list_awar->write_string(new_value);
+    }
+    return 0;
 }
 
-/*-------------------- function to get entry in the selection list for the index passed  -------------------- */
-const char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index){
-    int no_of_elements = get_no_of_entries(selection_list);
-    const char *element = 0;
- 
-    const char *listEntry = selection_list->first_element(); 
-    if(!listEntry || !listEntry[0] || listEntry == NULL) return element = NULL;
+/*-------------------- function to get index of an entry in the selection lists -------------------- */
+int AW_window::get_index_of_element(AW_selection_list *selection_list, const char *searched_value){
+    //     int         no_of_elements = get_no_of_entries(selection_list);
 
-    for (int i=1;i<no_of_elements;i++){
-        if (index == i){
-            element = strdup(listEntry);
-            return element;
+
+    int         element_index = 0;
+    int         found_index   = -1;
+    const char *listEntry     = selection_list->first_element();
+
+    while (listEntry) {
+        if (GBS_strscmp(listEntry, searched_value) == 0) {
+            found_index = element_index;
+            break;              // found
         }
-        listEntry = selection_list->next_element();             
+        ++element_index;
+        listEntry = selection_list->next_element();
     }
-    return element= NULL;
+
+//     if (listEntry && listEntry[0]) {
+//         for (int i=0; i<no_of_elements; i++){
+//             if (GBS_strscmp(listEntry,searched_value) == 0){
+//                 element_index = i;
+//                 break;
+//             }
+//             listEntry = selection_list->next_element();
+//         }
+//     }
+    return element_index;
+}
+
+/*-------------------- function to get value of entry in the selection list for the index passed  -------------------- */
+const char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index){
+    //     int no_of_elements = get_no_of_entries(selection_list);
+
+    const char *element = 0;
+
+    if (index >= 0) {
+        int     element_index = 0;
+        const char *listEntry     = selection_list->first_element();
+
+        while (listEntry) {
+            if (element_index == index) {
+                element = strdup(listEntry);
+                break;
+            }
+            ++element_index;
+            listEntry = selection_list->next_element();
+        }
+    }
+//     if(!listEntry || !listEntry[0] || listEntry == NULL) return element = NULL;
+
+//     for (int i=0; i<no_of_elements; i++){
+//         if (index == i){
+//             element = strdup(listEntry);
+//             break;
+//         }
+//         listEntry = selection_list->next_element();
+//     }
+
+    return element;
 }
 
 void AW_window::delete_selection_from_list( AW_selection_list *selection_list, const char *disp_string )
@@ -1172,32 +1222,24 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) count++;
     if( selection_list->default_select ) 	count++;
 
-    if (count == 2)		//Letzter Eintrag + default selection
+    if (count == 2)	{	//Letzter Eintrag + default selection
         clear_selection_list( selection_list );
+    }
 
-    for ( list_table 	= selection_list->list_table,
-              next 		= selection_list->list_table;
+    for ( list_table = selection_list->list_table, next = selection_list->list_table;
           list_table;
-          prev		= next,
-              list_table	= list_table->next,
-              next 		= list_table)
+          prev = next, list_table = list_table->next, next = list_table)
     {
         ptr = list_table->displayed;
-        if ( strcmp( disp_string, ptr ) == 0 )
-        {
+        if ( strcmp( disp_string, ptr ) == 0 ) {
             next = list_table->next;
 
-            if (prev)
-                prev->next = next;
-            else
-                selection_list->list_table = next;
+            if (prev) prev->next = next;
+            else selection_list->list_table = next;
 
-            if (! list_table->next)
-                if (prev)
-                    selection_list->last_of_list_table = prev;
+            if (!list_table->next && prev) selection_list->last_of_list_table = prev;
 
-            if ( selection_list->default_select == list_table )
-            {
+            if ( selection_list->default_select == list_table ) {
                 selection_list->default_select = NULL;
                 insert_default_selection( selection_list, "", "");
             }
@@ -1423,6 +1465,7 @@ const char *AW_selection_list::first_element(){
         lt->is_selected = 1;
     }
     loop_pntr = list_table;
+    if (!loop_pntr) return 0;
     return loop_pntr->char_value;
 }
 
@@ -1449,37 +1492,6 @@ const char *AW_selection_list::first_selected(){
     }
     if (!loop_pntr) return 0;
     return loop_pntr->char_value;
-}
-
-
-GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
-    // number_of_lines == 0		-> print all
-    AW_select_table_struct *list_table;
-    FILE                   *fd;
-    char	               *sep;
-
-    fd = fopen( filename, "w");
-    if (!fd) {
-        return GB_export_IO_error("writing", filename);
-    }
-    for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
-        number_of_lines--;
-        if ( (sep = strstr(list_table->displayed,"#")))		//'#' ist ein SEPARATOR
-        {
-            *sep = 0;
-            fprintf( fd, "%s,",list_table->displayed );
-            *sep = '#';
-            sep = sep + strlen("#");
-            fprintf( fd, "%s\n",sep );
-        }
-        else if (fprintf( fd, "%s\n",list_table->displayed )<0){
-            aw_message("Disc Full");
-            break;
-        }
-        if (!number_of_lines) break;
-    }
-    fclose( fd );
-    return 0;
 }
 
 char *AW_window::get_selection_list_contents( AW_selection_list * selection_list, long number_of_lines) {
@@ -1559,8 +1571,46 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
     return;
 }
 
-GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, const char *filename) {
+GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
+    // number_of_lines == 0		-> print all
 
+    AW_select_table_struct *list_table;
+    FILE                   *fd;
+
+    fd = fopen( filename, "w");
+    if (!fd) {
+        return GB_export_IO_error("writing", filename);
+    }
+    for ( list_table = selection_list->list_table; list_table; list_table = list_table->next) {
+        char *sep = 0;
+
+        if (selection_list->value_equal_display == false) {
+            sep = strstr(list_table->displayed,"#"); // interpret displayed as 'value#displayed' (old general behavior)
+        }
+
+        int res;
+        if (sep) { // replace first '#' with ','  (that's loaded different)
+            *sep = 0;
+            fprintf( fd, "%s,",list_table->displayed );
+            *sep++ = '#';
+            res  = fprintf( fd, "%s\n",sep );
+        }
+        else {
+            res = fprintf( fd, "%s\n", list_table->displayed ); // save plain (no interpratation)
+        }
+
+        if (res<0) {
+            aw_message("Disc Full");
+            break;
+        }
+
+        if (--number_of_lines == 0) break; // number_of_lines == 0 -> write all lines; otherwise write number_of_lines lines
+    }
+    fclose( fd );
+    return 0;
+}
+
+GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, const char *filename) {
     char *nl;
     char *ko;
     char *pl;
@@ -1568,6 +1618,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
     this->clear_selection_list(selection_list);
     char **fnames = GBS_read_dir(filename,0);
     char **fname;
+
     for (fname = fnames; *fname; fname++){
         char *data = GB_read_file(*fname);
         if (!data){
@@ -1575,10 +1626,27 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
             continue;
         }
 
+        int correct_old_format = -1;
+
         for (pl = data; pl; pl = nl) {
-            ko              = strchr(pl,',');
+            ko = strchr(pl,','); // look for ','
+
+            if (ko) {
+                if (selection_list->value_equal_display) { // here no komma should occur
+                    if (correct_old_format == -1) {
+                        correct_old_format = 1-aw_message(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", *fname), "Yes,No");
+                    }
+
+                    if (correct_old_format) {
+                        *ko = '#'; // restore (was converted by old-version save)
+                        ko  = 0; // ignore komma
+                    }
+                }
+            }
+
             if (ko) *(ko++) = 0;
-            else ko         = pl;
+            else ko         = pl; // if no komma -> display same as value
+
             while (*ko == ' ' || *ko == '\t') ko++;
 
             nl              = strchr(ko,'\n');
