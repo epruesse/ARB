@@ -563,8 +563,7 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
                     arg_pntr[i][1] = aisc_mes_buffer[mes_cnt++];
                     break;
                 case AISC_ATTR_STRING:
-                    arg_pntr[i][0] = (long)strdup(
-                                                  (char *)(&(aisc_mes_buffer[mes_cnt+1])));
+                    arg_pntr[i][0] = (long)strdup((char *)(&(aisc_mes_buffer[mes_cnt+1])));
                     mes_cnt += aisc_mes_buffer[mes_cnt] + 1;
                     break;
                 case AISC_ATTR_BYTES:
