@@ -57,6 +57,21 @@ char **GBT_get_alignment_names(GBDATA *gbd)
     return erg;
 }
 
+static char *gbt_nonexisting_alignment(GBDATA *gbMain) {
+    char  *ali_other = 0;
+    int    counter;
+
+    for (counter = 1; !ali_other; ++counter) {
+        ali_other = GBS_global_string_copy("ali_x%i", counter);
+        if (GBT_get_alignment(gbMain, ali_other) != 0) {
+            free(ali_other);
+            ali_other = 0;
+        }
+    }
+
+    return ali_other;
+}
+
 GB_ERROR GBT_check_alignment_name(const char *alignment_name)
 {
     GB_ERROR error;
@@ -93,7 +108,7 @@ GBDATA *GBT_create_alignment(   GBDATA *gbd,
         return 0;
     }
     if ( security>6) {
-        error = GB_export_error("Securities greater 6 are not allowed");
+        error = GB_export_error("Securities above 6 are not allowed");
         return 0;
     }
     if (!strstr("dna:rna:ami:usr",type)) {
@@ -102,7 +117,7 @@ GBDATA *GBT_create_alignment(   GBDATA *gbd,
     }
     gbn = GB_find(gb_presets,"alignment_name",name,down_2_level);
     if (gbn) {
-        error = GB_export_error("Alignment '%s' already exits",name);
+        error = GB_export_error("Alignment '%s' already exists",name);
         return 0;
     }
 
@@ -310,92 +325,132 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
     return error;
 }
 
-GB_ERROR GBT_rename_alignment(GBDATA *gbd,const char *source,const char *dest, int copy, int dele)
+static GB_ERROR gbt_rename_alignment_of_item(GBDATA *gb_item_container, const char *item_name, const char *item_entry_name,
+                                             const char *source, const char *dest, int copy, int dele)
 {
-    /*  if copy == 1 then create a copy
-        if dele == 1 then delete old */
-    GBDATA *gb_presets;
-    GBDATA *gb_species_data;
-    GBDATA *gb_extended_data;
-    GBDATA *gb_species;
-    GBDATA *gb_extended;
-    GBDATA *gb_ali;
-    GBDATA *gb_new;
-    GBDATA *gb_using;
-    GB_ERROR error;
-    GBDATA *gb_old_alignment;
-    gb_presets = GB_find(gbd,"presets",0,down_level);
-    if (!gb_presets) return "presets not found";
-    gb_species_data = GB_find(gbd,"species_data",0,down_level);
-    if (!gb_species_data) return "species_data not found";
-    gb_extended_data = GB_find(gbd,"extended_data",0,down_level);
-    if (!gb_extended_data) return "extended_data not found";
+    GB_ERROR  error = 0;
+    GBDATA   *gb_item;
 
-    gb_old_alignment = GBT_get_alignment(gbd,source);
-    if (!gb_old_alignment) return "source not found";
-    if (copy) {
-        GBDATA *gbh = GBT_get_alignment(gbd,dest);
-        GBDATA *gb_new_alignment;
-        GBDATA *gb_alignment_name;
-        if (gbh) return "destination already exists";
-        if ( (error = GBT_check_alignment_name(dest)) ) return error;
-        gb_new_alignment =
-            GB_create_container(gb_presets,"alignment");
-        error = GB_copy(gb_new_alignment, gb_old_alignment);
-        if (error) return error;
-        gb_alignment_name =
-            GB_search(gb_new_alignment,"alignment_name",GB_FIND);
-        error = GB_write_string(gb_alignment_name,dest);
-        if (error) return error;
-    }
-    if (dele) {
-        error = GB_delete(gb_old_alignment);
-        if (error) return error;
-    }
-
-    gb_using = GB_search(gb_presets,"use",GB_STRING);
-    if (dele && copy){
-        error = GB_write_string(gb_using,dest);
-        if (error) return error;
-    }
-    for (   gb_species = GB_find(gb_species_data,"species",0,down_level);
-            gb_species;
-            gb_species = GB_find(gb_species,"species",0,this_level|search_next) ){
-        gb_ali = GB_find(gb_species,source,0,down_level);
+    for (gb_item = GB_find(gb_item_container, item_entry_name, 0, down_level);
+         gb_item && !error;
+         gb_item = GB_find(gb_item, item_entry_name, 0, this_level|search_next))
+    {
+        GBDATA *gb_ali = GB_find(gb_item, source, 0, down_level);
         if (!gb_ali) continue;
-        if (copy){
-            gb_new = GB_find(gb_species,dest,0,down_level);
-            if (gb_new) return "Destination name exist in a species";
-            gb_new = GB_create_container(gb_species,dest);
-            if (!gb_new) return GB_get_error();
-            error = GB_copy(gb_new,gb_ali);
-            if (error) return error;
+            
+        if (copy) {
+            GBDATA *gb_new = GB_find(gb_item, dest, 0, down_level);
+            if (gb_new) {
+                error = GBS_global_string("Entry '%s' already exists", dest);
+            }
+            else {
+                gb_new = GB_create_container(gb_item,dest);
+                if (!gb_new) {
+                    error = GB_get_error();
+                }
+                else {
+                    error = GB_copy(gb_new,gb_ali);
+                }
+            }
         }
         if (dele) {
             error = GB_delete(gb_ali);
-            if (error) return error;
         }
     }
 
-    for (   gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
-            gb_extended;
-            gb_extended = GB_find(gb_extended,"extended",0,this_level|search_next) ){
-        gb_ali = GB_find(gb_extended,source,0,down_level);
-        if (!gb_ali) continue;
-        if (copy){
-            gb_new = GB_find(gb_extended,dest,0,down_level);
-            if (gb_new) return "Destination name exist in a SAI";
-            gb_new = GB_create_container(gb_extended,dest);
-            if (!gb_new) return GB_get_error();
-            error = GB_copy(gb_new,gb_ali);
-            if (error) return error;
+    if (error && gb_item) {
+        char   *name      = GBS_global_string_copy("<unknown%s>", item_name);
+        GBDATA *gb_name   = GB_find(gb_item, "name", 0, down_level);
+        if (gb_name) name = GB_read_string(gb_name);
+
+        error = GBS_global_string("%s\n(while renaming alignment for %s '%s')", error, item_name, name);
+        free(name);
+    }
+
+    return error;
+}
+
+GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele)
+{
+    /*  if copy     == 1 then create a copy
+        if dele     == 1 then delete old */
+
+    GB_ERROR  error            = 0;
+    int       is_case_error    = 0;
+    GBDATA   *gb_presets       = GB_find(gbMain, "presets", 0, down_level);
+    GBDATA   *gb_species_data  = GB_find(gbMain, "species_data", 0, down_level);
+    GBDATA   *gb_extended_data = GB_find(gbMain, "extended_data", 0, down_level);
+
+    if (!gb_presets)            error = "presets not found";
+    else if (!gb_species_data)  error = "species_data not found";
+    else if (!gb_extended_data) error = "extended_data not found";
+
+
+    /* create copy and/or delete old alignment description */
+    if (!error) {
+        GBDATA *gb_old_alignment = GBT_get_alignment(gbMain, source);
+
+        if (!gb_old_alignment) {
+            error = GBS_global_string("source alignment '%s' not found", source);
         }
-        if (dele) {
-            error = GB_delete(gb_ali);
-            if (error) return error;
+        else {
+            if (copy) {
+                GBDATA *gbh = GBT_get_alignment(gbMain, dest);
+                if (gbh) {
+                    error         = GBS_global_string("destination alignment '%s' already exists", dest);
+                    is_case_error = (gbs_stricmp(source, dest) == 0); // test for case-only difference
+                }
+                else {
+                    error = GBT_check_alignment_name(dest);
+                    if (!error) {
+                        GBDATA *gb_new_alignment = GB_create_container(gb_presets,"alignment");
+                        error                    = GB_copy(gb_new_alignment, gb_old_alignment);
+                        if (!error) {
+                            GBDATA *gb_alignment_name = GB_search(gb_new_alignment,"alignment_name",GB_FIND);
+                            error                     = GB_write_string(gb_alignment_name,dest);
+                        }
+                    }
+                }
+            }
+                
+            if (dele && !error) {
+                error = GB_delete(gb_old_alignment);
+            }
         }
     }
-    return 0;
+
+    /* change default alignment */
+    if (!error) {
+        GBDATA *gb_using = GB_search(gb_presets,"use",GB_STRING);
+        if (dele && copy){
+            error = GB_write_string(gb_using, dest);
+        }
+    }
+
+    /* copy and/or delete alignment entries in species */
+    if (!error) {
+        error = gbt_rename_alignment_of_item(gb_species_data, "Species", "species", source, dest, copy, dele);
+    }
+    
+    /* copy and/or delete alignment entries in SAIs */
+    if (!error) {
+        error = gbt_rename_alignment_of_item(gb_extended_data, "SAI", "extended", source, dest, copy, dele);
+    }
+
+    if (is_case_error) {
+        /* alignments source and dest only differ in case */
+        char *ali_other = gbt_nonexisting_alignment(gbMain);
+        ad_assert(copy);
+
+        printf("Renaming alignment '%s' -> '%s' -> '%s' (to avoid case-problem)\n", source, ali_other, dest);
+
+        error             = GBT_rename_alignment(gbMain, source, ali_other, 1, dele);
+        if (!error) error = GBT_rename_alignment(gbMain, ali_other, dest, 1, 1);
+
+        free(ali_other);
+    }
+
+    return error;
 }
 
 GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
