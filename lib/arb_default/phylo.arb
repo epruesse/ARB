@@ -266,29 +266,15 @@ bc	%% (%
 
 	standard	%i 0
 	overview	%% (%
-		data		"BC: no information available.
-    Please select START first.
-"
-		comp		"BC: no information available.
-    Please select START first.
-"
-		cov		"BC: no information available.
-    Please select START first.
-"
+		data		"BC: no information available.\n    Please select START first.\n"
+		comp		"BC: no information available.\n    Please select START first.\n"
+		cov		"BC: no information available.\n    Please select START first.\n"
 		cov_thresh	%f 0.700000
-		trans		"BC: no information available.
-    Please select START first.
-"
-		transmatrix		"BC: no information available.
-    Please select START first.
-"
+		trans		"BC: no information available.\n    Please select START first.\n"
+		transmatrix		"BC: no information available.\n    Please select START first.\n"
 		trans_thresh	%f 0.200000
-		verbose		"BC: no information available.
-    Please select START first.
-"
-		rounding		"BC: no information available.
-    Please select START first.
-"
+		verbose		"BC: no information available.\n    Please select START first.\n"
+		rounding		"BC: no information available.\n    Please select START first.\n"
 		%) /*overview*/
 
 	%) /*bc*/
