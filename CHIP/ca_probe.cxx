@@ -135,6 +135,7 @@ int main(int argc,char **argv)
   char *arg_input_file;
   char *arg_result_file;
   char *arg_ptserver;
+  char *arg_numMismatches;
   int numMismatches;
 
   if (argc < 4)
@@ -164,7 +165,10 @@ int main(int argc,char **argv)
     else
       args_err=1;
      if (argc>4)
-       numMismatches = atoi(argv[4]);
+       {
+	 arg_numMismatches = argv[4];
+         numMismatches = atoi(arg_numMismatches);
+       }
      else
        numMismatches = 0;
      }
@@ -227,7 +231,9 @@ int main(int argc,char **argv)
 	pFile = fopen(arg_result_file, "w");
 	if (pFile!=NULL)
 	  {
-	    fputs("# Probe File for Chipanalyser\n# This File was created by ca_probe (arb probe-match)\n\n", pFile);
+	    fputs("# Probe File for Chipanalyser\n# This File was created by ca_probe (arb probe-match)\n# Number of Mismatches considered: ", pFile);
+	    fputs(arg_numMismatches, pFile);
+	    fputs("\n\n", pFile);
 	    fclose(pFile);
 	  }
 	else
