@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : TreeToolbar.java                                       // 
 //    Purpose   : Toolbar for tree display                               // 
-//    Time-stamp: <Sat Mar/13/2004 14:19 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/13/2004 18:31 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -76,14 +76,14 @@ class TreeToolbar extends Panel {
          Dimension scdim  = gui.getPreferredScrollPaneSize();
          Dimension mypdim = super.getPreferredSize();
 
-         System.out.println("in TreeToolbar::getPreferredSize:");
-         System.out.println("scdim = "+scdim.width+"/"+scdim.height);
-         System.out.println("mypdim = "+mypdim.width+"/"+mypdim.height);
+         // System.out.println("in TreeToolbar::getPreferredSize:");
+         // System.out.println("scdim = "+scdim.width+"/"+scdim.height);
+         // System.out.println("mypdim = "+mypdim.width+"/"+mypdim.height);
 
          if (mypdim.width > scdim.width) {
              if (scdim.width == 0) return mypdim;
              int lines = (int)(mypdim.width/scdim.width)+1;
-             System.out.println("TreeToolbar occupies "+lines+" lines.");
+             // System.out.println("TreeToolbar occupies "+lines+" lines.");
 
              Dimension myWantedDim = new Dimension(scdim.width-5, mypdim.height*lines+5);
              if (myWantedDim.height>scdim.height) {
