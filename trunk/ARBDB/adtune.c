@@ -4,7 +4,7 @@ const int GBCM_BUFFER			= 8192;		/* The communication buffer size */
 const int GB_REMOTE_HASH_SIZE		= 0x40000;	/* The initial hash size in any client to find the database entry in the server */
 const int GBM_MAX_UNINDEXED_ENTRIES	= 64;		/* The maximum number fields with the same key which are not put together in one memory segment */
 
-const int GB_TOTAL_CACHE_SIZE		= 2000000;	/* Initial cache size in bytes */
+const int GB_TOTAL_CACHE_SIZE		= 25000000;	/* Initial cache size in bytes */
 const int GB_MAX_CACHED_ENTRIES 	= 8192;		/* maximum number of cached items (Maximum 32000) */
 
 const int GB_MAX_QUICK_SAVE_INDEX 	= 99;		/* Maximum extension-index of quick saves (Maximum 99) */
