@@ -104,10 +104,10 @@ GB_CSTR gb_mapfile_name(GB_CSTR path)
 
 GB_CSTR gb_overwriteName(GB_CSTR path)
 {
-    static char *oname = 0;
+    static char *oname;
     char *ext;
 
-    STATIC_BUFFER(oname,strlen(path)+1);
+    STATIC_BUFFER(oname,strlen(path)+2);
 
     strcpy(oname,path);
 
@@ -120,7 +120,9 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
     }
     else
     {
-        oname[strlen(oname)] = '~';
+	int len = strlen(oname);
+        oname[len] = '~';    
+        oname[len+1] = 0;    
     }
 
     return oname;
@@ -129,7 +131,7 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
 GB_CSTR gb_reffile_name(GB_CSTR path){
     static char *refname = 0;
     char *ext;
-    STATIC_BUFFER(refname,  strlen(path)+4);
+    STATIC_BUFFER(refname,  strlen(path)+4+1);
 
     strcpy(refname,path);
     ext = gb_findExtension(refname);
@@ -940,7 +942,9 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
  *			'b' binary
  *			'm' save mapfile too (only with binary)
  *			'f' force saving even in disabled path to a different directory (out of order save)
+ *                      'S' save to stdout (for debugging)
  *			 0=ascii
+ *  
  */
 {
     FILE *out;
@@ -951,11 +955,13 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     GB_CSTR map_path = NULL;
     GB_MAIN_TYPE *Main = GB_MAIN(gb);
     int deleteQuickAllowed = savetype==NULL || strchr(savetype, 'f')==NULL;
+    int dump_to_stdout = 0;
 
     if (gb == NULL) return NULL;
     gb = (GBDATA *)Main->data;
 
     if (path == NULL) path = Main->path;
+
     if (!path || !strlen(path) )
     {
         GB_export_error("Please specify a file name");
@@ -965,7 +971,12 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     if (gb_check_saveable(gb,path,savetype)) goto error;
 
     sec_path = GB_STRDUP(gb_overwriteName(path));
-    if ((out = fopen(sec_path, "w")) == NULL)
+
+    if (strchr(savetype,'S')) {
+	out = stdout;
+	dump_to_stdout = 1;
+    }
+    else if ((out = fopen(sec_path, "w")) == NULL)
     {
         printf(" file %s could not be opened for writing \n", sec_path);
         GB_export_error("ARBDB ERROR: Cannot save file to '%s'",sec_path);
@@ -1037,28 +1048,30 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     }
 
 
-    if (GB_rename(sec_path, path)==0){
-        if (map_path){
-            GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
-            long path_mode = GB_mode_of_file(path);
+    if (!dump_to_stdout) {
+	if (GB_rename(sec_path, path)==0){
+	    if (map_path){
+		GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
+		long path_mode = GB_mode_of_file(path);
 
-            if (GB_rename(overwrite_map_path, map_path)==0)
-            {
-                GB_set_mode_of_file(map_path,path_mode);        /* set mapfile to same mode as binary file */
-            }
-            else /* if we cannot rename the mapfile, then we delete it */
-            {
-                GB_unlink(overwrite_map_path);
-                goto error;
-            }
-        }
-        if (Main->qs.quick_save_disabled == 0){		/* do we need an ARF file ?? */
-            gb_create_reference(path);
-        }else{
-            gb_delete_reference(path);				/* delete old ARF file */
-        }
-    }else{
-        goto error;
+		if (GB_rename(overwrite_map_path, map_path)==0)
+		    {
+			GB_set_mode_of_file(map_path,path_mode);        /* set mapfile to same mode as binary file */
+		    }
+		else /* if we cannot rename the mapfile, then we delete it */
+		    {
+			GB_unlink(overwrite_map_path);
+			goto error;
+		    }
+	    }
+	    if (Main->qs.quick_save_disabled == 0){		/* do we need an ARF file ?? */
+		gb_create_reference(path);
+	    }else{
+		gb_delete_reference(path);				/* delete old ARF file */
+	    }
+	}else{
+	    goto error;
+	}
     }
     free(sec_path);sec_path = 0;
     if (!strchr(savetype,'f')){	/* reset values unless out of order save */
