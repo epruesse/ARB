@@ -59,15 +59,12 @@ int glastc   = ' ';		/* last char. seen by getsym() */
 
 typedef struct sym_part { 
     char *part;
-    int len; // strlen(part)
+    int len; /* strlen(part) */
     struct sym_part *next;
 } SymPart;
 
 SymPart *symParts = 0; /* create only prototypes for parts in this list */
 
-// --------------------------------------------------------------------------------
-//     void addSymParts(const char *parts) 
-// --------------------------------------------------------------------------------
 void addSymParts(const char *parts) {
     char *p = strdup(parts);
     const char *sep = ",";
@@ -88,9 +85,6 @@ void addSymParts(const char *parts) {
     free(p);
 }
 
-// --------------------------------------------------------------------------------
-//     int containsSymPart(const char *name) 
-// --------------------------------------------------------------------------------
 int containsSymPart(const char *name) {
     SymPart *sp = symParts;
     int contains = 0;
@@ -103,9 +97,6 @@ int containsSymPart(const char *name) {
     return contains;
 }
 
-// --------------------------------------------------------------------------------
-//     void freeSymParts() 
-// --------------------------------------------------------------------------------
 void freeSymParts() {
     SymPart *next = symParts;
     
@@ -898,7 +889,7 @@ void getdecl(FILE *f){
                 
                 for (w=wlist; w->next && oktoprint; w=w->next)  {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
-                    //printf("#%i='%s'\n", count++, w->string);
+                    /* printf("#%i='%s'\n", count++, w->string); */
                 }
                 
                 if (oktoprint &&symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
