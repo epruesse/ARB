@@ -210,9 +210,9 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
 
 GB_HASH *awt_generate_species_hash(GBDATA *gb_main, char *key,int split)
 {
-    GB_HASH *hash = GBS_create_hash(10000,1); // @@@ ralf 16/02/2000
-	GBDATA *gb_species;
-	GBDATA *gb_name;
+    GB_HASH *hash = GBS_create_hash(10000,1);
+	GBDATA  *gb_species;
+	GBDATA  *gb_name;
 	char	*keyas;
 
 	for (	gb_species = GBT_first_species(gb_main);

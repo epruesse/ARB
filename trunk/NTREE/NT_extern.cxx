@@ -19,6 +19,8 @@
 #include <awt_canvas.hxx>
 #include <aw_preset.hxx>
 #include <awt_preset.hxx>
+#include <awt_advice.hxx>
+
 #include <awtc_rename.hxx>
 #include <awtc_submission.hxx>
 #include <gde.hxx>
@@ -769,19 +771,20 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->button_length(5);
 
-    nt.tree = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
-    AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
-    char *tree_name = awr->awar_string(awar_tree)->read_string();
-    char *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
+    nt.tree                        = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
+    AWT_canvas *ntw                = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
+    char       *tree_name          = awr->awar_string(awar_tree)->read_string();
+    char       *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
     delete tree_name;
+#if defined(DEBUG)
+    existing_tree_name             = 0;
+#endif                          // DEBUG
     if (existing_tree_name) {
         awr->awar(awar_tree)->write_string(existing_tree_name);
 
         NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
     }else{
-#if !defined(DEBUG)
-        AW_POPUP_HELP(awm,(AW_CL)"no_tree.hlp");
-#endif // DEBUG
+        AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
     }
 
     awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
@@ -1066,6 +1069,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 //             AWMIMT("props_tree",	"Tree: Colors groups ...",	"G","nt_color_groups.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_color_groups_window, (AW_CL)aw_gc_manager );
             AWMIMT("props_tree2",	"Tree Settings ...",		"T","nt_tree_settings.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
             AWMIMT("props_www",	"WWW  ...",			"W","props_www.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
+            awm->insert_separator();
+            AWMIMT("enable_advices", "Reactivate advices",	"","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
             awm->insert_separator();
             AWMIMT("save_props",	"Save Properties (in ~/.arb_prop/ntree.arb)",	"S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 

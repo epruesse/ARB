@@ -11,6 +11,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt_canvas.hxx>
+#include <awt_advice.hxx>
 
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
@@ -257,6 +258,8 @@ int main(int argc, char **argv)
 
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
+
+    init_Advisor(aw_root, AW_ROOT_DEFAULT);
 
 	if (argc==3) {		// looks like merge
 	    MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
