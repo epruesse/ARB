@@ -1,7 +1,7 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = SQ_main.o SQ_functions.o
+CPP_OBJECTS = SQ_main.o SQ_functions.o SQ_GroupData.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
@@ -33,6 +33,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx seq_quality.h SQ_functions.h
+SQ_main.o: SQ_GroupData.h
 
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -41,3 +42,4 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h SQ_consensus.h
 SQ_functions.o: SQ_ambiguities.h $(ARBHOME)/INCLUDE/awt_iupac.hxx
 SQ_functions.o: SQ_helix.h $(ARBHOME)/INCLUDE/BI_helix.hxx
+SQ_functions.o: SQ_physical_layout.h
