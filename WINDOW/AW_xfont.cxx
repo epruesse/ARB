@@ -21,7 +21,6 @@
 #include <X11/Xlib.h>
 
 #include <arbdb.h>
-#define _AW_COMMON_INCLUDED
 #include <aw_root.hxx>
 #include "aw_device.hxx"
 #include "aw_commn.hxx"
@@ -49,7 +48,9 @@ appresStruct appres = {
 };
 
 // defines the preferred xfontsel-'rgstry' values (most wanted first)
-static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO8859", "*" };
+#warning check iso setting!
+// static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO8859", "*" };
+static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO10646", "*" };
 
 struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL}, // #0
@@ -92,16 +93,16 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-*-lucida-medium-i-*-*-",                    (struct xfont*) NULL},
     {"-*-lucida-bold-r-*-*-",                      (struct xfont*) NULL},
     {"-*-lucida-bold-i-*-*-",                      (struct xfont*) NULL},
-    {"-*-lucidatypewriter-medium-*-*-*-",          (struct xfont*) NULL},
-    {"-*-lucidatypewriter-bold-*-*-*-",            (struct xfont*) NULL},
-    {"-*-screen-medium-*-*-*-",                    (struct xfont*) NULL},
-    {"-*-screen-bold-*-*-*-",                      (struct xfont*) NULL},
-    {"-*-clean-medium-*-*-*-",                     (struct xfont*) NULL},
-    {"-*-clean-bold-*-*-*-",                       (struct xfont*) NULL},
+    {"-*-lucidatypewriter-medium-r-*-*-",          (struct xfont*) NULL},
+    {"-*-lucidatypewriter-bold-r-*-*-",            (struct xfont*) NULL},
+    {"-*-screen-medium-r-*-*-",                    (struct xfont*) NULL},
+    {"-*-screen-bold-r-*-*-",                      (struct xfont*) NULL},
+    {"-*-clean-medium-r-*-*-",                     (struct xfont*) NULL},
+    {"-*-clean-bold-r-*-*-",                       (struct xfont*) NULL},
     {"-*-biwidth-medium-r-*-*-",                   (struct xfont*) NULL},
     {"-*-biwidth-bold-r-*-*-",                     (struct xfont*) NULL},
-    {"-*-terminal-medium-*-*-*-",                  (struct xfont*) NULL},
-    {"-*-terminal-bold-*-*-*-",                    (struct xfont*) NULL},
+    {"-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL},
+    {"-*-terminal-bold-r-*-*-",                    (struct xfont*) NULL},
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
@@ -340,6 +341,17 @@ void aw_root_init_font(Display *tool_d)
     }
 }
 
+#if defined(DEBUG)
+static void dumpFontInformation(struct xfont *xf) {
+    printf("Font information for '%s':\n", xf->fname);
+    XFontStruct *xfs = xf->fstruct;
+    printf("- max letter ascent  = %2i\n", xfs->max_bounds.ascent);
+    printf("- max letter descent = %2i\n", xfs->max_bounds.descent);
+    printf("- max letter height  = %2i\n", xfs->max_bounds.ascent + xfs->max_bounds.descent);
+    printf("- max letter width   = %2i\n", xfs->max_bounds.width);
+}
+#endif // DEBUG
+
 /*
  * Lookup an X font, "f" corresponding to a Postscript font style that is
  * close in size to "s"
@@ -438,6 +450,10 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
         /* put the structure in the list */
         nf->fstruct = fontst;
     }
+
+#if defined(DEBUG) && 0
+    dumpFontInformation(nf);
+#endif // DEBUG
 
     return (nf->fstruct);
 }
@@ -581,44 +597,62 @@ int AW_root::font_2_xfig(AW_font font_nr)
 }
 #endif
 
-void            AW_GC_Xm::
-set_font(AW_font font_nr, int size)
+void AW_GC_Xm::set_font(AW_font font_nr, int size)
 {
-    XFontStruct    *xfs;
-    xfs = lookfont(common->display, font_nr, size);
+    XFontStruct *xfs;
+    xfs     = lookfont(common->display, font_nr, size);
     XSetFont(common->display, gc, xfs->fid);
     curfont = *xfs;
+    
     register XCharStruct *cs;
-    XCharStruct    *def;	/* info about default char */
-    Bool            singlerow = (xfs->max_byte1 == 0);	/* optimization */
-    if (singlerow) {	/* optimization */
-	CI_GET_DEFAULT_INFO_1D(xfs, def);
-    } else {
-	CI_GET_DEFAULT_INFO_2D(xfs, def);
+    XCharStruct          *def;  /* info about default char */
+    Bool                  singlerow = (xfs->max_byte1 == 0); /* optimization */
+
+    if (singlerow) {    /* optimization */
+        CI_GET_DEFAULT_INFO_1D(xfs, def);
     }
+    else {
+        CI_GET_DEFAULT_INFO_2D(xfs, def);
+    }
+
+    fontinfo.max_letter_ascent  = 0;
+    fontinfo.max_letter_descent = 0;
+    fontinfo.max_letter_width   = 0;
+
     unsigned int i;
     for (i = 0; i < 256; i++) {
-	if (singlerow) {/* optimization */
-	    CI_GET_CHAR_INFO_1D(xfs, i, def, cs);
-	} else {
-	    cs = def;	// X11R4
-	    //CI_GET_ROWZERO_CHAR_INFO_2D(xfs, i, def, cs);
-	}
-	if (cs) {
-	    width_of_chars[i] = cs ->width;
-	    descent_of_chars[i] = cs->descent;
-	    ascent_of_chars[i] = cs->ascent;
-	}else{
-	    width_of_chars[i] = 0;
-	    descent_of_chars[i] = 0;
-	    ascent_of_chars[i] = 0;
-	}
-    }
-    fontinfo.max_letter_ascent = xfs->max_bounds.ascent;
-    fontinfo.max_letter_descent = xfs->max_bounds.descent;
-    fontinfo.max_letter_height = xfs->max_bounds.ascent + xfs->max_bounds.descent;
-    fontinfo.max_letter_width = xfs->max_bounds.width;
+        if (singlerow) {/* optimization */
+            CI_GET_CHAR_INFO_1D(xfs, i, def, cs);
+        } else {
+            cs = def;   // X11R4
+            //CI_GET_ROWZERO_CHAR_INFO_2D(xfs, i, def, cs);
+        }
+        if (cs) {
+            ascent_of_chars[i]  = cs->ascent;
+            descent_of_chars[i] = cs->descent;
+            width_of_chars[i]   = cs->width;
 
-    this->fontnr = font_nr;
+            if (cs->ascent >fontinfo.max_letter_ascent ) fontinfo.max_letter_ascent  = cs->ascent;    
+            if (cs->descent>fontinfo.max_letter_descent) fontinfo.max_letter_descent = cs->descent; 
+            if (cs->width  >fontinfo.max_letter_width  ) fontinfo.max_letter_width   = cs->width;     
+        }
+        else {
+            width_of_chars[i]   = 0;
+            descent_of_chars[i] = 0;
+            ascent_of_chars[i]  = 0;
+        }
+    }
+
+#if defined(DEBUG) && 0
+#define INCREASE 0    
+#warning increasing font size for testing
+    fontinfo.max_letter_width   += INCREASE;
+    fontinfo.max_letter_ascent  += INCREASE;
+    fontinfo.max_letter_descent += INCREASE;
+#endif                          // DEBUG
+
+    fontinfo.max_letter_height = fontinfo.max_letter_descent + fontinfo.max_letter_ascent;
+
+    this->fontnr   = font_nr;
     this->fontsize = size;
 }
