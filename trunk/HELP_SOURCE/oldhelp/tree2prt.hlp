@@ -36,9 +36,12 @@ DESCRIPTION	Multi Page Printer
 				magnification will be adjusted to fit
 				the graphic into the number of pages.
 
+                Fit to page:    Tests how to fit the printout best onto 1 page
+                                (sets 'Orientation' and 'Pages')
+
 		Destination:	Printer: Use print command to print
-				File:	Use File Name as destination file name
-				Preview:
+				File: Use File Name as destination file name
+				Preview: Print to file and show using gv (ghostview)
 
 NOTES           The default printer used by ARB can be defined by setting the
                 environment variable PRINTER to your printer name.
