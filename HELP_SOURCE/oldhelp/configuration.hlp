@@ -10,21 +10,22 @@ SUB	e4.hlp
 #************* Title of helpfile @@@ ********
 TITLE		Selection of Species ( == Configurations )
 
-OCCURRENCE	ARB_EDIT4
+OCCURRENCE	ARB_NTREE/Species/Selections
 
 DESCRIPTION	Each species is either marked or unmarked. All species that are
 		marked are called marked species. In order to handle multiple
-		sets of marked species we use configurations ( =
-		a selection of species). You may create a configuration from
-		all marked species by pressing:
+		sets of marked species we use configurations ( = a selection of species).
 
-			 <ARB_NT/Species/Create Selection ...>
+        Several operations are possible with the configurations:
 
-		delete and extract configurations.
+            - STORE (save a (new) configuration)
+            - EXTRACT (= unmark all, then mark those from configuration)
+            - MARK/UNMARK/INVERT (mix currently marked species with those marked in configuration)
+            - DELETE (delete a configuration)
+            - RENAME (not implemented yet)
 
 		Each configuration has a unique name and is part of the data-
-		base.
-		Also the current tree displayed within the ARB_NT main window
+		base. Also the current tree displayed within the ARB_NT main window
 		is stored into the configuration.
 
 		The ARB_EDIT4 sequence may load all marked species or

@@ -16,4 +16,4 @@ depend:
 
 # DO NOT DELETE
 
-xml.o: xml.hxx
+xml.o: xml.hxx $(ARBHOME)/INCLUDE/arb_assert.h
