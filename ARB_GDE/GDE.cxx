@@ -51,7 +51,7 @@ int GDE_odd(long a)
     return 1;
 }
 
-void GDE_showhelp_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL cd) {
+void GDE_showhelp_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL /*cd*/) {
     const char *help_file = AWinfo->gmenuitem->help;
     if (help_file) {
         char *agde_help_file = GBS_string_eval(help_file, "*.help=agde_*1.hlp", 0);

@@ -1374,6 +1374,8 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     long                    val;
     GB_ERROR                error = 0;
 
+    GBUSE(cbt);
+
     /* search the hash to find the correct cached taxonomy.
        searching for tree name does not work, because the tree may already be deleted
     */
