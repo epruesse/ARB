@@ -6,6 +6,8 @@
 #undef _USE_AW_WINDOW
 #include "BI_helix.hxx"
 
+#include "SQ_consensus_marked.hxx"
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -41,6 +43,8 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     if (marked_only) {
 	getFirst = GBT_first_marked_species;
 	getNext  = GBT_next_marked_species;
+	//SQ_consensus_marked cm;
+	//cm.SQ_calc_consensus('b', 3);
     }
     else {
 	getFirst = GBT_first_species;
@@ -336,9 +340,10 @@ void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only)
     if (node->gb_node){
 	if (node->is_leaf==true && (!(node->gb_node==0))){
 	    parent = node->father;
-	    if (parent->name){;
-		gb_main = GB_find(parent->gb_node,"name",0,down_level);
-		//SQ_calc_sequence_structure(gb_main, marked_only);
+	    if (parent->name){
+		//gb_main = parent->gb_node;
+		//gb_main = GB_find(parent->gb_node,"name",0,down_level);
+		SQ_calc_sequence_structure(gb_main, marked_only);
 	    }
 	}
 	else {

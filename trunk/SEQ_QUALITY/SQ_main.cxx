@@ -83,8 +83,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
           value_of_evaluation
         */
 
-//        int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-//        int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+        //int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
+        //int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -99,8 +99,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         SQ_traverse_through_tree(gb_main, tree, marked_only);
         //SQ_evaluate(gb_main, weight_bases, weight_diff_from_average);
-        //int value = SQ_get_value(gb_main, option);
-        //aw_message(GBS_global_string("Value in container: %i", value));
+	//      int value = SQ_get_value(gb_main, option);
+//        aw_message(GBS_global_string("Value in container: %i", value));
 
     }
 
