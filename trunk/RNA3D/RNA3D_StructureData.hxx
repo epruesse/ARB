@@ -93,7 +93,9 @@ public:
     
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;
-    
+
+    OpenGLGraphics *GRAPHICS; // not really a good place - it better should be passed from callers
+
     Structure3D(void);
     virtual  ~Structure3D(void);
 
