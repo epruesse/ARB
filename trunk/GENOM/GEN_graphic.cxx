@@ -163,6 +163,9 @@ inline void increase_selected_range(AW_world& selected_range, AW_pos x1, AW_pos 
 inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen) {
     int res = device->text(gc, str, x, y, alignment, filteri, cd1, cd2, opt_strlen);
     if (gc == GEN_GC_CURSOR) {
+#if defined(DEVEL_RALF)
+#warning implementation missing
+#endif // DEVEL_RALF
         // @@@ FIXME: detect text size and increase_selected_range
     }
     return res;
@@ -179,7 +182,7 @@ enum PaintWhat {
     PAINT_COLORED,
     PAINT_MARKED,
     PAINT_SELECTED,
-    PAINT_MAX    = PAINT_SELECTED, 
+    PAINT_MAX    = PAINT_SELECTED,
 };
 
 inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_gene_name, int& draw_gc, int& text_gc) {
