@@ -28,7 +28,7 @@ public:
 	virtual ~GAParser(){}
 	virtual void parse() = 0;
 	void update(std::string*);
-	static bool writeMessage(std::string *);
+	// static bool writeMessage(std::string *);
 };
 
 };
