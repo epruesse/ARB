@@ -309,10 +309,7 @@ void gbm_free_mem P_((char *data, size_t size, long index));
 void gbm_debug_mem P_((GB_MAIN_TYPE *Main));
 
 /* ad_load.c */
-long gb_read_ascii P_((const char *path, GBCONTAINER *gbd));
-char **gb_read_file P_((const char *path));
-void gb_file_loc_error P_((char **pdat, const char *s));
-char **gb_read_rek P_((char **pdat, GBCONTAINER *gbd));
+GB_ERROR gb_read_ascii P_((const char *path, GBCONTAINER *gbd));
 long gb_read_bin_rek P_((FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed));
 long gb_recover_corrupt_file P_((GBCONTAINER *gbd, FILE *in));
 long gb_read_bin_rek_V2 P_((FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep));
