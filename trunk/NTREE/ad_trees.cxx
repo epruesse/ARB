@@ -466,7 +466,7 @@ AW_window *create_tree_rename_window(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the tree");
+    aws->create_autosize_button(0,"Please enter the new name\nof the tree");
 
     aws->at("input");
     aws->create_input_field(AWAR_TREE_DEST,15);
@@ -489,7 +489,7 @@ AW_window *create_tree_copy_window(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new tree");
+    aws->create_autosize_button(0,"Please enter the name\nof the new tree");
 
     aws->at("input");
     aws->create_input_field(AWAR_TREE_DEST,15);

@@ -596,7 +596,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  //
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nfor the Color Translation Table");
+    aws->create_autosize_button(0,"Please enter the new name\nfor the Color Translation Table");
 
     aws->at("input");
     aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME,15);
@@ -618,7 +618,7 @@ static AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ /
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nfor the Color Translation Table");
+    aws->create_autosize_button(0,"Please enter the name\nfor the Color Translation Table");
 
     aws->at("input");
     aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME,15);

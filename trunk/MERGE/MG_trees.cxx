@@ -73,7 +73,7 @@ AW_window *MG_create_tree_rename_window1(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the tree");
+    aws->create_autosize_button(0,"Please enter the new name\nof the tree");
 
     aws->at("input");
     aws->create_input_field(AWAR_TREE_DEST1,15);
@@ -96,7 +96,7 @@ AW_window *MG_create_tree_rename_window2(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the tree");
+    aws->create_autosize_button(0,"Please enter the new name\nof the tree");
 
     aws->at("input");
     aws->create_input_field(AWAR_TREE_DEST2,15);

@@ -511,7 +511,7 @@ static AW_window *create_new_seq_window(AW_root *root, AED_window *aedw)
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new species");
+    aws->create_autosize_button(0,"Please enter the name\nof the new species");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);
@@ -534,7 +534,7 @@ static AW_window *create_old_seq_window(AW_root *root, AED_window *aedw)
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the existing species");
+    aws->create_autosize_button(0,"Please enter the name\nof the existing species");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);
@@ -557,7 +557,7 @@ static AW_window *create_new_copy_window(AW_root *root, AED_window *aedw)
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new sequence");
+    aws->create_autosize_button(0,"Please enter the name\nof the new sequence");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);

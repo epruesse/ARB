@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Sep/28/2004 13:34 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -82,7 +82,7 @@ AW_window *MG_create_config_rename_window1(AW_root *root) {
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the configuration");
+    aws->create_autosize_button(0,"Please enter the new name\nof the configuration");
 
     aws->at("input");
     aws->create_input_field(AWAR_CONFIG_DEST1,15);
@@ -104,7 +104,7 @@ AW_window *MG_create_config_rename_window2(AW_root *root) {
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the configuration");
+    aws->create_autosize_button(0,"Please enter the new name\nof the configuration");
 
     aws->at("input");
     aws->create_input_field(AWAR_CONFIG_DEST2,15);
