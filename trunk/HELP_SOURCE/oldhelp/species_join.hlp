@@ -28,9 +28,27 @@ DESCRIPTION
 
             - Press GO to start.
 
+EXAMPLES
+
+		For example you have a 23s and a 16s database and you want
+		to append the 16s to the 23s sequences than you have to do:
+
+			- merge the 16s to the 23s sequences.
+
+			- create a field 'species_name' which holds the
+                          real name of the species.
+                          That means the species_name of the 16s sequence
+                          should be the same as of the 23s seq.
+                          Do not use the 'names' field because it is
+                          used as a UNIQUE id to the database.
+
+			- ARB_NT/Species/Merge Species/Join Marked Species
+                          and use the field 'species_name'.
+
+
 NOTES		There's a second function to merge species: see LINK{merge_species.hlp}
 
-EXAMPLES	None
+                There's a special new function to concatenate alignments: see LINK{concatenate.hlp}
 
 WARNINGS	None
 
