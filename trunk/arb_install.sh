@@ -193,7 +193,8 @@ echo
 case "$pt_dir" in
 	"")
 		echo "installing the pt_server data in $ARBHOME/lib/pts"
-		if test -L ${ARBHOME}/lib/pts; then
+		if test -h ${ARBHOME}/lib/pts ; then
+			echo "Are you sure to delete "
 			echo ">>> pt_server files at non default location:"
 			ls -ld ${ARBHOME}/lib/pts
 		else
@@ -205,7 +206,7 @@ case "$pt_dir" in
 		fi;;
 	*)
 		echo "changing your pt_server file location"
-		if test -L ${ARBHOME}/lib/pts; then
+		if test -h ${ARBHOME}/lib/pts; then
 			echo ">>> non default location found: removing old link"
 			rm lib/pts
 		else
@@ -354,6 +355,7 @@ echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash,"
 echo "       which is the default shell for Linux)"
 echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
 echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
+echo "Enter your decision (1/2/3)"
 
 	read var
 
