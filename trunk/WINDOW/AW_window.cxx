@@ -236,12 +236,13 @@ AW_select_table_struct::~AW_select_table_struct( void ) {
 
 AW_selection_list::AW_selection_list( const char *variable_namei, int variable_typei, Widget select_list_widgeti ) {
     memset((char *)this,0,sizeof(AW_selection_list));
-    variable_name		= GB_strdup( variable_namei );
-    variable_type		= (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget	= select_list_widgeti;
-    list_table		= NULL;
-    last_of_list_table	= NULL;
-    default_select		= NULL;
+    variable_name	    = GB_strdup( variable_namei );
+    variable_type	    = (AW_VARIABLE_TYPE)variable_typei;
+    select_list_widget  = select_list_widgeti;
+    list_table		    = NULL;
+    last_of_list_table  = NULL;
+    default_select	    = NULL;
+    value_equal_display = false;
 }
 
 AW_root::AW_root(void) {
