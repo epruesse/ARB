@@ -404,7 +404,7 @@ public void handleRightMouseClick(int x, int y)
             // System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
             String codedPath = clickedNode.getCodedPath();
             // System.out.println("path to clicked node: " + codedPath);
-            myBoss.updateNodeInformation(codedPath);
+            myBoss.updateNodeInformation(codedPath, clickedNode.getExactMatches()>0);
 
 //             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
 //             boolean state = clickedNode.isMarked() != 0;
