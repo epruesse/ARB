@@ -21,10 +21,12 @@
 
 #include "SaiProbeVisualization.hxx"
 
-extern GBDATA *gb_main;   
-saiProbeData  *g_pbdata    = 0;
-int            probeLen    = 0;
-static char    *saiValues  = 0;
+#define PROBE_PREFIX_LENGTH 9
+#define PROBE_SUFFIX_LENGTH 9
+
+extern GBDATA *gb_main;
+saiProbeData  *g_pbdata                    = 0;
+static char   *saiValues                   = 0;
 static bool    in_colorDefChanged_callback = false; // used to avoid colorDef correction
 
 #define BUFSIZE 100
@@ -41,23 +43,23 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
     AW_gc_manager preset_window =
         AW_manage_GC (aww,
                       device,
-                      SAI_GC_FOREGROUND, 
-                      SAI_GC_MAX, 
+                      SAI_GC_FOREGROUND,
+                      SAI_GC_MAX,
                       AW_GCM_DATA_AREA,
-                      (AW_CB)AWT_resize_cb, 
+                      (AW_CB)AWT_resize_cb,
                       (AW_CL)ntw,
                       cd2,
                       false,
                       "#00AA00",
                       "Foreground$#FF0000",
                       "Probe$#FFFF00",
-                      "+-COLOR 0$#FFFFFF", "-COLOR 1$#E0E0E0", 
+                      "+-COLOR 0$#FFFFFF", "-COLOR 1$#E0E0E0",
                       "+-COLOR 2$#C0C0C0", "-COLOR 3$#A0A0A0",
                       "+-COLOR 4$#909090", "-COLOR 5$#808080",
-                      "+-COLOR 6$#707070", "-COLOR 7$#505050", 
+                      "+-COLOR 6$#707070", "-COLOR 7$#505050",
                       "+-COLOR 8$#404040", "-COLOR 9$#303030",
                       0 );
-    
+
     return preset_window;
 }
 
@@ -146,14 +148,14 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     awr->awar(AWAR_DISP_SAI)->touch(); // refreshes the display
 }
 
-void refreshCanvas(AW_root *awr, AW_CL cl_ntw) { 
+static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) { 
     // repaints the canvas
     AWUSE(awr);
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     ntw->refresh();
 }
 
-void createSaiProbeAwars(AW_root *aw_root) {
+static void createSaiProbeAwars(AW_root *aw_root) {
     // creating awars specific for the painting routine
     aw_root->awar_int(AWAR_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
    
@@ -163,13 +165,14 @@ void createSaiProbeAwars(AW_root *aw_root) {
     }
 }
 
-void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
+static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
     // adding callbacks to the awars to refresh the display if recieved any changes 
     awr->awar(AWAR_DISP_SAI)   ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_SAI_2_PROBE)->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_PROBE_LIST) ->add_callback(refreshCanvas, (AW_CL)ntw);
 }
 
-const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo) {
+static const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo) {
     // translating SAIs to color strings
     static int   seqBufferSize = 0;
     static char *saiColors     = 0;
@@ -181,19 +184,19 @@ const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo
     if(seqSize > seqBufferSize){
         free(saiColors);
         seqBufferSize = seqSize;
-        saiColors = (char*)GB_calloc(seqBufferSize, sizeof(char));
-        saiValues = (char*)GB_calloc(seqBufferSize, sizeof(char));
+        saiColors = (char*)malloc(seqBufferSize);
+        saiValues = (char*)malloc(seqBufferSize);
     }
-    else { 
-        memset(saiColors,0,sizeof(char)*seqSize);
-        memset(saiValues,0,sizeof(char)*seqSize);
-    }
+    
+    memset(saiColors, '0'-1, seqSize);
+    memset(saiValues, '0'-1, seqSize);
 
     char *saiSelected = awr->awar(AWAR_SAI_2_PROBE)->read_string();
 
     GB_push_transaction(gb_main);
     char   *alignment_name = GBT_get_default_alignment(gb_main);
     GBDATA *gb_extended    = GBT_find_SAI(gb_main, saiSelected);
+    int     positions      = 0;
 
     if (gb_extended) {
         GBDATA *gb_ali = GB_find(gb_extended, alignment_name, 0, down_level);
@@ -214,7 +217,7 @@ const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo
                         free_saiData = true; // free saiData below
                     }
                 }
-                
+
                 const char *species_name = g_pbdata->probeSpecies[speciesNo];
                 GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
                 GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
@@ -224,19 +227,22 @@ const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo
             if (saiData) {
                 char trans_table[256];
                 {
-                    // build the translation table
-                    memset(trans_table, 0, 256);
-                    for (int i = 0; i < SAI_CLR_COUNT; ++i) {
-                        char *def      = awr->awar(getAwarName(i))->read_string(); 
-                        int   clrRange = SAI_GC_0 + i;
 
-                        for (char *d = def; *d; ++d) {
+                    // @@@ FIXME: build trans_table ONCE for each refresh only (not for each translation)
+                    
+                    // build the translation table
+                    memset(trans_table, '0'-1, 256);
+                    for (int i = 0; i < SAI_CLR_COUNT; ++i) {
+                        char *def      = awr->awar(getAwarName(i))->read_string();
+                        int   clrRange = i + '0'; // configured values use '0' to '9' (unconfigured use '0'-1)
+
+                        for (const char *d = def; *d; ++d) {
                             trans_table[*d] = clrRange;
                         }
                         free(def);
                     }
                 }
-                
+
                 // translate SAI to colors
                 int i, j;
                 for ( i = start, j = 0 ; i <= end; ++i) {
@@ -246,6 +252,7 @@ const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo
                         ++j;
                     }
                 }
+                positions = j;
             }
 
             if (free_saiData) {
@@ -253,16 +260,19 @@ const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo
             }
         }
     }
+
+    saiColors[positions] = 0;
+    saiValues[positions] = 0;
+
     free(alignment_name);
     free(saiSelected);
     GB_pop_transaction(gb_main);
 
-    if (saiColors) return saiColors;
-    else           return 0; 
+    return saiColors;
 }
 
-int calculateEndPosition(int startPos, int speciesNo, int mode) {
-    int i, endPos, baseCntr; 
+static int calculateEndPosition(int startPos, int speciesNo, int mode, int probeLen) {
+    int i, endPos, baseCntr;
     i = endPos = baseCntr = 0;
 
     GB_push_transaction(gb_main);
@@ -282,13 +292,13 @@ int calculateEndPosition(int startPos, int speciesNo, int mode) {
             }
             break;
         case PROBE_PREFIX:
-            for ( i = startPos; baseCntr < 9; --i) {
+            for ( i = startPos; baseCntr < PROBE_PREFIX_LENGTH && i >= 0; --i) {
                 if ((seqData[i] != '-') && (seqData[i] != '.'))
                     baseCntr++;
             }
             break;
         case PROBE_SUFFIX:
-            for ( i = startPos; baseCntr < 9; ++i) {
+            for ( i = startPos; baseCntr < PROBE_SUFFIX_LENGTH && seqData[i]; ++i) {
                 if ((seqData[i] != '-') && (seqData[i] != '.'))
                     baseCntr++;
             }
@@ -302,36 +312,163 @@ int calculateEndPosition(int startPos, int speciesNo, int mode) {
     return endPos;
 }
 
-// ---------------------------------  painting routine ------------------------------------------------------------------------------------------------//
+// --------------------------------------------------------------------------------
+// helper class to parse probe match results
 
-static inline void paintBackground (AW_device *device, char *probeRegion, AW_pos pbRgX1, AW_pos pbY, AW_pos pbMaxAscent, AW_pos pbMaxHeight, 
-                                    const char *saiCols, int dispSai) 
-{
-    // painting background in translated colors from the chosen SAI values and also printing the values based on the options set by user
-    char saiVal[2]; saiVal[1] = 0;
-    for (unsigned int j = 0; j<strlen(probeRegion);j++) {
-        if (saiCols[j] > 0) {
-            device->box(saiCols[j],(pbRgX1+(j*pbMaxAscent)),((pbY-pbMaxHeight)+4),pbMaxAscent, pbMaxHeight-2, -1, 0,0);
-            if (dispSai && saiValues[j] ) {
-                saiVal[0] = saiValues[j];
-                device->text(SAI_GC_FOREGROUND, saiVal, (pbRgX1+(j*pbMaxAscent)), pbY+pbMaxHeight, 0, 1, 0, 0, 0); 
+class ProbeMatchParser {
+    char *init_error;
+    int   pos_offset; // position of 's' in 'pos' (pos is right-aligned)
+    int   probe_region_offset; // left index of probe region
+
+    ProbeMatchParser(const ProbeMatchParser& other); // copying not allowed
+    ProbeMatchParser& operator=(const ProbeMatchParser& other); // assignment not allowed
+public:
+    ProbeMatchParser(const char *probe_target, const char *headline)
+        : init_error(0)
+    {
+        if (!headline) {
+            init_error = strdup("No headline given");
+        }
+        else if (!probe_target) {
+            init_error = strdup("No probe target given.");
+        }
+        else {
+            const char *pos = strstr(headline, " pos ");
+            if (!pos) {
+                init_error = strdup("Expected 'pos' in headline");
             }
+            else {
+                pos_offset = (pos-headline)+3;
+
+                const char *target;
+                char *probe_target_copy = strdup(probe_target);
+                for (int i = 0; probe_target_copy[i]; ++i) {
+                    probe_target_copy[i] = toupper(probe_target_copy[i]);
+                    if (probe_target_copy[i] == 'T') {
+                        probe_target_copy[i] = 'U';
+                    }
+                }
+
+                target = strstr(headline, probe_target_copy);
+
+                if (!target) {
+                    init_error = GBS_global_string_copy("Could not find target '%s' in headline", probe_target_copy);
+                }
+                else {
+                    probe_region_offset = (target-headline)-(PROBE_PREFIX_LENGTH+1);
+                    sai_assert(probe_region_offset>pos_offset);
+
+                    // Note: match-lines are shorter than the headline!
+                    probe_region_offset -= 2;
+                    pos_offset          -= 2;
+                }
+                free(probe_target_copy);
+            }
+        }
+    }
+    ~ProbeMatchParser() {
+        free(init_error);
+    }
+
+    bool parse_match(const char *match, const char *& result_probeRegion, int& result_startPos, GB_ERROR& error) {
+        result_probeRegion = 0;
+        result_startPos    = 0;
+
+        if (init_error) {
+            error = init_error;
+            return false;
+        }
+
+        error = 0;
+        if (match) {
+            int matchlen = strlen(match);
+            if (probe_region_offset > matchlen) {
+                error = GBS_global_string("can't parse match info '%s'", match);
+            }
+            else {
+                result_probeRegion    = match+probe_region_offset;
+                const char *pos_start = match+pos_offset;
+                while (pos_start>match && pos_start[0] != ' ') {
+                    --pos_start; // search backward for last space
+                }
+                if (pos_start>match) {
+                    result_startPos = atoi(pos_start+1);
+                }
+                else {
+                    error = GBS_global_string("can't parse match info '%s' (no space found in front of '%s')", match, match+pos_offset);
+                }
+            }
+        }
+        else {
+            error = "no match info";
+        }
+
+        return error == 0;
+    }
+};
+
+
+// --------------------------------------------------------------------------------
+// painting routine
+
+static void paintBackgroundAndSAI (AW_device *device, size_t probeRegionLen, AW_pos pbRgX1, AW_pos pbY, AW_pos pbMaxWidth, AW_pos pbMaxHeight,
+                             const char *saiCols, int dispSai)
+{
+    // painting background in translated colors from the chosen SAI values
+    // and also printing the values based on the options set by user
+    for (size_t j = 0; j<probeRegionLen; j++) {
+        if (saiCols[j] >= '0') {
+            device->box(saiCols[j]-'0'+SAI_GC_0, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0,0);
+        }
+        if (dispSai && saiValues[j]) {
+            char saiVal[2];
+            saiVal[0] = saiValues[j];
+            saiVal[1] = 0;
+            device->text(SAI_GC_FOREGROUND, saiVal, (pbRgX1+(j*pbMaxWidth)), pbY+pbMaxHeight, 0, 1, 0, 0, 0);
+        }
+    }
+}
+
+static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, AW_pos y, AW_pos xoff, AW_pos yoff, AW_pos maxDescent, AW_CL clientdata) {
+    char probeChar[2];
+    probeChar[1] = 0;
+
+    for (size_t j = 0; probe_info[j]; ++j) {
+        if (probe_info[j] == '=') {
+            AW_pos yl = y-maxDescent-(yoff-maxDescent)/3;
+            AW_pos xl = x+xoff*j;
+            device->line(SAI_GC_PROBE, xl, yl, xl+xoff-1, yl);
+        }
+        else {
+            probeChar[0] = probe_info[j];
+            device->text(SAI_GC_PROBE, probeChar, x+j*xoff, y-maxDescent, 0, AW_SCREEN|AW_CLICK, clientdata, 0);
         }
     }
 }
 
 void SAI_graphic::paint(AW_device *device) {
     // Painting routine of the canvas based on the probe match results
-    AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 'A');
-    AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 'A');
-    double fgMaxHeight = fgFontInfo->max_letter_height; 
-    double fgMaxAscent = fgFontInfo->this_letter_ascent; 
-    double pbMaxHeight = pbFontInfo->max_letter_height; 
-    double pbMaxAscent = pbFontInfo->this_letter_ascent; 
 
-    AW_pos fgX,fgY,pbRgX1,pbRgX2,pbY,pbX, lineXpos; 
-    fgX = 0; fgY = fgMaxHeight + 10; 
-    pbX = 0; pbY = pbMaxHeight + 10; 
+    double xStep      = 0;
+    double yStep      = 0;
+    double maxDescent = 0;
+    // detect x/y step to use
+    {
+        AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 0);
+        AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
+
+        xStep      = fgFontInfo->max_letter_width;
+        yStep      = fgFontInfo->max_letter_height;
+        maxDescent = fgFontInfo->max_letter_descent;
+
+        if (pbFontInfo->max_letter_width  > xStep)       xStep      = pbFontInfo->max_letter_width;
+        if (pbFontInfo->max_letter_height > yStep)       yStep      = pbFontInfo->max_letter_height;
+        if (pbFontInfo->max_letter_descent > maxDescent) maxDescent = pbFontInfo->max_letter_descent;
+    }
+
+    AW_pos fgX,fgY,pbRgX1,pbRgX2,pbY,pbX,lineXpos;
+    fgX = 0; fgY = yStep + 10;
+    pbX = 0; pbY = yStep + 10;
     pbRgX1 = pbRgX2 = lineXpos = 0;
 
     int tmpStrLen, strLen = 0;
@@ -343,109 +480,114 @@ void SAI_graphic::paint(AW_device *device) {
 
     char buf[1024];
     if (strcmp(saiSelected,"")==0)  sprintf(buf,"Selected SAI = Not Selected!");
-    else                            sprintf(buf,"Selected SAI = %s",saiSelected);
-    device->text(SAI_GC_FOREGROUND, buf, 100, -30, 0, 1, 0, 0); 
+    else sprintf(buf,"Selected SAI = %s",saiSelected);
+    device->text(SAI_GC_FOREGROUND, buf, 100, -30, 0, 1, 0, 0);
+
+    double yLineStep = dispSai ? yStep*2 : yStep;
 
     if (g_pbdata) {
-        device->text(SAI_GC_FOREGROUND,  "Species",0,10, 0, 1, 0, 0, 0); 
+        device->text(SAI_GC_FOREGROUND,  "Species",0,10, 0, 1, 0, 0, 0);
         if (!g_pbdata->probeSpecies.empty()) {
             for ( size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j ) {
                 const char *name = g_pbdata->probeSpecies[j];
-                device->text(SAI_GC_FOREGROUND, name, fgX, fgY, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0); 
-                if (dispSai) fgY += fgMaxHeight*2;
-                else         fgY += fgMaxHeight;
-                tmpStrLen = strlen(name);
+                device->text(SAI_GC_FOREGROUND, name, fgX, fgY, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
+                fgY       += yLineStep;
+                tmpStrLen  = strlen(name);
                 if (tmpStrLen > strLen) strLen = tmpStrLen;
             }
         }
-        pbRgX1 = (strLen * fgMaxAscent) + 15;
-        pbX    = pbRgX1 + (9 * pbMaxAscent);
-        pbRgX2 = pbX + ((strlen(g_pbdata->probeTarget)) * pbMaxAscent);
-        device->text(SAI_GC_PROBE, g_pbdata->probeTarget, pbX, 10, 0, 1, 0, 0, 0); 
-        device->set_line_attributes(SAI_GC_FOREGROUND,2, AW_SOLID); 
 
-        probeLen = strlen(g_pbdata->probeTarget);
+        double spacer = 4.0;
 
-        char *tmp, *pbSeq, *probeRegion, *pbRgTmp, baseBuf[2]; baseBuf[1] = 0;
+        pbRgX1 = (strLen * xStep) + 15;
+        pbX    = pbRgX1 + (9 * xStep) + spacer;
+        pbRgX2 = pbX + (g_pbdata->getProbeTargetLen() * xStep) + spacer;
 
-        if (!g_pbdata->probeSeq.empty()) 
-            {
-                for (size_t i = 0;  i < g_pbdata->probeSeq.size();  ++i) 
-                {
-                pbSeq = strdup(g_pbdata->probeSeq[i]);
-                tmp = strtok(pbSeq," ");
-                int tag = 0; bool extractFromHere = false;
-                while ((tmp = strtok(0," "))) {
-                    if (!extractFromHere) {
-                        if (strlen(tmp) == 1)             // Position where number of mismatches found - to avoid full name 
-                            extractFromHere = true;       // containg more than two words (eg., strain, clone, etc..).
-                    }
-                    if (extractFromHere) {                                   
-                        if (tag == 3)   startPos    = atoi(tmp);                 // Getting absolute postions of the probe region.
-                        if (tag == 6)   probeRegion = strdup((const char*)tmp);  // Getting only probe region.
-                        tag++;
-                    }
+        paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep, yStep, maxDescent, (AW_CL)0);
+        device->set_line_attributes(SAI_GC_FOREGROUND,2, AW_SOLID);
+
+        int probeLen = g_pbdata->getProbeTargetLen();
+        ProbeMatchParser parser(g_pbdata->getProbeTarget(), g_pbdata->getHeadline());
+
+        for (size_t i = 0;  i < g_pbdata->probeSeq.size(); ++i) { // loop over all matches
+            const char *probeRegion;
+            GB_ERROR    error;
+
+            if (parser.parse_match(g_pbdata->probeSeq[i], probeRegion, startPos, error)) {
+                sai_assert(probeRegion);
+                char *probeRegion_copy = strdup(probeRegion);
+
+                const char *tok_prefix = strtok(probeRegion_copy, "-");
+                const char *tok_infix  = tok_prefix ? strtok(0, "-") : 0;
+                const char *tok_suffix = tok_infix ? strtok(0, "-") : 0;
+
+                if (!tok_suffix) {
+                    // handle special case where no suffix exists
+                    char *end = strchr(probeRegion, 0);
+                    if (end>probeRegion && end[-1] == '-') tok_suffix = "";
                 }
-                char *probeStr = strtok(probeRegion,"-");
 
-                endPos = calculateEndPosition(startPos, i, PROBE_PREFIX);
-
-                // pre-probe region - 9 bases
-                saiCols  = translateSAItoColors(aw_root, endPos, startPos, i); 
-
-                if (saiCols)  paintBackground(device, probeStr, pbRgX1, pbY, pbMaxAscent, pbMaxHeight, saiCols, dispSai);
-                device->text(SAI_GC_PROBE, probeStr, pbRgX1, pbY, 0, AW_SCREEN|AW_CLICK, (AW_CL)i, 0,0);
-
-                // probe region 
-                endPos = calculateEndPosition(startPos, i, PROBE);
-                saiCols  = translateSAItoColors(aw_root, startPos, endPos, i); 
-                bool bProbeReg = true;
-                while ((probeStr = strtok(0,"-"))) {
-                    pbRgTmp = strdup((const char*)probeStr);
-                    if (bProbeReg) {
-                     for (unsigned int j = 0; j < strlen(pbRgTmp); j++) {
-                         if (saiCols && (saiCols[j] > 0)) {
-                             device->box(saiCols[j],(pbX+(j*pbMaxAscent)), ((pbY-pbMaxHeight)+4), pbMaxAscent, pbMaxHeight-2, -1, 0,0);
-                             if (dispSai && saiValues[j]) {
-                                 char saiVal[2]; saiVal[1] = 0;
-                                 saiVal[0] = saiValues[j];
-                                 device->text(SAI_GC_FOREGROUND, saiVal, (pbX+(j*pbMaxAscent)), pbY+pbMaxHeight, 0, 1, 0, 0, 0); 
-                             }
-                         }
-                         if (pbRgTmp[j]=='=') { 
-                             device->line(SAI_GC_PROBE, (pbX+(j*pbMaxAscent)), (pbY-pbMaxHeight/3), (pbX+((j+1)*pbMaxAscent)), (pbY-pbMaxHeight/3));
-                         } else {
-                             baseBuf[0] = pbRgTmp[j];
-                             device->text(SAI_GC_PROBE, baseBuf, (pbX+(j*pbMaxAscent)), pbY, 0, AW_SCREEN|AW_CLICK, (AW_CL)i, 0, 0); 
-                         }
-                     }
-                     bProbeReg = false;
+                if (tok_suffix) {
+                    // --------------------
+                    // pre-probe region - 9 bases
+                    endPos = calculateEndPosition(startPos-1, i, PROBE_PREFIX, probeLen);
+                    sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
+                    endPos++; // calculateEndPosition returns 'one position in front of start'
+                    saiCols = translateSAItoColors(aw_root, endPos, startPos-1, i);
+                    if (saiCols)  {
+                        int positions = strlen(saiCols);
+                        int skipLeft  = PROBE_PREFIX_LENGTH-positions;
+                        sai_assert(skipLeft >= 0);
+                        paintBackgroundAndSAI(device, positions, pbRgX1+skipLeft*xStep, pbY, xStep, yStep, saiCols, dispSai);
                     }
-                }
-                //post-probe region - 9 bases
-                endPos = calculateEndPosition((startPos + probeLen), i, PROBE_SUFFIX);
-                saiCols  = translateSAItoColors(aw_root, (startPos + probeLen), endPos, i); 
-                if (saiCols) paintBackground(device, pbRgTmp, pbRgX2, pbY, pbMaxAscent, pbMaxHeight, saiCols, dispSai);
-                device->text(SAI_GC_PROBE, pbRgTmp, pbRgX2, pbY, 0, AW_SCREEN|AW_CLICK, (AW_CL)i, 0, 0); 
+                    paintProbeInfo(device, tok_prefix, pbRgX1, pbY, xStep, yStep, maxDescent, (AW_CL)i);
 
-                if (dispSai) pbY += pbMaxHeight*2; 
-                else         pbY += pbMaxHeight; 
+                    // --------------------
+                    // probe region
+                    endPos  = calculateEndPosition(startPos, i, PROBE, probeLen);
+                    saiCols = translateSAItoColors(aw_root, startPos, endPos, i);
+
+                    paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep, yStep, saiCols, dispSai);
+                    paintProbeInfo(device, tok_infix, pbX, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+
+                    //post-probe region - 9 bases
+                    size_t post_start_pos = endPos;
+
+                    endPos  = calculateEndPosition(post_start_pos, i, PROBE_SUFFIX, probeLen);
+                    saiCols = translateSAItoColors(aw_root, post_start_pos, endPos, i);
+                    if (saiCols) paintBackgroundAndSAI(device, strlen(tok_suffix), pbRgX2, pbY, xStep, yStep, saiCols, dispSai);
+                    paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+                }
+                else {
+                    device->text(SAI_GC_PROBE, GBS_global_string("probe-region '%s' has invalid format", probeRegion),
+                                 pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                }
+                free(probeRegion_copy);
             }
-            // freeing allocated memory
-            free(pbRgTmp);
-            free(probeRegion);
-            free(pbSeq);
+            else {
+                device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+            }
+            pbY += yLineStep;
         }
-        lineXpos = pbRgX2 + (9 * pbMaxAscent);
-        device->set_line_attributes(SAI_GC_FOREGROUND,1, AW_SOLID); 
+        lineXpos = pbRgX2 + (9 * xStep);
+        device->set_line_attributes(SAI_GC_FOREGROUND,1, AW_SOLID);
+
         device->line(SAI_GC_FOREGROUND,0,-20,lineXpos,-20);
         device->line(SAI_GC_FOREGROUND,0,pbY,lineXpos,pbY);
+
+        {
+            double vert_x1 = pbX-spacer/2;
+            double vert_x2 = pbRgX2-spacer/2;
+            device->line(SAI_GC_FOREGROUND, vert_x1, -20, vert_x1, pbY);
+            device->line(SAI_GC_FOREGROUND, vert_x2, -20, vert_x2, pbY);
+        }
     }
 }
 
 void transferProbeData(struct saiProbeData *spd) {
-    //copying the probe data to gloabal struct g_pbdata
-    g_pbdata = (struct saiProbeData *)spd;
+    // store pointer to currently used probe data
+    g_pbdata = spd;
+
 }
 
 /* ---------------------------------- Creating WINDOWS ------------------------------------------------ */
@@ -522,7 +664,7 @@ static AW_window *createSelectSAI_window(AW_root *aw_root){
     return (AW_window *)aws;
 }
 
-AW_window *createSaiProbeMatchWindow(AW_root *awr){ 
+AW_window *createSaiProbeMatchWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(gb_main);
 
@@ -532,7 +674,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr){
     awm->init(awr,"MATCH_SAI", "PROBE AND SAI",200,300);
     AW_gc_manager aw_gc_manager;
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr,gb_main);
-    
+
     AWT_canvas *ntw = new AWT_canvas(gb_main,awm, saiProbeGraphic, aw_gc_manager,AWAR_TARGET_STRING);
     ntw->recalc_size();
 
@@ -548,4 +690,4 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr){
 
     return awm;
 }
- 
+
