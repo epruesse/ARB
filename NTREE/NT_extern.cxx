@@ -15,6 +15,7 @@
 #include <awt_nds.hxx>
 #include <awt_canvas.hxx>
 #include <aw_preset.hxx>
+#include <aw_global.hxx>
 #include <awt_preset.hxx>
 #include <awt_advice.hxx>
 
@@ -170,9 +171,7 @@ AW_window *create_nds_export_window(AW_root *root){
 
 void create_export_nds_awars(AW_root *awr, AW_default def)
 {
-    awr->awar_string( AWAR_EXPORT_NDS"/file_name", "export.nds", def);
-    awr->awar_string( AWAR_EXPORT_NDS"/directory", "", def);
-    awr->awar_string( AWAR_EXPORT_NDS"/filter", "nds", def);
+    aw_create_selection_box_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
     awr->awar_int( AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
@@ -937,7 +936,7 @@ void NT_test_AWT(AW_window *aww) {
     aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
     aws->create_button("B2","Button 2","2");
 
-    aws->at_newline();          // ------------------------------    
+    aws->at_newline();          // ------------------------------
 #endif
 
     aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
@@ -953,7 +952,7 @@ void NT_test_AWT(AW_window *aww) {
 
     aws->at_newline();          // ------------------------------
 
-#if 0    
+#if 0
 
     aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
     aws->create_button("B1","Button 1","1");
@@ -961,7 +960,7 @@ void NT_test_AWT(AW_window *aww) {
     aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
     aws->create_button("B2","Button 2","2");
 
-#endif    
+#endif
 
     aws->at("buttons2");
 
@@ -1347,11 +1346,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 GDE_load_menu(awm,"Phylogeny_DistMatrix");
                 awm->close_sub_menu();
 
-                awm->insert_sub_menu(0, "Maximum parisimony methods", "p");
+                awm->insert_sub_menu(0, "Maximum Parsimony methods", "P");
                 GDE_load_menu(awm,"Phylogeny_MaxParsimony");
                 awm->close_sub_menu();
 
-                awm->insert_sub_menu(0, "Maximum likelyhood methods", "l");
+                awm->insert_sub_menu(0, "Maximum Likelihood methods", "L");
                 GDE_load_menu(awm,"Phylogeny_MaxLikelyhood");
                 awm->close_sub_menu();
 
