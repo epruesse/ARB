@@ -547,6 +547,7 @@ ARCHS = \
 			EISPACK/EISPACK.a \
 			GDE/GDE.a \
 			GENOM/GENOM.a \
+			GENOM_IMPORT/GENOM_IMPORT.a \
 			ISLAND_HOPPING/ISLAND_HOPPING.a \
 			MERGE/MERGE.a \
 			MULTI_PROBE/MULTI_PROBE.a \
@@ -922,7 +923,7 @@ ARCHS_ARBDB_COMPRESS = \
 
 $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) ARBDB_COMPRESS/ARBDB_COMPRESS.a -lARBDB
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ARBDB_COMPRESS) -lARBDB
 
 #***********************************	OTHER EXECUTABLES   ********************************************
 
@@ -1133,7 +1134,8 @@ test:	$(TEST)
 demo:	$(AWDEMO)
 
 e4:		$(EDIT4)
-gp: 		$(GENE_PROBE)
+gp:		$(GENE_PROBE)
+gi:		GENOM_IMPORT/GENOM_IMPORT.dummy
 we:		$(WETC)
 eb:		$(EDITDB)
 
@@ -1312,7 +1314,7 @@ rmbak:
 	-print -exec rm {} \;
 
 bclean:
-	@echo Cleaning bin directory 
+	@echo Cleaning bin directory
 	find bin -type l -exec rm {} \;
 	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS*" \) -exec rm {} \;
 	cd bin;make all
