@@ -105,9 +105,9 @@ public String conductRequest(String url_rest)
         }
     }
 
-public String retrieveNodeInformation(String nodePath)
+public String retrieveNodeInformation(String nodePath, boolean onlyExact)
     {
-        String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all");
+        String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all&exact="+(onlyExact ? "1" : "0"));
         if (probes == null) {
             System.out.println("Warning: no answer from Server ("+getLastRequestError()+")");
         }
