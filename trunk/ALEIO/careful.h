@@ -30,7 +30,7 @@ extern void check_file (FILE *f, char *filename, char *op);
 /* If NAME is null, return DEFALT.
    If NAME is non-null, try to open it with MODE; print an error message
    and exit if this doesn't succeed.  */
-extern FILE *careful_open (char *NAME, char *MODE, FILE *DEFALT);
+extern FILE *careful_open (const char *name, const char *mode, FILE *defalt);
 
 
 /* If F is neither stdin nor stdout, close it.
