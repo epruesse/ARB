@@ -2,8 +2,13 @@
 #define MAX_TRY 10
 
 // Live time of a name server in milliseconds:
-// 10 minutes
-#define TIME_OUT (1000*60*10)
+#if defined(DEBUG)
+// debug: 30 seconds 
+#define TIME_OUT (1000*30)
+#else
+// release: 4 minutes
+#define TIME_OUT (1000*60*4)
+#endif // DEBUG
 
 struct Hs_struct;
 struct AN_gl_struct {
