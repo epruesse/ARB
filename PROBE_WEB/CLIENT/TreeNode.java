@@ -87,7 +87,11 @@ public class TreeNode
     public TreeNode getRootOfMarked() {
         if (markedState() == 0)
             return null;
-        
+
+        if (isLeaf()) {
+            return markedState() == 0 ? null : this; // single marked species
+        }
+
         if (upperSon().markedState() != 0) {
             if (lowerSon().markedState() != 0) {
                 return this;
@@ -130,8 +134,6 @@ public class TreeNode
         totalDist = distance + td;
         if (isLeaf == true) return totalDist;
 
-        //         double d1 = ((TreeNode)this.getChilds().elementAt(0)).calculateTotalDist(totalDist);
-        //         double d2 = ((TreeNode)this.getChilds().elementAt(1)).calculateTotalDist(totalDist);
         double d1 = upperSon().calculateTotalDist(totalDist);
         double d2 = lowerSon().calculateTotalDist(totalDist);
 
@@ -249,18 +251,11 @@ public class TreeNode
         }
 
         if (noOfChildren == -1) {   // not calculated yet
-            //             noOfChildren =
-            //                 ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() +
-            //                 ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
-
             noOfChildren = upperSon().getNoOfLeaves()+lowerSon().getNoOfLeaves();
         }
 
         return noOfChildren;
     }
-
-
-//     public Vector getChilds() { return childNodes; }
 
     public boolean isLeaf() { return isLeaf; }
     public void setLeaf(boolean l) { isLeaf = l; }
@@ -271,20 +266,7 @@ public class TreeNode
     public int getXOffset(){ return xOffset; }
     public int getYOffset(){ return yOffset; }
 
-
-    // not used yet
-
-//     public double getMaxDepth()
-//     {
-//         return isLeaf()
-//             ? getTotalDist()
-//             : (((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist()
-//                ? ((TreeNode)getChilds().elementAt(0)).getMaxDepth()
-//                : ((TreeNode)getChilds().elementAt(1)).getMaxDepth());
-//     }
-
-    public boolean setMarked(int marker)
-    {
+    public boolean setMarked(int marker) {
         if (marker == marked) return false;
 
         marked = marker;
@@ -376,8 +358,9 @@ public class TreeNode
         return marks_changed;
     }
 
-    public boolean markSubtree(boolean unmarkRest)
-    {
+    public boolean markSubtree(boolean unmarkRest) {
+        // also used to mark single species
+
         boolean marks_changed = markSubtree_rek(true);
         marks_changed         = propagateMarkUpwards() || marks_changed;
         if (unmarkRest) {
@@ -409,21 +392,44 @@ public class TreeNode
 
             TreeNode ref  = (TreeNode)hm.get(speciesName);
             marks_changed = ref.markSubtree(false) || marks_changed;
-            // System.out.println("markSpecies (marked '"+speciesName+"')");
         }
 
         return marks_changed;
     }
 
+    public int searchAndMark(String text, boolean ignoreCase) {
+        // if ignoreCase == true, text has to be in lower case!
+        if (isLeaf()) {
+            boolean found = false;
+            String  search;
 
-    public void setPath(String path)
-    {
+            search = ignoreCase ? getFullName().toLowerCase() : getFullName();
+            if (search.indexOf(text)!= -1) {
+                found = true;
+            }
+            if (!found) {
+                search = ignoreCase ? getAccessionNumber().toLowerCase() : getAccessionNumber();
+                if (search.indexOf(text) != -1) {
+                    found = true;
+                }
+            }
+
+            if (found) {
+                if (marked == 0) markSubtree(false);
+                return 1;
+            }
+            if (marked == 2) unmarkSubtree();
+            return 0;
+        }
+        return
+            upperSon().searchAndMark(text, ignoreCase) +
+            lowerSon().searchAndMark(text, ignoreCase);
+    }
+
+    public void setPath(String path) throws Exception {
         binaryPath = path;
         codedPath  = encodePath(binaryPath);
         if (!isLeaf()) {
-            //             ((TreeNode)childNodes.elementAt(0)).setPath(binaryPath + "0");
-            //             ((TreeNode)childNodes.elementAt(1)).setPath(binaryPath + "1");
-
             upperSon().setPath(binaryPath + "0");
             lowerSon().setPath(binaryPath + "1");
         }
@@ -436,8 +442,7 @@ public class TreeNode
     // NOTE: if you change encodePath() please keep encodePath/decodePath()
     //       in ./PROBE_SERVER/WORKER/psw_main.cxx up-to-date
 
-    private String encodePath(String path)
-    {
+    private String encodePath(String path) throws Exception {
         StringBuffer coded = new StringBuffer();
         int pathLength = path.length();
 
@@ -452,47 +457,27 @@ public class TreeNode
 
         int value = 0;
         int position;
-        for (position = 0; position < path.length(); position++ )
-        {
-            //                System.out.println(path.charAt(position));
-            if (path.charAt(position) == '1')
-            {
-                // value = value + (3 - (position%4))*2;
-                switch (position%4)
-                {
-                    case 0:
-                        value += 8;
-                        break;
-                    case 1:
-                        value += 4;
-                        break;
-                    case 2:
-                        value += 2;
-                        break;
-                    case 3:
-                        value += 1;
-                        break;
+        for (position = 0; position < path.length(); position++ ) {
+            if (path.charAt(position) == '1') {
+                switch (position%4) {
+                    case 0: value += 8; break;
+                    case 1: value += 4; break;
+                    case 2: value += 2; break;
+                    case 3: value += 1; break;
                     default:
-                        System.out.println("Error in binary string conversion");
+                        Toolkit.InternalError("logical error in encodePath");
                 }
 
             };
-            //              System.out.println(value);
-            if ((position%4) == 3)
-            {
-                //                         System.out.println(value);
-                //                         System.out.println(hexToken[value]);
+            if ((position%4) == 3) {
                 coded.append(hexToken[value]);
                 value = 0;
             }
-
         }
 
-        //        System.out.println(hexToken[value]);
         if ((position%4) != 0) {
             coded.append(hexToken[value]);
         }
-        //                System.out.println("am Ende: " + binary);
         return coded.toString();
     }
 
@@ -585,34 +570,6 @@ public class TreeNode
         return false;
     }
 
-//     public void smartFold() {
-//         if (foldUnmarked(false)) {
-//             System.out.println("folded unmarked");
-//         }
-//         else if (foldCompleteMarked(false)) {
-//             System.out.println("folded fully marked");
-//         }
-//         else if (foldPartiallyMarked(false)) {
-//             System.out.println("folded partially marked");
-//         }
-//         else {
-//             System.out.println("folded NOTHING");
-//         }
-//     }
-//     public void smartUnfold() {
-//         if (unfoldPartiallyMarked(true)) {
-//             System.out.println("unfolded partially marked");
-//         }
-//         else if (unfoldCompleteMarked(true)) {
-//             System.out.println("unfolded fully marked");
-//         }
-//         else if (unfoldUnmarked(true)) {
-//             System.out.println("unfolded unmarked");
-//         }
-//         else {
-//             System.out.println("unfolded NOTHING");
-//         }
-//     }
     public boolean smartFold() {
         return foldUnmarked(false) || foldCompleteMarked(false) || foldPartiallyMarked(false); // step-by-step folding
     }
