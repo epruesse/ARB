@@ -238,7 +238,7 @@ char *aisc_client_get_hostname(void){
     return hn;
 }
 
-const char *aisc_client_get_m_id(char *path, char **m_name, int *id) {
+const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     char           *p;
     char           *mn;
     int             i;
@@ -287,7 +287,7 @@ const char *aisc_client_get_m_id(char *path, char **m_name, int *id) {
     return 0;
 }
 
-const char *aisc_client_open_socket(char *path, int delay, int do_connect, int *psocket, char **unix_name) {
+const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
     char            buffer[128];
     struct in_addr  addr;	/* union -> u_long  */
     struct hostent *he;
@@ -393,7 +393,7 @@ void *aisc_init_client( aisc_com *link )
     return (void *)aisc_mes_buffer[0];
 }
 
-aisc_com *aisc_open(char *path,long *mgr, long magic)
+aisc_com *aisc_open(const char *path,long *mgr, long magic)
 {
     aisc_com *link;
     const char *err;
