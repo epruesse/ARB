@@ -31,9 +31,9 @@
 #define FONT_EXAMINE_MAX   500
 #define KNOWN_ISO_VERSIONS 3
 
-#if !defined(DEBUG) || defined(DEVEL_RALF)
+#if defined(DEBUG) || defined(DEVEL_RALF)
 // #warning font debugging is activ in release
-// #define DUMP_FONT_LOOKUP
+#define DUMP_FONT_LOOKUP
 // #define DUMP_FONT_DETAILS
 #endif // DEBUG
 
@@ -383,10 +383,15 @@ static void dumpFontInformation(struct xfont *xf) {
  * close in size to "s"
  */
 
-static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose)
+static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose, bool only_query, PIX_FONT *fontstPtr)
+// returns true if appropriate font is available.
+// 
+// 'found_size' is set to the actually found size, which may be bigger or smaller than 's', if the requested size is not available
+// 
+// if 'only_query' is true, then only report availability
+// if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
-    PIX_FONT      fontst = 0;
-    char          fn[128];      memset(fn,0,128);
+    // char          fn[128];      memset(fn,0,128);
     AW_BOOL       found;
     struct xfont *newfont, *nf, *oldnf;
 
@@ -409,86 +414,126 @@ static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool ve
     if (!nf) nf = x_fontinfo[0].xfontlist;
     oldnf = nf;
     if (nf != NULL) {
-        if (nf->size > s && !appres.SCALABLEFONTS)
+        if (nf->size > s && !appres.SCALABLEFONTS) {
             found = AW_TRUE;
-        else while (nf != NULL){
-            if (nf->size == s ||
-                (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s )))
-            {
-                found = AW_TRUE;
-                break;
+        }
+        else {
+            while (nf != NULL) {
+                if (nf->size == s ||
+                    (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s )))
+                {
+                    found = AW_TRUE;
+                    break;
+                }
+                oldnf = nf;
+                nf = nf->next;
             }
-            oldnf = nf;
-            nf = nf->next;
         }
     }
     if (found) {                /* found exact size (or only larger available) */
-        strcpy(fn,nf->fname);  /* put the name in fn */
+        // strcpy(fn,nf->fname);  /* put the name in fn */
         if (verboose) {
-            if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n",s,nf->size);
-            if (appres.debug) fprintf(stderr, "Located font %s\n", fn);
+            if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n", s, nf->size);
+            if (appres.debug) fprintf(stderr, "Detected font %s\n", nf->fname);
         }
     }
     else if (!appres.SCALABLEFONTS) { /* not found, use largest available */
         nf = oldnf;
-        strcpy(fn,nf->fname);           /* put the name in fn */
+        // strcpy(fn,nf->fname);           /* put the name in fn */
         if (verboose) {
-            if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n",s,nf->size);
-            if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", fn, s);
+            if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n", s, nf->size);
+            if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
         }
     }
     else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
         newfont = (struct xfont *) malloc(sizeof(struct xfont));
         /* add it on to the end of the list */
 
+        nf = oldnf->next;
+
         if (x_fontinfo[f].xfontlist == NULL) x_fontinfo[f].xfontlist = newfont;
         else oldnf->next                                             = newfont;
 
-        nf          = newfont;  /* keep current ptr */
-        nf->size    = s;        /* store the size here */
-        nf->fstruct = NULL;
-        nf->next    = NULL;
+        newfont->next    = nf; // old successor in fontlist
+        newfont->size    = s;
+        newfont->fstruct = NULL;
+        newfont->fname   = NULL;
+
+        nf = newfont;
 
         if (openwinfonts) {
             /* OpenWindows fonts, create font name like times-roman-13 */
-            sprintf(fn, "%s-%d", x_fontinfo[f].templat, s);
+
+            nf->fname = GBS_global_string_copy("%s-%d", x_fontinfo[f].templat, s);
+            // sprintf(fn, "%s-%d", x_fontinfo[f].templat, s);
         }
         else {
             // X11 fonts, create a full XLFD font name
             // attach pointsize to font name, use the pixel field instead of points in the fontname so that the
             // font scales with screen size
-            aw_assert(!fontst);
-            for (int iso = 0; !fontst && iso<KNOWN_ISO_VERSIONS; ++iso) {
-                sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
+
+            for (int iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) {
+                char *fontname = GBS_global_string_copy("%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
+                // sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
 #if defined(DUMP_FONT_LOOKUP)
-                fprintf(stderr, "Checking for '%s' (x_fontinfo[%i].templat='%s')\n", fn, f, x_fontinfo[f].templat);
+                fprintf(stderr, "Checking for '%s' (x_fontinfo[%i].templat='%s')\n", fontname, f, x_fontinfo[f].templat);
 #endif
-                fontst = XLoadQueryFont(tool_d, fn);
+
+                // PIX_FONT fontst = XQueryFont(tool_d, fontname);
+                // PIX_FONT fontst = XLoadQueryFont(tool_d, fontname); // @@@ why loaded here and not below (at least use XQueryFont instead!)
+
+                int    matching_fonts_found;
+                char **matching_fonts = XListFonts(tool_d, fontname, 1, &matching_fonts_found);
+
+                if (matching_fonts) {
+                    XFreeFontNames(matching_fonts);
+                    aw_assert(matching_fonts_found >= 1);
+                    nf->fname = fontname;
+                    break;
+                }
+
+//                 if (fontst) {
+//                     XFreeFontInfo(fontst); // only did query -- loading done below
+//                     // nf->fstruct = fontst;
+//                     nf->fname      = fontname;
+//                     break;
+//                 }
+                free(fontname);
             }
+            // @@@ what if nf->fstruct is 0 now ? 
         }
-        /* allocate space for the name and put it in the structure */
-        nf->fname = strdup(fn);
+
+        aw_assert(nf->fname);
     } /* scalable */
 
-    if (nf->fstruct == NULL) {
-        if (appres.debug && verboose) fprintf(stderr, "Loading font '%s'\n", fn);
-        fontst = XLoadQueryFont(tool_d, fn);
-        if (fontst == NULL) {
-            fprintf(stderr, "ARB fontpackage: Can't load font '%s' ?!, using '%s' (f=%i, s=%i)\n", fn, NORMAL_FONT, f, s);
-            fontst = XLoadQueryFont(tool_d, NORMAL_FONT);
-            nf->fname = strdup(NORMAL_FONT);    /* keep actual name */
-        }
-        /* put the structure in the list */
-        nf->fstruct = fontst;
-    }
+    bool font_found = true;
 
-    found_size = nf->size; // report used size
+    if (nf->fstruct == NULL) {
+        if (only_query) {
+            ; // assume its available (or use XQueryFont to reduce server-client bandwidth)
+        }
+        else {
+            if (appres.debug && verboose) fprintf(stderr, "Loading font '%s'\n", nf->fname);
+            PIX_FONT fontst = XLoadQueryFont(tool_d, nf->fname);
+            if (fontst == NULL) {
+                fprintf(stderr, "ARB fontpackage: Unexpectedly couldn't load font '%s', falling back to '%s' (f=%i, s=%i)\n", nf->fname, NORMAL_FONT, f, s);
+                fontst = XLoadQueryFont(tool_d, NORMAL_FONT); // @@@ may return 0!
+                free(nf->fname);
+                nf->fname = strdup(NORMAL_FONT);    /* store actual name */
+            }
+            /* put the structure in the list */
+            nf->fstruct = fontst;
+        }
+    }
 
 #if defined(DUMP_FONT_DETAILS)
     dumpFontInformation(nf);
 #endif // DEBUG
 
-    return (nf->fstruct);
+    found_size = nf->size;      // report used size
+    *fontstPtr = nf->fstruct;
+
+    return font_found;
 }
 
 static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes) {
@@ -497,8 +542,11 @@ static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes)
 
     int size_count = 0;
     for (int size = MAX_FONTSIZE; size >= MIN_FONTSIZE; --size) {
-        int found_size;
-        lookfont(tool_d, f, size, found_size, false);
+        int      found_size;
+        PIX_FONT fontst;
+        bool     was_found = lookfont(tool_d, f, size, found_size, false, true, &fontst);
+
+        aw_assert(was_found); // because lookfont does fallback
 
         if (found_size<size) size = found_size;
         if (found_size == size) available_sizes[size_count++] = size;
@@ -673,8 +721,10 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     XFontStruct *xfs;
 
     {
-        int found_font_size;
-        xfs = lookfont(common->display, font_nr, size, found_font_size, true);
+        int  found_font_size;
+        bool was_found = lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs);
+        aw_assert(was_found); // because lookfont does fallback
+
         if (found_size) *found_size = found_font_size;
     }
     XSetFont(common->display, gc, xfs->fid);
