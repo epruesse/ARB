@@ -13,8 +13,9 @@ DESCRIPTION
 
         There are two versions of ARB help:
 
-              - an HTML version (in lib/help_html)
-              - an embedded version (press any 'HELP' button inside ARB)
+              - an HTML version which is located in $ARBHOME/lib/help_html. It's also availiable via LINK{http://www.arb-home.de/help_html/arb.html}.
+                Please note this version may be more recent than your ARB version!
+              - an embedded, context-sensitive version (press any 'HELP' button inside ARB)
 
     The following is about the embedded help module:
 
@@ -54,11 +55,10 @@ DESCRIPTION
 
 		"Left mouse button" is used exclusively for clicking on prompts,
 			checkboxes and buttoms.
-			!!! Exception: current version of 'ARB_PHYL' (see 'HELP:
-				Matrices, Masks, Profiles V1.0.!!!
+			!!! Exception: current version of 'ARB_PHYL' (see LINK{phyl.hlp})
 
 		"Middle and right mouse buttons" are used for modifying the tree
-			display (see "HELP: MODES')
+			display (see LINK{mode.hlp})
 
 		"Press" means hold down the mous button while completeing an
 			operation.
@@ -108,7 +108,7 @@ DESCRIPTION
 				ghostview.
 
 NOTES		The 'HELP' texts for foreign programs or tools which have been
-		incorporated into ARB (see 'HELP: ARB') are usually (parts of)
+		incorporated into ARB (see LINK{arb.hlp}) are usually (parts of)
 		the original documentation or help texts.
 
 		The ASCII texts can be edited by clicking on the <EDIT> button

@@ -21,7 +21,7 @@ OCCURRENCE	ARB_NT/Species/Search/More Functions/Modify fields of listed
 DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 		all listed species/genes. The entries within the selected
 		fields of all listed species/genes can be modified either
-		individually or	globally. 
+		individually or	globally.
 
 		Three different languages can be used to modify an entry:
 
@@ -31,39 +31,49 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 
 	Details:
 
-		REG:	Simple Regular Expressions (not for beginners)
-			'/Seach RegExpr/Replace String/' or
+		REG: Simple Regular Expressions (not for beginners)
+
+			'/Seach RegExpr/Replace String/'  or
 			'/Seach RegExpr/'
-			(see REG-help text for more details)
+			(see LINK{regexpr.hlp} for more details)
 
-		SRT:	Replaces substrings
-			Syntax:	':old_string=new_string'
-			see SRT help text for more details
-			example: remove all spaces -> SRT ': ='
+		SRT: Replaces substrings
 
-			Different search/replace commands can be performed 
+                        Syntax: ':old_string=new_string' (see LINK{parser.hlp} for more details)
+
+                        Example: remove all spaces with SRT ': ='
+
+			Different search/replace commands can be performed
 			simultanously and have to be seperated by ':'
-			':search1=replace1:search2=replace2: ... :searchn=replacen'.
+
+                                      ':search1=replace1:search2=replace2:  ...  :searchn=replacen'.
 
 			* and ? are wild cards for multiple and single
-			  characters, respectively.
+                        characters, respectively.
 
-		ACI:	More sophisticated string manipulations
-			( Read help text for more information)
-		
+		ACI: More sophisticated string manipulations
+
+                     Read LINK{commands.hlp} for more information.
+
 
 NOTES		You may add new commands by editing one of the files:
+
 			$ARBHOME/lib/sellists/mod_fields.sellst
+
 			$ARBHOME/lib/sellists/mod_gene_fields.sellst
+
 		You should save this file to another location when
-		installing new versions of ARB.
+		installing new versions of ARB or it will be overwritten.
 
 		A better way is to create your own list(s). All list
-		matching 'mod_fields*.sellst' will be loaded, where 
+		matching 'mod_fields*.sellst' will be loaded, where
 		'mod_fields.sellst' is loaded.
 
+                If you have created any scripts which might be useful for
+                other ARB users send them to LINK{arb@arb-home.de}.
+
 EXAMPLES	':p?r=p?1w'	replaces 	par to paw
-						pbr to pbw 
+						pbr to pbw
 						pcr to pcw ...
 		':p??r=p?2?1r'	swaps the two letters between p and r
 
@@ -80,18 +90,18 @@ EXAMPLES	':p?r=p?1w'	replaces 	par to paw
 		1. Global modification: Replace 'spec.' by 'sp.' within
 			the field full_name of all listed species:
 
-			Press:		'MODIFY FIELDS OD LISTED SPECIES'
+			Press:		'MODIFY FIELDS OF LISTED SPECIES'
 
 			Select Field:	'full_name'
 			Type Command:	':spec.=sp.'
 			Press:		'GO'
 
-		2. Individual modification: Append the particular entries 
-			of fields 'title' and 'journal' to that of the 
+		2. Individual modification: Append the particular entries
+			of fields 'title' and 'journal' to that of the
 			fields 'author' of all listed species if there
 			are any entries:
 
-			Press:		'MODIFY FIELDS OD LISTED SPECIES'
+			Press:		'MODIFY FIELDS OF LISTED SPECIES'
 
 			Select Field:	'author'
 			Type Command:	':*=*1 *(title) *(journal)'

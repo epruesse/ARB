@@ -11,10 +11,11 @@ SUB	arb_commands.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		How to fix an 'exec' problem ?
 
-OCCURRENCE	NDS + ACI 	exec - command
+OCCURRENCE	NDS + ACI exec - command
 
 DESCRIPTION	If you use the exec command in the NDS window then
 		you might have to wait extremely long:
+
 			number of species *
 			execution time of the command
 			(5000 species, 1.5 sec/exec) -> 2 hour waiting.

@@ -37,38 +37,38 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 
 		File:		Save the database, export and import data.
 
+		Species:	Display, create, rename, delete, convert
+				'species' (see LINK{glossary.hlp}) associated
+				'field' (see LINK{glossary.hlp}) entries;
+				Database searching;
+				Automated renaming of 'species'
+				Mark and unmark (see LINK{glossary.hlp})
+
+		Sequence:	Create, copy, delete, rename, check, modify
+				'alignments' (see LINK{glossary.hlp});
+				Translate sequences, realign DNA according to
+				translated amino acid sequences;
+				Edit sequences and 'SAI' (see LINK{glossary.hlp}).
+
+		SAI:		Copy, delete, rename, convert Sequence
+				Associated Information;
+				Calculate consensus and positional variability
+
+                Probes:         Probe and Primer design and matching
+				Handle 'PT_SERVER' (see LINK{glossary.hlp});
+
 		Tree:		Copy, delete, import, export, print trees;
 				Modify tree display;
 				Calculate similarity/distance matrices,
 				profiles, filters;
 				Reconstruct phylogenetic trees.
 
-		Sequence:	Create, copy, delete, rename, check, modify
-				'alignments' (see 'HELP: Glossary');
-				Translate sequences, realign DNA according to
-				translated amino acid sequences;
-				Edit sequences and 'SAI' (see 'HELP: Glossary').
-
-		SAI:		Copy, delete, rename, convert Sequence
-				Associated Information;
-				Calculate consensus and positional variability
-
-		Species:	Display, create, rename, delete, convert
-				'species' (see 'HELP: Glossary') associated
-				'field' (see 'HELP: Glossary') entries;
-				Database searching;
-				Automated renaming of 'species'
-				Mark and unmark (see 'HELP: Glossary')
-
 		Properties:	Customize display of windows, trees and data.
 				To save the settings choose the 'Save Defaults'
 				item from the 'File' menu.
 
-		ETC:		A collection of different functions
-				Reset tree display;
-				Designing and checking probes;
-				Handle 'PT_SERVER' (see 'HELP: Glossary');
-				Use external programs via GDE
+		ETC:		A collection of different functions.
+				Use external programs via GDE.
 
 
 	The buttons of the area between the main menu bar and the tree display
@@ -82,12 +82,11 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 					displayed.
 
 		Third large button:	Indicates the name of the current
-					'alignment' (subdatabase;  see 'HELP:
-					Glossary') and allows switching to
-					another 'Alignment.
+					'alignment' (subdatabase; see LINK{glossary.hlp})
+                                        and allows switching to another 'Alignment.
 
 		Fourth large button:	Displays the name of the selected
-					'species' (see 'HELP: Glosssary') and
+					'species' (see LINK{glossary.hlp}) and
 					provides access to the database search
 					tools.
 
@@ -105,7 +104,7 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 		Jump button:		Displays partial tree within the tree
 					display area of the 'ARB_NT' window
 					containing the selected 'species' (see
-					'HELP: Glosssary')
+					LINK{glossary.hlp})
 
 	The buttons of the first column of the 'ARB_NT' window are used to
         select different modes for editing and modifying the current tree shown
@@ -113,7 +112,7 @@ DESCRIPTION	'ARB_NT' is the main window for the current ARB database and
 
 
 NOTES		Online help is available for all menu items and buttons (see
-		'HELP: How to Use Help').
+		LINK{help.hlp}).
 
 EXAMPLES	None
 
@@ -121,4 +120,4 @@ WARNINGS	None
 
 BUGS		Report any bugs:
 
-                       send bug report to devel@arb-home.de
+                       send bug report to LINK{devel@arb-home.de}

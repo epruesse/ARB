@@ -35,18 +35,25 @@ NOTES		A suffix typed or displayed in the 'Suffix' subwindow is used as
 		a filter for the file names to be displayed in the 'Existing
 		Files and Directories' subwindow.
 
-		'ARB' databases stored in any directory with read and write
-		permission can be opened starting 'ARB' from the current
+                If you want to load a specified ARB quick-save file, remove the
+                suffix and select the wanted file.
+
+		ARB databases stored in any directory with read and write
+		permission can be opened starting 'arb' from the current
 		directory. Find the path by sucessively selecting the
 		corresponding directories from the 'Existing Files and
 		Directories' subwindow.
 
-		!!! The suffix of 'ARB' database files has to be '.arb'.!!!	
+                You might also specify the name of a database or just a directory
+                in the command line.
 
-		Command line: type 'arb_ntree --help' to see command line help
+		Details can be found in the command line help.
+                Goto a shell and type
+
+                        arb_ntree --help
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	!!! The suffix of 'ARB' database files has to be '.arb'.!!!
 
 BUGS		No bugs known

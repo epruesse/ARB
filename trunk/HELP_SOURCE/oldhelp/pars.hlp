@@ -35,11 +35,11 @@ DESCRIPTION	In this release, 'ARB Parsimony' cannot be used to reconstruct
 
 		- Select the tree (to be modified) from the 'Tree:' subwindow.
 
-		- Select an 'alignment' (see 'HELP: Glossary') from the
+		- Select an 'alignment' (see LINK{glossary.hlp}) from the
                   'alignment:' subwindow.
 
 		- To select a filter display the 'Select Filter' window pressing
-                  the button after the 'Filter:' prompt (see 'HELP: Select Filter').
+                  the button after the 'Filter:' prompt (see LINK{sel_fil.hlp}).
 
 		- Press the <GO> button to display the 'ARB_PARSIMONY' window.
 

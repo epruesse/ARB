@@ -20,3 +20,8 @@ DESCRIPTION	Different alignments assigned to the same species (eg. sequences
 		a species, but in the subfield 'data' of 'ali_*'
 		'ali_*' is a container field: it holds no data
 		except other data fields (like a directory in a file system).
+
+NOTE            There is a special alignment called 'ali_genom' which is used
+                for full genome databases.
+                It's called an alignment because it fits into our database structure,
+                but it should NOT contain any gaps.

@@ -13,10 +13,9 @@ TITLE		Export NDS List
 
 OCCURRENCE	ARB_NT/File/Export NDS List
 
-DESCRIPTION	Writes 'field' (see 'HELP: Glossary') entries and other
-		information specified using the 'NDS' tool (see 'HELP: Node
-		Display Setup NDS') of 'marked species' (see 'HELP: Glossary')
-		to an ascii file.
+DESCRIPTION	Writes 'field' (see LINK{glossary.hlp}) entries and other
+		information specified using the 'NDS' tool (see LINK{props_nds.hlp})
+                of 'marked species' (see LINK{glossary.hlp}) to an ascii file.
 
 		Choose the 'Export NDS List' option from the 'File' menu to
                 display the 'EXPORT NDS OF MARKED SPECIES' window.

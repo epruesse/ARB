@@ -21,40 +21,42 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                     LD_LIBRARY_PATH
 
-                        path to system libraries (should contain /usr/arb/lib)
+                        path to system libraries (should contain $ARBHOME/lib (i.e. /usr/arb/lib if $ARBHOME is /usr/arb)).
+                        Set by the 'arb' script.
+
 
                     ARB_TEXTEDIT
 
-                        The name of the editor you like to use when editing files via ARB
-                        (default: textedit )
+                        The name of the editor you like to use when editing textlike files via ARB
+                        (default: textedit)
 
                     ARB_XTERM
 
-                            The call needed to create a normal xterm
+                            The call which is needed to create a normal xterm
                             (default: xterm -sl 1000 -sb -geometry 120x40 )
 
                     ARB_XCMD
 
-                            The call needed to create a xterm invoking external programs
-                            (default: xterm -sl 1000 -sb -geometry 140x30 -e )
+                            The call which is needed to create a xterm invoking external programs
+                            (default: xterm -sl 1000 -sb -geometry 140x30 -e ).
 
                     USER
 
-                            your username
+                            your username (normally set by shell)
 
                     ARB_PID
 
-                            (internal) PID for communication
+                            internal PID for communication (set by the 'arb' script)
 
                     ARBMACROHOME
 
                             directory name where your ARB-macros will be saved to/loaded from
-                            (default: $(ARBHOME)/lib/macros )
+                            (default: $ARBHOME/lib/macros )
 
                     ARB_GS
 
                             name of postscript viewer used by ARB
-                            (default: ghostview)
+                            (default: gv)
 
                     ARB_WORKDIR
 
@@ -64,14 +66,14 @@ DESCRIPTION     Arb is aware of several environment variables:
                     ARB_DOC
 
                             directory where ARB searches for *.ps or *.ps.gz
-                            (default: $(ARBHOME)/lib/help)
+                            (default: $ARBHOME/lib/help)
 
 NOTES		Short description of how to set an environment variable:
 
                         1. for bash users (add to .bashrc):
 
                            ARB_GS='gv'
-                           export ARB_GS
+                           export  ARB_GS
 
                         2. for tcsh users (add to .cshrc):
 

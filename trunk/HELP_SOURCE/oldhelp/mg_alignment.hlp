@@ -11,8 +11,8 @@ TITLE		Check and modify the consistency of two alignments
 OCCURRENCE	ARB_INTRO/MERGE TWO DATABASES <Check Consistency of Alignments>
 		button
 
-DESCRIPTION	Checks the types of data stored within 'alignments' (see 'HELP:
-		Glossary') for consistency to prevent merging of non homologous
+DESCRIPTION	Checks the types of data stored within 'alignments' (see LINK{glossary.hlp})
+                for consistency to prevent merging of non homologous
 		data such as 16S and 23S rRNA or protein and DNA sequence data.
 
 		Press the 'Check Consistency of Alignments' button to display
@@ -26,11 +26,11 @@ NOTES		If any alignment exists only in database I then the alignment
 		copied).
 
 		If the alignment exists in both databases then the sequence_type
-		will be compared 
+		will be compared
 
 		If any inconsistencies are detected the user has to resolve them
 		by pressing the 'MODIFY' button to display the 'ALIGNMENT
-		CONTROL' window. This tool allows to modify the alignments.	
+		CONTROL' window. This tool allows to modify the alignments.
 
 
 

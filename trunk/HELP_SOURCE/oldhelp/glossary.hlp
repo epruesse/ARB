@@ -25,12 +25,14 @@ SECTION         What do we mean if we talk about ...
         ALIGNMENT
 
                         Subdatabase containing homologous sequences (different
-        		'alignments' can be stored along with the species information)
+        		'alignments' can be stored along with the species information).
+                        See LINK{alignment.hlp} for more information.
 
         ACI
 
                         ARB Command Interpreter. ACI is a simple programing language
         		for calculating special species information (eg. G+C Content..)
+                        See LINK{commands.hlp}.
 
         EDGE
 
@@ -44,10 +46,17 @@ SECTION         What do we mean if we talk about ...
 
                         Marking of 'species' defines the datasubset which is analyzed
                         by the ARB tools.
+                        See LINK{mark.hlp}.
 
         NAMES
 
-                        Identifier for 'species' entries. Can be automatically generated
+                        There are two kinds of name fields (for species, genes, etc.).
+
+                              - name        Identifier for 'species' entries.
+                                            Should be generated automatically using
+                                            the name server.
+
+                              - full_name   User defined full name of the species,...
 
         NDS
 

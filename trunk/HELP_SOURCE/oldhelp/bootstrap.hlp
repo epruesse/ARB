@@ -21,6 +21,7 @@ DESCRIPTION	Read Notes also !!!!!
 		the branch is correct.
 
 NOTES		****************** IMPORTANT NOTES *********************
+
 		This program will NEVER end unless you stop it by pressing
 		kill.If you get a question whether to wait or kill after
 		pressing the kill button, press wait !!!!
@@ -28,6 +29,7 @@ NOTES		****************** IMPORTANT NOTES *********************
 		if you think enough samples have been calculated.
 
 		****************** MORE IMPORTANT NOTES *********************
+
 		The output tree is a consensus partial tree. Species and
 		subgroups which wander around in the input trees
 		are not shown in the output tree.

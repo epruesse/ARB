@@ -93,8 +93,7 @@ DESCRIPTION	Allows to select the 'PT_SERVER' and its database, to customize
 				   includes the reference sequence.
 
 		Press the 'EXPERT' button to display the 'PD SPECIAL' window if
-			base pairings should be individually weighted (see 'HELP:
-			Weighting of Base Pairings).
+			base pairings should be individually weighted (see LINK{pd_spec_param.hlp}).
 
 		Press the 'GO' button to start the calculations.
 

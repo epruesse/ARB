@@ -12,7 +12,7 @@ TITLE		Add Selected Species
 
 OCCURRENCE	ARB_NT/Tree/Parsimony/Tree/Add Selected Species
 
-DESCRIPTION	The 'selected species' (see 'HELP: Glossary') is positioned
+DESCRIPTION	The 'selected species' (see LINK{glossary.hlp}) is positioned
 		within the current tree according to maximum parsimony criteria.
 		The current tree topology is not changed.
 
@@ -22,7 +22,7 @@ NOTES		The current parsimony value (number of base changes needed) is
 		while calculating).
 
 		This tool should be used for the positioning of 'species' for
-		which only partial or preliminary sequence data are availble. 	
+		which only partial or preliminary sequence data are availble.
 
 EXAMPLES	None
 

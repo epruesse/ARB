@@ -36,7 +36,7 @@ DESCRIPTION	The 'ARB_Parsimony' and 'ARB_NT' windows are similar. 'ARB_
 		Jump button:		Displays partial tree within the tree
 					display area of the 'ARB_NT' window
 					containing the selected 'species' (see
-					'HELP: Glosssary')
+					LINK{glossary.hlp})
 
 		HELP button:		Displays this help information.
 
@@ -49,7 +49,7 @@ DESCRIPTION	The 'ARB_Parsimony' and 'ARB_NT' windows are similar. 'ARB_
 
 	The values after the 'Current Par' and 'Optimal Par' prompts indicate
         current and optimal parsimony values for the displayed tree
-        while moving subtrees manually (see 'HELP: MOVE MODE')
+        while moving subtrees manually (see LINK{mode_move.hlp})
 
         The program works on the selected tree, it does instantly change
         the database.

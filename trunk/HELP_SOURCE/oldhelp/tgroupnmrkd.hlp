@@ -12,8 +12,8 @@ TITLE		Group All Except Marked
 
 OCCURRENCE	ARB_NT/Tree/Group All Except Marked
 
-DESCRIPTION	Shows the ranking subtrees (groups of species; see 'HELP: GROUPE
-		MODE') of the currently displayed tree which do not contain
+DESCRIPTION	Shows the ranking subtrees (groups of species; see LINK{mode_group.hlp})
+                of the currently displayed tree which do not contain
 		marked species as triangles (radial tree) or rectangles
 		(dendrogram).
 

@@ -52,7 +52,7 @@ DESCRIPTION	Extracts data from the database entries of every species and
 			fields if fields had been deleted from the list
 			[ARB_NT/Species/Info/Delete Fields in List])
 
-		Show field entries assigned to internal nodes: (see 'HELP: Glossary')
+		Show field entries assigned to internal nodes: (see LINK{glossary.hlp})
 
 			Press the 'INH.' (Inherit) checkbox to display information
 			assigned to internal nodes of the tree ('ARB_NT/INFO
@@ -74,17 +74,17 @@ DESCRIPTION	Extracts data from the database entries of every species and
 
 			Press the corresponding <SRT> button to display the
                         'SRT_ACI_SELECT' window and select a procedure
-                        (see 'HELP: Predefined SRT/ACI).
-                        The corresponding syntax (see 'HELP: Search and
-                        Replace Tool' and 'HELP: ARB Command
-                        Interpreter') is displayed in the 'ACI SRT
+                        (see LINK{acisrt.hlp}).
+                        The corresponding syntax (see LINK{parser.hlp}
+                        and LINK{commands.hlp})
+                        is displayed in the 'ACI SRT
                         PROGRAM' subwindow. The displayed strings can be
                         modified by typing to the subwindows.
 
 		Generate new program:
 
-			Type syntax (see 'HELP: Search and Replace Tool' and
-			'HELP: ARB Command Interpreter') to the 'ACI SRT
+			Type syntax (see LINK{parser.hlp} and
+			LINK{commands.hlp}) to the 'ACI SRT
 			PROGRAM' subwindow
 
 

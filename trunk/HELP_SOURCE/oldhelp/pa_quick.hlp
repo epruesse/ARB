@@ -14,7 +14,7 @@ TITLE		Add Marked Species
 
 OCCURRENCE	ARB_NT/Tree/Parsimony/Tree/Add Marked Species
 
-DESCRIPTION	All 'marked species' (see 'HELP: Glossary') are
+DESCRIPTION	All 'marked species' (see LINK{glossary.hlp}) are
 		positioned according to maximum parsimony criteria. The current
 		tree topology is not changed.
 
@@ -24,7 +24,7 @@ NOTES		The current parsimony value (number of base changes needed) is
 		while calculating).
 
 		This tool should be used for the positioning of 'species' for
-		which only partial or preliminary sequence data are availble. 	
+		which only partial or preliminary sequence data are availble.
 
 EXAMPLES	None
 

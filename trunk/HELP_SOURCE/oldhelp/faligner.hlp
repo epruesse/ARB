@@ -25,18 +25,22 @@ DESCRIPTION     Choose the 'Integrated aligners' item from the 'ARB_EDIT/Edit'
                 The following adjustments and features should apply to both aligners.
 
                 We did not test everything yet with island hopper, so some of them are broken.
-                Please mail to devel@arb-home.de if you find something.
+                Please mail to LINK{devel@arb-home.de} if you find something.
 
 
 SECTION         ADJUSTMENTS
 
-                Align		Align selected or all marked sequences.
-				If you type 'Ctrl-A' in the main editor window
-				this option is set to selected species.
+                Align
 
-		Reference	The aligner needs a sequence as reference.
+                                Align selected or all marked sequences.
+                                If you type 'Ctrl-A' in the main editor window
+                                this option is set to selected species.
+
+		Reference
+
+                                The aligner needs a sequence as reference.
 				You can either select a fixed species, the
-				konsensus of the group containing the species
+				consensus of the group containing the species
 				or the next relative found by the selected
 				PT-Server.
 
@@ -47,16 +51,19 @@ SECTION         ADJUSTMENTS
 				relatives will be used. You can define the
 				maximum number of relatives.
 
-		Range		Align only a part or whole sequence.
+		Range
+
+                                Align only a part or whole sequence.
 				If you align only a part of the sequence, then
 				you have to enter the number of columns around
 				the cursor.
 
 				Example: If you align 10 columns around
-					 position 100 then columns 90-110
-					 get aligned.
+                                position 100 then columns 90-110 get aligned.
 
-		Turn check	The aligner is able to detect sequences which
+		Turn check
+
+                                The aligner is able to detect sequences which
 				were entered in the wrong direction. With this
 				switch you can select, if you like the aligner
 				to turn such sequences and if it should ask you.
@@ -68,7 +75,9 @@ SECTION         ADJUSTMENTS
 				do not search Reference via pt_server. In both
 				cases turn checking will be disabled.
 
-		Report 		The aligner can generate reports for the aligned
+		Report
+
+                                The aligner can generate reports for the aligned
 				sequence and for the reference sequence. These
 				reports can be viewed with EDIT4, if you choose
 				File/Load Configuration/DEFAULT_CONFIGURATION
@@ -79,12 +88,14 @@ SECTION         ADJUSTMENTS
 
 				The report for the aligned sequence (ASC) contains
 				the following characters:
-				'-' for matching positions
-				'+' for inserts (in aligned sequence and in
-				    reference sequence)
-				'~' for matching, but not equal bases (A aligned
-				    to G, C aligned to T or U)
-				'#' for mismatching positions
+
+                                    '-' for matching positions
+
+                                    '+' for inserts (in aligned sequence and in reference sequence)
+
+                                    '~' for matching, but not equal bases (A aligned to G, C aligned to T or U)
+
+                                    '#' for mismatching positions
 
 NOTES	 	This aligner knows about and uses all extended base characters
 		(ACGTUMRWSYKVHDN) for the alignment.
@@ -97,10 +108,11 @@ WARNINGS	None
 BUGS		If you select the menu entry 'remove all aligner entries' ARB_EDIT4
 		crashes in most cases.
 
-		Workaround:	1. Close all groups containing species with aligner
-				   entries, so that no aligner entries are visible.
-				2. Remove all aligner entries
-				3. Reload configuration
+		Workaround:
+
+                        1. Close all groups containing species with aligner entries, so that no aligner entries are visible.
+                        2. Remove all aligner entries
+                        3. Reload configuration
 
 
 

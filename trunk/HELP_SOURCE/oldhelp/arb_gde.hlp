@@ -11,11 +11,9 @@ UP	gde.hlp
 
 TITLE		GDE Extended Menu
 
-DESCRIPTION	Provides access to the integrated GDE software []
+DESCRIPTION	Provides access to the integrated GDE software.
 
-		Original description is available by choosing 'GDE Help' from
-			the 'Main Topic' subwindow
-		
+                See LINK{gde.hlp} for original description of GDE.
 
 EXAMPLES	None
 
@@ -23,4 +21,4 @@ WARNINGS	Some of the GDE tools are not available or do not run properly
 		blast/fasta require proberly installed databases
 
 BUGS		No bugs known
-			
+

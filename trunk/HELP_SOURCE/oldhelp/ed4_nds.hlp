@@ -39,8 +39,8 @@ DESCRIPTION	Extracts data from the database entries of every species and builds 
 			every ACI PROGRAM does.
 
 		Generate new ACI program:
-			Type syntax (see 'HELP: Search and Replace Tool' and
-			'HELP: ARB Command Interpreter') to the 'ACI SRT
+			Type syntax (see LINK{parser.hlp} and
+			LINK{commands.hlp}) to the 'ACI SRT
 			PROGRAM' subwindow
 
 		Width:

@@ -6,7 +6,7 @@ UP	glossary.hlp
 SUB	commands.hlp
 SUB	regexpr.hlp
 
-TITLE	SRT     Search and Replace Tool
+TITLE	Search and Replace Tool (SRT)
 
 
 DESCRIPTION	The String Parser is used to search and replace substrings.
@@ -65,9 +65,9 @@ SECTION SPECIAL CHARACTERS
                                 if this field does not exits then the string 'mystring'
 		*(key\:nsrt)    invokes the SRT recursively on the value of the
                                 database field 'key'
-                                NOTE: The ':' have to be 'escaped'
-		*([key]|ACI)    starts the ARB COMMAND INTERPRETER on the
-                                optional value of 'key'
+                                NOTE: All ':' have to be 'escaped'
+		*([key]|ACI)    starts ACI (see LINK{commands.hlp})
+                                on the value of '[key]' (which may be empty).
 
 
 EXAMPLES

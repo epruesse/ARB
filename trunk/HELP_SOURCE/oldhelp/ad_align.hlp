@@ -14,39 +14,40 @@ TITLE		Alignment Administration
 
 OCCURRENCE	ARB_NT/Sequence/Admin
 
-DESCRIPTION	This module allows handling and modification of 'alignments' (see 'HELP:
-		Glossary').
+DESCRIPTION  This module allows handling and modification of 'alignments'
+             (see LINK{glossary.hlp}).
 
 		Select an alignment from the 'Alignments' subwindow
 
-		Define the type of sequences (DNA, RNA, protein): 
+		Define the type of sequences (DNA, RNA, protein):
+
 			Press the <Type of Sequences> button and choose from the
 			displayed menu.
 
 		Set protection:
+
 			Press the <Default Write Protection> button and choose
 			from the displayed menu.
 
 		Press the respective buttons to perform further functions:
-	
-		DELETE:		Delete an alignment and its sequence data
-		RENAME:		Rename an alignment
-		CREATE:		Create a new alignment (no data)
-		COPY:		Copy an alignment			
-		SEQ REMARK:	Add a remark field to the sequence of the selected SAI		
-			
-		CHECK LEN: *	Find the longest sequence and set the
-				'Maximum Seq. Length' displayed in the
-				corresponding subwindow
-		FORMAT: *	Append '.' to sequences up to 'Maximum Seq.
-				Length'.
+
+                      DELETE:	  Delete an alignment and its sequence data
+                      RENAME:	  Rename an alignment
+                      CREATE:	  Create a new alignment (no data)
+                      COPY:	  Copy an alignment
+                      SEQ REMARK: Add a remark field to the sequence of the selected SAI
+                      CHECK LEN:  Find the longest sequence and set the
+                                  'Maximum Seq. Length' displayed in the
+                                  corresponding subwindow [*]
+                      FORMAT:     Append '.' to sequences up to 'Maximum Seq.
+                                  Length'. [*]
 
 NOTES		Some functions require setting a protection level equal to or
 		higher than that of the 'alignment'.
 
-		Asterisks indicate functions which are not available with the 
+		Asterisks indicate functions which are not available with the
 		'ALIGNMENT CONTROL' functions of the 'MERGE TWO DATABASES' tool.
-		
+
 EXAMPLES	None
 
 WARNINGS	Be careful when deleting or changing the name of an alignment

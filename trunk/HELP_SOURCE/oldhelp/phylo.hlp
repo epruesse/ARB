@@ -8,11 +8,11 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Matrices, Masks, Profiles V2.0 @@@@@@ siehe phyl.hlp
+TITLE		Matrices, Masks, Profiles V2.0
 
 OCCURRENCE	ARB_NT/SAI/Create Filter/by Base Frequncy
 
-DESCRIPTION	None
+DESCRIPTION	refer to LINK{phyl.hlp}
 
 NOTES		Not yet implemented
 

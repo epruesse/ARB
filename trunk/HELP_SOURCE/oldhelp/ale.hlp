@@ -14,7 +14,7 @@ OCCURRENCE	ARB_NT
 DESCRIPTION	Unfortunately the development of ARB_ALE had been stopped. All what
 		was left was this prototype, which nethertheless offers excellent
 		multiple alignment capabilities. So Niels Larsen and
-		I (Oliver Strunk) decided to plug it into the ARB environment.
+		Oliver Strunk decided to plug it into the ARB environment.
 		As ALE is based on emacs it does not use the ARB database
 		directly. Instead it loads all data through a dummy
 		file '/tmp/arb_dummy_user_###.gdbm'. As soon as all
