@@ -33,7 +33,7 @@
 /* #  ifndef __cplusplus */
 /* #   define SIG_PF void (*)() */
 /* #  else */
-/* #   include <sysent.h>	/* c++ only for sun (used for shutdown) */ */
+/* #   include <sysent.h>	/ * c++ only for sun (used for shutdown) * / */
 /* #  endif */
 /* # else */
 /* #  define SIG_PF void (*)(int ) */

@@ -247,8 +247,10 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
 
                 if (mode == 1) { // run gnuplot ?
                     char command_file[100];
+#if defined(DEBUG)
                     int  printed = sprintf(command_file,"/tmp/arb_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
                     assert(printed<100);
+#endif // DEBUG
 
                     char *smooth  = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
                     FILE *out = fopen(command_file, "wt");

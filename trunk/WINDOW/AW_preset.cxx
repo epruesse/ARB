@@ -333,7 +333,7 @@ void AW_color_group_name_changed_cb(AW_root *) {
                "save properties and restart the program.",
                AWT_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
-void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL cl_ntw) {
+void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /*cl_ntw*/) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //     ntw->refresh();

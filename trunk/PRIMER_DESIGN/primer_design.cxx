@@ -272,7 +272,8 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     GBDATA         *gb_species       = 0;
     GBDATA         *gb_gene          = 0;
     GBDATA         *gb_seq           = 0;
-    long            gene_start, gene_end;
+    long            gene_start       = -1;
+    long            gene_end         = -1;
     bool            is_genom_db      = GEN_is_genom_db(gb_main);
 
     if (is_genom_db && from_gene) {
@@ -327,7 +328,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         PRD_Sequence_Pos  right_min, right_max;
         PRD_Sequence_Pos  add_offset = 0; // offset to add to positions (used for genes)
         long int          dist_min, dist_max;
-        long int          length_min, length_max;
+//         long int          length_min, length_max;
         char             *sequence   = 0;
 
         sequence = GB_read_string(gb_seq);
@@ -411,8 +412,8 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         printf ( "primer_design_event_init : left_max   %7li\n",left_max );
         printf ( "primer_design_event_init : right_min  %7li\n",right_min );
         printf ( "primer_design_event_init : right_max  %7li\n",right_max );
-        printf ( "primer_design_event_init : length_min %7li\n",length_min );
-        printf ( "primer_design_event_init : length_max %7li\n",length_max );
+//         printf ( "primer_design_event_init : length_min %7li\n",length_min );
+//         printf ( "primer_design_event_init : length_max %7li\n",length_max );
         printf ( "primer_design_event_init : dist_min   %7li\n",dist_min );
         printf ( "primer_design_event_init : dist_max   %7li\n\n",dist_max );
 #endif
