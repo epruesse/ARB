@@ -102,14 +102,12 @@ int MG_check_alignment(AW_window *aww,int fast)
 			gb_presets2 = GB_search(gb_dest,"presets",GB_CREATE_CONTAINER);
 			gb_ali2 = GB_create_container(gb_presets2,"alignment");
 			GB_copy(gb_ali2,gb_ali1);
-			awt_add_new_changekey( gb_dest,
-					(char *)GBS_global_string("%s/data",*name),GB_STRING);
+			awt_add_new_changekey( gb_dest, (char *)GBS_global_string("%s/data",*name),GB_STRING);
 		}
 		char *type1 = GBT_get_alignment_type_string(gb_merge,*name);
 		char *type2 = GBT_get_alignment_type_string(gb_dest,*name);
 		if (strcmp(type1,type2)) {
-			sprintf(result,"The alignments '%s' have different types (%s != %s)",
-				*name,type1,type2);
+			sprintf(result,"The alignments '%s' have different types (%s != %s)", *name,type1,type2);
 			break;
 		}
 		delete(type1);
