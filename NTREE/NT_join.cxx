@@ -5,6 +5,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 #include <awt.hxx>
 
 extern GBDATA *gb_main;
@@ -68,7 +69,7 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
 			int end = strlen(sf);
 			for (i=0;i<end;i++) {
 				if (!strchr(spacers,sf[i])) break;
-			}			
+			}
 			char *str = new char [strlen(sf) + strlen(df) + strlen(s) + 1];
 			sprintf(str,"%s%s%s",df,s,sf+i);
 			error = GB_write_string(dest,str);
@@ -110,8 +111,8 @@ void species_rename_join(AW_window *aww){
 		}
 		error = nt_species_join(gb_old,gb_species,0,sep,sep2);
 		if (error) break;
-		error = GB_delete(gb_species);		
-		if (error) break;	
+		error = GB_delete(gb_species);
+		if (error) break;
 	}
 	aw_closestatus();
 	if (!error) GB_commit_transaction(gb_main);
@@ -139,10 +140,10 @@ AW_window *create_species_join_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("help");aws->callback( AW_POPUP_HELP, (AW_CL)"species_join.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->at("sym");
 	aws->create_input_field(AWAR_SPECIES_JOIN_SEP);
@@ -153,12 +154,12 @@ AW_window *create_species_join_window(AW_root *root)
 	aws->at("go");
 	aws->callback(species_rename_join);
 	aws->help_text("species_join.hlp");
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,AWAR_SPECIES_JOIN_FIELD,
 			AWT_NDS_FILTER,
-			"field",0);
+			"field",0, CHANGE_KEY_PATH);
 
 	return (AW_window *)aws;
 }

@@ -1,8 +1,10 @@
+#include <cstdlib>
 #include <awt.hxx>
 #include <ntree.hxx>
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <probe_design.hxx>
+#include <../NTREE/ad_spec.hxx>
 
 #ifndef GEN_LOCAL_HXX
 #include "GEN_local.hxx"
@@ -17,6 +19,8 @@
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
 	aw_root->awar_string( AWAR_GENE_NAME, "" ,	gb_main);
     aw_root->awar_string( AWAR_GENE_DEST, "" ,	aw_def);
+    aw_root->awar_string( AWAR_GENE_POS1, "" ,	aw_def);
+    aw_root->awar_string( AWAR_GENE_POS2, "" ,	aw_def);
 }
 
 
@@ -196,14 +200,36 @@ void gene_create_cb(AW_window *aww){
     GB_ERROR  error        = 0;
     AW_root  *aw_root      = aww->get_root();
     char     *dest         = aw_root->awar(AWAR_GENE_DEST)->read_string();
+    int       pos1         = atoi(aw_root->awar(AWAR_GENE_POS1)->read_string());
+    int       pos2         = atoi(aw_root->awar(AWAR_GENE_POS2)->read_string());
     GBDATA   *gb_gene_data = GEN_get_current_gene_data(gb_main, aw_root);
     GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
+    if (pos2<pos1) {
+        int p = pos1;
+        pos1  = pos2;
+        pos2  = p;
+    }
+
     if (gb_dest) {
         error = "Sorry: gene already exists";
-    }else{
+    }
+    else {
         gb_dest = GEN_create_gene_rel_gene_data(gb_gene_data, dest);
-        if (!gb_dest) error = GB_get_error();
+        if (gb_dest) {
+            GBDATA *gb_pos     = GB_create(gb_dest, "pos_begin", GB_INT);
+            if (!gb_pos) error = GB_get_error();
+            else    GB_write_int(gb_pos, pos1);
+
+            if (!error) {
+                gb_pos             = GB_create(gb_dest, "pos_end", GB_INT);
+                if (!gb_pos) error = GB_get_error();
+                else GB_write_int(gb_pos, pos2);
+            }
+        }
+        else {
+            error = GB_get_error();
+        }
         if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
     }
     if (!error) GB_commit_transaction(gb_main);
@@ -219,17 +245,20 @@ AW_window *create_gene_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "CREATE_GENE","GENE CREATE", 100, 100 );
-    aws->load_xfig("ad_al_si.fig");
+    aws->load_xfig("ad_al_si3.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new gene");
+    aws->at("label"); aws->create_button(0,"Please enter the name\nof the new gene");
+    aws->at("input"); aws->create_input_field(AWAR_GENE_DEST,15);
 
-    aws->at("input");
-    aws->create_input_field(AWAR_GENE_DEST,15);
+    aws->at("label1"); aws->create_button(0,"Start position");
+    aws->at("input1"); aws->create_input_field(AWAR_GENE_POS1,12);
+
+    aws->at("label2"); aws->create_button(0,"End position");
+    aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2,12);
 
     aws->at("ok");
     aws->callback(gene_create_cb);
@@ -277,8 +306,8 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 //      void GEN_create_field_items(AW_window *aws)
 //  ----------------------------------------------------
 void GEN_create_field_items(AW_window *aws) {
-    // @@@ aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...",	"r","spaf_reorder.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_list_reorder, 0 );
-    // @@@ aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...","D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_field_delete, 0 );
+    aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...",	"r","spaf_reorder.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)CHANGE_KEY_PATH_GENES );
+//     aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...","D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_delete, 0 );
     // @@@ aws->insert_menu_topic("create_field",		"Create Field ...",	"C","spaf_create.hlp",	AD_F_ALL,	AW_POPUP, (AW_CL)create_ad_field_create, 0 );
     // @@@ aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
@@ -324,7 +353,6 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     aws->create_menu(       0,   "FIELDS",     "I", "gena_fields.hlp",  AD_F_ALL );
     GEN_create_field_items(aws);
 
-//     aws->get_root()->awar(AWAR_SPECIES_NAME)->add_callback(	AD_map_species,scannerid);
     aws->get_root()->awar(AWAR_GENE_NAME)->add_callback(GEN_map_gene,scannerid);
 
     aws->show();

@@ -630,7 +630,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 
 	aws->at("double");	aws->create_toggle(cbs->awar_double_pars);
 
-	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_parskey,AWT_PARS_FILTER, "field",0);
+	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_parskey,AWT_PARS_FILTER, "field",0, CHANGE_KEY_PATH);
 
 	aws->at("go");
 	aws->callback((AW_CB1)awt_do_pars_list,(AW_CL)cbs);
@@ -755,7 +755,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 	aws->callback( AW_POPUP_HELP,(AW_CL)"write_field_list.hlp");
 	aws->create_button("HELP", "HELP","H");
 
-	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "box",0);
+	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "box",0, CHANGE_KEY_PATH);
 	aws->at("create");
 	aws->callback((AW_CB)awt_do_set_list,(AW_CL)cbs,0);
 	aws->create_button("SET_SINGLE_FIELD_OF_LISTED","WRITE");
@@ -837,7 +837,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
 	aws->insert_toggle("5 ","5",5);
 	aws->insert_toggle("6 the truth","5",6);
 
-	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "list",0);
+	awt_create_selection_list_on_scandb(cbs->gb_main,aws,cbs->awar_setkey, AWT_NDS_FILTER, "list",0, CHANGE_KEY_PATH);
 
 	aws->at("go");
 	aws->callback((AW_CB1)awt_do_set_protection,(AW_CL)cbs);

@@ -7,6 +7,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 #include <awt.hxx>
 
 #include "nt_sort.hxx"
@@ -143,7 +144,7 @@ char *NT_resort_data_base_by_tree(GBT_TREE *tree,GBDATA *gb_species_data)
 	}
 }
 
-GB_ERROR 
+GB_ERROR
 NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3)
 {
 	GB_begin_transaction(gb_main);
@@ -207,30 +208,30 @@ AW_window *NT_build_resort_window(AW_root *awr) {
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"sp_sort_fld.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->at("go");
 	aws->callback((AW_CB0)NT_resort_data_by_costum);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_1",
 			NT_RESORT_FILTER,
-			"key1",0);
+			"key1",0, CHANGE_KEY_PATH);
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_2",
 			NT_RESORT_FILTER,
-			"key2",0);
+			"key2",0, CHANGE_KEY_PATH);
 
 	awt_create_selection_list_on_scandb(gb_main,
 			(AW_window*)aws,"ad_tree/sort_3",
 			NT_RESORT_FILTER,
-			"key3",0);
+			"key3",0, CHANGE_KEY_PATH);
 
 	return (AW_window *)aws;
 

@@ -648,9 +648,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     if (existing_tree_name) {
         awr->awar(awar_tree)->write_string(existing_tree_name);
 
-        NT_reload_tree_event(awr,ntw,GB_FALSE);			// load first tree !!!!!!!
+        NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
     }else{
+#if !defined(DEBUG)
         AW_POPUP_HELP(awm,(AW_CL)"no_tree.hlp");
+#endif // DEBUG
     }
 
     awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
