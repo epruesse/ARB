@@ -1,8 +1,9 @@
-#include "rns.h"
-#include "spreadin.h"
-
 #include <limits.h>
 #include <stdlib.h>
+#include <memory.h>
+
+#include "rns.h"
+#include "spreadin.h"
 
 
 /* /------------------------\ */
