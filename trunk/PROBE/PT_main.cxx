@@ -56,7 +56,7 @@ extern "C" int server_shutdown(PT_main *pm,aisc_string passwd){
                    "SERVER UPDATE BY ADMINISTRATOR!\nYou'll get the latest version. Your screen information will be lost, sorry!");
     /** shutdown **/
     aisc_server_shutdown(psg.com_so);
-    exit(0);
+    exit(EXIT_SUCCESS);
     return 0;
 }
 extern "C" int broadcast(PT_main *main, int dummy )
@@ -85,14 +85,14 @@ void PT_get_names (const char **fullstring, char *first, char *second, char *thi
 
     first_ptr = *fullstring;
     second_ptr = strchr(first_ptr,';'); // Get first ';'
-    if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(1);}
+    if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(EXIT_FAILURE);}
     strncpy(first,first_ptr,second_ptr-first_ptr);  // Copy String until ';'
     first[second_ptr-first_ptr] = 0;
 
     second_ptr++;  // Point after the ';'
 
     third_ptr = strchr(second_ptr,';'); // Get next ';'
-    if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(1);}
+    if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(EXIT_FAILURE);}
     strncpy(second,second_ptr,third_ptr-second_ptr);  // Copy String until ';'
     second[third_ptr-second_ptr] = 0;
 
@@ -170,7 +170,7 @@ void PT_init_map(){
         }
         if (err) {
             fprintf(stderr, "Sorry - PT server cannot start.\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
     else {
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
         (argc >= 2 && strcmp(argv[1], "--help") == 0))
     {
         printf("Syntax: %s [-look/-build/-kill/-QUERY] -Dfile.arb -TSocketid\n",argv[0]);
-        exit (-1);
+        exit(EXIT_FAILURE);
     }
     if (argc==2) {
         command_flag = argv[1];
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
     if (!(name = params->tcp)) {
         if( !(name=(char *)GBS_read_arb_tcp("ARB_PT_SERVER0")) ){
             GB_print_error();
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -235,34 +235,35 @@ int main(int argc, char **argv)
         if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         enter_stage_1_build_tree(aisc_main,tname);
         printf("PT_SERVER database '%s' has been created.\n", params->db_server);
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     if (!strcmp(command_flag, "-QUERY")) {
         if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         enter_stage_3_load_tree(aisc_main,tname);           /* now stage 3 */
         PT_debug_tree();
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
     if (psg.link) {
-        if (!strcmp(command_flag, "-look"))
-            exit(0);    /* already another serther */
+        if (strcmp(command_flag, "-look") == 0) {
+            exit(EXIT_SUCCESS); /* already another server */
+        }
         printf("There is another activ server. I try to kill him...\n");
         aisc_nput(psg.link, PT_MAIN, psg.main,
                   MAIN_SHUTDOWN, "47@#34543df43%&3667gh",
                   NULL);
-        aisc_close(psg.link); psg.link = 0;
+        aisc_close(psg.link); psg.link      = 0;
     }
-    if (!strcmp(command_flag, "-kill")) {
-        exit(0);
+    if (strcmp(command_flag, "-kill") == 0) {
+        exit(EXIT_SUCCESS);
     }
     printf("\nTUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \ninitializing:\n");
     printf("open connection...\n");
@@ -274,7 +275,7 @@ int main(int argc, char **argv)
     }
     if (!so) {
         printf("PT_SERVER: Gave up on opening the communication socket!\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     psg.com_so = so;
     /**** init server main struct ****/
@@ -283,7 +284,7 @@ int main(int argc, char **argv)
     if (stat(aname,&s_source)) {
         aisc_server_shutdown(so);
         printf("PT_SERVER error while stat source %s\n",aname);
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     build_flag = 0;
     if (stat(tname,&s_dest)) {
@@ -297,14 +298,18 @@ int main(int argc, char **argv)
     if (build_flag) {
         char buf[256];
         sprintf(buf,"%s -build -D%s",argv[0],params->db_server);
-        system(buf);
+        printf("Executing '%s'\n", buf);
+        if (system(buf) != 0) {
+            printf("Error building pt-server.\n");
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
     {
         aisc_server_shutdown(so);
         printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     enter_stage_3_load_tree(aisc_main,tname);
 
