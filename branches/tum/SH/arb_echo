@@ -1,0 +1,12 @@
+#!/bin/sh
+while test $# -ne 0; do
+	echo $1
+	shift
+done
+echo
+echo
+echo
+echo y
+echo y
+echo y
+

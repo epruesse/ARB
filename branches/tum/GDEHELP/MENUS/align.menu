@@ -1,0 +1,172 @@
+arb_item:Clustalv Alignment (DNA)
+itemmethod:(tr '"%//' '>' <in1 >clus_in; RUN_IN_WINDOW((clustalv /output=PIR /infile=clus_in /align /ktuple=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustal_help
+
+arg:KTUP
+argtype:slider
+arglabel:K-tuple size for fast pairwise search 
+argmin:1
+argmax:10
+argvalue:2
+
+arg:WIN
+argtype:slider
+arglabel:Window size
+argmin:1
+argmax:10
+argvalue:4
+
+arg:Trans
+argtype:chooser
+arglabel:Transitions weighted?
+argchoice:Yes:/TRANSIT
+argchoice:No:
+
+arg:FIXED
+argtype:slider
+arglabel:Fixed gap penalty
+argmin:1
+argmax:100
+argvalue:10
+
+arg:FLOAT
+arglabel:Floating gap penalty
+argtype:slider
+argmin:1
+argmax:100
+argvalue:10
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+item:Clustalw DNA Alignment
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA -DNAMATRIX=$MATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustal.help
+
+arg:KTUP
+argtype:slider
+arglabel:K-tuple size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:2
+
+arg:WIN
+argtype:slider
+arglabel:Window size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:4
+
+arg:MATRIX_
+argtype:chooser
+arglabel:Weighting matrix
+argchoice:BLOSUM:BLOSUM
+argchoice:PAM:PAM
+argchoice:GONNET:GONNET
+argchoice:ID:ID
+
+arg:FIXED_
+argtype:slider
+arglabel:Gap Open Panelty
+argmin:1
+argmax:100
+argvalue:8.7
+ 
+arg:FLOAT_
+arglabel:Gap Extend Panelty
+argtype:slider
+argmin:.001
+argmax:1
+argvalue:.1
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+item:Clustalw Protein Alignment
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; ));\/bin/rm -f clus_in* in1)
+
+
+itemhelp:clustalw.help
+
+arg:KTUP_
+argtype:slider
+arglabel:K-tuple size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:2
+
+arg:WIN_
+argtype:slider
+arglabel:Window size and top diagonals for fast alignment
+argmin:1
+argmax:10
+argvalue:4
+
+arg:MATRIX_
+argtype:chooser
+arglabel:Weighting matrix
+argchoice:BLOSUM:BLOSUM
+argchoice:PAM:PAM
+argchoice:GONNET:GONNET
+argchoice:ID:ID
+
+arg:FIXED_
+argtype:slider
+arglabel:Gap Open Panelty
+argmin:1
+argmax:100
+argvalue:8.7
+ 
+arg:FLOAT_
+arglabel:Gap Extend Panelty
+argtype:slider
+argmin:.001
+argmax:1
+argvalue:.1
+
+
+ 
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+item:Assemble Contigs
+itemmethod: (tr '"%//' '>' <in1 >in1.tmp;CAP2 in1.tmp $OVERLAP $PMATCH >  out1;/bin/rm -f in1.tmp)
+itemhelp:CAP2.help
+
+arg:OVERLAP
+argtype:slider
+arglabel:Minimum overlap?
+argmin:5
+argmax:100
+argvalue:20
+
+arg:PMATCH
+argtype:slider
+arglabel:Percent match required within overlap
+argmin:25
+argmax:100
+argvalue:90
+
+in:in1
+informat:flat
+
+out:out1
+outformat:gde
+

@@ -1,0 +1,5 @@
+Save selection
+
+Save the currently selected sequences to a new file.  Sequences can be
+saved in Genbank, or GDE flat file format.
+

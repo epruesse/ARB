@@ -1,0 +1,9 @@
+ARB_TEXTEDIT='xedit'
+export ARB_TEXTEDIT
+ARB_XTERM='xterm -sl 1000 -sb'
+export ARB_XTERM
+ARB_XCMD='xterm -sl 1000 -sb -e'
+export ARB_XCMD
+ARB_GS=ghostview
+export ARB_GS
+

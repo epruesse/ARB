@@ -1,0 +1,47 @@
+#define GEN_INFILE(in1)			/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank in1 -phylip infile
+#define RM_LOCAL_FILES(in1)		/bin/rm -f in1 infile outfile treefile	
+#define RUN_IN_WINDOW(item_command)	${ARB_XCMD:-cmdtool} sh -c 'LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH; item_command ;arb_wait'
+#include <warning.menu>
+
+lmenu:export
+item:Export Sequences only to Foreign Format (using readseq: slow) ...
+#include <export.menu>
+
+lmenu:pretty_print
+item:Pretty Print Sequences (slow) ...
+#include <pretty_print.menu>
+
+lmenu:import
+item:Import Sequences in Foreign Format (using readseq: slow !!) ...
+#include <import.menu>
+
+menu:align
+#include <align.menu>
+
+menu:user
+#include <start_arb.menu>
+
+menu:DNA/RNA
+#include <dna_rna.menu>
+#include <blast.menu>
+
+menu:Protein
+#include <protein.menu>
+#include <blastp.menu>
+
+menu:Seq management
+#include <seq_management.menu>
+
+menu:SAI
+#include <dnamlrates.menu>
+
+menu:Incremental_Phylogeny
+#include <inc_fastdnaml.menu>
+
+menu:Phylogeny
+#include <desoete.menu>
+#include <phylip_dist_org.menu>
+#include <phylip_dist.menu>
+#include <phylip_pars.menu>
+#include <fastdnaml.menu>
+#include <molphy.menu>

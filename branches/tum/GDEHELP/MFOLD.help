@@ -1,0 +1,384 @@
+
+MFOLD - Prediction of RNA secondary structure by free energy minimization. 
+      - Version 2.0 : suboptimal folding with temperature dependence
+      - Michael Zuker and John Jaeger 
+      - LRNA : folds linear RNA sequences
+      - CRNA : folds circular RNA sequences
+
+Any research that uses these programs should cite :
+
+   M. Zuker 
+   On Finding All Suboptimal Foldings of an RNA Molecule.
+   Science, 244, 48-52, (1989)
+
+   J. A. Jaeger, D. H. Turner and M. Zuker 
+   Improved Predictions of Secondary Structures for RNA.
+   Proc. Natl. Acad. Sci. USA, BIOCHEMISTRY, 86, 7706-7710, (1989)
+
+   J. A. Jaeger, D. H. Turner and M. Zuker 
+   Predicting Optimal and Suboptimal Secondary Structure for RNA.
+   in "Molecular Evolution: Computer Analysis of Protein and
+   Nucleic Acid Sequences", R. F. Doolittle ed.
+   Methods in Enzymology, 183, 281-306 (1989)
+
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+GDE chooses "Regular run", "N Best", and default values and data tables.
+
+The data tables are the *.dat files in GDEHELP/ZUKER directory.
+
+ 
+------------------------------------------------------------------------
+ 
+             Sub-optimal RNA Folding Program Users Manual
+             --------------------------------------------
+ 
+                Michael Zuker, Eric Nelson and John Jaeger
+ 
+ 
+ 
+Start:
+ 
+Initially, the following menu appears 
+ 
+     Enter run type
+         0  Regular run (default)
+         1  Save run
+         2  Continuation run
+ 
+In a regular run the program takes an RNA sequence as input,  computes
+the  energy  matrix for the molecule, and produces various foldings as
+output.  Since the computation of the energy matrix uses a great  deal
+of  time  and  resourses, the matrix can be saved before any output is
+generated  (a  save  run)  and  later  used  to  produce   output   (a
+continuation run).
+ 
+Regular or Continuation run -> Procede to Step b
+Save run -> Procede to Step a 
+ 
+Step a:
+ 
+At this point a prompt will appear asking for the  name  of  the  file
+into which the unformatted save matrix can be stored.
+ 
+-> Procede to Step f
+ 
+Step b:
+ 
+The following menu will be displayed
+ 
+     Enter run mode
+         0  Sub-optimal plot (default)
+         1  N best
+         2  Multiple molecules
+ 
+If the program is run in  'Sub-optimal  plot'  ("dot plot")  mode,  the
+energy  matrix will be displayed graphically after it is computed.  In
+'N-best' mode the program will generate the suboptimal foldings
+within  a  certain  percentage  of  the  minimum energy.  If
+'Multiple molecules' ("multi") mode  is  chosen the  program  will
+run the N-best mode with every complete sequence in a file. This last
+option MUST be done in a regular run mode. 
+ 
+N best or multi mode -> Procede to Step d
+Sub-optimal plot mode -> Prcede to Step c 
+ 
+Step c:
+ 
+A prompt for the minimum number of points 'in a row' that will appear
+on the energy dot plot. Helices that are smaller than this number
+will not appear on the dot plot.
+ 
+-> Procede to Step e
+ 
+ 
+Step d:
+ 
+Two prompts asking for values of 'N-best' parameters now appear:   the
+percentage above the optimal energy which foldings must be within, and
+the maximum number of foldings that will be computed. Usually, the 
+program runs out of sub-optimal solutions before this limit is 
+reached.
+ 
+ 
+Step e:
+ 
+A prompt  for  the  window  parameter. The distance between any pair of 
+computed foldings must be more than window. A simpler distance
+function is defined in: 
+1. Zuker M
+   On Finding All Suboptimal Foldings of an RNA Molecule.
+   Science, 244, 48-52, (1989)
+2. Zuker M
+   The Use of Dynamic Programming Algorithms in RNA Secondary
+   Structure Prediction.
+   in "Mathematical Methods for DNA Sequences", M. S. Waterman ed.
+   CRC PRESS, INC.,  159-184, (1989)
+
+The new definition of distance requires that any two computed 
+foldings must contain more than 'window' base pairs that are in one 
+folding and not in the other.
+ 
+If Continuation run -> Procede to step h
+ 
+ 
+Step f:
+ 
+At this point a prompt for the name of a file containing one  or  more
+sequences  (in  Stanford,  Genbank,  EMBL,  PIR,  or  NRC format) will
+appear.  If the program is being  run  in  'multi'  mode  all  of  the
+sequences  in  the file will be folded, otherwise the program will ask
+for a selection from the file's contents (a portion of a sequence).
+Sequence data must be in upper case. The program recognizes A, C, G, 
+and T or U. The characters B, Z, H, and V or W are recognized as A, 
+C, G, and T or U respectively; but they are flagged by the program as 
+being accessible to nuclease cleavage. A flagged base can pair only
+if its 3' neighbor is single stranded. 
+ 
+ 
+Step g:
+ 
+Six files containing energy information are needed to run the
+program,  and  the names of these files are now requested.  The
+default energy files are organized as follows: 
+
+dangle.dat - single base stacking
+loop.dat - hairpin, bulge and interior loops
+stack.dat - base pair stacking energies
+tstack.dat - stacking energies for terminal mismatched pairs in
+             interior and hairpin loops
+tloop.dat - a list of distinguished tetra-loops and the bonus eneries
+            given to them. If you do not want to use this file, create
+            a dummy file containing a few blank lines and use it instead.
+miscloop.dat -  some miscellaneous energies (see files.list).
+
+These files can be replaced by dangle.025, loop.025, stack.025 etc. 
+for folding at (for example) 25 deg.
+
+-> Procede to step i
+ 
+ 
+Step h:
+ 
+For a continuation run, a file previously created by a save run  needs
+to  be  read  in  at  this  point.   A  prompt  will appear asking for
+identification of this file.  After the file is read, the energy rules
+and parameters used during the save run are output either to a file or
+the screen.
+ 
+Step i:
+ 
+Three different types of  folding  output  formats  can  be  produced:
+printer  (which shows the secondary structure in a rough, but directly
+readable format), ct file, and Region table (both ct files and  region
+tables  can be used as input to plotting programs).  Prompts will
+appear asking which types of output need to be produced.
+ 
+ 
+Step j:
+ 
+Main menu (see appendix A)
+ 
+If Save run -> The program stops here after writing the save file.
+If N-best or multi mode -> produce folding output
+ 
+ 
+Step k:
+ 
+Enter Dotplot section (see appendix B)
+ 
+ 
+ 
+ 
+                              Appendix A
+                              Main Menu
+ 
+ 
+The following menu will appear:
+ 
+ 
+         1  Energy Parameter           6  Single Prohibit
+         2  Single Force               7  Double Prohibit
+         3  Double Force               8  Begin Folding  
+         4  Closed Excision            9  Show current   
+         5  Open Excision             10  Clear current  
+ 
+Selections 2 through 7 provide a way for the user  to  directly  alter
+the  possible secondary structure by forcing or prohibiting particular
+base-pairs.  Each time one of these parameters is chosen, it is  added
+to a list held in memory - selection 9 will print the list and 10 will
+erase the list.  If '8' is chosen  from  the  menu  the  program  will
+continue past this section.
+ 
+NB : Options 2 and 3 force base pairs to occur.
+Base pairs are forced by giving them a bonus energy (EPARAM(9) in the
+program code). These energies are subtracted during the traceback
+algorithm so that the computed structures have the correct energies.
+Unfortunately, there is no way to subtract the bonus energies from
+the energy dot plots. Moreover, each forced base pair contains two
+bonus energies because of the nature of the algorithm. For example,
+suppose that an optimal folding of an RNA contains 3 forced base
+pairs ( default bonus energy is 50.0 kcal per forced base pair ) and
+that the correct folding energy is -180.0 kcal/mole. Internally, the
+energy will be -180.0 - (3+1) x 50.0 = -380.0 kcal/mole. To find
+foldings within 10% of the correct energy, one needs to compute
+foldings to within 18.0 kcal of -180.0 - 3 x 50.0 = -330.0 kcal/mole.
+This comes out to -312.0 kcal/mole. The ratio of -312.0 to -380.0 is
+82%, so that one would request the 18% level of suboptimality! This
+confustion only exists when base pairs are forced. Each closed
+excision counts as one forced base pair. 
+
+Choosing '1' from the above menu will result in the following (when 
+the default 37 deg. energy files have been chosen) :
+ 
+ 
+            Energy Parameters (10ths kcal/mole)
+ 
+          1 Extra stack energy                        [    0]
+          2 Extra bulge energy                        [    0]
+          3 Extra loop energy (interior)              [    0]
+          4 Extra loop energy (hairpin)               [    0]
+          5 Extra loop energy (multi)                 [   46]
+          6 Multi loop energy/single-stranded base    [    4]
+          7 Maximum size of interior loop             [   30]
+          8 Maximum lopsidedness of an interior loop  [   30]
+          9 Bonus Energy                              [ -500]
+         10 Multi loop energy/closing base-pair       [    1]
+ 
+ 
+The energy parameters (along with the energy rules, which are read  in
+from  files) decide what a given folding will look like.  For example,
+one could reduce  the  probability  of  a  bulge  loop  by  increasing
+parameter 2.
+ 
+Note that parameters 7 and 8 limit the maximum size and lopsidedness 
+of bulge and interior loops. The default values of 30 should be 
+sufficient for folding at 37 deg or less. If you wish to fold at high 
+temperatures, it would be wise to increase these parameters to 60 or 
+even 100. Note that this will increase folding times!
+ 
+ 
+ 
+ 
+ 
+ 
+                              Appendix B
+                          Dotplot in X-windows
+ 
+ 
+	The program is run from a window that can be called the 'text
+window'. When the energy dot plot option is chosen a new window is 
+automatically created (the dot plot window) in which the energy dot 
+plot is displayed, along with other information. Energy values are 
+displayed in kcal/mole. The i.j base pair locations are displayed in 
+historical numbers (i.e. numbering of the original sequence). Energy 
+increments are entered as integers in 10ths of a kcal/mole. The dot 
+plot window can be moved around and resized.
+
+POPUP MENUS
+
+	In this version of dotplot, all interaction with the program
+(except for point picking...see below) is done with a popup menu.  To cause
+the popup menu to be displayed, press the right mouse button.  To select an
+item from the popup menu, move the crosshairs over the item that you want
+to select, and click any mouse button.
+
+OPTIMAL SCORE
+
+	This number represents the lowest possible energy for a 
+folding of the RNA molecule. The expressions 'optimal score' and 
+'minimum folding energy' are equivalent.
+
+ENERGY INCREMENT
+
+	This represents the highest possible deviation in energy (in
+kcal/mole ) for which a point will be plotted.  All base pairs that
+are in foldings within this increment from the minimum folding
+energy will be plotted. The base pair i.j is plotted as a point in
+the ith row and jth column of the energy dot plot. The energy
+increment can be changed by selecting "Enter new increment" from the
+popup menu.  When this option is chosen, move the mouse pointer to
+the text window (on the DEC3100, the window must be activated by
+clicking a mouse button) and enter the new energy increment in 10ths
+of a kcal/mole. After entering a valid number and pressing <RETURN>,
+the program will redraw the energy dot plot with the new energy
+increment. Note that points that have already been found in previous
+computed structures (as well as points within WINDOW of these base
+pairs) will NOT be replotted when the energy dot plot is redrawn.
+This allows the user to select base pairing regions different from
+those that have already been found.
+
+POINT PICKING
+
+	One of the features of dotplot is the ability to select a
+base pair by picking a point using the crosshairs.  To do this, just
+click with the left or middle mouse button on the point that you
+want on the energy dot plot. Dotplot will optimize this selection by
+looking at the eight points surrounding the point picked, and use
+the point with minimum energy, not necessarily the exact point
+picked. After you have clicked on a point, the historical numbering
+will be displayed as an (i,j) basepair. The minimum folding energy
+of a structure containing the chosen point will also be displayed.
+
+COMPUTING THE STRUCTURE
+
+	After you have selected a valid i.j basepair, you can
+compute the best folding containing that structure selected by
+selecting 'compute structure' option from the popup menu. If a 
+structure output has been chosen, and no file was defined for the 
+output, the structure will be scrolled to the text window.
+After computing the structure, the program will automatically return
+to dotplot without you ever knowing that it had left. NOTE : If the
+computed structure contains fewer than WINDOW new base pairs that
+are insufficiently different from base pairs already computed, the
+structure will not be outputted. The energy dot plot is redrawn MINUS
+the base pairs in all computed structures as well as those base pairs
+that are 'close' to these base pairs.
+
+
+COLOR
+
+	Dotplot has the ability to display plotted base pairs in black and 
+white or in color using a color wheel (red to blue, corresponding to
+most stable to least stable respectively). The color option is an
+item on the popup menu. Clicking any mouse button on this entry will
+change the number in this entry from 1 to 2, and back to 1 etc. The
+value of 1 will produce a black and white dot plot; 2 will give a
+colored dot plot. (Note : older versions had six discrete non-black
+colors. If you get numbers larger than 2 appearing, keep clicking
+the mouse button until the number 1 reappears). Dotplot determines
+the color of each plotted point. Points with the optimal folding
+energy are plotted in red. Points that are at the limit of
+suboptimality appear in blue. The exact color of a point depends on
+its level of suboptimality. The 'exit menu' option will kill the 
+popup menu, leaving in effect the chosen color option.
+
+P-NUM PLOT
+
+	Dotplot allows you to plot the number of base pairs that the
+ith base can form ( P-num(i) ) versus i (historical numbering).
+P-num(i) is the ordinate versus all i's in the segment (abscissa).
+Selecting the P-Num plot option from the popup menu will cause this
+plot to be toggled on and off in its own window. If the energy
+increment changes, the plot will be redrawn.
+
+PLOT FILE CREATION
+
+	This option is used to create a hard copy of the energy dot 
+plot. (X-window software can also be used.) After selecting this 
+option, bring the cross-hairs to the text window (click to activate 
+the window on the DEC3100) and enter the requested data. The 'tick 
+mark interval' is the number of bases between tick marks on the hard 
+copy of the dot plot. The number of levels (maximum of 9) is the 
+number of different colors that will be used. The first level is 
+reserved for optimal base pairs. The energy increment is then divided
+equally among the remaining colors. Note that this differs from the 
+color wheel used with the 'interactive' dot plot. The ASCII plot
+file that is created (e.g. alu.plot1 and alu.plot2) can be used as
+the input file for the figdot program. The output of figdot is a
+device independent plot file for the GCG program 'FIGURE'.
+
+QUITTING
+
+	To exit the program, select "quit" from the popup menu.
+

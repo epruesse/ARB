@@ -1,0 +1,10 @@
+#ifndef awt_www_hxx_included
+#define awt_www_hxx_included
+
+AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main);
+void awt_openURL(AW_window *aww,GBDATA *gb_main);
+void awt_create_aww_vars(AW_root *aw_root,AW_default aw_def);
+GB_ERROR awt_openURL_by_gbd(AW_root *aw_root,GBDATA *gb_main, GBDATA *gbd, const char *name);
+
+
+#endif

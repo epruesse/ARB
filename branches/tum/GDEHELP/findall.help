@@ -1,0 +1,14 @@
+Findall:
+
+This function will search for all occurrences of a substring in all
+selected sequences.  If searching in DNA or RNA sequence, the search
+uses IUPAC ambiguity codes. Otherwise, only exact matches are used.
+The characters '-' and '~' are ignored in the search so that alignment
+gaps do not interfere with the searches.
+
+The search can be case sensitive, as well as allowing for a percentage
+mismatch.
+
+The results are passed back as a set of color masks that are automatically
+overlaid on the sequences.  Use the File:Properties... menu to disable
+the color mask, and return the standard character->color display.

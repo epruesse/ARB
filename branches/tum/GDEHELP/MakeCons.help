@@ -1,0 +1,35 @@
+Make Consensus
+
+Description:
+   This function makes a consensus of a set of aligned DNA/RNA sequences.  
+   IUPAC code (See the bottom of this help file for IUPAC code table) is 
+   used for ambiguous bases. 
+
+   If "IUPAC" is selected, any mismatching bases are represented by anIUPAC 
+   code.
+
+   If "Majority" is selected, the nucleic acid that has occurances of more
+   than "Minimum Percentage for Majority" is called.  When no such a base
+   exists, an IUPAC code is used.
+   
+   This function appends the consensus to the gde window.
+
+   Table of IUPAC code:
+
+        T G C A  IUPAC
+        0 0 0 0    -
+        0 0 0 1    a
+        0 0 1 0    c
+        0 0 1 1    m
+        0 1 0 0    g
+        0 1 0 1    r
+        0 1 1 0    s
+        0 1 1 1    v
+        1 0 0 0    t
+        1 0 0 1    w
+        1 0 1 0    y
+        1 0 1 1    h
+        1 1 0 0    k
+        1 1 0 1    d
+        1 1 1 0    b
+        1 1 1 1    n
