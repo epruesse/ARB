@@ -1,6 +1,9 @@
 #ifndef arbdb_h_included
 #define arbdb_h_included
 
+#define NOT4PERL 
+/* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
+
 #ifndef NDEBUG
 # define gb_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
 # ifndef DEBUG

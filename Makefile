@@ -708,9 +708,10 @@ endif
 	rm -f PERL2ARB/ARB.xs
 	rm -f PERL2ARB/proto.h
 	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
-	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK;export LD_LIBRARY_PATH;echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH;echo calling bin/arb_proto_2_xsub ...;bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.h >PERL2ARB/ARB.xs
-	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl -I ../lib/perl5 ${MACH}.PL;echo calling make;make
+	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK;export LD_LIBRARY_PATH;echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH;echo calling bin/arb_proto_2_xsub ...;bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
+	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl -I ../lib/perl5 ${MACH}.PL;echo -------- calling MakeMaker makefile;make
 #	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl ${MACH}.PL;echo calling make;make
+	echo -------- end of MakeMaker-Makefile 
 	cp PERL2ARB/blib/arch/auto/ARB/ARB.so lib
 	cp PERL2ARB/ARB.pm lib
 	echo Make lib/ARB.pm and lib/ARB.so finished.

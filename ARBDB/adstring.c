@@ -1544,7 +1544,7 @@ extern "C" {
 
 gb_error_handler_type gb_error_handler = gb_fprintf_stderr;
 
-void GB_install_error_handler(gb_error_handler_type aw_message){
+NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message){
     gb_error_handler = aw_message;
 }
 
@@ -1580,7 +1580,7 @@ void GB_warning( const char *templat, ...) {	/* max 4000 characters */
     }
 }
 
-void GB_install_warning(gb_warning_func_type warn){
+NOT4PERL void GB_install_warning(gb_warning_func_type warn){
     gb_warning_func = warn;
 }
 
@@ -1599,7 +1599,7 @@ void GB_information( const char *templat, ...) {	/* max 4000 characters */
     }
 }
 
-void GB_install_information(gb_information_func_type info){
+NOT4PERL void GB_install_information(gb_information_func_type info){
     gb_information_func = info;
 }
 
@@ -1622,7 +1622,7 @@ int GB_status( double val) {
     }
 }
 
-void GB_install_status(gb_status_func_type func){
+NOT4PERL void GB_install_status(gb_status_func_type func){
     gb_status_func = func;
 }
 
@@ -1643,7 +1643,7 @@ char 	buffer[4000];memset(&buffer[0],0,4000);
     }
 }
 
-void GB_install_status2(gb_status_func2_type func2){
+NOT4PERL void GB_install_status2(gb_status_func2_type func2){
     gb_status_func2 = func2;
 }
 

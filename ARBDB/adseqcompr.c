@@ -305,7 +305,7 @@ char *gb_compress_sequence_by_master(GBDATA *gbd,const char *master,int master_l
     return res;
 }
 
-GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const char *ali_name){
+NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const char *ali_name){
     GB_ERROR error = 0;
     char *masterfoldername = 0;
     int leafcount = 0;
