@@ -128,7 +128,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
         else {
             length = GB_read_count(gb_data);
 
-            gb_gene_data    = GEN_get_gene_data(gb_organism);
+            gb_gene_data    = GEN_find_gene_data(gb_organism);
             GBDATA *gb_gene = gb_gene_data ? GEN_first_gene_rel_gene_data(gb_gene_data) : 0;
 
             if (!gb_gene) {
