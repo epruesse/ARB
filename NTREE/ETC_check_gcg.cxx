@@ -9,6 +9,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 
+
 extern GBDATA *gb_main;
 
 #define ARCG_HASH_SIZE 1024
@@ -75,7 +76,7 @@ GB_ERROR arb_arcg()
 		fetch = fopen(arcg.fetchfile,"w");
 		if (!fetch) error = GB_export_error("Cannot open '%s'",arcg.fetchfile) ;
 	}
-	
+
 	while (!error) {
 		bp = getc(in);
 		if (bp == EOF) break;
@@ -102,7 +103,7 @@ GB_ERROR arb_arcg()
 			}
 			if (i==MAX_INCLUDE) goto arcg_next;	// not included
 		}
-			
+
 		p = ac+strlen(ac)-1;
 		while (*p && *p!=' ') {
 			p--;
@@ -192,11 +193,11 @@ AW_window *create_check_gcg_window(AW_root *root){
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"checkgcg.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	awt_create_selection_box((AW_window *)aws,"tmp/etc_check_gcg");
 
@@ -230,7 +231,7 @@ AW_window *create_check_gcg_window(AW_root *root){
 	aws->callback(etc_check_gcg_list_show_cb);
 	aws->at("go0");
 	aws->create_button("SHOW_FILE", "Show\n\nfile","s");
-	
+
 	aws->callback((AW_CB1)etc_check_gcg_list_cb,(AW_CL)"fetch");
 	aws->at("go1");
 	aws->create_button("GO_AND_SHOW", "GO & show\n\nfile.fetch","f");
