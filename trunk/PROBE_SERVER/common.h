@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Sun Sep/14/2003 08:47 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Sep/18/2003 18:45 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -114,6 +114,65 @@ static GB_ERROR checkDatabaseType(GBDATA *gb_main, const char *db_name, const ch
 }
 
 
+#endif
+
+// encoding/decoding tree node strings
+//
+// tree node strings may not contain ',' and ';'
+// performed escapes :
+//       _   <-> __
+//       ,   <-> _.
+//       ;   <-> _s
+//       :   <-> _c
+//       '   <-> _q
+
+static const char *PG_tree_node_escaped_chars = "_,;:'";
+static const char *PG_tree_node_replace_chars = "_.scq";
+
+#ifndef SKIP_ENCODETREENODE
+static char *encodeTreeNode(const char *str) {
+    int   len    = strlen(str);
+    char *result = (char*)GB_calloc(2*len+1, 1);
+    int   j      = 0;
+
+    for (int i = 0; i<len; ++i) {
+        const char *found = strchr(PG_tree_node_escaped_chars, str[i]);
+        if (found) {
+            result[j++] = '_';
+            result[j++] = PG_tree_node_replace_chars[found-PG_tree_node_escaped_chars];
+        }
+        else {
+            result[j++] = str[i];
+        }
+    }
+    return result;
+}
+#endif
+#ifndef SKIP_DECODETREENODE
+static char *decodeTreeNode(const char *str, GB_ERROR& error) {
+    int   len    = strlen(str);
+    char *result = (char*)GB_calloc(len+1, 1);
+    int   j      = 0;
+
+    for (int i = 0; i<len; ++i) {
+        if (str[i] == '_') {
+            char        c     = str[++i];
+            const char *found = strchr(PG_tree_node_replace_chars, c);
+            if (!found) {
+                error = GBS_global_string("Illegal character '%c' after '_'", c);
+                free(result);
+                return 0;
+            }
+
+            result[j++] = PG_tree_node_escaped_chars[found-PG_tree_node_replace_chars];
+        }
+        else {
+            result[j++] = str[i];
+        }
+    }
+
+    return result;
+}
 #endif
 
 #else
