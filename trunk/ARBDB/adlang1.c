@@ -399,8 +399,49 @@ GB_ERROR gbl_dd(GBDATA *gb_species, char *com,
     if (argcparam!=0) return "dd syntax: dd (no parameters)";
     argvparam = argvparam;
     GBUSE(gb_species);GBUSE(com);
-    return _gbl_mid(argcinput, argvinput,argcout, argvout,
-                    0, 0, -1, 0);
+    return _gbl_mid(argcinput, argvinput,argcout, argvout, 0, 0, -1, 0);
+}
+
+GB_ERROR gbl_string_convert(GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam,GBL *argvparam, int *argcout, GBL **argvout)	{
+    int mode  = -1;
+    int i;
+    if (argcparam!=0) return "dd syntax: dd (no parameters)";
+    argvparam = argvparam;
+    GBUSE(gb_species);
+
+    if (strcmp(com, "lower")      == 0) mode = 0;
+    else if (strcmp(com, "upper") == 0) mode = 1;
+    else if (strcmp(com, "caps")  == 0) mode = 2;
+    else return GB_export_error("Unknown command '%s'", com);
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {	/* go through all in streams	*/
+        char *p              = GB_STRDUP(argvinput[i].str);
+        char *pp;
+        int   last_was_alnum = 0;
+
+        for (pp = p; pp[0]; ++pp) {
+            switch (mode) {
+                case 0:  pp[0] = tolower(pp[0]); break;
+                case 1:  pp[0] = toupper(pp[0]); break;
+                case 2: /* caps */
+                    if (isalnum(pp[0])) {
+                        if (last_was_alnum) pp[0] = tolower(pp[0]);
+                        else pp[0]                = toupper(pp[0]);
+                        last_was_alnum            = 1;
+                    }
+                    else {
+                        last_was_alnum = 0;
+                    }
+                    break;
+                default : ad_assert(0); break;
+            }
+        }
+
+        (*argvout)[(*argcout)++].str = p;	/* export result string */
+    }
+
+    return 0;
 }
 
 GB_ERROR gbl_head(GBDATA *gb_species, char *com,
@@ -411,8 +452,7 @@ GB_ERROR gbl_head(GBDATA *gb_species, char *com,
     GBUSE(gb_species);GBUSE(com);
     if (argcparam!=1) return "head syntax: head(#start)";
     start = atoi(argvparam[0].str);
-    return _gbl_mid(argcinput, argvinput,argcout, argvout,
-                    0,0, start, -start);
+    return _gbl_mid(argcinput, argvinput,argcout, argvout, 0,0, start, -start);
 }
 
 GB_ERROR gbl_tail(GBDATA *gb_species, char *com,
@@ -423,8 +463,7 @@ GB_ERROR gbl_tail(GBDATA *gb_species, char *com,
     GBUSE(gb_species);GBUSE(com);
     if (argcparam!=1) return "tail syntax: tail(#length_of_tail)";
     end = atoi(argvparam[0].str);
-    return _gbl_mid(argcinput, argvinput,argcout, argvout,
-                    -1, end, -1, 0);
+    return _gbl_mid(argcinput, argvinput,argcout, argvout, -1, end, -1, 0);
 }
 
 GB_ERROR gbl_mid0(GBDATA *gb_species, char *com,
@@ -437,9 +476,7 @@ GB_ERROR gbl_mid0(GBDATA *gb_species, char *com,
     GBUSE(gb_species);GBUSE(com);
     start = atoi(argvparam[0].str);
     end = atoi(argvparam[1].str);
-    return _gbl_mid(argcinput, argvinput,
-                    argcout, argvout,
-                    start, -start, end, -end);
+    return _gbl_mid(argcinput, argvinput, argcout, argvout, start, -start, end, -end);
 }
 
 GB_ERROR gbl_mid(GBDATA *gb_species, char *com,
@@ -632,7 +669,7 @@ GB_ERROR gbl_calculator(GBDATA *gb_species, char *com,
     char result[100];
     GBUSE(gb_species);GBUSE(com);
 
-    if (argcparam>=2) return "calculating function syntax: plus[(#add)]";
+    if (argcparam>=2) return "calculator syntax: plus|minus|.. (arg1, arg2)";
     if (!argcinput) return "calculating function: missing input";
 
     val1 = atoi(argvinput[0].str);
@@ -1151,6 +1188,7 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 
 
 struct GBL_command_table gbl_command_table[] = {
+    {"caps", gbl_string_convert } ,
     {"change", gbl_change_gc },
     {"checksum", gbl_check } ,
     {"command", gbl_command } ,
@@ -1170,6 +1208,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"head", gbl_head } ,
     {"keep", gbl_keep } ,
     {"len", gbl_len } ,
+    {"lower", gbl_string_convert } ,
     {"mid", gbl_mid } ,
     {"mid0", gbl_mid0 } ,
     {"minus", gbl_calculator } ,
@@ -1183,6 +1222,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"srt", gbl_srt },
     {"tab", gbl_tab } ,
     {"tail", gbl_tail } ,
+    {"upper", gbl_string_convert } ,
     {0,0}
 
 };
