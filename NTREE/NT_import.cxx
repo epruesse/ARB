@@ -32,8 +32,6 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
 /**
  * Opens the "Import Sequences" dialog from the
  * ARB main window (arb_ntree)
- *
- * O-Ton Harald: "Saugehaecke"
 */
 void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
@@ -43,7 +41,7 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
     AW_root *awr = aww->get_root();
 
-    awr->awar_int(AWAR_READ_GENOM_DB, 0); // only default
+    awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
     gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
 
@@ -53,7 +51,11 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
-    awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? 0 : 2);
+#if defined(DEVEL_ARTEM)
+    awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
+#else    
+    awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_GENEBANK : IMP_PLAIN_SEQUENCE);
+#endif // DEVEL_ARTEM
 
     if (!gb_main_is_genom_db) { // normal database -> set default to current alignment
         GB_transaction dummy(gb_main);
