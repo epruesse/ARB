@@ -9,6 +9,7 @@
 
 #include <aw_awars.hxx>
 
+#define mp_assert(x) arb_assert(x)
 
 class MP_Main;
 class MP_Window;
