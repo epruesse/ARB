@@ -723,7 +723,7 @@ void GB_edit(const char *path){
     char buffer[1024];
     const char *ae = GB_getenv("ARB_TEXTEDIT"); // doc in arb_envar.hlp
     char *fpath = GBS_eval_env(path);
-    if (!ae) ae = "xedit";
+    if (!ae) ae = "arb_textedit";
     sprintf(buffer, "%s %s &",ae,fpath);
     printf("%s\n", buffer);
     system(buffer);

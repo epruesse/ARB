@@ -5,7 +5,7 @@ arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:What to do with the tree:?
 argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ treefile "FILTER=$FILTER PKG=phylip")
-argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} treefile
+argchoice:TextEdit:arb_textedit treefile
 argchoice:Treetool:treetool treefile
 
 arg:PROGRAM

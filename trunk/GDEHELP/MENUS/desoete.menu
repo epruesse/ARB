@@ -33,5 +33,5 @@ arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:View tree using
 argchoice:ARB ('tree_desoete'):arb_read_tree tree_desoete_$$ in1.out "PRG=DeSoete CORR=$CORR FILTER=$FILTER"
-argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} in1.out
+argchoice:TextEdit:arb_textedit in1.out &
 argchoice:Treetool:treetool in1.out
