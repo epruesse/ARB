@@ -16,7 +16,7 @@
 #include "awt_tree.hxx"
 
 /*****************************************************************************************
- ************			Filter						**********
+ ************           Filter                      **********
  *****************************************************************************************/
 
 AP_filter::AP_filter(void){
@@ -30,11 +30,11 @@ AP_filter::AP_filter(void){
 GB_ERROR AP_filter::init(const char *ifilter, const char *zerobases, long size)
 {
     int             i;
-    if (!ifilter || !*ifilter) {		// select all
+    if (!ifilter || !*ifilter) {        // select all
         return this->init(size);
     }
 
-    delete	filter_mask;
+    delete  filter_mask;
     filter_mask = new char[size];
     filter_len = size;
     real_len = 0;
@@ -70,7 +70,7 @@ GB_ERROR AP_filter::init(const char *ifilter, const char *zerobases, long size)
 GB_ERROR AP_filter::init(long size)
 {
     int             i;
-    delete	filter_mask;
+    delete  filter_mask;
     filter_mask = new char[size];
     real_len = filter_len = size;
     for (i = 0; i < size; i++) {
@@ -81,7 +81,7 @@ GB_ERROR AP_filter::init(long size)
 }
 
 AP_filter::~AP_filter(void){
-    delete bootstrap;
+    delete [] bootstrap;
     delete [] filter_mask;
     delete filterpos_2_seqpos;
 }
@@ -139,21 +139,22 @@ void AP_filter::calc_filter_2_seq(){
 }
 
 void AP_filter::enable_bootstrap(int random_seed){
-    delete bootstrap;
-    bootstrap = new int[this->real_len];
+    delete [] bootstrap;
+    bootstrap = new int[real_len];
     int i;
-    if (random_seed){
-        srand(random_seed);
-    }
+    if (random_seed) srand(random_seed);
+
+    awt_assert(filter_len < RAND_MAX);
 
     for (i=0;i<this->real_len;i++){
-        int r = rand() + rand() * 256; // create a big random
-        bootstrap[i] = r % this->filter_len;
+        int r = rand();
+        awt_assert(r >= 0);     // otherwise overflow in random number generator
+        bootstrap[i] = r % filter_len;
     }
 }
 
 /*****************************************************************************************
- ************			Rates						**********
+ ************           Rates                       **********
  *****************************************************************************************/
 void AP_rates::print(void)
 {
@@ -207,11 +208,11 @@ char *AP_rates::init(AP_FLOAT * ra, AP_filter *fil)
     return 0;
 }
 
-AP_rates::~AP_rates(void)	{ if (rates) delete(rates);}
+AP_rates::~AP_rates(void)   { if (rates) delete(rates);}
 
 
 /*****************************************************************************************
- ************			Weights					       	**********
+ ************           Weights                         **********
  *****************************************************************************************/
 
 AP_weights::AP_weights(void) {
@@ -252,11 +253,11 @@ char *AP_weights::init(GB_UINT4 *w, AP_filter *fil)
 
 AP_weights::~AP_weights(void)
 {
-    delete weights;
+    delete [] weights;
 }
 
 /*****************************************************************************************
- ************			Matrizes					       	**********
+ ************           Matrizes                            **********
  *****************************************************************************************/
 
 void AP_matrix::set_description(const char *xstring,const char *ystring){
@@ -275,8 +276,8 @@ void AP_matrix::set_description(const char *xstring,const char *ystring){
         if(ypos>=size) GB_CORE;
         x_description[ypos++] = strdup(t);
     }
-    delete x;
-    delete y;
+    free(x);
+    free(y);
 }
 
 void AP_matrix::create_awars(AW_root *awr,const char *awar_prefix){
@@ -337,7 +338,7 @@ void AP_matrix::create_input_fields(AW_window *aww,const char *awar_prefix){
     }
 }
 
-void AP_matrix::normize(){	// set values so that average of non diag elems == 1.0
+void AP_matrix::normize(){  // set values so that average of non diag elems == 1.0
     int x,y;
     double sum = 0.0;
     double elems = 0.0;
@@ -393,22 +394,18 @@ AP_matrix::~AP_matrix(void)
     long i;
     for (i=0;i<size;i++){
         free((char *)(m[i]));
-        if (x_description){
-            delete x_description[i];
-        }
-        if (y_description){
-            delete y_description[i];
-        }
+        if (x_description) free(x_description[i]);
+        if (y_description) free(y_description[i]);
     }
-    delete x_description;
-    delete y_description;
+    free(x_description);
+    free(y_description);
     free((char *)m);
 }
 
 
 
 /*****************************************************************************************
- ************			AP_Sequence					**********
+ ************           AP_Sequence                 **********
  *****************************************************************************************/
 
 
@@ -431,7 +428,7 @@ void AP_sequence::set_gb(GBDATA *gb_data){
     this->set(GB_read_char_pntr(gb_data));
 }
 /*****************************************************************************************
- ************			AP_tree_root					**********
+ ************           AP_tree_root                    **********
  *****************************************************************************************/
 
 void
@@ -505,7 +502,7 @@ void AP_tree_root::update_timers(void)
 }
 
 /*****************************************************************************************
- ************			AP_tree						**********
+ ************           AP_tree                     **********
  *****************************************************************************************/
 void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE){
     AP_tree *THIS = (AP_tree *)cl;
@@ -513,7 +510,7 @@ void ap_tree_node_deleted(GBDATA *, int *cl, GB_CB_TYPE){
 }
 
 
-AP_tree::AP_tree(AP_tree_root	*tree_rooti)
+AP_tree::AP_tree(AP_tree_root   *tree_rooti)
 {
     //memset(((char*)this)+sizeof(char*), 0, sizeof(*this)-sizeof(char*));
 
@@ -542,7 +539,7 @@ AP_tree::~AP_tree(void)
     if (this->tree_root) this->tree_root->inform_about_delete(this);
 }
 
-AP_tree *AP_tree::dup(void)	{
+AP_tree *AP_tree::dup(void) {
     return new AP_tree(this->tree_root);
 }
 
@@ -602,7 +599,7 @@ AP_BOOL AP_tree::is_son(AP_tree *mfather) {
 
 GB_ERROR AP_tree::insert(AP_tree *new_brother){
     AP_tree        *new_tree = dup();
-    AP_FLOAT	laenge;
+    AP_FLOAT    laenge;
 
     new_tree->leftson = this;
     new_tree->rightson = new_brother;
@@ -631,13 +628,13 @@ GB_ERROR AP_tree::insert(AP_tree *new_brother){
 }
 
 char *AP_tree_root::inform_about_changed_root(class AP_tree *old, class AP_tree *newroot) {
-    if (this->root_changed)	root_changed(root_changed_cd,old,newroot);
+    if (this->root_changed) root_changed(root_changed_cd,old,newroot);
     this -> tree = newroot;
     return 0;
 }
 
 char *AP_tree_root::inform_about_delete(class AP_tree *old) {
-    if (this->node_deleted)	node_deleted(node_deleted_cd,old);
+    if (this->node_deleted) node_deleted(node_deleted_cd,old);
     return 0;
 }
 
@@ -651,7 +648,7 @@ GB_ERROR AP_tree::remove(void){
     if (father->leftson != this) {
         father->swap_sons();
     }
-    if (father->gb_node) {		// move inner information to subtree
+    if (father->gb_node) {      // move inner information to subtree
         if (!father->rightson->gb_node && !father->rightson->is_leaf){
             father->rightson->gb_node = father->gb_node;
             father->gb_node = 0;
@@ -683,7 +680,7 @@ GB_ERROR AP_tree::remove(void){
 
 const char *AP_tree::move(AP_tree *new_brother, AP_FLOAT rel_pos)
     // rel_pos == 0.0 -> at father
-    //	== 1.0 -> at brother
+    //  == 1.0 -> at brother
 {
     if (new_brother->is_son(this)) {
         return GB_export_error("You cannot move a tree to itself");
@@ -694,19 +691,19 @@ const char *AP_tree::move(AP_tree *new_brother, AP_FLOAT rel_pos)
     }
 
     if (father->father == 0) {
-        if (new_brother->father == this->father) return 0;	// move root to root
+        if (new_brother->father == this->father) return 0;  // move root to root
         brother()->father = 0;
         this->tree_root->inform_about_changed_root(father,brother());
     }else{
         AP_tree        *ff_pntr = father->father;
-        if (father == new_brother) {	// just pull branches !!
+        if (father == new_brother) {    // just pull branches !!
             new_brother = brother();
             if (ff_pntr->leftson == father) {
                 rel_pos *= ff_pntr->leftlen / (father->rightlen+ff_pntr->leftlen);
             }else{
                 rel_pos *= ff_pntr->rightlen/(father->rightlen+ff_pntr->rightlen);
             }
-        }else if (new_brother->father == this->father) {	// just pull branches !!
+        }else if (new_brother->father == this->father) {    // just pull branches !!
             if (ff_pntr->leftson == father) {
                 rel_pos = 1.0 + (rel_pos -1.0) *
                     father->rightlen / (father->rightlen+ff_pntr->leftlen);
@@ -728,8 +725,8 @@ const char *AP_tree::move(AP_tree *new_brother, AP_FLOAT rel_pos)
     }
 
     AP_tree        *new_tree = father;
-    AP_tree		*brother_father = new_brother->father;
-    AP_FLOAT	laenge;
+    AP_tree     *brother_father = new_brother->father;
+    AP_FLOAT    laenge;
 
     if (brother_father->leftson == new_brother) {
         laenge = brother_father->leftlen;
@@ -861,15 +858,15 @@ GB_ERROR AP_tree::swap_assymetric(AP_TREE_SIDE mode){
 
 GB_ERROR AP_tree::set_root()
 {
-    AP_tree	       *pntr;
+    AP_tree        *pntr;
     AP_tree        *prev;
     AP_tree        *next;
     AP_branch_members br1,br2;
-    if (father == 0) {		// already root
+    if (father == 0) {      // already root
         return 0;
     }
 
-    if (father->father == 0) {	// already root  ???
+    if (father->father == 0) {  // already root  ???
         return 0;
     }
 
@@ -885,11 +882,11 @@ GB_ERROR AP_tree::set_root()
         pntr->rightson->br = br1;
     }
 
-    if (old_brother)	old_brother = old_brother->brother();
-    AP_tree        *	old_root = pntr;
+    if (old_brother)    old_brother = old_brother->brother();
+    AP_tree        *    old_root = pntr;
 
 
-    {			// move remark branches to top
+    {           // move remark branches to top
         AP_tree *node;
         char *remark = GBS_strdup(this->remark_branch);
         for (node = this;node->father;node = node->father){
@@ -906,7 +903,7 @@ GB_ERROR AP_tree::set_root()
     //
 
     old_root->leftson = this;
-    old_root->rightson = this->father;	// will be set later
+    old_root->rightson = this->father;  // will be set later
 
     if (this->father->leftson == this) {
         old_root->leftlen = old_root->rightlen = this->father->leftlen*.5;
@@ -918,10 +915,10 @@ GB_ERROR AP_tree::set_root()
     prev = old_root;
     pntr = father;
 
-    if (father->leftson == this)	father->leftson = old_root;	// to set the flag correctly
+    if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
 
     //
-    //loop from father to son of root	rotate tree
+    //loop from father to son of root   rotate tree
     //
     while  (next->father) {
         double len = 0;
@@ -1099,7 +1096,7 @@ GB_ERROR PH_tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS)
     return error;
 }
 
-const char *AP_tree::save(char	*tree_name)
+const char *AP_tree::save(char  *tree_name)
 {
     GB_ERROR error = 0;
     tree_name = tree_name;
@@ -1167,7 +1164,7 @@ GBT_LEN AP_tree::arb_tree_min_deep()
     return l;
 }
 
-int AP_tree::arb_tree_set_leafsum_viewsum()	// count all visible leafs
+int AP_tree::arb_tree_set_leafsum_viewsum() // count all visible leafs
 {
     int l,r;
     if (is_leaf) {
@@ -1185,7 +1182,7 @@ int AP_tree::arb_tree_set_leafsum_viewsum()	// count all visible leafs
     return gr.leave_sum;
 }
 
-int AP_tree::arb_tree_leafsum2()	// count all leafs
+int AP_tree::arb_tree_leafsum2()    // count all leafs
 {
     if (is_leaf) return 1;
     return leftson->arb_tree_leafsum2() + rightson->arb_tree_leafsum2();
@@ -1266,15 +1263,15 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
     if (is_leaf) {
         if (gb_node){
             res = GBS_read_hash( hashptr, name );
-            //		    printf("Ausgabe aus Alex' Hashtabelle : %d\n",res);
-            if (GB_read_flag(gb_node))			//Bakt. ist markiert
+            //          printf("Ausgabe aus Alex' Hashtabelle : %d\n",res);
+            if (GB_read_flag(gb_node))          //Bakt. ist markiert
                 if (!res)
                     res = AWT_GC_BLACK;
                 else
                     if (!res)
                         res =  AWT_GC_BLACK;
         }else{
-            res = 	AWT_GC_SOME_MISMATCHES;
+            res =   AWT_GC_SOME_MISMATCHES;
         }
     }else{
         l = leftson->calc_color_probes(hashptr);
@@ -1317,7 +1314,7 @@ void AP_tree::pop(unsigned long slevel){
     AW_ERROR("AP_tree::pop");
     slevel=slevel;
 }
-AP_BOOL AP_tree::clear(	unsigned long stack_update, unsigned long user_push_counter){
+AP_BOOL AP_tree::clear( unsigned long stack_update, unsigned long user_push_counter){
     AW_ERROR("AP_tree::clear");
     stack_update=stack_update;user_push_counter=user_push_counter;
     return AP_FALSE;
@@ -1330,10 +1327,10 @@ AP_FLOAT AP_tree::costs(void){
     return 0.0;
 }
 
-GB_ERROR AP_tree::load(	AP_tree_root *tr, int link_to_database, GB_BOOL insert_delete_cbs, GB_BOOL show_status )	{
+GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_delete_cbs, GB_BOOL show_status )    {
     GBDATA *gb_main = tr->gb_main;
     char *tree_name = tr->tree_name;
-    GB_transaction dummy(gb_main);	// open close a transaction
+    GB_transaction dummy(gb_main);  // open close a transaction
 
     GBT_TREE *gbt_tree;
     GBDATA *gb_tree_data;
@@ -1361,10 +1358,10 @@ GB_ERROR AP_tree::load(	AP_tree_root *tr, int link_to_database, GB_BOOL insert_d
     return 0;
 }
 
-GB_ERROR AP_tree::relink(	)
+GB_ERROR AP_tree::relink(   )
 {
-    GB_transaction dummy(this->tree_root->gb_main);	// open close a transaction
-    GB_ERROR error = GBT_link_tree(this->get_gbt_tree(),this->tree_root->gb_main,GB_FALSE);	// no status
+    GB_transaction dummy(this->tree_root->gb_main); // open close a transaction
+    GB_ERROR error = GBT_link_tree(this->get_gbt_tree(),this->tree_root->gb_main,GB_FALSE); // no status
     this->tree_root->update_timers();
     return error;
 }
@@ -1399,13 +1396,13 @@ void AP_tree::_load_sequences_rek(char *use,GB_BOOL set_by_gbdata,long nnodes, l
      * loads all sequences rekursivly
      * clears sequence->is_set_flag
      * flag = 0 with loading - 1 = without
-     *	use = alignment
+     *  use = alignment
      */
 
     GBDATA *gb_data;
     if (is_leaf) {
         if (gb_node  ) {
-            if ( sequence == 0)	{
+            if ( sequence == 0) {
                 if (nnodes){
                     aw_status((*counter)++/(double)nnodes);
                 }
@@ -1490,7 +1487,7 @@ char *buildBranchList_rek(AP_tree *THIS, AP_tree **list,long& num,
         if (THIS->father->father){
             list[num++] = THIS;
             list[num++] = THIS->father;
-        }else{					// root
+        }else{                  // root
             if (THIS->father->leftson == THIS) {
                 list[num++] = THIS;
                 list[num++] = THIS->father->rightson;
@@ -1546,7 +1543,7 @@ GB_ERROR AP_tree::remove_leafs(GBDATA *gb_main,int awt_remove_type)
         long flag;
         if (list[i]->gb_node) {
             flag = GB_read_flag(list[i]->gb_node);
-            if (	( flag && (awt_remove_type & AWT_REMOVE_MARKED) ) ||
+            if (    ( flag && (awt_remove_type & AWT_REMOVE_MARKED) ) ||
                     ( !flag && (awt_remove_type & AWT_REMOVE_NOT_MARKED) ) ||
                     ( !list[i]->sequence && (awt_remove_type & AWT_REMOVE_NO_SEQUENCE) )
                     ){
@@ -1603,17 +1600,17 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     for  (i=0; i< anzahl; i++) {
         // choose two random numbers
 #if defined(SUN4)
-        num = (int)random();		// random node
+        num = (int)random();        // random node
 #else
-        num = (int)rand();		// random node
+        num = (int)rand();      // random node
 #endif
         if (num<0) num *=-1;
-        num = num%count;		// exclude already selected nodes
-        retlist[i] = list[num];		// export node
-        count--;			// exclude node
+        num = num%count;        // exclude already selected nodes
+        retlist[i] = list[num];     // export node
+        count--;            // exclude node
         list[num] = list[count];
         list[count] = retlist[i];
-        if (count == 0) count = sumnodes;	//restart it
+        if (count == 0) count = sumnodes;   //restart it
     }
     delete list;
     return retlist;
@@ -1647,7 +1644,7 @@ double ap_search_strange_species_rek(AP_tree *at,double diff_eps,double max_diff
 
     if (max > min * (1.0 + max_diff) + diff_eps){
         if (max_is_left) ap_mark_species_rek(at->leftson);
-        else		ap_mark_species_rek(at->rightson);
+        else        ap_mark_species_rek(at->rightson);
         return  - 2.0 * max_diff;
     }
     return (max + min) *.5;
@@ -1655,7 +1652,7 @@ double ap_search_strange_species_rek(AP_tree *at,double diff_eps,double max_diff
 
 void AP_tree::mark_long_branches(GBDATA *gb_main,double diff){
     // look for asymmetric parts of the tree and mark all species with long branches
-    double max_deep = 	gr.tree_depth;
+    double max_deep =   gr.tree_depth;
     double diff_eps = max_deep * 0.05;
     GB_transaction dummy(gb_main);
     ap_search_strange_species_rek(this,diff_eps,diff);
