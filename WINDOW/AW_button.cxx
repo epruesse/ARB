@@ -309,11 +309,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     int    width_of_last_widget  = 0;
     int    height_of_last_widget = 0;
 
-    dump_at_position("create_button[0]");
-
     check_at_pos();
-
-    dump_at_position("create_button[1]");
 
     if (_callback && ((long)_callback!= 1) )
     {
@@ -490,9 +486,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     p_w->toggle_field = button;
     this->_set_activate_callback((void *)button);
     this->unset_at_commands();
-    dump_at_position("create_button[end-1]");
     this->increment_at_commands( width_of_last_widget, height_of_last_widget );
-    dump_at_position("create_button[end]");
 }
 
 void AW_window::dump_at_position(const char *label) const {

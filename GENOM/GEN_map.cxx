@@ -565,33 +565,22 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->set_info_area_height( 250 );
     awm->at(11,2);
     awm->auto_space(2,-2);
-    //awm->auto_space(5,-2);
     awm->shadow_width(1);
 
     // close + undo button, info area, define line y-positions:
 
     int cur_x, cur_y, start_x, first_line_y, second_line_y, third_line_y;
     awm->get_at_position( &start_x,&first_line_y);
+    awm->button_length(6);
 
-    printf("start_x = %i\n", start_x);
-
-    awm->button_length(5);
-
-    awm->at(cur_x, first_line_y);
+    awm->at(start_x, first_line_y);
     awm->help_text("quit.hlp");
     awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("Close", "Close");
 
     awm->get_at_position( &cur_x,&cur_y );
 
-    printf("cur_x = %i\n", cur_x);
-    printf("cur_y = %i\n", cur_y);
-
-    int gene_x = cur_x+10;
-    gene_x     = start_x+100; //@@@
-
-    printf("gene_x = %i\n", gene_x);
-
+    int gene_x = cur_x;
     awm->at_newline();
     awm->get_at_position( &cur_x,&second_line_y);
 
@@ -625,14 +614,11 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->create_button("SEARCH_GENE",AWAR_GENE_NAME);
 
     awm->get_at_position( &cur_x,&cur_y );
-    int dtype_x1 = cur_x+10;
-    dtype_x1     = gene_x+200;
-
-    printf("dtype_x1 = %i\n", dtype_x1);
+    int dtype_x1 = cur_x;
 
     // display type buttons:
 
-    awm->button_length(7);
+    awm->button_length(4);
 
     awm->at(dtype_x1, first_line_y);
     awm->help_text("gen_disp_radial.hlp");
@@ -644,10 +630,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->create_button("RADIAL_DISPLAY_TYPE", "#gen_book.bitmap",0);
 
     awm->get_at_position( &cur_x,&cur_y );
-    int jump_x = cur_x+10;
-    jump_x     = dtype_x1+100;
-
-    printf("jump_x = %i\n", jump_x);
+    int jump_x = cur_x;
 
     awm->at(dtype_x1, second_line_y);
     awm->help_text("gen_disp_vertical.hlp");
@@ -666,8 +649,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     // help buttons:
 
     awm->get_at_position( &cur_x,&cur_y );
-    int help_x = cur_x+10;
-    help_x     = jump_x+100;
+    int help_x = cur_x;
 
     awm->at(help_x, first_line_y);
     awm->help_text("help.hlp");
