@@ -8,34 +8,34 @@ destmach=$dest$1/$HOSTTYPE
 
 FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
 echo "\n\n*************"
-echo "exporting $FILES to the homepage:"
+echo "exporting $FILES to the website:"
 echo " ******* $destmach  ******"
 echo " Is this OK ??? [y]/n"
-read ok
-if [ "X$ok" != 'Xn' ]; then
+# read ok
+# if [ "X$ok" != 'Xn' ]; then
 	for i in $FILES; do
-		echo rcp $i $destmach
-		rcp $i $destmach
+		echo cp $i $destmach
+		cp $i $destmach
 	done
-fi
+# fi
 
 SOURCE=`echo arbsrc*.tgz`
 README="arb_README.txt README arb_CHANGES.txt"
 echo "\n\n*************"
-echo "exporting $SOURCE $README to the homepage:"
+echo "exporting $SOURCE $README to the website:"
 echo " ******* $dest  ******"
 echo " Is this OK ??? y/[n]"
-read ok
-if [ "X$ok" = 'Xy' ]; then
+# read ok
+# if [ "X$ok" = 'Xy' ]; then
 	for i in $SOURCE; do
-		echo rcp $i $dest/src
-		rcp $i $dest/src
+		echo cp $i $dest/src
+		cp $i $dest/src
 	done
 	for i in $README; do
-		echo rcp $i $dest
-		rcp $i $dest
+		echo cp $i $dest
+		cp $i $dest
 	done
-fi
+# fi
 
 # export names.dat:
 gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
