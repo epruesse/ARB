@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : tree_merge.cxx                                         //
 //    Purpose   : merges multiple trees saved by arb_probe_group_design  //
-//    Time-stamp: <Sun Sep/28/2003 22:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Oct/02/2003 13:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -19,7 +19,8 @@
 #include <fstream>
 
 #include <stdio.h>
-#include <assert.h>
+#include <arb_assert.h>
+#define tm_assert(cond) arb_assert(cond)
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -55,9 +56,9 @@ static void helpArguments(){
 static GB_ERROR scanArguments(int argc,char *argv[]){
     GB_ERROR error = 0;
 
-    if (argc < 4) {
+    if (argc < 3) {
         helpArguments();
-        error = "Need at least 2 input- and 1 output-tree.";
+        error = "Need at least 1 input- and 1 output-tree.";
     }
     else {
         for (int c = 1; c < argc; ++c) {
@@ -96,7 +97,7 @@ static string extractNodeInfos(const string& line, deque<string>& extract, GB_ER
 }
 
 static GB_ERROR splitNodeInfoTokens(const string& s, TokMap& tokens) {
-    size_t start = 0;
+    size_t start = s.empty() ? string::npos : 0;
     while (start != string::npos) {
         size_t equal = s.find('=', start);
         if (equal == string::npos) {
@@ -228,7 +229,7 @@ static string mergeNodeInfos(deque<string>& infos, GB_ERROR& error) {
             result += tm->first+"="+tm->second+",";
         }
         size_t len = result.length();
-        if (len) result.erase(len-1);
+        if (len) result.resize(len-1);
     }
     return result;
 }
@@ -252,6 +253,8 @@ static string mergeDifferingLines(set<string>& lines, GB_ERROR& error) {
         }
     }
 
+    fprintf(stdout, "format=<%s>\n", format.c_str());
+
     if (!error) {
         deque<string> mergedInfos;
 
@@ -270,17 +273,29 @@ static string mergeDifferingLines(set<string>& lines, GB_ERROR& error) {
 
         while (!mergedInfos.empty() && !error) {
             size_t pos = format.find("%s");
-            assert(pos != string::npos);
+            tm_assert(pos != string::npos);
 
-            char   *encoded     = encodeTreeNode(mergedInfos.front().c_str());
-            string  replacement = string("\'")+encoded+'\'';
-            free(encoded);
+            const string& nodeInfo = mergedInfos.front();
+            if (nodeInfo.length()) {
+                char   *encoded     = encodeTreeNode(nodeInfo.c_str());
+                string  replacement = string("\'")+encoded+'\'';
+                format.replace(pos, 2, replacement);
+                free(encoded);
+            }
+            else {
+                format.erase(pos, 2);
+            }
 
-            format.replace(pos, 2, replacement);
+            fprintf(stdout, "format=<%s>\n", format.c_str());
             mergedInfos.pop_front();
         }
 
-        if (!error) return format;
+        if (!error) {
+            if (format.find("''") != string::npos) {
+                tm_assert(0);
+            }
+            return format;
+        }
     }
 
     return "<error>";
@@ -330,11 +345,19 @@ static GB_ERROR mergeTrees(deque<ifstreamPtr>& in, ofstream& out) {
             ++linenumber;
 
             if (lines.size() == 1) { // all lines are equal
-                const string& line = *(lines.begin());
-                out << line << '\n';
+                string line = *(lines.begin());
                 if (!headerdone && line.find(']') != string::npos) {
                     headerdone = true;
                 }
+                else {
+                    if (headerdone) {
+                        size_t empty_node;
+                        while ((empty_node = line.find("''")) != string::npos) {
+                            line.erase(empty_node, 2);
+                        }
+                    }
+                }
+                out << line << '\n';
             }
             else { // lines differ
                 if (headerdone) {
