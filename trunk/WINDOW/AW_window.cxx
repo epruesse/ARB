@@ -3324,6 +3324,12 @@ GB_ERROR    AW_root::enable_execute_macro(FILE *mfile,const char *mname){
 }
 #endif
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#define DUMP_REMOTE_ACTIONS
+#endif // DEVEL_RALF
+#endif // DEBUG
+
 GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_base){
     GBDATA *gb_main = (GBDATA *)gb_maind;
     char awar_action[1024]; sprintf(awar_action,"%s/action",rm_base);
@@ -3339,12 +3345,27 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
         if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
             char *read_value = this->awar(awar)->read_as_string();
             GBT_write_string(gb_main, awar_value, read_value);
+#if defined(DUMP_REMOTE_ACTIONS)
+            printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", awar, read_value);
+#endif // DUMP_REMOTE_ACTIONS
             free(read_value);
             // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
+            action[0]        = 0;
+            GBT_write_string(gb_main, awar_action, "");
+        }
+        else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+            this->awar(awar)->touch();
+#if defined(DUMP_REMOTE_ACTIONS)
+            printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", awar);
+#endif // DUMP_REMOTE_ACTIONS
+            // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
             action[0] = 0;
             GBT_write_string(gb_main, awar_action, "");
         }
         else {
+#if defined(DUMP_REMOTE_ACTIONS)
+            printf("remote command (write awar) awar='%s' value='%s'\n", awar, value);
+#endif // DUMP_REMOTE_ACTIONS
             error = this->awar(awar)->write_as_string(value);
         }
         GBT_write_string(gb_main,awar_result,error ? error : "");
@@ -3354,6 +3375,11 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
 
     if (action[0]){
         AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash,action);
+
+#if defined(DUMP_REMOTE_ACTIONS)
+        printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
+#endif                          // DUMP_REMOTE_ACTIONS
+
         if (cbs){
             cbs->run_callback();
             GBT_write_string(gb_main,awar_result,"");
