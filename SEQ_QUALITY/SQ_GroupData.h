@@ -24,36 +24,43 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-class SQ_GroupData {
+typedef struct Groupnames {
+    const char *name;
+    Groupnames *next;
+} Groupnames;
 
-    SQ_GroupData(const SQ_GroupData& other); // copying not allowed
+class SQ_GroupData {
+    SQ_GroupData(const SQ_GroupData& other);              // copying not allowed
     SQ_GroupData& operator = (const SQ_GroupData& other); // assignment not allowed
+
 public:
     SQ_GroupData();
     virtual ~SQ_GroupData();
 
     virtual SQ_GroupData *clone() const = 0;
 
-    void    SQ_set_avg_bases(int bases) { avg_bases = bases; }
-    int     SQ_get_avg_bases() const { return avg_bases; }
-    bool    SQ_is_initialized() const { return initialized; }
+    void         SQ_set_avg_bases(int bases) { avg_bases = bases; }
+    int          SQ_get_avg_bases() const { return avg_bases; }
+    void         SQ_set_groupname(const char* name);
+    Groupnames * SQ_get_groupname() const { return head; }
+    bool         SQ_is_initialized() const { return initialized; }
 
-    virtual void    SQ_init_consensus(int size)                    = 0;
-    virtual int SQ_print_on_screen()                               = 0;
+    virtual void   SQ_init_consensus(int size)                     = 0;
+    virtual int    SQ_print_on_screen()                            = 0;
     virtual double SQ_test_against_consensus(const char *sequence) = 0;
-    virtual void SQ_add_sequence(const char *sequence)             = 0;
-    virtual void SQ_add(const SQ_GroupData& other)                 = 0;
+    virtual void   SQ_add_sequence(const char *sequence)           = 0;
+    virtual void   SQ_add(const SQ_GroupData& other)               = 0;
 
 protected:
-
     int  size;
     int  avg_bases;
     bool initialized;
+    Groupnames * head;
 };
 
 template <int I>
 class Int {
-    Int(const Int& other); // copying not allowed
+    Int(const Int& other);            // copying not allowed
     Int& operator=(const Int& other); // assignment not allowed
 
 public:
@@ -78,7 +85,7 @@ public:
 template <int I>
 class SQ_GroupData_Impl : public SQ_GroupData {
 
-    SQ_GroupData_Impl(const SQ_GroupData_Impl& other); // copying not allowed
+    SQ_GroupData_Impl(const SQ_GroupData_Impl& other);            // copying not allowed
     SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other); // assignment not allowed
 public:
     SQ_GroupData_Impl() { consensus = 0; }
@@ -97,7 +104,7 @@ protected:
 
 class SQ_GroupData_RNA: public SQ_GroupData_Impl<7> {
 
-    SQ_GroupData_RNA(const SQ_GroupData_RNA& other); // copying not allowed
+    SQ_GroupData_RNA(const SQ_GroupData_RNA& other);            // copying not allowed
     SQ_GroupData_RNA& operator=(const SQ_GroupData_RNA& other); // assignment not allowed
 public:
     SQ_GroupData_RNA() {}
@@ -110,7 +117,7 @@ public:
 
 class SQ_GroupData_PRO: public SQ_GroupData_Impl<20> {
 
-    SQ_GroupData_PRO(const SQ_GroupData_PRO& other); // copying not allowed
+    SQ_GroupData_PRO(const SQ_GroupData_PRO& other);            // copying not allowed
     SQ_GroupData_PRO& operator=(const SQ_GroupData_PRO& other); // assignment not allowed
 public:
     SQ_GroupData_PRO() {}
