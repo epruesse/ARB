@@ -74,7 +74,7 @@ void tree_import_callback(AW_root *aw_root) {
         treename_nopath = treename;
     }
 
-	char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1",0);
+	char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1",0);
 	aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
 	delete fname;
@@ -168,6 +168,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
 
 	aw_root->awar_int( AWAR_NODE_INFO_ONLY_MARKED, 0,	aw_def);
 
+    update_filter_cb(aw_root);
 	tree_vars_callback(aw_root);
 }
 
