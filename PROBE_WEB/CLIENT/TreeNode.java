@@ -5,9 +5,6 @@ import java.lang.*;
 import java.util.*;
 //import de.arbhome.arb_probe_library.*;
 
-
-
-
 public class TreeNode
 {
 // private float xOffset;
@@ -18,41 +15,56 @@ private int xOffset;
 private int yOffset;
 
     // content
-private float distance = 0;
-private StringBuffer nodeName;
-private float totalDist = 0;
-private float bootstrap;
-private String emblAccession;
-private String arbAccession;
+private double distance = 0;     // branchlength ?
+// private StringBuffer nodeName;
+// private float        bootstrap;
+// private String       emblAccession;
+
+    // ARB Data (valid for leafs only)
+private String shortName;
+private String fullName;
+private String accession_number;
+
+    // ARB Data (valid for internal nodes only)
+private String groupName;
+
+    // probe information
+private int exactMatches;       // number of probes matching exactly
+private int minNonGroupHits;    // the probe(s) matching all members of the group, hit(s) minimal that many species outside the group
+private int maxCoverage;        // the maximum coverage reached for this group (range is  0..100)
+
+private double  totalDist = 0;
 private String binaryPath;
 private String codedPath;
 private  static  final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-    // data structure
-private boolean isLeaf;
-private TreeNode father;
-private Vector childNodes;
-private int noOfChildren = 0;
-private boolean grouped = false;
-private boolean marked = false;
 
+    // data structure
+private boolean  isLeaf;
+private TreeNode father;
+private Vector   childNodes;
+private int      noOfChildren = 0;
+private boolean  grouped      = false;
+private boolean  marked       = false;
 
     // test and internals
-public int level;
+public int         level;
 public static long nodeCounter = 0;
-public long nodeSerial;
-public float maxDepth = 0;
-public boolean verbose = false;
+public long        nodeSerial;
+public double      maxDepth    = 0;
+public boolean     verbose     = false;
 
 
 
-public TreeNode()
+public TreeNode(boolean is_leaf)
 {
-    nodeName = new StringBuffer();
+    isLeaf     = is_leaf;
     childNodes = new Vector();
     nodeSerial = nodeCounter;
-    if (verbose) System.out.println("TreeNode:node number " + nodeSerial + " generated");
-    nodeCounter++;
+    father     = null;
 
+    if (verbose) System.out.println("TreeNode:node number " + nodeSerial + " generated");
+
+    nodeCounter++;
 }
 
     // copy constructor
@@ -87,12 +99,12 @@ public boolean testGrouped()
         return grouped;
     }
 
-public float getTotalDist()
+public double getTotalDist()
     {
         return totalDist;
     }
 
-public void calculateTotalDist(float td)
+public void calculateTotalDist(double td)
 {
     totalDist = distance + td;
     if (isLeaf != true)
@@ -117,32 +129,60 @@ public void calculateTotalDist(float td)
 // }
 
 
-public void setDistance(float d){
+public void setDistance(double d){
     distance = d;
 }
 
-public float getDistance(){
+public double getDistance(){
     return distance;
 }
 
-public void setNodeName(String n)
-{
-    nodeName = new StringBuffer(n);
+public void setSpeciesInfo(String short_name, String full_name, String acc) throws Exception {
+    if (!isLeaf) {
+        throw new Exception("setSpeciesInfo called for internal node");
+    }
+    shortName        = short_name;
+    fullName         = full_name;
+    accession_number = acc;
+}
+public void setGroupInfo(String group_name) throws Exception {
+    if (isLeaf) {
+        throw new Exception("setGroupInfo called for leaf");
+    }
+    groupName = group_name;
 }
 
-public String getNodeName()
-{
-    return nodeName.toString();
+public void setProbeInfo(int no_of_exact_matches, int min_non_group_hits, int max_coverage) throws Exception {
+    if (isLeaf) {
+        if (max_coverage != 100) {
+            throw new Exception("setProbeInfo with max_coverage!=0 called for leaf");
+        }
+    }
+    exactMatches    = no_of_exact_matches;
+    minNonGroupHits = min_non_group_hits;
+    maxCoverage     = max_coverage;
 }
 
-public void appendNodeName(String app)
-{
-    nodeName.append(app);
+public String getShortName() { return shortName; }
+public String getFullName() { return fullName; }
+public String getAccessionNumber() { return accession_number; }
+public int getExactMatches() { return exactMatches; }
+public int getMinNonGroupHits() { return minNonGroupHits; }
+public int getMaxCoverage() { return maxCoverage; }
 
+public String getNodeInformation() { // the string displayed in window
+    if (isLeaf) {
+        return "["+getExactMatches()+"] "+getFullName()+", "+getAccessionNumber();
+    }
+
+    return "blabla";
 }
 
-public void setFather(TreeNode f)
+public void setFather(TreeNode f) throws Exception
     {
+        if (father != null) {
+            throw new Exception("setFather called twice");
+        }
         father = f;
     }
 
@@ -151,11 +191,16 @@ public TreeNode getFather()
       return father;
     }
 
-public void addChild(TreeNode tn)
-    {
-        childNodes.addElement(tn);
+public void addChild(TreeNode tn) throws Exception
+{
+    if (isLeaf) {
+        throw new Exception("Tried to add a child to a leaf node");
     }
-
+    else {
+        childNodes.addElement(tn);
+        tn.setFather(this);
+    }
+}
 
 public int getNoOfLeaves()
     //throws Exception e
@@ -222,7 +267,7 @@ public int getYOffset(){
 
 // not used yet
 
-public float getMaxDepth()
+public double getMaxDepth()
 {
     return testLeaf() ? getTotalDist()
         : ((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist()
