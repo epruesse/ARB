@@ -44,51 +44,71 @@ private String removeTags(String str)
         return res;
     }
 
-public ServerAnswer(String answer)
+public ServerAnswer(String answer, boolean needResult, boolean beNoisy)
     {
         map                  = new HashMap();
         error_message        = null;
         boolean format_error = false;
 
+        String parseAnswer = new String(answer)+"\n";
+
         int start = 0;
-        int nl    = answer.indexOf('\n');
+        int nl    = parseAnswer.indexOf('\n');
 
         while (nl != -1) {
-            String line = answer.substring(start, nl);
-            int    eq   = line.indexOf('=');
-            if (eq !=  -1) {
-                String key   = line.substring(0, eq);
-                String value = line.substring(eq+1);
-                map.put(key, value);
-                System.out.println("    ANSWER: key='"+key+"' value='"+value+"'");
-            }
-            else {
-                format_error = true;
+            String line = parseAnswer.substring(start, nl);
+            if (!line.equals("")) {
+                int    eq   = line.indexOf('=');
+                if (eq !=  -1) {
+                    String key   = line.substring(0, eq);
+                    String value = line.substring(eq+1);
+                    map.put(key, value);
+                    if (beNoisy) System.out.println("    ANSWER: key='"+key+"' value='"+value+"'");
+                }
+                else {
+                    format_error = true;
+                }
             }
 
             start = nl+1;
-            nl    = answer.indexOf('\n', start);
+            nl    = parseAnswer.indexOf('\n', start);
         }
 
         if (format_error) {
             if (hasKey("result") && !getValue("result").equals("ok")) {
-                error_message  = getValue("message");
+                if (hasKey("message")) {
+                    error_message = getValue("message");
+                }
+                else {
+                    // should not occur
+                    error_message     = "Result '"+getValue("result")+"' without message";
+                    is_server_problem = true;
+                }
             }
             else {
-                error_message     = removeTags(answer);
+                error_message     = removeTags(parseAnswer);
                 is_server_problem = true;
             }
         }
         else {
-            if (hasKey("result")) {
-                String result = getValue("result");
-                if (!result.equals("ok")) {
-                    error_message  = getValue("message");
+            if (needResult) {
+                if (hasKey("result")) {
+                    String result = getValue("result");
+                    if (!result.equals("ok")) {
+                        if (hasKey("message")) {
+                            error_message = getValue("message");
+                        }
+                        else {
+                            // should not occur
+                            error_message     = "Result '"+getValue("result")+"' without message";
+                            is_server_problem = true;
+                        }
+                    }
                 }
-            }
-            else {
-                error_message = "no 'result' found";
-                is_server_problem = true;
+                else {
+                    error_message     = "no 'result' found";
+                    is_server_problem = true;
+                }
             }
         }
     }
@@ -100,7 +120,9 @@ public boolean hasKey(String key)
 
 public String getValue(String key)
     {
-        if (!hasKey(key)) return null;
+        if (!hasKey(key)) {
+            Toolkit.InternalError("Unknown key '"+key+"' requested");
+        }
         return (String)map.get(key);
     }
 
