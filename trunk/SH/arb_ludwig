@@ -1,16 +1,7 @@
 #!/bin/sh
 
 echo '***********************************************'
-echo 'Hallo Leute, auf welchem Rechner moechten Sie ARB starten'
-echo ''
-echo 'soul:	Nur spaet nachmittags und abends verwenden, dieser Rechner'
-echo '	ist eigentlich fuer unsere Informatiker reserviert.'
-echo
-echo 'blues: (Zur Zeit abgeschaltet!)'
-echo ''
-echo 'boarisch: Ein schneller Linux PC, langsamer als blues aber schneller als soul'
-echo ''
-echo 'disco: Ein schneller Solaris-Rechner (erste Wahl!)'
+echo 'Auf welchem Rechner moechten Sie ARB starten'
 echo ''
 echo 'Geben Sie bitte den Rechner-Namen ein:'
 read a
