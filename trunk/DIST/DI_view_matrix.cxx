@@ -71,15 +71,15 @@ void PH_dmatrix::init (PHMATRIX *matrix)
                 case PH_G_ABOVE_DIST: {
                     const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-                    width = aw_fi->max_letter_width*6; // normal cell contain 6 characters (e.g.: '0.0162')
-                    height = aw_fi->max_letter_height*2;
+                    width  = aw_fi->max_letter.width*6; // normal cell contain 6 characters (e.g.: '0.0162')
+                    height = aw_fi->max_letter.height*2;
                     break;
                 }
                 case PH_G_NAMES: {
                     const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-                    width = aw_fi->max_letter_width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
-                    height = aw_fi->max_letter_height*2;
+                    width  = aw_fi->max_letter.width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
+                    height = aw_fi->max_letter.height*2;
                     break;
                 }
                 default: {
@@ -127,24 +127,31 @@ void PH_dmatrix::resized(void)
 
     if (m) n = m->nentries;
     device->get_area_size(&squ);
-    screen_width=squ.r-squ.l;
-    screen_height=squ.b-squ.t;
-    if (m){
-        horiz_paint_size=(squ.r-aw_fi->max_letter_width-off_dx)/cell_width;
-        vert_paint_size=(squ.b-off_dy)/cell_height;
-        horiz_page_size = (n > horiz_paint_size) ?  horiz_paint_size : n;
-        vert_page_size = (n > vert_paint_size) ?    vert_paint_size : n;
-        rect.l=0;
-        rect.t=0;
+
+    screen_width  = squ.r-squ.l;
+    screen_height = squ.b-squ.t;
+
+    if (m) {
+        horiz_paint_size = (squ.r-aw_fi->max_letter.width-off_dx)/cell_width;
+        vert_paint_size  = (squ.b-off_dy)/cell_height;
+        horiz_page_size  = (n > horiz_paint_size) ?  horiz_paint_size : n;
+        vert_page_size   = (n > vert_paint_size) ? vert_paint_size : n;
+        
+        rect.l = 0;
+        rect.t = 0;
         rect.r = (int)((n-horiz_page_size)*cell_width+squ.r);
         rect.b = (int)((n-vert_page_size)*cell_height+squ.b);
     }
-    horiz_page_start=0; horiz_last_view_start=0;
-    vert_page_start=0; vert_last_view_start=0;
-    device->reset();                       // clip_size == device_size
+
+    horiz_page_start      = 0;
+    horiz_last_view_start = 0;
+    vert_page_start       = 0;
+    vert_last_view_start  = 0;
+
+    device->reset();            // clip_size == device_size
     device->clear();
     device->set_right_clip_border((int)(off_dx+cell_width*horiz_page_size));
-    device->reset();                             // reset shift_x and shift_y
+    device->reset();            // reset shift_x and shift_y
     awm->set_vertical_scrollbar_position(0);
     awm->set_horizontal_scrollbar_position(0);
     awm->tell_scrolled_picture_size(rect);
@@ -173,7 +180,7 @@ void PH_dmatrix::display(void)   // draw area
 
     int name_display_width; {
         const AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
-        name_display_width = cell_width/aw_fi->max_letter_width;
+        name_display_width = cell_width/aw_fi->max_letter.width;
     }
     gb_assert(name_display_width<BUFLEN);
 

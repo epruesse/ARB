@@ -31,10 +31,10 @@
 void ED4_calc_terminal_extentions(){
     const AW_font_information *seq_font_info   = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '.' );
     const AW_font_information *info_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
-    int                        seq_char_width  = seq_font_info->max_letter_width;
-    int                        info_char_width = info_font_info->max_letter_width;
+    int                        seq_char_width  = seq_font_info->max_letter.width;
+    int                        info_char_width = info_font_info->max_letter.width;
 
-    TERMINALHEIGHT = seq_font_info->max_letter_height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
+    TERMINALHEIGHT = seq_font_info->max_letter.height + 1 + ED4_ROOT->helix_spacing; // add 3 for Cursorheight
     {
         int maxchars;
         int maxbrackets;
@@ -46,7 +46,7 @@ void ED4_calc_terminal_extentions(){
     }
     MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
     MAXCHARWIDTH = max(seq_char_width, info_char_width); // @@@ FIXME:  check where MAXCHARWIDTH is used and set it properly here
-    MAXLETTERDESCENT = max(seq_font_info->max_letter_descent, info_font_info->max_letter_descent);
+    MAXLETTERDESCENT = max(seq_font_info->max_letter.descent, info_font_info->max_letter.descent);
 }
 
 void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )

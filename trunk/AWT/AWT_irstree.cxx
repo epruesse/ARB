@@ -277,7 +277,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
 
     irs_gl.nodes_nnnodes = MAXSHOWNNODES;
     irs_gl.nodes_ntip = 0;
-    irs_gl.font_height_2 = font_info->max_letter_ascent/2;
+    irs_gl.font_height_2 = font_info->max_letter.ascent/2;
     irs_gl.device = device;
     irs_gl.ftrst_species = GB_TRUE;
     irs_gl.y = 0;
