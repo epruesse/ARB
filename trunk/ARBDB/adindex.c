@@ -354,7 +354,9 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main,struct g_b_undo_entry_struct *ue){
 
                 }else{
                     gb_save_extern_data_in_ts(gbd); /* check out and free string */
-                    gbd->flags = ue->d.ts->flags;
+                    gb_assert(ue->d.ts);
+                    
+                    gbd->flags              = ue->d.ts->flags;
                     gbd->flags2.extern_data = ue->d.ts->flags2.extern_data;
 
                     GB_MEMCPY(&gbd->info,&ue->d.ts->info,sizeof(gbd->info)); /* restore old information */
