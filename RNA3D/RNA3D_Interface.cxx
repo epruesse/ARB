@@ -13,6 +13,7 @@
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 #include "RNA3D_Interface.hxx"
+#include "RNA3D_OpenGLGraphics.hxx"
 
 using namespace std;
 
@@ -259,6 +260,9 @@ void SetOpenGLBackGroundColor() {
 
     // set OpenGL Backgroud Color to the widget's backgroud     
     glClearColor(r, g, b, 0);
+
+    extern ColorRGBf ApplicationBGColor;
+    ApplicationBGColor = ColorRGBf(r, g, b);
 }
 
 static void RefreshCanvas(AW_root *awr) {
@@ -647,7 +651,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     OpenGLParentWidget = awm->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
 #ifdef DEBUG
-    cout<<"Openglwindow created!!"<<endl;
+    cout<<"RNA3D: OpenGL Window created!"<<endl;
 #endif
 
     return awm;

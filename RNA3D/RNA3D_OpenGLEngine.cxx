@@ -19,8 +19,6 @@ float fViewAngle = 90.0;
 float fClipNear  = 0.01;
 float fClipFar   = 100000;
 
-//bool alpha_Size_Supported is defined in WINDOWS/AW_window.cxx 
-
 int OpenGLEngineState = -1;
 GBDATA *OpenGL_gb_main;
 
@@ -29,9 +27,21 @@ Widget _glw;
 static Display *dpy;
 static GLXContext glx_context;
 
-static int attributes[]               = { GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4, GLX_ALPHA_SIZE, 4, GLX_DOUBLEBUFFER, None };
-static int attributes_Without_Alpha[] = { GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4, GLX_DOUBLEBUFFER, None };
-static int attributes_Single_Buffer[] = { GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4, None };
+static int DoubleBuffer[] = { GLX_RGBA, 
+                              GLX_DEPTH_SIZE, 12, 
+                              GLX_STENCIL_SIZE, 1,  
+                              GLX_RED_SIZE, 4, 
+                              GLX_GREEN_SIZE, 4, 
+                              GLX_BLUE_SIZE, 4, 
+                              GLX_DOUBLEBUFFER, 
+                              None };
+static int SingleBuffer[] = { GLX_RGBA, 
+                              GLX_DEPTH_SIZE, 12, 
+                              GLX_STENCIL_SIZE, 1,
+                              GLX_RED_SIZE, 4, 
+                              GLX_GREEN_SIZE, 4, 
+                              GLX_BLUE_SIZE, 4, 
+                              None };
 
 static GLfloat rotation_matrix[16];
 float ROTATION_SPEED = 0.5;
@@ -111,7 +121,7 @@ void ReshapeOpenGLWindow( GLint width, GLint height ) {
 }
 
 void InitializeOpenGLEngine(GLint width, GLint height ) {
-    cout<<"Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
+    cout<<"RNA3D: Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
 
     saved_x = saved_y = 2.0f;
     ComputeRotationXY(1,1);
@@ -141,9 +151,9 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     cTexture->LoadGLTextures();  // Load The Texture(s) 
     glEnable(GL_TEXTURE_2D);	// Enable Texture Mapping
 
-    glClearDepth(1.0);			     // Enables Clearing Of The Depth Buffer
-    glDepthFunc(GL_LESS);		     // The Type Of Depth Test To Do
+    glDepthFunc(GL_LEQUAL);		     // The Type Of Depth Test To Do
     glEnable(GL_DEPTH_TEST);	   	 // Enables Depth Testing
+    glClearDepth(1.0);
     glShadeModel(GL_FLAT);			 
 
     glPointSize(1.0);
@@ -161,13 +171,6 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     ReshapeOpenGLWindow(width,height);
 
     CalculateRotationMatrix();
-}
-
-void PrintString(float x, float y, float z, char *s) {
-    glRasterPos3d(x, y, z);
-    for (unsigned int i = 0; i < strlen(s); i++) {
-        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
-    }
 }
 
 void ComputeRotationXY(int x, int y) {
@@ -307,10 +310,19 @@ void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
 
 void MapSelectedSpeciesChanged_CB(AW_root *awr) {
 
-    if (bMapSpDispListCreated) {
-        glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
-        cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
-    }
+    // If Selected Species (in Primary Editor) changed and 
+    // the MapSpecies display lists created then,
+    //  1. Delete the display lists; 
+    //  2. Recalculate the Display lists for current species;
+    //  3. Map it to EColi Template;
+
+    if (cStructure->iMapEnable && 
+        cRenderer->iMapSpecies && 
+        bMapSpDispListCreated) 
+        {
+            glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
+            cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
+        }
 
     // If selected species changed then regenerate the SearchStrings DisplayList
     MapSearchStringsToEcoliTemplateChanged_CB(awr);
@@ -384,13 +396,12 @@ void DisplayHelixNrsChanged_CB(AW_root *awr) {
 }
 
 void DrawStructure(){
-    glPushMatrix();
-    cRenderer->DoHelixMapping();
-    glPopMatrix();
 
-    glPushMatrix();
+    // Drawing Molecule Skeleton
     cRenderer->DisplayMolecule(cStructure);
-    glPopMatrix();
+
+    // Mapping Helices to The molecule
+    cRenderer->DoHelixMapping();
 
     // Texture Mapping
     cRenderer->BeginTexturizer();
@@ -400,7 +411,10 @@ void DrawStructure(){
 
 void RenderOpenGLScene(Widget w){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-    SetOpenGLBackGroundColor();  // setting the BackGround Color of the OpenGL Scene
+
+    // setting the BackGround Color of the OpenGL Scene
+    SetOpenGLBackGroundColor();  
+
     glLoadIdentity();
 
     gluLookAt(Viewer.x, Viewer.y, Viewer.z,
@@ -417,13 +431,11 @@ void RenderOpenGLScene(Widget w){
         CalculateRotationMatrix();
     }
 
-    glPushMatrix();
     glMultMatrixf(rotation_matrix); 
 
     glTranslatef(-cStructure->strCen->x, -cStructure->strCen->y, -cStructure->strCen->z);
 
     DrawStructure();
-    glPopMatrix();
 
 	glFlush();
 	glXWaitX();
@@ -446,24 +458,21 @@ void InitializeOpenGLWindow( Widget w ) {
 		fprintf(stderr, "could not open display\n");
 	} 
     else {
-		extern bool alpha_Size_Supported;
-		if (alpha_Size_Supported)
-			vi = glXChooseVisual(dpy, DefaultScreen( dpy ), attributes);
-		else
-			vi = glXChooseVisual(dpy, DefaultScreen( dpy ), attributes_Without_Alpha);
-				
+        vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBuffer);            
+			
 		if (!vi) {
 			fprintf(stderr, "try to get a single buffered visual\n");
-			vi = glXChooseVisual(dpy, DefaultScreen(dpy), attributes_Single_Buffer);
+			vi = glXChooseVisual(dpy, DefaultScreen(dpy), SingleBuffer);
 			if (!vi)
 				fprintf(stderr, "could not get visual\n");
 		}
-        else {
+        else { 
+            printf("RNA3D: Double Buffered Visual Supported !\n"); 
 			glx_context = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 			if (!glXIsDirect(dpy, glx_context))
 				fprintf(stderr, "direct rendering not supported\n");
 			else
-				printf("direct rendering supported\n");
+				printf("RNA3D: Direct rendering supported\n");
 			
 			GLwDrawingAreaMakeCurrent(w, glx_context);
 

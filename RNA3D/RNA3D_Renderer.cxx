@@ -9,6 +9,7 @@
 using namespace std;
 
 OpenGLGraphics *G = new OpenGLGraphics();
+ColorRGBf ApplicationBGColor = ColorRGBf(0,0,0);
 
 GLRenderer::GLRenderer(void){
     fSkeletonSize = 0.5;
@@ -26,7 +27,7 @@ GLRenderer::GLRenderer(void){
     iDispCursorPos = 0;
     iMapSpecies = iMapSpeciesBase = iMapSpeciesPos = 0;
     iMapSpeciesDels = iMapSpeciesMiss = 0;
-}
+} 
 
 GLRenderer::~GLRenderer(void){
 }
@@ -84,11 +85,11 @@ void GLRenderer::DisplayHelixNumbers(void){
 
 void GLRenderer::DoHelixMapping(void) {
     if (iDisplayHelix) {
-        if (iHelixBackBone) {
-            DisplayHelixBackBone();
-        }
         if (iHelixNrs) {
             DisplayHelixNumbers();
+        }
+        if (iHelixBackBone) {
+            DisplayHelixBackBone();
         }
         DisplayHelices();
     }
@@ -132,6 +133,7 @@ void GLRenderer::DisplayMoleculeName(int w, int h){
 
 void GLRenderer::DisplayMolecule(Structure3D *cStr) {
     glLineWidth(fSkeletonSize);
+
     static ColorRGBf HelixOldColor         = G->GetColor(RNA3D_GC_BASES_HELIX); 
     static ColorRGBf UnpairedHelixOldColor = G->GetColor(RNA3D_GC_BASES_UNPAIRED_HELIX); 
     static ColorRGBf NonHelixOldColor      = G->GetColor(RNA3D_GC_BASES_NON_HELIX); 
@@ -198,7 +200,7 @@ void GLRenderer::BeginTexturizer(){
        glPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 1.0f );
        glPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, MIN(65,maxSize));
        
-       glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_BLEND );
+       glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
        glEnable(GL_POINT_SPRITE_ARB);
    }
 
@@ -213,6 +215,7 @@ void GLRenderer::EndTexturizer(){
     extern bool bPointSpritesSupported;
 
     if (bPointSpritesSupported) {
+        glDisable(GL_POINT_SPRITE_ARB);
         glDisable(GL_BLEND);
     }
 }
@@ -246,20 +249,34 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages) {
             switch(iBaseMode) {
             case CHARACTERS:
                 if(iBaseHelix) {
+                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
+                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
+                    glCallList(HELIX_A); glCallList(HELIX_G); glCallList(HELIX_C); glCallList(HELIX_U); 
+
                     G->SetColor(RNA3D_GC_BASES_HELIX);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(HELIX_A);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(HELIX_G);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);  glCallList(HELIX_C);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(HELIX_U);
                 }
+
                 if(iBaseUnpairHelix) {
+                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
+                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
+                    glCallList(UNPAIRED_HELIX_A); glCallList(UNPAIRED_HELIX_G); glCallList(UNPAIRED_HELIX_C); glCallList(UNPAIRED_HELIX_U); 
+
                     G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(UNPAIRED_HELIX_A);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(UNPAIRED_HELIX_G);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);  glCallList(UNPAIRED_HELIX_C);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(UNPAIRED_HELIX_U);
                 }
+
                 if(iBaseNonHelix) {
+                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
+                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
+                    glCallList(NON_HELIX_A); glCallList(NON_HELIX_G); glCallList(NON_HELIX_C); glCallList(NON_HELIX_U); 
+
                     G->SetColor(RNA3D_GC_BASES_NON_HELIX);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(NON_HELIX_A);
                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(NON_HELIX_G);

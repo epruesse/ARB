@@ -76,9 +76,7 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
-    // const char DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb";
     char *DataFile           = find_data_file("Ecoli_1M5G_16SrRNA.pdb");
-    // const char ErrorMsg[]        = "\n *** Error Opening File : ";
     char      buf[256];
 
     float X, Y, Z;
@@ -89,8 +87,6 @@ void Structure3D::ReadCoOrdinateFile() {
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
         throw_IO_error(DataFile);
-        // cerr<<ErrorMsg<<DataFile<<endl;
-        // exit(1);
     }
 
     int cntr = 0;
@@ -160,9 +156,7 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 //=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
-    // const char DataFile[] = "data/ECOLI_SECONDARY_STRUCTURE_INFO";
     char *DataFile        = find_data_file("ECOLI_SECONDARY_STRUCTURE_INFO");
-    // const char ErrorMsg[] = "\n *** Error Opening File : ";
     char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
@@ -174,8 +168,6 @@ void Structure3D::GetSecondaryStructureInfo(void) {
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
         throw_IO_error(DataFile);
-        // cerr<<ErrorMsg<<DataFile<<endl;
-        // exit(1);
     }
 
     while (!readData.eof()) {
@@ -432,17 +424,13 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
 
 void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
-    // const char DataFile[] = "data/ECOLI_Tertiary_Interaction.data";
     char           *DataFile = find_data_file("ECOLI_Tertiary_Interaction.data");
-    // const char ErrorMsg[]    = "\n *** Error Opening File : ";
     char            buf[256];
 
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
         throw_IO_error(DataFile);
-        // cerr<<ErrorMsg<<DataFile<<endl;
-        // exit(1);
     }
 
     int K[50];
