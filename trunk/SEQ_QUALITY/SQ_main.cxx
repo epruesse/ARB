@@ -63,7 +63,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
     if (!error) {
-        const char *option = "number_of_helix"; //"value_of_evaluation";
+        const char *option = "value_of_evaluation";
 
         /*
           "option" is variable which is passed to function "SQ_get_value()".
@@ -99,11 +99,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         bool marked_only = aw_root->awar(AWAR_SQ_MARKED)->read_int(); // whether to analyse marked or all species
 
-        SQ_calc_sequence_structure(gb_main);
-        SQ_calc_average_structure(gb_main);
-        SQ_calc_helix_conformance(gb_main);
+        SQ_calc_sequence_structure(gb_main, marked_only);
         SQ_evaluate(gb_main, weight_bases, weight_diff_from_average);
-
 
         int value = SQ_get_value(gb_main, option);
         aw_message(GBS_global_string("Value in container: %i", value));
