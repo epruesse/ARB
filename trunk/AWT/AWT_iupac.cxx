@@ -11,32 +11,32 @@
 #define ILL_CODE char(26)
 
 AWT_IUPAC_descriptor AWT_iupac_code[26][2]= {
-    {{ "A", 	1 }, { "A", 	1 }},
-    {{ "CGT", 	3 }, { "CGU", 	3 }},
-    {{ "C",	1 }, { "C",	1 }},
-    {{ "AGT", 	3 }, { "AGU", 	3 }},
-    {{ 0,	0 }, { 0,	0 }}, // E
-    {{ 0,	0 }, { 0,	0 }}, // F
-    {{ "G",	1 }, { "G",	1 }},
-    {{ "ACT", 	3 }, { "ACU", 	3 }},
-    {{ 0,	0 }, { 0,	0 }}, // I
-    {{ 0, 	0 }, { 0, 	0 }}, // J
-    {{ "GT", 	2 }, { "GU", 	2 }},
-    {{ 0, 	0 }, { 0, 	0 }}, // L
-    {{ "AC", 	2 }, { "AC", 	2 }},
-    {{ "ACGT", 	1 }, { "ACGU", 	1 }}, // N
-    {{ 0, 	0 }, { 0, 	0 }}, // O
-    {{ 0, 	0 }, { 0, 	0 }}, // P
-    {{ 0, 	0 }, { 0, 	0 }}, // Q
-    {{ "AG", 	2 }, { "AG", 	2 }},
-    {{ "CG", 	2 }, { "CG", 	2 }},
-    {{ "T", 	1 }, { "U", 	1 }}, // T
-    {{ "T", 	1 }, { "U", 	1 }}, // U
-    {{ "ACG", 	3 }, { "ACG", 	3 }},
-    {{ "AT", 	2 }, { "AU", 	2 }},
-    {{ 0, 	0 }, { 0, 	0 }}, // X
-    {{ "CT", 	2 }, { "CU", 	2 }},
-    {{ 0, 	0 }, { 0,    	0 }}  // Z
+    {{ "A",     1 }, { "A",     1 }},
+    {{ "CGT",   3 }, { "CGU",   3 }},
+    {{ "C",     1 }, { "C",     1 }},
+    {{ "AGT",   3 }, { "AGU",   3 }},
+    {{ 0,       0 }, { 0,       0 }}, // E
+    {{ 0,       0 }, { 0,       0 }}, // F
+    {{ "G",     1 }, { "G",     1 }},
+    {{ "ACT",   3 }, { "ACU",   3 }},
+    {{ 0,       0 }, { 0,       0 }}, // I
+    {{ 0,       0 }, { 0,       0 }}, // J
+    {{ "GT",    2 }, { "GU",    2 }},
+    {{ 0,       0 }, { 0,       0 }}, // L
+    {{ "AC",    2 }, { "AC",    2 }},
+    {{ "ACGT",  1 }, { "ACGU",  1 }}, // N
+    {{ 0,       0 }, { 0,       0 }}, // O
+    {{ 0,       0 }, { 0,       0 }}, // P
+    {{ 0,       0 }, { 0,       0 }}, // Q
+    {{ "AG",    2 }, { "AG",    2 }},
+    {{ "CG",    2 }, { "CG",    2 }},
+    {{ "T",     1 }, { "U",     1 }}, // T
+    {{ "T",     1 }, { "U",     1 }}, // U
+    {{ "ACG",   3 }, { "ACG",   3 }},
+    {{ "AT",    2 }, { "AU",    2 }},
+    {{ 0,       0 }, { 0,       0 }}, // X
+    {{ "CT",    2 }, { "CU",    2 }},
+    {{ 0,       0 }, { 0,       0 }}  // Z
 
     // (In each single string the nucs have to be sorted alphabetically)
 };
@@ -173,7 +173,7 @@ char AWT_encode_iupac(const char bases[], GB_alignment_type ali)
     }
 
     int i = 0;
-    char c1;
+    unsigned char c1;
 
     while (1) {
         c1 = bases[i++];
@@ -182,7 +182,7 @@ char AWT_encode_iupac(const char bases[], GB_alignment_type ali)
     }
 
     c1 = toupper(c1)-'A';
-    char c = IUPAC_add[c1][c1];
+    unsigned char c = IUPAC_add[c1][c1];
 
     while (c!=ILL_CODE && bases[i]) {
         if (isalpha(bases[i])) {
