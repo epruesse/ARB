@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Nov/18/2004 20:26 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Tue Mar/08/2005 16:03 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -171,14 +171,14 @@ GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo) {
 
 GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo) {
     const char *origin_gene_name;
-    
+
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
 
     origin_gene_name = GEN_origin_gene(gb_pseudo);
     if (origin_gene_name) {
         GBDATA *gb_organism = GEN_find_origin_organism(gb_pseudo);
         gb_assert(gb_organism);
-        
+
         return GEN_find_gene(gb_organism, origin_gene_name);
     }
     return 0;
@@ -236,9 +236,10 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
 /* ------------------------ */
 
 GB_BOOL GEN_is_organism(GBDATA *gb_species) {
-    return
-        !GEN_is_pseudo_gene_species(gb_species) &&
-        GEN_find_gene_data(gb_species) != 0; // has gene_data
+    return GB_find(gb_species, GENOM_ALIGNMENT, 0, down_level) != 0;
+/*     return */
+/*         !GEN_is_pseudo_gene_species(gb_species) && */
+/*         GEN_find_gene_data(gb_species) != 0; // has gene_data */
 }
 
 GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name) {
