@@ -261,6 +261,8 @@ PARS_generate_tree( AW_root *root )
 AW_gc_manager
 AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
+    AW_init_color_group_defaults("arb_pars");
+
     AW_gc_manager preset_window =
         AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_MAX, /*AWT_GC_CURSOR+7,*/ AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
