@@ -37,6 +37,7 @@ public:
         capacity = 1;
         bias     = _bias;
         data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*));
+        //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
         data[0]  = new PS_BitSet( bias );
     }
 
@@ -44,6 +45,8 @@ public:
         for (long i = 0; i < capacity; ++i) {
             delete data[i];
         }
+        free( data );
+        fprintf( stderr, "~PS_BitMap(%p)   free(%p(%lu))\n", this, data, capacity*sizeof(PS_BitSet*) );
     }
 };
 
@@ -107,7 +110,9 @@ bool PS_BitMap::reserve( const long _capacity ) {
     if (_capacity <= capacity) return true;                      // smaller or same size requested ?
     new_data = (PS_BitSet **)malloc( _capacity_bytes );          // get new memory for pointer array
     if (new_data == 0) return false;
+    //fprintf( stderr, "PS_BitMap(%p) malloc(%lu) = %p\n", this, _capacity_bytes, new_data );
     memcpy( new_data,data,capacity_bytes );                      // copy old pointers
+    //fprintf( stderr, "PS_BitMap(%p)   free(%p(%lu))\n", this, data, capacity_bytes );
     free( data );                                                // free old memory
     data = new_data;
     for (long i = capacity; i < _capacity; ++i) {                // init new requested bitsets

@@ -37,6 +37,17 @@ int main( int argc,  char *argv[] ) {
 
     for (int id = 10; id < 15; ++id) {
         PS_NodePtr new_child( new PS_Node( id ) );
+
+        if (id % 2 != 0) {
+            for (int pnr = 0; pnr < 5; ++pnr ) {
+                PS_ProbePtr new_probe( new PS_Probe );
+                new_probe->length     = probelength;
+                new_probe->quality    = quality;
+                new_probe->GC_content = (unsigned short) (random() % probelength);
+                new_child->addProbe( new_probe );
+            }
+        }
+
         root->addChild( new_child );
     }
 
@@ -47,7 +58,7 @@ int main( int argc,  char *argv[] ) {
             PS_NodePtr new_child( new PS_Node( id ) );
 		
             if (random() % 3 != 0) {
-                for (int pnr = 0; pnr < 100; ++pnr ) {
+                for (int pnr = 0; pnr < 50; ++pnr ) {
                     PS_ProbePtr new_probe( new PS_Probe );
                     new_probe->length     = probelength;
                     new_probe->quality    = quality;
@@ -55,6 +66,7 @@ int main( int argc,  char *argv[] ) {
                     new_child->addProbe( new_probe );
                 }
             }
+
             child->second->addChild( new_child );
         }
     }
