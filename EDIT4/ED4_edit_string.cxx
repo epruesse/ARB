@@ -962,7 +962,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                                         ad_err = GBS_global_string("End of sequence reached");
                                     }
                                     else if (seq[seq_pos]!=key) {
-                                        ad_err = GBS_global_string("Base '%c' at %i does not match '%c'", seq[seq_pos], seq_pos, key);
+                                        ad_err = GBS_global_string("Base '%c' at %li does not match '%c'", seq[seq_pos], seq_pos, key);
                                     }
                                     else {
                                         seq_pos = get_next_visible_pos(seq_pos, direction)+1;
