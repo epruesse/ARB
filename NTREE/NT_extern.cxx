@@ -1457,7 +1457,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->at(db_treex, third_liney);
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_IRS_TREE);
     awm->help_text("tr_type_irs.hlp");
-    awm->create_button("NO_TREE_TYPE", "#list.bitmap",0);
+    awm->create_button("FOLDED_LIST_TREE_TYPE", "#list.bitmap",0);
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_NDS_TREE);
     awm->help_text("tr_type_nds.hlp");
