@@ -114,14 +114,13 @@ void GLRenderer::DoHelixMapping(void) {
 }
 
 void GLRenderer::DisplayMoleculeName(int w, int h){
-    extern AW_root *gAwRoot;
     char *pSpeciesName;
 
     if(iMapSpecies) {
-        pSpeciesName = gAwRoot->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
+        pSpeciesName = GLOBAL->root->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
     }
     else {
-        pSpeciesName = "Eschericia Coli : Master Template"; 
+        pSpeciesName = (char *) "Eschericia Coli : Master Template"; 
     }
 
     float x_ratio = (float) w/ (float)h; 
@@ -200,9 +199,7 @@ void GLRenderer::BeginTexturizer(){
     glDisable(GL_LIGHTING);
     glDisable(GL_POINT_SMOOTH);
 
-   extern bool bPointSpritesSupported;
-
-   if (bPointSpritesSupported) {
+   if (GLOBAL->bPointSpritesSupported) {
        glEnable(GL_BLEND);
        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -227,9 +224,7 @@ void GLRenderer::BeginTexturizer(){
 void GLRenderer::EndTexturizer(){
     glDisable(GL_TEXTURE_2D);
 
-    extern bool bPointSpritesSupported;
-
-    if (bPointSpritesSupported) {
+    if (GLOBAL->bPointSpritesSupported) {
         float defaultAttenuation[3] = { 1.0f, 0.0f, 0.0f };
         glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, defaultAttenuation );
 

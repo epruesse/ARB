@@ -28,12 +28,11 @@ OpenGLGraphics::~OpenGLGraphics(void){
 
 // Sets the Background Color for the OpenGL Window
 void OpenGLGraphics::SetOpenGLBackGroundColor() {
-	extern Widget _glw;
-	unsigned long bgColor;
-	XtVaGetValues( _glw, XmNbackground, &bgColor, NULL );
 
-    extern AWT_canvas *gl_Canvas;
-    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+	unsigned long bgColor;
+	XtVaGetValues( GLOBAL->glw, XmNbackground, &bgColor, NULL );
+
+    Widget w = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
     XColor xcolor;
     xcolor.pixel = bgColor;
@@ -57,10 +56,9 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0,0,0);
     float r, g, b; r = g = b = 0.0;
    
-    extern AWT_canvas *gl_Canvas;
-    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+    Widget w = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
-    AW_common *common = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
+    AW_common *common = GLOBAL->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
     register class AW_GC_Xm *gcm = AW_MAP_GC( gc );
  
     XGCValues xGCValues;
@@ -241,11 +239,11 @@ void OpenGLGraphics::DrawAxis(float x, float y, float z, float len){
     glEnd();
 
     glColor4f(1,0,0,1);  // X axis
-    PrintString(x + len, y, z, "X",GLUT_BITMAP_8_BY_13);
+    //    PrintString(x + len, y, z, "X",GLUT_BITMAP_8_BY_13);
     glColor4f(0,0,1,1); // Y axis
-    PrintString(x, y + len, z, "Y",GLUT_BITMAP_8_BY_13);
+    // PrintString(x, y + len, z, "Y",GLUT_BITMAP_8_BY_13);
     glColor4f(0,1,0,1);// Z axis
-    PrintString(x, y, z + len, "Z",GLUT_BITMAP_8_BY_13);
+    // PrintString(x, y, z + len, "Z",GLUT_BITMAP_8_BY_13);
 
     glLineWidth(1.0);
 }

@@ -11,6 +11,8 @@ enum {
     HELIX_41,HELIX_42,HELIX_43,HELIX_44,HELIX_45,HELIX_46,HELIX_47,HELIX_48,HELIX_49,HELIX_50
 };
 
+
+
 void ShowVendorInformation();
 void ReshapeOpenGLWindow( GLint width, GLint height );
 void InitializeOpenGLEngine(GLint width, GLint height );
