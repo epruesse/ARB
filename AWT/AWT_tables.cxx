@@ -218,12 +218,12 @@ awt_table::awt_table(GBDATA *igb_main, AW_root *awr,const char *itable_name){
     GB_transaction tscope(gb_main);
     table_name = strdup(itable_name);
     char *tname = GBS_string_2_key(table_name);
-    this->awar_field_reorder_source = strdup(GBS_global_string(AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE,tname));
-    this->awar_field_reorder_dest = strdup(GBS_global_string(AWAR_TABLE_FIELD_REORDER_DEST_TEMPLATE,tname));
-    this->awar_field_rem = strdup(GBS_global_string(AWAR_TABLE_FIELD_REM_TEMPLATE,tname));
-    this->awar_field_new_name = strdup(GBS_global_string(AWAR_TABLE_FIELD_NEW_NAME_TEMPLATE,tname));
-    this->awar_field_new_type = strdup(GBS_global_string(AWAR_TABLE_FIELD_NEW_TYPE_TEMPLATE,tname));
-    this->awar_selected_field = strdup(GBS_global_string(AWAR_TABLE_SELECTED_FIELD_TEMPLATE,tname));
+    this->awar_field_reorder_source = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE,tname);
+    this->awar_field_reorder_dest = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_DEST_TEMPLATE,tname);
+    this->awar_field_rem = GBS_global_string_copy(AWAR_TABLE_FIELD_REM_TEMPLATE,tname);
+    this->awar_field_new_name = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_NAME_TEMPLATE,tname);
+    this->awar_field_new_type = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_TYPE_TEMPLATE,tname);
+    this->awar_selected_field = GBS_global_string_copy(AWAR_TABLE_SELECTED_FIELD_TEMPLATE,tname);
 
     awr->awar_string(awar_field_reorder_source,"");
     awr->awar_string(awar_field_reorder_dest,"");

@@ -71,7 +71,7 @@ void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 		if(helptext)
 		{
 			awr->awar("tmp/gde/helptext")->write_string(helptext);
-			delete helptext;
+			free(helptext);
 		}
 		else awr->awar("tmp/gde/helptext")->write_string("can not find help file\0");
 	}
@@ -103,9 +103,9 @@ char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
 	char *arg = GBS_string_2_key(AWinfo->gmenuitem->arg[i].symbol);
 
 	sprintf(name,"gde/%s/%s/%s",gmenu,gmenuitem,arg);
-	delete gmenu;
-	delete gmenuitem;
-	delete arg;
+	free(gmenu);
+	free(gmenuitem);
+	free(arg);
 
 	return(strdup(name));
 }
@@ -283,7 +283,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aws->label(AWinfo->gmenuitem->arg[i].label);
             GDE_create_infieldwithpm(aws,newawar,SLIDERWIDTH);
             // maybe bound checking //
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==CHOOSER) {
             char    *defopt           = itemarg.choice[0].method;
@@ -315,7 +315,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             if (!curr_value_legal) curr_awar->write_string(defopt); // if saved value no longer occurs in choice -> overwrite with default
             free(curr_value);
             aws->update_toggle_field();
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==CHOICE_MENU) {
             char    *defopt           = itemarg.choice[itemarg.ivalue].method;
@@ -334,7 +334,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             if (!curr_value_legal) curr_awar->write_string(defopt); // if saved value no longer occurs in choice -> overwrite with default
             free(curr_value);
             aws->update_option_menu();
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==TEXTFIELD) {
             char *defopt  = itemarg.textvalue;
@@ -342,7 +342,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             aws->create_input_field(newawar,itemarg.textwidth/*TEXTFIELDWIDTH*/);
-            delete newawar;
+            free(newawar);
         }
         else if(itemarg.type==CHOICE_TREE) {
             char *defopt=itemarg.textvalue;

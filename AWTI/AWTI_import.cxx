@@ -102,8 +102,10 @@ GB_ERROR awtc_read_import_format(char *file)
 	if (!in) return "Form not readable (select a form or check permissions)";
 	struct input_format_struct   *ifo;
 	struct input_format_per_line *pl = 0;
-	ifo                              = awtcig.ifo = new input_format_struct;
 	char                         *s1 = 0,*s2=0;
+
+    if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
+	ifo = awtcig.ifo = new input_format_struct;
 
 	while (!awtc_read_string_pair(in,s1,s2)){
 		if (!s1) {
@@ -172,6 +174,9 @@ GB_ERROR awtc_read_import_format(char *file)
 		}
 	}
 
+    free(s2);
+    free(s1);
+
 	fclose(in);
 	return 0;
 }
@@ -206,8 +211,8 @@ input_format_struct::~input_format_struct(void)
 	free(ifo->sequencesrt);
 	free(ifo->sequenceaci);
 	free(ifo->end);
-	delete ifo->b1;
-	delete ifo->b2;
+	free(ifo->b1);
+	free(ifo->b2);
 }
 
 void awtc_check_input_format(AW_window *aww)
@@ -248,7 +253,7 @@ void awtc_check_input_format(AW_window *aww)
 			if (size>=0){
 				buffer[size] = 0;
 				if (!GBS_string_cmp(buffer,autodetect,0)){	// format found
-					delete autodetect;
+					free(autodetect);
 					break;
 				}
 			}
@@ -289,7 +294,7 @@ static const char *awtc_next_file(void){
 				aw_message();
 				delete sys; continue;
 			}
-			delete sys;
+			free(sys);
 			origin_file_name = mid_file_name;
 		}else{
 			mid_file_name[0] = 0;
@@ -454,7 +459,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
 		    if (!strcmp(key,"name")){
                 char *nstr = GBT_create_unique_species_name(awtcig.gb_main,str);
                 GB_write_string(gbk,nstr);
-                delete nstr;
+                free(nstr);
 		    }else{
                 GB_write_string(gbk,str);
 		    }
@@ -464,11 +469,11 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
 
 	strin  = GB_read_char_pntr(gbk);
 	len    = strlen(str) + strlen(strin);
-    taglen = tag ? (strlen(tag)+3) : 0;
-	buf    = (char *)GB_calloc(sizeof(char),len+2+taglen);
+    taglen = tag ? (strlen(tag)+2) : 0;
+	buf    = (char *)GB_calloc(sizeof(char),len+2+taglen+1);
 
     if (tag) {
-        char *regexp = (char*)GB_calloc(sizeof(char), taglen+1);
+        char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
         if (GBS_string_cmp(strin, regexp, 1) != 0) { // if tag does not exist yet
@@ -603,7 +608,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                             string expanded = expandSetVariables(variables, pl->aci);
                             dup = dele;
                             dele = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species);
-                            delete dup;
+                            free(dup);
                             if (!s) return GB_get_error();
                         }
 
@@ -638,7 +643,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                         if (pl->setvar) {
                             variables[pl->setvar[0]]  = s;
                         }
-                        delete dele;
+                        free(dele);
                     }
                 }
             }
@@ -670,14 +675,14 @@ GB_ERROR awtc_read_data(char *ali_name)
             if (ifo->sequencesrt) {
                 char *h = GBS_string_eval(sequence,ifo->sequencesrt,gb_species);
                 if (!h) return GB_get_error();
-                delete sequence;
+                free(sequence);
                 sequence = h;
             }
 
             if (ifo->sequenceaci) {
                 char *h = GB_command_interpreter(GB_MAIN,
                                                  sequence,ifo->sequenceaci,gb_species);
-                delete sequence;
+                free(sequence);
                 if (!h) return GB_get_error();
                 sequence = h;
             }
@@ -693,7 +698,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                 gb_acc = GB_search(gb_species,"acc",GB_STRING);
                 GB_write_string(gb_acc,buf);
             }
-            delete sequence;
+            free(sequence);
         }
         while (1){				// go to the start of an species
             if (!p || !ifo->begin || !GBS_string_cmp(p,ifo->begin,0)) break;
@@ -760,7 +765,7 @@ void AWTC_import_go_cb(AW_window *aww)
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
         ali_name = GBS_string_eval(ali,"*=ali_*1:ali_ali_=ali_",0);
-        delete ali;
+        free(ali);
     }
 
     error = GBT_check_alignment_name(ali_name);
@@ -775,7 +780,7 @@ void AWTC_import_go_cb(AW_window *aww)
         else {
             GBT_create_alignment(GB_MAIN,ali_name,2000,0,4,ali_type);
         }
-        delete ali_type;
+        free(ali_type);
     }
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int());
 
@@ -812,7 +817,7 @@ void AWTC_import_go_cb(AW_window *aww)
          else {
             char *f = awr->awar(AWAR_FILE)->read_string();
             awtcig.filenames = GBS_read_dir(f,0);
-            delete f;
+            free(f);
 
             if (awtcig.filenames[0] == 0){
                 error = GB_export_error("Cannot find selected file");
@@ -846,7 +851,7 @@ void AWTC_import_go_cb(AW_window *aww)
             aw_closestatus();
          }
     }
-    delete ali_name;
+    free(ali_name);
 
     if (error) {
         aw_message(error);
@@ -906,11 +911,15 @@ static void genom_flag_changed(AW_root *awr) {
         awr->awar_string(AWAR_FORM"/filter",".fit");        // *hack* to hide normal import filters
     }
     else {
-        if (strcmp(awr->awar(AWAR_ALI)->read_string(), "genom") == 0) {
+        char *ali = awr->awar(AWAR_ALI)->read_string();
+
+        if (strcmp(ali, "genom") == 0) {
             awr->awar(AWAR_ALI)->write_string("ali_16s");
             awr->awar(AWAR_ALI_TYPE)->write_string("rna");
         }
         awr->awar_string(AWAR_FORM"/filter",".ift");
+
+        free(ali);
     }
 }
 

@@ -13,7 +13,8 @@ TITLE		Macros
 OCCURRENCE	ARB_NT
 
 DESCRIPTION	Macros are used to combine a set of menu-actions. They work like
-		a tape recorder, which records all buttons presses.
+		a tape recorder, which records all buttons presses, every input
+                to data fields, ...
 
 		To execute an existing macro select a macro and press <EXECUTE>
 		To record a new macro, go to a directory where the new macro
@@ -33,14 +34,14 @@ WARNINGS	Close all subwindows first.
 
 BUGS		-	Only buttons, values and menus are recorded
 		-	When recording a macro you have to open a subwindow
-			before you can press the buttons within. 
+			before you can press the buttons within.
 			Hint: Close all subwindows before you start to build a
 			macro.
 		-	Only value changes are recorded. If you open a subwindow
-			and just press the go button, all user changeable 
+			and just press the go button, all user changeable
 			parameters are unchanged. If you want a parameter set
 			to a certain value, you have to change it. Sometimes it
 			is necessary to change it to any value and than back to
-			the real value, just to ensure that it is recorded in 
+			the real value, just to ensure that it is recorded in
 			the macros.
 		-	Only actions within the main application are recorded.

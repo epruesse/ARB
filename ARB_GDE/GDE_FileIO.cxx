@@ -93,14 +93,15 @@ char *Calloc(int count,int size)
 
 char *Realloc(char *block,int size)
 {
-	char *temp;
+	char       *temp;
 #ifdef SeeAlloc
-	extern int TotalRealloc;
+	extern int  TotalRealloc;
 	TotalRealloc += size;
 	fprintf(stderr,"Realloc %d\n",TotalRealloc);
 #endif
-	temp=(char *)realloc(block,size);
-	ErrorOut(0!=temp,"Cannot change memory size");
+	temp          = (char *)realloc(block,size);
+	ErrorOut(0   != temp,"Cannot change memory size");
+
 	return(temp);
 }
 

@@ -227,8 +227,9 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
             sprintf(label_buf, "%s_%i", label_base, i);
 
             if (i) {
-                const char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
+                char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
                 sprintf(entry_buf, "%s '%s'", entry_prefix, color_group_name);
+                free(color_group_name);
             }
             else {
                 sprintf(entry_buf, "%s no color group", entry_prefix);
@@ -345,8 +346,9 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
         sprintf(label_buf, "tree_group_not_color_%i", i);
 
         if (i) {
-            const char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
+            char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
             sprintf(entry_buf, "group '%s'", color_group_name);
+            free(color_group_name);
         }
         else {
             strcpy(entry_buf, "No color group");

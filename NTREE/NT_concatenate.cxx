@@ -71,7 +71,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
 
     AW_root *aw_root = cas->aws->get_root();
     char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
-    ali_type         = strdup(GBS_global_string("%s=", ali_type));
+    ali_type         = GBS_global_string_copy("%s=", ali_type);
 
 	cas->aws->clear_selection_list(cas->db_id); //clearing the selection list
 
@@ -128,7 +128,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
 	GBDATA *gb_presets;
     AW_root *aw_root  = aws->get_root();
     char    *ali_type = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();  //reading sequence type from the concatenation window
-    ali_type          = strdup(GBS_global_string("%s=", ali_type));            // copying the awar with '=' appended to it
+    ali_type          = GBS_global_string_copy("%s=", ali_type);            // copying the awar with '=' appended to it
 
 	db_alignment_list = aws->create_selection_list(awarName,0,"",10,20);
 
@@ -329,7 +329,7 @@ void concatenateAlignments(AW_window *aws){
 			}
             else {
                 gb_assert(ask_about_missing_alignment);
-                char *question = strdup(GBS_global_string("\"%s\" alignment doesn`t exist in \"%s\"!", ali_name, GB_read_string(GB_find(gb_species, "full_name", 0, down_level))));
+                char *question = GBS_global_string_copy("\"%s\" alignment doesn`t exist in \"%s\"!", ali_name, GB_read_string(GB_find(gb_species, "full_name", 0, down_level)));
                 int skip_ali = ask_about_missing_alignment->get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
                 if(!skip_ali){
                     ali_len = GBT_get_alignment_len(gb_main, ali_name);

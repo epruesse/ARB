@@ -26,17 +26,17 @@ long seer_upload_species_attributes_rek(SeerInterfaceDataSet *sd, GBDATA *gb_spe
 	 gbd = GB_find(gbd,0,0,this_level | search_next)){
 	const char *key = GB_read_key_pntr(gbd);
 	sprintf(end_of_prefix,GB_read_key_pntr(gbd));
-	
+
 	if (!strcmp(prefix,"name")) continue;
 	if (!strcmp(prefix,SEER_KEY_FLAG)) continue;
 	SeerInterfaceAttribute *at = (SeerInterfaceAttribute *)GBS_read_hash(seer_global.arb_attribute_hash,prefix);
 	if (!at) continue;
 	if (at->element_for_upload==0) continue;
-	
+
 	if (GB_read_clock(gbd) <= transaction_limit){
 	    continue;
 	}
-	
+
 	GB_TYPES type = GB_read_type(gbd);
 	if (type == GB_DB){
 	    if (prefix == end_of_prefix && !strncmp(key,"ali_",4)){ // it's a sequence
@@ -67,7 +67,7 @@ long seer_upload_species_sequence(SeerInterfaceDataStringSet *ss, GBDATA *gb_spe
     GBDATA *gb_data;
     int count_exported_items = 0;
     if (GB_read_clock(gb_ali) <= transaction_limit) return 0;
-    
+
     for (gb_data = GB_find(gb_ali,0,0,down_level);
 	 gb_data;
 	 gb_data = GB_find(gb_data,0,0,this_level|search_next)){
@@ -75,7 +75,7 @@ long seer_upload_species_sequence(SeerInterfaceDataStringSet *ss, GBDATA *gb_spe
 	GB_TYPES type = GB_read_type(gb_data);
 	const char *key = GB_read_key_pntr(gb_data);
 	if (!strcmp(key,"data")) key = "Sequence";
-	
+
 	switch(type){
 	case GB_STRING:
 	    ss->addData(new SeerInterfaceDataString(key,GB_read_char_pntr(gb_data)));
@@ -140,16 +140,17 @@ GB_ERROR seer_upload_one_species(SeerInterfaceSequenceData *sd,GBDATA *gb_specie
 	}
     }
     delete sd;
-	
-}	
+
+}
 
 void seer_upload_all_species(AW_root *awr,int sequence_flag, int SAI_flag){
-    GBDATA *gb_species;
-    GBDATA *gb_next_species;
-    SEER_SAVE_WHAT_TYPE save_what = (SEER_SAVE_WHAT_TYPE)awr->awar(AWAR_SEER_UPLOAD_WHAT)->read_int();
-    SEER_SAVE_TYPE save_type = (SEER_SAVE_TYPE)awr->awar(AWAR_SEER_UPLOAD_TYPE)->read_int();
-    char *alignment_name = awr->awar(AWAR_SEER_ALIGNMENT_NAME)->read_string();
-    char *arb_alignment_name = strdup(GBS_global_string("ali_%s",alignment_name));
+    GBDATA              *gb_species;
+    GBDATA              *gb_next_species;
+    SEER_SAVE_WHAT_TYPE  save_what          = (SEER_SAVE_WHAT_TYPE)awr->awar(AWAR_SEER_UPLOAD_WHAT)->read_int();
+    SEER_SAVE_TYPE       save_type          = (SEER_SAVE_TYPE)awr->awar(AWAR_SEER_UPLOAD_TYPE)->read_int();
+    char                *alignment_name     = awr->awar(AWAR_SEER_ALIGNMENT_NAME)->read_string();
+    char                *arb_alignment_name = GBS_global_string_copy("ali_%s",alignment_name);
+
     aw_openstatus("Sequence Data");
     int max_i = 1;
     if (save_what == SSWT_ALL || SAI_flag) {
@@ -329,7 +330,7 @@ void seer_check_upload_attribute_list(AW_window *aws){
 	    GBDATA *gb_type = GB_search(gb_key,CHANGEKEY_TYPE,GB_INT);
 	    if (GB_read_int(gb_type) != GB_STRING) continue;
 	    at = new SeerInterfaceAttribute();
-	    
+
 	    key_name = GB_search(gb_key,CHANGEKEY_NAME,GB_STRING);
 	    at->name = GB_read_string(key_name);
 
@@ -343,7 +344,7 @@ void seer_check_upload_attribute_list(AW_window *aws){
 	// Check against the database !!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//
 	//
-	
+
     }
     {	// put arb_attribute_hash to selection list
 	aws->clear_selection_list(seer_global.export_attribute_sellection_list);
@@ -366,15 +367,15 @@ void  SEER_upload_to_seer_create_window(AW_window *aww){
 	aw_root->awar_int(AWAR_SEER_UPLOAD_TYPE,SST_SINCE_LOGIN);
 	aw_root->awar_int(AWAR_SEER_SAVE_SEQUENCES,1);
 	aw_root->awar_int(AWAR_SEER_SAVE_SAI,1);
-	    
+
 	seer_global.seer_upload_window = aws = new AW_window_simple;
 	aws->init( aw_root, "UPLOAD_ARB_2_SEER", "SEER UPLOAD_DATA", 400, 100 );
 	aws->load_xfig("seer/upload.fig");
 
-	
+
 	aws->callback( AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CANCEL","CANCEL","C");			   
+	aws->create_button("CANCEL","CANCEL","C");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"seer/select_upload.hlp");
@@ -411,7 +412,7 @@ void  SEER_upload_to_seer_create_window(AW_window *aww){
 		table_nr = td->sort_key;
 		sprintf(at_buffer,"table_%i",table_nr);
 		sprintf(awar_buffer,"%s/%s",AWAR_SEER_UPLOAD_TABLE_PREFIX,td->tablename);
-		
+
 		aws->at(at_buffer);
 		aw_root->awar_int(awar_buffer,0);
 		aws->create_toggle(awar_buffer);
@@ -426,21 +427,21 @@ void  SEER_upload_to_seer_create_window(AW_window *aww){
 	    aws->at("select");
 	    aws->callback(seer_select_all_export_attributes,1);
 	    aws->create_button("INVERT_ALL_ATTRIBUTES","Invert All");
-	
+
 	    aws->at("deselect");
 	    aws->callback(seer_select_all_export_attributes,0);
 	    aws->create_button("DESELECT_ALL_ATTRIBUTES","Deselect All");
-	
+
 	    aws->at("auto");
 	    aws->callback(seer_check_upload_attribute_list);
 	    aws->create_button("AUTO_SELECT_ATTRIBUTES","Auto Select");
-	
+
 	    aws->at("sequence_save");
 	    aws->create_toggle(AWAR_SEER_SAVE_SEQUENCES);
-    
+
 	    aws->at("SAI_save");
 	    aws->create_toggle(AWAR_SEER_SAVE_SAI);
-        
+
 	    aws->at("go");
 	    aws->button_length(15);
 	    aws->callback(SEER_export_data_cb);

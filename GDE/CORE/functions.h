@@ -1,25 +1,31 @@
 #ifndef P_
-#if defined(__STDC__) || defined(__cplusplus)
-# define P_(s) s
+# if defined(__STDC__) || defined(__cplusplus)
+#  define P_(s) s
+# else
+#  define P_(s) ()
+# endif
 #else
-# define P_(s) ()
-#endif
+# error P_ already defined elsewhere
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* BasicDisplay.c */
+int QuitGDE P_((void));
+int QuitGDE_update P_((Panel_item item, Event *event));
 Panel BasicDisplay P_((NA_Alignment *DataSet));
 void bailout P_((void));
-int GenMenu P_((int type));
-int MakeNAADisplay P_((void));
+void GenMenu P_((int type));
+void MakeNAADisplay P_((void));
 NA_DisplayData *SetNADData P_((NA_Alignment *aln, Canvas Can, Canvas NamCan));
-int DummyRepaint ();
+int DummyRepaint();
 int DrawNANames P_((Display *dpy, Window xwin));
-int RepaintNACan ();
-int SetNACursor P_((NA_DisplayData *NAdd, Canvas can, Xv_window win, Window xwin, Display *dpy, GC gc));
-int UnsetNACursor P_((NA_DisplayData *NAdd, Canvas can, Xv_window win, Window xwin, Display *dpy, GC gc));
+int RepaintNACan();
+void SetNACursor P_((NA_DisplayData *NAdd, Canvas can, Xv_window win, Window xwin, Display *dpy, GC gc));
+void UnsetNACursor P_((NA_DisplayData *NAdd, Canvas can, Xv_window win, Window xwin, Display *dpy, GC gc));
 int ResizeNACan P_((Canvas canvas, int wd, int ht));
-int QuitGDE P_((void));
 
 /* BuiltIn.c */
 int Open P_((Menu mnu, Menu_item mnuitm));
@@ -121,18 +127,18 @@ int HandleMeta P_((int curmenu, int curitem));
 int HELP P_((Panel_item item, Event *event));
 
 /* FileIO.c */
-int LoadData P_((char *filename));
-int LoadFile P_((char *filename, NA_Alignment *dataset, int type, int format));
-int ErrorOut P_((int code, char *string));
+void LoadData P_((char *filename));
+void LoadFile P_((char *filename, NA_Alignment *dataset, int type, int format));
+void ErrorOut P_((int code, const char *string));
 char *Calloc P_((int count, int size));
 char *Realloc P_((char *block, int size));
-int Cfree P_((char *block));
+void Cfree P_((char *block));
 char *String P_((char *string));
 int FindType P_((char *name, int *dtype, int *ftype));
-int AppendNA P_((NA_Base *buffer, int len, NA_Sequence *seq));
-int Ascii2NA P_((char *buffer, int len, int matrix[16 ]));
+void AppendNA P_((NA_Base *buffer, int len, NA_Sequence *seq));
+void Ascii2NA P_((char *buffer, int len, int matrix[16 ]));
 int WriteNA_Flat P_((NA_Alignment *aln, char *filename, int method, int maskable));
-int Warning P_((char *s));
+void Warning P_((const char *s));
 int InitNASeq P_((NA_Sequence *seq, int type));
 int ReadCMask P_((char *filename));
 int ReadNA_Flat P_((char *filename, char *dataset, int type));
@@ -148,6 +154,9 @@ int FreeNADD P_((NA_DisplayData *nadd));
 
 /* Genbank.c */
 int ReadGen P_((char *filename, NA_Alignment *dataset, int type));
+int WriteGen P_((NA_Alignment *aln, char *filename, int method, int maskable));
+int SetTime P_((struct gde_time *a));
+int CheckType P_((char *seq, int len));
 
 /* HGLfile.c */
 int ReadGDE P_((char *filename, NA_Alignment *dataset, int type));
@@ -159,12 +168,12 @@ char *uniqueID P_((void));
 int OverWrite P_((NA_Sequence *this, NA_Alignment *aln));
 
 /* ParseMenu.c */
-int ParseMenu P_((void));
-int Find P_((char *target, char *key));
-int Find2 P_((char *target, char *key));
-int Error P_((char *msg));
+void ParseMenu P_((void));
+int Find P_((char *target, const char *key));
+int Find2 P_((char *target, const char *key));
+void Error P_((const char *msg));
 int getline P_((FILE *file, char string[]));
-int crop P_((char input[], char head[], char tail[]));
+void crop P_((char input[], char head[], char tail[]));
 
 /* Scroll.c */
 int InitEditSplit P_((Xv_Window oldview, Xv_Window newview, int pos));
@@ -175,11 +184,15 @@ int DestroySplit P_((Xv_window view));
 
 /* arbdb_io.c */
 int Arbdb_get_curelem P_((NA_Alignment *dataset));
-int ReadArbdb P_((char *filename, NA_Alignment *dataset, int type));
+void ReadArbdb P_((char *filename, NA_Alignment *dataset, int type));
 int WriteArbdb P_((NA_Alignment *aln, char *filename, int method, int maskable));
-int Updata_Arbdb P_((Panel_item item, Event *event));
+void Updata_Arbdb P_((Panel_item item, Event *event));
 
 /* main.c */
 int main P_((int argc, char **argv));
+
+#ifdef __cplusplus
+}
+#endif
 
 #undef P_

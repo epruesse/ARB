@@ -21,7 +21,7 @@ AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER(){
 }
 
 AWTC_FIND_FAMILY_MEMBER::~AWTC_FIND_FAMILY_MEMBER(){
-    delete name;
+    free(name);
 }
 
 void awtc_ff_message(const char *msg){
@@ -116,7 +116,7 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
      *
      */
 
-    if (aisc_put(link, PT_LOCS, locs, 
+    if (aisc_put(link, PT_LOCS, locs,
 		 LOCS_FIND_TYPE, find_type,
 		 LOCS_FIND_FAMILY, &bs,0)){
 	return GB_export_error  ("Communication Error (2)");
@@ -133,7 +133,7 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
 	AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
 	fl->next = family_list;
 	family_list = fl;
-	
+
 	aisc_get(link, PT_FAMILYLIST, f_list,
 		 FAMILYLIST_NAME,&fl->name,
 		 FAMILYLIST_MATCHES,&fl->matches,

@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Fri Aug/23/2002 22:09 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/03/2002 15:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -293,7 +293,7 @@ static void MG_update_example(AW_root *aw_root) {
     if (!error && !result) error = "no result";
     if (error) {
         free(result);
-        result = strdup(GBS_global_string("<%s>", error));
+        result = GBS_global_string_copy("<%s>", error);
     }
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_EXAMPLE)->write_string(result);

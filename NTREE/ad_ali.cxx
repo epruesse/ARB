@@ -127,7 +127,7 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
 	error = GBT_rename_alignment(gb_main,source,dest,(int)copy,(int)dele);
 
 	if (!error){
-	    char *nfield = strdup(GBS_global_string("%s/data",dest));
+	    char *nfield = GBS_global_string_copy("%s/data",dest);
 	    awt_add_new_changekey( gb_main,nfield,GB_STRING);
 	    delete nfield;
 	    GB_commit_transaction(gb_main);
@@ -198,13 +198,13 @@ void aa_create_alignment(AW_window *aww)
 	if (!error){
 	    char *nfield = strdup(GBS_global_string("%s/data",name));
 	    awt_add_new_changekey( gb_main,nfield,GB_STRING);
-	    delete nfield;
+	    free(nfield);
 	    GB_commit_transaction(gb_main);
 	}else{
 	    GB_abort_transaction(gb_main);
 	}
 	if (error) aw_message(error);
-	delete name;
+	free(name);
 }
 
 AW_window *create_alignment_create_window(AW_root *root)

@@ -14,7 +14,11 @@ $(ARBHOME)/bin/arb_gde: $(CCOBJS)
 
 update: $(ARBHOME)/bin/arb_gde
 
-proto:
+proto: functions.h
+
+$(CCOBJS) : functions.h
+
+functions.h: $(CCOBJS:.o=.c)
 	rm -f functions.h
 	../../MAKEBIN/aisc_mkpt -C *.c >functions.h
 	arb_replace -l 'DummyRepaint*=DummyRepaint();' functions.h

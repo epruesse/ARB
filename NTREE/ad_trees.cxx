@@ -476,7 +476,7 @@ void ad_move_tree_info(AW_window *aww,AW_CL mode){
     */
     char *t1 = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     char *t2 = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
-    char *log_file = strdup(GBS_global_string("/tmp/arb_log_%s_%i",GB_getenvUSER(),GB_getuid()));
+    char *log_file = GBS_global_string_copy("/tmp/arb_log_%s_%i",GB_getenvUSER(),GB_getuid());
 
     AW_BOOL compare_node_info = mode==1;
     AW_BOOL delete_old_nodes = mode==0;

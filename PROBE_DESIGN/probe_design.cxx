@@ -859,7 +859,7 @@ char *pd_ptid_to_choice(int i){
     if (strrchr(file,'/')) file = strrchr(file,'/')-1;
     if (!(server = strtok(server,":"))) server = empty;
     sprintf(choice,"%-8s: %s",server,file+2);
-    delete fr;
+    free(fr);
 
     return strdup(choice);
 }
@@ -885,7 +885,7 @@ void probe_design_build_pt_server_choices(AW_window *aws,const char *var, AW_BOO
             }else{
                 aws->insert_option( choice, "", i );
             }
-            delete choice;
+            free(choice);
         }
     }
     if (sel_list) {

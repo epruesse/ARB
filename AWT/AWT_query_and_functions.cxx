@@ -656,7 +656,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize)
                         GBS_write_hash(hash,data,(long)gb_item);
                     }
                 }
-                delete data;
+                free(data);
             }
         }
 
@@ -700,7 +700,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize)
 //     }
 //     GBS_free_hash(hash);
 
-    delete key;
+    free(key);
     awt_query_update_list(0,cbs);
 }
 
@@ -768,8 +768,8 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 		sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
 		if (aw_message(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
 			GB_abort_transaction(cbs->gb_main);
-			delete command;
-			delete key;
+			free(command);
+			free(key);
 			return;
 		}
 		GB_ERROR error2 = awt_add_new_changekey_to_keypath(cbs->gb_main,key,GB_STRING, cbs->selector->change_key_path);
@@ -801,7 +801,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
         {
             long use_tag = cbs->aws->get_root()->awar(cbs->awar_use_tag)->read_int();
             if (!use_tag || !strlen(tag)) {
-                delete tag;
+                free(tag);
                 tag = 0;
             }
         }
@@ -854,12 +854,12 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                     }
                     if (!parsed) {
                         error = GB_get_error();
-                        delete str;
+                        free(str);
                         break;
                     }
                     if (!strcmp(parsed,str)){	// nothing changed
-                        delete str;
-                        delete parsed;
+                        free(str);
+                        free(parsed);
                         continue;
                     }
 
@@ -874,8 +874,8 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                             error = GB_write_as_string(gb_new,parsed);
                         }
                     }
-                    delete str;
-                    delete parsed;
+                    free(str);
+                    free(parsed);
                 }
             }
         }
@@ -948,7 +948,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 
         aw_closestatus();
         delete tag;
-        delete deftag;
+        free(deftag);
     }
 
 	if (error) {
@@ -957,8 +957,8 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 	}else{
 		GB_commit_transaction(cbs->gb_main);
 	}
-	delete key;
-	delete command;
+	free(key);
+	free(command);
 }
 
 void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
@@ -970,16 +970,16 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
 		if (!strcmp(str,"ali_*/data")){
 		    GB_transaction valid_transaction(cbs->gb_main);
 		    char *use = GBT_get_default_alignment(cbs->gb_main);
-		    kv = strdup(GBS_global_string("%s/data",use));
-		    delete use;
+		    kv = GBS_global_string_copy("%s/data",use);
+		    free(use);
 		}
 		aw_root->awar(cbs->awar_parskey)->write_string( kv);
-		if (kv != str) delete kv;
+		if (kv != str) free(kv);
 		aw_root->awar(cbs->awar_parsvalue)->write_string( brk);
 	}else{
 		aw_root->awar(cbs->awar_parsvalue)->write_string( str);
 	}
-	delete str;
+	free(str);
 }
 
 static void awt_colorize_listed(AW_window */*dummy*/, AW_CL cl_cbs) {
@@ -1115,8 +1115,8 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     const char             *what = mode == AWT_COL_COLORIZE_LISTED ? "listed" : "marked";
 
     {
-        char *macro_name  = strdup(GBS_global_string("COLORIZE_%s", Sel->items_name));
-        char *window_name = strdup(GBS_global_string("Colorize %s %s", what, Sel->items_name));
+        char *macro_name  = GBS_global_string_copy("COLORIZE_%s", Sel->items_name);
+        char *window_name = GBS_global_string_copy("Colorize %s %s", what, Sel->items_name);
 
         aws->init( aw_root, macro_name, window_name, 300, 0 );
 
@@ -1230,8 +1230,8 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 	aws                   = new AW_window_simple;
 
     {
-        char *macro_name = strdup(GBS_global_string("MODIFY_DATABASE_FIELD_%s", cbs->selector->items_name));
-        char *window_name = strdup(GBS_global_string("MODIFY DATABASE FIELD of listed %s", cbs->selector->items_name));
+        char *macro_name = GBS_global_string_copy("MODIFY_DATABASE_FIELD_%s", cbs->selector->items_name);
+        char *window_name = GBS_global_string_copy("MODIFY DATABASE FIELD of listed %s", cbs->selector->items_name);
 
         aws->init( aw_root, macro_name, window_name, 600, 0 );
 
@@ -1288,7 +1288,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
     }
 
 	GB_ERROR error = filename ? aws->load_selection_list(id,filename) : "No default selection list for query-type";
-	delete filename;
+	free(filename);
 	if (error) {
         aw_message(error);
     }
@@ -1312,7 +1312,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
 
     char *value = cbs->aws->get_root()->awar(cbs->awar_setvalue)->read_string();
     if (!strlen(value)) {
-        delete value;
+        free(value);
         value = 0;
     }
 
@@ -1324,7 +1324,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         aw_message();
         delete value;
-        delete key;
+        free(key);
         GB_commit_transaction(cbs->gb_main);
         return;
     }
@@ -1352,11 +1352,11 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
                                 GBS_strcat(strstr,value);
                                 char *v = GBS_strclose(strstr,0);
                                 error = GB_write_as_string(gb_new,v);
-                                delete v;
+                                free(v);
                             }else{
                                 char *name = GBT_read_string(gb_item,"name");
                                 error = GB_export_error("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
-                                delete name;
+                                free(name);
                             }
                         }else{
                             error = GB_write_as_string(gb_new,value);
@@ -1426,8 +1426,8 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
     }else{
         GB_commit_transaction(cbs->gb_main);
     }
-    delete key;
-    delete value;
+    free(key);
+    free(value);
 }
 
 AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
@@ -1521,7 +1521,7 @@ void awt_do_set_protection(void *dummy, struct adaqbsstruct *cbs)
 	}else{
 		GB_commit_transaction(cbs->gb_main);
 	}
-	delete key;
+	free(key);
 }
 
 AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
@@ -1840,7 +1840,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 		aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 
         {
-            char    *this_awar_name = strdup(GBS_global_string("tmp/arbdb_query_%i/select", query_id));
+            char    *this_awar_name = GBS_global_string_copy("tmp/arbdb_query_%i/select", query_id);
             AW_awar *awar           = aw_root->awar_string( this_awar_name, "", AW_ROOT_DEFAULT);
 
             cbs->result_id = aws->create_selection_list(this_awar_name,"","",5,5);
@@ -1959,6 +1959,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
             }
 	    }
 	}
+
+    free(Items);
 
 	query_id++;
 	GB_pop_transaction(gb_main);

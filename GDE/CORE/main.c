@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <xview/defaults.h>
 #include <xview/xview.h>
 #include <xview/panel.h>
@@ -48,9 +49,9 @@ static unsigned short GDEicon[258]={
 
 mpr_static(iconpr,64,64,1,GDEicon);
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(argc,argv)
+     int    argc;
+     char **argv;
 {
 
 	Icon tool_icon;			/* obvious	*/
@@ -75,7 +76,7 @@ char **argv;
 *	Main frame (primary window);
 */
 
-	frame = xv_create(NULL,FRAME,
+	frame = xv_create(0,FRAME,
 	    FRAME_NO_CONFIRM,FALSE,
 	    FRAME_LABEL,    "Genetic Data Environment 2.2",
 	    FRAME_INHERIT_COLORS,TRUE,
@@ -162,7 +163,7 @@ char **argv;
 		((NA_Alignment*)DataSet)->na_ddata = (char*)SetNADData
 		    ((NA_Alignment*)DataSet,EditCan,EditNameCan);
 
-	tool_icon = xv_create(NULL,ICON,
+	tool_icon = xv_create(0,ICON,
 	    ICON_IMAGE,&iconpr,
 	    ICON_LABEL,strlen(FileName)>0?FileName:"GDE",
 	    0);

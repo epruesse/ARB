@@ -31,7 +31,7 @@ void ORS_C_make_clean(char *data){			// removes all non ascii characters
 GB_ERROR ORS_C_try_to_do_java_function(void){
 	//////// BIN_TREE (JAVA) /////////
 	char *bin_tree_file = OC_cgi_var_2_filename("bt","tree_names","BIN_TREE");
-	char *bin_tree_path = strdup(GBS_global_string(ORS_LIB_PATH "%s",bin_tree_file));
+	char *bin_tree_path = GBS_global_string_copy(ORS_LIB_PATH "%s",bin_tree_file);
 	GB_ERROR error = 0;
 			// look for predefined datas
 	if (!ORS_strncase_tail_cmp(ors_gl.path_info,"/GET_TMP_FILE")) {

@@ -90,5 +90,6 @@ EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 
 
 WARNINGS	If the hitlist becomes too long, it will be truncated.
+                Nevertheless all operations work on non-truncated hitlist!
 
 BUGS		No bugs known

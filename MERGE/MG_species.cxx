@@ -307,7 +307,7 @@ void MG_transfer_fields_info(char *fieldname)
 			continue;
 		}
 		awt_add_new_changekey(gb_dest,name,(int)GB_read_int(gb_key_type));
-		delete name;
+		free(name);
 	}
 }
 #define MG_REMAP_WARNING "\n\tPlease read PRESERVE ALIGNMENT section in help file"
@@ -945,7 +945,7 @@ GB_ERROR MG_equal_alignments(){
         if (!strcmp(type, type2)){
             D_alignment_names[d++] = D_alignment_names[s];
         }else{
-            delete D_alignment_names[s];
+            free(D_alignment_names[s]);
             D_alignment_names[s] = 0;
         }
         free(type2);
@@ -983,7 +983,7 @@ GB_ERROR MG_equal_alignments(){
                 break;
             }
             dest = D_alignment_names[aliid];
-            delete b;
+            free(b);
             break;
     };
     if (!error && dest && strcmp(M_alignment_names[0],dest)){
@@ -993,7 +993,7 @@ GB_ERROR MG_equal_alignments(){
         }
     }
  mg_eq_end:
-    delete type;
+    free(type);
     GBT_free_names(M_alignment_names);
     GBT_free_names(D_alignment_names);
 
@@ -1020,12 +1020,12 @@ GB_ERROR MG_simple_merge(AW_root *awr){
 
     GBDATA *M_species;
     GBDATA *D_species;
-    delete m_name; m_name = 0;
+    free(m_name); m_name = 0;
     for (	M_species	= GB_find(M_species_data,"species",0,down_level);
             M_species;
             M_species	= GB_find(M_species,"species",0,this_level | search_next)){
         GBDATA *M_name = GB_search(M_species,"name",GB_STRING);
-        delete m_name;
+        free(m_name);
         m_name = GB_read_string(M_name);
         int count = 1;
     new_try:

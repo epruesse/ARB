@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/22/2002 19:48 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/03/2002 15:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -46,7 +46,7 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
         { // transform "YES,NO"  ->   "YES,YES (to_all),^NO,NO (to_all)" or "YES (to_all),NO (to_all)"
             char       *w       = new_buttons;
             const char *r       = buttons;
-            char       *all     = strdup(GBS_global_string(" (%s)", to_all));
+            char       *all     = GBS_global_string_copy(" (%s)", to_all);
             int         all_len = strlen(all);
 
             while (1) {

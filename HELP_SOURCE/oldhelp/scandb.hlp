@@ -11,27 +11,26 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Scan Database for all Fields
 
-OCCURRENCE	ARB_NT/Species|Genes|Experiments/Info/FIELDS/Unhide all fields
-                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Delete unused fields
-                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Rebuild fields
+OCCURRENCE	ARB_NT/Species|Genes|Experiments/Info/FIELDS/Show all hidden fields
+                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Scan unknown fields
+                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Remove unused fields
 
 DESCRIPTION     Each function scans the database to detect all existing fields.
 
-                The first function adds all unknown/hidden fields to the list
-                of known fields.
+                - 'Show all hidden fields' unhides all currently hidden fields.
 
-                The second function removes all non-existant fields.
+                - 'Scan unknown fields' scans the database for fields that are not listed
+                  in the field list and adds them to that list.
 
-                The third functions does both. It additionally resets the field sort order.
+                - 'Remove unused fields' deletes all fields from the field-list which are
+                  not used anywhere in the database.
 
-		Normally it is not necessary to run any of this procedures unless
+NOTE		Normally it is not necessary to run 'Scan unknown fields' unless
 		some external programs generate new and yet unknown fields
-                or if the ARB programmers forgot to mark a field as known.
+                or if the ARB programmers forgot to announce a field as known.
 
                 In the latter case please write to LINK{devel@arb-home.de} and describe which
                 fields was created by doing what.
-
-NOTES		None
 
 EXAMPLES	None
 

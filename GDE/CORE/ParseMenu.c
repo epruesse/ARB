@@ -22,7 +22,7 @@ All rights reserved.
 extern Gmenu menu[];
 int num_menus;
 
-ParseMenu()
+void ParseMenu()
 {
 	int j,curmenu = -1,curitem = 0;
 	int curchoice = 0 ,curarg = 0,curinput = 0, curoutput = 0;
@@ -228,16 +228,18 @@ ParseMenu()
 				if(thisarg->textvalue == NULL)
 					Error("Calloc");
 			}
-			else if(strcmp(temp,"choice_list")==0)
-				thisarg->type=CHOICE_LIST;
-			else if(strcmp(temp,"choice_menu")==0)
-				thisarg->type=CHOICE_MENU;
-			else if(strcmp(temp,"chooser")==0)
-				thisarg->type=CHOOSER;
-			else if(strcmp(temp,"slider")==0)
-				thisarg->type=SLIDER;
-			else
-				Error(sprintf(head,"Unknown argtype %s",temp));
+			else if(strcmp(temp,"choice_list") == 0)
+				thisarg->type                   = CHOICE_LIST;
+			else if(strcmp(temp,"choice_menu") == 0)
+				thisarg->type                   = CHOICE_MENU;
+			else if(strcmp(temp,"chooser")     == 0)
+				thisarg->type                   = CHOOSER;
+			else if(strcmp(temp,"slider")      == 0)
+				thisarg->type                   = SLIDER;
+			else {
+                sprintf(head,"Unknown argtype %s",temp);
+				Error(head);
+            }
 		}
 /*
 *	argtext: The default text value of the symbol.
@@ -482,8 +484,9 @@ ParseMenu()
 /*
 Find(): Search the target string for the given key
 */
-Find(target,key)
-char *key,*target;
+int Find(target,key)
+char *target;
+const char *key;
 {
 	int i,j,len1,dif,flag = FALSE;
 	dif = (strlen(target)) - (len1 = strlen(key)) +1;
@@ -500,12 +503,13 @@ char *key,*target;
 }
 
 
-Find2(target,key)
-char *key,*target;
-/*
-*	Like find, but returns the index of the leftmost
-*	occurence, and -1 if not found.
-*/
+int Find2(target,key)
+     char       *target;
+     const char *key;
+     /*
+      *	Like find, but returns the index of the leftmost
+      *	occurence, and -1 if not found.
+      */
 {
 	int i,j,len1,dif,flag = FALSE;
 	dif = (strlen(target)) - (len1 = strlen(key)) +1;
@@ -522,8 +526,8 @@ char *key,*target;
 }
 
 
-Error(msg)
-char *msg;
+void Error(msg)
+     const char *msg;
 {
 	(void)fprintf(stderr,"%s\n",msg);
 	exit(1);
@@ -549,7 +553,7 @@ Crop():
 	into: "this" and "that[:the_other]"
 */
 
-crop(input,head,tail)
+void crop(input,head,tail)
 char input[],head[],tail[];
 {
 /*

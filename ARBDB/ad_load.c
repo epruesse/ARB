@@ -650,7 +650,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
 					p = &(gb2->info.istr.data[0]);
 				}else{
 					GB_SETEXTERN(gb2);
-					p = gbm_get_mem((size_t)memsize,GB_GBM_INDEX(gb2));
+					p = gbm_get_mem((size_t)memsize+1,GB_GBM_INDEX(gb2)); // ralf: added +1 because decompress ran out of this block
 				}
 				i = fread(p,1,(size_t)memsize,in);
 				if (i!=memsize) {

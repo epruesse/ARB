@@ -2455,8 +2455,8 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
-//     cbs->id = strdup(GBS_global_string("%s/%s",this->window_defaults_name,id));
-    cbs->id = strdup(GBS_global_string("%s",id));
+//     cbs->id = GBS_global_string_copy("%s/%s",this->window_defaults_name,id);
+    cbs->id = GBS_global_string_copy("%s",id);
     GBS_write_hash(this->get_root()->prvt->action_hash,id,(long)cbs);
     if(!(mask&this->get_root()->global_mask)){
         XtSetSensitive( button, False );
@@ -2829,7 +2829,7 @@ GB_ERROR AW_root::start_macro_recording(const char *file,const char *application
     if (file[0] == '/'){
         path = strdup(file);
     }else{
-        path = strdup(GBS_global_string("%s/%s",GB_getenvARBMACROHOME(),file));
+        path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),file);
     }
     char *macro_header = GB_read_file("$(ARBHOME)/lib/macro.head");
     if (!macro_header){
@@ -2846,7 +2846,7 @@ GB_ERROR AW_root::start_macro_recording(const char *file,const char *application
     prvt->application_name_for_macros = strdup(application_id);
 
     fprintf(prvt->recording_macro_file,"%s",macro_header);
-    delete macro_header;
+    free(macro_header);
     return 0;
 }
 
@@ -2856,12 +2856,20 @@ GB_ERROR AW_root::stop_macro_recording(){
     }
     fprintf(prvt->recording_macro_file,"ARB::close($gb_main);");
     fclose(prvt->recording_macro_file);
+
     long mode = GB_mode_of_file(prvt->recording_macro_path);
+
     GB_set_mode_of_file(prvt->recording_macro_path,mode | ((mode >> 2)& 0111));
     prvt->recording_macro_file = 0;
-    delete(prvt->recording_macro_path);		    prvt->recording_macro_path = 0;
-    delete(prvt->stop_action_name);		    prvt->stop_action_name = 0;
-    delete prvt->application_name_for_macros;	    prvt->application_name_for_macros = 0;
+
+    free(prvt->recording_macro_path);
+    free(prvt->stop_action_name);
+    free(prvt->application_name_for_macros);
+
+    prvt->recording_macro_path        = 0;
+    prvt->stop_action_name            = 0;
+    prvt->application_name_for_macros = 0;
+
     return 0;
 }
 
@@ -2870,14 +2878,14 @@ GB_ERROR AW_root::execute_macro(const char *file){
     if (file[0] == '/'){
         path = strdup(file);
     }else{
-        path = strdup(GBS_global_string("%s/%s",GB_getenvARBMACROHOME(),file));
+        path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),file);
     }
     const char *com = GBS_global_string("%s/bin/perl %s &",GB_getenvARBHOME(),path);
     printf("Action '%s'\n",com);
     if(system(com)){
         aw_message(GBS_global_string("Calling '%s' failed",com));
     }
-    delete path;
+    free(path);
     return 0;
 }
 
@@ -2973,8 +2981,8 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
         }
         GBT_write_string(gb_main,awar_action,""); // this works as READY-signal for perl-client (remote_action)
     }
-    delete awar;
-    delete value;
-    delete action;
+    free(awar);
+    free(value);
+    free(action);
     return 0;
 }

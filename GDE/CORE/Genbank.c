@@ -426,17 +426,7 @@ int method,maskable;
 	return;
 }
 
-
-SetTime(a)
-struct
-{
-	int yy;
-	int mm;
-	int dd;
-	int hr;
-	int mn;
-	int sc;
-} *a;
+SetTime(struct gde_time *a)
 {
 	struct tm *tim,*localtime();
 	long clock;
