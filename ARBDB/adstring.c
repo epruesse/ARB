@@ -245,22 +245,31 @@ GB_CSTR GBS_global_string(const char *templat, ...)
 }
 
 
-char *GBS_string_2_key(const char *str)	/* converts any string to a valid key */
+char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
+     /* converts any string to a valid key (all chars in 'additional' are additionally allowed) */
 {
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
     for (i=0;i<GB_KEY_LEN_MAX;) {
-        c= *(str++);
+        c = *(str++);
         if (!c) break;
-        if (c==' ' || c == '_' ) 	buf[i++] = '_';
-        else if ( (c>='a') && (c<='z'))	buf[i++] = c;
-        else if ( (c>='A') && (c<='Z'))	buf[i++] = c;
-        else if ( (c>='0') && (c<='9'))	buf[i++] = c;
+
+        if (c==' ' || c == '_' ) {
+            buf[i++]  = '_';
+        }
+        else if (isalnum(c) || strchr(additional, c) != 0) {
+            buf[i++]  = c;
+        }
     }
     for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '_';
     buf[i] = 0;
     return GB_STRDUP(buf);
+}
+
+char *GBS_string_2_key(const char *str) /* converts any string to a valid key */
+{
+    return GBS_string_2_key_with_exclusions(str, "");
 }
 
 void gbs_uppercase(char *str)
