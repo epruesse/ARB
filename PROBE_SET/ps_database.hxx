@@ -138,7 +138,7 @@ public:
         return db_id2name_map.begin()->first;
     }
     const long getSpeciesCount() {
-        return db_id2name_map.size() + 1;
+        return db_id2name_map.size();
     }
 
     //
