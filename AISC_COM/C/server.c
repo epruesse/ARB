@@ -1334,6 +1334,7 @@ void aisc_server_shutdown(struct Hs_struct *hs){
     shutdown(hs->hso, 2);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
+    printf("Server terminating now.\n");
     exit(0);
 }
 
