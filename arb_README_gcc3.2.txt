@@ -29,7 +29,7 @@ To do this
 
 - prefix 
 	/opt/gcc-2.95/bin 
-  to your path
+  to your PATH environment variable.
 
 - compile ARB
 
