@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Wed Sep/17/2003 15:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Sep/19/2003 14:57 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -18,6 +18,7 @@
 #include <queue>
 #include <map>
 #include <list>
+#include <cctype>
 
 #include <unistd.h>
 #include <dirent.h>
@@ -112,7 +113,7 @@ namespace {
 
     const char *encodePath(const char *path, int pathlen, GB_ERROR& error) {
         // path contains strings like 'LRLLRRL'
-        // 'L' is interpreted as 1 ('R' as 0)
+        // 'L' is interpreted as 0 ('R' as 1)
         // (paths containing 0 and 1 are ok as well)
 
         psw_assert(!error);
@@ -128,11 +129,12 @@ namespace {
             for (int p = 0; p<4 && !error; ++p, --pathlen) {
                 halfbyte <<= 1;
                 if (pathlen>0) {
-                    char c = *path++;
+                    char c = toupper(*path++);
                     psw_assert(c);
 
-                    if (c == 'L' || c == '1') halfbyte |= 1;
-                    else if (c != 'R' && c != '0') {
+                    // we use it the other way:
+                    if (c == 'R' || c == '1') halfbyte |= 1;
+                    else if (c != 'L' && c != '0') {
                         error = GBS_global_string("Illegal character '%c' in path", c);
                     }
                 }
@@ -338,14 +340,16 @@ namespace {
             const char *enc_path   = path;
 
             if (!gb_subtree) {
-                int pathlen = strlen(path);
-                enc_path    = encodePath(path, pathlen, error);
+                int         pathlen       = strlen(path);
+                const char *test_enc_path = encodePath(path, pathlen, error);
 
                 if (!error) {
+                    enc_path = test_enc_path;
                     gb_subtree = (GBDATA*)GBS_read_hash(path_cache, enc_path);
                 }
 
                 fprintf(stderr, "testing whether '%s' is a plain path (%s) = %s\n", path, gb_subtree ? "yes" : "no", enc_path);
+                error = 0;
             }
 
             if (!gb_subtree) {
@@ -361,16 +365,21 @@ namespace {
                     fprintf(out, "result=ok\nfound=0\n");
                 }
                 else {
-                    GBDATA             *gb_probe_group_design = GB_search(gb_subtree, "probe_group_design", GB_FIND);
+                    GBDATA             *gb_probe_group_common = GB_search(gb_subtree, "probe_group_common", GB_FIND);
                     list<const char *>  found_probes;
 
-                    if (gb_probe_group_design) {
-                        for (GBDATA *gb_probe = GB_find(gb_probe_group_design, "common", 0, down_level);
+                    if (gb_probe_group_common) {
+                        for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
                              gb_probe && !error;
-                             gb_probe = GB_find(gb_probe, "common", 0, this_level|search_next))
+                             gb_probe = GB_find(gb_probe, "probe", 0, this_level|search_next))
                         {
                             found_probes.push_back(GB_read_char_pntr(gb_probe));
                         }
+                    }
+
+                    GBDATA *gb_path = GB_find(gb_subtree, "path", 0, down_level);
+                    if (gb_path) {
+                        fprintf(out, "path=%s\n", GB_read_char_pntr(gb_path));
                     }
 
                     if (found_probes.empty()) {
