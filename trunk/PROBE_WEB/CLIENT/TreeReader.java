@@ -42,7 +42,7 @@ public TreeReader(String treefile) throws Exception
             }
         }
         catch (Exception e) {
-            error = "Couldn't open treefile '"+treefile+"' ("+e.getMessage()+")";
+            error = "Could not read treefile: "+e.getMessage();
         }
 
         if (error == null) {
