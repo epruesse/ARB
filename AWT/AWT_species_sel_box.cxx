@@ -128,9 +128,19 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
     names = GBT_scan_db(gb_species_data);
+
     awt_add_new_gene_changekey(gb_main,"name", GB_STRING);
+
     awt_add_new_gene_changekey(gb_main,"pos_begin", GB_INT);
     awt_add_new_gene_changekey(gb_main,"pos_end", GB_INT);
+    awt_add_new_gene_changekey(gb_main,"pos_uncertain", GB_STRING);
+
+    awt_add_new_gene_changekey(gb_main,"pos_begin2", GB_INT);
+    awt_add_new_gene_changekey(gb_main,"pos_end2", GB_INT);
+    awt_add_new_gene_changekey(gb_main,"pos_uncertain2", GB_STRING);
+
+    awt_add_new_gene_changekey(gb_main,"pos_joined", GB_INT);
+    awt_add_new_gene_changekey(gb_main,"complement", GB_BYTE);
 
     for (name = names; *name; name++) {
         if ( (1<<(**name)) & bitfilter ) {		// look if already exists

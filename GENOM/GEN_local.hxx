@@ -30,6 +30,9 @@
 
 #define AWAR_GENMAP_DISPLAY_TYPE "genemap/display/type"
 
+// all display styles:
+#define AWAR_GENMAP_ARROW_SIZE "genemap/display/arrow_size"
+
 // display book-style:
 #define AWAR_GENMAP_BOOK_WIDTH_FACTOR   "genemap/display/book/width_factor"
 #define AWAR_GENMAP_BOOK_BASES_PER_LINE "genemap/display/book/base_per_line"
@@ -43,6 +46,9 @@
 // display radial-style:
 #define AWAR_GENMAP_RADIAL_INSIDE  "genemap/displax/radial/inside"
 #define AWAR_GENMAP_RADIAL_OUTSIDE "genemap/displax/radial/outside"
+
+// other options:
+#define AWAR_GENMAP_AUTO_JUMP       "genemap/options/autojump"
 
 #else
 #error GEN_local.hxx included twice

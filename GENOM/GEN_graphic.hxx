@@ -49,7 +49,7 @@ public:
     GBDATA   *gb_main;
     AW_root  *aw_root;
     GEN_root *gen_root;
-    int	      change_flag;      // used to indicate resize ....
+    int       change_flag;
 
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, void (*callback_installer_)(bool install, AWT_canvas*));
     virtual ~GEN_graphic();
@@ -65,6 +65,8 @@ public:
     virtual	void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+
+    virtual int GEN_graphic::check_update(GBDATA *gbdummy);
 };
 
 extern GEN_graphic *GEN_GRAPHIC;

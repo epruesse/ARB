@@ -662,12 +662,26 @@ void AWTC_import_go_cb(AW_window *aww)
 
     bool noautonames = false; // strange name!
     if (!error) {
-        if (is_genom_db) {
-            char *fname = awr->awar(AWAR_FILE)->read_string();
-            error = GEN_read(GB_MAIN, fname, ali_name);
-            delete fname;
-        }
-        else {
+          if (is_genom_db) {
+              char *mask   = awr->awar(AWAR_FILE)->read_string();
+              char **fnames = GBS_read_dir(mask, 0);
+
+              if (fnames[0] == 0) {
+                  error = GB_export_error("Cannot find selected file");
+              }
+              else {
+                  aw_openstatus("Reading input files");
+                  for (int count = 0; !error && fnames[count]; ++count) {
+                      aw_status(GBS_global_string("Reading %s", fnames[count]));
+                      error = GEN_read(GB_MAIN, fnames[count], ali_name);
+                  }
+                  aw_closestatus();
+              }
+
+              GBT_free_names(fnames);
+              free(mask);
+         }
+         else {
             char *f = awr->awar(AWAR_FILE)->read_string();
             awtcig.filenames = GBS_read_dir(f,0);
             delete f;
@@ -698,7 +712,7 @@ void AWTC_import_go_cb(AW_window *aww)
             awtcig.current_file = 0;
 
             aw_closestatus();
-        }
+         }
     }
     delete ali_name;
 
@@ -759,7 +773,7 @@ static void genom_flag_changed(AW_root *awr) {
     }
 }
 
-GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit,AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
+GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
 {
     static AW_window_simple *aws = 0;
 

@@ -85,7 +85,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx GEN_local.hxx GEN.hxx
-GEN_map.o: GEN_map.hxx GEN_gene.hxx GEN_graphic.hxx
+GEN_map.o: GEN_map.hxx GEN_gene.hxx GEN_graphic.hxx ./../NTREE/ad_spec.hxx
 GEN_graphic.o:  
 GEN_graphic.o:  
 GEN_graphic.o:  
@@ -95,7 +95,10 @@ GEN_graphic.o:
 GEN_graphic.o:  
 GEN_graphic.o:  
 GEN_graphic.o:  
-GEN_graphic.o:  $(ARBHOME)/INCLUDE/arbdb.h
+GEN_graphic.o:  
+GEN_graphic.o:  
+GEN_graphic.o: 
+GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -123,3 +126,4 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_device.hxx GEN.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_window.hxx GEN_gene.hxx
+GEN_gene.o: GEN_local.hxx

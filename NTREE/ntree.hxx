@@ -25,8 +25,8 @@ public:
     };
 };
 
-void nt_main_startup_main_window(AW_root *aw_root);
-void nt_exit(AW_window *aw_window);
+void       nt_main_startup_main_window(AW_root *aw_root);
+void       nt_exit(AW_window *aw_window);
 AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name); // basename is awar_prefix
 
 #define AWAR_EXPORT_NDS "tmp/export_nds"
