@@ -738,6 +738,7 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini,    AW_window *awwi, AWT_graphic *awd, A
 
     this->awr          = aww->get_root();
     gc_manager         = awd->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0 );
+    this->gc_manager   = gc_manager;
     tree_disp->drag_gc = aww->main_drag_gc;
     this->drag_gc      = aww->main_drag_gc;
 
