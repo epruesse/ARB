@@ -2,19 +2,18 @@ import java.util.*;
 
 public class ServerAnswer
 {
-private HashMap map;
-private String  error_message;
-private boolean is_server_problem = false;
+    private HashMap map;
+    private String  error_message;
+    private boolean is_server_problem = false;
 
-private String removeLF(String str)
-    {
+    private String removeLF(String str) {
         int lf = str.indexOf("\n");
         if (lf == -1) return str;
         if (lf == 0) return removeLF(str.substring(1));
         return str.substring(0, lf) + removeLF(str.substring(lf+1));
     }
-private String removeTags(String str)
-    {
+    
+    private String removeTags(String str) {
         String  res   = "";
         int     start = 0;
         boolean done  = false;
@@ -44,8 +43,7 @@ private String removeTags(String str)
         return res;
     }
 
-public ServerAnswer(String answer, boolean needResult, boolean beNoisy) throws Exception 
-    {
+    public ServerAnswer(String answer, boolean needResult, boolean beNoisy) throws Exception {
         map                  = new HashMap();
         error_message        = null;
         boolean format_error = false;
@@ -113,34 +111,29 @@ public ServerAnswer(String answer, boolean needResult, boolean beNoisy) throws E
         }
     }
 
-public boolean hasKey(String key)
-    {
-        return !hasError() && map.containsKey(key);
-    }
+    public boolean hasKey(String key) { return !hasError() && map.containsKey(key); }
 
-public String getValue(String key) throws Exception 
-    {
+    public String getValue(String key) throws Exception {
         if (!hasKey(key)) {
-            Toolkit.InternalError("Unknown key '"+key+"' requested");
+            Toolkit.AbortWithError("Unknown key '"+key+"' requested");
         }
         return (String)map.get(key);
     }
 
-    // error handling
-
-public boolean hasError()
-    {
-        return error_message != null;
+    public int getIntValue(String key) throws Exception {
+        return Integer.parseInt(getValue(key));
     }
 
-public String getError()
-    {
+    // error handling
+
+    public boolean hasError() { return error_message != null; }
+
+    public String getError() {
         if (!hasError()) return "no error";
         return error_message;
     }
 
-public void handleError() throws Exception 
-    {
+    public void handleError() throws Exception {
         if (hasError()) {
             if (is_server_problem) {
                 Toolkit.AbortWithServerProblem("[ServerAnswer] "+getError());
