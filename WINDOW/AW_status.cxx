@@ -15,16 +15,17 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt_www.hxx>
+#include <SIG_PF.h>
 
-#if defined(SUN4) || defined(SUN5)
-# ifndef __cplusplus
-#  define SIG_PF void (*)()
-# else
-#  include <sysent.h>   /* c++ only for sun */
-# endif
-#else
-# define SIG_PF void (*)(int )
-#endif
+// #if defined(SUN4) || defined(SUN5)
+// # ifndef __cplusplus
+// #  define SIG_PF void (*)()
+// # else
+// #  include <sysent.h>   /* c++ only for sun */
+// # endif
+// #else
+// # define SIG_PF void (*)(int )
+// #endif
 
 #ifdef SGI
 # include <bstring.h>
@@ -40,7 +41,7 @@
 #define AW_STATUS_KILL_DELAY        4000 // in ms
 #define AW_STATUS_LISTEN_DELAY      300 // in ms
 #define AW_STATUS_HIDE_DELAY        60 // in sec
-#define AW_STATUS_PIPE_CHECK_DELAY  1000*2 // in ms every minute a pipe check
+#define AW_STATUS_PIPE_CHECK_DELAY  1000*2 // in ms (a pipe check every 2 seconds)
 
 #define AWAR_STATUS         "tmp/Status/"
 #define AWAR_STATUS_TITLE   AWAR_STATUS "Title"
@@ -52,7 +53,16 @@
 
 #define AW_MESSAGE_LISTEN_DELAY 500
 // look in ms whether a father died
-#define AW_MESSAGE_LINES 50
+#define AW_MESSAGE_LINES        50
+
+#if defined(DEBUG)
+
+// ARB_LOGGING should always be undefined in CVS version!
+// #define ARB_LOGGING
+// #define TRACE_STATUS // enable debug output for status window (which runs forked!)
+// #define PIPE_DEBUGGING // enable debug output for pipes (for write commands)
+
+#endif // DEBUG
 
 enum {
     AW_STATUS_OK,           // status to main
@@ -70,44 +80,152 @@ struct {
     int        fd_from[2];
     int        mode;
     int        hide;
-    int        hide_delay; // in seconds
+    int        hide_delay;      // in seconds
     pid_t      pid;
     int        pipe_broken;
+    int        errno;
     AW_window *aws;
     AW_window *awm;
     AW_BOOL    status_initialized;
     char      *lines[AW_MESSAGE_LINES];
     int        line_cnt;
     int        local_message;
-    time_t     last_start; // time of last status start
+    time_t     last_start;      // time of last status start
 } aw_stg = {
-    {0,0},
-    {0,0},
-    AW_STATUS_OK,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    AW_FALSE,
-    { 0,0,0,},
-    0,
-    0,
-    0
+    {0,0}, // fd_to
+    {0,0}, // fd_from
+    AW_STATUS_OK, // mode
+    0, // hide
+    0, // hide_delay
+    0, // pid
+    0, // pipe_broken
+    0, // errno
+    0, // aws
+    0, // awm
+    AW_FALSE, // status_initialized
+    { 0,0,0 }, // lines
+    0, // line_cnt
+    0, // local_message
+    0 // last_start
 };
+
+// including errno.h sucks for some reason, so errno is manually declared here:
+// #include <errno.h>
+extern int errno;
+
+// timeouts :
+
+#define POLL_TIMEOUT 0         // idle wait POLL_TIMEOUT microseconds before returning EOF when polling
+
+#if defined(DEBUG)
+#define WRITE_TIMEOUT 1000      // 1 second for debug version (short because it always reaches timeout inside debugger)
+#else
+#define WRITE_TIMEOUT 10000     // 10 seconds for release
+#endif // DEBUG
 
 void aw_status_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 
+static void mark_pipe_broken(int errno) {
+#if defined(PIPE_DEBUGGING)
+    if (aw_stg.pipe_broken != 0) {
+        fprintf(stderr,
+                "Pipe already broken in mark_pipe_broken(); pipe_broken=%i aw_stg.errno=%i errno=%i\n",
+                aw_stg.pipe_broken, aw_stg.errno, errno);
+    }
+
+    fprintf(stderr, "Marking pipe as broken (errno=%i)\n", errno);
+#endif // PIPE_DEBUGGING
+
+    aw_stg.errno       = errno;
+    aw_stg.pipe_broken = 1;
+
+    static bool error_shown = false;
+    if (!error_shown) {
+        fprintf(stderr,
+                "******************************************************************\n"
+                "The connection to the status window was blocked unexpectedly!\n"
+                "This happens if you run the program from inside the debugger\n"
+                "or when the process is blocked longer than %5.2f seconds.\n"
+                "Further communication with the status window is suppressed.\n"
+                "******************************************************************\n"
+                , WRITE_TIMEOUT/1000.0);
+    }
+}
+
+static ssize_t safe_write(int fd, const char *buf, int count) {
+    if (aw_stg.pipe_broken != 0) {
+#if defined(PIPE_DEBUGGING)
+        fprintf(stderr, "pipe is broken -- avoiding write of %i bytes\n", count);
+#endif // PIPE_DEBUGGING
+        return -1;
+    }
+
+    gb_assert(count>0); // write nothing - bad idea
+
+    ssize_t result = -1;
+    {
+        fd_set         set;
+        struct timeval timeout;
+        timeout.tv_sec  = WRITE_TIMEOUT/1000;
+        timeout.tv_usec = WRITE_TIMEOUT%1000;
+
+        FD_ZERO(&set);
+        FD_SET(fd, &set);
+
+        int sel_res = select(fd+1, 0, &set, 0, &timeout);
+
+        if (sel_res == -1) {
+            fprintf(stderr, "select (before write) returned error (errno=%i)\n", errno);
+            exit(EXIT_FAILURE);
+        }
+
+        bool pipe_would_block = !FD_ISSET(fd, &set);
+
+#if defined(PIPE_DEBUGGING)
+        fprintf(stderr, "select returned %i, pipe_would_block=%i (errno=%i)\n",
+                sel_res, int(pipe_would_block), errno);
+
+        if (pipe_would_block) {
+            fprintf(stderr, "  Avoiding to write to pipe (because it would block!)\n");
+        }
+        else {
+            fprintf(stderr, "  Write %i bytes to pipe.\n", count);
+        }
+#endif // PIPE_DEBUGGING
+
+        if (!pipe_would_block) {
+            result = write(fd, buf, count);
+        }
+    }
+
+    if (result<0) {
+        mark_pipe_broken(errno);
+    }
+    else if (result != count) {
+#if defined(PIPE_DEBUGGING)
+        fprintf(stderr, "write wrote %i bytes instead of %i as requested.\n", result, count);
+#endif // PIPE_DEBUGGING
+        mark_pipe_broken(0);
+    }
+
+    return result;
+}
+
+static void write_with_success_or_exit(int fd, const char *buf, int count) {
+    safe_write(fd, buf, count);
+//     if (safe_write(fd, buf, count) != count) {
+//         fprintf(stderr, "Pipe broken! -- former exit-point.. now continuing (aw_stg.errno=%i)\n", aw_stg.errno);
+//         exit(EXIT_FAILURE);
+//     }
+
+
+}
+
+
 void aw_status_write( int fd, int cmd)
 {
-    char buf[10];
-    buf[0] = cmd;
-
-    if( write(fd, buf, 1) <= 0  || aw_stg.pipe_broken ){
-        printf("Pipe broken.\n");
-        exit(0);
-    }
+    char buf = cmd;
+    write_with_success_or_exit(fd, &buf, 1);
 }
 
 int aw_status_read_byte(int fd, int poll_flag)
@@ -118,10 +236,10 @@ int aw_status_read_byte(int fd, int poll_flag)
     unsigned char buffer[2];
 
     if (poll_flag){
-        fd_set set;
+        fd_set         set;
         struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
+        timeout.tv_sec  = POLL_TIMEOUT/1000;
+        timeout.tv_usec = POLL_TIMEOUT%1000;
 
         FD_ZERO (&set);
         FD_SET (fd, &set);
@@ -132,8 +250,8 @@ int aw_status_read_byte(int fd, int poll_flag)
     erg = read(fd,(char *)&(buffer[0]),1);
     if (erg<=0) {
         //      process died
-        printf("father died, now i kill myself\n");
-        exit(0);
+        fprintf(stderr, "father died, now i kill myself\n");
+        exit(EXIT_FAILURE);
     }
     return buffer[0];
 }
@@ -148,8 +266,8 @@ int aw_status_read_int(int fd, int poll_flag) {
     if (poll_flag){
         fd_set set;
         struct timeval timeout;
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
+        timeout.tv_sec  = POLL_TIMEOUT/1000;
+        timeout.tv_usec = POLL_TIMEOUT%1000;
 
         FD_ZERO (&set);
         FD_SET (fd, &set);
@@ -160,8 +278,8 @@ int aw_status_read_int(int fd, int poll_flag) {
     erg = read(fd,(char *)buffer,sizeof(int));
     if (erg<=0) {
         //      process died
-        printf("father died, now i kill myself\n");
-        exit(0);
+        fprintf(stderr, "father died, now i kill myself\n");
+        exit(EXIT_FAILURE);
     }
     return *(int*)buffer;
 }
@@ -183,6 +301,7 @@ int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
             *(p++) = c;
         }
         *(p++) = c;
+
         str = strdup(buffer);
     }
     else if (cmd == AW_STATUS_CMD_GAUGE) {
@@ -217,7 +336,12 @@ int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
 
 void aw_status_check_pipe()
 {
-    if (getppid() <=1 ) exit(0);
+    if (getppid() <= 1 ) {
+#if defined(TRACE_STATUS)
+        fprintf(stderr, "Terminating status process.\n");
+#endif // TRACE_STATUS
+        exit(EXIT_FAILURE);
+    }
 }
 
 void aw_status_wait_for_open(int fd)
@@ -226,19 +350,20 @@ void aw_status_wait_for_open(int fd)
     int cmd;
     int erg;
 
-    for (   cmd = 0;
-            cmd != AW_STATUS_CMD_INIT;
-            ){
-        for (erg = 0; !erg; ){
+    for (cmd = 0; cmd != AW_STATUS_CMD_INIT;) {
+        for (erg = 0; !erg; ) {
             struct timeval timeout;
-            timeout.tv_sec =  AW_STATUS_PIPE_CHECK_DELAY / 1000;
-            timeout.tv_usec = (AW_STATUS_PIPE_CHECK_DELAY % 1000) * 1000;
+            timeout.tv_sec  = AW_STATUS_PIPE_CHECK_DELAY / 1000;
+            timeout.tv_usec = AW_STATUS_PIPE_CHECK_DELAY % 1000;
 
             fd_set set;
 
             FD_ZERO (&set);
             FD_SET (fd, &set);
 
+#if defined(TRACE_STATUS)
+            fprintf(stderr, "Waiting for status open command..\n"); fflush(stderr);
+#endif // TRACE_STATUS
             erg = select(FD_SETSIZE,FD_SET_TYPE &set,NULL,NULL,&timeout);
             if (!erg) aw_status_check_pipe();   // time out
         }
@@ -246,7 +371,11 @@ void aw_status_wait_for_open(int fd)
         cmd = aw_status_read_command(fd,0,str);
     }
     aw_stg.mode = AW_STATUS_OK;
-    delete str;
+    free(str);
+
+#if defined(TRACE_STATUS)
+    fprintf(stderr, "OK got status open command!\n"); fflush(stderr);
+#endif // TRACE_STATUS
 }
 
 
@@ -254,7 +383,7 @@ void aw_status_timer_hide_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
     AWUSE(awr);AWUSE(cl1);AWUSE(cl2);
 
-    if(aw_stg.hide){
+    if (aw_stg.hide) {
         aw_stg.aws->show();
         aw_stg.hide = 0;
     }
@@ -362,11 +491,6 @@ inline const char *sec2disp(long seconds) {
     return buffer;
 }
 
-// if you change this do NOT check it into CVS!
-#if defined(DEBUG)
-// #define ARB_LOGGING
-#endif // DEBUG
-
 #ifdef ARB_LOGGING
 void aw_status_append_to_log(const char* str)
 {
@@ -384,10 +508,6 @@ void aw_status_append_to_log(const char* str)
     close(fd);
 }
 #endif
-
-#if defined(DEBUG)
-// #define TRACE_STATUS
-#endif // DEBUG
 
 
 void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
@@ -539,18 +659,24 @@ void aw_initstatus( void )
     pid_t clientid = fork();
 
     if (clientid) { /* i am the father */
+#if defined(TRACE_STATUS)
+        fprintf(stderr, "Forked status! (i am the father)\n"); fflush(stderr);
+#endif // TRACE_STATUS
         return;
     } else {
         GB_install_pid(1);
 
 #if defined(TRACE_STATUS)
-        fprintf(stderr, "Forked status!\n"); fflush(stderr);
+        fprintf(stderr, "Forked status! (i am the child)\n"); fflush(stderr);
 #endif // TRACE_STATUS
 
-        aw_status_wait_for_open(aw_stg.fd_to[0]);
-        AW_root    *aw_root;
-        aw_root                = new AW_root;
-        AW_default  aw_default = aw_root->open_default(".arb_prop/status.arb");
+//         aw_status_wait_for_open(aw_stg.fd_to[0]);
+
+        AW_root *aw_root;
+        aw_root = new AW_root;
+
+
+        AW_default aw_default = aw_root->open_default(".arb_prop/status.arb");
         aw_root->init_variables(aw_default);
         aw_root->awar_string( AWAR_STATUS_TITLE,"------------------------------------",aw_default);
         aw_root->awar_string( AWAR_STATUS_TEXT,"",aw_default);
@@ -608,14 +734,21 @@ void aw_initstatus( void )
 
         aw_stg.awm = (AW_window *)awm;
 
-        // install irq
-        aws->get_root()->add_timed_callback(AW_STATUS_LISTEN_DELAY,
-                                            aw_status_timer_listen_event, 0, 0);
+#if defined(TRACE_STATUS)
+        fprintf(stderr, "Created status window!\n"); fflush(stderr);
+#endif // TRACE_STATUS
 
+        aw_status_wait_for_open(aw_stg.fd_to[0]);
+
+        // install irq
+        // aws->get_root()->add_timed_callback(AW_STATUS_LISTEN_DELAY, aw_status_timer_listen_event, 0, 0);
+        aws->get_root()->add_timed_callback(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
 
         aw_root->main_loop();
     }
 }
+
+
 
 
 void aw_openstatus( const char *title )
@@ -626,7 +759,7 @@ void aw_openstatus( const char *title )
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
     }
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_OPEN);
-    write(aw_stg.fd_to[1], title, strlen(title)+1 );
+    write_with_success_or_exit(aw_stg.fd_to[1], title, strlen(title)+1 );
 }
 
 void aw_closestatus( void )
@@ -639,10 +772,9 @@ int aw_status( const char *text )
     if (!text) text = "";
 
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
-    if (write(aw_stg.fd_to[1], text, strlen(text)+1 ) <= 0 || aw_stg.pipe_broken) {
-        printf("Pipe broken.\n");
-        exit(1);
-    }
+    int len = strlen(text)+1;
+
+    write_with_success_or_exit(aw_stg.fd_to[1], text, len );
 
     return aw_status();
 }
@@ -657,10 +789,7 @@ extern "C" {
 
         if (val != last_val) {
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
-            if (write(aw_stg.fd_to[1], (char*)&val, sizeof(int)) <= 0 || aw_stg.pipe_broken) {
-                printf("Pipe broken.\n");
-                exit(0);
-            }
+            write_with_success_or_exit(aw_stg.fd_to[1], (char*)&val, sizeof(int));
             //             aw_status_write(aw_stg.fd_to[1], (int)(gauge*AW_GAUGE_GRANULARITY));
         }
         last_val = val;
@@ -745,7 +874,8 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
                 aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
             }
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
-            write(aw_stg.fd_to[1], msg, strlen(msg)+1 );
+            int len = strlen(msg)+1;
+            write_with_success_or_exit(aw_stg.fd_to[1], msg, len);
         }
         return 0;
     }
