@@ -44,7 +44,7 @@ foreach (<>) {
   }
   else { # put lines behind into '@depends'
     chomp;
-    if (/[a-z]/i) {
+    if (/^ *[\/\$a-z]/i) {
       if (/^([^:]*): *(.*)$/) {
         my $file       = $1;
         my $depends_on = $2;
