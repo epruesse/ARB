@@ -22,7 +22,12 @@ public void windowClosing(WindowEvent event)
 
         ProbesGUI mainFrame = (ProbesGUI)event.getWindow();
 
-        mainFrame.getClient().saveConfig();
+        try {
+            mainFrame.getClient().saveConfig();
+        }
+        catch (Exception e) {
+            Toolkit.clickOK("Saving config failed", e.getMessage());
+        }
         mainFrame.setVisible(false);
         mainFrame.dispose();
 
