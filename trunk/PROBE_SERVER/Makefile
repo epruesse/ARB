@@ -2,20 +2,24 @@
 SUBS = \
 		PROBE_GROUP/PROBE_GROUP.dummy \
 		PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.dummy \
+		WORKER/WORKER.dummy \
 
 DEST = bin
 
 BINARIES = \
 		$(DEST)/arb_probe_group \
 		$(DEST)/arb_probe_group_design \
+		$(DEST)/arb_probe_server_worker \
 
-LIBS = -lARBDB \
+LIBS = -lARBDB
+
+CLIENT_SERVER_LIBS = \
 		$(ARBHOME)/SERVERCNTRL/SERVERCNTRL.a \
 		$(ARBHOME)/PROBE_COM/client.a \
 
-
-ARCHS_PROBE_GROUP        = PROBE_GROUP/PROBE_GROUP.a
-ARCHS_PROBE_GROUP_DESIGN = PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a
+ARCHS_PROBE_GROUP         = PROBE_GROUP/PROBE_GROUP.a
+ARCHS_PROBE_GROUP_DESIGN  = PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a
+ARCHS_PROBE_SERVER_WORKER = WORKER/WORKER.a
 
 # --------------------------------------------------------------------------------
 
@@ -28,11 +32,15 @@ makedestdir:
 
 $(DEST)/arb_probe_group:
 		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(CLIENT_SERVER_LIBS)
 
 $(DEST)/arb_probe_group_design:
 		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS)
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(CLIENT_SERVER_LIBS)
+
+$(DEST)/arb_probe_server_worker:
+		@echo Link $@
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS)
 
 depends: $(SUBS:.dummy=.depend)
 
