@@ -431,17 +431,17 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 {
     printf("start awt_create_selection_list_on_extendeds_update\n"); // @@@
-    struct awt_sel_list_for_sai *cbs = (struct awt_sel_list_for_sai *)cbsid;
-    GBDATA                      *gb_extended_data;
-    gb_extended_data                 = GB_search(cbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
+
+    struct awt_sel_list_for_sai *cbs              = (struct awt_sel_list_for_sai *)cbsid;
+
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
-    GBDATA                      *gb_extended;
-    GBDATA                      *gb_name;
-    for (   gb_extended = GBT_first_SAI(cbs->gb_main);
-            gb_extended;
-            gb_extended              = GBT_next_SAI(gb_extended)){
-        gb_name                      = GB_find(gb_extended,"name",0,down_level);
+
+    for (GBDATA *gb_extended = GBT_first_SAI(cbs->gb_main);
+         gb_extended;
+         gb_extended = GBT_next_SAI(gb_extended))
+    {
+        GBDATA *gb_name = GB_find(gb_extended,"name",0,down_level);
         if (!gb_name) continue;
         if (cbs->filter_poc) {
             char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
@@ -450,14 +450,26 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
                 cbs->aws->insert_selection( cbs->id, res, name );
                 free(res);
             }
-        }else{
-            char *name = GB_read_char_pntr(gb_name);
-            cbs->aws->insert_selection( cbs->id, name, name );
+        }
+        else {
+            const char *name     = GB_read_char_pntr(gb_name);
+            GBDATA     *gb_group = GB_find(gb_extended, "sai_group", 0, down_level);
+            if (gb_group) {
+                const char *group          = GB_read_char_pntr(gb_group);
+                char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);
+                cbs->aws->insert_selection(cbs->id, group_and_name, name);
+                free(group_and_name);
+            }
+            else {
+                cbs->aws->insert_selection( cbs->id, name, name );
+            }
         }
     }
-    if (cbs->add_selected_species){
+    cbs->aws->sort_selection_list(cbs->id, 0, 0);
+
+    if (cbs->add_selected_species) {
         GBDATA *gb_sel = GB_search(cbs->gb_main,AWAR_SPECIES_NAME,GB_STRING);
-        char *name = GB_read_string(gb_sel);
+        char   *name   = GB_read_string(gb_sel);
         if (strlen(name)){
             char *sname = (char *)calloc(1, strlen(name)+2);
             sprintf(sname+1,"%s",name);
@@ -477,30 +489,33 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
                                              char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
                                              AW_BOOL add_sel_species)
 {
-    AW_selection_list *id;
-    GBDATA  *gb_extended_data;
+    AW_selection_list           *id;
+    GBDATA                      *gb_extended_data;
     struct awt_sel_list_for_sai *cbs;
+
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname,0,"",40,8);
+    id  = aws->create_selection_list(varname,0,"",40,8);
     cbs = new awt_sel_list_for_sai;
-    cbs->aws = aws;
-    cbs->gb_main = gb_main;
-    cbs->id = id;
-    cbs->filter_poc = filter_poc;
-    cbs->filter_cd = filter_cd;
+
+    cbs->aws                  = aws;
+    cbs->gb_main              = gb_main;
+    cbs->id                   = id;
+    cbs->filter_poc           = filter_poc;
+    cbs->filter_cd            = filter_cd;
     cbs->add_selected_species = add_sel_species;
+
     awt_create_selection_list_on_extendeds_update(0,(void *)cbs);
 
     gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_extended_data,GB_CB_CHANGED,
-                    (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+    GB_add_callback(gb_extended_data,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+
     if (add_sel_species){       // update box if another species is selected
         GBDATA *gb_sel = GB_search(gb_main,AWAR_SPECIES_NAME,GB_STRING);
-        GB_add_callback(gb_sel,GB_CB_CHANGED,
-                        (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+        GB_add_callback(gb_sel,GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
     }
     GB_pop_transaction(gb_main);
+
     return (void *)cbs;
 }
 
