@@ -1,6 +1,6 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : SQ_GroupData.h                                         //
+//    File      : SQ_GroupDataSeq.h                                         //
 //    Purpose   : We will see!                                           //
 //    Time-stamp: <Mon Sep/29/2003 19:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
@@ -11,29 +11,44 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
+#ifndef SQ_GROUPDATA_H
+#include "SQ_GroupData.h"
+#endif
 
-#ifndef SQ_GROUPADTA_H
-#define SQ_GROUPDATA_H
+#ifndef SQ_GROUPDATASEQ_H
+#define SQ_GROUPDATASEQ_H
 
 #ifndef _CPP_CSTDDEF
 #include <cstddef>
 #endif
 
-class SQ_GroupData {
+struct Int7 { 
+  int i[7]; 
+  Int7() {
+    for (int j=0; j<7; ++j) i[j]=0; 
+  }
+};
+
+class SQ_GroupDataSeq : public SQ_GroupData {
 
 public:
-    SQ_GroupData();
-    ~SQ_GroupData();
-    int  SQ_get_avg_bases() const;
-    void SQ_set_avg_bases(int bases);
-    bool SQ_is_initialised();
+    SQ_GroupDataSeq();
+    ~SQ_GroupDataSeq();
+    //SQ_GroupData(const SQ_GroupData& g1, const SQ_GroupData& g2) {}
+    void SQ_init_consensus(int size);
+    void SQ_add_consensus(int value, int row, int col);
+    Int7 *SQ_get_consensus();
+    int  SQ_print_on_screen();
+    double SQ_test_against_consensus(const char *sequence);
 
-protected:
+private:
     int    size;
     int    avg_bases;
+    Int7   *consensus;
+//    int**  consensus;
     bool   initialised;
 };
 
 #else
-#error SQ_GroupData.h included twice
+#error SQ_GroupDataSeq.h included twice
 #endif
