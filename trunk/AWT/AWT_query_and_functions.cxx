@@ -1668,7 +1668,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     cbs->look_in_ref_list = awtqs->look_in_ref_list;
     cbs->select_bit       = awtqs->select_bit;
     cbs->species_name     = strdup(awtqs->species_name);
-    cbs->tree_name        = aw_root->awar(awtqs->tree_name)->read_string();
+    cbs->tree_name        = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
     cbs->selector         = awtqs->selector;
 
     GB_push_transaction(gb_main);
