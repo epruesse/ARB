@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Wed Dec/04/2002 15:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/20/2003 13:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1912,6 +1912,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 error = readLine(in, line, lineNo);
                 if (error) break;
 
+
+                printf("line = '%s'\n", line.c_str());
                 if (line[0] == '#') continue;
 
                 if (line == "@MASK_END") {
