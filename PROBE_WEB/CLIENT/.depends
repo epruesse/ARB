@@ -67,4 +67,5 @@ TreeParser.class : TreeParser.java
 TreeReader.class : ServerAnswer.java
 TreeReader.class : Toolkit.java
 TreeReader.class : TreeReader.java
+WindowClosingAdapter.class : ProbesGUI.java
 WindowClosingAdapter.class : WindowClosingAdapter.java
