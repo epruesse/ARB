@@ -198,39 +198,11 @@ endif
 
 endif
 
-#********************* SUN4 && acc CC enviroments *****************
-#********************* SUN4 dynamic libraries libC *****************
-
-ifdef SUN4
-   SITE_DEPENDEND_TARGETS = perl
-   ARLIB =	ld -assert pure-text -o
-   CPP = CC -D$(MACH) -DNO_REGEXPR
-   PP = cc -D$(MACH) -E
-   ACC = acc -D$(MACH) -DNO_REGEXPR
-   CCPLIB = $(CPP) -pic
-   CCLIB = $(ACC) -pic
-
-   XMKMF = 	/usr/openwin/bin/xmkmf
-   SHARED_LIB_SUFFIX = so.2.0
-
-   XINCLUDES = -I$(XHOME)/include -I$(OPENWINHOME)/include
-
-   STATIC = -Bstatic
-   DYNAMIC = -Bdynamic
-   MOTIFLIB =  -lXm
-   SYSLIBS = -lm
-   XLIBS =  -L$(XHOME)/lib $(MOTIFLIB) -lXt -lX11 $(CCPLIBS)
-   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11
-
-endif
-
-
 #********************* SUN5  CC enviroments  *****************
 #********************* SUN5  ****
 ifdef SUN5
    SITE_DEPENDEND_TARGETS = perl
 
-ifdef ECGS
    # gcc on solaris:
    SUN5_ECGS_SPECIALS=-DNO_REGEXPR
 
@@ -250,116 +222,7 @@ ifdef ECGS
    SYSLIBS = -lsocket -lm # -lnsl -lgen -lposix4
    XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
 
-else
-   # sun workshop specific
-
-   #AR = $(FORCEMASK);ld -r -o#			# Archive Linker
-   AR = $(FORCEMASK);CC -xar -o#
-   XAR = $(FORCEMASK);CC -xar -o#
-   ARLIB = $(FORCEMASK);ld -G -o#
-
-ifdef SUN_WS_50
-
-   # fake pointer to virtual table at start of structs (when passing classes to C)
-   FAKE_VIRTUAL_TABLE_POINTER = -DFAKE_VIRTUAL_TABLE_POINTER=char
-
-   havebool = -DHAVE_BOOL
-
-   SUN_ACC_FLAGS = -errtags=yes -erroff=E_MODIFY_TYPEDEF_IGNORED $(havebool) $(FAKE_VIRTUAL_TABLE_POINTER)
-   SUN_CPP_FLAGS = +w2 $(havebool) $(FAKE_VIRTUAL_TABLE_POINTER)
-   AR = ld -r -o#
-   ARLIB = CC -G -o#
-else
-   SUN_ACC_FLAGS =
-   SUN_CPP_FLAGS = +w2
 endif
-
-   ACC = $(FORCEMASK);cc -D$(MACH) $(SUN_ACC_FLAGS)
-   CPP = $(FORCEMASK);CC -D$(MACH) $(SUN_CPP_FLAGS)
-   PP = $(FORCEMASK);cc -D$(MACH) -E
-   CCLIB = cc -D$(MACH) $(SUN_ACC_FLAGS) -Kpic
-   CCPLIB = CC -D$(MACH) $(SUN_CPP_FLAGS) -PIC
-
-   XHOME = /usr/dt
-   XMKMF = 	/usr/openwin/bin/xmkmf
-   f77_flags = $(fflags) -e -silent
-   F77LIB = -nolib -Bstatic -lF77 -lsunmath -Bdynamic -lm -lc
-
-   XINCLUDES = -I$(XHOME)/include -I$(OPENWINHOME)/include
-   STATIC = -Bstatic
-   DYNAMIC = -Bdynamic
-
-   SYSLIBS = -lm -lsocket -lnsl -lgen -lposix4
-   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
-   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11 -L/usr/ucblib -lucb
-   CTAGS = etags
-   CLEAN_BEFORE_MAKE = $(MAKE) clean# rebuild templates! (needed because of bug in Sun CC)
-
-ifeq ($(DEBUG),1)
-	MAKE_RTC = rtc_patch
-	RTC = -lRTC8M
-endif
-endif
-endif
-
-
-#********************* HP and CC/cc enviroments (dynamic) *****************
-
-ifdef HPCC
-   ARLIB =	ld -b -o
-   HPSPECIALS = -D$(MACH) -DNO_REGEXPR -DNO_INLINE
-   XMKMF = /usr/local/bin/X11/xmkmf
-
-   CPP = LDOPTS='+s'; export LDOPTS;CC $(HPSPECIALS)
-   ACC = LDOPTS='+s'; export LDOPTS;cc $(HPSPECIALS) -Ae
-
-   CCPLIB = $(CPP) +z
-   CCLIB = $(ACC) +z
-
-   SYSLIBS = -codelibs -lm
-   SHARED_LIB_SUFFIX = sl
-
-   XINCLUDES = -I/usr/include/X11R5 -I/usr/include/Motif1.2
-   XLIBS = -L/usr/lib/X11R5 -L/usr/lib/Motif1.2  -lXm -lXt -lX11
-endif
-
-#********************* HP and CC/cc enviroments (dynamic) *****************
-
-ifdef DIGITAL
-   ARLIB =	ld -r -g -o
-   DIGSPECIALS = -D$(MACH) -DNO_REGEXPR
-   CPP = cxx -w0 -x cxx $(DIGSPECIALS)
-   ACC = cc -w0 $(DIGSPECIALS)
-
-   CCPLIB = $(CPP)
-   CCLIB = $(ACC)
-
-   SHARED_LIB_SUFFIX = so
-   SYSLIBS =
-
-   STATIC = -non_shared
-   DYNAMIC =
-
-   XINCLUDES =
-   SYSLIBS = -lm
-   XLIBS =  -lXm -lXt -lX11
-endif
-
-#********************* SGI and CC/cc enviroments (dynamic) *****************
-
-ifdef SGI
-   ARLIB =	CC -D$(MACH) -shared -o
-   SGISPECIALS	= -DNO_REGEXPR
-   CPP =	CC -D$(MACH) $(SGISPECIALS)
-   ACC =	cc -w -D$(MACH) $(SGISPECIALS)
-   XMKMF = 	/usr/bin/X11/xmkmf
-   CCPLIB = $(CPP)
-   CCLIB = $(ACC)
-   XINCLUDES =
-   SYSLIBS = -lm
-   XLIBS = -lXm -lXt -lX11
-endif
-
 
 #********************* End of user defined Section *******************
 
@@ -475,6 +338,17 @@ else
 		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
+
+endif
+
+GCC_WITH_VTABLE_AFTER_CLASS=$(ALLOWED_GCC_295_VERSIONS)
+HAVE_GCC_WITH_VTABLE_AFTER_CLASS=$(strip $(foreach version,$(GCC_WITH_VTABLE_AFTER_CLASS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+
+# depending on the version of gcc the location of the vtable pointer differs.
+ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
+VTABLE_INFRONTOF_CLASS=1
+else
+VTABLE_INFRONTOF_CLASS=0
 endif
 
 #---------------------- check ARBHOME
@@ -531,6 +405,15 @@ DEST_BIN = bin
 AINCLUDES = 	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
 CPPINCLUDES =	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
 MAKEDEPENDFLAGS = -- $(cflags) -I. -Y$(DIR)/INCLUDE --
+
+ifeq ($(VTABLE_INFRONTOF_CLASS),1)
+# Some code in ARB depends on the location of the vtable pointer
+# (it does a cast from class AP_tree to struct GBT_TREE). In order to
+# work around that hack properly, we define FAKE_VTAB_PTR 
+# if the vtable is located at the beginning of class.
+# We are really sorry for that hack.
+cflags:=$(cflags) -DFAKE_VTAB_PTR=char
+endif
 
 #*****		List of all Directories
 
