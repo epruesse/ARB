@@ -1,14 +1,15 @@
 
-#ifndef MULTIPROBEHXX
-#define MULTIPROBEHXX
+#ifndef MULTIPROBE_HXX
+#define MULTIPROBE_HXX
 
 #include <mpdefs.h>     //unsere Definitionen
 #include <MP_externs.hxx>
 #include <SoTl.hxx>
 #include <string.h>
 
+#ifndef AW_AWARS_HXX
 #include <aw_awars.hxx>
-
+#endif
 #define mp_assert(x) arb_assert(x)
 
 class MP_Main;
@@ -22,11 +23,10 @@ class ProbeValuation ;
 class ST_Container;
 class Bitvector;
 class Sonde;
-#include <MP_probe.hxx>
 
-
-
-
+#ifndef MP_PROBE_HXX
+#include "MP_probe.hxx"
+#endif
 
 #define MP_AWAR_SEQUENZEINGABE      "mp/sequenzeingabe"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"
@@ -393,6 +393,6 @@ public:
     ~Bitvector();
 };
 
-
-
+#else
+#error MultiProbe.hxx included twice
 #endif
