@@ -930,7 +930,7 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
                     }
                 }
                 t3_str = "gene_length";
-                gene_length ++;
+                gene_length++;
 	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
             else if((int)joined.size() > 0)
@@ -944,7 +944,7 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
                 gene_length += t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
                 t3_str = "gene_length";
-                gene_length ++;
+                gene_length++;
 	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
         }

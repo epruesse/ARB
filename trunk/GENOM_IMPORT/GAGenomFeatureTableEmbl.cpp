@@ -119,7 +119,7 @@ void gellisary::GAGenomFeatureTableEmbl::parse()
                 tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
                 if(tmp_num != -1)
                 {
-                    t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_num);
+                    t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
                     tmp_gene->setNameOfGene(&t_str);
                     number_of_features[tmp_num]++;
                     tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
@@ -169,7 +169,7 @@ void gellisary::GAGenomFeatureTableEmbl::parse()
         tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
         if(tmp_num != -1)
         {
-            t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_num);
+            t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
             tmp_gene->setNameOfGene(&t_str);
             number_of_features[tmp_num]++;
             tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);

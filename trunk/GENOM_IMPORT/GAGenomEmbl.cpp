@@ -16,6 +16,9 @@
 #ifndef _CCP_FSTREAM
 #include <fstream>
 #endif
+#ifndef _CCP_S STREAM
+#include <sstream>
+#endif
 
 #include <perf_timer.h>
 
@@ -108,6 +111,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                         for(int i = 1; i < (int)tmp_vector.size(); i = i + 2)
                         {
                             t_str = tmp_vector[i];
+                            cout << t_str << endl;
                             tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
                             if(i == 1)
                             {
@@ -309,6 +313,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 }
                 break;
             case '/':
+            cout << seq_len << "=" << (int) sequence.size() << endl;
             	if(seq_len == (int) sequence.size())
             	{
             		complete_file = true;
@@ -545,20 +550,29 @@ vector<int> * gellisary::GAGenomEmbl::getSequenceHeader()
 void gellisary::GAGenomEmbl::parseSequence(string * source_str)
 {
     string target_str;
+    string tst = *source_str;
+    
     char tmp_char;
+    //ostringstream ost;
     int i = 0;
-    vector<string> tmp_vector;
-    for(i = 0; i < (int) source_str->size(); i++)
+    //vector<string> tmp_vector;
+    for(i = 0; i < (int) tst.size(); i++)
     {
-        tmp_char = source_str->operator[](i);
+        tmp_char = tst[i];
         if((tmp_char != ' ') && (tmp_char != '\r') && (tmp_char != '\n') && (tmp_char != '0') && (tmp_char != '1') && (tmp_char != '2') && (tmp_char != '3') && (tmp_char != '4') && (tmp_char != '5') && (tmp_char != '6') && (tmp_char != '7') && (tmp_char != '8') && (tmp_char != '9'))
         {
-        	target_str += tmp_char;
+//        	ost << tmp_char;
+			target_str += tmp_char;
+			
         }
+        
     }
 //    GAGenomUtilities::trimString(&target_str);
 //    GAGenomUtilities::onlyOneDelimerChar(&target_str,' ');
 //    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&target_str,' ',false);
 //    target_str = GAGenomUtilities::toOneString(&tmp_vector,false);
+	//target_str = ost.str();
+	cout << "Bla :-" << target_str << "-" << i << std::endl;
+	//source_str->erase();
     *source_str = target_str;
 }
