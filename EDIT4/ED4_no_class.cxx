@@ -13,6 +13,7 @@
 #include <BI_helix.hxx>
 #include <awt_seq_colors.hxx>
 #include <awt.hxx>
+#include <awtc_rename.hxx>
 
 #include <st_window.hxx>
 
@@ -1899,322 +1900,375 @@ static void freeSpeciesMergeList(SpeciesMergeList sml)
 
 static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
     // creation_mode == 	0 -> create new species
-    //			1 -> create new species from group konsensus
-    // 		       	2 -> copy current species
+    //			            1 -> create new species from group konsensus
+    // 		       	        2 -> copy current species
 {
     enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
-    GB_CSTR new_species_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string();
+    GB_CSTR new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
     GB_CSTR error = 0;
     
     e4_assert(creation_mode>=0 && creation_mode<=2); 
     
-    if (!new_species_name || new_species_name[0]==0) {
-        error = GB_export_error("Please enter a name for the new species");
+    if (!new_species_full_name || new_species_full_name[0]==0) {
+        error = GB_export_error("Please enter a full_name for the new species");
     }
-    else {
-        error = GB_push_transaction(gb_main);
-	
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
-        GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, new_species_name);
-        if (gb_new_species) {
-            error = GB_export_error("A species named '%s' already exists!", new_species_name);
-        }
-	
-        enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root
-                                                            ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
-        enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
-        ED4_terminal *cursor_terminal = 0;
-	
-        if (creation_mode==CREATE_FROM_CONSENSUS || creation_mode==COPY_SPECIES) { 
-            ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-	    
-            if (cursor->owner_of_cursor) {
-                cursor_terminal = cursor->owner_of_cursor->to_terminal();
-		
-                if (cursor_terminal->parent->parent->flag.is_consensus) {
-                    where_we_are = ON_KONSENSUS;
+    else {        
+        error = GB_begin_transaction(gb_main);        
+        GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);        
+        char *new_species_name = 0;        
+        
+        if (!error) {
+            error = generate_one_name(gb_main, new_species_full_name, new_species_name);        
+            if (!error) { // name was created
+                GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, new_species_name);
+                if (gb_new_species) { // oops exists
+                    error = GB_export_error("A species named '%s' already exists!", new_species_name);                
+                    free(new_species_name);
+                    new_species_name = 0;
+                }            
+            }
+        
+            if (error) { // try to make a random name
+                error = 0;
+            
+                char short_name[9];            
+                short_name[8] = 0;            
+                int count = 1000;
+            
+                while (count--) {
+                    for (int x=0; x<8; ++x) {
+                        int r = int(random()*36);
+                        short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
+                    }
+            
+                    GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, short_name);
+                    if (!gb_new_species) { 
+                        new_species_name = strdup(short_name);
+                        break;
+                    }            
                 }
-                else {
-                    where_we_are = ON_SPECIES;
+            
+                if (!new_species_name) {
+                    error = GB_export_error("Failed to create a new name for '%s'", new_species_full_name);
                 }
             }
         }
-	
+        
         if (!error) {
-            if (creation_mode==CREATE_NEW_SPECIES) { 
-                GBDATA *gb_created_species = GBT_create_species(gb_main, new_species_name);
-                if (!gb_created_species) {
-                    error = GB_export_error("Failed to create new species '%s'", new_species_name);
-                }		
-                else {
-                    GB_CSTR ali = GBT_get_default_alignment(gb_main);
-                    GBDATA *gb_ali = GB_search(gb_created_species, ali, GB_DB);
-                    if (gb_ali) {
-                        GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-                        error = GB_write_string(gb_data, ".......");
+            GBDATA *gb_new_species = 0;
+            
+            enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
+            enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
+            ED4_terminal *cursor_terminal = 0;
+	
+            if (creation_mode==CREATE_FROM_CONSENSUS || creation_mode==COPY_SPECIES) { 
+                ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+	    
+                if (cursor->owner_of_cursor) {
+                    cursor_terminal = cursor->owner_of_cursor->to_terminal();
+		
+                    if (cursor_terminal->parent->parent->flag.is_consensus) {
+                        where_we_are = ON_KONSENSUS;
                     }
                     else {
-                        error = GB_export_error("Can't find alignment '%s'", ali);
+                        where_we_are = ON_SPECIES;
                     }
                 }
             }
-            else if (creation_mode==CREATE_FROM_CONSENSUS && dataSource==MERGE_FIELDS)
-            { // create from consensus (merge fields from all species in container)
-                if (where_we_are==NOWHERE) {
-                    error = "Please place cursor on any sequence/consensus of group";
-                }
-                else {
-                    ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                    SpeciesMergeList sml = 0; // list of species in group
-		    
-                    group_man->route_down_hierarchy((void**)&sml, (void**)gb_species_data, add_species_to_merge_list);
-                    if (sml==0) {
-                        error = "Please choose a none empty group!";
+	
+            if (!error) {                
+                if (creation_mode==CREATE_NEW_SPECIES) { 
+                    GBDATA *gb_created_species = GBT_create_species(gb_main, new_species_name);
+                    if (!gb_created_species) {
+                        error = GB_export_error("Failed to create new species '%s'", new_species_name);
+                    }		
+                    else {
+                        GB_CSTR ali = GBT_get_default_alignment(gb_main);
+                        GBDATA *gb_ali = GB_search(gb_created_species, ali, GB_DB);
+                        if (gb_ali) {
+                            GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
+                            error = GB_write_string(gb_data, ".......");                            
+                        }
+                        else {
+                            error = GB_export_error("Can't create alignment '%s'", ali);
+                        }                        
                     }
-		    
-                    if (!error) { 
-                        GBDATA *gb_source = sml->species;
-                        gb_new_species = GB_create_container(gb_species_data, "species"); 
-                        error = GB_copy(gb_new_species, gb_source); // copy first found species to create a new species
-                    }
-                    if (!error) { 
-                        GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
-                        error = GB_write_string(gb_name, new_species_name); // insert new 'name'
-                    }
-                    if (!error) { 
-                        error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
-                    }
-		    
+                    
                     if (!error) {
-                        char *doneFields = strdup(";name;"); // all fields which are already merged 
-                        int doneLen = strlen(doneFields);
-                        SpeciesMergeList sl = sml;
-                        int sl_length = SpeciesMergeListLength(sml);
-                        int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = don't has field ;
-                        // 1..n = field content (same number means same content)
+                        GBDATA *gb_full_name = GB_search(gb_created_species, "full_name", GB_STRING);
+                        if (gb_full_name) {
+                            error = GB_write_string(gb_full_name, new_species_full_name);
+                        }
+                        else {
+                            error = GB_export_error("Can't create full_name entry for new species"); 
+                        }
+                    }
+                }
+                else if (creation_mode==CREATE_FROM_CONSENSUS && dataSource==MERGE_FIELDS)
+                { // create from consensus (merge fields from all species in container)
+                    if (where_we_are==NOWHERE) {
+                        error = "Please place cursor on any sequence/consensus of group";
+                    }
+                    else {
+                        ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                        SpeciesMergeList sml = 0; // list of species in group
+		    
+                        group_man->route_down_hierarchy((void**)&sml, (void**)gb_species_data, add_species_to_merge_list);
+                        if (sml==0) {
+                            error = "Please choose a none empty group!";
+                        }
+		    
+                        if (!error) { 
+                            GBDATA *gb_source = sml->species;
+                            gb_new_species = GB_create_container(gb_species_data, "species"); 
+                            error = GB_copy(gb_new_species, gb_source); // copy first found species to create a new species
+                        }
+                        if (!error) { 
+                            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
+                            error = GB_write_string(gb_name, new_species_name); // insert new 'name'
+                        }
+                        if (!error) { 
+                            GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
+                            error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
+                        }
+                        if (!error) { 
+                            error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
+                        }
+		    
+                        if (!error) {
+                            char *doneFields = strdup(";name;"); // all fields which are already merged 
+                            int doneLen = strlen(doneFields);
+                            SpeciesMergeList sl = sml;
+                            int sl_length = SpeciesMergeListLength(sml);
+                            int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = don't has field ;
+                            // 1..n = field content (same number means same content)
 				
-                        while (sl && !error) { // with all species do..
-                            char *newFields = GB_get_subfields(sl->species);
-                            char *fieldStart = newFields; // points to ; before next field
+                            while (sl && !error) { // with all species do..
+                                char *newFields = GB_get_subfields(sl->species);
+                                char *fieldStart = newFields; // points to ; before next field
 				    
-                            while (fieldStart[1] && !error) { // with all subfields of the species do..
-                                char *fieldEnd = strchr(fieldStart+1, ';');
+                                while (fieldStart[1] && !error) { // with all subfields of the species do..
+                                    char *fieldEnd = strchr(fieldStart+1, ';');
 					
-                                e4_assert(fieldEnd);
-                                char behind = fieldEnd[1];
-                                fieldEnd[1] = 0;
+                                    e4_assert(fieldEnd);
+                                    char behind = fieldEnd[1];
+                                    fieldEnd[1] = 0;
 					
-                                if (strstr(doneFields, fieldStart)==0) { // field is not merged yet 
-                                    char *fieldName = fieldStart+1;
-                                    int fieldLen = int(fieldEnd-fieldName);
+                                    if (strstr(doneFields, fieldStart)==0) { // field is not merged yet 
+                                        char *fieldName = fieldStart+1;
+                                        int fieldLen = int(fieldEnd-fieldName);
 				    
-                                    e4_assert(fieldEnd[0]==';');
-                                    fieldEnd[0] = 0; 
+                                        e4_assert(fieldEnd[0]==';');
+                                        fieldEnd[0] = 0; 
 				    
-                                    GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
-                                    e4_assert(gb_field); // field has to exist, cause it was found before
-                                    int type = gb_field->flags.type; //GB_TYPE(gb_field);
-                                    if (type==GB_STRING) { // we only merge string fields
-                                        int i;	
-                                        int doneSpecies = 0;
-                                        int nextStat = 1; 
+                                        GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
+                                        e4_assert(gb_field); // field has to exist, cause it was found before
+                                        int type = gb_field->flags.type; //GB_TYPE(gb_field);
+                                        if (type==GB_STRING) { // we only merge string fields
+                                            int i;	
+                                            int doneSpecies = 0;
+                                            int nextStat = 1; 
 					
-                                        for (i=0; i<sl_length; i++) { // clear field status
-                                            fieldStat[i] = 0; 
-                                        }
-
-                                        while (doneSpecies<sl_length) { // since all species in list were handled
-                                            SpeciesMergeList sl2 = sml;
-                                            i = 0;
-					    
-                                            while (sl2) {
-                                                if (fieldStat[i]==0) { 
-                                                    gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                                    if (gb_field) {
-                                                        char *content = GB_read_as_string(gb_field);
-                                                        SpeciesMergeList sl3 = sl2->next;
-						    
-                                                        fieldStat[i] = nextStat;
-                                                        doneSpecies++;
-                                                        int j = i+1;
-                                                        while (sl3) {
-                                                            if (fieldStat[j]==0) {
-                                                                gb_field = GB_search(sl3->species, fieldName, GB_FIND);
-                                                                if (gb_field) {
-                                                                    char *content2 = GB_read_as_string(gb_field);
-							
-                                                                    if (strcmp(content, content2)==0) { // if contents are the same, they get the same status
-                                                                        fieldStat[j] = nextStat;
-                                                                        doneSpecies++;
-                                                                    }
-                                                                    free(content2);
-                                                                }
-                                                                else {
-                                                                    fieldStat[j] = -1;
-                                                                    doneSpecies++;
-                                                                }
-                                                            }
-                                                            sl3 = sl3->next;
-                                                            j++;
-                                                        }
-						    
-                                                        free(content);
-                                                        nextStat++;
-                                                    }
-                                                    else {
-                                                        fieldStat[i] = -1; // field does not exist here
-                                                        doneSpecies++;
-                                                    }
-                                                }
-                                                sl2 = sl2->next;
-                                                i++;
+                                            for (i=0; i<sl_length; i++) { // clear field status
+                                                fieldStat[i] = 0; 
                                             }
-                                        }
-					
-                                        e4_assert(nextStat!=1); // this would mean that none of the species contained the field
-					
-                                        {
-                                            char *new_content = 0;
-                                            int new_content_len = 0;
-					    
-                                            if (nextStat==2) { // all species contain same field content or do not have the field
+
+                                            while (doneSpecies<sl_length) { // since all species in list were handled
                                                 SpeciesMergeList sl2 = sml;
+                                                i = 0;
 					    
                                                 while (sl2) {
-                                                    gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                                    if (gb_field) {
-                                                        new_content = GB_read_as_string(gb_field);
-                                                        new_content_len = strlen(new_content);
-                                                        break;
+                                                    if (fieldStat[i]==0) { 
+                                                        gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                                        if (gb_field) {
+                                                            char *content = GB_read_as_string(gb_field);
+                                                            SpeciesMergeList sl3 = sl2->next;
+						    
+                                                            fieldStat[i] = nextStat;
+                                                            doneSpecies++;
+                                                            int j = i+1;
+                                                            while (sl3) {
+                                                                if (fieldStat[j]==0) {
+                                                                    gb_field = GB_search(sl3->species, fieldName, GB_FIND);
+                                                                    if (gb_field) {
+                                                                        char *content2 = GB_read_as_string(gb_field);
+							
+                                                                        if (strcmp(content, content2)==0) { // if contents are the same, they get the same status
+                                                                            fieldStat[j] = nextStat;
+                                                                            doneSpecies++;
+                                                                        }
+                                                                        free(content2);
+                                                                    }
+                                                                    else {
+                                                                        fieldStat[j] = -1;
+                                                                        doneSpecies++;
+                                                                    }
+                                                                }
+                                                                sl3 = sl3->next;
+                                                                j++;
+                                                            }
+						    
+                                                            free(content);
+                                                            nextStat++;
+                                                        }
+                                                        else {
+                                                            fieldStat[i] = -1; // field does not exist here
+                                                            doneSpecies++;
+                                                        }
                                                     }
                                                     sl2 = sl2->next;
+                                                    i++;
                                                 }
                                             }
-                                            else { // different field contents
-                                                int actualStat;
-                                                for (actualStat=1; actualStat<nextStat; actualStat++) { 
-                                                    int names_len = 1; // open bracket
-                                                    SpeciesMergeList sl2 = sml;
-                                                    i = 0;
-                                                    char *content = 0;
-						    
-                                                    while (sl2) {
-                                                        if (fieldStat[i]==actualStat) {
-                                                            names_len += strlen(sl2->species_name)+1;
-                                                            if (!content) {
-                                                                gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                                                e4_assert(gb_field);
-                                                                content = GB_read_as_string(gb_field);
-                                                            }
-                                                        }
-                                                        sl2 = sl2->next;
-                                                        i++;
-                                                    }
-						    
-                                                    e4_assert(content);
-                                                    int add_len = names_len+1+strlen(content);
-                                                    char *whole = (char*)malloc(new_content_len+1+add_len);
-                                                    e4_assert(whole);
-                                                    char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
-                                                    sl2 = sml;
-                                                    i = 0;
-                                                    int first = 1;
-                                                    while (sl2) {
-                                                        if (fieldStat[i]==actualStat) {
-                                                            add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
-                                                            first = 0;
-                                                        }
-                                                        sl2 = sl2->next;
-                                                        i++;
-                                                    }
-                                                    add += sprintf(add, "} %s", content);
-						    
-                                                    free(content);
-						    
-                                                    free(new_content);
-                                                    new_content = whole;
-                                                    new_content_len = strlen(new_content);
-                                                }
-                                            }
+					
+                                            e4_assert(nextStat!=1); // this would mean that none of the species contained the field
+					
+                                            {
+                                                char *new_content = 0;
+                                                int new_content_len = 0;
 					    
-                                            if (new_content) {
-                                                GBDATA *gb_new_field = GB_search(gb_new_species, fieldName, GB_STRING);
-                                                if (gb_new_field) {
-                                                    error = GB_write_string(gb_new_field, new_content);
+                                                if (nextStat==2) { // all species contain same field content or do not have the field
+                                                    SpeciesMergeList sl2 = sml;
+					    
+                                                    while (sl2) {
+                                                        gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                                        if (gb_field) {
+                                                            new_content = GB_read_as_string(gb_field);
+                                                            new_content_len = strlen(new_content);
+                                                            break;
+                                                        }
+                                                        sl2 = sl2->next;
+                                                    }
                                                 }
-                                                else {
-                                                    error = GB_export_error("Can't create field '%s'", fieldName);
+                                                else { // different field contents
+                                                    int actualStat;
+                                                    for (actualStat=1; actualStat<nextStat; actualStat++) { 
+                                                        int names_len = 1; // open bracket
+                                                        SpeciesMergeList sl2 = sml;
+                                                        i = 0;
+                                                        char *content = 0;
+						    
+                                                        while (sl2) {
+                                                            if (fieldStat[i]==actualStat) {
+                                                                names_len += strlen(sl2->species_name)+1;
+                                                                if (!content) {
+                                                                    gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                                                    e4_assert(gb_field);
+                                                                    content = GB_read_as_string(gb_field);
+                                                                }
+                                                            }
+                                                            sl2 = sl2->next;
+                                                            i++;
+                                                        }
+						    
+                                                        e4_assert(content);
+                                                        int add_len = names_len+1+strlen(content);
+                                                        char *whole = (char*)malloc(new_content_len+1+add_len);
+                                                        e4_assert(whole);
+                                                        char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
+                                                        sl2 = sml;
+                                                        i = 0;
+                                                        int first = 1;
+                                                        while (sl2) {
+                                                            if (fieldStat[i]==actualStat) {
+                                                                add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
+                                                                first = 0;
+                                                            }
+                                                            sl2 = sl2->next;
+                                                            i++;
+                                                        }
+                                                        add += sprintf(add, "} %s", content);
+						    
+                                                        free(content);
+						    
+                                                        free(new_content);
+                                                        new_content = whole;
+                                                        new_content_len = strlen(new_content);
+                                                    }
                                                 }
-                                                free(new_content);
+					    
+                                                if (new_content) {
+                                                    GBDATA *gb_new_field = GB_search(gb_new_species, fieldName, GB_STRING);
+                                                    if (gb_new_field) {
+                                                        error = GB_write_string(gb_new_field, new_content);
+                                                    }
+                                                    else {
+                                                        error = GB_export_error("Can't create field '%s'", fieldName);
+                                                    }
+                                                    free(new_content);
+                                                }
                                             }
                                         }
+				    
+                                        // mark field as done:
+                                        char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
+                                        sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
+                                        doneLen += fieldLen+1;
+                                        free(doneFields);
+                                        doneFields = new_doneFields;
+				    
+                                        fieldEnd[0] = ';';
                                     }
-				    
-                                    // mark field as done:
-                                    char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
-                                    sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
-                                    doneLen += fieldLen+1;
-                                    free(doneFields);
-                                    doneFields = new_doneFields;
-				    
-                                    fieldEnd[0] = ';';
-                                }
 					
-                                fieldEnd[1] = behind;
-                                fieldStart = fieldEnd;
+                                    fieldEnd[1] = behind;
+                                    fieldStart = fieldEnd;
+                                }
+                                free(newFields);
+                                sl = sl->next;
                             }
-                            free(newFields);
-                            sl = sl->next;
+                            free(doneFields);
+                            free(fieldStat);
                         }
-                        free(doneFields);
-                        free(fieldStat);
-                    }
-                    freeSpeciesMergeList(sml); sml = 0;
-                }
-            }
-            else { // copy species or create from consensus (copy fields from one species)
-                if (where_we_are!=ON_SPECIES) {
-                    if (creation_mode==COPY_SPECIES) {
-                        error = "Please place cursor on the sequence to copy";
-                    }
-                    else  {
-                        e4_assert(creation_mode==CREATE_FROM_CONSENSUS && dataSource==COPY_FIELDS);
-                        error = "Please place cursor on the sequence from which the fields should be copied";
+                        freeSpeciesMergeList(sml); sml = 0;
                     }
                 }
-                else {
-                    ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
-                    char *source_name = spec_name->resolve_pointer_to_string();
-                    GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
+                else { // copy species or create from consensus (copy fields from one species)
+                    if (where_we_are!=ON_SPECIES) {
+                        if (creation_mode==COPY_SPECIES) {
+                            error = "Please place cursor on the sequence to copy";
+                        }
+                        else  {
+                            e4_assert(creation_mode==CREATE_FROM_CONSENSUS && dataSource==COPY_FIELDS);
+                            error = "Please place cursor on the sequence from which the fields should be copied";
+                        }
+                    }
+                    else {
+                        ED4_species_name_terminal *spec_name = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
+                        char *source_name = spec_name->resolve_pointer_to_string();
+                        GBDATA *gb_source = GBT_find_species_rel_species_data(gb_species_data, source_name);
 		    
-                    if (gb_source) {
-                        gb_new_species = GB_create_container(gb_species_data, "species");
-                        error = GB_copy(gb_new_species, gb_source);
-                        if (!error) {
-                            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
-			    
-                            error = GB_write_string(gb_name, new_species_name);
+                        if (gb_source) {
+                            gb_new_species = GB_create_container(gb_species_data, "species");
+                            error = GB_copy(gb_new_species, gb_source);
+                            if (!error) {
+                                GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING); 
+                                error = GB_write_string(gb_name, new_species_name);
+                            }
+                            if (!error) { 
+                                GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
+                                error = GB_write_string(gb_full_name, new_species_full_name); // insert new 'full_name'
+                            }
                             if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
                                 ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                                 error = createDataFromConsensus(gb_new_species, group_man);
                             }
                         }
-                    }
-                    else {
-                        error = GB_export_error("Can't find species '%s'", source_name);
+                        else {
+                            error = GB_export_error("Can't find species '%s'", source_name);
+                        }
                     }
                 }
             }
-        }
 	
-        if (error) {
-            GB_abort_transaction(gb_main);
-        }
-        else {
-            GB_pop_transaction(gb_main);
+            if (error) {
+                GB_abort_transaction(gb_main);
+            }
+            else {
+                GB_pop_transaction(gb_main);
 	    
-            ED4_get_and_jump_to_species(new_species_name);
-            ED4_ROOT->refresh_all_windows(1);
+                ED4_get_and_jump_to_species(new_species_name);
+                ED4_ROOT->refresh_all_windows(1);
+            }
         }
     }
     
@@ -2256,11 +2310,10 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\n"
-                       "of the new species");
+    aws->create_button(0,"Please enter the FULL_NAME\nof the new species");
 
     aws->at("input");
-    aws->create_input_field(ED4_AWAR_SPECIES_TO_CREATE, 15);
+    aws->create_input_field(ED4_AWAR_SPECIES_TO_CREATE, 30);
 
     aws->at("ok");
     aws->callback(create_new_species, cl_creation_mode);
