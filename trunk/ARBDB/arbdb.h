@@ -285,8 +285,6 @@ extern "C" {
 }
 #endif
 
-// #endif /*GB_INCLUDED*/
-
 #define GB_INLINE
 
 #ifdef __cplusplus
