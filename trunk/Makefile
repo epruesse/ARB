@@ -107,13 +107,13 @@ ifdef DARWIN
    havebool = -DHAVE_BOOL
    lflags = $(LDFLAGS) -force_flat_namespace -Wl,-stack_size -Wl,10000000 -Wl,-stack_addr -Wl,c0000000
    DARWIN_SPECIALS = -DNO_REGEXPR  -no-cpp-precomp -DHAVE_BOOL
-   CPP = cc -D$(MACH) $(DARWIN_SPECIALS)
-   ACC = cc -D$(MACH) $(DARWIN_SPECIALS)
-   CCLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
-   CCPLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
+   CPP = g++2 -D$(MACH) $(DARWIN_SPECIALS)
+   ACC = gcc2 -D$(MACH) $(DARWIN_SPECIALS)
+   CCLIB = gcc2 -fno-common -D$(MACH) $(DARWIN_SPECIALS)
+   CCPLIB = g++2 -fno-common -D$(MACH) $(DARWIN_SPECIALS)
    AR = ld -r -o#                 # Archive Linker
    ARLIB = $(AR)#                 # Archive Linker shared libs.
-#  ARLIB = cc -bundle -flat_namespace -undefined suppress -o
+#  ARLIB = gcc2 -bundle -flat_namespace -undefined suppress -o
    SHARED_LIB_SUFFIX = a#
 # .. Just building shared libraries static, i was having problems otherwise
 
@@ -147,12 +147,23 @@ ifdef LINUX
    ARLIB = gcc -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
-ifndef DEBIAN
-   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+
+ifdef DEBIAN
+   X11R6=1
 else
+ifdef REDHAT
+   X11R6=1
+else
+   X11R6=0
+endif
+endif
+
+ifeq ($X11R6,1)
    XINCLUDES = -I/usr/X11R6/include
    XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+else
+   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
+   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
 endif
 
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11 $(SYSLIBS) -lc
