@@ -18,11 +18,13 @@
 #define AWAR_PRIMER_DESIGN_MAX_PAIRS              "primer_design/max_pairs"
 #define AWAR_PRIMER_DESIGN_GC_FACTOR              "primer_design/GC_factor"
 #define AWAR_PRIMER_DESIGN_TEMP_FACTOR            "primer_design/temp_factor"
+#define AWAR_PRIMER_DESIGN_APROX_MEM              "primer_design/aprox_mem"
 
 void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global);
 void       create_primer_design_result_window(AW_window *aww);
 AW_window *create_primer_design_window( AW_root *root,AW_default def);
 void       primer_design_event_go(AW_window *aww);
+void       primer_design_event_update_memory(AW_window *aww);
 void       primer_design_event_check_temp_factor(AW_window *aww);
 void       primer_design_event_check_gc_factor(AW_window *aww);
 void       primer_design_event_init(AW_window *aww);

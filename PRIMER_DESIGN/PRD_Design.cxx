@@ -143,7 +143,7 @@ void  PrimerDesign::setConditionalParameters( Range ratio_, Range temperature_, 
 //
 void PrimerDesign::run ( int print_stages_ )
 {
-#ifdef DEBUG
+#if defined(DEBUG)
     printf("PrimerDesign : parameters are\n");
     primer1.print("left                    : ","\n");
     primer2.print("right                   : ","\n");
@@ -172,7 +172,7 @@ void PrimerDesign::run ( int print_stages_ )
     if ( error ) return;
     if ( print_stages_ & PRINT_RAW_TREES ) printPrimerTrees();
 
-    show_status("match possible primers against sequence");
+    show_status("match possible primers vs. sequence");
     matchSequenceAgainstPrimerTrees();
     if ( error ) return;
     if ( print_stages_ & PRINT_MATCHED_TREES ) printPrimerTrees();
@@ -267,8 +267,8 @@ void PrimerDesign::buildPrimerTrees ()
     primer1.print("buildPrimerTrees : pos1\t\t","\n");
     primer2.print("buildPrimerTrees : pos2\t\t","\n");
     primer_length.print("buildPrimerTrees : length\t","\n");
-    printf("buildPrimerTrees : 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789\n");
-    //     printf("buildPrimerTrees : %s\n",sequence);
+    //    printf("buildPrimerTrees : 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789\n");
+    //    printf("buildPrimerTrees : %s\n",sequence);
     printf("buildPrimerTrees : (pos,base,delivered,last_base_index)\n" );
 #endif
 
@@ -340,13 +340,13 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // clear left tree
     //
-#ifdef DEBUG
+#if defined(DEBUG)
     printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
     printf ("		clearing left tree\n" );
 #endif
     show_status("clearing left primertree");
     clearTree( root1, 1, 0 );
-#ifdef DEBUG
+#if defined(DEBUG)
     printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
 #endif
 
@@ -409,13 +409,13 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // clear left tree
     //
-#ifdef DEBUG
+#if defined(DEBUG)
     printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
     printf ("		clearing right tree\n" );
 #endif
     show_status("clearing right primertree");
     clearTree( root2, 0, 1 );
-#ifdef DEBUG
+#if defined(DEBUG)
     printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
 #endif
 }
@@ -505,12 +505,12 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     char               base;
     PRD_Sequence_Pos   pos;
 
-#ifdef DEBUG
+#if defined(DEBUG)
     printf( "root1 : [C %p, G %p, A %p, TU %p]\n",root1->child[0],root1->child[1],root1->child[2],root1->child[3] );
     printf( "root2 : [C %p, G %p, A %p, TU %p]\n",root2->child[0],root2->child[1],root2->child[2],root2->child[3] );
 #endif
 
-    show_status("match possible primers against sequence -- forward");
+    show_status("match possible primers vs. seq. (forward)");
     base    = sequence_iterator->nextBase();
     while ( base != SequenceIterator::EOS ) {
         pos = sequence_iterator->pos;
@@ -551,7 +551,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     fifo1->flush();
     fifo2->flush();
 
-    show_status("match possible primers against sequence -- backward");
+    show_status("match possible primers vs. seq. (backward)");
     base = INVERT.BASE[ sequence_iterator->nextBase() ];
     while ( base != SequenceIterator::EOS ) {
         pos = sequence_iterator->pos;
@@ -707,7 +707,7 @@ void PrimerDesign::convertTreesToLists ()
         return;
     }
 
-#ifdef DEBUG
+#if defined(DEBUG)
     printf( "convertTreesToLists : list1 : min_offset %7li  max_offset %7li\n", min_offset_1, max_offset_1 );
 #endif
 
@@ -736,8 +736,7 @@ void PrimerDesign::convertTreesToLists ()
 
             // push children on stack
             for ( int index = 0; index < 4; index++ )
-                if ( cur_node->child[index] != NULL )
-                {
+                if ( cur_node->child[index] != NULL ) {
                     new_pair = pair<Node*,int>( cur_node->child[index],depth+1 );
                     stack->push_back( new_pair );
                 }
@@ -796,7 +795,7 @@ void PrimerDesign::convertTreesToLists ()
 
     delete stack;
 
-#ifdef DEBUG
+#if defined(DEBUG)
     printf( "convertTreesToLists : list2 : min_offset %7li  max_offset %7li\n", min_offset_2, max_offset_2 );
 #endif
 
@@ -939,7 +938,7 @@ void PrimerDesign::evaluatePrimerPairs ()
     printf ( "evaluatePrimerPairs : ...\ninsertPair : [index], rating\n" );
 #endif
 
-    show_status("Evaluating primer pairs");
+    show_status("evaluating primer pairs");
     int list1_elems = 0;
     int elems       = 0;
     while (one) {
