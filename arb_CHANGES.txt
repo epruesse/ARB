@@ -1,6 +1,10 @@
 Major changes for next Beta:
 ----------------------------
 
+ - PCR primer-design for single genes
+ - when selecting a gene, the corresponding gene-species is selected (if found)
+ - save configuration for several windows (i.e. Search&Query, WWW, NDS, ...)
+ - highlight search occurances in ARB_SECEDIT
  - file selection box in import window
  - mark item with double click works in all search&query windows
  - User masks: create new; 'edit enable' and 'marked' toggles (like in info window)

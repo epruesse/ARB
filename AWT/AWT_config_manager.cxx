@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Jan/09/2002 19:04 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Jan/17/2002 14:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -107,13 +107,19 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     string             existing_configs = config->get_awar_value("existing");
     config->get_awar_value("current"); // create!
     bool               reopen           = false;
+    char              *title            = strdup(GBS_global_string("Configurations for '%s'", aww->window_name));
 
-    char   *result    = aw_string_selection("Select a config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "STORE,RESTORE,DELETE,CANCEL,HELP");
+    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CANCEL,HELP");
     int     button    = aw_string_selection_button();
     string  awar_name = string("cfg_")+result;
 
     switch (button) {
-        case 0: {               // STORE
+        case 0: {               // RESTORE
+            config->Restore(config->get_awar_value(awar_name));
+            config->set_awar_value("current", result);
+            break;
+        }
+        case 1: {               // STORE
             remove_from_configs(result, existing_configs); // remove existing config
 
             if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
@@ -122,11 +128,6 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
             config->set_awar_value(awar_name, config->Store());
             config->set_awar_value("current", result);
             config->set_awar_value("existing", existing_configs);
-            break;
-        }
-        case 1: {               // RESTORE
-            config->Restore(config->get_awar_value(awar_name));
-            config->set_awar_value("current", result);
             break;
         }
         case 2: {               // DELETE
@@ -146,6 +147,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
             break;
         }
     }
+    free(title);
     free(result);
 
     //     if (reopen) AWT_start_config_manager(aww, cl_config); // crashes!

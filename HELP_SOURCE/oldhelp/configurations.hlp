@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Help on configurations
 
-OCCURRENCE	Anywhere
+OCCURRENCE	Anywhere (buttons with disk icon)
 
 DESCRIPTION     This provides a general way to store and restore some settings
                 from the previous window.
