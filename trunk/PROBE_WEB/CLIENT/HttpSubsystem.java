@@ -75,8 +75,9 @@ public String conductRequest(String url_rest)
 
             String request = "GET " + path + url_rest;
 
-            toServer.print(request + "\n\n");
-            System.out.println("Request: " + request + "\n");
+            //toServer.print(request + "\n\n");
+            toServer.print(request + "\n");
+            System.out.println("Request: '" + request + "'\n");
             toServer.flush();
 
             StringBuffer strb = new StringBuffer();
@@ -160,8 +161,18 @@ public String downloadZippedTree(String fileName)
             toServer = new PrintWriter(probeSocket.getOutputStream());
             FileOutputStream outstream = new FileOutputStream(fileName);
             byteBuffer = new byte[4096];
-            toServer.print("GET " + path + "getTree.cgi\n\n");
+
+            String request = "GET " + path + "getTree.cgi";
+
+            //toServer.print(request + "\n\n");
+            toServer.print(request + "\n");
+            System.out.println("Request: '" + request + "'\n");
             toServer.flush();
+
+//            System.out.print("GET " + path + "getTree.cgi\n\n");
+//            toServer.print("GET " + path + "getTree.cgi\n\n");
+//            toServer.flush();
+
             int bytesRead;
             while((bytesRead = fromServer.read(byteBuffer)) != -1)
             {
