@@ -238,9 +238,8 @@ class aw_gc_manager {
     const char            *default_value;
     AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
     AW_MGC_awar_cb_struct *font_change_cb_parameter;
-    struct aw_gc_manager  *next;
+    aw_gc_manager         *next;
 
-    ~aw_gc_manager();           // unused
 public:
     aw_gc_manager(const char *field_, const char *default_value_)
         : field(field_)
