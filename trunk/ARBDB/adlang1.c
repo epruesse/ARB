@@ -1422,7 +1422,10 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
             error = GBS_global_string("%s (while trying to force refresh)", GB_get_error());
         }
         else {
-            GB_touch(gb_tree_refresh); /* Note : force tree update */
+            /* #if defined(DEBUG) */
+            /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
+            /* #endif /* DEBUG */ */
+            GB_touch(gb_tree_refresh); /* Note : force tree update */ 
         }
     }
 
@@ -1670,29 +1673,37 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
         error = "\"taxonomy\" syntax: \"taxonomy\"([tree_name,] count)";
     }
     else {
-        int is_current_tree = 0;
-        int count;
+        int   is_current_tree = 0;
+        int   count;
+        char *result          = 0;
 
         if (args->cparam == 1) {   /* only 'count' */
-            if (args->default_tree_name) tree_name = strdup(args->default_tree_name);
-            else error = "Can't use taxonomy without tree_name (no known default tree)";
-            count = atoi(args->vparam[0].str);
-            is_current_tree = 1;
+            if (!args->default_tree_name) {
+                result = strdup("No default tree");
+            }
+            else {
+                tree_name = strdup(args->default_tree_name);
+                count = atoi(args->vparam[0].str);
+                is_current_tree = 1;
+            }
         }
         else { /* 'tree_name', 'count' */
             tree_name = strdup(args->vparam[0].str);
             count     = atoi(args->vparam[1].str);
         }
 
-        if (!error && count<1) {
-            error = GBS_global_string("Illegal count '%i' (allowed 1..n)", count);
-        }
-        if (!error) {
-            const char *taxonomy_string = get_taxonomy(args->gb_ref, tree_name, is_current_tree, count, &error);
-            if (taxonomy_string) {
-                (*args->voutput)[(*args->coutput)++].str = strdup(taxonomy_string);
+        if (!result) {
+            if (count<1) {
+                error = GBS_global_string("Illegal count '%i' (allowed 1..n)", count);
+            }
+            if (!error) {
+                const char *taxonomy_string = get_taxonomy(args->gb_ref, tree_name, is_current_tree, count, &error);
+                if (taxonomy_string) result = strdup(taxonomy_string);
             }
         }
+
+        ad_assert(result || error);
+        if (result) (*args->voutput)[(*args->coutput)++].str = result;
     }
     if (tree_name) free(tree_name);
     return error;
