@@ -42,7 +42,8 @@ private Set             branchSet;
 private static Color dc;        // normal display color
 private static Color mc  = Color.yellow; // marked display color
 private static Color pmc = Color.white; // partly marked display color
-private static Color nic = Color.blue; // node info color (not used for species name etc.)
+private static Color nic1 = Color.blue; // node info color 1 (not used for species name etc.)
+private static Color nic2 = Color.magenta; // node info color 2 (not used for group name)
 
 public float maxDist        = 0;
 private int  clickTolerance = 5;
@@ -228,7 +229,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                     int brclose = info.indexOf(']');
                     if (brclose != -1) {
                         info = info.substring(0, brclose+1); // cut rest after '[...]'
-                        g.setColor(nic); // and draw again in different color
+                        g.setColor(nic1); // and draw again in different color
                         g.drawString(info, x, y);
                     }
                 }
@@ -300,8 +301,28 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
             {
                 String info = node.getNodeInformation();
                 if (info.length() > 0) {
-                    g.setColor(nic);
-                    g.drawString(info, line[0]+3, line[1]-1);
+                    int x = line[0]+3;
+                    int y = line[1]-1;
+
+                    setColor(node.isMarked(), g);
+                    g.drawString(info, x, y);
+
+                    if (info.charAt(0) == '[') { // has info about probes
+                        int brclose = info.indexOf(']');
+                        if (brclose != -1) {
+                            info = info.substring(0, brclose+1); // cut rest after '[...]'
+
+                            if (info.indexOf('%') == -1) { // have no exact group
+                                g.setColor(nic1);
+                            }
+                            else {
+                                g.setColor(nic2);
+                            }
+
+                            g.drawString(info, x, y); // and draw again in different color
+                        }
+                    }
+
                 }
             }
 
