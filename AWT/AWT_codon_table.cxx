@@ -6,84 +6,149 @@
 #include "awt_iupac.hxx"
 #include "awt_codon_table.hxx"
 
-struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_CODES+1] =
+// const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8;
+
+#define EMBL_BACTERIAL_TABLE_INDEX 11
+
+
+struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
 {
     //	"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
     //	"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
     //	"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
     {
-        "Standard Code",
-        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "---M---------------M---------------M----------------------------"
+        " (1) Standard Code",
+        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", // The first code in this table has to be 'Standard Code'!
+        "---M---------------M---------------M----------------------------",
+        1
     },
     {
-        "Bacterial Code",
-        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "---M---------------M------------MMMM---------------M------------"
-    },
-    {
-        "Vertebrate Mitochondrial Code",
+        " (2) Vertebrate Mitochondrial Code",
         "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
-        "--------------------------------MMMM---------------M------------"
+        "--------------------------------MMMM---------------M------------",
+        2
     },
     {
-        "Invertebrate Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
-        "---M----------------------------MMMM---------------M------------"
-    },
-    {
-        "Yeast Mitochondrial Code",
+        " (3) Yeast Mitochondrial Code",
         "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
+        "-----------------------------------M----------------------------",
+        3
     },
     {
-        "Mold/Protozoan/Coelenterate Mitochondrial Code", // identical with "Mycoplasma/Spiroplasma Code" (split because of name-length)
+        " (4) Mold/Protozoan/Coelenterate Mitochondrial Code",
         "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "--MM---------------M------------MMMM---------------M------------"
+        "--MM---------------M------------MMMM---------------M------------",
+        4
     },
     {
-        "Echinoderm Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
+        " (5) Invertebrate Mitochondrial Code",
+        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
+        "---M----------------------------MMMM---------------M------------",
+        5
     },
     {
-        "Ascidian Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
-    },
-    {
-        "Flatworm Mitochondrial Code",
-        "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
-    },
-    {
-        "Mycoplasma/Spiroplasma Code", // identical with "Mold/Protozoan/Coelenterate Mitochondrial Code" (split because of name-length)
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "--MM---------------M------------MMMM---------------M------------"
-    },
-    {
-        "Ciliate, Dasycladacean and Hexamita Nuclear Code",
+        " (6) Ciliate Macronuclear and Dasycladacean",
         "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
+        "-----------------------------------M----------------------------",
+        6
     },
     {
-        "Euplotid Nuclear Code",
+        " (9) Echinoderm Mitochondrial Code",
+        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+        "-----------------------------------M----------------------------",
+        9
+    },
+    {
+        "(10) Euplotid Nuclear Code",
         "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
+        "-----------------------------------M----------------------------",
+        10
     },
     {
-        "Alternative Yeast Nuclear Code",
+        "(11) Bacterial and Plant Plastid Code",
+        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+        "---M---------------M------------MMMM---------------M------------",
+        11
+    },
+    {
+        "(12) Alternative Yeast Nuclear Code",
         "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-------------------M---------------M----------------------------"
+        "-------------------M---------------M----------------------------",
+        12
     },
     {
-        "Blepharisma Nuclear Code",
+        "(13) Ascidian Mitochondrial Code",
+        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
+        "-----------------------------------M----------------------------",
+        13
+    },
+    {
+        "(14) Flatworm Mitochondrial Code",
+        "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+        "-----------------------------------M----------------------------",
+        14
+    },
+    {
+        "(15) Blepharisma Nuclear Code",
         "FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------"
+        "-----------------------------------M----------------------------",
+        15
+    },
+    {
+        "(16) Chlorophycean Mitochondrial Code",
+        "FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+        "-----------------------------------M----------------------------",
+        16
+    },
+    {
+        "(21) Trematode Mitochondrial Code",
+        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+        "-----------------------------------M---------------M------------",
+        21
+    },
+    {
+        "(22) Scenedesmus obliquus mitochondrial Code",
+        "FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+        "-----------------------------------M----------------------------",
+        22
+    },
+    {
+        "(23) Thraustochytrium Mitochondrial Code",
+        "FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+        "--------------------------------M--M---------------M------------",
+        23
     },
 
-    { 0, 0, 0 } // end of table-marker
+    { 0, 0, 0, 0 } // end of table-marker
 };
+
+#define MAX_EMBL_TRANSL_TABLE_VALUE 23 // maximum known EMBL transl_table value
+
+int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
+    // returns -1 if embl_index is not known by ARB
+
+    static bool initialized = false;
+    static int  arb_code_nr_table[MAX_EMBL_TRANSL_TABLE_VALUE+1];
+
+    if (!initialized) {
+        for (int embl = 0; embl <= MAX_EMBL_TRANSL_TABLE_VALUE; ++embl) {
+            arb_code_nr_table[embl] = -1; // illegal table
+        }
+        for (int arb_code_nr = 0; arb_code_nr <= AWT_CODON_TABLES; ++arb_code_nr) {
+            arb_code_nr_table[AWT_codon_def[arb_code_nr].embl_feature_transl_table] = arb_code_nr;
+        }
+        initialized = true;
+    }
+
+    // should be index of 'Bacterial and Plant Plastid Code'
+    // (otherwise maybe AWAR_PROTEIN_TYPE_bacterial_code_index  is wrong)
+    awt_assert(arb_code_nr_table[EMBL_BACTERIAL_TABLE_INDEX] == AWAR_PROTEIN_TYPE_bacterial_code_index);
+    awt_assert(arb_code_nr_table[1] == 0); // Standard Code has to be on index zero!
+
+    if (embl_index<0 || embl_index>MAX_EMBL_TRANSL_TABLE_VALUE) return -1;
+    return arb_code_nr_table[embl_index];
+}
+
 
 static bool codon_tables_initialized = false;
 static char definite_translation[AWT_MAX_CODONS]; // contains 0 if ambiguous, otherwise it contains the definite translation
@@ -99,12 +164,12 @@ void AWT_initialize_codon_tables() {
         ambiguous_codons[codon_nr] = 0;
     }
 
-    awt_assert(AWT_CODON_CODES>=1);
+    awt_assert(AWT_CODON_TABLES>=1);
     memcpy(definite_translation, AWT_codon_def[0].aa, AWT_MAX_CODONS); // only one translation is really definite
 
-    awt_assert(AWT_codon_def[AWT_CODON_CODES].aa==NULL); // Error in AWT_codon_def or AWT_CODON_CODES
+    awt_assert(AWT_codon_def[AWT_CODON_TABLES].aa==NULL); // Error in AWT_codon_def or AWT_CODON_CODES
 
-    for (code_nr=1; code_nr<AWT_CODON_CODES; code_nr++) {
+    for (code_nr=1; code_nr<AWT_CODON_TABLES; code_nr++) {
         const char *translation = AWT_codon_def[code_nr].aa;
 
         for (codon_nr=0; codon_nr<AWT_MAX_CODONS; codon_nr++) {
@@ -176,7 +241,7 @@ inline void build_codon(int codon_nr, char *to_buffer) {
 }
 
 const char* AWT_get_codon_code_name(int code) {
-    awt_assert(code>=0 && code<AWT_CODON_CODES);
+    awt_assert(code>=0 && code<AWT_CODON_TABLES);
     return AWT_codon_def[code].name;
 }
 
@@ -255,7 +320,7 @@ void AWT_dump_codons() {
                         printf("%s (", dna);
 
                         int first=1;
-                        for (int code=0; code<AWT_CODON_CODES; code++) {
+                        for (int code=0; code<AWT_CODON_TABLES; code++) {
                             if (allowed_code_left.is_allowed(code)) {
                                 if (!first) printf(",");
                                 first=0;
@@ -363,7 +428,7 @@ int AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_c
 
     // search for allowed correct translation possibity:
     int found = 0;
-    for (int code_nr=0; code_nr<AWT_CODON_CODES; code_nr++) {
+    for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
         if (allowed_code.is_allowed(code_nr) &&  // is this code allowed?
             AWT_codon_def[code_nr].aa[codon_nr]==protein) { // and does it translate correct?
             allowed_code_left.allow(code_nr);
@@ -398,7 +463,7 @@ public:
 Codon_Group::Codon_Group(char protein, int code_nr) {
     protein = toupper(protein);
     awt_assert(protein=='*' || isalpha(protein));
-    awt_assert(code_nr>=0 && code_nr<AWT_CODON_CODES);
+    awt_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
 
     const char *amino_table = AWT_codon_def[code_nr].aa;
     for (int i=0; i<AWT_MAX_CODONS; i++) {
@@ -510,7 +575,7 @@ int Codon_Group::expand(char *to_buffer) const {
 // --------------------------------------------------------------------------------
 
 static Codon_Group *get_Codon_Group(char protein, int code_nr) {
-    awt_assert(code_nr>=0 && code_nr<AWT_CODON_CODES);
+    awt_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
     protein = toupper(protein);
     awt_assert(isalpha(protein) || protein=='*');
     awt_assert(codon_tables_initialized);
@@ -556,7 +621,7 @@ const char *AWT_get_codons(char protein, int code_nr) {
 // #if defined(DEBUG)
 // void test_AWT_get_codons() {
 //     AWT_initialize_codon_tables();
-//     for (int code_nr=0; code_nr<1; /*AWT_CODON_CODES;*/ code_nr++) {
+//     for (int code_nr=0; code_nr<1; /*AWT_CODON_TABLES;*/ code_nr++) {
 //         printf("--------------------- Code = %i\n", code_nr);
 //         for (char c='*'; c<='Z'; c++) {
 //             const char *got_codons = AWT_get_codons(c, code_nr);
