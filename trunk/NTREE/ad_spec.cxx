@@ -263,7 +263,7 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
     if (ad_global_scannerroot) {
         ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
         if (type != ADMVT_SELECT) {
-            awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
+//             awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
         }
     }
     else {                      // no active scanner -> write global awar
@@ -368,7 +368,7 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     return (AW_window *)aws;
 }
 
-void ad_field_only_delete(AW_window *aws, AW_CL cl_item_selector)
+void ad_hide_field(AW_window *aws, AW_CL cl_item_selector, AW_CL cl_hide)
 {
     AWUSE(aws);
     GB_begin_transaction(gb_main);
@@ -378,8 +378,13 @@ void ad_field_only_delete(AW_window *aws, AW_CL cl_item_selector)
     const ad_item_selector *selector  = (const ad_item_selector*)cl_item_selector;
     GBDATA                 *gb_source = awt_get_key(gb_main,source, selector->change_key_path);
 
-    if (!gb_source) aw_message("Please select an item you want to delete");
-    else error = GB_delete(gb_source);
+    if (!gb_source) {
+        aw_message("Please select the field you want to (un)hide");
+    }
+    else {
+        GBDATA *gb_hidden = GB_search(gb_source, CHANGEKEY_HIDDEN, GB_INT);
+        GB_write_int(gb_hidden, (int)cl_hide);
+    }
 
     delete source;
 
@@ -403,7 +408,7 @@ void ad_field_delete(AW_window *aws, AW_CL cl_item_selector)
     GBDATA                 *gb_source = awt_get_key(gb_main,source, selector->change_key_path);
 
     if (!gb_source) {
-        aw_message("Please select an item you want to delete");
+        aw_message("Please select the field you want to delete");
     }else{
         error = GB_delete(gb_source);
     }
@@ -452,10 +457,16 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     aws->at("help");aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_delete.hlp");
     aws->create_button("HELP","HELP","H");
 
-    aws->at("doit");
-    aws->callback(ad_field_only_delete, (AW_CL)selector);
+    aws->button_length(13);
+    aws->at("hide");
+    aws->callback(ad_hide_field, (AW_CL)selector, (AW_CL)1);
     aws->help_text("rm_field_only.hlp");
-    aws->create_button("HIDE_FIELD","HIDE FIELD\n(NOTHING DELETED)","F");
+    aws->create_button("HIDE_FIELD","Hide field","H");
+
+    aws->at("unhide");
+    aws->callback(ad_hide_field, (AW_CL)selector, (AW_CL)0);
+    aws->help_text("rm_field_only.hlp");
+    aws->create_button("UNHIDE_FIELD","Unhide field","U");
 
     aws->at("delf");
     aws->callback(ad_field_delete, (AW_CL)selector);
@@ -465,7 +476,8 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     awt_create_selection_list_on_scandb(gb_main,
                                         (AW_window*)aws,AWAR_FIELD_DELETE,
                                         -1,
-                                        "source",0, selector, 20, 10);
+                                        "source",0, selector, 20, 10,
+                                        false, false, true);
 
     return (AW_window *)aws;
 }
@@ -512,7 +524,6 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
 
-
     aws->at("input");
     aws->label("FIELD NAME");
     aws->create_input_field(AWAR_FIELD_CREATE_NAME,15);
@@ -526,7 +537,6 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
     aws->insert_toggle("MASK = 01 Text","0",	(int)GB_BITS);
     aws->update_toggle_field();
 
-
     aws->at("ok");
     aws->callback(ad_field_create_cb, cl_item_selector);
     aws->create_button("CREATE","CREATE","C");
@@ -535,10 +545,16 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 }
 
 void ad_spec_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields", "Reorder    Fields ...", "r", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector );
-    aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...",                "D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector );
-    aws->insert_menu_topic("create_field",		"Create Field ...",	                    "C","spaf_create.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector );
-    aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields",  "S","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("reorder_fields", "Reorder    Fields ...",       "r", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector );
+    aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...",    "D","spaf_delete.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector );
+    aws->insert_menu_topic("create_field",		"Create Field ...",	        "C","spaf_create.hlp",	AD_F_ALL,	AW_POPUP,   (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector );
+    aws->insert_separator();
+    aws->insert_menu_topic("unhide_fields", "Show all hidden fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields","U","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("del_unused_fields", "Remove unused fields","e","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+//     aws->insert_menu_topic("unhide_fields",		"Unhide all fields",        "U","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+//     aws->insert_menu_topic("delete_unused_fields", "Delete unused fields",  "e","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+//     aws->insert_menu_topic("rebuild_fields",		"Rebuild fields",       "B","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rebuild_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 #include <probe_design.hxx>
@@ -742,13 +758,40 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     return (AW_window *)aws;
 }
 
+// -----------------------------------------------------------------------------------------------------------------
+//      void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info)
+// -----------------------------------------------------------------------------------------------------------------
+void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info) {
+    AW_window          **aww_pointer  = (AW_window**)cl_pointer_to_aww;
+    Awar_Callback_Info  *cb_info      = (Awar_Callback_Info*)cl_Awar_Callback_Info;
+    AW_root             *awr          = cb_info->get_root();
+    char                *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
+
+    if (*aww_pointer == aww) {  // first click on detach-button
+        // create unique awar :
+        static int detach_counter = 0;
+        char       new_awar[100];
+        sprintf(new_awar, "tmp/DETACHED_INFO_%i", detach_counter++);
+        awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
+
+        cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
+
+        *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
+        // [Note : the aww_pointer points to the static window pointer]
+    }
+
+    awr->awar(cb_info->get_awar_name())->write_string(curr_species);
+    aww->set_window_title(GBS_global_string("%s INFORMATION", curr_species));
+    free(curr_species);
+}
+
 AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
 {
     int windowIdx = (int)organismWindow;
 
     static AW_window_simple_menu *AWS[2] = { 0, 0 };
-    if (AWS[windowIdx]){
-        return (AW_window *)AWS[windowIdx];
+    if (AWS[windowIdx]) {
+        return (AW_window *)AWS[windowIdx]; // already created (and not detached)
     }
 
     AW_window_simple_menu *& aws = AWS[windowIdx];
@@ -773,9 +816,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->create_button("SEARCH","SEARCH","S");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"species_info.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
     aws->create_button("HELP","HELP","H");
-
 
     AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER,
                                                organismWindow ? &AWT_organism_selector : &AWT_species_selector);
@@ -793,9 +835,14 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->create_menu(       0,   "FIELDS",     "I", "spa_fields.hlp",  AD_F_ALL );
     ad_spec_create_field_items(aws);
 
-    aws->get_root()
-        ->awar((bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)
-        ->add_callback( AD_map_species, scannerid, (AW_CL)organismWindow);
+    const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+    AW_root            *awr       = aws->get_root();
+    Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, scannerid, (AW_CL)organismWindow); // do not delete!
+    cb_info->add_callback();
+
+    aws->at("detach");
+    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+    aws->create_button("DETACH", "DETACH", "D");
 
     aws->show();
     AD_map_species(aws->get_root(),scannerid, (AW_CL)organismWindow);
