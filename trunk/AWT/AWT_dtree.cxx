@@ -430,13 +430,38 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
 
     AWUSE(ct);
     AP_tree *at;
-    // clicked on a species list !!!!
     if ( ct->exists && ct->client_data2 && !strcmp((char *) ct->client_data2, "species")){
-        // @@@ FIXME: einige Modes sollten auch in species list funktionieren!
-        GBDATA *gbd = (GBDATA *)ct->client_data1;
-        if (type == AW_Mouse_Press) {
-            AD_map_viewer(gbd);
+        // clicked on a species list :
+        GBDATA *gbd     = (GBDATA *)ct->client_data1;
+        bool    select  = false;
+        bool    refresh = false;
+
+        switch (cmd) {
+            case AWT_MODE_MARK:  {
+                if (type == AW_Mouse_Press) {
+                    switch (button) {
+                        case AWT_M_LEFT:
+                            GB_write_flag(gbd, 1);
+                            refresh = true;
+                            select  = true;
+                            break;
+                        case AWT_M_RIGHT:
+                            GB_write_flag(gbd, 0);
+                            refresh = true;
+                            break;
+                    }
+                }
+                break;
+            }
+            default :  { // all other modes just select a species :
+                select = true;
+                break;
+            }
         }
+
+        if (select && type == AW_Mouse_Press) AD_map_viewer(gbd);
+        if (refresh) this->exports.refresh = 1;
+
         return;
     }
 
