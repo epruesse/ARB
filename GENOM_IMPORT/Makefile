@@ -231,11 +231,6 @@ GAGenomGeneLocationGenBank.o: GAGenomGeneLocationGenBank.h
 GAGenomGeneLocationGenBank.o: GAGenomUtilities.h
 GAGenomGeneLocationGenBank.o: GAParser.h
 
-GAGenomImport.o: ../GENOM_IMPORT/GAGenomFeatureTableEmbl.h
-GAGenomImport.o: ../GENOM_IMPORT/GAGenomFeatureTableSourceEmbl.h
-GAGenomImport.o: ../GENOM_IMPORT/GAGenomGeneEmbl.h
-GAGenomImport.o: ../GENOM_IMPORT/GAGenomGeneLocationEmbl.h
-GAGenomImport.o: ../GENOM_IMPORT/GAGenomReferenceEmbl.h
 GAGenomImport.o: GAGenom.h
 GAGenomImport.o: GAGenomEmbl.h
 GAGenomImport.o: GAGenomFeatureTable.h
