@@ -40,7 +40,35 @@ public class HttpSubsystem {
         System.out.println("  url.getRef()='"+url.getRef()+"'");
     }
 
-    private byte[] conductRequest_internal(String relativePath, String expected_content_type) {
+    private static int streamAll(Reader in, Writer out) throws Exception {
+        final int bufsize       = 64*1024;
+        char[]    buffer        = new char[bufsize];
+        int       streamedBytes = 0;
+
+        // InputStreamReader  reader = new InputStreamReader(instream);
+        // OutputStreamWriter writer = new OutputStreamWriter(outstream);
+
+        try {
+            int readBytes = in.read(buffer);
+            System.out.println("  readBytes="+readBytes+" (first)");
+            while (readBytes != -1) { // got some bytes
+                out.write(buffer, 0, readBytes);
+                streamedBytes += readBytes;
+                readBytes      = in.read(buffer);
+                System.out.println("  readBytes="+readBytes);
+            }
+        }
+        catch (IOException e) {
+            Toolkit.AbortWithError("while streaming data: "+e.getMessage());
+        }
+
+        System.out.println("streamedBytes="+streamedBytes);
+        return streamedBytes;
+    }
+
+    private int conductRequest_internal(String relativePath, String expected_content_type, Writer out) {
+        // returns number of bytes read
+
         lastRequestError = null;
         try {
             URL url = new URL(baseUrl, relativePath);
@@ -69,7 +97,7 @@ public class HttpSubsystem {
                     // Note : e.getMessage only contains the servername
                 }
 
-                showUrlInfo("after connect", url);                
+                showUrlInfo("after connect", url);
 
                 if (request.usingProxy()) {
                     System.out.println("* proxy is used");
@@ -96,46 +124,78 @@ public class HttpSubsystem {
                 }
 
                 int content_len = request.getContentLength();
-                System.out.println("content_len='"+content_len+"'");
+                if (content_len == -1) {
+                    System.out.println("content_len is unknown");
+                }
+                else {
+                    System.out.println("content_len='"+content_len+"'");
+                }
 
-                byte buffer[] = new byte[content_len];
-                DataInputStream dis = new DataInputStream(request.getInputStream());
+                // DataInputStream dis = new DataInputStream(request.getInputStream());
 
-                dis.readFully(buffer);
+                // byte buffer[] = new byte[content_len];
+                // dis.readFully(buffer);
+                // return buffer;
 
-                showUrlInfo("final", url);
-                return buffer;
+                InputStreamReader in = new InputStreamReader(request.getInputStream());
+                int bytes_read = streamAll(in, out);
+                if (bytes_read != content_len && content_len != -1) {
+                    System.out.println("bytes_read="+bytes_read+" content_len="+content_len);
+                }
+                return bytes_read;
             }
             catch (Exception e) {
                 lastRequestError = "requested: '"+relativePath+"' (from: '"+url.getFile()+"'): "+e.getMessage();
                 showUrlInfo("failure", url);
-                return null;
+                return 0;
             }
         }
         catch (Exception e) {
             lastRequestError = "requested: '"+relativePath+"' (from: '"+baseUrl.getHost()+"'): "+e.getMessage();
-            return null;
+            return 0;
         }
     }
 
     public String conductRequest(String relativePath) {
-        byte[] response  = conductRequest_internal(relativePath, "text/plain");
-        return response == null ? null : new String(response);
+        // byte[] response  = conductRequest_internal(relativePath, "text/plain");
+        // return response == null ? null : new String(response);
+
+        StringWriter str = new StringWriter(1000);
+        int streamedBytes = conductRequest_internal(relativePath, "text/plain", str);
+
+        if (streamedBytes <= 0) {
+            String error = "streamedBytes="+streamedBytes+" (illegal value)";
+            if (lastRequestError == null) {
+                lastRequestError = error;
+            }
+            else {
+                lastRequestError = lastRequestError+": "+error;
+            }
+            return null;
+        }
+
+        String result = str.toString();
+        System.out.println("conductRequest result: '"+result+"'");
+
+        return result;
     }
 
     public String downloadZippedTree(String fileName) {
-        byte[] response = conductRequest_internal("getTree.cgi", "text/gzipped");
-        if (response != null) {
-            try {
-                Toolkit.showMessage("Saving tree as "+fileName);
-                FileOutputStream outstream = new FileOutputStream(fileName);
-                outstream.write(response, 0, response.length);
-                outstream.close();
-            }
-            catch (Exception e) {
-                lastRequestError = "Can't save tree: "+e.getMessage();
-            }
+        try {
+            Toolkit.showMessage("Saving tree as "+fileName);
+            FileWriter outfile = new FileWriter(fileName);
+            
+            conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+            // outstream.write(response, 0, response.length);
+            outfile.close();
         }
+        catch (Exception e) {
+            lastRequestError = "Can't save tree: "+e.getMessage();
+        }
+
+        // byte[] response = conductRequest_internal("getTree.cgi", "text/gzipped");
+        // if (response != null) {
+        // }
         return lastRequestError;
     }
 
