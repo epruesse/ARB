@@ -274,30 +274,6 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 
     free(species_name);
 
-    //     if (ad_global_scannerid){
-//         GBDATA *gb_species_data =	GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-//         if (gbd && GB_get_father(gbd)==gb_species_data) {
-//             // I got a species !!!!!!
-//             GBDATA *gb_name = GB_find(gbd,"name",0,down_level);
-//             if (gb_name) {
-//                 char *name = GB_read_string(gb_name);
-//                 ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(name);
-// 				// that will map the species
-//             }else{
-//                 ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
-//                 if (type != ADMVT_SELECT) {
-//                     awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-//                 }
-// 				// do it by hand
-//             }
-//         }else{
-//             ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
-//             if (type != ADMVT_SELECT) {
-//                 awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-//             }
-//             // do it by hand
-//         }
-//     }
 
     while (gbd && type == ADMVT_WWW){
         char *name = strdup("noname");
@@ -445,35 +421,6 @@ void ad_field_delete(AW_window *aws, AW_CL cl_item_selector)
         }
     }
 
-
-//     for (GBDATA *gb_species = GBT_first_species(gb_main);
-//          !error && gb_species;
-//          gb_species = GBT_next_species(gb_species))
-//     {
-//         switch (selector->type) {
-//             case AWT_QUERY_ITEM_GENES: {
-//                 GBDATA *gb_item_container = selector->get_item_container(gb_main, aws->get_root());
-
-//                 for (GBDATA *gb_item = selector->get_first_item(gb_item_container);
-//                      !error && gb_item;
-//                      gb_item = selector->get_next_item(gb_item))
-//                 {
-//                     GBDATA *gbd = GB_search(gb_item,source,GB_FIND);
-//                     if (gbd) error = GB_delete(gbd);
-//                 }
-//                 break;
-//             }
-//             case AWT_QUERY_ITEM_SPECIES: {
-//                 GBDATA *gbd    = GB_search(gb_species,source,GB_FIND);
-//                 if (gbd) error = GB_delete(gbd);
-//                 break;
-//             }
-//             default: {
-//                 gb_assert(0);
-//                 break;
-//             }
-//         }
-//     }
 
     delete source;
     if (error) {
