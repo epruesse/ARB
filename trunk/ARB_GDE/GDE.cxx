@@ -57,28 +57,28 @@ void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 	static AW_window_simple *helpwindow=0;
 
 	char helpfile[1024], *help_file;
-	char *helptext=0;	
+	char *helptext=0;
 
 	help_file=AWinfo->gmenuitem->help;
 	if(!(help_file)) awr->awar("tmp/gde/helptext")->write_string("no help\0");
-	else 
+	else
 	{
 		sprintf(helpfile,"%s/GDEHELP/%s",GB_getenvARBHOME(),help_file);
 
 		helptext=GB_read_file(helpfile);
-		if(helptext) 
+		if(helptext)
 		{
 			awr->awar("tmp/gde/helptext")->write_string(helptext);
 			delete helptext;
 		}
 		else awr->awar("tmp/gde/helptext")->write_string("can not find help file\0");
 	}
-	
+
 	if(helpwindow) { helpwindow->show() ; return; }
-	
+
 	helpwindow=new AW_window_simple;
 		helpwindow->init(awr,"GDE_HELP", "GDE HELP",200,10);
-	
+
 	helpwindow->button_length(10);
 	helpwindow->at(10,10);helpwindow->callback((AW_CB0)AW_POPDOWN);
 	helpwindow->create_button("CLOSE", "CLOSE","C");
@@ -88,9 +88,9 @@ void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 	//helpwindow->label_length(80);
 	helpwindow->create_text_field("tmp/gde/helptext",80,20);
 
-	helpwindow->window_fit();	
+	helpwindow->window_fit();
 	helpwindow->show();
-	
+
 }
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
@@ -147,7 +147,7 @@ char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
     if (GBS_string_cmp( type,"PV?:*",0)) {
 	return 0;
     }
-    
+
     char *name = GBT_read_name(gb_sai);
     const char *res = GBS_global_string("%s: %s",name,type);
     delete name;
@@ -155,19 +155,19 @@ char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
 }
 
 
-		  
+
 AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 #define BUFSIZE 200
-    char bf[BUFSIZE+1]; 
+    char bf[BUFSIZE+1];
 #if defined(DEBUG)
     int printed =
 #endif // DEBUG
-        sprintf(bf,"GDE / %s / %s",AWinfo->gmenu->label,AWinfo->gmenuitem->label); 
+        sprintf(bf,"GDE / %s / %s",AWinfo->gmenu->label,AWinfo->gmenuitem->label);
     gb_assert(printed<=BUFSIZE);
-    
+
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root,bf,bf,10,10);
-    
+
     switch (gde_cgss.wt) {
         case CGSS_WT_DEFAULT:
             aws->load_xfig("gdeitem.fig");
@@ -181,7 +181,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
         default:
             gde_assert(0);
     }
-    
+
     aws->set_window_size(1000,2000);
     aws->button_length(10);
     aws->at(10,10);
@@ -231,10 +231,10 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
                 aws->at("middleh"); aws->create_toggle("gde/middle_area_helix");
                 break;
         }
-	
+
         aws->at("compression");
         aws->create_toggle_field( "gde/compression" );
-        aws->insert_toggle( "none", "n",0 ); 
+        aws->insert_toggle( "none", "n",0 );
         aws->insert_default_toggle( "vertical gaps", "v", 1 );
         aws->insert_toggle( "all gaps",  "g", 2 );
         aws->update_toggle_field();
@@ -251,27 +251,24 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
         aws->at("paramsb");
     }
 
-	
+
     long labellength=0,lablen;
     //char *help;
     labellength=1;
     long i;
-    for(i=0;i<AWinfo->gmenuitem->numargs;i++)
-    {
+    for (i=0;i<AWinfo->gmenuitem->numargs;i++) {
         //help=AWinfo->gmenuitem->help;
         if(!(AWinfo->gmenuitem->arg[i].label)) AWinfo->gmenuitem->arg[i].label=GDEBLANK;
-        lablen=strlen(AWinfo->gmenuitem->arg[i].label);	
+        lablen=strlen(AWinfo->gmenuitem->arg[i].label);
         if(lablen>labellength) labellength=lablen;
     }
     aws->label_length((int)labellength);
     aws->auto_space(0,0);
 
-    for(i=0;i<AWinfo->gmenuitem->numargs;i++)
-    {
+    for (i=0;i<AWinfo->gmenuitem->numargs;i++) {
         GmenuItemArg itemarg=AWinfo->gmenuitem->arg[i];
 
-        if(itemarg.type==SLIDER)
-        {
+        if(itemarg.type==SLIDER) {
             char *newawar=GDE_makeawarname(AWinfo,i);
             if ( int(AWinfo->gmenuitem->arg[i].fvalue) == AWinfo->gmenuitem->arg[i].fvalue &&
                  int(AWinfo->gmenuitem->arg[i].min) == AWinfo->gmenuitem->arg[i].min &&
@@ -287,86 +284,98 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             // maybe bound checking //
             delete newawar;
         }
+        else if(itemarg.type==CHOOSER) {
+            char    *defopt           = itemarg.choice[0].method;
+            char    *newawar          = GDE_makeawarname(AWinfo,i);
+            AW_awar *curr_awar        = aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
+            char    *curr_value       = curr_awar->read_string();
+            bool     curr_value_legal = false;
 
-        else if(itemarg.type==CHOOSER)
-        {
-            char *defopt=itemarg.choice[0].method;
-            char *newawar=GDE_makeawarname(AWinfo,i);
-            aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             if (	(! GBS_string_cmp(itemarg.choice[0].label,"no",1)) ||
-                    (! GBS_string_cmp(itemarg.choice[0].label,"yes",1))){
+                    (! GBS_string_cmp(itemarg.choice[0].label,"yes",1)))
+            {
                 aws->create_toggle_field(newawar,1);
-            }else{
+            }
+            else {
                 aws->create_toggle_field(newawar);
             }
-            for(long j=0;j<itemarg.numchoices;j++)
-            {
+
+            for(long j=0;j<itemarg.numchoices;j++) {
+                if (strcmp(itemarg.choice[j].method, curr_value) == 0) curr_value_legal = true;
+
                 if (!j) {
-                    aws->insert_default_toggle(itemarg.choice[j].label,"1",
-                                               itemarg.choice[j].method);
-                }else{
-                    aws->insert_toggle(itemarg.choice[j].label,"1",
-                                       itemarg.choice[j].method);
+                    aws->insert_default_toggle(itemarg.choice[j].label,"1", itemarg.choice[j].method);
+                }
+                else {
+                    aws->insert_toggle(itemarg.choice[j].label,"1", itemarg.choice[j].method);
                 }
             }
+            if (!curr_value_legal) curr_awar->write_string(defopt); // if saved value no longer occurs in choice -> overwrite with default
+            free(curr_value);
             aws->update_toggle_field();
             delete newawar;
         }
-        else if(itemarg.type==CHOICE_MENU)
-        {
-            char *defopt=itemarg.choice[itemarg.ivalue].method;
-            char *newawar=GDE_makeawarname(AWinfo,i);
-            aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
+        else if(itemarg.type==CHOICE_MENU) {
+            char    *defopt           = itemarg.choice[itemarg.ivalue].method;
+            char    *newawar          = GDE_makeawarname(AWinfo,i);
+            AW_awar *curr_awar        = aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
+            char    *curr_value       = curr_awar->read_string();
+            bool     curr_value_legal = false;
+
             aws->label(AWinfo->gmenuitem->arg[i].label);
             aws->create_option_menu(newawar,NULL,"");
 
-            for(long j=0;j<itemarg.numchoices;j++)
-            {
-                aws->insert_option(itemarg.choice[j].label,"1",
-                                   itemarg.choice[j].method);
+            for(long j=0;j<itemarg.numchoices;j++) {
+                if (strcmp(itemarg.choice[j].method, curr_value) == 0) curr_value_legal = true;
+                aws->insert_option(itemarg.choice[j].label,"1", itemarg.choice[j].method);
             }
+            if (!curr_value_legal) curr_awar->write_string(defopt); // if saved value no longer occurs in choice -> overwrite with default
+            free(curr_value);
             aws->update_option_menu();
             delete newawar;
-        }else if(itemarg.type==TEXTFIELD){
+        }
+        else if(itemarg.type==TEXTFIELD) {
             char *defopt=itemarg.textvalue;
-            char *newawar=GDE_makeawarname(AWinfo,i);			
+            char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             aws->create_input_field(newawar,TEXTFIELDWIDTH);
             delete newawar;
-        }else if(itemarg.type==CHOICE_TREE){
+        }
+        else if(itemarg.type==CHOICE_TREE) {
             char *defopt=itemarg.textvalue;
-            char *newawar=GDE_makeawarname(AWinfo,i);			
+            char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
-            aws->label(AWinfo->gmenuitem->arg[i].label);		    
+            aws->label(AWinfo->gmenuitem->arg[i].label);
             awt_create_selection_list_on_trees(gb_main,aws,newawar);
             delete newawar;
-        }else if(itemarg.type==CHOICE_SAI){
+        }
+        else if(itemarg.type==CHOICE_SAI) {
             char *defopt=itemarg.textvalue;
-            char *newawar=GDE_makeawarname(AWinfo,i);			
+            char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
-            aws->label(AWinfo->gmenuitem->arg[i].label);		    
+            aws->label(AWinfo->gmenuitem->arg[i].label);
             awt_create_selection_list_on_extendeds(gb_main,aws,newawar);
             delete newawar;
-        }else if(itemarg.type==CHOICE_WEIGHTS){
+        }
+        else if(itemarg.type==CHOICE_WEIGHTS) {
             char *defopt=itemarg.textvalue;
-            char *newawar=GDE_makeawarname(AWinfo,i);			
+            char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
-            aws->label(AWinfo->gmenuitem->arg[i].label);		    
+            aws->label(AWinfo->gmenuitem->arg[i].label);
             void *id = awt_create_selection_list_on_extendeds(gb_main,aws,newawar,gde_filter_weights);
             delete newawar;
-            aw_root->awar("tmp/gde/alignment")
-                ->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
+            aw_root->awar("tmp/gde/alignment")->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
         }
         if((AWinfo->gmenuitem->numargs<8) || GDE_odd(i)) aws->at_newline();
         else aws->at_shift( 50,0 );
     }
     aws->at_newline();
 
-    aws->window_fit();	
+    aws->window_fit();
     return (AW_window *)aws;
-#undef BUFSIZE    
+#undef BUFSIZE
 }
 
 
@@ -416,10 +425,10 @@ void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabe
 	}
 }
 
-struct choose_get_sequence_struct gde_cgss = { 0,CGSS_WT_DEFAULT};
+struct choose_get_sequence_struct gde_cgss = { 0, CGSS_WT_DEFAULT, 0 };
 
 void create_gde_var(AW_root  *aw_root, AW_default aw_def,
-		    char *(*get_sequences)(void *THIS, GBDATA **&the_species, 
+		    char *(*get_sequences)(void *THIS, GBDATA **&the_species,
 					   uchar **&the_names,
 					   uchar **&the_sequences,
 					   long &numberspecies,long &maxalignlen),
@@ -431,8 +440,8 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     gde_cgss.THIS= THIS;
 
     aw_root->awar_string("tmp/gde/helptext","help",aw_def);
-    aw_root->awar_string( "tmp/gde/alignment","" ,aw_def );	
-    
+    aw_root->awar_string( "tmp/gde/alignment","" ,aw_def );
+
     switch (gde_cgss.wt)
     {
 	case CGSS_WT_EDIT4:
@@ -453,8 +462,8 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 	default:
 	    break;
     }
-    
-    aw_root->awar_string( "presets/use","" ,gb_main );	
+
+    aw_root->awar_string( "presets/use","" ,gb_main );
     aw_root->awar_string( "gde/filter/name","",aw_def);
     aw_root->awar_string( "gde/filter/filter","",aw_def);
     aw_root->awar_int( "gde/species",1,aw_def);
@@ -465,7 +474,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 
     DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-    ParseMenu();	
+    ParseMenu();
 }
 
 AW_window *AP_open_gde_window(AW_root *aw_root)
