@@ -4,16 +4,20 @@ if [ -z "$2" ] ; then
     echo "Usage: mv_if_diff source target"
     echo "Moves source to target. If target does not differ from source"
     echo "target is kept untouched."
+    echo "If target does not exist, source is always moved to target."
     exit 1
 fi
-
-DIFF=`diff $1 $2 | wc -l`
-
-if [ $DIFF = 0 ] ; then
-    echo "$2 did not change."
-    rm $1
+    
+if [ -f "$2" ]; then    
+    DIFF=`diff $1 $2 | wc -l`
+    if [ $DIFF = 0 ] ; then
+        echo "$2 did not change."
+        rm $1
+    else
+        echo "$2 updated."
+        mv $1 $2
+    fi
 else
-    echo "$2 updated."
+    echo "$2 created."
     mv $1 $2
 fi
-
