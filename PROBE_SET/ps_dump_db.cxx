@@ -1,286 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include <arbdb.h>
 #include <map>
-#include "../PROBE_GROUP/pg_search.hxx"
-#include <smartptr.h>
-
-using namespace std;
-
-//***********************************************
-//* PS_Probe
-//***********************************************
-typedef struct {
-  unsigned int quality;
-  unsigned int length;
-  unsigned int GC_content;
-
-} PS_Probe;
-
-typedef SmartPtr<PS_Probe> PS_ProbePtr;
-
-void PS_printProbe( PS_Probe *p ) {
-  printf("%u_%u_%u",p->quality,p->length,p->GC_content);
-}
-
-void PS_printProbe( PS_ProbePtr p ) {
-  printf("%u_%u_%u",p->quality,p->length,p->GC_content);
-}
-
-struct lt_probe
-{
-  bool operator()(PS_ProbePtr p1, PS_ProbePtr p2) const
-  {
-    //printf("\t");PS_printProbe(p1);printf(" < ");PS_printProbe(p2);printf(" ?\n");
-    if (p1->quality == p2->quality) {
-      if (p1->length == p2->length) {
-        return (p1->GC_content < p2->GC_content); // equal quality & length => sort by GC-content
-      } else {
-        return (p1->length < p2->length);         // equal quality => sort by length
-      }
-    } else {
-      return (p1->quality < p2->quality);         // sort by quality
-    }
-  }
-};
-
-
-
-//***********************************************
-//* PS_ProbeSet
-//***********************************************
-typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
-typedef PS_ProbeSet::const_iterator PS_ProbeSetIterator;
-
-//***********************************************
-//* PS_Node
-//***********************************************
-class PS_Node;
-typedef SmartPtr<PS_Node>         PS_NodePtr;
-typedef map<SpeciesID,PS_NodePtr> PS_NodeMap;
-typedef PS_NodeMap::iterator      PS_NodeMapIterator;
-typedef PS_NodeMap::const_iterator PS_NodeMapConstIterator;
-
-class PS_Node {
-private:
-
-  SpeciesID   num;
-  PS_NodeMap  children;
-  PS_ProbeSet probes;
-
-public:
-  
-  // *** num ***
-  void      setNum( SpeciesID id ) { num = id;   }
-  SpeciesID getNum() const { return num; }
-  
-  // *** children ***
-  void addChild( PS_NodePtr& child ) {
-    //printf("addChild[%d]\n",child->getNum());
-    //PS_NodePtr p = child;
-    //printf("inserting child...\n");
-    children[child->getNum()] = child;
-    //printf("...done\n");
-  }
-
- PS_NodePtr getChild( SpeciesID id ) { 
-   PS_NodeMapIterator it = children.find(id); 
-   if (it!=children.end()) return it->second;
-   return 0;
-}
- const PS_NodePtr getChild( SpeciesID id ) const { 
-   PS_NodeMapConstIterator it = children.find(id); 
-   if (it!=children.end()) return it->second;
-   return 0;
- }
-
-  PS_NodeMapIterator getChildren() { return children.begin(); }
-  PS_NodeMapConstIterator getChildren() const { return children.begin(); }
-
-  // *** probes ***
-  void addProbe( const PS_ProbePtr& probe ) {
-    //printf("addProbe(");PS_printProbe(probe);printf(")\n");
-    //PS_ProbePtr p = probe;
-    //printf("inserting probe...\n");
-    probes.insert(probe);
-    //printf("...done\n");
-  }
-
-  PS_ProbeSetIterator getProbes() {
-    return probes.begin();
-  }
-
-  // *** output **
-  void print() {
-    printf( "\nN[%d] P[ ", num );
-    for (PS_ProbeSetIterator i=probes.begin(); i!=probes.end(); ++i) {
-      PS_printProbe(*i);
-      printf(" ");
-    }
-    printf( "] C[" );
-    for (PS_NodeMap::iterator i=children.begin(); i!=children.end(); ++i) {
-      i->second->print();
-    }
-    printf( "]" );
-  }
-
-  // *** constructors ***
-  PS_Node( SpeciesID id ) { num = id; } //printf(" constructor PS_Node() num=%d\n",num); }
-
-  // *** destructor ***
-  ~PS_Node() {
-    printf("destroying node #%d\n",num);
-    probes.clear();
-    children.clear(); 
-  }
-
-private:
-  PS_Node()               { pg_assert(0); } //printf(" constructor PS_Node() num=%d\n",num); }
-  PS_Node(const PS_Node&); // forbidden
-};
-
-
-// API for Probe-Group-Database format
-
-// --------------------------------------------------------------------------------
-// mapping shortname <-> SpeciesID
-
-typedef map<string, int>           String2Int;
-typedef String2Int::const_iterator String2IntIter;
-typedef map<int,string>            Int2String;
-typedef Int2String::const_iterator Int2StringIter;
-
-static String2Int species2num_map;
-static Int2String num2species_map;
-static bool       species_maps_initialized = false;
-
-//  ----------------------------------------------------------------------
-//      GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main)
-//  ----------------------------------------------------------------------
-GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
-
-  GB_transaction pb_dummy(pb_main);
-
-  pg_assert(!species_maps_initialized);
-
-  // look for existing mapping in pb-db:
-  GBDATA *pb_mapping = GB_find(pb_main, "species_mapping", 0, down_level);
-  if (!pb_mapping) {  // error
-    GB_export_error("No species mapping");
-  }  else {
-    // retrieve mapping from string
-    const char *mapping = GB_read_char_pntr(pb_mapping);
-    if (!mapping) return GB_export_error("Can't read mapping");
-    
-    while (mapping[0]) {
-      const char *komma     = strchr(mapping, ',');   if (!komma) break;
-      const char *semicolon = strchr(komma, ';');     if (!semicolon) break;
-      string      name(mapping, komma-mapping);
-      komma+=1;
-      string idnum(komma,semicolon-komma);
-      SpeciesID   id        = atoi(idnum.c_str());
-
-      species2num_map[name] = id;
-      num2species_map[id]   = name;
-
-      mapping = semicolon+1;
-    }
-  }
-
-  species_maps_initialized = true;
-  return 0;
-}
-
-//  --------------------------------------------------------------------
-//      SpeciesID PG_SpeciesName2SpeciesID(const string& shortname)
-//  --------------------------------------------------------------------
-SpeciesID PG_SpeciesName2SpeciesID(const string& shortname) {
-  pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
-  return species2num_map[shortname];
-}
-
-//  --------------------------------------------------------------
-//      const string& PG_SpeciesID2SpeciesName(SpeciesID num)
-//  --------------------------------------------------------------
-const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
-  pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
-  return num2species_map[num];
-}
-
-int PG_NumberSpecies(){
-    return num2species_map.size();
-}
-
-// db-structure of group_tree:
-//
-//                  <root>
-//                  |
-//                  |
-//                  "group_tree"
-//                  |
-//                  |
-//                  "node" <more nodes...>
-//                  | | |
-//                  | | |
-//                  | | "group" (contains all probes for this group; may be missing)
-//                  | |
-//                  | "num" (contains species-number (created by PG_SpeciesName2SpeciesID))
-//                  |
-//                  "node" <more nodes...>
-//  
-//  Notes:  - the "node"s contained in the path from "group_tree" to any "group"
-//            describes the members of the group
-
-
-
-//  ---------------------------------------------------
-//      static GBDATA *group_tree(GBDATA *pb_main)
-//  ---------------------------------------------------
-// search or create "group_tree"-entry
-// static GBDATA *group_tree(GBDATA *pb_main) {
-//     return GB_search(pb_main, "group_tree", GB_CREATE_CONTAINER);
-// }
-
-
-//  -----------------------------------------------------
-//      GBDATA *PG_get_first_probe(GBDATA *pb_group)
-//  -----------------------------------------------------
-GBDATA *PG_get_first_probe(GBDATA *pb_group) {
-  return GB_find(pb_group, "probe", 0, down_level);
-}
-
-//  ----------------------------------------------------
-//      GBDATA *PG_get_next_probe(GBDATA *pb_probe)
-//  ----------------------------------------------------
-GBDATA *PG_get_next_probe(GBDATA *pb_probe) {
-  return GB_find(pb_probe, "probe", 0, this_level|search_next);
-}
-
-//  ----------------------------------------------------
-//      const char *PG_read_probe(GBDATA *pb_probe)
-//  ----------------------------------------------------
-const char *PG_read_probe(GBDATA *pb_probe) {
-  return GB_read_char_pntr(pb_probe);
-}
-
-
-//  -----------------------------------------------------
-//      GBDATA *PS_get_first_node(GBDATA *pb_nodecontainer)
-//  -----------------------------------------------------
-GBDATA *PS_get_first_node(GBDATA *pb_nodecontainer) {
-  return GB_find(pb_nodecontainer, "node", 0, down_level);
-}
-
-
-//  ----------------------------------------------------
-//      GBDATA *PS_get_next_node(GBDATA *pb_node)
-//  ----------------------------------------------------
-GBDATA *PS_get_next_node(GBDATA *pb_node) {
-  return GB_find(pb_node, "node", 0, this_level|search_next);
-}
-
+#include "ps_node.hxx"
+#include "ps_pg_tree_functions.cxx"
 
 //  ----------------------------------------------------
 //      void print_indented_str( int depth, int newline, int id, const char *str )
@@ -409,11 +136,15 @@ int PS_detect_probe_length( GBDATA *pb_node ) {
 
 
 //  ----------------------------------------------------
-//      void PS_extract_probe_data( GBDATA *pb_node, int probe_length, PS_NodePtr ps_current_node )
+//      unsigned long int PS_extract_probe_data( GBDATA *pb_node, int probe_length, PS_NodePtr ps_current_node )
 //  ----------------------------------------------------
 //  recursively walk through database and extract probe-data
 //
-void PS_extract_probe_data( GBDATA *pb_node, int probe_length, PS_NodePtr ps_current_node ) {
+typedef pair<unsigned long int,unsigned long int> PairUL;
+PairUL PS_extract_probe_data( GBDATA *pb_node, const int probe_length, PS_NodePtr ps_current_node ) {
+  unsigned long int double_probes   = 0;
+  unsigned long int double_children = 0;
+
   //
   // number
   //
@@ -432,29 +163,32 @@ void PS_extract_probe_data( GBDATA *pb_node, int probe_length, PS_NodePtr ps_cur
 
     while (data) {
       buffer                = PG_read_probe( data );                    // get probe string
-      PS_ProbePtr new_probe(new PS_Probe); //(PS_Probe *)malloc(sizeof(PS_Probe));     // make new probe
+      PS_ProbePtr new_probe(new PS_Probe);                              // make new probe
       new_probe->length     = probe_length;                             // set probe length
       new_probe->quality    = 100;                                      // set probe quality    
       new_probe->GC_content = 0;                                        // eval probe for GC-content
       for (int i=0; i < probe_length; ++i) {
 	if ((buffer[i] == 'C') || (buffer[i] == 'G')) ++(new_probe->GC_content);
       }
-      new_node->addProbe( new_probe );                                  // append probe to new node
+      if (!new_node->addProbe( new_probe )) ++double_probes;            // append probe to new node
       data = PG_get_next_probe( data );                                 // get next probe
     }
   }
 
-  ps_current_node->addChild( new_node );                                // append new node to current node
+  if (!ps_current_node->addChild( new_node )) ++double_children;        // append new node to current node
 
   //
   // child(ren)
   //
   GBDATA *pb_child = PS_get_first_node( pb_node );                      // get first child if exists
   while (pb_child) {
-    PS_extract_probe_data( pb_child, probe_length, new_node );
+    PairUL doubles(PS_extract_probe_data( pb_child, probe_length, new_node ));
+    double_probes   += doubles.first;
+    double_children += doubles.second;
     pb_child = PS_get_next_node( pb_child );
   }
 
+  return PairUL(double_probes,double_children);
 }
 
 
@@ -466,7 +200,6 @@ int main( int argc,  char *argv[] ) {
   GB_ERROR  error   = 0;
 
   // open probe-group-database
-  // printf("argc=%i\n",argc);
   if (argc < 2) {
     printf("Missing arguments\n Usage %s <database name> [output filename]\n",argv[0]);
     exit(1);
@@ -520,12 +253,13 @@ int main( int argc,  char *argv[] ) {
       PS_make_stats( first_level_node,0 );
       first_level_node = PS_get_next_node( first_level_node );
     } while (first_level_node);
-    printf( "total_node_counter       %20lu\n", total_node_counter );
-    printf( "total_child_counter      %20lu\n", total_child_counter );
-    printf( "no_probes_node_counter   %20lu\n", no_probes_node_counter );
-    printf( "no_children_node_counter %20lu\n", no_children_node_counter );
-    printf( "total_probe_counter      %20lu\n", total_probe_counter );
-    printf( "max_depth                %20lu\n", max_depth );
+    printf( "database : %s\n",argv[1] );
+    printf( "total_node_counter       %15lu\n", total_node_counter );
+    printf( "total_child_counter      %15lu => %lu 1st level nodes\n", total_child_counter, total_node_counter-total_child_counter );
+    printf( "no_probes_node_counter   %15lu => %lu nodes with probes\n", no_probes_node_counter, total_node_counter-no_probes_node_counter );
+    printf( "no_children_node_counter %15lu (leaves)\n", no_children_node_counter );
+    printf( "total_probe_counter      %15lu => %5.2f probes/node with probes\n", total_probe_counter,((double) total_probe_counter) / (total_node_counter-no_probes_node_counter)  );
+    printf( "max_depth                %15lu\n", max_depth );
     printf( "  depth    nodes/depth probes/depth\n" );
     for ( IntIntMap::iterator i=nodes_per_depth.begin(); i!=nodes_per_depth.end(); ++i) {
       printf( "[ %6lu ] %6lu      %6lu\n", i->first, i->second,probes_per_depth[i->first] );
@@ -545,12 +279,18 @@ int main( int argc,  char *argv[] ) {
     
     first_level_node = PS_get_first_node( group_tree );
     unsigned int first_level_node_counter = 0;
+    unsigned long int double_probes   = 0;
+    unsigned long int double_children = 0;
     do {
+      if (first_level_node_counter % 200 == 0) printf( "1st level node #%u\n", first_level_node_counter );
+      PairUL doubles   = PS_extract_probe_data( first_level_node, probe_length, root );
+      double_probes   += doubles.first;
+      double_children += doubles.second;
       ++first_level_node_counter;
-      if (first_level_node_counter % 100 == 0) printf( "1st level node #%u\n", first_level_node_counter );
-      PS_extract_probe_data( first_level_node, probe_length, root );
       first_level_node = PS_get_next_node( first_level_node );
     } while (first_level_node);
+    printf( "done after %u 1st level nodes\n",first_level_node_counter );
+    printf( "there have been %lu probes and %lu children inserted double\n", double_probes, double_children );
     printf( "(enter to continue)\n" );
     getchar();
 
@@ -558,9 +298,17 @@ int main( int argc,  char *argv[] ) {
     // stage 2 : write tree to file
     //
     printf( "writing probe-data to %s\n",argv[2] );
-    printf( "TODO\n" );
+    int fd = open( argv[2], O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR );
+    if (fd == -1) {
+      printf( "error : %s already exists or can't be created\n",argv[2] );
+    } else {
+      root->save( fd );
+    }
+    close( fd );
     printf( "(enter to continue)\n" );
     getchar();
+
+    root.SetNull();
   }
 
 
@@ -578,6 +326,9 @@ int main( int argc,  char *argv[] ) {
 //     } while (first_level_node);
 //   }
 
+  printf( "root should be destroyed now\n" );
+  printf( "(enter to continue)\n" );
+  getchar();
   return 0;
 }
 
