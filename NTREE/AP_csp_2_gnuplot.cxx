@@ -251,10 +251,11 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
 
                 if (mode == 1) { // run gnuplot ?
                     char command_file[100];
-#if defined(DEBUG)
-                    int  printed = sprintf(command_file,"/tmp/arb_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
+#if defined(ASSERTION_USED)
+                    int  printed =
+#endif // ASSERTION_USED
+                        sprintf(command_file,"/tmp/arb_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
                     nt_assert(printed<100);
-#endif // DEBUG
 
                     char *smooth  = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
                     FILE *out = fopen(command_file, "wt");
@@ -283,6 +284,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         fclose(out);
 
                         if (mode == 1) {
+                            printf("command_file='%s'\n", command_file);
                             char *script = GB_strdup(GBS_global_string("gnuplot %s;rm -f %s", command_file, command_file));
                             GB_xcmd(script, true, true);
 
