@@ -99,26 +99,14 @@ class Client
         needUpdate = root.unmarkSubtree(); // unmark all
 
         if (probe != null) {
-            members                   = probe.members();
-//             members                   = groupCache.getGroupMembers(probe.groupID(), probe.length());
-            //             int komma1 = probeInfo.indexOf(',');
-            //             int komma2 = probeInfo.indexOf(',', komma1+1);
-
-//             if (komma1 == -1 || komma2 == -1) {
-//                 error = "Kommas expected in '"+probeInfo+"'";
-//             }
-//             else {
-//                 showMessage("Retrieving match information..");
-//                 String groupId = probeInfo.substring(komma2+1);
-//                 members        = groupCache.getGroupMembers(webAccess, groupId, komma1);
-                 if (members == null) {
-                     error = "during probe match: "+probe.getError();
-                 }
-                 else {
-                     needUpdate = root.markSpecies(members, shortNameHash) || needUpdate;
-                     updateDetails(probe, members);
-                 }
-//             }
+            members = probe.members();
+            if (members == null) {
+                error = "during probe match: "+probe.getError();
+            }
+            else {
+                needUpdate = root.markSpecies(members, shortNameHash) || needUpdate;
+                updateDetails(probe, members);
+            }
         }
 
         if (error != null) {
@@ -133,9 +121,6 @@ class Client
         else {
             System.out.println("Marks did not change.");
         }
-
-        //     throw new Exception("Test exception");
-        //     Toolkit.AbortWithError("Test error");
     }
 
     public void updateNodeInformation(TreeNode clickedNode) throws Exception
@@ -143,18 +128,15 @@ class Client
         ProbeList list = display.getProbeList();
         list.removeAll();
         list.add("retrieving probes..");
-//         showMessage("Retrieving probes ..");
 
         String emptyMessage = null;
         try {
-            //             String     encodedPath  = clickedNode.getCodedPath();
             lastNode = clickedNode;
             boolean    exactMatches = clickedNode.getExactMatches() > 0;
             NodeProbes probes       = clickedNode.getNodeProbes(exactMatches);
 
             list.setContents(probes);
 
-            // System.out.println("list.length()="+list.length());
             if (list.length() == 0) {
                 root.unmarkSubtree();
             }
@@ -179,37 +161,6 @@ class Client
             list.add(emptyMessage);
             root.unmarkSubtree();
         }
-
-        // ...
-
-        //         String answer = webAccess.retrieveNodeInformation(encodedPath, exactMatches);
-
-        //         if (answer == null) { // error during retrieval
-        //             list.removeAll();
-        //             root.unmarkSubtree();
-        //             showError(webAccess.getLastRequestError());
-        //         }
-        //         else {
-        //             ServerAnswer parsedAnswer = new ServerAnswer(answer, true, false);
-
-        //             if (parsedAnswer.hasError()) {
-        //                 Toolkit.AbortWithError("While retrieving probe information: "+parsedAnswer.getError());
-        //             }
-        //             else {
-        //                 list.setContents(parsedAnswer);
-
-        //                 if (parsedAnswer.hasKey("probe0")) { // if we found probes
-        //                     // select the first one
-        //                     list.select(0);
-        //                     // list.requestFocus(); // doesn't work
-        //                     matchProbes(list.getProbeInfo(0)); // so we do the action manually
-        //                 }
-        //                 else {
-        //                     root.unmarkSubtree();
-        //                     display.getTreeDisplay().repaint();
-        //                 }
-        //             }
-        //         }
     }
 
 
@@ -328,18 +279,6 @@ class Client
 
     public HashMap getShortNameHash() { return shortNameHash; }
 
-
-//     public IOManager getIOManager(){
-// 	if (iom == null){
-// 	    System.out.println("Cannot return IOManager");
-// 	    System.exit(2);
-// 	}
-
-// 	return iom;
-//    }
-
-
-
     public static void main(String[] args)
     {
         Client cl          = new Client();
@@ -355,15 +294,11 @@ class Client
             else {
                 cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL (DNS not propagated yet)
                 // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
-                //             cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
+                // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
             }
 
             cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.client_version, cl);
             cl.iom     = new IOManager(cl.display);
-
-//             cl.iom = new IOManager(cl.display, ".arb_probe_library_config"); // no config file name given, using default
-//   	    if (cl.iom == null) Toolkit.AbortWithError("Cannot initialize IOManager");
-//  	    cl.display.setIOManager(cl.iom);
 
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
@@ -372,14 +307,19 @@ class Client
                 // ask server for version info
                 Toolkit.showMessage("Contacting probe server ..");
                 cl.webAccess.retrieveVersionInformation(); // terminates on failure
-                
+
                 if (!Toolkit.interface_version.equals(cl.webAccess.getNeededInterfaceVersion())) {
-                    Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
+                    Toolkit.AbortWithError("Your client is out-of-date!\n"+
+                                           "Please get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
                 }
                 if (!Toolkit.client_version.equals(cl.webAccess.getAvailableClientVersion())) {
-                    MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice", "A newer version of this client is available from\n"+cl.baseurl+"arb_probe_library.jar");
+                    MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice",
+                                                            "A newer version of this client is available from\n"+
+                                                            cl.baseurl+"arb_probe_library.jar");
                     while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
-                    // Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
+                }
+                else {
+                    Toolkit.showMessage("Your client is up to date.");
                 }
 
                 // load and parse the most recent tree
