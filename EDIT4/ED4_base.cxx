@@ -35,39 +35,64 @@ bool ED4_base::remove_deleted_childs()
 
 bool ED4_terminal::remove_deleted_childs()
 {
-    if (!get_species_pointer()) {
+    if (flag.deleted) {
+        if (get_species_pointer() != 0) {
+#if defined(DEBUG)
+            printf("ED4_terminal: has non-zero species_pointer in remove_deleted_childs (resetting to zero)\n");
+#endif // DEBUG
+            set_species_pointer(0);
+        }
+        ED4_ROOT->announce_deletion(this);
         parent->children->delete_member(this);
-#if defined(DEBUG) && 1
-
-        // @@@ FIXME: remove aligner entries get's here
-        printf("ED4_terminal w/o species_pointer has been removed.\n");
-//         e4_assert(0);
-#endif
         return true;
     }
+
     return false;
 }
 bool ED4_sequence_info_terminal::remove_deleted_childs()
 {
+    if (flag.deleted) {
+        if (get_species_pointer() != 0) {
+#if defined(DEBUG)
+            printf("ED4_sequence_info_terminal: has non-zero species_pointer in remove_deleted_childs (resetting to zero)\n");
+#endif // DEBUG
+            set_species_pointer(0);
+        }
+        ED4_ROOT->announce_deletion(this);
+        parent->children->delete_member(this);
+        return true;
+    }
+
     return false;
 }
 
 bool ED4_manager::remove_deleted_childs()
 {
-    int i;
+    int  i;
+    bool deletion_occurred = false;
 
  restart:
 
     for (i=0; i<children->members(); i++) {
         ED4_base *child = children->member(i);
         if (child->remove_deleted_childs()) {
-            goto restart;
+            deletion_occurred = true;
+            goto restart;       // because order of childs may have changed
         }
     }
 
     if (!children->members()) {
-        parent->children->delete_member(this);
-        return true;
+        if (parent) {
+            ED4_ROOT->announce_deletion(this);
+            parent->children->delete_member(this);
+            return true;
+        }
+#if defined(DEBUG)
+        printf("ED4_manager::remove_deleted_childs: I have no parent\n");
+#endif // DEBUG
+    }
+    else if (deletion_occurred) {
+        parent->refresh_requested_by_child();
     }
 
     return false;
@@ -83,8 +108,15 @@ void ED4_base::changed_by_database(void)
 void ED4_manager::changed_by_database(void) {
     remove_deleted_childs();
     set_refresh(1);
-    parent->refresh_requested_by_child();
-    ED4_ROOT->main_manager->Show();
+    if (parent) {
+        parent->refresh_requested_by_child();
+    }
+    else {
+#if defined(DEBUG)
+        printf("ED4_manager::changed_by_database: I have no parent!\n");
+#endif // DEBUG
+    }
+    // ED4_ROOT->main_manager->Show();
 }
 
 void ED4_terminal::changed_by_database(void)
@@ -146,8 +178,41 @@ void ED4_terminal::deleted_from_database()
 {
     ED4_base::deleted_from_database();
 }
+void ED4_text_terminal::deleted_from_database()
+{
+#if defined(DEBUG)
+    printf("ED4_text_terminal::deleted_from_database (%p)\n", this);
+#endif // DEBUG
+    ED4_terminal::deleted_from_database();
+
+    // @@@ hide all cursors pointing to this terminal!
+
+    if (parent->is_name_manager()) {
+#if defined(DEBUG)
+        printf("- Deleting name terminal\n");
+#endif // DEBUG
+        ED4_name_manager *name_man = parent->to_name_manager();
+        flag.deleted               = 1;
+        name_man->delete_requested_by_child();
+    }
+    else if (parent->is_sequence_manager()) {
+#if defined(DEBUG)
+        printf("- Deleting sequence terminal\n");
+#endif // DEBUG
+        ED4_sequence_manager *seq_man = parent->to_sequence_manager();
+        flag.deleted                  = 1;
+        seq_man->delete_requested_by_child();
+    }
+    else {
+        e4_assert(0); // not prepated for that situation
+    }
+}
 void ED4_sequence_terminal::deleted_from_database()
 {
+#if defined(DEBUG)
+    printf("ED4_sequence_terminal::deleted_from_database (%p)\n", this);
+#endif // DEBUG
+
     ED4_terminal::deleted_from_database();
     dynamic_prop = ED4_properties(dynamic_prop&~ED4_P_CONSENSUS_RELEVANT);
 
@@ -192,7 +257,7 @@ void ED4_manager::deleted_from_database()
             }
         }
 
-        parent->resize_requested_by_child();
+        if (parent) parent->resize_requested_by_child();
         ED4_ROOT->refresh_all_windows(0);
 
         parent = 0;
@@ -396,7 +461,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     sequence_manager->set_properties( ED4_P_MOVABLE );
     species_manager->children->append_member( sequence_manager );
 
-    sequence_info_terminal = new ED4_sequence_info_terminal( "DATA",NULL, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager );  	// Info fuer Gruppe
+    sequence_info_terminal = new ED4_sequence_info_terminal( "DATA",/*NULL,*/ 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager );  	// Info fuer Gruppe
     sequence_info_terminal->set_links( ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence_info() );
     sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     sequence_manager->children->append_member( sequence_info_terminal );
