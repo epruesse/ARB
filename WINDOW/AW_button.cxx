@@ -1427,14 +1427,12 @@ const char *AW_selection_list::first_selected(){
 GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
     // number_of_lines == 0		-> print all
     AW_select_table_struct *list_table;
-    FILE *fd;
-
-    char	*sep;
-
+    FILE                   *fd;
+    char	               *sep;
 
     fd = fopen( filename, "w");
     if (!fd) {
-        return "Sorry, I cannot write your file";
+        return GB_export_IO_error("writing", filename);
     }
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
         number_of_lines--;

@@ -106,7 +106,7 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
         buf = make_node_text_nds(gb_main, gb_species,1,0);
         fprintf(out,"%s\n",buf);
     }
-    aww->get_root()->awar(AWAR_EXPORT_NDS"/directory")->touch();
+    awt_refresh_selection_box(aww->get_root(), AWAR_EXPORT_NDS);
     fclose(out);
     if (print_flag){
         GB_textprint(name);
@@ -243,7 +243,7 @@ NT_save_cb(AW_window *aww)
 	GB_ERROR error = GB_save(gb_main, filename, "b");
 	delete filename;
 	if (error) aw_message(error);
-	else	aww->get_root()->awar("tmp/nt/arbdb/directory")->touch();
+	else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 }
 
 
@@ -254,7 +254,7 @@ NT_save_quick_cb(AW_window *aww)
 	GB_ERROR error = GB_save_quick(gb_main,filename);
 	delete filename;
 	if (error) aw_message(error);
-	else	aww->get_root()->awar("tmp/nt/arbdb/directory")->touch();
+	else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 }
 
 void
@@ -266,8 +266,8 @@ NT_save_quick_as_cb(AW_window *aww)
 	if (error) {
 		aw_message(error);
 	}else{
+		awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 		aww->hide();
-		aww->get_root()->awar("tmp/nt/arbdb/directory")->touch();
 	}
 }
 
@@ -402,7 +402,7 @@ NT_save_as_cb(AW_window *aww)
 		aw_message(error);
 	}else{
 		aww->hide();
-		aww->get_root()->awar("tmp/nt/arbdb/directory")->touch();
+		awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 	}
 }
 
@@ -1077,7 +1077,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         {
             AWMIMT("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
             AWMIMT("props_tree",	"Tree: Colors and Fonts ...",	"C","nt_props_data.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-//             AWMIMT("props_tree",	"Tree: Colors groups ...",	"G","nt_color_groups.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_color_groups_window, (AW_CL)aw_gc_manager );
             AWMIMT("props_tree2",	"Tree Settings ...",		"T","nt_tree_settings.hlp",	AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
             AWMIMT("props_www",	"WWW  ...",			"W","props_www.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
             awm->insert_separator();

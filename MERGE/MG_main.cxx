@@ -28,8 +28,7 @@ void MG_exit(AW_window *aww) {
 
 int mg_save_enabled = 1;
 
-void
-MG_save_merge_cb(AW_window *aww)
+void MG_save_merge_cb(AW_window *aww)
 {
 	char *name = aww->get_root()->awar(AWAR_MERGE_DB"/file_name")->read_string();
 	GB_begin_transaction(gb_merge);
@@ -37,7 +36,7 @@ MG_save_merge_cb(AW_window *aww)
 	GB_commit_transaction(gb_merge);
 	GB_ERROR error = GB_save(gb_merge, name, "b");
 	if (error) aw_message(error);
-	else	aww->get_root()->awar(AWAR_MERGE_DB"/directory")->touch();
+	else awt_refresh_selection_box(aww->get_root(), AWAR_MERGE_DB);
 	delete name;
 }
 
@@ -77,7 +76,7 @@ MG_save_cb(AW_window *aww)
 	GB_ERROR error = GB_save(gb_dest, name, type);
 	aw_closestatus();
 	if (error) aw_message(error);
-	else	aww->get_root()->awar(AWAR_MAIN_DB"/directory")->touch();
+	else	awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
 	delete name;
 	delete type;
 }
@@ -138,7 +137,7 @@ MG_save_quick_cb(AW_window *aww)
 	GB_ERROR error = GB_save_quick_as(gb_dest, name);
 	aw_closestatus();
 	if (error) aw_message(error);
-	else	aww->get_root()->awar(AWAR_MAIN_DB"/directory")->touch();
+	else	awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
 	delete name;
 }
 

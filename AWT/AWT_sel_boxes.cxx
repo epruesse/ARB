@@ -18,7 +18,7 @@
 // ******************** selection boxes on alignments ********************
 
 void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs)
-	{
+{
 	GBDATA *gb_alignment;
 	GBDATA *gb_alignment_name;
 	GBDATA *gb_alignment_type;
@@ -117,7 +117,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
 
 	gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
 	GB_add_callback(gb_tree_data,GB_CB_CHANGED,
-		(GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
+                    (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
 
 	GB_pop_transaction(gb_main);
 }
@@ -267,7 +267,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 
 	gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
 	GB_add_callback(gb_configuration_data,GB_CB_CHANGED,
-		(GB_CB)awt_create_selection_list_on_configurations_cb, (int *)cbs);
+                    (GB_CB)awt_create_selection_list_on_configurations_cb, (int *)cbs);
 
 	GB_pop_transaction(gb_main);
 }
@@ -319,7 +319,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 // ******************** selection boxes on SAIs ********************
 
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
-	{
+{
 	struct awt_sel_list_for_sai *cbs = (struct awt_sel_list_for_sai *)cbsid;
 	GBDATA *gb_extended_data;
 	gb_extended_data = GB_search(cbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
@@ -328,8 +328,8 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 	GBDATA *gb_extended;
 	GBDATA *gb_name;
 	for (	gb_extended = GBT_first_SAI(cbs->gb_main);
-		gb_extended;
-		gb_extended = GBT_next_SAI(gb_extended)){
+            gb_extended;
+            gb_extended = GBT_next_SAI(gb_extended)){
 		gb_name = GB_find(gb_extended,"name",0,down_level);
 		if (!gb_name) continue;
 		if (cbs->filter_poc) {
@@ -362,8 +362,8 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 }
 
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
-			char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
-			AW_BOOL add_sel_species)
+                                             char *(*filter_poc)(GBDATA *gb_ext, AW_CL), AW_CL filter_cd,
+                                             AW_BOOL add_sel_species)
 {
 	AW_selection_list *id;
 	GBDATA	*gb_extended_data;
@@ -382,11 +382,11 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 
 	gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
 	GB_add_callback(gb_extended_data,GB_CB_CHANGED,
-		(GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+                    (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
 	if (add_sel_species){		// update box if another species is selected
 		GBDATA *gb_sel = GB_search(gb_main,AWAR_SPECIES_NAME,GB_STRING);
 		GB_add_callback(gb_sel,GB_CB_CHANGED,
-			(GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
+                        (GB_CB)awt_create_selection_list_on_extendeds_update, (int *)cbs);
 	}
 	GB_pop_transaction(gb_main);
 	return (void *)cbs;
@@ -398,29 +398,31 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, con
 // ******************** selection boxes on saving selection lists ********************
 
 void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL basenamecd)
-	{
-	AW_selection_list *selid = (AW_selection_list *)selidcd;
-	char *awar_prefix = (char *)basenamecd;
-	char bfile_name[GB_PATH_MAX];
+{
+	AW_selection_list *selid       = (AW_selection_list *)selidcd;
+	char              *awar_prefix = (char *)basenamecd;
+
 	char bline_anz[GB_PATH_MAX];
-	sprintf(bfile_name,"%s/file_name",awar_prefix);
 	sprintf(bline_anz,"%s/line_anz",awar_prefix);
 
-	AW_root *aw_root = aws->get_root();
-	long lineanz = aw_root->awar(bline_anz)->read_int();
-	char *filename = aw_root->awar(bfile_name)->read_string();
+	AW_root *aw_root  = aws->get_root();
+	long     lineanz  = aw_root->awar(bline_anz)->read_int();
+	char    *filename = awt_get_selected_fullname(aw_root, awar_prefix);
+
 	GB_ERROR error = aws->save_selection_list(selid,filename,lineanz);
-	if (error) aw_message(error);
+
+	if (error) {
+        aw_message(error);
+    }
 	else {
-		sprintf(bfile_name,"%s/directory",awar_prefix);
-		aws->get_root()->awar(bfile_name)->touch();
+        awt_refresh_selection_box(aw_root, awar_prefix);
 		aws->hide();
 	}
 	delete filename;
 }
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
-	{
+{
 	char base_name[100];
 	sprintf(base_name,"tmp/save_box_sel_%li",(long)selid);
 	char file_name[100];
@@ -477,16 +479,16 @@ void AWT_load_list(AW_window *aww, AW_CL sel_id, AW_CL ibase_name)
     char *basename = (char *)ibase_name;
 
     AW_root 	*aw_root 	= aww->get_root();
-    char 	bfile_name[GB_PATH_MAX];
     GB_ERROR	error;
 
-    sprintf(bfile_name,"%s/file_name",basename);
+    //     char 	bfile_name[GB_PATH_MAX];
+    //     sprintf(bfile_name,"%s/file_name",basename);
+    //     char *filename = aw_root->awar(bfile_name)->read_string();
 
-    char *filename = aw_root->awar(bfile_name)->read_string();
-    error = aww->load_selection_list(selid,filename);
+    char *filename = awt_get_selected_fullname(aw_root, basename);
+    error          = aww->load_selection_list(selid,filename);
 
-    if (error)
-	aw_message(error);
+    if (error) aw_message(error);
 
     AW_POPDOWN(aww);
 
@@ -604,12 +606,12 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
 
 void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value)	// set an awar
-	{
+{
 	aws->get_root()->awar((char *)varname)->write_int((long) value);
 }
 
 void awt_write_string( AW_window *aws, AW_CL varname, AW_CL value)	// set an awar
-	{
+{
 	aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }
 
@@ -630,71 +632,84 @@ void awt_edit(AW_root *awr, const char *path, int x, int y, const char *font){
 }
 
 
-/**************************************************************
-******************* MACROS **********************************
-**************************************************************/
-#define AWAR_MACRO_BASE "tmp/macro"
-#define AWAR_MACRO_FILENAME AWAR_MACRO_BASE"/file_name"
-#define AWAR_MACRO_SUFFIX AWAR_MACRO_BASE"/filter"
-#define AWAR_MACRO_DIRECTORY AWAR_MACRO_BASE"/directory"
+// ---------------
+//      MACROS
+// ---------------
+
+#define AWAR_MACRO_BASE                 "tmp/macro"
+#define AWAR_MACRO_FILENAME             AWAR_MACRO_BASE"/file_name"
+#define AWAR_MACRO_SUFFIX               AWAR_MACRO_BASE"/filter"
+#define AWAR_MACRO_DIRECTORY            AWAR_MACRO_BASE"/directory"
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 
 void awt_delete_macro_cb(AW_window *aww){
-    char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
-    int error = GB_unlink(mn);
-    if (error) aw_message("Cannot delete");
-    else     aww->get_root()->awar(AWAR_MACRO_DIRECTORY)->touch();
-    delete mn;
+    AW_root *awr   = aww->get_root();
+    char    *mn    = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    int      error = GB_unlink(mn);
+
+    if (error) aw_message(GB_export_IO_error("deleting", mn));
+    awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
+    free(mn);
 }
 
 
 
 void awt_exec_macro_cb(AW_window *aww){
-    char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
-    GB_ERROR error = aww->get_root()->execute_macro(mn);
+    AW_root  *awr   = aww->get_root();
+    char     *mn    = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    GB_ERROR  error = awr->execute_macro(mn);
+
     if (error) aw_message(error);
-    delete mn;
+    free(mn);
 }
 
 void awt_start_macro_cb(AW_window *aww,const char *application_name_for_macros){
     static int toggle = 0;
-    char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
-    GB_ERROR error;
+
+    AW_root  *awr = aww->get_root();
+//     char     *mn  = awr->awar(AWAR_MACRO_FILENAME)->read_string();
+    GB_ERROR  error;
+
     if (!toggle){
-	char *sac = strdup(GBS_global_string("%s/%s",aww->window_defaults_name,AWAR_MACRO_RECORDING_MACRO_TEXT));
-	error = aww->get_root()->start_macro_recording(mn,application_name_for_macros,sac);
-	delete sac;
-	if (!error){
-	    aww->get_root()->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("STOP");
-	    toggle = 1;
-	}
-    }else{
-	error = aww->get_root()->stop_macro_recording();
-	aww->get_root()->awar(AWAR_MACRO_DIRECTORY)->touch();
-	aww->get_root()->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("RECORD");
-	toggle = 0;
+        char *sac = strdup(GBS_global_string("%s/%s",aww->window_defaults_name,AWAR_MACRO_RECORDING_MACRO_TEXT));
+        char *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+        error     = awr->start_macro_recording(mn,application_name_for_macros,sac);
+        free(mn);
+        free(sac);
+        if (!error){
+            awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("STOP");
+            toggle = 1;
+        }
+    }
+    else {
+        error = awr->stop_macro_recording();
+        awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
+        awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("RECORD");
+        toggle = 0;
     }
     if (error) aw_message(error);
-    delete mn;
 }
 
 void awt_stop_macro_cb(AW_window *aww){
-    GB_ERROR error = aww->get_root()->stop_macro_recording();
-    aww->get_root()->awar(AWAR_MACRO_DIRECTORY)->touch();
+    AW_root  *awr   = aww->get_root();
+    GB_ERROR  error = awr->stop_macro_recording();
+
+    awt_refresh_selection_box(awr, AWAR_MACRO_BASE);
     if (error) aw_message(error);
 }
 
 void awt_edit_macro_cb(AW_window *aww){
-    char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
-    char *path = 0;
-    if (mn[0] == '/'){
-	path = strdup(mn);
-    }else{
-	path = strdup(GBS_global_string("%s/%s",GB_getenvARBMACROHOME(),mn));
-    }
+//     char *mn = aww->get_root()->awar(AWAR_MACRO_FILENAME)->read_string();
+//     char *path = 0;
+//     if (mn[0] == '/'){
+//         path = strdup(mn);
+//     }else{
+//         path = strdup(GBS_global_string("%s/%s",GB_getenvARBMACROHOME(),mn));
+//     }
+    char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     GB_edit(path);
-    delete path;
-    delete mn;
+    free(path);
+//     delete mn;
 }
 
 AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
@@ -718,8 +733,8 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
     aws->at("start");aws->callback((AW_CB1)awt_start_macro_cb,(AW_CL)application_id);
     aws->create_button(0, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
-//    aws->at("stop");aws->callback(awt_stop_macro_cb);
-//    aws->create_button("STOP");
+    //    aws->at("stop");aws->callback(awt_stop_macro_cb);
+    //    aws->create_button("STOP");
 
     aws->at("delete");aws->callback(awt_delete_macro_cb);
     aws->create_button("DELETE", "DELETE");

@@ -482,7 +482,7 @@ void message_cb( AW_window *aw, AW_CL cd1 ) {
     AWUSE(aw);
     long result = (long)cd1;
     if ( result == -1 ) { /* exit */
-        exit (0);
+        exit(EXIT_FAILURE);
     }
     aw_message_cb_result = ((int)result);
     return;
@@ -508,7 +508,9 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
     // the single buttons are seperated by kommas (i.e. "YES,NO")
     // If the button-name starts with ^ it starts a new row of buttons
+    // (if a button named 'EXIT' is pressed the program terminates using exit(EXIT_FAILURE))
     // If fixedSizeButtons is true all buttons have the same size
+
 
     if (!buttons){		        /* asynchronous message */
 #if defined(DEBUG)

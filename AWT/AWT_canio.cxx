@@ -13,10 +13,11 @@
 
 
 const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
-	{
-	GB_transaction dummy(ntw->gb_main);
-	AW_root *awr = aww->get_root();
-	char *dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
+{
+	GB_transaction  dummy(ntw->gb_main);
+	AW_root        *awr  = aww->get_root();
+// 	char           *dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
+	char           *dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_2_FILE_BASE);
 	if (!strlen(dest)) {
 		delete(dest);
 		sprintf(AW_ERROR_BUFFER,"Please enter a file name first");
@@ -56,8 +57,8 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 		device->shift_y(-size.t/ntw->trans_to_fit);
 		device->set_bottom_clip_border((int)(size.b-size.t),AW_TRUE);
 		device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
-// 		device->set_bottom_font_overlap(AW_TRUE);
-// 		device->set_right_font_overlap(AW_TRUE);
+        // 		device->set_bottom_font_overlap(AW_TRUE);
+        // 		device->set_right_font_overlap(AW_TRUE);
 		device->zoom(ntw->trans_to_fit);
 	}else{
 		ntw->init_device(device);	// draw screen
@@ -85,11 +86,12 @@ void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw){
     AW_root *awr = aww->get_root();
     const char *error = AWT_print_tree_to_file(aww,ntw);
     if (!error) {
-	char *dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
-	char com[1024];
-	sprintf(com,"xfig %s &",dest);
-	system(com);
-	delete dest;
+        // char *dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
+        char *dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_2_FILE_BASE);
+        char  com[1024];
+        sprintf(com,"xfig %s &",dest);
+        system(com);
+        delete dest;
     }
 }
 
@@ -127,16 +129,16 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
 	aws->at("what");
 	aws->label("Clip at Screen");
 	aws->create_toggle_field(AWAR_PRINT_TREE_2_FILE_WHAT,1);
-		aws->insert_toggle("#print/clipscreen.bitmap","S",0);
-		aws->insert_toggle("#print/clipall.bitmap","A",1);
-		aws->update_toggle_field();
+    aws->insert_toggle("#print/clipscreen.bitmap","S",0);
+    aws->insert_toggle("#print/clipall.bitmap","A",1);
+    aws->update_toggle_field();
 
 	aws->at("remove_root");
 	aws->label("Show Handles");
 	aws->create_toggle_field(AWAR_PRINT_TREE_2_FILE_HANDLES,1);
-		aws->insert_toggle("#print/nohandles.bitmap","S",0);
-		aws->insert_toggle("#print/handles.bitmap","A",1);
-		aws->update_toggle_field();
+    aws->insert_toggle("#print/nohandles.bitmap","S",0);
+    aws->insert_toggle("#print/handles.bitmap","A",1);
+    aws->update_toggle_field();
 
 
 
@@ -170,7 +172,8 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
 
 	switch(print2file) {
 		case 1:
-			dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
+			// dest = awr->awar(AWAR_PRINT_TREE_2_FILE_NAME)->read_string();
+            dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_2_FILE_BASE);
 			break;
 		default:
 			dest = GBS_eval_env("/tmp/arb_print_$(USER)_$(ARB_PID).ps");
@@ -184,7 +187,7 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
         }
 		else {
 			fclose(out);
-// 			sprintf(sys,"fig2dev -L ps -P -m %f %s %s %s", magnification,orientation, xfig, dest);
+            // 			sprintf(sys,"fig2dev -L ps -P -m %f %s %s %s", magnification,orientation, xfig, dest);
 			sprintf(sys,"fig2dev -L ps -M -m %f %s %s %s", magnification, orientation, xfig, dest);
 		}
 	}
@@ -279,9 +282,9 @@ void awt_print_tree_check_size(void *dummy, AWT_canvas *ntw) {
 	if (what){
 		size_device->reset();
 		size_device->zoom(ntw->trans_to_fit);
-			size_device->set_filter(AW_SCREEN);
-			ntw->tree_disp->show(size_device);
-			size_device->get_size_information(&size);
+        size_device->set_filter(AW_SCREEN);
+        ntw->tree_disp->show(size_device);
+        size_device->get_size_information(&size);
 	}else{
 		size_device->get_area_size( &size ) ;
 	}
@@ -399,9 +402,9 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 
 	aws->at("orientation");
 	aws->create_toggle_field(AWAR_PRINT_TREE_2_FILE_ORIENTATION,1);
-		aws->insert_toggle("#print/landscape.bitmap","L","-l 0");
-		aws->insert_toggle("#print/portrait.bitmap","P","");
-		aws->update_toggle_field();
+    aws->insert_toggle("#print/landscape.bitmap","L","-l 0");
+    aws->insert_toggle("#print/portrait.bitmap","P","");
+    aws->update_toggle_field();
 	aws->label_length(15);
 
 	aws->at("magnification");
@@ -410,44 +413,44 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 	aws->at("what");
 	aws->label("Clip at Screen");
 	aws->create_toggle_field(AWAR_PRINT_TREE_2_FILE_WHAT,1);
-		aws->insert_toggle("#print/clipscreen.bitmap","S",0);
-		aws->insert_toggle("#print/clipall.bitmap","A",1);
-		aws->update_toggle_field();
+    aws->insert_toggle("#print/clipscreen.bitmap","S",0);
+    aws->insert_toggle("#print/clipall.bitmap","A",1);
+    aws->update_toggle_field();
 
 	aws->at("remove_root");
 	aws->label("Show Handles");
 	aws->create_toggle_field(AWAR_PRINT_TREE_2_FILE_HANDLES,1);
-		aws->insert_toggle("#print/nohandles.bitmap","S",0);
-		aws->insert_toggle("#print/handles.bitmap","A",1);
-		aws->update_toggle_field();
+    aws->insert_toggle("#print/nohandles.bitmap","S",0);
+    aws->insert_toggle("#print/handles.bitmap","A",1);
+    aws->update_toggle_field();
 
 	aws->button_length(7);
 	aws->at("gsizex");
-		aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizex");
+    aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizex");
 	aws->at("gsizey");
-		aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizey");
+    aws->create_button(0, AWAR_PRINT_TREE_PRINT "gsizey");
 	aws->button_length(8);
 
 	aws->at("psizex");
-		aws->create_input_field(AWAR_PRINT_TREE_PRINT "psizex",4);
+    aws->create_input_field(AWAR_PRINT_TREE_PRINT "psizex",4);
 	aws->at("psizey");
-		aws->create_input_field(AWAR_PRINT_TREE_PRINT "psizey",4);
+    aws->create_input_field(AWAR_PRINT_TREE_PRINT "psizey",4);
 
 	aws->at("sizex");
-		aws->callback(awt_calc_mag_from_psizex);
-		aws->create_input_field(AWAR_PRINT_TREE_PRINT "sizex",4);
+    aws->callback(awt_calc_mag_from_psizex);
+    aws->create_input_field(AWAR_PRINT_TREE_PRINT "sizex",4);
 	aws->at("sizey");
-		aws->callback(awt_calc_mag_from_psizey);
-		aws->create_input_field(AWAR_PRINT_TREE_PRINT "sizey",4);
+    aws->callback(awt_calc_mag_from_psizey);
+    aws->create_input_field(AWAR_PRINT_TREE_PRINT "sizey",4);
 
 	aws->at("printto");
 	aws->label_length(12);
 	aws->label("Destination");
 	aws->create_toggle_field(AWAR_PRINT_TREE_PRINT "dest");
-		aws->insert_toggle("Printer","P",0);
-		aws->insert_toggle("File (Postscript)","F",1);
-		aws->insert_toggle("Preview","V",2);
-		aws->update_toggle_field();
+    aws->insert_toggle("Printer","P",0);
+    aws->insert_toggle("File (Postscript)","F",1);
+    aws->insert_toggle("Preview","V",2);
+    aws->update_toggle_field();
 
 	aws->at("printer");
 	//aws->label("Print Command");

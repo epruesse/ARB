@@ -2453,7 +2453,8 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
-    cbs->id = strdup(GBS_global_string("%s/%s",this->window_defaults_name,id));
+//     cbs->id = strdup(GBS_global_string("%s/%s",this->window_defaults_name,id));
+    cbs->id = strdup(GBS_global_string("%s",id));
     GBS_write_hash(this->get_root()->prvt->action_hash,id,(long)cbs);
     if(!(mask&this->get_root()->global_mask)){
         XtSetSensitive( button, False );
@@ -2941,18 +2942,25 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
     char *action = GBT_read_string2(gb_main,awar_action,"");
     char *value = GBT_read_string2(gb_main,awar_value,"");
     char *awar = GBT_read_string2(gb_main,awar_awar,"");
-    if (strlen(awar)){
-        GB_ERROR error = this->awar(awar)->write_as_string(value);
-        GBT_write_string(gb_main,awar_awar,"");
-        if (error){
-            GBT_write_string(gb_main,awar_result,error);
-        }else{
-            GBT_write_string(gb_main,awar_result,"");
+    if (awar[0]){
+        GB_ERROR error = 0;
+        if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
+            char *read_value = this->awar(awar)->read_as_string();
+            GBT_write_string(gb_main, awar_value, read_value);
+            free(read_value);
+            // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
+            action[0] = 0;
+            GBT_write_string(gb_main, awar_action, "");
         }
+        else {
+            error = this->awar(awar)->write_as_string(value);
+        }
+        GBT_write_string(gb_main,awar_result,error ? error : "");
+        GBT_write_string(gb_main,awar_awar,""); // this works as READY-signal for perl-client (remote_awar and remote_read_awar)
     }
     GB_pop_transaction(gb_main);
 
-    if (strlen(action)){
+    if (action[0]){
         AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(this->prvt->action_hash,action);
         if (cbs){
             cbs->run_callback();
@@ -2961,7 +2969,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
             aw_message(GB_export_error("Unknown action '%s' in macro",action));
             GBT_write_string(gb_main,awar_result,GB_get_error());
         }
-        GBT_write_string(gb_main,awar_action,"");
+        GBT_write_string(gb_main,awar_action,""); // this works as READY-signal for perl-client (remote_action)
     }
     delete awar;
     delete value;

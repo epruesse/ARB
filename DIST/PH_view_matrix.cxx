@@ -21,12 +21,12 @@
 
 void vertical_change_cb(AW_window *aww,PH_dmatrix *dis)
 {
-  dis->monitor_vertical_scroll_cb(aww);
+    dis->monitor_vertical_scroll_cb(aww);
 }
 
 void horizontal_change_cb(AW_window *aww,PH_dmatrix *dis)
 {
-  dis->monitor_horizontal_scroll_cb(aww);
+    dis->monitor_horizontal_scroll_cb(aww);
 }
 
 void redisplay_needed(AW_window *,PH_dmatrix *dis)
@@ -54,46 +54,46 @@ void PH_dmatrix::init (PHMATRIX *matrix)
 
     // calculate cell width and height
     {
-	int max_cell_width = 0;
-	int max_cell_height = 0;
+        int max_cell_width = 0;
+        int max_cell_height = 0;
 
-	PH_gc gc;
-	for (gc=PH_G_STANDARD; gc<=PH_G_LAST; gc = PH_gc(int(gc)+1)) {
-	    int height = 0;
-	    int width = 0;
+        PH_gc gc;
+        for (gc=PH_G_STANDARD; gc<=PH_G_LAST; gc = PH_gc(int(gc)+1)) {
+            int height = 0;
+            int width = 0;
 
-	    switch (gc) {
-		case PH_G_STANDARD:
-		case PH_G_BELOW_DIST:
-		case PH_G_ABOVE_DIST: {
-		    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+            switch (gc) {
+                case PH_G_STANDARD:
+                case PH_G_BELOW_DIST:
+                case PH_G_ABOVE_DIST: {
+                    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-		    width = aw_fi->max_letter_width*6; // normal cell contain 6 characters (i.e.: '0.0162')
-		    height = aw_fi->max_letter_height*2;
-		    break;
-		}
-		case PH_G_NAMES: {
-		    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+                    width = aw_fi->max_letter_width*6; // normal cell contain 6 characters (i.e.: '0.0162')
+                    height = aw_fi->max_letter_height*2;
+                    break;
+                }
+                case PH_G_NAMES: {
+                    AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
 
-		    width = aw_fi->max_letter_width*SPECIES_NAME_LEN; // normal cell contain 6 characters (i.e.: '0.0162')
-		    height = aw_fi->max_letter_height*2;
-		    break;
-		}
-		default: {
-		    break;
-		}
-	    }
+                    width = aw_fi->max_letter_width*SPECIES_NAME_LEN; // normal cell contain 6 characters (i.e.: '0.0162')
+                    height = aw_fi->max_letter_height*2;
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
 
-	    if (height>max_cell_height) max_cell_height = height;
-	    if (width>max_cell_width) max_cell_width = width;
-	}
+            if (height>max_cell_height) max_cell_height = height;
+            if (width>max_cell_width) max_cell_width = width;
+        }
 
-	cell_width = max_cell_width;
-	cell_height = max_cell_height;
+        cell_width = max_cell_width;
+        cell_height = max_cell_height;
     }
 
-//     cell_width = aw_fi->max_letter_width*SPECIES_NAME_LEN;
-//     cell_height = aw_fi->max_letter_height*2;
+    //     cell_width = aw_fi->max_letter_width*SPECIES_NAME_LEN;
+    //     cell_height = aw_fi->max_letter_height*2;
 
     cell_offset = 10;  // draw cell_offset pixels above cell base_line
 
@@ -101,8 +101,8 @@ void PH_dmatrix::init (PHMATRIX *matrix)
     off_dy = 3*cell_height;
 
     if (m){
-	total_cells_horiz=m->nentries;
-	total_cells_vert=m->nentries;
+        total_cells_horiz=m->nentries;
+        total_cells_vert=m->nentries;
     }
     set_scrollbar_steps( cell_width,cell_height,50,50);
     resized();  // initalize window_size dependend parameters
@@ -126,14 +126,14 @@ void PH_dmatrix::resized(void)
     screen_width=squ.r-squ.l;
     screen_height=squ.b-squ.t;
     if (m){
-	horiz_paint_size=(squ.r-aw_fi->max_letter_width-off_dx)/cell_width;
-	vert_paint_size=(squ.b-off_dy)/cell_height;
-	horiz_page_size = (n > horiz_paint_size) ?  horiz_paint_size : n;
-	vert_page_size = (n > vert_paint_size) ?    vert_paint_size : n;
-	rect.l=0;
-	rect.t=0;
-	rect.r = (int)((n-horiz_page_size)*cell_width+squ.r);
-	rect.b = (int)((n-vert_page_size)*cell_height+squ.b);
+        horiz_paint_size=(squ.r-aw_fi->max_letter_width-off_dx)/cell_width;
+        vert_paint_size=(squ.b-off_dy)/cell_height;
+        horiz_page_size = (n > horiz_paint_size) ?  horiz_paint_size : n;
+        vert_page_size = (n > vert_paint_size) ?    vert_paint_size : n;
+        rect.l=0;
+        rect.t=0;
+        rect.r = (int)((n-horiz_page_size)*cell_width+squ.r);
+        rect.b = (int)((n-vert_page_size)*cell_height+squ.b);
     }
     horiz_page_start=0; horiz_last_view_start=0;
     vert_page_start=0; vert_last_view_start=0;
@@ -146,7 +146,7 @@ void PH_dmatrix::resized(void)
     awm->tell_scrolled_picture_size(rect);
     awm->calculate_scrollbars();
     if (!awm->get_show() && m) {
-	awm->show();
+        awm->show();
     }
 }
 
@@ -160,78 +160,78 @@ void PH_dmatrix::display(void)   // draw area
     if (!device)	return;
     PHMATRIX       *m = get_matrix();
     if (!m)	{
-	if (awm) awm->hide();
-	return;
+        if (awm) awm->hide();
+        return;
     }
     device->shift_dx(off_dx);
     device->shift_dy(off_dy);
     xpos = 0;
 
     int name_display_width; {
-	AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
-	name_display_width = cell_width/aw_fi->max_letter_width;
+        AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
+        name_display_width = cell_width/aw_fi->max_letter_width;
     }
     gb_assert(name_display_width<BUFLEN);
 
     for (x = horiz_page_start;
-	 x < (horiz_page_start + horiz_page_size) && (x < total_cells_horiz);
-	 x++)
+         x < (horiz_page_start + horiz_page_size) && (x < total_cells_horiz);
+         x++)
     {
-	ypos = 0;
-	for (y = vert_page_start;
-	     y < (vert_page_start + vert_page_size) && (y < total_cells_vert);
-	     y++)
-	{
-	    double val2 = m->matrix->get(x, y);
+        ypos = 0;
+        for (y = vert_page_start;
+             y < (vert_page_start + vert_page_size) && (y < total_cells_vert);
+             y++)
+        {
+            double val2 = m->matrix->get(x, y);
 
-	    if (val2>=min_view_dist && val2<=max_view_dist && val2>0.0) { // display ruler
-		int maxw = (int)(cell_width * .75);
-		int h = cell_height /2 ;
-		int y2 = ypos * cell_height - cell_offset - 10;
-		int x2 = xpos * cell_width;
-		double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
-		if (len >= 0) {
-		    device->box(PH_G_RULER_DISPLAY, x2, y2,len, h*.8,-1,0,0);
-		}else{
-		    device->text(PH_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
-		}
-		double v;
-		for (v = x2; v < x2 + maxw; v += maxw * .1999) {
-		    device->line (PH_G_RULER, v, y2+h*.5, v, y2 + h, -1,0,0);
-		}
-		// device->line ( 0,x2, y2, x2+maxw-1, y2, -1,0,0);
-		device->line (PH_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1,0,0);
-	    }
-	    else {
-		PH_gc gc = val2<min_view_dist ? PH_G_BELOW_DIST : (val2>max_view_dist ? PH_G_ABOVE_DIST : PH_G_STANDARD);
+            if (val2>=min_view_dist && val2<=max_view_dist && val2>0.0) { // display ruler
+                int maxw = (int)(cell_width * .75);
+                int h = cell_height /2 ;
+                int y2 = ypos * cell_height - cell_offset - 10;
+                int x2 = xpos * cell_width;
+                double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
+                if (len >= 0) {
+                    device->box(PH_G_RULER_DISPLAY, x2, y2,len, h*.8,-1,0,0);
+                }else{
+                    device->text(PH_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+                }
+                double v;
+                for (v = x2; v < x2 + maxw; v += maxw * .1999) {
+                    device->line (PH_G_RULER, v, y2+h*.5, v, y2 + h, -1,0,0);
+                }
+                // device->line ( 0,x2, y2, x2+maxw-1, y2, -1,0,0);
+                device->line (PH_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1,0,0);
+            }
+            else {
+                PH_gc gc = val2<min_view_dist ? PH_G_BELOW_DIST : (val2>max_view_dist ? PH_G_ABOVE_DIST : PH_G_STANDARD);
 
-		if (val2 == 0.0 || val2 == 1.0) {
-		    sprintf(buf, "%3.1f", val2);
-		    gc = PH_G_STANDARD;
-		}
-		else {
-		    sprintf(buf, "%3.4f", val2);
-		}
-		device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
-	    }
+                if (val2 == 0.0 || val2 == 1.0) {
+                    sprintf(buf, "%3.1f", val2);
+                    gc = PH_G_STANDARD;
+                }
+                else {
+                    sprintf(buf, "%3.4f", val2);
+                }
+                device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+            }
 
-	    ypos++;
-	}
-	//display horizontal speciesnames:
+            ypos++;
+        }
+        //display horizontal speciesnames:
 
-	strcpy(buf, m->entries[x]->name);
-	buf[name_display_width] = 0; // cut group-names if too long
-	device->text(PH_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
-	xpos++;
+        strcpy(buf, m->entries[x]->name);
+        buf[name_display_width] = 0; // cut group-names if too long
+        device->text(PH_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
+        xpos++;
     }
     device->shift_dx(-off_dx);
     //display vertical speciesnames
     ypos = 0;
     for (y = vert_page_start; y < vert_page_start + vert_page_size; y++) {
-	strcpy(buf, m->entries[y]->name);
-	buf[name_display_width] = 0; // cut group-names if too long
-	device->text(PH_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
-	ypos++;
+        strcpy(buf, m->entries[y]->name);
+        buf[name_display_width] = 0; // cut group-names if too long
+        device->text(PH_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+        ypos++;
     }
     device->shift_dy(-off_dy);
 #undef BUFLEN
@@ -240,78 +240,78 @@ void PH_dmatrix::display(void)   // draw area
 void PH_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long page_v)
 { char buffer[200];
 
-  sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
-  awm->get_root()->awar(buffer)->write_int(width_h);
-  sprintf(buffer,"window/%s/scroll_width_vertical",awm->window_defaults_name);
-  awm->get_root()->awar(buffer)->write_int(width_v);
-  sprintf( buffer,"window/%s/horizontal_page_increment",awm->window_defaults_name);
-  awm->get_root()->awar(buffer)->write_int(page_h);
-  sprintf(buffer,"window/%s/vertical_page_increment",awm->window_defaults_name);
-  awm->get_root()->awar(buffer)->write_int(page_v);
+ sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
+ awm->get_root()->awar(buffer)->write_int(width_h);
+ sprintf(buffer,"window/%s/scroll_width_vertical",awm->window_defaults_name);
+ awm->get_root()->awar(buffer)->write_int(width_v);
+ sprintf( buffer,"window/%s/horizontal_page_increment",awm->window_defaults_name);
+ awm->get_root()->awar(buffer)->write_int(page_h);
+ sprintf(buffer,"window/%s/vertical_page_increment",awm->window_defaults_name);
+ awm->get_root()->awar(buffer)->write_int(page_v);
 }
 
 
 void PH_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
 { long diff;
 
-  if(!device) return;
-  if(vert_last_view_start==aww->slider_pos_vertical) return;
-  diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
-  // fast scroll: be careful: no transformation in move_region
-  if(diff==1){ // scroll one position up (== \/ arrow pressed)
+ if(!device) return;
+ if(vert_last_view_start==aww->slider_pos_vertical) return;
+ diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
+ // fast scroll: be careful: no transformation in move_region
+ if(diff==1){ // scroll one position up (== \/ arrow pressed)
 
-	device->move_region(0,off_dy,
-			screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
-	device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                      screen_width,cell_height);
+     device->move_region(0,off_dy,
+                         screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
+     device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
+                        screen_width,cell_height);
 
-	device->push_clip_scale();
-	device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
-    }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
-	device->move_region(0,off_dy-cell_height,screen_width,
-		(vert_page_size-1)*cell_height+1,0,off_dy);
-        device->clear_part(0,off_dy-cell_height,screen_width,cell_height);
-        device->push_clip_scale();
-        device->set_bottom_clip_border((int)off_dy);
-  }else  device->clear();
+     device->push_clip_scale();
+     device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
+ }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
+     device->move_region(0,off_dy-cell_height,screen_width,
+                         (vert_page_size-1)*cell_height+1,0,off_dy);
+     device->clear_part(0,off_dy-cell_height,screen_width,cell_height);
+     device->push_clip_scale();
+     device->set_bottom_clip_border((int)off_dy);
+ }else  device->clear();
 
-  vert_last_view_start=aww->slider_pos_vertical;
-  vert_page_start=aww->slider_pos_vertical/cell_height;
-  display();
-  if((diff==1) || (diff==-1))  device->pop_clip_scale();
+ vert_last_view_start=aww->slider_pos_vertical;
+ vert_page_start=aww->slider_pos_vertical/cell_height;
+ display();
+ if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 { long diff;
 
-  if(!device) return;
-  if( horiz_last_view_start==aww->slider_pos_horizontal) return;
-  diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
-  // fast scroll
-  if(diff==1)   // scroll one position left ( > arrow pressed)
-   { device->move_region(off_dx+cell_width,0,
-                         horiz_page_size*cell_width,screen_height,
-                          off_dx,0);
+ if(!device) return;
+ if( horiz_last_view_start==aww->slider_pos_horizontal) return;
+ diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
+ // fast scroll
+ if(diff==1)   // scroll one position left ( > arrow pressed)
+ { device->move_region(off_dx+cell_width,0,
+                       horiz_page_size*cell_width,screen_height,
+                       off_dx,0);
 
-      device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height);
+ device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height);
 
 
-      device->push_clip_scale();
-      device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
-   }
-  else if(diff==-1) // scroll one position right ( < arrow pressed)
-        { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
-                              0);
-          device->clear_part(off_dx,0,cell_width,screen_height);
-          device->push_clip_scale();
-          device->set_right_clip_border((int)(off_dx+cell_width));
-        }
-  else device->clear();
+ device->push_clip_scale();
+ device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
+ }
+ else if(diff==-1) // scroll one position right ( < arrow pressed)
+ { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
+                       0);
+ device->clear_part(off_dx,0,cell_width,screen_height);
+ device->push_clip_scale();
+ device->set_right_clip_border((int)(off_dx+cell_width));
+ }
+ else device->clear();
 
-  horiz_last_view_start=aww->slider_pos_horizontal;
-  horiz_page_start=aww->slider_pos_horizontal/cell_width;
-  display();
-  if((diff==1) || (diff==-1))  device->pop_clip_scale();
+ horiz_last_view_start=aww->slider_pos_horizontal;
+ horiz_page_start=aww->slider_pos_horizontal/cell_width;
+ display();
+ if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 static int update_display_on_dist_change = 1;
@@ -395,11 +395,11 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
                       (AW_CB)resize_needed,(AW_CL)dmatrix,0,
                       false,
                       "#D0D0D0",
-                      "#Standard$black",
-                      "#Names$#606060",
+                      "#Standard$#000000",
+                      "#Names$#000000",
                       "+-Ruler$#555", "-Display$#00AA55",
-                      "#BelowDist$#861CE9",
-                      "#AboveDist$#E20055",
+                      "#BelowDist$#008732",
+                      "#AboveDist$#DB008D",
                       0);
 
     awm->create_menu(0,"File","F");
