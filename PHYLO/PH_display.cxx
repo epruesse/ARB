@@ -78,38 +78,39 @@ void AP_display::initialize (display_type dpyt)
     const AW_font_information *aw_fi=device->get_font_information(0,0);
     switch(display_what)
     {
-        case NONE: return;
-        case species_dpy: cell_width=aw_fi->max_letter_width;
-            cell_height=aw_fi->max_letter_height+5;
-            cell_offset=3;
-            off_dx=SPECIES_NAME_LEN*aw_fi->max_letter_width+20;
-            off_dy=cell_height*3;
-            total_cells_horiz=PHDATA::ROOT->get_seq_len();
-            total_cells_vert=PHDATA::ROOT->nentries;
-            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window,
-                                cell_width,cell_height,50,50);
+        case NONE:
+            return;
+            
+        case species_dpy:
+        case filter_dpy:
+            cell_width  = aw_fi->max_letter.width;
+            cell_height = aw_fi->max_letter.height+5;
+            cell_offset = 3;
+
+            off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
+            off_dy = cell_height*3;
+            
+            total_cells_horiz = PHDATA::ROOT->get_seq_len();
+            total_cells_vert  = PHDATA::ROOT->nentries;
+            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width,cell_height,50,50);
             break;
-        case matrix_dpy: cell_width = aw_fi->max_letter_width*SPECIES_NAME_LEN;
-            cell_height = aw_fi->max_letter_height*2;
-            cell_offset = 10;  // draw cell_offset pixels above cell base_line
-            off_dx=SPECIES_NAME_LEN*aw_fi->max_letter_width+20;
-            off_dy=3*cell_height;
-            total_cells_horiz=PHDATA::ROOT->nentries;
-            total_cells_vert=PHDATA::ROOT->nentries;
-            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window,
-                                cell_width,cell_height,50,50);
+
+        case matrix_dpy:
+            cell_width  = aw_fi->max_letter.width*SPECIES_NAME_LEN;
+            cell_height = aw_fi->max_letter.height*2;
+            cell_offset = 10;   // draw cell_offset pixels above cell base_line
+
+            off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
+            off_dy = 3*cell_height;
+            
+            total_cells_horiz = PHDATA::ROOT->nentries;
+            total_cells_vert  = PHDATA::ROOT->nentries;
+            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width,cell_height,50,50);
             break;
-        case filter_dpy: cell_width=aw_fi->max_letter_width;
-            cell_height=aw_fi->max_letter_height+5;
-            cell_offset=3;
-            off_dx=SPECIES_NAME_LEN*aw_fi->max_letter_width+20;
-            off_dy=cell_height*3;
-            total_cells_horiz=PHDATA::ROOT->get_seq_len();
-            total_cells_vert=PHDATA::ROOT->nentries;
-            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window,
-                                cell_width,cell_height,50,50);
+
+        default:
+            aw_message("init: unknown display type (maybe not implemented yet)");
             break;
-        default: aw_message("init: unknown display type (maybe not implemented yet)");
     }  // switch
     resized();  // initalize window_size dependend parameters
 }
@@ -143,7 +144,7 @@ void AP_display::resized(void)
         case matrix_dpy: {
             const AW_font_information *aw_fi = device->get_font_information(0,0);
 
-            horiz_paint_size = (squ.r-aw_fi->max_letter_width-off_dx)/cell_width;
+            horiz_paint_size = (squ.r-aw_fi->max_letter.width-off_dx)/cell_width;
             vert_paint_size  = (squ.b-off_dy)/cell_height;
             horiz_page_size  = (long(PHDATA::ROOT->nentries) > horiz_paint_size) ? horiz_paint_size : PHDATA::ROOT->nentries;
             vert_page_size   = (long(PHDATA::ROOT->nentries) > vert_paint_size) ? vert_paint_size : PHDATA::ROOT->nentries;
@@ -306,7 +307,7 @@ void AP_display::display(void)   // draw area
                     strncpy(cbuf, buf + y, 1);
                     device->text(gc, cbuf, xpos * cell_width + 1,
                                  vert_page_size * cell_height +
-                                 y * aw_fi->max_letter_height,
+                                 y * aw_fi->max_letter.height,
                                  0.0, -1, 0, 0);
                 }
                 xpos++;
@@ -451,8 +452,8 @@ AP_display_status::AP_display_status(AW_device *awd)
 
     if(!device) return;
     const AW_font_information *aw_fi=device->get_font_information(0,0);
-    font_width=aw_fi->max_letter_width;
-    font_height=aw_fi->max_letter_height;
+    font_width=aw_fi->max_letter.width;
+    font_height=aw_fi->max_letter.height;
     device->reset();
     device->get_area_size(&rect);
     device->set_foreground_color(0,AW_WINDOW_FG);
