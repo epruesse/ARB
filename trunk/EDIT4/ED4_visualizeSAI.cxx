@@ -269,7 +269,7 @@ AW_selection_list *buildClrTransTabNamesList(AW_window *aws, AW_selection_list *
     aws->insert_default_selection(clrTransTabNamesList, "????", "????");
     aws->update_selection_list(clrTransTabNamesList);
 
-    free(tok); free(clrTransTabNames);
+    free(clrTransTabNames);
 
     return clrTransTabNamesList;
 }
