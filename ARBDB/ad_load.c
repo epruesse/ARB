@@ -485,7 +485,12 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
                                             case 'l': error = GB_write_link(gb_new, line); break;
                                             case 'y': error = GB_write_byte(gb_new, atoi(line)); break;
                                             case 'f': error = GB_write_float(gb_new, GB_atof(line)); break;
-                                            case 'I': error = GB_write_bits(gb_new, line, strlen(line), '-'); break;
+                                            case 'I': {
+                                                int len = strlen(line);
+                                                gb_assert(line[0] == '\"');
+                                                gb_assert(line[len-1] == '\"');
+                                                error   = GB_write_bits(gb_new, line+1, len-2, "-"); break;
+                                            }
 
                                             case 'Y': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in byte-array"; break;
                                             case 'N': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in int-array"; break;
