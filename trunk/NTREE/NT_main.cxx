@@ -263,7 +263,8 @@ int main(int argc, char **argv)
 	    nt_intro_start_merge(0,aw_root);
 	    aw_root->main_loop();
 	}
-	if (argc==2) {
+	printf("argc=%i\n",argc);
+	if (argc>=2) {
         if (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0) {
             fprintf(stderr,
                     "\n"
