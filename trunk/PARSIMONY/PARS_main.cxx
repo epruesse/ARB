@@ -28,6 +28,8 @@
 #include "pars_main.hxx"
 #include "pars_dtree.hxx"
 
+#include <list>
+
 AW_HEADER_MAIN
 GBDATA *gb_main;
 AP_main *ap_main;
@@ -82,16 +84,6 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
 
     if (ap_main->user_push_counter <= 0) { // last tree was popped => push again
         AP_user_push_cb(aww, ntw);
-    }
-}
-
-static void remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
-    if (!tree) return;
-    if (tree->is_leaf && tree->name) {
-        GBS_write_hash(hash,tree->name,0);  // delete species in tree in hash tabl
-    }else{
-        remove_species_in_tree_from_hash(tree->leftson,hash);
-        remove_species_in_tree_from_hash(tree->rightson,hash);
     }
 }
 
@@ -501,7 +493,7 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
 
     if (!error)
     {
-        remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
+        NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
         isits.quick_add_flag = quick;
         isits.abort_flag = AP_FALSE;
         isits.maxspecies = 0;
@@ -538,6 +530,362 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
     if (error) aw_message(error);
 
     AWT_TREE(ntw)->resort_tree(0);
+    ntw->zoom_reset();
+    if (!error) PARS_export_tree();
+}
+
+// -----------------------------------------
+//      Adding partial sequences to tree
+// -----------------------------------------
+
+class PartialSequence {
+    GBDATA          *gb_species;
+    mutable AP_tree *self;      // self converted to leaf (ready for insertion)
+    const AP_tree   *best_full_match; // full sequence position which matched best
+    long             overlap;   // size of overlapping region
+    long             penalty;   // weighted mismatches
+    bool             released;
+    bool             multi_match;
+
+    AP_tree *get_self() const {
+        if (!self) {
+            ap_assert(!released); // request not possible, because leaf has already been released!
+            GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+            self            = (AP_tree*)transform_gbd_to_leaf(GB_read_char_pntr(gb_name), (long)gb_species);
+            ap_assert(self);
+        }
+        return self;
+    }
+
+public:
+    PartialSequence(GBDATA *gb_species_)
+        : gb_species(gb_species_), self(0), best_full_match(0)
+        , overlap(0) , penalty(LONG_MAX), released(false), multi_match(false)
+    {
+    }
+
+    ~PartialSequence() { ap_assert(self == 0); }
+
+    GBDATA *get_species() const { return gb_species; }
+    const AP_tree *get_best_match() const { return best_full_match; }
+    AP_FLOAT get_branchlength() const { return AP_FLOAT(penalty)/overlap; }
+    void test_match(const AP_tree *leaf_full);
+    bool is_multi_match() const { return multi_match; }
+
+    const char *get_name() const {
+        const char *name = get_self()->name;
+        ap_assert(name);
+        return name;
+    }
+
+    AP_tree *release() {
+        AP_tree *s = self;
+        self       = 0;
+        released   = true;
+        return s;
+    }
+
+    void dump() const {
+        printf("best match for '%s' is '%s' (overlap=%li penalty=%li)\n",
+               get_name(), best_full_match->name,
+               overlap, penalty);
+    }
+
+};
+
+void PartialSequence::test_match(const AP_tree *leaf_full) {
+    long curr_overlap;
+    long curr_penalty;
+
+    leaf_full->sequence->partial_match(get_self()->sequence, &curr_overlap, &curr_penalty);
+
+    if (curr_overlap > overlap) {
+        overlap         = curr_overlap;
+        penalty         = curr_penalty;
+        best_full_match = leaf_full;
+        multi_match     = false;
+    }
+    else if (curr_overlap == overlap) {
+        if (curr_penalty<penalty) {
+            penalty         = curr_penalty;
+            best_full_match = leaf_full;
+            multi_match     = false;
+        }
+        else if (curr_penalty == penalty) {
+#if defined(DEBUG)
+            if (!multi_match) dump();
+            printf("Another equal match is against '%s' (overlap=%li penalty=%li)\n", leaf_full->name, curr_overlap, curr_penalty);
+#endif // DEBUG
+//             aw_message("Several full sequences match equal against one partial sequence");
+//             aw_message("Please save a copy of the current database and inform Ralf!!!!");
+
+            // @@@ FIXME: need an example
+            multi_match = true;
+        }
+    }
+}
+
+static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, AP_tree *tree) {
+    GB_ERROR error = 0;
+
+    if (tree) {
+        if (tree->is_leaf && tree->name) {
+            if (tree->gb_node) {
+                int is_partial = GBT_is_partial(tree->gb_node, 0, true); // marks undef as 'full sequence'
+                if (is_partial == 0) { // do not consider other partial sequences
+                    list<PartialSequence>::iterator i = partial.begin();
+                    list<PartialSequence>::iterator e = partial.end();
+                    for (;  i != e; ++i) {
+                        i->test_match(tree);
+                    }
+                }
+                else if (is_partial == -1) {
+                    error = GB_get_error();
+                }
+            }
+        }
+        else {
+            error             = nt_best_partial_match_rek(partial, tree->leftson);
+            if (!error) error = nt_best_partial_match_rek(partial, tree->rightson);
+        }
+    }
+    return error;
+}
+
+static void count_partial_and_full(AP_tree *at, int *partial, int *full, int *zombies, int default_value, int define_if_undef) {
+    if (at->is_leaf) {
+        if (at->gb_node) {
+            int is_partial = GBT_is_partial(at->gb_node, default_value, define_if_undef);
+            if (is_partial) ++(*partial);
+            else ++(*full);
+        }
+        else {
+            ++(*zombies);
+        }
+    }
+    else {
+        count_partial_and_full(at->leftson,  partial, full, zombies, default_value, define_if_undef);
+        count_partial_and_full(at->rightson, partial, full, zombies, default_value, define_if_undef);
+    }
+}
+
+static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
+    if (depth >= *min_depth) {
+        return 0; // already found better or equal
+    }
+
+    if (at->is_leaf) {
+        if (at->gb_node) {
+            *min_depth = depth;
+            return at;
+        }
+        return 0;
+    }
+
+    AP_tree *left  = find_least_deep_leaf(at->leftson, depth+1, min_depth);
+    AP_tree *right = find_least_deep_leaf(at->rightson, depth+1, min_depth);
+
+    return right ? right : left;
+}
+
+static void nt_add_partial(AW_window * aww, AWT_canvas *ntw) {
+    GB_begin_transaction(gb_main);
+    GB_ERROR error                 = 0;
+    int      full_marked_sequences = 0;
+
+    aw_openstatus("Adding partial sequences");
+
+    {
+        list<PartialSequence> partial;
+        {
+            GB_HASH *partial_hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);;
+            int      marked_found = 0;
+
+            for (GBDATA *gb_marked = GBT_first_marked_species(gb_main);
+                 !error && gb_marked;
+                 gb_marked = GBT_next_marked_species(gb_marked))
+            {
+                ++marked_found;
+
+                const char *name    = "<unknown>";
+                GBDATA     *gb_name = GB_find(gb_marked, "name", 0, down_level);
+                if (gb_name) name   = GB_read_char_pntr(gb_name);
+
+                switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
+                    case 0: { // full sequences
+                        aw_message(GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
+                        ++full_marked_sequences;
+                        break;
+                    }
+                    case 1:     // partial sequences
+                        GBS_write_hash(partial_hash, name, (long)gb_marked);
+                        break;
+                    case -1:    // error
+                        error = GB_get_error();
+                        break;
+                    default :
+                        ap_assert(0);
+                        break;
+                }
+            }
+
+            if (!error) {
+                // skip all species which are in tree
+                NT_remove_species_in_tree_from_hash(*ap_main->tree_root,partial_hash);
+
+                // build partial list from hash
+                long val;
+                for (GBS_hash_first_element(partial_hash, 0, &val);
+                     val;
+                     GBS_hash_next_element(partial_hash, 0, &val))
+                {
+                    partial.push_back(PartialSequence((GBDATA*)val));
+                }
+                if (partial.empty()) {
+                    if (marked_found == 0) {
+                        error = "There are no marked species";
+                    }
+                    else {
+                        int already_in_tree = marked_found-full_marked_sequences;
+                        if (already_in_tree == 0) {
+                            error = "All marked species have full sequences";
+                        }
+                        else if (already_in_tree == marked_found) {
+                            error = "All marked species already are in tree";
+                        }
+                        else {
+                            error = GB_export_error("Nothing to do (%i already in tree, %i have full sequences)",
+                                                    already_in_tree, full_marked_sequences);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!error) {
+            // find best matching full sequence for each partial sequence
+            error = nt_best_partial_match_rek(partial, *ap_main->tree_root);
+
+            list<PartialSequence>::iterator i = partial.begin();
+            list<PartialSequence>::iterator e = partial.end();
+#if defined(DEBUG)
+            // show results :
+            for (; i != e; ++i) {
+                i->dump();
+            }
+            i = partial.begin();
+#endif // DEBUG
+
+            for (; i != e && !error; ++i) {
+                const char *name      = i->get_name();
+                if (i->is_multi_match()) {
+                    error = GB_export_error("Insertion of '%s' not possible", name);
+                    for (; i != e; ++i) {
+                        delete i->release();
+                    }
+                    break;
+                }
+
+                AP_tree    *part_leaf = i->release();
+                AP_tree    *full_seq  = const_cast<AP_tree*>(i->get_best_match());
+                AP_tree    *brother   = full_seq->brother();
+                int         is_partial;
+                AP_tree    *target    = 0;
+
+                if (brother->is_leaf) {
+                    if (brother->gb_node) {
+                        is_partial = GBT_is_partial(brother->gb_node, 0, 1);
+
+                        if (is_partial) { // brother is partial sequence
+                            target = brother; // insert as brother of brother
+                        }
+                        else {
+                            target = full_seq; // insert as brother of full_seq
+                        }
+                    }
+                    else {
+                        error = "There are zombies in your tree - please remove them";
+                    }
+                }
+                else {
+                    int partial_count = 0;
+                    int full_count    = 0;
+                    int zombie_count  = 0;
+
+                    count_partial_and_full(brother, &partial_count, &full_count, &zombie_count, 0, 1);
+
+                    if (zombie_count) {
+                        error = "There are zombies in your tree - please remove them";
+                    }
+                    else if (full_count) {
+                        // brother is a subtree containing full sequences
+                        // -> add new brother to full_seq found above
+                        target = full_seq;
+                    }
+                    else {      // brother subtree only contains partial sequences
+                        // find one of the least-deep leafs
+                        int depth = INT_MAX;
+                        target    = find_least_deep_leaf(brother, 0, &depth);
+                    }
+                }
+
+
+                if (!error) {
+#if defined(DEBUG)
+                    printf("inserting '%s'\n", name);
+#endif // DEBUG
+                    error = part_leaf->insert(target);
+                }
+
+                if (!error) {
+                    // we need to create the sequence of the father node!
+                    AP_tree *father = part_leaf->father;
+                    father->costs();
+
+                    // ensure full-sequence is always on top
+                    if (father->rightson == target) {
+                        father->swap_sons();
+                    }
+
+                    if (!error) {
+                        // now correct the branch lengths.
+                        // First calc the original branchlen
+                        GBT_LEN orglen = father->get_branchlength()+target->get_branchlength();
+
+                        if (is_partial) { // we now have a subtree of partial sequences
+                            brother->set_branchlength(orglen); // each partial sequence has it's branchlength.
+                            father->set_branchlength(0); // all father branches are zero length
+                        }
+                        else { // we have a subtree of one full+one partial sequence
+                            father->set_branchlength(orglen); // father branch represents original length (w/o partial seq)
+                            full_seq->set_branchlength(0); // full seq has no sub-branch length
+                        }
+                        part_leaf->set_branchlength(i->get_branchlength());
+                        printf("Adding with branchlength=%f\n", i->get_branchlength());
+                    }
+                }
+                else {
+                    delete part_leaf;
+                }
+            }
+        }
+    }
+
+    aw_closestatus();
+
+    if (full_marked_sequences) {
+        aw_message(GBS_global_string("%i marked full sequences were not added", full_marked_sequences));
+    }
+
+    if (error) {
+        aw_message(error);
+        GB_abort_transaction(gb_main);
+    }
+    else {
+        GB_commit_transaction(gb_main);
+    }
+
+//     AWT_TREE(ntw)->resort_tree(0);
     ntw->zoom_reset();
     if (!error) PARS_export_tree();
 }
@@ -616,6 +964,16 @@ static void NT_radd_test(AW_window * aww, AWT_canvas *ntw, int what) {
 static void NT_rquick_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
     // what == 0 marked  ==1 selected
     NT_radd_internal(aww, ntw, what, AP_TRUE, 1);
+}
+
+// --------------------------------------------------------------------------------
+// Add Partial sequences
+// --------------------------------------------------------------------------------
+
+
+static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+    nt_add_partial(aww, ntw);
 }
 
 // --------------------------------------------------------------------------------
@@ -991,20 +1349,20 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 {
     awm->create_menu( 0,   "Test", "T", "",  AWM_ALL );
 
-    awm->insert_menu_topic(0, "Test edges",         "T","",         AWM_ALL,        (AW_CB)TEST_testWholeTree,  (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Mix Tree",           "M","",         AWM_ALL,        (AW_CB)TEST_mixTree,    (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Dump nodes",         "D","",         AWM_ALL,        (AW_CB)TEST_dumpNodes,      (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Set branchlens",         "b","",         AWM_ALL,        (AW_CB)TEST_setBranchlen,       (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Sort tree by name",      "S","",         AWM_ALL,        (AW_CB)TEST_sortTreeByName,     (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Build & dump chain",         "c","",         AWM_ALL,        (AW_CB)TEST_buildAndDumpChain,      (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Test edges",         "T", "", AWM_ALL, (AW_CB)TEST_testWholeTree,     (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Dump nodes",         "D", "", AWM_ALL, (AW_CB)TEST_dumpNodes,         (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TEST_setBranchlen,      (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Sort tree by name",  "S", "", AWM_ALL, (AW_CB)TEST_sortTreeByName,    (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TEST_buildAndDumpChain, (AW_CL)ntw, 0);
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Marked Species",     "A","pa_quick.hlp", AWM_ALL,    (AW_CB)NT_quick_add_test,   (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Add Marked Species + NNI",   "i","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_add_test,         (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Remove & Add Marked Species","o","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_rquick_add_test,  (AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Remove & Add Marked + NNI",  "v","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_radd_test,        (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)NT_quick_add_test,  (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Add marked species + NNI",    "i", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_add_test,        (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_rquick_add_test, (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_radd_test,       (AW_CL)ntw, 0);
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Selected Species",   "","pa_quick_sel.hlp",  AWM_ALL,    (AW_CB)NT_quick_add_test,   (AW_CL)ntw, 1 );
-    awm->insert_menu_topic(0, "Add Selected Species + NNI", "","pa_add_sel.hlp",    AWM_ALL,    (AW_CB)NT_add_test,         (AW_CL)ntw, 1 );
+    awm->insert_menu_topic(0, "Add selected species",       "", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add_test, (AW_CL)ntw, 1);
+    awm->insert_menu_topic(0, "Add selected species + NNI", "", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add_test,       (AW_CL)ntw, 1);
 }
 
 
@@ -1135,7 +1493,7 @@ static void pars_start_cb(AW_window *aww)
 
     awm->create_menu( 0,   "Species", "S", "nt_tree.hlp",  AWM_ALL );
     {
-        NT_insert_mark_submenus(awm, ntw);
+        NT_insert_mark_submenus(awm, ntw, 0);
 
     }
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
@@ -1166,13 +1524,15 @@ static void pars_start_cb(AW_window *aww)
         awm->close_sub_menu();
         awm->insert_sub_menu(0, "Add Species to Tree",      "A");
         {
-            awm->insert_menu_topic("add_marked",         "Add Marked Species",                   "M","pa_quick.hlp", AWM_ALL,    (AW_CB)NT_quick_add,    (AW_CL)ntw, 0 );
-            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",    "N","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_add,      (AW_CL)ntw, 0 );
-            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",              "R","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_rquick_add,   (AW_CL)ntw, 0 );
-            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",   "L","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_radd,     (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",     AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, 0);
+            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, 0);
+            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_rquick_add, (AW_CL)ntw, 0);
+            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_radd,       (AW_CL)ntw, 0);
             awm->insert_separator();
-            awm->insert_menu_topic("add_selected",      "Add Selected Species",                 "S","pa_quick_sel.hlp", AWM_ALL,    (AW_CB)NT_quick_add,    (AW_CL)ntw, 1 );
-            awm->insert_menu_topic("add_selected_nni",  "Add Selected Species + Local Optimization (NNI)",  "O","pa_add_sel.hlp",   AWM_ALL,    (AW_CB)NT_add,      (AW_CL)ntw, 1 );
+            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp",   AWM_ALL, NT_partial_add,       (AW_CL)ntw, (AW_CL)0);
+            awm->insert_separator();
+            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, 1);
+            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, 1);
         }
         awm->close_sub_menu();
         awm->insert_separator();
