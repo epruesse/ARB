@@ -6,6 +6,7 @@ UP	version.hlp
 UP	arb_commands.hlp
 UP	copyright.hlp
 UP	arb.ps
+UP	changes.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	arb_ntree.hlp
