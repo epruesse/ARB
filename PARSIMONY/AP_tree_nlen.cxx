@@ -34,7 +34,7 @@ AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root) :AP_tree(Tree_root)
     kernighan = AP_NONE;
     sequence  = NULL;
 
-    edge[0] = edge[1] = edge[2] = NULL;
+    edge[0]  = edge[1] = edge[2] = NULL;
 	index[0] = index[1] = index[2] = 0;
     distance = INT_MAX;
 
@@ -261,7 +261,9 @@ GB_ERROR AP_tree_nlen::insert(AP_tree *new_brother)
         ap_main->push_node(rson, STRUCTURE);
 
         oldEdge = lson->edgeTo(rson)->unlink();
+#if defined(DEBUG)
         cout << "old Edge = " << oldEdge << '\n';
+#endif // DEBUG
 
         error = this->AP_tree::insert(new_brother);
 
@@ -437,8 +439,7 @@ GB_ERROR AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode)
 /*-----------------------
   set_root
   -----------------------*/
-GB_ERROR AP_tree_nlen::set_root()
-{
+GB_ERROR AP_tree_nlen::set_root() {
     AP_tree   *pntr;
 
     if (!father || !father->father) { // already root
@@ -470,18 +471,15 @@ GB_ERROR AP_tree_nlen::set_root()
 /*-----------------------
   move
   -----------------------*/
-GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2)
-{
-    if ((*e1)->Age() > (*e2)->Age())
-    {
+GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2) {
+    if ((*e1)->Age() > (*e2)->Age()) {
         AP_tree_edge *tmp = *e1;
         *e1 = *e2;
         *e2 = tmp;
     }
 }
 
-GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge **e3)
-{
+GB_INLINE void sort(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge **e3) {
     sort(e1,e2);
     sort(e2,e3);
     sort(e1,e2);
@@ -683,8 +681,8 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
   costs
   -----------------------*/
 extern long global_combineCount;
-AP_FLOAT AP_tree_nlen::costs(void)
-{				/* cost of a tree (number of changes ..) */
+
+AP_FLOAT AP_tree_nlen::costs(void) { /* cost of a tree (number of changes ..) */
     if (! this->tree_root->sequence_template) return 0.0;
     this->parsimony_rek();
     return (AP_FLOAT)this->mutation_rate;
@@ -701,8 +699,7 @@ Section Buffer Operations:
 
 ********************************************/
 
-void AP_tree_nlen::unhash_sequence()
-{
+void AP_tree_nlen::unhash_sequence() {
     //removes the current sequence
     //(not leaf)
 
@@ -715,8 +712,7 @@ void AP_tree_nlen::unhash_sequence()
     return;
 }
 
-AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count)
-{
+AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
     // returns AP_TRUE if the first element is removed
     // AP_FALSE if it is copied into the previous level
     // according if user_buffer is greater than datum
@@ -734,32 +730,26 @@ AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count
 
     buff = stack.pop();
 
-    if (buff->controll == datum - 1 || user_buffer_count >= datum)
-    {
+    if (buff->controll == datum - 1 || user_buffer_count >= datum) {
         //previous node is buffered
 
-        if (buff->mode & SEQUENCE)
-        {
-            delete buff->sequence;
-        }
+        if (buff->mode & SEQUENCE) delete buff->sequence;
 
         stack_level = buff->controll;
         delete	buff;
-        result = AP_TRUE;
+        result      = AP_TRUE;
     }
-    else
-    {
+    else {
         stack_level = datum - 1;
         stack.push(buff);
-        result = AP_FALSE;
+        result      = AP_FALSE;
     }
 
     return result;
 }
 
 
-AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum)
-{
+AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     // according to mode
     // tree_structure / sequence is buffered in the node
 
@@ -768,62 +758,53 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum)
 
     if (is_leaf && !(STRUCTURE & mode)) return AP_FALSE;	// tips push only structure
 
-    if (this->stack_level == datum)
-    {
+    if (this->stack_level == datum) {
         AP_tree_buffer *last_buffer = stack.get_first();
         if (sequence &&(mode & SEQUENCE)) sequence->is_set_flag = AP_FALSE;
-        if (0 == (mode & ~last_buffer->mode))	// already buffered
-        {
+        if (0 == (mode & ~last_buffer->mode)) {	// already buffered
             return AP_FALSE;
         }
         new_buff = last_buffer;
         ret = AP_FALSE;
     }
-    else
-    {
-        new_buff = new AP_tree_buffer;
-        new_buff->count = 1;
+    else {
+        new_buff           = new AP_tree_buffer;
+        new_buff->count    = 1;
         new_buff->controll = stack_level;
-        new_buff->mode = NOTHING;
+        new_buff->mode     = NOTHING;
 
         stack.push(new_buff);
         this->stack_level = datum;
         ret = AP_TRUE;
     }
 
-    if ( (mode & STRUCTURE) && !(new_buff->mode & STRUCTURE) )
-    {
+    if ( (mode & STRUCTURE) && !(new_buff->mode & STRUCTURE) ) {
         //	cout << "push structure " << *this << '\n';
-        new_buff->father = father;
-        new_buff->leftson = leftson;
+        new_buff->father   = father;
+        new_buff->leftson  = leftson;
         new_buff->rightson = rightson;
-        new_buff->leftlen = leftlen;
+        new_buff->leftlen  = leftlen;
         new_buff->rightlen = rightlen;
-        new_buff->gb_node = gb_node;
+        new_buff->gb_node  = gb_node;
         new_buff->distance = distance;
 
-        for (int e=0; e<3; e++)
-        {
+        for (int e=0; e<3; e++) {
             new_buff->edge[e]      = edge[e];
             new_buff->edgeIndex[e] = index[e];
-            if (edge[e])
-            {
+            if (edge[e]) {
                 new_buff->edgeData[e]  = edge[e]->data;
             }
         }
     }
 
-    if ( (mode & SEQUENCE) && !(new_buff->mode & SEQUENCE) )
-    {
-        if (sequence)
-        {
-            new_buff->sequence = sequence;
+    if ( (mode & SEQUENCE) && !(new_buff->mode & SEQUENCE) ) {
+        if (sequence) {
+            new_buff->sequence      = sequence;
             new_buff->mutation_rate = mutation_rate;
-            mutation_rate = 0.0;
-            sequence = 0;
+            mutation_rate           = 0.0;
+            sequence                = 0;
         }
-        else
-        {
+        else {
             new_buff->sequence = 0;
             AW_ERROR("Sequence not found %s",this->name);
         }
@@ -834,12 +815,10 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum)
     return ret;
 }
 
-void AP_tree_nlen::pop(unsigned long datum)
-{				/* pop old tree costs */
+void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     AP_tree_buffer *buff;
 
-    if (stack_level != datum)
-    {
+    if (stack_level != datum) {
         // new AP_ERR("AP_tree_nlen::pop()", "Error in Node Stack");
     }
 
@@ -847,24 +826,21 @@ void AP_tree_nlen::pop(unsigned long datum)
 
     AP_STACK_MODE   mode = buff->mode;
 
-    if (mode&STRUCTURE)
-    {
+    if (mode&STRUCTURE) {
         //	cout << "pop structure " << this << '\n';
 
-        father = buff->father;
-        leftson = buff->leftson;
+        father   = buff->father;
+        leftson  = buff->leftson;
         rightson = buff->rightson;
-        leftlen = buff->leftlen;
+        leftlen  = buff->leftlen;
         rightlen = buff->rightlen;
-        gb_node = buff->gb_node;
+        gb_node  = buff->gb_node;
         distance = buff->distance;
 
-        for (int e=0; e<3; e++)
-        {
+        for (int e=0; e<3; e++) {
             edge[e] = buff->edge[e];
 
-            if (edge[e])
-            {
+            if (edge[e]) {
                 index[e] = buff->edgeIndex[e];
 
                 edge[e]->index[index[e]] = e;
@@ -874,16 +850,14 @@ void AP_tree_nlen::pop(unsigned long datum)
         }
     }
 
-    if (mode&SEQUENCE)
-    {
+    if (mode&SEQUENCE) {
         if (sequence) delete sequence;
 
         sequence      = buff->sequence;
         mutation_rate = buff->mutation_rate;
     }
 
-    if (ROOT==mode)
-    {
+    if (ROOT==mode) {
         //	cout << "root popped:" << this << "\n";
         ap_main->set_tree_root(this);
     }
@@ -1059,7 +1033,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
 	    pars[i] = (*ap_main->tree_root)->costs();
 	    if (pars[i] < pars_best) {
             better_subtrees++;
-            pars_best = pars[i];
+            pars_best      = pars[i];
             rek_width_type = AP_BETTER;
 	    }
 	    if (pars[i] < schwellwert) {
@@ -1076,7 +1050,7 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
 
 	for (i=7,t=0;t<i;t++) {
 		if (pars[t] <0) {
-			pars[t] = pars[i];
+			pars[t]     = pars[i];
 			pars_ref[t] = i;
 			t--;
 			i--;
@@ -1088,12 +1062,12 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
 		for (i = 0; i < t; i++) {
 			if (pars[i] > pars[i+1] ) {
 				bubblesort_change = 1;
-				help_ref = pars_ref[i];
-				pars_ref[i] = pars_ref[i + 1];
-				pars_ref[i + 1] = help_ref;
-				help = pars[i];
-				pars[i] = pars[i + 1];
-				pars[i + 1] = help;
+				help_ref          = pars_ref[i];
+				pars_ref[i]       = pars_ref[i + 1];
+				pars_ref[i + 1]   = help_ref;
+				help              = pars[i];
+				pars[i]           = pars[i + 1];
+				pars[i + 1]       = help;
 			}
 		}
 		if (bubblesort_change == 0)
@@ -1107,16 +1081,14 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
     //	for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
 
 
-	if (rek_deep < rek_2_width_max) {
-		rek_width_static = rek_2_width[rek_deep];
-	} else {
-		rek_width_static = 1;
-	}
+	if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
+    else rek_width_static                            = 1;
 
 	rek_width = visited_subtrees;
 	if (rek_width_type == AP_BETTER) {
 		rek_width =  better_subtrees;
-	}else{
+	}
+    else {
 		if (rek_width_type & AP_STATIC) {
 			if (rek_width> rek_width_static) rek_width = rek_width_static;
 		}
@@ -1172,7 +1144,6 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
 			}
 			cout.flush();
 
-
 			ap_main->clear();
 			break;
 		} else {
@@ -1219,19 +1190,17 @@ void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,
 
 void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
 	if (this->is_leaf == AP_TRUE) {
-		refUp.init = AP_TRUE;
-		refUp.isLeaf = AP_TRUE;
+		refUp.init    = AP_TRUE;
+		refUp.isLeaf  = AP_TRUE;
         refUp.refLeaf = gb_node;
 		return;
 	}
 	if (refUp.init == AP_FALSE) {
-		if (leftson->refUp.init == AP_FALSE)
-			leftson->createListRekUp(list,cn);
-		if (rightson->refUp.init == AP_FALSE)
-			rightson->createListRekUp(list,cn);
+		if (leftson->refUp.init == AP_FALSE) leftson->createListRekUp(list,cn);
+		if (rightson->refUp.init == AP_FALSE) rightson->createListRekUp(list,cn);
 
-		refUp.init = AP_TRUE;
-		refUp.isLeaf = AP_FALSE;
+		refUp.init    = AP_TRUE;
+		refUp.isLeaf  = AP_FALSE;
 		refUp.refNode = *cn;
 		(*cn)++;
 
@@ -1239,15 +1208,20 @@ void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
 		addToList(list,cn,this,leftson->refUp,rightson->refUp);
 		if (father == 0) { // at root
 			refRight.init = rightson->refUp.init;
-			if ((refRight.isLeaf = rightson->refUp.isLeaf) == AP_TRUE)
-				refRight.refLeaf = rightson->refUp.refLeaf;
-			else
-				refRight.refNode = rightson->refUp.refNode;
+			if ((refRight.isLeaf = rightson->refUp.isLeaf) == AP_TRUE) {
+                refRight.refLeaf = rightson->refUp.refLeaf;
+            }
+			else {
+                refRight.refNode = rightson->refUp.refNode;
+            }
+
 			refLeft.init = leftson->refUp.init;
-			if ((refLeft.isLeaf = leftson->refUp.isLeaf) == AP_TRUE)
-				refLeft.refLeaf = leftson->refUp.refLeaf;
-			else
-				refLeft.refNode = leftson->refUp.refNode;
+			if ((refLeft.isLeaf = leftson->refUp.isLeaf) == AP_TRUE) {
+                refLeft.refLeaf = leftson->refUp.refLeaf;
+            }
+			else {
+                refLeft.refNode = leftson->refUp.refNode;
+            }
 		}
 	}
     return;
@@ -1257,33 +1231,29 @@ void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
 	//
 	// has to be called after createListRekUp !!
 	if (refRight.init == AP_FALSE) {
-		refRight.init = AP_TRUE;
-		refRight.isLeaf = AP_FALSE;
+		refRight.init    = AP_TRUE;
+		refRight.isLeaf  = AP_FALSE;
 		refRight.refNode = *cn;
 		(*cn)++;
 
 		if (father->leftson == this) {
-			if (father->refLeft.init == AP_FALSE)
-				father->createListRekSide(list,cn);
+			if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
 			addToList(list,cn,this,leftson->refUp,father->refLeft);
 		} else {
-			if (father->refRight.init ==  AP_FALSE)
-				father->createListRekSide(list,cn);
+			if (father->refRight.init ==  AP_FALSE) father->createListRekSide(list,cn);
 			addToList(list,cn,this,leftson->refUp,father->refRight);
 		}
 	}
 	if (refLeft.init == AP_FALSE) {
-		refLeft.init = AP_TRUE;
-		refLeft.isLeaf = AP_FALSE;
+		refLeft.init    = AP_TRUE;
+		refLeft.isLeaf  = AP_FALSE;
 		refLeft.refNode = *cn;
 		(*cn)++;
 		if (father->leftson == this) {
-			if (father->refLeft.init == AP_FALSE)
-				father->createListRekSide(list,cn);
+			if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
 			addToList(list,cn,this,rightson->refUp,father->refLeft);
 		} else {
-			if (father->refRight.init == AP_FALSE)
-				father->createListRekSide(list,cn);
+			if (father->refRight.init == AP_FALSE) father->createListRekSide(list,cn);
 			addToList(list,cn,this,rightson->refUp,father->refRight);
 		}
 	}
@@ -1297,8 +1267,7 @@ AP_CO_LIST * AP_tree_nlen::createList(int *size)
     // tree combinations
     AP_CO_LIST *list;
     int number = 0;
-    if (father !=0)
-    {
+    if (father !=0) {
         AW_ERROR("AP_tree_nlen::createList may be called with damaged tree");
         return 0;
     }
@@ -1342,9 +1311,7 @@ int AP_tree_nlen::test(void) const
 
     for (int e=0; e<3; e++) if (edge[e]!=NULL) edges++;
 
-    if (!sequence) {
-        cout << "Node" << *this << "has no sequence\n";
-    }
+    if (!sequence) cout << "Node" << *this << "has no sequence\n";
 
     if (father) {
         if (father->father == (AP_tree *)this) {
@@ -1403,9 +1370,9 @@ char *AP_tree_nlen::fullname() const
 {
     if (!name) {
         static char *buffer;
-        char *lName = strdup(Leftson()->fullname()),
-            *rName = strdup(Rightson()->fullname());
-        int len = strlen(lName)+strlen(rName)+4;
+        char        *lName = strdup(Leftson()->fullname());
+        char        *rName = strdup(Rightson()->fullname());
+        int          len   = strlen(lName)+strlen(rName)+4;
 
         if (buffer) free(buffer);
 
