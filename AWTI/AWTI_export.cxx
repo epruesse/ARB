@@ -26,9 +26,9 @@ export_format_struct::export_format_struct(void){
 export_format_struct::~export_format_struct(void)
 	{
 	struct export_format_struct *efo= this;
-	delete efo->system;
-	delete efo->new_format;
-	delete efo->suffix;
+	free(efo->system);
+	free(efo->new_format);
+	free(efo->suffix);
 }
 
 
@@ -36,7 +36,7 @@ char *awtc_read_export_format(export_format_struct * efo,char *file){
 	char *fullfile = AWT_unfold_path(file,"ARBHOME");
 
 	FILE *in = fopen(fullfile,"r");
-	delete fullfile;
+	free(fullfile);
 	sprintf(AW_ERROR_BUFFER,"Form %s not readable (select a form or check permissions)", file);
 	if (!in) return AW_ERROR_BUFFER;
 	char *s1=0,*s2=0;
@@ -150,7 +150,7 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
 	}else{
 		char *form2 = GBS_string_eval(form,"*\nBEGIN*\n*=*3:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:",0);
 		if (!form2) error = (char *)GB_get_error();
-		delete form;
+		free(form);
 		form = form2;
 	}
 
@@ -210,7 +210,7 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
 						sprintf(AW_ERROR_BUFFER,"Error in '%s'",sys);
 						delete sys; error = AW_ERROR_BUFFER;
 					}
-					delete sys;
+					free(sys);
 				}
                 free(intermediate_resulting);
 			}else{
@@ -266,7 +266,7 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
                             char *name = GBT_read_name(gb_species);
                             sprintf(buffer,"%s: %i",name, count);
                             if (aw_status(buffer)) break;
-                            delete name;
+                            free(name);
                         }
                         char *pars = GBS_string_eval(" ",form,gb_species);
                         if (!pars) {
@@ -283,7 +283,7 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
                             o = r;
                         }
                         fprintf(out,"%s",o);
-                        delete pars;
+                        free(pars);
 
                         break;
                     }
@@ -339,8 +339,8 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
  end_of_AWTI_export_format:
 	if (openstatus) aw_closestatus();
 
-	delete fullformname;
-	delete form;
+	free(fullformname);
+	free(form);
 	delete efo;
 
 	return error;

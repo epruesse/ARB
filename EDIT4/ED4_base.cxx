@@ -132,7 +132,7 @@ void ED4_terminal::changed_by_database(void)
 //                     ED4_ROOT->main_manager->Show();
                 }
 
-                delete dup_data;
+                delete [] dup_data;
             }
         }
     }
@@ -472,7 +472,7 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
 
         if (parent->flag.is_consensus) { // in consensus terminals the brackets have to be eliminated
             strcat (*generated_string, dummy);
-            delete dummy;
+            delete [] dummy;
         }
         else if (parent->parent->parent->flag.is_SAI) {	// if Species_manager has flag is_SAI
             strcat(*generated_string, "S");
@@ -800,7 +800,7 @@ int ED4_multi_species_manager::count_all_children_and_set_group_id() // counts a
     name[i] = '\0';
     sprintf(name, "%s (%d)",name, counter);
 
-    delete consensus_name_terminal->id;
+    free(consensus_name_terminal->id);
     consensus_name_terminal->id = name;
 
     //    update_species_counters();
@@ -1540,8 +1540,7 @@ ED4_base::ED4_base(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos hei
         id = NULL;
     }
     else {
-        //	id = new char[51]; // Be careful
-        id = new char[strlen(temp_id)+1];
+        id = (char*)malloc(strlen(temp_id)+1);
         strcpy( id, temp_id);
     }
 
@@ -1625,7 +1624,7 @@ ED4_base::~ED4_base() // before calling this function the first time, parent has
     }
 
     set_species_pointer(0);	// clear pointer to database and remove callbacks
-    delete id;
+    free(id);
 }
 
 //***********************************

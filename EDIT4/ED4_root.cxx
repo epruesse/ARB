@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <memory.h>
 #include <string.h>
@@ -692,7 +693,7 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     if (all_found != 0) {
         aw_message(out_message);
     }
-    delete out_message;
+    free(out_message);
 
     return ( ED4_R_OK );
 }

@@ -583,12 +583,9 @@ char *GB_read_as_string(GBDATA *gbd)
     switch (GB_TYPE(gbd)) {
 		case GB_STRING:	return GB_read_string(gbd);
 		case GB_LINK:	return GB_read_link(gbd);
-		case GB_BYTE:	sprintf(buffer,"%i",GB_read_byte(gbd));
-			return GB_STRDUP(buffer);
-		case GB_INT:	sprintf(buffer,"%li",GB_read_int(gbd));
-			return GB_STRDUP(buffer);
-		case GB_FLOAT:	sprintf(buffer,"%.4g",GB_read_float(gbd));
-			return GB_STRDUP(buffer);
+		case GB_BYTE:	sprintf(buffer,"%i",GB_read_byte(gbd)); return GB_STRDUP(buffer);
+		case GB_INT:	sprintf(buffer,"%li",GB_read_int(gbd)); return GB_STRDUP(buffer);
+		case GB_FLOAT:	sprintf(buffer,"%.4g",GB_read_float(gbd)); return GB_STRDUP(buffer);
 		case GB_BITS:	return GB_read_bits(gbd,'0','1');
 		default:	return 0;
     }

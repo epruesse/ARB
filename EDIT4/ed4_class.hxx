@@ -270,7 +270,7 @@ class ED4_base_position
 public:
 
     ED4_base_position() 	{ calced4base = 0; seq_pos = 0; count = 0; }
-     ~ED4_base_position() 	{ delete seq_pos; }
+     ~ED4_base_position() 	{ delete [] seq_pos; }
 
     int get_base_position(ED4_base *base, int sequence_position);
     int get_sequence_position(ED4_base *base, int base_position);

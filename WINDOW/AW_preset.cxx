@@ -174,7 +174,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
         aws->window_fit();
     }
     awr->awar(AWAR_GLOBAL_COLOR_NAME)->write_string(label_name);
-    delete aw_glob_font_awar_name;
+    free(aw_glob_font_awar_name);
     aw_glob_font_awar_name = strdup(awar_name);
     aws->show();
 }
@@ -720,7 +720,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             if (!flag_append_in_same_line)	aws->at_newline();
         }
         first = AW_FALSE;
-        delete fontbasename;
+        free(fontbasename);
     }
 
     return has_color_groups;

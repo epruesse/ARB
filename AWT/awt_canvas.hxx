@@ -53,12 +53,11 @@ public:
 
 class AWT_graphic {
 	friend class AWT_canvas;
-	protected:
-		AW_rectangle extends;
-		int	drag_gc;
-	public:
-	class AWT_graphic_exports	exports;
-
+protected:
+    AW_rectangle extends;
+    int	drag_gc;
+public:
+    AWT_graphic_exports	exports;
 
 	virtual void show(AW_device *device) = 0;
 	virtual void info(AW_device *device, AW_pos x, AW_pos y,		/* double click */

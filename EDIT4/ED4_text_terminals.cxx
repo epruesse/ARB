@@ -66,11 +66,13 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
         cons = get_parent( ED4_L_GROUP )->to_group_manager()->table().build_consensus_string(seq_start, seq_end, cons);
 
         if ( size_t(right_index) >= buffer_size){
-            delete buffer;
+            delete [] buffer;
             buffer_size = right_index + 10;
             e4_assert(buffer_size>0);
-            buffer = new char[buffer_size];
+            buffer      = new char[buffer_size+1];
+
             memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
+            buffer[buffer_size] = 0;
         }
 
 
@@ -132,7 +134,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     static int	  len_of_colored_strings = 0;
     AW_device    *device                 = ED4_ROOT->temp_device;
 
-    resolve_pointer_to_string_copy(&max_seq_len);
+    resolve_pointer_to_char_pntr(&max_seq_len);
 
     {
         AW_pos world_x, world_y;
@@ -170,9 +172,11 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         }
         int i;
         for (i=0;i<ED4_G_DRAG;i++){
-            delete colored_strings[i];
-            colored_strings[i] = (char *)malloc(sizeof(char) * len_of_colored_strings);
+            free(colored_strings[i]);
+            colored_strings[i] = (char *)malloc(sizeof(char) * (len_of_colored_strings+1));
+
             memset(colored_strings[i],' ',len_of_colored_strings);
+            colored_strings[i][len_of_colored_strings] = 0;
         }
     }
 

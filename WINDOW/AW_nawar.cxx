@@ -67,7 +67,7 @@ char *AW_awar::read_string(){
 }
 
 void AW_awar::get( char **p_string ) {
-    delete *p_string;
+    free(*p_string);
     *p_string = read_string();
 }
 
@@ -275,7 +275,7 @@ GB_ERROR	AW_awar::toggle_toggle(){
             default: break;
         }
     }
-    delete var;
+    free(var);
     return error;
 }
 

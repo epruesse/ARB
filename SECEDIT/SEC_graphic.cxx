@@ -36,6 +36,8 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
         strcat(buf, sub);
 
         aw_root->awar_string(AWAR_SECEDIT_IMEXPORT_BASE "/directory", buf)->write_string(buf);
+
+        free(buf);
     }
 
     aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
@@ -183,7 +185,7 @@ static GB_ERROR change_constraints(GB_CSTR constraint_type, GB_CSTR element_type
 
     return error;
 }
-    
+
 void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AWUSE(cl);
     AW_pos world_x;
@@ -204,16 +206,16 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 	if(button==AWT_M_MIDDLE) {
 	    break;
 	}
-	
+
 	SEC_Base *base;
 	SEC_helix_strand *strand;
 	SEC_helix *helix_info;
 	SEC_segment *segment;
 	SEC_loop *loop;
-	
+
 	double fixpoint_x, fixpoint_y;
 	double loopCentre_x, loopCentre_y;
-	double initialLengthConstraint, finalLengthConstraint; 
+	double initialLengthConstraint, finalLengthConstraint;
 	double initialRadiusConstraint, finalRadiusConstraint;
 	double startDist, endDist;
 
@@ -241,7 +243,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 		}
 		break;
 	    }
-	    case AW_Mouse_Drag:{  
+	    case AW_Mouse_Drag:{
 		base = (SEC_Base*)ct->client_data1;
 		if (base) {
 		    if(base->getType()==SEC_HELIX_STRAND) {
@@ -285,7 +287,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 	    if (type==AW_Mouse_Press) {
 		SEC_Base *base  = (SEC_Base*)ct->client_data1;
 		int clicked_pos = ct->client_data2;
-		if (base) 
+		if (base)
 		    sec_root->paintSearchPatternStrings(device, clicked_pos, world_x+1, world_y);
 	    }
 	}
@@ -293,7 +295,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 	    exports.refresh = 1;
 	    sec_root->update(0);
 	    //awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)probe);
-	    break; // should popup probe search pattern window 
+	    break; // should popup probe search pattern window
 	}
 	break;
     }
@@ -310,7 +312,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 		if (!(ct && ct->exists)) {
 		    break;
 		}
-                
+
 		{
 		    //check security level @@@
 		    SEC_Base *base = (SEC_Base *)ct->client_data1;
@@ -341,7 +343,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 			    break;
 			}
 			}
-                        
+
 			GB_CSTR msg;
 			if (reg) {
 			    msg = GBS_global_string("Clicked on %s : positions[%i, %i]", (char*)whatAmI, reg->get_sequence_start(), reg->get_sequence_end());
@@ -361,7 +363,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 				aw_message("Selected Base is not suitable to split");
 				break;
 			    }
-                            
+
 			    char *clicked_helix_nr = sec_root->helix->entries[clicked_pos].helix_nr;
 			    char *helix_nr;
 			    int i, min_index=(-1), max_index=(-1);
@@ -378,7 +380,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 			    }
 			    int min_index_partner = sec_root->helix->entries[min_index].pair_pos;
 			    int max_index_partner = sec_root->helix->entries[max_index].pair_pos;
-                            
+
 			    //prevent "going backwards through the sequence"
 			    if (min_index > max_index_partner) {
 				sec_root->split_loop(max_index_partner, min_index_partner+1, min_index, max_index+1);
@@ -386,7 +388,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 			    else {
 				sec_root->split_loop(min_index, max_index+1, max_index_partner, min_index_partner+1);
 			    }
-                            
+
 			    exports.refresh = 1;
 			    exports.save = 1;
 			    exports.resize = 1;
@@ -409,7 +411,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 		if( !(ct && ct->exists) ) {
 		    break;
 		}
-                
+
 		/*** check security level @@@ ***/
 		SEC_Base *base = (SEC_Base *)ct->client_data1;
 		if (base) {
@@ -499,9 +501,9 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 		    //turn around root_loop caller's angle  -- warum??
 		    helix_info = strand_pointer->get_helix_info();
 		    double tmp_delta = helix_info->get_delta();
-		    helix_info->set_delta(tmp_delta + M_PI); 
+		    helix_info->set_delta(tmp_delta + M_PI);
 		    }*/
-                           
+
 		    fixpoint_x = strand_pointer->get_fixpoint_x();
 		    fixpoint_y = strand_pointer->get_fixpoint_y();
 		    strand_pointer->start_angle = (2*M_PI) + atan2( (world_y - fixpoint_y), (world_x - fixpoint_x) );
@@ -564,7 +566,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 		    /*  if (strand_pointer == root_loop->get_segment()->get_next_helix()) {
 			helix_info = strand_pointer->get_helix_info();
 			double tmp_delta = helix_info->get_delta();
-			helix_info->set_delta(tmp_delta + M_PI ); 
+			helix_info->set_delta(tmp_delta + M_PI );
 			}*/
 		}
 	    }
@@ -764,8 +766,8 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
             char *strct = GB_read_string(gb_struct);
             char *ref = GB_read_string(gb_struct_ref);
             err = sec_root->read_data(strct,ref,ali_len);
-            delete strct;
-            delete ref;
+            free(strct);
+            free(ref);
 
             if (err) {
                 reason = (char*)malloc(200);
@@ -824,8 +826,8 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
         GB_add_callback(gb_struct_ref,GB_CB_ALL,(GB_CB)SEC_structure_changed_cb, (int *)this);
     }
 
-    delete name;
-    delete ali_name;
+    free(name);
+    free(ali_name);
 
     return err;
 }

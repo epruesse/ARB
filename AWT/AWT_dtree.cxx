@@ -1331,7 +1331,7 @@ int AWT_graphic_tree::check_update(GBDATA *gbdummy)
             name = strdup(this->tree_static->tree_name);
             error = this->load(gb_main,name,1,0);
             if (error) aw_message(error);
-            delete name;
+            free(name);
             this->exports.resize = 1;
             break;
         case AP_UPDATE_RELINKED:

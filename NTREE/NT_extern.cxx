@@ -341,7 +341,7 @@ void NT_database_optimization(AW_window *aww){
             if (error) break;
         }
         GBT_free_names(ali_names);
-        delete tree_name;
+        free(tree_name);
         aw_closestatus();
     }
 #endif
@@ -374,7 +374,7 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root){
 
 	char *largest_tree = GBT_find_largest_tree(gb_main);
 	aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name",largest_tree);
-	delete largest_tree;
+	free(largest_tree);
 
 	aws = new AW_window_simple;
 	aws->init( aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE", 10, 10 );

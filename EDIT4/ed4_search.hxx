@@ -133,7 +133,7 @@ class ED4_SearchResults // list head
 public:
 
     ED4_SearchResults();
-    ~ED4_SearchResults() { delete first; }
+    ~ED4_SearchResults();
 
     void search(ED4_sequence_terminal *seq_terminal);
     void addSearchPosition(ED4_SearchPosition *pos);
@@ -151,7 +151,7 @@ public:
 };
 
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name); 
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name);
 
 
 

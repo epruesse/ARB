@@ -348,7 +348,7 @@ ED4_returncode	EDB_root_bact::fill_species(ED4_multi_species_manager *multi_spec
     } while (!((string[(*index)] == 1) && (string[(*index)+1] =='G' || string[(*index)+1]=='E' || string[(*index)+1]=='F'))
              && (string[*index] != '\0'));
 
-    delete ship;
+    free(ship);
     return retCode;
 #undef SHIPSIZE
 }

@@ -129,7 +129,7 @@ void SEC_helix::read(istream & in) {
 	}
 	else {
  	    SEC_make_numbers(&deltaIn, NULL, string_buffer);   //read out DELTA_IN
-	    
+
 	    string_buffer = SEC_read_line(in);
 	    if(strncmp(string_buffer, "LENGTH=", 7)) {
 		cout << "Unknown data format! \"STRAND\" must contain \"max_length\" and \"min_lenth\" !\n";
@@ -243,7 +243,7 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current
             if (x_string_in[i] == 'x') n++;
         }
         ap = new int[n];
-        ap_length = n; 
+        ap_length = n;
         int j=0;
         int x_string_in_len = strlen(x_string_in);
         for (i=0; i<x_string_in_len; i++) {				// create x to absposition table
@@ -263,7 +263,7 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current
     max_index = (int) tmp_max_index;
     if (max_index < current_ali_len) {
 	max_index = current_ali_len;
-    }    
+    }
 
     string_buffer = SEC_read_line(in);
     if(strncmp(string_buffer, "ROOT_ANGLE=", 11)==0) {
@@ -284,6 +284,6 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current
     root_segment = root_loop->get_segment();   //root_segment of root_loop points to first segment of root-loop
     update(0);
 
-    delete ap; ap = 0;
+    delete [] ap; ap = 0;
     return 0;
 }
