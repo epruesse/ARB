@@ -1534,22 +1534,54 @@ Widget aw_create_shell(
     if ( !GBS_read_hash(root->hash_for_windows,aww->window_name)) {
         GBS_write_hash(root->hash_for_windows,aww->window_name,(long)aww);
         char temp[GB_PATH_MAX];memset(temp,0,GB_PATH_MAX);
+        bool has_user_geometry = false;
 
         sprintf(temp,"window/windows/%s/width",aww->window_defaults_name);
         root->awar_int(temp,width);
-        if (allow_resize)   width = (int)root->awar(temp)->read_int();
+        if (allow_resize) {
+            int found_width   = (int)root->awar(temp)->read_int();
+            if (width != found_width) {
+                has_user_geometry = true;
+                width             = found_width;
+            }
+        }
 
         sprintf(temp,"window/windows/%s/height",aww->window_defaults_name);
         root->awar_int(temp,height);
-        if (allow_resize)   height = (int)root->awar(temp)->read_int();
+        if (allow_resize) {
+            int found_height = (int)root->awar(temp)->read_int();
+            if (height != found_height) {
+                has_user_geometry = true;
+                height            = found_height;
+            }
+        }
 
         sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
-        root->awar_int(temp,posx)->set_minmax(0,1000);
-        posx = (int)root->awar(temp)->read_int();
+        root->awar_int(temp,posx)->set_minmax(0,4000);
+        // @@@ FIXME:  maximum should be set to current screen size minus some offset
+        // to ensure that windows do not appear outside screen
+        // same for posy below!
+
+        int found_posx = (int)root->awar(temp)->read_int();
+        if (posx != found_posx) {
+            has_user_geometry = true;
+            posx              = found_posx;
+        }
 
         sprintf(temp,"window/windows/%s/posy",aww->window_defaults_name);
-        root->awar_int(temp,posy)->set_minmax(0,899);
-        posy = (int)root->awar(temp)->read_int();
+        root->awar_int(temp,posy)->set_minmax(0,3000);
+        int found_posy = (int)root->awar(temp)->read_int();
+        if (posy != found_posy) {
+            has_user_geometry = true;
+            posy              = found_posy;
+        }
+
+        if (has_user_geometry) {
+#if defined(DEBUG)
+            printf("User geometry detected for window '%s'\n", aww->window_defaults_name);
+#endif // DEBUG
+            aww->recalc_size_at_show = 2; // keep user geometry (never recalc size)
+        }
     }
 
     Widget father = p_global->toplevel_widget;
@@ -2111,7 +2143,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_FALSE,width, height, posx, posy);
+    p_w->shell= aw_create_shell(this,AW_TRUE,width, height, posx, posy);
     Widget form1 = XtVaCreateManagedWidget( "forms",
                                             xmFormWidgetClass,
                                             p_w->shell,
@@ -2148,7 +2180,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_FALSE,
+    p_w->shell= aw_create_shell(this,AW_TRUE,
                                 width, height, posx, posy);
 
     Widget main_window;
@@ -2817,7 +2849,7 @@ void AW_window::show(void) {
         get_root()->window_show();
         window_is_shown = AW_TRUE;
     }
-    if (recalc_size_at_show) {
+    if (recalc_size_at_show == 1) {
         this->window_fit();
         recalc_size_at_show = 0;
     }
@@ -2972,7 +3004,7 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
     _at->max_x_size = xfig->maxx - xfig->minx;
     _at->max_y_size = xfig->maxy - xfig->miny;
 
-    if (resize) {
+    if (resize && recalc_size_at_show == 0) {
         recalc_size_at_show = 1;
         set_window_size(_at->max_x_size+1000,_at->max_y_size+1000);
     }
