@@ -1212,15 +1212,17 @@ static void setBranchName(GBT_TREE *node, char *name) {
         node->name = name;
     }
     else {
-        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0
+        bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 */
+        // downscaling in done later!
+
         if (bootstrap>max_found_bootstrap) {
             max_found_bootstrap = bootstrap;
         }
 
         assert(node->remark_branch == 0);
-        if ((int)(bootstrap) != 100) { // skip 100% bootstraps
+/*         if ((int)(bootstrap) != 100) { // skip 100% bootstraps */
             node->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
-        }
+/*         } */
 
         if (end[0] != 0) {      // sth behind bootstrap value
             if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
@@ -1330,13 +1332,15 @@ void GBT_scale_bootstraps(GBT_TREE *tree, double scale) {
     if (tree->leftson) GBT_scale_bootstraps(tree->leftson, scale);
     if (tree->rightson) GBT_scale_bootstraps(tree->rightson, scale);
     if (tree->remark_branch) {
-        double bootstrap = strtod(tree->remark_branch, 0);
-        bootstrap        = bootstrap*scale+0.5;
+        const char *end          = 0;
+        double      bootstrap    = strtod(tree->remark_branch, (char**)&end);
+        GB_BOOL     is_bootstrap = end[0] == '%' && end[1] == 0;
 
         free(tree->remark_branch);
         tree->remark_branch = 0;
 
-        if ((int)(bootstrap) != 100) { // do not show 100% bootstraps
+        if (is_bootstrap) {
+            bootstrap = bootstrap*scale+0.5;
             tree->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
         }
     }
@@ -1368,8 +1372,8 @@ GBT_TREE *GBT_load_tree(char *path, int structuresize, char **commentPtr)
         max_found_bootstrap = -1;
         tree                = gbt_load_tree_rek(input,structuresize, name_only);
 
-        if (max_found_bootstrap >= 1.1) { // bootstrap values were given in percent
-            GBT_scale_bootstraps(tree, 0.01);
+        if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
+            GBT_scale_bootstraps(tree, 0.01); // devide all bootstraps by 100
         }
     }
     fclose(input);
