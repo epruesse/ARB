@@ -13,6 +13,8 @@
 
 #include <xml.hxx>
 
+using namespace std;
+
 // static void awt_export_tree_node_print_remove(char *str)
 // {
 //     int i,len;
