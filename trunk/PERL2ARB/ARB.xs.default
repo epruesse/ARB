@@ -1,3 +1,12 @@
+/* ARB.xs is generated from the following files:
+
+    ARB.xs.default
+    ../ARBDB/ad_prot.h
+    ..ARBDB/ad_t_prot.h
+
+*/
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,7 +36,7 @@ P2A_search(gbd,str,type_of_entry)
 	RETVAL = GB_search(gbd,str,GBP_gb_types(type_of_entry));
 	OUTPUT:
 	RETVAL
-	
+
 GBDATA *
 P2A_create(father,key,type)
 	GBDATA *father
@@ -82,8 +91,8 @@ P2AT_open_table_field(gb_table,key,type)
 	OUTPUT:
 	RETVAL
 
-	
-char 
+
+char
 P2AT_complementNucleotide(c,T_or_U)
 	char c
 	char T_or_U

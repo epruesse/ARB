@@ -289,7 +289,7 @@ void tree_save_cb(AW_window *aww){
 
 	if (error) aw_message(error);
 	else{
-		aw_root->awar(AWAR_TREE_EXPORT "/directory")->touch();
+		awt_refresh_selection_box(aw_root, AWAR_TREE_EXPORT);
 		aww->hide();
 	}
 	delete db_name;

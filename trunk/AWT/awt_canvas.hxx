@@ -164,15 +164,15 @@ void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 
 
 
-#define AWAR_PRINT_TREE_2_FILE_ORIENTATION	"tmp/NT/orientation"
-#define AWAR_PRINT_TREE_2_FILE_MAGNIFICATION	"tmp/NT/magnification"
-#define AWAR_PRINT_TREE_2_FILE_WHAT	"tmp/NT/what"
-#define AWAR_PRINT_TREE_2_FILE_HANDLES	"tmp/NT/handles"
-#define AWAR_PRINT_TREE_2_FILE_BASE	"tmp/NT/file"
-#define AWAR_PRINT_TREE_2_FILE_NAME	"tmp/NT/file/file_name"
-#define AWAR_PRINT_TREE_2_FILE_DIR	"tmp/NT/file/directory"
-#define AWAR_PRINT_TREE_2_FILE_FILTER 	"tmp/NT/file/filter"
-#define AWAR_PRINT_TREE_PRINT		"tmp/NT/"
+#define AWAR_PRINT_TREE_2_FILE_ORIENTATION	 "tmp/NT/orientation"
+#define AWAR_PRINT_TREE_2_FILE_MAGNIFICATION "tmp/NT/magnification"
+#define AWAR_PRINT_TREE_2_FILE_WHAT	         "tmp/NT/what"
+#define AWAR_PRINT_TREE_2_FILE_HANDLES	     "tmp/NT/handles"
+#define AWAR_PRINT_TREE_2_FILE_BASE	         "tmp/NT/file"
+#define AWAR_PRINT_TREE_2_FILE_NAME	         AWAR_PRINT_TREE_2_FILE_BASE"/file_name"
+#define AWAR_PRINT_TREE_2_FILE_DIR	         AWAR_PRINT_TREE_2_FILE_BASE"/directory"
+#define AWAR_PRINT_TREE_2_FILE_FILTER        AWAR_PRINT_TREE_2_FILE_BASE"/filter"
+#define AWAR_PRINT_TREE_PRINT                "tmp/NT/"
 
 AW_window *AWT_create_export_window(AW_root *root, AWT_canvas *ntw);
 

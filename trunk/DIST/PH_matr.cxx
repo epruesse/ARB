@@ -916,13 +916,20 @@ void ph_save_matrix_cb(AW_window *aww)
 {			// save the matrix
     GB_ERROR error = ph_calculate_matrix_cb(aww,0);
     if (error) return;
-    char *filename = aww->get_root()->awar("tmp/dist/save_matrix/file_name")->read_string();
-    enum PH_SAVE_TYPE type = (enum PH_SAVE_TYPE)aww->get_root()->awar("tmp/dist/save_matrix/type")->read_int();
+
+    char              *filename = aww->get_root()->awar("tmp/dist/save_matrix/file_name")->read_string();
+    enum PH_SAVE_TYPE  type     = (enum PH_SAVE_TYPE)aww->get_root()->awar("tmp/dist/save_matrix/type")->read_int();
+
     PHMATRIX::ROOT->save(filename,type);
-    delete filename;
-    if (error) aw_message(error);
-    else	aww->get_root()->awar("tmp/dist/save_matrix/directory")->touch();
-    aww->hide();
+    free(filename);
+
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        awt_refresh_selection_box(aww->get_root(), "tmp/dist/save_matrix");
+        aww->hide();
+    }
 }
 
 AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)

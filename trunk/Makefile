@@ -793,7 +793,7 @@ nas:
 perl:	lib/ARB.pm
 
 
-lib/ARB.pm:	ARBDB/ad_prot.h ARBDB/ad_t_prot.h
+lib/ARB.pm:	ARBDB/ad_prot.h ARBDB/ad_t_prot.h PERL2ARB/ARB.xs.default
 ifdef PERLBIN
 	mkdir -p PERL5/bin
 	(cd PERL5/bin;ln -f -s ${PERLBIN}/perl .);
