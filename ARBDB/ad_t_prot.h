@@ -74,6 +74,7 @@ GBDATA *GBT_first_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_species P_((GBDATA *gb_main));
 GBDATA *GBT_next_species P_((GBDATA *gb_species));
 GBDATA *GBT_find_species_rel_species_data P_((GBDATA *gb_species_data, const char *name));
+GBDATA *GBT_find_gene_rel_species P_((GBDATA *gb_species_data, const char *name));
 GBDATA *GBT_find_species P_((GBDATA *gb_main, const char *name));
 GBDATA *GBT_first_marked_extended P_((GBDATA *gb_extended_data));
 GBDATA *GBT_next_marked_extended P_((GBDATA *gb_extended));

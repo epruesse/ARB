@@ -27,12 +27,24 @@ using namespace std;
 
 void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *organism  = GB_strdup(item_name);
+#ifndef DEVEL_IDP
     char *gene = strchr(organism, '/');
+#endif
+#ifdef DEVEL_IDP
+    char *gene = strchr(organism, ' ');
+#endif
 
     if (gene) {
         gene[0] = 0;
         ++gene;
-
+#ifndef DEVEL_IDP
+ aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
+ aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
+#endif
+#ifdef DEVEL_IDP
+ aw_root->awar(AWAR_ORGANISM_NAME)->write_string(gene);
+ aw_root->awar(AWAR_GENE_NAME)->write_string(organism);
+#endif
         aw_root->awar(AWAR_ORGANISM_NAME)->write_string(organism);
         aw_root->awar(AWAR_GENE_NAME)->write_string(gene);
 
