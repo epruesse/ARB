@@ -69,7 +69,8 @@ DEBUG_tools.o:
 DEBUG_tools.o:  
 DEBUG_tools.o:  
 DEBUG_tools.o:  
-DEBUG_tools.o:  $(ARBHOME)/INCLUDE/arbdb.h
+DEBUG_tools.o: 
+DEBUG_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 DEBUG_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DEBUG_tools.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DEBUG_tools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ac.hxx

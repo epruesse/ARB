@@ -47,8 +47,8 @@ ORS_C_PT.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ORS_C_PT.o: $(ARBHOME)/INCLUDE/PT_com.h
 ORS_C_PT.o: $(ARBHOME)/INCLUDE/client.h
 ORS_C_PT.o: $(ARBHOME)/INCLUDE/servercntrl.h
-ORS_C_PT.o: $(ARBHOME)/INCLUDE/cat_tree.hxx ors_lib.h ors_c.hxx
-ORS_C_PT.o: ors_c_proto.hxx
+ORS_C_PT.o: $(ARBHOME)/INCLUDE/cat_tree.hxx ors_lib.h
+ORS_C_PT.o: ors_c.hxx ors_c_proto.hxx
 ORS_C_html.o:  
 ORS_C_html.o:  
 ORS_C_html.o:  
@@ -176,7 +176,8 @@ ORS_C_probe.o:
 ORS_C_probe.o:  
 ORS_C_probe.o:  
 ORS_C_probe.o:  
-ORS_C_probe.o:  $(ARBHOME)/INCLUDE/arbdb.h
+ORS_C_probe.o: 
+ORS_C_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_C_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ORS_C_probe.o: $(ARBHOME)/INCLUDE/ors_client.h
 ORS_C_probe.o: $(ARBHOME)/INCLUDE/client.h

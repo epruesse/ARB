@@ -77,7 +77,8 @@ MG_alignment.o:
 MG_alignment.o:  
 MG_alignment.o:  
 MG_alignment.o:  
-MG_alignment.o:  $(ARBHOME)/INCLUDE/arbdb.h
+MG_alignment.o: 
+MG_alignment.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
