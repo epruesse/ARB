@@ -24,7 +24,7 @@ AW_device_Xm::AW_device_Xm(AW_common *commoni) : AW_device(commoni) {
 }
 
 void AW_device_Xm::init() {
-;	
+;
 }
 
 
@@ -65,8 +65,9 @@ int AW_draw_string_on_screen(AW_device *device, int gc,const  char *str, size_t 
 	AW_pos X,Y;
 	AWUSE(cd1);AWUSE(cd2);AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(cduser);
 	device->transform(x,y,X,Y);
+    aw_assert(size <= strlen(str));
 	XDrawString(device->common->display, device->common->window_id, device->common->gcs[gc]->gc,
-		AW_INT(X), AW_INT(Y), str + start , (int)size);
+                AW_INT(X), AW_INT(Y), str + start , (int)size);
 	return 1;
 }
 
@@ -94,7 +95,7 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
 		if (drawflag) {
 			AWUSE(cd1);
 			AWUSE(cd2);
-			
+
 			XFillRectangle(common->display, common->window_id,
 			gcm->gc, (int)CX0,(int)CY0,
 			((int)CX1)-((int)CX0), ((int)CY1)-((int)CY0) );
@@ -117,7 +118,7 @@ int AW_device_Xm::circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height,
 	if(filteri & filter) {
 
 	    this->transform(x0,y0,X0,Y0);	// center
-	    
+
 	    x0 -= width;
 	    y0 -= height;
 	    this->transform(x0,y0,XL,YL);
@@ -218,7 +219,7 @@ void AW_device_Xm::flush(void) {
 void AW_device_Xm::move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y ) {
 	int gc = 0;
 	class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-	XCopyArea( common->display, common->window_id, common->window_id,	 gcm->gc, 
+	XCopyArea( common->display, common->window_id, common->window_id,	 gcm->gc,
 		(int)src_x, (int)src_y, (int)width, (int)height,
 		(int)dest_x, (int)dest_y );
 
