@@ -3,7 +3,7 @@
 #include <arbdb.h>
 
 #include <list.h>
-#include <map.h>
+#include <set.h>
 #include <PT_server.h>
 
 #ifndef ARB_ASSERT_H
@@ -166,16 +166,84 @@ extern struct probe_struct_global   {
     probe_statistic_struct  stat;
 } psg;
 
-struct gene_struct {
-    char gene_name[9];
-    char full_name[128];
-    char arb_gene_name[128];
-    char arb_species_name[128];
-    // @@@ FIXME: use dynamic strings  
+class gene_struct {
+    char       *gene_name;
+    const char *arb_species_name; // pointers into 'gene_name'
+    const char *arb_gene_name;
+
+    void init(const char *gene_name_, const char *arb_species_name_, const char *arb_gene_name_) {
+        int gene_name_len        = strlen(gene_name_);
+        int arb_species_name_len = strlen(arb_species_name_);
+        int arb_gene_name_len    = strlen(arb_gene_name_);
+
+        int fulllen      = gene_name_len+1+arb_species_name_len+1+arb_gene_name_len+1;
+        gene_name        = new char[fulllen];
+        strcpy(gene_name, gene_name_);
+        arb_species_name = gene_name+(gene_name_len+1);
+        strcpy((char*)arb_species_name, arb_species_name_);
+        arb_gene_name    = arb_species_name+(arb_species_name_len+1);
+        strcpy((char*)arb_gene_name, arb_gene_name_);
+
+        // fprintf(stderr, " gene_struct::init('%s', '%s', '%s')\n",
+                // get_internal_gene_name(), get_arb_species_name(), get_arb_gene_name());
+    }
+
+public:
+    gene_struct(const char *gene_name_, const char *arb_species_name_, const char *arb_gene_name_) {
+        init(gene_name_, arb_species_name_, arb_gene_name_);
+    }
+    gene_struct(const gene_struct& other) {
+        if (&other != this) {
+            init(other.get_internal_gene_name(), other.get_arb_species_name(), other.get_arb_gene_name());
+        }
+    }
+    gene_struct& operator = (const gene_struct& other) {
+        if (&other != this) {
+            delete [] gene_name;
+            init(other.get_internal_gene_name(), other.get_arb_species_name(), other.get_arb_gene_name());
+        }
+        return *this;
+    }
+
+    ~gene_struct() {
+        delete [] gene_name;
+    }
+
+    const char *get_internal_gene_name() const { return gene_name; }
+    const char *get_arb_species_name() const { return arb_species_name; }
+    const char *get_arb_gene_name() const { return arb_gene_name; }
+
+    // char gene_name[9];          // internal gene name
+    // char arb_gene_name[9];      // arb gene name
+    // char arb_species_name[9];   // arb species name
+    // char full_name[128]; // unused
 };
 
-extern list<gene_struct*>  names_list_idp;
-extern GBDATA             *map_ptr_idp;
-extern int                 gene_flag; // if 'gene_flag' == 1 -> we are a gene pt server
+extern int gene_flag;           // if 'gene_flag' == 1 -> we are a gene pt server
+
+struct ltByArbName {
+    bool operator()(const gene_struct *gs1, const gene_struct *gs2) const {
+        int cmp           = strcmp(gs1->get_arb_species_name(), gs2->get_arb_species_name());
+        if (cmp == 0) { cmp = strcmp(gs1->get_arb_gene_name(), gs2->get_arb_gene_name()); }
+        return cmp<0;
+    }
+};
+struct ltByInternalName {
+    bool operator()(const gene_struct *gs1, const gene_struct *gs2) const {
+        int cmp = strcmp(gs1->get_internal_gene_name(), gs2->get_internal_gene_name());
+        return cmp<0;
+    }
+};
+
+typedef list<gene_struct>                          gene_struct_list;
+typedef set<const gene_struct *, ltByInternalName> gene_struct_index_internal;
+typedef set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
+
+extern gene_struct_list           all_gene_structs; // stores all gene_structs
+extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb speces+gene name
+extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
+
+// extern list<gene_struct*>  names_list_idp;
+// extern GBDATA             *map_ptr_idp;
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
