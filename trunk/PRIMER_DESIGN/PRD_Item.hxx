@@ -10,21 +10,20 @@ class Item {
 
 public:
 
-  PRD_Sequence_Pos start_pos;
-  int              length;
+  PRD_Sequence_Pos start_pos;		// index in sequence
+  int              length;		// count of bases in primer
 
-  int              CG_ratio;
-  int              temperature;
+  int              GC_ratio;		// GC-ratio of primer
+  int              temperature;		// temperature of primer
 
   Item *next;
 
   Item ( PRD_Sequence_Pos pos_, int length_, int ratio_, int temperature_, Item *next_ );
   Item ();
-  ~Item ();
+  ~Item () {};
 
-    void print ( char *prefix, char *suffix );
-
-    const char * get_primer_sequence() { return "Hallo"; }
+  void  print             ( char *prefix_, char *suffix_ );	// print Items's values
+  char* getPrimerSequence ( const char *sequence_ );		// return the string the Item describes
 };
 
 #else

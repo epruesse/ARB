@@ -20,34 +20,28 @@ typedef struct SearchParameter {
 class SearchFIFO {
 private:
  
-  SearchParameter  *begin;
-  SearchParameter  *end;
-  SearchParameter  *current;
+  SearchParameter  *begin;					// start of list of positions in tree
+  SearchParameter  *end;					// end of list of positions in tree
+  SearchParameter  *current;					// points to the currently examined position in the list
 
-  const char       *sequence;
-  Node             *root;
-  Range             primer_length;
-  bool              expand_UPAC_Codes;
-  PRD_Sequence_Pos  min_distance_to_next_match;
+  Node             *root;					// rootnode of primertree to be searched in
+  bool              expand_IUPAC_Codes;				// enable/disable expasnion of IUPAC codes
+  PRD_Sequence_Pos  min_distance_to_next_match;			// if a match is found out of that distance its ignored (not deleted)
   
-  void init( const char *sequence_, Node *root_, Range primer_length_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_UPAC_Codes_ );
-  void erase      ( SearchParameter *param_ );
-  void push_front ( Node *child_of_current_ );
+  void init( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ );
+  void erase      ( SearchParameter *param_ );			// erase the position from the list (tries not to invalidate current)
+  void push_front ( Node *child_of_current_ );			// append new position in front of the list
+
 public:
 
-  int               size;
-
-  unsigned long int push_count;
-  unsigned long int iterate_count;
- 
-  SearchFIFO ( const char *sequence_, Node *root_, Range primer_length_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_UPAC_Codes_ );
+  SearchFIFO ( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ );
   SearchFIFO ();
   ~SearchFIFO ();
  
-  void push        ( char base_ );
-  void iterateWith ( PRD_Sequence_Pos pos_, char base_ );
-  void flush       ();
-  void print       ();
+  void push        ( char base_ );				// append new position (node=root) to the end of the list
+  void iterateWith ( PRD_Sequence_Pos pos_, char base_ );	// tries to iterate all positions in the list with the given base
+  void flush       ();						// erase all positions of the list
+  void print       ();						// print all positions in the list
 };
  
 #else

@@ -8,18 +8,18 @@
 class SequenceIterator {
 private:
 
-  const char *sequence;
-  int         max_length;
-  int         direction;
+  const char *sequence;				// sequence of bases to be iterated
+  int         max_length;			// maximum count of bases returned (afterwards only EOS is returned)
+  int         direction;			// direction to walk through sequence (FORWARD / BACKWARD)
   
 public:
-  const static int  IGNORE_LENGTH = -1;
-  const static char EOS           = '\x00';
-  const static int  FORWARD       =  1;
-  const static int  BACKWARD      = -1;
+  const static int  IGNORE_LENGTH = -1;		// may be used at max_length_ parameter
+  const static char EOS           = '\x00';	// = End Of Sequence
+  const static int  FORWARD       =  1;		// may be used at direction_ parameter
+  const static int  BACKWARD      = -1;		// may be used at direction_ parameter
 
-  PRD_Sequence_Pos pos;
-  int              delivered;
+  PRD_Sequence_Pos pos;				// current index in sequence .. position of last returned base
+  int              delivered;			// current count of returned bases
 
   SequenceIterator ( const char *sequence_, PRD_Sequence_Pos start_pos_, int max_length_, int direction_ );
   SequenceIterator ( const char *sequence );

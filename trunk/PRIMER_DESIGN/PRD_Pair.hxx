@@ -18,7 +18,7 @@ public:
   Pair ();
   ~Pair () {};
 
-  void print ( char *prefix, char *suffix );
+  void print ( char *prefix, char *suffix, const char *sequence_ ); // print pair with the values of the items
 };
 
 #else

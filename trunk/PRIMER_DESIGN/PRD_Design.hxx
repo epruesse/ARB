@@ -16,52 +16,58 @@ class PrimerDesign {
 private:
 
   // zu untersuchendes Genom
+  // sequence of bases/spaces to be examined
 
   const char* sequence;
 
   // Laenge der Primer (Anzahl der enthaltenen Basen)
-
+  // count of bases of primers (min/max)
   Range primer_length;
 
   // Position der Primer ( [min,max) )
+  // left/right position of primers
 
   Range primer1;
   Range primer2;
 
-  // Abstand der Primer (bzgl. der Positionen)
-  // <= 0 <=> ingorieren
+  // Abstand der Primer (bzgl. der Positionen nicht der Basen, <=0 = ignorieren)
+  // min/max distance of primers (regading positions, not number of bases between, <=0 = ignore)
 
   Range primer_distance;
 
   // maximale Anzahl zurueckzuliefernder Primerpaare
+  // max. count of returned primer pairs
 
   int   max_count_primerpairs;
 
-  // CG Verhaeltniss der Primer in Prozent
-  // <= 0 <=> ingorieren
-  // [ Verhaeltiss = (G+C)/Basen ]
+  // GC-Verhaeltniss der Primer in Prozent <=0 = ignorieren
+  // GC-ratio of primers in percent <=0 = ignore
+  // [ ratio = (G+C)/Basen ]
 
-  Range CG_ratio;
+  Range GC_ratio;
 
-  // Temperatur der Primer
-  // <= 0 <=> ingorieren
-  // [ Temperatur = 4*(G+C) + 2*(A+T) ]
+  // Temperatur der Primer <=0 = ignorieren
+  // temperature of primers <=0 = ignore
+  // [ temperature = 4*(G+C) + 2*(A+T) ]
 
   Range temperature;
 
-  // Faktoren zur Gewichtung von CG-Verhaeltniss und
-  // Temperatur bei der Bewertung von Primerpaaren
-  // [0.0 .. 1.0]
-  // !!! CG_factor + temperature_factor == 1  !!!
+  // Faktoren zur Gewichtung von CG-Verhaeltniss und Temperatur bei der Bewertung von Primerpaaren
+  // factors to assess the GC-ratio and temperature at the evaluation of primerpairs
+  // [ 0.0 .. 1.0 ]
 
-  double CG_factor;
+  double GC_factor;
   double temperature_factor;
 
-  // Eindeutigkeit der Primer bzgl. des Genoms
+  // wird ein Primer ausserhalb dieser Distanz nocheinmal gefunden wird das Vorkommen ignoriert ( <= 0 = eindeutig )
+  // is a primer found again out of this range its occurence is ignored ( <=0 = explict match )
 
-  int  min_distance_to_next_match; // <= 0 <=> eindeutig
-  bool expand_UPAC_Codes;          // expand UPAC-Codes while matching Sequence vs. Trees
+  int  min_distance_to_next_match;
 
+  // erweitern der IUPAC-Codes beim matching der sequence gegen die primerbaeume ?
+  // expand IUPAC-Codes while matching sequence vs. primertrees ?
+  
+  bool expand_IUPAC_Codes;
 
 
   //
@@ -70,35 +76,36 @@ private:
   const static int FORWARD  =  1;
   const static int BACKWARD = -1;
 
-  // primerbaume
+  // primertrees
   Node* root1;
   Node* root2;
 
-  // primerlisten
+  // primerlists
   Item* list1;
   Item* list2;
 
-  // primerpaarfeld
-    Pair* pairs;
-
-    GB_ERROR error;
+  // primerpairs
+  Pair* pairs;
+  
+  GB_ERROR error;
 
 public:
   PrimerDesign( const char *sequence_,          \
                 Range       pos1_, Range pos2_, Range length_, Range distance_, \
-		Range               ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, \
-		int                 max_count_primerpairs_, double CG_factor_, double temp_factor_ );
+		Range               ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, \
+		int                 max_count_primerpairs_, double GC_factor_, double temp_factor_ );
   PrimerDesign( const char *sequence_,          \
 		Range               pos1_, Range pos2_, Range length_, Range distance_, \
-		int                 max_count_primerpairs_, double CG_factor_, double temp_factor_ );
+		int                 max_count_primerpairs_, double GC_factor_, double temp_factor_ );
   PrimerDesign( const char *sequence_ );
   ~PrimerDesign();
 
   bool setPositionalParameters ( Range pos1_, Range pos2_, Range length_, Range distance_ ); // true = valid parameters
-  void setConditionalParameters( Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, int max_count_primerpairs_, double CG_factor_, double temp_factor_ );
+  void setConditionalParameters( Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );
 
   void buildPrimerTrees ();
   void printPrimerTrees ();
+
   void matchSequenceAgainstPrimerTrees ();
 
   void convertTreesToLists ();
@@ -107,9 +114,10 @@ public:
   void evaluatePrimerPairs ();
   void printPrimerPairs    ();
 
-    void run ( int print_stages_ );
+  void run ( int print_stages_ );
 
-    GB_ERROR get_error() const { return error; }
+  GB_ERROR get_error() const { return error; }
+
 public:
   const static int PRINT_RAW_TREES     = 1;
   const static int PRINT_MATCHED_TREES = 2;
@@ -117,13 +125,14 @@ public:
   const static int PRINT_PRIMER_PAIRS  = 8;
 
 private:
-  void              init           ( const char *sequence_, Range pos1_, Range pos2_, Range length_, Range distance_, Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, int max_count_primerpairs_, double CG_factor_, double temp_factor_ );
-  PRD_Sequence_Pos  followUp       ( Node *node_, deque<char> *primer_, int direction_ );
-  void              findNextPrimer ( Node *start_at_, int depth_, int *counter_, int delivered_ );
-  int               insertNode     ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_ );
-  void              calcCGandAT    ( int &CG_, int &AT_, Node *start_at_ );
-  double            evaluatePair   ( Item *one_, Item *two_ );
-  void              insertPair     ( double rating_, Item *one_, Item *two_ );
+  void              init               ( const char *sequence_, Range pos1_, Range pos2_, Range length_, Range distance_, Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );
+  PRD_Sequence_Pos  followUp           ( Node *node_, deque<char> *primer_, int direction_ );
+  void              findNextPrimer     ( Node *start_at_, int depth_, int *counter_, int delivered_ );
+  int               insertNode         ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_ );
+  bool              treeContainsPrimer ( Node *start );
+  void              calcGCandAT        ( int &GC_, int &AT_, Node *start_at_ );
+  double            evaluatePair       ( Item *one_, Item *two_ );
+  void              insertPair         ( double rating_, Item *one_, Item *two_ );
 };
 
 

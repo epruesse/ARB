@@ -6,30 +6,25 @@ using namespace std;
 //
 // Constructor
 //
-void SearchFIFO::init( const char *sequence_, Node *root_, Range primer_length_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_UPAC_Codes_ )
+void SearchFIFO::init( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ )
 {
   begin   = NULL;
   end     = NULL;
   current = NULL;
-  size    = 0;
 
-  sequence                   = sequence_;
   root                       = root_;
-  primer_length              = primer_length_;
-  expand_UPAC_Codes          = expand_UPAC_Codes_;
+  expand_IUPAC_Codes         = expand_IUPAC_Codes_;
   min_distance_to_next_match = min_distance_to_next_match_;
-
-//   printf( "SearchFIFO::init : sequence %p root %p length[%i,%i]\n", sequence_, root_, primer_length_.min() , primer_length_.max() );
 }
 
-SearchFIFO::SearchFIFO ( const char *sequence_, Node *root_, Range primer_length_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_UPAC_Codes_ )
+SearchFIFO::SearchFIFO ( Node *root_, PRD_Sequence_Pos min_distance_to_next_match_, bool expand_IUPAC_Codes_ )
 {
-  init( sequence_,root_,primer_length_,min_distance_to_next_match_,expand_UPAC_Codes_ );
+  init( root_,min_distance_to_next_match_,expand_IUPAC_Codes_ );
 }
 
 SearchFIFO::SearchFIFO ()
 {
-  init( NULL,NULL,Range(0,0),-1,false );
+  init( NULL,-1,false );
 }
 
 
@@ -60,7 +55,6 @@ void SearchFIFO::flush ()
   begin   = NULL;
   end     = NULL;
   current = NULL;
-  size    = 0;
 }
 
 
@@ -72,99 +66,70 @@ void SearchFIFO::flush ()
 //
 void SearchFIFO::push ( char base_ )
 {
-  push_count++;
-
   unsigned int     bits = CHAR2BIT.FIELD[ base_ ];
   Node            *child_of_root;
   SearchParameter *new_parameter;
 
-//   printf( "push : base %c   bits %u %u %u %u %u\n", base_, bits, bits & 1, bits & 2, bits & 4 , bits & 8  );
-//   printf( "root : [C %p, G %p, A %p, TU %p, %p]\n",root->child[0],root->child[1],root->child[2],root->child[3],root->child[4] );
-
-  if ( bits & 1 )
-  {
+  if ( bits & 1 ) {
     child_of_root = root->child[ 2 ]; // 2 = A
-    if ( child_of_root != NULL )
-    {
+    if ( child_of_root != NULL ) {
       new_parameter = new SearchParameter;
 
-      //   printf( "push : child_of_root %p new_parameter %p\n",  child_of_root, new_parameter );
       new_parameter->node      = child_of_root;
       new_parameter->next      = NULL;
       new_parameter->previous  = end;
 
-//       printf( "push : %p (%c,%p,%p)\n", new_parameter, new_parameter->node->base, new_parameter->previous, new_parameter->next );
-
       if (end   != NULL) end->next = new_parameter;
       if (begin == NULL) begin = new_parameter;
       end = new_parameter;
-      size++;
     }
   }
 
-  if ( bits & 2 )
-  {
+  if ( bits & 2 ) {
     child_of_root = root->child[ 3 ]; // 3 = T/U
-    if ( child_of_root != NULL )
-    {
+    if ( child_of_root != NULL ) {
       new_parameter = new SearchParameter;
 
-      //   printf( "push : child_of_root %p new_parameter %p\n",  child_of_root, new_parameter );
       new_parameter->node      = child_of_root;
       new_parameter->next      = NULL;
       new_parameter->previous  = end;
 
-//       printf( "push : %p (%c,,%p,%p)\n", new_parameter, new_parameter->node->base, new_parameter->previous, new_parameter->next );
-
       if (end   != NULL) end->next = new_parameter;
       if (begin == NULL) begin = new_parameter;
       end = new_parameter;
-      size++;
     }
   }
 
-  if ( bits & 4 )
-  {
+  if ( bits & 4 ) {
     child_of_root = root->child[ 0 ]; // 0 = C
-    if ( child_of_root != NULL )
-    {
+    if ( child_of_root != NULL ) {
       new_parameter = new SearchParameter;
 
-      //   printf( "push : child_of_root %p new_parameter %p\n",  child_of_root, new_parameter );
       new_parameter->node      = child_of_root;
       new_parameter->next      = NULL;
       new_parameter->previous  = end;
 
-//       printf( "push : %p (%c,%p,%p)\n", new_parameter, new_parameter->node->base, new_parameter->previous, new_parameter->next );
-
       if (end   != NULL) end->next = new_parameter;
       if (begin == NULL) begin = new_parameter;
       end = new_parameter;
-      size++;
     }
   }
 
-  if ( bits & 8 )
-  {
+  if ( bits & 8 ) {
     child_of_root = root->child[ 1 ]; // 1 = G
-    if ( child_of_root != NULL )
-    {
+    if ( child_of_root != NULL ) {
       new_parameter = new SearchParameter;
 
-      //   printf( "push : child_of_root %p new_parameter %p\n",  child_of_root, new_parameter );
       new_parameter->node      = child_of_root;
       new_parameter->next      = NULL;
       new_parameter->previous  = end;
 
-//       printf( "push : %p (%c,%p,%p)\n", new_parameter, new_parameter->node->base, new_parameter->previous, new_parameter->next );
-
       if (end   != NULL) end->next = new_parameter;
       if (begin == NULL) begin = new_parameter;
       end = new_parameter;
-      size++;
     }
   }
-//   getchar();
+
 }
 
 
@@ -173,79 +138,56 @@ void SearchFIFO::push ( char base_ )
 //
 void SearchFIFO::push_front( Node *child_of_current_ )
 {
-//   printf( "push_front : base %c\n", child_of_current_->base );
-
-  push_count++;
-
   SearchParameter *new_parameter = new SearchParameter;
 
   new_parameter->node      = child_of_current_;
   new_parameter->next      = begin;
   new_parameter->previous  = NULL;
 
-//   printf( "push_front : %p (%c,%p,%p)\n", new_parameter, new_parameter->node->base, new_parameter->previous, new_parameter->next );
-
   if (end   == NULL) end             = new_parameter;
   if (begin != NULL) begin->previous = new_parameter;
   begin = new_parameter;
-  size++;
 }
 
 void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 {
-  iterate_count++;
-  //   printf( "iterateWith : base %c pos %i begin %p end %p abort %s\n", base_, pos_, begin, end, (begin == NULL) ? "true" : "false" );
   if ( begin == NULL ) return;
 
   Node *child;
   int   bits;
   
   current = begin;
-  //   printf( "iterateWith : " );
 
-  if ( !expand_UPAC_Codes )
-  {
-    while ( current != NULL )
-    {
+  if ( !expand_IUPAC_Codes ) {
+    while ( current != NULL ) {
 
       // get childnode of parameters current node
       child = current->node->childByBase( base_ );
 
-      //     printf( "child %p ",child );
-      //     if ( child != NULL ) printf( "[%c] ", child->base );
-
       // erase parameter if child doesnt exist
-      if ( child == NULL )
-      {
-	//       printf( "no child:erase " );
+      if ( child == NULL ) {
 	erase( current );
       }
-      else
-      {
+      else {
 	// step down as child exists
 	current->node = child;
-	//       printf ( "stepped down ");
 	
 	// invalidate if node is primer and is in range
-	if ( child->isValidPrimer() )
-	{
-	  if ( min_distance_to_next_match <= 0 )
+	if ( child->isValidPrimer() ) {
+	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
-	  else
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) )
-	      child->last_base_index = -pos_;
-	  // 	printf ( "invalidated " );
+	  }
+	  else {
+	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	  }
 	}
 
 	// erase parameter if child is leaf
-	if ( child->isLeaf() )
-        {
-	  // 	printf ( "leaf:erasing ");
+	if ( child->isLeaf() ) {
 	  erase( current );
+
 	  // erase node in tree if leaf and invalid primer
-	  if ( !child->isValidPrimer() )
-	  {
-	    // 	  printf("invalidPrimer:removing ");
+	  if ( !child->isValidPrimer() ) {
 	    // remove child from parent
 	    child->parent->child[ CHAR2CHILD.INDEX[ base_ ] ] = NULL;
 	    child->parent->child_bits &= ~CHAR2BIT.FIELD[ base_ ];
@@ -259,34 +201,27 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
       current = (current == NULL) ? begin : current->next;
     }
   }
-  else // expand UPAC-Codes
-  {
-    while ( current != NULL )
-    {
+  else { // expand IUPAC-Codes
+    while ( current != NULL ) {
       bits = current->node->child_bits & CHAR2BIT.FIELD[ base_ ];
 
-      if ( bits & 1 ) // A
-      {
+      if ( bits & 1 ) { // A
 	child = current->node->child[ 2 ]; // 2 = A
 	
 	// invalidate if node is primer and is in range
-	if ( child->isValidPrimer() )
-	{
-	  if ( min_distance_to_next_match <= 0 )
+	if ( child->isValidPrimer() ) {
+	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
-	  else
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) )
-	      child->last_base_index = -pos_;
-	  // 	printf ( "invalidated " );
+	  }
+	  else {
+	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	  }
 	}
 
 	// erase child if child is leaf
-	if ( child->isLeaf() )
-	{
+	if ( child->isLeaf() ) {
 	  // erase node in tree if leaf and invalid primer
-	  if ( !child->isValidPrimer() )
-	  {
-	    // 	      printf("invalidPrimer:removing ");
+	  if ( !child->isValidPrimer() ) {
 	    // remove child from parent
 	    child->parent->child[ CHAR2CHILD.INDEX[ base_ ] ] = NULL;
 	    child->parent->child_bits &= ~CHAR2BIT.FIELD[ base_ ];
@@ -294,34 +229,28 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    delete child;
 	  }
 	}
-	else // add new parameter at the begin of fifo
-	{
+	else { // add new parameter at the begin of fifo
 	  push_front( child );
 	}
       }
 
-      if ( bits & 2 ) // T/U
-      {
+      if ( bits & 2 ) { // T/U
 	child = current->node->child[ 3 ]; // 3 = T/U
 
 	// invalidate if node is primer and is in range
-	if ( child->isValidPrimer() )
-	{
-	  if ( min_distance_to_next_match <= 0 )
+	if ( child->isValidPrimer() ) {
+	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
-	  else
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) )
-	      child->last_base_index = -pos_;
-	  // 	printf ( "invalidated " );
+	  }
+	  else {
+	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	  }
 	}
 
 	// erase child if child is leaf
-	if ( child->isLeaf() )
-	{
+	if ( child->isLeaf() ) {
 	  // erase node in tree if leaf and invalid primer
-	  if ( !child->isValidPrimer() )
-	  {
-	    // 	      printf("invalidPrimer:removing ");
+	  if ( !child->isValidPrimer() ) {
 	    // remove child from parent
 	    child->parent->child[ CHAR2CHILD.INDEX[ base_ ] ] = NULL;
 	    child->parent->child_bits &= ~CHAR2BIT.FIELD[ base_ ];
@@ -329,34 +258,28 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    delete child;
 	  }
 	}
-	else // add new parameter at the begin of fifo
-	{
+	else { // add new parameter at the begin of fifo
 	  push_front( child );
 	}
       }
 
-      if ( bits & 4 ) // C
-      {
+      if ( bits & 4 ) { // C
 	child = current->node->child[ 0 ]; // 0 = C
 
 	// invalidate if node is primer and is in range
-	if ( child->isValidPrimer() )
-	{
-	  if ( min_distance_to_next_match <= 0 )
+	if ( child->isValidPrimer() ) {
+	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
-	  else
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) )
-	      child->last_base_index = -pos_;
-	  // 	printf ( "invalidated " );
+	  }
+	  else {
+	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	  }
 	}
 
 	// erase child if child is leaf
-	if ( child->isLeaf() )
-	{
+	if ( child->isLeaf() ) {
 	  // erase node in tree if leaf and invalid primer
-	  if ( !child->isValidPrimer() )
-	  {
-	    // 	      printf("invalidPrimer:removing ");
+	  if ( !child->isValidPrimer() ) {
 	    // remove child from parent
 	    child->parent->child[ CHAR2CHILD.INDEX[ base_ ] ] = NULL;
 	    child->parent->child_bits &= ~CHAR2BIT.FIELD[ base_ ];
@@ -364,34 +287,28 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    delete child;
 	  }
 	}
-	else // add new parameter at the begin of fifo
-	{
+	else { // add new parameter at the begin of fifo
 	  push_front( child );
 	}
       }
 
-      if ( bits & 8 ) // G
-      {
+      if ( bits & 8 ) { // G
 	child = current->node->child[ 1 ]; // 1 = G
 
 	// invalidate if node is primer and is in range
-	if ( child->isValidPrimer() )
-	{
-	  if ( min_distance_to_next_match <= 0 )
+	if ( child->isValidPrimer() ) {
+	  if ( min_distance_to_next_match <= 0 ) {
 	    child->last_base_index = -pos_;
-	  else
-	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) )
-	      child->last_base_index = -pos_;
-	  // 	printf ( "invalidated " );
+	  }
+	  else {
+	    if ( min_distance_to_next_match >= abs(pos_ - child->last_base_index) ) child->last_base_index = -pos_;
+	  }
 	}
 
 	// erase child if child is leaf
-	if ( child->isLeaf() )
-	{
+	if ( child->isLeaf() ) {
 	  // erase node in tree if leaf and invalid primer
-	  if ( !child->isValidPrimer() )
-	  {
-	    // 	      printf("invalidPrimer:removing ");
+	  if ( !child->isValidPrimer() ) {
 	    // remove child from parent
 	    child->parent->child[ CHAR2CHILD.INDEX[ base_ ] ] = NULL;
 	    child->parent->child_bits &= ~CHAR2BIT.FIELD[ base_ ];
@@ -399,8 +316,7 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 	    delete child;
 	  }
 	}
-	else // add new parameter at the begin of fifo
-	{
+	else { // add new parameter at the begin of fifo
 	  push_front( child );
 	}
       }
@@ -412,8 +328,6 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
       current = (current == NULL) ? begin : current->next;
     }
   }
-
-//   printf ( "\n" );
 }
 
 
@@ -422,23 +336,20 @@ void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
 //
 void SearchFIFO::erase ( SearchParameter *param_ )
 {
-//   printf( "erase : %p (%c,%p,%p) ", param_, param_->node->base, param_->previous , param_->next );
-
   // unlink from doublelinked list
   if ( param_->next     != NULL ) param_->next->previous = param_->previous; else end   = param_->previous;
   if ( param_->previous != NULL ) param_->previous->next = param_->next;     else begin = param_->next;
-//   printf("unlinked ");
 
   // set current to current->previous if current is to delete
   if ( param_ == current ) current = param_->previous;
-//   printf("current adjusted to %p ",current);
 
   delete param_;
-  size--;
-//   printf("deleted\n");
 }
 
 
+//
+// print positions-list
+//
 void SearchFIFO::print ()
 {
   current = begin;
@@ -452,8 +363,7 @@ void SearchFIFO::print ()
   else
     printf( "end (nil)\n" );
 
-  while (current != NULL)
-  {
+  while ( current != NULL ) {
     printf( "print : %p (%p[%c],%p,%p)\n", current, current->node, current->node->base, current->previous, current->next );
     current = current->next;
   }

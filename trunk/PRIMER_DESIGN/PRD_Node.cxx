@@ -26,12 +26,12 @@ Node::Node ( Node* parent_, char base_, PRD_Sequence_Pos last_index_ )
 
 Node::Node ( Node* parent_, char base_ )
 {
-  init (parent_,base_,0);
+  init ( parent_,base_,0 );
 }
 
 Node::Node ()
 {
-  init (NULL,' ',0);
+  init ( NULL,' ',0 );
 }
 
 
