@@ -12,8 +12,10 @@
 
 void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL)
 {    
-#if defined(DEVEL_YADHU) || defined(DEVEL_RALF) 
+#if defined(DEVEL_YADHU) || defined(DEVEL_RALF)
+#if defined(ARB_OPENGL)
     RNA3D_StartApplication(aw->get_root());
+#endif // ARB_OPENGL
 #endif // DEVEL_YADHU
 }
 
