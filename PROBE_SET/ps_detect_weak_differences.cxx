@@ -1,7 +1,7 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/times.h>
 
 #ifndef PS_DATABASE_HXX
 #include "ps_database.hxx"
@@ -24,6 +24,32 @@ IDSet            *__PATHSET;
 IDID2IDSetMap    *__PAIR2PATH;
 SpeciesID         __ONEMATCH_MIN_ID;
 SpeciesID         __ONEMATCH_MAX_ID;
+
+void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
+    struct tms now;
+    times( &now );
+    if (_before) printf( "%s", _before );
+    printf( "time used : user (" );
+    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
+    unsigned int hours   = minutes / 60; 
+    minutes -= hours * 60;
+    if (hours > 0) printf( "%uh ", hours );
+    if (minutes > 0) printf( "%um ", minutes );
+    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
+    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
+    hours    = minutes / 60; 
+    minutes -= hours * 60;
+    if (hours > 0) printf( "%uh ", hours );
+    if (minutes > 0) printf( "%um ", minutes );
+    printf( "%.3fs)",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
+    if (_after) {
+        printf( "%s", _after );
+    } else {
+        printf( "\n" );
+    }
+    fflush( stdout );
+}
+
 
 //  ----------------------------------------------------
 //      void PS_print_path()
@@ -188,9 +214,19 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     __INVERSE_PATH = new IDVector;
 
     int c = 0;
+    struct tms before;
+    times( &before );
+    struct tms before_first_level_node;
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin(); i != _root_node->getChildrenEnd(); ++i,++c ) {
-        if ((c < 50) || (c % 100 == 0)) printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i\n", i->first, c+1, _root_node->countChildren() );
+        if ((c < 50) || (c % 100 == 0)) {
+            times( &before_first_level_node );
+            printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i  ", i->first, c+1, _root_node->countChildren() );
+        }
         PS_detect_weak_differences_stepdown( i->second, -1 );
+        if ((c < 50) || (c % 100 == 0)) {
+            PS_print_time_diff( &before_first_level_node, "this node ", "  " );
+            PS_print_time_diff( &before, "total ", "\n" );
+        }
     }
     printf( "%lu * %lu + %lu set operations performed\n", __COUNT_SET_OPS2, ULONG_MAX, __COUNT_SET_OPS );
 
@@ -455,13 +491,15 @@ int main( int argc,  char *argv[] ) {
             bitmap_filename = argv[3];
         }
     }
-
+    
+    struct tms before;
+    times( &before );
     printf( "Opening probe-set-database '%s'..\n", input_DB_name );
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
     db->load();
     __MAX_ID = db->getMaxID();
     __MIN_ID = db->getMinID();
-    printf( "loaded database (enter to continue)\n" );
+    PS_print_time_diff( &before, "(enter to continue)  " );
 //    getchar();
 
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
@@ -482,8 +520,9 @@ int main( int argc,  char *argv[] ) {
     printf( "(enter to continue)\n" );
 //    getchar();
 
+    times( &before );
     PS_print_and_evaluate_map( db->getRootNode(), result_filename );
-    printf( "(enter to continue)\n" );
+    PS_print_time_diff( &before, "(enter to continue)  " );
 //    getchar();
     delete __MAP;
     
