@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Mon Nov/26/2001 04:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Nov/27/2001 10:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -937,7 +937,8 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                     else {
                         usedText = text;
                     }
-                    XML_Text t(usedText.substr(1));
+//                     XML_Text t(usedText.substr(1)); // skip first char (\n)
+                    XML_Text t(usedText);
                 }
             }
             if (son) {
