@@ -31,11 +31,11 @@
 #define FONT_EXAMINE_MAX   500
 #define KNOWN_ISO_VERSIONS 3
 
-#if defined(DEBUG) || defined(DEVEL_RALF)
-// #warning font debugging is activ in release
+#if defined(DEVEL_RALF)
+#warning font debugging is active in release
+#endif // DEVEL_RALF
 #define DUMP_FONT_LOOKUP
 // #define DUMP_FONT_DETAILS
-#endif // DEBUG
 
 // --------------------------------------------------------------------------------
 
@@ -394,6 +394,11 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     // char          fn[128];      memset(fn,0,128);
     AW_BOOL       found;
     struct xfont *newfont, *nf, *oldnf;
+
+#if defined(DEVEL_RALF)
+#warning scalability shall be checked for each font -- not only for first
+#warning fontdetection is called for each GC -- do some caching ?
+#endif // DEVEL_RALF
 
     found_size = -1;
 
