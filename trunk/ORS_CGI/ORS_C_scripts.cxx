@@ -110,7 +110,7 @@ GB_ERROR ORS_file_2_java(char *command, char *tree, FILE *fd){
 	register int c;
 	while ( (c = getc(fd)) != EOF) GBS_chrcat(memfile,c);
 	int size = GBS_memoffset(memfile);		// sizeof data
-	char *data = GBS_strclose(memfile,0);
+	char *data = GBS_strclose(memfile);
 	// ** Now I would like to use perl, instead I have to use this ugly C
 	// Lets check the content type first
 	char *nl = strchr(data,'\n');

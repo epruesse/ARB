@@ -453,7 +453,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
             }
         }
         gb_names=GB_search(GB_get_father(gb_options),"_SPECIES",GB_STRING);
-        char *allnames = GBS_strclose(strstruct,0);
+        char *allnames = GBS_strclose(strstruct);
         err=GB_write_string(gb_names,allnames);
         delete allnames;
     }

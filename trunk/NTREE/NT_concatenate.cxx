@@ -294,7 +294,7 @@ GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_nam
         if (const_ali_name) GBS_strcat(ali_str,alignment_separator);
     }
 
-    char *ali_info_SAI = GBS_strclose(ali_str, 0);
+    char *ali_info_SAI = GBS_strclose(ali_str);
     if(!error) error   = GB_write_string(gb_data,ali_info_SAI);
     free(ali_info_SAI);
     return error;
@@ -376,7 +376,7 @@ void concatenateAlignments(AW_window *aws) {
 
                 {
                     char *concatenated_ali_seq_data;
-                    concatenated_ali_seq_data = GBS_strclose(str_seq, 0);
+                    concatenated_ali_seq_data = GBS_strclose(str_seq);
                     GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
                     GB_write_string(gb_data, concatenated_ali_seq_data);
                     free(concatenated_ali_seq_data);

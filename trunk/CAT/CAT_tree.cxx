@@ -55,7 +55,7 @@ GB_ERROR cat_write_cat_tree(CAT_tree *cat_tree, FILE *out){
 	long cat_offsets[CAT_FIELD_MAX];
 	long cat_sizes[CAT_FIELD_MAX];
 	int i,j,node;
-	for (i=0;i<CAT_FIELD_MAX;i++) cat_strings[i] = GBS_strclose(cat_mem_files[i],0);
+	for (i=0;i<CAT_FIELD_MAX;i++) cat_strings[i] = GBS_strclose(cat_mem_files[i]);
 	long sizeoftree = sizeof(CAT_tree) + sizeof(CAT_node) * (cat_tree->nnodes-1);
 	long offset = sizeoftree;
 	for (i=0;i<CAT_FIELD_MAX;i++){

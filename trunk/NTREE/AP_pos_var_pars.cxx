@@ -258,7 +258,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
             GBS_floatcat(strstruct, pow(1.0/logbase, i) );
             GBS_chrcat(strstruct,' ');
         }
-        char *h = GBS_strclose(strstruct,0);
+        char *h = GBS_strclose(strstruct);
         sprintf(buffer,"%s/_CATEGORIES",ali_name);
         GBDATA *gb_categories  = GB_search( gb_extended, buffer, GB_STRING);
         GB_write_string(gb_categories, h);

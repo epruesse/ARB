@@ -629,7 +629,7 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 	}
 	// if (!gb_field) return leerer bytestring;
 
-	bs.data = GBS_strclose(file,0);
+	bs.data = GBS_strclose(file);
 	bs.size = strlen(bs.data)+1;
 	return &bs;
 

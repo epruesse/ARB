@@ -528,13 +528,13 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
             nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
         }
         nt_build_conf_marked(used,topmid);
-        char *mid = GBS_strclose(middlefile,0);
+        char *mid = GBS_strclose(middlefile);
         GBS_strcat(topmid,mid);
         free(mid);
     }
 
-    char *middle = GBS_strclose(topmid,0);
-    char *top = GBS_strclose(topfile,0);
+    char *middle = GBS_strclose(topmid);
+    char *top = GBS_strclose(topfile);
 
     GBDATA *gb_configuration = GBT_create_configuration(gb_main,conf_name);
     GB_ERROR error = 0;

@@ -107,7 +107,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                         GBS_chrcat(str,toins);
                         GBS_strcat(str,str2+pos);
                         delete str2;
-                        str2 = GBS_strclose(str,0);
+                        str2 = GBS_strclose(str);
                         s2 = str2+pos+1;
                         *corrrected = 1;
                         continue;

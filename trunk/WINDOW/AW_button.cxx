@@ -1547,7 +1547,7 @@ char *AW_window::get_selection_list_contents( AW_selection_list * selection_list
         GBS_chrcat(fd,'\n');
         if (!number_of_lines) break;
     }
-    return GBS_strclose(fd,0);
+    return GBS_strclose(fd);
 }
 
 

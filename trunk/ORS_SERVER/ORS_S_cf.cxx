@@ -564,7 +564,7 @@ extern "C" void put_probe_field(ORS_local *locs, char *field_name) {
 		GBS_strcat(mem_file, locs->probe_field_data.data);
 		if (locs->probe_field_data.data[strlen(locs->probe_field_data.data)-1] != '*') GBS_strcat(mem_file, "*");
 		delete locs->search_any_field;
-		locs->search_any_field = GBS_strclose(mem_file,0);
+		locs->search_any_field = GBS_strclose(mem_file);
 	}
 	else {
 		pdb_elem = OS_find_pdb_list_elem_by_name(ors_main->pdb_list, locs->probe_field_section, field_name);

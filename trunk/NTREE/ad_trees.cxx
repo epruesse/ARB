@@ -393,7 +393,7 @@ char *readXmlTree(char *fname) {
                 GBS_strcat(buf,tmp);
             }
         }
-        char *path = GBS_strclose(buf,0);        
+        char *path = GBS_strclose(buf);        
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);

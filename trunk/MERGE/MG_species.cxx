@@ -245,7 +245,7 @@ char *MG_remap::remap(const char *sequence){
         if (strchr(gap_chars,c)) continue; // dont fill with gaps
         GBS_chrcat(outs,c);
     }
-    return GBS_strclose(outs,0);
+    return GBS_strclose(outs);
 }
 
 void MG_transfer_fields_info(char *fieldname = 0);
@@ -1009,7 +1009,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 }
                 GBS_strcat(str,"ABORT");
 
-                b = GBS_strclose(str,0);
+                b = GBS_strclose(str);
                 aliid = aw_message("There are more than one possible alignment targets\n"
                                    "Choose one destination alignment or ABORT",b);
                 free(b);

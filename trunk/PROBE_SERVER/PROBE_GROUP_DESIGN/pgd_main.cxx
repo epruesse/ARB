@@ -407,10 +407,10 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
         }
     }
 
-    bs.data = GBS_strclose(names, 0);
+    bs.data = GBS_strclose(names);
     bs.size = strlen(bs.data)+1;
 
-    checksum.data = GBS_strclose(checksums, 0);
+    checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);

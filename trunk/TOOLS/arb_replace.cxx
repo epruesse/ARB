@@ -131,7 +131,7 @@ int main(int argc, char **argv)
                 }
                 h = GBS_string_eval(p,eval,0);
                 GBS_strcat(strstruct,h);
-                ndata = GBS_strclose(strstruct,0);
+                ndata = GBS_strclose(strstruct);
                 free(h);
 
             }else{

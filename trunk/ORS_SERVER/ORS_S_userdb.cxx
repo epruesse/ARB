@@ -676,7 +676,7 @@ char * OS_who(ORS_local *locs, char *userpath) {
 	else
 		GBS_hash_do_loop((GB_HASH*)who_pm->pwds, OS_who_loop_all);
 	delete str;
-	str = GBS_strclose(who_file,0);
+	str = GBS_strclose(who_file);
 	return str;	// ...return it
 }
 

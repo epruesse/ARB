@@ -508,7 +508,7 @@ void OC_output_pdb_list(OC_pdb_list *list, char *select, char *how) {
 		}
 		GBS_strcat(mem_file, "</B></FONT>");
 		delete sections_string;
-		sections_string = GBS_strclose(mem_file,0);
+		sections_string = GBS_strclose(mem_file);
 		if (number_of > 1) 	printf("<CENTER>sections: %s</CENTER><P>",sections_string);
 		else 			sections_string = 0;
 	}
@@ -805,7 +805,7 @@ char *list_of_pub_parents(char *highest, char *lowest) {
 	if (!strcmp(hi,"/")) {
 		GBS_strcat(file, "/");
 		if (strcmp(lo,"/"))  GBS_chrcat(file, 1);
-				else return GBS_strclose(file,0);
+				else return GBS_strclose(file);
 	}
 
 	char *pos1=lo+strlen(hi);
@@ -824,7 +824,7 @@ char *list_of_pub_parents(char *highest, char *lowest) {
 		GBS_chrcat(file, 1);
 		pos1=pos2+1;
 	}
-	return GBS_strclose(file,0);
+	return GBS_strclose(file);
 }
 
 /*****************************************************************************
