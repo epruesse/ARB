@@ -248,8 +248,8 @@ void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
 #endif // DEBUG
 
         AW_rectangle srange;
-        device->transform(wrange.l, wrange.t, srange.l, srange.t);
-        device->transform(wrange.r, wrange.b, srange.r, srange.b);
+        device->transform(int(wrange.l), int(wrange.t), srange.l, srange.t);
+        device->transform(int(wrange.r), int(wrange.b), srange.r, srange.b);
 #if defined(DEBUG)
         printf("Window %i: Draw screen range of selected gene is: %i/%i -> %i/%i\n", win->get_nr(), srange.l, srange.t, srange.r, srange.b);
 #endif // DEBUG
