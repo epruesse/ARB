@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.h                                         //
 //    Purpose   : Functions used for calculation of alignment quality    //
-//    Time-stamp: <Sun Nov/23/2003 12:19 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/16/2003 09:22 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -29,9 +29,9 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node);
 
 GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
 
-int SQ_count_nr_of_groups(GBT_TREE *node, GBDATA *gb_main);
-
 GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main);
+
+void SQ_reset_counters(GBT_TREE *root); // reset counters used by SQ_calc_and_apply_group_data
 
 void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
 
