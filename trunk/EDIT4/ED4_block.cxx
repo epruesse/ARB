@@ -81,8 +81,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
             else if (new_len>len) {
                 for (int l=new_len-1; l>=len; l--) {
                     if (!ADPP_IS_ALIGN_CHARACTER(new_seq[l])) {
-                        error = "Result of block-operation to large (not enough gaps at end of sequence data)\n"
-                            "Maybe your sequences are not formatted?";
+                        error = "Result of block-operation to large (not enough gaps at end of sequence data)";
                         break;
                     }
                 }
@@ -759,15 +758,16 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
     char T_or_U;
     *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
     if (*error) return 0;
-    // char  T_or_U   = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
-    char *new_seq1 = GBT_complementNucSequence(seq, len, T_or_U);
-    char *new_seq2 = GBT_reverseNucSequence(new_seq1, len);
+    // char  T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
+    char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
+    char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
 
     delete new_seq1;
     if (new_len) *new_len = len;
     return new_seq2;
 }
-static char *unalign_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
+
+static char *unalign_sequence_internal(const char *seq, int len, int *new_len, bool to_the_right) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
     int o = 0;
     int n = 0;
@@ -783,12 +783,27 @@ static char *unalign_sequence(const char *seq, int len, int /*repeat*/, int *new
         o++;
     }
 
-    while (n<len) {
-        new_seq[n++] = gap;
+    if (n<len) {                // (move and) dot rest
+        int dotcount = len-n;
+        if (to_the_right) {
+            memmove(new_seq+dotcount, new_seq, n);
+            memset(new_seq, '.', dotcount);
+        }
+        else {
+            memset(new_seq+n, '.', dotcount);
+        }
     }
 
     if (new_len) *new_len = len;
     return new_seq;
+}
+
+static char *unalign_left_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
+    return unalign_sequence_internal(seq, len, new_len, false);
+}
+
+static char *unalign_right_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
+    return unalign_sequence_internal(seq, len, new_len, true);
 }
 
 static char *shift_left_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
@@ -881,14 +896,15 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
     int nrepeat = ED4_ROOT->edit_string->use_nrepeat();
 
     switch (operationType) {
-        case ED4_BO_UPPER_CASE: 	ED4_with_whole_block(sequence_to_upper_case, nrepeat); 		break;
-        case ED4_BO_LOWER_CASE: 	ED4_with_whole_block(sequence_to_lower_case, nrepeat); 		break;
-        case ED4_BO_REVERSE: 		ED4_with_whole_block(reverse_sequence, nrepeat); 		break;
-        case ED4_BO_COMPLEMENT:		ED4_with_whole_block(complement_sequence, nrepeat); 		break;
-        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(reverse_complement_sequence, nrepeat); 	break;
-        case ED4_BO_UNALIGN: 		ED4_with_whole_block(unalign_sequence, nrepeat); 		break;
-        case ED4_BO_SHIFT_LEFT:		ED4_with_whole_block(shift_left_sequence, nrepeat); 		break;
-        case ED4_BO_SHIFT_RIGHT: 	ED4_with_whole_block(shift_right_sequence, nrepeat); 		break;
+        case ED4_BO_UPPER_CASE:         ED4_with_whole_block(sequence_to_upper_case, nrepeat);          break;
+        case ED4_BO_LOWER_CASE:         ED4_with_whole_block(sequence_to_lower_case, nrepeat);          break;
+        case ED4_BO_REVERSE:            ED4_with_whole_block(reverse_sequence, nrepeat);                break;
+        case ED4_BO_COMPLEMENT:         ED4_with_whole_block(complement_sequence, nrepeat);             break;
+        case ED4_BO_REVERSE_COMPLEMENT: ED4_with_whole_block(reverse_complement_sequence, nrepeat);     break;
+        case ED4_BO_UNALIGN:            ED4_with_whole_block(unalign_left_sequence, nrepeat);           break;
+        case ED4_BO_UNALIGN_RIGHT:      ED4_with_whole_block(unalign_right_sequence, nrepeat);          break;
+        case ED4_BO_SHIFT_LEFT:         ED4_with_whole_block(shift_left_sequence, nrepeat);             break;
+        case ED4_BO_SHIFT_RIGHT:        ED4_with_whole_block(shift_right_sequence, nrepeat);            break;
 
         default: {
             e4_assert(0);
