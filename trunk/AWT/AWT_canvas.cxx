@@ -560,7 +560,6 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
             /** in most modes the user shall be able to
                 shift the display by dragging MM */
             switch(ntw->mode){
-                case AWT_MODE_NONE:
                 case AWT_MODE_SELECT:
                 case AWT_MODE_MARK:
                 case AWT_MODE_GROUP:
