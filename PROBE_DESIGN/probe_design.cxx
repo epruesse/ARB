@@ -784,7 +784,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
 #ifdef DEVEL_IDP
-    root->awar_int( "probe_design/gene", 1, db1);
+    root->awar_int( "probe_design/gene", 0, db1);
 #endif
 
     root->awar_int( "probe_match/mark_hits", 1, db1);
