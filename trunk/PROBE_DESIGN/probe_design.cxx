@@ -696,44 +696,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
     free(probe);
 
-    mark = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
-    int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
-
-    if (gb_main){
-        GB_push_transaction(gb_main);
-        gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-        if (mark){
-            if (show_status) aw_status("Unmark all species");
-            for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
-                 gb_species;
-                 gb_species = GBT_next_marked_species(gb_species) )
-            {
-                GB_write_flag(gb_species,0);
-#ifdef DEVEL_IDP
-		//<<<<<<< probe_design.cxx
-		for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
-		  GB_write_flag(gb_gene,0);
-		}
-		/*=======
-		for (gb_gene = GEN_first_marked_gene(GEN_get_gene_data(gb_species)); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene))  {
-		  GB_write_flag(gb_gene,0);
-		}
-		>>>>>>> 1.37*/
-#endif
-            }
-        }
-        if (write_2_tmp){
-            if (show_status) aw_status("Delete all old tmp fields");
-            for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
-                 gb_species;
-                 gb_species = GBT_next_species(gb_species) )
-            {
-                GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
-                if (gb_tmp) GB_delete(gb_tmp);
-            }
-        }
-    }
-
     long match_list_cnt;
     bytestring bs;
     bs.data = 0;
@@ -765,28 +727,66 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (hinfo) {
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
 #ifdef DEVEL_IDP
-    if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
+        if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
 #endif
     }
 
+    // clear all marks and delete all 'tmp' entries
+    
+    mark            = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
+    int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
+
+    if (gb_main){
+        GB_push_transaction(gb_main);
+        gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+        if (mark) {
+            if (show_status) aw_status("Unmark all species");
+            for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+                 gb_species;
+                 gb_species = GBT_next_marked_species(gb_species) )
+            {
+                GB_write_flag(gb_species,0);
+#ifdef DEVEL_IDP
+                if (gene_flag) {
+                    for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+                        GB_write_flag(gb_gene,0);
+                    }
+                }
+#endif
+            }
+        }
+        if (write_2_tmp){
+            if (show_status) aw_status("Delete all old tmp fields");
+            for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
+                 gb_species;
+                 gb_species = GBT_next_species(gb_species) )
+            {
+                GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
+                if (gb_tmp) GB_delete(gb_tmp);
+            }
+        }
+    }
+
+    if (show_status) aw_status("Parse the Results");
+    
     g_spd->probeSpecies.clear(); //saibaba
     g_spd->probeSeq.clear();
 
     while (hinfo && (match_name = strtok(0,toksep)) ) {
         match_info = strtok(0,toksep);
-    if (!match_info) break;
+        if (!match_info) break;
 #ifdef DEVEL_IDP
-    if (gene_flag) {
-        char *temp_gene_str = new char[strlen(match_info)+1];
-        strcpy(temp_gene_str,match_info);
-        gene_str      = strtok(temp_gene_str," ");
-        gene_str      = strtok(NULL," ");
+        if (gene_flag) {
+            char *temp_gene_str = new char[strlen(match_info)+1];
+            strcpy(temp_gene_str,match_info);
+            gene_str      = strtok(temp_gene_str," ");
+            gene_str      = strtok(NULL," ");
 
-        if (gene_str) gene_str = strdup(gene_str);
-        delete [] temp_gene_str;
-    }
+            if (gene_str) gene_str = strdup(gene_str);
+            delete [] temp_gene_str;
+        }
 #endif
-    char flag  = 'x';
+        char flag  = 'x';
         if (gb_main){
             gb_species = GBT_find_species_rel_species_data(gb_species_data,match_name);
 
@@ -794,15 +794,15 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (mark) {
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
-		    if (gene_flag) {
+                    if (gene_flag) {
                         if (strcmp(gene_str,"intron")) {
                             gb_gene = GEN_find_gene(gb_species,gene_str);
                             GB_write_flag(gb_gene,1);
                         }
-		    }
+                    }
 #endif
-            flag = '*';
-        }
+                    flag = '*';
+                }
                 else {
                     flag = GB_read_flag(gb_species) ? '*' : ' ';
                 }
