@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <aw_root.hxx>
+#include <aw_global_awars.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
@@ -15,15 +16,15 @@
 
 #include "awt_config_manager.hxx"
 
-#define WWW_COUNT 10
-#define AWAR_WWW_BROWSER "www/browser"
-#define AWAR_WWW_SELECT "www/url_select"
-#define AWAR_WWW_0 "www/url_0/srt"
-#define AWAR_WWW_1 "www/url_0/srt"
-#define AWAR_WWW_2 "www/url_0/srt"
+#define WWW_COUNT                10
+// #define AWAR_WWW_BROWSER "www/browser" // now defined by ARB_init_global_awars()
+#define AWAR_WWW_SELECT          "www/url_select"
+#define AWAR_WWW_0               "www/url_0/srt"
+#define AWAR_WWW_1               "www/url_0/srt"
+#define AWAR_WWW_2               "www/url_0/srt"
 #define AWAR_WWW_SELECT_TEMPLATE "www/url_%i/select"
-#define AWAR_WWW_TEMPLATE "www/url_%i/srt"
-#define AWAR_WWW_DESC_TEMPLATE "www/url_%i/desc"
+#define AWAR_WWW_TEMPLATE        "www/url_%i/srt"
+#define AWAR_WWW_DESC_TEMPLATE   "www/url_%i/desc"
 
 
 
@@ -38,32 +39,54 @@ void awt_create_aww_vars(AW_root *aw_root,AW_default aw_def){
     }
 
     aw_root->awar_int(AWAR_WWW_SELECT,0,aw_def);
-    aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def);
+
+    awt_assert(ARB_global_awars_initialized());
+//     aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def);
 }
+
+GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
+    // if gb_main == 0 -> normal system call is used
+
+    GB_ERROR  error   = 0;
+    char     *ka;
+    char     *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
+
+    while ( (ka = GBS_find_string(browser,"$(URL)",0)) ) {
+        char *nb = (char *)GB_calloc(sizeof(char), strlen(browser) + strlen(url));
+        *ka = 0;
+        sprintf(nb,"%s%s%s",browser,url,ka + 6);
+        free(browser);
+        browser = nb;
+    }
+
+    if (gb_main) {
+        if (GBCMC_system(gb_main, browser)) {
+            error = GB_get_error();
+        }
+    }
+    else {
+        char *command = GBS_global_string_copy("(%s)&", browser);
+        printf("Action: '%s'\n", command);
+        if (system(command)) aw_message(GBS_global_string("'%s' failed", command));
+        free(command);
+    }
+
+    free(browser);
+
+    return error;
+}
+
 
 GB_ERROR awt_open_ACISRT_URL_by_gbd(AW_root *aw_root,GBDATA *gb_main, GBDATA *gbd, const char *name, const char *url_srt){
     GB_ERROR        error = 0;
     GB_transaction  tscope(gb_main);
     char           *url   = GB_command_interpreter(gb_main,name,url_srt,gbd);
 
-    if (!url){
-        error = GB_get_error();
-    }else{
-        char *ka;
-        char *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
-        while ( (ka = GBS_find_string(browser,"$(URL)",0)) ){
-            char *nb = (char *)GB_calloc(sizeof(char), strlen(browser) + strlen(url));
-            *ka = 0;
-            sprintf(nb,"%s%s%s",browser,url,ka + 6);
-            delete browser;
-            browser = nb;
-        }
-        if (GBCMC_system(gb_main, browser)){
-            error = GB_get_error();
-        }
-        delete browser;
-        delete url;
-    }
+    if (!url) error = GB_get_error();
+    else error      = awt_openURL(aw_root, gb_main, url);
+
+    free(url);
+
     return error;
 }
 
@@ -79,7 +102,7 @@ GB_ERROR awt_openURL_by_gbd(AW_root *aw_root,GBDATA *gb_main, GBDATA *gbd, const
     return error;
 }
 
-void awt_openURL(AW_window *aww,GBDATA *gb_main){
+void awt_openDefaultURL_on_species(AW_window *aww,GBDATA *gb_main){
     GB_transaction  tscope(gb_main);
     AW_root        *aw_root          = aww->get_root();
     GB_ERROR        error            = 0;
@@ -140,7 +163,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
     aws->create_button("HELP", "HELP","H");
 
     aws->at("action");
-    aws->callback((AW_CB1)awt_openURL,cgb_main);
+    aws->callback((AW_CB1)awt_openDefaultURL_on_species,cgb_main);
     aws->create_button("WWW", "WWW", "W");
 
     aws->button_length(13);
