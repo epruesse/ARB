@@ -422,10 +422,12 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
         }
 
         if (!error && locs_error && locs_error[0]) {
-            static char *err;
+            static char *err = 0;
 
             if (err) free(err);
-            err   = locs_error;
+            err        = locs_error;
+            locs_error = 0;
+
             error = err;
         }
 
@@ -444,13 +446,16 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
         }
 
         free(bs.data);
+        free(locs_error);
     }
 
     return 0;
 }
 
-GBDATA *PG_find_probe_group_for_species(GBDATA *node, const set<SpeciesID>& species) {
-    set<SpeciesID>::const_iterator i;
+typedef SpeciesBag::const_iterator SpeciesBagIter;
+
+GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species) {
+    SpeciesBagIter i;
     for (i=species.begin(); i != species.end() && node; ++i) {
         node           = GB_find(node, "num", (const char *)&*i, down_2_level);
         if (node) node = GB_get_father(node);
@@ -460,47 +465,108 @@ GBDATA *PG_find_probe_group_for_species(GBDATA *node, const set<SpeciesID>& spec
     return node;
 }
 
-// void PG_find_probe_for_subtree(GBDATA *node,const deque<SpeciesID>& species, deque<string>& probe) {
-//     if (!node) return;
-//     GBDATA *pg_node=0;
-
-//     deque<SpeciesID>::const_iterator i;
-//     for (i=species.begin();i!=species.end();++i){
-//         if (!node) break;
-
-//         SpeciesID pg_id;
-//         do {
-//             pg_id = PG_get_id(node);  // atoi(PG_get_id(node).c_str());
-//             if(pg_id==*i) break;
-//         }
-//         while ( (node = GB_find(node,"node",0,this_level|search_next)) );
-
-//         if (pg_id!=*i) break;
-
-//         pg_node = node;
-//         node    = GB_find(node,"node",0,down_level);
+// static void dumpSpecies(SpeciesBagIter start, SpeciesBagIter end) {
+//     while (start != end) {
+//         fprintf(stdout, "%i ", *start);
+//         ++start;
 //     }
+// }
 
-//     if (i==species.end()) {
-//         GBDATA *pg_group = GB_find(pg_node,"group",0,down_level);
-//         if (pg_group) {
-//             for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
-//                  pg_probe;
-//                  pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
-//             {
-//                 probe.push_back(GB_read_char_pntr(pg_probe));
-//             }
-//         }
-//     }
+// static void dumpBestCover(SpeciesBagIter start, SpeciesBagIter end, int allowed_non_hits, int left_non_hits) {
+//     fprintf(stdout, "Found cover for ");
+//     dumpSpecies(start, end);
+//     fprintf(stdout, "allowed_non_hits=%i left_non_hits=%i\n", allowed_non_hits, left_non_hits);
+// }
 
-// }//PG_find_probe
+static GBDATA *best_covering_probe_group(GBDATA *pb_node, SpeciesBagIter start, SpeciesBagIter end, int allowed_non_hits, int& left_non_hits) {
+    GBDATA *pb_best_group = 0;
+
+//     fprintf(stdout, "Searching cover for ");
+//     dumpSpecies(start, end);
+//     fprintf(stdout, " (allowed_non_hits=%i)\n", allowed_non_hits);
+
+    pg_assert(allowed_non_hits >= 0);
+
+    if (start == end) {         // all specied found or skipped
+        pb_best_group = GB_find(pb_node, "group", 0, down_level);
+        left_non_hits = allowed_non_hits;
+    }
+    else {
+        // try direct path
+        int            max_left_non_hits = -1;
+        SpeciesBagIter next              = start;
+        ++next;
+
+        {
+            SpeciesID  id      = *start;
+            GBDATA    *pb_num = GB_find(pb_node, "num", (const char *)&id, down_2_level);
+
+            if (pb_num) { // yes there may be such a group
+                GBDATA *pb_subnode = GB_get_father(pb_num);
+                int     unused_non_hits;
+                GBDATA *pb_group   = best_covering_probe_group(pb_subnode, next, end, allowed_non_hits, unused_non_hits);
+
+                if (pb_group) {
+//                     dumpBestCover(next, end, allowed_non_hits, unused_non_hits);
+
+                    pb_best_group     = pb_group;
+                    max_left_non_hits = unused_non_hits;
+                }
+            }
+        }
+
+        if (allowed_non_hits) { // try to find group w/o current species
+            int     unused_non_hits;
+            GBDATA *pb_group = 0;
+
+            if (max_left_non_hits == -1) {
+                pb_group = best_covering_probe_group(pb_node, next, end, allowed_non_hits-1, unused_non_hits);
+            }
+            else {
+                // we already found a group with 'max_left_non_hits' left hits
+                // try to find better group only
+                if (allowed_non_hits > max_left_non_hits) {
+                    pb_group         = best_covering_probe_group(pb_node, next, end, allowed_non_hits-(max_left_non_hits+1), unused_non_hits);
+                    unused_non_hits += (max_left_non_hits+1);
+                }
+            }
+
+//             if (pb_group) dumpBestCover(next, end, allowed_non_hits, unused_non_hits);
+
+            if (pb_group && unused_non_hits>max_left_non_hits) {
+                pb_best_group  = pb_group;
+                max_left_non_hits = unused_non_hits;
+            }
+        }
+
+        left_non_hits = max_left_non_hits;
+    }
+
+    return pb_best_group;
+}
+
+GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *pb_rootNode, const SpeciesBag& species, int /*min_non_matched*/, int max_non_matched, int& groupsize) {
+    int     unused_non_matched;
+    GBDATA *pb_group = best_covering_probe_group(pb_rootNode, species.begin(), species.end(), max_non_matched, unused_non_matched);
+
+    if (pb_group) {
+        int non_matched = max_non_matched-unused_non_matched;
+        pg_assert(non_matched >= 0); // otherwise an exact group exists and we should not be here!
+        groupsize       = species.size()-non_matched;
+    }
+    else {
+        groupsize = 0;
+    }
+
+    return pb_group;
+}
 
 
-//return the id number stored in num under node
+// return the id number stored in num under node
 SpeciesID PG_get_id(GBDATA *node){
     GBDATA *pg_node = GB_find(node,"num",0,down_level);
     return GB_read_int(pg_node);
-}//PG_get_id
+}
 
 
 
