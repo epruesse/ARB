@@ -1784,7 +1784,7 @@ void AW_ERROR( const char *templat, ...) {
     char buffer[10000];
     va_list parg;
     char *p;
-    sprintf(buffer,"Internal ARB Error: ");
+    sprintf(buffer,"Internal ARB Error [AW]: ");
     p = buffer + strlen(buffer);
 
     va_start(parg,templat);
@@ -1795,6 +1795,7 @@ void AW_ERROR( const char *templat, ...) {
     if (GBS_do_core()){
         GB_CORE;
     }else{
+        gb_assert(0);
         fprintf(stderr,"Debug file $ARBHOME/do_core not found -> continuing operation \n");
     }
     aw_message(buffer);
