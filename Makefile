@@ -629,7 +629,7 @@ export:	tarfile
 	util/arb_export
 
 binlink:
-	(cd bin; make all);
+	(cd bin; $(MAKE) all);
 
 all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
