@@ -3,7 +3,6 @@
 #include "stdio.h"
 
 
-
 int SQ_get_raw_sequence(GBDATA *gb_main) {
 
 
@@ -51,7 +50,14 @@ int SQ_get_raw_sequence(GBDATA *gb_main) {
 
 	    if (read_sequence) {
 
-		rawSequence = GB_read_string(read_sequence);
+            rawSequence = GB_read_string(read_sequence); // @@@ Besser ist GB_read_char_pntr() !
+            // GB_read_string erzeugt eine Heap-Kopie der Sequenz und ist somit einiges langsamer.
+            // Du musst dann aber den Typ von 'rawSequence' in 'const char *' abaendern um
+            // sicherzustellen, dass Du nichts aenderst.
+            //
+            // Wenn Du mit GB_read_string liest, musst Du den String irgendwo wieder freigeben, was Du momentan
+            // nicht tust (sonst hast Du ein Speicherleck).
+            // Bei Verwendung von GB_read_char_pntr hast Du das Problem nicht.
 
 		//debug
 		sequenceLength = 100;
@@ -93,4 +99,4 @@ int SQ_get_raw_sequence(GBDATA *gb_main) {
     result = avr;
     return result;
 
-} 
+}
