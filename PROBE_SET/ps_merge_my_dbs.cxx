@@ -1,38 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/times.h>
 
-#ifndef PS_DATABASE_HXX
+#include "ps_tools.hxx"
 #include "ps_database.hxx"
-#endif
 
-void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
-    struct tms now;
-    times( &now );
-    if (_before) printf( "%s", _before );
-    printf( "time used : user (" );
-    unsigned int minutes = (now.tms_utime-_since->tms_utime)/CLK_TCK / 60;
-    unsigned int hours   = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs) system (", (float)(now.tms_utime-_since->tms_utime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    minutes  = (now.tms_stime-_since->tms_stime)/CLK_TCK / 60;
-    hours    = minutes / 60; 
-    minutes -= hours * 60;
-    if (hours > 0) printf( "%uh ", hours );
-    if (minutes > 0) printf( "%um ", minutes );
-    printf( "%.3fs)",  (float)(now.tms_stime-_since->tms_stime)/CLK_TCK-(hours*3600)-(minutes*60) );
-    if (_after) {
-        printf( "%s", _after );
-    } else {
-        printf( "\n" );
-    }
-    fflush( stdout );
-}
-
-//  ====================================================
 //  ====================================================
 
 int main( int argc,  char *argv[] ) {
