@@ -54,7 +54,9 @@ public:
     size_t 	size() const { return species.size(); }
     size_t 	empty() const { return species.empty(); }
 
-    GBDATA 	*groupEntry(GBDATA *pb_main, bool create, bool& created, int *numSpecies);	// searches or creates a group-entry in pb-db
+    GBDATA *groupEntry(GBDATA *pb_main, bool create, bool& created, int *numSpecies); // searches or creates a group-entry in pb-db
+
+    bool operator == (const PG_Group& other) const { return species == other.species; }
 };
 
 GBDATA *PG_get_first_probe(GBDATA *pb_group);
