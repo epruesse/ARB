@@ -26,7 +26,7 @@ help: $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
 
 $(HELPFILELIST): $(TARGET)
-	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://ig' | sort | uniq > $@
+	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
 
