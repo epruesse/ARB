@@ -437,7 +437,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
     aws->create_button(0,"SRT");
 
     aws->at_x(srtux);
-    aws->create_button(0,"ACI SRT PROGRAMM");
+    aws->create_button(0,"ACI/SRT PROGRAM");
 
 
     return (AW_window *)aws;
