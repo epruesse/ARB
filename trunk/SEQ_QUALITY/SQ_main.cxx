@@ -46,8 +46,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = 0;
-
-    GBT_TREE *tree        = 0;
+    GBT_TREE *tree    = 0;
 
     {
         char *treename = aw_root->awar(AWAR_SQ_TREE)->read_string(); // contains "????" if no tree is selected
@@ -60,6 +59,10 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         }
         else aw_message("No tree selected -- group specific calculations skipped.");
         free(treename);
+    }
+
+    if (!error) {
+        error = SQ_reset_quality_calcstate(gb_main);
     }
 
     // if tree == 0 -> do basic quality calculations that are possible without tree information
