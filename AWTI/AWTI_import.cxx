@@ -11,9 +11,9 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <GEN.hxx>
-#include "awtc_import.hxx"
+#include "awti_import.hxx"
 #include "awtc_rename.hxx"
-#include "awtc_imp_local.hxx"
+#include "awti_imp_local.hxx"
 
 struct awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000

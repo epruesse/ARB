@@ -19,24 +19,50 @@ depend:
 
 io_arbdb.o:  
 io_arbdb.o:  
-io_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  $(ARBHOME)/INCLUDE/arbdb.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h
-io_arbdb.o: xmalloc.h 
-io_arbdb.o:  lenstring.h hash.h
-io_arbdb.o: careful.h
+io_arbdb.o: xmalloc.h  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:  
+io_arbdb.o:   lenstring.h
+io_arbdb.o: hash.h careful.h
 getopt.o:  
 getopt.o:  
-getopt.o: getopt.h
-getopt1.o: getopt.h 
-xmalloc.o: 
-xmalloc.o: 
+getopt.o:  
+getopt.o:  
+getopt.o: 
+getopt1.o: getopt.h  
+getopt1.o:  
+getopt1.o:  
+getopt1.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:  
+xmalloc.o:   
 xmalloc.o:  xmalloc.h
-lenstring.o: 
 lenstring.o:  
 lenstring.o:  
-lenstring.o: lenstring.h xmalloc.h 
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  
+lenstring.o:  lenstring.h xmalloc.h
 careful.o:  
 careful.o:  
 careful.o:  
+careful.o:  
+careful.o:  
+careful.o:  
+careful.o: 

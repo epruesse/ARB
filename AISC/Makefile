@@ -28,33 +28,46 @@ proto:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-aisc.o: 
-aisc.o:  
+aisc.o:   
 aisc.o:  
 aisc.o:  
 aisc.o:  
 aisc.o:   
-aisc.o: aisc.h aisc_proto.h
-aisc_commands.o: 
+aisc.o:  
+aisc.o:  
+aisc.o:  
+aisc.o:   aisc.h aisc_proto.h
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
 aisc_commands.o:  
-aisc_commands.o:   aisc.h
-aisc_commands.o: aisc_proto.h
-aisc_var_ref.o: 
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o:  
+aisc_commands.o:  aisc.h aisc_proto.h
 aisc_var_ref.o:  
 aisc_var_ref.o:  
 aisc_var_ref.o:  
 aisc_var_ref.o:  
 aisc_var_ref.o:  
-aisc_var_ref.o:  aisc.h aisc_proto.h
-aisc_mix.o: 
+aisc_var_ref.o:  
+aisc_var_ref.o:  
+aisc_var_ref.o:  
+aisc_var_ref.o:  
+aisc_var_ref.o:   aisc.h
+aisc_var_ref.o: aisc_proto.h
 aisc_mix.o:  
 aisc_mix.o:  
 aisc_mix.o:  
 aisc_mix.o:  
 aisc_mix.o:  
-aisc_mix.o:  aisc.h aisc_proto.h
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:  
+aisc_mix.o:   aisc.h aisc_proto.h

@@ -9,8 +9,9 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
-#include "awtc_export.hxx"
-#include "awtc_exp_local.hxx"
+
+#include "awti_export.hxx"
+#include "awti_exp_local.hxx"
 
 export_format_struct::export_format_struct(void){
 	memset((char *)this,0,sizeof(export_format_struct));
@@ -55,7 +56,7 @@ char *awtc_read_export_format(export_format_struct * efo,char *file){
 	return 0;
 }
 
-GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple, 
+GB_ERROR AWTC_export_format(GBDATA *gb_main, char *formname, char *outname, int	multiple,
 		int openstatus )
 	{
 	char *fullformname = AWT_unfold_path(formname,"ARBHOME");
@@ -188,7 +189,7 @@ void AWTC_export_go_cb(AW_window *aww,GBDATA *gb_main){
 	char	*formname = awr->awar(AWAR_EXPORT_FORM"/file_name")->read_string();
 	int	multiple = (int)awr->awar(AWAR_EXPORT_MULTIPLE_FILES)->read_int();
 	GB_ERROR error = 0;
-	
+
 	char *outname = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
 	error = AWTC_export_format(gb_main, formname, outname, multiple,1);
 	aww->get_root()->awar(AWAR_EXPORT_FILE"/directory")->touch();

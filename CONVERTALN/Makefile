@@ -18,62 +18,78 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+main.o:   
 main.o:  
 main.o:  
 main.o:  
-main.o:  convert.h global.h prototypes.h
+main.o:   convert.h global.h
+main.o: prototypes.h
+fconv.o:  
 fconv.o:  
 fconv.o:  
 fconv.o:   convert.h
 fconv.o: global.h prototypes.h
-mg.o:  
-mg.o:  
-mg.o:   convert.h global.h
-mg.o: prototypes.h
+mg.o:   
+mg.o:   
+mg.o:   convert.h
+mg.o: global.h prototypes.h
+genbank.o:  
+genbank.o:  
 genbank.o:  
 genbank.o:  
 genbank.o:  
 genbank.o:  convert.h global.h prototypes.h
 macke.o:  
 macke.o:  
+macke.o:  
 macke.o:   convert.h
 macke.o: global.h prototypes.h
 phylip.o:  
 phylip.o:  
+phylip.o:  
 phylip.o:   convert.h
 phylip.o: global.h prototypes.h
+paup.o:   
 paup.o:  
 paup.o:  
-paup.o:   convert.h global.h
-paup.o: prototypes.h
+paup.o:  convert.h global.h prototypes.h
+util.o:   
 util.o:  
 util.o:  
 util.o:  
 util.o:   
-util.o: convert.h global.h prototypes.h
+util.o:   
+util.o:  
+util.o:  
+util.o:  convert.h global.h prototypes.h
+date.o:   
 date.o:  
 date.o:  
 date.o:  
 date.o:   
-date.o:  
+date.o:   
 date.o:  
 date.o:  convert.h global.h prototypes.h
+embl.o:   
 embl.o:  
 embl.o:  
-embl.o:   convert.h global.h
-embl.o: prototypes.h
+embl.o:  convert.h global.h prototypes.h
+gcg.o:   
 gcg.o:  
 gcg.o:  
-gcg.o:   convert.h global.h
-gcg.o: prototypes.h
+gcg.o:  convert.h global.h prototypes.h
+printable.o:  
 printable.o:  
 printable.o:  
 printable.o:   convert.h
 printable.o: global.h prototypes.h
+alma.o:   
 alma.o:  
 alma.o:  
 alma.o:  
-alma.o:  convert.h global.h prototypes.h
+alma.o:   convert.h global.h
+alma.o: prototypes.h
+routines.o:  
 routines.o:  
 routines.o:  
 routines.o:   convert.h

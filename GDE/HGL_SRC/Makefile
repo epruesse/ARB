@@ -40,106 +40,136 @@ $(ARBHOME)/bin/Consto01mask: Consto01mask.c $(libs.o) $(MKFILE)
 	$(CC) $(cflags) -o $@ $(@F).c $(libs.o) $(SYSLIBS)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-Alloc.o:  global_defs.h
 Alloc.o:  
 Alloc.o:  
+Alloc.o:  
+Alloc.o:   global_defs.h
 Alloc.o:   
 Alloc.o:  
 Alloc.o:  
-Alloc.o: 
-Consto01mask.o: global_defs.h 
+Alloc.o:  
+Alloc.o:  
+Alloc.o:  
+Alloc.o:  
+Alloc.o:  
+Consto01mask.o: global_defs.h  
 Consto01mask.o:  
 Consto01mask.o:  
 Consto01mask.o:  
 Consto01mask.o:  
 Consto01mask.o:  
 Consto01mask.o:  
-DotPlotTool.o: global_defs.h 
+Consto01mask.o:  
+Consto01mask.o:  
+Consto01mask.o:  
+Consto01mask.o:  
+Consto01mask.o:  
+Consto01mask.o: 
+DotPlotTool.o: global_defs.h  
 DotPlotTool.o:  
 DotPlotTool.o:  
 DotPlotTool.o:  
 DotPlotTool.o:  
 DotPlotTool.o:  
 DotPlotTool.o:  
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
-DotPlotTool.o: 
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
+DotPlotTool.o:  
 DotPlotTool.o:  plot.icon
-HGLfuncs.o: global_defs.h 
+HGLfuncs.o: global_defs.h  
 HGLfuncs.o:  
 HGLfuncs.o:  
 HGLfuncs.o:  
 HGLfuncs.o:  
 HGLfuncs.o:  
 HGLfuncs.o:  
+HGLfuncs.o:  
+HGLfuncs.o:  
+HGLfuncs.o:  
+HGLfuncs.o:  
+HGLfuncs.o:  
+HGLfuncs.o: 
+MAP_ChooseFile.o:  
+MAP_ChooseFile.o:  
+MAP_ChooseFile.o:  
+MAP_ChooseFile.o:  
+MAP_ChooseFile.o:  
+MAP_ChooseFile.o:  
 MAP_ChooseFile.o:  
 MAP_ChooseFile.o: 
 MAP_ChooseFile.o:  
-MAP_ChooseFile.o:  
-MAP_ChooseFile.o:  
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
-MAP_ChooseFile.o: 
 MAP_ChooseFile.o:  
 MakeCons.o:  
 MakeCons.o:  
 MakeCons.o:  
 MakeCons.o:  
-MakeCons.o:   global_defs.h
+MakeCons.o:  global_defs.h 
+MakeCons.o:  
+MakeCons.o:  
+MakeCons.o:  
+MakeCons.o:  
+MakeCons.o:  
+MakeCons.o:  
 MakeCons.o:  
 MakeCons.o: 
-PrintStrat.o: global_defs.h 
+PrintStrat.o: global_defs.h  
 PrintStrat.o:  
 PrintStrat.o:  
 PrintStrat.o:  
 PrintStrat.o:  
 PrintStrat.o:  
 PrintStrat.o:  
+PrintStrat.o:  
+PrintStrat.o:  
+PrintStrat.o:  
+PrintStrat.o:  
+PrintStrat.o:  
+PrintStrat.o: 
+Translate.o:  
+Translate.o:  
+Translate.o:  
+Translate.o:  
+Translate.o:   global_defs.h
 Translate.o:  
 Translate.o:  
 Translate.o:  
 Translate.o:  
 Translate.o:  
-Translate.o:  global_defs.h
 Translate.o:  
-heapsortHGL.o:  global_defs.h
+Translate.o:  
+Translate.o: 
+heapsortHGL.o:  
+heapsortHGL.o:  
+heapsortHGL.o:  
+heapsortHGL.o:  
+heapsortHGL.o: global_defs.h  
 heapsortHGL.o:  
 heapsortHGL.o:  
 heapsortHGL.o:  
 heapsortHGL.o:  
 heapsortHGL.o:  
 heapsortHGL.o:  
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
-mapview.o: 
+heapsortHGL.o:  
+heapsortHGL.o: 
 mapview.o:  
 mapview.o:  
 mapview.o:  
 mapview.o:  
 mapview.o:  
-mapview.o:  global_defs.h
-mapview.o: 
+mapview.o:  
+mapview.o:  
+mapview.o:  
+mapview.o:  
+mapview.o:  
+mapview.o:   global_defs.h
+mapview.o:   
+mapview.o:  
+mapview.o:  
+mapview.o:  
 mapview.o:  
 mapview.o:  

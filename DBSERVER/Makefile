@@ -16,6 +16,8 @@ depend:
 
 db_server.o:  
 db_server.o:  
-db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
+db_server.o:  
+db_server.o:  
+db_server.o:  $(ARBHOME)/INCLUDE/arbdb.h
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
