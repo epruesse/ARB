@@ -290,7 +290,7 @@ endif
 
 #********************* End of user defined Section *******************
 
-test_DEBUG: 
+test_DEBUG:
 ifndef dflags
 		@echo DEBUG has to be defined. Valid values are 0 and 1
 		@echo Please check your config.makefile
@@ -706,6 +706,8 @@ binlink:
 	(cd bin; $(MAKE) all);
 
 all: tests arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+		echo -----------------------------------
+		echo 'make all' has been done successful
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 ifndef DEBIAN
@@ -802,7 +804,7 @@ realclean: clean
 	rm -f AISC/aisc
 	rm -f AISC_MKPTPS/aisc_mkpt
 
-rebuild: 
+rebuild:
 		$(MAKE) realclean
 		$(MAKE) all
 
