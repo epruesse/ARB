@@ -10,6 +10,7 @@ CPP_OBJECTS =   \
 	GEN_gene.o \
 	GEN_nds.o \
 	GEN_color_groups.o \
+	GEN_tools.o \
     \
 	EXP_interface.o \
 	EXP_main.o \
@@ -103,6 +104,7 @@ GEN_gene.o: GEN.hxx
 GEN_gene.o: GEN_gene.hxx
 GEN_gene.o: GEN_local.hxx
 GEN_gene.o: GEN_nds.hxx
+GEN_gene.o: GEN_tools.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -207,3 +209,14 @@ GEN_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 GEN_read.o: $(ARBHOME)/INCLUDE/inline.h
+
+GEN_tools.o: GEN.hxx
+GEN_tools.o: GEN_local.hxx
+GEN_tools.o: GEN_tools.hxx
+GEN_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GEN_tools.o: $(ARBHOME)/INCLUDE/adGene.h
+GEN_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GEN_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
+GEN_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GEN_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GEN_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
