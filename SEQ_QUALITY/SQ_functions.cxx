@@ -264,8 +264,6 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 
 
     char *alignment_name;
-    const char *path = "demo.arb";
-    const char *savetype = "b";
 
     GBDATA *gb_species;
     GBDATA *gb_species_data;
@@ -326,4 +324,27 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 
     GB_pop_transaction(gb_main);
 
+}
+
+
+
+void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only){
+
+    GBT_TREE *parent = 0;
+
+
+    if (node->gb_node){
+	if (node->is_leaf){
+	    parent = node->father;
+	    //gb_main = GB_find(node->gb_node,"name",0,down_level);
+	    SQ_calc_sequence_structure(gb_main, marked_only);
+	}
+	else {
+	    parent = node;
+	    node = parent->rightson;
+	    SQ_traverse_through_tree(gb_main, node, marked_only);
+	    node = parent->leftson;
+	    SQ_traverse_through_tree(gb_main, node, marked_only);
+	}
+    }
 }
