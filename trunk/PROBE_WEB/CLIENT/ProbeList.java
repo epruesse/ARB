@@ -48,17 +48,13 @@ class ProbeList extends java.awt.List {
     public int getSortedIndexOf(String probeSeq) { return probes == null ? -1 : probes.getSortedIndexOf(probeSeq); }
 
     public void showOverlap(Probe p) throws Exception {
-        if (Probe.setOverlapProbe(p)) {
-            System.out.println("showOverlap refreshes List");
-
-            // int old_index = getSelectedIndex();
+        if (Probe.setOverlapProbe(p)) {            
+            // System.out.println("showOverlap refreshes List");
+            if (p == null) {    // overlapping switched off 
+                Probe.removeCompareOrder(Probe.SORT_BY_OVERLAP); // disable sort by overlap
+            }
+            gui.getProbeToolbar().set_OL_enabled(p != null);
             refreshList();
-//             if (p == null) {
-//                 selectProbe(old_index);
-//             }
-//             else {
-//                 selectProbe(getSortedIndexOf(p));
-//             }
         }
     }
 
@@ -67,6 +63,9 @@ class ProbeList extends java.awt.List {
         if (index != -1) {
             // System.out.println("selectProbe index="+index);
             select(index);
+            // if (!isVisible(index))
+            // @@@ FIXME: call makeVisible _only_ if 'index' is not visible
+            // (don't know how to test)
             makeVisible(index);
 
             Probe p = getProbe(index);
@@ -135,7 +134,7 @@ class ProbeList extends java.awt.List {
     public void setContents(NodeProbes nodeProbes, String preferredProbe) throws Exception {
         probes = nodeProbes;
         probes.resortProbes();
-        
+
         int preferredIndex = preferredProbe == null ? -1 : probes.getSortedIndexOf(preferredProbe);
         if (preferredIndex != -1) {
             lastSelectedProbe = getProbe(preferredIndex);
