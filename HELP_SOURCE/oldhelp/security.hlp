@@ -1,7 +1,6 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	glossary.hlp
 UP	arb_edit.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
@@ -17,7 +16,7 @@ OCCURENCE	ARB_NT/Protection
 
 DESCRIPTION	An individual protection level (0 - 6) can be assigned to
 		all types of database entries (sequences and additional
-		information stored in a particular 'field'). 
+		information stored in a particular 'field').
 		To modify any entries, a protection level has to be selected
 		from the 'Protection' menu of the main window equal to or higher
 		than that assigned to the data.
@@ -26,14 +25,14 @@ DESCRIPTION	An individual protection level (0 - 6) can be assigned to
 
 			Sequence names:		5
 
-		You can see the Protection level of fields in the species/gene 
-		information window.	
+		You can see the Protection level of fields in the species/gene
+		information window.
 
 EXAMPLES	None
 
 
 WARNINGS	It is recommended to reset the protection level after
 		performing operations to prevent unintentional modification
-		or loss of data.	
+		or loss of data.
 
 BUGS		No bugs known

@@ -4,17 +4,18 @@ UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	e4.hlp
+SUB	mark.hlp
 
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile @@@ ********
-TITLE		Selection of Species ( == Configurations )
+TITLE		Selections of Species (Configurations)
 
 OCCURRENCE	ARB_NTREE/Species/Selections
 
 DESCRIPTION	Each species is either marked or unmarked. All species that are
 		marked are called marked species. In order to handle multiple
-		sets of marked species we use configurations ( = a selection of species).
+		sets of marked species we use configurations ( = selections of species).
 
                 Several operations are possible with the configurations:
 

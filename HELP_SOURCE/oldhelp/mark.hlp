@@ -2,8 +2,11 @@
 UP	arb.hlp
 UP	glossary.hlp
 UP	mode.hlp
+
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	sp_search.hlp
+SUB	configuration.hlp
+SUB	colorize.hlp
 
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
@@ -35,3 +38,4 @@ EXAMPLES	Mark one known species:
 
 			1. Select the <MARK MODE>
 			2. Press the left mouse button at a subtree.
+

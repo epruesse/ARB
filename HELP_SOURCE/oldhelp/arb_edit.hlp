@@ -18,7 +18,6 @@ SUB	ne_copy_sequence.hlp
 SUB	ne_align_seq.hlp
 SUB	neprops_data.hlp
 SUB	neprops.hlp
-SUB	nekey_map.hlp
 SUB	helixsym.hlp
 SUB	ne_pretty.hlp
 

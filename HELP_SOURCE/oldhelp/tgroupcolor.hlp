@@ -3,6 +3,7 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
+SUB	color.hlp
 SUB	markcolor.hlp
 SUB	set_color_of_listed.hlp
 

@@ -18,7 +18,7 @@ SUB	helixsym.hlp
 
 #************* Title of helpfile !! and start of real helpfile ********
 
-TITLE		The New Sequence and Secondary Structure Editor
+TITLE		ARB_EDIT4 - Sequence and Secondary Structure Editor
 
 OCCURRENCE	ARB_NT/Sequence/Edit marked sequences
 
