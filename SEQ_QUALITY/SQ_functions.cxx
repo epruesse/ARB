@@ -346,12 +346,11 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights) {
 			}
 		    }
 		}
-		if (result != 0 ) (result = result * weights.gc) / 5;
+		if (result != 0 ) result = (result * weights.gc) / 5;
 		value += result;
 
 		/*write the final value of the evaluation*/
 		value2 = round(value);
-		if (value2 < 60) printf("%i ",value2);
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value2);

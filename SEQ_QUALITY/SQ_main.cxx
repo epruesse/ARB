@@ -60,7 +60,7 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
     aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 50, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 40, aw_def);
     aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
 }
 
