@@ -40,7 +40,35 @@ public class HttpSubsystem {
         System.out.println("  url.getRef()='"+url.getRef()+"'");
     }
 
-    private static int streamAll(Reader in, Writer out) throws Exception {
+    // private static int readInputStream(InputStream in, char[])
+
+    private static int streamAll(InputStream in, OutputStream out) throws Exception {
+        final int bufsize       = 64*1024;
+        byte[]    buffer        = new byte[bufsize];
+        int       streamedBytes = 0;
+
+        // InputStreamReader  reader = new InputStreamReader(instream);
+        // OutputStreamWriter writer = new OutputStreamWriter(outstream);
+
+        try {
+            int readBytes = in.read(buffer);
+            System.out.println("  readBytes="+readBytes+" (first)");
+            while (readBytes != -1) { // got some bytes
+                
+                out.write(buffer, 0, readBytes);
+                streamedBytes += readBytes;
+                readBytes      = in.read(buffer);
+                System.out.println("  readBytes="+readBytes);
+            }
+        }
+        catch (IOException e) {
+            Toolkit.AbortWithError("while streaming data: "+e.getMessage());
+        }
+
+        System.out.println("streamedBytes="+streamedBytes);
+        return streamedBytes;
+    }
+    private static int streamAll_old(Reader in, Writer out) throws Exception {
         final int bufsize       = 64*1024;
         char[]    buffer        = new char[bufsize];
         int       streamedBytes = 0;
@@ -66,7 +94,7 @@ public class HttpSubsystem {
         return streamedBytes;
     }
 
-    private int conductRequest_internal(String relativePath, String expected_content_type, Writer out) {
+    private int conductRequest_internal(String relativePath, String expected_content_type, OutputStream out) {
         // returns number of bytes read
 
         lastRequestError = null;
@@ -131,8 +159,18 @@ public class HttpSubsystem {
 //                     System.out.println("content_len='"+content_len+"'");
 //                 }
 
-                InputStreamReader in = new InputStreamReader(request.getInputStream());
-                int bytes_read = streamAll(in, out);
+//                 Reader in = null;
+//                 if (content_type.equals("text/plain")) {
+//                     in = new InputStreamReader(request.getInputStream());
+//                 }
+//                 else if (content_type.equals("application/octet-stream")) {
+//                     in = ;
+//                 }
+//                 else {
+//                     throw new Exception("Unhandled content-type '"+content_type+"'");
+//                 }
+
+                int bytes_read = streamAll(request.getInputStream(), out);
                 if (bytes_read != content_len && content_len != -1) {
                     System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
                 }
@@ -154,11 +192,13 @@ public class HttpSubsystem {
     }
 
     public String conductRequest(String relativePath) {
-        StringWriter str           = new StringWriter(1000);
-        int          streamedBytes = conductRequest_internal(relativePath, "text/plain", str);
+        // StringWriter str = new StringWriter(1000);
+        
+        ByteArrayOutputStream str     = new ByteArrayOutputStream(10000);
+        int                   written = conductRequest_internal(relativePath, "text/plain", str);
 
-        if (streamedBytes <= 0 && lastRequestError == null) {
-            lastRequestError = "streamedBytes="+streamedBytes+" (illegal value)";
+        if (written <= 0 && lastRequestError == null) {
+            lastRequestError = "written="+written+" (illegal value)";
         }
 
         if (lastRequestError != null) {
@@ -175,15 +215,15 @@ public class HttpSubsystem {
     public String downloadZippedTree(String fileName) {
         try {
             Toolkit.showMessage("  to file "+fileName);
-            FileWriter outfile = new FileWriter(fileName);
-
-            // int streamedBytes = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
-            int streamedBytes = conductRequest_internal("getTreeBinary.cgi", "application/octet-stream", outfile);
+            // FileWriter outfile          = new FileWriter(fileName);
+            FileOutputStream outstream     = new FileOutputStream(fileName);
+            // int streamedBytes           = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+            int              streamedBytes = conductRequest_internal("getTreeBinary.cgi", "application/octet-stream", outstream);
 
             // System.out.println("downloaded tree (lastRequestError="+lastRequestError+")");
             // outstream.write(response, 0, response.length);
 
-            outfile.close();
+            outstream.close();
 
             Toolkit.showMessage("Tree has been saved ("+(streamedBytes/1024)+"k)");
         }
