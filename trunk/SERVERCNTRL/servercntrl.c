@@ -140,10 +140,10 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     }
     
     return GB_export_error("I got some problems to start your server:\n"
-                           "	Possible Reasons:\n"
+                           "	Possible Reasons may be one or more of the following list:\n"
                            "	- there is no database in $ARBHOME/lib/pts/*\n"
                            "		update server <ARB_NT/Probes/PT_SERVER Admin/UPDATE SERVER>\n"
-                           "	- you are not allowed to run 'rsh host pt_server ....&'\n"
+                           "	- you are not allowed to run 'ssh host pt_server ....&'\n"
                            "		check file '/etc/hosts.equiv' (read man pages for help)\n"
                            "	- the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
                            "	- the PT_SERVER host is not up\n"
