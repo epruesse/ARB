@@ -13,6 +13,7 @@
 
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
+#define DEFAULT_LENGTH 0.1 // default length of tree-edge w/o given length
 
 /********************************************************************************************
 					some alignment header functions
@@ -1194,7 +1195,7 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
             left->name = str;
         }
         if (gbt_last_character !=  ':') {
-            nod->leftlen = 1.0;
+            nod->leftlen = DEFAULT_LENGTH;
         }else{
             gbt_read_char(input,c);
             nod->leftlen = gbt_read_number(input);
@@ -1234,7 +1235,7 @@ GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize)
                 right->name = str;
             }
             if (gbt_last_character != ':') {
-                nod->rightlen = 0.1;
+                nod->rightlen = DEFAULT_LENGTH;
             }else{
                 gbt_read_char(input, c);
                 nod->rightlen = gbt_read_number(input);

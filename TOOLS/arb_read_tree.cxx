@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 	}
 	GB_begin_transaction(gb_main);
 	if (tree->is_leaf){
-	    GBT_message(gb_main,"Cannot load tree");
+ 	    GBT_message(gb_main,"Cannot load tree");
 	    GB_commit_transaction(gb_main);
 	    GB_close(gb_main);
 	    return -1;
