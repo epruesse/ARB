@@ -70,7 +70,6 @@ MATCH	"mty:*"
 
 SEQUENCEAFTER	"seq:*"
 SEQUENCEACI	"remove(" [](){}^*")|srt(o=.)"
-SEQUENCECOLUMN	0
 SEQUENCEEND	"//"
 CREATE_ACC_FROM_SEQUENCE
 

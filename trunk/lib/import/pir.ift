@@ -8,7 +8,7 @@ MATCH	"C;Accession: *"
 	WRITE 	"acc"
 
 MATCH	"C;Species: *"
-	SRT 	"* *=*2"	
+	SRT 	"* *=*2"
 	WRITE 	"full_name"
 
 MATCH	"C;Species: *"
@@ -60,7 +60,6 @@ BEGIN	"??;*"
 SEQUENCESTART	"*Check:*"
 SEQUENCESRT	"*Check*..*=*3"
 SEQUENCEACI	"remove("0123456789. /")"
-SEQUENCECOLUMN	0
 SEQUENCEEND	"/END/"
 CREATE_ACC_FROM_SEQUENCE
 
