@@ -1615,7 +1615,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("reverse_complement", "Reverse Complement", 0, "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE_COMPLEMENT), 0);
     ____________________________SEP;
     awmm->insert_menu_topic("unalign", "Unalign Block", "a", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN), 0);
-    awmm->insert_menu_topic("unalign", "Unalign Block right", "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT), 0);
+    awmm->insert_menu_topic("unalign", "Unalign Block right", "", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT), 0);
     awmm->insert_menu_topic("replace", "Search & Replace ", "R", "e4_replace.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_replace_window, 0);
     ____________________________SEP;
     awmm->insert_menu_topic("toggle_block_type", "Line block <-> Column block", 0, "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
