@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Thu Feb/05/2004 12:12 MET Coder@ReallySoft.de>       //
+//    Time-stamp: <Fri Oct/01/2004 17:50 MET Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -193,7 +193,7 @@ template <int I>
 int SQ_GroupData_Impl<I>::SQ_print_on_screen() {
     for (int i=0; i < size; i++ ){
 	for (int j = 0; j<I; j++) {
-	    cout << consensus[i].i[j];
+	    std::cout << consensus[i].i[j];
 	}
     }
     return (0);
