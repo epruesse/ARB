@@ -68,23 +68,28 @@ extern int aisc_core_on_error;
 
 int main(int argc, char **argv)
 {
-    int i;
-    struct Hs_struct *so;
-     char *name;
-    char *error;
-    char *aname,*tname;
-    const char *suffix;
-    struct stat s_source,s_dest;
-    int build_flag;
+    int                i;
+    struct Hs_struct  *so;
+     char             *name;
+    char              *error;
+    char              *aname,*tname;
+    const char        *suffix;
+    struct stat        s_source,s_dest;
+    int                build_flag;
     struct arb_params *params;
-    char    *command_flag;
-    params = arb_trace_argv(&argc,argv);
+    char              *command_flag;
+
+    params             = arb_trace_argv(&argc,argv);
     PT_init_psg();
-    GB_install_pid(0);      /* not arb_clean able */
+    GB_install_pid(0);          /* not arb_clean able */
     aisc_core_on_error = 0;
-    physical_memory = GB_get_physical_memory();
+    physical_memory    = GB_get_physical_memory();
+#if defined(DEBUG)
+    printf("physical_memory=%lu k (%lu Mb)\n", physical_memory, physical_memory/1024UL);
+#endif // DEBUG
+
     /***** try to open com with any other pb server ******/
-    if ((argc>2) ||
+    if ((argc>2)                         ||
         ((argc<2) && !params->db_server) ||
         (argc >= 2 && strcmp(argv[1], "--help") == 0))
     {
@@ -118,6 +123,7 @@ int main(int argc, char **argv)
             exit(0);
         }
         enter_stage_1_build_tree(aisc_main,tname);
+        printf("PT_SERVER database '%s' has been created.\n", params->db_server);
         exit(0);
     }
     if (!strcmp(command_flag, "-QUERY")) {
