@@ -207,6 +207,8 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
         return -1;
     }
 
+    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB database (%s)", db_server));
+
     aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
     free(db_server);
     nt_main_startup_main_window(aw_root);
@@ -297,7 +299,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
 
     aws->at("version");
     aws->create_button(0, GBS_global_string("Version " DATE), 0); // version
-    
+
     aws->at("copyright");
     aws->create_button(0, GBS_global_string("(C) 1993-" DATE_YEAR), 0); 
 
@@ -331,18 +333,28 @@ void AD_set_default_root(AW_root *aw_root);
 //      static void AWAR_DB_PATH_changed_cb(AW_root *awr)
 //  ----------------------------------------------------------
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
-    char *value  = awr->awar(AWAR_DB_PATH)->read_string();
-    char *lslash = strrchr(value, '/');
+    static int avoid_recursion = 0;
 
-    if (lslash) { // update value of directory
-        lslash[0] = 0;
-        awr->awar(AWAR_DB"directory")->write_string(value);
-        lslash[0] = '/';
+    if (!avoid_recursion) {
+        avoid_recursion = 1;
+
+        char *value  = awr->awar(AWAR_DB_PATH)->read_string();
+        char *lslash = strrchr(value, '/');
+
+        char *name = lslash ? lslash+1 : value;
+        printf("writing '%s' to AWAR_DB_NAME\n", name);
+        awr->awar(AWAR_DB_NAME)->write_string(name); 
+
+        if (lslash) {               // update value of directory
+            lslash[0] = 0;
+            awr->awar(AWAR_DB"directory")->write_string(value);
+            lslash[0] = '/';
+        }
+
+        free(value);
+
+        avoid_recursion = 0;
     }
-
-    lslash = lslash ? lslash+1 : value;
-    awr->awar(AWAR_DB_NAME)->write_string(lslash);
-    free(value);
 }
 
 //  ---------------------------------------
