@@ -194,16 +194,17 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 multi_sequence_manager->children->append_member( seq_manager );
 
                 ED4_sequence_info_terminal *sequence_info_terminal =
-                    new ED4_sequence_info_terminal(key_string, gb_alignment, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager );
+                    new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager );
                 sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
                 sequence_info_terminal->set_links( ref_sequence_info_terminal, ref_sequence_info_terminal );
+                sequence_info_terminal->set_species_pointer(gb_alignment);
                 seq_manager->children->append_member( sequence_info_terminal );
 
                 ED4_text_terminal *text_terminal = 0;
                 int                is_data       = false;
 
                 if (strcmp(key_string, "data") == 0 ||
-                    strcmp(key_string, "dat2") == 0 || // SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
+                    strcmp(key_string, "data2") == 0 || // SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
                     strcmp(key_string, "bits") == 0) // binary SAIs
                 {
                     is_data = true; // handle as sequence data
@@ -547,7 +548,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     sequence_manager->set_properties( ED4_P_MOVABLE );
     species_manager->children->append_member( sequence_manager );
 
-    sequence_info_terminal = new ED4_sequence_info_terminal( "CONS", NULL, 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager ); // Info fuer Gruppe
+    sequence_info_terminal = new ED4_sequence_info_terminal( "CONS", /*NULL,*/ 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager ); // Info fuer Gruppe
     sequence_info_terminal->set_links( ref_sequence_info_terminal, ref_sequence_info_terminal );
     sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     sequence_manager->children->append_member( sequence_info_terminal );
