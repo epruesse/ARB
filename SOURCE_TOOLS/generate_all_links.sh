@@ -283,6 +283,7 @@ symlink ../ARBDB/adGene.h ARBDB2/adGene.h
 # small dirs
 
 symlink ../WINDOW/AW_preset.cxx AWT/AWT_preset.cxx
+symlink ../WINDOW/aw_def.hxx AWT/aw_def.hxx
 
 symlink ../EDIT/edit_naligner.cxx EDIT4/edit_naligner.cxx
 symlink ../EDIT/edit_naligner.hxx EDIT4/edit_naligner.hxx
