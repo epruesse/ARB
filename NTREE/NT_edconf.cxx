@@ -387,7 +387,8 @@ enum extractType {
     CONF_EXTRACT,
     CONF_MARK,
     CONF_UNMARK,
-    CONF_INVERT
+    CONF_INVERT,
+    CONF_COMBINE // logical AND
 };
 
 void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
@@ -401,7 +402,33 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
         char *md = 0;
         if (gb_middle_area){
             extractType ext_type = extractType(cl_extractType);
-            if (ext_type == CONF_EXTRACT) GBT_mark_all(gb_main,0); // unmark all for extract
+
+            GB_HASH *was_marked = 0; // only used for CONF_COMBINE
+
+            switch (ext_type) {
+                case CONF_EXTRACT:
+                    GBT_mark_all(gb_main,0); // unmark all for extract
+                    break;
+                case CONF_COMBINE: {
+                    // store all marked species in hash and unmark them
+                    was_marked = GBS_create_hash(10000,1);
+                    for (GBDATA *gbd = GBT_first_marked_species(gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
+                        int marked = GB_read_flag(gbd);
+                        if (marked) {
+                            char *name = GBT_read_name(gbd);
+                            if (name) {
+                                GBS_write_hash(was_marked, name, 1);
+                                free(name);
+                            }
+                            GB_write_flag(gbd, 0);
+                        }
+                    }
+
+                    break;
+                }
+                default :
+                    break;
+            }
 
             md = GB_read_string(gb_middle_area);
             if (md){
@@ -419,12 +446,19 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                             case CONF_MARK:     mark = 1; break;
                             case CONF_UNMARK:   mark = 0; break;
                             case CONF_INVERT:   mark = 1-mark; break;
+                            case CONF_COMBINE:  {
+                                nt_assert(mark == 0); // should have been unmarked above
+                                mark = GBS_read_hash(was_marked, p+1); // mark if was_marked
+                                break;
+                            }
                             default: nt_assert(0); break;
                         }
                         GB_write_flag(gb_species,mark);
                     }
                 }
             }
+
+            GBS_free_hash(was_marked);
         }
         free(md);
     }
@@ -597,6 +631,10 @@ AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
     aws->at("invert");
     aws->callback(nt_extract_configuration, CONF_INVERT);
     aws->create_button("INVERT","INVERT","I");
+
+    aws->at("combine");
+    aws->callback(nt_extract_configuration, CONF_COMBINE);
+    aws->create_button("COMBINE","COMBINE","C");
 
     aws->at("delete");
     aws->callback(nt_delete_configuration);
