@@ -275,7 +275,7 @@ struct gb_data_base_type2;
 typedef struct gb_main_type {
     int transaction;
     int aborted_transaction;
-    int local_mode;
+    int local_mode;             // GB_TRUE = server, GB_FALSE = client
     int client_transaction_socket;
 
     struct gbcmc_comm         *c_link;
