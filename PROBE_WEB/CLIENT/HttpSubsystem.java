@@ -140,7 +140,7 @@ public class HttpSubsystem {
                 int content_len = request.getContentLength();
                 int bytes_read  = streamAll(request.getInputStream(), out);
                 if (bytes_read != content_len && content_len != -1) {
-                    System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
+                    Toolkit.showError("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
                 }
                 return bytes_read;
             }
@@ -187,7 +187,7 @@ public class HttpSubsystem {
     {
         String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all&exact="+(onlyExact ? "1" : "0"));
         if (probes == null) {
-            System.out.println("Warning: no answer from Server: "+getLastRequestError());
+            Toolkit.showError("Warning: no answer from Server: "+getLastRequestError());
         }
         return probes;
     }
@@ -196,7 +196,7 @@ public class HttpSubsystem {
     {
         String members = conductRequest("getMembers.cgi?id=" + groupId + "&plength=" + plength);
         if (members == null) {
-            System.out.println("Warning: no answer from Server: "+getLastRequestError());
+            Toolkit.showError("Warning: no answer from Server: "+getLastRequestError());
         }
         return members;
     }

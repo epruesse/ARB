@@ -618,21 +618,21 @@ public class TreeNode
     }
 
     public void autofold(int wanted_reduce) {
-        System.out.println("autofolding.. wanted_reduce="+wanted_reduce);
+        Toolkit.showDebugMessage("autofolding.. wanted_reduce="+wanted_reduce);
 
         AutofoldCandidate.setMinHeight(wanted_reduce);
         AutofoldCandidate candidate = findFoldCandidate(wanted_reduce);
 
         if (candidate != null) {
             TreeNode node2fold = candidate.getNode();
-            System.out.println("autofolding "+node2fold.getBinaryPath());
+            Toolkit.showDebugMessage("autofolding "+node2fold.getBinaryPath());
 
             if (node2fold.isGroup()) {
-                Toolkit.showMessage("Autofolding group '"+node2fold.getGroupName()+"'");
+                Toolkit.showDebugMessage("Autofolding group '"+node2fold.getGroupName()+"'");
                 node2fold.fold();
             }
             else {
-                Toolkit.showMessage("Autofolding non-group '"+node2fold.getBinaryPath()+"'");
+                Toolkit.showDebugMessage("Autofolding non-group '"+node2fold.getBinaryPath()+"'");
                 node2fold.groupName = autofold;
                 node2fold.fold();
             }

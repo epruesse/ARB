@@ -294,8 +294,8 @@ public class TreeParser
         }
 
         if (anchor == null) {
-            System.out.println("got an error at '"+treeString.substring(parse_position, parse_position+5)+"'");
-            System.out.println("at '"+treeString.substring(parse_position-40, parse_position+40)+"'");
+            Toolkit.showDebugMessage("got an error at '"+treeString.substring(parse_position, parse_position+5)+"'");
+            Toolkit.showDebugMessage(" at '"+treeString.substring(parse_position-40, parse_position+40)+"'");
             Toolkit.AbortWithError("generateTreeNodes: Error parsing tree ("+parse_error+")");
         }
 

@@ -95,7 +95,7 @@ public class ProbeMenu extends MenuBar
         else if (cmd.equals("Help"))                    gui.showHelp();
 
         else {
-            System.out.println("Command not implemented yet: '"+cmd+"'");
+            Toolkit.showError("Command not implemented yet: '"+cmd+"'");
         }
     }
 
@@ -120,7 +120,7 @@ public class ProbeMenu extends MenuBar
             if (hotkey != null) {
                 item.setShortcut(hotkey);
                 if (usedKeys.contains(hotkey)) {
-                    System.out.println("Hotkey duplicated in '"+entry+"'");
+                    Toolkit.showDebugMessage("Hotkey duplicated in '"+entry+"'");
                 }
                 usedKeys.add(hotkey);
             }
