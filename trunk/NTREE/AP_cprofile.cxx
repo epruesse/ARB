@@ -51,6 +51,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 typedef GB_UINT4 STATTYPE;
 void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2);
@@ -797,12 +798,9 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( "tmp/cpro/memstatistic","",aw_def);
     aw_root->awar_string( "tmp/cpro/memfor1","",aw_def);
     aw_root->awar_string( "tmp/cpro/memfor2","",aw_def);
-    aw_root->awar_string("cpro/save/file_name", "" ,aw_def);
-    aw_root->awar_string( "cpro/save/directory", "." ,aw_def);
-    aw_root->awar_string( "cpro/save/filter", "cpr" ,aw_def);
-    aw_root->awar_string("cpro/load/file_name", "" ,aw_def);
-    aw_root->awar_string( "cpro/load/directory", "." ,aw_def);
-    aw_root->awar_string( "cpro/load/filter", "cpr" ,aw_def);
+    
+    aw_create_selection_box_awars(aw_root, "cpro/save", ".", ".cpr", "", aw_def);
+    aw_create_selection_box_awars(aw_root, "cpro/load", ".", ".cpr", "", aw_def);
     memset((char *)&CPRO,0,sizeof(struct CPRO_struct));
 
 }

@@ -11,6 +11,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_tree.hxx>
 #include <awt_canvas.hxx>
@@ -95,9 +96,8 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
     root->awar_string(AP_AWAR_BASE_FREQ_FILTER_NAME);
-    root->awar_string(AP_AWAR_CONSPRO_SUFFIX, "gnu", AW_ROOT_DEFAULT);
-    root->awar_string(AP_AWAR_CONSPRO_DIRECTORY);
-    root->awar_string(AP_AWAR_CONSPRO_FILENAME, "noname.gnu", AW_ROOT_DEFAULT);
+
+    aw_create_selection_box_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu");
 
     root->awar_string(AP_AWAR_CONSPRO_GNUPLOT_LEGEND);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS);
