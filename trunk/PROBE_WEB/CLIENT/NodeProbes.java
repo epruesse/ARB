@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : NodeProbes.java                                        // 
 //    Purpose   : Contains probes for one node                           // 
-//    Time-stamp: <Sun Mar/14/2004 22:17 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Thu Mar/18/2004 17:49 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -88,7 +88,7 @@ public class NodeProbes
         Toolkit.showMessage("Caching hits for all listed probes:");
         int size = probes.size();
         for (int i = 0; i<size; ++i) {
-            int dummy = ((Probe)probes.get(i)).no_of_hits();
+            String dummy = ((Probe)probes.get(i)).members();
         }
         Toolkit.showMessage("Ready.");
     }
