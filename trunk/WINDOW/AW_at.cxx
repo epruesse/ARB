@@ -154,7 +154,6 @@ void AW_window::at_shift( int x, int y ) {
     at(x+_at->x_for_next_button,y+_at->y_for_next_button);
 }
 
-
 void AW_window::at_newline( void ) {
 
     if ( _at->do_auto_increment ) {
@@ -235,7 +234,17 @@ void AW_window::at( const char *id ) {
     }
 }
 
-// set "to:XY:id" manually
+
+// set "$XY:id" manually
+
+void AW_window::at_attach(AW_BOOL attach_x, AW_BOOL attach_y) {
+    aw_assert(0); // this does not work
+    _at->attach_lx  = attach_x;
+    _at->attach_ly  = attach_y;
+    _at->attach_any = attach_x || attach_y;
+}
+
+// set "$to:XY:id" manually
 // use negative offsets to set offset from right/lower border to to-position
 
 void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff) {
