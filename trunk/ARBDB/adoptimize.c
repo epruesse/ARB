@@ -996,7 +996,7 @@ static int testCounts(GB_DICT_TREE tree)
     return cnt;
 }
 
-#  define MAX_OCCUR_COUNT 20000
+#  define MAX_OCCUR_COUNT 60000
 
 static GB_DICT_TREE test_dtree(GB_DICT_TREE tree)
      /* only correct while tree is under contruction (build_dict_tree()) */
@@ -1801,7 +1801,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
         }
     }
 
-    test_dtree(tree);
+    /*test_dtree(tree); */
     tree = cut_dtree(tree, 1, &memcount);	/* cut all single elements */
     test_dtree(tree);
 
