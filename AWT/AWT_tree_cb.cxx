@@ -261,7 +261,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw) {
     NT_insert_color_mark_submenu(awm, ntw, "Unmark colored Species", 0);
     awm->insert_separator();
     awm->insert_menu_topic("swap_marked",	"Swap marks of all Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_all_cb,		(AW_CL)ntw, (AW_CL)2 );
-    awm->insert_menu_topic("swap_marked",	"Swap marks of Species in Tree",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)2 );
+    awm->insert_menu_topic("swap_marked",	"Swap marks of Species in Tree",		"p","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, (AW_CL)2 );
     NT_insert_color_mark_submenu(awm, ntw, "Swap marks of colored Species", 2);
 }
 
