@@ -230,6 +230,7 @@ void gellisary::writeGeneEmbl(GBDATA * source_container, gellisary::GAGenomGeneE
         int t3_int;
         std::vector<gellisary::GAGenomGeneLocationEmbl> * t_locs;
         std::vector<int> joined;
+        int gene_length = 0;
         if(tmp_location->isSingleValue())
         {
             t3_int = tmp_location->getSingleValue();
@@ -237,6 +238,8 @@ void gellisary::writeGeneEmbl(GBDATA * source_container, gellisary::GAGenomGeneE
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
             t3_str = "pos_end";
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
+            t3_str = "gene_length";
+            gellisary::writeInteger(gene_container,&t3_str,1);
         }
         else
         {
@@ -274,30 +277,40 @@ void gellisary::writeGeneEmbl(GBDATA * source_container, gellisary::GAGenomGeneE
                     {
                         t3_str = "pos_begin";
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end";
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                     else
                     {
                         t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                 }
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
             else if((int)joined.size() > 0)
             {
                 t3_str = "pos_begin";
                 t3_int = joined[0];
+                gene_length -= t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
                 t3_str = "pos_end";
                 t3_int = joined[1];
+                gene_length += t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
         }
     }
@@ -517,6 +530,7 @@ void gellisary::writeGeneGenBank(GBDATA * source_container, gellisary::GAGenomGe
         int t3_int;
         std::vector<gellisary::GAGenomGeneLocationGenBank> * t_locs;
         std::vector<int> joined;
+        int gene_length = 0;
         if(tmp_location->isSingleValue())
         {
             t3_int = tmp_location->getSingleValue();
@@ -524,6 +538,8 @@ void gellisary::writeGeneGenBank(GBDATA * source_container, gellisary::GAGenomGe
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
             t3_str = "pos_end";
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
+            t3_str = "gene_length";
+            gellisary::writeInteger(gene_container,&t3_str,1);
         }
         else
         {
@@ -561,30 +577,40 @@ void gellisary::writeGeneGenBank(GBDATA * source_container, gellisary::GAGenomGe
                     {
                         t3_str = "pos_begin";
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end";
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                     else
                     {
                         t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                 }
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
             else if((int)joined.size() > 0)
             {
                 t3_str = "pos_begin";
                 t3_int = joined[0];
+                gene_length -= t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
                 t3_str = "pos_end";
                 t3_int = joined[1];
+                gene_length += t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
         }
     }
@@ -804,6 +830,7 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
         int t3_int;
         std::vector<gellisary::GAGenomGeneLocationDDBJ> * t_locs;
         std::vector<int> joined;
+        int gene_length = 0;
         if(tmp_location->isSingleValue())
         {
             t3_int = tmp_location->getSingleValue();
@@ -811,6 +838,8 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
             t3_str = "pos_end";
             gellisary::writeInteger(gene_container,&t3_str,t3_int);
+            t3_str = "gene_length";
+            gellisary::writeInteger(gene_container,&t3_str,1);
         }
         else
         {
@@ -848,30 +877,40 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
                     {
                         t3_str = "pos_begin";
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end";
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                     else
                     {
                         t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k];
+                        gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                         t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
                         t3_int = joined[k+1];
+                        gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
                 }
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
             else if((int)joined.size() > 0)
             {
                 t3_str = "pos_begin";
                 t3_int = joined[0];
+                gene_length -= t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
                 t3_str = "pos_end";
                 t3_int = joined[1];
+                gene_length += t3_int;
                 gellisary::writeInteger(gene_container,&t3_str,t3_int);
+                t3_str = "gene_length";
+	            gellisary::writeInteger(gene_container,&t3_str,gene_length);
             }
         }
     }
@@ -963,6 +1002,7 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
     int file_name_size = strlen(file_name);
 
     std::string extension;
+    std::string flatfile_name;
 
     for(int i = (file_name_size-1); i >= 0; i--)
     {
@@ -972,6 +1012,17 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             {
                 extension += file_name[j];
             }
+        }
+    }
+    for(int i = (file_name_size-1); i >= 0; i--)
+    {
+        if(file_name[i] == '/')
+        {
+            for(int j = (i+1); j < file_name_size; j++)
+            {
+                flatfile_name += file_name[j];
+            }
+            break;
         }
     }
     if((extension != "embl") && (extension != "gbk") && (extension != "ff"))
@@ -1012,6 +1063,12 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             std::string field;
             field = "identification";
             tmp_string_pnt = genomembl.getIdentification();
+            if((*tmp_string_pnt != "none") && (!(*tmp_string_pnt).empty()))
+            {
+                gellisary::writeString(gb_species,&field,tmp_string_pnt);
+            }
+            field = "name_of_flatfile";
+            tmp_string_pnt = &flatfile_name;
             if((*tmp_string_pnt != "none") && (!(*tmp_string_pnt).empty()))
             {
                 gellisary::writeString(gb_species,&field,tmp_string_pnt);
@@ -1148,6 +1205,12 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             {
                 gellisary::writeString(gb_species,&field,tmp_string_pnt);
             }
+            field = "name_of_flatfile";
+            tmp_string_pnt = &flatfile_name;
+            if((*tmp_string_pnt != "none") && (!(*tmp_string_pnt).empty()))
+            {
+                gellisary::writeString(gb_species,&field,tmp_string_pnt);
+            }
             tmp_string = "genbank";
             field = "source_database";
             gellisary::writeString(gb_species,&field,&tmp_string);
@@ -1280,6 +1343,12 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             std::string field;
             field = "identification";
             tmp_string_pnt = genomddbj.getIdentification();
+            if((*tmp_string_pnt != "none") && (!(*tmp_string_pnt).empty()))
+            {
+                gellisary::writeString(gb_species,&field,tmp_string_pnt);
+            }
+            field = "name_of_flatfile";
+            tmp_string_pnt = &flatfile_name;
             if((*tmp_string_pnt != "none") && (!(*tmp_string_pnt).empty()))
             {
                 gellisary::writeString(gb_species,&field,tmp_string_pnt);

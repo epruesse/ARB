@@ -30,14 +30,29 @@ void gellisary::GAGenomGeneEmbl::parse()
     tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&source_str,' ',true);
     tmp_str = tmp_vector[0];
     gene_type = tmp_str;
-    tmp_str = tmp_vector[1];
-    location_as_string = tmp_str;
+    int art = 0;
+    for(art = 1; art < (int)tmp_vector.size(); art++)
+    {
+    	tmp_str = tmp_vector[art];
+    	if(tmp_str[0] == '/')
+    	{
+    		break;
+    	}
+    	else
+    	{
+//    		cout << tmp_str << endl;
+    		location_as_string += tmp_str;
+    	}
+    }
+//    cout << location_as_string << endl;
+//    tmp_str = tmp_vector[1];
+	tmp_str = location_as_string;
     GAGenomGeneLocationEmbl * new_location;
     new_location = new GAGenomGeneLocationEmbl(&tmp_str);
     new_location->parse();
     location = *new_location;
     delete(new_location);
-    for(int i = 2; i < (int) tmp_vector.size(); i++)
+    for(int i = art; i < (int) tmp_vector.size(); i++)
     {
         tmp_str = tmp_vector[i];
         if(!tmp_str.empty())
