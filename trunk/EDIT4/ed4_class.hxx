@@ -1133,6 +1133,7 @@ public:
     ED4_Edit_String         *edit_string;
     int                      column_stat_activated;
     int                      column_stat_initialized;
+    int                      visualizeSAI;     
 
     // temporary Variables changing during runtime
     ED4_window    *temp_ed4w;
