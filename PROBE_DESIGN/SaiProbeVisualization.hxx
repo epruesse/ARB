@@ -4,6 +4,7 @@
 #define AWAR_PROBE_SAI_MATCH  "tmp/probe_design/probe_sai_match"
 #define AWAR_PROBE_LIST       "tmp/probe_design/probe_list"
 #define AWAR_SAI_2_PROBE      "tmp/probe_design/sai_2_probe"
+#define AWAR_DISP_SAI         "tmp/probe_design/disp_sai"
 
 #define AWAR_SAI_COLOR        "tmp/probeSai/color_0"
 #define SAI_CLR_COUNT 10
@@ -32,8 +33,8 @@ struct saiProbeData {
 
 class SAI_graphic: public AWT_graphic {
 public:
-    GBDATA *gb_main;
-    AW_root *aw_root;
+    GBDATA     *gb_main;
+    AW_root    *aw_root;
 
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
     ~SAI_graphic(void);
@@ -46,4 +47,4 @@ public:
 };
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr);
-void transferProbeData(AW_root *root, struct saiProbeData *spd);
+void transferProbeData(struct saiProbeData *spd);

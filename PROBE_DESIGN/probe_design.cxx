@@ -831,7 +831,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         mcount++;
     }
 
-    if (g_spd)  transferProbeData(root,g_spd);               // to update probe list in sai probe match window
+    if (g_spd)  transferProbeData(g_spd);               // to update probe list in sai probe match window
     root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //????
 
     if (counter) *counter = mcount;
@@ -921,8 +921,10 @@ static void selected_match_changed_cb(AW_root *root) {
 }
 
 static void probeListChanged_cb(AW_root *root) {
+    //this is called whenever the probe match results changes
+    AWUSE(root);
     if(g_spd) {
-        transferProbeData(root,g_spd); //transferring probe data to saiProbeMatch function
+        transferProbeData(g_spd); //transferring probe data to saiProbeMatch function
     }
 }
 
@@ -936,7 +938,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
     root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
 
-    root->awar_string( AWAR_PROBE_LIST, "" , global)->add_callback(probeListChanged_cb);; //saibaba
+    root->awar_string( AWAR_PROBE_LIST, "" , global)->add_callback(probeListChanged_cb);
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -1405,7 +1407,7 @@ static void matchSaiProbe(AW_window *aw) {
     if (!awExists) {
         awExists = createSaiProbeMatchWindow(awr);
     }
-    if(g_spd) transferProbeData(awr,g_spd); //transferring probe data to saiProbeMatch function
+    if(g_spd) transferProbeData(g_spd); //transferring probe data to saiProbeMatch function
 
     awExists->show();
 }
