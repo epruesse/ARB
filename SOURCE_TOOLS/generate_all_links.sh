@@ -279,3 +279,8 @@ ln -s ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt
 
 ln -s ../help/input_mask_format.hlp     lib/inputMasks/format.readme
 ln -s ../../GDEHELP                     lib/help/GDEHELP
+
+# links ralated to probe web service
+ln -s ../PROBE_WEB/SERVER PROBE_SERVER/ps_cgi
+
+
