@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 /* #include <malloc.h> */
 
 #include "adlocal.h"
@@ -218,6 +219,42 @@ GB_ERROR GB_export_error(const char *templat, ...)
     return GB_error_buffer;
 }
 
+GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
+    /* like GB_export_error() - creates error message from current 'errno'
+       action may be NULL (otherwise it should contain sth like "writing" or "deleting")
+       filename may be NULL (otherwise it should contain the filename, the IO-Error occurred for)
+    */
+
+    const char *error_message;
+    if (errno) {
+        error_message = strerror(errno);
+    }
+    else {
+        ad_assert(0);           // unhandled error (which is NOT an IO-Error)
+        error_message =
+            "Some unhandled error occurred, but it was not an IO-Error. "
+            "Please send detailed information about how the error occurred to devel@arb-home.de "
+            "or ignore this error (if possible).";
+    }
+
+    {
+        char buffer[GBS_GLOBAL_STRING_SIZE];
+
+        if (action) {
+            if (filename) sprintf(buffer, "ARB ERROR: When %s '%s': '%s'", action, filename, error_message);
+            else sprintf(buffer, "ARB ERROR: When %s <unknown file>: '%s'", action, error_message);
+        }
+        else {
+            if (filename) sprintf(buffer, "ARB ERROR: Concerning '%s': '%s'", filename, error_message);
+            else sprintf(buffer, "ARB ERROR: %s", error_message);
+        }
+
+        if (GB_error_buffer) free(GB_error_buffer);
+        GB_error_buffer = GB_STRDUP(buffer);
+    }
+    return GB_error_buffer;
+}
+
 GB_ERROR GB_print_error()
 {
     if (GB_error_buffer){
@@ -282,6 +319,8 @@ GB_CSTR GBS_global_string(const char *templat, ...)
     gb_global_string = GB_STRDUP(buffer);
     return gb_global_string;
 }
+
+
 
 
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
