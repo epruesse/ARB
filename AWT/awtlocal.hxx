@@ -15,6 +15,7 @@ struct adawcbstruct {
 	char	               *def_source;
 	char	               *def_dest;
 	char	               *def_filter;
+	char	               *previous_filename;
 	char	               *pwd;
 	AW_BOOL	                show_dir;
 	char	                may_be_an_error;
