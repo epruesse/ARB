@@ -5,7 +5,7 @@ class ProbeList
 extends java.awt.List
 {
 
-private int probeWidth = 150;
+
 
 private int              count;
 private java.util.Vector info;
@@ -20,12 +20,6 @@ public ProbeList(int width, int height)
         preferredWidth = width;
         count = 0;
         error = null;
-     //    Dimension dim = getSize();
-//         System.out.println("width: " + dim.width);
-//         dim.width = probeWidth;
-//         System.out.println("width: " + dim.width);
-//         //        setSize(dim);
-//         doLayout();
         setVisible(true);
     }
 
