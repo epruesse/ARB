@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <math.h>
 
 #include "arbdb.h"
 #include "arbdbt.h"
@@ -55,6 +56,15 @@ static GB_ERROR no_data_error(GBDATA *gb_species, const char *ali_name) {
     if (gb_name) name = GB_read_char_pntr(gb_name);
     return GBS_global_string("Species '%s' has no data in alignment '%s'",
                              name, ali_name);
+}
+
+
+int round(double value) {
+    int x;
+
+    value += 0.5;
+    x = (int) floor(value);
+    return x;
 }
 
 
@@ -235,7 +245,8 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		int cos        = 0;
 		int iupv       = 0;
 		int gcprop     = 0;
-		int value      = 0;
+		int value2     = 0;
+		double value   = 0;
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 
@@ -305,9 +316,10 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		if (value !=0 )	{
 		    value = value / 2;
 		}
+		value2 = round(value);
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
-		GB_write_int(gb_result7, value);
+		GB_write_int(gb_result7, value2);
 
 	    }
 	}
@@ -550,13 +562,14 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 
 		/*real calculations start here*/
 		if (read_sequence) {
+		    const char *rawSequence = 0;
 		    int sequenceLength      = 0;
 		    char temp[10];
 		    char cons_dev[1000]  = "<dev>";
 		    char cons_conf[1000] = "<conf>";
-		    const char *rawSequence = 0;
 		    double value1           = 0;
 		    double value2           = 0;
+		    double eval             = 0;
 		    int value3              = 0;
 		    int evaluation          = 0;
 		    int bases               = 0;
@@ -644,15 +657,15 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 				//if you parse the upper two values in the evaluate() function cut the following out
 				//for time reasons i do the evaluation here, as i still have the upper two values
 				//-------------cut this-----------------
-				if (value1 > 0.95) evaluation += 2;
+				if (value1 > 0.95) eval += 2;
 				else {
-				    if (value1 > 0.5) evaluation += 1;
-				    else { evaluation += 0;}
+				    if (value1 > 0.5) eval += 1;
+				    else { eval += 0;}
 				}
-				if (value2 > 0.6) evaluation += 0;
+				if (value2 > 0.6) eval += 0;
 				else {
-				    if (value2 > 0.4) evaluation += 1;
-				    else { evaluation += 2;}
+				    if (value2 > 0.4) eval += 1;
+				    else { eval += 2;}
 				}
 				whilecounter++;
 				//---------to this and scroll down--------
@@ -671,8 +684,9 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GB_write_string(gb_result4, cons_dev);
 
 		    //--------also cut this------
-		    if (evaluation != 0) {
-			evaluation = evaluation / (2 * whilecounter);
+		    if (eval != 0) {
+			eval = eval / (2 * whilecounter);
+			evaluation = round(eval);
 		    }
 		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
 		    seq_assert(gb_result5);
