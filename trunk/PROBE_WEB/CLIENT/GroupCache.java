@@ -15,7 +15,7 @@ public GroupCache()
 private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int probe_length)
     {
         String       answer = webAccess.retrieveGroupMembers(groupId, probe_length);
-        ServerAnswer parsed = new ServerAnswer(answer, true, true);
+        ServerAnswer parsed = new ServerAnswer(answer, true, false);
 
         if (parsed.hasError()) {
             error = parsed.getError();

@@ -30,7 +30,7 @@ public void itemStateChanged(ItemEvent e)
             int       selected   = pl.getSelectedIndex();
             String    probe_info = pl.getProbeInfo(selected);
 
-            System.out.println("Action Source: " + probe_info);
+//             System.out.println("Action Source: " + probe_info);
             gui.getClient().matchProbes(probe_info);
         }
     }

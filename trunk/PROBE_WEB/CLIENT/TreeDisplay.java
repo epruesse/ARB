@@ -231,7 +231,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
                         info = info.substring(0, brclose+1); // cut rest after '[...]'
                         g.setColor(nic1); // and draw again in different color
 
-                        
+
                         g.drawString(info, x, y);
                     }
                 }
@@ -398,12 +398,12 @@ public void handleLeftMouseClick(int x, int y)
 
 public void handleRightMouseClick(int x, int y)
     {
-        System.out.println("right mouse button clicked");
+        // System.out.println("right mouse button clicked");
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
-            System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
+            // System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
             String codedPath = clickedNode.getCodedPath();
-            System.out.println("path to clicked node: " + codedPath);
+            // System.out.println("path to clicked node: " + codedPath);
             myBoss.updateNodeInformation(codedPath);
 
 //             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
