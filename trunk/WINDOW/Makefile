@@ -4,7 +4,7 @@ STD_OBJECTS =	AW_xkey.o AW_xfont.o AW_nawar.o AW_button.o \
 		AW_at.o AW_print.o AW_window.o \
 		AW_device.o AW_Xm.o AW_click.o AW_size.o \
 		AW_xfig.o AW_xfigfont.o AW_status.o AW_preset.o \
-		AW_question.o AW_global_awars.o AW_font_group.o 
+		AW_question.o AW_global_awars.o AW_font_group.o
 
 OPENGL_OBJECTS = GLwMDrawA.o GLwDrawA.o
 

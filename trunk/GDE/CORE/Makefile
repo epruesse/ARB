@@ -54,53 +54,92 @@ arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 BasicDisplay.o: defines.h
 BasicDisplay.o: functions.h
 BasicDisplay.o: menudefs.h
+BasicDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
+BasicDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
+BasicDisplay.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 BuiltIn.o: defines.h
 BuiltIn.o: functions.h
 BuiltIn.o: menudefs.h
+BuiltIn.o: $(ARBHOME)/INCLUDE/ad_prot.h
+BuiltIn.o: $(ARBHOME)/INCLUDE/arb_assert.h
+BuiltIn.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 CutCopyPaste.o: defines.h
 CutCopyPaste.o: functions.h
 CutCopyPaste.o: menudefs.h
+CutCopyPaste.o: $(ARBHOME)/INCLUDE/ad_prot.h
+CutCopyPaste.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CutCopyPaste.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 DrawNA.o: defines.h
 DrawNA.o: functions.h
 DrawNA.o: menudefs.h
+DrawNA.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DrawNA.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DrawNA.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 Edit.o: defines.h
 Edit.o: functions.h
 Edit.o: menudefs.h
+Edit.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Edit.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Edit.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 EventHandler.o: defines.h
 EventHandler.o: functions.h
 EventHandler.o: menudefs.h
+EventHandler.o: $(ARBHOME)/INCLUDE/ad_prot.h
+EventHandler.o: $(ARBHOME)/INCLUDE/arb_assert.h
+EventHandler.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 FileIO.o: defines.h
 FileIO.o: functions.h
 FileIO.o: menudefs.h
+FileIO.o: $(ARBHOME)/INCLUDE/ad_prot.h
+FileIO.o: $(ARBHOME)/INCLUDE/arb_assert.h
+FileIO.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 Free.o: defines.h
 Free.o: functions.h
 Free.o: menudefs.h
+Free.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Free.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Free.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 Genbank.o: defines.h
 Genbank.o: functions.h
 Genbank.o: menudefs.h
+Genbank.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Genbank.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 HGLfile.o: defines.h
 HGLfile.o: functions.h
 HGLfile.o: menudefs.h
+HGLfile.o: $(ARBHOME)/INCLUDE/ad_prot.h
+HGLfile.o: $(ARBHOME)/INCLUDE/arb_assert.h
+HGLfile.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 main.o: defines.h
 main.o: functions.h
 main.o: globals.h
 main.o: icon_gde.bitmap
 main.o: menudefs.h
+main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+main.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 ParseMenu.o: defines.h
 ParseMenu.o: functions.h
 ParseMenu.o: menudefs.h
+ParseMenu.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ParseMenu.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb.h
 
 Scroll.o: defines.h
 Scroll.o: functions.h
 Scroll.o: menudefs.h
+Scroll.o: $(ARBHOME)/INCLUDE/ad_prot.h
+Scroll.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Scroll.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -35,6 +35,7 @@ depend.init:
 RNA3D_Graphics.o: RNA3D_GlobalHeader.hxx
 RNA3D_Graphics.o: RNA3D_Graphics.hxx
 RNA3D_Graphics.o: RNA3D_Interface.hxx
+RNA3D_Graphics.o: RNA3D_OpenGLEngine.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -55,15 +56,11 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
-RNA3D_Interface.o: ../WINDOW/aw_at.hxx
 RNA3D_Interface.o: ../WINDOW/aw_awar.hxx
 RNA3D_Interface.o: ../WINDOW/aw_click.hxx
 RNA3D_Interface.o: ../WINDOW/aw_print.hxx
 RNA3D_Interface.o: ../WINDOW/aw_size.hxx
 RNA3D_Interface.o: ../WINDOW/aw_window_Xm.hxx
-RNA3D_Interface.o: ../WINDOW/aw_xfig.hxx
-RNA3D_Interface.o: ../WINDOW/aw_xfigfont.hxx
-RNA3D_Interface.o: ../WINDOW/aw_xkey.hxx
 RNA3D_Interface.o: ../WINDOW/aw_Xm.hxx
 RNA3D_Interface.o: RNA3D_Global.hxx
 RNA3D_Interface.o: RNA3D_GlobalHeader.hxx
@@ -90,6 +87,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
+RNA3D_Main.o: RNA3D_Global.hxx
 RNA3D_Main.o: RNA3D_GlobalHeader.hxx
 RNA3D_Main.o: RNA3D_Interface.hxx
 RNA3D_Main.o: RNA3D_Main.hxx
@@ -169,6 +167,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 RNA3D_Renderer.o: RNA3D_GlobalHeader.hxx
+RNA3D_Renderer.o: RNA3D_Graphics.hxx
 RNA3D_Renderer.o: RNA3D_OpenGLGraphics.hxx
 RNA3D_Renderer.o: RNA3D_Renderer.hxx
 RNA3D_Renderer.o: RNA3D_StructureData.hxx
