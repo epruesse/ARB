@@ -91,8 +91,6 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void SEC_region::count_bases(SEC_root *root) {
 
     base_count = 0;
@@ -942,9 +940,8 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
             buffer[0] = '.';
         }
 	
-	if(i==0)startBase[0] = root->sequence[abs_pos-1];
-
 	if(lastSearchColor){
+	    if(i==0)startBase[0] = root->sequence[abs_pos-1];
 	    root->paintSearchBackground(device, bgColor, abs_pos,start_x,start_y,next_x, next_y, circleRadius,1);
 	    device->text(SEC_GC_HELIX, startBase, start_x, start_y, 0.5, root->helix_filter,(AW_CL)((SEC_Base *)(previous_strand_pointer)),0 );
 	    lastSearchColor = 0;
@@ -960,7 +957,8 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
             }
         }
         last_abs_pos = abs_pos;
-	startBase[0] = root->sequence[abs_pos+1];
+	if (abs_pos < root->sequence_length) startBase[0] = root->sequence[last_abs_pos+1];
+	else startBase[0]=0;
     }
 
     if(startBase[0]!='-')device->text(SEC_GC_HELIX, startBase, nextCircle_x, nextCircle_y, 0.5,-1,0,0);//root->helix_filter, (AW_CL)((SEC_Base *)(previous_strand_pointer)), 0 );
