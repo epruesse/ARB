@@ -518,7 +518,7 @@ int main(int argc,char **argv)
 
     openProperties(); // open properties database
 
-    ED4_ROOT->aw_root->init( "ARB_EDIT4" ); // initialize window-system
+   ED4_ROOT->aw_root->init( "ARB_EDIT4" ); // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();

@@ -2,7 +2,7 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = ED4_dump.o ED4_nds.o ED4_secedit.o \
+CPP_OBJECTS = ED4_dump.o ED4_nds.o ED4_secedit.o ED4_RNA3D.o \
 	 	ED4_main.o ED4_mini_classes.o ED4_edit_string.o ED4_base.o ED4_manager.o ED4_terminal.o \
 	 	ED4_root.o EDB_root_bact.o ED4_window.o ED4_members.o ED4_no_class.o ED4_list.o ED4_text_terminals.o \
 		ED4_cursor.o ED4_tools.o ED4_search.o ED4_block.o ED4_visualizeSAI.o edit_naligner.o \
@@ -250,7 +250,6 @@ ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_nds.hxx
-ED4_root.o: ed4_RNA3D.hxx
 ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx

@@ -34,7 +34,10 @@
 #include "ed4_secedit.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "edit_naligner.hxx"
+
+#ifdef DEVEL_YADHU
 #include "ed4_RNA3D.hxx"
+#endif
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 
@@ -1399,6 +1402,14 @@ static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
     AW_save_specific_defaults(aw, ED4_propertyName(mode));
 }
 
+#ifdef DEVEL_YADHU
+// void ED4_RNA3D_start(AW_window *aw)
+// {
+//     createRNA3DMainWindow(aw->aw_root);
+//     //    GBCMC_system(gb_main, "arb_rna3d");
+// }
+#endif
+
 ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
@@ -1604,7 +1615,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
 #ifdef DEVEL_YADHU
-    awmm->insert_menu_topic("rna_3D", "3 Dimensional Structure of ribosomal RNA", "", 0, AWM_ALL, ED4_RNA3D_start, 0, 0);
+    //    awmm->insert_menu_topic("rna_3D", "3 Dimensional Structure of ribosomal RNA", "", 0, AWM_ALL, ED4_RNA3D_start, 0, 0);
 #endif
     // ------------------------------
     //  Block
@@ -1764,6 +1775,12 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     // ----------------------------------------------------------------------------------------------------
     awmm->button_length(0);
+
+#ifdef DEVEL_YADHU
+    awmm->at("rna3d");
+    awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
+    awmm->create_button("RNA3D", "#edit/rna3D.bitmap");
+#endif
 
     awmm->at("secedit");
     awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
