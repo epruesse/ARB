@@ -1,27 +1,28 @@
-#include <stdio.h>
 #include <stdlib.h>
-
-#include "arbdb.h"
 #include "adlocal.h"
 #include "string.h"
+
+
+/* this module is currently not used */
+
 
 typedef struct S_Reffile
 {
     char *quickpath;
     char *user;
     struct S_Reffile *next;
-    
+
 } *Reffile;
 
 static char *referencePath(GB_CSTR arbpath)
 {
     char *copy = GB_STRDUP(arbpath);
-    char *ext = 
+    char *ext =
 }
 
 static Reffile addReference(Reffile ref, GB_CSTR quickpath, GB_CSTR user)
 {
-    
+
 }
 static Reffile removeReference(Reffile ref, GB_CSTR quickpath)
 {

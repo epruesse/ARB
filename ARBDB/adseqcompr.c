@@ -4,7 +4,7 @@
 /* #include <malloc.h> */
 
 #include <adlocal.h>
-#include <arbdb.h>
+/* #include <arbdb.h> */
 #include <arbdbt.h>
 #include "adseqcompr.h"
 #define MAX_SEQUENCE_PER_MASTER 10

@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -22,7 +22,6 @@
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
 
-#include <arbdb.h>
 #include <arbdbt.h>
 
 #include <adGene.h>

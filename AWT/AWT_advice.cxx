@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/14/2003 15:47 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:42 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -13,12 +13,11 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "awt_advice.hxx"
-#include "awt.hxx"
-
-#include <arbdb.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "awt_advice.hxx"
+#include "awt.hxx"
 
 
 using namespace std;

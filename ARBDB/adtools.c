@@ -8,7 +8,7 @@
 #include <ctype.h>
 
 #include "adlocal.h"
-#include "arbdb.h"
+/* #include "arbdb.h" */
 #include "arbdbt.h"
 
 #define GBT_GET_SIZE 0

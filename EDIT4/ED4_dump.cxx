@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : ED4_dump.cxx                                           //
 //    Purpose   : Contains dump() methods of ED4-classes                 //
-//    Time-stamp: <Tue May/28/2002 20:21 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -13,6 +13,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include <cstdio>
 #include <arbdb.h>
 
 #include <aw_window.hxx>

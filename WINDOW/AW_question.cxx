@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Sat Aug/09/2003 14:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 13:39 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -13,6 +13,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include <stdio.h>
 #include <string.h>
 #include <arbdb.h>
 #include <aw_question.hxx>
