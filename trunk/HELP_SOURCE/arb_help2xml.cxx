@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Tue Nov/27/2001 10:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/29/2001 13:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -23,6 +23,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 
 #include <xml.hxx>
 
@@ -173,7 +174,7 @@ public:
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
-    void writeXML(FILE *out, const string& page_name);
+    void writeXML(FILE *out, const string& page_name, const string& path);
     void checkConsistency();
 };
 
@@ -918,13 +919,13 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                 para = new XML_Tag("P");
             }
 
-            sprintf(buffer, "%i", indentation);
-            para->add_attribute("indentation", buffer);
+//             sprintf(buffer, "%i", indentation);
+//             para->add_attribute("indentation", buffer);
 
-            if (is_enumerated) {
-                sprintf(buffer, "%i", enumeration);
-                para->add_attribute("enumerated", buffer);
-            }
+//             if (is_enumerated) {
+//                 sprintf(buffer, "%i", enumeration);
+//                 para->add_attribute("enumerated", buffer);
+//             }
 
             {
                 XML_Tag textblock("T");
@@ -957,10 +958,22 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     }
 }
 
-//  --------------------------------------------------------------------
-//      void Helpfile::writeXML(FILE *out, const string& page_name)
-//  --------------------------------------------------------------------
-void Helpfile::writeXML(FILE *out, const string& page_name) {
+//  ---------------------------------------------------------------------------------------------------
+//      static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path)
+//  ---------------------------------------------------------------------------------------------------
+static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path) {
+    struct stat st;
+    string      fullname = path+basename+".hlp";
+
+    if (stat(fullname.c_str(), &st) == -1) {
+        link.add_attribute("missing", "1");
+    }
+}
+
+//  ----------------------------------------------------------------------------------------
+//      void Helpfile::writeXML(FILE *out, const string& page_name, const string& path)
+//  ----------------------------------------------------------------------------------------
+void Helpfile::writeXML(FILE *out, const string& page_name, const string& path) {
 #if defined(DUMP_DATA)
     display(uplinks, "Uplinks", stdout);
     display(references, "References", stdout);
@@ -976,10 +989,12 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     for (Strings::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
         XML_Tag uplink("UP");
         uplink.add_attribute("dest", *s);
+        addMissingAttribute(uplink, *s, path);
     }
     for (Strings::const_iterator s = references.begin(); s != references.end(); ++s) {
-        XML_Tag uplink("SUB");
-        uplink.add_attribute("dest", *s);
+        XML_Tag sublink("SUB");
+        sublink.add_attribute("dest", *s);
+        addMissingAttribute(sublink, *s, path);
     }
     {
         XML_Tag title_tag("TITLE");
@@ -1051,7 +1066,7 @@ int main(int argc, char *argv[]) {
             if (!out) throw string("Can't open '")+xml_output+'\'';
 
             try {
-                help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8))); // cut off 'oldhelp/' and '.hlp'
+                help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8)), "oldhelp/"); // cut off 'oldhelp/' and '.hlp'
                 fclose(out);
             }
             catch (...) {
