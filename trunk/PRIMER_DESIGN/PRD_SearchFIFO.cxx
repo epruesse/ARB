@@ -66,7 +66,7 @@ void SearchFIFO::flush ()
 // the current_node is determined from root with the given base
 // multiple parameters are generated for unsure bases like 'N'
 //
-void SearchFIFO::push ( char base_ )
+void SearchFIFO::push ( unsigned char base_ )
 {
   unsigned int     bits = CHAR2BIT.FIELD[ base_ ];
   Node            *child_of_root;
@@ -151,7 +151,7 @@ void SearchFIFO::push_front( Node *child_of_current_ )
   begin = new_parameter;
 }
 
-void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, char base_ )
+void SearchFIFO::iterateWith ( PRD_Sequence_Pos pos_, unsigned char base_ )
 {
   if ( begin == NULL ) return;
 

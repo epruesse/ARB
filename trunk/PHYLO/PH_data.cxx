@@ -168,41 +168,41 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
 
   
     for(i=0;i<256;i++) compare[i]=AW_FALSE;
-    for(i=0;i<long(strlen(real_chars));i++) compare[real_chars[i]]=AW_TRUE;
-    for(i=0;i<long(strlen(all_chars));i++) reference_table[all_chars[i]]=i;
+    for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=AW_TRUE;
+    for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
     
     // rna or dna sequence: set synonymes
     if(bases_used) {
-        reference_table['U']=reference_table['T'];  /* T=U */
-        reference_table['u']=reference_table['t'];
-        reference_table['N']=reference_table['X'];
-        reference_table['n']=reference_table['x'];
+        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
+        reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];
+        reference_table[(unsigned char)'N'] = reference_table[(unsigned char)'X'];
+        reference_table[(unsigned char)'n'] = reference_table[(unsigned char)'x'];
     }
-  
+
     distance_table = new AP_smatrix(strlen(all_chars));
     for(i=0;i<long(strlen(all_chars));i++) {
         for(j=0;j<long(strlen(all_chars));j++) {
             distance_table->set(i,j,(reference_table[i]==reference_table[j]) ? 0.0 : 1.0);
         }
     }
-  
+
     if(bases_used)  /* set substitutions T = U ... */
     {
-        distance_table->set(reference_table['N'],reference_table['X'],0.0);
-        distance_table->set(reference_table['n'],reference_table['x'],0.0);
+        distance_table->set(reference_table[(unsigned char)'N'],reference_table[(unsigned char)'X'],0.0);
+        distance_table->set(reference_table[(unsigned char)'n'],reference_table[(unsigned char)'x'],0.0);
     }
-    distance_table->set(reference_table['.'],reference_table['-'],0.0);
-  
+    distance_table->set(reference_table[(unsigned char)'.'],reference_table[(unsigned char)'-'],0.0);
+
     filter=strdup(aw_root->awar("phyl/filter/filter")->read_string());
-  
+
     // set compare-table according to options_vector
     switch(options_vector[0]) // '.' in column
     {
         case 0:  // forget pair
             // do nothing: compare stays AW_FALSE
             break;
-        case 1: 
-            compare['.']=AW_TRUE;
+        case 1:
+            compare[(unsigned char)'.']=AW_TRUE;
             break;
     }
     switch(options_vector[1]) // '-' in column
@@ -210,39 +210,39 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
         case 0:  // forget pair
             // do nothing: compare stays AW_FALSE
             break;
-        case 1: 
-            compare['-']=AW_TRUE;
+        case 1:
+            compare[(unsigned char)'-']=AW_TRUE;
             break;
     }
     switch(options_vector[2]) // '.' in column
     {
-        case 0:  // forget pair
+        case 0:                 // forget pair
             // do nothing: compare stays AW_FALSE
             break;
         case 1:
-            for(i=0;i<long(strlen(rest_chars));i++) compare[rest_chars[i]]=AW_TRUE;
+            for(i=0;i<long(strlen(rest_chars));i++) compare[(unsigned char)rest_chars[i]] = AW_TRUE;
             break;
     }
     if(bases_used) {
         switch(options_vector[1]) // '-' in column
         {
-            case 0:  // forget pair
+            case 0:             // forget pair
                 // do nothing: compare stays AW_FALSE
                 break;
             case 1:
-                for(i=0;i<long(strlen(low_chars));i++) compare[low_chars[i]]=AW_TRUE;
+                for(i=0;i<long(strlen(low_chars));i++) compare[(unsigned char)low_chars[i]] = AW_TRUE;
                 break;
         }
     }
-   
-   
+
+
     // counting routine
     aw_openstatus("Calculating Matrix");
     aw_status("Calculate the matrix");
     sequence_bufferi = 0;
     sequence_bufferj = 0;
     GB_transaction dummy(PHDATA::ROOT->gb_main);
-	
+
     for (i = 0; i < long(nentries); i++) {
         gauge = (double) i / (double) nentries;
         if (aw_status(gauge * gauge)) return 0;
@@ -253,12 +253,13 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
             delete sequence_bufferj;
             sequence_bufferj = GB_read_string(hash_elements[j]->gb_species_data_ptr);
             for (column = 0; column < seq_len; column++) {
-                if (compare[sequence_bufferi[column]] && compare[sequence_bufferj[column]] &&
+                if (compare[(unsigned char)sequence_bufferi[column]] &&
+                    compare[(unsigned char)sequence_bufferj[column]] &&
                     filter[column]) {
                     matrix->set(i, j,
                                 matrix->get(i, j) +
-                                distance_table->get(reference_table[sequence_bufferi[column]],
-                                                    reference_table[sequence_bufferj[column]]));
+                                distance_table->get(reference_table[(unsigned char)sequence_bufferi[column]],
+                                                    reference_table[(unsigned char)sequence_bufferj[column]]));
                     number_of_comparisons++;
                 } //if
             } //for column
@@ -270,6 +271,6 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     delete sequence_bufferi;
     delete          sequence_bufferj;
     aw_closestatus();
-	
+
     return 0;
 }

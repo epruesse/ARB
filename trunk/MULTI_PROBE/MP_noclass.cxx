@@ -804,7 +804,7 @@ BOOL MP_is_probe(char *seq)
     s = seq2;
     while (*s && result)
     {
-        result = result && MP_probe_tab[*s];
+        result = result && MP_probe_tab[(unsigned char)*s];
         s++;
     }
     free(seq2);

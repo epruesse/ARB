@@ -100,7 +100,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                     int toins = c1;
                     char *toinspos = s2-1;
                     if (toinspos > str2) toinspos--;
-                    if (tab[toinspos[0]]> 0) { /* real insertion */
+                    if (tab[(unsigned char)toinspos[0]]> 0) { /* real insertion */
                         void *str = GBS_stropen(strlen(str2+10));
                         int pos = s2-str2-1;
                         GBS_strncat(str,str2,pos);
@@ -113,10 +113,10 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                         continue;
                     }
                     int side=1; /* 0 = left   1= right */
-                    if ( tab[s1[0]]<0 ) side = 0;
+                    if ( tab[(unsigned char)s1[0]]<0 ) side = 0;
                     if ( ! side ) {
                         while ( toinspos > str2 &&
-                                tab[toinspos[-1]] < 0 ) toinspos--;
+                                tab[(unsigned char)toinspos[-1]] < 0 ) toinspos--;
                     }
                     toinspos[0] = toins;
                     *corrrected = 1;

@@ -124,16 +124,16 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
     if (is_dna) {
         long           base;
         unsigned char *char_2_bitstring;
-        char_2_freq['a'] = 'A';
-        char_2_freq['A'] = 'A';
-        char_2_freq['c'] = 'C';
-        char_2_freq['C'] = 'C';
-        char_2_freq['g'] = 'G';
-        char_2_freq['G'] = 'G';
-        char_2_freq['t'] = 'U';
-        char_2_freq['T'] = 'U';
-        char_2_freq['u'] = 'U';
-        char_2_freq['U'] = 'U';
+        char_2_freq[(unsigned char)'a'] = 'A';
+        char_2_freq[(unsigned char)'A'] = 'A';
+        char_2_freq[(unsigned char)'c'] = 'C';
+        char_2_freq[(unsigned char)'C'] = 'C';
+        char_2_freq[(unsigned char)'g'] = 'G';
+        char_2_freq[(unsigned char)'G'] = 'G';
+        char_2_freq[(unsigned char)'t'] = 'U';
+        char_2_freq[(unsigned char)'T'] = 'U';
+        char_2_freq[(unsigned char)'u'] = 'U';
+        char_2_freq[(unsigned char)'U'] = 'U';
         char_2_bitstring = (unsigned char *)AP_create_dna_to_ap_bases();
         for (i=0;i<256;i++) {
             int j;

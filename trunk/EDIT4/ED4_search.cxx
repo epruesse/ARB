@@ -293,14 +293,14 @@ class SearchTree
 {
     const SearchSettings *sett;
     SearchTreeNode *root;
-    char unified[256];
+    unsigned char unified[256];
     int shortestPattern;
 
     static char unify_char(char c, int case_sensitive, int T_equal_U);
 
-    char *unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real);
-    char *unify_pattern(GB_CSTR pattern, int *new_len);
-    char *unify_sequence(GB_CSTR sequence, int len, int *new_len, int **uni2real);
+    char *unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real);
+    char *unify_pattern(const char *pattern, int *new_len);
+    char *unify_sequence(const char *sequence, int len, int *new_len, int **uni2real);
 
     SearchTree(const SearchTree &); // forbidden
 
@@ -309,7 +309,7 @@ public:
     SearchTree(const SearchSettings *s);
     ~SearchTree();
 
-    void findMatches(GB_CSTR seq, int len, reportMatch report);
+    void findMatches(const char *seq, int len, reportMatch report);
     int get_shortestPattern() const { return shortestPattern; }
 };
 
@@ -375,10 +375,10 @@ SearchTree::SearchTree(const SearchSettings *s)
 #define ROOT(tok,com)                                       \
     do {                                                    \
         if (root) {                                         \
-			root = root->insert_unified_pattern(tok, com);  \
+            root = root->insert_unified_pattern(tok, com);  \
         }                                                   \
         else {                                              \
-			root = new SearchTreeNode(tok, com);            \
+            root = new SearchTreeNode(tok, com);            \
         }                                                   \
     } while(0)
 
@@ -504,7 +504,7 @@ char SearchTree::unify_char(char c, int case_sensitive, int T_equal_U)
     return c;
 }
 
-char *SearchTree::unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
+char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
 {
     char *p = (char*)malloc(len+1);
 
@@ -512,9 +512,9 @@ char *SearchTree::unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *ne
         return 0;
     }
 
-    char *pp = p;
-    int nlen = 0;
-    int realPos = 0;
+    char *pp      = p;
+    int   nlen    = 0;
+    int   realPos = 0;
 
     // Original-Version:
     //
@@ -538,13 +538,13 @@ char *SearchTree::unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *ne
 
         if (gaps==ED4_SG_CONSIDER_GAPS) {
             while(realPos<len) {
-                *pp++ = unified[data[realPos]];
+                *pp++ = unified[(unsigned char)data[realPos]];
                 u2r[nlen++] = realPos++;
             }
         }
         else {
             while(realPos<len) {
-                char c = data[realPos];
+                unsigned char c = data[realPos];
 
                 if (c!='-' && c!='.') {
                     *pp++ = unified[c];
@@ -557,13 +557,13 @@ char *SearchTree::unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *ne
     else {
         if (gaps==ED4_SG_CONSIDER_GAPS) {
             while(realPos<len) {
-                *pp++ = unified[data[realPos++]];
+                *pp++ = unified[(unsigned char)data[realPos++]];
                 nlen++;
             }
         }
         else {
             while(realPos<len) {
-                char c = data[realPos++];
+                unsigned char c = data[realPos++];
 
                 if (c!='-' && c!='.') {
                     *pp++ = unified[c];
@@ -582,18 +582,18 @@ char *SearchTree::unify_str(GB_CSTR data, int len, ED4_SEARCH_GAPS gaps, int *ne
     return p;
 }
 
-char *SearchTree::unify_pattern(GB_CSTR pattern, int *new_len)
+char *SearchTree::unify_pattern(const char *pattern, int *new_len)
 {
     int len = strlen(pattern);
     return unify_str(pattern, len, sett->get_pat_gaps(), new_len, 0);
 }
 
-char *SearchTree::unify_sequence(GB_CSTR sequence, int len, int *new_len, int **uni2real)
+char *SearchTree::unify_sequence(const char *sequence, int len, int *new_len, int **uni2real)
 {
     return unify_str(sequence, len, sett->get_seq_gaps(), new_len, uni2real);
 }
 
-void SearchTree::findMatches(GB_CSTR seq, int len, reportMatch report)
+void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 {
     if (root) {
         int new_len;

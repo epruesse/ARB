@@ -26,7 +26,7 @@ public:
     SequenceIterator ( const char *sequence );
 
     void restart ( PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ );
-    char nextBase();
+    unsigned char nextBase();
 };
 
 #else

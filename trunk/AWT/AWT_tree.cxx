@@ -113,12 +113,12 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type){
     }
     switch (type){
         case AWT_FILTER_SIMPLIFY_DNA:
-            simplify['g'] = 'a';
-            simplify['G'] = 'A';
-            simplify['u'] = 'c';
-            simplify['t'] = 'c';
-            simplify['U'] = 'C';
-            simplify['T'] = 'C';
+            simplify[(unsigned char)'g'] = 'a';
+            simplify[(unsigned char)'G'] = 'A';
+            simplify[(unsigned char)'u'] = 'c';
+            simplify[(unsigned char)'t'] = 'c';
+            simplify[(unsigned char)'U'] = 'C';
+            simplify[(unsigned char)'T'] = 'C';
             break;
         case AWT_FILTER_SIMPLIFY_PROTEIN:
             GB_CORE;

@@ -124,43 +124,43 @@ float *PH_filter::calculate_column_homology(void){
 
     // set valid characters
     for(i=0;i<num_all_chars;i++){
-        mask[all_chars[i]]=AW_TRUE;
-        reference_table[all_chars[i]]=i;
+        mask[(unsigned char)all_chars[i]]            = AW_TRUE;
+        reference_table[(unsigned char)all_chars[i]] = i;
     }
 
     // rna or dna sequence: set synonymes
     if(bases_used){
-        reference_table['U']=reference_table['T'];  /* T=U */
-        reference_table['u']=reference_table['t'];
-        reference_table['N']=reference_table['X'];
-        reference_table['n']=reference_table['x'];
+        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
+        reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];
+        reference_table[(unsigned char)'N'] = reference_table[(unsigned char)'X'];
+        reference_table[(unsigned char)'n'] = reference_table[(unsigned char)'x'];
     }
 
     // set mappings according to options
     // be careful the elements of rest and low are mapped to 'X' and 'a'
     switch(options_vector[4]){       // '.' in column
         case 0: // don't count
-            mask['.']=AW_FALSE;
+            mask[(unsigned char)'.']=AW_FALSE;
             break;
         case 1: // don't use column when maximal
             strcat(delete_when_max,".");
             strcat(get_maximum_from,".");
             break;
         case 2: // forget whole column
-            reference_table['.']=num_all_chars;    // map to invalid position
+            reference_table[(unsigned char)'.']=num_all_chars;    // map to invalid position
             break;
     }
 
     switch(options_vector[5]){       // '-' in column
         case 0: // don't count
-            mask['-']=AW_FALSE;
+            mask[(unsigned char)'-']=AW_FALSE;
             break;
         case 1: // don't use column when maximal
             strcat(delete_when_max,"-");
             strcat(get_maximum_from,"-");
             break;
         case 2: // forget whole column
-            reference_table['-']=num_all_chars;
+            reference_table[(unsigned char)'-']=num_all_chars;
             break;
         case 3: // use like another valid base/acid while not maximal
             // do nothing: don't get maximum of this charcater
@@ -170,43 +170,49 @@ float *PH_filter::calculate_column_homology(void){
     // 'MNY....' in column
     switch(options_vector[6]) // all rest characters counted to 'X' (see below)
     {
-        case 0: // don't count
-            for(i=0;i<long(strlen(rest_chars));i++) mask[rest_chars[i]]=AW_FALSE;
+        case 0:                 // don't count
+            for(i=0;i<long(strlen(rest_chars));i++) mask[(unsigned char)rest_chars[i]] = AW_FALSE;
             break;
-        case 1: // don't use column when maximal
+            
+        case 1:                 // don't use column when maximal
             strcat(delete_when_max,"X");
             strcat(get_maximum_from,"X");
             break;
-        case 2: // forget whole column
-            reference_table['X']=num_all_chars;
+            
+        case 2:                 // forget whole column
+            reference_table[(unsigned char)'X'] = num_all_chars;
             break;
-        case 3: // use like another valid base/acid whlie not maximal
+            
+        case 3:                 // use like another valid base/acid whlie not maximal
             break;
     }
 
     if(bases_used){
         switch(options_vector[7]){   // 'acgtu' in column
-            case 0: //use next maximal base, don't count
-                for(i=0;i<long(strlen(low_chars));i++) mask[low_chars[i]]=AW_FALSE;
+            case 0:             //use next maximal base, don't count
+                for(i=0;i<long(strlen(low_chars));i++) mask[(unsigned char)low_chars[i]] = AW_FALSE;
                 break;
-            case 1: //don't use column when maximal
+
+            case 1:             //don't use column when maximal
                 strcat(delete_when_max,"a"); // count 'cgtu' to 'a'
                 strcat(get_maximum_from,"a");
-                for(i=0;i<long(strlen(low_chars));i++) reference_table[low_chars[i]]=reference_table['a'];
+                for(i=0;i<long(strlen(low_chars));i++) reference_table[(unsigned char)low_chars[i]] = reference_table[(unsigned char)'a'];
                 break;
-            case 2: // forget whole column
-                for(i=0;i<long(strlen(low_chars));i++) reference_table[low_chars[i]]=num_all_chars;
+
+            case 2:             // forget whole column
+                for(i=0;i<long(strlen(low_chars));i++) reference_table[(unsigned char)low_chars[i]] = num_all_chars;
                 break;
+
             case 4: // use like corresponding uppercase characters
                 for(i=0;i<long(strlen(low_chars));i++)
-                    reference_table[low_chars[i]]=reference_table[toupper(low_chars[i])];
+                    reference_table[(unsigned char)low_chars[i]]=reference_table[toupper(low_chars[i])];
                 break;
         }
     }
 
     // map all rest_chars to 'X'
     for(i=0;i<long(strlen(rest_chars));i++){
-        reference_table[rest_chars[i]]=reference_table['X'];
+        reference_table[(unsigned char)rest_chars[i]]=reference_table[(unsigned char)'X'];
     }
     aw_openstatus("Calculating Filter");
     aw_status("Counting");
@@ -234,16 +240,16 @@ float *PH_filter::calculate_column_homology(void){
         if(chars_counted[i][num_all_chars]==0)  // else: forget whole column
         { max=0; max_char=' ';
         for(j=0;get_maximum_from[j]!='\0';j++){
-            if (max<chars_counted[i][reference_table[get_maximum_from[j]]]){
-                max_char=get_maximum_from[j];
-                max=chars_counted[i][reference_table[max_char]];
+            if (max<chars_counted[i][reference_table[(unsigned char)get_maximum_from[j]]]){
+                max_char = get_maximum_from[j];
+                max      = chars_counted[i][reference_table[(unsigned char)max_char]];
             }
         }
         if((max!=0) && !strchr(delete_when_max,max_char)){
             // delete option 1 classes for counting
             for(j=0;delete_when_max[j]!='\0';j++){
-                chars_counted[i][num_all_chars+1]+= chars_counted[i][reference_table[delete_when_max[j]]];
-                chars_counted[i][reference_table[delete_when_max[j]]]=0;
+                chars_counted[i][num_all_chars+1]+= chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]];
+                chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]]=0;
             }
             mline[i+startcol]= ( max/
                                  ((float) PHDATA::ROOT->nentries -

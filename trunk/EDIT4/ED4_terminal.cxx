@@ -1568,7 +1568,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
          r>=0;
          r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height)) { // 4 rows (one for T/U, G, C and A)
 
-        int gc = ED4_ROOT->sequence_colors->char_2_gc["ACGU"[r]];
+        int gc = ED4_ROOT->sequence_colors->char_2_gc[(unsigned char)"ACGU"[r]];
         int i;
         for (i=left; i<=right; i++) {
             int p = rm->screen_to_sequence(i);

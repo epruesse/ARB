@@ -713,7 +713,7 @@ const char *AWT_get_protein_iupac(char protein, int code_nr) {
 }
 
 
-static char protein_index_def[]       = "ABCDEFGHIKLMNPQRSTVWXYZ.-*";
+static unsigned char protein_index_def[]       = "ABCDEFGHIKLMNPQRSTVWXYZ.-*";
 static char protein_index[256]; // index of protein in protein_2_iupac_table
 static bool protein_index_initialized = 0;
 
@@ -772,7 +772,7 @@ char *AWT_proteinSeq_2_iupac(const char *proteinSeq, size_t prot_len, int code_n
 
     size_t didx = 0;
     for (size_t pidx = 0; pidx<prot_len; ++pidx, didx += 3) {
-        char prot_idx = protein_index[proteinSeq[pidx]];
+        char prot_idx = protein_index[(unsigned char)proteinSeq[pidx]];
 
         if (prot_idx == -1) { // illegal charater
             memcpy(result+didx, "???", 3);

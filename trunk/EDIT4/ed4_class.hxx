@@ -562,11 +562,11 @@ class ED4_char_table
     //     static bool tables_are_valid;
     // #endif
 
-    static bool         initialized;
-    static unsigned char    char_to_index_tab[MAXCHARTABLE];
-    static char         *upper_index_chars;
-    static char         *lower_index_chars;
-    static int          used_bases_tables; // size of 'bases_table'
+    static bool           initialized;
+    static unsigned char  char_to_index_tab[MAXCHARTABLE];
+    static unsigned char *upper_index_chars;
+    static unsigned char *lower_index_chars;
+    static int            used_bases_tables; // size of 'bases_table'
 
     inline void         set_char_to_index(unsigned char c, int index);
     inline void         set_string_to_index(const char *s, int index);
@@ -612,8 +612,8 @@ public:
 
     void bases_and_gaps_at(int column, int *bases, int *gaps) const;
 
-    inline char index_to_upperChar(int index) const;
-    inline char index_to_lowerChar(int index) const;
+    unsigned char index_to_upperChar(int index) const;
+    unsigned char index_to_lowerChar(int index) const;
 
     // linear access to all tables
     ED4_bases_table&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }

@@ -311,21 +311,21 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     //                     else {
 
                     double amount =
-                        csp->frequency['A'][j] + csp->frequency['C'][j] +
-                        csp->frequency['G'][j] + csp->frequency['U'][j] ;
+                        csp->frequency[(unsigned char)'A'][j] + csp->frequency[(unsigned char)'C'][j] +
+                        csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'U'][j] ;
 
                     switch (plot_type) {
                         case PT_GC_RATIO:
-                            val = ( csp->frequency['G'][j] + csp->frequency['C'][j] ) / amount;
+                            val = ( csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'C'][j] ) / amount;
                             break;
                         case PT_GA_RATIO:
-                            val = ( csp->frequency['G'][j] + csp->frequency['A'][j] ) / amount;
+                            val = ( csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'A'][j] ) / amount;
                             break;
 
-                        case PT_BASE_A: val  = csp->frequency['A'][j] / amount; break;
-                        case PT_BASE_C: val  = csp->frequency['C'][j] / amount; break;
-                        case PT_BASE_G: val  = csp->frequency['G'][j] / amount; break;
-                        case PT_BASE_TU: val = csp->frequency['U'][j] / amount; break;
+                        case PT_BASE_A: val  = csp->frequency[(unsigned char)'A'][j] / amount; break;
+                        case PT_BASE_C: val  = csp->frequency[(unsigned char)'C'][j] / amount; break;
+                        case PT_BASE_G: val  = csp->frequency[(unsigned char)'G'][j] / amount; break;
+                        case PT_BASE_TU: val = csp->frequency[(unsigned char)'U'][j] / amount; break;
 
                         case PT_RATE:                   val = csp->rates[j]; break;
                         case PT_TT_RATIO:               val = csp->ttratio[j]; break;

@@ -113,7 +113,7 @@ long *awt_nuc_create_pro_to_bits(void){
     return table;
 }
 
-static void awt_pro_a_nucs_build_table(char pbase, const char *tri_pro, const char *nuc) {
+static void awt_pro_a_nucs_build_table(unsigned char pbase, const char *tri_pro, const char *nuc) {
     struct arb_r2a_pro_2_nuc *str;
     struct arb_r2a_pro_2_nucs *nucs;
     // search for existing protein, else generate new
@@ -463,7 +463,7 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     initialized_for_code_nr      = code_nr;
 }
 
-int AP_nuc_dist(char p1, char p2){  // nucleotid changes between two aa
+static int AP_nuc_dist(unsigned char p1, unsigned char p2) {  // nucleotid changes between two aa
     struct arb_r2a_pro_2_nuc *s1,*s2;
     s1 = awt_pro_a_nucs->s2str[p1];
     s2 = awt_pro_a_nucs->s2str[p2];

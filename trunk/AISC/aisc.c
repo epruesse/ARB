@@ -105,19 +105,19 @@ aisc_init()
 
 	gl->outtab[i] = i;
     }
-    gl->outtab['n'] = '\n';
-    gl->outtab['t'] = '\t';
-    gl->outtab['0'] = 0;
-    gl->outtab['1'] = 0;
-    gl->outtab['2'] = 0;
-    gl->outtab['3'] = 0;
-    gl->outtab['4'] = 0;
-    gl->outtab['5'] = 0;
-    gl->outtab['6'] = 0;
-    gl->outtab['7'] = 0;
-    gl->outtab['8'] = 0;
-    gl->outtab['9'] = 0;
-    gl->outtab['\\'] = 0;
+    gl->outtab[(unsigned char)'n'] = '\n';
+    gl->outtab[(unsigned char)'t'] = '\t';
+    gl->outtab[(unsigned char)'0'] = 0;
+    gl->outtab[(unsigned char)'1'] = 0;
+    gl->outtab[(unsigned char)'2'] = 0;
+    gl->outtab[(unsigned char)'3'] = 0;
+    gl->outtab[(unsigned char)'4'] = 0;
+    gl->outtab[(unsigned char)'5'] = 0;
+    gl->outtab[(unsigned char)'6'] = 0;
+    gl->outtab[(unsigned char)'7'] = 0;
+    gl->outtab[(unsigned char)'8'] = 0;
+    gl->outtab[(unsigned char)'9'] = 0;
+    gl->outtab[(unsigned char)'\\'] = 0;
 }
 
 void p_err(const char *error) {
