@@ -403,6 +403,23 @@ void gellisary::writeReferenceGenBank(GBDATA * source_container, gellisary::GAGe
     tmp_int_vec_2 = reference->getPositionEnd();
     if((tmp_int_vec_1->size() > 0) && (tmp_int_vec_2->size() > 0) && (tmp_int_vec_1->size() == tmp_int_vec_2->size()))
     {
+        for(int i = 0; i < (int)tmp_int_vec_1->size(); i++)
+        {
+            std::string tmp1_str = r_nummer;
+            std::string tmp2_str = r_nummer;
+            tmp1_str.append("position_begin_");
+            tmp1_str.append(gellisary::GAGenomUtilities::integerToString((i+1)));
+            tmp2_str.append("position_end_");
+            tmp2_str.append(gellisary::GAGenomUtilities::integerToString((i+1)));
+            gellisary::writeInteger(source_container,&tmp1_str,(*tmp_int_vec_1)[i]);
+            gellisary::writeInteger(source_container,&tmp2_str,(*tmp_int_vec_2)[i]);
+        }
+    }
+    /*
+    tmp_int_vec_1 = reference->getPositionBegin();
+    tmp_int_vec_2 = reference->getPositionEnd();
+    if((tmp_int_vec_1->size() > 0) && (tmp_int_vec_2->size() > 0) && (tmp_int_vec_1->size() == tmp_int_vec_2->size()))
+    {
 
         for(int i = 0; i < (int)tmp_int_vec_1->size(); i++)
         {
@@ -416,6 +433,7 @@ void gellisary::writeReferenceGenBank(GBDATA * source_container, gellisary::GAGe
             gellisary::writeInteger(source_container,&tmp2_str,(*tmp_int_vec_2)[i]);
         }
     }
+    */
     tmp_str_pnt = reference->getComment();
     if((*tmp_str_pnt != "none") && (!(*tmp_str_pnt).empty()))
     {
@@ -1003,6 +1021,9 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
 
     std::string extension;
     std::string flatfile_name;
+    
+    int error_number = 2;
+    string error_message;
 
     for(int i = (file_name_size-1); i >= 0; i--)
     {
@@ -1049,7 +1070,8 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         string ffname = file_name;
         gellisary::GAGenomEmbl genomembl(&ffname);
         genomembl.parseFlatFile();
-        if(genomembl.isFileComplete())
+        error_number = genomembl.getErrorNumber();
+        if(error_number == 0)
         {
             GBDATA        *gb_species_data  = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
             char          *new_species_name = AWTC_makeUniqueShortName("genom", gb_species_data);
@@ -1176,10 +1198,19 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                 gellisary::writeReferenceEmbl(gb_species,tmp_reference);
             }
             delete (tmp_reference);
+            error_message = *(genomembl.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());
         }
         else
         {
-            GB_warning("The Embl flatfile is incomplete!");
+            /*error_message = *(genomembl.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());
+            error = "Fehler!";*/
+            error = (*(genomembl.getErrorMessage())).c_str();
         }
     }
     else if(extension == "gbk")
@@ -1187,7 +1218,8 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         string ffname = file_name;
         gellisary::GAGenomGenBank genomgenbank(&ffname);
         genomgenbank.parseFlatFile();
-        if(genomgenbank.isFileComplete())
+        error_number = genomgenbank.getErrorNumber();
+        if(error_number == 0)
         {
             GBDATA        *gb_species_data  = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
             char          *new_species_name = AWTC_makeUniqueShortName("genom", gb_species_data);
@@ -1318,10 +1350,19 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                 gellisary::writeReferenceGenBank(gb_species,tmp_reference);
             }
             delete (tmp_reference);
+            error_message = *(genomgenbank.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());
         }
         else
         {
-            GB_warning("The GenBank flatfile is incomplete!");
+            /*error_message = *(genomgenbank.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());
+            error = "Fehler!";*/
+            error = (*(genomgenbank.getErrorMessage())).c_str();
         }
     }
     else if(extension == "ff")
@@ -1329,7 +1370,8 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
         string ffname = file_name;
         gellisary::GAGenomDDBJ genomddbj(&ffname);
         genomddbj.parseFlatFile();
-        if(genomddbj.isFileComplete())
+        error_number = genomddbj.getErrorNumber();
+        if(error_number == 0)
         {
             GBDATA        *gb_species_data  = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
             char          *new_species_name = AWTC_makeUniqueShortName("genom", gb_species_data);
@@ -1460,10 +1502,19 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                 gellisary::writeReferenceDDBJ(gb_species,tmp_reference);
             }
             delete (tmp_reference);
+            error_message = *(genomddbj.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());
         }
         else
         {
-            GB_warning("The DDBJ flatfile : is incomplete!");
+            /*error_message = *(genomddbj.getErrorMessage());
+            error_message.append(" : ");
+            error_message.append(file_name);
+            GB_warning(error_message.c_str());*/
+            error = (*(genomddbj.getErrorMessage())).c_str();
+            //error = "Fehler!";
         }
     }
     return error;

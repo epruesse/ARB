@@ -37,6 +37,7 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
     string t3_str;
     vector<string> t2_vector;
     vector<string> t3_vector;
+    int seq_len = 0;
 
     GAGenomReferenceDDBJ *tmp_reference;
 
@@ -159,14 +160,19 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'O')
                     {
                         del_str = "LOCUS";
                         GAGenomUtilities::preparePropertyString(&tmp_str,&del_str,&identification);
+                    	t3_str = tmp_str;
+                    	GAGenomUtilities::replaceByWhiteSpaceCleanly(&t3_str,&del_str);
+                        tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t3_str,' ',true);
+                        int tmp_int_4 = 0;
+                        t_str = tmp_vector[1];
+                        tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
+                      	seq_len = tmp_int_4;
                     }
                     break;
                 case 'A':
@@ -266,8 +272,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'C')
@@ -373,8 +377,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'E')
@@ -489,10 +491,12 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                         del_str = "BASE COUNT";
                         GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
                         tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',true);
-                        for(int i = 0; i < (int) tmp_vector.size(); i = i + 2)
+                        int tmp_int_4 = 0;
+                        for(int i = 1; i < (int)tmp_vector.size(); i = i + 2)
                         {
                             t_str = tmp_vector[i];
-                            sequence_header.push_back(GAGenomUtilities::stringToInteger(&t_str));
+                            tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
+                            sequence_header.push_back(tmp_int_4);
                         }
                     }
                     break;
@@ -593,8 +597,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'E')
@@ -700,8 +702,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'E')
@@ -781,8 +781,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
 
@@ -876,8 +874,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'E')
@@ -1002,8 +998,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     switch(tmp_str[2])
@@ -1115,8 +1109,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'E')
@@ -1222,8 +1214,6 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     }
                     if(ori)
                     {
-                        parseSequence(&tmp_str);
-                        sequence += tmp_str;
                         ori = false;
                     }
                     if(tmp_str[1] == 'R')
@@ -1237,8 +1227,18 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     {
                         ori = false;
                     }
-                    flatfile.close();
-                    complete_file = true;
+                    if(seq_len == (int) sequence.size()) 
+	            	{
+    	        		complete_file = true;
+        	    		error_number = 0;
+            			error_message = "All Okay!";
+            		}
+	            	else
+	            	{
+    	        		error_number = 1;
+        	    		error_message = "Sequence string of genome is incomplete!";
+            		}
+                	flatfile.close();
                     break;
                 case ' ':
                     if(de)
@@ -1331,6 +1331,11 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
         }
         else
         {
+            if(ori)
+            {
+            	parseSequence(&tmp_str);
+                sequence += tmp_str;
+            }
             if(fe)
             {
                 feature_table.update(&tmp_str);
@@ -1447,19 +1452,13 @@ void gellisary::GAGenomDDBJ::parseSequence(string * source_str)
 {
     string target_str;
     char tmp_char;
-    int i = 0;
-    vector<string> tmp_vector;
-    for(i = 0; i < (int) source_str->size(); i++)
+    for(int i = 0; i < (int) source_str->size(); i++)
     {
         tmp_char = source_str->operator[](i);
-        if((tmp_char == 't') || (tmp_char == 'g') || (tmp_char == 'c') || (tmp_char == 'a') || (tmp_char == 'T') || (tmp_char == 'G') || (tmp_char == 'C') || (tmp_char == 'A'))
+        if((tmp_char != ' ') && (tmp_char != '\r') && (tmp_char != '\n') && (tmp_char != '0') && (tmp_char != '1') && (tmp_char != '2') && (tmp_char != '3') && (tmp_char != '4') && (tmp_char != '5') && (tmp_char != '6') && (tmp_char != '7') && (tmp_char != '8') && (tmp_char != '9'))
         {
-            target_str += tmp_char;
+        	target_str += tmp_char;
         }
     }
-    GAGenomUtilities::trimString(&target_str);
-    GAGenomUtilities::onlyOneDelimerChar(&target_str,' ');
-    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&target_str,' ',false);
-    target_str = GAGenomUtilities::toOneString(&tmp_vector,false);
     *source_str = target_str;
 }
