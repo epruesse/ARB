@@ -1,4 +1,5 @@
-#define AWAR_FILE "tmp/import/pattern"
+#define AWAR_FILE_BASE "tmp/import/pattern"
+#define AWAR_FILE AWAR_FILE_BASE"/file_name"
 #define AWAR_FORM "tmp/import/form"
 #define AWAR_ALI "tmp/import/alignment"
 #define AWAR_ALI_TYPE "tmp/import/alignment_type"
