@@ -2,7 +2,7 @@
 #include <memory.h>
 #include <string.h>
 #include <math.h>
-#include <iostream.h>
+#include <iostream>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -327,11 +327,9 @@ AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
     if (!sequence) return -1.0;
     if (cashed_real_len>=0.0) return cashed_real_len;
     char hits[256];
-    register long sum,i;
-    register char *p;
-    register GB_UINT4 *w;
-    sum = 0;
-    p = sequence;
+    long i;
+    long sum = 0;
+    unsigned char *p = (unsigned char*)sequence;
     for (i=0;i<256;i++){    // count ambigous characters half
         hits[i] = 1;
     }
@@ -341,7 +339,7 @@ AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
     hits[AP_T] = 2;
     hits[AP_S] = 0;     // count no gaps
     hits[AP_N] = 0;     // no Ns
-    w = root->weights->weights;
+    GB_UINT4 *w = root->weights->weights;
 
     for ( i = sequence_len; i ;i-- ) {  // all but no gaps
         sum += hits[*(p++)] * *(w++);
