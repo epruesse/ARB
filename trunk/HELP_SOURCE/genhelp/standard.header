@@ -8,10 +8,5 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 # *********************************************************************
-# *                                                                   *
-# *    THIS is a GENERATED FILE! DO NOT EDIT!                         *
-# *    see HELP_SOURCE/genhelp for details                            *
-# *                                                                   *
-# *********************************************************************
-#
-#************* Title of helpfile !! and start of real helpfile ********
+# 
+# THIS is a GENERATED FILE! DO NOT EDIT!
