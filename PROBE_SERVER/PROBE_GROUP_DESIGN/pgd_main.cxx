@@ -37,7 +37,7 @@ typedef string Probes;
 static GBDATA *gb_main = 0;            //ARB-database
 static GBDATA *pd_main = 0;            //probe-design-database
 
-typedef enum { TF_NONE, TF_CREATE, TF_EXTEND } Treefile_Action;
+typedef enum { TF_NONE, TF_CREATE } Treefile_Action;
 
 struct InputParameter {
     string          db_name;
@@ -472,8 +472,11 @@ static GB_ERROR PGD_export_tree(GBT_TREE *node, FILE *out) {
     if (!error) {
         error = PGD_export_tree(node->rightson, out);
         fprintf(out, ":%.5f)", node->rightlen);
-        if (node->name) { // groupname
+        if (node->name) { // node info
             fprintf(out, "'%s'", node->name);
+        }
+        else {
+            fprintf(out, "''"); // save empty nodo-info (needed by pgd_tree_merge)
         }
     }
     return error;
@@ -896,10 +899,10 @@ static GB_ERROR setNodeInfo(GBDATA *pd_subtree, GBT_TREE *node) {
     return 0;
 }
 
-static GB_ERROR createOrUpdateTree() {
+static GB_ERROR saveTreefile() {
     GB_ERROR error = 0;
 
-    if (para.gen_treefile != TF_NONE) { // create/extend tree ?
+    if (para.gen_treefile == TF_CREATE) { // create treefile ?
         GB_transaction dummy(pd_main);
 
         // load the tree
@@ -968,7 +971,7 @@ int main(int argc,char *argv[]) {
     if (!error) error = openDatabases();
     if (!error) error = PM_initSpeciesMaps(pd_main);
     if (!error) error = designProbes();
-    if (!error) error = createOrUpdateTree();
+    if (!error) error = saveTreefile();
     if (!error) {
         error = setDatabaseState(pd_main, "probe_group_design_db", "complete"); // adjust database type
         if (!error) error = saveDatabase();
