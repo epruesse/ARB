@@ -1781,8 +1781,8 @@ extern "C" {
 
 gb_error_handler_type gb_error_handler = gb_fprintf_stderr;
 
-NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message){
-    gb_error_handler = aw_message;
+NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler){
+    gb_error_handler = aw_message_handler;
 }
 
 void GB_internal_error(const char *templat, ...) {
