@@ -587,9 +587,12 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
     if(method == NULL) 		method=(char *)calloc(1,sizeof(char));
     if(symbol == NULL) 		symbol="";
 
-    for(; (i=Find2(Action,symbol)) != -1;)
+    int j = 0;
+    for(; (i=Find2(Action+j,symbol)) != -1;)
     {
-        if(i>0 && Action[i-1] =='$' )
+        i += j;
+        ++j;
+        if(i>0 && Action[i-1] == '$' )
         {
             newlen = strlen(Action)-strlen(symbol)
                 +strlen(textvalue);
@@ -604,16 +607,21 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
         }
         else
         {
-            newlen = strlen(Action)-strlen(symbol)
-                +strlen(method)+1;
-            temp = (char *)calloc(newlen,1);
-            if (temp == NULL)
-                Error("ReplaceArgs():Error in calloc");
-            strncat(temp,Action,i);
-            strncat(temp,method,strlen(method));
-            strcat( temp,&(Action[i+strlen(symbol)]) );
-            free(Action);
-            Action = temp;
+            fprintf(stderr,
+                    "old arb version converted '%s' to '%s' in '%s'.\n"
+                    "now this is not done any more (check the action!)\n"
+                    "If this error occurs, please send it to devel@arb-home.de - thanks\n",
+                    symbol, textvalue, Action);
+            //             newlen = strlen(Action)-strlen(symbol)
+            //                 +strlen(method)+1;
+            //             temp   = (char *)calloc(newlen,1);
+            //             if (temp == NULL)
+            //                 Error("ReplaceArgs():Error in calloc");
+            //             strncat(temp,Action,i);
+            //             strncat(temp,method,strlen(method));
+            //             strcat( temp,&(Action[i+strlen(symbol)]) );
+            //             free(Action);
+            //             Action = temp;
         }
     }
     delete textvalue;
