@@ -2,7 +2,7 @@
 item:Phylip PROML
 itemmeta: O
 itemmethod:(GEN_INFILE(in1);\
-            RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE; $DISPLAY_FUNC));\
+            RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE $RATE_VARIATION $INTERACTIVE; $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1) )&
 itemhelp:proml.help
 
@@ -37,6 +37,13 @@ arglabel:Randomize sequence order
 argchoice:Yes:1
 argchoice:No:0
 
+arg:RATE_VARIATION
+argtype:choice_menu
+arglabel:Rate variation among sites?
+argchoice:Constant rate of change:0
+argchoice:Gamma distributed rates:1
+argchoice:Gamma+Invariant sites:2
+
 arg:BOOTSTRAP
 argtype:choice_menu
 arglabel:How many bootstraps ?
@@ -51,6 +58,12 @@ argchoice:10000:10000
 arg:VIEWOUT
 argtype:choice_menu
 arglabel:View report
+argchoice:No:0
+argchoice:Yes:1
+
+arg:INTERACTIVE
+argtype:choice_menu
+arglabel:Interactive? (no for bootstrap)
 argchoice:No:0
 argchoice:Yes:1
 
