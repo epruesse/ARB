@@ -19,11 +19,13 @@
 #include <awt_canvas.hxx>
 #include <awt.hxx>
 #include <awtc_rename.hxx>
+#include <awt_input_mask.hxx>
 
 #include "GEN_local.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 #include "GEN_nds.hxx"
+#include "EXP.hxx"
 #include "../NTREE/ad_spec.hxx" // needed for species query window
 
 using namespace std;
@@ -155,6 +157,7 @@ void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *ntw) {
 void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *ntw) {
     awr->awar_string(AWAR_ORGANISM_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_organism_name_changed_cb, (AW_CL)ntw);
     awr->awar_string(AWAR_GENE_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_gene_name_changed_cb, (AW_CL)ntw);
+    awr->awar_string(AWAR_COMBINED_GENE_NAME,"",gb_main);
 
     awr->awar(AWAR_GENMAP_ARROW_SIZE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
     awr->awar(AWAR_GENMAP_SHOW_HIDDEN)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
@@ -504,10 +507,11 @@ static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
     }
 }
 
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode, void (*do_command)(int cmode, GBDATA *gb_species, AW_CL cl_user), int mode, AW_CL cl_user)
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode, void (*do_command)(int cmode, GBDATA *gb_species, AW_CL cl_user), int mode, AW_CL cl_user) {
+//  --------------------------------------------------------------------------------
+//      static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
+//  --------------------------------------------------------------------------------
+static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
+                                 void (*do_command)(int cmode, GBDATA *gb_species, AW_CL cl_user), int mode, AW_CL cl_user) {
     GB_ERROR error = 0;
 
     GB_begin_transaction(gb_main);
@@ -759,10 +763,11 @@ AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
 
 #define AWMIMT awm->insert_menu_topic
 
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file)
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file) {
+//  -------------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+//  -------------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+                                const char *help_file) {
 //     GEN_insert_multi_submenu(awm, macro_prefix, submenu_name, hot_key, help_file, GEN_extract_marked_command, (AW_CL)mark_mode);
     awm->insert_sub_menu(0, submenu_name, hot_key);
 
@@ -780,10 +785,11 @@ void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_pre
     awm->close_sub_menu();
 }
 
-//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode)
-//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode) {
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+//  -----------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+                              const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode) {
     awm->insert_sub_menu(0, submenu_name, hot_key);
 
     char macro_name_buffer[50];
@@ -802,16 +808,18 @@ void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefi
 
     awm->close_sub_menu();
 }
-//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_MARK_MODE mark_mode)
-//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_MARK_MODE mark_mode) {
+//  ----------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+//  ----------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+                             const char *help_file, GEN_MARK_MODE mark_mode) {
     GEN_insert_multi_submenu(awm, macro_prefix, submenu_name, hot_key, help_file, GEN_mark_command, (AW_CL)mark_mode);
 }
-//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_HIDE_MODE hide_mode)
-//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_HIDE_MODE hide_mode) {
+//  ----------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+//  ----------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
+                             const char *help_file, GEN_HIDE_MODE hide_mode) {
     GEN_insert_multi_submenu(awm, macro_prefix, submenu_name, hot_key, help_file, GEN_hide_command, (AW_CL)hide_mode);
 }
 
@@ -825,22 +833,84 @@ AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
         aws->at(10, 10);
         aws->auto_space(10,10);
 
-        aws->label("AWAR_SPECIES_NAME");
-        aws->create_input_field(AWAR_SPECIES_NAME, 30);
-
-        aws->at_newline();
-        aws->label("AWAR_ORGANISM_NAME");
-        aws->create_input_field(AWAR_ORGANISM_NAME, 30);
-
-        aws->at_newline();
-        aws->label("AWAR_GENE_NAME");
-        aws->create_input_field(AWAR_GENE_NAME, 30);
+        ;                  aws->label("AWAR_SPECIES_NAME      "); aws->create_input_field(AWAR_SPECIES_NAME, 30);
+        aws->at_newline(); aws->label("AWAR_ORGANISM_NAME     "); aws->create_input_field(AWAR_ORGANISM_NAME, 30);
+        aws->at_newline(); aws->label("AWAR_GENE_NAME         "); aws->create_input_field(AWAR_GENE_NAME, 30);
+        aws->at_newline(); aws->label("AWAR_COMBINED_GENE_NAME"); aws->create_input_field(AWAR_COMBINED_GENE_NAME, 30);
+        aws->at_newline(); aws->label("AWAR_EXPERIMENT_NAME   "); aws->create_input_field(AWAR_EXPERIMENT_NAME, 30);
 
         aws->window_fit();
     }
     return aws;
 }
 #endif // DEBUG
+// #########################################
+// #########################################
+// ###                                   ###
+// ##          user mask section          ##
+// ###                                   ###
+// #########################################
+// #########################################
+
+//  -----------------------------------------------------------------------------
+//      class GEN_item_type_species_selector : public awt_item_type_selector
+//  -----------------------------------------------------------------------------
+class GEN_item_type_species_selector : public awt_item_type_selector {
+public:
+    GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
+    virtual ~GEN_item_type_species_selector() {}
+
+    virtual const char *get_self_awar() const {
+        return AWAR_COMBINED_GENE_NAME;
+    }
+    virtual size_t get_self_awar_content_length() const {
+        return 12 + 1 + 40; // species-name+'/'+gene_name
+    }
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+        root->awar(get_self_awar())->add_callback(f, cl_mask);
+    }
+    virtual GBDATA *current(AW_root *root) const { // give the current item
+        char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
+        char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
+        GBDATA *gb_gene      = 0;
+
+        if (species_name[0] && gene_name[0]) {
+            GB_transaction dummy(gb_main);
+            GBDATA *gb_species = GBT_find_species(gb_main,species_name);
+            if (gb_species) {
+                gb_gene = GEN_find_gene(gb_species, gene_name);
+            }
+        }
+
+        free(gene_name);
+        free(species_name);
+
+        return gb_gene;
+    }
+    virtual const char *getKeyPath() const { // give the keypath for items
+        return CHANGE_KEY_PATH_GENES;
+    }
+};
+
+static GEN_item_type_species_selector item_type_gene;
+
+//  -----------------------------------------------------------------------------
+//      static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL)
+//  -----------------------------------------------------------------------------
+static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
+    int                              id         = int(cl_id);
+    const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+    assert(descriptor);
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_maskname());
+}
+
+//  -----------------------------------------------------------------------
+//      static void GEN_create_mask_submenu(AW_window_menu_modes *awm)
+//  -----------------------------------------------------------------------
+static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
+    AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window);
+}
+
 
 //  -------------------------------------------------------------------------------------
 //      void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
@@ -858,6 +928,8 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
         }
         AWMIMT( "gene_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
         AWMIMT( "gene_search",	"Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
+
+        GEN_create_mask_submenu(awm);
 
         awm->insert_separator();
 
@@ -942,6 +1014,14 @@ void GEN_set_display_style(void *dummy, AWT_canvas *ntw, GEN_DisplayStyle type) 
     ntw->refresh();
 }
 
+// ##########################################
+// ##########################################
+// ###                                    ###
+// ##          create main window          ##
+// ###                                    ###
+// ##########################################
+// ##########################################
+
 //  -----------------------------------------------------------
 //      AW_window *GEN_map_create_main_window(AW_root *awr)
 //  -----------------------------------------------------------
@@ -976,6 +1056,9 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     // Organisms
     GEN_create_organism_submenu(awm, false);
+
+    // Experiments
+    EXP_create_experiments_submenu(awm, false);
 
     // Hide Menu
     GEN_create_hide_submenu(awm);

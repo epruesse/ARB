@@ -427,7 +427,9 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize)
             hashsize = GB_number_of_subentries(gb_species_data);
             break;
         }
+        case AWT_QUERY_ITEM_EXPERIMENTS: 
         case AWT_QUERY_ITEM_GENES: {
+            // handle species sub-items
             hashsize = 0;
 
             for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), range);
@@ -544,7 +546,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 
 	if (!strcmp(key,"name")){
         switch (cbs->selector->type)  {
-            case AWT_QUERY_ITEM_SPECIES:
+            case AWT_QUERY_ITEM_SPECIES: {
                 if (aw_message("WARNING WARNING WARNING!!! You now try to rename the species\n"
                                "	The name is used to link database entries and trees\n"
                                "	->	 ALL TREES WILL BE LOST\n"
@@ -552,15 +554,26 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                "		if not you may corrupt the database" ,
                                "Let's Go,Cancel")) return;
                 break;
-            case AWT_QUERY_ITEM_GENES:
-                if (aw_message("WARNING! You now try to rename the genes\n"
+            }
+            case AWT_QUERY_ITEM_GENES: {
+                if (aw_message("WARNING! You now try to rename the gene\n"
+                               "	->	Pseudo-species will loose their link to the gene"
                                "	->	The new names MUST be UNIQUE"
                                "		if not you may corrupt the database" ,
                                "Let's Go,Cancel")) return;
                 break;
-            default:
+            }
+            case AWT_QUERY_ITEM_EXPERIMENTS: {
+                if (aw_message("WARNING! You now try to rename the experiment\n"
+                               "	->	The new names MUST be UNIQUE"
+                               "		if not you may corrupt the database" ,
+                               "Let's Go,Cancel")) return;
+                break;
+            }
+            default: {
                 awt_assert(0);
                 return;
+            }
         }
 	}
 
@@ -935,6 +948,9 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
         case AWT_QUERY_ITEM_GENES:
             filename = AWT_unfold_path("lib/sellists/mod_gene_fields*.sellst","ARBHOME");
             break;
+        case AWT_QUERY_ITEM_EXPERIMENTS: 
+            filename = AWT_unfold_path("lib/sellists/mod_experiment_fields*.sellst","ARBHOME");
+            break;            
         default:
             gb_assert(0);
             break;

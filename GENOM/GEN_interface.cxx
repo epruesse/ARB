@@ -70,10 +70,10 @@ static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBD
 
 static char *old_species_marks = 0; // configuration storing marked species
 
-//  ------------------------------------------------------------------------------------------------------
-//      static GB_ERROR mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
-//  ------------------------------------------------------------------------------------------------------
-static GB_ERROR mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
+//  ---------------------------------------------------------------------------------------------------
+//      GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
+//  ---------------------------------------------------------------------------------------------------
+GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
     AWUSE(client_data);
     GB_ERROR error = 0;
 
@@ -116,7 +116,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
             if (gb_pseudo) {    // there are marked pseudo-species..
                 old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
 
-                error                  = GBT_with_stored_species(gb_main, old_species_marks, mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
+                error                  = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
                 if (!error) gb_species = GEN_first_marked_organism(gb_main);
             }
             else {
@@ -209,20 +209,33 @@ void GEN_species_name_changed_cb(AW_root *awr) {
     free(species_name);
 }
 
+//  --------------------------------------------------
+//      void GEN_update_combined_cb(AW_root *awr)
+//  --------------------------------------------------
+void GEN_update_combined_cb(AW_root *awr) {
+    char       *organism = awr->awar(AWAR_ORGANISM_NAME)->read_string();
+    char       *gene     = awr->awar(AWAR_GENE_NAME)->read_string();
+    const char *combined = GBS_global_string("%s/%s", organism, gene);
+    awr->awar(AWAR_COMBINED_GENE_NAME)->write_string(combined);
+    free(gene);
+    free(organism);
+}
+
 //  -------------------------------------------------------------------
 //      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
 //  -------------------------------------------------------------------
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
-	aw_root->awar_string( AWAR_GENE_NAME, "" ,	gb_main);
-	aw_root->awar_string( AWAR_ORGANISM_NAME, "" ,	gb_main);
+	aw_root->awar_string(AWAR_GENE_NAME, "" ,	gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
+	aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,	gb_main)->add_callback((AW_RCB0)GEN_update_combined_cb);
+    aw_root->awar_string(AWAR_COMBINED_GENE_NAME,"",gb_main);
 
     aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB0)GEN_species_name_changed_cb);
 
-    aw_root->awar_string( AWAR_GENE_DEST, "" ,	aw_def);
-    aw_root->awar_string( AWAR_GENE_POS1, "" ,	aw_def);
-    aw_root->awar_string( AWAR_GENE_POS2, "" ,	aw_def);
+    aw_root->awar_string(AWAR_GENE_DEST, "" ,	aw_def);
+    aw_root->awar_string(AWAR_GENE_POS1, "" ,	aw_def);
+    aw_root->awar_string(AWAR_GENE_POS2, "" ,	aw_def);
 
-    aw_root->awar_string( AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,	aw_def);
+    aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,	aw_def);
 }
 
 
