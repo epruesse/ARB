@@ -67,9 +67,10 @@ case "X${ARBHOME}" in
 	export ARBBIN
 	ARBHOME=`dirname $ARBBIN`
 	export ARBHOME
-    echo "Environment Variable ARBHOME was empty"
-    echo "Using '$ARBHOME'"
+    	echo "Environment Variable ARBHOME was empty"
 esac
+
+echo "Using ARBHOME='$ARBHOME'"
 
 prepend PATH			$ARBHOME/bin
 prepend LD_LIBRARY_PATH		$ARBHOME/lib
@@ -91,18 +92,29 @@ fi
 
 ARB_PID="$$"; export ARB_PID
 
-if [ ! -d ${HOME}/.arb_prop ] ; then
-  echo 'Directory $HOME/.arb_prop not found - creating ...'
-  mkdir ${HOME}/.arb_prop
+ARB_PROPERTIES=${HOME}/.arb_prop
+
+if [ ! -d ${ARB_PROPERTIES} ] ; then
+  echo "Directory ${ARB_PROPERTIES} not found - creating ..."
+  mkdir ${ARB_PROPERTIES}
 fi
 
 if [ "X$ARBMACROHOME" = "X" ] ; then
-  ARBMACROHOME="$ARBHOME/lib/macros"
+  ARBMACROHOME="${ARB_PROPERTIES}/macros";
   export ARBMACROHOME
-  if [ ! -d ${ARBMACROHOME} ] ; then
-    echo 'Directory $ARBMACROHOME not found - creating ...'
-    mkdir ${ARBMACROHOME}
-  fi
+fi
+if [ ! -d ${ARBMACROHOME} ] ; then
+  echo "Directory $ARBMACROHOME not found - creating ..."
+  mkdir ${ARBMACROHOME}
+fi
+
+if [ "X$ARBMACRO" = "X" ] ; then
+  ARBMACRO="$ARBHOME/lib/macros"
+  export ARBMACRO
+fi
+if [ ! -d ${ARBMACRO} ] ; then
+  echo "Directory $ARBMACRO not found - creating ..."
+  mkdir ${ARBMACRO}
 fi
 
 if [ "X$GDE_HELP_DIR" = "X" ] ; then
