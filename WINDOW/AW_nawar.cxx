@@ -10,7 +10,10 @@
 #include "awt.hxx"
 #define AWAR_EPS 0.00000001
 
-//#define DUMP_AWAR_CHANGES
+#if defined(DEBUG)
+// uncomment next line to dump all awar-changes to stderr
+// #define DUMP_AWAR_CHANGES
+#endif // DEBUG
 
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti){
     next = nexti;
@@ -104,7 +107,7 @@ void AW_awar::get( float *p_float ) {
 }
 
 #if defined(DUMP_AWAR_CHANGES)
-#define AWAR_CHANGE_DUMP(name, where, format) fprintf(stderr, "change awar '%s' " where "(" format ")", name, para)
+#define AWAR_CHANGE_DUMP(name, where, format) fprintf(stderr, "change awar '%s' " where "(" format ")\n", name, para)
 #else
 #define AWAR_CHANGE_DUMP(name, where, format)
 #endif // DEBUG
@@ -115,14 +118,14 @@ void AW_awar::get( float *p_float ) {
 GB_ERROR AW_awar::self(type para) {                     \
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
     GB_transaction ta(gb_var);                          \
-    AWAR_CHANGE_DUMP(awar_name, self, format);          \
+    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
     if ( func(gb_var, para)) return GB_get_error();     \
     return 0;                                           \
 }                                                       \
 GB_ERROR AW_awar::concat(re, self)(type para) {         \
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
     GB_transaction ta(gb_var);                          \
-    AWAR_CHANGE_DUMP(awar_name, self, format);          \
+    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
     if (func(gb_var, para)) return GB_get_error();      \
     GB_touch(gb_var);                                   \
     return 0;                                           \
