@@ -39,7 +39,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 
 	device->reset();
 	error = device->open(tmp);
-    	device->line(0,0,0,1,-1); // dummy point upper left corner
+    device->line(0,0,0,1,-1); // dummy point upper left corner
 
 	if (what) {				// draw all
 		AW_world size;
@@ -49,13 +49,15 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 		ntw->tree_disp->show(size_device);
 		size_device->get_size_information(&size);
 		size.l -= 50;
-		size.t -= 40;		// expand pic
+		size.t -= 40;		    // expand pic
 		size.r += 20;
 		size.b += 20;
 		device->shift_x(-size.l/ntw->trans_to_fit);
 		device->shift_y(-size.t/ntw->trans_to_fit);
 		device->set_bottom_clip_border((int)(size.b-size.t),AW_TRUE);
 		device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
+// 		device->set_bottom_font_overlap(AW_TRUE);
+// 		device->set_right_font_overlap(AW_TRUE);
 		device->zoom(ntw->trans_to_fit);
 	}else{
 		ntw->init_device(device);	// draw screen

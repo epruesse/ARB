@@ -310,7 +310,7 @@ dummy:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' tarfile     - make all and create "arb.tar.gz"'
+		@echo ' tarfile     - make rebuild and create "arb.tar.gz"'
 		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
 		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
@@ -720,7 +720,7 @@ rtc_patch:
 menus:
 	$(GMAKE) -C GDEHELP -r "PP=$(PP)" all
 
-tarfile:	all
+tarfile:	rebuild
 	util/arb_compress
 tarfile_ignore:
 	util/arb_compress
@@ -738,8 +738,8 @@ binlink:
 	(cd bin; $(MAKE) all);
 
 all: tests arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
-		echo -----------------------------------
-		echo 'make all' has been done successful
+		@echo -----------------------------------
+		@echo 'make all' has been done successful
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 # the following lib is not provided with the source
