@@ -909,10 +909,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genom_db) {
-            GEN_create_genes_submenu(awm, true);
-            EXP_create_experiments_submenu(awm, true);
-        }
+        if (is_genom_db) GEN_create_genes_submenu(awm, true);
 
         // --------------------------------------------------------------------------------
         //     Sequence
