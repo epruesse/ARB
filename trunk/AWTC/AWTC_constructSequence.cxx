@@ -626,7 +626,6 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 	part[p] = strndup(compressed+start, llen);
 	if (rand()%2)
 	{
-	    //AWTC_mirrorSequence(part[p], llen, GB_AT_RNA);
 	    GBT_reverseComplementNucSequence(part[p], llen, GB_AT_RNA);
 	    printf(" (reverted)");
 	}

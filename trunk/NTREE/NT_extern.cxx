@@ -158,8 +158,10 @@ void create_all_awars(AW_root *awr, AW_default def)
 	}else{
 		awr->awar_string( AWAR_TREE, "tree_main", def);
 	}
+
 	awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
 	awr->awar_string( AWAR_SPECIES_NAME, "" ,	gb_main);
+
     GEN_create_awars(awr, def);
 
 	awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);

@@ -1085,6 +1085,43 @@ end:
     return error;
 }
 
+//  ---------------------------
+//      MG_species_selector
+//  ---------------------------
+
+static void mg_select_species1(GBDATA* , AW_root *aw_root, const char *item_name) {
+    aw_root->awar(AWAR_SPECIES1)->write_string(item_name);
+}
+static void mg_select_species2(GBDATA* , AW_root *aw_root, const char *item_name) {
+    aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
+}
+
+static GBDATA *mg_get_first_species_data1(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+    return GBT_get_species_data(gb_merge);
+}
+static GBDATA *mg_get_first_species_data2(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+    return GBT_get_species_data(gb_dest);
+}
+
+static struct ad_item_selector MG_species_selector[2];
+
+static void mg_initialize_species_selectors() {
+    static int initialized = 0;
+    if (!initialized) {
+        MG_species_selector[0] = AWT_species_selector;
+        MG_species_selector[1] = AWT_species_selector;
+
+        for (int s = 0; s <= 1; ++s) {
+            ad_item_selector& sel = MG_species_selector[s];
+
+            sel.update_item_awars        = s ? mg_select_species2 : mg_select_species1;
+            sel.get_first_item_container = s ? mg_get_first_species_data2 : mg_get_first_species_data1;
+        }
+
+        initialized = 1;
+    }
+}
+
 AW_window *MG_merge_species_cb(AW_root *awr){
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -1134,9 +1171,11 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.open_parser_pos_fig = "openparser1";
     awtqs.use_menu		      = 1;
 
+    mg_initialize_species_selectors();
+    awtqs.selector = &(MG_species_selector[0]);
+
     awt_create_query_box((AW_window*)aws,&awtqs);
 
-    awtqs.selector       = &AWT_species_selector;
     AW_CL scannerid      = awt_create_arbdb_scanner(gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
@@ -1164,10 +1203,10 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.do_refresh_pos_fig  = "dorefresh2";
     awtqs.open_parser_pos_fig = "openparser2";
 
+    awtqs.selector = &(MG_species_selector[1]);
+
     awt_create_query_box((AW_window*)aws,&awtqs);
 
-
-    awtqs.selector       = &AWT_species_selector;
     scannerid            = awt_create_arbdb_scanner(gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
@@ -1200,7 +1239,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->insert_menu_topic( "compare_field_of_listed",	"Compare a field of listed species ...","C","checkfield.hlp", 	AWM_ALL, AW_POPUP,(AW_CL)create_mg_check_fields,0);
     aws->insert_menu_topic( "move_field_of_selected",	"Move one field of selected left species to same field of selected right species","M",
 			    "movefield.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_mg_move_fields,0);
-    aws->insert_menu_topic( "merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ","M",
+    aws->insert_menu_topic( "merge_field_of_listed_to_new_field", "Merge field of listed species of DB1 with different fields of same species of DB2 ","D",
 			    "mergetaggedfield.hlp", AWM_ALL, AW_POPUP,(AW_CL)create_mg_merge_tagged_fields,0);
     return (AW_window *)aws;
 }

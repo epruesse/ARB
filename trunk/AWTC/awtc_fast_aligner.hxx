@@ -34,14 +34,6 @@ void AWTC_awar_set_actual_sequence(AW_root *root, AW_default db1);
 
 void AWTC_start_faligning(AW_window *aw, AW_CL cd2);
 GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
-// GB_ERROR AWTC_mirrorSequence(char *seq, long length, GB_alignment_type alignment_type);
-
-// --------------------------------------------------------------------------------
-
-// char AWTC_complementBase(char c, char T_or_U);
-
-// char *AWTC_reverseString(const char *s, int len);
-// char *AWTC_complementString(const char *s, int len, char T_or_U);
 
 // --------------------------------------------------------------------------------
 

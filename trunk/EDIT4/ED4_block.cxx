@@ -752,17 +752,18 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
         *error = GBS_global_string("Complement not possible for this alignment-type");
         return 0;
     }
-    if ((repeat&1)==0) {
-        *error = GBS_global_string(EVEN_REPEAT);
+    if ((repeat&1) == 0) {
+        *error      = GBS_global_string(EVEN_REPEAT);
         return 0;
     }
-    char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
-    char *new_seq1 = GBT_complementNucSequence(seq, len, T_or_U);
-    char *new_seq2 = GBT_reverseNucSequence(new_seq1, len);
 
-    delete new_seq1;
-    if (new_len) *new_len = len;
-    return new_seq2;
+     char  T_or_U   = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
+     char *new_seq1 = GBT_complementNucSequence(seq, len, T_or_U);
+     char *new_seq2 = GBT_reverseNucSequence(new_seq1, len);
+
+     delete new_seq1;
+     if (new_len) *new_len = len;
+     return new_seq2;
 }
 static char *unalign_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));

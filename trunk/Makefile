@@ -236,10 +236,10 @@ endif
 
 dummy:
 	@echo 'Please choose a Makefile option:'
-	@echo '	arb		- Just compile ARB'
+	@echo '	arb		    - Just compile ARB'
 	@echo '	perl		- Compile the PERL XSUBS into lib/ARB.so  and create links in lib to perl'
 	@echo '	binlink		- Create all links in the bin directory'
-	@echo '	all		- Compile ARB + TOOLs + and copy shared libs + link foreign software'
+	@echo '	all		    - Compile ARB + TOOLs + and copy shared libs + link foreign software'
 	@echo '	tarfile		- make all and create "arb.tar.gz"'
 	@echo '	tarale		- compress emacs and ale lisp files int arb_ale.tar.gz'
 	@echo '	save		- save all basic ARB sources into arbsrc_DATE'
@@ -252,7 +252,6 @@ dummy:
 	@echo '	XXX/.depend	- create dependencies in dir XXX'
 	@echo '	rtc_patch	- create LIBLINK/libRTC8M.so (SOLARIS ONLY'
 	@echo '	menus		- create GDEHELP/ARB_GDEmenus from GDEHELP/ARB_GDEmenus.source'
-	@echo '	update		- copy all new files under ../source to ../* (update other versions)'
 	@echo '	export		- make tarfile and export tarfile'
 
 #********************* End of user defined Section *******************
@@ -661,9 +660,6 @@ rmbak:
 	rm -f -r .test.?.er
 	rm -f checkpoint*
 	rm -f test.?.er
-
-update:
-	util/arb_update
 
 bclean:		#binary clean
 	rm -f bin/arb_*

@@ -67,9 +67,7 @@ static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prote
             int length = GB_read_string_count(gbd);
             GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, ali);
 
-            // error = AWTC_mirrorSequence(seq, length, ali_type);
-            error    = GBT_reverseComplementNucSequence(seq, length, ali_type);
-
+            error = GBT_reverseComplementNucSequence(seq, length, ali_type);
             if (!error) error = GB_write_string(gbd, seq);
         }
         else { // protection error
@@ -1515,7 +1513,6 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                 long length = strlen(mirroredSequence);
                 long bestMirroredScore = -1;
 
-//                 AWTC_mirrorSequence(mirroredSequence, length, global_alignmentType);
                 GBT_reverseComplementNucSequence(mirroredSequence, length, global_alignmentType);
 
                 error = family.go(pt_server_id, mirroredSequence,0,maxNextRelatives+1);

@@ -33,9 +33,14 @@ extern GBDATA *gb_main;
 //      void GEN_create_genemap_awars(AW_root *aw_root,AW_default def)
 //  -----------------------------------------------------------------------
 void GEN_create_genemap_awars(AW_root *aw_root,AW_default def) {
+
+    // layout options:
+
     aw_root->awar_int(AWAR_GENMAP_DISPLAY_TYPE, GEN_DISPLAY_STYLE_RADIAL);
 
-    aw_root->awar_int(AWAR_GENMAP_BOOK_BASES_PER_LINE, 20000);
+    aw_root->awar_int(AWAR_GENMAP_ARROW_SIZE, 150);
+
+    aw_root->awar_int(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15000);
     aw_root->awar_float(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 0.1);
     aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_HEIGHT, 20);
     aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
@@ -43,8 +48,12 @@ void GEN_create_genemap_awars(AW_root *aw_root,AW_default def) {
     aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_X, 1.0);
     aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_Y, 0.3);
 
-    aw_root->awar_float(AWAR_GENMAP_RADIAL_INSIDE, 100);
-    aw_root->awar_float(AWAR_GENMAP_RADIAL_OUTSIDE, 10);
+    aw_root->awar_float(AWAR_GENMAP_RADIAL_INSIDE, 20);
+    aw_root->awar_float(AWAR_GENMAP_RADIAL_OUTSIDE, 4);
+
+    // other options:
+
+    aw_root->awar_int(AWAR_GENMAP_AUTO_JUMP, 1);
 }
 
 //  --------------------------------------------------------------------------------------------
@@ -80,11 +89,33 @@ void GEN_gene_container_cb_installer(bool install, AWT_canvas *ntw) {
     }
 }
 
+//  ------------------------------------------------------------
+//      void GEN_jump_cb(AW_window *dummy, AWT_canvas *ntw)
+//  ------------------------------------------------------------
+void GEN_jump_cb(AW_window */*dummy*/, AWT_canvas *ntw) {
+    // @@@ Center on selected gene
+    // analog NT_jump_cb
+//     GEN_GRAPHIC->change_flag = 1;
+//     ntw->refresh();
+}
+
+//  --------------------------------------------------------------
+//      void GEN_jump_cb_auto(AW_root *root, AWT_canvas *ntw)
+//  --------------------------------------------------------------
+void GEN_jump_cb_auto(AW_root *root, AWT_canvas *ntw) {
+    int jump = root->awar(AWAR_GENMAP_AUTO_JUMP)->read_int();
+    if (jump) {
+        AW_window *dummy = 0;
+        GEN_jump_cb(dummy, ntw);
+    }
+}
+
 //  ------------------------------------------------------------------------
 //      void GEN_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw)
 //  ------------------------------------------------------------------------
 void GEN_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw) {
     GEN_GRAPHIC->reinit_gen_root(ntw);
+    GEN_jump_cb_auto(awr, ntw);
     ntw->refresh();
 }
 
@@ -93,6 +124,7 @@ void GEN_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw) {
 //  ------------------------------------------------------------------------
 void GEN_gene_name_changed_cb(AW_root *awr, AWT_canvas *ntw) {
     GEN_GRAPHIC->reinit_gen_root(ntw);
+    GEN_jump_cb_auto(awr, ntw);
     ntw->refresh();
 }
 
@@ -110,6 +142,8 @@ void GEN_display_param_changed_cb(AW_root *awr, AWT_canvas *ntw) {
 void GEN_add_awar_callbacks(AW_root *awr,AW_default /*def*/, AWT_canvas *ntw) {
     awr->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_species_name_changed_cb, (AW_CL)ntw);
     awr->awar_string(AWAR_GENE_NAME,"",gb_main)->add_callback((AW_RCB1)GEN_gene_name_changed_cb, (AW_CL)ntw);
+
+    awr->awar(AWAR_GENMAP_ARROW_SIZE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
 
     awr->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
     awr->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->add_callback((AW_RCB1)GEN_display_param_changed_cb, (AW_CL)ntw);
@@ -163,11 +197,32 @@ void GEN_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type) {
     }
 }
 
-//  ---------------------------------------------------------
-//      void GEN_jump_cb(AW_window *aw, AWT_canvas *ntw)
-//  ---------------------------------------------------------
-void GEN_jump_cb(AW_window *aw, AWT_canvas *ntw) {
-    // @@@ Center on selected gene
+//  -----------------------------------------------------------
+//      AW_window *GEN_create_options_window(AW_root *awr)
+//  -----------------------------------------------------------
+AW_window *GEN_create_options_window(AW_root *awr) {
+	static AW_window_simple *aws = 0;
+	if (aws) return (AW_window *)aws;
+
+	aws = new AW_window_simple;
+	aws->init( awr, "GEN_OPTIONS", "GENE MAP OPTIONS", 10, 10 );
+	aws->load_xfig("gene_options.fig");
+
+	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+	aws->create_button("CLOSE","CLOSE","C");
+
+	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"gene_options.hlp");
+	aws->create_button("HELP","HELP","H");
+
+	aws->at("button");
+	aws->auto_space(10,10);
+	aws->label_length(30);
+
+    aws->label("Auto jump to selected gene");
+    aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
+    aws->at_newline();
+
+	return (AW_window *)aws;
 }
 
 //  ----------------------------------------------------------
@@ -198,25 +253,44 @@ AW_window *GEN_create_layout_window(AW_root *awr) {
     aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
     aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
 
+    aws->at("arrow_size");      aws->create_input_field(AWAR_GENMAP_ARROW_SIZE, 5);
+
     return aws;
 }
 
 typedef enum  {
-    GEN_MARK   = 1,
-    GEN_UNMARK = 2,
-    GEN_INVERT_MARKED = 3,
+    GEN_PERFORM_ALL_SPECIES,
+    GEN_PERFORM_CURRENT_SPECIES,
+    GEN_PERFORM_MARKED_SPECIES,
+} GEN_PERFORM_MODE;
 
-    GEN_PERFORM_ALL_SPECIES     = 4,
-    GEN_PERFORM_CURRENT_SPECIES = 8,
-    GEN_PERFORM_MARKED_SPECIES  = 12
+typedef enum  {
+    GEN_MARK,
+    GEN_UNMARK,
+    GEN_INVERT_MARKED,
 
+    GEN_MARK_HIDDEN,
+    GEN_MARK_VISIBLE,
+    GEN_UNMARK_HIDDEN,
+    GEN_UNMARK_VISIBLE,
 } GEN_MARK_MODE;
 
+typedef enum  {
+    GEN_HIDE_ALL,
+    GEN_UNHIDE_ALL,
+    GEN_INVERT_HIDE_ALL,
 
-//  --------------------------------------------------------------------------------------------
-//      static void do_mark_command_for_one_species(GEN_MARK_MODE mode, GBDATA *gb_species)
-//  --------------------------------------------------------------------------------------------
-static void do_mark_command_for_one_species(GEN_MARK_MODE mode, GBDATA *gb_species) {
+    GEN_HIDE_MARKED,
+    GEN_UNHIDE_MARKED,
+    GEN_INVERT_HIDE_MARKED,
+} GEN_HIDE_MODE;
+
+//  -----------------------------------------------------------------------------------
+//      static void do_mark_command_for_one_species(int imode, GBDATA *gb_species)
+//  -----------------------------------------------------------------------------------
+static void do_mark_command_for_one_species(int imode, GBDATA *gb_species) {
+    GEN_MARK_MODE mode = (GEN_MARK_MODE)imode;
+
     for (GBDATA *gb_gene = GEN_first_gene(gb_species);
          gb_gene;
          gb_gene = GEN_next_gene(gb_gene))
@@ -224,11 +298,22 @@ static void do_mark_command_for_one_species(GEN_MARK_MODE mode, GBDATA *gb_speci
         bool mark_flag     = GB_read_flag(gb_gene) != 0;
         bool org_mark_flag = mark_flag;
 
-        switch (mode&3) {
+        switch (mode) {
             case GEN_MARK:              mark_flag = 1; break;
             case GEN_UNMARK:            mark_flag = 0; break;
             case GEN_INVERT_MARKED:     mark_flag = !mark_flag; break;
-            default: gen_assert(0); break;
+            default: {
+                GBDATA *gb_hidden = GB_find(gb_gene, "display_hidden", 0, down_level);
+                bool    hidden    = gb_hidden ? GB_read_byte(gb_hidden) != 0 : false;
+
+                switch (mode) {
+                    case GEN_MARK_HIDDEN:       if (hidden) mark_flag = 1; break;
+                    case GEN_UNMARK_HIDDEN:     if (hidden) mark_flag = 0; break;
+                    case GEN_MARK_VISIBLE:      if (!hidden) mark_flag = 1; break;
+                    case GEN_UNMARK_VISIBLE:    if (!hidden) mark_flag = 0; break;
+                    default: gen_assert(0); break;
+                }
+            }
         }
 
         if (mark_flag != org_mark_flag) {
@@ -236,22 +321,55 @@ static void do_mark_command_for_one_species(GEN_MARK_MODE mode, GBDATA *gb_speci
         }
     }
 }
-//  ---------------------------------------------------------------------------
-//      static void GEN_mark_command(AW_window *aww, AW_CL cl_mode, AW_CL)
-//  ---------------------------------------------------------------------------
-static void GEN_mark_command(AW_window *aww, AW_CL cl_mode, AW_CL) {
-    GEN_MARK_MODE mode    = (GEN_MARK_MODE)cl_mode;
-    GB_ERROR      error   = 0;
+
+//  -----------------------------------------------------------------------------------
+//      static void do_hide_command_for_one_species(int imode, GBDATA *gb_species)
+//  -----------------------------------------------------------------------------------
+static void do_hide_command_for_one_species(int imode, GBDATA *gb_species) {
+    GEN_HIDE_MODE mode = (GEN_HIDE_MODE)imode;
+
+    for (GBDATA *gb_gene = GEN_first_gene(gb_species);
+         gb_gene;
+         gb_gene = GEN_next_gene(gb_gene))
+    {
+        bool marked = GB_read_flag(gb_gene) != 0;
+
+        GBDATA *gb_hidden  = GB_find(gb_gene, "display_hidden", 0, down_level);
+        bool    hidden     = gb_hidden ? (GB_read_byte(gb_hidden) != 0) : false;
+        bool    org_hidden = hidden;
+
+        switch (mode) {
+            case GEN_HIDE_ALL:              hidden = true; break;
+            case GEN_UNHIDE_ALL:            hidden = false; break;
+            case GEN_INVERT_HIDE_ALL:       hidden = !hidden; break;
+            case GEN_HIDE_MARKED:           if (marked) hidden = true; break;
+            case GEN_UNHIDE_MARKED:         if (marked) hidden = false; break;
+            case GEN_INVERT_HIDE_MARKED:    if (marked) hidden = !hidden; break;
+            default: gen_assert(0); break;
+        }
+
+        if (hidden != org_hidden) {
+            if (!gb_hidden) gb_hidden = GB_create(gb_gene, "display_hidden", GB_BYTE);
+            GB_write_byte(gb_hidden, hidden ? 1 : 0); // change gene visibility
+        }
+    }
+}
+
+//  ----------------------------------------------------------------------------------------------------------------------------------------------
+//      static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode, void (*do_command)(int cmode, GBDATA *gb_species), int mode)
+//  ----------------------------------------------------------------------------------------------------------------------------------------------
+static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode, void (*do_command)(int cmode, GBDATA *gb_species), int mode) {
+    GB_ERROR error = 0;
 
     GB_begin_transaction(gb_main);
 
-    switch (mode&12) {
+    switch (pmode) {
         case GEN_PERFORM_ALL_SPECIES: {
             for (GBDATA *gb_species = GBT_first_species(gb_main);
                  gb_species;
                  gb_species = GBT_next_species(gb_species))
             {
-                do_mark_command_for_one_species(mode, gb_species);
+                do_command(mode, gb_species);
             }
             break;
         }
@@ -260,7 +378,7 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_mode, AW_CL) {
                  gb_species;
                  gb_species = GBT_next_marked_species(gb_species))
             {
-                do_mark_command_for_one_species(mode, gb_species);
+                do_command(mode, gb_species);
             }
             break;
         }
@@ -272,7 +390,7 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_mode, AW_CL) {
                 error = "First you have to select a species.";
             }
             else {
-                do_mark_command_for_one_species(mode, gb_species);
+                do_command(mode, gb_species);
             }
             break;
         }
@@ -286,37 +404,67 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_mode, AW_CL) {
     else GB_abort_transaction(gb_main);
 
     if (error) aw_message(error);
+
+}
+//  -------------------------------------------------------------------------------------
+//      static void GEN_hide_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_hmode)
+//  -------------------------------------------------------------------------------------
+static void GEN_hide_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_hmode) {
+    GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_hide_command_for_one_species, cl_hmode);
+}
+//  -------------------------------------------------------------------------------------
+//      static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mmode)
+//  -------------------------------------------------------------------------------------
+static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mmode) {
+    GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, cl_mmode);
 }
 
 #define AWMIMT awm->insert_menu_topic
 
-//  -------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_insert_mark_menu(AW_window_menu_modes *awm, const char *macro_postfix, const char *menu_text_postfix, GEN_MARK_MODE range_mode)
-//  -------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_insert_mark_menu(AW_window_menu_modes *awm, const char *macro_postfix, const char *menu_text_postfix, GEN_MARK_MODE range_mode) {
+//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_MARK_MODE mark_mode)
+//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_MARK_MODE mark_mode) {
+    awm->insert_sub_menu(0, submenu_name, hot_key);
+
     char macro_name_buffer[50];
-    char menu_text_buffer[70];
 
-    sprintf(macro_name_buffer, "gene_mark_%s", macro_postfix);
-    sprintf(menu_text_buffer,   "Mark all genes    %s", menu_text_postfix);
-    AWMIMT(macro_name_buffer, menu_text_buffer, "",	"gene_mark.hlp", AWM_ALL,GEN_mark_command, GEN_MARK|range_mode, 0);
+    sprintf(macro_name_buffer, "%s_of_all", macro_prefix);
+    AWMIMT(macro_name_buffer, "of all species", "A", help_file, AWM_ALL, GEN_mark_command, GEN_PERFORM_ALL_SPECIES, mark_mode);
 
-    sprintf(macro_name_buffer, "gene_unmark_%s", macro_postfix);
-    sprintf(menu_text_buffer,   "Unmark all genes  %s", menu_text_postfix);
-    AWMIMT(macro_name_buffer, menu_text_buffer, "",	"gene_mark.hlp", AWM_ALL,GEN_mark_command, GEN_UNMARK|range_mode, 0);
+    sprintf(macro_name_buffer, "%s_of_current", macro_prefix);
+    AWMIMT(macro_name_buffer, "of current species", "C", help_file, AWM_ALL, GEN_mark_command, GEN_PERFORM_CURRENT_SPECIES, mark_mode);
 
-    sprintf(macro_name_buffer, "gene_mark_%s", macro_postfix);
-    sprintf(menu_text_buffer,   "Swap marked genes %s", menu_text_postfix);
-    AWMIMT(macro_name_buffer, menu_text_buffer, "",	"gene_mark.hlp", AWM_ALL, GEN_mark_command, GEN_INVERT_MARKED|range_mode, 0);
+    sprintf(macro_name_buffer, "%s_of_marked", macro_prefix);
+    AWMIMT(macro_name_buffer, "of marked species", "M", help_file, AWM_ALL, GEN_mark_command, GEN_PERFORM_MARKED_SPECIES, mark_mode);
 
-    awm->insert_separator();
+    awm->close_sub_menu();
+}
+//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_HIDE_MODE hide_mode)
+//  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void GEN_insert_hide_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key, const char *help_file, GEN_HIDE_MODE hide_mode) {
+    awm->insert_sub_menu(0, submenu_name, hot_key);
+
+    char macro_name_buffer[50];
+
+    sprintf(macro_name_buffer, "%s_of_all", macro_prefix);
+    AWMIMT(macro_name_buffer, "of all species", "A", help_file, AWM_ALL, GEN_hide_command, GEN_PERFORM_ALL_SPECIES, hide_mode);
+
+    sprintf(macro_name_buffer, "%s_of_current", macro_prefix);
+    AWMIMT(macro_name_buffer, "of current species", "C", help_file, AWM_ALL, GEN_hide_command, GEN_PERFORM_CURRENT_SPECIES, hide_mode);
+
+    sprintf(macro_name_buffer, "%s_of_marked", macro_prefix);
+    AWMIMT(macro_name_buffer, "of marked species", "M", help_file, AWM_ALL, GEN_hide_command, GEN_PERFORM_MARKED_SPECIES, hide_mode);
+
+    awm->close_sub_menu();
 }
 
 //  -------------------------------------------------------------------------------------
 //      void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
 //  -------------------------------------------------------------------------------------
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
-    awm->create_menu(0,"Genes","G","genes.hlp",	AWM_ALL);
+    awm->create_menu(0,"Genes","G","no.hlp",	AWM_ALL);
     {
         if (for_ARB_NTREE) {
             AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, 0 );
@@ -327,9 +475,36 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
 
         awm->insert_separator();
 
-        GEN_insert_mark_menu(awm, "curr",   "of current species", GEN_PERFORM_CURRENT_SPECIES);
-        GEN_insert_mark_menu(awm, "marked", "of marked species", GEN_PERFORM_MARKED_SPECIES);
-        GEN_insert_mark_menu(awm, "all",    "of all species", GEN_PERFORM_ALL_SPECIES);
+        GEN_insert_mark_submenu(awm, "gene_mark_all", "Mark all genes", "M", "gene_mark.hlp",  GEN_MARK);
+        GEN_insert_mark_submenu(awm, "gene_unmark_all", "Unmark all genes", "U", "gene_mark.hlp", GEN_UNMARK);
+        GEN_insert_mark_submenu(awm, "gene_invert_marked", "Invert marked genes", "I", "gene_mark.hlp", GEN_INVERT_MARKED);
+
+        if (!for_ARB_NTREE) {   // only in ARB_GENE_MAP:
+            awm->insert_separator();
+            GEN_insert_mark_submenu(awm, "gene_mark_hidden", "Mark hidden genes", "", "gene_hide.hlp", GEN_MARK_HIDDEN);
+            GEN_insert_mark_submenu(awm, "gene_mark_visible", "Mark visible genes", "", "gene_hide.hlp", GEN_MARK_VISIBLE);
+
+            awm->insert_separator();
+            GEN_insert_mark_submenu(awm, "gene_unmark_hidden", "Unmark hidden genes", "", "gene_hide.hlp", GEN_UNMARK_HIDDEN);
+            GEN_insert_mark_submenu(awm, "gene_unmark_visible", "Unmark visible genes", "", "gene_hide.hlp", GEN_UNMARK_VISIBLE);
+        }
+    }
+}
+
+//  ----------------------------------------------------------------
+//      void GEN_create_hide_submenu(AW_window_menu_modes *awm)
+//  ----------------------------------------------------------------
+void GEN_create_hide_submenu(AW_window_menu_modes *awm) {
+    awm->create_menu(0,"Hide","H","no.hlp",	AWM_ALL);
+    {
+        GEN_insert_hide_submenu(awm, "gene_hide_marked", "Hide marked genes", "H", "gene_hide.hlp", GEN_HIDE_MARKED);
+        GEN_insert_hide_submenu(awm, "gene_unhide_marked", "Unhide marked genes", "U", "gene_hide.hlp", GEN_UNHIDE_MARKED);
+        GEN_insert_hide_submenu(awm, "gene_invhide_marked", "Invert-hide marked genes", "I", "gene_hide.hlp", GEN_INVERT_HIDE_MARKED);
+
+        awm->insert_separator();
+        GEN_insert_hide_submenu(awm, "gene_hide_all", "Hide all genes", "", "gene_hide.hlp", GEN_HIDE_ALL);
+        GEN_insert_hide_submenu(awm, "gene_unhide_all", "Unhide all genes", "", "gene_hide.hlp", GEN_UNHIDE_ALL);
+        GEN_insert_hide_submenu(awm, "gene_invhide_all", "Invert-hide all genes", "", "gene_hide.hlp", GEN_INVERT_HIDE_ALL);
     }
 }
 
@@ -366,18 +541,22 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     ntw->set_mode(AWT_MODE_ZOOM); // Default-Mode
 
     // File Menu
-    awm->create_menu( 0, "File", "F", "gene_file.hlp",  AWM_ALL );
+    awm->create_menu( 0, "File", "F", "no.hlp",  AWM_ALL );
     AWMIMT( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 
     // Genes
     GEN_create_genes_submenu(awm, false);
 
+    // Hide Menu
+    GEN_create_hide_submenu(awm);
+
     // Properties Menu
-    awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
-    AWMIMT("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    AWMIMT("props_secedit",	"GENEMAP: Colors and Fonts ...","C","gene_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-    AWMIMT("sec_layout", "Layout", "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
-    AWMIMT("save_props",	"Save Defaults (in ~/.arb_prop/genemap.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->create_menu("props","Properties","r","no.hlp", AWM_ALL);
+    AWMIMT("gene_props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+    AWMIMT("gene_props",	"GENEMAP: Colors and Fonts ...","C","gene_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    AWMIMT("gene_layout", "Layout", "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
+    AWMIMT("gene_options", "Options", "L", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
+    AWMIMT("gene_save_props",	"Save Defaults (in ~/.arb_prop/genemap.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // Create mode buttons
     awm->create_mode( 0, "zoom.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);

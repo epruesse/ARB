@@ -342,6 +342,7 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 	awr->awar_string( AWAR_MAIN_DB"/directory", "",aw_def);
 	awr->awar_string( AWAR_MAIN_DB"/file_name", fname_two,aw_def);
 	awr->awar_string( AWAR_MAIN_DB"/type", "b",aw_def);
+
 	awr->awar_string( AWAR_MERGE_DB"/filter", "arb",aw_def);
 	awr->awar_string( AWAR_MERGE_DB"/directory", "",aw_def);
 	awr->awar_string( AWAR_MERGE_DB"/file_name", fname_one,aw_def);
