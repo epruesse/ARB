@@ -699,7 +699,7 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
     double   blen     = Blen/Seq_len;
 
 #if defined(DEBUG)
-    printf("Blen=%f name=%s\n", Blen, leaf->name);
+    // printf("Blen=%f name=%s\n", Blen, leaf->name);
 #endif // DEBUG
 
 
