@@ -217,6 +217,26 @@ void DrawStructure(){
     cRenderer->EndTexturizer();
     glPopMatrix();
 
+    glPushMatrix();
+    cRenderer->BeginTexturizer();
+    {
+        glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
+        glPointSize(24);
+        glColor4f(1,1,1,1);
+        glBegin(GL_POINTS);
+        glTexCoord2f(0,0);
+        glVertex3f(sCen.x, sCen.y, sCen.z);
+        glTexCoord2f(1,0);
+        glVertex3f(sCen.x + 0.1, sCen.y, sCen.z);
+        glTexCoord2f(1,1);
+        glVertex3f(sCen.x + 0.1, sCen.y+0.1, sCen.z);
+        glTexCoord2f(0,1);
+        glVertex3f(sCen.x, sCen.y+0.1, sCen.z);
+        glEnd();
+    }
+    cRenderer->EndTexturizer();
+    glPopMatrix();
+	
 //     glPushMatrix();
 //     glLineWidth(cRenderer->ObjectSize/2);
 //     glColor4fv(BLUE);
