@@ -747,13 +747,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
             if (hinfo) {
                 g_spd->setHeadline(hinfo);
-                parser    = new ProbeMatchParser(probe, hinfo);
-                gene_flag = parser->is_gene_result();
+                parser = new ProbeMatchParser(probe, hinfo);
+                error  = parser->get_error();
+                if (!error) gene_flag = parser->is_gene_result();
             }
 
             if (selection_id) {
                 int width         = 0;
-                if (parser) width = parser->get_probe_region_offset()+2+10; // 2 cause headline is shorter and 10 for match prefix region
+                if (parser && !error) width = parser->get_probe_region_offset()+2+10; // 2 cause headline is shorter and 10 for match prefix region
 
                 const char *searched = GBS_global_string("%-*s%s", width, "Searched for ", probe);
                 aww->insert_selection( selection_id, searched, probe );
@@ -767,8 +768,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
 
             GB_push_transaction(gb_main);
+
             GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-            if (mark) {
+            if (mark && !error) {
                 if (show_status) aw_status(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
                 for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
                      gb_species;
@@ -785,7 +787,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     }
                 }
             }
-            if (write_2_tmp){
+            if (write_2_tmp && !error) {
                 if (show_status) aw_status("Deleting old 'tmp' fields");
                 for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
                      gb_species;
@@ -807,14 +809,16 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
             // read results from pt-server :
 
-            if (show_status) aw_status("Parsing results..");
+            if (!error) {
+                if (show_status) aw_status("Parsing results..");
 
-            g_spd->probeSpecies.clear();
-            g_spd->probeSeq.clear();
+                g_spd->probeSpecies.clear();
+                g_spd->probeSeq.clear();
 
-            if (gene_flag) {
-                if (!GEN_is_genome_db(gb_main, -1)) {
-                    error = "Wrong PT-Server chosen (selected one is built for genes)";
+                if (gene_flag) {
+                    if (!GEN_is_genome_db(gb_main, -1)) {
+                        error = "Wrong PT-Server chosen (selected one is built for genes)";
+                    }
                 }
             }
 
@@ -930,6 +934,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
                 free(gene_str);
             }
+
+            if (error) error = GBS_global_string("%s", error); // make static copy (error may be free'd by delete parser)
             delete parser;
             free(result);
 
