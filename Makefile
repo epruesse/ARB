@@ -503,10 +503,12 @@ CPPINCLUDES =	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
 MAKEDEPENDFLAGS = -- $(cflags) -I. -Y$(DIR)/INCLUDE --
 
 #*****		List of all Directories
+
+#			ALEIO/ALEIO.a \
+
 ARCHS = \
 			AISC/dummy.a \
 			AISC_MKPTPS/dummy.a \
-			ALEIO/ALEIO.a \
 			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
 			ARBDB2/libARBDB.a \
@@ -1065,7 +1067,7 @@ TAGFILE=TAGS
 TAGFILE_TMP=TAGS.tmp
 
 tags: tags_$(MACH)
-	mv $(TAGFILE_TMP) $(TAGFILE) 
+	mv $(TAGFILE_TMP) $(TAGFILE)
 
 tags_LINUX: tags2
 tags_SUN5: tags1
@@ -1105,7 +1107,7 @@ nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
 convert:	CONVERTALN/CONVERTALN.dummy
 readseq:	READSEQ/READSEQ.dummy
-aleio:		ALEIO/.dummy
+#aleio:		ALEIO/.dummy
 
 #***************************************************************************************
 #			Some user commands
@@ -1121,8 +1123,8 @@ tarfile:	rebuild
 	util/arb_compress
 tarfile_quick: all
 	util/arb_compress
-tarale:
-	util/arb_compress_emacs
+#tarale:
+#	util/arb_compress_emacs
 
 sourcetarfile:
 		util/arb_save
@@ -1282,7 +1284,8 @@ tryxtras:
 
 arb: arbbasic arbshared arbapplications help
 
-all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
+#all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
+all: checks arb libs convert tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
 		-$(MAKE) tryxtras
 		@echo $(SEP)
 		@echo "'make all' has been done successful"
