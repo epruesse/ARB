@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Wed Oct/09/2002 14:37 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/18/2002 16:03 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -333,6 +333,21 @@ inline string cutoff_hlp_extension(const string& s) {
     }
     return string(s, 0, s.length()-4);
 }
+// -----------------------------------------------------------------------------------------------
+//      static void check_duplicates(const string& link, const char *where, Strings existing)
+// -----------------------------------------------------------------------------------------------
+inline void check_duplicates(const string& link, const char *where, Strings existing) {
+    for (Strings::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
+        if (*ex == link) throw strf("%s-Link used again (duplicated link)", where);
+    }
+}
+// -----------------------------------------------------------------------------------------------
+//      static void check_duplicates(const string& link, Strings uplinks, Strings references)
+// -----------------------------------------------------------------------------------------------
+inline void check_duplicates(const string& link, Strings uplinks, Strings references) {
+    check_duplicates(link, "UP", uplinks);
+    check_duplicates(link, "SUB", references);
+}
 
 //  ---------------------------------------------
 //      void Helpfile::readHelp(istream& in)
@@ -340,6 +355,10 @@ inline string cutoff_hlp_extension(const string& s) {
 void Helpfile::readHelp(istream& in, const string& filename) {
     Reader      read(in);
     const char *line;
+    const char *name_only = strrchr(filename.c_str(), '/');
+
+    h2x_assert(name_only);
+    ++name_only;
 
     try {
         while (1) {
@@ -362,11 +381,25 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             if (rest) {         // found a keyword
                 if (keyword == "UP") {
                     rest = eatWhite(rest);
-                    if (strlen(rest)) uplinks.push_back(cutoff_hlp_extension(rest));
+                    if (strlen(rest)) {
+                        string rest_noext = cutoff_hlp_extension(rest);
+
+                        check_duplicates(rest_noext, uplinks, references);
+                        if (strcmp(name_only, rest) == 0) throw "UP link to self";
+
+                        uplinks.push_back(rest_noext);
+                    }
                 }
                 else if (keyword == "SUB") {
                     rest = eatWhite(rest);
-                    if (strlen(rest)) references.push_back(cutoff_hlp_extension(rest));
+                    if (strlen(rest)) {
+                        string rest_noext = cutoff_hlp_extension(rest);
+
+                        check_duplicates(rest_noext, uplinks, references);
+                        if (strcmp(name_only, rest) == 0) throw "SUB link to self";
+
+                        references.push_back(rest_noext);
+                    }
                 }
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);

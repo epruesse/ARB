@@ -3,7 +3,8 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	mark.hlp
+SUB	color.hlp
 
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
@@ -16,6 +17,11 @@ OCCURRENCE	Species/Colors
                 Experiments/Colors
 
 DESCRIPTION     Allows to toggle between colored and marked items.
+
+                First select which color group should be targetted on the right side.
+
+                Then select an action by clicking onto one of the action buttons on
+                the left side.
 
 NOTES		None
 

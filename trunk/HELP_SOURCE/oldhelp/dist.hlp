@@ -6,7 +6,6 @@ UP	phylo.hlp
 UP	bootstrap.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	bootstrap.hlp
 SUB	user_matrix.hlp
 SUB	savedef.hlp
 SUB	props_frame.hlp
