@@ -71,7 +71,7 @@ public:
     char        *pairs[HELIX_MAX];
     char        *char_bind[HELIX_MAX];
     size_t       size;
-    static char  error[256];
+    static char *error;
 
     // ***** read and write
     BI_helix(void);
