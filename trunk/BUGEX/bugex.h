@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : bugex.h                                                //
 //    Purpose   : Debugging code                                         //
-//    Time-stamp: <Wed Apr/30/2003 13:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Apr/16/2004 12:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in April 2003            //
@@ -15,12 +15,12 @@
 
 // Description :
 //
-// when using the macros XXX_DUMP_VAL and XXX_DUMP_STR the programm prints
+// when using the macros XXX_DUMP_VAL and XXX_DUMP_STR the program prints
 // out information about the specified variables.
 //
 // This information is prefixed by 'FILE:LINENO: '
 //
-// The intention is to use the programm as compile-command in emacs and follow
+// The intention is to use the program as compile-command in emacs and follow
 // the program flow with next-error / previous-error
 //
 // Note : When finished with debugging you should remove the #include "bugex.h"

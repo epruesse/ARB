@@ -362,7 +362,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
     aws->at("rows");
     aws->create_button(0,AWAR_APRINT_SY);
 
-    aws->at("coloumns");
+    aws->at("columns");
     aws->create_button(0,AWAR_APRINT_SX);
 
     aws->at("magnification");

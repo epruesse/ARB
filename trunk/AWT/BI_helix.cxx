@@ -129,7 +129,7 @@ BI_helix::BI_helix(AW_root * aw_root)
 
 BI_helix::~BI_helix(void){
     if (!deleteable){
-        GB_warning("Internal Programm Error: You cannot delete BI_helix !!");
+        GB_warning("Internal program error: You cannot delete BI_helix !!");
     }
     unsigned i;
     for (i=0;i<HELIX_MAX; i++)  free(pairs[i]);
