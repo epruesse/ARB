@@ -80,6 +80,7 @@ public:
     AW_root *get_aw_root() const { return aw_root; }
     GBDATA *get_gb_main() const { return gb_main; }
     const GEN_root *get_gen_root() const { return gen_root; }
+    AW_device *get_device() const { return disp_device; }
 };
 
 #else
