@@ -855,7 +855,7 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
 
 void NT_calc_sequence_quality(AW_window *aww, AW_CL, AW_CL) {
     //Jürgen
-    const char *treename = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+    const char *treename = aww->get_root()->awar(AWAR_TREE)->read_string();
 
     GB_ERROR error = SQ_calc_seq_quality(gb_main, treename);
     if (error) aw_message(error);
