@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_local.hxx                                          //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Aug/23/2002 19:22 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 23:09 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -29,6 +29,7 @@
 #define AWAR_EXPERIMENT_DEST "tmp/experiment/dest"
 
 AW_window *EXP_create_experiment_window(AW_root *aw_root);
+void EXP_popup_experiment_window(AW_window *aww, AW_CL, AW_CL);
 
 #else
 #error EXP_local.hxx included twice
