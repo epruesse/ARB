@@ -446,13 +446,12 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 #if defined(DEBUG) && 0
     static int toggle = 0;
-    ED4_ROOT->temp_device->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1, 0, 0);    // fill range with blue (for testing)
-    toggle = (toggle+1)&3;
+    ED4_ROOT->temp_device->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1, 0, 0);    // fill range with color (for testing)
+    toggle = (toggle+1)&7;
 #else
-    ED4_ROOT->temp_device->clear_part(x1, y1, x2-x1+1, y2-y1+1);
+    ED4_ROOT->temp_device->clear_part(x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1);
 #endif
 
-//    ED4_ROOT->main_manager->Show(1);
     ED4_ROOT->main_manager->to_manager()->Show(1,1);
 }
 
@@ -469,37 +468,39 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
     int ys = int(y2-y1-abs(dy));
 
     {
-    AW_rectangle rect;
-    rect.t = int(ty);
-    rect.b = int(ty+ys-1);
-    rect.l = int(tx);
-    rect.r = int(tx+xs-1);
-    ED4_set_clipping_rectangle(&rect);
+        AW_rectangle rect;
+        rect.t = int(ty);
+        rect.b = int(ty+ys-1);
+        rect.l = int(tx);
+        rect.r = int(tx+xs-1);
+        ED4_set_clipping_rectangle(&rect);
     }
-    ED4_ROOT->temp_device->move_region(fx, fy, xs, ys, tx, ty);
+
+    AW_device *device = ED4_ROOT->temp_device;
+    device->move_region(fx, fy, xs, ys, tx, ty);
 
     if (dy<0) { // scroll to the top
-    ED4_ROOT->temp_device->set_top_font_overlap(1);
-    clear_and_update_rectangle(x1, y2+dy, x2, y2);
-    ED4_ROOT->temp_device->set_top_font_overlap(0);
+        device->set_top_font_overlap(1);
+        clear_and_update_rectangle(x1, y2+dy, x2, y2);
+        device->set_top_font_overlap(0);
     }
     else if (dy>0) { // scroll to the bottom
-    ED4_ROOT->temp_device->set_bottom_font_overlap(1);
-    clear_and_update_rectangle(x1, y1, x2, y1+dy);
-    ED4_ROOT->temp_device->set_bottom_font_overlap(0);
+        device->set_bottom_font_overlap(1);
+        clear_and_update_rectangle(x1, y1, x2, y1+dy);
+        device->set_bottom_font_overlap(0);
     }
 
+    int char_width = ED4_ROOT->font_group.get_max_width() * 2;
     if (dx<0) { // scroll left
-    ED4_ROOT->temp_device->set_left_font_overlap(1);
-    clear_and_update_rectangle(x2+dx, y1, x2, y2);
-    ED4_ROOT->temp_device->set_left_font_overlap(0);
+        device->set_left_font_overlap(1);
+        clear_and_update_rectangle(x2+dx-char_width, y1, x2, y2);
+        device->set_left_font_overlap(0);
     }
     else if (dx>0) { // scroll right
-    ED4_ROOT->temp_device->set_right_font_overlap(1);
-    clear_and_update_rectangle(x1, y1, x1+dx, y2);
-    ED4_ROOT->temp_device->set_right_font_overlap(0);
+        device->set_right_font_overlap(1);
+        clear_and_update_rectangle(x1, y1, x1+dx+char_width, y2);
+        device->set_right_font_overlap(0);
     }
-
 }
 
 static inline void update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) // x1/y1=upper-left-corner x2/y2=lower-right-corner
@@ -536,8 +537,6 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
     scrolled_rect.scroll_right->dimension += dx;
     scrolled_rect.scroll_bottom->dimension += dy;
 
-//    printf("top->dimension=%f bottom->dimension=%f dx=%f dy=%f\n", scrolled_rect.scroll_top->dimension, scrolled_rect.scroll_bottom->dimension, dx, dy);
-
     skip_move = (ABS(int(dy)) > (bottom_y - top_y - 20)) || (ABS(int(dx)) > (right_x - left_x - 20));
 
     AW_pos leftmost_x = coords.middle_area_x;
@@ -549,22 +548,20 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
     // main area
 
     if (skip_move)  update_rectangle(left_x, top_y, right_x, bottom_y); // main area
-    else        move_and_update_rectangle(left_x, top_y, right_x, bottom_y, int(dx), int(dy)); // main area
-
-//    ED4_ROOT->temp_device->y_font_overlap = 0;
+    else            move_and_update_rectangle(left_x, top_y, right_x, bottom_y, int(dx), int(dy)); // main area
 
     // name area (scroll only vertically)
 
     if (dy) {
-    if (skip_move)  update_rectangle(leftmost_x, top_y, left_x, bottom_y);
-    else        move_and_update_rectangle(leftmost_x, top_y, left_x, bottom_y, 0, int(dy));
+        if (skip_move)  update_rectangle(leftmost_x, top_y, left_x, bottom_y);
+        else            move_and_update_rectangle(leftmost_x, top_y, left_x, bottom_y, 0, int(dy));
     }
 
     // top area (scroll only horizontally)
 
     if (dx) {
-    if (skip_move)  update_rectangle(left_x, toptop_y, right_x, topbottom_y);
-    else        move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
+        if (skip_move)  update_rectangle(left_x, toptop_y, right_x, topbottom_y);
+        else            move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
     }
 
     ED4_ROOT->temp_device->pop_clip_scale();
@@ -575,7 +572,7 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
 ED4_returncode ED4_window::set_scrollbar_indents( void ) {
     int indent_y, indent_x;
 
-    if (    (scrolled_rect.scroll_top    == NULL) ||
+    if ((scrolled_rect.scroll_top    == NULL) ||
         (scrolled_rect.scroll_bottom == NULL) ||
         (scrolled_rect.scroll_left   == NULL) ||
         (scrolled_rect.scroll_right  == NULL) )
