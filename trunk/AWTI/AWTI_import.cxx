@@ -717,7 +717,7 @@ void AWTC_import_go_cb(AW_window *aww)
     {
         bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
 
-        is_genom_db = GEN_is_genom_db(GB_MAIN, read_genom_db);
+        is_genom_db = GEN_is_genome_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
