@@ -13,24 +13,10 @@
 
 extern GBDATA *gb_main;
 static AW_selection_list *clrTransTableLst;
+AW_window_simple *aws = new AW_window_simple;
 
-void setVisualizeSAI_cb(AW_root *awr){
-    int set = awr->awar(AWAR_SAI_ENABLE)->read_int();
-    
-    if(set)  ED4_ROOT->visualizeSAI = 1; 
-    else     ED4_ROOT->visualizeSAI = 0; 
-}
-
-void awarColorDefTable_callback(AW_root *aw_root){
-    char *clrTransTableName = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
-    char *clrDefName =    aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_DEF)->read_string();
-    printf("%s\t%s\n", clrTransTableName,clrDefName);
-    free(clrDefName);
-    free(clrTransTableName);
-}
-
-
-#define BUFSIZE 30
+/* --------------------------------------------------------- */
+#define BUFSIZE 100
 
 static const char *getAwarName(int awarNo) {
     static char buf[BUFSIZE];
@@ -42,11 +28,89 @@ static const char *getAwarName(int awarNo) {
     return buf;
 }
 
+static const char *getClrDefAwar(char *awarName) {
+    static char buf[BUFSIZE];
+#ifdef DEBUG
+    int size =
+#endif
+    sprintf(buf,AWAR_SAI_CLR_DEF "%s", awarName);
+    e4_assert(size<BUFSIZE);
+    return buf;
+}
+
 #undef BUFSIZE
+/* --------------------------------------------------------- */
 
-/*--------------------------Creating and initializing AWARS----------------------------------------*/
+void setVisualizeSAI_cb(AW_root *awr) {
+    int set = awr->awar(AWAR_SAI_ENABLE)->read_int();
+    
+    if(set)  ED4_ROOT->visualizeSAI = 1; 
+    else     ED4_ROOT->visualizeSAI = 0; 
+}
 
-void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {
+static bool inCallback = false;
+
+void colorDefTabNameChanged_callback(AW_root *awr) {
+    inCallback = true;
+    {
+        char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+
+        if(clrTabName[0]!='?') {
+            char *clrTabDef  = awr->awar(getClrDefAwar(clrTabName))->read_string();
+            char *tok; int i = 0;
+
+            if(strcmp(clrTabDef,"")!=0) {
+                for (tok = strtok(clrTabDef,";"); tok; tok= strtok(0,";"),i++) {
+                    awr->awar_string(getAwarName(i))->write_string(tok);
+                }
+            } else for(int i=0; i<10 ; i++)  awr->awar_string(getAwarName(i))->write_string("");
+            free(clrTabDef);
+        } 
+        else  for(int i=0; i<10 ; i++)  awr->awar_string(getAwarName(i))->write_string("");
+    
+        free(clrTabName);
+    }
+    inCallback = false;
+    {
+        void *transTabStr = GBS_stropen(100);
+        const char *transTabName = clrTransTableLst->first_element();
+
+        while (transTabName){
+            GBS_strcat(transTabStr, transTabName);
+            GBS_strcat(transTabStr, "\n");
+            transTabName = clrTransTableLst->next_element();
+        }
+
+        char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+        char buf[100];  sprintf(buf, AWAR_SAI "%s", saiName);                  //creating a AWAR for the selected SAI and 
+        awr->awar_string(buf, GBS_strclose(transTabStr,0), AW_ROOT_DEFAULT);   // writing the existing clr trans table names to the same
+        free(saiName);
+    }
+}
+
+void saiChanged_callback(AW_root *awr) {
+
+//     char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+//     char buf[100];  sprintf(buf, AWAR_SAI "%s", saiName);                  
+//     awr->awar_string(buf, "", AW_ROOT_DEFAULT);
+//     char *transTabNameStr = awr->awar(buf)->read_string();
+//     char *tok; int i = 0;
+
+//     aws->clear_selection_list(clrTransTableLst);
+    
+//     for (tok = strtok(transTabNameStr,"\n"); tok; tok= strtok(0,"\n"),i++) {
+//         aws->insert_selection(clrTransTableLst,tok,tok);
+//     }
+//     aws->insert_default_selection(clrTransTableLst,"????","????");
+//     aws->update_selection_list(clrTransTableLst); 
+    
+//     free(transTabNameStr);
+//     free(saiName);
+    ;
+}
+
+
+void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // --- Creating and initializing AWARS -----
     aw_root->awar_int(    AWAR_SAI_ENABLE,                  0 , aw_def);
     aw_root->awar_string( AWAR_SAI_SELECT,                 "" , aw_def);
     aw_root->awar_string( AWAR_SAI_CLR_TRANS_TABLE,        "" , aw_def);
@@ -56,30 +120,18 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {
 
     for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
        aw_root->awar_string(getAwarName(i),"",aw_def);
-   }
-    aw_root->awar(AWAR_SAI_ENABLE)->add_callback(setVisualizeSAI_cb);
-    //    aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->add_callback(awarColorDefTable_callback);
-}
-
-void generateColorDefinitionString(AW_window *aws){
-    AW_root *awr    = aws->get_root();
-    void *clrDefStr = GBS_stropen(400);            /* create output stream */
-
-    for (int i=0;i<10;i++){
-        GBS_strcat(clrDefStr, awr->awar(getAwarName(i))->read_string());
-        GBS_strcat(clrDefStr, ";");
     }
-    awr->awar(AWAR_SAI_CLR_TRANS_TAB_DEF)->write_string(GBS_strclose(clrDefStr, 0));
-    printf("\n%s\n",awr->awar(AWAR_SAI_CLR_TRANS_TAB_DEF)->read_string());
+    aw_root->awar(AWAR_SAI_ENABLE)->add_callback(setVisualizeSAI_cb);
+    aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->add_callback(colorDefTabNameChanged_callback);
+    aw_root->awar(AWAR_SAI_SELECT)->add_callback(saiChanged_callback);
 }
-
-static bool inCallback = false;
 
 void colorDefChange_callback(AW_window *aws, long int awarNo){
     if(!inCallback){
         inCallback   = true;
         AW_root *awr = aws->get_root();
         unsigned char charUsed[256]; memset(charUsed,255,256);
+        void *clrDefStr = GBS_stropen(500);            /* create output stream */
 
         {
             for (int i=0; i<10 ; i++){
@@ -112,33 +164,58 @@ void colorDefChange_callback(AW_window *aws, long int awarNo){
         
         for(int i=0; i<10; i++){
             awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
+            GBS_strcat(clrDefStr, (char *)s[i]);
+            GBS_strcat(clrDefStr, ";");
         }
+        char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+        if(clrTabName[0]!='?') awr->awar(getClrDefAwar(clrTabName))->write_string(GBS_strclose(clrDefStr, 0));
+        free(clrTabName);
+        
         inCallback = false;
     }
 }
 
-void defineClrTransTable(AW_window *aws){
-    generateColorDefinitionString(aws);
-}
-
 void createCopyClrTransTable(AW_window *aws, long int mode) {
-    AW_root    *aw_root = aws->get_root();
-    const char *newClrTransTabName;
+    AW_root *aw_root = aws->get_root();
+    char    *newClrTransTabName = 0;
+    char    *clrTabSourceName   = 0;
 
     switch(mode){
     case CREATE_CLR_TR_TABLE:
         newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_CREATE)->read_string());
+        aw_root->awar_string(getClrDefAwar(newClrTransTabName), "" , AW_ROOT_DEFAULT);        
         aws->insert_selection(clrTransTableLst, newClrTransTabName,newClrTransTabName);
         aws->update_selection_list(clrTransTableLst);
         break;
     case COPY_CLR_TR_TABLE:
         newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_COPY)->read_string());
+        clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+        if(clrTabSourceName[0]!='?') {
+            aw_root->awar_string(getClrDefAwar(newClrTransTabName), aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string(), AW_ROOT_DEFAULT);            
+        }
         aws->insert_selection(clrTransTableLst, newClrTransTabName, newClrTransTabName);
         aws->update_selection_list(clrTransTableLst);
         break;
     default:
         break;
     }
+    free(clrTabSourceName);
+    free(newClrTransTabName);
+}
+
+void deleteColorTranslationTable(AW_window *aws){
+    AW_root *aw_root = aws->get_root();
+
+    int answer = aw_message("Are you sure to delete the selected COLOR TRANLATION TABLE?","OK,CANCEL");
+    if(answer) return;
+
+    char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+    if(clrTabName[0]!='?') {
+        aws->delete_selection_from_list(clrTransTableLst, clrTabName);
+    aws->insert_default_selection(clrTransTableLst, "????", "????");
+        aws->update_selection_list(clrTransTableLst);
+    }
+    free(clrTabName);
 }
 
 AW_window *create_copyColorTranslationTable_window(AW_root *aw_root){  // creates copy color tranlation table window
@@ -183,11 +260,6 @@ AW_window *create_createColorTranslationTable_window(AW_root *aw_root){ // creat
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
-}
-
-void deleteColorTranslationTable(AW_root *aw_root){
-    int answer = aw_message("Are you sure to delete the selected COLOR TRANLATION TABLE?","OK,CANCEL");
-    if(answer) return;
 }
 
 AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  // creates edit color tranlation table window
@@ -268,7 +340,7 @@ AW_window *ED4_openSelectSAI_window(AW_root *aw_root){
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root/*, AW_CL cl_ntw*/){
 
     ED4_createVisualizeSAI_Awars(aw_root,AW_ROOT_DEFAULT);
-    AW_window_simple *aws = new AW_window_simple;
+    //    AW_window_simple *aws = new AW_window_simple;
 
     aws->init( aw_root, "VISUALIZE_SAI", "VISUALIZE SAI", 150, 150 );
     aws->load_xfig("visualizeSAI.fig");
