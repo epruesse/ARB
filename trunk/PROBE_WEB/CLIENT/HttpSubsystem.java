@@ -50,19 +50,19 @@ public class HttpSubsystem {
 
         try {
             int readBytes = in.read(buffer);
-            System.out.println("  readBytes="+readBytes+" (first)");
+            // System.out.println("  readBytes="+readBytes+" (first)");
             while (readBytes != -1) { // got some bytes
                 out.write(buffer, 0, readBytes);
                 streamedBytes += readBytes;
                 readBytes      = in.read(buffer);
-                System.out.println("  readBytes="+readBytes);
+                // System.out.println("  readBytes="+readBytes);
             }
         }
         catch (IOException e) {
             Toolkit.AbortWithError("while streaming data: "+e.getMessage());
         }
 
-        System.out.println("streamedBytes="+streamedBytes);
+        // System.out.println("streamedBytes="+streamedBytes);
         return streamedBytes;
     }
 
@@ -76,19 +76,19 @@ public class HttpSubsystem {
             // showUrlInfo("creation", url);
 
             try {
-                System.out.println("Generating request to '"+relativePath+"'");
+                // System.out.println("Generating request to '"+relativePath+"'");
                 HttpURLConnection request = (HttpURLConnection)url.openConnection();
 
-                {
-                    Permission perm = request.getPermission();
-                    if (perm != null) {
-                        System.out.println("Found permission[1]:");
-                        System.out.println(" perm.toString()='"+perm.toString()+"'");
-                        System.out.println(" perm.getName()='"+perm.getName()+"'");
-                    }
-                }
+//                 {
+//                     Permission perm = request.getPermission();
+//                     if (perm != null) {
+//                         System.out.println("Found permission[1]:");
+//                         System.out.println(" perm.toString()='"+perm.toString()+"'");
+//                         System.out.println(" perm.getName()='"+perm.getName()+"'");
+//                     }
+//                 }
 
-                System.out.println("connecting request");
+                // System.out.println("connecting request");
                 try {
                     request.connect();
                 }
@@ -97,20 +97,20 @@ public class HttpSubsystem {
                     // Note : e.getMessage only contains the servername
                 }
 
-                showUrlInfo("after connect", url);
+                // showUrlInfo("after connect", url);
 
-                if (request.usingProxy()) {
-                    System.out.println("* proxy is used");
-                }
+                // if (request.usingProxy()) {
+                    // System.out.println("* proxy is used");
+                // }
 
-                {
-                    Permission perm = request.getPermission();
-                    if (perm != null) {
-                        System.out.println("Found permission[2]:");
-                        System.out.println(" perm.toString()='"+perm.toString()+"'");
-                        System.out.println(" perm.getName()='"+perm.getName()+"'");
-                    }
-                }
+//                 {
+//                     Permission perm = request.getPermission();
+//                     if (perm != null) {
+//                         System.out.println("Found permission[2]:");
+//                         System.out.println(" perm.toString()='"+perm.toString()+"'");
+//                         System.out.println(" perm.getName()='"+perm.getName()+"'");
+//                     }
+//                 }
 
                 int response_code = request.getResponseCode();
                 if (response_code != 200) {
@@ -124,28 +124,22 @@ public class HttpSubsystem {
                 }
 
                 int content_len = request.getContentLength();
-                if (content_len == -1) {
-                    System.out.println("content_len is unknown");
-                }
-                else {
-                    System.out.println("content_len='"+content_len+"'");
-                }
-
-                // DataInputStream dis = new DataInputStream(request.getInputStream());
-
-                // byte buffer[] = new byte[content_len];
-                // dis.readFully(buffer);
-                // return buffer;
+//                 if (content_len == -1) {
+//                     System.out.println("content_len is unknown");
+//                 }
+//                 else {
+//                     System.out.println("content_len='"+content_len+"'");
+//                 }
 
                 InputStreamReader in = new InputStreamReader(request.getInputStream());
                 int bytes_read = streamAll(in, out);
                 if (bytes_read != content_len && content_len != -1) {
-                    System.out.println("bytes_read="+bytes_read+" content_len="+content_len);
+                    System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
                 }
                 return bytes_read;
             }
             catch (Exception e) {
-                lastRequestError = "requested: '"+relativePath+"' (from: '"+url.getFile()+"'): "+e.getMessage();
+                lastRequestError = "requested: '"+relativePath+"' (from: '"+url.getHost()+"'): "+e.getMessage();
                 showUrlInfo("failure", url);
                 return 0;
             }
@@ -157,37 +151,37 @@ public class HttpSubsystem {
     }
 
     public String conductRequest(String relativePath) {
-        // byte[] response  = conductRequest_internal(relativePath, "text/plain");
-        // return response == null ? null : new String(response);
+        StringWriter str           = new StringWriter(1000);
+        int          streamedBytes = conductRequest_internal(relativePath, "text/plain", str);
 
-        StringWriter str = new StringWriter(1000);
-        int streamedBytes = conductRequest_internal(relativePath, "text/plain", str);
-
-        if (streamedBytes <= 0) {
-            String error = "streamedBytes="+streamedBytes+" (illegal value)";
-            if (lastRequestError == null) {
-                lastRequestError = error;
-            }
-            else {
-                lastRequestError = lastRequestError+": "+error;
-            }
+        if (streamedBytes <= 0 && lastRequestError == null) {
+            lastRequestError = "streamedBytes="+streamedBytes+" (illegal value)";            
+        }
+        
+        if (lastRequestError != null) {
             return null;
         }
+        else {
+            String result = str.toString();
+            // System.out.println("conductRequest result: '"+result+"'");
 
-        String result = str.toString();
-        System.out.println("conductRequest result: '"+result+"'");
-
-        return result;
+            return result;
+        }
     }
 
     public String downloadZippedTree(String fileName) {
         try {
-            Toolkit.showMessage("Saving tree as "+fileName);
+            Toolkit.showMessage("  to file "+fileName);
             FileWriter outfile = new FileWriter(fileName);
-            
-            conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+
+            int streamedBytes = conductRequest_internal("getTree.cgi", "text/gzipped", outfile);
+
+            // System.out.println("downloaded tree (lastRequestError="+lastRequestError+")");
             // outstream.write(response, 0, response.length);
+            
             outfile.close();
+            
+            Toolkit.showMessage("Tree has been saved ("+(streamedBytes/1024)+"k)");
         }
         catch (Exception e) {
             lastRequestError = "Can't save tree: "+e.getMessage();
