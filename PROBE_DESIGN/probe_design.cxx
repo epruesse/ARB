@@ -31,8 +31,9 @@ void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is 
 
 // probe match awars
 
-#define AWAR_PD_MATCH_ITEM    AWAR_SPECIES_NAME
-#define AWAR_PD_MATCH_RESOLVE "tmp/probe_design/match_resolve" // for IUPAC resolution
+// #define AWAR_PD_MATCH_ITEM     AWAR_SPECIES_NAME
+#define AWAR_PD_SELECTED_MATCH "tmp/probe_design/match"
+#define AWAR_PD_MATCH_RESOLVE  "tmp/probe_design/match_resolve" // for IUPAC resolution
 
 #define AWAR_PD_MATCH_SORTBY     "probe_match/sort_by" // weighted mismatches
 #define AWAR_PD_MATCH_COMPLEMENT "probe_match/complement" // check reverse complement too
@@ -829,12 +830,28 @@ static void resolved_probe_chosen(AW_root *root) {
     root->awar(AWAR_TARGET_STRING)->write_string(string);
 }
 
+static void selected_match_changed_cb(AW_root *root) {
+    // this gets called when ever the selected probe match changes
+
+    char *selected_match = root->awar(AWAR_PD_SELECTED_MATCH)->read_string();
+
+    if (strchr(selected_match, '/')) {
+        fprintf(stderr, "/ found in selected match [not implemented yet]\n");
+    }
+    else {
+        root->awar(AWAR_SPECIES_NAME)->write_string(selected_match);
+    }
+
+    free(selected_match);
+}
+
 void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
 {
     char buffer[256]; memset(buffer,0,256);
     int  i;
     pd_gl.pd_design = 0;        /* design result window not created */
-    root->awar_string( AWAR_PD_MATCH_ITEM, "" , db1);
+    root->awar_string( AWAR_SPECIES_NAME, "" , db1);
+    root->awar_string( AWAR_PD_SELECTED_MATCH, "" , db1)->add_callback(selected_match_changed_cb);
     root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
     root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
 
@@ -887,7 +904,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
 #ifdef DEVEL_IDP
     root->awar_int( "probe_design/gene", 0, db1);
-    
+
 #endif
 
     root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
@@ -1321,7 +1338,7 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
 
     AW_selection_list *selection_id;
     aws->at( "result" );
-    selection_id = aws->create_selection_list( AWAR_PD_MATCH_ITEM, NULL, "", 110, 15 );
+    selection_id = aws->create_selection_list( AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15 );
     aws->insert_default_selection( selection_id, "****** No results yet *******", "" ); // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
     aws->callback( create_print_box_for_selection_lists, (AW_CL)selection_id );
@@ -1472,9 +1489,7 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
     char     *file;
     GB_ERROR  error;
 #ifdef DEVEL_IDP
-    int i;
-    char *tempfile;
-    char *extention;
+
     char command[1024];
 #endif
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
@@ -1493,18 +1508,15 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
         if (*file) file += strlen(file)+1;  /* now i got the command string */
         if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
-#ifdef DEVEL_IDP       
-	printf ("\n\nGENSERVER: %i\n\n",server_type);
-	if (server_type == 1) {
-	  tempfile = (char*) malloc((strlen(file)+5));
-	  strcpy (tempfile,file);
-	  for (i = strlen(tempfile);i>0;i--) {
-	    if (tempfile[i] == '/') break;
-	  }
-	  i++;
-	  extention = &tempfile[i];
-	  strcpy(extention,"t.arb");
-	}
+#ifdef DEVEL_IDP
+        printf ("\n\nGENSERVER: %i\n\n",server_type);
+        if (server_type == 1) {
+            char *tempfile = (char*) malloc((strlen(file)+5));
+            strcpy (tempfile,file);
+            char *rslash = strrchr(tempfile, '/');
+            pd_assert(rslash);
+            strcpy(rslash+1,"t.arb");
+        }
 #endif
 
         aw_status("Exporting the database");
