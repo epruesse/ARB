@@ -870,7 +870,7 @@ void AWTC_import_go_cb(AW_window *aww)
     aww->hide();
 
     aw_openstatus("Checking and Scanning database");
-    aw_status("First Pass: Check entries");
+    aw_status("Pass 1: Check entries");
 
     // scan for hidden/unknown fields :
     awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
@@ -878,7 +878,7 @@ void AWTC_import_go_cb(AW_window *aww)
 
     GBT_mark_all(GB_MAIN,1);
     sleep(1);
-    aw_status("Second Pass: Check sequence lengths");
+    aw_status("Pass 2: Check sequence lengths");
     GBT_check_data(GB_MAIN,0);
     sleep(1);
 
@@ -888,9 +888,14 @@ void AWTC_import_go_cb(AW_window *aww)
         if (aw_message("You may generate short names using the full_name and accession entry of the species",
                        "Generate new short names,use old names")==0)
         {
-            aw_status("Third Pass: Generate unique names");
+            aw_status("Pass 3: Generate unique names");
             error = AWTC_pars_names(GB_MAIN,1);
         }
+    }
+
+    if (!error) {
+        GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
+        error = NT_format_all_alignments(GB_MAIN);
     }
 
     aw_closestatus();
@@ -901,10 +906,6 @@ void AWTC_import_go_cb(AW_window *aww)
     GB_commit_transaction(GB_MAIN);
 
     awtcig.func(awr, awtcig.cd1,awtcig.cd2);
-
-    if (!is_genom_db) {
-        AWT_advice("Use Sequence/Admin/Format to fix the length of the imported sequences.", AWT_ADVICE_TOGGLE, 0, "ad_align.hlp");
-    }
 }
 
 //  ------------------------------------------------------
