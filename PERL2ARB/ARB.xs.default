@@ -2,7 +2,8 @@
 
     ARB.xs.default
     ../ARBDB/ad_prot.h
-    ..ARBDB/ad_t_prot.h
+    ../ARBDB/ad_t_prot.h
+    ../ARBDB/adGene.h
 
 */
 
@@ -16,6 +17,7 @@ extern "C" {
 #include "debug.h"
 #include "arbdb.h"
 #include "arbdbt.h"
+#include "adGene.h"
 #include "ARB_ext.c"
 #ifdef __cplusplus
 }
