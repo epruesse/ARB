@@ -26,17 +26,17 @@ extern AW_CL agde_filtercd;
 
 //char *ReplaceArgs(char *Action,GmenuItemArg arg);
 char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number);
- 
+
 
 long LMAX(long a,long b)
 {
     if(a>b) return a;
     return b;
 }
- 
+
 void GDE_free(void **p)
 {
-    if(*p!=0) 
+    if(*p!=0)
     {
         //delete *p;
         free(*p);
@@ -84,7 +84,7 @@ char *ReplaceString(char *Action,const char *old,const char *news)
     const char *method;
     char *temp;
     int i,newlen;
-    
+
     symbol = old;
     method = news;
 
@@ -130,13 +130,13 @@ void GDE_freeali(NA_Alignment *dataset)
     GDE_free((void**)&dataset->selection_mask);
     GDE_free((void**)&dataset->alignment_name);
 
-    /* maybe not correct: 
+    /* maybe not correct:
        GMask *mask=dataset->mask;
        GDE_freemask(dataset->mask);
        GDE_free((void**)&dataset->mask);*/
 
     unsigned long i;
-    // **maybe not correct: 
+    // **maybe not correct:
     //NA_Sequence **group=dataset->group;
     //for(long i=0;i<dataset->numgroups;i++)
     //	GDE_freesequ(dataset->group[i]);
@@ -161,15 +161,15 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 
     maxalignlen=GBT_get_alignment_len(gb_main,align);
     long lotyp=0;
-    // 	char *type=GBT_get_alignment_type(gb_main,align);	
+    // 	char *type=GBT_get_alignment_type(gb_main,align);
     // 	if(strcmp(type,"dna")==0) lotyp=DNA;
     // 	if(strcmp(type,"rna")==0) lotyp=RNA;
     // 	if(strcmp(type,"ami")==0) lotyp=PROTEIN;
     // 	if(strcmp(type,"pro")==0) lotyp=PROTEIN;
-	
+
     {
         GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
-	    
+
         switch (at)
         {
             case GB_AT_DNA: lotyp = DNA; break;
@@ -179,7 +179,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             case GB_AT_UNKNOWN: lotyp = DNA; break;
         }
     }
-	
+
     GB_ERROR error = 0;
     unsigned long i;
     for(i=oldnumelements;!error && i<dataset->numelements;i++)
@@ -273,7 +273,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 
             char *dummy=resstring;
             for(long j=0;j<maxalignlen-sequ->seqlen;j++)
-                *resstring++=DEFAULT_COLOR; 
+                *resstring++=DEFAULT_COLOR;
 
             for(long k=0;k<sequ->seqlen;k++)
                 *resstring++=(char)sequ->cmask[i];
@@ -296,7 +296,7 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         char *dummy=resstring;
         long k;
         for(k=0;k<maxalignlen-dataset->cmask_len;k++)
-            *resstring++=DEFAULT_COLOR; 
+            *resstring++=DEFAULT_COLOR;
 
         for(k=0;k<dataset->cmask_len;k++)
             *resstring++=(char)dataset->cmask[k];
@@ -326,7 +326,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
 
     long compress=aw_root->awar("gde/compression")->read_int();
     AP_filter *filter2 = awt_get_filter(aw_root,agde_filtercd);
-    char *filter_name  = aw_root->awar("gde/filter/name")->read_string();
+    char *filter_name  = 0; //aw_root->awar("gde/filter/name")->read_string();
     char *alignment_name=strdup("ali_unknown");
     long marked=aw_root->awar("gde/species")->read_int();
 
@@ -358,9 +358,9 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         }
         GB_commit_transaction(DataSet->gb_main);
 
-        if(stop) goto startaction_end;	
+        if(stop) goto startaction_end;
 
-        if(DataSet->numelements==0) 
+        if(DataSet->numelements==0)
         {
             aw_message("no sequences selected");
             goto startaction_end;
@@ -378,7 +378,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     //chdir(current_dir);
     for(j=0;j<current_item->numinputs;j++)
     {
-        sprintf(buffer,"/tmp/gde%d_%d",(int)getpid(),fileindx++);  
+        sprintf(buffer,"/tmp/gde%d_%d",(int)getpid(),fileindx++);
         current_item->input[j].name = String(buffer);
         switch(current_item->input[j].format)
         {
@@ -427,16 +427,15 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     for(j=0;j<current_item->numoutputs;j++)
         Action = ReplaceFile(Action,current_item->output[j]);
 
-    //    Action = ReplaceString(Action,"$FILTER",filter_name);
-    Action = ReplaceString(Action,"$FILTER",AWT_get_combined_filter_name(aw_root));
-	
+    filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+    Action = ReplaceString(Action,"$FILTER",filter_name);
 
     /*
      *	call and go...
      */
 
     aw_status("calling external program");
-    printf("Action: %s\n",Action);	
+    printf("Action: %s\n",Action);
     system(Action);
     free(Action);
 
@@ -508,7 +507,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     DataSet=0;
     DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-	
+
     aw->hide();
 }
 
@@ -534,10 +533,10 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
     /*
      *	The basic idea is to replace all of the symbols in the method
      *	string with the values picked in the dialog box.  The method
-     *	is the general command line structure.  All arguements have three 
+     *	is the general command line structure.  All arguements have three
      *	parts, a label, a method, and a value.  The method never changes, and
-     *	is used to represent '-flag's for a given function.  Values are the 
-     *	associated arguements that some flags require.  All symbols that 
+     *	is used to represent '-flag's for a given function.  Values are the
+     *	associated arguements that some flags require.  All symbols that
      *	require argvalue replacement should have a '$' infront of the symbol
      *	name in the itemmethod definition.  All symbols without the '$' will
      *	be replaced by their argmethod.  There is currently no way to do a label
@@ -566,7 +565,7 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
 *
 *		argchoice:Argument_label:Argument_method
 *
-*	
+*
 */
     const char *symbol=0;
     char *method=0;
@@ -598,8 +597,8 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
         textvalue=awr->awar(awarname)->read_string();
     }
 
-    if(textvalue == NULL) 	textvalue=(char *)calloc(1,sizeof(char)); 
-    if(method == NULL) 		method=(char *)calloc(1,sizeof(char)); 
+    if(textvalue == NULL) 	textvalue=(char *)calloc(1,sizeof(char));
+    if(method == NULL) 		method=(char *)calloc(1,sizeof(char));
     if(symbol == NULL) 		symbol="";
 
     for(; (i=Find2(Action,symbol)) != -1;)
