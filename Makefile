@@ -440,7 +440,6 @@ ARCHS = \
 			AWDEMO/AWDEMO.a \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
-			SEQ_QUALITY/SEQ_QUALITY.a \
 			AWTI/AWTI.a \
 			CAT/CAT.a \
 			CONSENSUS_TREE/CONSENSUS_TREE.a \
@@ -461,8 +460,6 @@ ARCHS = \
 			NAMES/NAMES.a \
 			NAMES_COM/server.a \
 			NTREE/NTREE.a \
-			RNA3D/RNA3D.a \
-			RNA3D/OPENGL/OPENGL.a \
 			ORS_CGI/ORS_CGI.a \
 			ORS_COM/server.a \
 			ORS_SERVER/ORS_SERVER.a \
@@ -472,12 +469,16 @@ ARCHS = \
 			PROBE/PROBE.a \
 			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
-			PROBE_SET/PROBE_SET.a \
 			PROBE_SERVER/PROBE_SERVER.a \
+			PROBE_SET/PROBE_SET.a \
 			READSEQ/READSEQ.a \
+			RNA3D/OPENGL/OPENGL.a \
+			RNA3D/RNA3D.a \
 			SECEDIT/SECEDIT.a \
 			SEER/SEER.a \
+			SEQ_QUALITY/SEQ_QUALITY.a \
 			SERVERCNTRL/SERVERCNTRL.a \
+			SL/SL.a \
 			STAT/STAT.a \
 			TEST/TEST.a \
 			TOOLS/TOOLS.a \
@@ -525,6 +526,7 @@ ARCHS_NTREE = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		STAT/STAT.a \
 		GENOM_IMPORT/GENOM_IMPORT.a \
+		SL/HELIX/HELIX.a \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
@@ -557,6 +559,8 @@ ARCHS_EDIT = \
 		ARB_GDE/ARB_GDE.a \
 		STAT/STAT.a \
 		XML/XML.a \
+		SL/HELIX/HELIX.a \
+		SL/AW_HELIX/AW_HELIX.a \
 
 $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
@@ -577,6 +581,8 @@ ARCHS_EDIT4_GENERAL = \
 		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
+		SL/HELIX/HELIX.a \
+		SL/AW_HELIX/AW_HELIX.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),0)
@@ -600,6 +606,7 @@ $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 WETC = bin/arb_wetc
 ARCHS_WETC = \
 		WETC/WETC.a \
+		SL/HELIX/HELIX.a \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
@@ -617,6 +624,7 @@ ARCHS_DIST = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		EISPACK/EISPACK.a \
+		SL/HELIX/HELIX.a \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
@@ -630,6 +638,7 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
 		PARSIMONY/PARSIMONY.a \
+		SL/HELIX/HELIX.a \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
@@ -654,15 +663,16 @@ $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 #***********************************	arb_naligner **************************************
 NALIGNER = bin/arb_naligner
 ARCHS_NALIGNER = \
-		PROBE_COM/server.a \
+		$(ARCHS_CLIENT_PROBE) \
 		NALIGNER/NALIGNER.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+		SL/HELIX/HELIX.a \
 
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
-	@SOURCE_TOOLS/binuptodate.pl $@ NALIGNER/NALIGNER.com || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo Link $@ ; \
-		echo cp NALIGNER/NALIGNER.com $@ ; \
-		cp NALIGNER/NALIGNER.com $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) \
 		)
 
 #***********************************	arb_secedit **************************************
@@ -682,6 +692,7 @@ ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
 PHYLO = bin/arb_phylo
 ARCHS_PHYLO = \
 		PHYLO/PHYLO.a \
+		SL/HELIX/HELIX.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
@@ -714,6 +725,7 @@ ARCHS_PROBE = \
 		PROBE_COM/server.a \
 		PROBE/PROBE.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+		SL/HELIX/HELIX.a \
 
 $(PROBE): $(ARCHS_PROBE:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
@@ -786,15 +798,14 @@ $(TEST): $(ARCHS_TEST:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
 
-ALIV3 = tb/aliv3
+ALIV3 = bin/aliv3
 ARCHS_ALIV3 = \
-		PROBE_COM/server.a \
 		ALIV3/ALIV3.a \
-		SERVERCNTRL/SERVERCNTRL.a
+		SL/HELIX/HELIX.a \
 
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) ALIV3/ALIV3.a SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
 
 
 ACORR = tb/acorr
@@ -1013,6 +1024,7 @@ tg:	$(TREEGEN)
 
 3d:	$(RNA3D)
 gl:	GL/GL.dummy
+sl:	SL/SL.dummy
 
 ds:	$(DBSERVER)
 pt:	$(PROBE)
@@ -1067,16 +1079,10 @@ tags2:
 
 #********************************************************************************
 
-ifndef DEBIAN
 links: SOURCE_TOOLS/generate_all_links.stamp
-else
-links: SOURCE_TOOLS/generate_all_links.stamp
-# @echo ARB authors do some stuff with symlinks here.  This is not necessary with Debian.
-# We try to stick to the default compile procedure at first place
-endif
 
 SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
-	-sh SOURCE_TOOLS/generate_all_links.sh
+	SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
 gde:		GDE/GDE.dummy
@@ -1250,7 +1256,7 @@ release: tarfile save
 # basic arb libraries
 arbbasic: links
 		$(MAKE) arbbasic2
-arbbasic2: mbin com nas ${MAKE_RTC}
+arbbasic2: mbin com nas ${MAKE_RTC} sl gl
 
 # shared arb libraries
 arbshared: dball aw dp awt
@@ -1259,7 +1265,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip
+arbxtras: tg ps pc pst chip a3
 
 tryxtras:
 		@echo $(SEP)
