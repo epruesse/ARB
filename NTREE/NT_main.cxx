@@ -10,6 +10,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_question.hxx>
 #include <awt_canvas.hxx>
 #include <awt_advice.hxx>
 
@@ -34,6 +35,110 @@ AW_HEADER_MAIN
 
 GBDATA *gb_main;
 NT_global nt = { 0, 0, 0, AW_FALSE };
+
+// NT_format_all_alignments may be called after any operation which causes
+// unformatted alignments (e.g importing sequences)
+//
+// It tests all alignments whether they need to be formatted
+// and asks the user if they should be formatted.
+
+GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
+    GB_ERROR err = 0;
+    GB_push_transaction(gb_main);
+
+    aw_status("Checking alignments");
+    err = GBT_check_data(gb_main, 0);
+
+    AW_repeated_question  question;
+    GBDATA               *gb_presets = GB_find(gb_main,"presets", 0, down_level);
+
+    question.add_help("prompt/format_alignments.hlp");
+
+    for (GBDATA *gb_ali = GB_find(gb_presets,"alignment",0,down_level);
+         gb_ali && !err;
+         gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) )
+    {
+        GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
+
+        if (GB_read_int(gb_aligned) == 0) { // sequences in alignment are not formatted
+            int format_action = 0;
+            // 0 -> ask user
+            // 1 -> format automatically w/o asking
+            // 2 -> skip automatically w/o asking
+
+            GBDATA     *gb_ali_name  = GB_find(gb_ali,"alignment_name",0,down_level);
+            const char *ali_name     = GB_read_char_pntr(gb_ali_name);
+            bool        is_ali_genom = strcmp(ali_name, "ali_genom") == 0;
+
+            if (GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level)) {
+                format_action = GB_read_int(gb_auto_format);
+
+                if (is_ali_genom) {
+                    if (format_action != 2) {
+                        format_action = 2; // always skip ali_genom
+                        GB_write_int(gb_auto_format, 2);
+                    }
+                }
+            }
+            else if (is_ali_genom) {
+                GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
+                GB_write_int(gb_auto_format, 2); // always skip
+                format_action          = 2;
+            }
+
+            bool perform_format = false;
+
+            switch (format_action) {
+                case 1: perform_format = true; break;
+                case 2: perform_format = false; break;
+                default: {
+                    char *qtext  = GBS_global_string_copy("Alignment '%s' is not formatted. Format?", ali_name);
+                    int   answer = question.get_answer(qtext, "Format,Skip,Always format,Always skip", "all", false);
+
+                    switch (answer) {
+                        case 2: {
+                            GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
+                            GB_write_int(gb_auto_format, 1);
+                            // fall-through
+                        }
+                        case 0:
+                            perform_format = true;
+                            break;
+                        case 3: {
+                            GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
+                            GB_write_int(gb_auto_format, 2);
+                            break;
+                        }
+                    }
+
+                    free(qtext);
+                    break;
+                }
+            }
+
+            if (perform_format) {
+                aw_status(GBS_global_string("Formatting '%s'", ali_name));
+                err = GBT_format_alignment(gb_main, ali_name);
+            }
+        }
+    }
+
+    if (err) GB_abort_transaction(gb_main);
+    else GB_commit_transaction(gb_main);
+
+    return err;
+}
+
+// called once on ARB_NTREE startup
+//
+static GB_ERROR nt_check_database_consistency() {
+    aw_openstatus("Checking database...");
+
+    GB_ERROR err = NT_format_all_alignments(gb_main);
+
+    aw_closestatus();
+    return err;
+}
 
 
 void serve_db_interrupt(AW_root *awr){
@@ -70,15 +175,19 @@ GB_ERROR create_nt_window(AW_root *aw_root){
 void nt_main_startup_main_window(AW_root *aw_root){
     create_nt_window(aw_root);
 
-    if (GB_read_clients(gb_main)==0) {
+    if (GB_read_clients(gb_main)==0) { // i am the server
         GB_ERROR error = GBCMS_open(":",0,gb_main);
         if (error) {
             aw_message(
                        "THIS PROGRAMM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION !!!\n"
-                       "(MAYBE THERE IS A SERVER RUNNING ALREADY)\n\n"
-                       "You cannot use any EDITOR or other external SOFTWARE with this dataset!");
+                       "(MAYBE THERE IS ALREADY ANOTHER SERVER RUNNING)\n\n"
+                       "You cannot use any EDITOR or other external SOFTWARE with this dataset!\n\n"
+                       "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
+                       "Caution: Any unsaved data in an eventually running ARB will be lost!\n");
         }else{
             aw_root->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);
+            error = nt_check_database_consistency();
+            if (error) aw_message(error);
         }
     }else{
         aw_root->add_timed_callback(NT_CHECK_DB_TIMER,(AW_RCB)check_db_interrupt,0,0);
