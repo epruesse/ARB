@@ -8,13 +8,10 @@ using namespace std;
 inline float _min(float a, float b) { return (a>b)? b:a; }
 inline float _max(float a, float b) { return (a<b)? b:a; }
 
-Vector3 strCen = Vector3(0.0, 0.0, 0.0);
-
 OpenGLGraphics *GRAPHICS = new OpenGLGraphics();
 
 Structure3D::Structure3D(void) {
-    xCenter = yCenter = zCenter = 0.0;
-    xStrPoint = yStrPoint = zStrPoint = 0.0;
+    strCen = new Vector3(0.0, 0.0, 0.0);
 }
 
 Structure3D::~Structure3D(void) {
@@ -44,7 +41,9 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
     }
 }
 
-void Structure3D::ReadCoOrdinateFile(Vector3 *sCen) {
+//=========== Reading 3D Coordinates from PDB file ====================//
+
+void Structure3D::ReadCoOrdinateFile() {
     const char 
         DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb",
         ErrorMsg[] = "\n *** Error Opening File : ";
@@ -78,13 +77,15 @@ void Structure3D::ReadCoOrdinateFile(Vector3 *sCen) {
                 Z    = atof((line.substr(47,8)).c_str());
                 StoreCoordinates(X,Y,Z,Base,pos);
                 
-                strCen.x += X; strCen.y += Y; strCen.z += Z;
+                strCen->x += X; strCen->y += Y; strCen->z += Z;
                 cntr++;
             }
         }
     }
-    strCen.x = strCen.x/cntr; strCen.y = strCen.y/cntr; strCen.z = strCen.z/cntr;
-    sCen->x = strCen.x; sCen->y = strCen.y; sCen->z = strCen.z;
+
+    strCen->x = strCen->x/cntr; 
+    strCen->y = strCen->y/cntr; 
+    strCen->z = strCen->z/cntr;
 
     readData.close();
 }
@@ -113,6 +114,8 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
         temp->next = data;
     }
 }
+
+//=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
     const char 
@@ -190,6 +193,8 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
     }
 }
 
+//=========== Combining Secondary Structrue Data with 3D Coordinates =======================//
+
 void Structure3D::Combine2Dand3DstructureInfo(void) {
     Struct3Dinfo *temp3D;
     Struct2Dinfo *temp2D;
@@ -205,27 +210,9 @@ void Structure3D::Combine2Dand3DstructureInfo(void) {
     }
 }
 
-void GenerateNonHelixBaseDispList(void) {
-    Struct2Dplus3D *temp;
-
-    glNewList(NON_HELIX_BASES, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp = start2D3D;
-        while (temp != NULL) { 
-            if ((temp->helixNr >= 0) && (temp->mask == '.')) { 
-                glVertex3f(temp->x, temp->y, temp->z);
-            }
-            temp = temp->next;
-        }
-        glEnd();
-    }
-    glEndList();
-}
-
 HelixNrInfo *start = NULL;
 
-void StoreHelixNrInfo(float x, float y, float z, int helixNr) {
+void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
     HelixNrInfo *data, *temp;
     data = new HelixNrInfo;
     data->helixNr = helixNr;;
@@ -245,30 +232,52 @@ void StoreHelixNrInfo(float x, float y, float z, int helixNr) {
     }
 }
 
-void PositionsToCoordinatesDispList(int listID, int *pos, int len){
+void Structure3D::PointsToQuads(float x, float y, float z) {
+    extern bool bPointSpritesSupported;
+
+    if (bPointSpritesSupported) {
+        glVertex3f(x, y, z);
+    }
+    else {
+        glBegin(GL_QUADS);
+        glTexCoord2f(0,0); glVertex3f(x - 1, y - 1, z);
+        glTexCoord2f(1,0); glVertex3f(x + 1, y - 1, z);
+        glTexCoord2f(1,1); glVertex3f(x + 1, y + 1, z);
+        glTexCoord2f(0,1); glVertex3f(x - 1, y + 1, z);
+        glEnd();
+    }
+}
+
+void Structure3D::PositionsToCoordinatesDispList(int listID, int *pos, int len){
     Struct2Dplus3D *t;
     int tmpPos = 0;
 
     glNewList(listID, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
+    {   
+        extern bool bPointSpritesSupported;
+        if (bPointSpritesSupported) {
+            glBegin(GL_POINTS);
+        }
         for(int i = 0; i < len; i++) 
             {
                 tmpPos = pos[i];
                 t = start2D3D;
                 while (t != NULL) {
                     if (t->pos == tmpPos) {
-                        glVertex3f(t->x, t->y, t->z); break;
+                        PointsToQuads(t->x, t->y, t->z);
+                        break;
                     }
                     t = t->next;
                 }
             }
-        glEnd();
+        if (bPointSpritesSupported){
+            glEnd();
+        }
     }
     glEndList();
 }
 
-void GenerateSecStructureNonHelixRegions(void) {
+void Structure3D::GenerateSecStructureNonHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -296,7 +305,7 @@ void GenerateSecStructureNonHelixRegions(void) {
     PositionsToCoordinatesDispList(NON_HELIX_U, baseU, u);
 }
 
-void GenerateSecStructureHelixRegions(void) {
+void Structure3D::GenerateSecStructureHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 1000;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -328,7 +337,7 @@ void GenerateSecStructureHelixRegions(void) {
     PositionsToCoordinatesDispList(HELIX_U, baseU, u);
 }
 
-void GenerateSecStructureUnpairedHelixRegions(void) {
+void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
     Struct2Dplus3D *t;
     const int MAX_BASE = 500;
     int baseA[MAX_BASE], baseG[MAX_BASE], baseC[MAX_BASE], baseU[MAX_BASE];
@@ -357,6 +366,24 @@ void GenerateSecStructureUnpairedHelixRegions(void) {
     PositionsToCoordinatesDispList(UNPAIRED_HELIX_G, baseG, g);
     PositionsToCoordinatesDispList(UNPAIRED_HELIX_C, baseC, c);
     PositionsToCoordinatesDispList(UNPAIRED_HELIX_U, baseU, u);
+}
+
+void Structure3D::GenerateNonHelixBaseDispList(void) {
+    Struct2Dplus3D *temp;
+
+    glNewList(NON_HELIX_BASES, GL_COMPILE);
+    {
+        glBegin(GL_POINTS);
+        temp = start2D3D;
+        while (temp != NULL) { 
+            if ((temp->helixNr >= 0) && (temp->mask == '.')) { 
+                glVertex3f(temp->x, temp->y, temp->z);
+            }
+            temp = temp->next;
+        }
+        glEnd();
+    }
+    glEndList();
 }
 
 void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
@@ -421,48 +448,13 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
     glEndList();
 }
 
-void Generate2DmaskDispLists(int dispLstID, char MASK) {
-    Struct3Dinfo *temp3D;
-    Struct2Dinfo *temp2D;
-
-    glNewList(dispLstID, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp3D = start3D;    
-        temp2D = start2D;
-        while ((temp3D != NULL) &&  (temp2D != NULL)) {
-            if (temp2D->mask == MASK) {
-                glVertex3f(temp3D->x, temp3D->y, temp3D->z);
-            }
-            temp3D = temp3D->next;
-            temp2D = temp2D->next;
-        }
-        glEnd();
-    }
-    glEndList();
-}
-
-void Structure3D::BuildSecondaryStructureMask(void){
-    Generate2DmaskDispLists(STRUCTURE_2D_MASK_HELIX_START, '[');
-    Generate2DmaskDispLists(STRUCTURE_2D_MASK_HELIX_END, ']');
-    Generate2DmaskDispLists(STRUCTURE_2D_MASK_HELIX_FORWARD_STRAND, '<');
-    Generate2DmaskDispLists(STRUCTURE_2D_MASK_HELIX_BACKWARD_STRAND, '>');
-    Generate2DmaskDispLists(STRUCTURE_2D_MASK_NON_HELIX, '.');
-
-
-    for (int i = 1; i <= 50;i++) {
-        GenerateHelixDispLists(i, i);
-    }
-
-    GenerateNonHelixBaseDispList();
-    GenerateSecStructureNonHelixRegions();
-    GenerateSecStructureHelixRegions();
-    GenerateSecStructureUnpairedHelixRegions();
+void Structure3D::GenerateHelixNrDispList(void) {
+    HelixNrInfo *t;
 
     glNewList(HELIX_NUMBERS, GL_COMPILE);
     {
         char POS[50];
-        HelixNrInfo *t = start;    
+        t = start;    
         while (t != NULL) {
             sprintf(POS, "%d", t->helixNr);
             GRAPHICS->PrintString(t->x, t->y, t->z, POS, GLUT_BITMAP_HELVETICA_10);
@@ -473,70 +465,39 @@ void Structure3D::BuildSecondaryStructureMask(void){
 
     glNewList(HELIX_NUMBERS_POINTS, GL_COMPILE);
     {
-        HelixNrInfo *t = start;    
-        glBegin(GL_POINTS);
+        t = start;    
+        extern bool bPointSpritesSupported;
+        if (bPointSpritesSupported) {
+            glBegin(GL_POINTS);
+        }
         while (t != NULL) {
-            glVertex3f(t->x, t->y, t->z);
+            PointsToQuads(t->x, t->y, t->z);
             t = t->next;
         }
-        glEnd();
+        if (bPointSpritesSupported) {
+            glEnd();
+        }
     }
     glEndList();
 }
 
-void GenerateDisplayLists(int dispLstID, char BASE){
-    Struct3Dinfo *temp;
+void Structure3D::GenerateDisplayLists(void){
 
-    glNewList(dispLstID, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp = start3D;    
-        while (temp != NULL) {
-            if(temp->base == BASE) {
-                glVertex3f(temp->x, temp->y, temp->z);
-            }
-            temp = temp->next;
-        }
-        glEnd();
+    GenerateMoleculeSkeleton();
+    //    ComputeBasePositions(int iInterval);
+
+    for (int i = 1; i <= 50;i++) {
+        GenerateHelixDispLists(i, i);
     }
-    glEndList();
+
+    GenerateSecStructureHelixRegions();
+    GenerateSecStructureNonHelixRegions();
+    GenerateSecStructureUnpairedHelixRegions();
+    GenerateHelixNrDispList();
 }
 
-void Structure3D::PrepareStructureSkeleton(void){
+void Structure3D::GenerateMoleculeSkeleton(void){
     Struct3Dinfo *temp;
-    // drawing structure 
-    extern bool bPointSpritesSupported;
-
-    if (!bPointSpritesSupported) {
-        glNewList(STRUCTURE_BACKBONE_POINTS, GL_COMPILE);
-        {
-            //        glBegin(GL_POINTS);
-            temp = start3D;    
-            while (temp != NULL) {
-                glBegin(GL_QUADS);
-                glTexCoord2f(0,0); glVertex3f(temp->x, temp->y, temp->z);
-                glTexCoord2f(1,0); glVertex3f(temp->x + 2, temp->y, temp->z);
-                glTexCoord2f(1,1); glVertex3f(temp->x + 2, temp->y +2, temp->z);
-                glTexCoord2f(0,1); glVertex3f(temp->x + 2, temp->y, temp->z);
-                glEnd();
-                temp = temp->next;
-            }
-            //        glEnd();
-        }
-        glEndList();
-    }
-
-    glNewList(STRUCTURE_BACKBONE_POINTS_CLR, GL_COMPILE);
-    {
-        glBegin(GL_POINTS);
-        temp = start3D;    
-        while (temp != NULL) {
-            GRAPHICS->DrawPoints(temp->x, temp->y, temp->z, temp->base);
-            temp = temp->next;
-        }
-        glEnd();
-    }
-    glEndList();
 
     glNewList(STRUCTURE_BACKBONE, GL_COMPILE);
     {   
@@ -549,33 +510,14 @@ void Structure3D::PrepareStructureSkeleton(void){
         glEnd();
     }
     glEndList();
-
-    glNewList(STRUCTURE_BACKBONE_CLR, GL_COMPILE);
-    {   
-        glBegin(GL_LINE_STRIP);
-        temp = start3D;    
-        while (temp != NULL) {
-            GRAPHICS->DrawPoints(temp->x, temp->y, temp->z, temp->base);
-            temp = temp->next;
-        }
-        glEnd();
-    }
-    glEndList();
-
-    GenerateDisplayLists(STRUCTURE_BACKBONE_POINTS_A, 'A');
-    GenerateDisplayLists(STRUCTURE_BACKBONE_POINTS_G, 'G');
-    GenerateDisplayLists(STRUCTURE_BACKBONE_POINTS_C, 'C');
-    GenerateDisplayLists(STRUCTURE_BACKBONE_POINTS_U, 'U');
-
-    DrawStructureInfo();
 }
 
-void Structure3D::DrawStructureInfo(void){
+void Structure3D::ComputeBasePositions(int iInterval){
     Struct3Dinfo *temp;
-    // drawing position numbers
+
     char POS[50];
-    float spacer = 1.5;//0.5;
-    int posSkip = 25;
+    float spacer = 1.5;
+    int posSkip = iInterval;
 
     glNewList(STRUCTURE_POS, GL_COMPILE);
     {
@@ -605,39 +547,9 @@ void Structure3D::DrawStructureInfo(void){
         glEnd();
     }
     glEndList();
-
-    glNewList(STRUCTURE_SEARCH_POINTS, GL_COMPILE);
-    {   
-        glBegin(GL_POINTS);
-        temp = start3D;    
-        while (temp != NULL) {
-            if(temp->pos >= startPos && temp->pos <= endPos) {
-                glVertex3f(temp->x, temp->y, temp->z);
-            }
-            temp = temp->next;
-        }
-        glEnd();
-    }
-    glEndList();
-
-    glNewList(STRUCTURE_SEARCH, GL_COMPILE);
-    {   
-        temp = start3D;    
-        while (temp != NULL) {
-            if(temp->pos >= startPos && temp->pos <= endPos) {
-                glVertex3f(temp->x, temp->y, temp->z);
-                if(temp->pos == ((startPos+endPos)/2)) {
-                    xStrPoint = temp->x; yStrPoint = temp->y; zStrPoint = temp->z;
-                }
-            }
-            temp = temp->next;
-        }
-    }
-    glEndList();
-
 }
 
-void Structure3D::PrepareSecondaryStructureInfo(void) {
+void Structure3D::PrepareSecondaryStructureData(void) {
     const char 
         outFile[]      = "data/test.data",
         EcoliFile[]    = "data/ECOLI_GAPS",
@@ -735,57 +647,6 @@ void Structure3D::PrepareSecondaryStructureInfo(void) {
         delete [] helixGapBuf;
         out.close();
     }
-
-//     {
-//         {
-//             inFile.open(BaseFile, ios::binary);
-//             if(!inFile.is_open())   cerr<<ErrorMsg<<HelixGapFile<<endl;
-    
-//             inFile.seekg (0, ios::end);  // get length of file
-//             fileLen = inFile.tellg();
-//             inFile.seekg (0, ios::beg);
-    
-//             BaseBuf = new char[fileLen];    // allocate memory:
-
-//             inFile.read (BaseBuf,fileLen);     // read data as a block:
-//             inFile.close();
-//         }
-
-//         {
-//             inFile.open(HelixFile, ios::binary);
-//             if(!inFile.is_open())   cerr<<ErrorMsg<<HelixNrFile<<endl;
-    
-//             inFile.seekg (0, ios::end);  // get length of file
-//             fileLen = inFile.tellg();
-//             inFile.seekg (0, ios::beg);
-    
-//             HelixBuf = new char[fileLen];    // allocate memory:
-
-//             inFile.read (HelixBuf,fileLen);     // read data as a block:
-//             inFile.close();
-//         }
-
-//         int pos, skip; pos = skip = 0;
-
-//         for(unsigned int i = 0; i < strlen(HelixBuf); i++) 
-//             {
-//                 if (HelixBuf[i] == '\n')    skip++;
-//                 else {
-//                     pos = (i - skip) + 1; if(pos>1542) break;
-//                     cout<<pos<<"  "<<BaseBuf[i]<<"\t"<<HelixBuf[i]<<"\t";
-//                     switch (HelixBuf[i]) 
-//                         {
-//                         case '.' : cout<<"N"; break;
-//                         case '[' : cout<<"S"; break;
-//                         case ']' : cout<<"E"; break;
-//                         case '<' : cout<<"H"; break;
-//                         case '>' : cout<<"H"; break;
-//                         }
-//                     cout<<endl;
-//                 }
-//             }
-//     }
-
 }
 
 
