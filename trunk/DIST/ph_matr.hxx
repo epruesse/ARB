@@ -53,7 +53,8 @@ typedef long PH_MUT_MATR[AP_MAX][AP_MAX];
 
 enum PH_SAVE_TYPE {
 	PH_SAVE_PHYLIP_COMP,
-	PH_SAVE_READABLE
+	PH_SAVE_READABLE,
+    PH_SAVE_TABBED
 };
 
 class PHMATRIX {
@@ -70,7 +71,7 @@ private:
 
     long	entries_mem_size;
 
-public:	
+public:
     GB_BOOL	is_AA;
     PHENTRY	**entries;
     long	nentries;
