@@ -22,29 +22,29 @@ enum {
 	AWT_GC_UNDIFF,
 	AWT_GC_NSELECTED,		// no hit
 	AWT_GC_SOME_MISMATCHES,
-    
+
     // for multiprobecoloring
-    
+
 	AWT_GC_BLACK,   AWT_GC_YELLOW,
-	AWT_GC_RED,     AWT_GC_MAGENTA, 
-	AWT_GC_GREEN,   AWT_GC_CYAN,	         
+	AWT_GC_RED,     AWT_GC_MAGENTA,
+	AWT_GC_GREEN,   AWT_GC_CYAN,
 	AWT_GC_BLUE,    AWT_GC_WHITE,
-    
+
 	AWT_GC_MAX
 }; // AW_gc
 
 typedef enum {
-		NOTHING=0,	// nothing to buffer in AP_tree node
-		STRUCTURE=1,	// only structure
-		SEQUENCE=2,	// only sequence
-		BOTH=3,		// sequence & treestructure is buffered
-		ROOT=7	// old root is buffered
-	} AP_STACK_MODE;
+    NOTHING=0,	// nothing to buffer in AP_tree node
+    STRUCTURE=1,	// only structure
+    SEQUENCE=2,	// only sequence
+    BOTH=3,		// sequence & treestructure is buffered
+    ROOT=7	// old root is buffered
+} AP_STACK_MODE;
 
 typedef enum {
-		AP_FALSE,
-		AP_TRUE 
-	} AP_BOOL;
+    AP_FALSE,
+    AP_TRUE
+} AP_BOOL;
 
 typedef enum {
 	AP_UPDATE_OK = 0,
@@ -54,13 +54,13 @@ typedef enum {
 } AP_UPDATE_FLAGS;
 
 typedef enum {	// flags zum kennzeichnen von knoten
-		AP_LEFT,
-		AP_RIGHT,
-		AP_FATHER,
-		AP_LEFTSON,
-		AP_RIGHTSON,
-		AP_NONE
-		} AP_TREE_SIDE;
+    AP_LEFT,
+    AP_RIGHT,
+    AP_FATHER,
+    AP_LEFTSON,
+    AP_RIGHTSON,
+    AP_NONE
+} AP_TREE_SIDE;
 
 enum {			// Flags can be ored !!!
 	AWT_REMOVE_MARKED = 1,
@@ -79,24 +79,24 @@ enum AWT_FILTER_SIMPLIFY {
 };
 
 class AP_filter {
-	public:
+public:
 	char	*filter_mask;	// 0 1
 	long	filter_len;
 	long	real_len;	// how many 1
 	long	update;
-        uchar	simplify[256];
-        int *filterpos_2_seqpos;
-        int	*bootstrap;	// if set then sizeof(bootstrap) == real_len; bootstrap[i] points to random original positions [0..filter_len]
-    
+    uchar	simplify[256];
+    int *filterpos_2_seqpos;
+    int	*bootstrap;	// if set then sizeof(bootstrap) == real_len; bootstrap[i] points to random original positions [0..filter_len]
+
 	GB_ERROR init(const char *filter,const char *zerobases, long size);
 	GB_ERROR init(long size);
-        void	calc_filter_2_seq();
-        void	enable_bootstrap(int random_seed);
-        void	enable_simplify(AWT_FILTER_SIMPLIFY type);
-        char    *to_string();   // convert to 0/1 string
+    void	calc_filter_2_seq();
+    void	enable_bootstrap(int random_seed);
+    void	enable_simplify(AWT_FILTER_SIMPLIFY type);
+    char    *to_string();   // convert to 0/1 string
 	AP_filter(void);
 	~AP_filter(void);
-};	
+};
 
 
 
@@ -105,34 +105,34 @@ protected:
     friend class AP_sequence;
     friend class AP_sequence_parsimony;
     friend class AP_sequence_protein;
-		GB_UINT4 *weights;
-	public:
-		long weight_len;
-		AP_filter *filter;
-		long	update;
-                GB_BOOL dummy_weights; // if true all weights are == 1
-		AP_weights(void);
-		char *init(AP_filter *fil);	// init weights
-		char *init(GB_UINT4 *w, AP_filter *fil);
-		~AP_weights(void);
+    GB_UINT4 *weights;
+public:
+    long weight_len;
+    AP_filter *filter;
+    long	update;
+    GB_BOOL dummy_weights; // if true all weights are == 1
+    AP_weights(void);
+    char *init(AP_filter *fil);	// init weights
+    char *init(GB_UINT4 *w, AP_filter *fil);
+    ~AP_weights(void);
 };
 
 class AP_rates {
-	public:
-		AP_FLOAT *rates;
-		long	rate_len;
-		AP_filter *filter;
-		long	update;
+public:
+    AP_FLOAT *rates;
+    long	rate_len;
+    AP_filter *filter;
+    long	update;
 
-		AP_rates(void);
-		char *init(AP_filter *fil);
-		char *init(AP_FLOAT * ra, AP_filter *fil);
-		~AP_rates(void);
-		void print(void);
+    AP_rates(void);
+    char *init(AP_filter *fil);
+    char *init(AP_FLOAT * ra, AP_filter *fil);
+    ~AP_rates(void);
+    void print(void);
 };
 
 class AP_smatrix {		// Symmetrical Matrix (upper triangular matrix)
-	public:
+public:
 	AP_FLOAT **m;		// m[i][j]	i<= j !!!!
 	long 	size;
 	AP_smatrix(long si);
@@ -173,23 +173,24 @@ public:
     long	sequence_len;
     long	update;
     AP_FLOAT	costs;
-    
+
     AP_sequence(AP_tree_root *rooti);
-    virtual ~AP_sequence(void);		
-    
+    virtual ~AP_sequence(void);
+
     virtual AP_sequence *dup(void) = 0;				// used to get the real new element
     virtual void set_gb(GBDATA *gb_sequence ); // by default calls set((char *))
     virtual void set(	char *sequence )  = 0;
     /* seq = acgtututu   */
-    virtual AP_FLOAT combine(const AP_sequence* lefts,	
-			     const AP_sequence *rights) = 0;
+    virtual AP_FLOAT combine(const AP_sequence* lefts,
+                             const AP_sequence *rights) = 0;
     virtual AP_FLOAT real_len(void);
 };
 
 
 class AP_tree;
+
 class AP_tree_root {
-	public:
+public:
 	GBDATA	*gb_main;
 	GBDATA	*gb_tree;
 	GBDATA *gb_species_data;
@@ -198,31 +199,29 @@ class AP_tree_root {
 	long	species_timer;
 	long	table_timer;
 	char	*tree_name;
-	class AP_tree	*tree_template;
+    AP_tree	*tree_template;
 	AP_sequence 	*sequence_template;
 
     AP_filter *filter;
     AP_weights *weights;
     AP_rates  *rates;
     AP_smatrix *matrix;
-    
-    AP_tree_root(GBDATA *gb_main, class AP_tree *tree_proto,const char *name);
+
+    AP_tree_root(GBDATA *gb_main, AP_tree *tree_proto,const char *name);
 	void update_timers(void);		// update the timer
 	GB_BOOL is_tree_updated(void);
 	GB_BOOL is_species_updated(void);
 
 
-	char 		*(*root_changed)(void *cd, class AP_tree *old,
-			 class AP_tree *newroot);
+	char 		*(*root_changed)(void *cd,  AP_tree *old,  AP_tree *newroot);
 	void 		*root_changed_cd;
-	char 		*(*node_deleted)(void *cd, class AP_tree *old);
+	char 		*(*node_deleted)(void *cd,  AP_tree *old);
 	void 		*node_deleted_cd;
 
-	class AP_tree	*tree;
-	char 		*inform_about_changed_root(class AP_tree *old,
-			class AP_tree *newroot);
+    AP_tree	*tree;
+	char 		*inform_about_changed_root( AP_tree *old,  AP_tree *newroot);
 
-	char 		*inform_about_delete(class AP_tree *old);
+	char 		*inform_about_delete( AP_tree *old);
 
 	~AP_tree_root();
 };
@@ -235,9 +234,9 @@ public:
     // struct arb_flags
     unsigned int grouped:1;		// indicates a folded group
     unsigned int hidden:1; 		// not shown because a father is a folded group
-    unsigned int has_marked_children:1; // at least one child is marked 
+    unsigned int has_marked_children:1; // at least one child is marked
     unsigned int callback_exists:1;
-    unsigned int gc:6;			// color 
+    unsigned int gc:6;			// color
 
     char	left_linewidth;
     char	right_linewidth;
@@ -251,7 +250,7 @@ public:
 
     float  	left_angle;
     float  	right_angle;
-    
+
     void clear() {
         grouped = 0;
         hidden = 0;
@@ -274,7 +273,7 @@ struct AP_branch_members {
 public:
     unsigned int kl_marked:1;		// kernighan lin marked
     unsigned int touched:1;			// nni and kl
-    
+
     void clear() {
         kl_marked = 0;
         touched = 0;
@@ -291,23 +290,25 @@ private:
 protected:
 
 public:
-    GBT_TREE_ELEMENTS(class AP_tree);
+    GBT_TREE_ELEMENTS( AP_tree);
     AP_tree_members	gr;
     AP_branch_members	br;
-    
+
     AP_FLOAT	mutation_rate;
     unsigned long stack_level;
     AP_tree_root	*tree_root;
-    AP_sequence     *sequence;    
-    
+    AP_sequence     *sequence;
+
     AP_tree(void);
-    
+
     GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; }
 
     int 	compute_tree(GBDATA *gb_main);
-    int	arb_tree_leafsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
-    void calc_hidden_flag(int father_is_hidden);
+
+    int	arb_tree_set_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
     int	arb_tree_leafsum2();// count all leafs
+
+    void calc_hidden_flag(int father_is_hidden);
     virtual int	calc_color();// start a transaction first
 
     virtual int calc_color_probes(GB_HASH *hashptr);		//new function for coloring the tree; ak
@@ -354,10 +355,10 @@ public:
     GB_ERROR buildLeafList(AP_tree **&list, long &num);	// returns a list of leafs
     GB_ERROR buildNodeList(AP_tree **&list, long &num);	// returns a list of leafs
     GB_ERROR buildBranchList(AP_tree **&list, long &num,	AP_BOOL create_terminal_branches,int deep);
-// returns a pairs o leafs/father,
+    // returns a pairs o leafs/father,
     //			node/father
 
-    AP_tree **getRandomNodes(int nnodes); 
+    AP_tree **getRandomNodes(int nnodes);
     // returns a list of random nodes (no leafs)
 
     AP_BOOL is_son(AP_tree *father);
