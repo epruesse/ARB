@@ -300,6 +300,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
