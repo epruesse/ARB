@@ -272,6 +272,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
 GB_ERROR GB_print_error()
 {
     if (GB_error_buffer){
+        fflush(stdout);
         fprintf(stderr,"%s\n",GB_error_buffer);
     }
     return GB_error_buffer;
