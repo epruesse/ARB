@@ -13,6 +13,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.4  2005/01/05 11:46:52  westram
+ * - uses GBDATA*
+ *
  * Revision 1.3  2003/08/14 23:54:06  westram
  * - uses AWAR_FOOTER
  *
@@ -58,7 +61,7 @@
 AW_HEADER_MAIN;
 
 // required dummy for AWT, even if you don't use trees...
-void AD_map_viewer(gb_data_base_type *dummy)
+void AD_map_viewer(GBDATA *dummy)
 {
     AWUSE(dummy);
 }

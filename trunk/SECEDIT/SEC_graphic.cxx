@@ -55,7 +55,7 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
 
 // required dummy for AWT, even if you don't use trees...
 #if defined(FREESTANDING)
-void AD_map_viewer(gb_data_base_type *dummy, AD_MAP_VIEWER_TYPE)
+void AD_map_viewer(GBDATA *dummy, AD_MAP_VIEWER_TYPE)
 {
     AWUSE(dummy);
 }
