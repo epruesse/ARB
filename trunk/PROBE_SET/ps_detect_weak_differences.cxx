@@ -11,19 +11,20 @@
 #endif
 
 // common globals
-SpeciesID         __MAX_ID;
-SpeciesID         __MIN_ID;
-PS_BitMap_Fast   *__MAP;
+SpeciesID          __MAX_ID;
+SpeciesID          __MIN_ID;
+PS_BitMap_Fast    *__MAP;
 // globals for PS_detect_weak_differences
-IDVector         *__PATH;
-IDVector         *__INVERSE_PATH;
-unsigned long int __COUNT_SET_OPS  = 0;
-unsigned long int __COUNT_SET_OPS2 = 0;
+IDVector          *__PATH;
+IDVector          *__INVERSE_PATH;
+unsigned long int  __COUNT_SET_OPS  = 0;
+unsigned long int  __COUNT_SET_OPS2 = 0;
+char              *__NODES_LEFT;
 // globals for PS_print_and_evaluate_map
-IDSet            *__PATHSET;
-IDID2IDSetMap    *__PAIR2PATH;
-SpeciesID         __ONEMATCH_MIN_ID;
-SpeciesID         __ONEMATCH_MAX_ID;
+IDSet             *__PATHSET;
+IDID2IDSetMap     *__PAIR2PATH;
+SpeciesID          __ONEMATCH_MIN_ID;
+SpeciesID          __ONEMATCH_MAX_ID;
 
 void PS_print_time_diff( const struct tms *_since, const char *_before = 0, const char *_after = 0 ) {
     struct tms now;
@@ -90,10 +91,15 @@ void PS_print_inverse_path() {
 //  (this allows us to find pairs of SpeciesIDs that can be distinguished by exactly one probe)
 //
 void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
-                                          const SpeciesID  _parent_ID ) {
+                                          const SpeciesID  _parent_ID,
+                                          const long       _depth ) {
     
     SpeciesID id = _ps_node->getNum();
-
+    if (_depth < 60) {
+        printf( "%s", __NODES_LEFT );
+        for (int i = 0; i < 60; ++i) printf( "\b" );
+        fflush( stdout );
+    }
     //
     // append IDs to paths
     //
@@ -191,11 +197,20 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     //
     // step down the children
     //
-    for (PS_NodeMapConstIterator i = _ps_node->getChildrenBegin();
-         i != _ps_node->getChildrenEnd();
-         ++i) {
-        PS_detect_weak_differences_stepdown( i->second, id );
+    int c = _ps_node->countChildren()-1;
+    for ( PS_NodeMapConstIterator i = _ps_node->getChildrenBegin();
+          i != _ps_node->getChildrenEnd();
+          ++i,--c ) {
+        if (_depth < 60) {
+            if (c < 10) {
+                __NODES_LEFT[ _depth ] = '0'+c;
+            } else {
+                __NODES_LEFT[ _depth ] = '+';
+            }
+        }
+        PS_detect_weak_differences_stepdown( i->second, id, _depth+1 );
     }
+    if (_depth < 60) __NODES_LEFT[ _depth ] = ' ';
 
     //
     // remove IDs from paths
@@ -218,17 +233,22 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     times( &before );
     struct tms before_first_level_node;
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin(); i != _root_node->getChildrenEnd(); ++i,++c ) {
+        if (_root_node->countChildren()-c-1 < 10) {
+            __NODES_LEFT[0] = '0'+_root_node->countChildren()-c-1;
+        } else {
+            __NODES_LEFT[0] = '+';
+        }
         if ((c < 50) || (c % 100 == 0)) {
             times( &before_first_level_node );
-            printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i  ", i->first, c+1, _root_node->countChildren() );
+            printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i  ", i->first, c+1, _root_node->countChildren() ); fflush( stdout );
         }
-        PS_detect_weak_differences_stepdown( i->second, -1 );
+        PS_detect_weak_differences_stepdown( i->second, -1, 1 );
         if ((c < 50) || (c % 100 == 0)) {
             PS_print_time_diff( &before_first_level_node, "this node ", "  " );
             PS_print_time_diff( &before, "total ", "\n" );
         }
     }
-    printf( "%lu * %lu + %lu set operations performed\n", __COUNT_SET_OPS2, ULONG_MAX, __COUNT_SET_OPS );
+    printf( "%lu * %lu + %lu set operations performed\n", __COUNT_SET_OPS2, ULONG_MAX, __COUNT_SET_OPS ); fflush( stdout );
 
     delete __PATH;
     delete __INVERSE_PATH;
@@ -504,7 +524,12 @@ int main( int argc,  char *argv[] ) {
 
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
     if (!bitmap_filename || (bitmap_filename[0] != '-')) {
+        printf( "detecting..\n" ); fflush( stdout );
+        __NODES_LEFT = (char*)malloc( 61 );
+        memset( __NODES_LEFT, ' ', 60 );
+        __NODES_LEFT[ 60 ] = '\x00';
         PS_detect_weak_differences( db->getRootNode() );
+        free( __NODES_LEFT );
         if (bitmap_filename) {
             printf( "saving bitmap to file %s\n", bitmap_filename );
             PS_FileBuffer *mapfile = new PS_FileBuffer( bitmap_filename, PS_FileBuffer::WRITEONLY );
