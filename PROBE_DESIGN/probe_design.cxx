@@ -764,7 +764,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
         sprintf(result, "%c %s", flag, match_info);
 
-        if (selection_id) aww->insert_selection( selection_id, result, match_name );
+        if (selection_id) aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
         mcount++;
     }
 
