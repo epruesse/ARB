@@ -84,6 +84,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_cursor.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -112,6 +113,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -146,6 +148,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -230,6 +233,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -243,6 +247,16 @@ ED4_protein_2nd_structure.o: ed4_protein_2nd_structure.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
+
+ED4_RNA3D.o: ../RNA3D/RNA3D_Interface.hxx
+ED4_RNA3D.o: ed4_RNA3D.hxx
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 
 ED4_root.o: ../NTREE/nt_date.h
 ED4_root.o: ed4_awars.hxx
@@ -263,6 +277,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -346,6 +361,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_root.hxx

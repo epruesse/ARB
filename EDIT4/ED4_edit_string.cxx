@@ -10,7 +10,7 @@
 #include <aw_keysym.hxx>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 
 #include <awtc_fast_aligner.hxx>
 #include <awt_map_key.hxx>
@@ -853,7 +853,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             break;
                         }
                         case 'J': { // CTRL-J = Jump to opposite helix position
-                            BI_helix *helix = ED4_ROOT->helix;
+                            AW_helix *helix = ED4_ROOT->helix;
 
                             if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
                                 int pairing_pos = helix->entries[seq_pos].pair_pos;

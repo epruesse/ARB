@@ -8,7 +8,6 @@
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
-#include <BI_helix.hxx>
 #include <awtc_fast_aligner.hxx>
 #include <awt_iupac.hxx>
 

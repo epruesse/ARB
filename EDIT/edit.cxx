@@ -14,7 +14,7 @@
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <adtools.hxx>
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <edit.hxx>
 #include "ed_conf.hxx"
@@ -35,7 +35,7 @@ void AD_map_viewer(GBDATA *dummy,AD_MAP_VIEWER_TYPE )
 }
 
 struct ed_global {
-    BI_helix    *helix;
+    AW_helix    *helix;
     BI_ecoli_ref    *ref;
     ed_key      *edk;
 } edg;
@@ -363,7 +363,7 @@ int AED_window::load_data(void) {
         }
     }
     sp.exit();
-    edg.helix = new BI_helix(root->aw_root);
+    edg.helix = new AW_helix(root->aw_root);
     const char *err = edg.helix->init(gb_main);
     if (err) aw_message(err);
 

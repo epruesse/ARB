@@ -10,7 +10,7 @@
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
@@ -882,7 +882,7 @@ void ED4_cursor::updateAwars()
     // update awar for helix#:
 
     {
-        BI_helix *helix = ED4_ROOT->helix;
+        AW_helix *helix = ED4_ROOT->helix;
         int helixnr = 0;
 
         if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
@@ -1654,7 +1654,7 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
     }
 
     int seq_pos = cursor->get_sequence_pos();
-    BI_helix *helix = ED4_ROOT->helix;
+    AW_helix *helix = ED4_ROOT->helix;
 
     if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
         int pairing_pos = helix->entries[seq_pos].pair_pos;

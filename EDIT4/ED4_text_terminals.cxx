@@ -15,8 +15,7 @@
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 
-#define _USE_AW_WINDOW
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 
 #include <awt_seq_colors.hxx>
 #include <awt_attributes.hxx>
@@ -106,7 +105,7 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
                              AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
                              AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2){
     AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
-    BI_helix *THIS = (BI_helix *)cduser;
+    AW_helix *THIS = (AW_helix *)cduser;
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     char *buffer = GB_give_buffer(size+1);
     register long i,j,k;
