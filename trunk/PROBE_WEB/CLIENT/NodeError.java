@@ -6,7 +6,7 @@ public class NodeError
 {
 public NodeError(TreeNode tn)
     {
-        System.out.println("NodeError:node information    : '" + tn.getNodeInformation() + "'");
+        System.out.println("NodeError:display string      : '" + tn.getDisplayString() + "'");
         System.out.println("NodeError:short name          : '" + tn.getShortName() + "'");
         System.out.println("NodeError:full name           : '" + tn.getFullName() + "'");
         System.out.println("NodeError:acc                 : '" + tn.getAccessionNumber() + "'");
