@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS = probe_design.o SaiProbeVisualization.o
+CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
@@ -50,12 +50,20 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
+probe_match_parser.o: probe_match_parser.hxx
+probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
+
+SaiProbeVisualization.o: probe_match_parser.hxx
 SaiProbeVisualization.o: SaiProbeVisualization.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
