@@ -728,23 +728,6 @@ void awt_write_string( AW_window *aws, AW_CL varname, AW_CL value)  // set an aw
 
 
 void awt_edit(AW_root */*awr*/, const char *path, int /*x*/, int /*y*/, const char */*font*/){
-    //     char  buffer[1024];
-    //     AWUSE(awr);
-    //     char *path2 = GBS_eval_env(path);
-
-    //     const char *ae = getenv("ARB_TEXTEDIT");
-    //     if (!ae) ae    = "textedit";
-    //     if (strcmp(ae,"textedit")==0){
-    //         sprintf(buffer, "textedit -Ws %i %i -font %s %s &",x,y,font,path2);
-    //     }else{
-    //         sprintf(buffer, "%s %s &",ae,path2);
-    //     }
-
-    //     sprintf(buffer, "arb_textedit %s &", path2);
-
-    //     system(buffer);
-    //     free(path2);
-
     GB_edit(path);
 }
 
