@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Sep/25/2003 18:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -87,7 +87,7 @@ GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
     my_helix.init(gb_main, alignment_name);
-    SQ_consensus_marked cons_mkd;
+    SQ_consensus_marked cons_mkd(40000);
 
 
     if (marked_only) {
@@ -474,30 +474,43 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 }
 
 
+class SQ_GroupData {
+public:
+    SQ_GroupData() {}
+    SQ_GroupData(const SQ_GroupData& g1, const SQ_GroupData& g2) {}
+};
 
-void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only){
+void SQ_applyGroupData()  {
 
-    GBT_TREE *parent = 0;
+}
 
-    
+SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	if (node->is_leaf){
-	    if (node->gb_node != 0){
-		parent = node->father;
-		if (parent->name && parent->name[0]){
-		    //gb_main = parent->gb_node;
-		    //gb_main = GB_find(parent->gb_node,"name",0,down_level);
-		    //SQ_calc_sequence_structure(gb_main, marked_only);
-		    printf("%s",parent->name);
-		}
-	    }
-	}
+        if (!node->gb_node) return 0;
+
+        SQ_GroupData *data = new SQ_GroupData();
+
+        //  ...
+
+        return data;
+    }
 	else {
-	    parent = node;
-	    if(node = parent->rightson){
-		SQ_traverse_through_tree(gb_main, node, marked_only);
-	    }
-	    if(node = parent->leftson){
-		SQ_traverse_through_tree(gb_main, node, marked_only);
-	    }
+        SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
+        SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
+
+        if (!leftData) return rightData;
+        if (!rightData) return leftData;
+
+
+        SQ_GroupData *data = new SQ_GroupData(*leftData, *rightData);
+        delete leftData;
+        delete rightData;
+
+        if (node->name) { //  gruppe!
+            SQ_applyGroupData();
+        }
+
+        return data;
 	}
 }
+
