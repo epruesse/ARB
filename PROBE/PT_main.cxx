@@ -80,7 +80,7 @@ int main(int argc, char **argv)
     char              *command_flag;
 
 #ifdef DEVEL_IDP
-    ....
+   
 #endif
 
     params             = arb_trace_argv(&argc,argv);
