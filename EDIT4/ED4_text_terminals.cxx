@@ -124,18 +124,26 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
 
 ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 {
-    AW_pos height = extension.size[HEIGHT] - 1;
-    AW_pos text_x, text_y;
-    int max_seq_len = 0;
-    static int	color_is_used[ED4_G_DRAG];
-    static char	**colored_strings = 0;
-    static int	len_of_colored_strings = 0;
-    AW_device *device = ED4_ROOT->temp_device;
+    AW_pos        height                 = extension.size[HEIGHT] - 1;
+    AW_pos        text_x, text_y;
+    int           max_seq_len            = 0;
+    static int	  color_is_used[ED4_G_DRAG];
+    static char	**colored_strings        = 0;
+    static int	  len_of_colored_strings = 0;
+    AW_device    *device                 = ED4_ROOT->temp_device;
 
     {
-        AW_pos		world_x, world_y;
+        AW_pos world_x, world_y;
+
+        printf("this=%p\n", this);
         calc_world_coords( &world_x, &world_y );
+#if defined(DEBUG)
+        printf("species_name='%s' world_x=%f world_y=%f\n", species_name, world_x, world_y);
+#endif // DEBUG
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
+#if defined(DEBUG)
+        printf("win_x=%f win_y=%f\n", world_x, world_y);
+#endif // DEBUG
 
         text_x = world_x + CHARACTEROFFSET;							// don't change
         text_y = world_y + height - MAXLETTERDESCENT - ED4_ROOT->helix_spacing;
@@ -234,7 +242,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 selection_col2 = rm->screen_to_sequence(real_right);
             }
 
-	    e4_assert(height<40);
+            e4_assert(height<40);
             e4_assert(height>0);
 
             for ( i = real_left; i < real_right; i++,x2 += width) {
@@ -260,7 +268,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 if (color != old_color) {	// draw till oldcolor
                     if (x2>old_x){
                         if (old_color!=ED4_G_STANDARD) {
-			    device->box(old_color,old_x, y2, x2-old_x, height, -1, 0,0); // paints the search pattern background
+                            device->box(old_color,old_x, y2, x2-old_x, height, -1, 0,0); // paints the search pattern background
                         }
                     }
                     old_x = x2;
@@ -270,7 +278,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
             if (x2>old_x){
                 if (color!=ED4_G_STANDARD) {
-		    device->box(color,old_x, y2, x2-old_x, height, -1, 0,0);
+                    device->box(color,old_x, y2, x2-old_x, height, -1, 0,0);
                 }
             }
         }
