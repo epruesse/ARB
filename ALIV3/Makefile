@@ -2,8 +2,10 @@
 
 .SUFFIXES: .o .c .cxx .depend
 
-CPP_OBJECTS = a3.o a3_seq.o a3_ptree1.o a3_ptree2.o a3_helix.o a3_darray.o a3_ali.o a3_matrix.o a3_arbdb.o a3_bihelix.o
-C_OBJECTS   = a3_basen.o
+CPP_OBJECTS =	a3.o a3_seq.o a3_ptree1.o a3_ptree2.o a3_helix.o a3_darray.o a3_ali.o \
+		a3_matrix.o a3_arbdb.o a3_basen.o
+C_OBJECTS=
+
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
 $(MAIN): $(OBJECTS)
@@ -17,6 +19,7 @@ $(MAIN): $(OBJECTS)
 
 clean:
 	@-rm $(OBJECTS)
+	@-rm *.a
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -37,7 +40,6 @@ depend.init:
 
 a3.o: a3_ali.hxx
 a3.o: a3_arbdb.hxx
-a3.o: a3_bihelix.hxx
 a3.o: a3_darray.hxx
 a3.o: a3_helix.hxx
 a3.o: a3_ptree.hxx
@@ -48,6 +50,7 @@ a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3.o: $(ARBHOME)/INCLUDE/arbdbt.h
+a3.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 
 a3_ali.o: a3_ali.hxx
 a3_ali.o: a3_darray.hxx
@@ -64,14 +67,6 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 
 a3_basen.o: a3_basen.h
-
-a3_bihelix.o: a3_arbdb.hxx
-a3_bihelix.o: a3_bihelix.hxx
-a3_bihelix.o: $(ARBHOME)/INCLUDE/ad_prot.h
-a3_bihelix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-a3_bihelix.o: $(ARBHOME)/INCLUDE/arb_assert.h
-a3_bihelix.o: $(ARBHOME)/INCLUDE/arbdb.h
-a3_bihelix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 
 a3_darray.o: a3_darray.hxx
 
