@@ -48,7 +48,7 @@ void GB_usleep(long usec){
     nap((int)(usec/1000)+1);
 }
 #else
-#	if defined(SUN5) 
+#	if defined(SUN5)
 void GB_usleep(long usec){
     struct timespec timeout,time2;
     timeout.tv_sec  = 0;
@@ -73,7 +73,7 @@ long gbcm_sig_violation_end();
 
 GB_ERROR gbcm_test_address(long *address,long key)
 {
-    /* tested ob die Addresse address erlaubt ist, 
+    /* tested ob die Addresse address erlaubt ist,
        falls ja, dann return NULL, sonst Fehlerstring */
     /* Falls key != NULL, tested ob *address == key */
     long i;
@@ -205,9 +205,9 @@ gbcm_write_flush(int socket)
     leftsize = leftsize - writesize;
 
     while (leftsize) {
-    
+
         GB_usleep(10000);
-		
+
         writesize = write(socket,ptr,(size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {
             if ( (int)getppid() <=1 ) {
@@ -288,7 +288,7 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
     return 0;
 }
 
-GB_ERROR 
+GB_ERROR
 gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name)
 {
     long      socket_id[1];
@@ -584,7 +584,7 @@ char *GB_follow_unix_link(const char *path){	/* returns the real path of a file 
     if (len<0) return 0;
     buffer[len] = 0;
     if (path[0] == '/') return GB_STRDUP(buffer);
-	
+
     path2 = GB_STRDUP(path);
     pos = strrchr(path2,'/');
     if (!pos){
@@ -626,7 +626,7 @@ GB_ERROR GB_rename(const char *oldpath,const char *newpath){
 /********************************************************************************************
 					read a file to memory
 ********************************************************************************************/
-char *GB_read_file(const char *path) 
+char *GB_read_file(const char *path)
 {
     FILE *input;
     char *epath = 0;
@@ -645,7 +645,7 @@ char *GB_read_file(const char *path)
         return GBS_strclose(str,0);
     }
     epath = GBS_eval_env(path);
-	
+
     if ((input = fopen(epath, "r")) == NULL) {
         GB_export_error("File %s=%s not found",path,epath);
         free(epath);
@@ -725,6 +725,7 @@ void GB_edit(const char *path){
     char *fpath = GBS_eval_env(path);
     if (!ae) ae = "xedit";
     sprintf(buffer, "%s %s &",ae,fpath);
+    printf("%s\n", buffer);
     system(buffer);
     free(fpath);
 }
@@ -864,5 +865,5 @@ GB_ULONG GB_get_physical_memory(void){
     return 80000;		/* 100 megabyte */
 #else
     return 40000;		/* 40 megabyte default memory */
-#endif    
+#endif
 }

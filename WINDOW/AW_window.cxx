@@ -27,8 +27,8 @@
 #include <Xm/ScrollBar.h>
 #include <Xm/MwmUtil.h>
 
-#include <arbdb.h>	
-#include <arbdbt.h>	
+#include <arbdb.h>
+#include <arbdbt.h>
 
 /* Eigene Klassendefinition */
 #define _AW_COMMON_INCLUDED
@@ -53,7 +53,7 @@
 AW_root *AW_root::THIS = NULL;
 
 AW_cb_struct::AW_cb_struct( AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti ) {
-    aw = awi;	
+    aw = awi;
     f = g;
     cd1 = cd1i;
     cd2 = cd2i;
@@ -286,7 +286,7 @@ AW_window_simple::AW_window_simple( void ) {}
 AW_window_simple::~AW_window_simple( void ) {}
 
 AW_window_simple_menu::AW_window_simple_menu( void ) {}
-AW_window_simple_menu::~AW_window_simple_menu( void ) {} 
+AW_window_simple_menu::~AW_window_simple_menu( void ) {}
 
 AW_window_message::AW_window_message( void ) {}
 AW_window_message::~AW_window_message( void ) {}
@@ -304,14 +304,14 @@ void value_changed_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtP
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; //setzt Scrollwerte im AW_window
-    cbs->run_callback();	
+    cbs->run_callback();
 }
 void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; //setzt Scrollwerte im AW_window
-    cbs->run_callback();	
+    cbs->run_callback();
 }
 void AW_window::set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2){
     XtAddCallback( p_w->scroll_bar_horizontal, XmNvalueChangedCallback,
@@ -327,14 +327,14 @@ void value_changed_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPoi
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; //setzt Scrollwerte im AW_window
-    cbs->run_callback();	
+    cbs->run_callback();
 }
 void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; //setzt Scrollwerte im AW_window
-    cbs->run_callback();	
+    cbs->run_callback();
 }
 
 void AW_window::set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2){
@@ -566,7 +566,7 @@ void	AW_cb_struct::run_callback(void){
             (this->f != (AW_CB)macro_message_cb) &&
             (this->f != (AW_CB)input_cb) &&
             (this->f != (AW_CB)aw_calculate_WM_offsets)	) {
-            return;	
+            return;
         }
     }
 
@@ -595,7 +595,7 @@ void 	AW_root_Motif::set_cursor(Display *d, Window w, Cursor c)
     XSetWindowAttributes attrs;
     old_cursor_display = d;
     old_cursor_window = w;
-    
+
     if (c) attrs.cursor = c;
     else attrs.cursor = None;
 
@@ -639,7 +639,7 @@ void	AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
             fprintf(root->prvt->recording_macro_file,");\n");
         }
     }
-    
+
     if ( cbs->f == AW_POPUP ) {
         cbs->run_callback();
     } else {
@@ -658,7 +658,7 @@ void	AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                                  XtWindow(p_aww(cbs->aw)->shell),
                                  p_global->question_cursor);
-        }else{ 
+        }else{
             p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
                                  XtWindow(p_aww(cbs->aw)->shell),
                                  0);
@@ -703,8 +703,8 @@ void AW_window::set_popup_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1,
 
 void AW_window::set_focus_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2)
 {
-    XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, 
-                      (XtEventHandler)AW_focusCB, 
+    XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE,
+                      (XtEventHandler)AW_focusCB,
                       (XtPointer)  new AW_cb_struct(this, f, cd1, cd2, 0) );
 }
 
@@ -823,12 +823,12 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
     }
     else if (ev->xkey.type == KeyPress) {
         aww->event.time = ev->xbutton.time;
-        
+
         struct awxkeymap_struct *mykey = aw_xkey_2_awkey(&(ev->xkey));
-        
+
         aww->event.keycode = mykey->awkey;
         aww->event.keymodifier = mykey->awmod;
-        
+
         if (mykey->awstr){
             aww->event.character = mykey->awstr[0];
         }
@@ -867,7 +867,7 @@ void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallb
         }
     }
 
-    if( run_callback && (cbs->help_text == (char*)0) ) 
+    if( run_callback && (cbs->help_text == (char*)0) )
         cbs->run_callback();
 }
 
@@ -935,7 +935,7 @@ struct fallbacks {
 
 struct fallbacks aw_fb[] = {
     // fallback	awarname	init
-    
+
     { "FontList", "window/font", "8x13bold" }
     , { "background", "window/background", "grey" }
     , { "foreground", "window/foreground", "Black", }
@@ -974,7 +974,7 @@ void AW_root::init_variables( AW_default database ) {
     this->awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database);       // name for default font in lib/pictures
     // from the filerequester
     this->awar_int("vectorfont/active", 1,application_database); // zoomtext-calls: call text or use vectorfont (1)
- 
+
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
     this->awar_string("vectorfont/directory", "lib/pictures", application_database);
     this->awar_string("vectorfont/filter", ".vfont", application_database);
@@ -1064,12 +1064,12 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     }
     fallback_resources[i] = 0;
     GB_install_warning((gb_warning_func_type)aw_message_dummy);
-    GB_install_status((gb_status_func_type)aw_status_dummy); 
+    GB_install_status((gb_status_func_type)aw_status_dummy);
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
-    p_r->toplevel_widget = XtAppInitialize(&(p_r->context), programmname, NULL, 0, 
-                                           &a,   /*&argc*/ 
-                                           NULL, /*argv*/ 
+    p_r->toplevel_widget = XtAppInitialize(&(p_r->context), programmname, NULL, 0,
+                                           &a,   /*&argc*/
+                                           NULL, /*argv*/
                                            fallback_resources, NULL, 0);
     for (i=0;i<1000;i++) {
         if (!fallback_resources[i]) break;
@@ -1274,7 +1274,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname)
     return (AW_color)colnum;
 }
 
-void AW_window::create_devices(void) 
+void AW_window::create_devices(void)
 {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]){
@@ -1363,7 +1363,7 @@ void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
             aww->update_label((int*)widget,var_value);
         } else {
             AW_ERROR("AW_LABEL_IN_AWAR_LIST:: AWAR %s not found\n",str);
-            aww->update_label((int*)widget,str);			
+            aww->update_label((int*)widget,str);
         }
         delete var_value;
         AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, widget, AW_WIDGET_LABEL_FIELD, aww);
@@ -1379,7 +1379,9 @@ void aw_window_destroy_cb(Widget w, AW_window *aww, XmAnyCallbackStruct *cbs)
     AWUSE(cbs);AWUSE(w);
     AW_root *root = aww->get_root();
     if ( (p_global->main_aww == aww) || !p_global->main_aww->get_show() ) {
+#ifdef NDEBUG
         if (aw_message("Are you sure to quit ??","YES,NO") ) return;
+#endif
         exit(0);
     }
     aww->hide();
@@ -1435,7 +1437,7 @@ void aw_update_awar_window_geometrie(AW_root *awr){
 Widget aw_create_shell(
                        AW_window *aww,
                        AW_BOOL	allow_resize,
-                       int width, int height, 
+                       int width, int height,
                        int posx, int posy)	{
     AW_root *root = aww->get_root();
     Widget shell;
@@ -1578,8 +1580,8 @@ void aw_realize_widget(AW_window *aww) {
     p_aww(aww)->WM_top_offset = -1000;
 }
 
-void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname, 
-                                int width, int height, 
+void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname,
+                                int width, int height,
                                 int posx, int posy) {
     Widget main_window;
     Widget help_popup;
@@ -1597,7 +1599,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     window_defaults_name = GBS_string_2_key(wid);
 
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, 
+    p_w->shell= aw_create_shell(this,AW_TRUE,
                                 width, height, posx, posy);
 
     main_window = XtVaCreateManagedWidget( "mainWindow1",
@@ -1691,7 +1693,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
                                      XmNbottomOffset, 0,
                                      XmNleftOffset, 0,
                                      XmNrightOffset, 0,
-                                     XmNrightAttachment, XmATTACH_FORM,	
+                                     XmNrightAttachment, XmATTACH_FORM,
                                      XmNbottomAttachment, XmATTACH_FORM,
                                      XmNleftAttachment, XmATTACH_WIDGET,
                                      XmNleftWidget, separator,
@@ -1798,8 +1800,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
 }
 
 
-void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname, 
-                          int width, int height, 
+void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windowname,
+                          int width, int height,
                           int posx, int posy) {
     Widget main_window;
     Widget help_popup;
@@ -1816,9 +1818,9 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, 
+    p_w->shell= aw_create_shell(this,AW_TRUE,
                                 width, height, posx, posy);
-	
+
     main_window = XtVaCreateManagedWidget( "mainWindow1",
                                            xmMainWindowWidgetClass,
                                            p_w->shell,
@@ -1897,7 +1899,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
                                      XmNbottomOffset, 0,
                                      XmNleftOffset, 0,
                                      XmNrightOffset, 0,
-                                     XmNrightAttachment, XmATTACH_FORM,	
+                                     XmNrightAttachment, XmATTACH_FORM,
                                      XmNbottomAttachment, XmATTACH_FORM,
                                      XmNleftAttachment, XmATTACH_WIDGET,
                                      XmNleftWidget, separator,
@@ -2037,7 +2039,7 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
 
 
 void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *windowname,
-                                 int width, int height, 
+                                 int width, int height,
                                  int posx, int posy) {
     //	Arg args[10];
 
@@ -2049,7 +2051,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
-    p_w->shell= aw_create_shell(this,AW_FALSE, 
+    p_w->shell= aw_create_shell(this,AW_FALSE,
                                 width, height, posx, posy);
 
     Widget main_window;
@@ -2114,7 +2116,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
                                                                      XmNrightAttachment, XmATTACH_FORM,
                                                                      XmNmarginHeight, 2,
                                                                      XmNmarginWidth, 2,
-                                                                     NULL)); 
+                                                                     NULL));
 
     aw_realize_widget(this );
 
@@ -2139,7 +2141,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, int width
     p_w->areas[AW_INFO_AREA] =
         new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
                                                                          xmDrawingAreaWidgetClass,
-                                                                         p_w->shell,	
+                                                                         p_w->shell,
                                                                          XmNheight, 0,
                                                                          XmNbottomAttachment, XmATTACH_NONE,
                                                                          XmNtopAttachment, XmATTACH_FORM,
@@ -2156,13 +2158,13 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, int width
 
 void AW_window::set_info_area_height(int height) {
     XtVaSetValues(INFO_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->frame, XmNtopOffset, height, NULL);	
+    XtVaSetValues(p_w->frame, XmNtopOffset, height, NULL);
 }
 
 
 void AW_window::set_bottom_area_height(int height) {
     XtVaSetValues(BOTTOM_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height, NULL);	
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height, NULL);
 }
 
 
@@ -2191,7 +2193,7 @@ void AW_root::set_sensitive( AW_active mask ) {
             XtSetSensitive( list->button, False );
 
         }
-    } 
+    }
 }
 
 void AW_root::set_sensitive( const char *id ) {
@@ -2200,7 +2202,7 @@ void AW_root::set_sensitive( const char *id ) {
     do {
         if( list->id && !strcmp( list->id, id ) ) {
             XtSetSensitive( list->button, True );
-        }	
+        }
         list = list->next;
     } while( list != NULL );
 
@@ -2282,14 +2284,14 @@ static int TD_topics[MAX_DEEP_TO_TEST];
 
 static void init_duplicate_mnemonic() {
     int i;
-    
+
     if (TD_menu_name) {
         free(TD_menu_name);
         TD_menu_name = 0;
     }
-    
+
     TD_menu_name = strdup("");
-    
+
     for (i=0; i<MAX_DEEP_TO_TEST; i++) {
         TD_topics[i] = 0;
     }
@@ -2298,7 +2300,7 @@ static void init_duplicate_mnemonic() {
 static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, char mnemonic) {
     int topics = TD_topics[menu_deep];
     int t;
-    
+
     mnemonic = toupper(mnemonic);
     TD_mnemonics[menu_deep][topics] = mnemonic;
     for (t=0; t<topics; t++) {
@@ -2307,45 +2309,45 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, char
             break;
         }
     }
-    
+
     TD_topics[menu_deep] = topics+1;
 }
 
 static void test_duplicate_mnemonics_new_sub(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
     int len = strlen(TD_menu_name)+1+strlen(sub_menu_name)+1;
     char *buf = (char*)malloc(len);
-    
-#ifdef DEBUG    
+
+#ifdef DEBUG
     memset(buf, 0, len);
-#endif    
-    
+#endif
+
     //    printf("old[1]: '%s' (new sub: '%s'; deep=%i)\n", TD_menu_name, sub_menu_name, menu_deep);
-    
+
     sprintf(buf, "%s|%s", TD_menu_name, sub_menu_name);
-    
+
     if (mnemonic && *mnemonic && strchr(sub_menu_name, mnemonic[0])) {
         test_duplicate_mnemonics(menu_deep, sub_menu_name, mnemonic[0]);
     }
-    
+
     free(TD_menu_name);
     TD_menu_name = buf;
-    
+
     //    printf("new[1]: '%s'\n", TD_menu_name);
 }
 
 static void close_test_duplicate_mnemonics(int menu_deep) {
-    
+
     TD_topics[menu_deep] = 0;
-    
+
     //    printf("old[2]: '%s' (close deep=%i)\n", TD_menu_name, menu_deep);
-    
+
     char *slash = strrchr(TD_menu_name, '|');
     if (slash) {
         slash[0] = 0;}
     else {
         TD_menu_name[0] = 0;
     }
-    
+
     //    printf("new[2]: '%s'\n", TD_menu_name);
 }
 
@@ -2355,10 +2357,10 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
     AWUSE(help_text);
     Widget shell, label;
 
-#ifndef NDEBUG	
+#ifndef NDEBUG
     test_duplicate_mnemonics_new_sub(p_w->menu_deep, name, mnemonic);
-#endif	
-	
+#endif
+
     // create shell for Pull-Down
     shell = XtVaCreatePopupShell ("menu_shell",
                                   xmMenuShellWidgetClass, p_w->menu_bar[p_w->menu_deep],
@@ -2382,7 +2384,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                      p_w->menu_bar[p_w->menu_deep],
                                      RES_CONVERT( XmNlabelString, name ),
                                      RES_CONVERT( XmNmnemonic, mnemonic ),
-                                     XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1], 
+                                     XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
                                      NULL);
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
@@ -2390,18 +2392,18 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
     AW_INSERT_BUTTON_IN_SENS_LIST ( root, id, mask, label );
 }
 
-void AW_window::create_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask) {    
+void AW_window::create_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask) {
     p_w->menu_deep = 0;
-#ifndef NDEBUG    
+#ifndef NDEBUG
     init_duplicate_mnemonic();
 #endif
     insert_sub_menu(id,name,mnemonic,help_text,mask);
 }
 
 void AW_window::close_sub_menu(void) {
-#ifndef NDEBUG    
+#ifndef NDEBUG
     close_test_duplicate_mnemonics(p_w->menu_deep);
-#endif    
+#endif
     if (p_w->menu_deep>0) p_w->menu_deep--;
 }
 
@@ -2409,10 +2411,10 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
     Widget button;
     if (!id) id = name;
     if (mnemonic && *mnemonic && strchr(name,mnemonic[0])) {
-        // create one sub-menu-point 
-#ifndef NDEBUG	
+        // create one sub-menu-point
+#ifndef NDEBUG
         test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic[0]);
-#endif	
+#endif
         button = XtVaCreateManagedWidget( "",
                                           xmPushButtonWidgetClass,
                                           p_w->menu_bar[p_w->menu_deep],
@@ -2433,12 +2435,12 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
-	
+
     cbs->id = strdup(GBS_global_string("%s/%s",this->window_defaults_name,id));
     GBS_write_hash(this->get_root()->prvt->action_hash,id,(long)cbs);
     if(!(mask&this->get_root()->global_mask)){
         XtSetSensitive( button, False );
-    }	
+    }
     AW_INSERT_BUTTON_IN_SENS_LIST(root, id, mask, button);
 }
 
@@ -2447,7 +2449,7 @@ void AW_window::insert_help_topic(const char *id, AW_label name, const char *mne
     Widget button;
 
 
-    // create one help-sub-menu-point 
+    // create one help-sub-menu-point
     button = XtVaCreateManagedWidget( "",
                                       xmPushButtonWidgetClass,
                                       p_w->help_pull_down,
@@ -2465,7 +2467,7 @@ void AW_window::insert_help_topic(const char *id, AW_label name, const char *mne
 void AW_window::insert_separator(void) {
     Widget separator;
 
-    // create one help-sub-menu-point 
+    // create one help-sub-menu-point
     separator = XtVaCreateManagedWidget( "",
                                          xmSeparatorWidgetClass,
                                          p_w->menu_bar[p_w->menu_deep],
@@ -2476,7 +2478,7 @@ void AW_window::insert_separator(void) {
 void AW_window::insert_separator_help(void) {
     Widget separator;
 
-    // create one help-sub-menu-point 
+    // create one help-sub-menu-point
     separator = XtVaCreateManagedWidget( "",
                                          xmSeparatorWidgetClass,
                                          p_w->help_pull_down,
@@ -2628,7 +2630,7 @@ void AW_window::message( char *title, int ms ) {
 
     XtVaSetValues( p_w->shell ,XmNtitle, title, NULL );
 
-    get_root()->add_timed_callback( ms, timed_window_title_cb, (AW_CL)old_title, (AW_CL)this );	
+    get_root()->add_timed_callback( ms, timed_window_title_cb, (AW_CL)old_title, (AW_CL)this );
 
 }
 
@@ -2683,7 +2685,7 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
     }
     _at->max_x_size = xfig->maxx - xfig->minx;
     _at->max_y_size = xfig->maxy - xfig->miny;
-    
+
     if (resize) {
         recalc_size_at_show = 1;
         set_window_size(_at->max_x_size+1000,_at->max_y_size+1000);
@@ -2729,11 +2731,11 @@ void macro_message_cb( AW_window *aw,AW_CL  ) {
         fprintf( root->prvt->recording_macro_file,"\n");
         delete s;
     }
-    
+
     if (root->prvt->executing_macro_file){
         //root->enable_execute_macro(); @@@@
     }
-        
+
     return;
 }
 
@@ -2748,13 +2750,13 @@ void aw_macro_message( const char *templat, ... )
     char buffer[10000];
     {
         va_list	parg;
-        va_start(parg,templat);	
+        va_start(parg,templat);
         vsprintf(buffer,templat,parg);
     }
     static AW_window_message *aw_msg = 0;
 
     root->awar_string(AW_MESSAGE_AWAR)->write_string(buffer);
-	
+
 
     if (!aw_msg) {
         aw_msg = new AW_window_message;
@@ -2768,7 +2770,7 @@ void aw_macro_message( const char *templat, ... )
 
         aw_msg->at("Message");
         aw_msg->create_text_field(AW_MESSAGE_AWAR);
-		
+
         aw_msg->at("hide");
         aw_msg->callback     ( macro_message_cb,0 );
         aw_msg->create_button( "OK", "OK", "O" );
