@@ -115,10 +115,6 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 	getFirst = GBT_first_marked_species;
 	getNext = GBT_next_marked_species;
     }
-    else {
-
-    }
-
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
 
@@ -191,7 +187,7 @@ int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
 }
 
 
-GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac){
+GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac, int weight_gc){
 
 
     char *alignment_name;
@@ -213,9 +209,10 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	getFirst = GBT_first_marked_species;
 	getNext = GBT_next_marked_species;
     }
-    else {
 
-    }
+    //DEBUG why SIGSEV???
+    //getFirst = GBT_first_species;
+    //getNext  = GBT_next_species;
 
 
     for (gb_species = getFirst(gb_main);
@@ -254,11 +251,11 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		result = result * weight_bases;
 		value += result;
 
-		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);   //BETRAG!!!
+		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		dfa = GB_read_int(gb_result2);
-		if (dfa < 3) result = 3;
+		if (abs(dfa) < 2) result = 3;
 		else {
-	  	    if (dfa < 6) result = 2;
+	  	    if (abs(dfa) < 4) result = 2;
 		    else { result = 1;}
 		}
 		result = result * weight_diff_from_average;
@@ -293,16 +290,15 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	  	    if (gcprop < 190) result = 2;
 		    else { result = 3;}
 		}
-		//result += result * weight_gc;
+		result = result * weight_gc;
 		value += result;
 
-		//if (value !=0 )	value = value / 600;
-
 		/*write the final value of the evaluation*/
-		printf("%i",value);
+		if (value !=0 )	value = value / 6;
 		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
 		GB_write_int(gb_result7, value);
+		printf("value: %i\n",value);
 
 	    }
 	}
