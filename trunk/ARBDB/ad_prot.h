@@ -140,7 +140,7 @@ GB_ERROR GB_write_float P_((GBDATA *gbd, double f));
 GB_ERROR GB_write_pntr P_((GBDATA *gbd, const char *s, long bytes_size, long stored_size));
 GB_ERROR GB_write_string P_((GBDATA *gbd, const char *s));
 GB_ERROR GB_write_link P_((GBDATA *gbd, const char *s));
-GB_ERROR GB_write_bits P_((GBDATA *gbd, const char *bits, long size, char c_0));
+GB_ERROR GB_write_bits P_((GBDATA *gbd, const char *bits, long size, const char *c_0));
 GB_ERROR GB_write_bytes P_((GBDATA *gbd, const char *s, long size));
 GB_ERROR GB_write_ints P_((GBDATA *gbd, const GB_UINT4 *i, long size));
 GB_ERROR GB_write_floats P_((GBDATA *gbd, const float *f, long size));
