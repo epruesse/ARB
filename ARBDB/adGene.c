@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Wed Nov/10/2004 17:02 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Nov/11/2004 12:59 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -40,21 +40,21 @@ GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name) {
 }
 
 GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
+    GBDATA *gb_gene = 0;
+    
     /* Search for a gene, when gene does not exist create it */
     if (!name || !name[0]) {
         GB_export_error("Missing gene name");
-        return 0;
     }
+    else {
+        GBDATA *gb_name = GB_find(gb_gene_data, "name", name, down_2_level);
 
-    GBDATA *gb_name = GB_find(gb_gene_data, "name", name, down_2_level);
-    GBDATA *gb_gene = 0;
+        if (gb_name) return GB_get_father(gb_name); // found existing gene
 
-    if (gb_name) return GB_get_father(gb_name); // found existing gene
-
-    gb_gene = GB_create_container(gb_gene_data, "gene");
-    gb_name = GB_create(gb_gene, "name", GB_STRING);
-    GB_write_string(gb_name, name);
-
+        gb_gene = GB_create_container(gb_gene_data, "gene");
+        gb_name = GB_create(gb_gene, "name", GB_STRING);
+        GB_write_string(gb_name, name);
+    }
     return gb_gene;
 }
 
