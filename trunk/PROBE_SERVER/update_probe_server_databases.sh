@@ -71,6 +71,10 @@ if [ \! -f $PT_SERVER_DB ]; then
 else
     if [ $DB -nt $PT_SERVER_DB ]; then
         UPDATE=1 # source db is newer
+    else
+        if [ $DB -ot $PT_SERVER_DB ]; then
+            UPDATE=1 # source db is older
+        fi
     fi
 fi
 
@@ -79,7 +83,7 @@ if [ $UPDATE = 1 ]; then
     arb_pt_server -kill -D$PT_SERVER_DB
 
     echo "Updating PT-Server.."
-    cp $DB $PT_SERVER_DB
+    cp -p $DB $PT_SERVER_DB
     rm $PT_SERVER_DB.pt
 fi
 
@@ -152,6 +156,7 @@ create_dbs $CREATE
 # merge trees
 echo "------------------------------------------------------------"
 SAVED_TREES=`treenames $TREENAME $CREATE`
+echo ./bin/pgd_tree_merge $SAVED_TREES $TREENAME
 ./bin/pgd_tree_merge $SAVED_TREES $TREENAME || rm $TREENAME
 rm $SAVED_TREES
 
