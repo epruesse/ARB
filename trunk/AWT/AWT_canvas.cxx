@@ -356,16 +356,16 @@ AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 	/*** here appear all modes which must be handled right here ***/
 
 	switch(ntw->mode){
-    	case AWT_MODE_NONE:
-            switch(event.button){
-                case AWT_M_LEFT:
-                case AWT_M_RIGHT:
-                    if(event.type==AW_Mouse_Press){
-                        aw_message("Please select a mode, first!");
-                    }
-                    break;
-            }
-            break;
+//     	case AWT_MODE_NONE:
+//             switch(event.button){
+//                 case AWT_M_LEFT:
+//                 case AWT_M_RIGHT:
+//                     if(event.type==AW_Mouse_Press){
+//                         aw_message("Please select a mode, first!");
+//                     }
+//                     break;
+//             }
+//             break;
 
         case AWT_MODE_ZOOM:
             switch(event.button){

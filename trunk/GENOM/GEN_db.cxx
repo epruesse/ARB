@@ -139,7 +139,7 @@ GBDATA* GEN_next_pseudo_species(GBDATA *gb_species) {
             if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) break;
         }
     }
-    return 0;
+    return gb_species;
 }
 
 //  ----------------------------------
@@ -160,7 +160,7 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
             if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) break;
         }
     }
-    return 0;
+    return gb_species;
 }
 
 //  ----------------------
@@ -180,7 +180,7 @@ GBDATA *GEN_next_organism(GBDATA *gb_organism) {
             if (!gb_organism || GEN_is_organism(gb_organism)) break;
         }
     }
-    return 0;
+    return gb_organism;
 
 }
 //  -----------------------------
@@ -200,5 +200,5 @@ GBDATA *GEN_next_marked_organism(GBDATA *gb_organism) {
             if (!gb_organism || GEN_is_organism(gb_organism)) break;
         }
     }
-    return 0;
+    return gb_organism;
 }

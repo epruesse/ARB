@@ -210,8 +210,9 @@ AW_window *nt_create_intro_window(AW_root *awr)
 	return (AW_window *)aws;
 }
 
-int
-main(int argc, char **argv)
+void AD_set_default_root(AW_root *aw_root);
+
+int main(int argc, char **argv)
 {
 	AW_root *aw_root;
 	AW_default aw_default;
@@ -228,7 +229,8 @@ main(int argc, char **argv)
 	GB_set_verbose();
 
 	aw_root = new AW_root;
-	nt.awr = aw_root;
+	nt.awr  = aw_root;
+    AD_set_default_root(aw_root); // set default for AD_map_viewer (as long as no info-box was opened)
 	aw_default = aw_root->open_default(".arb_prop/ntree.arb");
 	aw_root->init_variables(aw_default);
 	aw_root->init("ARB_NT");

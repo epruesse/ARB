@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <arbdb.h>
@@ -221,8 +222,13 @@ void ad_species_delete_cb(AW_window *aww){
     if (error) aw_message(error);
     delete source;
 }
-static AW_CL ad_global_scannerid = 0;
-static AW_root *ad_global_scannerroot = 0;
+static AW_CL    ad_global_scannerid      = 0;
+static AW_root *ad_global_scannerroot    = 0;
+static AW_root *ad_global_default_awroot = 0;
+
+void AD_set_default_root(AW_root *aw_root) {
+    ad_global_default_awroot = aw_root;
+}
 
 void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 {
@@ -238,26 +244,61 @@ void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 {
     GB_push_transaction(gb_main);
-    if (ad_global_scannerid){
-        GBDATA *gb_species_data =	GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-        if (gbd && GB_get_father(gbd)==gb_species_data) {
+
+    char *species_name = strdup("");
+    {
+        GBDATA *gb_species_data        = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+        if (gbd && GB_get_father(gbd) == gb_species_data) {
             // I got a species !!!!!!
-            GBDATA *gb_name = GB_find(gbd,"name",0,down_level);
+            GBDATA *gb_name            = GB_find(gbd,"name",0,down_level);
             if (gb_name) {
-                char *name = GB_read_string(gb_name);
-                ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(name);
-				// that will map the species
-            }else{
-                ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
-                awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-				// do it by hand
+                free(species_name);
+                species_name = GB_read_string(gb_name);
             }
-        }else{
-            ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
-            awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-            // do it by hand
         }
     }
+
+    // if we have an active info-scanner, then update his awar
+
+    if (ad_global_scannerroot) {
+        ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
+        if (type != ADMVT_SELECT) {
+            awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
+        }
+    }
+    else {                      // no active scanner -> write global awar
+        if (ad_global_default_awroot) {
+            ad_global_default_awroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
+        }
+    }
+
+    free(species_name);
+
+    //     if (ad_global_scannerid){
+//         GBDATA *gb_species_data =	GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+//         if (gbd && GB_get_father(gbd)==gb_species_data) {
+//             // I got a species !!!!!!
+//             GBDATA *gb_name = GB_find(gbd,"name",0,down_level);
+//             if (gb_name) {
+//                 char *name = GB_read_string(gb_name);
+//                 ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(name);
+// 				// that will map the species
+//             }else{
+//                 ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
+//                 if (type != ADMVT_SELECT) {
+//                     awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
+//                 }
+// 				// do it by hand
+//             }
+//         }else{
+//             ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string("");
+//             if (type != ADMVT_SELECT) {
+//                 awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
+//             }
+//             // do it by hand
+//         }
+//     }
+
     while (gbd && type == ADMVT_WWW){
         char *name = strdup("noname");
         GBDATA *gb_name = GB_find(gbd,"name",0,down_level);

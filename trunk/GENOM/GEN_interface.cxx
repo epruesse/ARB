@@ -70,10 +70,10 @@ static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBD
 
 static char *old_species_marks = 0; // configuration storing marked species
 
-//  -----------------------------------------------------------------------------
-//      static GB_ERROR mark_organisms(GBDATA *gb_species, int *client_data)
-//  -----------------------------------------------------------------------------
-static GB_ERROR mark_organisms(GBDATA *gb_species, int *client_data) {
+//  ------------------------------------------------------------------------------------------------------
+//      static GB_ERROR mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
+//  ------------------------------------------------------------------------------------------------------
+static GB_ERROR mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
     AWUSE(client_data);
     GB_ERROR error = 0;
 
@@ -116,7 +116,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
             if (gb_pseudo) {    // there are marked pseudo-species..
                 old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
 
-                error                  = GBT_with_stored_species(gb_main, old_species_marks, mark_organisms, 0); // mark organisms related with stored
+                error                  = GBT_with_stored_species(gb_main, old_species_marks, mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
                 if (!error) gb_species = GEN_first_marked_organism(gb_main);
             }
             else {

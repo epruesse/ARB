@@ -1166,6 +1166,10 @@ static void pars_start_cb(AW_window *aww)
     awm->insert_help_topic("help_arb",		"ARB Help",			"A","arb.hlp",		AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
     awm->insert_help_topic("help_arb_pars",		"ARB PARSIMONY Help",		"N","arb_pars.hlp",	AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
+    awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event,
+                      (AW_CL)ntw,
+                      (AW_CL)AWT_MODE_SELECT
+                      );
     awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event,
                       (AW_CL)ntw,
                       (AW_CL)AWT_MODE_MARK

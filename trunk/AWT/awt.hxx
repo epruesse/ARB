@@ -319,7 +319,8 @@ void AWT_show_file(AW_root *awr, const char *filename);
 
 enum AD_MAP_VIEWER_TYPE {
     ADMVT_INFO,
-    ADMVT_WWW
+    ADMVT_WWW,
+    ADMVT_SELECT
 };
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
