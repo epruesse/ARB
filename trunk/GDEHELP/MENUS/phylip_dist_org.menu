@@ -7,25 +7,24 @@ itemmethod:(GEN_INFILE(in1);\
             RM_LOCAL_FILES(in1))&
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ treefile "FILTER=$FILTER PKG=phylip")
-argchoice:TextEdit:arb_textedit treefile
-argchoice:Treetool:treetool treefile
+argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ outtree "FILTER=$FILTER PKG=phylip")
+argchoice:TextEdit:arb_textedit outtree
+argchoice:Treetool:treetool outtree
 
 arg:PROGRAM
 arglabel:Which method?
-argtype:chooser
+argtype:choice_menu
 argchoice:Fitch:${ARB_XCMD:-cmdtool} fitch
 argchoice:Kitsch:${ARB_XCMD:-cmdtool} kitsch
 argchoice:Neighbor:${ARB_XCMD:-cmdtool} neighbor
 
 arg:DPGM
 arglabel:Treat data as..
-argtype:chooser
-argchoice:DNA (dnadist):dnadist
-argchoice:RNA (dnadist):dnadist
-argchoice:AA  (protdist):protdist
+argtype:choice_menu
+argchoice:RNA/DNA (dnadist):dnadist
+argchoice:AA      (protdist):protdist
 
 
 in:in1

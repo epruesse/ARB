@@ -7,7 +7,7 @@ itemmethod:(/bin/rm -f outfile infile treefile outtree;\
 itemhelp:fastdnaml.help
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:What to do with the tree:?
 argchoice:ARB ('tree_puz_//'):arb_read_tree tree_puz_$$ outtree "PRG=PUZZLE FILTER=$FILTER PKG=strimmer/v. haeseler"
 argchoice:Treetool:treetool outtree

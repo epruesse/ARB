@@ -20,13 +20,13 @@ arglabel:Base Tree
 argchoice:
 
 arg:PROGRAM
-argtype:chooser
+argtype:choice_menu
 arglabel:Select program to use
 argchoice:AxML:axml
 argchoice:FastdnaML:fastdnaml
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:What to do with the tree:?
 argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM BASETREE=$TREE FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
 argchoice:Treetool:treetool treefile

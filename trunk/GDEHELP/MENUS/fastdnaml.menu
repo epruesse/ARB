@@ -15,19 +15,19 @@ arglabel:Select a Weighting Mask
 argchoice:POS_VAR_BY_PAR
 
 arg:PROGRAM
-argtype:chooser
+argtype:choice_menu
 arglabel:Select program to use
 argchoice:AxML:axml
 argchoice:FastdnaML:fastdnaml
 
 arg:QUICKADD
-argtype:chooser
+argtype:choice_menu
 arglabel:Use Quickadd
 argchoice:Yes:
 argchoice:No:Q
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:What to do with the tree:?
 argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
 argchoice:Treetool:treetool treefile

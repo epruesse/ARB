@@ -24,7 +24,7 @@ argmax:10
 argvalue:4
 
 arg:Matrx
-argtype:chooser
+argtype:choice_menu
 arglabel:Weighting matrix
 argchoice:PAM 250:PAM250
 argchoice:PAM 100:PAM100
