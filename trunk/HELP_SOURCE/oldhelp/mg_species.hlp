@@ -72,12 +72,12 @@ DESCRIPTION	Allows 	# database searching,
 
 		ARB Merge tries to keep the alignment correct. Normally people
 		have inserted new gaps in either the left or right database.
-		By entering the name of some reference species in the input
+		By entering the name(s) of some reference species in the input
 		box in the upper center of the TRANSFER SPECIES window, the
 		program will try to find those species in both databases,
-		create a coloumn reference list, and realign all transfered
-		sequences. If you do not want this feature, turn off the
-		'Preserve Alignment' togge.
+		create a column reference list, and realign all transfered
+		sequences.
+                To enable this feature, enable the 'Preserve Alignment' toggle.
 
 
 NOTES		None
