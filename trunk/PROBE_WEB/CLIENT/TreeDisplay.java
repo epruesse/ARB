@@ -17,7 +17,7 @@ private TreeNode root;
 private TreeNode vs; // visible subtree
 private TreeNode prevNode;
 private Stack history;
-
+private TreeSet listOfMarked;
 
 // private int xSize = 800;
 // private int ySize = 1000;
@@ -62,7 +62,8 @@ public TreeDisplay(TreeNode root, int treeLevels)
         rootSet = new HashSet();
         branchSet = new HashSet();
         history = new Stack();
-        laf = new LineAreaFactory(3);
+        listOfMarked = new TreeSet();
+        laf = new LineAreaFactory(6);
 
         this.treeLevels = treeLevels;
         this.root = root;
@@ -411,6 +412,7 @@ public void handleRightMouseClick(int x, int y)
 
                 boolean state = clickedNode.isMarked();
                 clickedNode.markSubtree(!state);
+                updateListOfMarked();
                 repaint();
             }
     }
@@ -490,6 +492,41 @@ public void previousRoot()
     }
 
 
+public void countMarkedSpecies ()
+    {
+        int numberOfMarked = countMarkedRecursive(root);
+        System.out.println("Currently number of marked species: " + numberOfMarked);
+    }
+
+public int countMarkedRecursive(TreeNode node)
+    {
+
+        return  !node.testLeaf() ?
+             countMarkedRecursive( (TreeNode)node.getChilds().elementAt(0)) +  countMarkedRecursive ((TreeNode)node.getChilds().elementAt(1))
+            : node.isMarked() ? 1 : 0
+            ;
+ 
+    }
+
+public void updateListOfMarked()
+    {
+        listOfMarked.clear();
+        getLeafNames(root);
+
+    }
+
+public void getLeafNames(TreeNode node)
+    {
+       if(node.testLeaf())
+           {
+               listOfMarked.add(node.getNodeName());
+           }else{
+               getLeafNames((TreeNode)node.getChilds().elementAt(0));
+               getLeafNames((TreeNode)node.getChilds().elementAt(1));
+           }
+            
+
+    }
 
     // transform coordinates in TreeNode
 private TreeNode getClickedNode(int x, int y)

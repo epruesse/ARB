@@ -98,7 +98,10 @@ public void actionPerformed(ActionEvent e)
                     }
                 if (cmdName.equals("Count Marked Species"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
+                        td.countMarkedSpecies();
+                        //  System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
+
+
                     }
                 if (cmdName.equals("Span Marked"))
                     {

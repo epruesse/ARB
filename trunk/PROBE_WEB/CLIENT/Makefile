@@ -2,7 +2,8 @@
 
 jar:
 	javac *.java
-	jar -cmf mymanifest allProbes.jar *.class demo.newick
+	jar -cmf mymanifest allProbes.jar *.class  
+##demo.newick
 
 update:
 	jar -uf allProbes.jar *.class

@@ -35,18 +35,46 @@ public static void main(String[] args)
 
         Client cl = new Client();
 
-        if (args.length == 0) cl.hostname = new String("localhost");
+        if (args.length == 0) cl.hostname = new String("http://localhost");
         cl.webAccess = new HttpSubsystem(cl.hostname);
-        cl.webAccess.conductRequest("/demo.newick");
-
-        // inlude version number in tree
+        
         // enables users to store tree local
         // update only when tree is changed
 
         // here goes the web access code
 
         // tree to display
-        cl.treeString = new TreeReader().getTreeString();
+        TreeReader tr = new TreeReader("probetree.gz");
+   
+
+        //        cl.webAccess.conductRequest("/demo.newick");
+        // inlude version number in tree
+        String currentVersion = cl.webAccess.conductRequest("/cgi/getTreeVersion.cgi");
+        System.out.println("server version: " + ">>>" + currentVersion + "<<<");
+        //        String localVersion = new String("[CURRENTVERSION_16S_27081969]");
+        // access local jar file;
+
+
+                //                System.out.println(cl.treeString.substring(0,40));
+        System.out.println("local version: " + ">>>" + tr.getVersionString() + "<<<"); 
+       if (!currentVersion.equals(tr.getVersionString()))
+            {
+
+
+                System.out.println("TreeVersion don't match the current version");
+                System.out.println("Downloading actual version\nPlease start again");
+
+                //                System.out.println("Downloading current tree version from server");
+                //                cl.treeString = cl.webAccess.conductRequest("/demo.newick");
+
+                cl.webAccess.downloadZippedTree("probetree.gz");
+                System.exit(15);
+            }
+       else
+           {
+               cl.treeString = tr.getTreeString();
+           };
+
 
         // parsing
 

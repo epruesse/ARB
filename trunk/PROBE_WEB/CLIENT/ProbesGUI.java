@@ -10,7 +10,7 @@ public class ProbesGUI extends Frame
     //private Canvas td;
 private ScrollPane sc;
 private TextArea details;
-private TextArea info;
+private java.awt.List info;
 private int treeLevels;
 private TreeDisplay td;
 private TreeNode root;
@@ -51,7 +51,8 @@ public ProbesGUI( TreeNode root, int levels)
     details = new TextArea("Display detail information", 10, 40, TextArea.SCROLLBARS_BOTH);
     add(details, BorderLayout.SOUTH);
 
-    info = new TextArea("short information", 20, 15, TextArea.SCROLLBARS_BOTH);
+    //    info = new TextArea("short information", 20, 15, TextArea.SCROLLBARS_BOTH);
+    info = new java.awt.List();
     add(info, BorderLayout.EAST);
 
 //     td = new Canvas();

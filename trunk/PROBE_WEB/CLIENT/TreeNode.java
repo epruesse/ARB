@@ -172,10 +172,12 @@ public int getNoOfLeaves()
      if (testLeaf())
          {
              noOfChildren = 0;
-             return 0;
+             //             return 0;
+             return 1;
          }
      else {
-  return noOfChildren = 1 + ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
+         //  return noOfChildren = 1 + ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
+  return noOfChildren = ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() 
       +  ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
      }
 
