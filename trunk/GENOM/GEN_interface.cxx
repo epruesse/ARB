@@ -240,6 +240,9 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
         awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
         free(gene_content);
     }
+    else {
+        awr->awar(AWAR_GENE_CONTENT)->write_string(""); // clear if gene is unknown (e.g. for gene-pt-server intergene regions)
+    }
 }
 
 //  --------------------------------------------------
