@@ -22,7 +22,14 @@ DESCRIPTION	Starts the 'NAME SERVER' to update names within the specified
 
 		Press the 'GO' button.
 
-NOTES		None	
+NOTES		It is possible to link names.dat to a central names.dat, but you should
+                be aware, that there may occur temporary inconsitencies. When you didn't
+                use the NAME SERVER for 4 minutes (i.e. you didn't call 'Generate new names'
+                and you didn't import or create new species), these inconsistencies will not occur.
+
+                The normal way to use a central NAME SERVER is to edit '$ARBHOME/lib/arb_tcp.dat'
+                and to specify a central server for ARB_NAME_SERVER. The drawback is: This currently
+                uses 'rsh' (not ssh), which makes it impossible in most environments.
 
 EXAMPLES	None
 
