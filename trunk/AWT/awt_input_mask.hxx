@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Aug/22/2002 19:15 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 17:40 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -27,6 +27,9 @@
 #endif
 #ifndef __MAP__
 #include <map>
+#endif
+#ifndef __CASSERT__
+#include <cassert>
 #endif
 
 
@@ -147,7 +150,7 @@ public:
         : awr(awr_)
         , gb_main(gb_main_)
         , mask_name(mask_name_)
-        , internal_mask_name(string(1, local ? '0' : '1')+mask_name_)
+        , internal_mask_name(std::string(1, local ? '0' : '1')+mask_name_)
         , mask_id(generate_id(mask_name_))
         , local_mask(local)
         , itemtype(itemtype_)
@@ -638,8 +641,8 @@ public:
 //      casts :
 //  ----------------
 
-inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
-inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
+inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
+inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
 
 inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
 inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
