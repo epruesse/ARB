@@ -720,7 +720,23 @@ GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
         if (!strcmp(s,GB_read_pntr(gbd)))
             return 0;
     }
+#if defined(DEBUG) && 0
+    // check for error (in compression)
+    {
+        GB_ERROR error = GB_write_pntr(gbd,s,size+1,size);
+        if (!error) {
+            char *check = GB_read_string(gbd);
+            
+            gb_assert(check);
+            gb_assert(strcmp(check, s) == 0);
+            
+            free(check);
+        }
+        return error;
+    }
+#else
     return GB_write_pntr(gbd,s,size+1,size);
+#endif /* DEBUG */
 }
 
 GB_ERROR GB_write_link(GBDATA *gbd,const char *s)
