@@ -630,6 +630,7 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
                     if (new_gname) {
                         free(at->name);
                         at->name = new_gname;
+			GB_write_string(gb_name, new_gname);
                     }
                     return;
                 }
@@ -666,8 +667,9 @@ AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
 
         GBDATA *gb_name;
         gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
-        GBT_write_group_name(gb_name, "noname");
-//         GB_write_string(gb_name, "noname");
+        GBT_write_group_name(gb_name, at->name);
+	//        GBT_write_group_name(gb_name, "noname");
+	//        	 GB_write_string(gb_name, "noname");
     }
     return AW_TRUE;
 }
