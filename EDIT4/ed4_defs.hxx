@@ -16,7 +16,7 @@ typedef int		ED4_COORDINATE;
 typedef enum ad_edit_modus {
 	AD_ALIGN,	// add & remove of . possible (default)
 	AD_NOWRITE,	// no edits allowed
-	AD_NOWRITE_IF_COMPRESSED, 
+	AD_NOWRITE_IF_COMPRESSED,
 	AD_REPLACE,	// all edits (overwrite)
 	AD_INSERT	// all edits (insert)
 } ED4_EDITMODI;
@@ -42,7 +42,7 @@ extern long			max_seq_terminal_length;				// global maximum of sequence terminal
 extern ED4_EDITMODI		awar_edit_modus;
 extern long			awar_edit_direction;
 extern bool			move_cursor;						//only needed for editing in consensus
-extern bool			DRAW;				
+extern bool			DRAW;
 extern bool			last_window_reached;					//only needed for refreshing all windows
 
 extern double			status_add_count;					//only needed for loading configuration
@@ -72,9 +72,11 @@ extern bool			loading;
 #define COLUMN_STAT_ROW_HEIGHT(font_height)   	(2.2*(font_height))	// each row contains 2 sub-rows (plus some xtra space)
 #define COLUMN_STAT_ROWS 			4
 
+#define MAX_POSSIBLE_SEQ_LENGTH     100000000
+
 #define MAXCHARTABLE	256						// Maximum of Consensustable
 //#define MAXBASESTABLE	7
-#define MAXWINDOWS 	5							
+#define MAXWINDOWS 	5
 #define MINSPECFORSTATWIN	200
 
 #define AWAR_EDIT_MODE				"tmp/edit4/edit_mode"
@@ -113,7 +115,7 @@ inline int ABS(int x) 		{ return x<0 ? -x : x; }
 typedef enum
 {
     ED4_G_STANDARD,
-    
+
     ED4_G_SEQUENCES,
     ED4_G_HELIX,
 
@@ -125,7 +127,7 @@ typedef enum
     ED4_G_COLOR_7,
     ED4_G_COLOR_8,
     ED4_G_COLOR_9,
-    
+
     ED4_G_CBACK_0,	// Ranges for column statitics
     ED4_G_CBACK_1,
     ED4_G_CBACK_2,
@@ -136,26 +138,26 @@ typedef enum
     ED4_G_CBACK_7,
     ED4_G_CBACK_8,
     ED4_G_CBACK_9,
-    
+
     ED4_G_SBACK_0,	// Background for search
-    ED4_G_SBACK_1,	
-    ED4_G_SBACK_2,	
-    ED4_G_SBACK_3,	
-    ED4_G_SBACK_4,	
-    ED4_G_SBACK_5,	
-    ED4_G_SBACK_6,	
-    ED4_G_SBACK_7,	
-    ED4_G_SBACK_8,	
+    ED4_G_SBACK_1,
+    ED4_G_SBACK_2,
+    ED4_G_SBACK_3,
+    ED4_G_SBACK_4,
+    ED4_G_SBACK_5,
+    ED4_G_SBACK_6,
+    ED4_G_SBACK_7,
+    ED4_G_SBACK_8,
     ED4_G_MBACK,	// Mismatches
-    
+
     ED4_G_CURSOR,	// Color of cursor
     ED4_G_MARKED,	// Background for marked species
     ED4_G_SELECTED, 	// Background for selected species
-    
+
     ED4_G_DRAG		// must be last
 } ED4_gc;
 
-typedef enum 
+typedef enum
 {
     ED4_L_NO_LEVEL 		= 0x0,
     ED4_L_ROOT 			= 0x1,
@@ -175,7 +177,7 @@ typedef enum
     ED4_L_NAME_MANAGER		= 0x4000,
     ED4_L_GROUP			= 0x8000,
     ED4_L_BRACKET		= 0x10000,
-    ED4_L_PURE_TEXT		= 0x20000, 
+    ED4_L_PURE_TEXT		= 0x20000,
     ED4_L_COL_STAT		= 0x40000
 }	ED4_level;
 
@@ -188,7 +190,7 @@ typedef enum
 }	ED4_datamode;
 
 
-typedef enum 
+typedef enum
 {
     ED4_M_NO_MOVE 	= 0,
     ED4_M_HORIZONTAL 	= 1,
@@ -196,7 +198,7 @@ typedef enum
     ED4_M_FREE 		= 4
 }	ED4_movemode;
 
-typedef enum 
+typedef enum
 {
     ED4_R_OK 		= 0,
     ED4_R_WARNING 	= 1,
@@ -226,7 +228,7 @@ typedef enum
     	ED4_B_RIGHT_BUTTON 	= 3
 }          ED4_mouse_buttons;
 
-typedef enum 
+typedef enum
 {
 	ED4_P_NO_PROP		= 0,
 	ED4_P_IS_MANAGER 	= 1,
@@ -308,7 +310,7 @@ struct ED4_selection_entry
     AW_pos               actual_width, actual_height;
     int			 old_event_y;
     ED4_terminal 	 *object;
-}; 
+};
 
 
 
@@ -316,7 +318,7 @@ struct ED4_extension // contains info about graphical properties
 {
     AW_pos	position[2];		// upper left corner (pos_x, pos_y) in relation to parent
     // !!! WARNING: This is a hack!!! Every time you change 'position' you HAVE TO call ED4_base::touch_world_cache() !!!
-    
+
     AW_pos	size[2];		// width and height
     ED4_index	y_folded;		// remember old position of consensus when folding group
 };
@@ -334,21 +336,21 @@ struct ED4_work_info
     AW_event	event;
     GBDATA	*gb_data;
     char 	*string;		// pointer to consensus; only if editing the consensus
-    long	char_position;		// screen position after cursor	
+    long	char_position;		// screen position after cursor
 
     int		direction;		// contains direction of editing (-1 left, +1 right )
     ED4_EDITMODI mode;
-    
-    bool 	is_sequence;		// ==1 -> special handling for sequences 
+
+    bool 	is_sequence;		// ==1 -> special handling for sequences
     bool	cannot_handle;		// if TRUE than cannot edit
     bool    center_cursor;      // if true => cursor gets centered horizontally
-    bool    refresh_needed; 
+    bool    refresh_needed;
 
     long 	out_seq_position;	// sequence position (after editing)
-    
+
     char	*out_string;		// nur falls new malloc
     char	*error;
-    
+
     int 	repeat_count;		// only for keystrokes: contains # of times key should be repeated
 };
 
@@ -363,7 +365,7 @@ struct ED4_update_info // if you add new elements, please ensure to initialize t
     unsigned int        refresh_horizontal_scrolling:1;
     unsigned int        refresh_vertical_scrolling:1;
     unsigned int 	delete_requested:1;
-    
+
     void set_clear_at_refresh(int value) {
         clear_at_refresh = value;
     }
@@ -391,7 +393,7 @@ struct ED4_coords
 	window_lower_clip_point,		//absolute coordinate of lower visible clipping point in middle area
 	window_left_clip_point,			//absolute coordinate of left  visible clipping point in top and middle area
 	window_right_clip_point;		//absolute coordinate of right visible clipping point in top and middle area
-    
+
     void clear() {
 	top_area_x = 0;
 	top_area_y = 0;
@@ -400,13 +402,13 @@ struct ED4_coords
 	middle_area_x = 0;
 	middle_area_y = 0;
 
-	window_width = 0;	
+	window_width = 0;
 	window_height = 0;
 
 	window_upper_clip_point = 0;
-	window_lower_clip_point = 0;	
+	window_lower_clip_point = 0;
 	window_left_clip_point = 0;
-	window_right_clip_point = 0;	
+	window_right_clip_point = 0;
     }
 };
 

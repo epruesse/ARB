@@ -2,7 +2,7 @@
 #define AWAR_FORM "tmp/import/form"
 #define AWAR_ALI "tmp/import/alignment"
 #define AWAR_ALI_TYPE "tmp/import/alignment_type"
-#define AWAR_READ_GENOM_DB "tmp/import/genom_db"
+
 #define GB_MAIN	awtcig.gb_main
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 

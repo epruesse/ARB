@@ -569,7 +569,17 @@ void AWTC_import_go_cb(AW_window *aww)
     bool is_genom_db;
     {
         bool read_genom_db = awr->awar(AWAR_READ_GENOM_DB)->read_int();
-        is_genom_db = awr->awar_int(AWAR_GENOM_DB, read_genom_db)->read_int();
+
+        {
+            GB_transaction dummy(GB_MAIN);
+
+            GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
+            if (!gb_genom_db) {
+                gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
+                GB_write_int(gb_genom_db, read_genom_db);
+            }
+            is_genom_db = GB_read_int(gb_genom_db);
+        }
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
@@ -713,7 +723,9 @@ void AWTC_import_go_cb(AW_window *aww)
     GB_change_my_security(GB_MAIN,0,"");
     GB_commit_transaction(GB_MAIN);
 
-    if (!is_genom_db) awtcig.func(awr, awtcig.cd1,awtcig.cd2);
+//     if (!is_genom_db) {
+        awtcig.func(awr, awtcig.cd1,awtcig.cd2);
+//     }
 }
 
 //  ------------------------------------------------------
