@@ -49,6 +49,7 @@
    - if AWAR_SPECIES_NAME contains the name of a pseudo gene-species then AWAR_ORGANISM_NAME
    contains the name of the species the pseudo gene-species originated from */
 #define AWAR_EXPERIMENT_NAME    "tmp/focus/experiment_name" /* string :  name of selected experiment */
+#define AWAR_SAI_NAME           "tmp/focus/sai_name" /* string :  name of selected SAI (e.g. in EDIT4 and 'Manage SAI') */
 
 
 #define AWAR_HELIX_NAME     "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
