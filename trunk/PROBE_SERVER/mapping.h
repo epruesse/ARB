@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : mapping.cxx                                            //
 //    Purpose   : simple species mapping                                 //
-//    Time-stamp: <Wed Sep/17/2003 10:15 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 17:17 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -16,6 +16,11 @@
 #ifndef __MAP__
 #include <map>
 #endif
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define pm_assert(cond) arb_assert(cond)
 
 using namespace std;
 
@@ -65,6 +70,12 @@ GB_ERROR PM_initSpeciesMaps(GBDATA *pb_main) {
     return error;
 }
 
-SpeciesID PM_name2ID(const string& name) { return PM_species2num_map[name]; }
-const string& PM_ID2name(SpeciesID id) { return PM_num2species_map[id]; }
+SpeciesID PM_name2ID(const string& name) {
+    pm_assert(PM_species_maps_initialized);
+    return PM_species2num_map[name];
+}
+const string& PM_ID2name(SpeciesID id) {
+    pm_assert(PM_species_maps_initialized);
+    return PM_num2species_map[id];
+}
 
