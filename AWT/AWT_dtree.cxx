@@ -1105,6 +1105,14 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
 
 void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
 {
+    if (type == AP_NDS_TREE) {
+        if (tree_sort == AP_NDS_TREE) { // we are already in NDS view
+            nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
+        }
+        else {
+            nds_show_all = true; // default to all
+        }
+    }
     tree_sort = type;
     switch(type) {
         case AP_RADIAL_TREE:
@@ -1704,20 +1712,21 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
 {
     AWUSE(dummy);
-    GBDATA         *gb_species;
-    GBDATA         *gb_name;
-    AW_pos          y_position = scale;
-    AW_pos		offset;
-    long		max_strlen = 0;
+    GBDATA      *gb_species;
+    GBDATA      *gb_name;
+    AW_pos       y_position = scale;
+    AW_pos	     offset;
+    long	     max_strlen = 0;
 
-    disp_device->text(AWT_GC_CURSOR,"NDS List of all species:",
+    disp_device->text(AWT_GC_CURSOR,
+                      nds_show_all ? "NDS List of all species:" : "NDS List of marked species:",
                       (AW_pos) scale * 2, (AW_pos) 0,
                       (AW_pos) 0, text_filter,
                       (AW_CL) 0, (AW_CL) 0);
 
-    for (gb_species = GBT_first_species(gb_main);
+    for (gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
          gb_species;
-         gb_species = GBT_next_species(gb_species)) {
+         gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species)) {
 
         y_position += scale;
         gb_name = GB_find(gb_species, "name", 0, down_level);
@@ -1751,8 +1760,6 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
     }
     disp_device->invisible(AWT_GC_CURSOR,0,0,-1,0,0);
     disp_device->invisible(AWT_GC_CURSOR,max_strlen*scale,y_position,-1,0,0);
-
-
 }
 
 

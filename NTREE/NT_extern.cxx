@@ -881,7 +881,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
             AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), 0);
             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
-            AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+//             AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
             awm->insert_separator();
             awm->insert_sub_menu(0, "Destroy Species",		"y");
             {
@@ -1252,7 +1252,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->at(db_treex, third_liney);
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_IRS_TREE);
-    awm->help_text("tr_type_nds.hlp");
+    awm->help_text("tr_type_irs.hlp");
     awm->create_button("NO_TREE_TYPE", "#list.bitmap",0);
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_NDS_TREE);

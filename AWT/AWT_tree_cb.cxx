@@ -11,6 +11,7 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
+#include <awt_assert.hxx>
 
 
 void
@@ -331,7 +332,8 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 ntw->refresh();
                 break;
             }
-            case AP_NDS_TREE:{
+            case AP_NDS_TREE:
+                {
                 AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
                 device->set_filter(AW_SIZE);
                 device->reset();
@@ -368,16 +370,15 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 ntw->refresh();
                 break;
             }
-
+            default : awt_assert(0); break;
         }
     }
     delete name;
 }
 
 void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){	// jump only if auto jump is set
-    if (AWT_TREE(ntw)->tree_sort == AP_LIST_TREE
-        || AWT_TREE(ntw)->tree_sort == AP_NDS_TREE) {
-        if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()){
+    if (AWT_TREE(ntw)->tree_sort == AP_LIST_TREE || AWT_TREE(ntw)->tree_sort == AP_NDS_TREE) {
+        if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
             NT_jump_cb(dummy,ntw,0);
             return;
         }

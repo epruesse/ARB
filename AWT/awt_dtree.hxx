@@ -49,7 +49,8 @@ class AWT_graphic_tree : public AWT_graphic {
 
 	AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
 	AW_bitset ruler_filter, root_filter;
-	int treemodus;
+	int       treemodus;
+    bool      nds_show_all;
 
 	// functions to compute displayinformation
 	double show_list_tree_rek(AP_tree * at, double x_father,
