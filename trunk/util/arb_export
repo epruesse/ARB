@@ -1,48 +1,32 @@
 #!/bin/sh
 # Syntax arb_export [/beta]
 
-# dest=strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB$1
-
 dest=/trance1/ARB_download/ARB
 destmach=$dest$1/$HOSTTYPE
 
 FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
-# echo "\n\n*************"
 echo "****************************************"
 echo "exporting $FILES to $destmach"
-# echo " ******* $destmach  ******"
-# echo " Is this OK ??? [y]/n"
-# read ok
-# if [ "X$ok" != 'Xn' ]; then
-	for i in $FILES; do
-		echo cp $i $destmach
-		cp $i $destmach
-	done
-# fi
+for i in $FILES; do
+    echo cp $i $destmach
+    cp $i $destmach
+done
 
-# SOURCE=`echo arbsrc.tgz`
 echo "****************************************"
 TODAY=`date +%Y_%m_%d`
 echo cp -L arbsrc.tgz $dest/src/arbsrc_$TODAY.tgz
 cp -L arbsrc.tgz $dest/src/arbsrc_$TODAY.tgz
 
 README="arb_README.txt README arb_CHANGES.txt"
-# echo "\n\n*************"
 echo "****************************************"
-echo "exporting $README to $dest
-# echo " ******* $dest  ******"
-# echo " Is this OK ??? y/[n]"
-# read ok
-# if [ "X$ok" = 'Xy' ]; then
-# 	for i in $SOURCE; do
-# 		cp $i $dest/src
-# 	done
-	for i in $README; do
-		echo cp $i $dest
-		cp $i $dest
-	done
-# fi
+echo "exporting $README to $dest"
+for i in $README; do
+    echo cp $i $dest
+    cp $i $dest
+done
 
 # export names.dat:
+echo "****************************************"
+echo "exporting $names.dat to $dest/xtra/names.dat.gz"
 gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
 
