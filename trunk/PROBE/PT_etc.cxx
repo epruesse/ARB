@@ -167,6 +167,11 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         const char *arb_name      = get_list_part(names_list, noff);
         const char *internal_name = arb_name; // differs only for gene pt server
 
+        if (arb_name[0] == 0) {
+            pt_assert(names_list[0] == 0);
+            break; // nothing marked
+        }
+
         if (gene_flag) {
             const char *slash = strchr(arb_name, '/');
 
@@ -217,105 +222,6 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     }
     return result;
 }
-
-#if 0
-char *ptpd_read_names_old(PT_local * locs, char *names_listi, char *checksumsi)
-{
-    char *names_list;
-    char *checksums = 0;
-    long  i;
-    char *name;
-
-//     if (gene_flag) {
-//         char *temp;
-//         int   j = 0;
-//         int   k = 0;
-//         char *listi_copy;
-//         char *temp_listi;
-//         char bit;
-//         list<gene_struct*>::iterator gene_iterator;
-//         gene_iterator = names_list_idp.begin();
-//         bit           = names_listi[k];
-//         while (bit != '\0') {
-//             if (bit=='#') j++;
-//             k++;
-//             bit = names_listi[k];
-//         }
-//         j++;
-//         temp_listi = new char[j*9+2];
-//         listi_copy = new char[strlen(names_listi)+1];
-//         strcpy(temp_listi,"");
-//         strcpy(listi_copy,names_listi);
-//         temp = strtok(listi_copy,"#");
-//         while (temp) {
-//             while (strcmp((*gene_iterator)->arb_gene_name,temp) && gene_iterator != names_list_idp.end()) {
-//                 gene_iterator++;
-//             }
-
-//             if (gene_iterator == names_list_idp.end()) {
-//                 printf("Error in Name Resolution\n");
-//                 exit(1);
-//             }
-//             else {
-//                 strcat(temp_listi,(*gene_iterator)->gene_name);
-//                 strcat(temp_listi,"#");
-//             }
-//             temp = strtok(NULL,"#");
-//         }
-//         //  temp_listi[strlen(temp_listi)] = '\0';
-//         names_listi = temp_listi;
-//     }
-
-    char *to_free_names_list = names_list = strdup(names_listi);
-    char *to_free_checksums  = 0;
-
-    /* read single names */
-    void *not_found = GBS_stropen(1000);
-    int   nfound    = 0;
-
-    if (checksumsi) to_free_checksums = checksums = strdup(checksumsi);
-
-    char *checksum = 0;
-    while (*names_list) {
-        if (checksums){
-            checksum = checksums;
-            while (*checksums && *checksums != '#') checksums ++;
-            if (*checksums) *(checksums++) = 0;
-        }
-        name = names_list;
-        while (*names_list && *names_list != '#') names_list++;
-        if (*names_list) *(names_list++) = 0;
-        /* set is_group */
-        i = GBS_read_hash(psg.namehash, name);
-        if (i){
-            i--;
-	    // IDP Checksumme
-	    if (checksum && atol(checksum)!= psg.data[i].checksum){
-                psg.data[i].is_group = -1;
-                goto not_found;	// sequence has changed meanwhile !!
-	    }
-            psg.data[i].is_group = 1;
-            locs->group_count++;
-        }else{
-        not_found:
-            if (nfound>0){
-                GBS_chrcat(not_found,'#');
-            }
-            nfound++;
-            GBS_strcat(not_found,name);
-        }
-    }
-    free(to_free_names_list);
-    if (to_free_checksums) free(to_free_checksums);
-    if (nfound){
-        return GBS_strclose(not_found);
-    }else{
-        free(GBS_strclose(not_found));
-    }
-    return 0;
-}
-
-#endif
 
 extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc){
     static bytestring un = {0,0};
