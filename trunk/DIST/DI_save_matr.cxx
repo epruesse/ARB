@@ -56,10 +56,10 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
                 // create all NDS strings
                 char **nds_results = new (char*)[nentries];
                 for (col=0; col<size_t(nentries); col++) {
-                    char   *buf         = entries[col]->name;
-                    GBDATA *gb_species  = GBT_find_species_rel_species_data(gb_species_data,buf);
+                    const char *buf        = entries[col]->name;
+                    GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data,buf);
                     if (gb_species) {
-                        buf = make_node_text_nds(gb_main,gb_species,0,0);
+                        buf = make_node_text_nds(gb_main,gb_species,0,0,0);
                         while (buf[0] == ' ') ++buf;
                     }
 
