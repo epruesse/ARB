@@ -10,18 +10,18 @@
 #include <aw_color_groups.hxx>
 
 enum {
-	GEN_GC_DEFAULT    = 0,
+    GEN_GC_DEFAULT    = 0,
     GEN_GC_FIRST_FONT = GEN_GC_DEFAULT,
 
-	GEN_GC_GENE,
-	GEN_GC_MARKED,
+    GEN_GC_GENE,
+    GEN_GC_MARKED,
     GEN_GC_CURSOR,
 
     GEN_GC_LAST_FONT = GEN_GC_CURSOR,
 
     GEN_GC_FIRST_COLOR_GROUP,
 
-	GEN_GC_MAX = GEN_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
+    GEN_GC_MAX = GEN_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
 
 };                              // AW_gc
 
@@ -37,7 +37,20 @@ typedef enum {
 //  -----------------------------------------------
 //      class GEN_graphic : public AWT_graphic
 //  -----------------------------------------------
+
+typedef void (*GEN_graphic_cb_installer)(bool install, AWT_canvas*, GEN_graphic*);
+
 class GEN_graphic : public AWT_graphic {
+    AW_root                  *aw_root;
+    GBDATA                   *gb_main;
+    GEN_graphic_cb_installer  callback_installer;
+    int                       window_nr;
+    GEN_root                 *gen_root;
+    GEN_DisplayStyle          style;
+    bool                      want_zoom_reset; // true -> do zoom reset on next refresh
+
+    void delete_gen_root(AWT_canvas *ntw);
+
 protected:
 
     // variables - tree compatibility
@@ -45,21 +58,13 @@ protected:
     AW_clicked_text rot_ct;
     AW_clicked_line old_rot_cl;
 
-    AW_device        *disp_device; // device for  rekursiv Funktions
-    GEN_DisplayStyle  style;
-    void (*callback_installer)(bool install, AWT_canvas*);
+    AW_device *disp_device;     // device for recursive functions
 
 public:
-    GBDATA   *gb_main;
-    AW_root  *aw_root;
-    GEN_root *gen_root;
-    int       change_flag;
-
-    GEN_graphic(AW_root *aw_root, GBDATA *gb_main, void (*callback_installer_)(bool install, AWT_canvas*));
+    GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
     virtual ~GEN_graphic();
 
-    void delete_gen_root(AWT_canvas *ntw); // reinit_gen_root is normally called afterwards
-    void reinit_gen_root(AWT_canvas *ntw);
+    void reinit_gen_root(AWT_canvas *ntw, bool force_reinit);
 
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
@@ -71,9 +76,11 @@ public:
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
 
     virtual int GEN_graphic::check_update(GBDATA *gbdummy);
-};
 
-extern GEN_graphic *GEN_GRAPHIC;
+    AW_root *get_aw_root() const { return aw_root; }
+    GBDATA *get_gb_main() const { return gb_main; }
+    const GEN_root *get_gen_root() const { return gen_root; }
+};
 
 #else
 #error GEN_graphic.hxx included twice
