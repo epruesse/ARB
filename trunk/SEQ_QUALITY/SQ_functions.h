@@ -4,12 +4,12 @@ void SQ_calc_average_structure(GBDATA *gb_main);
 
 int SQ_calc_insertations(GBDATA *gb_main);
 
-int SQ_get_value(GBDATA *gb_main, char *option);
+int SQ_get_value(GBDATA *gb_main, const char *option);
     /*
       "option" is variable which is passed to function "SQ_get_value()".
       SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
       Right now the options you have are:
-      
+
       number_of_bases
       number_of_spaces
       number_of_dots

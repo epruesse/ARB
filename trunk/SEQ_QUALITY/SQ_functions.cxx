@@ -47,15 +47,15 @@ void SQ_calc_sequence_structure(GBDATA *gb_main) {
 
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
-     
+
       gb_name = GB_find(gb_species, "name", 0, down_level);
 
       if (gb_name) {
 
 	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	
+
 	if (gb_ali) {   //!gb_ali
-	  GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);	  
+	  GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
 	  read_sequence = GB_find(gb_ali,"data",0,down_level);
 
 	  if (read_sequence) {
@@ -153,16 +153,16 @@ void SQ_calc_average_structure(GBDATA *gb_main) {
 
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
-     
+
       gb_name = GB_find(gb_species, "name", 0, down_level);
 
       if (gb_name) {
 
 	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	
+
 	if (gb_ali) {
-	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);	  
-	    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);	    
+	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+	    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
 	    avg_bases = avg_bases + GB_read_int(gb_result1);
 	    j++;
 
@@ -173,21 +173,21 @@ void SQ_calc_average_structure(GBDATA *gb_main) {
     //return avg_bases;
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
-     
+
       gb_name = GB_find(gb_species, "name", 0, down_level);
 
       if (gb_name) {
 
 	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	
+
 	if (gb_ali) {
 	    int diff = 0;
 	    int temp = 0;
 	    int diff_percent = 0;
 
-	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);	  
+	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 	    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
-	    
+
 	    temp = GB_read_int(gb_result1);
 	    diff = avg_bases - temp;
 	    diff_percent = (100*diff) / avg_bases;
@@ -237,7 +237,7 @@ int SQ_calc_insertations(GBDATA *gb_main) {
 
     gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
     alignment_name = GBT_get_default_alignment(gb_main);
-    
+
 
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
@@ -262,7 +262,7 @@ int SQ_calc_insertations(GBDATA *gb_main) {
 			points++;
 		    }
 		}
-		
+
 		qualities[j][0] = sequenceLength - (spaces + points);
 		qualities[j][1] = spaces;
 		qualities[j][2] = points;
@@ -289,7 +289,7 @@ int SQ_calc_insertations(GBDATA *gb_main) {
 
 
 
-int SQ_get_value(GBDATA *gb_main, char *option){
+int SQ_get_value(GBDATA *gb_main, const char *option){
 
 
     int result = 0;
@@ -317,16 +317,16 @@ int SQ_get_value(GBDATA *gb_main, char *option){
 
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
-     
+
       gb_name = GB_find(gb_species, "name", 0, down_level);
 
       if (gb_name) {
 
 	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	
+
 	if (gb_ali) {
-	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);	  
-	    GBDATA *gb_result1 = GB_search(gb_quality, option, GB_INT);	    
+	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+	    GBDATA *gb_result1 = GB_search(gb_quality, option, GB_INT);
 	    result = GB_read_int(gb_result1);
 	}
       }
@@ -366,23 +366,23 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
-     
+
       gb_name = GB_find(gb_species, "name", 0, down_level);
 
       if (gb_name) {
 
 	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	
+
 	if (gb_ali) {
 	    int bases = 0;
 	    int dfa = 0;
 	    int result = 0;
 
-	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);	  
-	    GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);	    
+	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+	    GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);
 	    bases = GB_read_int(gb_result1);
-  
-	    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);	    
+
+	    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 	    dfa = GB_read_int(gb_result2);
 	    result = 100 - ((weight_bases * bases) + (weight_diff_from_average * dfa)) / 100;
 
