@@ -631,7 +631,7 @@ void awt_edit(AW_root *awr, const char *path, int x, int y, const char *font){
 	    sprintf(buffer, "%s %s &",ae,path2);
 	}
 	system(buffer);
-	delete(path2);
+	free(path2);
 }
 
 

@@ -237,7 +237,7 @@ void aw_status_kill(AW_window *aws)
 
 void aw_insert_message_in_tmp_message(AW_root *awr,const char *message){
     char *str;
-    delete aw_stg.lines[0];
+    free(aw_stg.lines[0]);
     int i;
     for (i = 1; i< AW_MESSAGE_LINES; i++){
         aw_stg.lines[i-1] = aw_stg.lines[i];

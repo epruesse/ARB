@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Aug/22/2002 19:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Dec/04/2002 15:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1727,8 +1727,8 @@ void awt_marked_checkbox::db_changed() {
     if (item()) {
         GB_transaction dummy(mask_global()->get_gb_main());
         if (GB_read_flag(item())) marked = true;
+        set_value(marked ? "yes" : "no"); // @@@ TEST: moved into if (was below)
     }
-    set_value(marked ? "yes" : "no");
 }
 //  ---------------------------------------------------------------
 //      void awt_marked_checkbox::build_widget(AW_window *aws)
@@ -2077,9 +2077,20 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                         AW_CB   cb                     = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
                                         string  mask_to_start_internal = find_internal_name(mask_to_start, local);
 
-                                        aws->callback( cb, (AW_CL)new string(mask->mask_global()->get_internal_maskname()), (AW_CL)new string(mask_to_start_internal));
-                                        aws->button_length(label.length()+2);
-                                        aws->create_button(key, label.c_str());
+                                        if (mask_to_start_internal.length() == 0) {
+                                            error = "Can't detect which mask to load";
+                                        }
+                                        else {
+                                            string *cl_arg1 = new string(mask->mask_global()->get_internal_maskname());
+                                            string *cl_arg2 = new string(mask_to_start_internal);
+
+                                            awt_assert(cl_arg1);
+                                            awt_assert(cl_arg2);
+
+                                            aws->callback( cb, (AW_CL)cl_arg1, (AW_CL)cl_arg2);
+                                            aws->button_length(label.length()+2);
+                                            aws->create_button(key, label.c_str());
+                                        }
 
                                         free(key);
                                     }
