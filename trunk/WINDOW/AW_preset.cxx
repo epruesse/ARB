@@ -291,7 +291,7 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     char *colorname;
 
     sprintf(awar_name,AWP_COLORNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->colorbasename);
-    colorname = root->awar(awar_name)->read_string(); 
+    colorname = root->awar(awar_name)->read_string();
     AW_color color = (AW_color)cbs->colorindex;
     cbs->cbs->aw->alloc_named_data_color(color,colorname);
     if (color != AW_DATA_BG) {
@@ -825,6 +825,9 @@ void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_C
         aws->callback((AW_CB0) AW_POPDOWN);
         aws->create_button("CLOSE","CLOSE", "C");
 
+        aws->callback(AW_POPUP_HELP,(AW_CL)"color_props_groups.hlp");
+        aws->create_button("HELP","HELP", "H");
+
         aws->at_newline();
 
         aw_insert_gcs(aw_root, aws, gcmgr, true);
@@ -861,6 +864,10 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 
     aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE", "C");
+
+    aws->callback(AW_POPUP_HELP,(AW_CL)"color_props.hlp");
+    aws->create_button("HELP","HELP", "H");
+
     aws->at_newline();
 
     bool has_color_groups = aw_insert_gcs(aw_root, aws, gcmgr, false);
@@ -919,8 +926,12 @@ AW_window *AWT_preset_window( AW_root *root )
 
     aws->at           ( 10,10 );
     aws->auto_space(10,10);
+
     aws->callback     ( AW_POPDOWN );
     aws->create_button( "CLOSE","CLOSE", "C" );
+
+    aws->callback(AW_POPUP_HELP,(AW_CL)"props_frame.hlp");
+    aws->create_button("HELP","HELP", "H");
 
     aws->at_newline();
 
