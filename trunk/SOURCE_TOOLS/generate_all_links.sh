@@ -78,7 +78,9 @@ ln -s ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx
 ln -s ../AWT/awt_codon_table.hxx INCLUDE/awt_codon_table.hxx
 ln -s ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx
 ln -s ../AWT/awt_dtree.hxx INCLUDE/awt_dtree.hxx
+ln -s ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx
 ln -s ../AWT/awt_imp_exp.hxx INCLUDE/awt_imp_exp.hxx
+ln -s ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx
 ln -s ../AWT/awt_iupac.hxx INCLUDE/awt_iupac.hxx
 ln -s ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx
 ln -s ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx
@@ -93,7 +95,6 @@ ln -s ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx
 ln -s ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx
 ln -s ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx
 ln -s ../AWT/awt_www.hxx INCLUDE/awt_www.hxx
-ln -s ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx
 ln -s ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx
 ln -s ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx
 ln -s ../AWTC/awtc_fast_aligner.hxx INCLUDE/awtc_fast_aligner.hxx
@@ -107,6 +108,7 @@ ln -s ../CAT/cat_tree.hxx INCLUDE/cat_tree.hxx
 ln -s ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx
 ln -s ../DIST/dist.hxx INCLUDE/dist.hxx
 ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
+ln -s ../GENOM/EXP.hxx INCLUDE/EXP.hxx
 ln -s ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx
 ln -s ../NAMES_COM/names_client.h INCLUDE/names_client.h
 ln -s ../NAMES_COM/names_prototypes.h INCLUDE/names_prototypes.h
