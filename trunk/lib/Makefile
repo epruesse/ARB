@@ -1,10 +1,13 @@
 help.make:
 	@echo	'options'
-	@echo	'	slib	create links to perl, Xlib'
-	@echo	'	smacro	set permissions in the macros dir'
-	@echo	'	shelp	set permissions in the help dir'
-	@echo	'	all	all above'
-	@echo	'	msg	edit daily arb message'
+	@echo	'	slib			create links to perl, Xlib'
+	@echo	'	smacro			set permissions in the macros dir'
+	@echo	'	shelp			set permissions in the help dir'
+	@echo	'	'
+	@echo	'	all				all above'
+	@echo	'	'
+	@echo	'	nameserver		create nameserver from template'
+	@echo	'	msg				edit daily arb message'
 
 all:	slib smacro shelp
 
@@ -21,6 +24,9 @@ smacro:
 shelp:
 	(cd help; make all)
 
+
+nameserver:
+		(cd nas;$(MAKE) all)
 
 msg:	$(HOME)/.arb_prop/time
 

@@ -516,6 +516,8 @@ mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
+help:   xml HELP_SOURCE/dummy.dummy
+
 dball: db dbs db2
 db:		ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
@@ -636,7 +638,7 @@ export:	tarfile sourcetarfile
 binlink:
 	(cd bin; $(MAKE) all);
 
-all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all:	arb libs gde tools help readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 ifndef DEBIAN
@@ -678,6 +680,9 @@ openwinprogs:	gde	$(DEST_BIN)/arb_gde
 else
 openwinprogs:
 endif
+
+nas:
+		(cd lib;$(MAKE) nameserver)
 
 perl:	lib/ARB.pm
 
@@ -730,7 +735,7 @@ realclean: clean
 	rm -f AISC_MKPTPS/aisc_mkpt
 
 #*** basic arb libraries
-arbbasic: links mbin menus com ${MAKE_RTC}
+arbbasic: links mbin menus com nas ${MAKE_RTC}
 
 #*** New arb programs (Version 2.0) (Motif)
 arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs
