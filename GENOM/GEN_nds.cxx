@@ -351,96 +351,98 @@ void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 //  -----------------------------------------------------------------------
 AW_window *GEN_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "GENE_NDS_PROPS", "Gene NDS");
-    aws->load_xfig("awt/nds.fig");
-    aws->auto_space(10,5);
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+    
+        aws->init( aw_root, "GENE_NDS_PROPS", "Gene NDS");
+        aws->load_xfig("awt/nds.fig");
+        aws->auto_space(10,5);
 
-    aws->callback( AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+        aws->callback( AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"props_nds.hlp");
-    aws->create_button("HELP", "HELP","H");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"props_nds.hlp");
+        aws->create_button("HELP", "HELP","H");
 
-    aws->button_length(13);
-    int dummy,closey;
-    aws->at_newline();
-    aws->get_at_position( &dummy,&closey );
-
-    aws->create_button(0,"K");
-
-    aws->at_newline();
-
-
-    int showx,fieldselectx,fieldx, /*inheritx,*/ columnx,srtx,srtux;
-
-    aws->auto_space(10,0);
-
-    int i;
-    for (   i=0;i<GEN_NDS_COUNT; i++) {
-        char buf[256];
-
-        sprintf(buf,"tmp/gene_viewkey_%i/flag1",i);
-        aws->get_at_position( &showx,&dummy );
-        aws->create_toggle(buf);
-
-        aws->button_length(20);
-        sprintf(buf,"tmp/gene_viewkey_%i/key_text",i);
-        aws->get_at_position( &fieldx,&dummy );
-        aws->create_input_field(buf,15);
-
-        aws->button_length(0);
-        aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf),cgb_main);
-        aws->get_at_position( &fieldselectx,&dummy );
-        aws->create_button("SELECT_NDS","S");
-
-        //      sprintf(buf,"tmp/gene_viewkey_%i/inherit",i);
-        //      aws->get_at_position( &inheritx,&dummy );
-        //      aws->create_toggle(buf);
-
-        sprintf(buf,"tmp/gene_viewkey_%i/len1",i);
-        aws->get_at_position( &columnx,&dummy );
-        aws->create_input_field(buf,4);
-
-        sprintf(buf,"tmp/gene_viewkey_%i/pars",i);
-        aws->get_at_position( &srtx,&dummy );
-
-        aws->button_length(0);
-
-        aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(buf),0);
-        aws->create_button("SELECT_SRTACI", "S","S");
-
-        aws->get_at_position( &srtux,&dummy );
-        aws->create_input_field(buf,40);
+        aws->button_length(13);
+        int dummy,closey;
         aws->at_newline();
+        aws->get_at_position( &dummy,&closey );
+
+        aws->create_button(0,"K");
+
+        aws->at_newline();
+
+
+        int showx,fieldselectx,fieldx, /*inheritx,*/ columnx,srtx,srtux;
+
+        aws->auto_space(10,0);
+
+        int i;
+        for (   i=0;i<GEN_NDS_COUNT; i++) {
+            char buf[256];
+
+            sprintf(buf,"tmp/gene_viewkey_%i/flag1",i);
+            aws->get_at_position( &showx,&dummy );
+            aws->create_toggle(buf);
+
+            aws->button_length(20);
+            sprintf(buf,"tmp/gene_viewkey_%i/key_text",i);
+            aws->get_at_position( &fieldx,&dummy );
+            aws->create_input_field(buf,15);
+
+            aws->button_length(0);
+            aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf),cgb_main);
+            aws->get_at_position( &fieldselectx,&dummy );
+            aws->create_button("SELECT_NDS","S");
+
+            //      sprintf(buf,"tmp/gene_viewkey_%i/inherit",i);
+            //      aws->get_at_position( &inheritx,&dummy );
+            //      aws->create_toggle(buf);
+
+            sprintf(buf,"tmp/gene_viewkey_%i/len1",i);
+            aws->get_at_position( &columnx,&dummy );
+            aws->create_input_field(buf,4);
+
+            sprintf(buf,"tmp/gene_viewkey_%i/pars",i);
+            aws->get_at_position( &srtx,&dummy );
+
+            aws->button_length(0);
+
+            aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(buf),0);
+            aws->create_button("SELECT_SRTACI", "S","S");
+
+            aws->get_at_position( &srtux,&dummy );
+            aws->create_input_field(buf,40);
+            aws->at_newline();
+        }
+        aws->at(showx,closey);
+
+        aws->at_x(fieldselectx);
+        aws->create_button(0,"SEL");
+
+        aws->at_x(showx);
+        aws->create_button(0,"SHOW");
+
+        aws->at_x(fieldx);
+        aws->create_button(0,"FIELD");
+
+        //  aws->at_x(inheritx);
+        //  aws->create_button(0,"INH.");
+
+        aws->at_x(columnx);
+        aws->create_button(0,"WIDTH");
+
+        aws->at_x(srtx);
+        aws->create_button(0,"SRT");
+
+        aws->at_x(srtux);
+        aws->create_button(0,"ACI/SRT PROGRAM");
     }
-    aws->at(showx,closey);
-
-    aws->at_x(fieldselectx);
-    aws->create_button(0,"SEL");
-
-    aws->at_x(showx);
-    aws->create_button(0,"SHOW");
-
-    aws->at_x(fieldx);
-    aws->create_button(0,"FIELD");
-
-    //  aws->at_x(inheritx);
-    //  aws->create_button(0,"INH.");
-
-    aws->at_x(columnx);
-    aws->create_button(0,"WIDTH");
-
-    aws->at_x(srtx);
-    aws->create_button(0,"SRT");
-
-    aws->at_x(srtux);
-    aws->create_button(0,"ACI/SRT PROGRAM");
-
-
-    return (AW_window *)aws;
+    return aws;
 }
 
 
