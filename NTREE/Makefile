@@ -3,7 +3,8 @@
 .SUFFIXES: .o .cxx
 
 
-CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o \
+CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
+	NT_validNames.o NT_validNameParser.o \
 	NT_ins_col.o NT_import.o NT_concatenate.o\
 	ad_spec.o ad_trees.o  ad_ali.o ad_ext.o ad_transpro.o \
 	AP_consensus.o AP_cprofile.o AP_pos_var_pars.o \
@@ -32,7 +33,7 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_edconf.o:  $(ARBHOME)/INCLUDE/arbdb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -81,8 +82,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx ad_trees.hxx
-NT_cb.o: ntree.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx ad_trees.hxx ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -100,10 +100,10 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx ntree.hxx
-NT_main.o: nt_cb.hxx $(ARBHOME)/INCLUDE/mg_merge.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx ntree.hxx nt_cb.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx ./nt_concatenate.hxx
+NT_extern.o:  $(ARBHOME)/INCLUDE/arbdb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -111,9 +111,8 @@ NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx ad_trees.hxx
-NT_extern.o: ad_ext.hxx ad_spec.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx ad_trees.hxx ad_ext.hxx
+NT_extern.o: ad_spec.hxx $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -127,12 +126,11 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx ntree.hxx
-NT_extern.o: nt_cb.hxx etc_check_gcg.hxx nt_sort.hxx ap_consensus.hxx
-NT_extern.o: ap_csp_2_gnuplot.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx nt_join.hxx
-NT_extern.o: nt_edconf.hxx ap_pos_var_pars.hxx ad_ali.hxx nt_import.hxx
-NT_extern.o: nt_date.h nt_internal.h
+NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx ntree.hxx nt_cb.hxx
+NT_extern.o: etc_check_gcg.hxx nt_sort.hxx ap_consensus.hxx
+NT_extern.o: ap_csp_2_gnuplot.hxx $(ARBHOME)/INCLUDE/awti_export.hxx
+NT_extern.o: nt_join.hxx nt_edconf.hxx ap_pos_var_pars.hxx ad_ali.hxx
+NT_extern.o: nt_import.hxx nt_date.h nt_internal.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
@@ -141,7 +139,18 @@ NT_extern.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
-NT_extern.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx ./nt_concatenate.hxx
+NT_extern.o: nt_validNames.hxx
+NT_validNames.o:  $(ARBHOME)/INCLUDE/arbdb.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_validNames.o: $(ARBHOME)/INCLUDE/aw_window.hxx nt_validNames.hxx
+NT_validNames.o: nt_validNameParser.hxx
+NT_validNameParser.o: nt_validNameParser.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -159,8 +168,8 @@ NT_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx
-NT_import.o: ad_spec.hxx $(ARBHOME)/INCLUDE/GEN.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx ad_spec.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_concatenate.o:  $(ARBHOME)/INCLUDE/arbdb.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -171,8 +180,16 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx nt_concatenate.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+NT_concatenate.o: ./nt_concatenate.hxx nt_sort.hxx
+ad_spec.o:  $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -189,8 +206,8 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
-ad_spec.o: ntree.hxx $(ARBHOME)/INCLUDE/probe_design.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx ntree.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -213,7 +230,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
-ad_ext.o:  $(ARBHOME)/INCLUDE/arbdb.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -235,7 +252,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
+AP_consensus.o:  $(ARBHOME)/INCLUDE/arbdb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -267,7 +284,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_pos_var_pars.o: ap_pos_var_pars.hxx
-ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
+ETC_check_gcg.o:  $(ARBHOME)/INCLUDE/arbdb.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
