@@ -1,7 +1,7 @@
-item:Protein_ML (molphy max 40 species) [sorry - broken]
+item:Protein_ML (molphy; max 40 species)
 itemmeta: L
-itemmethod:(GEN_INFILE(in1);cat infile |tr '?' '-' >in1.in;RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
-itemhelp:phylip.help
+itemmethod:(GEN_INFILE(in1);cat infile |tr '?' '-' >in1.in;mv in1.in infile;RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
+itemhelp:protml.help
 
 arg:DISPLAY_FUNC
 argtype:chooser
@@ -10,34 +10,36 @@ argchoice:ARB ('tree_phylip'):arb_read_tree `/bin/cat arb_read_tree_args` tree_p
 argchoice:TextEdit:arb_textedit treefile &
 argchoice:Treetool:treetool treefile
 
-arg:BOOTSTRP
-arglabel:How many bootstraps ?
-argtype:chooser
-argchoice:Do not bootstrap:echo >arb_read_tree_args;protml $MODEL $SEARCH -v -I in1.in;mv protml.tre treefile
-argchoice:10:   arb_bootstrap 10   1 "protml "
-argchoice:100:  arb_bootstrap 100  1 $PROGRAM
-argchoice:1000: arb_bootstrap 1000 1 protml
-argchoice:x10:   arb_echo 1 r 10 y   |seqboot ; /bin/mv -f outfile infile; arb_echo m 10 y   |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-argchoice:x100:  arb_echo 1 r 100 y  |seqboot ; /bin/mv -f outfile infile; arb_echo m 100 y  |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-argchoice:x1000: arb_echo 1 r 1000 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 1000 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-
 arg:MODEL
-argtype:chooser
+argtype:choice_menu
 arglabel:Which model to use ?
 argchoice:JTT:-j
 argchoice:Dayhoff:-d
 argchoice:mtREV24:-m
 argchoice:Poisson:-p
-argchoice:Jones Tayler & Thornton:-jf
+argchoice:JTT-F:-jf
 argchoice:Dayhoff-F:-df
-argchoice:Adachi & Hasegawa(1995):-mf
+argchoice:mtREV24-F:-mf
+argchoice:Proportional:-pf
+
+arg:BOOTSTRP
+arglabel:How many bootstraps ?
+argtype:chooser
+argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_protml $MODEL -s in1.in
+argchoice:10:   arb_bootstrap 10   "arb_protml $MODEL $SEARCH infile 10"
+argchoice:100:  arb_bootstrap 100  "arb_protml $MODEL $SEARCH infile 100"
+argchoice:1000: arb_bootstrap 1000 "arb_protml $MODEL $SEARCH infile 1000"
+#argchoice:xDo not bootstrap:echo >arb_read_tree_args;protml $MODEL $SEARCH -v -I in1.in;mv protml.tre treefile
+#argchoice:x10:   arb_echo 1 r 10 y   |seqboot ; /bin/mv -f outfile infile; arb_echo m 10 y   |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
+#argchoice:x100:  arb_echo 1 r 100 y  |seqboot ; /bin/mv -f outfile infile; arb_echo m 100 y  |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
+#argchoice:x1000: arb_echo 1 r 1000 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 1000 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
 
 arg:SEARCH
 argtype:chooser
-arglabel:Search Strategie
-argchoice:star decomposition:-s
+arglabel:Search strategy (bootstrap only)
+# argchoice:star decomposition:-s
 argchoice:exhaustive:-e
-argchoice:quickadd:-q
+argchoice:quickadd (does not work):-q
 
 in:in1
 informat:genbank
