@@ -672,7 +672,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     int           len;
     char         *buffer;
     GB_ERROR      error;
-    char         *error2    = 0;
     int           i;
     int           argcinput;
     int           argcparam;
@@ -850,9 +849,9 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
                     command = (GBL_COMMAND)GBS_read_hash(Main->command_hash,s1);
                     if (!command) {
-                        error = "Unknown Command";
-                        error2 = GB_STRDUP(s1);
-                    }else{
+                        error = GBS_global_string("Unknown command '%s'", s1);
+                    }
+                    else {
                         GBL_command_arguments args;
                         args.gb_ref            = gbd;
                         args.default_tree_name = default_tree_name;
@@ -865,6 +864,39 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         args.voutput           = &out;
 
                         error = command(&args);
+                        
+                        if (error) {
+                            char *inputstreams = 0;
+                            char *paramlist    = 0;
+                            int   i;
+
+                            for (i = 0; i<args.cparam; ++i) {
+                                if (!paramlist) paramlist = strdup(args.vparam[i].str);
+                                else {
+                                    char *conc = GBS_global_string_copy("%s,%s", paramlist, args.vparam[i].str);
+                                    free(paramlist);
+                                    paramlist  = conc;
+                                }
+                            }
+                            for (i = 0; i<args.cinput; ++i) {
+                                if (!inputstreams) inputstreams = strdup(args.vinput[i].str);
+                                else {
+                                    char *conc   = GBS_global_string_copy("%s;%s", inputstreams, args.vinput[i].str);
+                                    free(inputstreams);
+                                    inputstreams = conc;
+                                }
+                            }
+
+                            if (paramlist) {
+                                error = GBS_global_string("while applying '%s(%s)' to '%s': %s", s1, paramlist, inputstreams, error);
+                            }
+                            else {
+                                error = GBS_global_string("while applying '%s' to '%s': %s", s1, inputstreams, error);
+                            }
+
+                            free(inputstreams);
+                            free(paramlist);
+                        }
                     }
                 }
 
@@ -920,12 +952,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         if (s1) free(s1);
     }
 
-    if (error2){
-        GB_export_error("%s:%s in '%s'",error,error2, commands);
-        free(error2);
-    }else{
-        GB_export_error("%s in '%s'",error,commands);
-    }
+    GB_export_error("in '%s': %s", commands, error);
     return 0;
 }
 
