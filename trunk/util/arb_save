@@ -57,7 +57,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
         ./SH \
         ./etc \
         ./util \
-        \! -type l -print; \
+        \! -type l \! -type d -print; \
     ) \
     |grep -v '/CVS/' \
     |grep -v '/CVS$' \
@@ -69,10 +69,12 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
     |grep -v '/lib/nas/names.dat$' \
     |grep -v '\.xvpics' \
     |grep -v '\.genmenu$' \
-    |sort|uniq | tee arbsrc.lst \
-    |cpio -oH tar |gzip - >$name
+    |grep -v '\.cvsignore$' \
+    |grep -v '\ChangeLog$' \
+    |sort|uniq > arbsrc.lst
 
-# rm -f arbsrc
+tar -zcf $name --files-from=arbsrc.lst
+
 rm -f arbsrc.tgz
 ln -s $name arbsrc.tgz
 ls -alG -rt arbsrc*
