@@ -826,12 +826,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     AW_window_simple_menu *& aws = AWS[windowIdx];
 
     aws = new AW_window_simple_menu;
-    if (organismWindow) {
-        aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION", 0,0,800, 0 );
-    }
-    else {
-        aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION", 0,0,800, 0 );
-    }
+    if (organismWindow) aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION", 0,0,800, 0 );
+    else                aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION", 0,0,800, 0 );
     aws->load_xfig("ad_spec.fig");
 
     aws->button_length(8);
@@ -853,15 +849,17 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 
-    aws->create_menu(       0,   "SPECIES",     "E", "spa_species.hlp",  AD_F_ALL );
-    aws->insert_menu_topic("species_delete",    "Delete",   "D","spa_delete.hlp",   AD_F_ALL,   (AW_CB)ad_species_delete_cb, 0, 0);
-    aws->insert_menu_topic("species_rename",    "Rename ...",   "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_rename_window, 0);
-    aws->insert_menu_topic("species_copy",      "Copy ...", "C","spa_copy.hlp", AD_F_ALL,   AW_POPUP, (AW_CL)create_species_copy_window, 0);
-    aws->insert_menu_topic("species_create",    "Create ...",   "R","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","E","sp_sp_2_ext.hlp",AD_F_ALL,    (AW_CB)move_species_to_extended, 0, 0);
+    if (organismWindow) aws->create_menu(0,   "ORGANISM",     "O", "spa_organism.hlp",  AD_F_ALL );
+    else                aws->create_menu(0,   "SPECIES",     "S", "spa_species.hlp",  AD_F_ALL );
+
+    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AD_F_ALL,   (AW_CB)ad_species_delete_cb, 0, 0);
+    aws->insert_menu_topic("species_rename",        "Rename ...",    "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_rename_window, 0);
+    aws->insert_menu_topic("species_copy",          "Copy ...",      "y","spa_copy.hlp", AD_F_ALL,   AW_POPUP, (AW_CL)create_species_copy_window, 0);
+    aws->insert_menu_topic("species_create",        "Create ...",    "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AD_F_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
-    aws->create_menu(       0,   "FIELDS",     "I", "spa_fields.hlp",  AD_F_ALL );
+    aws->create_menu(       0,   "FIELDS",     "F", "spa_fields.hlp",  AD_F_ALL );
     ad_spec_create_field_items(aws);
 
     const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
@@ -904,7 +902,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     }
     aws = new AW_window_simple_menu;
     aws->init( aw_root, "SPECIES_QUERY", "SEARCH and QUERY", 0,0,500, 0 );
-    aws->create_menu(0,"More functions","F");
+    aws->create_menu(0,"More functions","f");
     aws->load_xfig("ad_query.fig");
 
 
@@ -936,11 +934,11 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     AW_CL cbs           = (AW_CL)awt_create_query_box((AW_window*)aws,&awtqs);
     ad_query_global_cbs = cbs;
 
-    aws->create_menu(       0,   "More search",     "S" );
+    aws->create_menu(       0,   "More search",     "s" );
     aws->insert_menu_topic( "search_equal_fields_within_db","Search For Equal Fields and Mark Duplikates",          "E",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 0 );
     aws->insert_menu_topic( "search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplikates",    "W",0,  -1, (AW_CB)awt_search_equal_entries, cbs, 1 );
     aws->insert_menu_topic( "search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...",   "R",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_create, cbs );
-    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",     "M",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_listed_create, cbs );
+    aws->insert_menu_topic( "search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",     "L",0,  -1, (AW_CB)AW_POPUP,    (AW_CL)ad_spec_next_neighbours_listed_create, cbs );
 
     aws->button_length(7);
 
