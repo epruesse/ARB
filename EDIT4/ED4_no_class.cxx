@@ -1916,9 +1916,11 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         error = GB_begin_transaction(gb_main);        
         GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);        
         char *new_species_name = 0;        
+        char *acc = 0;
+        
         
         if (!error) {
-            error = generate_one_name(gb_main, new_species_full_name, new_species_name);        
+            error = generate_one_name(gb_main, new_species_full_name, acc, new_species_name);        
             if (!error) { // name was created
                 GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, new_species_name);
                 if (gb_new_species) { // oops exists
