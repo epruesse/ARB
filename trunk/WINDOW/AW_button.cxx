@@ -26,6 +26,9 @@
 #include "aw_awar.hxx"
 #include "aw_window_Xm.hxx"
 
+#if defined(DEBUG)
+#define DUMP_BUTTON_CREATION
+#endif // DEBUG
 
 /*********************************************************************************************************************/
 /*********************************************************************************************************************/
@@ -323,7 +326,78 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
     }
 }
 /****************************************************************************************************************************/
+
+static char *pixmapPath(const char *pixmapName) {
+    return GBS_global_string_copy("%s/lib/pixmaps/%s", GB_getenvARBHOME(), pixmapName);
+}
+
+
+#define MAX_LINE_LENGTH 200
+static const char *detect_bitmap_size(const char *pixmapname, int *width, int *height) {
+    const char *err = 0;
+    
+    *width  = 0;
+    *height = 0;
+
+    char *path = pixmapPath(pixmapname);
+    FILE *in   = fopen(path, "rt");
+    if (in) {
+        const char *subdir = strrchr(pixmapname, '/');
+        char       *name   = strdup(subdir ? subdir+1 : pixmapname);
+        {
+            char *dot       = strrchr(name, '.');
+            if (dot) dot[0] = 0;
+            else  err       = GBS_global_string("expected '.' in '%s'", pixmapname);
+        }
+        int  namelen = strlen(name);
+        char buffer[MAX_LINE_LENGTH];
+        bool done    = false;
+
+        while (!done && !err) {
+            fgets(buffer, MAX_LINE_LENGTH, in);
+            if (strchr(buffer, 0)[-1] != '\n') {
+                err = GBS_global_string("Line to long (%s)", buffer);
+            }
+            else if (strncmp(buffer, "#define", 7) != 0) {
+                done = true;
+            }
+            else {
+                char *name_pos = strstr(buffer+7, name);
+                if (name_pos) {
+                    char *behind = name_pos+namelen;
+                    if (strncmp(behind, "_width ", 7) == 0) *width = atoi(behind+7);
+                    else if (strncmp(behind, "_height ", 8) == 0) *height = atoi(behind+8);
+                }
+            }
+        }
+
+        if (done && ((*width == 0) || (*height == 0))) {
+            err = "size detection failed";
+        }
+
+        fclose(in);
+    }
+    else {
+        err = GBS_global_string("Non-existing pixmap in detect_bitmap_size ('%s')\n", path);
+    }
+
+#if defined(DEBUG)
+    if (err) {
+        printf("Error in detect_bitmap_size('%s'): %s\n", pixmapname, err);
+    }
+#if defined(DUMP_BUTTON_CREATION)
+    printf("Bitmap '%s' has size %i / %i\n", pixmapname, *width, *height);
+#endif // DUMP_BUTTON_CREATION
+#endif // DEBUG
+    return err;
+}
+#undef MAX_LINE_LENGTH
+
 /****************************************************************************************************************************/
+
+Widget AW_window::get_last_button_widget() const {
+    return p_global->get_last_button_widget();
+}
 
 void AW_window::create_autosize_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, unsigned xtraSpace) {
     int   len               = strlen(buttonlabel)+(xtraSpace*2);
@@ -336,13 +410,10 @@ void AW_window::create_autosize_button( const char *macro_name, AW_label buttonl
 
 void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic) {
     AWUSE(mnemonic);
-    Widget button                = 0;
-    Widget label                 = 0;
-    int    x_correcting_for_label;
-    int    width_of_button;
-    int    width_of_label;
-    int    width_of_last_widget  = 0;
-    int    height_of_last_widget = 0;
+
+#if defined(DUMP_BUTTON_CREATION)
+    printf("------------------------------ Button %s\n", buttonlabel);
+#endif // DUMP_BUTTON_CREATION
 
     check_at_pos();
 
@@ -356,57 +427,122 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         }
     }
 
-    width_of_label = this->calculate_string_width( calculate_label_length() );
-    width_of_button = this->calculate_string_width( _at->length_of_buttons );
+#define SPACE_BEHIND_LABEL  10
+#define SPACE_BEHIND_BUTTON 3
+// #define BUTTON_PADDING      2   // space between button text/graphic and button outline
 
-    if ( _at->label_for_inputfield ) {
+#define BUTTON_TEXT_PADDING    4
+#define BUTTON_GRAPHIC_PADDING 12
+
+
+    int  width_of_label       = this->calculate_string_width(calculate_label_length());
+    int  height_of_label      = this->calculate_string_height(1, 0);
+    int  width_of_button      = this->calculate_string_width(_at->length_of_buttons ) + BUTTON_TEXT_PADDING;
+    int  height_of_button     = height_of_label + BUTTON_TEXT_PADDING;
+    bool is_graphical_button  = buttonlabel[0] == '#';
+
+    if (is_graphical_button) {
+        int         width, height;
+        const char *err = detect_bitmap_size(buttonlabel+1, &width, &height);
+        if (!err) {
+            if (width_of_button == BUTTON_TEXT_PADDING) {
+                width_of_button = width + BUTTON_GRAPHIC_PADDING;
+            }
+            else {
+#if defined(DUMP_BUTTON_CREATION)
+                printf("Ignoring width of bitmap\n");
+#endif // DUMP_BUTTON_CREATION
+            }
+            height_of_button = height + BUTTON_GRAPHIC_PADDING;
+        }
+    }
+
+    int width_of_button_and_highlight = width_of_button + (_at->highlight ? 2*(_at->shadow_thickness+1)+1 : 0);
+
+    int x_label = _at->x_for_next_button;
+    int y_label = _at->y_for_next_button;
+
+    int width_of_label_and_spacer = _at->label_for_inputfield ? width_of_label+SPACE_BEHIND_LABEL : 0;  // @@@ FIXME: restrict definition range
+
+    int x_button = x_label + width_of_label_and_spacer;
+    int y_button = y_label;
+
+    int width_of_label_and_button = width_of_label_and_spacer+width_of_button_and_highlight; // @@@ FIXME: restrict definition range
+
+    if (_at->correct_for_at_center) { // not left justified
+        int shiftback = width_of_label_and_button; // shiftback for right justification
+        if (_at->correct_for_at_center == 1) { // center justification
+            shiftback /= 2;
+        }
+#if defined(DUMP_BUTTON_CREATION)
+        printf("shiftback=%i\n", shiftback);
+#endif // DUMP_BUTTON_CREATION
+        x_label  -= shiftback;
+        x_button -= shiftback;
+    }
+
+    // we already did the justification by calculating all positions manually, so..
+    int org_correct_for_at_center = _at->correct_for_at_center; // ..store original justification and..
+    _at->correct_for_at_center = 0; // ..from now on act like "left justified"!
+
+#if defined(DUMP_BUTTON_CREATION)
+    printf("x_label  / y_label  = %i / %i\n", x_label, y_label);
+    printf("x_button / y_button = %i / %i\n", x_button, y_button);
+#endif // DUMP_BUTTON_CREATION
+
+    Widget parent_widget = (_at->attach_any) ? INFO_FORM : INFO_WIDGET;
+    Widget label         = 0;
+
+    if (_at->label_for_inputfield) {
+        _at->x_for_next_button = x_label;
+
         label = XtVaCreateManagedWidget( "label",
                                          xmLabelWidgetClass,
-                                         (_at->attach_any)?INFO_FORM:INFO_WIDGET,
+                                         parent_widget,
                                          XmNwidth, (int)(width_of_label + 2),
                                          RES_LABEL_CONVERT(_at->label_for_inputfield),
                                          XmNrecomputeSize, AW_FALSE,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
                                          XmNfontList, p_global->fontlist,
-                                         (_at->attach_any) ? NULL:XmNx,(int)_at->x_for_next_button,
-                                         XmNy, (int)(_at->y_for_next_button),
+                                         XmNx, (int)(x_label),
+                                         XmNy, (int)(y_label),
                                          NULL );
 
-        if (_at->attach_any){ // +
-            aw_attach_widget(label,_at);
-        }
-
+        if (_at->attach_any) aw_attach_widget(label,_at);
         AW_LABEL_IN_AWAR_LIST(this,label,_at->label_for_inputfield);
-        x_correcting_for_label = width_of_label+10;
-    }
-    else {
-        x_correcting_for_label = 0;
     }
 
-    width_of_last_widget = x_correcting_for_label + width_of_button;
+    _at->x_for_next_button = x_button;
 
-    if ( _at->to_position_exists ) {
-        width_of_button = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label - 3;
-        width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
-    }
-    short height = 0;
-    short width = width_of_button;
-
-    Widget fatherwidget = INFO_WIDGET;
+    Widget fatherwidget = parent_widget; // used as father for button below
     if ( _at->highlight ) {
-        fatherwidget = XtVaCreateManagedWidget( "draw_area",
-                                                xmFrameWidgetClass,
-                                                INFO_WIDGET,
-                                                XmNx, (int) (_at->x_for_next_button + x_correcting_for_label),
-                                                XmNy, (int)(_at->y_for_next_button - 3 - _at->shadow_thickness ),
-                                                XmNmarginWidth, 3,
-                                                XmNmarginHeight,3,
-                                                XmNshadowType, XmSHADOW_IN,
-                                                XmNshadowThickness, _at->shadow_thickness,
-                                                NULL);
+        if (_at->attach_any) {
+#if defined(DEBUG)
+            printf("Attaching highlighted buttons does not work - highlight ignored for button '%s'!\n", buttonlabel);
+#endif // DEBUG
+            _at->highlight = AW_FALSE;
+        }
+        else {
+            int shadow_offset = _at->shadow_thickness;
+            int x_shadow      = x_button;
+            int y_shadow      = y_button - shadow_offset;
+
+            x_button += shadow_offset;
+
+            fatherwidget = XtVaCreateManagedWidget( "draw_area",
+                                                    xmFrameWidgetClass,
+                                                    INFO_WIDGET,
+                                                    XmNx, (int)(x_shadow),
+                                                    XmNy, (int)(y_shadow),
+                                                    // XmNmarginWidth, 3,
+                                                    // XmNmarginHeight,3,
+                                                    XmNshadowType, XmSHADOW_IN,
+                                                    XmNshadowThickness, _at->shadow_thickness,
+                                                    NULL);
+        }
     }
     const char *color_switch = 0;
-    Pixel bg_color = 0;
+    Pixel       bg_color     = 0;
 
     if (_at->background_colorname){
         color_switch = XmNbackground;
@@ -421,101 +557,108 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         }
     }
 
+    Widget  button = 0;
+    char   *mwidth = XmNwidth;
 
-    if (_callback){
-        char *mwidth = XmNwidth;
-        if (!width_of_button) mwidth = 0;
-        if (_at->attach_any){
+    if (width_of_button == BUTTON_TEXT_PADDING) mwidth = 0; // 0 means autodetect (e.g. from picture size)
+
+    if (_callback) {
+        if (_at->attach_any) {
+#if defined(DUMP_BUTTON_CREATION)
+            printf("Attached button with callback\n");
+#endif // DUMP_BUTTON_CREATION
             button = XtVaCreateManagedWidget( "button",
                                               xmPushButtonWidgetClass,
-                                              INFO_FORM,
+                                              fatherwidget,
                                               RES_LABEL_CONVERT(buttonlabel),
+                                              XmNx, (int)(x_button),
+                                              XmNy, (int)(y_button),
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
                                               XmNfontList, p_global->fontlist,
+                                              mwidth, (int)width_of_button,
                                               color_switch, bg_color,
                                               NULL );
-            aw_attach_widget(button,_at,width_of_button + 2);
-            width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
-            height_of_last_widget = _at->to_position_y - _at->y_for_next_button;
+            aw_attach_widget(button,_at);
         }
         else {
+#if defined(DUMP_BUTTON_CREATION)
+            printf("Un-attached button with callback\n");
+#endif // DUMP_BUTTON_CREATION
             button = XtVaCreateManagedWidget( "label",
                                               xmPushButtonWidgetClass,
                                               fatherwidget,
-                                              XmNx, (int) (_at->x_for_next_button + x_correcting_for_label),
-                                              XmNy, (int)(_at->y_for_next_button),
                                               RES_LABEL_CONVERT(buttonlabel),
+                                              XmNx, (int)(x_button),
+                                              XmNy, (int)(y_button),
                                               XmNrecomputeSize, AW_FALSE,
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
                                               XmNfontList, p_global->fontlist,
-                                              mwidth, (int)(width_of_button + 2),
+                                              mwidth, (int)width_of_button,
+                                              // mwidth, (int)(width_of_button + 2),
                                               color_switch, bg_color,
                                               NULL );
         }
         AW_LABEL_IN_AWAR_LIST(this,button,buttonlabel);
-        AW_INSERT_BUTTON_IN_SENS_LIST ( root,
-                                        _at->id_for_next_button, _at->mask_for_next_button, button );
-
+        AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, button );
     }
     else {
+#if defined(DUMP_BUTTON_CREATION)
+        printf("Button w/o callback\n");
+#endif // DUMP_BUTTON_CREATION
         button = XtVaCreateManagedWidget( "label",
                                           xmLabelWidgetClass,
-                                          (_at->attach_any)?INFO_FORM:fatherwidget,
+                                          parent_widget,
                                           XmNrecomputeSize, AW_FALSE,
-                                          XmNx, (int)(_at->x_for_next_button + x_correcting_for_label ),
-                                          XmNy, (int)(_at->y_for_next_button) + 4,
+                                          XmNx, (int)(x_button),
+                                          XmNy, (int)(y_button),
                                           XmNalignment, XmALIGNMENT_BEGINNING,
                                           RES_LABEL_CONVERT(buttonlabel),
                                           XmNfontList, p_global->fontlist,
+                                          mwidth, (int)width_of_button,
                                           color_switch, bg_color,
                                           NULL );
-        if (width_of_button >= this->calculate_string_width(strlen(buttonlabel))){
-            XtVaSetValues( button, XmNwidth, width_of_button + 2, NULL);
-        }
-        if (_at->attach_any){
-            aw_attach_widget(button,_at);
-        }
+
+        // if (width_of_button >= this->calculate_string_width(strlen(buttonlabel))){
+            // XtVaSetValues( button, XmNwidth, width_of_button + 2, NULL);
+        // }
+
+        if (_at->attach_any) aw_attach_widget(button,_at);
         AW_JUSTIFY_LABEL(button,_at->correct_for_at_center);
         AW_LABEL_IN_AWAR_LIST(this,button,buttonlabel);
     }
 
-    if (_at->to_position_exists){
-        if (!height)    height = _at->to_position_y - _at->y_for_next_button;
-        if (!height)    XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
-        height_of_last_widget = height;
-    }
-    else {
-        if (!height) XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
-        width_of_last_widget = x_correcting_for_label + width;
+    short height = 0;
+    short width  = 0;
 
-        height_of_last_widget = height;
-        short div = 1;
-        if (_at->correct_for_at_center) {
-            Widget w = button;
-            if (_at->highlight) w = fatherwidget;
-
-            switch (_at->correct_for_at_center){
-                case 1: div = 2;        // middle centered
-                case 2:             // right justified
-                    XtVaSetValues( w,
-                                   XmNx, ((_at->x_for_next_button + x_correcting_for_label) - (int)(width_of_last_widget-1)/div),
-                                   NULL );
-                    if ( label ) {
-                        XtVaSetValues( label,
-                                       XmNx, ((_at->x_for_next_button) - ((width_of_last_widget-1)/div) ),
-                                       NULL );
-                    }
-                    width_of_last_widget -= width_of_last_widget / div;
-            }
-        }
-        width_of_last_widget += 3;
+    if (_at->to_position_exists) {
+        // size has explicitly been specified in xfig -> calculate
+        height = _at->to_position_y - _at->y_for_next_button;
+        width  = _at->to_position_x - _at->x_for_next_button;
     }
+
+    if (!height || !width) {
+        // ask motif for real button size
+        XtVaGetValues(_at->highlight ? fatherwidget : button,
+                      XmNheight, &height, XmNwidth, &width, NULL);
+    }
+
+#if defined(DUMP_BUTTON_CREATION)
+    printf("width(button)=%i  height=%i  width_of_button(calc)=%i height_of_button=%i"
+           "\nwidth_of_button_and_highlight=%i\n",
+           width, height, width_of_button, height_of_button,
+           width_of_button_and_highlight);
+    printf("height_of_label=%i  width_of_label=%i width_of_label_and_button=%i\n",
+           height_of_label, width_of_label, width_of_label_and_button);
+#endif
+
+    _at->correct_for_at_center = org_correct_for_at_center; // restore original justification
+
     p_w->toggle_field = button;
     this->_set_activate_callback((void *)button);
     this->unset_at_commands();
-    this->increment_at_commands( width_of_last_widget, height_of_last_widget );
+    this->increment_at_commands(width+SPACE_BEHIND_BUTTON, height);
 }
 
 void AW_window::dump_at_position(const char *label) const {
@@ -542,9 +685,11 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
     char **bitmaps = (char**)cd;
     char *path;
     if (var[0] == '0' || var[0] == 'n') {
-        path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[0]+1);
+        path = pixmapPath(bitmaps[0]+1);
+        // path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[0]+1);
     }else{
-        path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[1]+1);
+        path = pixmapPath(bitmaps[1]+1);
+        // path = GBS_global_string_copy("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[1]+1);
     }
     XtVaSetValues( (Widget)wgt, RES_CONVERT( XmNlabelPixmap, path ), NULL );
     free(path);
@@ -552,18 +697,23 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
 
 void AW_window::create_toggle( const char *var_name,const char *no, const char *yes ) {
     AW_cb_struct *cbs = _callback;
-    _callback = (AW_cb_struct *)1;
-    int old_length_of_buttons = _at->length_of_buttons;
-    _at->length_of_buttons = 0;
-    AW_awar *vs;
-    char **bitmaps = new char *[2];
-    bitmaps[0] = GBS_string_eval(no,"*=#*1:##=#",0);
-    bitmaps[1] = GBS_string_eval(yes,"*=#*1:##=#",0);
-    create_button(0,bitmaps[0],0);
+    _callback         = (AW_cb_struct *)1;
 
-    _at->length_of_buttons =    old_length_of_buttons;
+    AW_awar  *vs;
+    char    **bitmaps = new char *[2];
+    bitmaps[0]        = GBS_string_eval(no,"*=#*1:##=#",0);
+    bitmaps[1]        = GBS_string_eval(yes,"*=#*1:##=#",0);
 
-    vs= this->get_root()->awar(var_name);
+    {
+        int old_length_of_buttons = _at->length_of_buttons;
+        _at->length_of_buttons    = 0;
+
+        create_button(0,bitmaps[0],0);
+
+        _at->length_of_buttons = old_length_of_buttons;
+    }
+
+    vs = this->get_root()->awar(var_name);
 
     char *var_value = vs->read_as_string();
     this->update_toggle((int*)p_w->toggle_field,var_value,(AW_CL)bitmaps);
@@ -1188,7 +1338,7 @@ void AW_window::select_index(AW_selection_list *selection_list, const char *awar
 void AW_window::move_selection(AW_selection_list *selection_list, const char *awar_name, int offset) {
     int index = get_index_of_current_element(selection_list, awar_name);
     select_index(selection_list, awar_name, index+offset);
-    
+
     //     int curr_idx;
     //     {
     //         char *curr_value = list_awar->read_string();
@@ -1586,7 +1736,7 @@ AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, A
     if (destinationList) clear_selection_list(destinationList);
     else {
         printf(" Destination list not initialised!!\n");
-        return 0; 
+        return 0;
     }
 
     const char *readListItem = sourceList->first_element();
