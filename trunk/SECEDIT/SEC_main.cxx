@@ -395,7 +395,7 @@ void SEC_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type)
 
 static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *helix, int *no_of_helices_ptr)
 {
-    int allocated = 100;
+    int allocated = 1000;
     int no_of_helices = 0;
     char *rel_helix = (char*)malloc(sizeof(*rel_helix)*allocated);
     int pos;
