@@ -181,7 +181,7 @@ void nt_main_startup_main_window(AW_root *aw_root){
         GB_ERROR error = GBCMS_open(":",0,gb_main);
         if (error) {
             aw_message(
-                       "THIS PROGRAMM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION !!!\n"
+                       "THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION !!!\n"
                        "(MAYBE THERE IS ALREADY ANOTHER SERVER RUNNING)\n\n"
                        "You cannot use any EDITOR or other external SOFTWARE with this dataset!\n\n"
                        "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
@@ -242,7 +242,7 @@ void main3(AW_root *aw_root)
     if (GB_read_clients(gb_main)==0) {
         GB_ERROR error = GBCMS_open(":",0,gb_main);
         if (error) {
-            aw_message("THIS PROGRAMM IS NOT THE ONLY DB SERVER !!!\nDONT USE ANY ARB PROGRAMM !!!!");
+            aw_message("THIS PROGRAM IS NOT THE ONLY DB SERVER !!!\nDONT USE ANY ARB PROGRAM !!!!");
         }else{
             aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt,0,0);
             error = nt_check_database_consistency();
@@ -294,6 +294,12 @@ AW_window *nt_create_intro_window(AW_root *awr)
 
     aws->at("logo");
     aws->create_button(0,"#logo.bitmap");
+
+    aws->at("version");
+    aws->create_button(0, GBS_global_string("Version " DATE), 0); // version
+    
+    aws->at("copyright");
+    aws->create_button(0, GBS_global_string("(C) 1993-" DATE_YEAR), 0); 
 
     //  aws->button_length(25);
 
