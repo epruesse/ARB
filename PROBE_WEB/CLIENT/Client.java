@@ -147,6 +147,8 @@ public ProbesGUI getDisplay()
 
 public void matchProbes(String probeInfo) {
     boolean needUpdate = false;
+    String  error      = null;
+
     if (probeInfo == null) {
         root.unmarkSubtree();   // unmark all
         needUpdate = true;
@@ -156,27 +158,33 @@ public void matchProbes(String probeInfo) {
         int komma2 = probeInfo.indexOf(',', komma1+1);
 
         if (komma1 == -1 || komma2 == -1) {
-            System.out.println("Kommas expected in '"+probeInfo+"'");
+            error = "Kommas expected in '"+probeInfo+"'";
         }
         else {
             String groupId = probeInfo.substring(komma2+1);
-            members = groupCache.getGroupMembers(webAccess, groupId, komma1);
-            updateDetails(probeInfo,members);
+            members        = groupCache.getGroupMembers(webAccess, groupId, komma1);
             if (members == null) {
-                System.out.println("Error during probe match: "+groupCache.getError());
+                error = "during probe match: "+groupCache.getError();
             }
             else {
-                // System.out.println("Members='"+members+"'");
+                updateDetails(probeInfo,members);
                 needUpdate = root.markSpecies(","+members+",");
             }
         }
     }
-    if (needUpdate)
-        {
-            display.getTreeDisplay().repaint();
 
-        }
-    else System.out.println("Marks did not change.");
+    if (error != null) {
+        root.unmarkSubtree();
+        showError(error);
+        needUpdate = true;
+    }
+
+    if (needUpdate) {
+        display.getTreeDisplay().repaint();
+    }
+    else {
+        System.out.println("Marks did not change.");
+    }
 }
 
 public void updateNodeInformation(String encodedPath)
@@ -185,29 +193,42 @@ public void updateNodeInformation(String encodedPath)
         list.removeAll();
         list.add("wait..");
 
-        String       answer       = webAccess.retrieveNodeInformation(encodedPath);
-        ServerAnswer parsedAnswer = new ServerAnswer(answer, true, false);
+        String answer = webAccess.retrieveNodeInformation(encodedPath);
 
-        if (parsedAnswer.hasError()) {
-            String error = parsedAnswer.getError();
-            System.out.println("Error while retrieving probe information: "+error);
+        if (answer == null) { // error during retrieval
+            list.removeAll();
+            root.unmarkSubtree();
+            showError(webAccess.getLastRequestError());
         }
         else {
-            list.setContents(parsedAnswer);
+            ServerAnswer parsedAnswer = new ServerAnswer(answer, true, false);
 
-            if (parsedAnswer.hasKey("probe0")) { // if we found probes
-                // select the first one
-                list.select(0);
-                // list.requestFocus(); // doesn't work
-                matchProbes(list.getProbeInfo(0)); // so we do the action manually
+            if (parsedAnswer.hasError()) {
+                String error = parsedAnswer.getError();
+                System.out.println("Error while retrieving probe information: "+error);
             }
             else {
-                root.unmarkSubtree();
-                display.getTreeDisplay().repaint();
+                list.setContents(parsedAnswer);
+
+                if (parsedAnswer.hasKey("probe0")) { // if we found probes
+                    // select the first one
+                    list.select(0);
+                    // list.requestFocus(); // doesn't work
+                    matchProbes(list.getProbeInfo(0)); // so we do the action manually
+                }
+                else {
+                    root.unmarkSubtree();
+                    display.getTreeDisplay().repaint();
+                }
             }
         }
     }
 
+public void showError(String error)
+    {
+        TextArea ta = display.getDetails();
+        ta.setText(error);
+    }
 
     // should be grouped in separate class later on
 public void updateDetails (String probeInfo, String shortNames)
@@ -239,29 +260,29 @@ public void updateDetails (String probeInfo, String shortNames)
                 ta.append("%GC-Content:  " + (gc*100)/probeSequenz.length() + "%\n");
 
                 int snlen = shortNames.length();
-                
+
                 if (snlen != 0)
                     {
                         int komma       = 0;
                         int begin       = 0;
                         int hit_count = 0;
-                        
+
                         while (begin < snlen) { // detect number of hits
-                            komma                  = shortNames.indexOf(',', begin);                            
+                            komma                  = shortNames.indexOf(',', begin);
                             if (komma == -1) komma = snlen;
                             hit_count++;
                             begin                  = komma+1;
                         }
-                        
+
                         ta.append("\nNumber of hits: "+hit_count+"\n");
-                        
+
                         komma = 0;
                         begin = 0;
                         while (begin < snlen)
                             {
                                 komma                  = shortNames.indexOf(',', begin);
                                 if (komma == -1) komma = snlen;
-                                
+
                                 String sn = shortNames.substring(begin,komma);
                                 String details;
 
