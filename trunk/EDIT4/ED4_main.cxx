@@ -15,8 +15,7 @@
 #include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <awt.hxx>
-#define _USE_AW_WINDOW
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
 
@@ -537,7 +536,7 @@ int main(int argc,char **argv)
         err = 0;
     }
 
-    ED4_ROOT->helix = new BI_helix(ED4_ROOT->aw_root);
+    ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
     switch (ED4_ROOT->alignment_type) {
         case GB_AT_RNA:

@@ -61,7 +61,7 @@ class AP_tree;
 class AWT_reference;
 class AWT_seq_colors;
 class BI_ecoli_ref;
-class BI_helix;
+class AW_helix;
 class ST_ML;
 class ed_key;
 
@@ -1130,7 +1130,7 @@ public:
     AWT_reference           *reference;
     AWT_seq_colors          *sequence_colors;
     ST_ML                   *st_ml;
-    BI_helix                *helix;
+    AW_helix                *helix;
     long                     helix_spacing;
     char                    *protstruct; // protein structure summary
     long                     protstruct_len; // protein structure summary

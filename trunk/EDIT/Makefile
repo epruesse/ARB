@@ -7,7 +7,7 @@ CPP_OBJECTS = edit.o edit_naligner.o edit_tools.o ed_conf.o
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c -D_USE_AW_WINDOW $(@:.o=.cxx) $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $(@:.o=.cxx) $(CPPINCLUDES)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -48,6 +48,7 @@ edit.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit.o: $(ARBHOME)/INCLUDE/arbdbt.h
 edit.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+edit.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -80,4 +81,3 @@ edit_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-edit_tools.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

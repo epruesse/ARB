@@ -21,8 +21,7 @@
 
 #include "../NTREE/nt_date.h"
 
-#define _USE_AW_WINDOW
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
 
@@ -954,7 +953,7 @@ struct AWTC_faligner_cd faligner_client_data =
  get_selected_range,            // aligner fetches column range of selection via this function
  get_first_selected_species,    // aligner fetches first and..
  get_next_selected_species,         // .. following selected species via this functions
- 0 // BI_helix (needed for island_hopping)
+ 0 // AW_helix (needed for island_hopping)
  };
 
 static GB_ERROR ED4_delete_temp_entries(GBDATA *species, void **alignment_char_ptr)

@@ -10,7 +10,7 @@
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include <BI_helix.hxx>
+#include <AW_helix.hxx>
 #include <awt_seq_colors.hxx>
 #include <awt.hxx>
 #include <awtc_rename.hxx>
@@ -783,7 +783,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
         int pos = -1; // move cursor to this sequence position (-1=don't move)
 
         if (helix_nr!=0) {
-            BI_helix *helix = ED4_ROOT->helix;
+            AW_helix *helix = ED4_ROOT->helix;
             unsigned p;
 
             for (p=0; p<helix->size; p++) {

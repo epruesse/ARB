@@ -11,7 +11,6 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
-#include <BI_helix.hxx>
 #include "edit.hxx"
 
 
