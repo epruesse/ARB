@@ -229,33 +229,35 @@ static int ptnd_count_mishits2(POS_TREE *pt)
 }
 extern "C" char *get_design_info(PT_tprobes  *tprobe)
 {
-    char *buffer = (char *)GB_give_buffer(2000);
-    char *probe = (char *)GB_give_buffer2(tprobe->seq_len + 10);
-    char sprint[10];
-    PT_pdc *pdc = (PT_pdc *)tprobe->mh.parent->parent;
-    char	*p;
-    int	i;
-    int	sum;
+    char   *buffer = (char *)GB_give_buffer(2000);
+    char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
+    PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
+    char   *p;
+    int     i;
+    int     sum;
+
     p = buffer;
+
+    // target
     strcpy(probe,tprobe->sequence);
-    PT_base_2_string(probe,0);			/* convert probe to real ASCII */
-    sprintf(sprint,"%%-%is ",pdc->probelen+1);
-    sprintf(p,sprint,probe);
+    PT_base_2_string(probe,0);  /* convert probe to real ASCII */
+    sprintf(p, "%-*s", pdc->probelen+1, probe);
     p += strlen(p);
+
     int apos = tprobe->apos;
-    int c = 0;
-    int cs = '=';
-    {			// search nearest hit
-        for (c=0;c<ALPHA_SIZE;c++){
-            if (!pdc->pos_groups[c]){ // new group
+    int c    = 0;
+    int cs   = '=';
+    { // search nearest hit
+        for (c=0;c<ALPHA_SIZE;c++) {
+            if (!pdc->pos_groups[c]) { // new group
                 pdc->pos_groups[c] = tprobe->apos;
                 break;
             }
             int dist = tprobe->apos - pdc->pos_groups[c];
             if (dist<0) dist = -dist;
-            if ( dist < pdc->probelen){
+            if ( dist < pdc->probelen) {
                 apos = tprobe->apos - pdc->pos_groups[c];
-                if (apos > 0){
+                if (apos > 0) {
                     cs = '+';
                 }else{
                     apos = -apos; cs = '-';
@@ -264,25 +266,38 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
             }
         }
     }
-    sprintf(p,"%2i %c%c%4i %4li ",tprobe->seq_len,c+'A',cs,apos, PT_abs_2_rel(tprobe->apos));
+
+    // le apos ecol
+    sprintf(p,"%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs, apos, PT_abs_2_rel(tprobe->apos));
     p += strlen(p);
-    sprintf(p,"%4i  ",tprobe->groupsize);
+
+    // grps
+    sprintf(p,"%4i ",tprobe->groupsize);
     p += strlen(p);
-    sprintf(p,"%4.1f ",((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
+
+    // G+C
+    sprintf(p,"%-4.1f ",((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
     p += strlen(p);
-    sprintf(p,"%5.1f  |",pt_get_temperature(tprobe->sequence));
+
+    // 4GC+2AT
+    sprintf(p,"%-7.1f ", pt_get_temperature(tprobe->sequence));
     p += strlen(p);
-    for (sum=i=0;i<PERC_SIZE;i++) {
-        sum+= tprobe->perc[i];
-        sprintf(p,"%2i,",sum);
-        p += strlen(p);
-    }
+
+    // probe string
     probe = reverse_probe(tprobe->sequence,0);
     complement_probe(probe,0);
-    PT_base_2_string(probe,0);			/* convert probe to real ASCII */
-    sprintf(p," %s",probe);
-    free(probe);
+    PT_base_2_string(probe,0);	/* convert probe to real ASCII */
+    sprintf(p,"%-*s |", pdc->probelen, probe);
+    free(probe);    
     p += strlen(p);
+
+    // non-group hits by temp. decrease
+    for (sum=i=0;i<PERC_SIZE;i++) {
+        sum+= tprobe->perc[i];
+        sprintf(p,"%3i,",sum);
+        p += strlen(p);
+    }
+
     return buffer;
 }
 
@@ -308,28 +323,23 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
             pdc->min_gc*100.0,pdc->max_gc*100.0,
             pdc->minpos, pdc->maxpos,
             pdc->mishit, pdc->mintarget*100.0);
-    s += strlen(s);
-    char sprint[10];
-    sprintf(sprint,"%%-%is ",pdc->probelen+1);
 
-    sprintf(s,sprint,"Target");
     s += strlen(s);
 
-    sprintf(s,"%2s %4s   %4s ","le","apos","ecol");
+    sprintf(s,"%-*s", pdc->probelen+1, "Target");
     s += strlen(s);
 
-    sprintf(s,"%4s ","grps");		// groupsize
+    sprintf(s,"%2s %8s %4s ","le","apos","ecol");
     s += strlen(s);
 
-    sprintf(s,"%4s %7s |"," G+C","4GC+2AT");
+    sprintf(s,"%4s ","grps"); // groupsize
     s += strlen(s);
 
-    sprintf(sprint,"%%-%is ",PERC_SIZE*3);
-    sprintf(s,sprint,"Decrease T by n*.3C -> probe matches n non group species");
+    sprintf(s,"%-4s %-7s %-*s | "," G+C","4GC+2AT", pdc->probelen, "Probe sequence");
     s += strlen(s);
 
-    sprintf(s,"Probe sequence");
-    s += strlen(s);
+    sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
+    // s += strlen(s);
 
     return buffer;
 }
@@ -379,7 +389,7 @@ static void ptnd_first_check(PT_pdc *pdc)	/* checks the direkt mishits */
     PT_tprobes	*tprobe, *tprobe_next;
     for (	tprobe = pdc->tprobes;
             tprobe;
-            tprobe = tprobe_next ){
+            tprobe = tprobe_next ) {
         tprobe_next = tprobe->next;
         psg.apos = 0;
         tprobe->mishit = ptnd_count_mishits(tprobe->sequence,psg.pt,0);
@@ -400,10 +410,10 @@ static void ptnd_check_position(PT_pdc *pdc)	/* checks the direkt mishits */
 
     for (	tprobe = pdc->tprobes;
             tprobe;
-            tprobe = tprobe_next ){
+            tprobe = tprobe_next ) {
         tprobe_next = tprobe->next;
         long relpos = PT_abs_2_rel(tprobe->apos);
-        if (relpos < pdc->minpos || relpos > pdc->maxpos){
+        if (relpos < pdc->minpos || relpos > pdc->maxpos) {
             destroy_PT_tprobes(tprobe);
         }
     }
@@ -418,7 +428,7 @@ static void ptnd_check_bonds(PT_pdc *pdc, int match)	/* checks probe hairpin bon
     double	sbond;
     for (	tprobe = pdc->tprobes;
             tprobe;
-            tprobe = tprobe_next ){
+            tprobe = tprobe_next ) {
         tprobe_next = tprobe->next;
         tprobe->seq_len = strlen(tprobe->sequence);
         sbond = 0.0;
@@ -441,10 +451,10 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc)
     while (pdc->parts) destroy_PT_probeparts(pdc->parts);
     for (	tprobe = pdc->tprobes;
             tprobe;
-            tprobe = tprobe->next ){
+            tprobe = tprobe->next ) {
         probelen = strlen(tprobe->sequence);
         probelen -= DOMAIN_MIN_LENGTH;
-        for (pos = 0; pos < probelen; pos ++ ){
+        for (pos = 0; pos < probelen; pos ++ ) {
             parts = create_PT_probeparts();
             parts->sequence = strdup(tprobe->sequence+pos);
             parts->source = tprobe;
@@ -463,7 +473,7 @@ static void ptnd_duplikate_probepart_rek(PT_pdc *pdc, char *insequence, int deep
     double	ndt,nsum_bonds;
     char	*sequence;
     sequence = strdup(insequence);
-    if (deep >= PT_PART_DEEP){	/* now do it */
+    if (deep >= PT_PART_DEEP) {	/* now do it */
         newparts = create_PT_probeparts();
         newparts->sequence = sequence;
         newparts->source = parts->source;
@@ -525,7 +535,7 @@ static void ptnd_sort_parts(PT_pdc *pdc)
     my_list = (PT_probeparts **)calloc(sizeof(void *),list_len);
     for (	i=0,	tprobe = pdc->parts;
             tprobe;
-            i++,tprobe=tprobe->next	){
+            i++,tprobe=tprobe->next	) {
         my_list[i] = tprobe;
     }
     GB_mergesort((void **)my_list,0,list_len,ptnd_compare_parts,0);
@@ -541,7 +551,7 @@ static void ptnd_remove_duplikated_probepart(PT_pdc *pdc)
     PT_probeparts	*parts, *parts_next;
     for (	parts = pdc->parts;
             parts;
-            parts = parts_next){
+            parts = parts_next) {
         parts_next = parts->next;
         if (parts_next) {
             if ( (parts->source== parts_next->source) && !strcmp(parts->sequence, parts_next->sequence)) {	/* equal sequence */
@@ -575,7 +585,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
         pos = rpos-1;
         start--;			/* test the base left of start */
         split = 0;
-        while (start>=0){
+        while (start>=0) {
             if (pos<0) break;	/* out of sight */
             h = ptnd_check_split(ptnd.pdc, probe, start,psg.data[name].data[pos]);
             if (h>0.0 && !split)	return;	/* there is a longer part matching this */
@@ -594,7 +604,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
     tprobe->perc[pos] ++;
     if (ptnd.new_match) {			/* save the result in probematch */
         PT_probematch *match;
-        if (psg.data[name].match){
+        if (psg.data[name].match) {
             if (psg.data[name].match->dt < ndt) return;
             /* there is a better hit for that sequence */
             match = psg.data[name].match;
@@ -640,7 +650,7 @@ static int ptnd_chain_check_part(int name, int apos, int rpos, long split)
         pos = rpos+psg.height;
         while (probe[height] && (base = psg.data[name].data[pos])) {
             if (!split && (h = ptnd_check_split(ptnd.pdc, probe, height,
-                                                base) < 0.0) ){
+                                                base) < 0.0) ) {
                 dt -= h;
                 split = 1;
             }else{
@@ -706,7 +716,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
                     if (split) {
                         h = ptnd_check_split(ptnd.pdc, probe, height,i);
                         if (h>0.0) ndt = dt+h; else ndt = dt-h;
-                    }else	if ((h = ptnd_check_split(ptnd.pdc, probe, height,i)) < 0.0 ){
+                    }else	if ((h = ptnd_check_split(ptnd.pdc, probe, height,i)) < 0.0 ) {
                         ndt = dt - h;
                         nsplit = 1;
                     }else{
@@ -731,11 +741,11 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
             if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)		/* after end */
                 return;
             while (probe[height] && (ref = psg.data[name].data[pos])) {
-                if (split){
+                if (split) {
                     h = ptnd_check_split(ptnd.pdc, probe, height,ref);
                     if (h<0.0) dt -= h; else dt += h;
                 }else if ( (h = ptnd_check_split(ptnd.pdc, probe, height,
-                                                 ref)) < 0.0 ){
+                                                 ref)) < 0.0 ) {
                     dt -= h;
                     split = 1;
                 }else{
@@ -764,7 +774,7 @@ static void ptnd_check_probepart(PT_pdc *pdc)
     ptnd.pdc = pdc;
     for (	parts = pdc->parts;
             parts;
-            parts = parts->next){
+            parts = parts->next) {
         ptnd.parts = parts;
         ptnd_check_part(parts->sequence, psg.pt, 0, parts->dt, parts->sum_bonds,0);
     }
@@ -813,27 +823,27 @@ extern "C" {
     }
 }
 
-static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, register char *sequence, int seq_len, register int probe_len, char *prefix, int prefix_len){
+static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, register char *sequence, int seq_len, register int probe_len, char *prefix, int prefix_len) {
     register int pos;
     register int c;
     //printf ("Size of sequence %i\n",seq_len);
-    if (*prefix){
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++){
+    if (*prefix) {
+        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
             if (   (*prefix!= *sequence ||
                     strncmp(sequence,prefix,prefix_len)) ) continue;
             /* partition search, else very large hash tables (>60 mbytes) 	*/
             c = sequence[probe_len];
             sequence[probe_len] = 0;
-            if (!ptnd_check_tprobe(pdc,sequence,probe_len)){
+            if (!ptnd_check_tprobe(pdc,sequence,probe_len)) {
                 GBS_incr_hash(hash,sequence);
             }
             sequence[probe_len] = c;
         }
     }else{
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++){
+        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
             c = sequence[probe_len];
             sequence[probe_len] = 0;
-            if (!ptnd_check_tprobe(pdc,sequence,probe_len)){
+            if (!ptnd_check_tprobe(pdc,sequence,probe_len)) {
                 GBS_incr_hash(hash,sequence);
             }
             sequence[probe_len] = c;
@@ -848,47 +858,54 @@ static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
 }
 
 static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
-    GB_HASH    *hash;
-    // int         name;
-    int         partsize;
-    char        partstring[256];
-    const long  defhash      = 500000;
-    int        *group_idx    = new int[group_count];
-    int         maxseqlength = 0; // of marked species/genes
+    int                 *group_idx             = new int[group_count];
+    unsigned long        datasize              = 0; // of marked species/genes
+    unsigned long        maxseqlength          = 0; // of marked species/genes
 
+    // get group indices and count datasize of marked species
     {
         int used_idx = 0;
         for (int name = 0; name < psg.data_count; name++) {
             if(psg.data[name].is_group == 1) {
-                group_idx[used_idx++] = name; // store marked group indices
-                if (psg.data[name].size > maxseqlength) {
-                    maxseqlength = psg.data[name].size;
-                }
+                group_idx[used_idx++]                  = name; // store marked group indices
+                unsigned long size                     = psg.data[name].size;
+                datasize                              += size;
+                if (datasize<size) datasize            = ULONG_MAX; // avoid overflow!
+                if (size > maxseqlength) maxseqlength  = size;
             }
         }
         pt_assert(used_idx == group_count);
     }
 
-    // long defsize = psg.max_size * ptnd.locs->group_count;
-    long defsize = maxseqlength * ptnd.locs->group_count;
-    for (partsize=0; defsize>defhash;partsize++) defsize /= 4; // 4 codes
-
-    pt_assert(partsize<256);
+    unsigned long outer_hash_size;
+    int           partsize = 0; // no partitions
     {
-        int partitions = partsize == 0 ? 1 : 4;
+        const unsigned long max_allowed_hash_size = 1000000; // approx.
+        const unsigned long max_allowed_tprobes   = (unsigned long)(max_allowed_hash_size*0.66); // results in 66% fill rate for hash (which is much!)
 
-        for (int p = 1; p < partsize; ++p) partitions *= 4;
+        // tests found about 5-8% tprobes (in relation to datasize) -> we use 10% here
+        unsigned long estimated_no_of_tprobes = (unsigned long)((datasize-pdc->probelen+1)*0.10+0.5);
 
-        if (partitions>100) {
-            printf("Performance warning: Due to the max. sequence length and the number of probes\n"
-                   "this probe design will be very slow (%i times slower than possible)\n", partitions);
+        while (estimated_no_of_tprobes > max_allowed_tprobes) {
+            partsize++;
+            estimated_no_of_tprobes /= 4; // 4 different bases
         }
 
+        outer_hash_size = (unsigned long)(estimated_no_of_tprobes*1.5);
+
 #if defined(DEBUG)
-        printf("partsize=%i -> %i partitions to search\n", partsize, partitions);
+        printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu outer_hash_size=%lu\n",
+               group_count, datasize, partsize, estimated_no_of_tprobes, outer_hash_size);
 #endif // DEBUG
     }
 
+#if defined(DEBUG)
+    GBS_clear_hash_statistic_summary("outer");
+#endif // DEBUG
+
+    const int hash_multiply = 4; // hash fill ratio is 1/hash_multiply
+
+    char partstring[256];
     PT_init_base_string_counter(partstring,PT_A,partsize);
     while (!PT_base_string_counter_eof(partstring)) {
 #if defined(DEBUG)
@@ -899,30 +916,50 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         fputs("'\n", stdout);
 #endif // DEBUG
 
-        hash = GBS_create_hash(defhash,0); // count in how many groups/sequences the tprobe occurs
+        GB_HASH *hash = GBS_create_hash(outer_hash_size,0); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
+
+#if defined(DEBUG)
+        GBS_clear_hash_statistic_summary("inner");
+#endif // DEBUG
 
         // for (name = 0; name < psg.data_count; name++) {
             // if(psg.data[name].is_group != 1) continue;
         for (int g = 0; g<group_count; ++g) {
-            int name = group_idx[g];
-
-            GB_HASH *hash_one = GBS_create_hash(defhash,0); // count tprobe occurances for one group/sequence
+            int      name             = group_idx[g];
+            long     possible_tprobes = psg.data[name].size-pdc->probelen+1;
+            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply,0); // count tprobe occurances for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
             GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+#if defined(DEBUG)
+            GBS_calc_hash_statistic(hash_one, "inner", 0);
+#endif // DEBUG
             GBS_free_hash(hash_one);
         }
         PT_sequence *seq;
-        for ( seq = pdc->sequences; seq; seq = seq->next){
-            GB_HASH *hash_one = GBS_create_hash(defhash,0); // count tprobe occurances for one group/sequence
+        for ( seq = pdc->sequences; seq; seq = seq->next) {
+            long     possible_tprobes = seq->seq.size-pdc->probelen+1;
+            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply,0); // count tprobe occurances for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
             GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
+#if defined(DEBUG)
+            GBS_calc_hash_statistic(hash_one, "inner", 0);
+#endif // DEBUG
             GBS_free_hash(hash_one);
         }
 
+#if defined(DEBUG)
+        GBS_print_hash_statistic_summary("inner");
+#endif // DEBUG
         GBS_hash_do_loop(hash,ptnd_build_probes_collect);
+#if defined(DEBUG)
+        GBS_calc_hash_statistic(hash, "outer", 1);
+#endif // DEBUG
         GBS_free_hash(hash);
         PT_inc_base_string_count(partstring,PT_A,PT_B_MAX,partsize);
     }
+#if defined(DEBUG)
+    GBS_print_hash_statistic_summary("outer");
+#endif // DEBUG
 }
 
 #if 0
@@ -932,7 +969,7 @@ static void ptnd_print_probes(PT_pdc *pdc) {
     int	i;
     for (	tprobe = pdc->tprobes;
             tprobe;
-            tprobe = tprobe->next ){
+            tprobe = tprobe->next ) {
         strncpy(buffer,tprobe->sequence,250);
         buffer[250] = 0;
         PT_base_2_string(buffer,0);
@@ -966,7 +1003,7 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
     }
 
     PT_sequence *seq;
-    for ( seq = pdc->sequences; seq; seq = seq->next){ // Convert all external sequence to internal format
+    for ( seq = pdc->sequences; seq; seq = seq->next) { // Convert all external sequence to internal format
         seq->seq.size = probe_compress_sequence(seq->seq.data);
         locs->group_count++;
     }
