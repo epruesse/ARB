@@ -70,10 +70,17 @@ AW_window *NT_create_organism_window(AW_root *aw_root);
 /* ad_trees.cxx */
 
 /* ad_ali.cxx */
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
+AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown);
 
 /* ad_ext.cxx */
+void NT_create_extendeds_var(AW_root *aw_root, AW_default aw_def);
+AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_transpro.cxx */
+AW_window *NT_create_dna_2_pro_window(AW_root *root);
+AW_window *NT_create_realign_dna_window(AW_root *root);
+void NT_create_transpro_variables(AW_root *root, AW_default db1);
 
 /* AP_consensus.cxx */
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
