@@ -76,7 +76,7 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
     if (after) index = (int)after->index+1; else index = 0;
 
     for (   ; index < end; index++) {
-        if ( (key_quark<0) || ((int)header[index].flags.key_quark  == key_quark) )
+        if ( (key_quark<0 && ((int)header[index].flags.key_quark != 0)) || ((int)header[index].flags.key_quark  == key_quark) )
         {
             if ( (int)header[index].flags.changed >= gb_deleted) continue;
             if (!(gb=GB_HEADER_LIST_GBD(header[index])))
