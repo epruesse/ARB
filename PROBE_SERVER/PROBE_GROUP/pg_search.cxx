@@ -4,6 +4,9 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
+#include <string>
+#include <deque>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -445,30 +448,36 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
 
     return 0;
 }
-void PG_find_probe_for_subtree(GBDATA *node,std::set<SpeciesID>species,std::set<string> *probe){
-    if(!node) return;
+void PG_find_probe_for_subtree(GBDATA *node,const deque<SpeciesID>& species, deque<string>& probe) {
+    if (!node) return;
     GBDATA *pg_node=0;
 
-    set<SpeciesID>::const_iterator i;
-    for(i=species.begin();i!=species.end();++i){
-        if(!node) break;
+    deque<SpeciesID>::const_iterator i;
+    for (i=species.begin();i!=species.end();++i){
+        if (!node) break;
+
         int pg_id;
-        do{
+        do {
             pg_id=atoi(PG_get_id(node).c_str());
             if(pg_id==*i) break;
-        }while((node=GB_find(node,"node",0,this_level|search_next)));
-        if(pg_id!=*i) break;
-        pg_node=node;
-        node=GB_find(node,"node",0,down_level);
+        }
+        while ( (node = GB_find(node,"node",0,this_level|search_next)) );
+
+        if (pg_id!=*i) break;
+
+        pg_node = node;
+        node    = GB_find(node,"node",0,down_level);
     }
 
-    if(i==species.end()){
-        GBDATA *pg_group=GB_find(pg_node,"group",0,down_level);
-        if(pg_group){
-            GBDATA *pg_probe=GB_find(pg_group,"probe",0,down_level);
-            do{
-                (*probe).insert(GB_read_string(pg_probe));
-            }while((pg_probe=GB_find(pg_probe,"probe",0,this_level|search_next)));
+    if (i==species.end()) {
+        GBDATA *pg_group = GB_find(pg_node,"group",0,down_level);
+        if (pg_group) {
+            for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
+                 pg_probe;
+                 pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
+            {
+                probe.push_back(GB_read_char_pntr(pg_probe));
+            }
         }
     }
 

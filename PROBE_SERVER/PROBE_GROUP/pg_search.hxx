@@ -7,6 +7,9 @@
 #ifndef __PG_DB_HXX__
 #include "pg_db.hxx"
 #endif
+#ifndef DEQUE
+#include <deque>
+#endif
 
 // initialization (needed for all functions below):
 GB_ERROR 	PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...));
@@ -30,8 +33,8 @@ struct PG_probe_match_para {
 GB_ERROR 	PG_probe_match(PG_Group& g, const PG_probe_match_para& para, const char *for_probe);
 
 GBDATA *PG_find_species(GBDATA *node,int id,long gbs);
-void PG_find_probe_for_subtree(GBDATA *node,std::set<SpeciesID>species,std::set<string> *probe);
-string PG_get_id(GBDATA *node);
+void    PG_find_probe_for_subtree(GBDATA *node,const std::deque<SpeciesID>& species, std::deque<std::string>& probe);
+string  PG_get_id(GBDATA *node);
 
 #else
 #error pg_search.hxx included twice
