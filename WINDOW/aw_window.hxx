@@ -164,6 +164,8 @@ public:
     const char *next_element();
 };
 
+struct AW_option_menu_struct;
+
 class AW_window {
 private:
     void all_menus_created();
@@ -212,7 +214,7 @@ public:
     void update_text_field( int *widget, const char *var_value );
 
     void create_invisible( int columns );
-    void update_option_menu( int option_menu_number );
+    // void update_option_menu( int option_menu_number );
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color );
     void update_toggle_field( int toggle_field_number );
     void update_selection_list_intern( AW_selection_list *selection_list );
@@ -397,18 +399,26 @@ public:
     // with scrollbars
 
 
-    // ***** option_menu is a static menu (only one selection visible at a time)
-    void create_option_menu( const char *awar_name, AW_label label=0,const char *mnemonic=0 );
-    // for string
-    void insert_option( AW_label choice_label, const char *mnemonic,const char *var_value, const char *name_of_color = 0);
-    void insert_default_option( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0 );
-    // for int
-    void insert_option( AW_label choice_label, const char *mnemonic, int var_value, const char *name_of_color = 0 );
-    void insert_default_option( AW_label choice_label, const char *mnemonic, int var_value, const char *name_of_color = 0 );
-    // for float
-    void insert_option( AW_label choice_label, const char *mnemonic, float var_value, const char *name_of_color = 0 );
-    void insert_default_option( AW_label choice_label, const char *mnemonic, float var_value, const char *name_of_color = 0 );
+    // ***** option_menu is a menu where only one selection is visible at a time
+    AW_option_menu_struct *create_option_menu( const char *awar_name, AW_label label=0,const char *mnemonic=0 );
+    void clear_option_menu( AW_option_menu_struct *oms); // used to redefine available options
+
+private:
+    void insert_option_internal( AW_label choice_label, const char *mnemonic,const char *var_value,  const char *name_of_color, bool default_option);
+    void insert_option_internal( AW_label choice_label, const char *mnemonic,int var_value,          const char *name_of_color, bool default_option);
+    void insert_option_internal( AW_label choice_label, const char *mnemonic,float var_value,        const char *name_of_color, bool default_option);
+public: 
+    
+    void insert_option         ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0); // for string
+    void insert_default_option ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0 );
+    void insert_option         ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 ); // for int
+    void insert_default_option ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 );
+    void insert_option         ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 ); // for float
+    void insert_default_option ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 );
+    
     void update_option_menu( void );
+    void update_option_menu( AW_option_menu_struct *); // dont use this
+
 
     // ***** toggle_field is a static menu (all items are visible and only one is selected)
     void create_toggle_field( const char *awar_name, AW_label label, const char *mnemonic );
