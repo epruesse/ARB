@@ -356,7 +356,7 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be syncronized (ahead!)
 // before deciding "X was realigned correctly"
 
-GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
+GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *neededLength)
 {
     //     GBDATA *gb_source;
     //     GBDATA *gb_dest;
@@ -675,13 +675,10 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
     }
     aw_closestatus();
 
-#if defined(DEBUG)
     if (max_wanted_ali_len>0) {
-        if (aw_message(GBS_global_string("Increase length of '%s' to %li?", ali_dest, max_wanted_ali_len), "Yes,No") == 0) {
-            GBT_set_alignment_len(gb_main, ali_dest, max_wanted_ali_len); // @@@ has no effect ? ? why ?
-        }
+        if (neededLength) *neededLength = max_wanted_ali_len;
     }
-#endif // DEBUG
+
     if (error) {
         return error;
     }
@@ -801,13 +798,17 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 
 void transdna_event(AW_window *aww)
 {
-    AW_root *aw_root = aww->get_root();
-    GB_ERROR error;
+    AW_root  *aw_root      = aww->get_root();
+    GB_ERROR  error;
+    char     *ali_source   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    char     *ali_dest     = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    long      neededLength = 0;
+    bool      retrying     = false;
 
-    char *ali_source = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    char *ali_dest = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    retry :
     GB_begin_transaction(gb_main);
-    error = arb_transdna(gb_main,ali_source,ali_dest);
+
+    error = arb_transdna(gb_main,ali_source,ali_dest, &neededLength);
     if (error) {
         GB_abort_transaction(gb_main);
         aw_message(error,"OK");
@@ -815,6 +816,17 @@ void transdna_event(AW_window *aww)
         GBT_check_data(gb_main,ali_dest);
         GB_commit_transaction(gb_main);
     }
+
+    if (!retrying && neededLength) {
+        if (aw_message(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength), "Yes,No") == 0) {
+            GB_transaction dummy(gb_main);
+            GBT_set_alignment_len(gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
+            aw_message(GBS_global_string("Alignment length of '%s' set to %li\nrunning re-aligner again!", ali_dest, neededLength));
+            retrying = true;
+            goto retry;
+        }
+    }
+
     free(ali_source);
     free(ali_dest);
 
