@@ -535,10 +535,11 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 {
-    char *base_name = GBS_global_string_copy("tmp/save_box_sel_%li", long(selid)); // don't free (passed to callback)
-    char *line_anz  = GBS_global_string_copy("%s/line_anz", base_name);
+    char *awar_base_name = GBS_global_string_copy("tmp/save_box_sel_%li", long(selid)); // don't free (passed to callback)
+    char *awar_line_anz  = GBS_global_string_copy("%s/line_anz", awar_base_name);
     {
-        aw_create_selection_box_awars(aw_root, base_name, ".", GBS_global_string("noname.list"), "list");
+        aw_create_selection_box_awars(aw_root, awar_base_name, ".", GBS_global_string("noname.list"), "list");
+        aw_root->awar_int(awar_line_anz, 0, AW_ROOT_DEFAULT);
     }
 
     AW_window_simple *aws = new AW_window_simple;
@@ -550,23 +551,23 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 
     aws->at("save");
     aws->highlight();
-    aws->callback(create_save_box_for_selection_lists_save,selid,(AW_CL)base_name); // loose ownership of base_name!
+    aws->callback(create_save_box_for_selection_lists_save,selid,(AW_CL)awar_base_name); // loose ownership of awar_base_name!
     aws->create_button("SAVE", "SAVE","S");
 
-
     aws->at("nlines");
-    aws->create_option_menu(line_anz,0,"");
+    aws->create_option_menu(awar_line_anz, 0, "");
     aws->insert_default_option("all","a",0);
-    aws->insert_option("40","a",40);
-    aws->insert_option("80","a",80);
-    aws->insert_option("120","a",120);
-    aws->insert_option("160","a",160);
-    aws->insert_option("240","a",240);
+    aws->insert_option(   "50", "a",    50);
+    aws->insert_option(  "100", "a",   100);
+    aws->insert_option(  "500", "a",   500);
+    aws->insert_option( "1000", "a",  1000);
+    aws->insert_option( "5000", "a",  5000);
+    aws->insert_option("10000", "a", 10000);
     aws->update_option_menu();
 
-    awt_create_selection_box((AW_window *)aws,base_name);
+    awt_create_selection_box((AW_window *)aws,awar_base_name);
 
-    free(line_anz);
+    free(awar_line_anz);
 
     return (AW_window *)aws;
 }
