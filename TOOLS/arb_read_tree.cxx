@@ -17,38 +17,33 @@ void show_error(GBDATA *gb_main) {
 // add_bootstrap interprets the length of the branches as bootstrap value
 // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
 //
-// if maxval <= 1.0 the values are expected in Range [0.0 ; 1.0]
-// otherwise no range is assumed
+// 'hundred' specifies which value represents 100%
 
-void add_bootstrap(GBT_TREE *node, double max_val) {
-    char buffer[256];
-    if (node->is_leaf) return;
-
-    if (max_val <= 1.0) {
-        if (node->leftlen < 1.0){
-            sprintf(buffer,"%2.0f%%",node->leftlen*100.0+0.5);
-            node->leftson->remark_branch = strdup(buffer);
+void add_bootstrap(GBT_TREE *node, double hundred) {
+    if (node->is_leaf) {
+        if (node->remark_branch) {
+            free(node->remark_branch);
+            node->remark_branch = 0;
         }
-        else {
-            node->leftson->remark_branch = strdup("100%");
-        }
-        if (node->rightlen < 1.0){
-            sprintf(buffer,"%2.0f%%",node->rightlen*100.0+0.5);
-            node->rightson->remark_branch = strdup(buffer);
-        }
-        else {
-            node->rightson->remark_branch = strdup("100%");
-        }
-    }
-    else {
-        sprintf(buffer,"%2.0f%%",node->leftlen*100.0/max_val);
-        node->leftson->remark_branch = strdup(buffer);
-        sprintf(buffer,"%2.0f%%",node->rightlen*100.0/max_val);
-        node->rightson->remark_branch = strdup(buffer);
+        return;
     }
 
-    add_bootstrap(node->leftson, max_val);
-    add_bootstrap(node->rightson, max_val);
+    node->leftlen  /= hundred;
+    node->rightlen /= hundred;
+
+    double left_bs  = node->leftlen  * 100.0 + 0.5;
+    double right_bs = node->rightlen * 100.0 + 0.5;
+
+#if defined(DEBUG) && 0
+    fprintf(stderr, "node->leftlen  = %f left_bs  = %f\n", node->leftlen, left_bs);
+    fprintf(stderr, "node->rightlen = %f right_bs = %f\n", node->rightlen, right_bs);
+#endif // DEBUG
+
+    node->leftson->remark_branch  = GBS_global_string_copy("%2.0f%%", left_bs);
+    node->rightson->remark_branch = GBS_global_string_copy("%2.0f%%", right_bs);
+
+    add_bootstrap(node->leftson, hundred);
+    add_bootstrap(node->rightson, hundred);
 }
 
 // ---------------------------------------
@@ -74,7 +69,7 @@ int main(int argc,char **argv)
         arg++;
 
         calculated_trees = atoi(argv[arg++]);
-        GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees)", calculated_trees));
+        GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
     }
 
     if (argc!= arg+2 && argc!= arg+3) error_msg(argv);
@@ -84,13 +79,19 @@ int main(int argc,char **argv)
     if (argc==arg+3) comment          = argv[arg+2];
     char       *comment_from_treefile = 0;
 
-    GBT_TREE *tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile);
+    GBT_TREE *tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, consense ? 0 : 1);
     if (!tree) {
         show_error(gb_main);
         return -1;
     }
 
     if (consense) {
+        if (calculated_trees < 1) {
+            GB_export_error("Min. for -consense is 1");
+            show_error(gb_main);
+            GB_close(gb_main);
+            return -1;
+        }
         add_bootstrap(tree, calculated_trees);
     }
 
