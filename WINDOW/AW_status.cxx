@@ -508,9 +508,10 @@ int aw_message(const char *msg, const char *buttons)
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
 {
-    printf("in aw_message\n");
-
     if (!buttons){		        /* asynchronous message */
+#if defined(DEBUG)
+        printf("aw_message: '%s'\n", msg);
+#endif // DEBUG
         if (aw_stg.local_message){
             aw_insert_message_in_tmp_message(AW_root::THIS,msg);
         }else{
@@ -939,8 +940,16 @@ void aw_help_search(AW_window *aww) {
         aw_message("Enter a searchstring");
     }
     else {
-        char *helpfilename = 0;
+        char        *helpfilename = 0;
         static char *last_help;
+
+        {
+            char *searchtext2 = GBS_string_eval(searchtext, " =.*", 0); // replace all spaces by '.*'
+            if (searchtext2) {
+                free(searchtext);
+                searchtext = searchtext2;
+            }
+        }
 
         {
             static int counter;
