@@ -17,14 +17,14 @@ extern GBDATA *gb_main;
 
 void create_extendeds_var(AW_root *aw_root, AW_default aw_def)
 {
-    aw_root->awar_string( AWAR_EX_NAME, "" ,    aw_def);
-    aw_root->awar_string( AWAR_EX_DEST, "" ,    aw_def);
+    aw_root->awar_string( AWAR_SAI_NAME, "" ,    aw_def);
+    aw_root->awar_string( AWAR_SAI_DEST, "" ,    aw_def);
 }
 
 void extended_rename_cb(AW_window *aww){
     GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_EX_DEST)->read_string();
+    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
+    char *dest = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
     GB_begin_transaction(gb_main);
     GBDATA *gb_extended_data =  GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
     GBDATA *gb_extended =       GBT_find_SAI_rel_exdata(gb_extended_data,source);
@@ -47,8 +47,8 @@ void extended_rename_cb(AW_window *aww){
 
 void extended_copy_cb(AW_window *aww){
     GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_EX_DEST)->read_string();
+    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
+    char *dest = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
     GB_begin_transaction(gb_main);
     GBDATA *gb_extended_data =  GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
     GBDATA *gb_extended =       GBT_find_SAI_rel_exdata(gb_extended_data,source);
@@ -76,7 +76,7 @@ void extended_copy_cb(AW_window *aww){
 void move_to_sepcies(AW_window *aww)
 {
     GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
+    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
     GB_begin_transaction(gb_main);
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
@@ -118,7 +118,7 @@ AW_window *create_extended_rename_window(AW_root *root)
     aws->create_button(0,"Please enter the new name\nof the SAI");
 
     aws->at("input");
-    aws->create_input_field(AWAR_EX_DEST,15);
+    aws->create_input_field(AWAR_SAI_DEST,15);
 
     aws->at("ok");
     aws->callback(extended_rename_cb);
@@ -141,7 +141,7 @@ AW_window *create_extended_copy_window(AW_root *root)
     aws->create_button(0,"Please enter the name\nof the new SAI");
 
     aws->at("input");
-    aws->create_input_field(AWAR_EX_DEST,15);
+    aws->create_input_field(AWAR_SAI_DEST,15);
 
     aws->at("ok");
     aws->callback(extended_copy_cb);
@@ -152,7 +152,7 @@ AW_window *create_extended_copy_window(AW_root *root)
 
 void ad_extended_delete_cb(AW_window *aww){
     GB_ERROR  error       = 0;
-    char     *source      = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
+    char     *source      = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
     GB_begin_transaction(gb_main);
     GBDATA   *gb_extended = GBT_find_SAI(gb_main,source);
 
@@ -176,7 +176,7 @@ void ad_extended_delete_cb(AW_window *aww){
 
 void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
 {
-    char   *source      = aw_root->awar(AWAR_EX_NAME)->read_string();
+    char   *source      = aw_root->awar(AWAR_SAI_NAME)->read_string();
     GB_push_transaction(gb_main);
     GBDATA *gb_extended = GBT_find_SAI(gb_main,source);
     awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
@@ -187,7 +187,7 @@ void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
 void ad_ad_remark(AW_window *aww){
     AW_root *awr = aww->get_root();
     GB_transaction dummy(gb_main);
-    char *source = awr->awar(AWAR_EX_NAME)->read_string();
+    char *source = awr->awar(AWAR_SAI_NAME)->read_string();
     GBDATA *gb_sai = GBT_find_SAI(gb_main,source);
     if (gb_sai){
         char *use = GBT_get_default_alignment(gb_main);
@@ -210,7 +210,7 @@ void ad_ad_remark(AW_window *aww){
 void ad_ad_group(AW_window *aww){
     AW_root *awr = aww->get_root();
     GB_transaction dummy(gb_main);
-    char *source = awr->awar(AWAR_EX_NAME)->read_string();
+    char *source = awr->awar(AWAR_SAI_NAME)->read_string();
     GBDATA *gb_sai = GBT_find_SAI(gb_main,source);
     if (gb_sai){
         free(GBT_read_string2(gb_sai,"sai_group","default_group"));
@@ -268,9 +268,9 @@ AW_window *create_extendeds_window(AW_root *aw_root)
     aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
 
     aws->at("list");
-    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_EX_NAME);
+    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_NAME);
 
     AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
-    aws->get_root()->awar(AWAR_EX_NAME)->add_callback(AD_map_extended,scannerid);
+    aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(AD_map_extended,scannerid);
     return (AW_window *)aws;
 }
