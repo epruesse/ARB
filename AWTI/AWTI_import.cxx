@@ -900,9 +900,7 @@ void AWTC_import_go_cb(AW_window *aww)
     GB_change_my_security(GB_MAIN,0,"");
     GB_commit_transaction(GB_MAIN);
 
-    //     if (!is_genom_db) {
     awtcig.func(awr, awtcig.cd1,awtcig.cd2);
-    //     }
 
     if (!is_genom_db) {
         AWT_advice("Use Sequence/Admin/Format to fix the length of the imported sequences.", AWT_ADVICE_TOGGLE, 0, "ad_align.hlp");
