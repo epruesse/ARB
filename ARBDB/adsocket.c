@@ -856,6 +856,17 @@ GB_CSTR GB_getenvDOCPATH(void){
     return dp;
 }
 
+GB_CSTR GB_getenvHTMLDOCPATH(void) {
+    static const char *dp = 0;
+    if (!dp) {
+        char *res = getenv("ARB_HTMLDOC"); // doc in arb_envar.hlp
+        if (res) dp = res;
+        else     dp = GBS_eval_env("$(ARBHOME)/lib/help_html");
+    }
+    return dp;
+
+}
+
 GB_CSTR GB_getenv(const char *env){
     if (strncmp(env, "ARB", 3) == 0) {
 
