@@ -741,20 +741,21 @@ char *aw_input( const char *prompt, const char *awar_value, const char *default_
 }
 
 
-//  ---------------------------------------------------------------------------------------------------------------------------------------------------
-//      char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
-//  ---------------------------------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*))
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // A modal input window. A String may be entered by hand or selected from value_list
 //
 //      title           window title
 //      prompt          prompt at input field
 //      awar_name       name of awar to use for inputfield (if NULL => internal awar)
-//      default_value   default value (if NULL => "")
+//      default_value   default value (if NULL => ""). Not used in case of awar_name != NULL
 //      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
+//      check_fun       function to correct input (or 0 for no check). The function may return 0 to indicate no correction
 //
 // returns the value of the inputfield
 //
-char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
+char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*))
 {
     if (!value_list) return aw_input(title, prompt, awar_name, default_value);
 
@@ -842,9 +843,30 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
 
     root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,	aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
+
+    char *last_input = root->awar(AW_INPUT_AWAR)->read_string();
     while (aw_input_cb_result == dummy) {
         root->process_events();
+
+        char *this_input = root->awar(AW_INPUT_AWAR)->read_string();
+        if (strcmp(this_input, last_input) != 0) {
+            if (check_fun) {
+                char *corrected_input = check_fun(this_input);
+                if (corrected_input) {
+                    if (strcmp(corrected_input, this_input) != 0) {
+                        root->awar(AW_INPUT_AWAR)->write_string(corrected_input);
+                    }
+                    free(corrected_input);
+                }
+            }
+            free(last_input);
+            last_input = this_input;
+            this_input = 0;
+        }
+        free(this_input);
     }
+
+
     root->disable_callbacks = AW_FALSE;
     aw_msg->hide();
 
