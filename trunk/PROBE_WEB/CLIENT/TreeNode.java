@@ -399,11 +399,13 @@ public boolean unmarkRestOfTree()
     return marks_changed;
 }
 
-public boolean markSubtree()
+public boolean markSubtree(boolean unmarkRest)
 {
     boolean marks_changed = markSubtree_rek(true);
     marks_changed         = propagateMarkUpwards() || marks_changed;
-    marks_changed         = unmarkRestOfTree() || marks_changed;
+    if (unmarkRest) {
+        marks_changed = unmarkRestOfTree() || marks_changed;
+    }
 
     return marks_changed;
 }
@@ -415,41 +417,32 @@ public boolean unmarkSubtree()
     return marks_changed;
 }
 
-public boolean markSpecies_rek(String speciesList)
+public boolean markSpecies(String speciesList, HashMap hm)
 {
+    int     begin         = 0;
+    int     komma         = 0;
+    int     len           = speciesList.length();
     boolean marks_changed = false;
-    if (isLeaf) {
-        if (speciesList.indexOf(","+shortName+",") != -1) {
-            marks_changed = setMarked(2);
-        }
-        else {
-            marks_changed = setMarked(0);
-        }
-        marks_changed = propagateMarkUpwards() || marks_changed;
+
+    while (begin<len) {
+        komma                  = speciesList.indexOf(',', begin);
+        if (komma == -1) komma = len;
+        String speciesName     = speciesList.substring(begin, komma);
+        begin                  = komma+1;
+
+        TreeNode ref  = (TreeNode)hm.get(speciesName);
+        marks_changed = ref.markSubtree(false) || marks_changed;
+        // System.out.println("markSpecies (marked '"+speciesName+"')");
     }
-    else {
-        marks_changed = ((TreeNode)childNodes.elementAt(0)).markSpecies_rek(speciesList);
-        marks_changed = ((TreeNode)childNodes.elementAt(1)).markSpecies_rek(speciesList) || marks_changed;
-    }
+
     return marks_changed;
 }
 
-public boolean markSpecies(String speciesList)
-{
-    // speciesList contains sth like ",name1,name2,name3,name4,"
-
-    if (father != this) {
-        System.out.println("markSpecies has to be called for root!");
-        return getRoot().markSpecies(speciesList);
-    }
-
-    return markSpecies_rek(speciesList);
-}
 
 public void setPath(String path)
 {
     binaryPath = path;
-    codedPath =  encodePath(binaryPath);
+    codedPath  = encodePath(binaryPath);
     if(!testLeaf())
         {
             ((TreeNode)childNodes.elementAt(0)).setPath(binaryPath + "0");
