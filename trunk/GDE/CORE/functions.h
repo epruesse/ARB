@@ -19,6 +19,12 @@ extern "C" {
 #endif
 
 
+/* arbdb_io.c */
+int Arbdb_get_curelem P_((NA_Alignment *dataset));
+void ReadArbdb P_((char *filename, NA_Alignment *dataset, int type));
+int WriteArbdb P_((NA_Alignment *aln, char *filename, int method, int maskable));
+void Updata_Arbdb P_((Panel_item item, Event *event));
+
 /* BasicDisplay.c */
 int QuitGDE P_((void));
 int QuitGDE_update P_((Panel_item item, Event *event));
@@ -174,6 +180,9 @@ void SeqNorm P_((NA_Sequence *seq));
 char *uniqueID P_((void));
 int OverWrite P_((NA_Sequence *this, NA_Alignment *aln));
 
+/* main.c */
+int main P_((int argc, char **argv));
+
 /* ParseMenu.c */
 void ParseMenu P_((void));
 int Find P_((char *target, const char *key));
@@ -188,15 +197,6 @@ Notify_value EditCanScroll P_((Notify_client client, Event *event, Notify_arg ar
 void JumpTo P_((Xv_window view, int x, int y));
 int RepaintAll P_((int Names));
 int DestroySplit P_((Xv_window view));
-
-/* arbdb_io.c */
-int Arbdb_get_curelem P_((NA_Alignment *dataset));
-void ReadArbdb P_((char *filename, NA_Alignment *dataset, int type));
-int WriteArbdb P_((NA_Alignment *aln, char *filename, int method, int maskable));
-void Updata_Arbdb P_((Panel_item item, Event *event));
-
-/* main.c */
-int main P_((int argc, char **argv));
 
 #ifdef __cplusplus
 }
