@@ -82,8 +82,8 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
             const char *komma     = strchr(mapping, ',');   if (!komma) break;
             const char *semicolon = strchr(komma, ';');     if (!semicolon) break;
             string      name(mapping, komma-mapping);
-	    komma+=1;
-	    string idnum(komma,semicolon-komma);
+            komma+=1;
+            string idnum(komma,semicolon-komma);
             SpeciesID   id        = atoi(idnum.c_str());
 
             species2num_map[name] = id;
@@ -95,6 +95,44 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
 
     species_maps_initialized = true;
     return 0;
+}
+
+GB_ERROR PG_transfer_root_string_field(GBDATA *pb_src, GBDATA *pb_dest, const char *field_name) {
+    GB_ERROR error = 0;
+    GB_push_transaction(pb_src);
+    GB_push_transaction(pb_dest);
+
+    GBDATA *pb_src_mapping = GB_find(pb_src, field_name, 0, down_level);
+    if (!pb_src_mapping) {
+        error = GBS_global_string("no such entry '%s'", field_name);
+    }
+    else {
+        GBDATA *pb_dest_mapping = GB_search(pb_dest, field_name, GB_STRING);
+        if (!pb_dest_mapping) {
+            error = GB_get_error();
+            error = GBS_global_string("can't create '%s' (reason: %s)", field_name, error ? error : "unknown");
+        }
+        else {
+            const char *mapping = GB_read_char_pntr(pb_src_mapping);
+            if (!mapping) {
+                error = GB_get_error();
+                error = GBS_global_string("can't read '%s' (reason: %s)", field_name, error ? error : "unknown");
+            }
+            else {
+                error = GB_write_string(pb_dest_mapping, mapping);
+            }
+        }
+    }
+
+    if (!error) {
+        GB_pop_transaction(pb_dest);
+        GB_pop_transaction(pb_src);
+    }
+    else {
+        GB_abort_transaction(pb_dest);
+        GB_abort_transaction(pb_src);
+    }
+    return error;
 }
 
 //  --------------------------------------------------------------------
@@ -157,7 +195,7 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
     GBDATA         *pb_current_node = pb_group_tree;
 
     created = false;
-    
+
     *numSpecies=0;
 
     for (set<SpeciesID>::const_iterator i = begin(); i != end(); ++i)
@@ -182,7 +220,7 @@ GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* n
 	    pg_assert(pb_node);
 
             pb_num = GB_create(pb_node, "num", GB_STRING);
-	    
+
 	    pg_assert(pb_num);
 
             GB_write_string(pb_num, buffer);

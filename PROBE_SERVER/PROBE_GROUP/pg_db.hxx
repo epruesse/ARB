@@ -26,7 +26,8 @@
 
 typedef int SpeciesID;
 
-GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main);   // call this at startup
+GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main); // call this at startup
+GB_ERROR PG_transfer_root_string_field(GBDATA *pb_src, GBDATA *pb_dest, const char *field_name);
 
 SpeciesID     PG_SpeciesName2SpeciesID(const std::string& shortname);
 const std::string& PG_SpeciesID2SpeciesName(SpeciesID id);
