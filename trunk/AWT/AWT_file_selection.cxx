@@ -30,8 +30,8 @@ static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
 }
 
 GB_CSTR AWT_get_full_path(const char *anypath) {
-    static char buf[PATH_MAX+1];
-    if (strlen(anypath) > PATH_MAX) GB_CORE;
+    static char buf[FILENAME_MAX+1];
+    if (strlen(anypath) > FILENAME_MAX) GB_CORE;
     if (strncmp(anypath, "~/", 2) == 0) {
         GB_CSTR home    = GB_getenvHOME();
         GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
@@ -44,11 +44,11 @@ GB_CSTR AWT_get_full_path(const char *anypath) {
 }
 
 GB_CSTR AWT_concat_full_path(const char *anypath_left, const char *anypath_right) {
-    static char buf[PATH_MAX+1];
+    static char buf[FILENAME_MAX+1];
 
     int len_left  = strlen(anypath_left);
     int len_right = strlen(anypath_right);
-    if ((len_left+1+len_right) > PATH_MAX) GB_CORE;
+    if ((len_left+1+len_right) > FILENAME_MAX) GB_CORE;
 
     sprintf(buf, "%s/%s", anypath_left, anypath_right);
     return AWT_get_full_path(buf);
@@ -65,7 +65,7 @@ GB_CSTR AWT_get_suffix(const char *fullpath) { // returns pointer behind '.' of 
 
 GB_CSTR AWT_append_suffix(const char *name, const char *suffix) {
     // returns "name.suffix" (checks for multiple dots)
-    static char  buf[PATH_MAX+1];
+    static char  buf[FILENAME_MAX+1];
     strcpy(buf, name ? name : "noname"); // force a name!
     char *end = strchr(buf, 0);
     char *ep;
