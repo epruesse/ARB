@@ -437,30 +437,73 @@ GB_ERROR GB_check_hkey(const char *key)
      /* test whether all characters are letters, numbers or _ */
      /* additionally allow '/' and '->' for hierarchical keys */
 {
-	int  i;
-	long len;
+    GB_ERROR err = 0;
 
-	if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
-	len = strlen(key);
-	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
-	if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key);
+	if (!key || key[0] == 0) {
+        err = GB_export_error("Empty key is not allowed");
+    }
+    else if (!strpbrk(key, "/-")) {
+        err = GB_check_key(key);
+    }
+    else {
+        char *key_copy = strdup(key);
+        char *start    = key_copy;
 
-	for (i = 0; key[i]; ++i) {
-        char c = key[i];
-		if ( (c>='a') && (c<='z')) continue;
-		if ( (c>='A') && (c<='Z')) continue;
-		if ( (c>='0') && (c<='9')) continue;
-		if ( (c=='_') ) continue;
+        if (start[0] == '/') ++start;
 
-        /* hierarchical keys :  */
-		if ( (c=='/') ) continue;
-		if ( (c=='-') && (key[i+1] == '>') ) { ++i; continue; }
+        while (start && !err) {
+            char *key_end = strpbrk(start, "/-");
 
-		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' '->' '/'", c, key);
-	}
+            if (key_end) {
+                char c   = *key_end;
+                *key_end = 0;
+                err      = GB_check_key(start);
+                *key_end = c;
 
-	return 0;
+                if (c == '-') {
+                    if (key_end[1] != '>') {
+                        err = GB_export_error("'>' expected after '-' in '%s'", key);
+                    }
+                    start = key_end+2;
+                }
+                else  {
+                    ad_assert(c == '/');
+                    start = key_end+1;
+                }
+            }
+            else {
+                err   = GB_check_key(start);
+                start = 0;
+            }
+        }
+    }
+
+    return err;
 }
+
+/* 	int  i; */
+/* 	long len; */
+
+/* 	if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed"); */
+/* 	len = strlen(key); */
+/* 	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key); */
+/* 	if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key); */
+
+/* 	for (i = 0; key[i]; ++i) { */
+/*         char c = key[i]; */
+/* 		if ( (c>='a') && (c<='z')) continue; */
+/* 		if ( (c>='A') && (c<='Z')) continue; */
+/* 		if ( (c>='0') && (c<='9')) continue; */
+/* 		if ( (c=='_') ) continue; */
+
+         /* hierarchical keys :  */
+/* 		if ( (c=='/') ) continue; */
+/* 		if ( (c=='-') && (key[i+1] == '>') ) { ++i; continue; } */
+
+/* 		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' '->' '/'", c, key); */
+/* 	} */
+
+/* 	return 0; */
 
 
 char *GBS_strdup(const char *s){
