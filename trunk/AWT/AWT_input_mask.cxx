@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Feb/21/2003 13:02 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 18:55 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1870,9 +1870,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         if (!error) {
             awt_assert(!mask.Null());
             AW_window_simple*& aws = mask->get_window();
-            aws = new AW_window_simple;
-            aws->init(root, "INPUT_MASK", title.c_str(), 200, 100);
+            aws                    = new AW_window_simple;
+            aws->init(root, "INPUT_MASK", title.c_str());
             aws->load_xfig(0, AW_TRUE);
+
+            aws->recalc_size_at_show = 1; // ignore user size!
 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();
@@ -2687,7 +2689,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(aww->get_root(), "CREATE_USER_MASK", "Create new input mask:", 100, 100);
+        aws->init(aww->get_root(), "CREATE_USER_MASK", "Create new input mask:");
 
         aws->auto_space(10, 10);
 
