@@ -143,7 +143,7 @@ void update_filter_cb(AW_root *root){
 
 void create_trees_var(AW_root *aw_root, AW_default aw_def)
 {
-    aw_root->awar_string( AWAR_TREE_NAME,       0,  aw_def ) ->set_srt( GBT_TREE_AWAR_SRT);
+    AW_awar *awar_tree_name = aw_root->awar_string( AWAR_TREE_NAME,       0,  aw_def )->set_srt( GBT_TREE_AWAR_SRT);
     aw_root->awar_string( AWAR_TREE_DEST,       0,  aw_def ) ->set_srt( GBT_TREE_AWAR_SRT);
     aw_root->awar_int(  AWAR_TREE_SECURITY,     0,  aw_def );
     aw_root->awar_string( AWAR_TREE_REM,        0,  aw_def );
@@ -162,7 +162,8 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( AWAR_TREE_IMPORT "/tree_name", "tree_",   aw_def) ->set_srt( GBT_TREE_AWAR_SRT);
 
     aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback( tree_import_callback);
-    aw_root->awar(AWAR_TREE_NAME)->add_callback( tree_vars_callback);
+    awar_tree_name->add_callback( tree_vars_callback);
+    awar_tree_name->map(AWAR_TREE);
     aw_root->awar(AWAR_TREE_SECURITY)->add_callback( ad_tree_set_security);
 
     aw_root->awar_int( AWAR_NODE_INFO_ONLY_MARKED, 0,   aw_def);
