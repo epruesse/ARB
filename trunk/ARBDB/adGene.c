@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Jul/11/2002 12:24 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Wed Dec/10/2003 14:29 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -15,6 +15,35 @@
 
 #include "adGene.h"
 #include "arbdbt.h"
+
+
+#ifdef DEVEL_IDP
+
+/* GBDATA *GBT_first_marked_gene_rel_species(GBDATA *gb_species) */
+/* { */
+/*   GBDATA *gene_data; */
+/*   gene_data = GB_find(gb_species,"gene_data",0,down_level); */
+/*   return GB_first_marked(gene_data,"gene"); */
+/* } */
+
+/* GBDATA *GBT_get_gene_data(GBDATA *gb_main) { */
+/*   return GB_search(gb_main,"gene_data",GB_CREATE_CONTAINER); */
+/* } */
+
+/* GBDATA *GBT_find_gene_rel_species(GBDATA *gb_species,const char *name) */
+/* { */
+
+/*     GBDATA *gb_gene_name; */
+/*     GBDATA *gb_gene_data; */
+/*     gb_gene_data = GB_find(gb_species,"gene_data",0,down_level); */
+/*     gb_gene_name = GB_find(gb_gene_data,"name",name,down_2_level); */
+/*     if (!gb_gene_name) return 0; */
+/*     return GB_get_father(gb_gene_name); */
+/* } */
+
+
+#endif
+
 
 //  --------------
 //      genes:
@@ -55,8 +84,7 @@ GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name) {
 }
 
 GBDATA* GEN_first_gene(GBDATA *gb_species) {
-    GBDATA *gb_gene_data = GEN_get_gene_data(gb_species);
-    return GB_find(gb_gene_data, "gene", 0, down_level);
+    return GB_find(GEN_get_gene_data(gb_species), "gene", 0, down_level);
 }
 
 GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data) {
@@ -65,6 +93,13 @@ GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data) {
 
 GBDATA* GEN_next_gene(GBDATA *gb_gene) {
     return GB_find(gb_gene, "gene", 0, this_level|search_next);
+}
+
+GBDATA *GEN_first_marked_gene(GBDATA *gb_species) {
+    return GB_first_marked(GEN_get_gene_data(gb_species), "gene");
+}
+GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
+    return GB_next_marked(gb_gene,"gene");
 }
 
 //  -----------------------------------------
