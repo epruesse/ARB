@@ -658,9 +658,10 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
     }
 }
 
-GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
+GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
     GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
     int        use_species_aside = int(cl_use_species_aside);
+    aww->get_root()->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
     return NT_create_configuration(0, ptree, 0, use_species_aside);
 }
 
@@ -1306,7 +1307,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->at(behind_buttonsx, second_liney+10);
     if (!GB_NOVICE){
-	awm->label("Protect");
+        awm->label("Protect");
         awm->create_option_menu(AWAR_SECURITY_LEVEL);
         awm->insert_option("0",0,0);
         awm->insert_option("1",0,1);
@@ -1325,11 +1326,16 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
     //  -----------------------------------
-    //      Automatically start tests:
+    //
     //  -----------------------------------
 #if defined(DEBUG)
     if (strcmp(GB_getenvUSER(), "westram") == 0) {
+        // Automatically start:
+        // --------------------
+
         // NT_test_input_mask(awm->get_root());
+
+
     }
 #endif // DEBUG
 
