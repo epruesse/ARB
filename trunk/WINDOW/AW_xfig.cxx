@@ -16,8 +16,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:17  westram
- * Initial revision
+ * Revision 1.2  2000/11/24 17:23:46  westram
+ * *** empty log message ***
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:17  westram
+ * Erster Import
  *
  * Revision 1.8  1995/03/13  16:53:41  jakobi
  * *** empty log message ***
@@ -346,7 +349,7 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
                     if (x<minx) minx = x;
                     if (y<miny) miny = y;
 
-                    aw_assert(x>0 && y>0);
+                    aw_assert(x>=0 && y>=0);
                     
                     if (oldx == INT_MAX && oldy == INT_MAX) {
                         oldx = x;
