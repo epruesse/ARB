@@ -16,7 +16,7 @@
 #define AWAR_ALI2 AWAR2"alignment_name"
 
 void MG_alignment_vars_callback(AW_root *aw_root,GBDATA *gbd, long ali_nr)
-	{
+{
 	char buffer[256];
 
 	GB_push_transaction(gbd);
@@ -61,7 +61,7 @@ void MG_alignment_vars_callback(AW_root *aw_root,GBDATA *gbd, long ali_nr)
 
 
 void MG_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
-	{
+{
 	aw_root->awar_string( AWAR_ALI1, "" ,	aw_def);
 	aw_root->awar_string( AWAR_ALI2, "" ,	aw_def);
 
@@ -79,7 +79,7 @@ void MG_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 }
 
 int MG_check_alignment(AW_window *aww,int fast)
-	{
+{
 	AWUSE(aww);
 	// check type and names !!!!
 	char result[1024];
@@ -124,7 +124,7 @@ int MG_check_alignment(AW_window *aww,int fast)
 }
 
 void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
-	{
+{
 	if (aw_message("Are you sure to delete all data belonging to this alignment","OK,CANCEL"))return;
 
 	GB_ERROR error = 0;
@@ -151,7 +151,7 @@ void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
 
 
 void MG_ed_al_check_len_cb(AW_window *aww,AW_CL db_nr)
-	{
+{
 	char *error = 0;
 	char buffer[256];
 	sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
@@ -169,7 +169,7 @@ void MG_ed_al_check_len_cb(AW_window *aww,AW_CL db_nr)
 }
 
 void MG_copy_delete_rename(AW_window *aww,AW_CL db_nr, AW_CL dele)
-	{
+{
 	GB_ERROR error = 0;
 	char buffer[256];
 	GBDATA *gbd;
@@ -198,7 +198,7 @@ void MG_copy_delete_rename(AW_window *aww,AW_CL db_nr, AW_CL dele)
 
 
 AW_window *create_alignment_copy_window(AW_root *root,AW_CL db_nr)
-	{
+{
 	AW_window_simple *aws = new AW_window_simple;
 	char header[80];
 	sprintf(header,"ALIGNMENT COPY %li",db_nr);
@@ -224,7 +224,7 @@ AW_window *create_alignment_copy_window(AW_root *root,AW_CL db_nr)
 	return (AW_window *)aws;
 }
 AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
-	{
+{
 	AW_window_simple *aws = new AW_window_simple;
 	char header[80];
 	sprintf(header,"ALIGNMENT RENAME %li",db_nr);
@@ -251,7 +251,7 @@ AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
 }
 
 void MG_aa_create_alignment(AW_window *aww,AW_CL db_nr)
-	{
+{
 	GB_ERROR error = 0;
 	char buffer[256];
 	GBDATA *gbd;
@@ -273,7 +273,7 @@ void MG_aa_create_alignment(AW_window *aww,AW_CL db_nr)
 }
 
 AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)
-	{
+{
 	AW_window_simple *aws = new AW_window_simple;
 	char header[80];
 	sprintf(header,"ALIGNMENT CREATE %li",db_nr);
@@ -302,7 +302,7 @@ AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)
 
 
 AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
-	{
+{
 	char buffer[256];
 	GBDATA *gbd;
 	if (db_nr == 1) gbd = gb_merge;
@@ -348,8 +348,8 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 	aws->at("aligned");
 	sprintf(buffer,"tmp/merge%li/aligned",db_nr);
 	aws->create_option_menu(buffer);
-		aws->insert_option("justified","j",1);
-		aws->insert_default_option("not justified","n",0);
+    aws->insert_option("justified","j",1);
+    aws->insert_default_option("not justified","n",0);
 	aws->update_option_menu();
 
 
@@ -369,7 +369,7 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 
 	aws->at("security");
 	sprintf(buffer,"tmp/merge%li/security",db_nr);
-//	aws->get_root()->awar(buffer)->add_callback(MG_ed_al_check_len_cb,db_nr);
+    //	aws->get_root()->awar(buffer)->add_callback(MG_ed_al_check_len_cb,db_nr);
 	aws->callback(MG_ed_al_check_len_cb,db_nr);
 	aws->create_option_menu(buffer);
 	aws->insert_option("0","0",0);
@@ -384,10 +384,6 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 	return (AW_window *)aws;
 
 }
-
-
-
-
 
 AW_window *MG_merge_alignment_cb(AW_root *awr){
 	static AW_window_simple *aws = 0;
