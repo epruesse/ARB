@@ -102,7 +102,7 @@ void colorDefTabNameChanged_callback(AW_root *awr) {
         }
         inCallback = false;
      
-        char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+        char *saiName = GBS_string_2_key(awr->awar(AWAR_SAI_SELECT)->read_string());
         char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", saiName);  
         awr->awar_string(buf, "", AW_ROOT_DEFAULT);                 //creating a AWAR for the selected SAI and 
         awr->awar(buf)->write_string(clrTabName);                   // writing the existing clr trans table names to the same
@@ -123,7 +123,7 @@ void colorDefTabNameChanged_callback(AW_root *awr) {
 }
 
 void saiChanged_callback(AW_root *awr) {
-    char *saiName = awr->awar(AWAR_SAI_SELECT)->read_string();
+    char *saiName = GBS_string_2_key(awr->awar(AWAR_SAI_SELECT)->read_string());
 
     char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", saiName);                  
     awr->awar_string(buf, "???", AW_ROOT_DEFAULT);
@@ -319,7 +319,7 @@ char *getSaiColorString(int start, int end) {
         if (saiSequence) {
             char *saiData = GB_read_string(saiSequence);
             
-            char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", saiSelected);                  
+            char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", GBS_string_2_key(saiSelected));                  
             awr->awar_string(buf, "", AW_ROOT_DEFAULT);
             char *clrTransTabName = awr->awar(buf)->read_string();
 
