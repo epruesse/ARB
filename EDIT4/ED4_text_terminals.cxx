@@ -124,6 +124,33 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
 
+int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
+									 AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+									 AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2){
+    AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
+    BI_helix *THIS = (BI_helix *)cduser;
+    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
+    char *buffer = GB_give_buffer(size+1);
+    register long i,j,k;
+
+    for (k=0; size_t(k)<size; k++) {
+        i = rm->screen_to_sequence(k+start);
+        if ( size_t(i)<THIS->size && THIS->entries[i].pair_type) {
+            j = THIS->entries[i].pair_pos;
+            char pairing_character = '.';
+            if (j < real_sequence_length){
+                pairing_character = opt_string[j];
+            }
+            buffer[k] = THIS->get_symbol(opt_string[i],pairing_character, THIS->entries[i].pair_type);
+        }else{
+            buffer[k] = ' ';
+        }
+    }
+    buffer[size] = 0;
+    return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
+}
+
+
 
 ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -321,6 +348,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             free(db_pointer);
         }
     }
+
     // output strings
     {
         int gc;
