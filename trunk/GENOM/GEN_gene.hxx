@@ -39,11 +39,11 @@ private:
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
     void init(GBDATA *gb_gene_, GEN_root *root_);
-    void load_positions(int part);
+    GB_ERROR load_positions(int part);
 
 public:
-    GEN_gene(GBDATA *gb_gene_, GEN_root *root_);
-    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts);
+    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, GB_ERROR& error);
+    GEN_gene(GBDATA *gb_gene_, GEN_root *root_, int partNumber, int maxParts, GB_ERROR& error);
     virtual ~GEN_gene();
 
     inline bool operator<(const GEN_gene& other) const {
@@ -85,6 +85,9 @@ private:
 
     GBDATA *gb_gene_data;       // i am build upon this
 
+    AW_world selected_range; // draw-range of selected gene (set by paint, used by GEN_jump_cb)
+
+
 public:
     GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_);
     virtual ~GEN_root();
@@ -99,6 +102,8 @@ public:
     void paint(AW_device *device);
 
     void reinit_NDS() const;
+
+    const AW_world& get_selected_range() const { return selected_range; }
 };
 
 
