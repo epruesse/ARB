@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Oct/11/2002 18:19 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/25/2003 09:59 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -47,12 +47,12 @@ void EXP_update_combined_cb(AW_root *awr) {
 //      void EXP_create_awars(AW_root *aw_root, AW_default aw_def)
 //  -------------------------------------------------------------------
 void EXP_create_awars(AW_root *aw_root, AW_default /*aw_def*/) {
-    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" ,	gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
-    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,	gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" , gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
     aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "" , gb_main);
 
     aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
-    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "" ,	gb_main);
+    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "" , gb_main);
 }
 
 //  -----------------------------------------------------------------------------
@@ -127,19 +127,19 @@ static AW_window *EXP_create_experiment_colorize_window(AW_root *aw_root) {
 //  -------------------------------------------------------------------------------------
 void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
     const char *title  = "Experiment";
-    const char *hotkey = "X";
+    const char *hotkey = "x";
 
     if (submenu) awm->insert_sub_menu(0, title, hotkey);
     else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
 
     {
-        AWMIMT( "experiment_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window,	0 );
-        AWMIMT( "experiment_search",	"Search and Query",			"",	"experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
+        AWMIMT( "experiment_info",   "Experiment information", "i", "experiment_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_window, 0 );
+        AWMIMT( "experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_query_window, 0 );
 
         EXP_create_mask_submenu(awm);
 
         awm->insert_separator();
-        AWMIMT( "experiment_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
+        AWMIMT( "experiment_colors",    "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
     }
     if (submenu) awm->close_sub_menu();
 }
