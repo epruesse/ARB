@@ -208,6 +208,7 @@ void GB_dump(GBDATA *gbd) {
     const char  *key_name  = 0;
     const char  *content   = 0;
     GBCONTAINER *father    = GB_FATHER(gbd);
+    static int   indent    = 0;
 
     if (!father) {
         key_name = "<unknown quark - element w/o father>";
@@ -216,7 +217,6 @@ void GB_dump(GBDATA *gbd) {
         key_name = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
     }
 
-    static int indent = 0;
     if (indent == 0) {
         printf("\nGB_dump of '%s':\n", father ? GB_get_db_path(gbd) : "<GBDATA w/o father>");
     }
