@@ -99,6 +99,7 @@ ln -s ../AWT/BI_helix.hxx INCLUDE/BI_helix.hxx
 ln -s ../AWT/awt.hxx INCLUDE/awt.hxx
 ln -s ../AWT/awt_advice.hxx INCLUDE/awt_advice.hxx
 ln -s ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx
+ln -s ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx
 ln -s ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx
 ln -s ../AWT/awt_codon_table.hxx INCLUDE/awt_codon_table.hxx
 ln -s ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx
