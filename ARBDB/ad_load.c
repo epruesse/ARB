@@ -12,6 +12,275 @@
 #include "adlocal.h"
 #include "admap.h"
 
+#define READING_BUFFER_SIZE (1024*32)
+
+/* ------------------------------------------ */
+/* helper code to read ascii file in portions */
+
+/* ----------------------- */
+/*      ReadingBuffer      */
+/* ----------------------- */
+
+typedef struct reading_buffer_S {
+    char                    *data;
+    struct reading_buffer_S *next;
+    int                      read_bytes;
+} *ReadingBuffer;
+
+static ReadingBuffer unused_reading_buffers = 0;
+
+static ReadingBuffer allocate_ReadingBuffer() {
+    ReadingBuffer rb = malloc(sizeof(*rb)+READING_BUFFER_SIZE);
+    rb->data         = ((char*)rb)+sizeof(*rb);
+    rb->next         = 0;
+    rb->read_bytes   = 0;
+    return rb;
+}
+static void release_ReadingBuffers(ReadingBuffer rb) {
+    ReadingBuffer last = rb;
+
+    while (last->next) last = last->next;
+    gb_assert(last && !last->next);
+    last->next              = unused_reading_buffers;
+    unused_reading_buffers  = rb;
+}
+static void free_ReadingBuffer(ReadingBuffer rb) {
+    if (rb) {
+        if (rb->next) free_ReadingBuffer(rb->next);
+        free(rb);
+    }
+}
+
+static ReadingBuffer read_another_block(FILE *in) {
+    ReadingBuffer buf = 0;
+    if (unused_reading_buffers) {
+        buf                    = unused_reading_buffers;
+        unused_reading_buffers = buf->next;
+        buf->next              = 0;
+        buf->read_bytes        = 0;
+    }
+    else {
+        buf = allocate_ReadingBuffer();
+    }
+
+    buf->read_bytes = fread(buf->data, 1, READING_BUFFER_SIZE, in);
+
+    return buf;
+}
+
+/* ---------------- */
+/*      Reader      */
+/* ---------------- */
+
+typedef struct reader_S {
+    FILE          *in;
+    ReadingBuffer  first; // allocated
+    GB_ERROR       error;
+
+    ReadingBuffer current;      // only reference
+    size_t        current_offset; // into 'current->data'
+
+    char   *current_line;
+    int     current_line_allocated; // whether 'current_line' was allocated
+    size_t  current_line_size;  // size of 'current_line' (valid if current_line_allocated == 1)
+    size_t  line_number;
+
+} *Reader;
+
+typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer 'first')
+#define NOPOS (-1UL)
+
+
+static Reader openReader(FILE *in) {
+    Reader r = malloc(sizeof(*r));
+
+    r->in    = in;
+    r->error = 0;
+    r->first = read_another_block(r->in);
+
+    r->current_offset = 0;
+    r->current        = r->first;
+
+    r->current_line           = 0;
+    r->current_line_allocated = 0;
+    r->line_number            = 0;
+
+    return r;
+}
+
+static void freeCurrentLine(Reader r) {
+    if (r->current_line_allocated && r->current_line) {
+        free(r->current_line);
+        r->current_line_allocated = 0;
+    }
+}
+
+static GB_ERROR closeReader(Reader r) {
+    GB_ERROR error = r->error;
+
+    free_ReadingBuffer(r->first);
+    free_ReadingBuffer(unused_reading_buffers);
+    freeCurrentLine(r);
+    free(r);
+
+    return error;
+}
+
+static void releasePreviousBuffers(Reader r) {
+    /* Release all buffers before current position.
+     * Warning: This invalidates all offsets!
+     */
+    ReadingBuffer last_rel  = 0;
+    ReadingBuffer old_first = r->first;
+
+    while (r->first != r->current) {
+        last_rel = r->first;
+        r->first = r->first->next;
+    }
+
+    if (last_rel) {
+        last_rel->next = 0;     // avoid to release 'current'
+        release_ReadingBuffers(old_first);
+        r->first       = r->current;
+    }
+}
+
+static char *getPointer(const Reader r) {
+    return r->current->data + r->current_offset;
+}
+
+static ReaderPos getPosition(const Reader r) {
+    ReaderPos     p = 0;
+    ReadingBuffer b = r->first;
+    while (b != r->current) {
+        ad_assert(b);
+        p += b->read_bytes;
+        b  = b->next;
+    }
+    p += r->current_offset;
+    return p;
+}
+
+static int gotoNextBuffer(Reader r) {
+    if (!r->current->next) {
+        if (r->current->read_bytes < READING_BUFFER_SIZE) { // eof
+            return 0;
+        }
+        r->current->next = read_another_block(r->in);
+    }
+
+    r->current        = r->current->next;
+    r->current_offset = 0;
+
+    return r->current != 0;
+}
+
+static int movePosition(Reader r, int offset) {
+    int rest = r->current->read_bytes - r->current_offset - 1;
+
+    gb_assert(offset >= 0);     // not implemented for negative offsets
+    if (rest >= offset) {
+        r->current_offset += offset;
+        return 1;
+    }
+
+    if (gotoNextBuffer(r)) {
+        offset -= rest+1;
+        return offset == 0 ? 1 : movePosition(r, offset);
+    }
+
+    // in last buffer and position behind end -> position after last element
+    // (Note: last buffer cannot be full - only empty)
+    r->current_offset = r->current->read_bytes;
+    return 0;
+}
+
+static int gotoChar(Reader r, char lookfor) {
+    const char *data  = r->current->data + r->current_offset;
+    size_t      size  = r->current->read_bytes-r->current_offset;
+    char       *found = memchr(data, lookfor, size);
+
+    if (found) {
+        r->current_offset += (found-data);
+        return 1;
+    }
+
+    if (gotoNextBuffer(r)) {
+        return gotoChar(r, lookfor);
+    }
+
+    // in last buffer and char not found -> position after last element
+    // (Note: last buffer cannot be full - only empty)
+    r->current_offset = r->current->read_bytes;
+    return 0;
+}
+
+char *getLine(Reader r) {
+    releasePreviousBuffers(r);
+
+    {
+        ReaderPos      start        = getPosition(r);
+        ReadingBuffer  start_buffer = r->current;
+        char          *start_ptr    = getPointer(r);
+        int            eol_found    = gotoChar(r, '\n');
+
+        // now current position is on EOL or EOF
+
+        ReaderPos      eol        = getPosition(r);
+        ReadingBuffer  eol_buffer = r->current;
+        char          *eol_ptr    = getPointer(r);
+
+        movePosition(r, 1);
+
+        if (start_buffer == eol_buffer) { // start and eol in one ReadingBuffer -> no copy
+            freeCurrentLine(r);
+            r->current_line           = start_ptr;
+            r->current_line_allocated = 0;
+            eol_ptr[0]                = 0; // eos
+        }
+        else { // otherwise build a copy of the string
+            size_t  line_length = eol-start+1;
+            char   *bp;
+            size_t  len;
+
+            if (r->current_line_allocated == 0 || r->current_line_size < line_length) { // need alloc
+                freeCurrentLine(r);
+                r->current_line           = malloc(line_length);
+                r->current_line_size      = line_length;
+                r->current_line_allocated = 1;
+
+                gb_assert(r->current_line);
+            }
+
+            // copy contents of first buffer
+            bp            = r->current_line;
+            len           = start_buffer->read_bytes - (start_ptr-start_buffer->data);
+            memcpy(bp, start_ptr, len);
+            bp           += len;
+            start_buffer  = start_buffer->next;
+
+            // copy contents of middle buffers
+            while (start_buffer != eol_buffer) {
+                memcpy(bp, start_buffer->data, start_buffer->read_bytes);
+                bp           += start_buffer->read_bytes;
+                start_buffer  = start_buffer->next;
+            }
+
+            // copy contents from last buffer
+            len        = eol_ptr-start_buffer->data;
+            memcpy(bp, start_buffer->data, len);
+            bp        += len;
+            bp[0]  = 0; // eos
+        }
+
+        if (!eol_found && r->current_line[0] == 0)
+            return 0;               // signal eof
+
+    }
+
+    ++r->line_number;
+    return r->current_line;
+}
 
 /********************************************************************************************
             Versions:
@@ -20,305 +289,263 @@
         V0  - 20.6.95
         V1  Full save
         V2  Differential save
+        V3  May read from stdin. Skipped support for old ASCII format.
 ********************************************************************************************/
 
-long gb_read_ascii(const char *path, GBCONTAINER * gbd)
-{
-    char **pdat, **p2;
+static char *getToken(char **line) {
+    char *token  = *line;
+    (*line)     += strcspn(*line, " \t");
 
-    if (gbd == NULL) return -1;
-    if (path == NULL) return -1;
-
-    pdat = gb_read_file(path);
-    if (pdat) {
-        GB_search((GBDATA *)gbd,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER);      /* Switch to Version 3 */
-        p2 = gb_read_rek(pdat + 1, gbd);
-        if (p2) {
-            if (*p2) {
-                fprintf(stderr, "error in file: %s\n", path);
-                gb_file_loc_error(p2, "syntax error before in fi");
-            }
-        }
-        free(pdat[0]);
-        free(pdat);
+    if ((*line)[0]) { // sth follows behind token
+        (*line)[0]  = 0;        // terminate token
+        (*line)++;
+        (*line)    += strspn(*line, " \t"); // goto next token
     }
 
-    return 0;
+    return token;
 }
 
-char **gb_read_file(const char *path)
-{   /* This is used to load an ASCII-database
+static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char *p) {
+    int      secr, secw, secd, lu;
+    GB_ERROR error = 0;
 
-    ' ' '\t' '\n' werden entfernt und durch '\0' ersetzt
-    "string" wird zu string\0
-    \0 folgt short  bis zur naechsten '\0'
-    Kommentare #  und  comment werden entfernt
+    secr = secw = secd = 0;
+    lu   = 0;
 
-    */
+    if (p && p[0] == ':') {
+        long i;
 
-/* @@@ FIXME: should use GBS_fconvert_string  */
+        secd = p[1]; A_TO_I(secd);
+        secw = p[2]; A_TO_I(secw);
+        secr = p[3]; A_TO_I(secr);
 
+        if (secd<0 || secd>7) error = GBS_global_string("Illegal protection level %i", secd);
+        else if (secw<0 || secw>7) error = GBS_global_string("Illegal protection level %i", secw);
+        else if (secr<0 || secr>7) error = GBS_global_string("Illegal protection level %i", secr);
 
-    register char *t,*t2,*pb;
-    char tab[256],tab2[256],x;
-    register long i;
-    char **pdat;
-    FILE *input;
-    char *buffer;
-    long data_size,pdat_cnt = 0,pdat_size;
+        lu = atoi(p+4);
 
-    for (i=0;i<256;i++)  { tab[i] = 1;tab2[i]=0;}
-    tab[' '] = 0;
-    tab['\t'] = 0;
-    tab['\n'] = 0;
-    tab['\0'] = 0;
-
-    tab2[' '] = 1;
-    tab2['\t'] = 1;
-    tab2['\n'] = 1;
-    t = tab;t2=tab2;
-    pdat = NULL;data_size = 0;
-    if ((input = fopen(path, "r")) == NULL) {
-        printf(" file %s not found\n", path);
-    }
-    else {
-        if (fseek(input,0,2)==-1) {
-            printf("file %s not seekable\n",path);
+        for (i=Main->last_updated; i<=lu; ++i) {
+            Main->dates[i] = GB_STRDUP("unknown date");
+            Main->last_updated = lu+1;
         }
-        else {
-            data_size         = (long)ftell(input) + 1;
-            rewind(input);
-            buffer            = (char *)malloc((size_t)data_size+1);
-            data_size         = fread(buffer,1,(int)data_size,input);
-            fclose(input);
-            pdat_size         = data_size/CROSS_BUFFER_DIFF+2;
-            buffer[data_size] = 0;
-            pdat_cnt          = 0;
-            pdat              = (char **)malloc((size_t)(sizeof(char *) * pdat_size));
-            pdat[pdat_cnt++]  = buffer;
-            pb                = buffer;
+    }
 
-            while ( 1 ) {
-                if (pdat_cnt == pdat_size) {
-                    pdat_size += data_size/CROSS_BUFFER_DIFF+2;
-                    pdat = (char **)realloc((char *)pdat, (size_t)(sizeof(char *) * pdat_size));
+    if (!error) {
+        gbd->flags.security_delete = secd;
+        gbd->flags.security_write  = secw;
+        gbd->flags.security_read   = secr;
+        gbd->flags2.last_updated   = lu;
+    }
+
+    return error;
+}
+
+static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char *parent_name) {
+    /* if parent_name == 0 -> we are parsing at root-level */
+    GB_ERROR      error = 0;
+    int           done  = 0;
+    GB_MAIN_TYPE *Main  = GBCONTAINER_MAIN(gb_parent);
+
+    while (!error && !done) {
+        char *line = getLine(r);
+        if (!line) break;
+
+    rest:
+        line += strspn(line, " \t"); // goto first non-whitespace
+
+        if (line[0]) {          // not empty
+            if (line[0] == '/' && line[1] == '*') { // comment
+                char *eoc = strstr(line+2, "*/");
+                if (eoc) {
+                    line = eoc+2;
+                    goto rest;
                 }
-                while ( t2[(int)(x = *pb)] ) pb++;
-                if (! x) break;
-                if (x == '"') {  /* string start */
-                    if (pb[1] == 1) {   /* old string mode */
-                        pb += 2;
-                        pdat[pdat_cnt++] = pb;
-                        while ( (x = *pb++) ) {
-                            if( (x==(char)1) && (pb[0]==(char)34) ) break;
-                        }
-                        if (!x) break;
-                        pb[-1] = 0;
-                        pb++;
+                error = "expected '*/'";
+            }
+            else { // real content
+                char *name = getToken(&line);
+
+                if (name[0] == '%' && name[1] == ')' && !name[2]) { // close container
+                    if (!parent_name) {
+                        error = "Unexpected '%)' (not allowed outside container)";
                     }
                     else {
-                        pdat[pdat_cnt++] = ++pb; /* store string-start (behind ") in pointer-array */
-                        pb = GBS_fconvert_string(pb);
-                        if (!pb) break; /* error: 0-character found */
-
-                        /*  char *dest; */
-                        /*  pdat[pdat_cnt++] = ++pb;  */
-                        /*  dest             = pb; */
-                        /*  while ((x = *pb++) != '"' ){ */
-                        /*      if (x == '\\'){ */
-                        /*          x = *pb++; */
-                        /*          if (!x) break; */
-                        /*          if (x>='@' && x <='@'+ 25) { */
-                        /*              *dest++ = x-'@';continue; */
-                        /*          } */
-                        /*          if (x>='0' && x <='9') { */
-                        /*              *dest++ = x-('0'-25);continue; */
-                        /*          } */
-                        /*      } */
-                        /*      *dest++ = x; */
-                        /*  } */
-                        /*  dest[0] = 0; */
+                        if (line[0] == '/' && line[1] == '*') { // comment at container-end
+                            char *eoc  = strstr(line+2, "*/");
+                            if (!eoc) {
+                                error = "expected '*/'";
+                            }
+                            else {
+                                line += 2;
+                                *eoc  = 0;
+                                if (strcmp(line, parent_name) != 0) {
+                                    fprintf(stderr,
+                                            "Warning: comment at end of container ('%s') does not match name of container ('%s').\n"
+                                            "         (might be harmless if you've edited the file and did not care about these comments)\n",
+                                            line, parent_name);
+                                }
+                                line = eoc+2;
+                            }
+                        }
+                        done = 1;
                     }
-                    continue;
                 }
-                if ( (x == '/') && (pb[1] == '*') ) {
-                    while ( (x = *pb++) && ((x != '*') || (*pb !='/')));
-                    if (!x) break;
-                    *pb++ = 0;
-                    continue;
+                else {
+                    char *protection = 0;
+                    if (line[0] == ':') { // protection level
+                        protection = getToken(&line);
+                    }
+
+                    if (line[0] == '%') {
+                        char *type = getToken(&line);
+
+                        if (type[1] == 0 || type[2] != 0) {
+                            error = GBS_global_string("Syntax error in type '%s' (expected %% and 1 more character)", type);
+                        }
+                        else {
+                            if (type[1] == '%') { // container
+                                if (line[0] == '(' && line[1] == '%') {
+                                    char        *cont_name = strdup(name);
+                                    GBCONTAINER *gbc       = gb_make_container(gb_parent, cont_name, -1, 0);
+
+                                    protection = protection ? strdup(protection) : 0;
+                                    error      = gb_parse_ascii_rek(r, gbc, cont_name);
+                                    // caution: most buffer variables are invalidated NOW!
+
+                                    set_protection_level(Main, (GBDATA*)gbc, protection);
+
+                                    free(protection);
+                                    free(cont_name);
+                                }
+                                else {
+                                    error = "Expected '(%' after '%%'";
+                                }
+                            }
+                            else {
+                                GB_TYPES gb_type = GB_NONE;
+
+                                switch (type[1]) {
+                                    case 'i': gb_type = GB_INT; break;
+                                    case 'l': gb_type = GB_LINK; break;
+                                    case 'y': gb_type = GB_BYTE; break;
+                                    case 'f': gb_type = GB_FLOAT; break;
+                                    case 'I': gb_type = GB_BITS; break;
+
+                                    case 'Y': gb_type = GB_BYTES; break;
+                                    case 'N': gb_type = GB_INTS; break;
+                                    case 'F': gb_type = GB_FLOATS; break;
+
+                                    default:
+                                        error = GBS_global_string("Unknown type '%s'", type);
+                                        break;
+                                }
+
+                                if (!error) {
+                                    GBDATA *gb_new;
+
+                                    gb_assert(gb_type != GB_NONE);
+                                    gb_new = gb_make_entry(gb_parent, name, -1, 0, gb_type);
+                                    if (!gb_new) {
+                                        error = GB_get_error();
+                                        gb_assert(error);
+                                    }
+                                    else {
+                                        switch (type[1]) {
+                                            case 'i': error = GB_write_int(gb_new, atoi(line)); break;
+                                            case 'l': error = GB_write_link(gb_new, line); break;
+                                            case 'y': error = GB_write_byte(gb_new, atoi(line)); break;
+                                            case 'f': error = GB_write_float(gb_new, GB_atof(line)); break;
+                                            case 'I': error = GB_write_bits(gb_new, line, strlen(line), '-'); break;
+
+                                            case 'Y': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in byte-array"; break;
+                                            case 'N': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in int-array"; break;
+                                            case 'F': if (gb_ascii_2_bin(line, gb_new)) error = "syntax error in float-array"; break;
+
+                                            default : gb_assert(0); // forgot a case ?
+                                        }
+
+                                        if (!error) set_protection_level(Main, gb_new, protection);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        if (line[0] != '\"') {
+                            error = GBS_global_string("Unexpected content '%s'", line);
+                        }
+                        else {  // string entry
+                            char *string_start = line+1;
+                            char *end          = GBS_fconvert_string(string_start);
+
+                            if (!end) error = "Cannot convert string (contains zero char)";
+                            else {
+                                GBDATA *gb_string = gb_make_entry(gb_parent, name, -1, 0, GB_STRING);
+                                if (!gb_string) {
+                                    error = GB_get_error();
+                                    gb_assert(error);
+                                }
+                                else {
+                                    error = GB_write_string(gb_string, string_start);
+                                    set_protection_level(Main, gb_string, protection);
+                                }
+                            }
+                        }
+                    }
                 }
-                if (x == '#') {
-                    while ( (x= *pb++) && (x != '\n') );    /*ende*/
-                    if (!x) break;
-                    continue;
-                }
-                pdat[pdat_cnt++] = pb;
-                while ( t[(int)(*pb++)] );
-                pb[-1] = 0;
             }
         }
-        pdat[pdat_cnt] = NULL;
-
-        /* all data read */
-
     }
-    return pdat;
+
+    return error;
+}
+
+static GB_ERROR gb_parse_ascii(Reader r, GBCONTAINER *gb_parent) {
+    GB_ERROR error = gb_parse_ascii_rek(r, gb_parent, 0);
+    if (error) {
+        error = GBS_global_string("%s in line %u", error, r->line_number);
+    }
+    return error;
+}
+
+GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
+    /* This loads an ACSII database
+     * if path == "-" -> read from stdin
+     */
+
+    FILE     *in         = 0;
+    GB_ERROR  error      = 0;
+    int       close_file = 0;
+
+    if (strcmp(path, "-") == 0) {
+        in = stdin;
+    }
+    else {
+        in              = fopen(path, "rt");
+        if (!in) error  = GBS_global_string("Can't open '%s'", path);
+        else close_file = 1;
+    }
+
+    if (!error) {
+        Reader   r        = openReader(in);
+        GB_ERROR cl_error = 0;
+
+        GB_search((GBDATA *)gbd,GB_SYSTEM_FOLDER,GB_CREATE_CONTAINER); /* Switch to Version 3 */
+
+        error = gb_parse_ascii(r, gbd);
+
+        cl_error = closeReader(r);
+        if (!error) error = cl_error;
+    }
+
+    if (close_file) fclose(in);
+    return error;
 }
 
 /********************************************************************************************
-            print part of ascii file on error
+                    Read binary files
 ********************************************************************************************/
-
-void gb_file_loc_error(char **pdat,const char *s)
-{
-    long i;
-    printf("error in data_base: %s\n",s);
-    printf("\t the error is followed by:\n");
-    for(i=0; (i<10) && (pdat[i]);i++ ) {
-        printf ("\t\t'%s'\n",pdat[i]);
-    }
-}
-
-/********************************************************************************************
-                    Read Ascii File
-********************************************************************************************/
-
-char **gb_read_rek(char **pdat,GBCONTAINER *gbd)
-{
-    char *p;
-    char *key;
-    int secr, secw, secd, lu;
-    long    i;
-    GBDATA *previous;
-    GBCONTAINER *gbc;
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbd);
-
-    previous = NULL;
-    while ( (p = *pdat++) && (*p != '%') ) {
-        key = p;
-        if ( !(p = *pdat++)) break; /* eof */
-        if (*p==':' && p[-1]!='"' ) {
-            secd = p[1];A_TO_I(secd);
-            secw = p[2];A_TO_I(secw);
-            secr = p[3];A_TO_I(secr);
-            lu = atoi(p+4);
-            for (i=Main->last_updated;i<=lu;i++)
-            {
-                Main->dates[i] = GB_STRDUP("unknown date");
-                Main->last_updated = lu+1;
-            };
-            if ( !(p = *pdat++)) break; /* eof */
-        }else{
-            secr = secw = secd = 0;
-            lu = 0;
-        }
-
-        if (*p != '%' || p[-1]=='"' )
-        {
-            previous = gb_make_entry(gbd, key,-1,0,GB_STRING);
-            GB_write_string(previous,p);
-            previous->flags.security_delete = secd;
-            previous->flags.security_write = secw;
-            previous->flags.security_read = secr;
-            previous->flags2.last_updated = lu;
-        }else{
-            if (p[2]) {
-                gb_file_loc_error(pdat-2,
-                                  "illegal option");
-                return NULL;
-            }
-            if (! *pdat) {  gb_file_loc_error(pdat-2,
-                                              "unexpected end of file, long expected");
-            return NULL;
-            };/* eof */
-
-
-            switch (p[1]) {
-                case 's':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_STRING);
-                    GB_write_string(previous,*pdat++);
-                    break;
-                case 'l':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_LINK);
-                    GB_write_link(previous,*pdat++);
-                    break;
-                case 'i':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_INT);
-                    p = *pdat++;
-                    GB_write_int(previous,atoi(p));
-                    break;
-                case 'y':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_BYTE);
-                    p = *pdat++;
-                    GB_write_byte(previous,atoi(p));
-                    break;
-                case 'f':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_FLOAT);
-                    p = *pdat++;
-                    GB_write_float(previous,GB_atof(p));
-                    break;
-                case 'I':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_BITS);
-                    p = *(pdat++);
-                    GB_write_bits(previous,p,strlen(p),'-');
-                    break;
-                case 'Y':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_BYTES);
-                    if ( gb_ascii_2_bin(*(pdat++),previous)){
-                        gb_file_loc_error(pdat-2,"error in bytes");
-                        return 0;
-                    }
-                    break;
-                case 'N':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_INTS);
-                    if ( gb_ascii_2_bin(*(pdat++),previous)){
-                        gb_file_loc_error(pdat-2,"error in ints");
-                        return 0;
-                    }
-                    break;
-                case 'F':
-                    previous = gb_make_entry(gbd, key, -1,0,GB_FLOATS);
-                    if ( gb_ascii_2_bin(*(pdat++),previous)){
-                        gb_file_loc_error(pdat-2,"error in floats");
-                        return 0;
-                    }
-                    break;
-                case '%':
-                    p = *pdat;
-                    gbc = gb_make_container(gbd, key, -1,0);
-                    previous = (GBDATA *)gbc;
-                    if (*p != '(') {
-                        pdat ++;
-                        p = *pdat;
-                    }
-                    if ( (*p =='(')&&(p[1]=='%')){
-                        if (!(pdat = gb_read_rek(pdat+1,gbc))){
-                            return NULL;
-                        }
-                        if ( (!(p=*pdat)) || (*p !='%')||(p[1]!=')')){
-                            gb_file_loc_error(pdat-2,
-                                              "unexpected end of file, %%) expected");
-                            return NULL;
-                        }
-                        pdat++;
-                    }else{
-                        gb_file_loc_error(pdat-2,
-                                          "no '(' found, %");
-                        return NULL;
-                    }
-                    break;
-                default:    gb_file_loc_error(pdat-2,
-                                              "unknown option");
-                    return NULL;
-            } /*switch */
-            previous->flags.security_delete = secd;
-            previous->flags.security_write = secw;
-            previous->flags.security_read = secr;
-            previous->flags2.last_updated = lu;
-        } /* if */
-    } /* while */
-    return pdat-1;
-}
 
 long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed)
 {
@@ -458,12 +685,12 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in){
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
         GB_export_error("Your data file is corrupt.\n"
                         "   This may happen if \n"
-                        "   - there is a hard drive crash,\n"
+                        "   - there is a hardware error (e.g a drive crash),\n"
                         "   - data is corrupted by bad internet connections,\n"
-                        "   - or the data is destroyed by the program\n"
-                        "   - it is not an arb file\n"
+                        "   - data is destroyed by the program or\n"
+                        "   - if it isn't an arb file\n"
                         "   You may recover part of your data by running\n"
-                        "       arb_2_ascii old_arb_file panic.arb\n");
+                        "       arb_repair old_arb_file panic.arb\n");
         return -1;
     }
     pos = ftell(in);
@@ -1032,7 +1259,8 @@ GB_ERROR    gb_login_remote(struct gb_main_type *gb_main,const char *path,const 
 }
 
 GBDATA *GB_login(const char *path,const char *opent,const char *user)
-     /* opent   char    'r' read
+     /* opent char :
+        'r' read
         'w' write (w/o 'r' it overwrites existing database)
         'c' create (if not found)
         's'     read only ???
@@ -1154,13 +1382,19 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
     if (path && (strchr(opent, 'r')) ){
         if (strchr(path, ':')){
             error = gb_login_remote(Main,path,opent);
-        }else{
-            GB_ULONG time_of_main_file = 0;
+        }
+        else {
+            int read_from_stdin = strcmp(path, "-") == 0;
+
+            GB_ULONG time_of_main_file  = 0;
             GB_ULONG time_of_quick_file = 0;
-            Main->local_mode = GB_TRUE;
+            Main->local_mode            = GB_TRUE;
             GB_begin_transaction((GBDATA *)gbd);
-            Main->clock = 0;        /* start clock */
-            input = fopen(path, "r");
+            Main->clock                 = 0; /* start clock */
+
+            if (read_from_stdin) input = stdin;
+            else input                 = fopen(path, "r");
+
             if (!input && ignoreMissingMaster){
                 goto load_quick_save_file_only;
             }
@@ -1206,7 +1440,10 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                 }
             }
             time_of_main_file = GB_time_of_file(path);
-            i = gb_read_in_long(input, 0);
+
+            if (input != stdin) i = gb_read_in_long(input, 0);
+            else i                = 0;
+
             if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))    {
                 i = gb_read_bin(input, gbd,0);      /* read or map whole db */
                 gbd = Main->data;
@@ -1223,9 +1460,12 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                 }
 
                 if (quickFile){
-                    long err;
+                    long     err;
+                    GB_ERROR err_msg;
                 load_quick_save_file_only:
-                    err = 0;
+                    err     = 0;
+                    err_msg = 0;
+
                     input = fopen(quickFile,"r");
 
                     if (input){
@@ -1246,25 +1486,42 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                         {
                             err = gb_read_bin(input, gbd, 1);
                             fclose (input);
+
+                            if (err) err_msg = "Loading failed (file corrupt?)";
                         }
-                    }   else err = 1;
+                        else {
+                            err_msg = "Wrong file format (not a quicksave file)";
+                            err     = 1;
+                        }
+                    }
+                    else  {
+                        err_msg = "Can't open file";
+                        err     = 1;
+                    }
 
                     if (err){
-                        GB_export_error("I cannot load your quick file '%s';\n"
-                                        "    you may restore an older version by running arb with:\n"
-                                        "    arb <name of quicksave-file>",
-                                        quickFile);
+                        GB_export_error("I cannot load your quick file '%s'\n"
+                                        "Reason: %s\n"
+                                        "\n"
+                                        "Note: you MAY restore an older version by running arb with:\n"
+                                        "      arb <name of quicksave-file>",
+                                        quickFile, err_msg);
                         GB_print_error();
-                        if (Main->allow_corrupt_file_recovery){
-                            return (GBDATA *)(gbd);
+
+                        if (!Main->allow_corrupt_file_recovery) {
+                            return 0;
                         }
-                        return 0;
+
+                        GB_disable_quicksave((GBDATA*)gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
+                        // return (GBDATA *)(gbd); // if we return here, no dictionaries get loaded and decompression won't work
                     }
                 }
                 Main->qs.last_index = loadedQuickIndex; /* determines which # will be saved next */
+
             } else {
-                fclose(input);
-                (void) gb_read_ascii(path, gbd);
+                if (input != stdin) fclose(input);
+                error = gb_read_ascii(path, gbd);
+                if (error) GB_warning("%s", error);
                 GB_disable_quicksave((GBDATA *)gbd,"Sorry, I cannot save differences to ascii files\n"
                                      "  Save whole database in binary mode first");
             }
