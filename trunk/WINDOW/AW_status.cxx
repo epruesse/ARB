@@ -635,12 +635,12 @@ void input_cb( AW_window *aw, AW_CL cd1 ) {
     return;
 }
 
-char *aw_input( const char *title, const char *awar_value, const char *default_input)
+char *aw_input( const char *title, const char *prompt, const char *awar_value, const char *default_input)
 {
     AW_root *root = AW_root::THIS;
 
     static AW_window_message *aw_msg = 0;
-    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)title);
+    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)prompt);
     if (awar_value) {
         root->awar_string(AW_INPUT_AWAR)->map(awar_value);
     }else{
@@ -650,7 +650,7 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "ENTER A STRING", 1000, 1000, 300, 300 );
+        aw_msg->init( root, title, 1000, 1000, 300, 300 );
 
         aw_msg->label_length( 0 );
         aw_msg->button_length( 30 );
@@ -692,6 +692,10 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
     return aw_input_cb_result;
 }
 
+char *aw_input( const char *prompt, const char *awar_value, const char *default_input)
+{
+    return aw_input("ENTER A STRING", prompt, awar_value, default_input);
+}
 
 
 //  ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -700,22 +704,23 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
 // A modal input window. A String may be entered by hand or selected from value_list
 //
 //      title           window title
+//      prompt          prompt at input field
 //      awar_name       name of awar to use for inputfield (if NULL => internal awar)
 //      default_value   default value (if NULL => "")
 //      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
 //
 // returns the value of the inputfield
 //
-char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
+char *aw_string_selection(const char *title, const char *prompt, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
 {
-    if (!value_list) return aw_input(title, awar_name, default_value);
+    if (!value_list) return aw_input(title, prompt, awar_name, default_value);
 
     AW_root *root = AW_root::THIS;
 
     static AW_window_message *aw_msg = 0;
     static AW_selection_list *sel = 0;
 
-    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)title);
+    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)prompt);
     if (awar_name) {
         root->awar_string(AW_INPUT_AWAR)->map(awar_name);
     }else{
@@ -723,22 +728,25 @@ char *aw_string_selection(const char *title, const char *awar_name, const char *
     }
 
     if (!aw_msg) {
+        int width           = strlen(prompt)+1;
+        if (width<30) width = 30;
+
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "ENTER OR SELECT A STRING", 1000, 1000, 300, 300 );
+        aw_msg->init( root, title, 1000, 1000, 300, 300 );
 
         aw_msg->label_length( 0 );
-        aw_msg->button_length( 30 );
+        aw_msg->button_length(width);
 
         aw_msg->at( 10, 10 );
         aw_msg->auto_space( 10, 10 );
         aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
 
         aw_msg->at_newline();
-        aw_msg->create_input_field((char *)AW_INPUT_AWAR,30);
+        aw_msg->create_input_field((char *)AW_INPUT_AWAR,width);
         aw_msg->at_newline();
 
-        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, 30, 10);
+        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, width, 10);
         aw_msg->insert_default_selection(sel, "", "");
         aw_msg->update_selection_list(sel);
 
