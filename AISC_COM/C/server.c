@@ -24,6 +24,10 @@
 
 #define FD_SET_TYPE
 
+#if defined(DEBUG)
+/* #define SERVER_TERMINATE_ON_CONNECTION_CLOSE */
+#endif /* DEBUG */
+
 
 #include <signal.h>
 #include <sys/time.h>
@@ -1229,8 +1233,6 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
     aisc_server_hs = hs;
 
     while (hs){
-
-
         FD_ZERO(&set);
         FD_ZERO(&setex);
         FD_SET(hs->hso,&set);
@@ -1302,8 +1304,17 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
                     si->destroy_callback(si->destroy_clientdata);
                 }
                 free((char *)si);
+#ifdef SERVER_TERMINATE_ON_CONNECTION_CLOSE
+                if (hs->nsoc == 0) { /* no clients left */
+                    if (hs->fork) exit(0); /* child exits */
+                    return hs; /* parent exits */
+                }
+                break;
+#else
+                /* normal behavior */
                 if (hs->nsoc == 0 && hs->fork) exit(0);
                 break;
+#endif
             }
         }
     } /* while main loop */
