@@ -127,7 +127,7 @@ double max_branchlength(GBT_TREE *node) {
 //      int main(int argc,char **argv)
 // ---------------------------------------
 int main(int argc,char **argv)
-{   
+{
   GB_ERROR error;
    error = 0;
   int args_err= 0;
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
 
   printf("vor einlesen\n");
   // Einlesen des input-probefiles
-     error = read_input_file(arg_input_file); 
+     error = read_input_file(arg_input_file);
          if (error)
 	   {
 	     printf(error);
@@ -196,7 +196,7 @@ printf("nach GB_open\n");
 		printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
 		return -1;
 	}
-	
+
 
  // Versuche, den pt-server zu initialisieren
       error =  PG_init_pt_server(gb_main, arg_ptserver);
@@ -254,7 +254,7 @@ printf("nach GB_open\n");
 
 	GB_commit_transaction(gb_main);
 
-	GB_close(gb_main); 
+	GB_close(gb_main);
 	printf("ok\n");
 	return 0;
 
@@ -267,7 +267,7 @@ printf("nach GB_open\n");
 GB_ERROR read_input_file(char *fn)
 {
     GB_ERROR 	error = 0;
-    
+
     char line[256];
     line[255]= 0; // no segfault
 
@@ -277,11 +277,11 @@ GB_ERROR read_input_file(char *fn)
     ifstream iS;
 
     iS.open(fn);
-    if(iS)  
+    if(iS)
     {
        while(iS.getline(line, 255))
        {
-	if(!line[0]) 
+	if(!line[0])
 	  iS.getline(line, 255); //Zeile++
 
         if(strstr(line,"probe")) {
@@ -317,7 +317,7 @@ GB_ERROR read_input_file(char *fn)
 	      while(tmpstr[i]==' ')
 	      {
 		if (gotWord)
-		{  
+		{
 		  buf[buf_count] = tmpstr[i];
 		  i++;
 		  buf_count++;
@@ -385,13 +385,13 @@ GB_ERROR read_input_file(char *fn)
 	    {
 	     i++;
 	    }
-	      
+
 	  }
           buf[buf_count]=0;
 	  if (strlen(buf)>0)
 	    strcpy(tmplongname, buf);
 	} // end longname
-    
+
 	else if(char *tmpstr = strstr(line, "sequence"))
 	{
 	  int i = 0;
@@ -449,43 +449,16 @@ GB_ERROR read_input_file(char *fn)
 	   strcpy(pD.name, tmpname);
 	   strcpy(pD.longname, tmplongname);
 	   strcpy(pD.sequence, tmpsequence);
-	   probeData.push_back(pD);	   
+	   probeData.push_back(pD);
 	 }
-	
+
       iS.close();
     }
     else
       error = ("Could not open input-file.\n");
-   
-   
+
+
     return error;
-}
-
-
-//  ---------------------------------------------
-//      static char *pd_ptid_to_choice(int i)
-//  ---------------------------------------------
-static char *pd_ptid_to_choice(int i){
-    char search_for[256];
-    char choice[256];
-    char	*fr;
-    char *file;
-    char *server;
-    char empty[] = "";
-    sprintf(search_for,"ARB_PT_SERVER%i",i);
-
-    server = GBS_read_arb_tcp(search_for);
-    if (!server) return 0;
-    fr = server;
-    file = server;				/* i got the machine name of the server */
-    if (*file) file += strlen(file)+1;	/* now i got the command string */
-    if (*file) file += strlen(file)+1;	/* now i got the file */
-    if (strrchr(file,'/')) file = strrchr(file,'/')-1;
-    if (!(server = strtok(server,":"))) server = empty;
-    sprintf(choice,"%-8s: %s",server,file+2);
-    delete fr;
-
-    return strdup(choice);
 }
 
 //  --------------------------------------------------------------------------------------
@@ -496,7 +469,7 @@ static char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, G
     int serverid = -1;
 
     for (int i=0;i<1000; ++i) {
-        char *aServer = pd_ptid_to_choice(i);
+        char *aServer = GBS_ptserver_id_to_choice(i);
         if (aServer) {
 	  //printf("server='%s'\n",aServer);
             if (strcmp(aServer, servername)==0) {
@@ -574,7 +547,7 @@ GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
     if (server_initialized) return "pt-server is already initialized";
 
     GB_ERROR 	error = 0;
- 
+
    current_server_name = (char *)probe_pt_look_for_server(gb_main, servername, error);
     // pg_assert(error || current_server_name);
     server_initialized 	= true;;
@@ -625,7 +598,7 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_
 //  calls probe-match for the sequence contained in pD  and appends all matching species to the result-probefile fn
 
 GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn ) {
-    
+
   //  printf("PG_probe_match\n");
 
   static PT_server_connection *my_server = 0;
@@ -662,7 +635,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
     struct gl_struct& 	 pd_gl = my_server->get_pd_gl();
 
     // @@@ soll eigentlich auch reverse-complement gesucht werden??
-    
+
     printf("sequenz: %s\n", pD.sequence);
 
     if (aisc_nput(pd_gl.link,
@@ -708,7 +681,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	  // Oeffne result-probefile im append-modus
 	   pFile = fopen(fn, "a");
 	 if (pFile!=NULL)
-	  { 
+	  {
 	    char tmp[256];
 
 	    fputs("\nprobe\n", pFile);
@@ -733,25 +706,25 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	    strcat(probe_sequence, pD.sequence);
 	    strcat(probe_sequence, "\n");
 	    fputs(probe_sequence, pFile);
-	 
+
 	    char toksep[2]     = { 1, 0 };
             char 	*hinfo = strtok(bs.data, toksep);
 	    if (hinfo) {
                 while (1) {
-                    char 	*match_name = strtok(0, toksep); 
+                    char 	*match_name = strtok(0, toksep);
 		    if (!match_name) break;
-		    char 	*match_info = strtok(0, toksep); 
+		    char 	*match_info = strtok(0, toksep);
 		    if (!match_info) break;
 		    char *match_longname = parse_match_info(match_info);
 		    char probe_match[255];
 		    strcpy(probe_match, "\tmatch= ");
 		    correctIllegalChars(match_name);
 		    strcat(probe_match, match_name);
-		    strcat(probe_match, ", ");  
+		    strcat(probe_match, ", ");
 		    correctIllegalChars(match_longname);
 		    strcat(probe_match, match_longname);
 		    strcat(probe_match, "\n");
-		    fputs(probe_match, pFile); 
+		    fputs(probe_match, pFile);
 
                     // @@@ hier Namen in container einfuegen
                 }
