@@ -577,6 +577,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     char *gene_str;
     char *temp_gene_str;
     char **ptrptr;
+    char *gene_match_name;
 #endif
     int show_status = 0;
     int extras = 1; // mark species, write to temp fields,
@@ -711,7 +712,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
 
     while (hinfo && (match_name = strtok(0,toksep)) ) {
-      //!!.:IDP:.Sollte die Reihenfolge nicht Spezies..Gen sein hier ändern!.:IDP:.!!
         match_info = strtok(0,toksep);
 	if (!match_info) break;
 #ifdef DEVEL_IDP
@@ -764,7 +764,19 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
         sprintf(result, "%c %s", flag, match_info);
 
-        if (selection_id) aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+#ifdef DEVEL_IDP
+	if (gene_flag) {
+	  gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
+	  sprintf(gene_match_name,"%s/%s",match_name,gene_str);
+	  if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
+	}
+	else {
+#endif
+	  if (selection_id) aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+#ifdef DEVEL_IDP
+	}
+#endif
+
         mcount++;
     }
 
@@ -837,11 +849,23 @@ static void resolved_probe_chosen(AW_root *root) {
 
 static void selected_match_changed_cb(AW_root *root) {
     // this gets called when ever the selected probe match changes
+#ifdef DEVEL_IDP
+  char *temp;
+#endif
 
     char *selected_match = root->awar(AWAR_PD_SELECTED_MATCH)->read_string();
 
     if (strchr(selected_match, '/')) {
-        fprintf(stderr, "/ found in selected match [not implemented yet]\n");
+#ifdef DEVEL_IDP
+      // fprintf(stderr, "/ found in selected match [not implemented yet]\n");
+      temp = strtok(selected_match,"/");
+      root->awar(AWAR_SPECIES_NAME)->write_string(temp);
+      temp = strtok(NULL," /\n");
+      root->awar(AWAR_GENE_NAME)->write_string(temp);
+#endif
+#ifndef DEVEL_IDP
+      fprintf(stderr, "/ found in selected match [not implemented yet]\n");
+#endif
     }
     else {
         root->awar(AWAR_SPECIES_NAME)->write_string(selected_match);
