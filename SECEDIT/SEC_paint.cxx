@@ -140,8 +140,6 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
     }
     else {
 	cout<<"Please click on the probe "<<endl;
-
-	device->circle(backColor, true, last_x, last_y-lineCenter, radius, radius, -1, 0, 0);
     }
    // awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)type);
 }
@@ -478,7 +476,6 @@ void SEC_segment::update_alpha(void) {  //alpha is an angle of segment
 
 void SEC_helix_strand::compute_attachment_points(double direction_strand) {
     double dbs = root->get_distance_between_strands();
-    AW_device *device;
     //turn dir_delta about 90 degrees
     direction_strand += (M_PI / 2);  //to paint the strands parallel to each other the angle is turned by 90 deg.
 
@@ -1066,7 +1063,6 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     double lineWidth  = font_info[SEC_GC_HELIX].get_max_width();
 
     const char *otherBgColor, *thisBgColor;    
-    const char *otherBgColor, *thisBgColor;
 
     char thisBgColor_buf[seqEnd-seqStart+1];
     {
