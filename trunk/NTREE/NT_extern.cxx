@@ -1707,7 +1707,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     // NT_test_AWT(awm);
     // NT_test_input_mask(awm->get_root());
-    GEN_map_first(awr)->show();
+    if (is_genome_db) GEN_map_first(awr)->show();
 
 #endif // DEVEL_RALF
 
