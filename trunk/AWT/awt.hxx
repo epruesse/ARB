@@ -65,6 +65,8 @@ struct ad_item_selector {
     GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // for species this is normally a function returning 0
     GBDATA *(*get_first_item)(GBDATA *); // for species this is normally GBT_first_species_rel_species_data
     GBDATA *(*get_next_item)(GBDATA *); // for species this is normally GBT_next_species
+
+    GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 };
 
 extern ad_item_selector AWT_species_selector;
@@ -336,29 +338,39 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
 // open database viewer using input-mask-file
 class awt_item_type_selector;
-GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name);
+GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool localMask);
 
 //  ----------------------------------------
 //      class awt_input_mask_descriptor
 //  ----------------------------------------
 class awt_input_mask_descriptor {
 private:
-    char *title;               // title of the input mask
-    char *maskname;            // file name w/o path
-    char *itemtypename;        // name of the itemtype
+    char *title;                // title of the input mask
+    char *internal_maskname;    // starts with 0 for local mask and with 1 for global mask
+    // followed by file name w/o path
+    char *itemtypename;         // name of the itemtype
+    bool  local_mask;           // true if mask file was found in "~/.arb_prop/inputMasks"
+    bool  hidden;               // if true, mask is NOT shown in Menus
 
 public:
-    awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_);
+    awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_);
     awt_input_mask_descriptor(const awt_input_mask_descriptor& other);
     virtual ~awt_input_mask_descriptor();
 
     awt_input_mask_descriptor& operator = (const awt_input_mask_descriptor& other);
 
     const char *get_title() const { return title; }
-    const char *get_maskname() const { return maskname; }
+    const char *get_maskname() const { return internal_maskname+1; }
+    const char *get_internal_maskname() const { return internal_maskname; }
     const char *get_itemtypename() const { return itemtypename; }
+
+    bool is_local_mask() const { return local_mask; }
+    bool is_hidden() const { return hidden; }
 };
 
 const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 0; returns 0 if no more masks
+
+// void       AWT_input_mask_create_global_awars(AW_root *awr); // needed by AWT_create_new_input_mask
+// AW_window *AWT_create_window_input_mask_new(AW_root *awr); // create new user mask (interactively)
 
 #endif

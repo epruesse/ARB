@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Nov/22/2001 17:04 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Dec/09/2001 13:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -40,8 +40,9 @@
 
 // forward references :
 class awt_mask_item;
-class awt_input_handler;
-class awt_script_viewport;
+class awt_linked_to_item;
+// class awt_input_handler;
+// class awt_script_viewport;
 class awt_viewport;
 
 typedef enum {
@@ -124,9 +125,13 @@ private:
     mutable AW_root *awr;
     mutable GBDATA  *gb_main;
     //     int              input_mask_id; // unique number of input mask
-    std::string           mask_name; // filename of mask-file
-    std::string           mask_id; // key generated from mask_name
+    std::string      mask_name; // filename of mask-file
+    std::string      internal_mask_name; // filename of mask-file (prefixed by 0( = local) or 1( = global))
+    std::string      mask_id;   // key generated from mask_name
+    bool             local_mask; // true if mask was found in "~/.arb_prop/inputMasks"
     awt_item_type    itemtype;  // what kind of item do we handle ?
+
+    bool test_edit_enabled; // true -> the global awar AWAR_INPUT_MASKS_EDIT_ENABLE should be tested before writing to database
 
     const awt_item_type_selector *sel;
 
@@ -136,22 +141,30 @@ private:
 
     static std::string generate_id(const std::string& mask_name_);
 
+
 public:
-    awt_input_mask_global(AW_root *awr_, GBDATA *gb_main_, const std::string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
+    awt_input_mask_global(AW_root *awr_, GBDATA *gb_main_, const std::string& mask_name_, awt_item_type itemtype_, bool local, const awt_item_type_selector *sel_, bool test_edit_enabled_)
         : awr(awr_)
         , gb_main(gb_main_)
         , mask_name(mask_name_)
+        , internal_mask_name(string(1, local ? '0' : '1')+mask_name_)
         , mask_id(generate_id(mask_name_))
+        , local_mask(local)
         , itemtype(itemtype_)
+        , test_edit_enabled(test_edit_enabled_)
         , sel(sel_)
-    {}
+    {
+        awt_assert(mask_name_[0] != '0' && mask_name_[0] != '1');
+    }
     virtual ~awt_input_mask_global() {
         awt_assert(ids.empty());
     }
 
+    bool is_local_mask() const { return local_mask; }
     AW_root *get_root() const { return awr; }
     GBDATA *get_gb_main() const { return gb_main; }
     const std::string& get_maskname() const { return mask_name; }
+    const std::string& get_internal_maskname() const { return internal_mask_name; }
     std::string get_maskid() const { return mask_id; }
     awt_item_type get_itemtype() const { return itemtype; }
     const awt_item_type_selector *get_selector() const { awt_assert(sel); return sel; }
@@ -187,6 +200,9 @@ public:
         }
         return found;
     }
+
+    void no_item_selected() const;
+    bool edit_allowed() const;
 };
 
 //  ----------------------------
@@ -215,15 +231,18 @@ public:
     inline const awt_viewport *to_viewport(bool fail = true) const;
     inline awt_viewport *to_viewport(bool fail = true);
 
-    inline const awt_input_handler *to_input_handler(bool fail = true) const;
-    inline awt_input_handler *to_input_handler(bool fail = true);
-
-    inline const awt_script_viewport *to_script_viewport(bool fail = true) const;
-    inline awt_script_viewport *to_script_viewport(bool fail = true);
+    inline const awt_linked_to_item *to_linked_item(bool fail = true) const;
+    inline awt_linked_to_item *to_linked_item(bool fail = true);
+//     inline const awt_input_handler *to_input_handler(bool fail = true) const;
+//     inline awt_input_handler *to_input_handler(bool fail = true);
+//
+//     inline const awt_script_viewport *to_script_viewport(bool fail = true) const;
+//     inline awt_script_viewport *to_script_viewport(bool fail = true);
 
     bool is_viewport() const { return to_viewport(0) != 0; }
-    bool is_input_handler() const { return to_input_handler(0) != 0; }
-    bool is_script_viewport() const { return to_script_viewport(0) != 0; }
+    bool is_linked_item() const { return to_linked_item(0) != 0; }
+//     bool is_input_handler() const { return to_input_handler(0) != 0; }
+//     bool is_script_viewport() const { return to_script_viewport(0) != 0; }
 
     virtual std::string get_value() const                    = 0; // reads the current value of the item
     virtual GB_ERROR set_value(const std::string& new_value) = 0; // assigns a new value to the item
@@ -343,7 +362,12 @@ protected:
     virtual GB_ERROR add_db_callbacks();
     virtual GB_ERROR remove_db_callbacks();
 
-    void set_item(GBDATA *new_item) { gb_item = new_item; }
+    void set_item(GBDATA *new_item) {
+#if defined(DEBUG)
+        printf("gb_item=%p new_item=%p\n", gb_item, new_item);
+#endif // DEBUG
+        gb_item = new_item;
+    }
 
 public:
     awt_linked_to_item() : gb_item(0) {}
@@ -357,6 +381,8 @@ public:
 
     GB_ERROR unlink() { return link_to(0); }
     virtual GB_ERROR relink() = 0; // used by callbacks to relink awt_input_handler
+
+    virtual void general_item_change() {} // called if item was changed (somehow)
 };
 
 
@@ -582,8 +608,8 @@ private:
     bool                   shall_reload_on_reinit;
 
 public:
-    awt_input_mask(AW_root *awr, GBDATA *gb_main, const std::string& mask_name_, awt_item_type itemtype_, const awt_item_type_selector *sel_)
-        : global(awr, gb_main, mask_name_, itemtype_, sel_)
+    awt_input_mask(AW_root *awr, GBDATA *gb_main, const std::string& mask_name_, awt_item_type itemtype_, bool local, const awt_item_type_selector *sel_, bool test_edit_enabled)
+        : global(awr, gb_main, mask_name_, itemtype_, local, sel_, test_edit_enabled)
         , aws(0)
         , shall_reload_on_reinit(false)
     {}
@@ -612,14 +638,17 @@ public:
 //      casts :
 //  ----------------
 
+    inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); awt_assert(!fail || linked); return linked; }
+    inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail = true) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); awt_assert(!fail || linked); return linked; }
+
 inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
 inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
 
-inline const awt_input_handler *awt_mask_item::to_input_handler(bool fail) const { const awt_input_handler *handler = dynamic_cast<const awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
-inline awt_input_handler *awt_mask_item::to_input_handler(bool fail)  { awt_input_handler *handler = dynamic_cast<awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
-
-inline const awt_script_viewport *awt_mask_item::to_script_viewport(bool fail) const { const awt_script_viewport *viewport = dynamic_cast<const awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
-inline awt_script_viewport *awt_mask_item::to_script_viewport(bool fail)  { awt_script_viewport *viewport = dynamic_cast<awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
+// inline const awt_input_handler *awt_mask_item::to_input_handler(bool fail) const { const awt_input_handler *handler = dynamic_cast<const awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
+// inline awt_input_handler *awt_mask_item::to_input_handler(bool fail)  { awt_input_handler *handler = dynamic_cast<awt_input_handler*>(this); awt_assert(!fail || handler); return handler; }
+//
+// inline const awt_script_viewport *awt_mask_item::to_script_viewport(bool fail) const { const awt_script_viewport *viewport = dynamic_cast<const awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
+// inline awt_script_viewport *awt_mask_item::to_script_viewport(bool fail)  { awt_script_viewport *viewport = dynamic_cast<awt_script_viewport*>(this); awt_assert(!fail || viewport); return viewport; }
 
 
 awt_item_type AWT_getItemType(const std::string& itemtype_name);

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Nov/22/2001 18:06 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Dec/09/2001 13:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -50,8 +50,41 @@ const char *awt_itemtype_names[AWT_IT_TYPES+1] =
 #define MIN_TEXTFIELD_SIZE 1
 #define MAX_TEXTFIELD_SIZE 1000
 
+#define AWT_SCOPE_LOCAL  0
+#define AWT_SCOPE_GLOBAL 1
+
 awt_input_mask_id_list awt_input_mask_global::global_ids; // stores global ids
 
+// ####################################
+// ####################################
+// ###                              ###
+// ##          global awars          ##
+// ###                              ###
+// ####################################
+// ####################################
+
+#define AWAR_INPUT_MASK_BASE   "tmp/inputMask"
+#define AWAR_INPUT_MASK_NAME   AWAR_INPUT_MASK_BASE"/name"
+#define AWAR_INPUT_MASK_ITEM   AWAR_INPUT_MASK_BASE"/item"
+#define AWAR_INPUT_MASK_SCOPE  AWAR_INPUT_MASK_BASE"/scope"
+#define AWAR_INPUT_MASK_HIDDEN AWAR_INPUT_MASK_BASE"/hidden"
+
+#define AWAR_INPUT_MASKS_EDIT_ENABLED AWAR_INPUT_MASK_BASE"/edit_enabled"
+
+static bool global_awars_created = false;
+
+//  --------------------------------------------------------------
+//      void AWT_input_mask_create_global_awars(AW_root *awr)
+//  --------------------------------------------------------------
+static void create_global_awars(AW_root *awr) {
+    awt_assert(!global_awars_created);
+    awr->awar_string(AWAR_INPUT_MASK_NAME, "new");
+    awr->awar_string(AWAR_INPUT_MASK_ITEM, awt_itemtype_names[AWT_IT_SPECIES]);
+    awr->awar_int(AWAR_INPUT_MASK_SCOPE, 0);
+    awr->awar_int(AWAR_INPUT_MASK_HIDDEN, 0);
+    awr->awar_int(AWAR_INPUT_MASKS_EDIT_ENABLED, 0);
+    global_awars_created = true;
+}
 
 // #########################################################
 // #########################################################
@@ -70,7 +103,7 @@ static bool in_awar_changed_callback  = false;
 //  --------------------------------------------------------------------------------------------------
 static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
-        in_item_changed_callback   = true;
+        in_item_changed_callback      = true;
         awt_linked_to_item *item_link = (awt_linked_to_item*)cl_awt_linked_to_item;
 
         if (type&GB_CB_DELETE) { // handled child was deleted
@@ -79,6 +112,9 @@ static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_
         else if ((type&(GB_CB_CHANGED|GB_CB_SON_CREATED)) == (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
             // child was created (not only changed)
             item_link->relink();
+        }
+        else if (type&GB_CB_CHANGED) { // only changed
+            item_link->general_item_change();
         }
 
         in_item_changed_callback = false;
@@ -129,6 +165,22 @@ string awt_input_mask_global::generate_id(const string& mask_name_)
         else result.append(1, '_');
     }
     return result;
+}
+
+//  ---------------------------------------------------------
+//      bool awt_input_mask_global::edit_allowed() const
+//  ---------------------------------------------------------
+bool awt_input_mask_global::edit_allowed() const {
+    return !test_edit_enabled ||
+        get_root()->awar(AWAR_INPUT_MASKS_EDIT_ENABLED)->read_int() == 1;
+}
+
+//  ------------------------------------------------------------
+//      void awt_input_mask_global::no_item_selected() const
+//  ------------------------------------------------------------
+void awt_input_mask_global::no_item_selected() const {
+    aw_message(GBS_global_string("This had no effect, because no %s is selected",
+                                 awt_itemtype_names[get_itemtype()]));
 }
 
 // -end- of implementation of class awt_input_mask_global.
@@ -521,7 +573,9 @@ void awt_string_handler::awar_changed() {
 
     GB_push_transaction(gb_main);
 
-    if (!gbd) {
+    if (!mask_global()->edit_allowed()) error = "Editing is disabled. Check the 'Enable edit' switch!";
+
+    if (!error && !gbd) {
         const char *child   = get_child_path().c_str();
         const char *keypath = mask_global()->get_selector()->getKeyPath();
 
@@ -538,12 +592,13 @@ void awt_string_handler::awar_changed() {
             }
         }
         else {
+            mask_global()->no_item_selected();
             aw_message(GBS_global_string("This had no effect, because no %s is selected",
                                          awt_itemtype_names[mask_global()->get_itemtype()]));
         }
     }
 
-    if (gbd) {
+    if (!error && gbd) {
         char     *content   = awar()->read_string();
         GB_TYPES  found_typ = GB_read_type(gbd);
         if (found_typ != type()) set_type(found_typ); // fix type if different
@@ -1150,18 +1205,19 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 //     return id;
 // }
 
-//  ------------------------------------
-//      inline char *inputMaskDir()
-//  ------------------------------------
-inline char *inputMaskDir() {
+//  ----------------------------------------------
+//      inline char *inputMaskDir(bool local)
+//  ----------------------------------------------
+inline char *inputMaskDir(bool local) {
+    if (local) return AWT_unfold_path(".arb_prop/inputMasks", "HOME");
     return AWT_unfold_path("lib/inputMasks", "ARBHOME");
 }
 
-//  -----------------------------------------------------------------
-//      inline string inputMaskFullname(const string& mask_name)
-//  -----------------------------------------------------------------
-inline string inputMaskFullname(const string& mask_name) {
-    char   *dir      = inputMaskDir();
+//  -----------------------------------------------------------------------------
+//      inline string inputMaskFullname(const string& mask_name, bool local)
+//  -----------------------------------------------------------------------------
+inline string inputMaskFullname(const string& mask_name, bool local) {
+    char   *dir      = inputMaskDir(local);
     string  fullname = string(dir)+'/'+mask_name;
     free(dir);
     return fullname;
@@ -1169,13 +1225,14 @@ inline string inputMaskFullname(const string& mask_name) {
 
 #define ARB_INPUT_MASK_ID "ARB-Input-Mask"
 
-//  -----------------------------------------------------------------------------------------------------------------
-//      static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename)
-//  -----------------------------------------------------------------------------------------------------------------
-static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename) {
+//  -----------------------------------------------------------------------------------------------------------------------------
+//      static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local)
+//  -----------------------------------------------------------------------------------------------------------------------------
+static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local) {
     FILE     *in     = fopen(filename.c_str(), "rt");
     size_t    lineNo = 0;
     GB_ERROR  error  = 0;
+    int       hidden = 0; // defaults to 'not hidden'
 
     if (in) {
         string   line;
@@ -1205,6 +1262,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
 
                     if (parameter == "ITEMTYPE") itemtype = value;
                     else if (parameter == "TITLE") title  = value;
+                    else if (parameter == "HIDE") hidden  = atoi(value.c_str());
                 }
             }
 
@@ -1214,7 +1272,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
                 }
                 else {
                     if (title == "") title = mask_name;
-                    return new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str());
+                    return new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str(), local, hidden);
                 }
             }
         }
@@ -1230,12 +1288,12 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
     return 0;
 }
 
-//  ----------------------------------------------------------------------------
-//      static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name)
-//  ----------------------------------------------------------------------------
-static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name) {
+//  ----------------------------------------------------------------------------------------
+//      static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name, bool local)
+//  ----------------------------------------------------------------------------------------
+static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_local) {
     const string *mask_name = (const string *)cl_mask_name;
-    string        fullmask  = inputMaskFullname(*mask_name);
+    string        fullmask  = inputMaskFullname(*mask_name, (bool)cl_local);
     awt_edit(aww->get_root(), fullmask.c_str());
 }
 
@@ -1275,13 +1333,23 @@ static void unlink_mask_from_database(awt_input_mask_ptr mask) {
     sel->remove_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
 }
 
-//  -----------------------------------------------------------------------------------------------------------------------------------
-//      static void awt_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current)
-//  -----------------------------------------------------------------------------------------------------------------------------------
-static void awt_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current) {
-    const string            *mask_name    = (const string *)cl_mask_name;
-    const string            *mask_to_open = (const string *)cl_mask_to_open;
-    InputMaskList::iterator  mask_iter    = input_mask_list.find(*mask_name);
+//  --------------------------------------------------------
+//      inline bool isInternalMaskName(const string& s)
+//  --------------------------------------------------------
+inline bool isInternalMaskName(const string& s) {
+    return s[0] == '0' || s[0] == '1';
+}
+
+//  --------------------------------------------------------------------------------------------------------------------------------------------
+//      static void awt_open_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current)
+//  --------------------------------------------------------------------------------------------------------------------------------------------
+static void awt_open_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current) {
+    const string            *internal_mask_name = (const string *)cl_internal_mask_name;
+    const string            *mask_to_open       = (const string *)cl_mask_to_open;
+    InputMaskList::iterator  mask_iter          = input_mask_list.find(*internal_mask_name);
+
+    awt_assert(internal_mask_name && isInternalMaskName(*internal_mask_name));
+    awt_assert(mask_to_open && isInternalMaskName(*mask_to_open));
 
     if (mask_iter != input_mask_list.end()) {
         awt_input_mask_ptr     mask   = mask_iter->second;
@@ -1292,25 +1360,33 @@ static void awt_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mas
 
         if (reload) mask->set_reload_on_reinit(true);
         if (hide_current) mask->hide();
-        GB_ERROR error = AWT_initialize_input_mask(global->get_root(), global->get_gb_main(), global->get_selector(), mask_to_open->c_str());
-        if (error && hide_current) mask->show();
+        // @@@ hier sollte nicht der Selector der alten Maske verwendet werden, sondern anhand des Typs ein
+        // Selector ausgewaehlt werden. Dazu muessen jedoch alle Selectoren registriert werden.
+        GB_ERROR error = AWT_initialize_input_mask(global->get_root(), global->get_gb_main(), global->get_selector(), mask_to_open->c_str(), global->is_local_mask());
+        // CAUTION: AWT_initialize_input_mask invalidates mask and mask_iter
+        if (error && hide_current) {
+            mask_iter = input_mask_list.find(*internal_mask_name);
+            awt_assert(mask_iter != input_mask_list.end());
+            mask_iter->second->show();
+        }
     }
 #if defined(DEBUG)
     else {
-        printf("'%s' (no such mask in input_mask_list)\n", mask_name->c_str());
+        string mask_name = internal_mask_name->substr(1);
+        printf("'%s' (no such mask in input_mask_list)\n", mask_name.c_str());
         awt_assert(0);
     }
 #endif // DEBUG
 }
 
-static void AWT_reload_input_mask(AW_window *aww, AW_CL cl_mask_name) {
-    awt_open_input_mask(aww, cl_mask_name, cl_mask_name, true, true);
+static void AWT_reload_input_mask(AW_window *aww, AW_CL cl_internal_mask_name) {
+    awt_open_input_mask(aww, cl_internal_mask_name, cl_internal_mask_name, true, true);
 }
-static void AWT_open_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mask_to_open) {
-    awt_open_input_mask(aww, cl_mask_name, cl_mask_to_open, false, false);
+static void AWT_open_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open) {
+    awt_open_input_mask(aww, cl_internal_mask_name, cl_mask_to_open, false, false);
 }
-static void AWT_change_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_mask_to_open) {
-    awt_open_input_mask(aww, cl_mask_name, cl_mask_to_open, false, true);
+static void AWT_change_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open) {
+    awt_open_input_mask(aww, cl_internal_mask_name, cl_mask_to_open, false, true);
 }
 
 
@@ -1547,11 +1623,162 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
     }
 }
 
+//  ----------------------------------------------------------------------------------------
+//      static string find_internal_name(const string& mask_name, bool search_in_local)
+//  ----------------------------------------------------------------------------------------
+static string find_internal_name(const string& mask_name, bool search_in_local) {
+    const char *internal_local  = 0;
+    const char *internal_global = 0;
+
+    for (int id = 0; ; ++id) {
+        const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+        if (!descriptor) break;
+
+        const char *internal_name = descriptor->get_internal_maskname();
+
+        if (strcmp(internal_name+1, mask_name.c_str()) == 0) {
+            if (descriptor->is_local_mask()) {
+                awt_assert(internal_local == 0);
+                internal_local = internal_name;
+            }
+            else {
+                awt_assert(internal_global == 0);
+                internal_global = internal_name;
+            }
+        }
+    }
+
+    return (search_in_local && internal_local) ? internal_local : (internal_global ? internal_global : "");
+}
+
+//  -----------------------------------------------------------------------------------
+//      class awt_marked_checkbox : public awt_viewport, public awt_linked_to_item
+//  -----------------------------------------------------------------------------------
+class awt_marked_checkbox : public awt_viewport, public awt_linked_to_item {
+private:
+
+    string generate_baseName(awt_input_mask_global *global_) {
+        return GBS_global_string("%s/marked", global_->get_maskid().c_str());
+    }
+
+public:
+    awt_marked_checkbox(awt_input_mask_global *global_, const std::string& label_)
+        : awt_viewport(global_, generate_baseName(global_), "0", false, label_)
+        , awt_linked_to_item()
+    {}
+    virtual ~awt_marked_checkbox() {}
+
+    virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
+    virtual GB_ERROR relink() { return link_to(mask_global()->get_selector()->current(mask_global()->get_root())); }
+    virtual void awar_changed();
+    virtual void db_changed();
+    virtual void general_item_change() { db_changed(); } // called if item was changed (somehow)
+    virtual void build_widget(AW_window *aws); // builds the widget at the current position
+};
+
+//  -------------------------------------------------------------------
+//      GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item)
+//  -------------------------------------------------------------------
+GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item
+    GB_ERROR       error = 0;
+    GB_transaction dummy(mask_global()->get_gb_main());
+
+    remove_awar_callbacks();    // unbind awar callbacks temporarily
+
+    if (item()) {
+        remove_db_callbacks(); // ignore result (if handled db-entry was deleted, it returns an error)
+        set_item(0);
+    }
+
+    if (gb_new_item) {
+        set_item(gb_new_item);
+        db_changed();
+        error = add_db_callbacks();
+    }
+
+    add_awar_callbacks();       // rebind awar callbacks
+    return error;
+}
+//  -------------------------------------------------
+//      void awt_marked_checkbox::awar_changed()
+//  -------------------------------------------------
+void awt_marked_checkbox::awar_changed() { // called when awar changes
+    if (item()) {
+        string         value  = get_value();
+        bool           marked = value == "yes";
+        GB_transaction dummy(mask_global()->get_gb_main());
+        GB_write_flag(item(), marked);
+    }
+    else {
+        mask_global()->no_item_selected();
+    }
+}
+//  -----------------------------------------------
+//      void awt_marked_checkbox::db_changed()
+//  -----------------------------------------------
+void awt_marked_checkbox::db_changed() {
+    bool marked = false;
+
+    if (item()) {
+        GB_transaction dummy(mask_global()->get_gb_main());
+        if (GB_read_flag(item())) marked = true;
+    }
+    set_value(marked ? "yes" : "no");
+}
+//  ---------------------------------------------------------------
+//      void awt_marked_checkbox::build_widget(AW_window *aws)
+//  ---------------------------------------------------------------
+void awt_marked_checkbox::build_widget(AW_window *aws) { // builds the widget at the current position
+    const string& lab = get_label();
+    if (lab.length()) aws->label(lab.c_str());
+
+    aws->create_toggle(awar_name().c_str());
+}
+
+//  -------------------------------------------------------------------------------------------------------------------------
+//      static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskname, const string& itemtypename)
+//  -------------------------------------------------------------------------------------------------------------------------
+static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskname, const string& itemtypename, bool hidden) {
+    FILE *out = fopen(fullname.c_str(), "wt");
+    if (!out) return GBS_global_string("Can't open '%s'", fullname.c_str());
+
+    fprintf(out,
+            "%s\n"
+            "# New mask '%s'\n\n"
+            "# What kind of item to edit:\n"
+            "@ITEMTYPE=%s\n\n"
+            "# Window title:\n"
+            "@TITLE=%s\n\n", ARB_INPUT_MASK_ID, maskname.c_str(), itemtypename.c_str(), maskname.c_str());
+
+    fprintf(out,
+            "# Should mask appear in 'User mask' menu\n"
+            "@HIDE=%i\n\n", int(hidden));
+
+    fputs("# Spacing in window:\n"
+          "@X_SPACING=5\n"
+          "@Y_SPACING=3\n\n"
+          "# Show edit/reload button?\n"
+          "@EDIT=1\n"
+          "# Show 'edit enable' toggle?\n"
+          "@EDIT_ENABLE=1\n"
+          "# Show 'marked' toggle?\n"
+          "@SHOW_MARKED=1\n"
+          "\n# ---------------------------\n"
+          "# The definition of the mask:\n\n"
+          "@MASK_BEGIN\n\n"
+          "\tTEXT(\"You are editing\") SELF()\n"
+          "\tNEW_SECTION()\n"
+          "\tTEXTFIELD(\"Full name\", \"full_name\", 30)\n\n"
+          "@MASK_END\n\n", out);
+
+    fclose(out);
+    return 0;
+}
 //  --------------------------------------------------------------------------------------------------------------------------
 //      static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
 //  --------------------------------------------------------------------------------------------------------------------------
 static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
-                                                const string& mask_name, GB_ERROR& error) {
+                                                const string& mask_name, bool local, GB_ERROR& error) {
     size_t             lineNo = 0;
     awt_input_mask_ptr mask;
 
@@ -1559,7 +1786,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
 
     FILE *in = 0;
     {
-        string  fullfile = inputMaskFullname(mask_name);
+        string  fullfile = inputMaskFullname(mask_name, local);
         in               = fopen(fullfile.c_str(), "rt");
         if (!in) error   = GBS_global_string("Can't open '%s'", fullfile.c_str());
     }
@@ -1574,6 +1801,8 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         int           x_spacing   = 5;
         int           y_spacing   = 3;
         bool          edit_reload = false;
+        bool          edit_enable = true;
+        bool          show_marked = true;
         awt_item_type itemtype;
 
         string line;
@@ -1602,11 +1831,14 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                     string parameter = line.substr(at+1, eq-at-1);
                     string value     = line.substr(eq+1);
 
-                    if (parameter == "ITEMTYPE") itemtypename    = value;
-                    else if (parameter == "TITLE") title         = value;
-                    else if (parameter == "X_SPACING") x_spacing = atoi(value.c_str());
-                    else if (parameter == "Y_SPACING") y_spacing = atoi(value.c_str());
-                    else if (parameter == "EDIT") edit_reload    = atoi(value.c_str()) != 0;
+                    if (parameter == "ITEMTYPE")            itemtypename = value;
+                    else if (parameter == "TITLE")          title        = value;
+                    else if (parameter == "X_SPACING")      x_spacing    = atoi(value.c_str());
+                    else if (parameter == "Y_SPACING")      y_spacing    = atoi(value.c_str());
+                    else if (parameter == "EDIT")           edit_reload  = atoi(value.c_str()) != 0;
+                    else if (parameter == "EDIT_ENABLE")    edit_enable  = atoi(value.c_str()) != 0;
+                    else if (parameter == "SHOW_MARKED")    show_marked  = atoi(value.c_str()) != 0;
+                    else if (parameter == "HIDE") ; // ignore parameter here
                     else {
                         error = GBS_global_string("Unknown parameter '%s'", parameter.c_str());
                     }
@@ -1627,7 +1859,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         }
 
         // create mask
-        if (!error) mask = new awt_input_mask(root, gb_main, mask_name, itemtype, sel);
+        if (!error) mask = new awt_input_mask(root, gb_main, mask_name, itemtype, local, sel, edit_enable);
 
         // create window
         if (!error) {
@@ -1644,8 +1876,22 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->callback( AW_POPUP_HELP,(AW_CL)"input_mask.hlp"); aws->create_button("HELP","HELP","H");
 
             if (edit_reload) {
-                aws->callback( AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname()); aws->create_button("EDIT","EDIT","E");
-                aws->callback( AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_maskname()); aws->create_button("RELOAD","RELOAD","R");
+                aws->callback( AWT_edit_input_mask, (AW_CL)&mask->mask_global()->get_maskname(), (AW_CL)mask->mask_global()->is_local_mask()); aws->create_button("EDIT","EDIT","E");
+                aws->callback( AWT_reload_input_mask, (AW_CL)&mask->mask_global()->get_internal_maskname()); aws->create_button("RELOAD","RELOAD","R");
+            }
+
+            if (edit_reload && edit_enable && show_marked) aws->at_newline();
+
+            if (edit_enable) {
+                aws->label("Enable edit?");
+                aws->create_toggle(AWAR_INPUT_MASKS_EDIT_ENABLED);
+            }
+
+            if (show_marked) {
+                awt_mask_item_ptr handler = new awt_marked_checkbox(mask->mask_global(), "Marked");
+                mask->add_handler(handler);
+                if (handler->is_viewport()) handler->to_viewport()->build_widget(aws);
+
             }
 
             aws->at_newline();
@@ -1822,10 +2068,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     check_last_parameter(error, command);
 
                                     if (!error) {
-                                        char  *key = GBS_string_2_key(label.c_str());
-                                        AW_CB  cb  = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
+                                        char   *key                    = GBS_string_2_key(label.c_str());
+                                        AW_CB   cb                     = cmd == CMD_OPENMASK ? AWT_open_input_mask : AWT_change_input_mask;
+                                        string  mask_to_start_internal = find_internal_name(mask_to_start, local);
 
-                                        aws->callback( cb, (AW_CL)new string(mask->mask_global()->get_maskname()), (AW_CL)new string(mask_to_start));
+                                        aws->callback( cb, (AW_CL)new string(mask->mask_global()->get_internal_maskname()), (AW_CL)new string(mask_to_start_internal));
                                         aws->button_length(label.length()+2);
                                         aws->create_button(key, label.c_str());
 
@@ -2050,20 +2297,21 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
     return mask;
 }
 
-//  -------------------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name)
-//  -------------------------------------------------------------------------------------------------------------------------------------
-GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name) {
-    InputMaskList::iterator mask_iter  = input_mask_list.find(mask_name);
-    GB_ERROR                error      = 0;
-    awt_input_mask_ptr      old_mask;
-    bool                    unlink_old = false;
+//  -------------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool local)
+//  -------------------------------------------------------------------------------------------------------------------------------------------------
+GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* internal_mask_name, bool local) {
+    const char              *mask_name  = internal_mask_name+1;
+    InputMaskList::iterator  mask_iter  = input_mask_list.find(internal_mask_name);
+    GB_ERROR                 error      = 0;
+    awt_input_mask_ptr       old_mask;
+    bool                     unlink_old = false;
 
     static list<awt_input_mask_ptr> mask_collector; // here old (aka reloaded) masks are kept
+    // (freeing masks is not possible, because of too many nested callbacks)
 
     // erase mask (so it loads again from scratch)
-    if (mask_iter != input_mask_list.end() &&
-        mask_iter->second->reload_on_reinit()) // reload wanted ?
+    if (mask_iter != input_mask_list.end() && mask_iter->second->reload_on_reinit()) // reload wanted ?
     {
         old_mask  = mask_iter->second;
         input_mask_list.erase(mask_iter);
@@ -2075,21 +2323,22 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
     }
 
     if (mask_iter == input_mask_list.end()) { // mask not loaded yet
-        awt_input_mask_ptr newMask = awt_create_input_mask(root, gb_main, sel, mask_name, error);
+        awt_input_mask_ptr newMask = awt_create_input_mask(root, gb_main, sel, mask_name, local, error);
         if (error) {
             error = GBS_global_string("Error reading %s (%s)", mask_name, error);
             if (!old_mask.Null()) { // are we doing a reload or changemask ?
-                input_mask_list[mask_name] = old_mask; // error loading modified mask -> put old one back to mask-list
-                unlink_old                 = false;
+                input_mask_list[internal_mask_name] = old_mask; // error loading modified mask -> put old one back to mask-list
+                unlink_old                          = false;
             }
         }
         else {
-            input_mask_list[mask_name] = newMask;
-            mask_iter                  = input_mask_list.find(mask_name);
+            input_mask_list[internal_mask_name] = newMask;
         }
+        mask_iter = input_mask_list.find(internal_mask_name);
     }
 
     if (!error) {
+        awt_assert(mask_iter != input_mask_list.end());
         AW_window_simple *aws  = mask_iter->second->get_window();
         aws->show();
     }
@@ -2119,42 +2368,51 @@ awt_input_mask::~awt_input_mask()
 //  --------------------------------------
 //      void awt_input_mask::relink()
 //  --------------------------------------
+// this functions links/unlinks all registered item handlers to/from the database
 void awt_input_mask::relink(bool unlink) {
-    const awt_item_type_selector  *sel     = global.get_selector();
-    GBDATA                        *gb_item = unlink ? 0 : sel->current(global.get_root());
+    const awt_item_type_selector *sel     = global.get_selector();
+    GBDATA                       *gb_item = unlink ? 0 : sel->current(global.get_root());
 
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
-        if ((*h)->is_input_handler()) (*h)->to_input_handler()->link_to(gb_item);
-        else if ((*h)->is_script_viewport()) (*h)->to_script_viewport()->link_to(gb_item);
+         if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
+//         if ((*h)->is_input_handler()) (*h)->to_input_handler()->link_to(gb_item);
+//         else if ((*h)->is_script_viewport()) (*h)->to_script_viewport()->link_to(gb_item);
     }
 }
 
 // -end- of implementation of class awt_input_mask.
 
 
-//  -----------------------------------------------------------------------------------------------------------------------------------
-//      awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_)
-//  -----------------------------------------------------------------------------------------------------------------------------------
-awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_) {
-    title        = strdup(title_);
-    maskname     = strdup(maskname_);
-    itemtypename = strdup(itemtypename_);
+//  -------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_)
+//  -------------------------------------------------------------------------------------------------------------------------------------------------------------
+awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
+    title                = strdup(title_);
+    internal_maskname    = (char*)malloc(strlen(maskname_)+2);
+    internal_maskname[0] = local ? '0' : '1';
+    strcpy(internal_maskname+1, maskname_);
+    //     maskname      = strdup(maskname_);
+    itemtypename         = strdup(itemtypename_);
+    local_mask           = local;
+    hidden               = hidden_;
 }
 //  ----------------------------------------------------------------
 //      awt_input_mask_descriptor::~awt_input_mask_descriptor()
 //  ----------------------------------------------------------------
 awt_input_mask_descriptor::~awt_input_mask_descriptor() {
     free(itemtypename);
-    free(maskname);
+    free(internal_maskname);
     free(title);
 }
 //  -----------------------------------------------------------------------------------------------------
 //      awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other)
 //  -----------------------------------------------------------------------------------------------------
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
-    title        = strdup(other.title);
-    maskname     = strdup(other.maskname);
-    itemtypename = strdup(other.itemtypename);
+    title             = strdup(other.title);
+    internal_maskname = strdup(other.internal_maskname);
+    itemtypename      = strdup(other.itemtypename);
+    local_mask        = other.local_mask;
+    hidden            = other.hidden;
 }
 //  ------------------------------------------------------------------------------------------------------------------
 //      awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_input_mask_descriptor& other)
@@ -2162,54 +2420,71 @@ awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descri
 awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_input_mask_descriptor& other) {
     if (this != &other) {
         free(itemtypename);
-        free(maskname);
+        free(internal_maskname);
         free(title);
 
-        title        = strdup(other.title);
-        maskname     = strdup(other.maskname);
-        itemtypename = strdup(other.itemtypename);
+        title             = strdup(other.title);
+        internal_maskname = strdup(other.internal_maskname);
+        itemtypename      = strdup(other.itemtypename);
+        local_mask        = other.local_mask;
+        hidden            = other.hidden;
     }
 
     return *this;
 }
 
-static int scanned_existing_input_masks = false;
+static bool scanned_existing_input_masks = false;
 static vector<awt_input_mask_descriptor> existing_masks;
 
+//  -----------------------------------------
+//      static void add_new_input_mask()
+//  -----------------------------------------
+static void add_new_input_mask(const string& maskname, const string& fullname, bool local) {
+    awt_input_mask_descriptor *descriptor = quick_scan_input_mask(maskname, fullname, local);
+    if (descriptor) {
+        existing_masks.push_back(*descriptor);
+        delete descriptor;
+    }
+}
 //  ------------------------------------------------
 //      static void scan_existing_input_masks()
 //  ------------------------------------------------
 static void scan_existing_input_masks() {
+
     awt_assert(!scanned_existing_input_masks);
 
-    char *dirname = inputMaskDir();
-    DIR  *dirp    = opendir(dirname);
+    for (int scope = 0; scope <= 1; ++scope) {
+        char *dirname = inputMaskDir(scope == AWT_SCOPE_LOCAL);
+        DIR *dirp     = opendir(dirname);
 
-    if (!dirp) {
-        fprintf(stderr, "The path '%s' is invalid.\n", dirname);
-    }
-    else {
-        struct dirent *dp;
-        for (dp = readdir(dirp); dp; dp = readdir(dirp)) {
-            struct stat st;
-            string      maskname = dp->d_name;
-            string      fullname = inputMaskFullname(maskname);
+        if (!dirp) {
+            fprintf(stderr, "The path '%s' is invalid.\n", dirname);
+        }
+        else {
+            struct dirent *dp;
+            for (dp = readdir(dirp); dp; dp = readdir(dirp)) {
+                struct stat st;
+                string      maskname = dp->d_name;
+                string      fullname = inputMaskFullname(maskname, scope == AWT_SCOPE_LOCAL);
 
-            if (stat(fullname.c_str(), &st)) continue;
-            if (!S_ISREG(st.st_mode)) continue;
-            // now we have a regular file
+                if (stat(fullname.c_str(), &st)) continue;
+                if (!S_ISREG(st.st_mode)) continue;
+                // now we have a regular file
 
-            if (maskname.find(".mask") != string::npos) {
-                awt_input_mask_descriptor *descriptor = quick_scan_input_mask(maskname, fullname);
-                if (descriptor) { // we found a input mask file
-                    existing_masks.push_back(*descriptor);
-                    delete descriptor;
+                size_t ext_pos = maskname.find(".mask");
+
+                if (ext_pos != string::npos && maskname.substr(ext_pos) == ".mask") {
+                    awt_input_mask_descriptor *descriptor = quick_scan_input_mask(maskname, fullname, scope == AWT_SCOPE_LOCAL);
+                    if (descriptor) { // we found a input mask file
+                        existing_masks.push_back(*descriptor);
+                        delete descriptor;
+                    }
                 }
             }
+            closedir(dirp);
         }
+        free(dirname);
     }
-
-    free(dirname);
     scanned_existing_input_masks = true;
 }
 
@@ -2241,36 +2516,264 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
     return type;
 }
 
+// ############################################
+// ############################################
+// ###                                      ###
+// ##          Registered Itemtypes          ##
+// ###                                      ###
+// ############################################
+// ############################################
+
+typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL);
+
+//  --------------------------------------
+//      class AWT_registered_itemtype
+//  --------------------------------------
+// stores information about so-far-used item types
+class AWT_registered_itemtype {
+private:
+    AW_window_menu_modes       *awm; // the main window responsible for opening windows
+    AWT_OpenMaskWindowCallback  open_window_cb; // callback to open the window
+
+public:
+    AWT_registered_itemtype() : awm(0), open_window_cb(0) {}
+    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_)
+        : awm(awm_)
+        , open_window_cb(open_window_cb_)
+    {}
+    virtual ~AWT_registered_itemtype() {}
+
+    AW_window_menu_modes *getWindow() const { return awm; }
+    AWT_OpenMaskWindowCallback getOpenCb() const { return open_window_cb; }
+};
+
+static map<awt_item_type, AWT_registered_itemtype> registeredTypes;
+
+//  -------------------------------------------------------------------
+//      void openMaskWindowByType(int mask_id, awt_item_type type)
+//  -------------------------------------------------------------------
+static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
+    map<awt_item_type, AWT_registered_itemtype>::const_iterator registered = registeredTypes.find(type);
+    GB_ERROR                                                    error      = 0;
+
+    if (registered == registeredTypes.end()) error = GBS_global_string("Type '%s' not registered (yet)", awt_itemtype_names[type]);
+    else registered->second.getOpenCb()(registered->second.getWindow(), (AW_CL)mask_id, (AW_CL)0);
+
+    return error;
+}
+
+//  ---------------------------------------------------------------------------------------------------------------------------
+//      static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb)
+//  ---------------------------------------------------------------------------------------------------------------------------
+static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb) {
+    map<awt_item_type, AWT_registered_itemtype>::const_iterator alreadyRegistered = registeredTypes.find(type);
+    if (alreadyRegistered == registeredTypes.end()) {
+        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb);
+    }
+#if defined(DEBUG)
+    else {
+//         awt_assert(alreadyRegistered->second.getWindow() == awm);
+        awt_assert(alreadyRegistered->second.getOpenCb() == open_window_cb);
+    }
+#endif // DEBUG
+}
+
+// #############################################################
+// #############################################################
+// ###                                                       ###
+// ##          Create a new input mask (interactive)          ##
+// ###                                                       ###
+// #############################################################
+// #############################################################
+
+//  ----------------------------------------------------
+//      static void create_new_mask_cb(AW_window *)
+//  ----------------------------------------------------
+static void create_new_mask_cb(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+
+    string maskname = awr->awar(AWAR_INPUT_MASK_NAME)->read_string();
+    {
+        size_t ext = maskname.find(".mask");
+
+        if (ext == string::npos) maskname = maskname+".mask";
+        else maskname                     = maskname.substr(0, ext)+".mask";
+
+        awr->awar(AWAR_INPUT_MASK_NAME)->write_string(maskname.c_str());
+    }
+
+
+    string       itemname     = awr->awar(AWAR_INPUT_MASK_ITEM)->read_string();
+    int          scope        = awr->awar(AWAR_INPUT_MASK_SCOPE)->read_int();
+    int          hidden       = awr->awar(AWAR_INPUT_MASK_HIDDEN)->read_int();
+    bool         local        = scope == AWT_SCOPE_LOCAL;
+    string       maskfullname = inputMaskFullname(maskname, local);
+    bool         openMask     = false;
+    bool         closeWindow  = false;
+    const char  *error        = 0;
+    struct stat  st;
+
+    if (stat(maskfullname.c_str(), &st) == 0) { // file exists
+        int answer = aw_message("File does already exist", "Open mask,Cancel");
+        switch (answer) {
+            case 0:
+                openMask   = true;
+                break;
+            case 1: break;
+            default: awt_assert(0); break;
+        }
+    }
+    else {                      // file does not exist
+        error = GB_create_directory(inputMaskDir(local));
+        if (!error) {
+            error = writeDefaultMaskfile(maskfullname, maskname, itemname, hidden);
+        }
+        if (!error) {
+            add_new_input_mask(maskname, maskfullname, local);
+            openMask    = true;
+            closeWindow = true;
+        }
+    }
+
+    if (!error && openMask) {
+        int           mask_id;
+        awt_item_type item_type;
+
+        for (mask_id = 0; ; ++mask_id) {
+            const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(mask_id);
+            if (!descriptor) {
+                error = GBS_global_string("Can't find descriptor for mask '%s'", maskname.c_str());
+                break;
+            }
+
+            if (strcmp(descriptor->get_maskname(), maskname.c_str()) == 0 &&
+                descriptor->is_local_mask() == local)
+            {
+                item_type = AWT_getItemType(descriptor->get_itemtypename());
+                break;          // found wanted mask id
+            }
+        }
+
+        if (!error) {
+            error = openMaskWindowByType(mask_id, item_type);
+        }
+    }
+
+    if (error) aw_message(error);
+}
+
+//  -------------------------------------------------------------------------------------
+//      static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL)
+//  -------------------------------------------------------------------------------------
+static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { // create new user mask (interactively)
+    static AW_window_simple *aws = 0;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(aww->get_root(), "CREATE_USER_MASK", "Create new input mask:", 100, 100);
+
+        aws->auto_space(10, 10);
+
+        aws->button_length(10);
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", 0);
+        aws->callback(AW_POPUP_HELP,(AW_CL)"input_mask_new.hlp");
+        aws->create_button("HELP", "HELP","H");
+
+        aws->at_newline();
+
+        aws->label("Name of new input mask");
+        aws->create_input_field(AWAR_INPUT_MASK_NAME, 20);
+
+        aws->at_newline();
+
+        aws->label("Item type");
+        aws->create_option_menu(AWAR_INPUT_MASK_ITEM, "", "");
+        for (int i = AWT_IT_UNKNOWN+1; i<AWT_IT_TYPES; ++i) {
+            aws->insert_option(awt_itemtype_names[i], "", awt_itemtype_names[i]);
+        }
+        aws->update_option_menu();
+
+        aws->at_newline();
+
+        aws->label("Scope");
+        aws->create_toggle_field(AWAR_INPUT_MASK_SCOPE, 1);
+        aws->insert_toggle("Local", "L", AWT_SCOPE_LOCAL);
+        aws->insert_toggle("Global", "G", AWT_SCOPE_GLOBAL);
+        aws->update_toggle_field();
+
+        aws->at_newline();
+
+        aws->label("Visibility");
+        aws->create_toggle_field(AWAR_INPUT_MASK_HIDDEN, 1);
+        aws->insert_toggle("Normal", "N", 0);
+        aws->insert_toggle("Hidden", "H", 1);
+        aws->update_toggle_field();
+
+        aws->at_newline();
+
+        aws->callback(create_new_mask_cb);
+        aws->create_button("CREATE", "CREATE","C");
+
+        aws->window_fit();
+    }
+
+    aws->show();
+    aww->get_root()->awar(AWAR_INPUT_MASK_ITEM)->write_string(awt_itemtype_names[int(cl_item_type)]);
+}
+
+// ####################################################################
+// ####################################################################
+// ###                                                              ###
+// ##          Create User-Mask-Submenu for any application          ##
+// ###                                                              ###
+// ####################################################################
+// ####################################################################
+
 //  ------------------------------------------------------------------------------------------------------------------------------------------------------------
 //      void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL))
 //  ------------------------------------------------------------------------------------------------------------------------------------------------------------
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL)) {
     // add a user mask submenu at current position
-    bool found = false;
+    AW_root *awr = awm->get_root();
 
-    for (int id = 0; ;++id) {
-        const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-        if (!descriptor) break;
+    if (!global_awars_created) create_global_awars(awr);
 
-        awt_item_type item_type = AWT_getItemType(descriptor->get_itemtypename());
+    awm->insert_sub_menu(0, "User Masks", "k");
 
-        if (item_type == wanted_item_type) {
-            if (!found) awm->insert_sub_menu(0, "User Masks", "");
+    for (int scope = 0; scope <= 1; ++scope) {
+        bool entries_made = false;
 
-            found               = true;
-            char *macroname2key = GBS_string_2_key(descriptor->get_maskname());
+        for (int id = 0; ;++id) {
+            const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+
+            if (!descriptor) break;
+            if (descriptor->is_local_mask() != (scope == AWT_SCOPE_LOCAL)) continue; // wrong scope type
+
+            awt_item_type item_type = AWT_getItemType(descriptor->get_itemtypename());
+
+            if (item_type == wanted_item_type) {
+                if (!descriptor->is_hidden()) { // do not show masks with hidden-flag
+                    entries_made = true;
+                    char *macroname2key = GBS_string_2_key(descriptor->get_internal_maskname());
 #if defined(DEBUG) && 0
-            printf("added user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
+                    printf("added user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
 #endif // DEBUG
-            awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_window_cb, (AW_CL)id, (AW_CL)0);
-            free(macroname2key);
+                    awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_window_cb, (AW_CL)id, (AW_CL)0);
+                    free(macroname2key);
+                }
+                registerType(item_type, awm, open_window_cb);
+            }
+            else if (item_type == AWT_IT_UNKNOWN) {
+                aw_message(GBS_global_string("Unkown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));
+            }
         }
-        else if (item_type == AWT_IT_UNKNOWN) {
-            aw_message(GBS_global_string("Unkown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_maskname()));
-        }
+        if (entries_made) awm->insert_separator();
     }
 
-    if (found) awm->close_sub_menu();
+    awm->insert_menu_topic("new_mask", "New mask ...", "N", "input_mask_new.hlp", AWM_ALL, create_new_input_mask, (AW_CL)wanted_item_type, (AW_CL)0);
+    awm->close_sub_menu();
 }
 
 
