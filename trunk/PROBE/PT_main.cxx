@@ -72,6 +72,39 @@ void PT_init_psg(){
 #ifdef DEVEL_IDP
 
 
+void PT_get_names (char **fullstring, char *first, char *second, char *third) {
+  char *first_ptr;
+  char *second_ptr;
+  char *third_ptr;
+  int flag = 0;
+
+  first_ptr = *fullstring;
+  second_ptr = strchr(first_ptr,';'); //Get first ';'
+  if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(1);}
+  strncpy(first,first_ptr,second_ptr-first_ptr);  //Copy String until ';'
+  first[second_ptr-first_ptr] = 0;
+
+  second_ptr++;  //Point after the ';'
+
+  third_ptr = strchr(second_ptr,';'); //Get next ';'
+  if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(1);}
+  strncpy(second,second_ptr,third_ptr-second_ptr);  //Copy String until ';'
+  second[third_ptr-second_ptr] = 0;
+
+  third_ptr++;  //Point after the ';'
+
+  first_ptr = strchr(third_ptr,';');  //Get next ';'
+  if(first_ptr+1 == 0) {
+    flag = 1;
+  } //Get last String
+  strncpy(third,third_ptr,first_ptr-third_ptr); //Copy second String
+  third[first_ptr-third_ptr] = 0;
+
+  if (!flag) first_ptr++; // Point to next Pair
+  if (flag) *fullstring=NULL;
+  else *fullstring = first_ptr;  //Return Pointer to next Pair
+}
+
 void PT_init_map(){
   GB_begin_transaction(psg.gb_main);
   map_ptr_idp = NULL;
@@ -81,72 +114,42 @@ void PT_init_map(){
     gene_flag = 1;
     GBDATA * map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
     char *map_str;
-    map_str = new char[strlen(GB_read_char_pntr(map_ptr_str))+1];
+    map_str = new char[GB_read_count(map_ptr_str)+1];
     strcpy (map_str,GB_read_char_pntr(map_ptr_str));
 
     char *gene_name_str;
     char *full_name_str;
     char *arb_gene_name_str;
     char *arb_species_name_str;
-    char *temp1;
-    char *temp2;
-    char *temp3;
+    char temp1[128];
+    char temp2[128];
+    char temp3[128];
     
     gene_struct *tempstruct;
 
-    temp1 = strtok(map_str," /\n"); //PT interner Name
-    temp2 = strtok(NULL," /\n");    // Strichpunkt
-    temp2 = strtok(NULL," /\n");    // Speziesname
-    temp3 = strtok(NULL," /\n");    // Genname
+    PT_get_names(&map_str,temp1,temp2,temp3);
 
-
-    gene_name_str = new char[strlen(temp1)+1];
-    //    full_name_str = new char[strlen(temp2)+1];
-    arb_species_name_str = new char[strlen(temp2)+1];
-    arb_gene_name_str = new char[strlen(temp3)+1];
-
-    strcpy (gene_name_str,temp1);
-    //strcpy (full_name_str,temp2);
-    strcpy (arb_species_name_str,temp2);
-    strcpy (arb_gene_name_str,temp3);
-    
     tempstruct = new gene_struct;
 
-    strcpy(tempstruct->gene_name,gene_name_str);
-    //strcpy(tempstruct->full_name,full_name_str);
-    strcpy(tempstruct->arb_species_name,arb_species_name_str);
-    strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
+    strcpy(tempstruct->gene_name,temp1);
+    strcpy(tempstruct->arb_species_name,temp2);
+    strcpy(tempstruct->arb_gene_name,temp3);
 
     names_list_idp.push_back(tempstruct);
 
-    temp1 = strtok(NULL," /\n");
-    temp2 = strtok(NULL," /\n");
-    temp2 = strtok(NULL," /\n");
-    temp3 = strtok(NULL," /\n");
-
-    while (temp1 != NULL)
+    while (map_str != NULL && *map_str != 0)
       {
-	gene_name_str = new char[strlen(temp1)+1];
-	arb_species_name_str = new char[strlen(temp2)+1];
-	arb_gene_name_str = new char[strlen(temp3)+1];
-	
-	strcpy (gene_name_str,temp1);
-	strcpy (arb_species_name_str,temp2);
-	strcpy (arb_gene_name_str,temp3);
-	
+
+	PT_get_names(&map_str,temp1,temp2,temp3);
+
 	tempstruct = new gene_struct;
 	
-	strcpy(tempstruct->gene_name,gene_name_str);
-	strcpy(tempstruct->arb_species_name,arb_species_name_str);
-	strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
+	strcpy(tempstruct->gene_name,temp1);
+	strcpy(tempstruct->arb_species_name,temp2);
+	strcpy(tempstruct->arb_gene_name,temp3);
 	
 	names_list_idp.push_back(tempstruct);
 	
-	temp1 = strtok(NULL," /\n");
-	temp2 = strtok(NULL," /\n");
-	temp2 = strtok(NULL," /\n");
-	temp3 = strtok(NULL," /\n");
-
       }
   }
 }
