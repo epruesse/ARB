@@ -30,7 +30,7 @@ NT_delete_mark_all_cb(void *dummy, AWT_canvas *ntw) {
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = gb_next ) {
         gb_next = GBT_next_marked_species(gb_species);
         if (!error) error = GB_delete(gb_species);
-        else	break;
+        else    break;
     }
     if (error) {
         aw_message(error);
@@ -45,26 +45,26 @@ NT_delete_mark_all_cb(void *dummy, AWT_canvas *ntw) {
 AW_window *
 NT_open_select_tree_window(AW_root *awr,char *awar_tree)
 {
-	AW_window_simple *aws;
+    AW_window_simple *aws;
 
-	aws = new AW_window_simple;
-	aws->init( awr, "SELECT_TREE", "SELECT A TREE", 400, 200 );
-	aws->load_xfig("select_simple.fig");
+    aws = new AW_window_simple;
+    aws->init( awr, "SELECT_TREE", "SELECT A TREE", 400, 200 );
+    aws->load_xfig("select_simple.fig");
 
-	aws->at("selection");
-// 	aws->callback((AW_CB0)AW_POPDOWN);
-	awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,awar_tree);
+    aws->at("selection");
+//  aws->callback((AW_CB0)AW_POPDOWN);
+    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,awar_tree);
 
-	aws->at("close");
-	aws->callback(AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("modify");
-	aws->callback(AW_POPUP,(AW_CL)create_trees_window,0);
-	aws->help_text("treeadm.hlp");
-	aws->create_button("MODIFY","MODIFY","M");
+    aws->at("modify");
+    aws->callback(AW_POPUP,(AW_CL)create_trees_window,0);
+    aws->help_text("treeadm.hlp");
+    aws->create_button("MODIFY","MODIFY","M");
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
 
 void NT_select_last_tree(AW_window *aww,char *awar_tree){
@@ -81,47 +81,47 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def);
 AW_window *
 NT_open_select_alignment_window(AW_root *awr)
 {
-	static AW_window_simple *aws = 0;
-	if (aws) return (AW_window *)aws;
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
 
-	aws = new AW_window_simple;
-	aws->init( awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT", 400, 200 );
-	aws->load_xfig("select_simple.fig");
+    aws = new AW_window_simple;
+    aws->init( awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT", 400, 200 );
+    aws->load_xfig("select_simple.fig");
 
-	aws->at("selection");
-    // 	aws->at(10,10);
-	aws->auto_space(0,0);
-	aws->callback((AW_CB0)AW_POPDOWN);
-	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,AWAR_DEFAULT_ALIGNMENT,"*=");
-    // 	aws->at_newline();
+    aws->at("selection");
+    //  aws->at(10,10);
+    aws->auto_space(0,0);
+    aws->callback((AW_CB0)AW_POPDOWN);
+    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,AWAR_DEFAULT_ALIGNMENT,"*=");
+    //  aws->at_newline();
 
-	aws->at("close");
-	aws->callback(AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("modify");
-	aws->callback(AW_POPUP,(AW_CL)create_alignment_window,0);
-	aws->help_text("ad_align.hlp");
-	aws->create_button("MODIFY","MODIFY","M");
+    aws->at("modify");
+    aws->callback(AW_POPUP,(AW_CL)create_alignment_window,0);
+    aws->help_text("ad_align.hlp");
+    aws->create_button("MODIFY","MODIFY","M");
 
-	aws->window_fit();
-	return (AW_window *)aws;
+    aws->window_fit();
+    return (AW_window *)aws;
 }
 
 void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file)
 {
-	char *sys = (char *)command;
-	if (auto_help_file) {
-		AW_POPUP_HELP(aww,auto_help_file);
-	}
-	GBCMC_system(gb_main,sys);
+    char *sys = (char *)command;
+    if (auto_help_file) {
+        AW_POPUP_HELP(aww,auto_help_file);
+    }
+    GBCMC_system(gb_main,sys);
 }
 
 void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file)
 {
-	char *sys = (char *)command;
-	if (auto_help_file) {
-		AW_POPUP_HELP(aww,auto_help_file);
-	}
-	GB_xcmd(sys,GB_TRUE, GB_FALSE);
+    char *sys = (char *)command;
+    if (auto_help_file) {
+        AW_POPUP_HELP(aww,auto_help_file);
+    }
+    GB_xcmd(sys,GB_TRUE, GB_FALSE);
 }

@@ -11,9 +11,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <aw_awars.hxx>
-
-#define AWAR_EX_NAME "tmp/focus/extended_name"
-#define AWAR_EX_DEST "tmp/focus/extended_dest"
+#include "ad_ext.hxx"
 
 extern GBDATA *gb_main;
 
