@@ -910,7 +910,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 			if (!merror){
 				GB_warning("%s",GB_get_error());
 			}else{
-				printf("	no FastLoad File '%s' found: loading entire database\n",map_path);
+				GB_information("no FastLoad File '%s' found: loading entire database",map_path);
 			}
 		}
 		if (ok) return 0;
@@ -1111,10 +1111,9 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 		}
     }
 
-    if (gb_verbose_mode){
-	fprintf(stdout, "	ARB:	Loading '%s' ", path);
-	if (quickFile) fprintf(stdout, "+ Changes-File '%s'", quickFile);
-	fprintf(stdout,"\n");
+    if (gb_verbose_mode){	
+	GB_information("Loading '%s'%s%s",
+		   path, quickFile ? " + Changes-File ":"", quickFile ? quickFile :"");
     }
 
     gbm_init_mem();
