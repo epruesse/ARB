@@ -492,14 +492,14 @@ ED4_returncode	ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     ED4_device_manager *device_manager = new ED4_device_manager( "Device_Manager", 0, 0, 0, 0, root_group_man );
     root_group_man->children->append_member( device_manager );
 
-    ED4_calc_terminal_extenstions();
+    ED4_calc_terminal_extentions();
 
     {
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
-        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",NULL, 250, 0, MAXCHARWIDTH*5, TERMINALHEIGHT, NULL),
+        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",NULL, 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
                            new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL),
-                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal",NULL, 250, 0, MAXCHARWIDTH*5, col_stat_term_height, NULL),
+                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal",NULL, 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
                            new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
     }
     x = 100;
@@ -1801,7 +1801,7 @@ AW_window *ED4_root::create_new_window( void ) 						// only the first time, oth
 	ED4_window		*new_window = NULL;
 
 	generate_window( &device, &new_window );
-	ED4_calc_terminal_extenstions();
+	ED4_calc_terminal_extentions();
 
 	last_window_reached = 1;
 	MARGIN = 5;
