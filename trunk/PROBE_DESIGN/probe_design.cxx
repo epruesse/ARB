@@ -160,12 +160,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
          gb_species = GBT_next_marked_gene(gb_species) ){
         gb_name = GB_find(gb_species, "name", 0, down_level);
         if (!gb_name) continue;
-        gb_data = GBT_read_sequence(gb_species, use);
-        if(!gb_data){
-            return (char *)GB_export_error("Gene '%s' has no sequence '%s'", GB_read_char_pntr(gb_name), use);
-        }
-        GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
-        GBS_strcat(names, GB_read_char_pntr(gb_name));
+	GBS_strcat(names, GB_read_char_pntr(gb_name));
         GBS_chrcat(checksums, '#');
         GBS_chrcat(names, '#');
     }

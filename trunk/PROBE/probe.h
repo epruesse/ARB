@@ -175,7 +175,7 @@ struct gene_struct {
   char arb_species_name[128];
 };
 
-extern list<gene_struct*> names_list;
+extern list<gene_struct*> names_list_idp;
 extern GBDATA *map_ptr_idp;
 extern int gene_flag;
 #endif

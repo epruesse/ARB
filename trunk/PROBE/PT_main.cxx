@@ -20,7 +20,7 @@ char *pt_error_buffer = new char[1024];
 ulong physical_memory = 0;
 #ifdef DEVEL_IDP
 int gene_flag = 0;
-list<gene_struct *> names_list;
+list<gene_struct *> names_list_idp;
 GBDATA *map_ptr_idp;
 #endif
 
@@ -117,7 +117,7 @@ void PT_init_map(){
     strcpy(tempstruct->arb_species_name,arb_species_name_str);
     strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
 
-    names_list.push_back(tempstruct);
+    names_list_idp.push_back(tempstruct);
 
     temp1 = strtok(NULL," /\n");
     temp2 = strtok(NULL," /\n");
@@ -140,7 +140,7 @@ void PT_init_map(){
 	strcpy(tempstruct->arb_species_name,arb_species_name_str);
 	strcpy(tempstruct->arb_gene_name,arb_gene_name_str);
 	
-	names_list.push_back(tempstruct);
+	names_list_idp.push_back(tempstruct);
 	
 	temp1 = strtok(NULL," /\n");
 	temp2 = strtok(NULL," /\n");
