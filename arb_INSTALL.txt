@@ -50,7 +50,7 @@ Additional software that is needed to compile ARB:
 --------------------------------------------------
 
 - expat, rxp, sablotron (needed for target 'help' only)
-- STLport
+- (STLport)
 - xaw
 - xview-devel
 
