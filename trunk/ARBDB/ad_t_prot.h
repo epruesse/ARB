@@ -65,6 +65,7 @@ GBDATA *GBT_gen_accession_number P_((GBDATA *gb_species, const char *ali_name));
 int GBT_is_partial P_((GBDATA *gb_species, int default_value, int define_if_undef));
 GBDATA *GBT_get_species_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_species_rel_species_data P_((GBDATA *gb_species_data));
+GBDATA *GBT_first_marked_gene_rel_species P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_marked_species P_((GBDATA *gb_main));
 GBDATA *GBT_get_gene_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_gene P_((GBDATA *gb_main));
