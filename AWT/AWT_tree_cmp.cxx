@@ -2,12 +2,12 @@
 #include <malloc.h>
 #include <memory.h>
 #include <string.h>
-#include <assert.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <awt_tree.hxx>
+#include <awt.hxx>
 
 #include <awt_tree_cmp.hxx>
 
@@ -53,7 +53,7 @@ void AWT_species_set_root::add(const char *species_name){
 }
 
 void AWT_species_set_root::add(AWT_species_set *set){
-    aw_assert(nsets<nspecies*2);
+    awt_assert(nsets<nspecies*2);
     sets[nsets++] = set;
 }
 

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Sep/07/2001 13:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Sep/28/2001 18:06 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -71,6 +71,9 @@ public:
     }
     virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
+    }
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+        root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
     virtual GBDATA *current(AW_root *root) const { // give the current item
         char   *species_name    = root->awar(AWAR_ORGANISM_NAME)->read_string();

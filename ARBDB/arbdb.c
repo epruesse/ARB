@@ -846,7 +846,7 @@ int GB_get_my_security(GBDATA *gbd)
 GB_ERROR gb_security_error(GBDATA *gbd){
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     return GB_export_error("Security Error: You tried to change an entry '%s' with security level %i\n"
-						   "	and your current security level is %i\n",
+						   "	and your current security level is %i",
 						   GB_read_key_pntr(gbd),
 						   GB_GET_SECURITY_WRITE(gbd),
 						   Main->security_level);
