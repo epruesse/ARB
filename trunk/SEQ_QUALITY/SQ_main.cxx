@@ -12,8 +12,8 @@
 #include "seq_quality.h"
 #include "SQ_functions.h"
 
-#ifndef SQ_GROUPDATA_H
-#define SQ_GROUPDATA_H
+#ifndef SQ_GROUPDATASEQ_H
+#include "SQ_GroupDataSeq.h"
 #endif
 
 extern GBDATA *gb_main;
@@ -121,8 +121,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         //SQ_traverse_through_tree(gb_main, tree, marked_only);
 
 	if(tree==0){
-	  //SQ_GroupData globalData();
-	    SQ_GroupData* globalData = new SQ_GroupData();
+	  //SQ_GroupDataSeq globalData();
+	    SQ_GroupDataSeq* globalData = new SQ_GroupDataSeq();
 	    SQ_pass1(globalData, gb_main);
 	    int value = SQ_get_value_no_tree(gb_main, option);
 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
@@ -130,13 +130,12 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    
 	}
 	else {
-	    SQ_GroupData* globalData = new SQ_GroupData();
+	    SQ_GroupDataSeq* globalData = new SQ_GroupDataSeq();
 	    SQ_pass1(globalData, gb_main);
 	    SQ_pass2(globalData, gb_main, marked_only);
 	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
 	    int value = SQ_get_value(gb_main, option);
 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
-	    //globalData->SQ_print_on_screen();
 	    delete globalData;
 	}
 

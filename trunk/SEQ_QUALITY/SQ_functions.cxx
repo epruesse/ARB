@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Fri Nov/14/2003 15:25 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/14/2003 19:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -17,7 +17,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "SQ_GroupData.h"
+#include "SQ_GroupDataSeq.h"
 #include "SQ_consensus.h"
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
@@ -265,11 +265,12 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 
 
-//GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
-GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
+//GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass1(SQ_GroupDataSeq* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
+
     int avg_bases           = 0;
     int worked_on_sequences = 0;
 
@@ -347,6 +348,8 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    /*calculate consensus sequence*/
 		    {
 			bool init;
+ 			int *pp;
+			int p;
 
 			init = globalData->SQ_is_initialised();
 			if (init==false){
@@ -354,9 +357,13 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 			}
 			SQ_consensus* consens = new SQ_consensus(sequenceLength);
 			consens->SQ_calc_consensus(rawSequence);
-                        for(int i = 0; i < sequenceLength; i++) {
-                            globalData->SQ_add_consensus_column(i, consens->SQ_get_consensus(i));
-                        }
+			for(int i = 0; i < sequenceLength; i++) {
+			    for(int j = 0; j < 7; j++) {
+ 				pp = consens->SQ_get_consensus(i,j);
+ 				p = *pp;
+				globalData->SQ_add_consensus(p,i,j);
+			    }
+			}
 			delete consens;
 		    }
 
@@ -380,7 +387,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
 
-GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
+GB_ERROR SQ_pass2(SQ_GroupDataSeq* globalData, GBDATA *gb_main, bool marked_only) {
 
 
     char *alignment_name;
@@ -440,6 +447,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
+		    //int temp                = 0;
 		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
@@ -490,26 +498,26 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 // }
 
 
-// SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
+// SQ_GroupDataSeq *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 
 //     if (node->is_leaf){
 // 	if (!node->gb_node) return 0;
 
-// 	SQ_GroupData *data = new SQ_GroupData();
+// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq();
 
 //         //  ...
 
 // 	return data;
 //     }
 //     else {
-// 	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
-// 	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
+// 	SQ_GroupDataSeq *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
+// 	SQ_GroupDataSeq *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
 
 // 	if (!leftData) return rightData;
 // 	if (!rightData) return leftData;
 
 
-// 	SQ_GroupData *data = new SQ_GroupData(*leftData, *rightData);
+// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq(*leftData, *rightData);
 // 	delete leftData;
 // 	delete rightData;
 
