@@ -2,6 +2,7 @@ ARB change log
 
 Major changes for next Beta:
 
+ - menus and menu-hotkeys reorganized
  - alignment concatenation (i.e. several different genes)
  - merging data of similar species (according selected database field)
  - keyboard commands for ARB_NTREE (mark/unmark/invert, collapse/expand)

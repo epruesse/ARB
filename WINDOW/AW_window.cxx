@@ -2608,7 +2608,9 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 #if defined(DEBUG)
     if (p_w->menu_deep>0) {     // window had menu
         aw_assert(p_w->menu_deep == 1); // some unclosed sub-menus ?
-        exit_duplicate_mnemonic();
+        if (menu_deep_check == 1) { // otherwise the window is just re-shown (already has been checked!)
+            exit_duplicate_mnemonic();
+        }
     }
 #endif // DEBUG
 }
