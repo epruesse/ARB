@@ -333,6 +333,8 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
 
     ED4_create_global_awars(root);
     ARB_init_global_awars(root, AW_ROOT_DEFAULT, gb_main);
+    
+    AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 
     create_naligner_variables(root, AW_ROOT_DEFAULT);
 
@@ -499,8 +501,7 @@ int main(int argc,char **argv)
 #endif
     }
 
-    if (argc>1)
-    {
+    if (argc>1) {
         data_path = argv[1];
         argc--; argv++;
     }
@@ -512,6 +513,7 @@ int main(int argc,char **argv)
         exit (-1);
     }
 
+    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB database (%s)", data_path));
     ED4_ROOT = new ED4_root;
 
     openProperties(); // open properties database
