@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Wed Feb/27/2002 15:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/28/2002 18:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -911,7 +911,7 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     else {
         {
             XML_Tag *para = 0;
-            char     buffer[100];
+//             char     buffer[100];
 
             if (is_enumerated || write_as_entry) {
                 para = new XML_Tag("ENTRY");
