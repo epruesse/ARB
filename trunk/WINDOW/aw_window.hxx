@@ -174,7 +174,7 @@ public:
     long           color_table_size;
     unsigned long *color_table;
 
-    int recalc_size_at_show;
+    int recalc_size_at_show;    // 0 = do not resize, 1 = do resize, 2 = keep user size
     int number_of_timed_title_changes;
 
     void /*AW_xfig*/    *xfig_data;
@@ -340,6 +340,9 @@ public:
 
     void get_at_position( int *x, int *y );
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
+
+    void at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff); // set "to:XY:id" manually
+    void at_unset_to(); // unset "to:id" manually
 
     void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
     void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
