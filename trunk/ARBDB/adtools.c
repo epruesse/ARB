@@ -8,9 +8,8 @@
 #include <ctype.h>
 
 #include "adlocal.h"
-/* #include "arbdb.h" */
 #include "arbdbt.h"
-/* #include "bugex.h" */
+#include "adGene.h"
 #include "aw_awars.hxx"
 
 #define GBT_GET_SIZE 0
@@ -580,9 +579,15 @@ GB_ERROR gbt_insert_character(GBDATA *gb_species_data, const char *species,const
     GBDATA *gb_species;
     GB_ERROR error;
 
-    for (   gb_species = GB_find(gb_species_data,species,0,down_level);
-            gb_species;
-            gb_species = GB_find(gb_species,species,0,this_level|search_next)){
+    long species_count = GBT_count_species(GB_get_root(gb_species_data));
+    long count         = 0;
+
+    for (gb_species = GB_find(gb_species_data,species,0,down_level);
+         gb_species;
+         gb_species = GB_find(gb_species,species,0,this_level|search_next))
+    {
+        count++;
+        GB_status((double)count/species_count);
         error = gbt_insert_character_species(gb_species,name,len,pos,nchar,delete_chars);
         if (error) return error;
     }
@@ -627,13 +632,13 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
 GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name) {
     GB_ERROR err = 0;
 
-    if (strcmp(alignment_name, "ali_genom") != 0) { // NEVER EVER format 'ali_genom'
+    if (strcmp(alignment_name, GENOM_ALIGNMENT) != 0) { // NEVER EVER format 'ali_genom'
         err           = GBT_check_data(Main, alignment_name); // detect max. length
         if (!err) err = GBT_check_lengths(Main, alignment_name); // format sequences in alignment
         if (!err) err = GBT_check_data(Main, alignment_name); // sets state to "formatted"
     }
     else {
-        err = "It's forbidden to format 'ali_genom'!";
+        err = "It's forbidden to format '" GENOM_ALIGNMENT "'!";
     }
     return err;
 }
@@ -799,7 +804,7 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
                 GBDATA *gb_id2 = GB_find(node->gb_node, "id", 0, down_level);
                 int     id     = 0;
                 if (gb_id2) id = GB_read_int(gb_id2);
-                
+
                 printf("deleting node w/o info: tree-node=%p; gb_node=%p prev.id=%i\n", node, node->gb_node, id);
             }
 #endif /* DEBUG */
@@ -1088,7 +1093,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
     long size;
     GBDATA *gb_ctree;
     if (!tree_name) {
-        GB_export_error("zero treename"); return 0;
+        GB_export_error("no treename given"); return 0;
     }
     error =GBT_check_tree_name(tree_name); if (error) return 0;
 
