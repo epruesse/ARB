@@ -24,7 +24,7 @@ extern "C" {
 char **GBT_get_alignment_names P_((GBDATA *gbd));
 GB_ERROR GBT_check_alignment_name P_((const char *alignment_name));
 GBDATA *GBT_create_alignment P_((GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type));
-GB_ERROR GBT_check_alignment P_((GBDATA *Main, GBDATA *preset_alignment));
+NOT4PERL GB_ERROR GBT_check_alignment P_((GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash));
 GB_ERROR GBT_rename_alignment P_((GBDATA *gbd, const char *source, const char *dest, int copy, int dele));
 GBDATA *GBT_find_or_create P_((GBDATA *Main, const char *key, long delete_level));
 GB_ERROR GBT_check_data P_((GBDATA *Main, const char *alignment_name));
@@ -106,7 +106,8 @@ GB_alignment_type GBT_get_alignment_type P_((GBDATA *gb_main, const char *use));
 GB_BOOL GBT_is_alignment_protein P_((GBDATA *gb_main, const char *alignment_name));
 GB_ERROR GBT_check_arb_file P_((const char *name));
 char **GBT_scan_db P_((GBDATA *gbd, const char *datapath));
-GB_ERROR GBT_message P_((GBDATA *gb_main, const char *msg));
+void GBT_install_message_handler P_((GBDATA *gb_main));
+void GBT_message P_((GBDATA *gb_main, const char *msg));
 GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ncase));
 GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
 GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));

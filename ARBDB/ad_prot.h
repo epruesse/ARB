@@ -298,7 +298,7 @@ GB_ERROR GB_install_pid P_((int mode));
 
 /* adhash.c */
 long GBS_get_a_prime P_((long above_or_equal_this));
-GB_HASH *GBS_create_hash P_((long user_size, int upper_case));
+GB_HASH *GBS_create_hash P_((long user_size, int ignore_case));
 char *GBS_hashtab_2_string P_((GB_HASH *hash));
 char *GBS_string_2_hashtab P_((GB_HASH *hash, char *data));
 long GBS_read_hash P_((GB_HASH *hs, const char *key));
