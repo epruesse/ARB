@@ -37,9 +37,15 @@ NOTES           Look at the bottom line of the WWW configuration window
 		and check out whether the command line there calls your
 		preferred internet browser.
 
-                Netscape User:
+                Netscape user enter:
 
-                         (netscape -remote 'openURL($(URL))' || netscape '$(URL)') &
+                    (netscape -remote 'openURL($(URL))' || netscape '$(URL)') &
+
+                Opera users enter one of:
+
+                    opera -remote 'openURL($(URL))' &
+
+                    opera -remote 'openURL($(URL),new-window)' &
 
 
 

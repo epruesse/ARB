@@ -13,9 +13,11 @@ DESCRIPTION
 
         There are two versions of ARB help:
 
-              - an HTML version which is located in $ARBHOME/lib/help_html. It's also availiable via LINK{http://www.arb-home.de/help_html/arb.html}.
-                Please note this version may be more recent than your ARB version!
               - an embedded, context-sensitive version (press any 'HELP' button inside ARB)
+              - an HTML version which is located in $ARBHOME/lib/help_html (it may be started using
+                the BROWSE button in embedded help windows).
+                This HTML help is also available via LINK{http://www.arb-home.de/help_html/arb.html}.
+                Please note that the online version may be more recent than your ARB version!
 
     The following is about the embedded help module:
 
@@ -115,6 +117,8 @@ NOTES		The 'HELP' texts for foreign programs or tools which have been
 		of the 'HELP WINDOW' and can be modified by the user. Write
 		permission is needed for '$ARBHOME/lib/help'. (This only works
                 if you build arb from source)
+
+                See LINK{props_www.hlp} on how to configure the BROWSE button.
 
 BUGS		In the current release, the 'open question pointer' is reset to
 		the original symbol when moved to a menu item.

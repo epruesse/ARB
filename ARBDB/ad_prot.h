@@ -79,6 +79,7 @@ void GB_add_set P_((GBDATA_SET *set, GBDATA *item));
 void GB_delete_set P_((GBDATA_SET *set));
 GB_ERROR GBS_fwrite_string P_((const char *strngi, FILE *out));
 char *GBS_fread_string P_((FILE *in, int optimize));
+char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
 
@@ -253,6 +254,7 @@ GB_CSTR GB_getenvARBHOME P_((void));
 GB_CSTR GB_getenvARBMACROHOME P_((void));
 GB_CSTR GB_getenvGS P_((void));
 GB_CSTR GB_getenvDOCPATH P_((void));
+GB_CSTR GB_getenvHTMLDOCPATH P_((void));
 GB_CSTR GB_getenv P_((const char *env));
 int GB_host_is_local P_((const char *hostname));
 GB_ULONG GB_get_physical_memory P_((void));
