@@ -182,9 +182,9 @@ GB_ERROR gb_add_reference(char *master, char *changes){
         GB_set_mode_of_file(fullref,00666);
     }else{
         error = GB_export_error("Cannot add your file '%s'\n"
-                                "   to the list of references '$s'\n"
+                                "   to the list of references of '%s'\n"
                                 "   Please ask the owner of that file not to delete it\n"
-                                "   or save not only the changes but the entire database",
+                                "   or save the entire database (that's recommended!)",
                                 fullchanges,fullref);
     }
 
@@ -1042,9 +1042,8 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     Main->transaction = translevel;
     erg |= fclose(out);
 
-    if (erg)
-    {
-        GB_export_error("ARBDB: Write Error, system errno = '%i', see console");
+    if (erg) {
+        GB_export_error("ARBDB: Write Error, system errno = '%i', see console", errno);
         perror("Write Error");
         goto error;
     }
