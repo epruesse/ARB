@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Nov/18/2004 19:21 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Nov/18/2004 20:26 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -160,24 +160,28 @@ GBDATA *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, cons
 }
 
 GBDATA *GEN_find_origin_organism(GBDATA *gb_pseudo) {
+    const char *origin_species_name;
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
-    
-    const char *origin_species_name = GEN_origin_organism(gb_pseudo);
+
+    origin_species_name = GEN_origin_organism(gb_pseudo);
     return origin_species_name
         ? GBT_find_species_rel_species_data(GB_get_father(gb_pseudo), origin_species_name)
         : 0;
 }
 
 GBDATA *GEN_find_origin_gene(GBDATA *gb_pseudo) {
+    const char *origin_gene_name;
+    
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
 
-    const char *origin_gene_name = GEN_origin_gene(gb_pseudo);
-    GBDATA     *gb_organism      = 0;
-    if (!origin_gene_name) return 0;
-
-    gb_organism = GEN_find_origin_organism(gb_pseudo);
-    gb_assert(gb_organism);
-    return GEN_find_gene(gb_organism, origin_gene_name);
+    origin_gene_name = GEN_origin_gene(gb_pseudo);
+    if (origin_gene_name) {
+        GBDATA *gb_organism = GEN_find_origin_organism(gb_pseudo);
+        gb_assert(gb_organism);
+        
+        return GEN_find_gene(gb_organism, origin_gene_name);
+    }
+    return 0;
 }
 
 //  --------------------------------
