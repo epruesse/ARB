@@ -53,20 +53,40 @@ makedestdir:
 		mkdir -p $(DEST)
 
 $(DEST)/arb_probe_group:
-		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		)
+#		@echo Link $@
+#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
 
 $(DEST)/arb_probe_group_design:
-		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		)
+#		@echo Link $@
+#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
 
 $(DEST)/arb_probe_server_worker:
-		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) ; \
+		)
+#		@echo Link $@
+#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS)
 
 $(DEST)/pgd_tree_merge:
-		@echo Link $@
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) ; \
+		)
+#		@echo Link $@
+#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS)
 
 depends: $(SUBS:.dummy=.depend)
 
