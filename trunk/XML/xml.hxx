@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Tue Oct/02/2001 18:09 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Oct/24/2001 21:51 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -177,6 +177,8 @@
 
             XML_Node* LatestSon() { return latest_son; }
             void set_LatestSon(XML_Node* latest_son_) { latest_son = latest_son_; }
+
+            XML_Tag& getRoot() { return *root; }
 
             FILE *Out() { return out; }
         };
