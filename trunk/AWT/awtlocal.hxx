@@ -22,6 +22,7 @@ struct adawcbstruct {
 	char	                scannermode;
 	char	               *def_dir;
     const ad_item_selector *selector;
+    AW_BOOL                 add_all_fields_pseudo_field; // true => add a pseudo-field named 'all_fields' (used by 'awt_create_selection_list_on_scandb_cb')
 };
 
 struct awt_sel_list_for_tables {

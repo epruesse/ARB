@@ -606,7 +606,7 @@ links:
 endif
 
 SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
-	-SOURCE_TOOLS/generate_all_links.sh
+	-sh SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
 gde:		GDE/GDE.dummy
@@ -711,7 +711,7 @@ endif
 	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK;export LD_LIBRARY_PATH;echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH;echo calling bin/arb_proto_2_xsub ...;bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
 	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl -I ../lib/perl5 ${MACH}.PL;echo -------- calling MakeMaker makefile;make
 #	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl ${MACH}.PL;echo calling make;make
-	echo -------- end of MakeMaker-Makefile 
+	echo -------- end of MakeMaker-Makefile
 	cp PERL2ARB/blib/arch/auto/ARB/ARB.so lib
 	cp PERL2ARB/ARB.pm lib
 	echo Make lib/ARB.pm and lib/ARB.so finished.
@@ -743,7 +743,9 @@ realclean: clean
 	rm -f AISC_MKPTPS/aisc_mkpt
 
 #*** basic arb libraries
-arbbasic: links mbin menus com nas ${MAKE_RTC} help
+arbbasic: links
+		$(MAKE) arbbasic2
+arbbasic2: mbin menus com nas ${MAKE_RTC} help
 
 #*** New arb programs (Version 2.0) (Motif)
 arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs

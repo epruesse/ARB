@@ -414,6 +414,10 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                             gb_key = GB_find_sub_by_quark(gb_item,this_query->getKeyquark(),0,0);
                         }
 
+                        bool all_fields = !gb_key && strcmp(this_query->getKey(), "all_fields") == 0;
+
+                        // @@@ if all_fields is true => search through all fields
+
                         switch(ext_query){
                             case AWT_EXT_QUERY_NONE: {
                                 const char *query_string = this_query->getQuery();
@@ -1591,12 +1595,9 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
             aws->at(xpos+KEY_OPTION_X_OFFSET, ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-//             awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
-//                                                 0,awtqs->rescan_pos_fig,
-//                                                 awtqs->selector, 20, 1, true);
-             awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
-                                                 0,awtqs->rescan_pos_fig,
-                                                 awtqs->selector, 23, 30, true);
+            awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
+                                                0,awtqs->rescan_pos_fig,
+                                                awtqs->selector, 23, 30, true, true);
 
             aws->at(xpos+KEY_NOT_X_OFFSET, ypos+key*KEY_Y_OFFSET);
             aws->create_toggle(cbs->awar_not[key], "matches.bitmap", "not.bitmap");
