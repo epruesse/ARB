@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : output.h                                               //
 //    Purpose   : class for indented output to FILE                      //
-//    Time-stamp: <Sat Sep/27/2003 14:13 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Oct/11/2003 11:15 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -73,13 +73,12 @@ public:
         cr();
     }
 
-    void put(const char *s, ...) {
-        va_list parg;
-        va_start(parg, s);
-        vput(s, parg);
-    }
+    void put(const char *s, ...) __attribute__((format(printf, 2, 3)));
 
-    void put()  { put(""); }
+    void put()  {
+        goto_indentation();
+        cr();
+    }
 
     void setMaxPoints(int maxP) {
         max_points = maxP;
@@ -99,6 +98,14 @@ public:
         fflush(stdout);
     }
 };
+
+inline void output::put(const char *s, ...) {
+    va_list parg;
+    va_start(parg, s);
+    vput(s, parg);
+}
+
+
 
 //  ---------------------
 //      class indent
