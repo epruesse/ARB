@@ -8,4 +8,4 @@ read a
 pwd=`pwd`
 
 #xon $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""
-ssh -X $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""
+ssh -f -X $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""
