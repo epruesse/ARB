@@ -306,6 +306,53 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 }
 
 
+int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
+
+
+    int result = 0;
+    char *alignment_name;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*) = 0;
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+
+    getFirst = GBT_first_species;
+    getNext = GBT_next_species;
+
+
+    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+	if (gb_name) {
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+	    if (gb_ali) {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (gb_quality){
+		    read_sequence = GB_find(gb_ali,"data",0,down_level);
+		    if (read_sequence) {
+			GBDATA *gb_result1 = GB_search(gb_quality, option, GB_INT);
+			result = GB_read_int(gb_result1);
+		    }
+		}
+	    }
+	}
+    }
+    delete alignment_name;
+
+
+    GB_pop_transaction(gb_main);
+    return result;
+
+}
+
 
 GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac){
 

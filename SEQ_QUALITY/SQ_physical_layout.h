@@ -84,6 +84,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
     percent_dots   = (100 * count_dots) / size;
     percent_bases  = 100 - (percent_scores + percent_dots);
 
+
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_bases);

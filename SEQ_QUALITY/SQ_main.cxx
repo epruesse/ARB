@@ -51,7 +51,6 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
 
 static void sq_calc_seq_quality_cb(AW_window *aww) {
 
-    bool no_tree = false;
 
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = 0;
@@ -67,7 +66,6 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    }
             else{
 		aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename));
-		no_tree = true;
 	    }
             GB_pop_transaction(gb_main);
         }
@@ -122,7 +120,11 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         //SQ_traverse_through_tree(gb_main, tree, marked_only);
 
-	if(no_tree){
+	if(tree==0){
+	    SQ_GroupData globalData;
+	    SQ_pass1(globalData, gb_main);
+	    int value = SQ_get_value_no_tree(gb_main, option);
+	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
 
 	}
 	else {

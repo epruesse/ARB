@@ -30,6 +30,8 @@ GB_ERROR SQ_pass2(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only);
 
 void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
 
+int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
+
 int SQ_get_value(GBDATA *gb_main, const char *option);
     /*
       "option" is variable which is passed to function "SQ_get_value()".
