@@ -168,7 +168,7 @@ char AWT_encode_iupac(const char bases[], GB_alignment_type ali)
         IUPAC_add_initialized = 1;
     }
 
-    if (ali==GB_AT_AMI || ali==GB_AT_PRO) {
+    if (ali==GB_AT_AA) {
         return '?';
     }
 
@@ -215,7 +215,7 @@ const char* AWT_decode_iupac(char iupac, GB_alignment_type ali, int decode_amino
         return IUPAC_EMPTY;
     }
 
-    if (ali==GB_AT_AMI || ali==GB_AT_PRO) {
+    if (ali==GB_AT_AA) {
         if (decode_amino_iupac_groups) {
             int group = AWT_iupac_group[toupper(iupac)-'A'];
 

@@ -2393,8 +2393,8 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *use)
         {
             case 'r': if (strcmp(ali_type, "rna")==0) at = GB_AT_RNA; break;
             case 'd': if (strcmp(ali_type, "dna")==0) at = GB_AT_DNA; break;
-            case 'a': if (strcmp(ali_type, "ami")==0) at = GB_AT_AMI; break;
-            case 'p': if (strcmp(ali_type, "pro")==0) at = GB_AT_PRO; break;
+            case 'a': if (strcmp(ali_type, "ami")==0) at = GB_AT_AA; break;
+            case 'p': if (strcmp(ali_type, "pro")==0) at = GB_AT_AA; break;
             default: ad_assert(0); break;
         }
         free(ali_type);
@@ -2402,18 +2402,8 @@ GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *use)
     return at;
 }
 
-GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name)
-{
-    /*     char *type = GBT_get_alignment_type(gb_main,use); */
-    /*     GB_BOOL is_aa = GB_FALSE; */
-    /*     if (!type) return GB_FALSE; */
-    /*     if (!strcmp(type,"ami")) is_aa = GB_TRUE; */
-    /*     if (!strcmp(type,"pro")) is_aa = GB_TRUE; */
-    /*     free(type); */
-    /*     return is_aa; */
-
-    GB_alignment_type at = GBT_get_alignment_type(gb_main,alignment_name);
-    return at==GB_AT_PRO || at==GB_AT_AMI;
+GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name) {
+    return GBT_get_alignment_type(gb_main,alignment_name) == GB_AT_AA;
 }
 
 /********************************************************************************************
