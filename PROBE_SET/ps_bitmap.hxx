@@ -19,6 +19,8 @@ protected:
     long max_row;                       // max used row index
     long capacity;                      // number of allocated rows (and columns)
 
+    virtual bool do_reserve( const long _capacity, const bool _init_sets );
+
     PS_BitMap( const PS_BitMap& );
     PS_BitMap();
     PS_BitMap( const bool _bias, const long _max_row, const long _capacity ) {
@@ -51,9 +53,10 @@ public:
 
     explicit PS_BitMap( const bool _bias, const long _capacity ) : bias(_bias), max_row(0), capacity(_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
-        //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
+//         printf( "PS_BitMap(%p) data = malloc(%lu) = %p\n", this, capacity*sizeof(PS_BitSet*), data );
         for (long i = 0; i < capacity; ++i) {                        // init requested bitsets
             data[i] = new PS_BitSet( bias, capacity );               // init field
+//             printf( "PS_BitMap(%p) data[%li] = %p\n", this, i, data[i] );
             if (data[i] == 0) {
                 printf( "PS_BitMap( %s,%li ) : error while init. data[%li]\n", bias ? "true" : "false", capacity, i );
                 exit( 1 );
@@ -68,8 +71,10 @@ public:
 
     virtual ~PS_BitMap() {
         for (long i = 0; i < capacity; ++i) {
-            delete data[i];
+//             printf( "~PS_BitMap(%p) delete data[%li] (%p) : ", this, i, data[i] );
+            if (data[i]) delete data[i];
         }
+//         printf( "~PS_BitMap(%p) free( data(%p) (%li) )\n : ", this, data, capacity*sizeof(PS_BitSet*) );
         if (data) free( data );
     }
 };
@@ -85,6 +90,8 @@ public:
 class PS_BitMap_Fast : public PS_BitMap {
 private:
 
+    virtual bool do_reserve( const long _capacity, const bool _init_sets );
+
     PS_BitMap_Fast( const PS_BitMap_Fast& );
     PS_BitMap_Fast();
 
@@ -95,13 +102,16 @@ public:
     virtual void setTrue(  const long _row, const long _col );
     virtual void setFalse( const long _row, const long _col );
 
+    virtual bool load( PS_FileBuffer *_file );
+
     virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap_Fast( const bool _bias, const long _capacity ) : PS_BitMap(_bias,0,_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
-        //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
+//         printf( "PS_BitMap_Fast(%p) data = malloc(%lu) = %p\n", this, capacity*sizeof(PS_BitSet*), data );
         for (long i = 0; i < capacity; ++i) {                        // init requested bitsets
             data[i] = new PS_BitSet_Fast( bias, capacity );          // init field
+//             printf( "PS_BitMap_Fast(%p) data[%li] = %p\n", this, i, data[i] );
             if (data[i] == 0) {
                 printf( "PS_BitMap_Fast( %s,%li ) : error while init. data[%li]\n", bias ? "true" : "false", capacity, i );
                 exit( 1 );
@@ -134,6 +144,8 @@ private:
 
     long *count_true_per_index;
 
+    virtual bool do_reserve( const long _capacity, const bool _init_sets );
+
     PS_BitMap_Counted( const PS_BitMap_Counted& );
     PS_BitMap_Counted();
 
@@ -162,14 +174,27 @@ public:
         load( _file );
     }
 
-    explicit PS_BitMap_Counted( const bool _bias, const long _capacity ) : PS_BitMap(_bias,_capacity) {
+    explicit PS_BitMap_Counted( const bool _bias, const long _capacity ) : PS_BitMap(_bias,0,_capacity) {
+        data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
+//         printf( "PS_BitMap_Counted(%p) data = malloc(%lu) = %p\n", this, capacity*sizeof(PS_BitSet*), data );
+        for (long i = 0; i < capacity; ++i) {                        // init requested bitsets
+            data[i] = new PS_BitSet_Fast( bias, capacity );          // init field
+//             printf( "PS_BitMap_Counted(%p) data[%li] = %p\n", this, i, data[i] );
+            if (data[i] == 0) {
+                printf( "PS_BitMap_Counted( %s,%li ) : error while init. data[%li]\n", bias ? "true" : "false", capacity, i );
+                exit( 1 );
+            }
+        }
         // alloc memory for counters
         count_true_per_index = (long *)malloc( capacity * sizeof(long) );
+//         printf( "PS_BitMap_Counted(%p) count_true_per_index = malloc(%lu) = %p\n", this, capacity*sizeof(long), count_true_per_index );
+
         // preset memory of counters
         memset( count_true_per_index, (bias) ? capacity : 0, capacity * sizeof(long) );
     }
 
     virtual ~PS_BitMap_Counted() {
+//         printf( "~PS_BitMap_Counted(%p) free(count_true_per_index) %p (%li)\n", this, count_true_per_index, capacity*sizeof(long) );
         if (count_true_per_index) free( count_true_per_index );
     }
 };
@@ -250,6 +275,9 @@ bool PS_BitMap::triangle_get( const long _row, const long _col ) {
 // * PS_BitMap::reserve( _capacity )
 // ************************************************************
 bool PS_BitMap::reserve( const long _capacity ) {
+    return do_reserve( _capacity, true );
+}
+bool PS_BitMap::do_reserve( const long _capacity, const bool _init_sets ) {
     PS_BitSet **new_data;
     long new_capacity_bytes = _capacity * sizeof(PS_BitSet*);
     long old_capacity_bytes =  capacity * sizeof(PS_BitSet*);
@@ -259,9 +287,11 @@ bool PS_BitMap::reserve( const long _capacity ) {
     if (capacity > 0) memcpy( new_data,data,old_capacity_bytes );// copy old pointers
     if (data) free( data );                                      // free old memory
     data = new_data;
-    for (long i = capacity; i < _capacity; ++i) {                // init new requested bitsets
-        data[i] = new PS_BitSet( bias,1 );                       // init field
-        if (data[i] == 0) return false;                          // check success
+    if (_init_sets) {
+        for (long i = capacity; i < _capacity; ++i) {            // init new requested bitsets
+            data[i] = new PS_BitSet( bias,1 );                   // init field
+            if (data[i] == 0) return false;                      // check success
+        }
     }
     capacity = _capacity;                                        // store new capacity
     return true;
@@ -354,9 +384,16 @@ bool PS_BitMap::load( PS_FileBuffer *_file ) {
     // load bias
     bias = (_file->get_char() == '1');
     // initialize bitmap
-    if (!reserve( max_row+1 )) return false;
+//     printf( "PS_BitMap::load(%p) max_row (%li) bias(%1i)\n", this, max_row, bias );
+    if (!do_reserve( max_row+1, false )) return false;
     for (long i = 0; i <= max_row; ++i) {
-        data[i]->load( _file );
+        if (data[i]) {
+//             printf( "PS_BitMap::load(%p) delete data[%li] = %p\n", this, i, data[i] );
+            delete data[i];
+        }
+//         printf( "PS_BitMap::load(%p) load data[%li] = ", this,i );
+        data[i] = new PS_BitSet( _file );
+//         printf( "%p\n", data[i] );
     }
     return true;
 }
@@ -399,9 +436,36 @@ inline void PS_BitMap_Fast::setFalse( const long _row, const long _col ) {
 
 
 // ************************************************************
+// * PS_BitMap_Fast::load( PS_FileBuffer *_file )
+// ************************************************************
+bool PS_BitMap_Fast::load( PS_FileBuffer *_file ) {
+    if (!_file->isReadonly()) return false;
+    // load max_row
+    _file->get_long( max_row );
+    // load bias
+    bias = (_file->get_char() == '1');
+    // initialize bitmap
+//     printf( "PS_BitMap_Fast::load(%p) max_row (%li) bias(%1i)\n", this, max_row, bias );
+    if (!do_reserve( max_row+1, false )) return false;
+    for (long i = 0; i <= max_row; ++i) {
+        if (data[i]) {
+//             printf( "PS_BitMap_Fast::load(%p) delete data[%li] = %p\n", this, i, data[i] );
+            delete data[i];
+        }
+        data[i] = new PS_BitSet_Fast( _file );
+//         printf( "PS_BitMap_Fast::load(%p) data[%li] = %p\n", this, i, data[i] );
+    }
+    return true;
+}
+
+
+// ************************************************************
 // * PS_BitMap_Fast::reserve( _capacity )
 // ************************************************************
 bool PS_BitMap_Fast::reserve( const long _capacity ) {
+    return do_reserve( _capacity, true );
+}
+bool PS_BitMap_Fast::do_reserve( const long _capacity, const bool _init_sets ) {
     if (_capacity <= capacity) return true;                      // smaller or same size requested ?
     PS_BitSet **new_data;
     long new_capacity_bytes = _capacity * sizeof(PS_BitSet*);
@@ -411,9 +475,11 @@ bool PS_BitMap_Fast::reserve( const long _capacity ) {
     if (capacity > 0) memcpy( new_data,data,old_capacity_bytes );// copy old pointers
     if (data) free( data );                                      // free old memory
     data = new_data;
-    for (long i = capacity; i < _capacity; ++i) {                // init new requested bitsets
-        data[i] = new PS_BitSet_Fast( bias,1 );                  // init field
-        if (data[i] == 0) return false;                          // check success
+    if (_init_sets) {
+        for (long i = capacity; i < _capacity; ++i) {            // init new requested bitsets
+            data[i] = new PS_BitSet_Fast( bias,1 );              // init field
+            if (data[i] == 0) return false;                      // check success
+        }
     }
     capacity = _capacity;                                        // store new capacity
     return true;
@@ -460,6 +526,7 @@ long PS_BitMap_Counted::getFalseIndicesFor( const long _index, PS_BitSet::IndexS
 // * PS_BitMap_Counted::set( _row,_col,_value )
 // ************************************************************
 bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value ) {
+    if (_col >= _row) printf( "PS_BitMap_Counted::set( %li,%li,%1i ) not allowed\n", _row, _col, _value );
     if (_row > max_row) max_row = _row;
     bool previous_value = data[_row]->set( _col, _value );
     if (_value && !previous_value) {
@@ -477,6 +544,7 @@ bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value
 // * PS_BitMap_Counted::get( _row,_col )
 // ************************************************************
 inline bool PS_BitMap_Counted::get( const long _row, const long _col ) {
+    if (_col >= _row) printf( "PS_BitMap_Counted::get( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     return data[_row]->get( _col );
 }
@@ -486,6 +554,7 @@ inline bool PS_BitMap_Counted::get( const long _row, const long _col ) {
 // * PS_BitMap_Counted::setTrue( _row, _col )
 // ************************************************************
 inline void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
+    if (_col >= _row) printf( "PS_BitMap_Counted::setTrue( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     data[_row]->setTrue( _col );
 }
@@ -495,8 +564,34 @@ inline void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
 // * PS_BitMap_Counted::setFalse( _row, _col )
 // ************************************************************
 inline void PS_BitMap_Counted::setFalse( const long _row, const long _col ) {
+    if (_col >= _row) printf( "PS_BitMap_Counted::setFalse( %li,%li ) not allowed\n", _row, _col );
     if (_row > max_row) max_row = _row;
     data[_row]->setFalse( _col );
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::load( PS_FileBuffer *_file )
+// ************************************************************
+bool PS_BitMap_Counted::load( PS_FileBuffer *_file ) {
+    if (!_file->isReadonly()) return false;
+    // load max_row
+    _file->get_long( max_row );
+    // load bias
+    bias = (_file->get_char() == '1');
+    // initialize bitmap
+//     printf( "PS_BitMap_Counted::load(%p) max_row (%li) bias(%1i)\n", this, max_row, bias );
+    if (!do_reserve( max_row+1, false )) return false;
+    for (long i = 0; i <= max_row; ++i) {
+        if (data[i]) {
+//             printf( "PS_BitMap_Counted::load(%p) delete data[%li] = %p\n", this, i, data[i] );
+            delete data[i];
+        }
+        data[i] = new PS_BitSet_Fast( _file, i );
+//         printf( "PS_BitMap_Counted::load(%p) data[%li] = %p capacity(%li)\n", this, i, data[i], data[i]->capacity );
+    }
+    recalcCounters();
+    return true;
 }
 
 
@@ -504,6 +599,9 @@ inline void PS_BitMap_Counted::setFalse( const long _row, const long _col ) {
 // * PS_BitMap_Counted::reserve( _capacity )
 // ************************************************************
 bool PS_BitMap_Counted::reserve( const long _capacity ) {
+    return do_reserve( _capacity, true );
+}
+bool PS_BitMap_Counted::do_reserve( const long _capacity, const bool _init_sets ) {
     PS_BitSet **new_data;
     long *new_counts;
     if (_capacity <= capacity) return true;                      // smaller or same size requested ?
@@ -516,6 +614,8 @@ bool PS_BitMap_Counted::reserve( const long _capacity ) {
     //
     new_data   = (PS_BitSet **)malloc( new_data_bytes );
     new_counts = (long *)malloc( new_counts_bytes );
+//     printf( "PS_BitMap_Counted::reserve(%p) new_data = malloc(%li) = %p\n", this, new_data_bytes, new_data );
+//     printf( "PS_BitMap_Counted::reserve(%p) new_counts = malloc(%li) = %p\n", this, new_counts_bytes, new_counts );
     //
     // test is we got the memory we wanted
     //
@@ -531,9 +631,13 @@ bool PS_BitMap_Counted::reserve( const long _capacity ) {
     if (capacity > 0) memcpy( new_data,data,old_data_bytes );    // copy old pointers
     if (data) free( data );                                      // free old memory
     data = new_data;
-    for (long i = capacity; i < _capacity; ++i) {                // init new requested bitsets
-        data[i] = new PS_BitSet_Fast( bias,i+1 );                // init field
-        if (data[i] == 0) return false;                          // check success
+//     printf( "PS_BitMap_Counted::reserve( %li )\n", _capacity );
+    if (_init_sets) {
+        for (long i = capacity; i < _capacity; ++i) {            // init new requested bitsets
+            data[i] = new PS_BitSet_Fast( bias,i+1 );            // init field
+//             printf( "PS_BitMap_Counted::reserve(%p) data[%li] = %p\n", this, i, data[i] );
+            if (data[i] == 0) return false;                      // check success
+        }
     }
     //
     // initialize new counts-arrays
@@ -612,22 +716,14 @@ void PS_BitMap_Counted::printGNUplot( const char *_title, char *_buffer, PS_File
 
 
 // ************************************************************
-// * PS_BitMap_Counted::load( PS_FileBuffer *_file )
-// ************************************************************
-bool PS_BitMap_Counted::load( PS_FileBuffer *_file ) {
-    if (!PS_BitMap::load( _file )) return false;
-    recalcCounters();
-    return true;
-}
-
-
-// ************************************************************
 // * PS_BitMap_Counted::recalcCounters()
 // ************************************************************
 void PS_BitMap_Counted::recalcCounters() {
+    printf( "PS_BitMap_Counted::recalcCounters()\n" );
     memset( count_true_per_index, 0, capacity * sizeof(long) );
     for (long row = 0; row <= max_row; ++row) {
         PS_BitSet *row_data = data[row];
+        if (row_data->getMaxUsedIndex() >= row) printf( "row %4li 0..%li ??\n", row, row_data->getMaxUsedIndex() );
         for (long col = 0; col <= row_data->getMaxUsedIndex(); ++col) {
             if (row_data->get(col)) {
                 ++count_true_per_index[ col ];
