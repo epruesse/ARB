@@ -295,7 +295,8 @@ GB_CSTR GBC_get_hostname P_((void));
 GB_ERROR GB_install_pid P_((int mode));
 
 /* adhash.c */
-GB_HASH *GBS_create_hash P_((long size, int upper_case));
+long GBS_get_a_prime P_((long above_or_equal_this));
+GB_HASH *GBS_create_hash P_((long user_size, int upper_case));
 char *GBS_hashtab_2_string P_((GB_HASH *hash));
 char *GBS_string_2_hashtab P_((GB_HASH *hash, char *data));
 long GBS_read_hash P_((GB_HASH *hs, const char *key));
@@ -304,6 +305,9 @@ long GBS_write_hash_no_strdup P_((GB_HASH *hs, char *key, long val));
 long GBS_incr_hash P_((GB_HASH *hs, const char *key));
 void GBS_free_hash_entries P_((GB_HASH *hs));
 void GBS_free_hash P_((GB_HASH *hs));
+void GBS_clear_hash_statistic_summary P_((const char *id));
+void GBS_print_hash_statistic_summary P_((const char *id));
+void GBS_calc_hash_statistic P_((GB_HASH *hs, const char *id, int print));
 void GBS_free_hash_entries_free_pointer P_((GB_HASH *hs));
 void GBS_free_hash_free_pointer P_((GB_HASH *hs));
 void GBS_hash_do_loop P_((GB_HASH *hs, gb_hash_loop_type func));
