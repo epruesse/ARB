@@ -1109,8 +1109,17 @@ nas:
 
 perl:	lib/ARB.pm
 
+PERLDEPS= \
+	ARBDB/ad_prot.h \
+	ARBDB/ad_t_prot.h \
+	ARBDB/arbdb.h \
+	ARBDB/arbdbt.h \
+	ARBDB/arb_assert.h \
+	PERL2ARB/ARB.xs.default \
+	PERL2ARB/${MACH}.PL \
 
-lib/ARB.pm:	ARBDB/ad_prot.h ARBDB/ad_t_prot.h PERL2ARB/ARB.xs.default
+
+lib/ARB.pm: ${PERLDEPS}
 ifdef PERLBIN
 	mkdir -p PERL5/bin
 	(cd PERL5/bin;ln -f -s ${PERLBIN}/perl .);
@@ -1124,8 +1133,25 @@ endif
 	rm -f PERL2ARB/ARB.xs
 	rm -f PERL2ARB/proto.h
 	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
-	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK;export LD_LIBRARY_PATH;echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH;echo calling bin/arb_proto_2_xsub ...;bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
-	PATH=/usr/arb/bin:${PATH};export PATH;cd PERL2ARB;echo calling perl ${MACH}.PL;perl -I ../lib/perl5 ${MACH}.PL;echo -------- calling MakeMaker makefile;make
+	LD_LIBRARY_PATH=${ARBHOME}/LIBLINK; \
+		export LD_LIBRARY_PATH; \
+		echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH; \
+		echo calling bin/arb_proto_2_xsub ...; \
+		bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
+	echo "#undef DEBUG" >PERL2ARB/debug.h
+	echo "#undef NDEBUG" >>PERL2ARB/debug.h
+ifeq ($(DEBUG),1)
+	echo "#define DEBUG" >>PERL2ARB/debug.h
+else
+	echo "#define NDEBUG" >>PERL2ARB/debug.h
+endif
+	PATH=/usr/arb/bin:${PATH}; \
+		export PATH; \
+		cd PERL2ARB; \
+		echo calling perl ${MACH}.PL; \
+		perl -I ../lib/perl5 ${MACH}.PL; \
+		echo -------- calling MakeMaker makefile; \
+		make "dflags=${dflags}"
 	echo -------- end of MakeMaker-Makefile
 	cp PERL2ARB/blib/arch/auto/ARB/ARB.so lib
 	cp PERL2ARB/ARB.pm lib
@@ -1151,6 +1177,7 @@ clean:	rmbak
 	rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
 	rm -f *_COM/GENH/*.h
 	rm -f *_COM/GENC/*.c
+	rm -f lib/ARB.pm
 
 realclean: clean
 	rm -f `find bin -type f -perm -001 -print`
