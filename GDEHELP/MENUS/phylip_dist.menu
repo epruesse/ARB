@@ -40,7 +40,7 @@ argchoice:Jukes-Cantor:       DNATEXT=Jukes-Cantor; DNAFLAGS="d d y"
 argchoice:LogDet:             DNATEXT=LogDet;       DNAFLAGS="d d d y"
 argchoice:Manual:             DNATEXT=User;         DNAFLAGS=""
 
-arg:CORRECTION _PROT
+arg:CORRECTION_PROT
 arglabel:Correction (PROT)
 argtype:choice_menu
 argchoice:Jones-Taylor-Thornton:  PROTEXT=JTT;     PROFLAGS="y"
