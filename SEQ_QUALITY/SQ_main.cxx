@@ -35,9 +35,9 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
         free(default_tree);
     }
     aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 50, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 15, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
 }
 
@@ -75,7 +75,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
     if (!error) {
-        const char *option = "number_of_bases";// "consensus_conformity";
+      //const char *option = "number_of_bases";// "consensus_conformity";
 
         /*
           "option" is variable which is passed to function "SQ_get_value()".
@@ -83,23 +83,21 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
           Right now the options you have are:
 
           number_of_bases
-          number_of_spaces
-          number_of_dots
           percent_of_bases
-          percent_of_spaces
-          percent_of_dots
           diff_from_average
           number_of_helix
           number_of_weak_helix
           number_of_no_helix
           value_of_evaluation
+	  consensus
+	  evaluation
         */
 
-//         int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-//         int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
-// 	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
-// 	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
-// 	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
+        int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
+        int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
+	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
+ 	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -119,8 +117,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    aw_openstatus("Calculating pass 2 of 2 ...");
 	    SQ_pass2_no_tree(globalData, gb_main);
 	    aw_closestatus();
-	    int value = SQ_get_value_no_tree(gb_main, option);
-	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
+	    //int value = SQ_get_value_no_tree(gb_main, option);
+	    //aw_message(GBS_global_string("Value in container %s : %i",option, value));
 	    delete globalData;
 
 	}
@@ -133,10 +131,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    SQ_reset_counters(tree);
 	    aw_openstatus("Calculating pass 2 of 2...");
 	    SQ_calc_and_apply_group_data2(tree, gb_main, globalData);
+	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
 	    aw_closestatus();
-//	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
-// 	    int value                = SQ_get_value(gb_main, option);
-// 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
 	    delete globalData;
 	}
 

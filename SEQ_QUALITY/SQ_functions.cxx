@@ -237,39 +237,72 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		int dfa        = 0;
 		int result     = 0;
 		int noh        = 0;
-		int coc        = 0;
+		int cos        = 0;
 		int iupv       = 0;
 		int gcprop     = 0;
+		int value      = 0;
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 
 		GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);
 		bases = GB_read_int(gb_result1);
-		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		if (bases < 6) result = 1;
+		else {
+	  	    if (bases < 9) result = 2;
+		    else { result = 3;}
+		}
+		result = result * weight_bases;
+		value += result;
+
+		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);   //BETRAG!!!
 		dfa = GB_read_int(gb_result2);
+		if (dfa < 3) result = 3;
+		else {
+	  	    if (dfa < 6) result = 2;
+		    else { result = 1;}
+		}
+		result = result * weight_diff_from_average;
+		value += result;
+
 		GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
 		noh = GB_read_int(gb_result3);
-// 		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_conformity", GB_INT);
-// 		coc = GB_read_int(gb_result4);
+		if (noh < 900) result = 3;
+		else {
+	  	    if (noh < 1100) result = 2;
+		    else { result = 1;}
+		}
+		result = result * weight_helix;
+		value += result;
+
+ 		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
+ 		cos = GB_read_int(gb_result4);
+		result = cos;
+		result = result * weight_consensus;
+		value += result;
+
 		GBDATA *gb_result5 = GB_search(gb_quality, "iupac_value", GB_INT);
 		iupv = GB_read_int(gb_result5);
+		result = iupv;
+		result = result * weight_iupac;
+		value += result;
+
 		GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_INT);
 		gcprop = GB_read_int(gb_result6);
-
-		/*this is the equation for the evaluation of the stored values*/
-		double gc_proportion = gcprop;    // hack->SQ_physical_layout.h
-		if (gc_proportion !=0) {
-		  gc_proportion = 100 / gcprop;
+		if (gcprop < 150) result = 1;
+		else {
+	  	    if (gcprop < 190) result = 2;
+		    else { result = 3;}
 		}
-		//printf("\n debug info:%i %i %i %e \n", bases, dfa, noh, gcprop );
+		//result += result * weight_gc;
+		value += result;
 
-		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * noh) + (weight_consensus * coc) + (weight_iupac * iupv);
-		//result = round(result * gc_proportion); // @@@ runden ?
+		//if (value !=0 )	value = value / 600;
 
 		/*write the final value of the evaluation*/
-		GBDATA *gb_result7 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
+		printf("%i",value);
+		GBDATA *gb_result7 = GB_search(gb_quality, "evaluation", GB_INT);
 		seq_assert(gb_result7);
-		GB_write_int(gb_result7, result);
+		GB_write_int(gb_result7, value);
 
 	    }
 	}
@@ -518,6 +551,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    const char *rawSequence = 0;
 		    double value1           = 0;
 		    double value2           = 0;
+		    int evaluation          = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
@@ -585,6 +619,25 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
 		    seq_assert(gb_result4);
 		    GB_write_string(gb_result4, cons_dev);
+
+		    //if you parse the upper two values in the evaluate() function cut the following out
+		    //for time reasons i do the evaluation here, as i still have the upper two values
+		    //---------cut this-----------
+		    if (value1 < 0.01) evaluation += 1;
+		    else {
+		      if (value1 < 0.02) evaluation += 2;
+		      else { evaluation += 3;}
+		    }
+		    if (value2 < 0.0001) evaluation += 1;
+		    else {
+		      if (value2 < 0.001) evaluation += 2;
+		      else { evaluation += 3;}
+		    }
+		    evaluation = evaluation / 2;
+		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
+		    seq_assert(gb_result5);
+		    GB_write_int(gb_result5, evaluation);
+		    //---------end cut this-------
 
 		}
 	    }
