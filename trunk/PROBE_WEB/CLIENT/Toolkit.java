@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Fri Oct/10/2003 12:44 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/13/2003 01:02 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -18,7 +18,7 @@ class Toolkit
     public static String clientName    = "arb_probe_client";
     public static String clientVersion = "0.9alpha"; // CLIENT_SERVER_VERSION -- this has to match the version in ../SERVER/getVersion.cgi
 
-    private static String maintainer = "devel@arb-home.de";
+    private static String maintainer = "probeadmin@arb-home.de";
 
 public static void AbortWithError(String error)
     {
@@ -26,10 +26,17 @@ public static void AbortWithError(String error)
         System.exit(1); // error
     }
 
+public static void AbortWithConnectionProblem(String error)
+    {
+        System.out.println(clientName+" has a connection problem: "+error);
+        System.out.println("Please check whether your internet connection works.");
+        System.exit(2); // server problem
+    }
+
 public static void AbortWithServerProblem(String error)
     {
-        System.out.println(clientName+" has a server problem: "+error);
-        System.out.println("Please check whether your internet connection works.");
+        System.out.println(clientName+" got error from server:\n    "+error);
+        System.out.println("Please report to "+maintainer);
         System.exit(2); // server problem
     }
 

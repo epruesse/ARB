@@ -49,7 +49,7 @@ public HttpSubsystem(String name)
             probeSocket.close();
         }
         catch (Exception e) {
-            Toolkit.AbortWithServerProblem("Cannot connect to server '"+host+"'");
+            Toolkit.AbortWithConnectionProblem("Cannot connect to server '"+host+"'");
         }
 
         // init other members
@@ -126,9 +126,12 @@ public void retrieveVersionInformation()
     {
         String versionInfo = conductRequest("getVersion.cgi");
         if (versionInfo == null) {
-            Toolkit.AbortWithServerProblem("cannot get version info ("+getLastRequestError()+")");
+            Toolkit.AbortWithConnectionProblem("cannot get version info ("+getLastRequestError()+")");
         }
         ServerAnswer parsedVersionInfo = new ServerAnswer(versionInfo, true, false);
+        if (parsedVersionInfo.hasError()) {
+            Toolkit.AbortWithServerProblem(parsedVersionInfo.getError());
+        }
 
         neededClientVersion = parsedVersionInfo.getValue("client_version");
         neededTreeVersion   = parsedVersionInfo.getValue("tree_version");
