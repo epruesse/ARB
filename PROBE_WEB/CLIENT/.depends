@@ -1,9 +1,12 @@
 Client.class : Client.java
 Client.class : CommandLine.java
+Client.class : GroupCache.java
 Client.class : HttpSubsystem.java
+Client.class : ProbeList.java
 Client.class : ProbeMenu.java
 Client.class : ProbesGUI.java
 Client.class : ProbesGUIActionListener.java
+Client.class : ServerAnswer.java
 Client.class : Toolkit.java
 Client.class : TreeDisplay.java
 Client.class : TreeNode.java
@@ -13,6 +16,9 @@ CommandLine.class : CommandLine.java
 CommandLine.class : Toolkit.java
 DisplayMouseAdapter.class : DisplayMouseAdapter.java
 DisplayMouseAdapter.class : TreeDisplay.java
+GroupCache.class : GroupCache.java
+GroupCache.class : HttpSubsystem.java
+GroupCache.class : ServerAnswer.java
 HttpSubsystem.class : HttpSubsystem.java
 HttpSubsystem.class : ServerAnswer.java
 HttpSubsystem.class : Toolkit.java
@@ -21,10 +27,14 @@ LineAreaFactory.class : LineArea.java
 LineAreaFactory.class : LineAreaFactory.java
 NodeError.class : NodeError.java
 NodeError.class : TreeNode.java
+ProbeList.class : ProbeList.java
+ProbeList.class : ServerAnswer.java
 ProbeMenu.class : ProbeMenu.java
+ProbesGUI.class : ProbeList.java
 ProbesGUI.class : ProbeMenu.java
 ProbesGUI.class : ProbesGUI.java
 ProbesGUI.class : ProbesGUIActionListener.java
+ProbesGUI.class : ServerAnswer.java
 ProbesGUI.class : Toolkit.java
 ProbesGUI.class : TreeDisplay.java
 ProbesGUI.class : TreeNode.java

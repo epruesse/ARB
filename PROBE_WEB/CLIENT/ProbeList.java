@@ -5,14 +5,27 @@ class ProbeList
 extends java.awt.List
 {
 
+private int probeWidth = 150;
+
 private int              count;
 private java.util.Vector info;
 private String           error;
+private int preferredHeight;
+private int preferredWidth;
 
-public ProbeList()
+public ProbeList(int width, int height)
     {
+
+        preferredHeight = height;
+        preferredWidth = width;
         count = 0;
         error = null;
+     //    Dimension dim = getSize();
+//         System.out.println("width: " + dim.width);
+//         dim.width = probeWidth;
+//         System.out.println("width: " + dim.width);
+//         //        setSize(dim);
+//         doLayout();
         setVisible(true);
     }
 
@@ -24,14 +37,15 @@ public String getProbeInfo(int index) {
 private void rebuildList()
     {
 //         setVisible(false);
-        clear();
+//        clear();
+        removeAll();
         if (count>0) {
             for (int i = 0; i<count; i++) {
-                addItem(getProbeInfo(i));
+                add(getProbeInfo(i));
             }
         }
         else {
-            addItem("None found.");
+            add("None found.");
         }
 //         setVisible(true);
     }
@@ -70,5 +84,14 @@ public String getError()
 // public void paint()
 //     {
 //     }
+
+
+// overloading of java.awt.component method, is called from layout manager to determine optimal size of widget
+public Dimension getPreferredSize()
+    {
+        return new Dimension(preferredWidth, preferredHeight);
+
+    }
+
 
 }
