@@ -108,6 +108,7 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) const
 		current[3] = current[3] + 33;
                 break;
             case 'N':
+            case 'X':
 		current[2] = current[2] + 20;
 		current[1] = current[1] + 20;
 		current[0] = current[0] + 20;
