@@ -32,7 +32,7 @@ FORCEMASK = umask 002
 #---------------------- Some compiler-specific defaults
 
 ifdef ECGS
-dflag1 = -ggdb3
+dflag1 = -g
 enumequiv =
 havebool = -DHAVE_BOOL
 else

@@ -5,6 +5,7 @@
  */
 #include "GAGenomUtilities.h"
 #include <cstdio>
+#include <sstream>
 
 using namespace std;
 using namespace gellisary;
@@ -194,20 +195,21 @@ void gellisary::GAGenomUtilities::onlyOneDelimerChar(string * source_str, char d
 {
     bool current_stat = false;
     string target;
+    ostringstream ost;
     for(int i = 0; i < (int) source_str->size(); i++)
     {
         if((source_str->c_str())[i] == delimer_char)
         {
             if(i == 0)
             {
-                target += delimer_char;
+                ost << delimer_char;
                 current_stat = true;
             }
             else
             {
                 if(!current_stat)
                 {
-                    target += delimer_char;
+                    ost << delimer_char;
                     current_stat = true;
                 }
             }
@@ -222,11 +224,12 @@ void gellisary::GAGenomUtilities::onlyOneDelimerChar(string * source_str, char d
               }
               else
               {*/
-            target += (source_str->c_str())[i];
+            ost << (source_str->c_str())[i];
             current_stat = false;
             //}
         }
     }
+    target = ost.str();
     *source_str = target;
 }
 
@@ -717,7 +720,7 @@ string gellisary::GAGenomUtilities::integerToString(int source_int)
  * Diese Funktion generiert aus einem 'source_str' und einem 'gene_type' eine ID für Genes
  */
 
-string gellisary::GAGenomUtilities::generateGeneID(string * source_str, int gene_type)
+string gellisary::GAGenomUtilities::generateGeneID2(string * source_str, int gene_type)
 {
     string target_str("a");
     bool next = true;
@@ -828,6 +831,49 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, int gene
     target_str.append("y");
     target_str.append(GAGenomUtilities::integerToString(gene_type));
     target_str.append("z");
+    return target_str;
+}
+/*
+ * Diese Funktion generiert aus einem 'source_str' und einem 'gene_type' eine ID für Genes
+ */
+
+string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string * gene_type)
+{
+    string target_str;
+    bool next = true;
+    int pointer = 0;
+    bool point = false;
+    std::ostringstream sout;
+    std::string tstring1 = *source_str;
+    std::string tstring2 = *gene_type;
+    bool drin = false;
+    sout << tstring2;
+    sout << '_';
+    int i = 0;
+    
+    
+    while(next)
+    {
+        i = tstring1[pointer++];
+        if(i >= 48 && i <= 57)
+        {
+		    if(!drin)
+		    {
+		    	drin = true;
+		    }
+		    sout << (char)i;
+        } 
+        else if(drin)
+        {
+        	drin = false;
+        	break;
+        }
+        if(pointer == (int) tstring1.size())
+        {
+            break;
+        }
+    }
+    target_str = sout.str();
     return target_str;
 }
 

@@ -115,6 +115,13 @@ void gellisary::GAGenomFeatureTableDDBJ::parse()
                 tmp_gene->setGeneNumber(number_of_genes++);
                 tmp_gene->parse();
                 tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
+                t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_gene->getGeneType());
+                tmp_gene->setNameOfGene(&t_str);
+                number_of_features[tmp_num]++;
+                tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
+                genes[*(tmp_gene->getNameOfGene())] = *tmp_gene;
+                delete(tmp_gene);
+                /*tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
                 if(tmp_num != -1)
                 {
                     t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_num);
@@ -123,7 +130,7 @@ void gellisary::GAGenomFeatureTableDDBJ::parse()
                     tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
                     genes[*(tmp_gene->getNameOfGene())] = *tmp_gene;
                     delete(tmp_gene);
-                }
+                }*/
                 gene_open = false;
             }
             if(source_open)
