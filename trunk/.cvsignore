@@ -1,8 +1,9 @@
-ChangeLog
-config.makefile
-do_core
-arbsrc_*.tgz
 ARB_SOURCE_DOC
-demo.a[0-9][0-9]
-demo.ARF
+ChangeLog
 arb.tgz
+arbsrc.lst
+arbsrc_*.tgz
+config.makefile
+demo.ARF
+demo.a[0-9][0-9]
+do_core
