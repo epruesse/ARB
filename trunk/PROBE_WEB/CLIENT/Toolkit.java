@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Mon Mar/15/2004 18:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Mar/17/2004 20:06 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -63,12 +63,12 @@ class Toolkit
     }
 
     public static void AbortWithConnectionProblem(String error) throws Exception {
-        AbortWithError_Internal(clientName+" has a connection problem:",
+        AbortWithError_Internal(clientName+" has a connection problem",
                                 error+"\nPlease check whether your internet connection works", 2);
     }
 
     public static void AbortWithServerProblem(String error) throws Exception {
-        AbortWithError_Internal(clientName+" got error from server:",
+        AbortWithError_Internal(clientName+" got error from server",
                                 error+"\nPlease report to "+maintainer, 2);
     }
 
