@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Tue Feb/03/2004 14:34 MET  Coder@ReallySoft.de>       //
+//    Time-stamp: <Thu Feb/05/2004 12:12 MET Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -12,17 +12,18 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <iostream.h>
-
-#ifndef SQ_GROUPADTA_H
+#ifndef SQ_GROUPDATA_H
 #define SQ_GROUPDATA_H
 
 #ifndef _CPP_CSTDDEF
-#include <cstddef>
+# include <cstddef>
+#endif
+#ifndef _CPP_IOSTREAM
+# include <iostream>
 #endif
 
 #ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+# include <arb_assert.h>
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
@@ -42,12 +43,12 @@ public:
     int          SQ_get_nr_sequences() const { return nr_sequences; }
     bool         SQ_is_initialized() const { return initialized; }
 
-    virtual void   SQ_init_consensus(int size)                      = 0;
-    virtual int    SQ_print_on_screen()                             = 0;
-    virtual double SQ_calc_consensus_deviation(const char *sequence)= 0;
-    virtual double SQ_calc_consensus_conformity(const char *sequence)=0;
-    virtual void   SQ_add_sequence(const char *sequence)            = 0;
-    virtual void   SQ_add(const SQ_GroupData& other)                = 0;
+    virtual void   SQ_init_consensus(int size)                              = 0;
+    virtual int    SQ_print_on_screen()                                     = 0;
+    virtual double SQ_calc_consensus_deviation(const char *sequence) const  = 0;
+    virtual double SQ_calc_consensus_conformity(const char *sequence) const = 0;
+    virtual void   SQ_add_sequence(const char *sequence)                    = 0;
+    virtual void   SQ_add(const SQ_GroupData& other)                        = 0;
 
 protected:
     int  size;
@@ -82,7 +83,7 @@ public:
         for (int j = 0; j<I; ++j) {
             i[j] = other.i[j];
         }
-        return *this;      
+        return *this;
     }
 };
 
@@ -130,8 +131,8 @@ public:
 	return static_cast<SQ_GroupData_RNA&>(SQ_GroupData_Impl<7>::operator=(static_cast<const SQ_GroupData_Impl<7>& >(other)));
     }
 
-    double SQ_calc_consensus_deviation(const char *sequence);
-    double SQ_calc_consensus_conformity(const char *sequence);
+    double SQ_calc_consensus_deviation(const char *sequence) const;
+    double SQ_calc_consensus_conformity(const char *sequence) const;
     void   SQ_add_sequence(const char *sequence);
 };
 
@@ -147,8 +148,8 @@ public:
 	return static_cast<SQ_GroupData_PRO&>(SQ_GroupData_Impl<20>::operator=(static_cast<const SQ_GroupData_Impl<20>& >(other)));
     }
 
-    double SQ_calc_consensus_deviation(const char *sequence);
-    double SQ_calc_consensus_conformity(const char *sequence);
+    double SQ_calc_consensus_deviation(const char *sequence) const;
+    double SQ_calc_consensus_conformity(const char *sequence) const;
     void   SQ_add_sequence(const char *sequence);
 };
 
@@ -163,8 +164,12 @@ SQ_GroupData_Impl<I>::~SQ_GroupData_Impl(){
     delete [] consensus;
 }
 
+
+
 template <int I>
 void SQ_GroupData_Impl<I>::SQ_init_consensus(int size_) {
+    seq_assert(!initialized);
+
     size        = size_;
     consensus   = new Int<I>[size];
     initialized = true;
