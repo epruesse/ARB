@@ -4,7 +4,8 @@
 #
 # Uncomment one section, depending on your machine type and compiler options
 
-DEBUG = 1# don't set to 0 (comment out instead!)
+DEBUG=1# build with debug information
+DEBUG_GRAPHICS = 0# force instant graphic update
 # SEER = 1
 
 #********* LINUX / gcc g++ / static ********
