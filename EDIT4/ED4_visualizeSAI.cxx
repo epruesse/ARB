@@ -107,7 +107,6 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
         char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
         if (clrTabName[0]) {
             unsigned char charUsed[256]; memset(charUsed,255,256);
-            void *clrDefStr = GBS_stropen(500);            /* create output stream */
 
             {
                 for (int i=0; i<10 ; i++){
@@ -139,17 +138,22 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 }
             }
 
-            for(int i=0; i<10; i++){
-                awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
-                GBS_strcat(clrDefStr, (char *)s[i]);
-                GBS_strcat(clrDefStr, ";");
+            {
+                void *clrDefStr = GBS_stropen(500);            /* create output stream */
+                for(int i=0; i<10; i++){
+                    awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
+
+                    char *escaped = GBS_escape_string((char*)s[i], ";", '&');
+                    GBS_strcat(clrDefStr, escaped);
+                    free(escaped);
+                    GBS_chrcat(clrDefStr, ';');
+                }
+
+                char    *colorDef = GBS_strclose(clrDefStr);
+                AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
+                awar_def->write_string(colorDef); // writing clr defnition to clr trans table awar
+                free(colorDef);
             }
-
-            char    *colorDef = GBS_strclose(clrDefStr);
-            AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
-            awar_def->write_string(colorDef); // writing clr defnition to clr trans table awar
-            free(colorDef);
-
         }
         else {
             if (!old_inCallback) { // only warn when user really changed the setting
@@ -186,37 +190,35 @@ static void colorDefTabNameChanged_callback(AW_root *awr) {
             char    *clrTabDef      = clrTabDef_awar->read_string();
 
             if (clrTabDef[0]) {
-                int  i           = 0;
-                int  si          = 0;
-                int  tokStart    = 0;
-                bool have_escape = false;
+                int i        = 0;
+                int tokStart = 0;
 
-                while (clrTabDef[si]) {
-                    if (clrTabDef[si] == '\\') {
-                        ...
-                    }
-                    else if (clrTabDef[si] == ';') {
-                        if (si>0 && clrTabDef[si-1] == '\\') { // escaped ; ('\;')
+                for (int si = 0; clrTabDef[si]; ++si) {
+                    if (clrTabDef[si] == ';') {
+                        e4_assert(i >= 0 && i<10);
+                        AW_awar *awar = awr->awar(getAwarName(i));
 
+                        if (tokStart == si) { // empty definition
+                            awar->write_string("");
                         }
                         else {
-                            if (tokStart != si) {
-                                int toklen                 = si-tokStart;
-                                e4_assert(toklen > 0);
-                                e4_assert(clrTabDef[tokStart+toklen] == ';');
-                                clrTabDef[tokStart+toklen] = 0;
-                                awr->awar(getAwarName(i))->write_string(clrTabDef+tokStart);
-                                clrTabDef[tokStart+toklen] = ';';
-                            }
-                            else {
-                                awr->awar(getAwarName(i))->write_string("");
-                            }
-                            ++i;
-                            tokStart = si+1;
+                            int toklen = si-tokStart;
+
+                            e4_assert(toklen > 0);
+                            e4_assert(clrTabDef[tokStart+toklen] == ';');
+                            clrTabDef[tokStart+toklen] = 0;
+
+                            char *unescaped = GBS_unescape_string(clrTabDef+tokStart, ";", '&');
+                            awar->write_string(unescaped);
+                            free(unescaped);
+
+                            clrTabDef[tokStart+toklen] = ';';
                         }
+                        ++i;
+                        tokStart = si+1;
                     }
-                    ++si;
                 }
+                e4_assert(i == 10);
             }
             free(clrTabDef);
         }
@@ -311,7 +313,9 @@ static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_aws, AW_CL cl_
 
 static void autoselect_cb(AW_root *aw_root) {
     char *curr_sai = aw_root->awar(AWAR_SAI_NAME)->read_string();
+#if defined(DEBUG)
     printf("curr_sai='%s'\n", curr_sai);
+#endif // DEBUG
     aw_root->awar(AWAR_SAI_SELECT)->write_string(curr_sai);
     free(curr_sai);
 }
