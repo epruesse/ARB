@@ -40,5 +40,4 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-SQ_functions.o: SQ_consensus_marked.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx SQ_consensus_marked.h
