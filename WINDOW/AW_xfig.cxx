@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.5  2003/08/13 11:24:35  westram
+ * - Text elements may be X/Y attached
+ *
  * Revision 1.4  2002/11/21 18:21:50  westram
  * memory bugfixes
  *
@@ -182,7 +185,7 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
             sprintf(buffer,"%s/%s",arbhome,filename);
             file = fopen(buffer,"r");
             if (!file) {
-				// relative to $CWD?
+                // relative to $CWD?
                 sprintf(buffer,"%s",filename);
                 file = fopen(buffer,"r");
             }
@@ -453,7 +456,7 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
                     if (endf2) *endf2 = 0;
                 }
 
-                if (*p=='$') {		// text starts with a '$'
+                if (*p=='$') {      // text starts with a '$'
                     // place a button
                     if (!strcmp(p,"$$")) {
                         this->centerx = x;
@@ -509,43 +512,56 @@ AW_xfig::~AW_xfig(void)
     int i;
 
     if (hash) {
-	GBS_hash_do_loop(hash,(gb_hash_loop_type)aw_xfig_hash_free_loop);
-	GBS_free_hash(hash);
+        GBS_hash_do_loop(hash,(gb_hash_loop_type)aw_xfig_hash_free_loop);
+        GBS_free_hash(hash);
     }
     struct AW_xfig_text *xtext;
     while(text) {
-	xtext = text;
-	text = text->next;
-	delete xtext->text;
-	delete xtext;
+        xtext = text;
+        text = text->next;
+        delete xtext->text;
+        delete xtext;
     }
 
     struct AW_xfig_line *xline;
     for (i=0;i<MAX_LINE_WIDTH; i++){
-	while(line[i]){
-	    xline = line[i];
-	    line[i] = xline->next;
-	    delete xline;
-	}
+        while(line[i]){
+            xline = line[i];
+            line[i] = xline->next;
+            delete xline;
+        }
     }
 }
 
 void AW_xfig::print(AW_device *device)
 {
     int i;
-    AW_rectangle ws;	// window size
+    AW_rectangle ws;    // window size
     device->get_area_size(&ws);
     device->clear();
     struct AW_xfig_text *xtext;
     for (xtext = text; xtext; xtext=xtext->next){
         char *str = xtext->text;
-        int x = xtext->x;
-        int y = xtext->y;
-        if (str[0] == 'Y' && str[1] == ':' ){
-            y += (ws.b - ws.t)- size_y;
-            str += 2;
+        int   x   = xtext->x;
+        int   y   = xtext->y;
+
+        if (str[1] == ':') {
+            if (str[0] == 'Y') {
+                y   += (ws.b - ws.t)- size_y;
+                str += 2;
+            }
+            else if (str[0] == 'X') {
+                x   += (ws.r - ws.l)- size_x;
+                str += 2;
+            }
         }
-        device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);		// filter
+        else if (str[2] == ':' && str[0] == 'X' && str[1] == 'Y') {
+            x   += (ws.r - ws.l)- size_x;
+            y   += (ws.b - ws.t)- size_y;
+            str += 3;
+        }
+
+        device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);        // filter
     }
 
     struct AW_xfig_line *xline;
@@ -553,9 +569,9 @@ void AW_xfig::print(AW_device *device)
         device->set_line_attributes(0,(AW_pos)scaleAndRound(i, font_scale),AW_SOLID);
         //device->set_line_attributes(0,(AW_pos)i,AW_SOLID);
         for (xline = line[i]; xline; xline=xline->next){
-            device->line(0,	(AW_pos)xline->x0,(AW_pos)xline->y0,
+            device->line(0, (AW_pos)xline->x0,(AW_pos)xline->y0,
                          (AW_pos)xline->x1,(AW_pos)xline->y1,
-                         -1,0,0);				// filter
+                         -1,0,0);               // filter
         }
     }
 }
@@ -573,7 +589,7 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     device->set_foreground_color( gc, AW_WINDOW_FG );
     if (depth<=1) device->set_function( gc,AW_XOR);
     device->set_line_attributes( gc, 0.3, AW_SOLID );
-    gc = 1;			// create gc for texts
+    gc = 1;         // create gc for texts
     for (xtext = text; xtext; xtext=xtext->next){
         sprintf(fontstring,"%i-%i",xtext->font,scaleAndRound(xtext->fontsize, font_scale));
         //sprintf(fontstring,"%i-%i",xtext->font,(int)(dpi_scale * xtext->fontsize));
