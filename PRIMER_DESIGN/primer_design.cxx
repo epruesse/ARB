@@ -275,7 +275,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     GBDATA         *gb_seq           = 0;
     long            gene_start       = -1;
     long            gene_end         = -1;
-    bool            is_genom_db      = GEN_is_genom_db(gb_main);
+    bool            is_genom_db      = GEN_is_genome_db(gb_main);
 
     if (is_genom_db && from_gene) {
         selected_species = root->awar( AWAR_ORGANISM_NAME )->read_string();
@@ -536,7 +536,7 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
     aws->callback( (AW_CB0)AW_POPDOWN );                     aws->at( "close" );   aws->create_button( "CLOSE","CLOSE","C" );
     aws->callback( AW_POPUP_HELP,(AW_CL)"primer_new.hlp" );  aws->at( "help" );    aws->create_button( "HELP","HELP","H" );
     aws->callback( primer_design_event_init, (AW_CL)0);      aws->at( "init1" );   aws->create_button( "INIT_FROM_SPECIES","Species","I" );
-    if (GEN_is_genom_db(gb_main)) {
+    if (GEN_is_genome_db(gb_main)) {
         aws->callback( primer_design_event_init, (AW_CL)1); aws->at( "init2" ); aws->create_button( "INIT_FROM_GENE","Gene","I" );
     }
 

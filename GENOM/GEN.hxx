@@ -16,7 +16,7 @@ class AWT_canvas;
 
 #define GENOM_DB_TYPE "genom_db" // main flag (true=genom db, false/missing=normal db)
 
-bool GEN_is_genom_db(GBDATA *gb_main, int default_value = -1);
+bool GEN_is_genome_db(GBDATA *gb_main, int default_value = -1);
 
 // --------------------------------------------------------------------------------
 // awars:
