@@ -17,7 +17,7 @@ void gellisary::GAParser::update(string * new_line)
 	prepared = false;
 }
 
-bool gellisary::GAParser::writeMessage(string * source_str)
-{
-	return true;
-}
+// bool gellisary::GAParser::writeMessage(string * source_str)
+// {
+// 	return true;
+// }
