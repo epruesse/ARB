@@ -69,7 +69,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     }
 
     if (!error) {
-        error = SQ_reset_quality_calcstate(gb_main);
+        //error = SQ_reset_quality_calcstate(gb_main);
     }
 
     // if tree == 0 -> do basic quality calculations that are possible without tree information
@@ -120,18 +120,19 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	//TEST!!!
 
 	SQ_GroupData globalData;
-	SQ_calc_sequence_structure(globalData, gb_main, marked_only);
-	SQ_pass3(globalData, gb_main, marked_only);
-	SQ_reset_quality_calcstate(gb_main);
+	//SQ_calc_sequence_structure(globalData, gb_main, marked_only);
+	SQ_pass1(globalData, gb_main);
+	SQ_pass2(globalData, gb_main, marked_only);
+	//SQ_reset_quality_calcstate(gb_main);
 	//globalData.SQ_print_on_screen();
 
 	//END TEST
 
 
         SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
-	int value = SQ_get_value(gb_main, option);
+ 	int value = SQ_get_value(gb_main, option);
         aw_message(GBS_global_string("Value in container %s : %i",option, value));
-	SQ_reset_quality_calcstate(gb_main);
+	//SQ_reset_quality_calcstate(gb_main);
 
     }
 

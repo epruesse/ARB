@@ -5,13 +5,24 @@ using namespace std;
 
 
 SQ_GroupData::SQ_GroupData(){
-    size = 0;
-    initialised=false;
+    size        = 0;
+    avg_bases   = 0;
+    initialised = false;
 }
 
 
 SQ_GroupData::~SQ_GroupData(){
     delete [] consensus;
+}
+
+
+void SQ_GroupData::SQ_set_avg_bases(int bases){
+    avg_bases = bases;
+}
+
+
+int SQ_GroupData::SQ_get_avg_bases(){
+    return avg_bases;
 }
 
 

@@ -11,7 +11,6 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
-#include <math.h>
 
 #include "arbdb.h"
 #include "arbdbt.h"
@@ -241,24 +240,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		error = no_data_error(gb_species, alignment_name);
 	    }
 	    else {
-		int diff = 0;
-		int temp = 0;
-		int diff_percent = 0;
 
-		/*
-		  calculate the average number of bases in group, and the difference of
-		  a single seqeunce in group from it
-		*/
-		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
-		GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
-
-		temp = GB_read_int(gb_result1);
-		diff = avg_bases - temp;
-		diff_percent = (100*diff) / avg_bases;
-
-		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
-		seq_assert(gb_result2);
-		GB_write_int(gb_result2, diff_percent);
 	    }
 	}
     }
@@ -416,7 +398,132 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 
 
-GB_ERROR SQ_pass3(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
+GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
+
+
+    char *alignment_name;
+
+    int avg_bases           = 0;
+    int worked_on_sequences = 0;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*)  = 0;
+    GB_ERROR error = 0;
+
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+
+
+    getFirst = GBT_first_species;
+    getNext  = GBT_next_species;
+
+
+
+    /*first pass operations*/
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
+
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+
+        if (!gb_name) error = GB_get_error();
+
+	else {
+
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+
+	    if (!gb_ali) {
+		error = no_data_error(gb_species, alignment_name);
+	    }
+	    else {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (!gb_quality){
+		    error = GB_get_error();
+		}
+		read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+		/*real calculations start here*/
+		if (read_sequence) {
+		    int i = 0;
+		    int sequenceLength = 0;
+		    const char *rawSequence = 0;
+
+		    rawSequence    = GB_read_char_pntr(read_sequence);
+		    sequenceLength = GB_read_count(read_sequence);
+
+
+		    /*calculate physical layout of sequence*/
+		    SQ_physical_layout ps_chan;
+		    ps_chan.SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
+		    i = ps_chan.SQ_get_number_of_bases();
+		    avg_bases = avg_bases + i;
+		    worked_on_sequences++;
+
+		    /*get values for  ambiguities*/
+		    SQ_ambiguities ambi_chan;
+		    ambi_chan.SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
+
+		    /*claculate the number of strong, weak and no helixes*/
+		    SQ_helix heli_chan(sequenceLength);
+		    heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
+
+		    /*calculate consensus sequence*/
+// 		    {
+// 			bool init;
+// 			int **consensus;
+// 			init = globalData.SQ_is_initialised();
+// 			if (init==false){
+// 			    globalData.SQ_init_consensus(sequenceLength);
+// 			}
+// 			SQ_consensus consens(sequenceLength);
+// 			consens.SQ_calc_consensus(rawSequence);
+// 			consensus = new int *[sequenceLength];
+// 			for (int i=0; i < sequenceLength; i++ ){
+// 			    consensus[i] = new int [7];
+// 			}
+//  			int *pp;
+// 			for(int i = 0; i < sequenceLength; i++) {
+// 			    for(int j = 0; j < 7; j++) {
+// 				pp = consens.SQ_get_consensus(i,j);
+// 				consensus[i][j] = *pp;
+// 			    }
+// 			}
+// 			for(int i = 0; i < sequenceLength; i++) {
+// 			    for(int j = 0; j < 7; j++) {
+// 				globalData.SQ_add_consensus(consensus[i][j],i,j);
+// 			    }
+// 			}
+// 			delete [] consensus;
+// 		    }
+		}
+	    }
+	}
+    }
+    /*calculate the average number of bases in group*/
+    if (worked_on_sequences != 0) {
+	avg_bases = avg_bases / worked_on_sequences;
+    }
+    globalData.SQ_set_avg_bases(avg_bases);
+
+    delete alignment_name;
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
+
+
+
+GB_ERROR SQ_pass2(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
 
 
     char *alignment_name;
@@ -447,7 +554,7 @@ GB_ERROR SQ_pass3(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
     }
 
 
-    /*third pass operations*/
+    /*second pass operations*/
     for (gb_species = getFirst(gb_main);
 	 gb_species && !error;
 	 gb_species = getNext(gb_species) ){
@@ -473,12 +580,34 @@ GB_ERROR SQ_pass3(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
 		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
 		    double value            = 0;
+		    int bases               = 0;
+		    int avg_bases           = 0;
+		    int diff                = 0;
+		    int temp                = 0;
+		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
 
+		    /*
+		      calculate the average number of bases in group, and the difference of
+		      a single seqeunce in group from it
+		    */
+		    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+		    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
+		    bases = GB_read_int(gb_result1);
+		    avg_bases = globalData.SQ_get_avg_bases();
+
+		    diff = avg_bases - bases;
+		    diff_percent = (100*diff) / avg_bases;
+
+		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		    seq_assert(gb_result2);
+		    GB_write_int(gb_result2, diff_percent);
+
+
 		    value = globalData.SQ_test_against_consensus(rawSequence);
-		    printf("     %f    ",value);
+		    //printf("     %f    ",value);
 		}
 	    }
 	}
