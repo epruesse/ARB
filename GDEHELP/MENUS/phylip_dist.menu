@@ -8,7 +8,7 @@ itemmethod:(GEN_INFILE(in1);\
                            arb_echo $PROGRAM_FLAGS |$PROGRAM;\
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 infile.1))&
-itemhelp:phylip.help
+itemhelp:phylip_distance.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
@@ -62,7 +62,7 @@ itemmethod: GEN_INFILE(in1) ; \
                             $DPGM ; \
                             arb_textedit outfile & )) ; \
             RM_LOCAL_FILES(in1)
-itemhelp:phylip.help
+itemhelp:phylip_distance.help
 
 arg:DPGM
 arglabel:Treat data as..
