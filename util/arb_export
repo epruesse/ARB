@@ -3,8 +3,8 @@
 
 # dest=strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB$1
 
-dest=/trance1/ARB_download/ARB$1
-destmach=$dest/$HOSTTYPE
+dest=/trance1/ARB_download/ARB
+destmach=$dest$1/$HOSTTYPE
 
 FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
 echo "\n\n*************"
