@@ -366,6 +366,7 @@ NT_main.o: nt_date.h
 NT_main.o: ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_main.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h

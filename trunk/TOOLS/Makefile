@@ -89,6 +89,13 @@ $(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdbt.h
 
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/ad_prot.h
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/ad_t_prot.h
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/adGene.h
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arb_assert.h
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arbdb.h
+$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arbdbt.h
+
 $(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_t_prot.h
 $(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arb_assert.h

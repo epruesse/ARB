@@ -248,6 +248,7 @@ adtools.o: ad_lpro.h
 adtools.o: ad_prot.h
 adtools.o: ad_t_lpro.h
 adtools.o: ad_t_prot.h
+adtools.o: adGene.h
 adtools.o: adlmacros.h
 adtools.o: adlocal.h
 adtools.o: adtune.h
