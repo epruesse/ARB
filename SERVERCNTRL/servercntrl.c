@@ -54,7 +54,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             printf("Contacting local host '%s' (cmd='%s')\n", host, command);
 #endif /* DEBUG */
         }else{
-            sprintf(command,"rsh %s -n %s %s -T%s &",host, server, file, tcp_id);
+            sprintf(command,"ssh %s -n %s %s -T%s &",host, server, file, tcp_id);
 #if defined(DEBUG)
             printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
 #endif /* DEBUG */

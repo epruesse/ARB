@@ -1,6 +1,6 @@
 #!/bin/csh
 if (! $?MACHINES) set MACHINES='tango rock soul boarisch pop blues'
 foreach i ( $MACHINES )
-	(\ping $i 2 && rsh $i "$*")&
+	(\ping $i 2 && ssh $i "$*")&
 #	echo ''
 end
