@@ -513,8 +513,8 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		if (read_sequence) {
 		    int sequenceLength      = 0;
 		    char temp[10];
-		    char cons_dev[1000]         = "|";
-		    char cons_conf[1000]        = "|";
+		    char cons_dev[1000]  = "<dev>";
+		    char cons_conf[1000] = "<conf>";
 		    const char *rawSequence = 0;
 		    double value1           = 0;
 		    double value2           = 0;
@@ -576,8 +576,8 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			}
 			backup = backup->father;
 		    }
-		    strcat(cons_conf, "|"); //eof character
-		    strcat(cons_dev, "|");
+		    strcat(cons_conf, "</conf>"); //eof character
+		    strcat(cons_dev, "</dev>");
 
 		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
 		    seq_assert(gb_result3);
