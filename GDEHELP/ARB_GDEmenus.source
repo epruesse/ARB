@@ -1,5 +1,5 @@
-#define GEN_INFILE(in1)			/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank in1 -phylip infile
-#define RM_LOCAL_FILES(in1)		/bin/rm -f in1 infile outfile treefile arb_read_tree_args
+#define GEN_INFILE(in1)			/bin/rm -f infile outfile outtree; arb_convert_aln -GenBank in1 -phylip infile
+#define RM_LOCAL_FILES(in1)		/bin/rm -f in1 infile outfile intree outtree arb_read_tree_args
 #define RUN_IN_WINDOW(cmd)	${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait''
 
 #include <warning.genmenu>
@@ -47,6 +47,7 @@ menu:Phylogeny
 #include <phylip_dist_org.genmenu>
 #include <phylip_dist.genmenu>
 #include <phylip_pars.genmenu>
+#include <phylip_ml.genmenu>
 #include <fastdnaml.genmenu>
 #include <puzzle.genmenu>
 #include <molphy.genmenu>
