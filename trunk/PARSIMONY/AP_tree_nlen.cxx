@@ -16,19 +16,18 @@
 #include <aw_root.hxx>
 #include <assert.h>
 
-/********************************************
+// ---------------------------------
+//      Section	base operations:
+// ---------------------------------
 
-Section	base operations:
+// 	constructor/destructor
+// 	dup
+// 	check_update
+// 	copy
+// 	ostream&<<
 
-	constructor/destructor
-	dup
-	check_update
-	copy
-	ostream&<<
-
-********************************************/
-
-AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root) :AP_tree(Tree_root)
+AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
+    : AP_tree(Tree_root)
 {
     //    this->init();
     kernighan = AP_NONE;
@@ -39,13 +38,6 @@ AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root) :AP_tree(Tree_root)
     distance = INT_MAX;
 
     //    cout << "AP_tree_nlen-constructor\n";
-}
-
-AP_tree_nlen::~AP_tree_nlen(void)
-{
-
-    //cout << "AP_tree_nlen - destructor " << counter++ << '\n';
-
 }
 
 AP_tree *AP_tree_nlen::dup(void)
@@ -872,9 +864,6 @@ Section	Parsimony:
 
 void AP_tree_nlen::parsimony_rek(void)
 {
-    AP_tree_nlen   *lefts = (AP_tree_nlen *) leftson;
-    AP_tree_nlen   *rights = (AP_tree_nlen *) rightson;
-
     if (sequence && sequence->is_set_flag) return;
 
     if (is_leaf) {
@@ -882,20 +871,24 @@ void AP_tree_nlen::parsimony_rek(void)
         return;
     }
 
-    if (!lefts->sequence || !lefts->sequence->is_set_flag  ) lefts->parsimony_rek();
-    if (!rights->sequence|| !rights->sequence->is_set_flag ) rights->parsimony_rek();
+    if (!Leftson()->sequence || !Leftson()->sequence->is_set_flag  ) Leftson()->parsimony_rek();
+    if (!Rightson()->sequence|| !Rightson()->sequence->is_set_flag ) Rightson()->parsimony_rek();
 
-    if (!lefts->sequence->is_set_flag || !rights->sequence->is_set_flag) {
+    if (!Leftson()->sequence->is_set_flag || !Rightson()->sequence->is_set_flag) {
         AW_ERROR("AP_tree_nlen::parsimony_rek:	Cannot set sequence");
         return;
     }
 
     if (sequence == 0) sequence = tree_root->sequence_template->dup();
 
-    mutation_rate =
-        leftson->mutation_rate +
-        rightson->mutation_rate +
-    	sequence->combine(lefts->sequence, rights->sequence);
+    AP_FLOAT mutations_for_combine = sequence->combine(Leftson()->sequence, Rightson()->sequence);
+    mutation_rate                  = Leftson()->mutation_rate + Rightson()->mutation_rate + mutations_for_combine;
+
+#if defined(DEBUG)
+    printf("mutation-rates: left=%f right=%f combine=%f overall=%f %s\n",
+           Leftson()->mutation_rate, rightson->mutation_rate, mutations_for_combine, mutation_rate,
+           fullname());
+#endif // DEBUG
 
     sequence->is_set_flag = AP_TRUE;
 }
@@ -1366,7 +1359,7 @@ int AP_tree_nlen::test(void) const
     return 0;
 }
 
-char *AP_tree_nlen::fullname() const
+const char *AP_tree_nlen::fullname() const
 {
     if (!name) {
         static char *buffer;
@@ -1392,6 +1385,7 @@ char *AP_tree_nlen::fullname() const
 
     return name;
 }
+
 
 char* AP_tree_nlen::getSequence()
 {
