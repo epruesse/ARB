@@ -1,3 +1,5 @@
+AutofoldCandidate.class : AutofoldCandidate.java
+AutofoldCandidate.class : TreeNode.java
 Client.class : Client.java
 Client.class : ClientException.java
 Client.class : CommandLine.java
@@ -9,7 +11,6 @@ Client.class : NodeProbes.java
 Client.class : Probe.java
 Client.class : ProbeList.java
 Client.class : ProbesGUI.java
-Client.class : ServerAnswer.java
 Client.class : Toolkit.java
 Client.class : TreeNode.java
 Client.class : TreeParser.java
@@ -17,6 +18,9 @@ Client.class : TreeReader.java
 ClientException.class : ClientException.java
 CommandLine.class : CommandLine.java
 CommandLine.class : Toolkit.java
+DialogDriver.class : DialogDriver.java
+DialogDriver.class : DialogWrapper.java
+DialogWrapper.class : DialogWrapper.java
 DisplayMouseAdapter.class : DisplayMouseAdapter.java
 DisplayMouseAdapter.class : TreeDisplay.java
 GroupCache.class : Client.java
@@ -81,7 +85,9 @@ ServerAnswer.class : ServerAnswer.java
 ServerAnswer.class : Toolkit.java
 Toolkit.class : Client.java
 Toolkit.class : ClientException.java
+Toolkit.class : DialogWrapper.java
 Toolkit.class : Toolkit.java
+TreeDisplay.class : AutofoldCandidate.java
 TreeDisplay.class : Client.java
 TreeDisplay.class : ClientException.java
 TreeDisplay.class : DisplayMouseAdapter.java
@@ -90,6 +96,7 @@ TreeDisplay.class : LineAreaFactory.java
 TreeDisplay.class : Toolkit.java
 TreeDisplay.class : TreeDisplay.java
 TreeDisplay.class : TreeNode.java
+TreeNode.class : AutofoldCandidate.java
 TreeNode.class : NodeProbes.java
 TreeNode.class : Toolkit.java
 TreeNode.class : TreeNode.java
