@@ -111,7 +111,6 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
 
 int SQ_get_value(GBDATA *gb_main, const char *option){
 
-
     int result = 0;
     char *alignment_name;
 
@@ -204,7 +203,6 @@ int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
 }
 
 
-// GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac, int weight_gc){
 GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights) {
 
 
