@@ -136,42 +136,47 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
         }
         else {
             GBDATA *gb_data = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-            length          = GB_read_count(gb_data);
-
-            gb_gene_data    = GEN_get_gene_data(gb_organism);
-            GBDATA *gb_gene = gb_gene_data ? GEN_first_gene_rel_gene_data(gb_gene_data) : 0;
-
-            if (!gb_gene) {
-                error_reason = GBS_global_string("Species '%s' has no gene-information", organism_name.c_str());
+            if (!gb_data) {
+                error_reason = GBS_global_string_copy("'%s' has no data in '%s'", organism_name.c_str(), GENOM_ALIGNMENT);
             }
             else {
-                bool show_hidden = aw_root->awar(AWAR_GENMAP_SHOW_HIDDEN)->read_int() != 0;
+                length = GB_read_count(gb_data);
 
-                while (gb_gene) {
-                    bool show_this = show_hidden;
+                gb_gene_data    = GEN_get_gene_data(gb_organism);
+                GBDATA *gb_gene = gb_gene_data ? GEN_first_gene_rel_gene_data(gb_gene_data) : 0;
 
-                    if (!show_this) {
-                        GBDATA *gbd = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
+                if (!gb_gene) {
+                    error_reason = GBS_global_string("Species '%s' has no gene-information", organism_name.c_str());
+                }
+                else {
+                    bool show_hidden = aw_root->awar(AWAR_GENMAP_SHOW_HIDDEN)->read_int() != 0;
 
-                        if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
-                            show_this = true;
-                        }
-                    }
+                    while (gb_gene) {
+                        bool show_this = show_hidden;
 
-                    if (show_this) {
-                        GBDATA *gbd    = GB_find(gb_gene, "pos_joined", 0, down_level);
-                        int     joined = gbd ? GB_read_int(gbd) : 0;
+                        if (!show_this) {
+                            GBDATA *gbd = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
 
-                        if (joined) {
-                            for (int j = 1; j <= joined; ++j) { // insert all parts
-                                gene_set.insert(GEN_gene(gb_gene, this, j, joined));
+                            if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
+                                show_this = true;
                             }
                         }
-                        else {
-                            gene_set.insert(GEN_gene(gb_gene, this)); // insert normal (unsplitted) gene
+
+                        if (show_this) {
+                            GBDATA *gbd    = GB_find(gb_gene, "pos_joined", 0, down_level);
+                            int     joined = gbd ? GB_read_int(gbd) : 0;
+
+                            if (joined) {
+                                for (int j = 1; j <= joined; ++j) { // insert all parts
+                                    gene_set.insert(GEN_gene(gb_gene, this, j, joined));
+                                }
+                            }
+                            else {
+                                gene_set.insert(GEN_gene(gb_gene, this)); // insert normal (unsplitted) gene
+                            }
                         }
+                        gb_gene = GEN_next_gene(gb_gene);
                     }
-                    gb_gene = GEN_next_gene(gb_gene);
                 }
             }
         }
