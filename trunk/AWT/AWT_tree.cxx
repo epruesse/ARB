@@ -1035,6 +1035,13 @@ void AP_tree::move_gbt_2_ap(GBT_TREE* tree, GB_BOOL insert_remove_cb)
     return;
 }
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+// #define DEBUG_PH_tree_write_byte
+#endif // DEVEL_RALF
+#endif // DEBUG
+
+
 GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *key, int init)
 {
     GBDATA *gbd;
@@ -1043,22 +1050,25 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
         if (node->gb_node){
             gbd = GB_find(node->gb_node,key,0,down_level);
             if (gbd) {
-#if defined(DEBUG)
+#if defined(DEBUG_PH_tree_write_byte)
                 printf("[PH_tree_write_byte] deleting db entry %p\n", gbd);
-#endif // DEBUG
+#endif // DEBUG_PH_tree_write_byte
                 GB_delete(gbd);
             }
         }
     }else{
         if (!node->gb_node){
             node->gb_node = GB_create_container(gb_tree,"node");
+#if defined(DEBUG_PH_tree_write_byte)
+            printf("[PH_tree_write_byte] created node-container %p\n", node->gb_node);
+#endif // DEBUG_PH_tree_write_byte
         }
         gbd = GB_find(node->gb_node,key,0,down_level);
         if (!gbd) {
             gbd = GB_create(node->gb_node,key,GB_BYTE);
-#if defined(DEBUG)
+#if defined(DEBUG_PH_tree_write_byte)
             printf("[PH_tree_write_byte] created db entry %p\n", gbd);
-#endif // DEBUG
+#endif // DEBUG_PH_tree_write_byte
         }
         error = GB_write_byte(gbd,i);
     }
@@ -1091,8 +1101,9 @@ GB_ERROR PH_tree_write_tree_rek(GBDATA *gb_tree, AP_tree * THIS)
     if (THIS->is_leaf){
         return 0;
     }
-    error = PH_tree_write_tree_rek(gb_tree,THIS->leftson);
+    error             = PH_tree_write_tree_rek(gb_tree,THIS->leftson);
     if (!error) error = PH_tree_write_tree_rek(gb_tree,THIS->rightson);
+
     if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.spread,"spread", 1.0);
     if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.left_angle,"left_angle", 0.0);
     if (!error) error = PH_tree_write_float(gb_tree,THIS, THIS->gr.right_angle,"right_angle", 0.0);
@@ -1133,7 +1144,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group){
         }
         else if (new_group->gb_node) {
             error = GB_export_error("Internal Error: Target node already has a database entry (but no name)");
-        }        
+        }
     }
 
     if (!error) {
