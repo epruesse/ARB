@@ -1193,7 +1193,7 @@ void aw_help_search(AW_window *aww) {
             helpfilename = strdup(buffer);
 
             sprintf(buffer,
-                    "cd %s;grep -i '%s' `find . -name \"*.hlp\"` | sed -e \"s/:.*//g\" -e \"s/^\\.\\///g\" | uniq > %s",
+                    "cd %s;grep -i '%s' `find . -name \"*.hlp\"` | sed -e \"s/:.*//g\" -e \"s/^\\.\\///g\" | sort | uniq > %s",
                     GB_getenvDOCPATH(), searchtext, helpfilename);
 
             printf("%s\n", buffer);
