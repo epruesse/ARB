@@ -25,7 +25,9 @@ help:
 	@echo "    target      description"
 	@echo "   ----------------------------------------------------------------------"
 	@echo "    all         Build $(JAR)"
-	@echo "    test        Run $(JAR)"
+	@echo "    test        Run $(JAR) on DEBUG server"
+	@echo "    test_master Run $(JAR) on Master server"
+	@echo "    test_rs     Run $(JAR) on my local server (Ralf)"
 	@echo "    clean       remove made files"
 	@echo "    depends     update dependencies"
 	@echo ""
@@ -56,12 +58,21 @@ update:
 	jar -uf $(JAR) *.class
 
 test: all
-	(   mkdir -p $(TESTDIR) ;\
-        cd $(TESTDIR) ;\
+	(	mkdir -p $(TESTDIR) ;\
+	        cd $(TESTDIR) ;\
 		echo "----------------------------------------" ;\
-        java -jar $(BASE)/$(JAR) ;\
+		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/ ;\
 		echo "----------------------------------------" ;\
-        ls -al -rt )
+	        ls -al -rt )
+
+test_master: all
+	(	mkdir -p $(TESTDIR) ;\
+		cd $(TESTDIR) ;\
+		echo "----------------------------------------" ;\
+		echo "Adress has to be changed to probeserver.mikro..." ;\
+		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probe_library/ ;\
+		echo "----------------------------------------" ;\
+		ls -al -rt )
 
 test_rs: all
 	(	mkdir -p $(TESTDIR) ;\
