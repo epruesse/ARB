@@ -144,78 +144,60 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
 
 int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out)
 {
-    int outcode0, outcode1, outcodeout;
-    int done,success;
-    AW_pos x =0, y =0;
+    int    outcodeout;
+    AW_pos x = 0;
+    AW_pos y = 0;
 
-    success=0;                              // indiactes wether part of line is visible
-    done = 0;
+    bool is_visible = false;    // indicates whether part of line is visible
+    bool done       = false;    // true soon as line is completely inside or outside rectangle
 
-    while (done == 0)
-    {       outcode0 = compoutcode(x0,y0);
-    outcode1 = compoutcode(x1,y1);
+    while (!done) {
+        int outcode0 = compoutcode(x0,y0);
+        int outcode1 = compoutcode(x1,y1);
 
-    if ((outcode0 | outcode1) == 0)
-    {                       // line is inside the rectangle
+        if ((outcode0 | outcode1) == 0) { // line is inside the rectangle
+            x0out = x0; y0out = y0; // clipped coordinates of line
+            x1out = x1; y1out = y1;
 
-        x0out=x0;       y0out=y0;               // clipped coordinates of line
-        x1out=x1;       y1out=y1;
-
-        done = 1;
-        success=1;
-    }
-
-    if ((outcode0 & outcode1) != 0)
-        //line is outside the rectangle
-        done = 1;
-    if (done == 0)                //;
-    {
-        if (outcode0 > 0)
-            outcodeout = outcode0;
-        else
-            outcodeout = outcode1;
-        if ((outcodeout & 8) != 0)
-        {
-            x = x0+(x1-x0)*(clip_rect.t-y0)/(y1-y0);
-            y = clip_rect.t;
+            done    = true;
+            is_visible = true;
         }
-        else
-        {
-            if ((outcodeout & 4) != 0)
-            {
+        else if ((outcode0 & outcode1) != 0) { // line is outside the rectangle
+            done = true;
+        }
+        else { // line overlaps with at least one rectangle border
+            outcodeout = outcode0>0 ? outcode0 : outcode1;
+
+            if ((outcodeout & 8) != 0) { // overlap at top
+                x = x0+(x1-x0)*(clip_rect.t-y0)/(y1-y0);
+                y = clip_rect.t;
+            }
+            else if ((outcodeout & 4) != 0) { // overlap at bottom
                 x = x0+(x1-x0)*(clip_rect.b-y0)/(y1-y0);
                 y = clip_rect.b;
             }
-            else
-            {
-                if ((outcodeout & 2) != 0)
-                {
-                    y = y0+(y1-y0)*(clip_rect.r-x0)/(x1-x0);
-                    x = clip_rect.r;
-                }
-                else
-                { if ((outcodeout & 1) != 0)
-                {
+            else if ((outcodeout & 2) != 0) { // overlap at right side
+                y = y0+(y1-y0)*(clip_rect.r-x0)/(x1-x0);
+                x = clip_rect.r;
+            }
+            else if ((outcodeout & 1) != 0) {
+                y = y0+(y1-y0)*(clip_rect.l-x0)/(x1-x0); // overlap at left side
+                x = clip_rect.l;
+            }
 
-                    y = y0+(y1-y0)*(clip_rect.l-x0)/(x1-x0);
-                    x = clip_rect.l;
-                }
-                }
+            // set corrected point and iterate : 
+            if (outcode0 > 0) {
+                x0 = x;
+                y0 = y;
+            }
+            else {
+                x1 = x;
+                y1 = y;
             }
         }
-        if (outcode0 > 0)
-        {
-            x0 = x;
-            y0 = y;
-        }
-        else
-        {
-            x1 = x;
-            y1 = y;
-        }
     }
-    }
-    return success;
+    
+    return is_visible;
 }
 
 
@@ -279,7 +261,7 @@ void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {	// <0 dont fill	 0.0 white 
 
 
 void AW_GC_Xm::set_lineattributes(AW_pos width,AW_linestyle stylei) {
-    int lwidth = (int)(width*AW_PIXELS_PER_MM);
+    int lwidth = AW_INT(width);
     if (stylei == style && line_width == lwidth) return;
 
     switch (style){
@@ -332,10 +314,11 @@ void AW_GC_Xm::set_background_color(unsigned long colori) {
 const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
     AW_GC_Xm            *gcm = (common->gcs[gc]);
     AW_font_information *ptr = &common->gcs[gc]->fontinfo;
-    ptr->this_letter_ascent  = gcm->ascent_of_chars[c];
-    ptr->this_letter_descent = gcm->descent_of_chars[c];
-    ptr->this_letter_width   = gcm->width_of_chars[c];
-    ptr->this_letter_height  = ptr->this_letter_ascent + ptr->this_letter_descent;
+
+    ptr->this_letter.ascent  = gcm->ascent_of_chars[c];
+    ptr->this_letter.descent = gcm->descent_of_chars[c];
+    ptr->this_letter.width   = gcm->width_of_chars[c];
+    ptr->this_letter.calc_height();
     return ptr;
 }
 
