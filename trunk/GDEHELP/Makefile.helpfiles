@@ -56,7 +56,7 @@ $(GENHELPDEST)/%.help: $(GENDOCDEST)/%.doc $(HEADER)
 HELP_PHYLIP=../GDE/PHYLIP/doc
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html
-	lynx -dump -nolist $< | sed -e 's/©/(C)/ig' > $@
+	lynx -dump -nolist $< | sed -e 's/©/(C)/' > $@
 	test -s $@ || (echo $@ not generated or empty && false)
 
 FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))

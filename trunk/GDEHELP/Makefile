@@ -11,7 +11,7 @@ GENMENUS=$(MENUS:.menu=.genmenu)
 all: $(TARGET) help
 
 MENUS/%.genmenu : MENUS/%.menu
-		sed -e "s/^[ ]*//ig" < $< > $@
+		sed -e "s/^[ ]*//" < $< > $@
 
 $(TARGET) : $(SOURCE) $(GENMENUS)
 	-chmod a+w $(TARGET)
