@@ -930,3 +930,54 @@ void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData
 	}
     }
 }
+
+
+GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
+
+    char *alignment_name;
+    int result = 0;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GB_ERROR error = 0;
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+
+    for (gb_species = GBT_first_species(gb_main);
+	 gb_species;
+	 gb_species = GBT_next_species(gb_species) ) {
+
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+	if (gb_name) {
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+	    if (gb_ali) {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (gb_quality){
+		    read_sequence = GB_find(gb_ali,"data",0,down_level);
+		    if (read_sequence) {
+			GBDATA *gb_result1 = GB_search(gb_quality, "evaluation", GB_INT);
+			result = GB_read_int(gb_result1);
+			if (result < condition) {
+			    GB_write_flag(gb_species,!GB_read_flag(gb_species));
+			}
+			pass1_counter_notree++;
+			aw_status(double(globalcounter_notree)/pass1_counter_notree);
+		    }
+		}
+	    }
+	}
+
+    }
+    free(alignment_name);
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
