@@ -421,6 +421,6 @@ void AWT_show_file(AW_root *awr, const char *filename){
         aw_message(GB_get_error());
         return;
     }
-    AWT_create_ascii_print_window(awr,text);
+    AWT_create_ascii_print_window(awr,text, filename);
     delete text;
 }
