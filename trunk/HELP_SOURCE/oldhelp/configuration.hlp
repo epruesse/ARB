@@ -23,7 +23,7 @@ DESCRIPTION	Each species is either marked or unmarked. All species that are
                         - EXTRACT (= unmark all, then mark those from configuration)
                         - MARK/UNMARK/INVERT (mix currently marked species with those marked in configuration)
                         - DELETE (delete a configuration)
-                        - RENAME (not implemented yet)
+                        - RENAME (rename a configuration)
 
 		Each configuration has a unique name and is part of the database.
                 The current tree displayed within the ARB_NT main window is stored
@@ -31,4 +31,5 @@ DESCRIPTION	Each species is either marked or unmarked. All species that are
 
 		ARB_EDIT4 may load all marked species or all species stored in a configuration.
 
-NOTES		Saving the database means also saving all configurations.
+NOTES   Saving the database means also saving all configurations.
+
