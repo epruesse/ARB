@@ -27,28 +27,54 @@ ED4_group_manager *ED4_base::is_in_folded_group() const
     return group->is_in_folded_group();
 }
 
-void ED4_base::remove_deleted_childs()
+bool ED4_base::remove_deleted_childs()
 {
     e4_assert(0);
+    return false;
 }
 
-void ED4_terminal::remove_deleted_childs()
+bool ED4_terminal::remove_deleted_childs()
 {
     if (!get_species_pointer()) {
+        parent->children->delete_member(this);
 #ifdef DEBUG
-        printf("ED4_sequence_terminal ohne species_pointer!\n");
+        printf("ED4_terminal ohne species_pointer!\n");
 #endif
+        return true;
     }
+    return false;
+}
+bool ED4_sequence_info_terminal::remove_deleted_childs()
+{
+    if (!get_species_pointer()) {
+        parent->children->delete_member(this);
+#ifdef DEBUG
+        printf("ED4_sequence_info_terminal ohne species_pointer!\n");
+#endif
+        return true;
+    }
+    return false;
 }
 
-void ED4_manager::remove_deleted_childs()
+bool ED4_manager::remove_deleted_childs()
 {
     int i;
 
+ restart:
+
     for (i=0; i<children->members(); i++) {
         ED4_base *child = children->member(i);
-        child->remove_deleted_childs();
+        if (child->remove_deleted_childs()) {
+            goto restart;
+        }
     }
+
+    if (!children->members()) {
+        parent->children->delete_member(this);
+        return true;
+    }
+
+    return false;
 }
 
 void ED4_base::changed_by_database(void)

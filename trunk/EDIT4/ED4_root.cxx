@@ -1566,7 +1566,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     ____________________________SEP;
 
-    awmm->insert_menu_topic("fast_aligner",FAST_ALIGNER_TITLE "... [Ctrl-A]","F","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
+    awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE "... [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
     awmm->insert_menu_topic("align_sequence","Old aligner from ARB_EDIT...", "2","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("del_ali_tmp", "Remove all aligner entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
 
@@ -1784,8 +1784,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device, 	ED4_window **new_
         // Automatically start:
         // --------------------
 
-        AW_window *win = AWTC_create_island_hopping_window(aw_root, 0);
-        win->show();
+//         AW_window *win = AWTC_create_island_hopping_window(aw_root, 0); win->show();
 
 
     }
