@@ -2283,7 +2283,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->at("what");
     aws->create_toggle_field(FA_AWAR_TO_ALIGN,"Align","A");
-    aws->insert_toggle("Actual Species:","A",0);
+    aws->insert_toggle("Current Species:","A",0);
     aws->insert_default_toggle("Marked Species", "M",1);
     aws->insert_toggle("Selected Species","S",2);
     aws->update_toggle_field();
