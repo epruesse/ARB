@@ -7,7 +7,7 @@ OBJECTS =	\
 		AWT_www.o AWT_tables.o AWT_irstree.o \
 		AWT_asciiprint.o AWT_map_key.o AWT_tree_cmp.o AWT_seq_colors.o \
 		AWT_pro_a_nucs.o AWT_csp.o AWT_canvas.o AWT_dtree.o AWT_tree.o AWT_tree_cb.o AWT_nei.o \
-		BI_helix.o AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
+		AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
 		AWT_query_and_functions.o AWT_file_selection.o AWT_species_sel_box.o \
 		AWT_imp_exp.o AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
 		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o \
@@ -18,7 +18,9 @@ $(MAIN): $(OBJECTS)
 	touch $@
 
 .cxx.o:
-	$(CCPLIB) $(cflags) -c -D_USE_AW_WINDOW $<  $(CPPINCLUDES)
+	$(CCPLIB) $(cflags) -c $<  $(CPPINCLUDES)
+
+#	$(CCPLIB) $(cflags) -c -D_USE_AW_WINDOW $<  $(CPPINCLUDES)
 
 awt_tree_cb.hxx: AWT_tree_cb.cxx
 	rm -f $@
@@ -110,7 +112,6 @@ AWT_csp.o: awt.hxx
 AWT_csp.o: awt_csp.hxx
 AWT_csp.o: awt_pro_a_nucs.hxx
 AWT_csp.o: awt_tree.hxx
-AWT_csp.o: BI_helix.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -120,6 +121,7 @@ AWT_csp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_csp.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 
 AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -438,10 +440,3 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_global_awars.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-
-BI_helix.o: BI_helix.hxx
-BI_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
-BI_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
