@@ -728,7 +728,7 @@ AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini,    AW_window *awwi, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awari)
+AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awari)
 {
     this->gb_main   = gb_maini;
     this->aww       = awwi;
@@ -810,5 +810,3 @@ AWT_graphic::AWT_graphic(void)
 {
     exports.init();
 }
-
-

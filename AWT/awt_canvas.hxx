@@ -61,6 +61,9 @@ public:
     AWT_graphic_exports	exports;
 
 	virtual void show(AW_device *device) = 0;
+
+	virtual void show_opengl() {}; // Extended by Daniel Koitzsch & Christian Becker 
+
 	virtual void info(AW_device *device, AW_pos x, AW_pos y,		/* double click */
 				AW_clicked_line *cl, AW_clicked_text *ct)= 0;
 	virtual AW_gc_manager init_devices(AW_window *,AW_device *, AWT_canvas *ntw,AW_CL cd2) = 0;
@@ -104,7 +107,6 @@ enum {
 enum {
 	AWT_d_screen = 1
 	};
-
 
 class AWT_canvas {
 private:
@@ -158,7 +160,6 @@ public:
 			AW_BOOL dont_update_scrollbars = AW_FALSE);
     void	set_mode(AWT_COMMAND_MODE mo);
 };
-
 
 void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
 void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
