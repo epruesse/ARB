@@ -1,9 +1,14 @@
 Major changes for next Beta:
 ----------------------------
 
+ - file selection box in import window
+ - mark item with double click works in all search&query windows
+ - User masks: create new; 'edit enable' and 'marked' toggles (like in info window)
+ - Fixed command line help for all Arb-modules
+ - Fixed problem parsing fonts (should fix display problems with default fonts)
  - Mark mode now works in list-view as well (ARB_NTREE)
- - fixed appearance of 'tiny little boxes' (everywhere)
- - redesign of ARB help:
+ - Fixed appearance of 'tiny little boxes' (everywhere)
+ - Redesign of ARB help:
      - a HTML version is in $ARBHOME/lib/help_html
      - a text version is in $ARBHOME/lib/help (like before, but now generated)
 
