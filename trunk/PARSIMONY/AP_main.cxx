@@ -29,8 +29,8 @@ AP_ERR::AP_ERR (const char *pntr)
 {
     text = pntr;
     if (modus == 0) {
-	cout << "\n*** WARNING *** \n" << text <<"\n";
-	cout.flush();
+        cout << "\n*** WARNING *** \n" << text <<"\n";
+        cout.flush();
     }
 }
 
@@ -38,8 +38,8 @@ AP_ERR::AP_ERR (const char *pntr,const char *pntr2)
 {
     text = pntr2;
     if (modus == 0) {
-	cout << "\n***** WARNING  in " << pntr << "\n" << text <<"\n";
-	cout.flush();
+        cout << "\n***** WARNING  in " << pntr << "\n" << text <<"\n";
+        cout.flush();
     }
 }
 
@@ -104,9 +104,9 @@ void AP_main::user_push(void) {
 void AP_main::user_pop(void) {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
-	this->pop();	// changes user_push_counter if user pop
+        this->pop();	// changes user_push_counter if user pop
     } else {
-	new AP_ERR("AP_main::user_pop()","No user pop possible");
+        new AP_ERR("AP_main::user_pop()","No user pop possible");
     }
     return;
 }
@@ -125,25 +125,25 @@ void AP_main::push(void) {
 void AP_main::pop(void) {
     AP_tree *knoten;
     if (!stack) {
-	new AP_ERR("AP_main::pop()","Stack underflow !");
-	return;
+        new AP_ERR("AP_main::pop()","Stack underflow !");
+        return;
     }
     while ( (knoten = stack->pop()) ) {
-	if (stack_level != knoten->stack_level) {
-	    GB_internal_error("AP_main::pop","Error in stack_level");
-	    cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
-	    return;
-	}
-	knoten->pop(stack_level);
+        if (stack_level != knoten->stack_level) {
+            GB_internal_error("AP_main::pop","Error in stack_level");
+            cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
+            return;
+        }
+        knoten->pop(stack_level);
     }
     delete stack;
     stack_level --;
     stack = list.pop();
 
     if (stack) {
-	user_push_counter = stack->last_user_buffer;
+        user_push_counter = stack->last_user_buffer;
     }else{
-	user_push_counter = 0;
+        user_push_counter = 0;
     }
     return;
 }
@@ -159,36 +159,36 @@ void AP_main::clear(void) {
     AP_tree * knoten;
     AP_main_stack * new_stack;
     if (!stack) {
-	new AP_ERR("AP_main::clear","Stack underflow !");
-	return;
+        new AP_ERR("AP_main::clear","Stack underflow !");
+        return;
     }
     if (user_push_counter >= stack_level) {
-	if (stack != 0) {
-	    if (stack->size() > 0) {
-		while (stack->size() > 0) {
-		    knoten = stack->pop();
-		    //if (buffer_cout == AP_TRUE) knoten->printl();
-		    knoten->clear(stack_level,user_push_counter);
-		}
-	    }
-	    delete stack;
-	    stack = list.pop();
-	}
+        if (stack != 0) {
+            if (stack->size() > 0) {
+                while (stack->size() > 0) {
+                    knoten = stack->pop();
+                    //if (buffer_cout == AP_TRUE) knoten->printl();
+                    knoten->clear(stack_level,user_push_counter);
+                }
+            }
+            delete stack;
+            stack = list.pop();
+        }
     } else {
-	if (stack) {
-	    new_stack = list.pop();
-	    while ( (knoten = stack->pop()) ) {
-		if (knoten->clear(stack_level,user_push_counter) != AP_TRUE) {
-				// node is not cleared because buffered in previous node stack
-				// node is instead copied in previous level
-		    if (new_stack) new_stack->push(knoten);
-		}
-	    }
-	    delete stack;
-	    stack = new_stack;
-	} else {
-	    new AP_ERR("AP_main::clear");
-	}
+        if (stack) {
+            new_stack = list.pop();
+            while ( (knoten = stack->pop()) ) {
+                if (knoten->clear(stack_level,user_push_counter) != AP_TRUE) {
+                    // node is not cleared because buffered in previous node stack
+                    // node is instead copied in previous level
+                    if (new_stack) new_stack->push(knoten);
+                }
+            }
+            delete stack;
+            stack = new_stack;
+        } else {
+            new AP_ERR("AP_main::clear");
+        }
     }
     stack_level --;
     if (stack) user_push_counter = stack->last_user_buffer;
@@ -201,13 +201,13 @@ void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     //	stores node
     //
     if (!stack) {
-	if (mode & SEQUENCE) 	node->unhash_sequence();
-	return;
+        if (mode & SEQUENCE) 	node->unhash_sequence();
+        return;
     }
 
     if ( stack_level < node->stack_level) {
-	GB_warning("AP_main::push_node: stack_level < node->stack_level");
-	return;
+        GB_warning("AP_main::push_node: stack_level < node->stack_level");
+        return;
     }
 
     if (node->push(mode,stack_level)) 	stack->push(node);

@@ -693,9 +693,15 @@ void ap_calc_leaf_branch_length(AP_tree_nlen *leaf){
     AP_FLOAT parsbest = rootNode()->costs();
     ap_main->push();
     leaf->remove();
-    AP_FLOAT Blen = parsbest - rootNode()->costs();
+    AP_FLOAT Blen     = parsbest - rootNode()->costs();
     ap_main->pop();
-    double blen = Blen/Seq_len;
+    double   blen     = Blen/Seq_len;
+
+#if defined(DEBUG)
+    printf("Blen=%f name=%s\n", Blen, leaf->name);
+#endif // DEBUG
+
+
     if (!leaf->father->father){	// at root
         leaf->father->leftlen = blen*.5;
         leaf->father->rightlen = blen*.5;

@@ -1081,7 +1081,7 @@ static void pars_start_cb(AW_window *aww)
     awm->create_menu(       0,   "File",     "F", "pars_file.hlp",  AWM_ALL );
     {
         awm->insert_menu_topic("print_tree", "Print Tree ...",			"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
-        awm->insert_menu_topic( "quit",		"Quit",				"n","quit.hlp",		AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
+        awm->insert_menu_topic( "quit",		"Quit",				"Q","quit.hlp",		AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
 
     awm->create_menu( 0,   "Species", "S", "nt_tree.hlp",  AWM_ALL );
