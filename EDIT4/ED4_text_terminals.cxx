@@ -275,8 +275,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
         if (colors || searchColors || is_marked || is_selected || color_group || saiColors) {
             int i;
-            AW_pos font_height = ED4_ROOT->font_info[ED4_G_HELIX].get_ascent();
-            AW_pos width = ED4_ROOT->font_info[ED4_G_HELIX].get_width();
+            AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_HELIX);
+            AW_pos width = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
             int real_left = left/* + 1*/;
             int real_right = right/* -1*/;
             AW_pos x2 = text_x + width*real_left;
@@ -289,7 +289,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 selection_col2 = rm->screen_to_sequence(real_right);
             }
 
-            e4_assert(height<40);
+            e4_assert(height<140); // not a real limit 
             e4_assert(height>0);
 
             for ( i = real_left; i < real_right; i++,x2 += width) {
@@ -481,8 +481,8 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
                 is_marked = GB_read_flag(gbd);
             }
 
-            width_of_char = ED4_ROOT->font_info[ED4_G_STANDARD].get_width();
-            height_of_char = ED4_ROOT->font_info[ED4_G_STANDARD].get_height();
+            width_of_char = ED4_ROOT->font_group.get_width(ED4_G_STANDARD);
+            height_of_char = ED4_ROOT->font_group.get_height(ED4_G_STANDARD);
 #define MIN_MARK_BOX_SIZE 8
             if (width_of_char<MIN_MARK_BOX_SIZE) width_of_char = MIN_MARK_BOX_SIZE;
             if (height_of_char<MIN_MARK_BOX_SIZE) height_of_char = MIN_MARK_BOX_SIZE;
