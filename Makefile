@@ -641,7 +641,7 @@ export:	tarfile sourcetarfile
 binlink:
 	(cd bin; $(MAKE) all);
 
-all:	arb libs gde tools help readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 ifndef DEBIAN
@@ -738,7 +738,7 @@ realclean: clean
 	rm -f AISC_MKPTPS/aisc_mkpt
 
 #*** basic arb libraries
-arbbasic: links mbin menus com nas ${MAKE_RTC}
+arbbasic: links mbin menus com nas ${MAKE_RTC} help
 
 #*** New arb programs (Version 2.0) (Motif)
 arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs
