@@ -912,9 +912,8 @@ show:
 		@echo '  ph     arb_phylo'
 		@echo '  pa     arb_parsimony'
 		@echo '  tg     arb_treegen'
-		@echo '  tg     arb_treegen'
 		@echo '  ds     arb_dbserver'
-		@echo '  pr     arb_pt_server'
+		@echo '  pt     arb_pt_server'
 		@echo '  na     arb_name_server'
 		@echo ''
 		@echo ' libraries:'
@@ -993,7 +992,6 @@ tg:		$(TREEGEN)
 
 ds:		$(DBSERVER)
 pt:		$(PROBE)
-pr:		$(PROBE)
 ps:		PROBE_SERVER/PROBE_SERVER.dummy
 pc:		PROBE_WEB/PROBE_WEB.dummy
 pst:	PROBE_SET/PROBE_SET.dummy
@@ -1052,6 +1050,7 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
 gde:		GDE/GDE.dummy
+GDE:        gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		shared_libs TOOLS/TOOLS.dummy
 chip:		CHIP/CHIP.dummy
@@ -1180,7 +1179,7 @@ arbbasic2: mbin menus com nas ${MAKE_RTC}
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pr na al nal di ph ds trs
+arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg ps pc pst chip
