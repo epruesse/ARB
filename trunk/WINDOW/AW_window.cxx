@@ -1361,7 +1361,7 @@ const char *aw_str_2_label(const char *str,AW_window *aww)
         if (var_value) return var_value;
         return &buffer[0];
     }
-    delete [] var_value; var_value = 0;
+    free(var_value); var_value = 0;
     if (str[0] == '#') {
         const char *arbhome = GB_getenvARBHOME();
         sprintf( &buffer[0], "%s/lib/pixmaps/%s", arbhome, str+1 );
