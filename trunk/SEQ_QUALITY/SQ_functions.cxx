@@ -57,6 +57,9 @@ int SQ_calc_sequence_diff(GBDATA *gb_main) {
 		    if (working_on_sequence[i] == '-') {
 			sequenceQuality--;
 		    }
+		    if (working_on_sequence[i] == '.') {
+			sequenceQuality--;
+		    }
 		}
 
 		qualities[j][0] = sequenceQuality;
@@ -176,6 +179,6 @@ int SQ_calc_insertations(GBDATA *gb_main) {
     }
 
 
-    return qualities[9][3];
+    return qualities[0][3];
 
 }
