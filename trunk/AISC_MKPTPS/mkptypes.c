@@ -48,13 +48,75 @@ int aisc = 0;			/* aisc compatible output */
 int cansibycplus = 0;		/* produce extern "C" { */
 int promote_extern_c = 0;	/* produce extern "C" into prototype */
 int extern_c_seen = 0;		/* true, if extern "C" was parsed */
-char *sym_part = 0;		/* create only prototypes starting with 'sym_start' */
-int sym_part_len = 0;
 char /*const*/ *ourname; 		/* our name, from argv[] array */
 int inquote = 0;		/* in a quote?? */
 int newline_seen = 1;		/* are we at the start of a line */
 long linenum  = 1L;		/* line number in current file */
 int glastc   = ' ';		/* last char. seen by getsym() */
+
+/* char *sym_part = 0;*/		/* create only prototypes starting with 'sym_start' */ 
+/* int sym_part_len = 0; */
+
+typedef struct sym_part { 
+    char *part;
+    int len; // strlen(part)
+    struct sym_part *next;
+} SymPart;
+
+SymPart *symParts = 0; /* create only prototypes for parts in this list */
+
+// --------------------------------------------------------------------------------
+//     void addSymParts(const char *parts) 
+// --------------------------------------------------------------------------------
+void addSymParts(const char *parts) {
+    char *p = strdup(parts);
+    const char *sep = ",";
+    char *s = strtok(p, sep);
+    
+    while (s) {
+        SymPart *sp = malloc(sizeof(*sp));
+        
+        sp->part = strdup(s);
+        sp->len = strlen(s);
+        sp->next = symParts;
+        
+        symParts = sp;
+        
+        s = strtok(0, sep);
+    }
+    
+    free(p);
+}
+
+// --------------------------------------------------------------------------------
+//     int containsSymPart(const char *name) 
+// --------------------------------------------------------------------------------
+int containsSymPart(const char *name) {
+    SymPart *sp = symParts;
+    int contains = 0;
+    
+    while (sp && !contains) {
+        contains = strstr(name, sp->part)!=0;
+        sp = sp->next;
+    }
+    
+    return contains;
+}
+
+// --------------------------------------------------------------------------------
+//     void freeSymParts() 
+// --------------------------------------------------------------------------------
+void freeSymParts() {
+    SymPart *next = symParts;
+    
+    while (next) {
+        SymPart *del = next;
+        next = del->next;
+        
+        free(del->part);
+        free(del);
+    }
+}
 
 typedef struct word {
     struct word *next;
@@ -829,12 +891,18 @@ void getdecl(FILE *f){
                 goto again;
 
             /* It seems to have been what we wanted */
-
-            if (oktoprint && sym_part) { /* check function-name */
+            
+            if (oktoprint) { /* check function-name */
                 Word *w;
-                for (w=wlist; w->next; w=w->next) ;
-                if (strstr(w->string, sym_part)==0) { /* name does not contain sym_part */
-                    oktoprint = 0;  /* => do not emit prototype */
+                int count = 0;
+                
+                for (w=wlist; w->next && oktoprint; w=w->next)  {
+                    if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; /* do not emit prototypes for member functions */
+                    //printf("#%i='%s'\n", count++, w->string);
+                }
+                
+                if (oktoprint &&symParts && !containsSymPart(w->string)) { /* name does not contain sym_part */
+                    oktoprint = 0; /* => do not emit prototype */
                 }
             }
 	    
@@ -851,7 +919,7 @@ void getdecl(FILE *f){
 
 void Usage(void){
     fprintf(stderr, 
-            "Usage: %s [-e][-n][-p sym][-s][-x][-z][-A][-W][-F sym_part][files ...]\n", ourname);
+            "Usage: %s [-e][-n][-p sym][-s][-x][-z][-A][-W][-F sym_part[,sym_part]*][files ...]\n", ourname);
     fputs("   -a: make a funcion list for aisc_includes\n",stderr);
     fputs("   -e: put an explicit \"extern\" keyword in declarations\n",
           stderr);
@@ -865,7 +933,7 @@ void Usage(void){
           stderr);
     fputs("   -V: print version number\n", stderr);
     fputs("   -W: don't promote types in old style declarations\n", stderr);
-    fputs("   -F sym_part: create prototypes only for function-names containing sym_part\n", stderr);
+    fputs("   -F sym_part[,sym_part]*: create prototypes only for function-names containing one of the sym_parts\n", stderr);
     fputs("   -C: insert 'extern \"C\"'\n", stderr);
     fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
     exit(EXIT_FAILURE);
@@ -913,8 +981,9 @@ int main(int argc, char **argv){
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
-                sym_part = t;
-                sym_part_len = strlen(sym_part);
+                addSymParts(t);
+/*                 sym_part = t; */
+/*                 sym_part_len = strlen(sym_part); */
                 break;
             }
             else if (*t == 's')
@@ -1008,6 +1077,9 @@ int main(int argc, char **argv){
             printf("\n#undef %s\n", macro_name);	/* clean up namespace */
         }
     }
+    
+    freeSymParts();
+    
     return 0;
 }
 
