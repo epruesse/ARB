@@ -22,9 +22,13 @@ CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that IS i
 TOOL_OBJECT = \
 	 arb_help2xml.o
 
+QUIETLY = ./quietly.pl
+
 # We use Sablotron 1.0 and RXP 1.2
 XSLT = sabcmd
-VALIDATE = rxp -v -V -V
+VALIDATE = $(QUIETLY) RXP
+#VALIDATE = ./quiet_rxp.sh
+#VALIDATE = rxp -v -V -V
 
 # --------------------------------------------------------------------------------
 
@@ -102,7 +106,7 @@ XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 
 XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
 
-$(XML) : $(XML_DEPEND)
+$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 xml : $(XML)
 
@@ -115,7 +119,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 				  echo $(HLP_GENERATED)/$(<F):1: other occurance \
 				  && false )
 		arb_help2xml $< $@
-		$(VALIDATE) $@ >/dev/null
+		$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 		@test \! -f $(HLP_SOURCE)/$(<F) || \
@@ -123,7 +127,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 				  echo $(HLP_SOURCE)/$(<F):1: other occurance \
 				  && false )
 		arb_help2xml $< $@
-		$(VALIDATE) $@ >/dev/null
+		$(VALIDATE) $@
 
 else
 
