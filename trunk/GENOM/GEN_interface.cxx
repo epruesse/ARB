@@ -4,7 +4,6 @@
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <probe_design.hxx>
-//#include <nt_edconf.hxx>
 #include "GEN_db.hxx"
 
 #define AWAR_GENE_NAME "blabla"
@@ -27,7 +26,6 @@ static GBDATA *get_current_gene(AW_root *root) {
 
 static AW_CL ad_global_scannerid = 0;
 static AW_root *ad_global_scannerroot = 0;
-//AW_CL ad_query_global_cbs = 0;
 AW_CL gene_query_global_cbs = 0;
 AW_window *create_gene_rename_window(AW_root *root)
 {
@@ -46,7 +44,6 @@ AW_window *create_gene_rename_window(AW_root *root)
     aws->create_input_field(AWAR_GENE_DEST,15);
     aws->at("ok");
     aws->callback(gene_rename_cb);
-    //aws->callback(species_rename_cb);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
