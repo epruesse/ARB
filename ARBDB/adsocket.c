@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
 /* #include <malloc.h> */
@@ -547,6 +548,26 @@ int GB_is_regularfile(const char *path){
     return 0;
 }
 
+int GB_is_executablefile(const char *path) {
+    struct stat stt;    
+    if (stat(path, &stt)) return 0;
+
+    {
+        uid_t my_userid = geteuid(); // effective user id
+        if (stt.st_uid == my_userid) { // I am the owner of the file
+            return !!(stt.st_mode&S_IXUSR); // owner execution permission
+        }
+    }
+    {
+        gid_t my_groupid = getegid(); // effective group id
+        if (stt.st_gid == my_groupid) { // I am member of the file's group
+            return !!(stt.st_mode&S_IXGRP); // group execution permission
+        }
+    }
+
+    return !!(stt.st_mode&S_IXOTH); // others execution permission
+}
+
 int GB_is_directory(const char *path){
     struct stat stt;
     if (stat(path, &stt)) return 0;
@@ -729,13 +750,15 @@ GB_ULONG GB_last_saved_time(GBDATA *gb_main){
 }
 
 void GB_edit(const char *path){
-    char buffer[1024];
-    const char *ae = GB_getenv("ARB_TEXTEDIT"); // doc in arb_envar.hlp
-    char *fpath = GBS_eval_env(path);
-    if (!ae) ae = "arb_textedit";
-    sprintf(buffer, "%s %s &",ae,fpath);
-    printf("%s\n", buffer);
-    system(buffer);
+    const char *editor  = GB_getenvARB_TEXTEDIT();
+    char       *fpath   = GBS_eval_env(path);
+    char       *command = GBS_global_string_copy("%s %s &", editor, fpath);
+
+    GB_information("Executing '%s'", command);
+    if (system(command) != 0) {
+        GB_warning("Could not start editor command '%s'", command);
+    }
+    free(command);
     free(fpath);
 }
 
@@ -743,6 +766,7 @@ void GB_textprint(const char *path){
     char buffer[1024];
     char *fpath = GBS_eval_env(path);
     sprintf(buffer, "%s %s &","arb_textprint",fpath);
+    GB_information("Executing '%s'", buffer);
     system(buffer);
     free(fpath);
 }
@@ -793,47 +817,162 @@ void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
         }
     }
     sys = GBS_strclose(strstruct);
+    GB_information("Executing '%s'", sys);
     system(sys);
-    printf("%s\n",sys);
     free(sys);
 }
 
-GB_CSTR GB_getenvUSER(void){
+/* -------------------------------------------------------------------------------- */
+/* Functions to find an executable */
+
+static char *search_executable(GB_CSTR exe_name) {
+    GB_CSTR     path   = GB_getenvPATH();
+    char       *buffer = GB_give_buffer(strlen(path)+1+strlen(exe_name)+1);
+    const char *start  = path;
+    int         found  = 0;
+
+    while (!found && start) {
+        const char *colon = strchr(start, ':');
+        int         len   = colon ? (colon-start) : strlen(start);
+
+        memcpy(buffer, start, len);
+        buffer[len] = '/';
+        strcpy(buffer+len+1, exe_name);
+
+        found = GB_is_executablefile(buffer);
+        start = colon ? colon+1 : 0;
+    }
+
+    return found ? strdup(buffer) : 0;
+}
+
+char *GB_find_executable(GB_CSTR description_of_executable, ...) {
+    /* search the path for an executable with any of the given names (...)
+     * if any is found, it's full path is returned
+     * if none is found, a warning call is returned (which can be executed without harm)
+    */
+
+    GB_CSTR  name;
+    char    *found = 0;
+    va_list  args;
+
+    va_start(args, description_of_executable);
+    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = search_executable(name);
+    va_end(args);
+
+    if (!found) { /* none of the executables has been found */
+        char *looked_for;
+        char *msg;
+        {
+            void *buf   = GBS_stropen(100);
+            int   first = 1;
+
+            va_start(args, description_of_executable);
+            while ((name = va_arg(args, GB_CSTR)) != 0) {
+                if (!first) GBS_strcat(buf, ", ");
+                first = 0;
+                GBS_strcat(buf, name);
+            }
+            va_end(args);
+            looked_for = GBS_strclose(buf);
+        }
+
+        msg   = GBS_global_string_copy("Could not find a %s (looked for: %s)", description_of_executable, looked_for);
+        GB_warning(msg);
+        found = GBS_global_string_copy("echo \"%s\" ; arb_ign Parameters", msg);
+        free(msg);
+        free(looked_for);
+    }
+    else {
+        GB_information("Using %s '%s' ('%s')", description_of_executable, name, found);
+    }
+    return found;
+}
+
+/* -------------------------------------------------------------------------------- */
+/* Functions to access the environment variables used by ARB: */
+
+static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
+    GB_CSTR result = getenv(envvar);
+    return (result && result[0]) ? result : 0;
+}
+
+static char *getenv_executable(GB_CSTR envvar) {
+    // get full path of executable defined by 'envvar'
+    // returns 0 if
+    //  - envvar not defined or
+    //  - not defining an executable (warns about that)
+
+    char       *result   = 0;
+    const char *exe_name = getenv_ignore_empty(envvar);
+
+    if (exe_name) {
+        result = search_executable(exe_name);
+        if (!result) {
+            GB_warning("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
+        }
+    }
+
+    return result;
+}
+
+static char *getenv_existing_directory(GB_CSTR envvar) {
+    // get full path of directory defined by 'envvar'
+    // return 0 if
+    // - envvar is not defined or
+    // - does not point to a directory (warns about that)
+
+    char       *result   = 0;
+    const char *dir_name = getenv_ignore_empty(envvar);
+
+    if (dir_name) {
+        if (GB_is_directory(dir_name)) {
+            result = strdup(dir_name);
+        }
+        else {
+            GB_warning("Environment variable '%s' should contain the path of an existing directory.\n"
+                       "(current content '%s' has been ignored.)", envvar, dir_name);
+        }
+    }
+    return result;
+}
+
+GB_CSTR GB_getenvUSER(void) {
     static const char *user = 0;
     if (!user) {
-        user = getenv("USER");
-        if (!user) user = getenv("LOGNAME");
+        user = getenv_ignore_empty("USER");
+        if (!user) user = getenv_ignore_empty("LOGNAME");
         if (!user) {
-            user = getenv("HOME");
+            user = getenv_ignore_empty("HOME");
             if (user && strrchr(user,'/')) user = strrchr(user,'/')+1;
         }
         if (!user) {
-            fprintf(stderr, "WARNING: Cannot identify user: environment variables USER LOGNAME and HOME not set\n");
-            user = "UNKNOWN";
+            fprintf(stderr, "WARNING: Cannot identify user: environment variables USER, LOGNAME and HOME not set\n");
+            user = "UnknownUser";
         }
     }
     return user;
 }
 
 
-GB_CSTR GB_getenvHOME(void){
+GB_CSTR GB_getenvHOME(void) {
     static const char *home = 0;
     if (!home){
-        home = getenv("HOME");
-        if (!home){
-            fprintf(stderr, "WARNING: Cannot identify user's home directory: environment variable HOME not set\n"
-                    "Using this directory as home\n");
+        home = getenv_existing_directory("HOME");
+        if (!home) {
             home = GB_getcwd();
+            if (!home) home = ".";
+            fprintf(stderr, "WARNING: Cannot identify user's home directory: environment variable HOME not set\n"
+                    "Using current directory (%s) as home.\n", home);
         }
-        if (!home) home = ".";
     }
     return home;
 }
 
-GB_CSTR GB_getenvARBHOME(void){
+GB_CSTR GB_getenvARBHOME(void) {
     static char *arbhome = 0;
     if (!arbhome) {
-        arbhome = getenv("ARBHOME"); // doc in arb_envar.hlp
+        arbhome = getenv_existing_directory("ARBHOME"); // doc in arb_envar.hlp
         if (!arbhome){
             fprintf(stderr, "ERROR: Environment Variable ARBHOME not found !!!\n"
                     "   Please set 'ARBHOME' to the installation path of ARB\n");
@@ -843,36 +982,58 @@ GB_CSTR GB_getenvARBHOME(void){
     return arbhome;
 }
 
-GB_CSTR GB_getenvARBMACROHOME(void){
-    static const char *amh = 0;
-    if (!amh) {
-        char *res = getenv("ARBMACROHOME"); // doc in arb_envar.hlp
-        if (res) amh = res;
-        else     amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
-    }
-    return amh;
-}
-
-GB_CSTR GB_getenvARBMACRO(void){
+GB_CSTR GB_getenvARBMACRO(void) {
     static const char *am = 0;
     if (!am) {
-        char *res = getenv("ARBMACRO"); // doc in arb_envar.hlp
-        if (res) am = res;
-        else     am = GBS_eval_env("$(ARBHOME)/lib/macros");
+        am          = getenv_existing_directory("ARBMACRO"); // doc in arb_envar.hlp
+        if (!am) am = GBS_eval_env("$(ARBHOME)/lib/macros");
     }
     return am;
 }
 
-GB_CSTR GB_getenvGS(void){
-    char *gs = getenv("ARB_GS"); // doc in arb_envar.hlp
-    if (gs) return gs;
-    return "gv"; /* more recent than "ghostview" */
+GB_CSTR GB_getenvARBMACROHOME(void) {
+    static const char *amh = 0;
+    if (!amh) {
+        amh = getenv_existing_directory("ARBMACROHOME"); // doc in arb_envar.hlp
+        if (!amh) amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
+    }
+    return amh;
 }
 
-GB_CSTR GB_getenvDOCPATH(void){
+GB_CSTR GB_getenvPATH() {
+    static const char *path = 0;
+    if (!path) {
+        path = getenv_ignore_empty("PATH");
+        if (!path) {
+            path = GBS_eval_env("/bin:/usr/bin:/$(ARBHOME)/bin");
+            GB_information("Your PATH variable is empty - using '%s' as search path.", path);
+        }
+    }
+    return path;
+}
+
+GB_CSTR GB_getenvARB_GS(void) {
+    static const char *gs = 0;
+    if (!gs) {
+        gs = getenv_executable("ARB_GS"); // doc in arb_envar.hlp
+        if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", 0); 
+    }
+    return gs;
+}
+
+GB_CSTR GB_getenvARB_TEXTEDIT(void) {
+    static const char *editor = 0;
+    if (!editor) {
+        editor = getenv_executable("ARB_TEXTEDIT"); // doc in arb_envar.hlp
+        if (!editor) editor = "arb_textedit"; // a smart editor shell script
+    }
+    return editor;
+}
+
+GB_CSTR GB_getenvDOCPATH(void) {
     static const char *dp = 0;
     if (!dp) {
-        char *res = getenv("ARB_DOC"); // doc in arb_envar.hlp
+        char *res = getenv_existing_directory("ARB_DOC"); // doc in arb_envar.hlp
         if (res) dp = res;
         else     dp = GBS_eval_env("$(ARBHOME)/lib/help");
     }
@@ -882,7 +1043,7 @@ GB_CSTR GB_getenvDOCPATH(void){
 GB_CSTR GB_getenvHTMLDOCPATH(void) {
     static const char *dp = 0;
     if (!dp) {
-        char *res = getenv("ARB_HTMLDOC"); // doc in arb_envar.hlp
+        char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in arb_envar.hlp
         if (res) dp = res;
         else     dp = GBS_eval_env("$(ARBHOME)/lib/help_html");
     }
@@ -898,15 +1059,16 @@ GB_CSTR GB_getenv(const char *env){
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
         if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
         if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
-        if (strcmp(env, "ARB_GS")       == 0) return GB_getenvGS();
+        if (strcmp(env, "ARB_GS")       == 0) return GB_getenvARB_GS();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
+        if (strcmp(env, "ARB_TEXTEDIT") == 0) return GB_getenvARB_TEXTEDIT();
     }
     else {
         if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
         if (strcmp(env, "USER") == 0) return GB_getenvUSER();
     }
 
-    return getenv(env);
+    return getenv_ignore_empty(env);
 }
 
 
