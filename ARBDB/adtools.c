@@ -348,7 +348,7 @@ GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
                     check the database !!!
 ********************************************************************************************/
 
-GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
+GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
 {
     GBDATA *gb_presets;
     GBDATA *gb_ali;
@@ -596,14 +596,15 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
     GBDATA *gb_len;
     GB_ERROR error;
 
-    gb_presets      = GBT_find_or_create(Main,"presets",7);
-    gb_species_data     = GBT_find_or_create(Main,"species_data",7);
-    gb_extended_data    = GBT_find_or_create(Main,"extended_data",7);
+    gb_presets       = GBT_find_or_create(Main,"presets",7);
+    gb_species_data  = GBT_find_or_create(Main,"species_data",7);
+    gb_extended_data = GBT_find_or_create(Main,"extended_data",7);
 
     for (   gb_ali = GB_find(gb_presets,"alignment",0,down_level);
             gb_ali;
-            gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) ){
-        gbd = GB_find(gb_ali,"alignment_name",alignment_name,down_level);
+            gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) )
+    {
+        gbd    = GB_find(gb_ali,"alignment_name",alignment_name,down_level);
         gb_len = GB_find(gb_ali,"alignment_len",0,down_level);
         if (gbd) {
             error = gbt_insert_character(gb_extended_data,"extended",
@@ -618,6 +619,20 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
         }
     }
     return 0;
+}
+
+GB_ERROR GBT_format_alignment(GBDATA *Main, const char *alignment_name) {
+    GB_ERROR err = 0;
+
+    if (strcmp(alignment_name, "ali_genom") != 0) { // NEVER EVER format 'ali_genom'
+        err           = GBT_check_data(Main, alignment_name); // detect max. length
+        if (!err) err = GBT_check_lengths(Main, alignment_name); // format sequences in alignment
+        if (!err) err = GBT_check_data(Main, alignment_name); // sets state to "formatted"
+    }
+    else {
+        err = "It's forbidden to format 'ali_genom'!";
+    }
+    return err;
 }
 
 
