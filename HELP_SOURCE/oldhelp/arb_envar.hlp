@@ -1,0 +1,84 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB environment variables
+
+OCCURRENCE	Anywhere
+
+DESCRIPTION     Arb is aware of several environment variables:
+
+                    ARBHOME
+
+                        Should be set to the arb install directory
+                        (usually /usr/arb)
+
+                    LD_LIBRARY_PATH
+
+                        path to system libraries (should contain /usr/arb/lib)
+
+                    ARB_TEXTEDIT
+
+                        The name of the editor you like to use when editing files via ARB
+                        (default: textedit )
+
+                    ARB_XTERM
+
+                            The call needed to create a normal xterm
+                            (default: xterm -sl 1000 -sb -geometry 120x40 )
+
+                    ARB_XCMD
+
+                            The call needed to create a xterm invoking external programs
+                            (default: xterm -sl 1000 -sb -geometry 140x30 -e )
+
+                    USER
+
+                            your username
+
+                    ARB_PID
+
+                            (internal) PID for communication
+
+                    ARBMACROHOME
+
+                            directory name where your ARB-macros will be saved to/loaded from
+                            (default: $(ARBHOME)/lib/macros )
+
+                    ARB_GS
+
+                            name of postscript viewer used by ARB
+                            (default: ghostview)
+
+                    ARB_WORKDIR
+
+                            extra directory appearing in ARB-Browser
+                            (default: $ARBHOME)
+
+                    ARB_DOC
+
+                            directory where ARB searches for *.ps or *.ps.gz
+                            (default: $(ARBHOME)/lib/help)
+
+NOTES		Short description of how to set an environment variable:
+
+                        1. for bash users (add to .bashrc):
+
+                           ARB_GS='gv'
+                           export ARB_GS
+
+                        2. for tcsh users (add to .cshrc):
+
+                           setenv ARB_GS 'gv'
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -16,12 +16,12 @@
 void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
     clip_rect = *rect;	// coordintes : (0,0) = top-left-corner
     if (!allow_oversize){
-	if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
-	if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
-	if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
-	if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
+        if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
+        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+        if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
+        if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
     }
-	
+
     top_font_overlap = 0;
     bottom_font_overlap = 0;
     left_font_overlap = 0;
@@ -42,25 +42,25 @@ void AW_clip::reduce_top_clip_border(int top){
 void AW_clip::set_top_clip_border(int top, AW_BOOL allow_oversize) {
     clip_rect.t = top;
     if (!allow_oversize){
-	if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
+        if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
     }
 }
 
 void AW_clip::reduce_bottom_clip_border(int bottom) {
     if ( bottom < clip_rect.b)    clip_rect.b = bottom;
-}	
+}
 
 void AW_clip::set_bottom_clip_border(int bottom, AW_BOOL allow_oversize) {
     clip_rect.b = bottom;
     if (!allow_oversize){
-	if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
     }
 }
 
 void AW_clip::set_bottom_clip_margin(int bottom,AW_BOOL allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize){
-	if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
     }
 }
 void AW_clip::reduce_left_clip_border(int left) {
@@ -69,7 +69,7 @@ void AW_clip::reduce_left_clip_border(int left) {
 void AW_clip::set_left_clip_border(int left, AW_BOOL allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize){
-	if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
+        if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
     }
 }
 
@@ -80,7 +80,7 @@ void AW_clip::reduce_right_clip_border(int right) {
 void AW_clip::set_right_clip_border(int right, AW_BOOL allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize){
-	if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
+        if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
     }
 }
 
@@ -138,61 +138,61 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
     if ((outcode0 | outcode1) == 0)
     {                       // line is inside the rectangle
 
-	x0out=x0;       y0out=y0;               // clipped coordinates of line
-	x1out=x1;       y1out=y1;
+        x0out=x0;       y0out=y0;               // clipped coordinates of line
+        x1out=x1;       y1out=y1;
 
-	done = 1;
-	success=1;
+        done = 1;
+        success=1;
     }
 
     if ((outcode0 & outcode1) != 0)
-	//line is outside the rectangle
-	done = 1;
+        //line is outside the rectangle
+        done = 1;
     if (done == 0)                //;
     {
-	if (outcode0 > 0)
-	    outcodeout = outcode0;
-	else
-	    outcodeout = outcode1;
-	if ((outcodeout & 8) != 0)
-	{
-	    x = x0+(x1-x0)*(clip_rect.t-y0)/(y1-y0);
-	    y = clip_rect.t;
-	}
-	else
-	{
-	    if ((outcodeout & 4) != 0)
-	    {
-		x = x0+(x1-x0)*(clip_rect.b-y0)/(y1-y0);
-		y = clip_rect.b;
-	    }
-	    else
-	    {
-		if ((outcodeout & 2) != 0)
-		{
-		    y = y0+(y1-y0)*(clip_rect.r-x0)/(x1-x0);
-		    x = clip_rect.r;
-		}
-		else
-		{ if ((outcodeout & 1) != 0)
-		{
+        if (outcode0 > 0)
+            outcodeout = outcode0;
+        else
+            outcodeout = outcode1;
+        if ((outcodeout & 8) != 0)
+        {
+            x = x0+(x1-x0)*(clip_rect.t-y0)/(y1-y0);
+            y = clip_rect.t;
+        }
+        else
+        {
+            if ((outcodeout & 4) != 0)
+            {
+                x = x0+(x1-x0)*(clip_rect.b-y0)/(y1-y0);
+                y = clip_rect.b;
+            }
+            else
+            {
+                if ((outcodeout & 2) != 0)
+                {
+                    y = y0+(y1-y0)*(clip_rect.r-x0)/(x1-x0);
+                    x = clip_rect.r;
+                }
+                else
+                { if ((outcodeout & 1) != 0)
+                {
 
-		    y = y0+(y1-y0)*(clip_rect.l-x0)/(x1-x0);
-		    x = clip_rect.l;
-		}
-		}
-	    }
-	}
-	if (outcode0 > 0)
-	{
-	    x0 = x;
-	    y0 = y;
-	}
-	else
-	{
-	    x1 = x;
-	    y1 = y;
-	}
+                    y = y0+(y1-y0)*(clip_rect.l-x0)/(x1-x0);
+                    x = clip_rect.l;
+                }
+                }
+            }
+        }
+        if (outcode0 > 0)
+        {
+            x0 = x;
+            y0 = y;
+        }
+        else
+        {
+            x1 = x;
+            y1 = y;
+        }
     }
     }
     return success;
@@ -263,14 +263,14 @@ void AW_GC_Xm::set_lineattributes(AW_pos width,AW_linestyle stylei) {
     if (stylei == style && line_width == lwidth) return;
 
     switch (style){
-	case AW_SOLID:
-	    XSetLineAttributes(common->display, gc, lwidth, LineSolid, CapButt, JoinBevel);
-	    break;
-	case AW_DOTTED:
-	    XSetLineAttributes(common->display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
-	    break;
-	default:
-	    break;
+        case AW_SOLID:
+            XSetLineAttributes(common->display, gc, lwidth, LineSolid, CapButt, JoinBevel);
+            break;
+        case AW_DOTTED:
+            XSetLineAttributes(common->display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+            break;
+        default:
+            break;
     };
     line_width = lwidth;
     style = style;
@@ -280,27 +280,27 @@ void AW_GC_Xm::set_lineattributes(AW_pos width,AW_linestyle stylei) {
 void AW_GC_Xm::set_function(AW_function mode)
 {
     if (function != mode) {
-	switch(mode) {
-	    case AW_XOR:
-		XSetFunction(common->display,gc,GXxor);
-		break;
-	    case AW_COPY:
-		XSetFunction(common->display,gc,GXcopy);
-		break;
-	}
-	function = mode;
-	set_foreground_color(color);
+        switch(mode) {
+            case AW_XOR:
+                XSetFunction(common->display,gc,GXxor);
+                break;
+            case AW_COPY:
+                XSetFunction(common->display,gc,GXcopy);
+                break;
+        }
+        function = mode;
+        set_foreground_color(color);
     }
 }
 
 void AW_GC_Xm::set_foreground_color(unsigned long col) {
     color = (short)col;
     if (function == AW_XOR) {
-	if (common->data_colors[0]) {
-	    col ^= common->data_colors[0][AW_DATA_BG];
-	}else{
-	    col ^= common->frame_colors[AW_WINDOW_BG];
-	}
+        if (common->data_colors[0]) {
+            col ^= common->data_colors[0][AW_DATA_BG];
+        }else{
+            col ^= common->frame_colors[AW_WINDOW_BG];
+        }
     }
     XSetForeground(common->display,gc, col );
 }
@@ -331,28 +331,28 @@ int	AW_gc::get_string_size(int gc, const char *str, long textlen)
     register short *size_per_char = common->gcs[gc]->width_of_chars;
     if (!textlen)
     {
-	if (!str) return 0;
-	textlen = strlen(str);
+        if (!str) return 0;
+        textlen = strlen(str);
     }
     register int c;
     register long l_width;
 
     if (xfs->max_bounds.width == xfs->min_bounds.width || !str) {
-				// monospaced font
-	l_width = textlen * xfs->max_bounds.width;
+        // monospaced font
+        l_width = textlen * xfs->max_bounds.width;
     }else {		// non-monospaced font
-	l_width = 0;
-	for (c = *(str++); c; c = *(str++)) {
-	    l_width += size_per_char[c];
-	}
+        l_width = 0;
+        for (c = *(str++); c; c = *(str++)) {
+            l_width += size_per_char[c];
+        }
     }
     return (int)l_width;
 }
 void AW_gc::new_gc(int gc) {
     if (gc>= common->ngcs) {
-	common->gcs = (AW_GC_Xm **)realloc((char *)common->gcs,sizeof(void *)*(gc+10));
-	memset( &common->gcs[common->ngcs],0,sizeof(void *) * (gc-common->ngcs+10));
-	common->ngcs = gc+10;
+        common->gcs = (AW_GC_Xm **)realloc((char *)common->gcs,sizeof(void *)*(gc+10));
+        memset( &common->gcs[common->ngcs],0,sizeof(void *) * (gc-common->ngcs+10));
+        common->ngcs = gc+10;
     }
     if (common->gcs[gc])delete (common->gcs[gc]);
     common->gcs[gc] = new AW_GC_Xm(common);
@@ -381,9 +381,9 @@ void AW_gc::set_function(int gc,AW_function function){
 void AW_gc::set_foreground_color(int gc, AW_color color) {
     unsigned long col;
     if (color>=AW_DATA_BG) {
-	col = common->data_colors[0][color];
+        col = common->data_colors[0][color];
     }else{
-	col = common->frame_colors[color];
+        col = common->frame_colors[color];
     }
     common->gcs[gc]->set_foreground_color(col);
 }
@@ -392,9 +392,9 @@ void AW_gc::set_foreground_color(int gc, AW_color color) {
 void AW_gc::set_background_color(int gc, AW_color color) {
     unsigned long col;
     if (color>=AW_DATA_BG) {
-	col = common->data_colors[0][color];
+        col = common->data_colors[0][color];
     }else{
-	col = common->frame_colors[color];
+        col = common->frame_colors[color];
     }
     common->gcs[gc]->set_background_color(col);
 }
@@ -410,13 +410,13 @@ void AW_get_common_extends_cb(AW_window *aww,AW_common *common) {
     unsigned int width,height;
     unsigned int depth, borderwidth;
     XGetGeometry(common->display,common->window_id,
-		 &root,
-		 &common->screen_x_offset,	// xoffset
-		 &common->screen_y_offset,	// yoffset
-		 &width,
-		 &height,
-		 &borderwidth,		// border width
-		 &depth);		// depth of display
+                 &root,
+                 &common->screen_x_offset,	// xoffset
+                 &common->screen_y_offset,	// yoffset
+                 &width,
+                 &height,
+                 &borderwidth,		// border width
+                 &depth);		// depth of display
 
     common->screen.t = 0;		// set clipping coordinates
     common->screen.b = height;
@@ -460,8 +460,8 @@ void		AW_device::push_clip_scale(void)
 }
 void		AW_device::pop_clip_scale(void){
     if (!clip_scale_stack) {
-	AW_ERROR("To many pop_clip_scale on that device");
-	return;
+        AW_ERROR("To many pop_clip_scale on that device");
+        return;
     }
     scale = clip_scale_stack->scale;
     xoffset = clip_scale_stack->xoffset;
@@ -494,7 +494,7 @@ void AW_device::_privat_reset()
 
 void AW_device::reset(){
     while (clip_scale_stack){
-	pop_clip_scale();
+        pop_clip_scale();
     }
     get_area_size(&clip_rect);
     AW_matrix::reset();
@@ -519,11 +519,11 @@ int AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cl
     AWUSE(gc);
     AW_pos X,Y;							// Transformed pos
     if(filteri & filter) {
-	transform(x,y,X,Y);
-	if ( X > clip_rect.r) return 0;
-	if ( X < clip_rect.l) return 0;
-	if ( Y > clip_rect.b) return 0;
-	if ( Y < clip_rect.t) return 0;
+        transform(x,y,X,Y);
+        if ( X > clip_rect.r) return 0;
+        if ( X < clip_rect.l) return 0;
+        if ( Y > clip_rect.b) return 0;
+        if ( Y < clip_rect.t) return 0;
     }
     return 1;
 }
@@ -556,10 +556,10 @@ int AW_device::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filter
     npoints--;
     erg |= line(gc,points[0],points[1],points[npoints*2],points[npoints*2+1],filteri,cd1,cd2);
     while (	npoints>0) {
-	AW_pos x = *(points++);
-	AW_pos y = *(points++);
-	erg |= line(gc,x,y,points[0],points[1],filteri,cd1,cd2);
-	npoints--;
+        AW_pos x = *(points++);
+        AW_pos y = *(points++);
+        erg |= line(gc,x,y,points[0],points[1],filteri,cd1,cd2);
+        npoints--;
     }
     return erg;
 }
@@ -619,40 +619,40 @@ int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitse
     AW_pos X0,Y0;				// Transformed pos
 
     //  cursor insert         cursor overwrite
-    //     (X0,Y0)            
-    //       /\               
-    //      /  \              
-    //      ----              
-    // (X1,Y1)(X2,Y2)         
+    //     (X0,Y0)
+    //       /\                       .
+    //      /  \                      .
+    //      ----
+    // (X1,Y1)(X2,Y2)
 
     if(filteri & filter) {
-	if( type == AW_cursor_insert ) {
-	    transform(x0,y0,X0,Y0);
+        if( type == AW_cursor_insert ) {
+            transform(x0,y0,X0,Y0);
 
-	    if (X0 > clip_rect.r) return 0;
-	    if (X0 < clip_rect.l) return 0;
-	    if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0;
-	    if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;
+            if (X0 > clip_rect.r) return 0;
+            if (X0 < clip_rect.l) return 0;
+            if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0;
+            if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;
 
-	    x1 = x0-4;
-	    y1 = y0+4;
-	    x2 = x0+4;
-	    y2 = y0+4;
+            x1 = x0-4;
+            y1 = y0+4;
+            x2 = x0+4;
+            y2 = y0+4;
 
-	    line(gc,x1,y1,x0,y0,filteri,clientdata1, clientdata2);
-	    line(gc,x2,y2,x0,y0,filteri,clientdata1, clientdata2);
-	    line(gc,x1,y1,x2,y2,filteri,clientdata1, clientdata2);
-	}
+            line(gc,x1,y1,x0,y0,filteri,clientdata1, clientdata2);
+            line(gc,x2,y2,x0,y0,filteri,clientdata1, clientdata2);
+            line(gc,x1,y1,x2,y2,filteri,clientdata1, clientdata2);
+        }
     }
     return 1;
 }
 
 int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// either string or strlen != 0
-			     AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2, 
-			     AW_pos opt_ascent,AW_pos opt_descent, 		// optional height (if == 0 take font height)
-			     int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len,size_t start, size_t size,
-				      AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
-				      AW_CL cduser, AW_CL cd1, AW_CL cd2))
+                             AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
+                             AW_pos opt_ascent,AW_pos opt_descent, 		// optional height (if == 0 take font height)
+                             int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len,size_t start, size_t size,
+                                      AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+                                      AW_CL cduser, AW_CL cd1, AW_CL cd2))
 {
     long	textlen;
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
@@ -677,37 +677,40 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
     if (!(filter & filteri)) return 0;
 
     if (left_font_overlap || clip_rect.l == 0) {
-	inside_clipping_left = AW_FALSE;
+        inside_clipping_left = AW_FALSE;
     }
 
     if (right_font_overlap || clip_rect.r == common->screen.r) {
-	inside_clipping_right = AW_FALSE;
+        inside_clipping_right = AW_FALSE;
     }
 
     transform(x,y,X0,Y0);
 
 
     if (top_font_overlap || clip_rect.t == 0) { 						// check clip border inside screen
-	if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
+        if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
     }else {
-	if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // dont cross the clip border
+        if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // dont cross the clip border
     }
 
     if (bottom_font_overlap || clip_rect.b == common->screen.b) { 				// check clip border inside screen drucken
-	if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;	     // draw outside screen
+        if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;	     // draw outside screen
     }else {
-	if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;	     // dont cross the clip border
+        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;	     // dont cross the clip border
     }
 
     if (!opt_len) {
-	opt_len = textlen = strlen(opt_str);
+        opt_len = textlen = strlen(opt_str);
     }else{
-	textlen = opt_len;
+        textlen = opt_len;
     }
 
+    aw_assert(opt_len == textlen);
+    aw_assert(int(strlen(opt_str)) >= textlen);
+
     if (alignment){
-	AW_pos width = get_string_size(gc,opt_str,textlen);
-	X0 = X0-alignment*width;
+        AW_pos width = get_string_size(gc,opt_str,textlen);
+        X0 = X0-alignment*width;
     }
     xi = AW_INT(X0);
     yi = AW_INT(Y0);
@@ -718,50 +721,68 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
 
     start = 0;
     if (xi < l) {								// now clip left side
-	if (xfs->max_bounds.width == xfs->min_bounds.width) {		//  monospaced font
-	    h = (l - xi)/xfs->max_bounds.width;
-	    if (inside_clipping_left) {
-		if ( (l-xi)%xfs->max_bounds.width  >0 )	h += 1;
-	    }
-	    if (h >= textlen) return 0;
-	    start = h;
-	    xi += h*xfs->max_bounds.width;
-	    textlen -= h;
-	}else {								// non-monospaced font
-	    for (h=0; xi < l; h++) {
-		if (!(c = opt_str[h])) return 0;
-		xi += size_per_char[c];
-	    }
-	    if (!inside_clipping_left) {
-		h-=1;
-		xi -= size_per_char[c];
-	    }
-	    start = h;
-	    textlen -= h;
-	}
+        if (xfs->max_bounds.width == xfs->min_bounds.width) {		//  monospaced font
+            h = (l - xi)/xfs->max_bounds.width;
+            if (inside_clipping_left) {
+                if ( (l-xi)%xfs->max_bounds.width  >0 )	h += 1;
+            }
+            if (h >= textlen) return 0;
+            start    = h;
+            xi      += h*xfs->max_bounds.width;
+            textlen -= h;
+
+            if (textlen < 0) return 0;
+            aw_assert(int(strlen(opt_str)) >= textlen);
+        }else {								// non-monospaced font
+            for (h=0; xi < l; h++) {
+                if (!(c = opt_str[h])) return 0;
+                xi += size_per_char[c];
+            }
+            if (!inside_clipping_left) {
+                h-=1;
+                xi -= size_per_char[c];
+            }
+            start    = h;
+            textlen -= h;
+
+            if (textlen < 0) return 0;
+            aw_assert(int(strlen(opt_str)) >= textlen);
+        }
     }
 
     // now clipp right side
     if (xfs->max_bounds.width == xfs->min_bounds.width) {			// monospaced font
-	h = ((int)clip_rect.r - xi) / xfs->max_bounds.width;
-	if (h < textlen) {
-	    if (inside_clipping_right) {
-		textlen = h;
-	    }else{
-		textlen = h+1;
-	    }
-	}
-    }else{									// non-monospaced font
-	l = (int)clip_rect.r - xi;
-	for (h = start; l >= 0 && textlen >=0 ; h++, textlen--) {
-	    l -= size_per_char[opt_str[h]];
-	}
-	textlen = h - start;
-	if (inside_clipping_right && textlen  > 0 )
-	    textlen -= 1;
+        h = ((int)clip_rect.r - xi) / xfs->max_bounds.width;
+        if (h < textlen) {
+            if (inside_clipping_right) {
+                textlen = h;
+            }else{
+                textlen = h+1;
+            }
+        }
+
+        if (textlen < 0) return 0;
+        aw_assert(int(strlen(opt_str)) >= textlen);
     }
-    X0=(AW_pos)xi;
+    else {									// non-monospaced font
+        l = (int)clip_rect.r - xi;
+        for (h = start; l >= 0 && textlen > 0 ; h++, textlen--) { // was textlen >= 0
+            l -= size_per_char[opt_str[h]];
+        }
+        textlen = h - start;
+        if (inside_clipping_right && textlen  > 0 ) {
+            textlen -= 1;
+        }
+
+        if (textlen < 0) return 0;
+        aw_assert(int(strlen(opt_str)) >= textlen);
+    }
+    X0 = (AW_pos)xi;
     rtransform(X0,Y0,x,y);
+
+    aw_assert(opt_len >= textlen);
+    aw_assert(textlen >= 0 && int(strlen(opt_str)) >= textlen);
+
     return f(this,gc,opt_str,opt_len, start ,(size_t)textlen, x,y, opt_ascent, opt_descent, cduser, cd1, cd2);
 }
 
