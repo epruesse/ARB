@@ -1,4 +1,5 @@
 #include <cmath>
+#include <string>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -162,7 +163,6 @@ void primer_design_event_go(AW_window *aww) {
 
     if ( !error ) {
         aw_openstatus("Search PCR primer pairs");
-
         PrimerDesign *PD =
             new PrimerDesign(sequence, length,
                              Range(root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->read_int(),  root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int()),
@@ -179,11 +179,20 @@ void primer_design_event_go(AW_window *aww) {
                              );
 
         PD->set_status_callbacks(aw_status, aw_status);
+
+        try {
 #ifdef DEBUG
-        PD->run(PrimerDesign::PRINT_PRIMER_PAIRS);
+            PD->run(PrimerDesign::PRINT_PRIMER_PAIRS);
 #else
-        PD->run(0);
+            PD->run(0);
 #endif
+        }
+        catch (string& s) {
+            error = GBS_global_string(s.c_str());
+        }
+        catch (...) {
+            error = "Unknown error (maybe out of memory ? )";
+        }
         if ( !error ) error = PD->get_error();
 
         if ( !error ) {
