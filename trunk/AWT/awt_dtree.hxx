@@ -1,12 +1,14 @@
 #ifndef awt_dtree_hxx_included
 #define awt_dtree_hxx_included
 
-#define AWAR_DTREE_BASELINEWIDTH "awt/dtree/baselinewidth"
-#define AWAR_DTREE_VERICAL_DIST  "awt/dtree/verticaldist"
-#define AWAR_DTREE_AUTO_JUMP     "awt/dtree/autojump"
-#define AWAR_DTREE_SHOW_CIRCLE   "awt/dtree/show_circle"
-#define AWAR_DTREE_CIRCLE_ZOOM   "awt/dtree/circle_zoom"
-#define AWAR_DTREE_GREY_LEVEL    "awt/dtree/greylevel"
+#define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
+#define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
+#define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
+#define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
+#define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
+#define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
+#define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 
 #define AWAR_DTREE_REFRESH       AWAR_TREE_REFRESH // touch this awar to refresh the tree display
 
@@ -81,12 +83,17 @@ protected:
     int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
     int paint_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
 
-    void          unload();
-    char         *species_name;
-    int           baselinewidth;
-    int           show_circle;
-    float         circle_zoom_factor;
+    void unload();
+    
+    char  *species_name;
+    int    baselinewidth;
+    int    show_circle;
+    int    use_ellipse;
+    float  circle_zoom_factor;
+    float  circle_max_size;
+    
 public:
+    
     // *********** read only variables !!!
     AW_root      *aw_root;
     AP_tree_sort  tree_sort;
