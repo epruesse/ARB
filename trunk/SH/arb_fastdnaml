@@ -1,7 +1,7 @@
 #!/bin/sh
 tmp=/tmp/arb_fdnaml_${USER}_$$
 mv infile $tmp
-nice -19 fastdnaml < $tmp &
+nice -19 $1 < $tmp &
 sig=$!
 /bin/echo "$sig $$ \c" >>/tmp/arb_pids_${USER}_${ARB_PID}
 wait
