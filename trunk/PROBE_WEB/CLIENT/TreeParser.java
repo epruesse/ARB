@@ -23,6 +23,8 @@ public TreeNode getRootNode()
             {
                 try{ 
                     root = generateTreeNodes(treeString);
+                    root.setFather(root);
+
                return root;
                 } 
                 catch (Exception e)
