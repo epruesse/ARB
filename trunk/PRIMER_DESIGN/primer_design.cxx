@@ -38,6 +38,8 @@ void create_primer_design_variables( AW_root *aw_root, AW_default aw_def, AW_def
   aw_root->awar_int( AWAR_PRIMER_DESIGN_GC_FACTOR,		   50, aw_def);
   aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMP_FACTOR,		   50, aw_def);
 
+  aw_root->awar_string( AWAR_PRIMER_DESIGN_APROX_MEM,		   "", aw_def);
+
   aw_root->awar_string( AWAR_PRIMER_TARGET_STRING,                 "", global);
 }
 
@@ -111,10 +113,13 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
 
 
   aws->at( "minleft" );   aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_POS,    7 );
-  aws->at( "maxleft" );	  aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_LENGTH, 7 );
+  aws->callback( primer_design_event_update_memory );
+  aws->at( "maxleft" );	  aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9 );
   aws->at( "minright" );  aws->create_input_field( AWAR_PRIMER_DESIGN_RIGHT_POS,    7 );
-  aws->at( "maxright" );  aws->create_input_field( AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 7 );
+  aws->callback( primer_design_event_update_memory );
+  aws->at( "maxright" );  aws->create_input_field( AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 9 );
   aws->at( "minlen" );    aws->create_input_field( AWAR_PRIMER_DESIGN_LENGTH_MIN, 7 );
+  aws->callback( primer_design_event_update_memory );
   aws->at( "maxlen" );    aws->create_input_field( AWAR_PRIMER_DESIGN_LENGTH_MAX, 7 );
   aws->at( "mindist" );   aws->create_input_field( AWAR_PRIMER_DESIGN_DIST_MIN, 7 );
   aws->at( "maxdist" );   aws->create_input_field( AWAR_PRIMER_DESIGN_DIST_MAX, 7 );
@@ -130,6 +135,8 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
   aws->at( "GC_factor" );      aws->create_input_field( AWAR_PRIMER_DESIGN_GC_FACTOR, 7 );
   aws->callback( primer_design_event_check_temp_factor );
   aws->at( "temp_factor" );    aws->create_input_field( AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7 );
+
+  aws->at( "aprox_mem" );      aws->create_input_field( AWAR_PRIMER_DESIGN_APROX_MEM, 11 );
 
   return aws;
 }
@@ -240,6 +247,30 @@ void primer_design_event_go(AW_window *aww) {
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_update_memory
+//
+//
+void primer_design_event_update_memory( AW_window *aww ) {
+    AW_root *root = aww->get_root();
+
+    int bases  = root->awar( AWAR_PRIMER_DESIGN_LEFT_LENGTH )->read_int() + root->awar( AWAR_PRIMER_DESIGN_RIGHT_LENGTH )->read_int();
+    int length = root->awar( AWAR_PRIMER_DESIGN_LENGTH_MAX )->read_int();
+    double mem = bases*length*0.9*(sizeof(Node)+16);
+
+    if (mem > 1073741824) {
+      mem = mem / 1073741824;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f TB",mem));
+    } else if (mem > 1048576) {
+      mem = mem / 1048576;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f MB",mem));
+    } else if (mem > 1024) {
+      mem = mem / 1024;
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.1f KB",mem));
+    } else {
+      root->awar( AWAR_PRIMER_DESIGN_APROX_MEM )->write_string(GBS_global_string("%.0f bytes",mem));
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_check_temp_factor
 //
 //
@@ -309,10 +340,10 @@ void primer_design_event_init( AW_window *aww ) {
       if (left_len == 0 || left_len<0) left_len = 100;
 
       i                     = new SequenceIterator( sequence, 0, SequenceIterator::IGNORE, left_len, SequenceIterator::FORWARD );
-      i->nextBase();				// find first base from start
-      left_min              = i->pos; // store pos. of first base
-      while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'left_len'th base from start
-      left_max              = i->pos; // store pos. of 'left_len'th base
+      i->nextBase();                                                  // find first base from start
+      left_min              = i->pos;                                 // store pos. of first base
+      while (i->nextBase() != SequenceIterator::EOS ) ;               // step to 'left_len'th base from start
+      left_max              = i->pos;                                 // store pos. of 'left_len'th base
       root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->write_int(left_min);
       root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->write_int(left_len);
 
@@ -321,21 +352,21 @@ void primer_design_event_init( AW_window *aww ) {
 
       // right pos ('right_len'th base from end)
       i->restart( length, 0, right_len, SequenceIterator::BACKWARD );
-      i->nextBase();				// find last base
-      right_max             = i->pos; // store pos. of last base
-      while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'right_len'th base from end
-      right_min             = i->pos; // store pos of 'right_len'th base from end
+      i->nextBase();				                      // find last base
+      right_max             = i->pos;                                 // store pos. of last base
+      while (i->nextBase() != SequenceIterator::EOS ) ;               // step to 'right_len'th base from end
+      right_min             = i->pos;                                 // store pos of 'right_len'th base from end
       root->awar(AWAR_PRIMER_DESIGN_RIGHT_POS)->write_int(right_min);
       root->awar(AWAR_PRIMER_DESIGN_RIGHT_LENGTH)->write_int(right_len);
 
       // primer distance
-      if ( right_min >= left_max ) { // non-overlapping ranges
+      if ( right_min >= left_max ) {                                  // non-overlapping ranges
           i->restart(left_max, right_min, SequenceIterator::IGNORE, SequenceIterator::FORWARD);
-          long int bases_between  = 0; // count bases from right_min to left_max
+          long int bases_between  = 0;                                // count bases from right_min to left_max
           while (i->nextBase()   != SequenceIterator::EOS) ++bases_between;
-          dist_min = bases_between; // take bases between as min distance
+          dist_min = bases_between;                                   // take bases between as min distance
       }
-      else {								// overlapping ranges
+      else {							      // overlapping ranges
           dist_min = right_min - left_min +1;
       }
       dist_max = right_max - left_min;
@@ -353,6 +384,9 @@ void primer_design_event_init( AW_window *aww ) {
       // GC-ratio/temperature - factors
       root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
       root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
+
+      // update mem-info
+      primer_design_event_update_memory(aww);
 
       delete i;
       free( sequence );
