@@ -385,9 +385,9 @@ static void dumpFontInformation(struct xfont *xf) {
 
 static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose, bool only_query, PIX_FONT *fontstPtr)
 // returns true if appropriate font is available.
-// 
+//
 // 'found_size' is set to the actually found size, which may be bigger or smaller than 's', if the requested size is not available
-// 
+//
 // if 'only_query' is true, then only report availability
 // if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
@@ -449,7 +449,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         newfont = (struct xfont *) malloc(sizeof(struct xfont));
         /* add it on to the end of the list */
 
-        nf = oldnf->next;
+        nf = oldnf ? oldnf->next : 0; // store successor
 
         if (x_fontinfo[f].xfontlist == NULL) x_fontinfo[f].xfontlist = newfont;
         else oldnf->next                                             = newfont;
@@ -500,7 +500,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 //                 }
                 free(fontname);
             }
-            // @@@ what if nf->fstruct is 0 now ? 
+            // @@@ what if nf->fstruct is 0 now ?
         }
 
         aw_assert(nf->fname);
