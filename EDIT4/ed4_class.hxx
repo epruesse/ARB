@@ -1781,6 +1781,8 @@ extern "C" {
 
 #endif
 
+struct AWTC_faligner_cd;
+void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data);
 
 
 

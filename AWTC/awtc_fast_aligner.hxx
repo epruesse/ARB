@@ -7,24 +7,28 @@
 #ifndef awtc_fast_aligner_hxx_included
 #define awtc_fast_aligner_hxx_included
 
+#define _USE_AW_WINDOW
+#include <BI_helix.hxx>
 
-#define FAST_ALIGNER_TITLE "Fast Aligner V1.03"
+ #define FAST_ALIGNER_TITLE "Fast Aligner V1.03"
 
-typedef char* 	(*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
-typedef int 	(*AWTC_get_selected_range)(int *firstColumn, int *lastColumn);
-typedef GBDATA* (*AWTC_get_first_selected_species)(int *total_no_of_selected_species);
-typedef GBDATA* (*AWTC_get_next_selected_species)(void);
+ typedef char* 	(*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
+ typedef int 	(*AWTC_get_selected_range)(int *firstColumn, int *lastColumn);
+ typedef GBDATA* (*AWTC_get_first_selected_species)(int *total_no_of_selected_species);
+ typedef GBDATA* (*AWTC_get_next_selected_species)(void);
 
-struct AWTC_faligner_cd
-{
-    int do_refresh;		// if do_refresh==TRUE then AWTC_start_faligning() does a refresh
-    void (*refresh_display)();	// via calling refresh_display()
+ struct AWTC_faligner_cd
+ {
+     int do_refresh;		// if do_refresh==TRUE then AWTC_start_faligning() does a refresh
+     void (*refresh_display)();	// via calling refresh_display()
 
-    AWTC_get_consensus_func 		get_group_consensus;
-    AWTC_get_selected_range 		get_selected_range;
-    AWTC_get_first_selected_species	get_first_selected_species;
-    AWTC_get_next_selected_species 	get_next_selected_species;
-};
+     AWTC_get_consensus_func 		 get_group_consensus;
+     AWTC_get_selected_range 		 get_selected_range;
+     AWTC_get_first_selected_species get_first_selected_species;
+     AWTC_get_next_selected_species  get_next_selected_species;
+
+     char *helix_string;
+ };
 
 // --------------------------------------------------------------------------------
 
