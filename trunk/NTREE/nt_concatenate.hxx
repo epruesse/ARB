@@ -18,6 +18,7 @@
 #define AWAR_CON_CONCAT_ALIGNS       "tmp/concat/concatenating_alignments"  
 #define AWAR_CON_DUMMY               "tmp/concat/dummy"  
 #define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"  
+#define AWAR_CON_STORE_SIM_SP_NO     "tmp/concat/store_sim_sp_no"  
 
 #define MERGE_SIMILAR_CONCATENATE_ALIGNMENTS 1
 #define MOVE_DOWN  0
