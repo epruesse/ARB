@@ -193,7 +193,7 @@ GB_ERROR GB_get_error()
 
 /* -------------------------------------------------------------------------------- */
 
-/* GB_ERROR GB_strf(const char *templat, ...)  */
+/* GB_CSTR GB_strf(const char *templat, ...)  */
 /* { */
 /*     char buffer[GBS_GLOBAL_STRING_SIZE]; */
 /*     char *p = buffer; */
@@ -904,7 +904,6 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 	*/
 
 {
-
     register char *source;		/* pointer into the current string when parsed */
     register char *search;		/* pointer into the current command when parsed */
     register char *p;		/* short live pointer */

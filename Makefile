@@ -510,6 +510,7 @@ db2:	ARBDB2/libARBDB.dummy
 dp:		ARBDBPP/libARBDBPP.dummy
 aw:		WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
+awtc:	AWTC/AWTC.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 ge: 	GENOM/GENOM.dummy
