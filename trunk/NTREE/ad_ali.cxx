@@ -283,7 +283,7 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
     aws->update_option_menu();
 
     aws->at("len");
-    aws->create_input_field("presets/alignment_len",5);
+    aws->create_input_field("presets/alignment_len",7);
 
     aws->at("type");
     aws->create_option_menu("presets/alignment_type");
