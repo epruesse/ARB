@@ -416,11 +416,12 @@ config.makefile : config.makefile.template
 		@echo --------------------------------------------------------------------------------
 ifeq ($(strip $(CONFIG_MAKEFILE_FOUND)),)
 		@cp $< $@
-		@echo '$@ has been generated.'
+		@echo '$@:1: has been generated.'
 		@echo 'Please edit $@ to configure your system!'
 		@echo '(not needed for linux systems - simply type "make all")'
 else
-		@echo $< is more recent than $@
+		@echo '$<:1: is more recent than'
+		@echo '$@:1:'
 		@ls -al config.makefile*
 		@echo "you may either:"
 		@echo "- ignore it and touch $@"
@@ -434,13 +435,13 @@ endif
 
 check_DEVELOPER:
 ifndef DEVELOPER
-		@echo DEVELOPER not defined -- check your config.makefile
+		@echo 'config.makefile:1: DEVELOPER not defined'
 		@false
 endif
 
 check_DEBUG:
 ifndef dflags
-		@echo DEBUG has to be defined. Valid values are 0 and 1 -- check your config.makefile
+		@echo 'config.makefile:1: DEBUG has to be defined. Valid values are 0 and 1'
 		@false
 endif
 
