@@ -1311,6 +1311,42 @@ void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, int width)
     disp_device->line(gc,u+diam,v, u,v+diam,mark_filter,0,0);
     disp_device->line(gc,u-diam,v, u,v+diam,mark_filter,0,0);
 }
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// returns true if a bootstrap was DISPLAYED
+
+AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    const char *end          = 0;
+    int         bootstrap    = int(strtol(remark_branch, &(char*)end, 10));
+    bool        is_bootstrap = end[0] == '%' && end[1] == 0;
+    bool        show         = true;
+    const char *text         = 0;
+
+    if (is_bootstrap) {
+        if (bootstrap == 100) {
+            show = false; // do not show 100% bootstraps
+        }
+        else {
+            if (bootstrap == 0) {
+                text = "<1%"; // show instead of '0%'
+            }
+            else {
+                text = GBS_global_string("%i%%", bootstrap);
+            }
+        }
+    }
+    else {
+        text = remark_branch;
+    }
+
+    if (show) {
+        awt_assert(text != 0);
+        device->text(AWT_GC_BRANCH_REMARK, text, x, y, alignment, filteri, cd1, cd2);
+    }
+
+    return is_bootstrap && show;
+}
 
 
 double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double x_son)
@@ -1418,21 +1454,28 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     }
 
     if (at->leftson->remark_branch ) {
-        disp_device->text(AWT_GC_BRANCH_REMARK, at->leftson->remark_branch ,
-                          (AW_pos) nx0,(AW_pos) ny0-scale*.1,
-                          (AW_pos) 1 , text_filter,
-                          (AW_CL) at , (AW_CL) 0 );
-        if (show_circle){
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+
+        //         disp_device->text(AWT_GC_BRANCH_REMARK, at->leftson->remark_branch ,
+        //                           (AW_pos) nx0,(AW_pos) ny0-scale*.1,
+        //                           (AW_pos) 1 , text_filter,
+        //                           (AW_CL) at , (AW_CL) 0 );
+
+
+        if (show_circle && bootstrap_shown){
             AWT_show_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor,at->leftlen,nx0, ny0, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
         }
     }
 
     if (at->rightson->remark_branch ) {
-        disp_device->text(AWT_GC_BRANCH_REMARK,at->rightson->remark_branch ,
-                          (AW_pos) nx1,(AW_pos) ny1-scale*.1,
-                          (AW_pos) 1 , text_filter,
-                          (AW_CL) at , (AW_CL) 0 );
-        if (show_circle){
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+
+        //         disp_device->text(AWT_GC_BRANCH_REMARK,at->rightson->remark_branch ,
+        //                           (AW_pos) nx1,(AW_pos) ny1-scale*.1,
+        //                           (AW_pos) 1 , text_filter,
+        //                           (AW_CL) at , (AW_CL) 0 );
+
+        if (show_circle && bootstrap_shown){
             AWT_show_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, at->rightlen,nx1, ny1, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
         }
     }
@@ -1612,7 +1655,6 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
                       x_center, y_center, at->gr.left_linewidth );
     }
     if (show_circle){
-        /*** left branch ***/
         /*** left branch ***/
         if (at->leftson->remark_branch){
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
