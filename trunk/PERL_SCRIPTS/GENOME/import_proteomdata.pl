@@ -1,11 +1,17 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+
 use strict;
 use warnings;
 
-use lib "$ENV{'ARBHOME'}/lib/";
-use ARB;
+BEGIN {
+  if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
+  my $arbhome = $ENV{'ARBHOME'};
+  push @INC, "$arbhome/lib";
+  push @INC, "$arbhome/PERL_SCRIPTS/GENOME";
+  1;
+}
 
-use lib "$ENV{'ARBHOME'}/PERL_SCRIPTS/GENOME/";
+use ARB;
 use GI;
 
 # -----------------------
