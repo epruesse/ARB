@@ -747,7 +747,7 @@ const char *AP_tree::move(AP_tree *new_brother, AP_FLOAT rel_pos)
     return 0;
 }
 
-GB_ERROR AP_tree::swap_sons(void)
+void AP_tree::swap_sons(void)
 {
     AP_tree *h_at = this->leftson;
     this->leftson = this->rightson;
@@ -756,7 +756,6 @@ GB_ERROR AP_tree::swap_sons(void)
     double h = this->leftlen;
     this->leftlen = this->rightlen;
     this->rightlen = h;
-    return 0;
 }
 
 GB_ERROR AP_tree::swap_assymetric(AP_TREE_SIDE mode){
