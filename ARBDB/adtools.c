@@ -13,7 +13,9 @@
 
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
-#define DEFAULT_LENGTH 0.1 /* default length of tree-edge w/o given length */
+
+#define DEFAULT_LENGTH        0.1 /* default length of tree-edge w/o given length */
+#define DEFAULT_LENGTH_MARKER -1.0 /* tree-edges w/o length are marked with this value during read and corrected in GBT_scale_tree */
 
 /********************************************************************************************
                     some alignment header functions
@@ -1238,6 +1240,7 @@ char *gbt_read_quoted_string(FILE *input){
 /* name has to be stored in node or must be free'ed */
 
 static double max_found_bootstrap = -1;
+static double max_found_branchlen = -1;
 
 static void setBranchName(GBT_TREE *node, char *name) {
     char   *end       = 0;
@@ -1255,9 +1258,7 @@ static void setBranchName(GBT_TREE *node, char *name) {
         }
 
         assert(node->remark_branch == 0);
-/*         if ((int)(bootstrap) != 100) { // skip 100% bootstraps */
-            node->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
-/*         } */
+        node->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
 
         if (end[0] != 0) {      // sth behind bootstrap value
             if (end[0] == ':') ++end; // ARB format for nodes with bootstraps AND node name is 'bootstrap:nodename'
@@ -1293,10 +1294,13 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
             /* left->name = str; */
         }
         if (gbt_last_character !=  ':') {
-            nod->leftlen = DEFAULT_LENGTH;
+            nod->leftlen = DEFAULT_LENGTH_MARKER;
         }else{
             GBT_READ_CHAR(input,c);
             nod->leftlen = gbt_read_number(input);
+            if (nod->leftlen>max_found_branchlen) {
+                max_found_branchlen = nod->leftlen;
+            }
         }
         if ( gbt_last_character == ')' ) {  /* only a single node !!!!, skip this node */
             GB_FREE(nod);           /* delete superflous father node */
@@ -1336,10 +1340,13 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
                 /* right->name = str; */
             }
             if (gbt_last_character != ':') {
-                nod->rightlen = DEFAULT_LENGTH;
+                nod->rightlen = DEFAULT_LENGTH_MARKER;
             }else{
                 GBT_READ_CHAR(input, c);
                 nod->rightlen = gbt_read_number(input);
+                if (nod->rightlen>max_found_branchlen) {
+                    max_found_branchlen = nod->rightlen;
+                }
             }
         }
         if ( gbt_last_character != ')' ) {
@@ -1363,9 +1370,35 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
 /* ------------------------------------------------------------------ */
 /*      void GBT_scale_bootstraps(GBT_TREE *tree, double scale)       */
 /* ------------------------------------------------------------------ */
-void GBT_scale_bootstraps(GBT_TREE *tree, double scale) {
-    if (tree->leftson) GBT_scale_bootstraps(tree->leftson, scale);
-    if (tree->rightson) GBT_scale_bootstraps(tree->rightson, scale);
+/* void GBT_scale_bootstraps(GBT_TREE *tree, double scale) { */
+/*     if (tree->leftson) GBT_scale_bootstraps(tree->leftson, scale); */
+/*     if (tree->rightson) GBT_scale_bootstraps(tree->rightson, scale); */
+/*     if (tree->remark_branch) { */
+/*         const char *end          = 0; */
+/*         double      bootstrap    = strtod(tree->remark_branch, (char**)&end); */
+/*         GB_BOOL     is_bootstrap = end[0] == '%' && end[1] == 0; */
+
+/*         free(tree->remark_branch); */
+/*         tree->remark_branch = 0; */
+
+/*         if (is_bootstrap) { */
+/*             bootstrap = bootstrap*scale+0.5; */
+/*             tree->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap)); */
+/*         } */
+/*     } */
+/* } */
+void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
+    if (tree->leftson) {
+        if (tree->leftlen<-0.01) tree->leftlen  = DEFAULT_LENGTH;
+        else                     tree->leftlen *= length_scale;
+        GBT_scale_tree(tree->leftson, length_scale, bootstrap_scale);
+    }
+    if (tree->rightson) {
+        if (tree->rightlen<-0.01) tree->rightlen  = DEFAULT_LENGTH;
+        else                      tree->rightlen *= length_scale;
+        GBT_scale_tree(tree->rightson, length_scale, bootstrap_scale);
+    }
+
     if (tree->remark_branch) {
         const char *end          = 0;
         double      bootstrap    = strtod(tree->remark_branch, (char**)&end);
@@ -1375,17 +1408,17 @@ void GBT_scale_bootstraps(GBT_TREE *tree, double scale) {
         tree->remark_branch = 0;
 
         if (is_bootstrap) {
-            bootstrap = bootstrap*scale+0.5;
+            bootstrap = bootstrap*bootstrap_scale+0.5;
             tree->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap));
         }
     }
 }
 
-/* Load a newick compatible tree from file int GBT_TREE, structure size should be >0, see
-   GBT_read_tree for more information
+/* Load a newick compatible tree from file 'path',
+   structure size should be >0, see GBT_read_tree for more information
    if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
 */
-GBT_TREE *GBT_load_tree(char *path, int structuresize, char **commentPtr)
+GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr)
 {
     FILE        *input;
     GBT_TREE    *tree;
@@ -1405,10 +1438,21 @@ GBT_TREE *GBT_load_tree(char *path, int structuresize, char **commentPtr)
         else name_only = path;
 
         max_found_bootstrap = -1;
+        max_found_branchlen = -1;
         tree                = gbt_load_tree_rek(input,structuresize, name_only);
 
-        if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
-            GBT_scale_bootstraps(tree, 0.01); // devide all bootstraps by 100
+        {
+            double bootstrap_scale = 1.0;
+            double branchlen_scale = 1.0;
+
+            if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
+                bootstrap_scale = 0.01;
+            }
+            if (max_found_branchlen >= 1.01) { // branchlengths had range [0;100]
+                branchlen_scale = 0.01;
+            }
+
+            GBT_scale_tree(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
         }
     }
     fclose(input);
