@@ -342,8 +342,10 @@ echo "    1. Change your local .profile (if you are using ksh/bash)"
 
 	case "$var" in
 	  1)
+	     echo '******************************************************';
 	     echo "add the following lines to your ~/.profile";
-	     echo '******************************************';
+	     echo "or to your ~/.bashrc if you are using bash under SuSE";
+	     echo '******************************************************';
 	     echo "	ARBHOME=$ARBHOME;export ARBHOME";
 	     echo '	LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}';
 	     echo '	export LD_LIBRARY_PATH';
@@ -353,10 +355,11 @@ echo "    1. Change your local .profile (if you are using ksh/bash)"
 	     echo 'enter the following command:';
 	     echo '	. ~/.profile';;
 	  2)
+	     echo '******************************************';
 	     echo "add the following lines to your ~/.cshrc";
 	     echo '******************************************';
 	     echo "	setenv ARBHOME $ARBHOME";
-	     if test "X${LD_LIBRARY_PATH:}" != "X"; then
+	     if test "X${LD_LIBRARY_PATH}" != "X"; then
 	       echo '	setenv LD_LIBRARY_PATH $ARBHOME/lib\:$LD_LIBRARY_PATH';
 	     else
 	       echo '        setenv LD_LIBRARY_PATH $ARBHOME/lib';
