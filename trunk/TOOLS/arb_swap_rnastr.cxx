@@ -40,7 +40,7 @@ void arb_asrs_swap()
 	}
 	p = asrs.sequence;
 	NEXTBASE(p);
-	while (ok = fgets(buffer,1020,in)){
+	while ((ok = fgets(buffer,1020,in))){
 		if (!strchr(buffer,'#')) {
 			ok = strchr(buffer,' ');
 			if (ok && ok[1]) {
@@ -57,9 +57,9 @@ void arb_asrs_swap()
 			break;
 		}
 	}
-	while (ok = fgets(buffer,1020,in)){
+	while ((ok = fgets(buffer,1020,in))){
 		fputs(buffer,out);
-	}	
+	}
 	fclose(in);
 	fclose(out);
 }
@@ -108,7 +108,7 @@ int main(int argc, char **/*argv*/)
 	asrs.sequence = GB_read_string(gb_data);
 	GB_commit_transaction(asrs.gb_main);
 	GB_close(asrs.gb_main);
-	
+
 	arb_asrs_menu();
 	arb_asrs_swap();
 	return 0;
