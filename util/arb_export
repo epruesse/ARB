@@ -10,7 +10,7 @@ FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
 echo "\n\n*************"
 echo "exporting $FILES to the website:"
 echo " ******* $destmach  ******"
-echo " Is this OK ??? [y]/n"
+# echo " Is this OK ??? [y]/n"
 # read ok
 # if [ "X$ok" != 'Xn' ]; then
 	for i in $FILES; do
@@ -19,18 +19,20 @@ echo " Is this OK ??? [y]/n"
 	done
 # fi
 
-SOURCE=`echo arbsrc*.tgz`
+# SOURCE=`echo arbsrc.tgz`
 README="arb_README.txt README arb_CHANGES.txt"
 echo "\n\n*************"
 echo "exporting $SOURCE $README to the website:"
 echo " ******* $dest  ******"
-echo " Is this OK ??? y/[n]"
+# echo " Is this OK ??? y/[n]"
 # read ok
 # if [ "X$ok" = 'Xy' ]; then
-	for i in $SOURCE; do
-		echo cp $i $dest/src
-		cp $i $dest/src
-	done
+# 	for i in $SOURCE; do
+        TODAY=`date +%Y_%m_%d`
+		echo cp -L arbsrc.tgz $dest/src/arbsrc_$TODAY.tgz
+		cp -L arbsrc.tgz $dest/src/arbsrc_$TODAY.tgz
+# 		cp $i $dest/src
+# 	done
 	for i in $README; do
 		echo cp $i $dest
 		cp $i $dest
