@@ -141,21 +141,38 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     return err;
 }
 
-GB_ERROR NT_fix_empty_gene_data(GBDATA *gb_main) {
+static GB_ERROR NT_fix_gene_data(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
-    int            deleted_gene_datas = 0;
-    GB_ERROR       error              = 0;
+    int            deleted_gene_datas   = 0;
+    int            generated_gene_datas = 0;
+    GB_ERROR       error                = 0;
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
+        bool    is_organism  = GEN_is_organism(gb_species);
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
-        if (gb_gene_data) {
+
+        if (is_organism && !gb_gene_data) {
+            gb_gene_data = GEN_findOrCreate_gene_data(gb_species);
+            generated_gene_datas++;
+        }
+        else if (!is_organism && gb_gene_data) {
             GBDATA *gb_child = GB_find(gb_gene_data, 0, 0, down_level);
             if (!gb_child) {
                 error = GB_delete(gb_gene_data);
                 if (!error) deleted_gene_datas++;
+            }
+            else {
+                const char *name    = "<unknown species>";
+                GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+                if (gb_name) name = GB_read_char_pntr(gb_name);
+
+                error = GBS_global_string("Non-empty 'gene_data' found for species '%s',\n"
+                                          "which has no alignment '" GENOM_ALIGNMENT "',\n"
+                                          "i.e. which is not regarded as full-genome organism.\n"
+                                          "This causes problems - please fix!", name);
             }
         }
     }
@@ -163,8 +180,13 @@ GB_ERROR NT_fix_empty_gene_data(GBDATA *gb_main) {
     if (error) {
         ta.abort();
     }
-    else if (deleted_gene_datas>0) {
-        aw_message(GBS_global_string("Deleted %i useless empty 'gene_data' entries.", deleted_gene_datas));
+    else {
+        if (deleted_gene_datas>0) {
+            aw_message(GBS_global_string("Deleted %i useless empty 'gene_data' entries.", deleted_gene_datas));
+        }
+        if (generated_gene_datas>0) {
+            aw_message(GBS_global_string("Re-created %i missing 'gene_data' entries.\nThese organisms have no genes!", generated_gene_datas));
+        }
     }
     return error;
 }
@@ -226,9 +248,9 @@ static GB_ERROR nt_check_database_consistency() {
     CheckedConsistencies check(gb_main);
     GB_ERROR             err = NT_format_all_alignments(gb_main);
 
-    if (!err && !check.was_performed("empty gene_data")) {
-        err = NT_fix_empty_gene_data(gb_main);
-        if (!err) check.register_as_performed("empty gene_data");
+    if (!err && !check.was_performed("fix gene_data")) {
+        err = NT_fix_gene_data(gb_main);
+        if (!err) check.register_as_performed("fix gene_data");
     }
 
     aw_closestatus();
