@@ -8,6 +8,7 @@
 #include <arbdbt.h>
 #include <awt_tree.hxx>
 #include "awt_seq_protein.hxx"
+#include "awt_parsimony_defaults.hxx"
 
 #define awt_assert(bed) arb_assert(bed)
 
@@ -279,6 +280,9 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
             if (p[idx]&APP_GAP) { // contains a gap
                 mutations = 1; // count first gap as mutation
 
+#if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
+                // count multiple mutations as 1 mutation
+                // this was an experiment (don't use it, it does not work!)
                 if (idx>0 && (p[idx-1]&APP_GAP)) { // last position also contained gap..
                     if (((c1&APP_GAP) && (p1[idx-1]&APP_GAP)) || // ..in same sequence
                         ((c2&APP_GAP) && (p2[idx-1]&APP_GAP)))
@@ -288,6 +292,7 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
                         }
                     }
                 }
+#endif // MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS
             }
             else {
                 for (int t1 = 0; t1<PROTEINS_TO_TEST && mutations>1; ++t1) { // with all proteins to test
@@ -310,16 +315,19 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
             if (mutpsite) mutpsite[idx] += mutations; // count mutations per site (unweighted)
             result                      += mutations * (w ? w[idx] : 1); // count weighted or simple
 
-            // do not propagate mixed gaps upwards (they cause neg. branches)
-            if (p[idx] & APP_GAP) { // contains gap
-                if (p[idx] != APP_GAP) { // is not real gap
-                    p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
-                }
-            }
         }
         else {
             p[idx] = AP_PROTEINS(c1&c2); // store common proteins for both subtrees
         }
+
+#if !defined(PROPAGATE_GAPS_UPWARDS)
+        // do not propagate mixed gaps upwards (they cause neg. branches)
+        if (p[idx] & APP_GAP) { // contains gap
+            if (p[idx] != APP_GAP) { // is not real gap
+                p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
+            }
+        }
+#endif // PROPAGATE_GAPS_UPWARDS
     }
 
 #if defined(DEBUG) && 0
