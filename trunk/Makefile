@@ -634,7 +634,14 @@ libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
 
-lib/libXm.so.2:  LIBLINK/libXm.so.2
+# the following lib is not provided with the source
+# you need to install Motif (NOT lesstif) and correct
+# MOTIF_LIBPATH
+
+MOTIF_LIBPATH=LIBLINK/libXm.so.2
+#MOTIF_LIBPATH=/usr/X11R6/lib/libXm.so.2
+
+lib/libXm.so.2:  $(MOTIF_LIBPATH)
 	cp $< $@
 
 bin/arb_%:	DEPOT2/%
