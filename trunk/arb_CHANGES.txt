@@ -1,6 +1,7 @@
 Major changes for next Beta:
 ----------------------------
 
+ - fixed appearance of 'tiny little boxes' in tree-view
  - redesign of ARB help:
      - a HTML version is in $ARBHOME/lib/help_html
      - a text version is in $ARBHOME/lib/help (like before, but now generated)
