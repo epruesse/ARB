@@ -196,7 +196,7 @@ public String getDisplayString() { // the string displayed in window
         result = "["+getExactMatches()+"]";
     }
     else if ((getMinNonGroupHits() != 0) || (getMaxCoverage() != 100)) {
-        result = "["+getMinNonGroupHits()+","+getMaxCoverage()+"%]";
+        result = "["+getMinNonGroupHits()+"/"+getMaxCoverage()+"%]";
     }
     else {
         result = "";
