@@ -22,3 +22,5 @@ void       ad_spec_create_field_items(AW_window *aws);
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
+
+void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info);
