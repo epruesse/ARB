@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : probe_match_parser.cxx                                 // 
 //    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Wed Jun/09/2004 09:59 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri Jun/11/2004 18:46 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cctype>
+#include <map>
 
 #include "arbdb.h"
 #define pm_assert(cond) arb_assert(cond)
@@ -31,46 +32,27 @@ using namespace std;
 struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
     int         start_column, end_column;
-    column     *next;
 
-    column(const char *t, int sc, int ec)
-        : title(t), start_column(sc), end_column(ec), next(0) {}
-    ~column() { delete next; }
-
-    column *findPred(const char *tit) {
-        if (!next) return 0;
-        if (strcmp(next->title, tit) == 0) return this;
-        return next->findPred(tit);
-    }
-
-    column *toFront(const char *tit) {
-        if (strcmp(tit, title) == 0) return this; // already is at front
-
-        column *predecessor = findPred(tit);
-        if (!predecessor) return 0;
-
-        column *new_head = predecessor->next;
-        pm_assert(new_head);
-
-        predecessor->next = new_head->next; // remove from chain
-        new_head->next    = this;
-        return new_head;
-    }
+    column() : title(0), start_column(-1), end_column(-1) { }
+    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) { }
 };
 
 // ------------------------
 //      ProbeMatch_impl
 // ------------------------
 
-class ProbeMatch_impl {
-    char   *headline;
-    column *head;
+typedef map<const char*, column> ColumnMap;
 
+class ProbeMatch_impl {
+    char      *headline;
+    ColumnMap  columns;
     int probe_region_offset;    // left index of probe region
+
 
 public:
     ProbeMatch_impl(const char *headline_, char **errPtr)
-        : head(0), probe_region_offset(-1)
+        : headline(0)
+        , probe_region_offset(-1)
     {
         pm_assert(headline_);
         headline = strdup(headline_);
@@ -83,29 +65,23 @@ public:
 
             while (tok_end >= tok_start && tok_end[0] == '-') --tok_end;
             while (tok_start <= tok_end && tok_start[0] == '-') ++tok_start;
+            pm_assert(tok_start <= tok_end); // otherwise column only contained '-'
+            tok_end[1] = 0;
 
-            column *col = new column(tok_start, startPos-2, endPos-2); // -2 because headline is 2 shorter than other lines
-            col->next = head;
-            head      = col;
+            columns[tok_start] = column(tok_start, startPos-2, endPos-2); // -2 because headline is 2 shorter than other lines
         }
 
-        if (!head) *errPtr = strdup("No columns found");
+        if (columns.empty()) *errPtr = strdup("No columns found");
     }
 
     ~ProbeMatch_impl() {
         free(headline);
-        delete head;
     }
 
     column *findColumn(const char *columntitle) {
-        if (head) {
-            column *new_head = head->toFront(columntitle);
-            if (new_head) {
-                head = new_head;
-                return new_head;
-            }
-        }
-        return 0;
+        ColumnMap::iterator ci = columns.find(columntitle);
+        if (ci == columns.end()) return 0;
+        return &(ci->second);
     }
 
     void set_probe_region_offset(int offset) { probe_region_offset = offset; }
@@ -130,14 +106,14 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
         if (!init_error) {
             // modify target, so that it matches the target string in headline
             char *probe_target_copy = GBS_global_string_copy("'%s'", probe_target); // add single quotes
-            for (int i = 0; probe_target_copy[i]; ++i) { 
+            for (int i = 0; probe_target_copy[i]; ++i) {
                 probe_target_copy[i] = toupper(probe_target_copy[i]);
                 if (probe_target_copy[i] == 'T') { // replace 'T' by 'U'
                     probe_target_copy[i] = 'U';
                 }
             }
 
-            // find that column and 
+            // find that column and
             column *target_found = pimpl->findColumn(probe_target_copy);
             if (target_found) {
                 int probe_region_offset = target_found->start_column - 9;
@@ -165,7 +141,11 @@ bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int
 }
 
 bool ProbeMatchParser::is_gene_result() const {
-    return pimpl->findColumn("organism") && pimpl->findColumn("gene");
+    return pimpl->findColumn("organism") && pimpl->findColumn("genename");
+}
+
+int ProbeMatchParser::get_probe_region_offset() const {
+    return pimpl->get_probe_region_offset();
 }
 
 // -------------------------
@@ -220,9 +200,13 @@ const char *ParsedProbeMatch::get_probe_region() const {
     return 0;
 }
 
-char *ParsedProbeMatch::get_column_content(const char *columnName) const {
+char *ParsedProbeMatch::get_column_content(const char *columnName, bool chop_spaces) const {
     int sc, ec;
     if (parser.getColumnRange(columnName, &sc, &ec)) {
+        if (chop_spaces) {
+            while (sc<ec && match[sc] == ' ') ++sc;
+            while (sc<ec && match[ec] == ' ') --ec;
+        }
         return strpartdup(match, sc, ec);
     }
     return 0;
