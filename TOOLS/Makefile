@@ -38,7 +38,7 @@ DEPENDS = $(addsuffix .depend,$(TOOLS))
 
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
-#	@rm $(DEPENDS)
+	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
