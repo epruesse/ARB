@@ -43,7 +43,9 @@ void GLRenderer::DisplayPositions(void){
 
 void GLRenderer::DisplayHelixNumbers(void){
     glColor4f(0.8,0.8,0.8,1);
+    glCallList(HELIX_NUMBERS_ANCHOR);
     glCallList(HELIX_NUMBERS);
+
 }
 
 void GLRenderer::BeginTexturizer(){

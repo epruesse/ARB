@@ -43,8 +43,17 @@ char* Texture2D::GetImageFile(int ImageId){
      case CONE_DOWN:
          sprintf(ImageFileName, "%s/ConeDown.png",Path);
          break;
-     case FREEFORM_1:
-         sprintf(ImageFileName, "%s/FreeForm_1.png",Path);
+     case CROSS:
+         sprintf(ImageFileName, "%s/Cross.png",Path);
+         break;
+     case QUESTION:
+         sprintf(ImageFileName, "%s/Question.png",Path);
+         break;
+     case DANGER:
+         sprintf(ImageFileName, "%s/Danger.png",Path);
+         break;
+     case HEXAGON:
+         sprintf(ImageFileName, "%s/Hexagon.png",Path);
          break;
      case LETTER_A:
          sprintf(ImageFileName, "%s/LetterA.png",Path);

@@ -28,12 +28,23 @@
 #define AWAR_3D_SHAPES_NON_HELIX      "rna3d/shapes_non_helix"
 
 // Awars for General Molecule
-#define AWAR_3D_MOL_BACKBONE  "rna3d/mol_backbone"
-#define AWAR_3D_MOL_COLORIZE  "rna3d/mol_colorize"
-#define AWAR_3D_MOL_SIZE      "rna3d/mol_size"
+#define AWAR_3D_MOL_BACKBONE                 "rna3d/mol_backbone"
+#define AWAR_3D_MOL_COLORIZE                 "rna3d/mol_colorize"
+#define AWAR_3D_MOL_SIZE                     "rna3d/mol_size"
+#define AWAR_3D_MOL_DISP_POS                 "rna3d/mol_disp_pos"
+#define AWAR_3D_MOL_POS_INTERVAL             "rna3d/mol_pos_interval"
+#define AWAR_3D_MOL_ROTATE                   "rna3d/mol_rotate"
+#define AWAR_3D_MAP_SPECIES                  "rna3d/mol_map_species"
+#define AWAR_3D_MAP_SPECIES_DISP_BASE        "rna3d/mol_map_species_base"
+#define AWAR_3D_MAP_SPECIES_DISP_POS         "rna3d/mol_map_species_pos"
+#define AWAR_3D_MAP_SPECIES_DISP_DELETIONS   "rna3d/mol_map_species_deletions"
+#define AWAR_3D_MAP_SPECIES_DISP_MISSING     "rna3d/mol_map_species_missing"
+#define AWAR_3D_SELECTED_SPECIES             "rna3d/selected_species"
+#define AWAR_3D_CURSOR_POSITION              "rna3d/cursor_postion"
 
+#define AWAR_3D_MAP_SAI  "rna3d/map_sai"
 
-struct Vector3 {
+typedef struct Vector3 {
 public:
     float x, y, z;						
 

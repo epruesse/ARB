@@ -7,8 +7,6 @@
 
 using namespace std;
 
-char HEXA_DECI_VALUE[] = {"000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F404142434445464748494A4B4C4D4E4F505152535455565758595A5B5C5D5E5F606162636465666768696A6B6C6D6E6F707172737475767778797A7B7C7D7E7F808182838485868788898A8B8C8D8E8F909192939495969798999A9B9C9D9E9FA0A1A2A3A4A5A6A7A8A9AAABACADAEAFB0B1B2B3B4B5B6B7B8B9BABBBCBDBEBFC0C1C2C3C4C5C6C7C8C9CACBCCCDCECFD0D1D2D3D4D5D6D7D8D9DADBDCDDDEDFE0E1E2E3E4E5E6E7E8E9EAEBECEDEEEFF0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"};
-
 OpenGLGraphics::OpenGLGraphics(void){
     displayGrid = false;
 }
@@ -20,13 +18,33 @@ void OpenGLGraphics::SetBackGroundColor(int color){
     glClearColor(0,0,0,1);
 }
 
-void OpenGLGraphics::SetColor(char base) {
-    switch (base) {
-    case 'A': glColor4fv(BLUE);    break;
-    case 'G': glColor4fv(GREEN);   break;
-    case 'U': glColor4fv(WHITE);   break;
-    case 'C': glColor4fv(RED);     break;
-    default : glColor4fv(BLACK); break;
+void OpenGLGraphics::SetColor(int gc) {
+    float r, g, b;
+    extern AW_window_menu_modes_opengl *awm;
+    const char *ERROR = awm->GC_to_RGB_float(awm->get_device(AW_MIDDLE_AREA), gc, r, g, b);
+    if (ERROR) {
+        cout<<"Error retrieving RGB values for GC #"<<gc<<" : "<<ERROR
+            <<endl<<"Setting the color to default white"<<endl;
+        glColor4f(1,1,1,1);
+    }
+    else {
+        glColor4f(r,g,b,1);
+    }
+}
+
+ColorRGBf OpenGLGraphics::GetColor(int gc) {
+    ColorRGBf clr = ColorRGBf(0,0,0);
+    float r, g, b;
+
+    extern AW_window_menu_modes_opengl *awm;
+    const char *ERROR = awm->GC_to_RGB_float(awm->get_device(AW_MIDDLE_AREA), gc, r, g, b);
+    if (ERROR) {
+        cout<<"Error retrieving RGB values for GC #"<<gc<<" : "<<ERROR<<endl;
+        return clr;
+    }
+    else {
+        clr = ColorRGBf(r,g,b);
+        return clr;
     }
 }
 
@@ -48,18 +66,31 @@ void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
                  );
 }
 
+void OpenGLGraphics::ScreenToWinCoordinates(int x, int y, GLdouble *winPos) {
+    //project window coords to gl coord
+    glLoadIdentity();
+    GLdouble modelMatrix[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
+    GLdouble projMatrix[16];
+    glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT,viewport);
+    gluProject(x, y, 0,
+               modelMatrix,
+               projMatrix,
+               viewport,
+               //the next 3 parameters are the pointers to the final object coordinates.(double)
+               &winPos[0], &winPos[1], &winPos[2]
+               );
+}
+
 void OpenGLGraphics::DrawCursor(int x, int y) {
     GLdouble screenPos[3];
     WinToScreenCoordinates(x, y, screenPos);
     glPushMatrix();
-    glColor4fv(RED); 
+    glColor4f(1,0,0,1); 
     DrawCube((float)screenPos[0],(float)-screenPos[1],(float)screenPos[2], 0.01);
     glPopMatrix();
-}
-
-void OpenGLGraphics::DrawPoints(float x, float y, float z, char base) {
-    SetColor(base);     // Set color
-    glVertex3f(x,y,z);   // Draw Points
 }
 
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font) {
@@ -67,36 +98,6 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font)
     for (unsigned int i = 0; i < strlen(s); i++) {
         glutBitmapCharacter(font, s[i]);
     }
-}
-
-void OpenGLGraphics::HexaDecimalToRGB(char *color, float *RGB){
-    float R, G, B; R=G=B=1.0;
-    if(strlen(color)<6) {
-        cout<<"Invalid Color \""<<color<<"\" ! Setting default White !"<<endl; 
-        RGB[0] = R; RGB[1] = G; RGB[2] = B;
-    }
-    else {
-        int r,g,b; r=g=b=FALSE;
-        char HEXA[3]; HEXA[2] = '\0';
-        char hexa_R[3]; hexa_R[0] = color[0]; hexa_R[1] = color[1]; hexa_R[2] ='\0';
-        char hexa_G[3]; hexa_G[0] = color[2]; hexa_G[1] = color[3]; hexa_G[2] ='\0';
-        char hexa_B[3]; hexa_B[0] = color[4]; hexa_B[1] = color[5]; hexa_B[2] ='\0';
-
-        for(unsigned int i = 0, k = 0; i<strlen(HEXA_DECI_VALUE); i += 2, k++) {
-            HEXA[0] = HEXA_DECI_VALUE[i];
-            HEXA[1] = HEXA_DECI_VALUE[i+1];
-            if(strcmp(hexa_R, HEXA) == 0) { R = (float) k/255; r = TRUE;}
-            if(strcmp(hexa_G, HEXA) == 0) { G = (float) k/255; g = TRUE;}
-            if(strcmp(hexa_B, HEXA) == 0) { B = (float) k/255; b = TRUE;}
-            if(r && g && b) break;
-        }
-        RGB[0] = R; RGB[1] = G; RGB[2] = B;
-    }
-}
-
-void  OpenGLGraphics::ClickedPos(float x, float y, float z){
-//     mouseX = x;
-//     mouseY = y;
 }
 
 void OpenGLGraphics::DrawSphere(float radius, float x, float y, float z){
@@ -176,28 +177,27 @@ void OpenGLGraphics::DrawAxis(float x, float y, float z, float len){
     glLineWidth(5.0);
 
     glBegin(GL_LINES);
-      glColor4fv(RED);  // X axis
+    glColor4f(1,0,0,1);  // X axis
       glVertex3f(x, y, z);
       glVertex3f(x + len, y, z);
 
-      glColor4fv(BLUE); // Y axis
+      glColor4f(0,0,1,1); // Y axis
       glVertex3f(x, y, z);
       glVertex3f(x, y + len, z);
 
-      glColor4fv(GREEN);// Z axis
+      glColor4f(0,1,0,1);// Z axis
       glVertex3f(x, y, z);
       glVertex3f(x, y, z + len);
     glEnd();
 
-    glColor4fv(RED);  // X axis
+    glColor4f(1,0,0,1);  // X axis
     PrintString(x + len, y, z, "X",GLUT_BITMAP_8_BY_13);
-    glColor4fv(BLUE); // Y axis
+    glColor4f(0,0,1,1); // Y axis
     PrintString(x, y + len, z, "Y",GLUT_BITMAP_8_BY_13);
-    glColor4fv(GREEN);// Z axis
+    glColor4f(0,1,0,1);// Z axis
     PrintString(x, y, z + len, "Z",GLUT_BITMAP_8_BY_13);
 
     glLineWidth(1.0);
-    glColor4fv(DEFAULT);
 }
 
 void OpenGLGraphics::Draw3DSGrid() {

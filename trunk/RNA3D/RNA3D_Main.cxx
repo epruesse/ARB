@@ -5,6 +5,8 @@
 
 using namespace std;
 
+extern GBDATA *gb_main;
+
 static void  CreateRNA3DAwars(AW_root *root){
     // Display Base Section
     root->awar_int(AWAR_3D_DISPLAY_BASES, 0, AW_ROOT_DEFAULT); 
@@ -13,9 +15,9 @@ static void  CreateRNA3DAwars(AW_root *root){
     root->awar_int(AWAR_3D_BASES_HELIX, 1, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_BASES_UNPAIRED_HELIX, 1, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_BASES_NON_HELIX, 1, AW_ROOT_DEFAULT); 
-    root->awar_int(AWAR_3D_SHAPES_HELIX, 0, AW_ROOT_DEFAULT); 
-    root->awar_int(AWAR_3D_SHAPES_UNPAIRED_HELIX, 0, AW_ROOT_DEFAULT); 
-    root->awar_int(AWAR_3D_SHAPES_NON_HELIX, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_HELIX, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_UNPAIRED_HELIX, 3, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_SHAPES_NON_HELIX, 1, AW_ROOT_DEFAULT); 
 
     //Display Helix Section
     root->awar_int(AWAR_3D_DISPLAY_HELIX, 0, AW_ROOT_DEFAULT); 
@@ -29,9 +31,20 @@ static void  CreateRNA3DAwars(AW_root *root){
     // Genral Molecule Display Section
     root->awar_int(AWAR_3D_MOL_BACKBONE, 1, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MOL_COLORIZE, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_BASE, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_POS, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_DELETIONS, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SPECIES_DISP_MISSING, 1, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_CURSOR_POSITION, 0, AW_ROOT_DEFAULT); 
     root->awar_float(AWAR_3D_MOL_SIZE, 0.5, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MOL_DISP_POS, 0, AW_ROOT_DEFAULT);
+    root->awar_int(AWAR_3D_MOL_ROTATE, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MOL_POS_INTERVAL, 25, AW_ROOT_DEFAULT); 
+    root->awar_string(AWAR_3D_SELECTED_SPECIES, "", AW_ROOT_DEFAULT); 
 
     //Display SAI Section
+    root->awar_int(AWAR_3D_MAP_SAI, 0, AW_ROOT_DEFAULT); 
     root->awar_string( AWAR_3D_SAI_SELECTED, "", AW_ROOT_DEFAULT);
 }
 

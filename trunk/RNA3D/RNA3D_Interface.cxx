@@ -19,6 +19,7 @@ using namespace std;
 
 AWT_canvas *gl_Canvas;
 AW_window_menu_modes_opengl *awm;
+AW_root *gAwRoot;
 
 extern GBDATA *gb_main;
 Widget OpenGLParentWidget;
@@ -64,6 +65,24 @@ void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
     RefreshOpenGLDisplay();
 }
 
+static void RotateMoleculeStateChanged(void) {
+
+    extern bool autoRotate;
+
+    if(Spinning) {
+        XtRemoveWorkProc(workId);
+        Spinning = GL_FALSE; autoRotate = false;
+    } else {
+        workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
+        Spinning = GL_TRUE; autoRotate = true;
+    }
+}
+
+static void RotateMoleculeStateChanged_cb(AW_root *awr) {
+    MapDisplayParameters(awr);
+    RotateMoleculeStateChanged();
+    RefreshOpenGLDisplay();
+}
 
 void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	XKeyEvent *evt;
@@ -71,24 +90,27 @@ void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
 
     char   buffer[1];
     KeySym keysym;
-  	int    count;
-    extern bool autoRotate;
+    int    count;
 
     // Converting keycode to keysym
     count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
 
+    extern float fClipNear;
+
     switch(keysym) {
     case XK_space:
-        if(Spinning) {
-            XtRemoveWorkProc(workId);
-            Spinning = GL_FALSE; autoRotate = false;
-        } else {
-            workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
-            Spinning = GL_TRUE; autoRotate = true;
-        }
+        extern int iRotateMolecule;
+        iRotateMolecule = !iRotateMolecule;
+        gAwRoot->awar(AWAR_3D_MOL_ROTATE)->write_int(iRotateMolecule);
         break;
     case XK_Escape:
         exit(0); 
+        break;
+    case XK_Up:
+        fClipNear += 0.10f;cout<<fClipNear<<endl;
+        break;
+    case XK_Down:
+        fClipNear -= 0.10f;cout<<fClipNear<<endl;
         break;
     }
 
@@ -117,7 +139,6 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
 
     RefreshOpenGLDisplay();
 }
-
 
 void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 
@@ -241,6 +262,17 @@ static void AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_3D_MOL_BACKBONE)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MOL_COLORIZE)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MOL_SIZE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MOL_DISP_POS)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MOL_ROTATE)->add_callback(RotateMoleculeStateChanged_cb);
+    awr->awar(AWAR_3D_MOL_POS_INTERVAL)->add_callback(DisplayPostionsIntervalChanged_CB);
+    awr->awar(AWAR_3D_MAP_SPECIES)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_CURSOR_POSITION)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(MapSelectedSpeciesChanged_CB);
+    awr->awar(AWAR_CURSOR_POSITION)->add_callback(CursorPositionChanged_CB);
 
     // Display Base Section
     awr->awar(AWAR_3D_DISPLAY_BASES)->add_callback(RefreshCanvas);
@@ -257,10 +289,12 @@ static void AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_3D_DISPLAY_HELIX)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_HELIX_BACKBONE)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_HELIX_MIDPOINT)->add_callback(RefreshCanvas);
-    awr->awar(AWAR_3D_HELIX_FROM)->add_callback(RefreshCanvas);
-    awr->awar(AWAR_3D_HELIX_TO)->add_callback(RefreshCanvas);
+    awr->awar(AWAR_3D_HELIX_FROM)->add_callback(DisplayHelixNrsChanged_CB);
+    awr->awar(AWAR_3D_HELIX_TO)->add_callback(DisplayHelixNrsChanged_CB);
     awr->awar(AWAR_3D_HELIX_NUMBER)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_HELIX_SIZE)->add_callback(RefreshCanvas);
+
+    awr->awar(AWAR_3D_MAP_SAI)->add_callback(MapSaiToEcoliTemplateChanged_CB);
 }
 
 static AW_window *CreateSelectSAI_window(AW_root *aw_root){
@@ -415,8 +449,76 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_3D_MOL_BACKBONE);
         aws->at("color");
         aws->create_toggle(AWAR_3D_MOL_COLORIZE);
+        aws->at("dispPos");
+        aws->create_toggle(AWAR_3D_MOL_DISP_POS);
+        aws->at("rot");
+        aws->create_toggle(AWAR_3D_MOL_ROTATE);
+        aws->at("pos");
+        aws->create_input_field(AWAR_3D_MOL_POS_INTERVAL, 2);
         aws->at("molSize");
         aws->create_input_field(AWAR_3D_MOL_SIZE, 5);
+        aws->at("cp");
+        aws->create_toggle(AWAR_3D_CURSOR_POSITION);
+   }
+    aws->show();
+    return (AW_window *)aws;
+}
+
+static AW_window *CreateMapCurrentSpecies_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "MAP_SPECIES", "RNA3D : Map Current Species ");
+    aws->load_xfig("RNA3D_MapSpeciesOptions.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->button_length(0);
+    aws->create_button("CLOSE","#Close.xpm");
+    //    aws->create_button("CLOSE","CLOSE","C");
+
+    {  // Display Map Current Species Section
+        aws->at("sp");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES);
+        aws->at("base");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_BASE);
+        aws->at("pos");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_POS);
+        aws->at("del");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_DELETIONS);
+        aws->at("mis");
+        aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_MISSING);
+   }
+    aws->show();
+    return (AW_window *)aws;
+}
+
+static AW_window *CreateMapSAI_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "MAP_SAI", "RNA3D : Map Sequence Associated Information (SAI)");
+    aws->load_xfig("RNA3D_MapSAI.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    {  // Display Map Current Species Section
+        aws->at("sai");
+        aws->create_toggle(AWAR_3D_MAP_SAI);
    }
     aws->show();
     return (AW_window *)aws;
@@ -445,8 +547,8 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     awm->insert_help_topic("rna3D_help_how", "How to Visualize 3D structure of rRNA ?", "H", "rna3DHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"rna3DHelp.hlp", 0);
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
-    awm->create_menu( 0, "Properties", "P", 0,  AWM_ALL );
-    awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)CreateSelectSAI_window, (AW_CL)0);
+    //    awm->create_menu( 0, "Properties", "P", 0,  AWM_ALL );
+    //    awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)CreateSelectSAI_window, (AW_CL)0);
     //    awm->insert_menu_topic( "SetColors", "Change Colors ", "c","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
 
     {
@@ -456,17 +558,21 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
 
         int cur_x, cur_y, start_x, first_line_y, second_line_y, third_line_y;
         awm->get_at_position( &start_x,&first_line_y);
-        awm->button_length(10);
+        awm->button_length(0);
         awm->callback( (AW_CB0)AW_POPDOWN );
-        awm->create_button("Close", "Close");
+        awm->create_button("Close", "#exit.xpm");
     
         awm->get_at_position( &cur_x,&cur_y );
         awm->callback(AW_POPUP,(AW_CL)AW_create_gc_window,(AW_CL)aw_gc_manager);
-        awm->button_length(20);
-        awm->create_button("setColors", "Change Colors");
+        awm->button_length(0);
+        awm->create_button("setColors", "#colors.xpm");
+        //        awm->button_length(20);
+        //        awm->create_button("setColors", "Change Colors");
 
         awm->get_at_position( &cur_x,&cur_y );
         awm->callback(AW_POPUP,(AW_CL)CreateDisplayBases_window,(AW_CL)0);
+//         awm->button_length(0);
+//         awm->create_button("displayBases", "#Close.xpm");
         awm->button_length(20);
         awm->create_button("displayBases", "Display Bases");
 
@@ -481,15 +587,21 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         awm->create_button("displayHelix", "Molecule Display");
 
         awm->at_newline();
-        awm->get_at_position( &start_x,&second_line_y);
-        awm->button_length(15);
-        awm->callback( (AW_CB0)AW_POPDOWN );
-        awm->create_button("sai", "Select SAI");
 
+        awm->get_at_position( &start_x,&second_line_y);
+        awm->callback(AW_POPUP,(AW_CL)CreateMapCurrentSpecies_window,(AW_CL)0);
+        awm->button_length(31);
+        awm->create_button("mapSpecies", "Map Current Species");
+
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->callback(AW_POPUP,(AW_CL)CreateMapSAI_window,(AW_CL)0);
+        awm->button_length(41);
+        awm->create_button("mapSAI", "Map Sequence Associated Information");
 
     }
 
     AddCallBacks(awr);
+    gAwRoot = awr;
 
     appContext = awr->prvt->context;
 
@@ -516,9 +628,6 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        PointerMotionMask, 0, (XtEventHandler) MouseMoveEventHandler, (XtPointer) 0 );
 
-//     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-//                       VisibilityChangeMask, 0, (XtEventHandler) RotateMolecule, (XtPointer) 0 );
-		
     extern Widget OpenGLParentWidget;
     OpenGLParentWidget = awm->p_w->areas[ AW_MIDDLE_AREA ]->area;
 

@@ -14,19 +14,8 @@ enum {
 
 const float DEG2RAD = 3.14159/180;   // Used in circle drawing
 
-// Colors
-const GLfloat BLACK[4]   = { 0.0, 0.0, 0.0, 1.0 };
-const GLfloat RED[4]     = { 1.0, 0.0, 0.0, 1.0 };
-const GLfloat GREEN[4]   = { 0.0, 1.0, 0.0, 1.0 };
-const GLfloat BLUE[4]    = { 0.0, 0.0, 1.0, 1.0 };
-const GLfloat CYAN[4]    = { 0.0, 1.0, 1.0, 1.0 };
-const GLfloat YELLOW[4]  = { 1.0, 1.0, 0.0, 1.0 };
-const GLfloat MAGENTA[4] = { 1.0, 0.0, 1.0, 1.0 };
-const GLfloat WHITE[4]   = { 1.0, 1.0, 1.0, 1.0 };
-
-const GLfloat DEFAULT[4] = { 0.5, 0.5, 0.5, 1.0 }; // grey
-
 class Texture2D;
+class Structure3D;
 
 class GLRenderer {
 public:
@@ -39,21 +28,25 @@ public:
     float fHelixSize;
     float fSkeletonSize;
     int iColorise, iBackBone;
+    int iDispPos;
+    int iMapSpecies, iMapSpeciesBase, iMapSpeciesPos;
+    int iMapSpeciesDels, iMapSpeciesMiss;
+    int iDispCursorPos;
 
     GLRenderer(void);
     virtual ~GLRenderer(void);
 
-    void DisplayMolecule(void);
+    void DisplayMolecule(Structure3D *cStr);
+    void DisplayMoleculeName(int w, int h);
     void DoHelixMapping(void);
     void DisplayHelices();
     void DisplayHelixBackBone(void);
     void DisplayHelixNumbers(void);
-    void DisplayPositions(void);
+    void DisplayBasePositions(void);
+    void DisplayMappedSpBasePositions(void);
     void DisplayHelixMidPoints(Texture2D *cImages);
 
     void BeginTexturizer();
     void EndTexturizer();
     void TexturizeStructure(Texture2D *cImages);
-    void DrawTexturizedStructure(Texture2D *cImages, int Structure );
-    void SetColor(int gc);
 };
