@@ -200,7 +200,7 @@ nt_exit(AW_window *aw_window){
     AWUSE(aw_window);
     if (gb_main) {
         if (GB_read_clients(gb_main)>=0) {
-#ifndef DEBUG
+#ifdef NDEBUG
             if (GB_read_clock(gb_main) > GB_last_saved_clock(gb_main)){
                 long secs;
                 secs = GB_last_saved_time(gb_main);
@@ -216,7 +216,7 @@ nt_exit(AW_window *aw_window){
                                    "QUIT ARB,DO NOT QUIT")) return;
                 }
             }
-#endif // DEBUG
+#endif // NDEBUG
         }
         GBCMS_shutdown(gb_main);
         GB_exit(gb_main);
