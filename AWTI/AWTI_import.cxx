@@ -832,8 +832,12 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->insert_option("protein","p","ami");
     aws->update_option_menu();
 
+
     aws->at("genom");
-    aws->create_toggle(AWAR_READ_GENOM_DB);
+    aws->create_toggle_field(AWAR_READ_GENOM_DB);
+    aws->insert_toggle("Import genom data in GENBANK format","0",0);
+    aws->insert_toggle("Import genom data in EMBL format","1",1);
+    aws->insert_toggle("Import foreign data format (or press AUTO DETECT)","2",2);
 
     aws->at("go");
     aws->callback(AWTC_import_go_cb);
