@@ -126,10 +126,22 @@ class AW_matrix {
 	void shift_dy(AW_pos yoff);
 	void reset(void);
 
-	void	transform(int x,int y,int& xout,int& yout) {xout = int((x+ xoffset)*scale); yout = int((y + yoffset)*scale);};
-	void	transform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {xout = (x+ xoffset)*scale; yout = (y + yoffset)*scale;};
-	void	rtransform(int x,int y,int& xout,int& yout) {xout = int(x/scale - xoffset); yout = int(y/scale - yoffset);};
-	void	rtransform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {xout = x/scale - xoffset; yout = y/scale - yoffset;};
+	void	transform(int x,int y,int& xout,int& yout) {
+	    xout = int((x+ xoffset)*scale); 
+	    yout = int((y + yoffset)*scale);
+	}
+	void	transform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {
+	    xout = (x+ xoffset)*scale; 
+	    yout = (y + yoffset)*scale;
+	}
+	void	rtransform(int x,int y,int& xout,int& yout) {
+	    xout = int(x/scale - xoffset); 
+	    yout = int(y/scale - yoffset);
+	}
+	void	rtransform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {
+	    xout = x/scale - xoffset; 
+	    yout = y/scale - yoffset;
+	}
 };
 
 class AW_common;

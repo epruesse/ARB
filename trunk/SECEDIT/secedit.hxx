@@ -15,10 +15,11 @@
 class AW_window;
 class SEC_graphic;
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef NDEBUG
+# define sec_assert(bed) do { if (!(bed)) { *(char*)0 = 0; } } while(0)
+#else
+# define sec_a3ssert(bed)
 #endif
-#define sec_assert(bed) arb_assert(bed)
 
 class SEC_segment;
 class SEC_root;
@@ -124,6 +125,7 @@ public:
     SEC_segment * get_previous_segment();
     int connect_segments_and_strand();
     void print_ecoli_pos(long ecoli_pos, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y, AW_device *device);
+    void printHelixNumbers(AW_device *device, double helixStart_x, double helixStart_y, double helixEnd_x, double helixEnd_y, double base_x, double base_y, int absPos);
     void print_lonely_bases(char *buffer, AW_device *device, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y,
 			    int abs_pos, double half_font_height, const char *bgColor, int thisStrand);//yadhu
     void generate_x_string();
@@ -197,8 +199,14 @@ private:
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
 
 public:
+    int rotateBranchesMode;
 
     bool show_debug; // show debug info in structure display (todo)
+
+    bool show_helixNrs; //to display helix number information
+    bool show_strSkeleton; // to display the skeleton
+    bool hide_bases; // to toggle b/w show and hide bases
+    bool hide_bonds; // to toggle b/w show and hide bonds
 
     double rootAngle; // to store root angle
 
@@ -272,6 +280,11 @@ public:
     void set_distance_between_strands (double distance_between_strands_) 	{ distance_between_strands = distance_between_strands_; }
     void set_show_debug (bool show) 	{ show_debug=show; }
 
+    void set_show_helixNrs (bool show) 	 { show_helixNrs    = show; }
+    void set_show_strSkeleton (bool show){ show_strSkeleton = show; }
+    void set_hide_bases (bool hide)      { hide_bases = hide; }
+    void set_hide_bonds (bool hide)      { hide_bonds = hide; }
+
     void set_cursor(int cursor_) 						{ cursor = cursor_; }
     void set_show_constraints(int show_constraints_) 				{ show_constraints = show_constraints_; }
 
@@ -279,7 +292,12 @@ public:
     void get_last_drawed_cursor_position(double &x1, double &y1, double &x2, double &y2) const { x1 = cursor_x1; y1 = cursor_y1; x2 = cursor_x2; y2 = cursor_y2; }
     void clear_last_drawed_cursor_position() { set_last_drawed_cursor_position(0, 0, 0, 0); }
 
-    void setRootAngle(double rtAngle) { rootAngle = rtAngle; }
+    void setRootAngle(double rtAngle) { 
+	while(rtAngle >= (2*M_PI)){
+	    rtAngle -= (2*M_PI);
+	}
+	rootAngle = rtAngle; 
+    }
     double getRootAngle()             { return rootAngle;    }
 };
 
@@ -462,7 +480,7 @@ private:
     double length;
 
     double delta;
-    double deltaIn; //yadhu
+    double deltaIn; 
     double max_length, min_length; // constraints
 
 public:
@@ -481,7 +499,7 @@ public:
     double get_length() 		{ return length; }
 
     double get_delta () 		{ return delta; }
-    double get_deltaIn () 		{ return deltaIn;} //yadhu
+    double get_deltaIn () 		{ return deltaIn;} 
 
     double& get_max_length_ref() 	{ return max_length; }
     double& get_min_length_ref() 	{ return min_length; }
@@ -499,8 +517,8 @@ public:
 	while(deltaIn_ >= (2*M_PI)) {
 	    deltaIn_ -= (2*M_PI);
 	}
-	deltaIn = deltaIn_;
-    } //yadhu
+	deltaIn = deltaIn_; 
+    } 
 };
 
 SEC_root *create_test_root();
@@ -516,6 +534,10 @@ void SEC_add_awar_callbacks(AW_root *aw_root, AW_default def, AWT_canvas *ntw);
 
 void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_show_helixNrs_toggled_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_show_strSkeleton_toggled_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_hide_bases_toggled_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_hide_bonds_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_pair_def_changed_cb(AW_root *awr, AW_CL cl_ntw);
 
 // --------------------------------------------------------------------------------
