@@ -8,8 +8,9 @@
             find DEPOT ! -type d; \
             find Xlib ! -type d; \
             find lib ! -type d | grep -v "/pts/") \
-        | grep -v "/CVS/"` \
-        | grep -v "^.#"` \
+        | grep -v "/CVS/" \
+        | grep -v "^.#" \
+        ` \
     |gzip >arb.tgz
 
 #	mv lib/pts lib/pts.old
