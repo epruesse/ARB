@@ -10,6 +10,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_question.hxx>
+#include <aw_global.hxx>
 #include <awt_canvas.hxx>
 #include <awt_advice.hxx>
 
@@ -342,7 +343,9 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
         char *lslash = strrchr(value, '/');
 
         char *name = lslash ? lslash+1 : value;
+#if defined(DEBUG)
         printf("writing '%s' to AWAR_DB_NAME\n", name);
+#endif // DEBUG
         awr->awar(AWAR_DB_NAME)->write_string(name); 
 
         if (lslash) {               // update value of directory
@@ -383,9 +386,7 @@ int main(int argc, char **argv)
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_NT");
 
-    aw_root->awar_string( AWAR_DB_PATH, "noname.arb", aw_default);
-    aw_root->awar_string( AWAR_DB"directory", "", aw_default);
-    aw_root->awar_string( AWAR_DB"filter", "arb", aw_default);
+    aw_create_selection_box_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
     aw_root->awar_string( AWAR_DB"type", "b", aw_default);
     aw_root->awar_int( "NT/GB_NOVICE",      0, aw_default)  ->add_target_var(&GB_NOVICE);
 
@@ -440,7 +441,7 @@ int main(int argc, char **argv)
                 exit(0);
             }
             AWT_announce_db_to_browser(gb_dest, "Current database (:)");
-            
+
             gb_dest = GBT_open("noname.arb","cw",0);
             AWT_announce_db_to_browser(gb_dest, "New database (noname.arb)");
 
