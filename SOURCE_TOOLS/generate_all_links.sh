@@ -2,6 +2,7 @@
 
 # Generates some directories as well:
 mkdir -p INCLUDE
+mkdir -p INCLUDE/GL
 
 mkdir -p NAMES_COM/GENC
 mkdir -p NAMES_COM/GENH
@@ -173,6 +174,9 @@ ln -s ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx
 ln -s ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx
 ln -s ../XML/xml.hxx INCLUDE/xml.hxx
 
+# gl stuff
+ln -s ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h 
+
 # arbdb dirs
 
 ln -s ../ARBDB/AD_MOBJECTS.h ARBDBS/AD_MOBJECTS.h
@@ -291,5 +295,4 @@ ln -s ../../GDEHELP                     lib/help/GDEHELP
 
 # links related to probe web service
 ln -s ../PROBE_WEB/SERVER PROBE_SERVER/ps_cgi
-
 
