@@ -1,11 +1,15 @@
-#include <stdio.h>
-#include <iostream.h>
+#include <cstdio>
 #include <memory.h>
+#include <iostream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <awt_tree.hxx>
+
 #include "AP_buffer.hxx"
 #include "AP_error.hxx"
+
+using namespace std;
 
 #define MAX_SPECIES 250000L
 #define MAX_DSTACKSIZE (MAX_SPECIES*2)   // defaultwert fuer dynamischen stack

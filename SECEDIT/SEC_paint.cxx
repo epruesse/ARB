@@ -1,9 +1,10 @@
-#include <stdio.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <iostream.h>
-#include <math.h>
-#include <strstream.h>
+#include <cstdio>
+#include <climits>
+#include <cstdlib>
+#include <cmath>
+
+#include <iostream>
+#include <sstream>
 
 #include <arbdb.h>
 #include <aw_root.hxx>
@@ -17,6 +18,8 @@
 #include "../EDIT4/ed4_class.hxx"
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
 #include "../EDIT4/ed4_visualizeSAI.hxx"
+
+using namespace std;
 
 #define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
 #define SAICOLORS (ED4_G_CBACK_0 - SEC_GC_CBACK_0)
