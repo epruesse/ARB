@@ -37,8 +37,9 @@ argtype:choice_menu
 argchoice:F84:                DNATEXT=F84;          DNAFLAGS="y"
 argchoice:Kimura 2-parameter: DNATEXT=Kimura;       DNAFLAGS="d y"
 argchoice:Jukes-Cantor:       DNATEXT=Jukes-Cantor; DNAFLAGS="d d y"
-argchoice:LogDet:             DNATEXT=LogDet;       DNAFLAGS="d d d y"
-argchoice:Manual:             DNATEXT=User;         DNAFLAGS=""
+// the following options cause crash with all distance programs:
+// argchoice:LogDet:             DNATEXT=LogDet;       DNAFLAGS="d d d y"
+// argchoice:Manual:             DNATEXT=User;         DNAFLAGS=""
 
 arg:CORRECTION_PROT
 arglabel:Correction (PROT)
