@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Tue Sep/16/2003 15:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Sep/16/2003 16:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -26,6 +26,8 @@
 
 #include "arbdb.h"
 #include "smartptr.h"
+
+#define psw_assert(x) arb_assert(x)
 
 #include "../global_defs.h"
 #define SKIP_SETDATABASESTATE
@@ -107,20 +109,52 @@ namespace {
     // Note: When changing encoding please adjust
     //       encodePath() in ./PROBE_WEB/CLIENT/TreeNode.java
 
-    const char *encodePath(const char *path, int pathlen) {
+    const char *encodePath(const char *path, int pathlen, GB_ERROR& error) {
         // path contains strings like 'LRLLRRL'
         // 'L' is interpreted as 1 ('R' as 0)
+        // (paths containing 0 and 1 are ok as well)
+
+        psw_assert(!error);
+        psw_assert(strlen(path) == (unsigned)pathlen);
+        psw_assert(pathlen);
 
         static char buffer[MAXPATH+1];
+        sprintf(buffer, "%04X", pathlen);
+        int         idx = 4;
 
+        while (pathlen>0 && !error) {
+            int halfbyte = 0;
+            for (int p = 0; p<4 && !error; ++p, --pathlen) {
+                halfbyte <<= 1;
+                if (pathlen>0) {
+                    char c = *path++;
+                    psw_assert(c);
+
+                    if (c == 'L' || c == '1') halfbyte |= 1;
+                    else if (c != 'R' && c != '0') {
+                        error = GBS_global_string("Illegal character '%c' in path", c);
+                    }
+                }
+            }
+
+            psw_assert(halfbyte >= 0 && halfbyte <= 15);
+            buffer[idx++] = "0123456789ABCDEF"[halfbyte];
+        }
+
+        if (error) return 0;
+
+        buffer[idx] = 0;
+        return buffer;
     }
+
+#if 0
     const char *decodePath(const char *encodedPath) {
         // does the opposite of encodePath
 
         static char buffer[MAXPATH+1];
 
     }
-
+#endif
 
     GB_HASH *path_cache       = 0; // links encoded "path" content with "subtree" db-pointer
     GBDATA  *gb_is_inner_node = 0;
@@ -147,19 +181,28 @@ namespace {
                         error = "subtree w/o path (database corrupt!)";
                     }
                     else {
-                        char *path = GB_read_string(gb_path);
-                        GBS_write_hash(path_cache, path, (long)gb_subtree);
+                        char       *path     = GB_read_string(gb_path);
+                        int         pathlen  = GB_read_string_count(gb_path);
+                        const char *enc_path = encodePath(path, pathlen, error);
 
-                        int last = strlen(path)-1;
-                        while (last>0) {
-                            path[last--]      = 0; // remove last character ( = parent path)
-                            GBDATA *gb_exists = (GBDATA*)GBS_read_hash(path_cache, path);
-                            if (gb_exists) break; // path to root already inserted!
+                        if (enc_path) {
+                            GBS_write_hash(path_cache, enc_path, (long)gb_subtree);
 
-                            // no entry for parent yet -> link to gb_is_inner_node
-                            GBS_write_hash(path_cache, path, (long)gb_is_inner_node);
+                            int last = pathlen-1;
+                            while (last>0 && !error) {
+                                path[last] = 0; // remove last character ( = parent path)
+                                enc_path     = encodePath(path, last, error);
+
+                                if (!error) {
+                                    GBDATA *gb_exists = (GBDATA*)GBS_read_hash(path_cache, enc_path);
+                                    if (gb_exists) break; // path to root already inserted!
+
+                                    // no entry for parent yet -> link to gb_is_inner_node
+                                    GBS_write_hash(path_cache, enc_path, (long)gb_is_inner_node);
+                                }
+                                last--;
+                            }
                         }
-
                         free(path);
                     }
                 }
@@ -272,7 +315,7 @@ namespace {
                 }
             }
             else {
-                error = "illegal probe-group id";
+                error = GBS_global_string("illegal probe-group id ('%s')", id);
             }
         }
         return error;
@@ -280,16 +323,29 @@ namespace {
 
     // returns a list of probes for a specific node
     GB_ERROR CMD_getprobes(GBDATA *gb_main, const Arguments& args, FILE *out) {
-        //         printf("getprobes()\n");
-        //         dumpArguments(args, stdout);
-
-        const char *path;
-        GB_ERROR    error = expectArgument(args, "path", path);
-        GB_transaction dummy(gb_main);
+        const char     *path;
+        GB_ERROR        error = expectArgument(args, "path", path);
+        GB_transaction  dummy(gb_main);
 
         if (!error) {
-            GBDATA *gb_subtree = (GBDATA*)GBS_read_hash(path_cache, path);
-            if (gb_subtree) {
+            GBDATA     *gb_subtree = (GBDATA*)GBS_read_hash(path_cache, path); // expects path to be in encoded format
+            const char *enc_path   = path;
+
+            if (!gb_subtree) {
+                int pathlen = strlen(path);
+                enc_path    = encodePath(path, pathlen, error);
+
+                if (!error) {
+                    gb_subtree = (GBDATA*)GBS_read_hash(path_cache, enc_path);
+                }
+
+                fprintf(stderr, "testing whether '%s' is a plain path (%s) = %s\n", path, gb_subtree ? "yes" : "no", enc_path);
+            }
+
+            if (!gb_subtree) {
+                error = GBS_global_string("Illegal subtree path '%s'", path);
+            }
+            else {
                 if (gb_subtree == gb_is_inner_node) { // inner node w/o info
                     fprintf(out, "result=ok\nfound=0\n");
                 }
@@ -310,19 +366,24 @@ namespace {
                         fprintf(out, "result=ok\nfound=0\n");
                     }
                     else {
-                        int count = found_probes.size();
+                        int     count   = found_probes.size();
                         fprintf(out, "result=ok\nfound=%i\n", count);
+#if defined(DEBUG)
+                        GBDATA *gb_path = GB_find(gb_subtree, "path", 0, down_level);
+                        if (gb_path) {
+                            fprintf(out, "debug_path=%s\n", GB_read_char_pntr(gb_path));
+                        }
+                        fprintf(out, "debug_enc_path=%s\n", enc_path);
+#endif                          // DEBUG
 
                         int c = 1;
                         for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
-                            const char *probe_group_id = path; // currently we have only 100% groups, so we can use the path
+                            // currently we have only 100% groups, so we can use the path as id
+                            const char *probe_group_id = enc_path;
                             fprintf(out, "probe%04i=%s,%s\n", c, *p, probe_group_id);
                         }
                     }
                 }
-            }
-            else {
-                error = GBS_global_string("Illegal subtree path '%s'", path);
             }
         }
 
