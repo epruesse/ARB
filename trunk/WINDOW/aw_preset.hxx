@@ -41,9 +41,9 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id);
 		/* opens the properties Window */
 
 
-void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,int message_reload = 0);
+void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false);
 void AW_preset_create_scale_chooser(AW_window *aws, const char *awar, const char *label);
-void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,int message_reload = 0);
+void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false, bool show_label = false);
 
 
 #endif
