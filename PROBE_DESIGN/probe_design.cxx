@@ -1241,7 +1241,7 @@ void pd_export_pt_server(AW_window *aww)
                    "The server will need a long time (up to several hours) to analyse the data.\n"
                    "Until the new server has analyzed all data, no server functions are available.\n\n"
                    "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
-                   "Note2 : The server will do the job in background,\n"
+                   "Note 2: The server will do the job in background,\n"
                    "        quitting this program won't affect the server","Cancel,Do it")){
         aw_openstatus("Export db to server");
         aw_status("Search server to kill");
@@ -1251,12 +1251,11 @@ void pd_export_pt_server(AW_window *aww)
         if (*file) file += strlen(file)+1;  /* now i got the command string */
         if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
+
         aw_status("Exporting the database");
-        if ( (error = GB_save_as(gb_main,file,"bfm")) ) { // save PT-server database with Fastload file
-            aw_message(error);
-            return;
-        }
-        {
+        error = GB_save_as(gb_main,file,"bfm"); // save PT-server database with Fastload file
+
+        if (!error) { // set pt-server database file to same permissions as pts directory
             char *dir = strrchr(file,'/');
             if (dir) {
                 *dir = 0;
@@ -1266,9 +1265,11 @@ void pd_export_pt_server(AW_window *aww)
                 error = GB_set_mode_of_file(file,modi);
             }
         }
-        error = 0;
-        aw_status("Start new server");
-        if (!error ) error = arb_start_server(pt_server,gb_main,0);
+
+        if (!error ) {
+            aw_status("Start new server");
+            error = arb_start_server(pt_server,gb_main,0);
+        }
         if (error) {
             aw_message(error);
         }
