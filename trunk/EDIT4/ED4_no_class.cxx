@@ -1540,9 +1540,11 @@ void ED4_compression_changed_cb(AW_root *awr){
     int percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
     GB_transaction transaction_var(gb_main);
 
-    ED4_remap *remap = ED4_ROOT->root_group_man->remap();
-    remap->set_mode(mode, percent);
-    ED4_ROOT->refresh_all_windows(1);
+    if (ED4_ROOT->root_group_man) {
+        ED4_remap *remap = ED4_ROOT->root_group_man->remap();
+        remap->set_mode(mode, percent);
+        ED4_ROOT->refresh_all_windows(1);
+    }
 }
 
 void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
