@@ -1677,7 +1677,7 @@ static AW_window * CON_showgroupswin_cb( AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SHOW_IUPAC", "Show IUPAC", 590,10);
-    aws->load_xfig("con/groups.fig");
+    aws->load_xfig("consensus/groups.fig");
     aws->button_length( 7 );
 
     aws->at("ok");aws->callback((AW_CB0)AW_POPDOWN);
