@@ -6,6 +6,7 @@
 #include "GAGenomUtilities.h"
 #include <cstdio>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 using namespace gellisary;
