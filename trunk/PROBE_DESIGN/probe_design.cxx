@@ -30,10 +30,10 @@
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
 
 
-#define AWAR_PD_MATCH_ITEM 	AWAR_SPECIES_NAME
-#define AWAR_PD_MATCH_RESOLVE 	"tmp/probe_design/match_resolve"
+#define AWAR_PD_MATCH_ITEM  AWAR_SPECIES_NAME
+#define AWAR_PD_MATCH_RESOLVE   "tmp/probe_design/match_resolve"
 
-extern GBDATA *gb_main;		/* must exist */
+extern GBDATA *gb_main;     /* must exist */
 
 struct gl_struct {
     aisc_com *link;
@@ -107,8 +107,8 @@ char *probe_pt_look_for_server(AW_root *root)
 char *pd_get_the_names(bytestring &bs, bytestring &checksum){
     GBDATA *gb_species;
     GBDATA *gb_name;
-    GBDATA	*gb_data;
-    long	len;
+    GBDATA  *gb_data;
+    long    len;
 
     void *names = GBS_stropen(1024);
     void *checksums = GBS_stropen(1024);
@@ -146,16 +146,16 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
     int i;
     char buffer[256];
     if (aisc_put(pd_gl.link, PT_PDC, pdc,
-                 PDC_DTEDGE, 	(double)root->awar("probe_design/DTEDGE")->read_float()*100.0,
-                 PDC_DT,		(double)root->awar("probe_design/DT")->read_float()*100.0,
-                 PDC_SPLIT,	(double)root->awar("probe_design/SPLIT")->read_float(),
-                 PDC_CLIPRESULT,	root->awar("probe_design/CLIPRESULT")->read_int(),
+                 PDC_DTEDGE,    (double)root->awar("probe_design/DTEDGE")->read_float()*100.0,
+                 PDC_DT,        (double)root->awar("probe_design/DT")->read_float()*100.0,
+                 PDC_SPLIT, (double)root->awar("probe_design/SPLIT")->read_float(),
+                 PDC_CLIPRESULT,    root->awar("probe_design/CLIPRESULT")->read_int(),
                  0)) return 1;
     for (i=0;i<16;i++) {
         sprintf(buffer,"probe_design/bonds/pos%i",i);
         if (aisc_put(pd_gl.link,PT_PDC, pdc,
-                     PT_INDEX,	i,
-                     PDC_BONDVAL,	(double)root->awar(buffer)->read_float(),
+                     PT_INDEX,  i,
+                     PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
                      0) ) return 1;
     }
 #if 0
@@ -171,7 +171,7 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
         sprintf(pdcr,"probe_design/exceptions/nr%i/RIGHT",i);
         sprintf(pdcrr,"probe_design/exceptions/nr%i/RRIGHT",i);
         if (aisc_create(pd_gl.link,PT_PDC, pdc,
-                        PDC_SPECIALS,	PT_SPECIALS, &specials,
+                        PDC_SPECIALS,   PT_SPECIALS, &specials,
                         SPECIALS_MODE, root->awar(pdcmode)->read_int(),
                         SPECIALS_LLEFT, (double)root->awar(pdcll)->read_float(),
                         SPECIALS_LEFT, (double)root->awar(pdcl)->read_float(),
@@ -187,13 +187,13 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 void probe_design_event(AW_window *aww)
 {
     AW_root *root = aww->get_root();
-    char	*servername;
+    char    *servername;
     T_PT_PDC  pdc;
     T_PT_TPROBE tprobe;
     bytestring bs;
     bytestring check;
-    char	*match_info;
-    const char 	*error = 0;
+    char    *match_info;
+    const char  *error = 0;
 
     aw_openstatus("Probe Design");
     aw_status("Search a free running server");
@@ -228,19 +228,19 @@ void probe_design_event(AW_window *aww)
     aw_status("Start probe design (Cannot be stopped)");
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
-                PDC_PROBELENGTH,	root->awar("probe_design/PROBELENGTH")->read_int(),
-                PDC_MINTEMP,	(double)root->awar("probe_design/MINTEMP")->read_float(),
-                PDC_MAXTEMP,	(double)root->awar("probe_design/MAXTEMP")->read_float(),
-                PDC_MINGC,	        (double)root->awar("probe_design/MINGC")->read_float()/100.0,
-                PDC_MAXGC,	        (double)root->awar("probe_design/MAXGC")->read_float()/100.0,
-                PDC_MAXBOND,	(double)root->awar("probe_design/MAXBOND")->read_int(),
+                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
+                PDC_PROBELENGTH,    root->awar("probe_design/PROBELENGTH")->read_int(),
+                PDC_MINTEMP,    (double)root->awar("probe_design/MINTEMP")->read_float(),
+                PDC_MAXTEMP,    (double)root->awar("probe_design/MAXTEMP")->read_float(),
+                PDC_MINGC,          (double)root->awar("probe_design/MINGC")->read_float()/100.0,
+                PDC_MAXGC,          (double)root->awar("probe_design/MAXGC")->read_float()/100.0,
+                PDC_MAXBOND,    (double)root->awar("probe_design/MAXBOND")->read_int(),
                 0);
     aisc_put(pd_gl.link,PT_PDC, pdc,
-             PDC_MINPOS,	root->awar("probe_design/MINPOS")->read_int(),
-             PDC_MAXPOS,	root->awar("probe_design/MAXPOS")->read_int(),
-             PDC_MISHIT,	root->awar("probe_design/MISHIT")->read_int(),
-             PDC_MINTARGETS,	(double)root->awar("probe_design/MINTARGETS")->read_float()/100.0,
+             PDC_MINPOS,    root->awar("probe_design/MINPOS")->read_int(),
+             PDC_MAXPOS,    root->awar("probe_design/MAXPOS")->read_int(),
+             PDC_MISHIT,    root->awar("probe_design/MISHIT")->read_int(),
+             PDC_MINTARGETS,    (double)root->awar("probe_design/MINTARGETS")->read_float()/100.0,
              0);
 
     if (probe_design_send_data(root,pdc)) {
@@ -265,14 +265,14 @@ void probe_design_event(AW_window *aww)
         return;
     }
 
-    char *unames = 	unknown_names.data;
+    char *unames =  unknown_names.data;
     if (unknown_names.size>1){
         if (aw_message(GBS_global_string(
                                          "Your PT server is not up to date or wrongly chosen\n"
-                                         "	The following names are new to it:\n"
-                                         "	%s\n"
-                                         "	This version allows you to quickly add the unknown sequences\n"
-                                         "	to the pt_server\n"
+                                         "  The following names are new to it:\n"
+                                         "  %s\n"
+                                         "  This version allows you to quickly add the unknown sequences\n"
+                                         "  to the pt_server\n"
                                          ,unames),"Add and Continue,Abort")){
             delete unknown_names.data;
             goto end;
@@ -290,7 +290,7 @@ void probe_design_event(AW_window *aww)
             }
             GBDATA *data = GBT_read_sequence(gb_species,ali_name);
             if (!data) {
-                aw_message(	GB_export_error("Species has no sequence belonging to alignment %s",
+                aw_message( GB_export_error("Species has no sequence belonging to alignment %s",
                                             GB_read_char_pntr(GB_search(gb_species,"name",GB_STRING)),
                                             ali_name));
                 goto end;
@@ -315,7 +315,7 @@ void probe_design_event(AW_window *aww)
     {
         char *locs_error = 0;
         if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                      LOCS_ERROR	,&locs_error,
+                      LOCS_ERROR    ,&locs_error,
                       0)){
             aw_message ("Connection to PT_SERVER lost (1)");
             aw_closestatus();
@@ -336,7 +336,7 @@ void probe_design_event(AW_window *aww)
 
     if (tprobe) {
         aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                  TPROBE_INFO_HEADER,	&match_info,
+                  TPROBE_INFO_HEADER,   &match_info,
                   0);
         char *s = strtok(match_info,"\n");
         while (s) {
@@ -369,11 +369,11 @@ void probe_design_event(AW_window *aww)
 
 #endif // TEST_PD
 
-    while (	tprobe ){
+    while ( tprobe ){
       long tprobe_next;
         if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
-                      TPROBE_NEXT,		&tprobe_next,
-                      TPROBE_INFO,		&match_info,
+                      TPROBE_NEXT,      &tprobe_next,
+                      TPROBE_INFO,      &match_info,
 #if defined(TEST_PD)
                       TPROBE_KEY, &my_TPROBE_KEY,
                       TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
@@ -427,14 +427,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     AW_selection_list *selection_id = (AW_selection_list*)cl_selection_id;
     int *counter = (int*)cl_count_ptr;
     AW_root *root = aww->get_root();
-    char	*servername;
-    char	result[1024];
+    char    *servername;
+    char    result[1024];
     T_PT_PDC  pdc;
     T_PT_MATCHLIST match_list;
     char *match_info, *match_name;
-    int	mark;
-    char	*probe;
-    char	*locs_error;
+    int mark;
+    char    *probe;
+    char    *locs_error;
 
     GBDATA *gb_species_data = 0;
     GBDATA *gb_species;
@@ -478,7 +478,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
+                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
                 0);
     if (probe_design_send_data(root,pdc)) {
         aw_message ("Connection to PT_SERVER lost (2)");
@@ -491,12 +491,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (show_status) aw_status("Start Probe Match");
 
     if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_REVERSED,		root->awar("probe_match/complement")->read_int(),
-                  LOCS_MATCH_SORT_BY,		root->awar("probe_match/sort_by")->read_int(),
-                  LOCS_MATCH_COMPLEMENT,		0,
-                  LOCS_MATCH_MAX_MISMATCHES,	root->awar(AWAR_MAX_MISMATCHES)->read_int(),
-                  LOCS_MATCH_MAX_SPECIES,		root->awar("probe_match/clip_hits")->read_int(),
-                  LOCS_SEARCHMATCH,		probe,
+                  LOCS_MATCH_REVERSED,      root->awar("probe_match/complement")->read_int(),
+                  LOCS_MATCH_SORT_BY,       root->awar("probe_match/sort_by")->read_int(),
+                  LOCS_MATCH_COMPLEMENT,        0,
+                  LOCS_MATCH_MAX_MISMATCHES,    root->awar(AWAR_MAX_MISMATCHES)->read_int(),
+                  LOCS_MATCH_MAX_SPECIES,       root->awar("probe_match/clip_hits")->read_int(),
+                  LOCS_SEARCHMATCH,     probe,
                   0)){
         free(probe);
         aw_message ("Connection to PT_SERVER lost (2)");
@@ -536,10 +536,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     bs.data = 0;
     if (show_status) aw_status("Read the Results");
     if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_LIST,	&match_list,
-                  LOCS_MATCH_LIST_CNT,	&match_list_cnt,
-                  LOCS_MATCH_STRING,	&bs,
-                  LOCS_ERROR,		&locs_error,
+                  LOCS_MATCH_LIST,  &match_list,
+                  LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+                  LOCS_MATCH_STRING,    &bs,
+                  LOCS_ERROR,       &locs_error,
                   0)){
         aw_message ("Connection to PT_SERVER lost (3)");
         if (show_status) aw_closestatus();
@@ -673,7 +673,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 {
     char buffer[256]; memset(buffer,0,256);
     int i;
-    pd_gl.pd_design = 0;		/* design result window not created */
+    pd_gl.pd_design = 0;        /* design result window not created */
     root->awar_string( AWAR_PD_MATCH_ITEM, "" , db1);
     root->awar_float( "probe_design/DTEDGE", .5  ,    db1);
     root->awar_float( "probe_design/DT", .5  ,    db1);
@@ -685,7 +685,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 #if 0
     for (i=0;i<PROBE_DESIGN_EXCEPTION_MAX;i++){
         sprintf(buffer,"probe_design/exceptions/nr%i/MODE",i);
-        root->awar_int( 	buffer, -1  ,    db1);
+        root->awar_int(     buffer, -1  ,    db1);
 
         sprintf(buffer,"probe_design/exceptions/nr%i/LLEFT",i);
         root->awar_float( buffer, 0.0  ,    db1);
@@ -750,13 +750,13 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 }
 /*
 AW_window *create_fig( AW_root *root, char *file)  {
-	AW_window_simple *aws = new AW_window_simple;
-	aws->init( root, "HELP","HELP", 800, 800, 10, 10 );
-	aws->load_xfig(file);
-	aws->callback( (AW_CB0)AW_POPDOWN);
-	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");
-	return aws;
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "HELP","HELP", 800, 800, 10, 10 );
+    aws->load_xfig(file);
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
+    return aws;
 }
 */
 AW_window *create_probe_design_expert_window( AW_root *root)  {
@@ -835,7 +835,7 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
 }
 
 
-void	probe_design_save_default(AW_window *aw,AW_default aw_def)
+void    probe_design_save_default(AW_window *aw,AW_default aw_def)
 {
     AW_root *aw_root = aw->get_root();
     aw_root->save_default(aw_def,0);
@@ -844,7 +844,7 @@ void	probe_design_save_default(AW_window *aw,AW_default aw_def)
 char *pd_ptid_to_choice(int i){
     char search_for[256];
     char choice[256];
-    char	*fr;
+    char    *fr;
     char *file;
     char *server;
     char empty[] = "";
@@ -853,9 +853,9 @@ char *pd_ptid_to_choice(int i){
     server = GBS_read_arb_tcp(search_for);
     if (!server) return 0;
     fr = server;
-    file = server;				/* i got the machine name of the server */
-    if (*file) file += strlen(file)+1;	/* now i got the command string */
-    if (*file) file += strlen(file)+1;	/* now i got the file */
+    file = server;              /* i got the machine name of the server */
+    if (*file) file += strlen(file)+1;  /* now i got the command string */
+    if (*file) file += strlen(file)+1;  /* now i got the file */
     if (strrchr(file,'/')) file = strrchr(file,'/')-1;
     if (!(server = strtok(server,":"))) server = empty;
     sprintf(choice,"%-8s: %s",server,file+2);
@@ -915,17 +915,17 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     aws->highlight();
     aws->create_button("GO","GO","G");
 
-    //	aws->callback( (AW_CB1)AW_save_defaults, (int) def);
-    //	aws->at("save_default");
-    //	aws->create_button("SAVE DEFAULTS","S");
+    //  aws->callback( (AW_CB1)AW_save_defaults, (int) def);
+    //  aws->at("save_default");
+    //  aws->create_button("SAVE DEFAULTS","S");
 
     aws->callback( probe_design_create_result_window);
     aws->at("result");
     aws->create_button("RESULT","RESULT","S");
 
-    //	aws->callback( AW_POPUP, (AW_CL)create_probe_design_window, (int)def);
-    //	aws->at("open");
-    //	aws->create_button("REOPEN","REOPEN","S");
+    //  aws->callback( AW_POPUP, (AW_CL)create_probe_design_window, (int)def);
+    //  aws->at("open");
+    //  aws->create_button("REOPEN","REOPEN","S");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
     aws->at("expert");
@@ -1079,8 +1079,8 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                         buffer[off] = AWT_iupac_code[idx][index].iupac[resolution_idx[i]];
                     }
 
-                    /*if (not_last) */	aww->insert_selection        (selection_id, buffer, buffer);
-                    /*else 		aww->insert_default_selection(selection_id, buffer, buffer); */
+                    /*if (not_last) */  aww->insert_selection        (selection_id, buffer, buffer);
+                    /*else      aww->insert_default_selection(selection_id, buffer, buffer); */
                     not_last--;
 
                     // permutatate indices:
@@ -1264,7 +1264,7 @@ void pd_query_pt_server(AW_window *aww)
         rsh = strdup("");
     }
     void *strstruct = GBS_stropen(1024);
-    GBS_strcat(strstruct,	"echo Contents of directory ARBHOME/lib/pts:;echo;"
+    GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
                "echo; echo Disk Space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
@@ -1296,9 +1296,9 @@ void pd_export_pt_server(AW_window *aww)
         aw_status("Search server to kill");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
         server = GBS_read_arb_tcp(pt_server);
-        file = server;				/* i got the machine name of the server */
-        if (*file) file += strlen(file)+1;	/* now i got the command string */
-        if (*file) file += strlen(file)+1;	/* now i got the file */
+        file = server;              /* i got the machine name of the server */
+        if (*file) file += strlen(file)+1;  /* now i got the command string */
+        if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
         aw_status("Exporting the database");
         if ( (error = GB_save_as(gb_main,file,"bf")) ) { // mode hase been "bfm" - but that crashes with newer dbs -- ralf jan 03
@@ -1438,7 +1438,7 @@ static void pg_result_selected(AW_window */*aww*/) {
         }
 
         if (marked!=count) {
-            aw_message(GBS_global_string("%i species were in group - %i species marked in database", count, marked));
+            aw_message(GBS_global_string("%li species were in group - %li species marked in database", count, marked));
         }
 
         NT_group_not_marked_cb(0, pg_global.ntw);
@@ -1602,7 +1602,7 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
 
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
-	return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,
+    return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,
                                create_probe_group_groups_window,
                                0);
 }
