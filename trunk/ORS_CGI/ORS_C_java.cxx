@@ -114,7 +114,7 @@ char *t2j_write_uint(unsigned int value, int or_cmd){
 }
 
 /***********************************************************************
-	Sends the data in nodes->user_data to the java programm
+	Sends the data in nodes->user_data to the java program
 	modifier_string is just send after the main header
 	Sideeffects:	writes to t2j_out
 			uses cat_tree
@@ -603,7 +603,7 @@ long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
 	varname			a string that is prepended to the output
 	all_nodes		output = all nodes or just ranges
 
-	if all_nodes >0 then the programm calculates:
+	if all_nodes >0 then the program calculates:
 	focusout		the internal id that contains all selected nodes
 	maxnodeout		the name of the inner node that contains all selected nodes
 	maxnodehits		relativ number of selected_nodes/tip beneath maxnodeout
