@@ -766,13 +766,7 @@ void ED4_cursor::updateAwars()
 
                 if (cursor_manager->parent->flag.is_SAI) {
                     static char *last_set_SAI = 0;
-
-                    if (last_set_SAI && strcmp(last_set_SAI, species_name) == 0) {
-#if defined(DEBUG)
-                        printf("Avoiding to write same species_name to AWAR_SAI_NAME twice ('%s')\n", species_name);
-#endif // DEBUG
-                    }
-                    else {
+                    if (!last_set_SAI || strcmp(last_set_SAI, species_name) != 0) {
                         free(last_set_SAI);
                         last_set_SAI = strdup(species_name);
 
@@ -783,13 +777,7 @@ void ED4_cursor::updateAwars()
                 }
                 else {
                     static char *last_set_species = 0;
-
-                    if (last_set_species && strcmp(last_set_species, species_name) == 0) {
-#if defined(DEBUG)
-                        printf("Avoiding to write same species_name to AWAR_SPECIES_NAME twice ('%s')\n", species_name);
-#endif // DEBUG
-                    }
-                    else {
+                    if (!last_set_species || strcmp(last_set_species, species_name) != 0) {
                         free(last_set_species);
                         last_set_species = strdup(species_name);
 
