@@ -15,8 +15,10 @@
 #include "../global_defs.h"
 #endif
 
-
-typedef std::set<SpeciesID> SpeciesBag;
+// DB access (@@@ should better be in module pg_db.xxx)
+GBDATA *PG_find_species(GBDATA *node,int id,long gbs);
+GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species);
+GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *rootNode, const SpeciesBag& species, int min_non_matched, int max_non_matched, int& groupsize);
 
 // initialization (needed for all functions below):
 GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...));
@@ -28,20 +30,7 @@ bool        PG_exit_find_probes();
 const char *PG_find_next_probe(GB_ERROR& error);
 
 // probe match:
-
-// struct PG_probe_match_para {
-//     // expert window
-//     double bondval[16];
-//     double split;               // should be 0.5
-//     double dtedge;              // should be 0.5
-//     double dt;                  // should be 0.5
-// };
-
 GB_ERROR PG_probe_match(PG_Group& g, const probe_config_data& para, const char *for_probe);
-
-GBDATA *PG_find_species(GBDATA *node,int id,long gbs);
-GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species);
-GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *rootNode, const SpeciesBag& species, int min_non_matched, int max_non_matched, int& groupsize);
 
 #else
 #error pg_search.hxx included twice
