@@ -1,7 +1,5 @@
 #define AP_AWAR_CONSPRO		"tmp/ntree/conservProfile2Gnuplot"
 
-#define AP_AWAR_CONSPRO_SUFFIX	          AP_AWAR_CONSPRO "/filter"
-#define AP_AWAR_CONSPRO_DIRECTORY         AP_AWAR_CONSPRO "/directory"
 #define AP_AWAR_CONSPRO_FILENAME          AP_AWAR_CONSPRO "/file_name"
 
 #define AP_AWAR_CONSPRO_SMOOTH_GNUPLOT    AP_AWAR_CONSPRO "/smooth_gnuplot"
