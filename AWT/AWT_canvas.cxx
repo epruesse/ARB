@@ -709,18 +709,17 @@ AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
 
 
 AWT_canvas::AWT_canvas(GBDATA *gb_maini,	AW_window *awwi, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awari)
-	{
-	this->gb_main = gb_maini;
-	this->aww = awwi;
-	this->user_awar = strdup(user_awari);
-	tree_disp = awd;
-	mode = AWT_MODE_NONE;
+{
+    this->gb_main   = gb_maini;
+    this->aww       = awwi;
+    this->user_awar = strdup(user_awari);
+    tree_disp       = awd;
+    mode            = AWT_MODE_NONE;
 
-	this->awr = aww->get_root();
-	gc_manager = awd->init_devices(aww, aww->get_device (AW_MIDDLE_AREA),
-		this, (AW_CL)0 );
+	this->awr          = aww->get_root();
+	gc_manager         = awd->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0 );
 	tree_disp->drag_gc = aww->main_drag_gc;
-	this->drag_gc = aww->main_drag_gc;
+	this->drag_gc      = aww->main_drag_gc;
 
 	memset((char *)&clicked_line,0,sizeof(clicked_line));
 	memset((char *)&clicked_text,0,sizeof(clicked_text));
