@@ -22,17 +22,15 @@ int main( int argc,  char *argv[] ) {
     //
     // open probe-set-database
     //
-    PS_NodePtr     root(new PS_Node(-1));
-    PS_FileBuffer *ps_db_fb = 0;
-    for (int i = 2; i < argc; ++i) {
-        const char *input_DB_name = argv[i];
-        printf( "Opening input-probe-set-database '%s'..\n", input_DB_name );
-
-        if (!ps_db_fb) {
-            ps_db_fb = new PS_FileBuffer( input_DB_name, PS_FileBuffer::READONLY );
-        } else {
-            ps_db_fb->reinit( input_DB_name,PS_FileBuffer::READONLY );
-        }
+    const char    *input_DB_name = argv[2];
+    printf( "Opening 1st input-probe-set-database '%s'..\n", input_DB_name );
+    PS_Node       *root          = new PS_Node(-1);
+    PS_FileBuffer *ps_db_fb      = new PS_FileBuffer( input_DB_name, PS_FileBuffer::READONLY );
+    root->load( ps_db_fb );
+    for (int i = 3; i < argc; ++i) {
+        input_DB_name = argv[i];
+        printf( "Appending input-probe-set-database '%s'..\n", input_DB_name );
+        ps_db_fb->reinit( input_DB_name,PS_FileBuffer::READONLY );
         root->append( ps_db_fb );
     }
     printf( "loaded databases (enter to continue)\n" );
@@ -42,7 +40,7 @@ int main( int argc,  char *argv[] ) {
     // write one big whole tree to file
     //
     const char *output_DB_name = argv[1];
-    printf( "writing probe-data to %s\n",output_DB_name );
+    printf( "Writing output-probe-set-database '%s'..\n",output_DB_name );
     ps_db_fb->reinit( output_DB_name, PS_FileBuffer::WRITEONLY );
     root->save( ps_db_fb );
     printf( "(enter to continue)\n" );
@@ -70,7 +68,6 @@ int main( int argc,  char *argv[] ) {
 
 
     delete ps_db_fb;
-//     root.SetNull();
 //     printf( "root should be destroyed now\n" );
 //     printf( "(enter to continue)\n" );
 //     getchar();

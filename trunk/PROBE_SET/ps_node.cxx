@@ -17,6 +17,45 @@ using namespace std;
 
 
 //
+// *** disk output ASCII **
+//
+bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) {
+    unsigned int size;
+    int          count;
+    //
+    // write num
+    //
+    count = sprintf( buffer, "\nN[%i P{", num );
+    _fb->put( buffer,count );
+    //
+    // write probes
+    //
+    size  = (probes == 0) ? 0 : probes->size();
+    if (size) {
+	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+            count = sprintf( buffer, " (%i_%i_%i)", (*i)->quality, (*i)->length, (*i)->GC_content );
+	    _fb->put( buffer, count );
+	}
+    }
+    //
+    // write children
+    //
+    size = children.size();
+    count = sprintf( buffer, "} C{" );
+    _fb->put( buffer, count );
+    for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
+        i->second->saveASCII( _fb,buffer );
+    }
+    //
+    // return true to signal success
+    //
+    count = sprintf( buffer, "}]" );
+    _fb->put( buffer, count );
+    return true;
+}
+
+
+//
 // *** disk output **
 //
 bool PS_Node::save( PS_FileBuffer* _fb ) {
@@ -31,8 +70,10 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     size = (probes == 0) ? 0 : probes->size();
     _fb->put( &size, sizeof(size) );
     if (size) {
+        PS_Probe p;
 	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
-	    _fb->put( (PS_Probe *)&(*i), sizeof(PS_Probe) );
+            p = **i;
+	    _fb->put( &p, sizeof(PS_Probe) );
 	}
     }
     //
@@ -66,8 +107,9 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
     if (size) {               // does node have probes ?
 	probes = new PS_ProbeSet;                                 // make new probeset
 	for (unsigned int i=0; i<size; ++i) {
-	    PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
-	    _fb->get( &(*new_probe), sizeof(PS_Probe) );          // read new probe
+            PS_Probe *p = new PS_Probe;
+	    _fb->get( p, sizeof(PS_Probe) );                      // read new probe
+	    PS_ProbePtr new_probe(p);                             // make new probe-smartpointer
 	    probes->insert( new_probe );                          // append new probe to probeset
 	}
     } else {
@@ -112,10 +154,11 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
     //
     _fb->get( &size, sizeof(size) );
     if (size) {               // does node have probes ?
-	probes = new PS_ProbeSet;                                 // make new probeset
+	if (!probes) probes = new PS_ProbeSet;                    // make new probeset
 	for (unsigned int i=0; i<size; ++i) {
-	    PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
-	    _fb->get( &(*new_probe), sizeof(PS_Probe) );          // read new probe
+            PS_Probe *p = new PS_Probe;
+	    _fb->get( p, sizeof(PS_Probe) );                      // read new probe
+	    PS_ProbePtr new_probe(p);                             // make new probe-smartpointer
 	    probes->insert( new_probe );                          // append new probe to probeset
 	}
     }

@@ -9,6 +9,7 @@ LIBS = -L$(ARBHOME)/LIBLINK -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 DEST_EXECUTABLES = \
 	$(ARBHOME)/PROBE_SET/fb_test \
+	$(ARBHOME)/PROBE_SET/ps_my2ascii \
 	$(ARBHOME)/bin/arb_probe_set4 \
 	$(ARBHOME)/bin/arb_probe_set3 \
 	$(ARBHOME)/bin/arb_probe_set2 \
@@ -25,22 +26,32 @@ SHARED_OBJECTS = ps_node.o ps_filebuffer.o
 PROBE_SET1_OBJECTS = ps_dump_db.o
 $(ARBHOME)/bin/arb_probe_set1 : $(SHARED_OBJECTS) $(PROBE_SET1_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET1_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET1_OBJECTS) $(LIBS)
 
 PROBE_SET2_OBJECTS = ps_merge_my_dbs.o
 $(ARBHOME)/bin/arb_probe_set2 : $(SHARED_OBJECTS) $(PROBE_SET2_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET2_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET2_OBJECTS) $(LIBS)
 
 PROBE_SET3_OBJECTS = ps_make_sample_db.o
 $(ARBHOME)/bin/arb_probe_set3 : $(SHARED_OBJECTS) $(PROBE_SET3_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET3_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET3_OBJECTS) $(LIBS)
 
 PROBE_SET4_OBJECTS = ps_detect_weak_differences.o
 $(ARBHOME)/bin/arb_probe_set4 : $(SHARED_OBJECTS) $(PROBE_SET4_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET4_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET4_OBJECTS) $(LIBS)
 
 PROBE_SET5_OBJECTS = fb_test.o
 $(ARBHOME)/PROBE_SET/fb_test : $(SHARED_OBJECTS) $(PROBE_SET5_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET5_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET5_OBJECTS) $(LIBS)
+
+PROBE_SET6_OBJECTS = ps_my2ascii.o
+$(ARBHOME)/PROBE_SET/ps_my2ascii : $(SHARED_OBJECTS) $(PROBE_SET6_OBJECTS)
+	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET6_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET6_OBJECTS) $(LIBS)
 
 CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PROBE_SET1_OBJECTS) \
@@ -48,9 +59,10 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PROBE_SET3_OBJECTS) \
 	$(PROBE_SET4_OBJECTS) \
 	$(PROBE_SET5_OBJECTS) \
+	$(PROBE_SET6_OBJECTS) \
 
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
+	$(CPP) $(cflags) -pg -g -a -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
 
 depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)

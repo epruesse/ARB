@@ -306,10 +306,10 @@ int main( int argc,  char *argv[] ) {
         // stage 2 : extract data
         //
         printf( "extracting probe-data...\n" );
-        PS_NodePtr root         = new PS_Node(-1);
-        int        probe_length = PS_detect_probe_length( group_tree );
+        int      probe_length = PS_detect_probe_length( group_tree );
         printf( "probe_length = %d\n",probe_length );
     
+        PS_NodePtr  root = new PS_Node(-1);
         first_level_node = PS_get_first_node( group_tree );
         unsigned int first_level_node_counter = 0;
         unsigned long int double_probes   = 0;
@@ -334,10 +334,11 @@ int main( int argc,  char *argv[] ) {
         PS_FileBuffer *fb = new PS_FileBuffer( argv[2], PS_FileBuffer::WRITEONLY );
         root->save( fb );
         delete fb;
+
+        root.Discard();
         printf( "(enter to continue)\n" );
 //        getchar();
 
-//        root.SetNull();
     }
 
 
@@ -355,9 +356,6 @@ int main( int argc,  char *argv[] ) {
     //     } while (first_level_node);
     //   }
 
-    printf( "root should be destroyed now\n" );
-    printf( "(enter to continue)\n" );
-//    getchar();
     return 0;
 }
 
