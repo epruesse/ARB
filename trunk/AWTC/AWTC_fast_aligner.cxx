@@ -97,8 +97,12 @@ static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prote
             int length = GB_read_string_count(gbd);
             GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, ali);
 
-            error = GBT_reverseComplementNucSequence(seq, length, ali_type);
-            if (!error) error = GB_write_string(gbd, seq);
+            char T_or_U;
+            error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
+            if (!error) {
+                GBT_reverseComplementNucSequence(seq, length, T_or_U);
+                error = GB_write_string(gbd, seq);
+            }
         }
         else { // protection error
             char *name = GBT_read_name(gb_species);
