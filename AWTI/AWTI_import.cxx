@@ -240,6 +240,7 @@ void awtc_check_input_format(AW_window *aww)
                 sprintf(com,"cat %s 2>/dev/null",f);
                 in = popen(com,"r");
             }
+            free(f);
             if (!in) {
                 aw_message( "Cannot open any input file");
                 *file = 0;
@@ -257,6 +258,7 @@ void awtc_check_input_format(AW_window *aww)
                 }
             }
         }
+        free(autodetect);
     }
     if (!*file) {       // nothing found
         root->awar(AWAR_FORM"/file_name")->write_string("unknown.ift");
