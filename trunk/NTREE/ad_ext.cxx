@@ -11,11 +11,12 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <aw_awars.hxx>
-#include "ad_ext.hxx"
+
+#define AWAR_SAI_DEST "tmp/focus/extended_dest"
 
 extern GBDATA *gb_main;
 
-void create_extendeds_var(AW_root *aw_root, AW_default aw_def)
+void NT_create_extendeds_var(AW_root *aw_root, AW_default aw_def)
 {
     aw_root->awar_string( AWAR_SAI_NAME, "" ,    aw_def);
     aw_root->awar_string( AWAR_SAI_DEST, "" ,    aw_def);
@@ -227,7 +228,7 @@ void ad_ad_group(AW_window *aww){
     free(source);
 }
 
-AW_window *create_extendeds_window(AW_root *aw_root)
+AW_window *NT_create_extendeds_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");

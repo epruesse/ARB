@@ -356,7 +356,7 @@ void nt_trans_cursorpos_changed(AW_root *awr) {
     awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
 }
 
-AW_window *create_dna_2_pro_window(AW_root *root) {
+AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     AWUSE(root);
     GB_transaction dummy(gb_main);
 
@@ -835,7 +835,7 @@ void transdna_event(AW_window *aww)
 
 }
 
-AW_window *create_realign_dna_window(AW_root *root)
+AW_window *NT_create_realign_dna_window(AW_root *root)
 {
     AWUSE(root);
 
@@ -868,11 +868,11 @@ AW_window *create_realign_dna_window(AW_root *root)
 
 void create_transpro_menus(AW_window *awmm)
 {
-    awmm->insert_menu_topic("dna_2_pro",    "Translate Nucleic to Amino Acid ...","T","translate_dna_2_pro.hlp",        AWM_PRO,    AW_POPUP, (AW_CL)create_dna_2_pro_window, 0 );
-    awmm->insert_menu_topic("realign_dna",  "Realign Nucleic Acid according to Aligned Protein ...","r","realign_dna.hlp",  AWM_PRO,    AW_POPUP, (AW_CL)create_realign_dna_window, 0 );
+    awmm->insert_menu_topic("dna_2_pro",    "Translate Nucleic to Amino Acid ...","T","translate_dna_2_pro.hlp",        AWM_PRO,    AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0 );
+    awmm->insert_menu_topic("realign_dna",  "Realign Nucleic Acid according to Aligned Protein ...","r","realign_dna.hlp",  AWM_PRO,    AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0 );
 }
 
-void create_transpro_variables(AW_root *root,AW_default db1)
+void NT_create_transpro_variables(AW_root *root,AW_default db1)
 {
     root->awar_string(AWAR_TRANSPRO_SOURCE, "",         db1);
     root->awar_string(AWAR_TRANSPRO_DEST,   "",         db1);
