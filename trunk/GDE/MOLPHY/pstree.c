@@ -153,9 +153,9 @@ Tree *tr;
 		if (len == 0) len = 1;
 		if (cp->descen) x += len;
 		if (cp->isop == NULL) { /* external node */
-			(Sciname[cp->num] && Sciname[cp->num][0] != '\0') ?  /* @@@OLIVER */
-				(name = Sciname[cp->num]) : (name = Identif[cp->num]);
-			s = (int)(fontw * (strlen(name) + 1) + 10);
+			name = ((Sciname[cp->num] && (Sciname[cp->num][0] != '\0'))
+                    ? Sciname[cp->num] : Identif[cp->num]); /* @@@OLIVER */
+			s    = (int)(fontw * (strlen(name) + 1) + 10);
 			if (Engname[cp->num] && Engname[cp->num][0] != '\0') { /* @@@OLIVER */
 				s += (int)(fontw * (strlen(Engname[cp->num]) + 1));
 			}
