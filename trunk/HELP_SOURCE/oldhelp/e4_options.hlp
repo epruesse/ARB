@@ -14,42 +14,66 @@ OCCURRENCE	ARB_EDIT4/Properties/Options...
 
 DESCRIPTION	This window allows you to adjust some display parameters
 
-	Online Sequence Compression 
+SECTION Online Sequence Compression 
 
 		Online Sequence Compression (OSC) is a way to hide column positions
 		(normally: column positions containing only or many gaps) in order
 		to simplify editing of aligments with wide gaps.
 
 		OSC affects only the manner how sequences are DISPLAYED in the
-		editor and does not affect the sequences themselves. 
+		editor and does not affect the sequences themselves.
 
-		All compression modes are named by the following naming convention:
+           Available modes:
 
-			GAP: 0 		Hide every column consisting only of gaps
+                Show all gaps: Nothing is hidden.
 
-			GAP: SOME 	Dynamically show some columns for each
-					block of columns consisting only of gaps.
+                Show some gaps: For each column range (consisting of gaps only) a different
+                amount of gaps is shown, depending on the width of that column range.
+                In detail:
 
+                   sequence has less than gaps    =>    display that many gaps
+                            100                                 G/10+1
+                            1000                                G/100+1
+                            else                                G/1000+1
 
-			HIDE: 0		Do NOT hide any column containing bases.
+                Hide all gaps:
 
-			HIDE: xx% 	Hide all columns containing less than xx
-					percent bases.
+                     Hide no nucleotides: All column ranges consisting of gaps only are hidden.
+
+                     Hide columns with less than X% nucleotides: This mode really makes nucleotides
+                     disappear from display. Use with care!
+
 
 		Those above mentioned column values are calculated on the basis of
 		all sequences currently loaded in the editor.
 
-			SPEC.		Special edit mode to edit over gaps 
-			EDIT		(not working yet)
+                Only sequence data is taken into respect while calculating gap positions.
+                It is possible, that parts of a SAI get hidden by using OSC.
 
-			COM		Deactivate OSC
-			OFF
+SECTION Layout
 
-		Editing 
+        Sequence-helix spacing: Extra distance between sequence data and helix display (Default=0).
 
+        Sequence-sequence spacing: Extra distance between two sequences (Default=0).
+
+        Note: You may use negative values for the above settings to get a very compact
+              display. Note that this will cause some minor drawbacks like cut-off
+              underlengths (e.g. with small 'g') and character overlapping. Additional compaction
+              is possible by switching off the helix display (see LINK{helixsym.hlp}).
+
+SECTION Scroll-Speed
+
+        Define the horizontal and vertical scroll speed for mouse scrolling (with middle mouse button).
+        The default scroll-speed is 10/10, which scrolls with same speed as the mouse is moved.
+
+SECTION Editing
+
+        Gap characters: set of characters which are handled as "gaps"
+
+        
 
 EXAMPLES	None
 		
-WARNINGS	None
+WARNINGS        None
 
 BUGS		None
