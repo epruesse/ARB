@@ -1,7 +1,7 @@
 #ifndef awt_hxx_included
 #define awt_hxx_included
 
-
+const char * AWT_date_string(void);
 
 char *AWT_fold_path(char *path, const char *pwd = "PWD");
 char *AWT_unfold_path(const char *path, const char *pwd = "PWD");
