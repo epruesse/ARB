@@ -529,7 +529,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
 /***************************************************************************************
 *******         Reference to abs pos                    ********
 ****************************************************************************************/
-void BI_ecoli_ref::exit(void){
+void BI_ecoli_ref::bi_exit(void){
     delete [] _abs_2_rel1;
     delete [] _abs_2_rel2;
     delete [] _rel_2_abs;
@@ -544,15 +544,16 @@ BI_ecoli_ref::BI_ecoli_ref(void)
 }
 
 BI_ecoli_ref::~BI_ecoli_ref(void){
-    exit();
+    bi_exit();
 }
 
 const char *BI_ecoli_ref::init(char *seq,long size)
 {
-    exit();
+    bi_exit();
+    
     _abs_2_rel1 = new long[size];
     _abs_2_rel2 = new long[size];
-    _rel_2_abs = new long[size];
+    _rel_2_abs  = new long[size];
     memset((char *)_rel_2_abs,0,(size_t)(sizeof(long)*size));
 
     _rel_len = 0;

@@ -95,7 +95,7 @@ class BI_ecoli_ref {
         long *_abs_2_rel1;
         long *_abs_2_rel2;
         long *_rel_2_abs;
-        void    exit(void);
+        void    bi_exit(void);
     public:
     BI_ecoli_ref(void);
     ~BI_ecoli_ref(void);
