@@ -10,15 +10,15 @@ include config.makefile
 #
 # The ARB source code is aware of the following defines
 #
-# GNU					activates __attribute__ definitions
-# HAVE_BOOL				should be true if compiler supports the type 'bool'
-# $(MACH)				name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
-# NO_INLINE				for machines w/o keyword 'inline' (needs code fixes, cause we have no such machine)
-# NO_REGEXPR			for machines w/o regular expression library
+# GNU			activates __attribute__ definitions
+# HAVE_BOOL		should be true if compiler supports the type 'bool'
+# $(MACH)		name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
+# NO_INLINE		for machines w/o keyword 'inline' (needs code fixes, cause we have no such machine)
+# NO_REGEXPR		for machines w/o regular expression library
 #
-# DEBUG					compiles the DEBUG sections
-# NDEBUG				doesnt compile the DEBUG sections
-# DEBUG_GRAPHICS		all X-graphics are flushed immediately (for debugging)
+# DEBUG			compiles the DEBUG sections
+# NDEBUG		doesnt compile the DEBUG sections
+# DEBUG_GRAPHICS 	all X-graphics are flushed immediately (for debugging)
 # DEVEL_$(DEVELOPER)	developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
@@ -43,6 +43,7 @@ endif
 #---------------------- developer specific settings
 
 DEVEL_DEF=-DDEVEL_$(DEVELOPER)
+OPENGL=0 # open gl tools are experimental yet
 
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
 DEVEL_DEF=
@@ -50,10 +51,15 @@ endif
 
 ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
 DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS -DDEVEL_ARTEM
+OPENGL=1
 endif
 
 ifeq ($(DEVELOPER),HARALDX) # special settings for HARALDX
 DEVEL_DEF=-DDEVEL_HARALD -DDEVEL_ARTEM
+endif
+
+ifeq ($(DEVELOPER),YADHU) # special settings for YADHU
+OPENGL=1
 endif
 
 #----------------------
@@ -535,10 +541,7 @@ ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
 		RNA3D/OPENGL/OPENGL.a \
 
-$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
-#	@echo $@ currently does not work as standalone application
-#	false
-
+$(RNA3D): gl $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
 		echo Link $@ ; \
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
@@ -567,8 +570,6 @@ ARCHS_EDIT4 = \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
-		RNA3D/RNA3D.a \
-		RNA3D/OPENGL/OPENGL.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		STAT/STAT.a \
 		ARB_GDE/ARB_GDE.a \
@@ -578,8 +579,8 @@ ARCHS_EDIT4 = \
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(GLLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)  $(GLLIBS) ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_wetc **************************************
@@ -1244,7 +1245,13 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip 3d gl
+ifeq ($(OPENGL),1) # build opengl tools?
+OPENGL_TARGETS=3d
+else
+OPENGL_TARGETS=
+endif
+
+arbxtras: tg ps pc pst chip $(OPENGL_TARGETS)
 
 tryxtras:
 		@echo $(SEP)
