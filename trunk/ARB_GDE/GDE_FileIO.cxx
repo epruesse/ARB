@@ -203,8 +203,8 @@ void LoadData(char *filen)
                 aw_message(GBS_global_string("Internal error: unknown file type of file %s",filen));
                 break;
         }
+        fclose(file);
     }
-    fclose(file);
     sprintf(temp,"Genetic Data Environment 2.2 (%s)",FileName);
     return;
 }
