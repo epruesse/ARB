@@ -62,6 +62,7 @@ test: all
 	(	mkdir -p $(TESTDIR)/debug ;\
 	        cd $(TESTDIR)/debug ;\
 		echo "----------------------------------------" ;\
+		echo "OOOOOOOOOOOOPS - incorrect server address!!!" ;\
 		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/ ;\
 		echo "----------------------------------------" ;\
 	        ls -al -rt )
@@ -70,8 +71,7 @@ test_master: all
 	(	mkdir -p $(TESTDIR)/master ;\
 		cd $(TESTDIR)/master ;\
 		echo "----------------------------------------" ;\
-		echo "Adress has to be changed to probeserver.mikro..." ;\
-		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probe_library/ ;\
+		java -jar $(BASE)/$(JAR)  ;\
 		echo "----------------------------------------" ;\
 		ls -al -rt )
 

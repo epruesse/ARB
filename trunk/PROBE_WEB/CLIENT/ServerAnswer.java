@@ -135,7 +135,7 @@ public boolean hasError()
 
 public String getError()
     {
-        if (!hasError()) return "";
+        if (!hasError()) return "no error";
         return error_message;
     }
 

@@ -2,22 +2,33 @@
 ToDo for arb_probe_library CLIENT:
 ==================================
 
-- disable refresh of species list during print 
-
-- Don't send request, if result is known to be empty
-        (e.g. if node has no probes etc.)
-
 - list of probes:
         ** sort by different criteria
         ** restrict to probes in specified temperature- and/or gccontent-range
+        ** colorize partial equally probes according to selected probe
+           (or use '=' if color impossible)
+        ** disable refresh during print
 
-- allow search for species by name
+- allow search for species by name and by acc
+        ** implementation:
+        *** mark by name and by acc
+        *** jump to "root-of marked"
 
 - tree display:
         ** change folding (use groups, autofold if display will get to high)
         ** show group names? (at least if group is folded; if open -> display left of branch)
         ** if (display width != tree width) => stretch branches
+        ** hotkey to jump to "root of marked"
+        ** add virtual button left-upwards of root-branch: UP, [GROUP,]* ROOT
+        ** add scale bar
 
+- details:
+        ** missing information:
+        *** probe length
+        *** % of subtree (and total # of species in subtree)
+
+- Don't send request, if result is known to be empty
+        (e.g. if node has no probes etc.)
 
 
 
