@@ -34,10 +34,10 @@ class Client
 
     public HttpSubsystem webAccess() { return webAccess; }
 
-    private HashMap knownOptions()
-    {
+    private HashMap knownOptions() {
+        // declares the known options 
         HashMap hm = new HashMap();
-        hm.put("server", "=URL        Specify server URL manually (note: needs leading /)");
+        hm.put("server", "=URL        Specify server URL manually");
         hm.put("tree",   "=reload       Force tree reload");
         return hm;
     }
@@ -138,9 +138,8 @@ class Client
 
         String emptyMessage = null;
         try {
-            lastNode                = clickedNode;
-            boolean    exactMatches = clickedNode.getExactMatches() > 0;
-            NodeProbes probes       = clickedNode.getNodeProbes(exactMatches);
+            lastNode          = clickedNode;
+            NodeProbes probes = clickedNode.getNodeProbes();
 
             // Toolkit.clickOK("Nachricht", "Die Sonden wurden geholt");
 
@@ -242,9 +241,9 @@ class Client
             int hit_count          = probe.no_of_hits();
             int species_in_subtree = lastNode.getNoOfLeaves();
 
-            theText.append("\nThe probe matches " + hit_count +
-                           " of " + species_in_subtree + " species = " +
-                           (int)((hit_count*100.0/species_in_subtree)+0.5)+"%\n");
+            theText.append("\nThe probe matches " + hit_count + " " +
+                           (int)((hit_count*100.0/species_in_subtree)+0.5)+"% of "+
+                           species_in_subtree + " species.\n");
 
             komma = 0;
             begin = 0;
@@ -304,15 +303,15 @@ class Client
         return new Dimension(width, height);
     }
 
-    public static void showRect(Rectangle rect, String name) {
-        System.out.println("Rectangle "+name+": lu="+rect.x+"/"+rect.y+
-                           " rl="+(rect.x+rect.width-1)+"/"+(rect.y+rect.height-1)+
-                           " sz="+rect.width+"/"+rect.height);
-    }
+    // public static void showRect(Rectangle rect, String name) {
+        // System.out.println("Rectangle "+name+": lu="+rect.x+"/"+rect.y+
+                           // " rl="+(rect.x+rect.width-1)+"/"+(rect.y+rect.height-1)+
+                           // " sz="+rect.width+"/"+rect.height);
+    // }
 
     private void createProbesGUI() throws Exception {
         Point     wantedOrigin         = null;
-        Dimension wantedScrollPaneSize = null; 
+        Dimension wantedScrollPaneSize = null;
 
         if (config != null) {
             try {
@@ -322,7 +321,7 @@ class Client
             catch (Exception e) {
                 System.out.println("Your config seems to be corrupted:");
                 System.out.println(e.getMessage());
-                
+
                 wantedScrollPaneSize = null;
                 wantedOrigin         = null;
             }
@@ -362,81 +361,105 @@ class Client
         display      = new ProbesGUI(10, title, this, wantedBounds, wantedScrollPaneSize, 40);
     }
 
+    private void initialize(CommandLine cmdline) throws Exception {
+        if (cmdline.getOption("server")) {
+            baseurl = cmdline.getOptionValue("server");
+        }
+        else {
+            baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
+            // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging (curr. not working)
+        }
+        if (baseurl.charAt(baseurl.length()-1) != '/') baseurl += '/'; // force trailing slash
+
+        loadConfig();
+        createProbesGUI(); // creates 'display'
+        iom = new IOManager(display);
+
+        try {
+            NodeProbes.webAccess = webAccess = new HttpSubsystem(baseurl);
+
+            // ask server for version info
+            Toolkit.showMessage("Contacting probe server ..");
+            webAccess.retrieveVersionInformation(); // terminates on failure (e.g. if no connection)
+
+            if (!Toolkit.interface_version.equals(webAccess.getNeededInterfaceVersion())) {
+                Toolkit.AbortWithError("Your client is out-of-date!\n"+
+                                       "Please get the newest version from\n  "+baseurl+"arb_probe_library.jar");
+            }
+            if (!Toolkit.client_version.equals(webAccess.getAvailableClientVersion())) {
+                String whatToDo = Toolkit.askUser("Notice", "A newer version of this client is available", "Ignore,Exit");
+
+                if (whatToDo.equals("Download")) {
+                    Toolkit.AbortWithError("download not implemented yet.");
+                }
+                if (whatToDo.equals("Exit")) {
+                    System.exit(1);
+                }
+            }
+            else {
+                Toolkit.showMessage("Your client is up to date.");
+            }
+
+            // load and parse the most recent tree
+            {
+                boolean reload_tree = cmdline.getOption("tree") && cmdline.getOptionValue("tree").equals("reload");
+                treeString       = readTree(webAccess, reload_tree); // terminates on failure
+                root             = (new TreeParser(treeString)).getRootNode();
+                fillShortNameHash(root);
+            }
+
+            if (root == null) Toolkit.AbortWithError("no valid node given to display");
+
+            root.setPath("");
+            display.initTreeDisplay(root);
+
+            TreeDisplay td          = display.getTreeDisplay();
+            boolean     needRefresh = false;
+            if (config.hasKey("Folding")) { // restore saved folding
+                try {
+                    td.setFolding(config.getValue("Folding"));
+                    needRefresh = true;
+                }
+                catch (Exception e) {
+                    Toolkit.showMessage("Error restoring folding state:\n  "+e.getMessage());
+                }
+            }
+            if (config.hasKey("VisibleSubtree")) { // restore visible subtree
+                td.setVisibleSubtree(td.findNodeByCodedPath(config.getValue("VisibleSubtree")));
+                needRefresh = true;
+            }
+            if (config.hasKey("LastMatchedSubtree")) { // restore last matched subtree
+                td.setMatchedNode(td.findNodeByCodedPath(config.getValue("LastMatchedSubtree")));
+                needRefresh = true;
+            }
+
+            if (needRefresh) td.refresh();
+        }
+        catch (ClientException e) {
+            Toolkit.showError(e.getMessage());
+            Toolkit.clickButton(e.get_kind(), e.get_plain_message(), "Exit");
+            System.exit(e.get_exitcode());
+        }
+        catch (Exception e) {
+            Toolkit.showError(e.getMessage());
+            e.printStackTrace();
+            Toolkit.clickButton("Uncaught exception", e.getMessage(), "Exit");
+            System.exit(3);
+        }
+    }
+
     public static void main(String[] args)
     {
-        Client cl          = new Client();
-        Toolkit.clientName = "ARB probe library";
+        Client cl = new Client();
 
         System.out.println(Toolkit.clientName+" v"+Toolkit.client_version+" -- (C) 2003/2004 Lothar Richter & Ralf Westram");
         try {
             CommandLine cmdline = new CommandLine(args, cl.knownOptions());
-
-            if (cmdline.getOption("server")) {
-                cl.baseurl = cmdline.getOptionValue("server");
-            }
-            else {
-                cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
-                // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
-            }
-
-            cl.loadConfig();
-            cl.createProbesGUI();
-            cl.iom = new IOManager(cl.display);
-
-            // check correctness of application placement:
-            Rectangle resBounds = cl.display.getBounds(null);
-            // showRect(resBounds, "resBounds (wrong value, but seems correct)");
-
-            try {
-                cl.webAccess         = new HttpSubsystem(cl.baseurl);
-                NodeProbes.webAccess = cl.webAccess;
-
-                // ask server for version info
-                Toolkit.showMessage("Contacting probe server ..");
-                cl.webAccess.retrieveVersionInformation(); // terminates on failure
-
-                if (!Toolkit.interface_version.equals(cl.webAccess.getNeededInterfaceVersion())) {
-                    Toolkit.AbortWithError("Your client is out-of-date!\n"+
-                                           "Please get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
-                }
-                if (!Toolkit.client_version.equals(cl.webAccess.getAvailableClientVersion())) {
-                    String whatToDo = Toolkit.askUser("Notice", "A newer version of this client is available", "Ignore,Exit");
-
-                    if (whatToDo.equals("Download")) {
-                        Toolkit.AbortWithError("download not implemented yet.");
-                    }
-                    if (whatToDo.equals("Exit")) {
-                        System.exit(1);
-                    }
-                }
-                else {
-                    Toolkit.showMessage("Your client is up to date.");
-                }
-
-                // load and parse the most recent tree
-                {
-                    boolean reload_tree = cmdline.getOption("tree") && cmdline.getOptionValue("tree").equals("reload");
-                    cl.treeString       = cl.readTree(cl.webAccess, reload_tree); // terminates on failure
-                    cl.root             = (new TreeParser(cl.treeString)).getRootNode();
-                    cl.fillShortNameHash(cl.root);
-                }
-
-                if (cl.root == null) Toolkit.AbortWithError("no valid node given to display");
-
-                cl.root.setPath("");
-                cl.display.initTreeDisplay(cl.root);
-            }
-            catch (ClientException e) {
-                Toolkit.showError(e.getMessage());
-                Toolkit.clickButton(e.get_kind(), e.get_plain_message(), "Exit");
-                System.exit(e.get_exitcode());
-            }
-            catch (Exception e) {
-                Toolkit.showError(e.getMessage());
-                e.printStackTrace();
-                Toolkit.clickButton("Uncaught exception", e.getMessage(), "Exit");
-                System.exit(3);
-            }
+            cl.initialize(cmdline);
+        }
+        catch (ClientException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
         catch (Exception e) {
             System.out.println("Uncaught exception: "+e.getMessage());
@@ -468,24 +491,35 @@ class Client
         Point     location = display.getLocationOnScreen();
         Dimension psize    = display.getPreferredScrollPaneSize();
 
-        // System.out.println("Current location on screen: x="+location.x+" y="+location.y);
-        // System.out.println("Scroll pane dimension:      width="+psize.width+" height="+psize.height+" (getPreferredScrollPaneSize)");
+        StringBuffer configBuf = new StringBuffer(1000);
 
-        String configuration =
-            "LocationX="+location.x+"\n"+
-            "LocationY="+location.y+"\n"+
-            "Width="+psize.width+"\n"+
-            "Height="+psize.height+"\n";
+        configBuf.append("LocationX="+location.x+"\n");
+        configBuf.append("LocationY="+location.y+"\n");
+        configBuf.append("Width="+psize.width+"\n");
+        configBuf.append("Height="+psize.height+"\n");
 
+        TreeDisplay tree_display = display.getTreeDisplay();
+        configBuf.append("Folding="+tree_display.getFolding()+"\n");
+        configBuf.append("VisibleSubtree="+tree_display.getVisibleSubtree().getCodedPath()+"\n");
+
+        TreeNode lastMatched = tree_display.getLastMatchedNode();
+        if (lastMatched != null) {
+            configBuf.append("LastMatchedSubtree="+lastMatched.getCodedPath()+"\n");
+        }
+
+        String configuration = configBuf.toString();
         System.out.println("Saving config to "+configFileName);
+
         iom.saveAs("config", configuration, configFileName);
     }
 
     public void loadConfig() throws Exception {
         try {
-            String           content = "";
-            FileReader       infile  = new FileReader(configFileName);
-            LineNumberReader in      = new LineNumberReader(infile);
+            String     content = "";
+            FileReader infile  = new FileReader(configFileName);
+
+            System.out.println("Loading config "+configFileName);
+            LineNumberReader in = new LineNumberReader(infile);
 
             while (true) {
                 String line  = in.readLine();
