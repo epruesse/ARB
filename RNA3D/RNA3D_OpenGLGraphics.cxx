@@ -7,6 +7,15 @@
 
 #include <math.h>
 
+// The following includes are needed to use AW_window_Motif 
+// and access Application's colormap
+#include "../WINDOW/aw_awar.hxx"
+#include "../WINDOW/aw_Xm.hxx"
+#include "../WINDOW/aw_click.hxx"
+#include "../WINDOW/aw_size.hxx"
+#include "../WINDOW/aw_print.hxx"
+#include "../WINDOW/aw_window_Xm.hxx"
+#include "../WINDOW/aw_commn.hxx"
 
 using namespace std;
 
@@ -17,38 +26,71 @@ OpenGLGraphics::OpenGLGraphics(void){
 OpenGLGraphics::~OpenGLGraphics(void){
 }
 
-void OpenGLGraphics::SetBackGroundColor(int color){
-    glClearColor(0,0,0,1);
+// Sets the Background Color for the OpenGL Window
+void OpenGLGraphics::SetOpenGLBackGroundColor() {
+	extern Widget _glw;
+	unsigned long bgColor;
+	XtVaGetValues( _glw, XmNbackground, &bgColor, NULL );
+
+    extern AWT_canvas *gl_Canvas;
+    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+
+    XColor xcolor;
+    xcolor.pixel = bgColor;
+    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
+    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+
+    float r, g, b; r = g = b = 0.0;
+    r = (float) xcolor.red / 65535.0;
+    g = (float) xcolor.green / 65535.0;
+    b = (float) xcolor.blue / 65535.0;
+
+    // set OpenGL Backgroud Color to the widget's backgroud     
+    glClearColor(r, g, b, 1);
+
+    extern ColorRGBf ApplicationBGColor;
+    ApplicationBGColor = ColorRGBf(r, g, b);
 }
 
-void OpenGLGraphics::SetColor(int gc) {
-    float r, g, b;
-    extern AW_window_menu_modes_opengl *awm;
-    const char *ERROR = awm->GC_to_RGB_float(awm->get_device(AW_MIDDLE_AREA), gc, r, g, b);
-    if (ERROR) {
-        cout<<"Error retrieving RGB values for GC #"<<gc<<" : "<<ERROR
-            <<endl<<"Setting the color to default white"<<endl;
-        glColor4f(1,1,1,1);
-    }
-    else {
-        glColor4f(r,g,b,1);
-    }
-}
-
-ColorRGBf OpenGLGraphics::GetColor(int gc) {
+// Converts the GC into RGB values 
+ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     ColorRGBf clr = ColorRGBf(0,0,0);
-    float r, g, b;
+    float r, g, b; r = g = b = 0.0;
+   
+    extern AWT_canvas *gl_Canvas;
+    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
-    extern AW_window_menu_modes_opengl *awm;
-    const char *ERROR = awm->GC_to_RGB_float(awm->get_device(AW_MIDDLE_AREA), gc, r, g, b);
-    if (ERROR) {
-        cout<<"Error retrieving RGB values for GC #"<<gc<<" : "<<ERROR<<endl;
-        return clr;
-    }
-    else {
-        clr = ColorRGBf(r,g,b);
-        return clr;
-    }
+    AW_common *common = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
+    register class AW_GC_Xm *gcm = AW_MAP_GC( gc );
+ 
+    XGCValues xGCValues;
+    XGetGCValues( XtDisplay( w ), gcm->gc, GCForeground, &xGCValues );
+    unsigned long color = xGCValues.foreground;
+
+    XColor xcolor;
+    xcolor.pixel = color;
+
+    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
+	XQueryColor( XtDisplay( w ), colormap, &xcolor );
+	
+	r = (float) xcolor.red / 65535.0;
+	g = (float) xcolor.green / 65535.0;
+	b = (float) xcolor.blue / 65535.0;
+
+    clr = ColorRGBf(r,g,b);
+    return clr;
+}
+
+// Converts the GC into RGB values and sets the glColor
+void OpenGLGraphics::SetColor(int gc) {
+    ColorRGBf color = ConvertGCtoRGB(gc);
+    glColor4f(color.red, color.green, color.blue, 1);
+}
+
+// Converts the GC into RGB values and returns them 
+ColorRGBf OpenGLGraphics::GetColor(int gc) {
+    ColorRGBf color = ConvertGCtoRGB(gc);
+    return color;
 }
 
 void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
@@ -97,7 +139,7 @@ void OpenGLGraphics::DrawCursor(int x, int y) {
 }
 
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font) {
-    glRasterPos3d(x, y, z);
+    glRasterPos3f(x, y, z);
     for (unsigned int i = 0; i < strlen(s); i++) {
         glutBitmapCharacter(font, s[i]);
     }

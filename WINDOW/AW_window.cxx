@@ -1476,6 +1476,7 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
     XColor     query_color;
 
     query_color.pixel = pixel;
+     
     XQueryColor(p_global->display, p_global->colormap, &query_color);
     // @@@ FIXME: error handling!
 
@@ -3773,31 +3774,37 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
                                           //XmNrightWidget, p_w->scroll_bar_vertical,
                                           NULL);
 
-    Arg args[15];
+    Arg args[20];
     int n;
     Widget glw;
     n = 0;
 
-    XtSetArg(args[n], GLwNrgba, True); n++;
-    XtSetArg(args[n], GLwNallocateBackground, True); n++;
-    XtSetArg(args[n], GLwNdoublebuffer, True); n++;
-    XtSetArg(args[n], GLwNdepthSize, True); n++;
-    XtSetArg(args[n], GLwNstencilSize, True); n++;
-//    XtSetArg(args[n], GLwNredSize, 4); n++; printf("***************** args\n");
-//    XtSetArg(args[n], GLwNgreenSize, 4); n++; printf("***************** args\n");
-//    XtSetArg(args[n], GLwNblueSize, 4); n++; printf("***************** args\n");
+    XtSetArg(args[n], (char *) GLwNrgba, True); n++;
+    XtSetArg(args[n], (char *) GLwNallocateBackground, True); n++;
+    XtSetArg(args[n], (char *) GLwNallocateOtherColors,True); n++;
+    XtSetArg(args[n], (char *) GLwNdoublebuffer, True); n++;
+    XtSetArg(args[n], (char *) GLwNdepthSize, True); n++;
+    XtSetArg(args[n], (char *) GLwNredSize, 4); n++; 
+    XtSetArg(args[n], (char *) GLwNgreenSize, 4); n++;
+    XtSetArg(args[n], (char *) GLwNblueSize, 4); n++; 
 
-	static int alpha_Attributes[] = {GLX_RGBA, GLX_RED_SIZE, 4, GLX_GREEN_SIZE, 4, GLX_BLUE_SIZE, 4, GLX_ALPHA_SIZE, 4, None};
+	static int alpha_Attributes[] = { GLX_RGBA, 
+                                      GLX_DEPTH_SIZE, 12, 
+                                      GLX_RED_SIZE, 4, 
+                                      GLX_GREEN_SIZE, 4, 
+                                      GLX_BLUE_SIZE, 4, 
+                                      GLX_ALPHA_SIZE, 4, 
+                                      None};
 
  	Widget tmp = XtCreateWidget("glw", glwMDrawingAreaWidgetClass,
-		form2, args, n);
+                                form2, args, n);
 
 	XVisualInfo *vi;
 	Display *dpy;
 	dpy = XtDisplay(tmp);
 	vi = glXChooseVisual(dpy, DefaultScreen( dpy ), alpha_Attributes);
 	if (vi) {
-		XtSetArg(args[n], GLwNalphaSize, 4); n++;
+		XtSetArg(args[n], (char *) GLwNalphaSize, 4); n++;
 		extern bool alpha_Size_Supported;
 		alpha_Size_Supported = true;
 		printf("Alpha channel supported\n");
@@ -3806,7 +3813,7 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
 		alpha_Size_Supported = false;
 		printf("Alpha channel NOT supported\n");
 	}
-
+	
 	XtSetArg(args[n], XmNmarginHeight, 0); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
 	XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;

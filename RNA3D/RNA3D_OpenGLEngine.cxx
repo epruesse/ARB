@@ -7,7 +7,6 @@
 #include "RNA3D_Renderer.hxx"
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_Interface.hxx"
-//#include "RNA3D_Main.hxx"
 
 OpenGLGraphics *cGraphics  = new OpenGLGraphics();
 Structure3D    *cStructure = new Structure3D();
@@ -27,17 +26,25 @@ Widget _glw;
 static Display *dpy;
 static GLXContext glx_context;
 
+static int DoubleBufferWithAlpha[] = { GLX_RGBA, 
+                                       GLX_DEPTH_SIZE, 12, 
+                                       GLX_RED_SIZE, 4, 
+                                       GLX_GREEN_SIZE, 4, 
+                                       GLX_BLUE_SIZE, 4, 
+                                       GLX_ALPHA_SIZE, 4,
+                                       GLX_DOUBLEBUFFER, 
+                                       None };
+
 static int DoubleBuffer[] = { GLX_RGBA, 
                               GLX_DEPTH_SIZE, 12, 
-                              GLX_STENCIL_SIZE, 1,  
                               GLX_RED_SIZE, 4, 
                               GLX_GREEN_SIZE, 4, 
                               GLX_BLUE_SIZE, 4, 
                               GLX_DOUBLEBUFFER, 
                               None };
+
 static int SingleBuffer[] = { GLX_RGBA, 
                               GLX_DEPTH_SIZE, 12, 
-                              GLX_STENCIL_SIZE, 1,
                               GLX_RED_SIZE, 4, 
                               GLX_GREEN_SIZE, 4, 
                               GLX_BLUE_SIZE, 4, 
@@ -156,15 +163,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     glClearDepth(1.0);
     glShadeModel(GL_FLAT);			 
 
-    glPointSize(1.0);
-    if (!glIsEnabled(GL_POINT_SMOOTH)) {
-        glEnable(GL_POINT_SMOOTH);
-    }
-
-    glLineWidth(1.0);
-    if(!glIsEnabled(GL_LINE_SMOOTH)) {
-        glEnable(GL_LINE_SMOOTH);
-    }
+    glEnable(GL_POINT_SMOOTH);
 
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
@@ -413,7 +412,7 @@ void RenderOpenGLScene(Widget w){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
     // setting the BackGround Color of the OpenGL Scene
-    SetOpenGLBackGroundColor();  
+    cGraphics->SetOpenGLBackGroundColor();  
 
     glLoadIdentity();
 
@@ -450,7 +449,7 @@ void InitializeOpenGLWindow( Widget w ) {
 	XVisualInfo *vi;
 	extern Widget _glw;
 	
-	XtSetArg(args[0], GLwNvisualInfo, &vi);
+	XtSetArg(args[0], (char *) GLwNvisualInfo, &vi);
 	XtGetValues(w, args, 1);
 	
 	dpy = XtDisplay(w);
@@ -458,8 +457,17 @@ void InitializeOpenGLWindow( Widget w ) {
 		fprintf(stderr, "could not open display\n");
 	} 
     else {
-        vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBuffer);            
-			
+        extern bool alpha_Size_Supported;
+       
+        if (alpha_Size_Supported) {
+            vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBufferWithAlpha);            
+            printf("RNA3D: Double Buffered Visual With Alpha Size Supported !\n"); 
+        }
+        else {
+            vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBuffer);            
+            printf("RNA3D: Double Buffered Visual Supported !\n"); 
+        }
+
 		if (!vi) {
 			fprintf(stderr, "try to get a single buffered visual\n");
 			vi = glXChooseVisual(dpy, DefaultScreen(dpy), SingleBuffer);
@@ -467,13 +475,12 @@ void InitializeOpenGLWindow( Widget w ) {
 				fprintf(stderr, "could not get visual\n");
 		}
         else { 
-            printf("RNA3D: Double Buffered Visual Supported !\n"); 
 			glx_context = glXCreateContext(dpy, vi, NULL, GL_TRUE);
 			if (!glXIsDirect(dpy, glx_context))
 				fprintf(stderr, "direct rendering not supported\n");
 			else
 				printf("RNA3D: Direct rendering supported\n");
-			
+            
 			GLwDrawingAreaMakeCurrent(w, glx_context);
 
 			_glw = w;

@@ -180,9 +180,10 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
 }
 
 void GLRenderer::BeginTexturizer(){
-   glDisable(GL_CULL_FACE);
-   glDisable(GL_LIGHTING);
-   
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_POINT_SMOOTH);
+
    extern bool bPointSpritesSupported;
 
    if (bPointSpritesSupported) {
@@ -205,19 +206,21 @@ void GLRenderer::BeginTexturizer(){
    }
 
    glEnable(GL_TEXTURE_2D);
-   glPushMatrix();
 }
 
 void GLRenderer::EndTexturizer(){
-    glPopMatrix();
     glDisable(GL_TEXTURE_2D);
 
     extern bool bPointSpritesSupported;
 
     if (bPointSpritesSupported) {
+        float defaultAttenuation[3] = { 1.0f, 0.0f, 0.0f };
+        glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, defaultAttenuation );
+
         glDisable(GL_POINT_SPRITE_ARB);
         glDisable(GL_BLEND);
     }
+    glEnable(GL_POINT_SMOOTH);
 }
 
 void GLRenderer::TexturizeStructure(Texture2D *cImages) {
