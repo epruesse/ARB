@@ -136,12 +136,27 @@ void ParseMenu()
 */
 		else if(Find(in_line,"itemmethod:"))
 		{
-			crop(in_line,head,temp);
+			crop(in_line,head,temp);            
 			thisitem->method = 
 			(char*)calloc(strlen(temp)+1,sizeof(char));
-			if(thisitem->method == NULL)
-				Error("Calloc");
-			(void)strcpy(thisitem->method,temp);
+			if(thisitem->method == NULL) Error("Calloc");
+            
+            {
+                char *to = thisitem->method;
+                char *from = temp;
+                char last = 0;
+                char c;
+                
+                do {
+                    c = *from++;
+                    if (c!=last || c!='\'') { /* replace '' with ' */
+                        *to++ = c;
+                        last = c;
+                    }                    
+                } while (c!=0); 
+            }
+            
+			//strcpy(thisitem->method,temp);
 		}
 /*
 *	Help file
