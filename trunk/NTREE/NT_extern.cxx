@@ -42,6 +42,7 @@
 #include "ad_ali.hxx"
 #include "nt_import.hxx"
 #include "nt_date.h"
+#include "nt_internal.h"
 #include <st_window.hxx>
 #include <probe_design.hxx>
 #include <primer_design.hxx>
@@ -618,7 +619,8 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     char *val = aw_input("Enter relativ diff [0 .. 5.0]",0);
 	if (!val) return;	// operation cancelled
-    NT_unmark_all_cb(aww,ntw);
+    NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+    // NT_unmark_all_cb(aww,ntw);
     AWT_TREE(ntw)->tree_root->mark_long_branches(gb_main,atof(val));
     AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
     delete val;
@@ -663,12 +665,6 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
     }
 }
 
-GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
-    GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
-    int        use_species_aside = int(cl_use_species_aside);
-    aww->get_root()->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
-    return NT_create_configuration(0, ptree, 0, use_species_aside);
-}
 
 // #########################################
 // #########################################
@@ -739,7 +735,6 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
 void NT_test_input_mask(AW_root *root) {
     AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask", true);
 }
-
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -770,6 +765,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->init(awr,window_title, window_title, 0,0,0,0);
 
     awm->button_length(5);
+
+    AW_init_color_group_defaults("arb_ntree");
 
     nt.tree                        = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
     AWT_canvas *ntw                = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
@@ -877,18 +874,30 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 ad_spec_create_field_items(awm);
             }
             awm->close_sub_menu();
+
+
             AWMIMT( "species_submission", "Submission...",				"S",	"submission.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,	0 );
             awm->insert_separator();
-            AWMIMT("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
-            AWMIMT("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
-            AWMIMT("swap_marked",	"Swap Marked Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_invert_mark_all_cb,		(AW_CL)ntw, 0 );
-            AWMIMT("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, 0 );
-            AWMIMT("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_unmark_all_tree_cb,		(AW_CL)ntw, 0 );
-            AWMIMT("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
+
+            NT_insert_mark_submenus(awm, ntw);
             awm->insert_separator();
-            AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), 0);
+            AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB2)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
-//             AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+            // AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+
+            //             AWMIMT("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
+            //             awm->insert_separator();
+            //             AWMIMT("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
+            //             AWMIMT("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, 0 );
+            //             awm->insert_separator();
+            //             AWMIMT("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
+            //             AWMIMT("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_unmark_all_tree_cb,		(AW_CL)ntw, 0 );
+            //             awm->insert_separator();
+            //             AWMIMT("swap_marked",	"Swap Marked Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_invert_mark_all_cb,		(AW_CL)ntw, 0 );
+            //             awm->insert_separator();
+            //             AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), 0);
+            //             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+
             awm->insert_separator();
             awm->insert_sub_menu(0, "Destroy Species",		"y");
             {
@@ -1009,6 +1018,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("tree_group_not_marked", 	"Group All Except Marked",	"M","tgroupnmrkd.hlp",	AWM_ALL, 	(AW_CB)NT_group_not_marked_cb,	(AW_CL)ntw, 0 );
             AWMIMT("tree_group_term_groups", 	"Group Terminal Groups",	"T","tgroupterm.hlp",	AWM_TREE, 	(AW_CB)NT_group_terminal_cb,	(AW_CL)ntw, 0 );
             AWMIMT("tree_ungroup_all",		"Ungroup All",			"U","tungroupall.hlp",	AWM_ALL,	(AW_CB)NT_ungroup_all_cb,	(AW_CL)ntw, 0 );
+            awm->insert_separator();
+            NT_insert_color_collapse_submenu(awm, ntw);
         }
         awm->close_sub_menu();
 
