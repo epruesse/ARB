@@ -638,7 +638,7 @@ refresh_again:
         }
     }
 
-    if (last_max_name_width <= max_name_width) {
+    if (last_max_name_width < max_name_width) {
         last_max_name_width = max_name_width;
         goto refresh_again;
     }
