@@ -242,8 +242,6 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GBDATA *gb_gene;
     GBDATA *gb_name;
     GBDATA  *gb_data;
-<<<<<<< probe_design.cxx
-=======
     GBDATA *gene_pos_begin_ptr;
     GBDATA *gene_pos_end_ptr;
 //     GBDATA *gb_data_temp;
@@ -251,7 +249,6 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     char *ali_genom;
     int pos_begin,pos_end;
 
->>>>>>> 1.37
     long    len;
 
     void *names = GBS_stropen(1024);
@@ -262,14 +259,14 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
     len = 0;
     for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
-<<<<<<< probe_design.cxx
-      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
-    gb_name = GB_find(gb_gene, "name", 0, down_level);
-    if (!gb_name) continue;
-    GBS_strcat(names, GB_read_char_pntr(gb_name));
-    GBS_chrcat(checksums, '#');
-    GBS_chrcat(names, '#');
-=======
+      //<<<<<<< probe_design.cxx
+      /*      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+	gb_name = GB_find(gb_gene, "name", 0, down_level);
+	if (!gb_name) continue;
+	GBS_strcat(names, GB_read_char_pntr(gb_name));
+	GBS_chrcat(checksums, '#');
+	GBS_chrcat(names, '#');
+	=======*/
       for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
 	gb_name = GB_find(gb_gene, "name", 0, down_level);
 	if (!gb_name) continue;
@@ -292,7 +289,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 	GBS_strcat(names, GB_read_char_pntr(gb_name));
 	GBS_chrcat(checksums, '#');
 	GBS_chrcat(names, '#');
->>>>>>> 1.37
+	//>>>>>>> 1.37
       }
     }
     bs.data = GBS_strclose(names, 0);
@@ -713,18 +710,15 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             {
                 GB_write_flag(gb_species,0);
 #ifdef DEVEL_IDP
-<<<<<<< probe_design.cxx
-        for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
-          GB_write_flag(gb_gene,0);
-        }
-=======
-		for (gb_gene = GEN_first_marked_gene(GEN_get_gene_data(gb_species));
-                     gb_gene;
-                     gb_gene = GEN_next_marked_gene(gb_gene))
-                {
+		//<<<<<<< probe_design.cxx
+		for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
 		  GB_write_flag(gb_gene,0);
 		}
->>>>>>> 1.37
+		/*=======
+		for (gb_gene = GEN_first_marked_gene(GEN_get_gene_data(gb_species)); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene))  {
+		  GB_write_flag(gb_gene,0);
+		}
+		>>>>>>> 1.37*/
 #endif
             }
         }
@@ -782,14 +776,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         match_info = strtok(0,toksep);
     if (!match_info) break;
 #ifdef DEVEL_IDP
-<<<<<<< probe_design.cxx
+    /*<<<<<<< probe_design.cxx
     if (gene_flag) {
       temp_gene_str = new char[strlen(match_info)+1];
       strcpy(temp_gene_str,match_info);
       gene_str = strtok_r(temp_gene_str," ",ptrptr);
       gene_str = strtok_r(NULL," ",ptrptr);
     }
-=======
+    =======*/
 	if (gene_flag) {
 	  temp_gene_str = new char[strlen(match_info)+1];
 	  strcpy(temp_gene_str,match_info);
@@ -798,7 +792,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	  gene_str = strtok_r(temp_gene_str," ",&ptrptr);
 	  gene_str = strtok_r(NULL," ",&ptrptr);
 	}
->>>>>>> 1.37
+	//>>>>>>> 1.37
 #endif
     char flag  = 'x';
         if (gb_main){
@@ -808,19 +802,19 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (mark) {
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
-<<<<<<< probe_design.cxx
-            if (gene_flag) {
-              gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
-              GB_write_flag(gb_gene,1);
-            }
-=======
+		    /*<<<<<<< probe_design.cxx
+		      if (gene_flag) {
+		      gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
+		      GB_write_flag(gb_gene,1);
+		      }
+		      =======*/
 		    if (gene_flag) {
 		      if (strcmp(gene_str,"intron")) {
 			gb_gene = GEN_find_gene(gb_species,gene_str);
 			GB_write_flag(gb_gene,1);
 		      }
 		    }
->>>>>>> 1.37
+		    //>>>>>>> 1.37
 #endif
             flag = '*';
         }
@@ -1769,9 +1763,9 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
 
 #ifdef DEVEL_IDP
-    aws->at( "idp" );
+    aws->at( "export_gene" );
     aws->callback(pd_export_pt_server, 1);
-    aws->create_button("idp","IDP");
+    aws->create_button("update_genesrv","Update GeneSrv");
 #endif
 
     return aws;
