@@ -94,6 +94,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
 	cas->aws->update_selection_list( cas->db_id );
 
     GB_pop_transaction(gb_main); //closing a transaction
+    free(ali_type);
 }
 
 static void createSelectionList_callBack_gb(GBDATA*,int *cl_cas, GB_CB_TYPE cbtype) {
@@ -143,6 +144,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
 	GB_add_callback(gb_presets, GB_CB_CHANGED, createSelectionList_callBack_gb, (int *)cas);
 	GB_pop_transaction(gb_main);
 
+    free(ali_type);
     return cas;
 }
 
@@ -169,6 +171,7 @@ void selectAlignment(AW_window *aws){
         aws->insert_selection(con_alignment_list, selected_alignment, selected_alignment);
     }
     aws->update_selection_list(con_alignment_list);
+    free(selected_alignment);
 }
 
 void selectAllAlignments(AW_window *aws){
@@ -199,6 +202,7 @@ void removeAlignment(AW_window *aws){
     aws->delete_selection_from_list(con_alignment_list, selected_alignment);
 	aws->insert_default_selection(con_alignment_list,"????", "????" );
     aws->update_selection_list(con_alignment_list);
+    free(selected_alignment);
 }
 
 void shiftAlignment(AW_window *aws, long int direction){
@@ -259,6 +263,7 @@ void shiftAlignment(AW_window *aws, long int direction){
     }
     aws->insert_default_selection(con_alignment_list,"????", "????" );
     aws->update_selection_list(con_alignment_list);
+    free(selected_alignment);
 }
 
 /*---------------------------------------- Concatenation function ----------------------------------*/
@@ -275,26 +280,9 @@ void concatenateAlignments(AW_window *aws){
 
     ask_about_missing_alignment = new  AW_repeated_question;
 
-#if defined(DEBUG)
-    if (strcmp(GB_getenvUSER(), "yadhu") == 0) {
-        GB_raise_critical_error("here's an important note for Yadhu!"); // read note below (then remove this block)
-    }
-#endif
-
-    // hello yadhu! :)
-    // The following 3 'char*' have been 'const char *' - that's not correct,
-    // because read_string() returns a malloc-copy!
-    // These have to be free'd somewhere (only 'new_ali_name' is freed) -- please fix this.
-    //
-    // In general allocation and correct de-allocation is one the most important things when coding C(++) :
-    // - Everytime you use a function that returns a char* control whether it is allocated or not!
-    // - When a function returns a const char* then there's no need to care about freeing it!
-
 	char *new_ali_name        = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
     char *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
     char *alignment_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
-
-
 
     const char *ali_name;
 	long new_alignment_len   = 0;
@@ -327,10 +315,10 @@ void concatenateAlignments(AW_window *aws){
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
 		void *str_seq = GBS_stropen(new_alignment_len+1000);			/* create output stream */
 		const char *concatenated_ali_seq_data;
-        int separator_tag = 0; int found =0; int missing = 0; int ali_len = 0;
-
-		for(int i = 1; i<aws->get_no_of_entries(con_alignment_list); i++){  // concatenation of the selected alignments in the database
-			ali_name            =  aws->get_element_of_index(con_alignment_list, i);
+        int separator_tag = 0; int found =0; int missing = 0; int ali_len = 0; 
+        ali_name = con_alignment_list->first_element();
+        
+        while(ali_name){             // concatenation of the selected alignments in the database
 			GBDATA *gb_seq_data = GBT_read_sequence(gb_species, ali_name);
 			if(gb_seq_data) {
 				char *str_data      = GB_read_char_pntr(gb_seq_data);
@@ -353,7 +341,8 @@ void concatenateAlignments(AW_window *aws){
                 ++missing;
                 free(question);
             }
-		}
+            ali_name = con_alignment_list->next_element();
+		} 
 		concatenated_ali_seq_data = GBS_strclose(str_seq, 0);
 		GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
 		GB_write_string(gb_data, concatenated_ali_seq_data);
@@ -370,7 +359,10 @@ void concatenateAlignments(AW_window *aws){
             GB_abort_transaction(gb_main);
 	}
     if(error) aw_message(error);
+
 	free(new_ali_name);
+    free(seq_type);
+    free(alignment_separator);
 }
 
 static void addSpeciesToConcatenateList(void **speciesConcatenateListPtr,GB_CSTR species_name){
@@ -424,6 +416,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     char   *str_name          = GB_read_string(gb_species_name);
     GBDATA *gb_species_source = GBT_find_species_rel_species_data(gb_species_data, str_name);
     GBDATA *gb_new_species    = 0;
+    free(str_name);
 
     if (!error) {
         gb_new_species = GB_create_container(gb_species_data, "species");
@@ -617,7 +610,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
             sl = sl->next;
         }
         free(doneFields);
-        free(fieldStat);
+        delete [] fieldStat;
     }
 
     GB_write_flag(gb_new_species, 1);    //marking the new species created
@@ -683,6 +676,7 @@ void mergeSimilarSpecies(AW_window *aws,int option){
 	}
 
 	cout<<GBT_count_marked_species(gb_main)<<" new species created by taking \""<<merge_field_name<<"\" as a criterion!\n";
+    free(merge_field_name);
 
  ERROR:
 	if (!error)  GB_pop_transaction(gb_main);
