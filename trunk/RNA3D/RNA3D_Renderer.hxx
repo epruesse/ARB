@@ -1,6 +1,8 @@
 #define CHARACTERS 0
 #define SHAPES     1
 
+#define MIN(a,b) ((a)<(b)?(a):(b))
+
 enum {
     BASES,
     BASES_COLOR,
@@ -24,6 +26,7 @@ public:
     int iBaseHelix,  iBaseUnpairHelix,  iBaseNonHelix;
     int iShapeHelix, iShapeUnpairHelix, iShapeNonHelix;
     int iDisplayHelix, iHelixMidPoint, iHelixBackBone, iHelixNrs;
+    int iDispTerInt;
     int iStartHelix, iEndHelix;
     float fHelixSize;
     float fSkeletonSize;

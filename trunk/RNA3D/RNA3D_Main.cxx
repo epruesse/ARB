@@ -27,6 +27,7 @@ static void  CreateRNA3DAwars(AW_root *root){
     root->awar_int(AWAR_3D_HELIX_TO, 50, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_HELIX_NUMBER, 0, AW_ROOT_DEFAULT); 
     root->awar_float(AWAR_3D_HELIX_SIZE, 0.5, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS, 0, AW_ROOT_DEFAULT); 
 
     // Genral Molecule Display Section
     root->awar_int(AWAR_3D_MOL_BACKBONE, 1, AW_ROOT_DEFAULT); 
@@ -45,7 +46,8 @@ static void  CreateRNA3DAwars(AW_root *root){
 
     //Display SAI Section
     root->awar_int(AWAR_3D_MAP_SAI, 0, AW_ROOT_DEFAULT); 
-    root->awar_string( AWAR_3D_SAI_SELECTED, "", AW_ROOT_DEFAULT);
+    root->awar_int(AWAR_3D_MAP_ENABLE, 0, AW_ROOT_DEFAULT); 
+    root->awar_int(AWAR_3D_MAP_SEARCH_STRINGS, 0, AW_ROOT_DEFAULT); 
 }
 
 void RNA3D_StartApplication(AW_root *awr){

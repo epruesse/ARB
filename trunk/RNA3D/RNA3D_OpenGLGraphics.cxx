@@ -100,6 +100,11 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font)
     }
 }
 
+void OpenGLGraphics::PrintCharacter(float x, float y, float z, char c, void *font) {
+    glRasterPos3d(x, y, z);
+    glutBitmapCharacter(font, c);
+}
+
 void OpenGLGraphics::DrawSphere(float radius, float x, float y, float z){
     GLUquadricObj *newObj = gluNewQuadric();
     gluQuadricDrawStyle(newObj, GLU_FILL);

@@ -18,6 +18,7 @@ GLRenderer::GLRenderer(void){
     iBaseHelix  = iBaseUnpairHelix  = iBaseNonHelix  = 0;
     iShapeHelix = iShapeUnpairHelix = iShapeNonHelix = 0;
     iDisplayHelix = iHelixMidPoint = iHelixBackBone = iHelixNrs = 0;
+    iDispTerInt = 0;
     iStartHelix  = 1;
     iEndHelix    = 50;
     fHelixSize = 1.0;
@@ -57,6 +58,7 @@ void GLRenderer::DisplayBasePositions(void){
 
     G->SetColor(RNA3D_GC_MOL_POS);
     glCallList(STRUCTURE_POS);
+
 }
 
 void GLRenderer::DisplayMappedSpBasePositions(void){
@@ -78,7 +80,6 @@ void GLRenderer::DisplayHelixMidPoints(Texture2D *cImages){
 void GLRenderer::DisplayHelixNumbers(void){
     G->SetColor(RNA3D_GC_FOREGROUND);
     glCallList(HELIX_NUMBERS);
-
 }
 
 void GLRenderer::DoHelixMapping(void) {
@@ -91,12 +92,19 @@ void GLRenderer::DoHelixMapping(void) {
         }
         DisplayHelices();
     }
+    // Displaying Tertiary Interactions of E.coli 16S ribosomal RNA 
+    if(iDispTerInt) {
+        G->SetColor(RNA3D_GC_PSEUDOKNOT);
+        glCallList(ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS);
+        G->SetColor(RNA3D_GC_TRIPLE_BASE);
+        glCallList(ECOLI_TERTIARY_INTRACTION_TRIPLE_BASES);
+    }
 }
 
 void GLRenderer::DisplayMoleculeName(int w, int h){
     extern AW_root *gAwRoot;
     char *pSpeciesName;
-    char *probe = gAwRoot->awar(AWAR_TARGET_STRING)->read_string(); //cout<<probe<<endl;
+
     if(iMapSpecies) {
         pSpeciesName = gAwRoot->awar(AWAR_3D_SELECTED_SPECIES)->read_string();
     }
@@ -158,8 +166,14 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
         DisplayBasePositions();
     } 
 
-    if(iMapSpecies && iMapSpeciesPos) {
-        DisplayMappedSpBasePositions();
+    if(cStr->iMapEnable) {
+        if (cStr->iMapSearch) {
+            glLineWidth(ObjectSize/3);
+            glCallList(MAP_SEARCH_STRINGS_BACKBONE);
+        }
+        if(iMapSpecies && iMapSpeciesPos) {
+            DisplayMappedSpBasePositions();
+        }
     }
 }
 
@@ -172,6 +186,17 @@ void GLRenderer::BeginTexturizer(){
 
    extern bool bPointSpritesSupported;
    if (bPointSpritesSupported) {
+       float quadratic[] =  { 0.0f, 0.0f, 1.0f };
+       glPointParameterfvEXT( GL_DISTANCE_ATTENUATION_EXT, quadratic );
+       
+       // Query for the max point size supported by the hardware
+       float maxSize = 0.0f;
+       glGetFloatv( GL_POINT_SIZE_MAX_EXT, &maxSize );
+       glPointSize(MIN(ObjectSize,maxSize) );
+       
+       glPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 1.0f );
+       glPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, MIN(65,maxSize));
+       
        glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_BLEND );
        glEnable(GL_POINT_SPRITE_ARB);
    }
@@ -189,10 +214,17 @@ void GLRenderer::EndTexturizer(){
 void GLRenderer::TexturizeStructure(Texture2D *cImages) {
     extern Structure3D *cStructure;
 
-    if (cStructure->iMapSAI) {
+    if (cStructure->iMapEnable ) {
         glPointSize(ObjectSize*2);
-        glBindTexture(GL_TEXTURE_2D, cImages->texture[HEXAGON]);  
-        glCallList(MAP_SAI_TO_STRUCTURE);
+        if (cStructure->iMapSAI) {
+            glBindTexture(GL_TEXTURE_2D, cImages->texture[HEXAGON]);  
+            glCallList(MAP_SAI_TO_STRUCTURE);
+        }
+        if (cStructure->iMapSearch) {
+            glPointSize(ObjectSize*1.5);
+            glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);  
+            glCallList(MAP_SEARCH_STRINGS_TO_STRUCTURE);
+        }
     }
 
     if(iDispCursorPos) {
@@ -254,16 +286,11 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages) {
         DisplayHelixMidPoints(cImages);  // Draw circles at the midpoint of each Helix
     }
 
-    if (iMapSpecies) {
+    if (cStructure->iMapEnable && iMapSpecies) {
         if(iMapSpeciesBase) { 
-            glPointSize(ObjectSize+4);
-            G->SetColor(RNA3D_GC_FOREGROUND);
             glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);  
-            glCallList(MAP_SPECIES_BASE_A); glCallList(MAP_SPECIES_BASE_U);
-            glCallList(MAP_SPECIES_BASE_G); glCallList(MAP_SPECIES_BASE_C);
-            //        glCallList(MAP_SPECIES_BASE_DIFFERENCE);
 
-            glPointSize(ObjectSize+2);
+            glPointSize(ObjectSize+4);
             G->SetColor(RNA3D_GC_MAPPED_SPECIES);
             glCallList(MAP_SPECIES_BASE_A); glCallList(MAP_SPECIES_BASE_U);
             glCallList(MAP_SPECIES_BASE_G); glCallList(MAP_SPECIES_BASE_C);
