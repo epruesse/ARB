@@ -60,7 +60,7 @@ void Texture2D::LoadGLTextures(void) {
             throw string(GBS_global_string("Error loading %s", ImageFile));
         }
 
-    if (!GLOBAL->bPointSpritesSupported) {
+    if (!RNA3D->bPointSpritesSupported) {
        glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
     }
     else {
