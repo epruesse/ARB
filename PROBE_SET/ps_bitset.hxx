@@ -44,6 +44,7 @@ public:
 
     virtual long getTrueIndices(  IndexSet &_index_set, const long _fill_index );
     virtual long getFalseIndices( IndexSet &_index_set, const long _fill_index );
+    virtual long getCountOfTrues( const long _fill_index = -1 );
     long         getMaxUsedIndex() { return max_index; }
 
     virtual bool get( const long _index );
@@ -51,13 +52,15 @@ public:
     virtual void setTrue(  const long _index );
     virtual void setFalse( const long _index );
 
-    virtual bool reserve( const long _capacity );
     virtual void invert();
     virtual void xor( const PS_BitSet *_other_set );
     
     virtual void print( const bool _header, const long _fill_index );
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file, const long _fill_index );
+
+    virtual bool copy( const PS_BitSet *_other_bitset );
+    virtual bool reserve( const long _capacity );
 
     explicit PS_BitSet( const bool _bias, const long _capacity ) : bias(_bias), max_index(-1), capacity(0) {
         data = 0;
@@ -147,7 +150,7 @@ long PS_BitSet::getFalseIndices( PS_BitSet::IndexSet &_index_set, const long _fi
 // ************************************************************
 long PS_BitSet::getTrueIndices( PS_BitSet::IndexSet &_index_set, const long _fill_index = -1 ) {
     _index_set.clear();
-    // get indices of falses from bitset up to max_index
+    // get indices of trues from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
     while (true) {
@@ -168,6 +171,33 @@ long PS_BitSet::getTrueIndices( PS_BitSet::IndexSet &_index_set, const long _fil
         }
     }
     return _index_set.size();
+}
+
+
+// ************************************************************
+// * PS_BitSet::getCountOfTrues()
+// ************************************************************
+long PS_BitSet::getCountOfTrues( const long _fill_index = -1 ) {
+    long count = 0;
+    // get indices of trues from bitset up to max_index
+    long index      = 0;
+    long byte_index = 0;
+    while (true) {
+        unsigned char byte  = data[ byte_index++ ];     // get a data byte
+        if (byte &   1) ++count; if (index++ >= max_index) break;
+        if (byte &   2) ++count; if (index++ >= max_index) break;
+        if (byte &   4) ++count; if (index++ >= max_index) break;
+        if (byte &   8) ++count; if (index++ >= max_index) break;
+        if (byte &  16) ++count; if (index++ >= max_index) break;
+        if (byte &  32) ++count; if (index++ >= max_index) break;
+        if (byte &  64) ++count; if (index++ >= max_index) break;
+        if (byte & 128) ++count; if (index++ >= max_index) break;
+    }
+    // append indices [max_index+1 .. _max_index] if bias is set to true
+    if (bias && (_fill_index > max_index)) {
+        count += _fill_index-max_index +1;
+    }
+    return count;
 }
 
 
@@ -248,6 +278,18 @@ bool PS_BitSet::get( const long _index ) {
 //     byte = (byte >> offset);
 //     return (byte & 1 == 1);
     return ((data[ _index/8 ] >> (_index % 8)) & 1 == 1);
+}
+
+
+// ************************************************************
+// * PS_BitSet::copy( _other_bitset )
+// ************************************************************
+bool PS_BitSet::copy( const PS_BitSet *_other_bitset ) {
+    bias = _other_bitset->bias;
+    if (!reserve( _other_bitset->capacity )) return false;
+    memcpy( data, _other_bitset->data, (capacity>>3) );
+    max_index = _other_bitset->max_index;
+    return true;
 }
 
 
