@@ -1149,7 +1149,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
     type = GB_TYPE(source);
     if (GB_TYPE(dest) != type)
     {
-        return GB_export_error("incompatible types in GB_copy (source '%s:%i != %s:%i",
+        return GB_export_error("incompatible types in GB_copy (source %s:%li != %s:%i",
                                GB_read_key_pntr(source),type, GB_read_key_pntr(dest), GB_TYPE(dest));
     }
 
@@ -1871,7 +1871,7 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         return GB_export_error("Sorry: this program is not the arbdb server, you cannot resort your data");
 
     if (GB_read_clients(gb_main)>0)
-        return GB_export_error("There are %i clients (editors, tree programms) connected to this server,\n"
+        return GB_export_error("There are %li clients (editors, tree programms) connected to this server,\n"
                                "please close clients and rerun operation",
                                GB_read_clients(gb_main));
 
@@ -1886,7 +1886,7 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         long old_index = new_order_list[new_index]->index;
 
         if (old_index < new_index)
-            GB_warning("Warning at resort database: entry exists twice: %i and %i",
+            GB_warning("Warning at resort database: entry exists twice: %li and %li",
                        old_index, new_index);
         else
         {
