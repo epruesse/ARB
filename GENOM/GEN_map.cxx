@@ -1035,11 +1035,13 @@ AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
         aws->at(10, 10);
         aws->auto_space(10,10);
 
-        ;                  aws->label("AWAR_SPECIES_NAME      "); aws->create_input_field(AWAR_SPECIES_NAME, 30);
-        aws->at_newline(); aws->label("AWAR_ORGANISM_NAME     "); aws->create_input_field(AWAR_ORGANISM_NAME, 30);
-        aws->at_newline(); aws->label("AWAR_GENE_NAME         "); aws->create_input_field(AWAR_GENE_NAME, 30);
-        aws->at_newline(); aws->label("AWAR_COMBINED_GENE_NAME"); aws->create_input_field(AWAR_COMBINED_GENE_NAME, 30);
-        aws->at_newline(); aws->label("AWAR_EXPERIMENT_NAME   "); aws->create_input_field(AWAR_EXPERIMENT_NAME, 30);
+        const int width = 50;
+
+        ;                  aws->label("AWAR_SPECIES_NAME      "); aws->create_input_field(AWAR_SPECIES_NAME, width);
+        aws->at_newline(); aws->label("AWAR_ORGANISM_NAME     "); aws->create_input_field(AWAR_ORGANISM_NAME, width);
+        aws->at_newline(); aws->label("AWAR_GENE_NAME         "); aws->create_input_field(AWAR_GENE_NAME, width);
+        aws->at_newline(); aws->label("AWAR_COMBINED_GENE_NAME"); aws->create_input_field(AWAR_COMBINED_GENE_NAME, width);
+        aws->at_newline(); aws->label("AWAR_EXPERIMENT_NAME   "); aws->create_input_field(AWAR_EXPERIMENT_NAME, width);
 
         aws->window_fit();
     }
