@@ -130,15 +130,26 @@ ED4_object_specification column_stat_terminal_spec =
 //*****************************************
 
 
+char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
+    int         len;
+    const char *s = resolve_pointer_to_char_pntr(&len);
+    char       *t = GB_strduplen(s, len);
 
-char *ED4_terminal::resolve_pointer_to_string(int *str_len) const
+    if (str_len) *str_len = len;
+    return t;
+}
+
+const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
 {
     GB_TYPES	gb_type;
     char *db_pointer = NULL;
     GBDATA *gbd = get_species_pointer();
 
     if (!gbd) {
-        if (str_len && id) *str_len = strlen(id);
+        if (str_len) {
+            if (id) *str_len = strlen(id);
+            else *str_len    = 0;
+        }
         return id; // if we don't have a link to the database we have to use our id
     }
 
@@ -152,7 +163,7 @@ char *ED4_terminal::resolve_pointer_to_string(int *str_len) const
             if (str_len) *str_len = GB_read_string_count(gbd);
             break;
         case GB_BITS:
-            db_pointer = GB_read_bits_pntr(gbd, ' ', '+');
+            db_pointer = GB_read_bits_pntr(gbd, '.', '+');
             if (str_len) *str_len = GB_read_bits_count(gbd);
             break;
         case GB_BYTES:
@@ -172,7 +183,7 @@ char *ED4_terminal::resolve_pointer_to_string(int *str_len) const
             strcpy(db_pointer, "GB_FLOATS");
             break;
         default:
-            printf("Unknown data type - Please connect administrator\n");
+            printf("Unknown data type - Please contact administrator\n");
             e4_assert(0);
             break;
     }
@@ -182,7 +193,7 @@ char *ED4_terminal::resolve_pointer_to_string(int *str_len) const
     return db_pointer;
 }
 
-ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int /* seq_len */)
+ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
 {
     ED4_ERROR *err = 0;
     GBDATA *gbd = get_species_pointer();
@@ -190,18 +201,39 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int /* seq_len */)
 
     GB_push_transaction(gb_main);
 
-    GB_CPNTR old_seq = 0;
+    int   old_seq_len;
+    char *old_seq = resolve_pointer_to_string_copy(&old_seq_len);
 
-    GB_TYPES gb_type = GB_read_type(gbd);
-    switch(gb_type) {
-        case GB_STRING: {
-            old_seq = GB_read_char_pntr(gbd);
-            err = GB_write_string(gbd, seq);
-            break;
+    bool allow_write_data = true;
+    if (ED4_ROOT->aw_root->awar(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES)->read_int()) {
+        long old_checksum = GBS_checksum(old_seq, 1, "-.");
+        long new_checksum = GBS_checksum(seq, 1, "-.");
+
+        if (old_checksum != new_checksum) {
+            if (aw_message("Checksum changed!", "Allow, Reject") == 1) {
+                allow_write_data = false;
+                // GB_write_string(info->gb_data, old_seq);
+            }
+
         }
-        default: {
-            e4_assert(0);
-            break;
+    }
+
+    if (allow_write_data) {
+        GB_TYPES gb_type = GB_read_type(gbd);
+        switch(gb_type) {
+            case GB_STRING: {
+                //             old_seq = GB_read_char_pntr(gbd);
+                err = GB_write_string(gbd, seq);
+                break;
+            }
+            case GB_BITS: {
+                err = GB_write_bits(gbd, seq, seq_len, '.');
+                break;
+            }
+            default: {
+                e4_assert(0);
+                break;
+            }
         }
     }
 
@@ -209,8 +241,10 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int /* seq_len */)
 
     if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
         if (old_seq) {
+            actual_timestamp = GB_read_clock(gb_main);
+
             get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
-                ->check_bases_and_rebuild_consensi(old_seq, strlen(old_seq), get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
+                ->check_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
         }
         else {
             aw_message("Couldn't read old sequence data");
@@ -219,6 +253,8 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int /* seq_len */)
         set_refresh();
         parent->refresh_requested_by_child();
     }
+
+    if (old_seq) free(old_seq);
 
     return err;
 }
@@ -600,11 +636,13 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                     if (dragged_name_terminal) {
                         if (dragged_name_terminal->flag.dragged) {
                             {
-                                char *db_pointer = dragged_name_terminal->resolve_pointer_to_string();
-                                ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
+                                char                *db_pointer = dragged_name_terminal->resolve_pointer_to_string_copy();
+                                ED4_selection_entry *sel_info   = dragged_name_terminal->selection_info;
 
                                 dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
                                 dragged_name_terminal->flag.dragged = 0;
+
+                                free(db_pointer);
                             }
                             {
                                 ED4_move_info mi;
@@ -916,8 +954,9 @@ ED4_returncode ED4_tree_terminal::draw( int /*only_text*/ )					// draws boundin
     //		for( i = 0; i <= 3; i++ )
     //			ED4_ROOT->temp_device->line( gc, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
 
-    db_pointer = resolve_pointer_to_string();
+    db_pointer = resolve_pointer_to_string_copy();
     ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0);
+    free(db_pointer);
 
     return ( ED4_R_OK );
 }
@@ -1092,7 +1131,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     memset(real_name, 0, allocatedSize);
 
     if (parent->flag.is_consensus) {
-        char *db_pointer = resolve_pointer_to_string();
+        char *db_pointer = resolve_pointer_to_string_copy();
         char *bracket = strchr(db_pointer, '(');
 
         if (bracket) {
@@ -1117,8 +1156,11 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
         else {
             strncpy(real_name, db_pointer, BUFFERSIZE);
         }
-    } else if (parent->parent->parent->flag.is_SAI) { // whether species_manager has is_SAI flag
-        char *db_pointer = resolve_pointer_to_string();
+
+        free(db_pointer);
+    }
+    else if (parent->parent->parent->flag.is_SAI) { // whether species_manager has is_SAI flag
+        char *db_pointer = resolve_pointer_to_string_copy();
 
         strcpy(real_name, "SAI: ");
         if (strcmp(db_pointer, "ECOLI")==0) {
@@ -1129,7 +1171,9 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
         else {
             strncpy(real_name+5, db_pointer, BUFFERSIZE-5);
         }
-    } else { // normal species
+        free(db_pointer);
+    }
+    else { // normal species
         ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
         char *result = ED4_get_NDS_text(species_man);
 
@@ -1375,12 +1419,12 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
 #define PROBE_MATCH_TARGET_STRING_LENGTH 32
 
 GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end_pos) const {
-    static char result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
-    int max_insert = PROBE_MATCH_TARGET_STRING_LENGTH;
-    char *r = result;
-    int significance = int(get_threshold());
-    ED4_sequence_terminal *seq_term = corresponding_sequence_terminal()->to_sequence_terminal();
-    char *seq = seq_term->resolve_pointer_to_string();
+    static char            result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
+    int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
+    char                  *r            = result;
+    int                    significance = int(get_threshold());
+    ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal()->to_sequence_terminal();
+    char                  *seq          = seq_term->resolve_pointer_to_string_copy();
 
     for (int pos=start_pos; pos<=end_pos; pos++) {
         int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
@@ -1398,6 +1442,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
         }
     }
     r[0] = 0;
+    free(seq);
 
     if (max_insert<0) {
         aw_message(GBS_global_string("Max. %i bases allowed in Probe Match", PROBE_MATCH_TARGET_STRING_LENGTH));
