@@ -635,7 +635,8 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 #if defined(DEBUG) && 1
                         printf("Clicked pos = %i\n", clicked_pos);
 #endif
-                        aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(clicked_pos+1); // sequence position is starting with 1 !!!
+                        // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0
+                        aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(clicked_pos);
                     }
                 }
             }
