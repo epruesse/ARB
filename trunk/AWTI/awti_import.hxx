@@ -13,6 +13,6 @@ typedef enum { IMP_GENOME_GENEBANK, IMP_GENOME_EMBL, IMP_PLAIN_SEQUENCE } AWTI_I
 #define AWTC_RCB(func) void (*func)(AW_root*,AW_CL,AW_CL)
 
 GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit,AWTC_RCB(func), AW_CL cd1, AW_CL cd2);
-void    AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type);
+void    AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type, GBDATA *gbmain);
 
 #endif
