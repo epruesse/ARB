@@ -23,6 +23,22 @@
 #define MAX_SPECIES 999999 // max species returned by pt-server (probe match)
 using namespace std;
 
+
+struct _probe_match_result
+{
+	char name[16];
+	char fullname[255];
+	int mis;
+	int nmis;
+	float wmis;
+	int pos;
+	int ecoli;
+	int rev;
+	char string[255];
+} probe_match_result;
+// 
+
+
 #if 0
 static void my_print(const char *, ...) {
     chip_assert(0); // CHIP_init_pt_server should install another handler
@@ -143,6 +159,7 @@ int main(int argc,char **argv)
   char *arg_numMismatches= NULL;
   int numMismatches= 0;
   int weightedMismatches= 0;
+  float maxWeightedMismatches= -1;
 
 
   if (argc < 4)
@@ -153,6 +170,11 @@ int main(int argc,char **argv)
       switch(argv[c][1]) {
       case 'w':
 	weightedMismatches= 1; // 0= do not use weighted, 1= use weighted mm.
+	if((c+1) < argc)
+	{
+		c++;
+		maxWeightedMismatches= atof(argv[c]);
+	}
 	break;
       case 'h':
 	args_help= 1;
@@ -188,9 +210,9 @@ int main(int argc,char **argv)
   if (args_help && !args_err)
     {
       printf("Usage: %s input_probefile result_probefile pt-servername [numberOfMismatches] [Options]\n\n", argv[0]);
-      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0' -w\n\n", argv[0]);
+      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0' -w 0.3\n\n", argv[0]);
       printf("The default for numberOfMismatches is 0.\n");
-      printf("-w\tuse weighted mismatches for the probematch.\n");
+      printf("-w #\tuse weighted mismatches for the probematch (# = upper limit, if set).\n");
       printf("-h\tprint this help and exit.\n\n");
       return -1;
     }
@@ -237,7 +259,28 @@ int main(int argc,char **argv)
 	my_para.split = 0.5;
 	my_para.dtedge = 0.5;
 	my_para.dt = 0.5;
+	my_para.bondval[0] = 0.0;
+	my_para.bondval[1] = 0.0;
+	my_para.bondval[2] = 0.5;
+	my_para.bondval[3] = 1.1;
+	my_para.bondval[4] = 0.0;
+	my_para.bondval[5] = 0.0;
+	my_para.bondval[6] = 1.5;
+	my_para.bondval[7] = 0.0;
+	my_para.bondval[8] = 0.5;
+	my_para.bondval[9] = 1.5;
+	my_para.bondval[10] = 0.4;
+	my_para.bondval[11] = 0.9;
+	my_para.bondval[12] = 1.1;
+	my_para.bondval[13] = 0.0;
+	my_para.bondval[14] = 0.9;
+	my_para.bondval[15] = 0.0;
 
+// 	my_para.bondval = {
+// 		0.0, 0.0, 0.5, 1.1,
+// 		0.0, 0.0, 1.5, 0.0,
+// 		0.5, 1.5, 0.4, 0.9,
+// 		1.1, 0.0, 0.9, 0.0 };
 
 	pFile = fopen(arg_result_file, "w");
 	if (pFile!=NULL)
@@ -259,7 +302,7 @@ int main(int argc,char **argv)
 	for (unsigned int j=0; j<probeData.size(); j++)
 	{
 	  //printf("j=%d and probename=%s\n", j, probeData[j].name);
-	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches, weightedMismatches);
+	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches, weightedMismatches, maxWeightedMismatches);
 	}
 
 	if (error)
@@ -653,12 +696,20 @@ static bool chip_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const C
 }
 
 
+char *skipToNextWord(char *ptr)
+{
+	while(*ptr && (*ptr != ' ')) ptr++;
+	while(*ptr && (*ptr == ' ')) ptr++;
+	return ptr;
+}
+
+
 //  -----------------------------------------------------------------------------------------------------
 //      GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches)
 //  -----------------------------------------------------------------------------------------------------
 //  calls probe-match for the sequence contained in pD  and appends all matching species to the result-probefile fn
 
-GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches, int weightedMismatches)
+GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches, int weightedMismatches, float maxWeightedMismatches)
 {
 
   //  printf("CHIP_probe_match\n");
@@ -770,30 +821,98 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 	    strcat(probe_sequence, "\n");
 	    fputs(probe_sequence, pFile);
 
-	    char toksep[2]     = { 1, 0 };
-            char 	*hinfo = strtok(bs.data, toksep);
-	    if (hinfo) {
-                while (1) {
-                    char 	*match_name = strtok(0, toksep);
-		    if (!match_name) break;
-		    char 	*match_info = strtok(0, toksep);
-		    if (!match_info) break;
-		    char *match_longname = parse_match_info(match_info);
-		    char probe_match[255];
-		    strcpy(probe_match, "\tmatch= ");
-		    correctIllegalChars(match_name);
-		    strcat(probe_match, match_name);
+	    char toksep[2] = { 1, 0 };
+	    char *hinfo = strtok(bs.data, toksep);
+	    
+	    if(weightedMismatches) // weighted mismatches are used ...
+	    {
+		if(hinfo)
+		{
+			while(1)
+			{
+				struct _probe_match_result pMR;
 
-		    strcat(probe_match, ", ");
-		    correctIllegalChars(match_longname);
+				char *token1= strtok(NULL, toksep);
+				if(!token1) break;
 
-		    strcat(probe_match, match_longname);
-		    strcat(probe_match, "\n");
-		    fputs(probe_match, pFile);
+				// probe name
+				char *token2= strtok(NULL, toksep);
+				if(!token2) break;
 
-                    // @@@ hier Namen in container einfuegen
-                }
-             } // end while(1)
+				char buf[64];
+				
+				char *ptr= skipToNextWord(token2);
+				// name
+				strncpy(buf, ptr, 9);
+				buf[9]=0;
+				correctIllegalChars(buf);
+				strcpy(pMR.name, buf);
+				
+				// fullname
+				ptr= skipToNextWord(ptr);
+				strncpy(buf, ptr, 40);
+				buf[40]=0;
+				correctIllegalChars(buf);
+				strcpy(pMR.fullname, buf);
+				
+				// nmis
+				ptr= skipToNextWord(ptr+56);
+				ptr= skipToNextWord(ptr);
+				strncpy(buf, ptr, 2);
+				buf[2]=0;
+				pMR.nmis= atoi(buf);
+				
+				// wmis
+				ptr= skipToNextWord(ptr);
+				strncpy(buf, ptr, 4);
+				buf[4]=0;
+				pMR.wmis= atof(buf);
+				
+				// other settings separated similar, but not needeed here...
+				
+				//if((maxWeightedMismatches == -1) || (maxWeightedMismatches > pMR.wmis))
+				//if(numMismatches > pMR.nmis)
+				//{
+					strcpy(buf, "\tmatch= ");
+					strcat(buf, pMR.name);
+					strcat(buf, ", ");
+					strcat(buf, pMR.fullname);
+					strcat(buf, "\n");
+					fputs(buf, pFile);
+					//
+					//printf("%s\n", token2);
+					//printf("%s \t(wmis=%f)(nmis=%d)\n", buf, pMR.wmis, pMR.nmis);
+				//}
+			}
+		} // end while(1)
+	    }
+	    else // no weighted mismatches ...
+	    {
+		if (hinfo)
+		{
+			while(1)
+			{
+				char *match_name = strtok(0, toksep);
+				if (!match_name) break;
+				char *match_info = strtok(0, toksep);
+				if (!match_info) break;
+				char *match_longname = parse_match_info(match_info);
+				char probe_match[255];
+				strcpy(probe_match, "\tmatch= ");
+				correctIllegalChars(match_name);
+				strcat(probe_match, match_name);
+		
+				strcat(probe_match, ", ");
+				correctIllegalChars(match_longname);
+		
+				strcat(probe_match, match_longname);
+				strcat(probe_match, "\n");
+				fputs(probe_match, pFile);
+			}
+		} // end while(1)
+	    }
+	    
+	    
 	      fclose(pFile);
 	    } // end if(pFile!=NULL)
 	    else

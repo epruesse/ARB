@@ -1,6 +1,6 @@
 
-#ifndef CA_MARK_HXX
-#define CA_MARK_HXX
+#ifndef CA_PROBE_HXX
+#define CA_PROBE_HXX
 
 // initialization (needed for all functions below):
 GB_ERROR CHIP_init_pt_server(GBDATA *gb_main, const char *servername);
@@ -22,11 +22,10 @@ struct probe_data {
   char sequence[255];
 };
 
-
 typedef int euer_container;
 
 //GB_ERROR CHIP_probe_match(euer_container& g, const CHIP_probe_match_para& para, const char *for_probe, GBDATA *gb_main);
-GB_ERROR CHIP_probe_match(probe_data& pD, const CHIP_probe_match_para& para, char *fn, int numMismatches, int weightedMismatches);
+GB_ERROR CHIP_probe_match(probe_data& pD, const CHIP_probe_match_para& para, char *fn, int numMismatches, int weightedMismatches, float maxWeightedMismatches);
 GB_ERROR read_input_file(char *fn);
 char *parse_match_info(const char *match_info);
 GB_ERROR write_result_file(char *fn);
@@ -40,5 +39,5 @@ GB_ERROR write_result_file(char *fn);
 #endif
 
 #else
-#error ca_mark.hxx included twice
-#endif // CA_MARK_HXX
+#error ca_probe.hxx included twice
+#endif // CA_PROBE_HXX
