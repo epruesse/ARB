@@ -16,8 +16,9 @@ public:
 
 class OpenGLGraphics {
 public:
-    int screenXmax,screenYmax, mouseX, mouseY;
-    bool displayGrid;
+    int       screenXmax,screenYmax, mouseX, mouseY;
+    bool      displayGrid;
+    ColorRGBf ApplicationBGColor;
 
     OpenGLGraphics(void);
     virtual  ~OpenGLGraphics(void);
