@@ -1598,6 +1598,9 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
     root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(int(mode));
 }
 
+//  -------------------------------------------------------------------
+//      AW_window *ED4_create_level_1_options_window(AW_root *root)
+//  -------------------------------------------------------------------
 AW_window *ED4_create_level_1_options_window(AW_root *root){
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1611,6 +1614,9 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->callback( AW_POPUP_HELP,(AW_CL)"e4_options.hlp");
     aws->at("help");
     aws->create_button("HELP","HELP","H");
+
+    //  -----------------------------------
+    //      Online Sequence Compression
 
     aws->at("gaps");
     aws->create_toggle_field(ED4_AWAR_COMPRESS_SEQUENCE_GAPS);
@@ -1628,8 +1634,28 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->at("percent");
     aws->create_input_field(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT);
 
+    //  --------------
+    //      Layout
+
 //     aws->at("leftcol");
 //     aws->create_input_field(ED4_AWAR_COMPRESS_LEFT_COLUMN);
+
+    aws->at( "name_width" );
+    aws->create_input_field(ED4_AWAR_SPECIES_NAME_WIDTH);
+
+    //  --------------------
+    //      Scroll-Speed
+
+    aws->at("scroll_x");
+    aws->create_input_field(ED4_AWAR_SCROLL_SPEED_X);
+    aws->at("scroll_y");
+    aws->create_input_field(ED4_AWAR_SCROLL_SPEED_Y);
+
+    //  ---------------
+    //      Editing
+
+    aws->at("gapchars");
+    aws->create_input_field(ED4_AWAR_GAP_CHARS);
 
     aws->at("repeat");
     aws->label("Use digits to repeat edit commands?");
@@ -1639,16 +1665,9 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->label("Should Ctrl-Cursor jump over next group?");
     aws->create_toggle(ED4_AWAR_FAST_CURSOR_JUMP);
 
-    aws->at( "name_width" );
-    aws->create_input_field(ED4_AWAR_SPECIES_NAME_WIDTH);
-
-    aws->at("scroll_x");
-    aws->create_input_field(ED4_AWAR_SCROLL_SPEED_X);
-    aws->at("scroll_y");
-    aws->create_input_field(ED4_AWAR_SCROLL_SPEED_Y);
-
-    aws->at("gapchars");
-    aws->create_input_field(ED4_AWAR_GAP_CHARS);
+    aws->at("checksum");
+    aws->label("Announce all checksum changes caused by editing commands.");
+    aws->create_toggle(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES);
 
     return (AW_window *)aws;
 }

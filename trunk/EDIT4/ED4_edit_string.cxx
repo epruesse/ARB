@@ -869,7 +869,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             }
 
                             ED4_ROOT->aw_root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->write_int(next_mode);
-                                   
+
                             last_mode = current_mode;
                             break;
                         }
@@ -1156,9 +1156,22 @@ void ED4_Edit_String::edit(ED4_work_info *info)
     if (!err){
         if (info->gb_data){
             if (info->refresh_needed){
-                old_seq =  GB_read_string(info->gb_data);
+
+                old_seq     = GB_read_string(info->gb_data);
                 old_seq_len = GB_read_string_count(info->gb_data);
-                err = GB_write_string(info->gb_data,seq);
+                err         = GB_write_string(info->gb_data,seq);
+
+                if (ED4_ROOT->aw_root->awar(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES)) {
+                    long old_checksum = GBS_checksum(old_seq, 1, "-.");
+                    long new_checksum = GBS_checksum(seq, 1, "-.");
+
+                    if (old_checksum != new_checksum) {
+                        if (aw_message("Checksum changed!", "Allow, Reject") == 1) {
+                            GB_write_string(info->gb_data, old_seq);
+                        }
+                    }
+                }
+
                 if (err) {
                     info->out_seq_position = remap->screen_to_sequence(info->char_position);	// correct cursor_pos if protection error occurred
                 }
