@@ -22,15 +22,14 @@ extern char *pd_ptid_to_choice(int i);
 
 //**************************************************************************
 
-AW_selection_list *selected_list;	//globale id's fuer 
+AW_selection_list *selected_list;	//globale id's fuer
 AW_selection_list *probelist;		//Identifizierung der Listen
 AW_selection_list *result_probes_list;
 
 
 AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
 {
-    if (result_window)
-	return result_window;
+    if (result_window) return result_window;
 
     result_window = new AW_window_simple;
     result_window->init( aw_root, "MULTIPROBE_RESULTS", "MultiProbe combination results", 0, 0);
@@ -48,23 +47,68 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_window->at("DeleteSel");
     result_window->callback(MP_del_sel_result);
     result_window->create_button("DELETE_SEELECTED", "DELETE");
-    
+
     result_window->at("box");
     result_window->callback(MP_result_chosen);
-    result_probes_list = result_window->create_selection_list( MP_AWAR_RESULTPROBES,"ResultProbes","R" );
+
+    result_probes_list                      = result_window->create_selection_list( MP_AWAR_RESULTPROBES,"ResultProbes","R" );
+    result_probes_list->value_equal_display = true; // plain load/save (no # interpretation)
+
     result_window->set_selection_list_suffix(result_probes_list,"mpr");
-    
+
     result_window->insert_default_selection(result_probes_list, "","");
 
- 
+
     result_window->at("Load");
-    result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)result_probes_list ); 
+    result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)result_probes_list );
     result_window->create_button("LOAD_RPL", "LOAD");
 
     result_window->at("Save");
     result_window->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)result_probes_list);
     result_window->create_button("SAVE_RPL", "SAVE");
-    
+
+    result_window->button_length(7);
+    result_window->at("Help");
+    result_window->callback(AW_POPUP_HELP,(AW_CL)"multiproberesults.hlp");
+    result_window->create_button("HELP","HELP");
+
+    // change comment :
+
+    result_window->button_length(8);
+
+    result_window->at("Trash");
+    result_window->callback(MP_Comment, (AW_CL) "Bad");
+    result_window->create_button("MARK_AS_BAD", "BAD");
+
+    result_window->at("Good");
+    result_window->callback(MP_Comment, (AW_CL) "???");
+    result_window->create_button("MARK_AS_GOOD", "???");
+
+    result_window->at("Best");
+    result_window->callback(MP_Comment, (AW_CL) "Good");
+    result_window->create_button("MARK_AS_BEST", "Good");
+
+    result_window->at("Comment");
+    result_window->callback(MP_Comment, (AW_CL) NULL);
+    result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
+
+    result_window->at("auto");
+    result_window->create_toggle(MP_AWAR_AUTOADVANCE);
+
+    // tree actions :
+
+	result_window->button_length(3);
+
+    result_window->at("ct_back");
+    result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
+    result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.bitmap");
+
+    result_window->at("ct_fwd");
+    result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
+    result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.bitmap");
+
+    result_window->button_length(8);
+
     result_window->at("ColorTree");
     result_window->button_length(4);
     result_window->callback(MP_show_probes_in_tree);
@@ -82,42 +126,20 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_window->callback(MP_normal_colors_in_tree);
     result_window->create_button("RESET_COLORS", "GO");
 
-    result_window->button_length(7);
-    result_window->at("Help");
-    result_window->callback(AW_POPUP_HELP,(AW_CL)"multiproberesults.hlp");
-    result_window->create_button("HELP","HELP");
-   
-    result_window->button_length(8);
-    result_window->at("Trash");
-    result_window->callback(MP_Comment, (AW_CL) "Bad");
-    result_window->create_button("MARK_AS_BAD", "BAD");
-    
-    result_window->at("Good");
-    result_window->callback(MP_Comment, (AW_CL) "???");
-    result_window->create_button("MARK_AS_GOOD", "????");
-    
-    result_window->at("Best");
-    result_window->callback(MP_Comment, (AW_CL) "Good");
-    result_window->create_button("MARK_AS_BEST", "Good");
-    
-    result_window->at("Comment");
-    result_window->callback(MP_Comment, (AW_CL) NULL);
-    result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
-
     return result_window;
 }
 
 char *mp_get_word_before_newline(char **string)			//new_line wird durch 0-Zeichen ersetzt
 {
     char *end, *merk;
-    
+
     if (!*string || !*string[0])
 	return NULL;
-    
+
     end = strchr(*string, '\n');
     if (!end)
 	end = strchr(*string, 0);
-    
+
     if (end)
     {
 	*end = 0;
@@ -128,7 +150,7 @@ char *mp_get_word_before_newline(char **string)			//new_line wird durch 0-Zeiche
 
 	if (*end == ' ' || *end == '\t')
 	    end++;
-	
+
 	*string = merk;
 	return end;
     }
@@ -140,7 +162,7 @@ int MP_get_ecoli_pos(char *ko)				//gedacht fuer ein probedesign file
 {
     char *op = ko;
     char *marke;
-    
+
     while (*op != ' ' && *op != '\t')    // ueberspringt ein Wort
 	op++; 				 //mit Leerzeichen
     while (*op == ' ' || *op == '\t')	 //diese Schleife gehoert
@@ -176,7 +198,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 	char *next_word = NULL;
 	char *beg_line;
 	int  ecoli_pos;
-	
+
 	aww->clear_selection_list(selection_list);
 	char *data;
 	{
@@ -188,7 +210,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 	    aw_message(GB_get_error());
 	    return;
 	}
-		
+
 	if (strstr(data,"Probe design Parameters:"))		//designliste nach Sonden filtern
 	{
 	    ko = data;
@@ -203,7 +225,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 		{
 		    real_disp = new char[5+7+strlen(pl)];
 		    ecoli_pos = MP_get_ecoli_pos(beg_line);
-			    
+
 		    sprintf(real_disp,"%1d#%1d#%6d#%s",QUALITYDEFAULT,0,ecoli_pos,pl);
 		    aww->insert_selection(selection_list,real_disp,real_disp);
 		    delete real_disp;
@@ -214,7 +236,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 	}
 	else
 	{
-	    for (pl = data; pl && pl[0]; pl = next_word) 
+	    for (pl = data; pl && pl[0]; pl = next_word)
 	    {
 		ko = strchr(pl,'\n');
 		if (ko)
@@ -224,9 +246,9 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 		}
 		else
 		    next_word = ko;
-				
+
 		ko = strchr(pl,',');
-			
+
 		if (ko)
 		{
 		    *(ko++) = 0;
@@ -254,13 +276,13 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 			sprintf(real_disp,"%20s%s%s"," ",SEPARATOR,pl);
 		    }
 		}
-	
+
 		aww->insert_selection(selection_list,real_disp,real_disp);
 		delete real_disp;
 	    }
 	    delete data;
 	}
-	
+
 
 	aww->insert_default_selection(selection_list,"","");
 //	aww->sort_selection_list( selection_list );
@@ -274,7 +296,7 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
         char filter[GB_PATH_MAX];
 	char base_name[GB_PATH_MAX];
 	sprintf(base_name,"tmp/load_box_sel_%li",(long)selid);
-	
+
         sprintf(file_name,"%s/file_name",base_name);
         aw_root->awar_string( file_name, "");
 
@@ -290,13 +312,13 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 
         aws->at("close");
 	aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE","CLOSE","C");			   
+        aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("load");
         aws->highlight();
         aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)strdup(file_name));
-        aws->create_button("LOAD","LOAD","L");			   
-	
+        aws->create_button("LOAD","LOAD","L");
+
         awt_create_selection_box((AW_window *)aws,base_name);
 	return (AW_window*) aws;
 }
@@ -305,7 +327,7 @@ void MP_Window::build_pt_server_list()
 {
     int 	i;
     char 	*choice;
-    
+
     aws->at("PTServer");
     aws->callback(MP_cache_sonden);
     aws->create_option_menu( MP_AWAR_PTSERVER, NULL, "");
@@ -330,7 +352,7 @@ MP_Window::MP_Window(AW_root *aw_root)
 	max_seq_hgt = 15;
 
     result_window = NULL;
-    
+
 	aws = new AW_window_simple;
         aws->init( aw_root, "MULTI_PROBE", "MULTI_PROBE", 200, 200 );
         aws->load_xfig("multiprobe.fig");
@@ -338,16 +360,16 @@ MP_Window::MP_Window(AW_root *aw_root)
         aws->at("close");
 	    aws->callback(MP_cache_sonden);
         aws->callback(MP_close_main);
-        aws->create_button("CLOSE","CLOSE");			   
+        aws->create_button("CLOSE","CLOSE");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP,(AW_CL)"multiprobe.hlp");
-        aws->create_button("HELP","HELP");			   
+        aws->create_button("HELP","HELP");
 
 	//      aws->at("Sequenzeingabe");
 	//	aws->callback(MP_take_manual_sequence);
         //	aws->create_input_field(MP_AWAR_SEQUENZEINGABE, max_seq_col);
-	
+
 	aws->at("Border1");
 	aws->callback(MP_cache_sonden);
 	aws->create_input_field(MP_AWAR_QUALITYBORDER1, 4);
@@ -356,24 +378,24 @@ MP_Window::MP_Window(AW_root *aw_root)
 	    aws->at("EcoliPos");
 	    aws->create_input_field(MP_AWAR_ECOLIPOS, 6);
 	}
-	
+
 	aws->button_length(5);
         aws->at("New");
 	aws->callback(MP_new_sequence);
         aws->create_button("CREATE_NEW_SEQUENCE", "ADD");
-	
+
 	aws->button_length(10);
         aws->at("Compute");
         aws->callback(MP_compute);
 	aws->highlight();
 	aws->help_text("Compute possible Solutions");
-        aws->create_button("GO","GO");			   
+        aws->create_button("GO","GO");
 
 	aws->button_length(20);
 	aws->at("Results");
         aws->callback(MP_result_window);
 	aws->create_button("OPEN_RESULT_WIN", "Open result window");
-	
+
 	aws->button_length(5);
 	aws->at("RightLeft");
         aws->callback(MP_rightleft);
@@ -409,7 +431,7 @@ MP_Window::MP_Window(AW_root *aw_root)
 #ifdef DEBUG
 	    aws->insert_option( "0", "", (float)1.0 );
 #endif
-	    
+
 	    aws->update_option_menu();
 	}
 
@@ -425,86 +447,86 @@ MP_Window::MP_Window(AW_root *aw_root)
 	aws->set_selection_list_suffix(selected_list,"prb");
 
 	aws->insert_default_selection(selected_list, "","");
-	
+
 	aws->at("Probelist");
 	probelist = aws->create_selection_list( MP_AWAR_PROBELIST,
 						 "Probelist",
 						 "P" );
 	aws->set_selection_list_suffix(probelist,"prb");
 	aws->insert_default_selection(probelist, "","");
-	
+
 	aws->at("LoadProbes");
-        aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)probelist);
-        aws->create_button("LOAD_PROBES","LOAD");			   
+    aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)probelist);
+    aws->create_button("LOAD_PROBES","LOAD");
 
 	aws->at("SaveProbes");
 	aws->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)probelist);
-        aws->create_button("SAVE_PROBES", "SAVE");
+    aws->create_button("SAVE_PROBES", "SAVE");
 
 	aws->at("LoadSelProbes");
-        aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)selected_list);
-        aws->create_button("LOAD_SELECTED_PROBES", "LOAD");
+    aws->callback(AW_POPUP, (AW_CL)mp_create_load_box_for_selection_lists, (AW_CL)selected_list);
+    aws->create_button("LOAD_SELECTED_PROBES", "LOAD");
 
 	aws->at("SaveSelProbes");
 	aws->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)selected_list );
-        aws->create_button("SAVE_SELECTED_PROBES", "SAVE");
+    aws->create_button("SAVE_SELECTED_PROBES", "SAVE");
 
 	aws->at("DeleteAllPr");
-        aws->callback(MP_del_all_probes);
-        aws->create_button("DELETE_ALL_PROBES", "DELETE");
+    aws->callback(MP_del_all_probes);
+    aws->create_button("DELETE_ALL_PROBES", "DELETE");
 
 	aws->at("DeleteAllSelPr");
-        aws->callback(MP_del_all_sel_probes);
-        aws->create_button("DELETE_ALL_SELECTED_PROBES", "DELETE");
-	
+    aws->callback(MP_del_all_sel_probes);
+    aws->create_button("DELETE_ALL_SELECTED_PROBES", "DELETE");
+
 	aws->at("DeleteSel");
-        aws->callback(MP_del_sel_probes);
-        aws->create_button("DELETE_SELECTED_PROBE", "DELETE");
+    aws->callback(MP_del_sel_probes);
+    aws->create_button("DELETE_SELECTED_PROBE", "DELETE");
 
 	aws->at("DeletePr");
-        aws->callback(MP_del_probes);
-        aws->create_button("DELETE_PROBES", "DELETE");
-	
+    aws->callback(MP_del_probes);
+    aws->create_button("DELETE_PROBES", "DELETE");
+
 	aws->at("WeightedMismatches");
-        aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden);
 	aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
 
-	if (0){
-	    aws->create_toggle_field(MP_AWAR_WEIGHTEDMISMATCHES,1);
-	    aws->insert_toggle("#weighted1.bitmap","0",0);
-	    aws->insert_toggle("#weighted3.bitmap","1",1);
-	    aws->insert_toggle("#weighted2.bitmap","2",2);	
-	    aws->update_toggle_field();
-	}
-	
+// 	if (0){
+// 	    aws->create_toggle_field(MP_AWAR_WEIGHTEDMISMATCHES,1);
+// 	    aws->insert_toggle("#weighted1.bitmap","0",0);
+// 	    aws->insert_toggle("#weighted3.bitmap","1",1);
+// 	    aws->insert_toggle("#weighted2.bitmap","2",2);
+// 	    aws->update_toggle_field();
+// 	}
+
 	aws->at("Komplement");
 	aws->callback(MP_cache_sonden);
 	aws->create_toggle(MP_AWAR_COMPLEMENT);
 
-	if (0){
-	    aws->at("Mismatches");
-	    aws->create_option_menu( MP_AWAR_MISMATCHES, NULL, "");
-	    aws->callback(MP_cache_sonden);
-	    aws->insert_option( "0 mismatches", "", 0 );
-	    aws->insert_option( "1 mismatches", "", 1 );
-	    aws->insert_option( "2 mismatches", "", 2 );
-	    aws->insert_option( "3 mismatches", "", 3 );
-	    aws->insert_option( "4 mismatches", "", 4 );
-	    aws->insert_option( "5 mismatches", "", 5 );
-	    aws->update_option_menu();
-	}
-	if (0){ 
-	    aws->at("SingleMismatches");
-	    aws->create_option_menu( MP_AWAR_SINGLEMISMATCHES, NULL, "");
-	    aws->insert_option( "0 mismatches", "", 0 );
-	    aws->insert_option( "1 mismatches", "", 1 );
-	    aws->insert_option( "2 mismatches", "", 2 );
-	    aws->insert_option( "3 mismatches", "", 3 );
-	    aws->insert_option( "4 mismatches", "", 4 );
-	    aws->insert_option( "5 mismatches", "", 5 );
-	    aws->update_option_menu();
-	}
-    
+// 	if (0){
+// 	    aws->at("Mismatches");
+// 	    aws->create_option_menu( MP_AWAR_MISMATCHES, NULL, "");
+// 	    aws->callback(MP_cache_sonden);
+// 	    aws->insert_option( "0 mismatches", "", 0 );
+// 	    aws->insert_option( "1 mismatches", "", 1 );
+// 	    aws->insert_option( "2 mismatches", "", 2 );
+// 	    aws->insert_option( "3 mismatches", "", 3 );
+// 	    aws->insert_option( "4 mismatches", "", 4 );
+// 	    aws->insert_option( "5 mismatches", "", 5 );
+// 	    aws->update_option_menu();
+// 	}
+// 	if (0){
+// 	    aws->at("SingleMismatches");
+// 	    aws->create_option_menu( MP_AWAR_SINGLEMISMATCHES, NULL, "");
+// 	    aws->insert_option( "0 mismatches", "", 0 );
+// 	    aws->insert_option( "1 mismatches", "", 1 );
+// 	    aws->insert_option( "2 mismatches", "", 2 );
+// 	    aws->insert_option( "3 mismatches", "", 3 );
+// 	    aws->insert_option( "4 mismatches", "", 4 );
+// 	    aws->insert_option( "5 mismatches", "", 5 );
+// 	    aws->update_option_menu();
+// 	}
+
     aws->at("Greyzone");
     aws->callback(MP_cache_sonden);
     aws->create_option_menu( MP_AWAR_GREYZONE, NULL, "");
@@ -517,18 +539,18 @@ MP_Window::MP_Window(AW_root *aw_root)
     }
     aws->update_option_menu();
 
-	
+
     aws->at("NoOfProbes");
     aws->create_option_menu( MP_AWAR_NOOFPROBES, NULL, "");
     aws->callback(MP_cache_sonden);
 
-    aws->insert_option( "Compute  1 probe ", "", 1 );	
+    aws->insert_option( "Compute  1 probe ", "", 1 );
     char str[50];
     for (int i=2; i<=MAXPROBECOMBIS; i++){
 	sprintf(str,"%2d-probe-combinations",i);
 	aws->insert_option( str, "", i );
     }
-	
+
     aws->update_option_menu();
     build_pt_server_list();
 }
@@ -540,7 +562,7 @@ MP_Window::~MP_Window()
 	result_window->hide();
 
     if (aws)	aws->hide();
-    
+
     delete result_window;
     delete aws;
 }
