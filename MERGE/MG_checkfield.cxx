@@ -333,10 +333,10 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
 	aws->create_input_field(AWAR_ETAG,6);
 
 	awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_SOURCE_FIELD,
-			AWT_STRING_FILTER, "source",0, &AWT_species_selector);
+			AWT_STRING_FILTER, "source",0, &AWT_species_selector, 20, 10);
 
 	awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_DEST_FIELD,
-			(1<<GB_STRING)|(1<<GB_INT), "dest",0, &AWT_species_selector);
+			(1<<GB_STRING)|(1<<GB_INT), "dest",0, &AWT_species_selector, 20, 10);
 
 
 	aws->at("go");

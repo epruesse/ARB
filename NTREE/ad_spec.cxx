@@ -386,8 +386,8 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     aws->help_text("spaf_reorder.hlp");
     aws->create_button("MOVE_TO_NEW_POSITION", "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
 
-    awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector);
-    awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector);
+    awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
+    awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
     return (AW_window *)aws;
 }
@@ -518,7 +518,7 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     awt_create_selection_list_on_scandb(gb_main,
                                         (AW_window*)aws,AWAR_FIELD_DELETE,
                                         -1,
-                                        "source",0, selector);
+                                        "source",0, selector, 20, 10);
 
     return (AW_window *)aws;
 }
@@ -743,7 +743,7 @@ AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
 
     aws->at("field");
     awt_create_selection_list_on_scandb(gb_main,aws,"next_neighbours/dest_field",
-                                        (1<<GB_INT) | (1<<GB_STRING), "field",0, &AWT_species_selector);
+                                        (1<<GB_INT) | (1<<GB_STRING), "field",0, &AWT_species_selector, 20, 10);
 
 
     aws->at("go");

@@ -691,7 +691,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
 }
 
 
-void AW_window::update_input_field( int *widget, const char *var_value ) {
+void AW_window::update_input_field(int *widget, const char *var_value ) {
     Widget w = (Widget) widget;
 
     XtVaSetValues( w, XmNvalue, var_value, NULL );
