@@ -210,7 +210,7 @@ void NT_insert_color_mark_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_c
     char hotkey[]       = "x";
     const char *hotkeys = "N1234567890  ";
 
-    const char *label_base;
+    const char *label_base = 0;
     switch (mark_basemode) {
         case 0: label_base = "all_unmark_color"; break;
         case 1: label_base = "all_mark_color"; break;
