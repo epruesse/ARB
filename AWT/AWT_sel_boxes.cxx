@@ -139,13 +139,17 @@ static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id)
         free(choice);
     }
 
+    aws->insert_default_selection(id, "-undefined-", (long)-1);
     aws->update_selection_list(id);
 }
 
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index);
     if (!fullname) {
-        awt_assert(0); // awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index
+#ifdef DEBUG
+      printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
+#endif
+      //        awt_assert(0); // awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index
         return strdup("-undefined-");
     }
 
