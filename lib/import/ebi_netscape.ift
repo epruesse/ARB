@@ -138,7 +138,7 @@ MATCH	"FT */EC_number*"
 	APPEND	"EC_num"
 
 MATCH	"FT *note*"
-	SRT	"*\=\"*\"=*2"	
+	SRT	"*\=\"*\"=*2"
 	TAG	"EBI"
 	APPEND	"note"
 
@@ -159,7 +159,6 @@ MATCH	"FT *"
 SEQUENCEAFTER	"SQ*"
 SEQUENCESRT	"*Check*..*=*3"
 SEQUENCEACI	"remove("0123456789 /")"
-SEQUENCECOLUMN	0
 SEQUENCEEND	"//"
 CREATE_ACC_FROM_SEQUENCE
 

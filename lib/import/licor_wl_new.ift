@@ -31,7 +31,6 @@ MATCH	"	primer: *"
 	WRITE	"primer"
 
 SEQUENCEAFTER	".."
-SEQUENCECOLUMN	0
 SEQUENCEEND	"//"
 
 END	"//"
