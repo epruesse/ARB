@@ -993,7 +993,7 @@ export:	tarfile sourcetarfile
 binlink:
 	(cd bin; $(MAKE) all);
 
-all: checks arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
 		@echo -----------------------------------
 		@echo 'make all' has been done successful
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
