@@ -43,6 +43,7 @@ private:
     ID2IDMap       db_file2db_id_map;
     PS_NodePtr     db_path;
     SpeciesID      db_MAX_ID;
+    SpeciesID      db_MIN_ID;
     void callback( void *_caller );
 
 public:
@@ -129,6 +130,9 @@ public:
 
     SpeciesID getMaxID() {
         return db_id2name_map.rbegin()->first;
+    }
+    SpeciesID getMinID() {
+        return db_id2name_map.begin()->first;
     }
 
     //
