@@ -827,8 +827,8 @@ void SEC_helix_strand::printHelixNumbers(AW_device *device, double helixStart_x,
     double printPos_y = base_y - start_base_v[1]*2;
     char *helixNumber = root->helix->entries[absPos].helix_nr;
 
-    if(helixNumber != NULL){
-    device->text(SEC_GC_HELIX_NO, helixNumber, printPos_x, printPos_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), 0 );
+    if(helixNumber != NULL && (strchr(helixNumber,'-') == 0)){ // paints helix numbers on starting strand of helix
+        device->text(SEC_GC_HELIX_NO, helixNumber, printPos_x, printPos_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), 0 );
     }
 }
 
@@ -952,10 +952,11 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
                 if(!root->hide_bases)  device->text(thisBaseColor, thisBase, thisLast_x, thisLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this),thisLastAbsPos, 0 );
                 root->announce_base_position(thisLastAbsPos, thisLast_x, thisLast_y-font_height2);
                 //paints the Helix Numbers
-                if(!thisHelixNrTag && i%(this_base_count/2)==0){
-                    printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
-                    thisHelixNrTag = 1;
-                }
+                if(!thisHelixNrTag && this_base_count >= 2 && i%(this_base_count/2) == 0)
+                    {
+                        printHelixNumbers(device, attachp2_x, attachp2_y, other_strand->attachp1_x, other_strand->attachp1_y, (this_x+thisLast_x)/2, (this_y+thisLast_y)/2,this_abs_pos);
+                        thisHelixNrTag = 1;
+                    }
                 thisBaseColor = SEC_GC_HELIX; thisLast_x = this_x; thisLast_y = this_y; thisBase[0] = this_buffer[0]; thisLastAbsPos = this_abs_pos;
             }
         }
@@ -979,12 +980,12 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
                 root->announce_base_position(otherLastAbsPos, otherLast_x, otherLast_y-font_height2);
                 //paints the Helix Numbers
                 if(!otherHelixNrTag &&
-                   other_base_count >= 2 && // avoid "devide by zero"
+                   other_base_count >= 2 && // to avoid "divide by zero"
                    j%(other_base_count/2) == 0)
-                {
-                    printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
-                    otherHelixNrTag = 1;
-                }
+                    {
+                        printHelixNumbers(device, other_strand->attachp2_x, other_strand->attachp2_y, attachp1_x, attachp1_y, (other_x+otherLast_x)/2, (other_y+otherLast_y)/2,other_abs_pos);
+                        otherHelixNrTag = 1;
+                    }
                 otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
             }
         }
