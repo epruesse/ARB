@@ -10,7 +10,7 @@
 #include <arbdbt.h>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include <aw_root.hxx>
+// #include <aw_root.hxx>
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
