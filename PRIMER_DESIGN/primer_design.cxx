@@ -11,7 +11,7 @@
 extern GBDATA *gb_main;
 
 void create_primer_design_variables(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_POS_LEFT_MAX , 0, aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_POS_LEFT_MIN , 0, aw_def);
     aw_root->awar_int(AWAR_PRIMER_DESIGN_POS_LEFT_MAX , 0, aw_def);
     aw_root->awar_int(AWAR_PRIMER_DESIGN_POS_RIGHT_MIN , 0, aw_def);
     aw_root->awar_int(AWAR_PRIMER_DESIGN_POS_RIGHT_MAX , 0, aw_def);
@@ -31,45 +31,62 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_float(AWAR_PRIMER_DESIGN_TEMP_FACTOR , 0, aw_def);
 }
 
-void probe_design_event(AW_window *aww) {
-    AW_root    *root = aww->get_root();
-    char *sequence;
+void primer_design_event(AW_window *aww) {
+    AW_root *root     = aww->get_root();
+    GB_ERROR error    = 0;
+    char    *sequence = 0;
+
     {
         GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main,selected_species);
-        const char     *alignment        = GBT_get_default_alignment(gb_main);
-        GBDATA         *gb_seq           = GBT_read_sequence(gb_species, alignment);
 
-        sequence = GB_read_string(gb_seq);
+        if (!gb_species) {
+            error = "You have to select a species!";
+        }
+        else {
+            const char *alignment = GBT_get_default_alignment(gb_main);
+            GBDATA     *gb_seq    = GBT_read_sequence(gb_species, alignment);
+
+            sequence = GB_read_string(gb_seq);
+        }
     }
 
-    int dist_min = root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->read_int();
-    int dist_max = root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->read_int();
+    if (!error) {
+        int dist_min = root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->read_int();
+        int dist_max = root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->read_int();
 
-    if (root->awar(AWAR_PRIMER_DESIGN_DIST_USE)->read_int() == 0)
-    {
-        dist_min = dist_max = -1;
+        if (root->awar(AWAR_PRIMER_DESIGN_DIST_USE)->read_int() == 0)
+        {
+            dist_min = dist_max = -1;
+        }
+
+        PrimerDesign *PD = new PrimerDesign(sequence,
+                                            Range(root->awar(AWAR_PRIMER_DESIGN_POS_LEFT_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_POS_LEFT_MAX)->read_int()),
+                                            Range(root->awar(AWAR_PRIMER_DESIGN_POS_RIGHT_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_POS_RIGHT_MAX)->read_int()),
+                                            Range(root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int()),
+                                            Range(dist_min, dist_max),
+                                            Range(root->awar(AWAR_PRIMER_DESIGN_GCRATIO_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_GCRATIO_MAX)->read_int()),
+                                            Range(root->awar(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX)->read_int()),
+                                            root->awar(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST)->read_int(),
+                                            (bool)root->awar(AWAR_PRIMER_DESIGN_EXPAND_IUPAC)->read_int(),
+                                            root->awar(AWAR_PRIMER_DESIGN_MAX_PAIRS)->read_int(),
+                                            root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->read_float(),
+                                            root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->read_float()
+                                            );
+
+#ifdef DEBUG
+        PD->run(PrimerDesign::PRINT_PRIMER_PAIRS);
+#else
+        PD->run(0);
+#endif
+        if (!error) error = PD->get_error();
     }
-
-    PrimerDesign *PD = new PrimerDesign(sequence,
-                                        Range(root->awar(AWAR_PRIMER_DESIGN_POS_LEFT_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_POS_LEFT_MAX)->read_int()),
-                                        Range(root->awar(AWAR_PRIMER_DESIGN_POS_RIGHT_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_POS_RIGHT_MAX)->read_int()),
-                                        Range(root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int()),
-                                        Range(dist_min, dist_max),
-                                        Range(root->awar(AWAR_PRIMER_DESIGN_GCRATIO_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_GCRATIO_MAX)->read_int()),
-                                        Range(root->awar(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN)->read_int(), root->awar(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX)->read_int()),
-                                        root->awar(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST)->read_int(),
-                                        (bool)root->awar(AWAR_PRIMER_DESIGN_EXPAND_IUPAC)->read_int(),
-                                        root->awar(AWAR_PRIMER_DESIGN_MAX_PAIRS)->read_int(),
-                                        root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->read_float(),
-                                        root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->read_float()
-                                        );
     free(sequence);
+    if (error) aw_message(error);
 }
 
 AW_window *create_primer_design_window( AW_root *root,AW_default def)  {
-    AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     AWUSE(def);
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "PRIMER_DESIGN","PRIMER DESIGN", 10, 10 );
@@ -109,13 +126,27 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def)  {
     aws->at("maxtemp"); aws->create_input_field( AWAR_PRIMER_DESIGN_TEMPERATURE_MAX, 7);
 
 
-    aws->at("allowed_match"); aws->create_input_field( AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, 7);
-    aws->at("expand_IUPAC"); aws->create_toggle( AWAR_PRIMER_DESIGN_EXPAND_IUPAC);
-    aws->at("max_pairs"); aws->create_input_field( AWAR_PRIMER_DESIGN_MAX_PAIRS, 7);
-    aws->at("GC_factor"); aws->create_input_field( AWAR_PRIMER_DESIGN_GC_FACTOR, 7);
-    aws->at("temp_factor"); aws->create_input_field( AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
+    aws->at("allowed_match");
+    aws->label("Min. distance to next match of primer (0 = singular match)");
+    aws->create_input_field( AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, 7);
 
+    aws->at("expand_IUPAC");
+    aws->label("Match IUPAC Codes");
+    aws->create_toggle( AWAR_PRIMER_DESIGN_EXPAND_IUPAC);
 
+    aws->at("max_pairs");
+    aws->label("Max. results");
+    aws->create_input_field( AWAR_PRIMER_DESIGN_MAX_PAIRS, 7);
+
+    aws->at("GC_factor");
+    aws->label("G+C factor");
+    aws->create_input_field( AWAR_PRIMER_DESIGN_GC_FACTOR, 7);
+
+    aws->at("temp_factor");
+    aws->label("Temperature factor");
+    aws->create_input_field( AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
+
+    return aws;
 }
 
 

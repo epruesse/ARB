@@ -15,13 +15,20 @@ using namespace std;
 // Constructor
 //
 void PrimerDesign::init ( const char *sequence_, \
-			  Range pos1_, Range pos2_, Range length_, Range distance_, \
-			  Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, \
-			  int max_count_primerpairs_, double CG_factor_, double temp_factor_ )
+			  Range                   pos1_, Range pos2_, Range length_, Range distance_, \
+			  Range                   ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, \
+			  int                     max_count_primerpairs_, double CG_factor_, double temp_factor_ )
 {
-  sequence = sequence_;
-  setPositionalParameters ( pos1_, pos2_, length_, distance_ );
-  setConditionalParameters( ratio_, temperature_, min_dist_to_next_, expand_UPAC_Codes_, max_count_primerpairs_, CG_factor_, temp_factor_ );
+    error    = 0;
+    sequence = sequence_;
+    root1    = 0;
+    root2    = 0;
+    list1    = 0;
+    list2    = 0;
+    pairs    = 0;
+
+    setPositionalParameters ( pos1_, pos2_, length_, distance_ );
+    setConditionalParameters( ratio_, temperature_, min_dist_to_next_, expand_UPAC_Codes_, max_count_primerpairs_, CG_factor_, temp_factor_ );
 }
 
 PrimerDesign::PrimerDesign( const char *sequence_, \
@@ -29,14 +36,14 @@ PrimerDesign::PrimerDesign( const char *sequence_, \
 			    Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_,\
 			    int max_count_primerpairs_, double CG_factor_, double temp_factor_ )
 {
-  init ( sequence_, pos1_, pos2_, length_, distance_, ratio_, temperature_, min_dist_to_next_, expand_UPAC_Codes_, max_count_primerpairs_, CG_factor_, temp_factor_ ); 
+  init ( sequence_, pos1_, pos2_, length_, distance_, ratio_, temperature_, min_dist_to_next_, expand_UPAC_Codes_, max_count_primerpairs_, CG_factor_, temp_factor_ );
 }
 
 
 PrimerDesign::PrimerDesign( const char *sequence_, \
 			    Range pos1_, Range pos2_, Range length_, Range distance_, int max_count_primerpairs_, double CG_factor_, double temp_factor_ )
 {
-  init ( sequence_, pos1_, pos2_, length_, distance_, Range(0,0), Range(0,0), -1, false, max_count_primerpairs_, CG_factor_, temp_factor_ ); 
+  init ( sequence_, pos1_, pos2_, length_, distance_, Range(0,0), Range(0,0), -1, false, max_count_primerpairs_, CG_factor_, temp_factor_ );
 }
 
 
@@ -66,7 +73,7 @@ bool PrimerDesign::setPositionalParameters( Range pos1_, Range pos2_, Range leng
 
   // pos1_.max + length_.max < pos2_.min
   if (pos2_.min() <= pos1_.max() + length_.max()) return false;
-  
+
   // use distance-parameter ? (-1 = no)
   if (distance_.min() > 0) {
     // pos2_.max - pos1_.min >= distance_.min
@@ -136,7 +143,7 @@ int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_
 {
   int  index     = CHAR2CHILD.INDEX[ base_ ];
   bool is_primer = primer_length.includes( delivered_ );
-  
+
 //   printf ( "(%li,%c,%i,",pos_,base_,delivered_ );
 
   // create new node if necessary
@@ -145,7 +152,7 @@ int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_
   {
     if ( is_primer )        // new child with positive last_base_index
       current_->child[index] = new Node ( current_,base_,pos_ );
-    else                    
+    else
       current_->child[index] = new Node ( current_,base_,0 );
     current_->child_bits |= CHAR2BIT.FIELD[ base_ ];
   }
@@ -342,7 +349,7 @@ void PrimerDesign::printPrimerTrees ()
 //
 // match the sequence against the primer-trees
 //
-void PrimerDesign::matchSequenceAgainstPrimerTrees() 
+void PrimerDesign::matchSequenceAgainstPrimerTrees()
 {
   SearchFIFO        *fifo1             = new SearchFIFO( sequence,root1,primer_length,min_distance_to_next_match,expand_UPAC_Codes );
   SearchFIFO        *fifo2             = new SearchFIFO( sequence,root2,primer_length,min_distance_to_next_match,expand_UPAC_Codes );
@@ -503,7 +510,7 @@ void PrimerDesign::convertTreesToLists ()
 {
 //   CG_ratio.print( "convertTreesToLists : CG_ratio ","  " );
 //   temperature.print( "temperature ","  " );
-//   primer_distance.print( "primer_distance ","\n" ); 
+//   primer_distance.print( "primer_distance ","\n" );
 
   Node             *cur_node;
   Item             *cur_item;
@@ -517,7 +524,7 @@ void PrimerDesign::convertTreesToLists ()
   PRD_Sequence_Pos  max_pos_2 = -1;
   pair< Node*,int > new_pair;      // < cur_node->child[i], depth >
   deque< pair<Node*,int> > *stack;
-  
+
 
   // list 1
   cur_item = NULL;
@@ -545,9 +552,9 @@ void PrimerDesign::convertTreesToLists ()
       calcCGandAT( CG, AT, cur_node );
       AT = 4*CG + 2*AT;
       CG = (CG * 100) / depth;
-      
+
       // create new item if conditional parameters are in range
-      if ( CG_ratio.includes(CG) && temperature.includes(AT) ) 
+      if ( CG_ratio.includes(CG) && temperature.includes(AT) )
       {
 	new_item = new Item( cur_node->last_base_index, depth, CG, AT, NULL );
 
@@ -618,7 +625,7 @@ void PrimerDesign::convertTreesToLists ()
       calcCGandAT( CG, AT, cur_node );
       AT = 4*CG + 2*AT;
       CG = (CG * 100) / depth;
-      
+
       // create new item if conditional parameters are in range
       if ( CG_ratio.includes(CG) && temperature.includes(AT) )
       {
@@ -656,7 +663,7 @@ void PrimerDesign::convertTreesToLists ()
       {
 	// primer in list 1 out of range of primers in list 2 => remove from list 1
 //       printf ( "removing %i\n", cur_item->start_pos );
-      
+
 	if ( cur_item == list1 )
 	{
 	  // 'to delete'-item is first in list
@@ -782,7 +789,7 @@ void PrimerDesign::evaluatePrimerPairs ()
       // evaluate pair
       rating = evaluatePair( one, two );
 //       counter++;
-      
+
       // test if rating is besster that the worst of the best
       if ( rating > pairs[max_count_primerpairs-1].rating )
       {

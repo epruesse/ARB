@@ -115,6 +115,7 @@ ln -s ../PROBE_COM/PT_com.h INCLUDE/PT_com.h
 ln -s ../PROBE_COM/PT_server.h INCLUDE/PT_server.h
 ln -s ../PROBE_COM/PT_server_prototypes.h INCLUDE/PT_server_prototypes.h
 ln -s ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx
+ln -s ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx
 ln -s ../SECEDIT/sec_graphic.hxx INCLUDE/sec_graphic.hxx
 ln -s ../SECEDIT/secedit.hxx INCLUDE/secedit.hxx
 ln -s ../SEER/seer.hxx INCLUDE/seer.hxx

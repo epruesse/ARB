@@ -22,7 +22,9 @@ public:
   Item ();
   ~Item ();
 
-  void print ( char *prefix, char *suffix );
+    void print ( char *prefix, char *suffix );
+
+    const char * get_primer_sequence() { return "Hallo"; }
 };
 
 #else

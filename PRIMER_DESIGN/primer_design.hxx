@@ -20,6 +20,9 @@
 #define AWAR_PRIMER_DESIGN_GC_FACTOR              "primer_design/GC_factor"
 #define AWAR_PRIMER_DESIGN_TEMP_FACTOR            "primer_design/temp_factor"
 
+AW_window *create_primer_design_window( AW_root *root,AW_default def);
+void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def);
+
 
 #else
 #error primer_design.hxx included twice

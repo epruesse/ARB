@@ -8,7 +8,9 @@
 #include "PRD_Node.hxx"
 #include "PRD_Item.hxx"
 #include "PRD_Pair.hxx"
-#include "deque.h"
+
+#include <deque.h>
+#include <arbdb.h>
 
 class PrimerDesign {
 private:
@@ -67,7 +69,7 @@ private:
   //
   const static int FORWARD  =  1;
   const static int BACKWARD = -1;
-  
+
   // primerbaume
   Node* root1;
   Node* root2;
@@ -77,21 +79,23 @@ private:
   Item* list2;
 
   // primerpaarfeld
-  Pair* pairs;
+    Pair* pairs;
+
+    GB_ERROR error;
 
 public:
-  PrimerDesign( const char *sequence_, \
-                Range pos1_, Range pos2_, Range length_, Range distance_, \
-		Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, \
-		int max_count_primerpairs_, double CG_factor_, double temp_factor_ );
-  PrimerDesign( const char *sequence_, \
-		Range pos1_, Range pos2_, Range length_, Range distance_, \
-		int max_count_primerpairs_, double CG_factor_, double temp_factor_ );
+  PrimerDesign( const char *sequence_,          \
+                Range       pos1_, Range pos2_, Range length_, Range distance_, \
+		Range               ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, \
+		int                 max_count_primerpairs_, double CG_factor_, double temp_factor_ );
+  PrimerDesign( const char *sequence_,          \
+		Range               pos1_, Range pos2_, Range length_, Range distance_, \
+		int                 max_count_primerpairs_, double CG_factor_, double temp_factor_ );
   PrimerDesign( const char *sequence_ );
   ~PrimerDesign();
 
   bool setPositionalParameters ( Range pos1_, Range pos2_, Range length_, Range distance_ ); // true = valid parameters
-  void setConditionalParameters( Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, int max_count_primerpairs_, double CG_factor_, double temp_factor_ ); 
+  void setConditionalParameters( Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_UPAC_Codes_, int max_count_primerpairs_, double CG_factor_, double temp_factor_ );
 
   void buildPrimerTrees ();
   void printPrimerTrees ();
@@ -103,7 +107,9 @@ public:
   void evaluatePrimerPairs ();
   void printPrimerPairs    ();
 
-  void run ( int print_stages_ );
+    void run ( int print_stages_ );
+
+    GB_ERROR get_error() const { return error; }
 public:
   const static int PRINT_RAW_TREES     = 1;
   const static int PRINT_MATCHED_TREES = 2;

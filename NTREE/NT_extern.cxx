@@ -42,6 +42,7 @@
 #include "nt_date.h"
 #include <st_window.hxx>
 #include <probe_design.hxx>
+#include <primer_design.hxx>
 #include <GEN.hxx>
 
 
@@ -165,6 +166,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 
 	create_insertchar_variables(awr,def);
 	create_probe_design_variables(awr,def,gb_main);
+	create_primer_design_variables(awr,def);
 	create_trees_var(awr,def);
 	create_extendeds_var(awr,def);
 	create_species_var(awr,def);
@@ -586,9 +588,10 @@ void NT_primer_cb(void) {
 	GB_xcmd("arb_primer",1);
 }
 
+
 void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL){
 	GB_transaction dummy(gb_main);
-	GB_ERROR error = GB_set_compression(gb_main,dis_compr);
+	GB_ERROR       error = GB_set_compression(gb_main,dis_compr);
 	if (error) aw_message(error);
 }
 
@@ -960,6 +963,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("view_probe_group_result",	"View Probe Group Result ...",	"G","",  AWM_EXP, AW_POPUP, (AW_CL)create_probe_group_result_window, (AW_CL)ntw );
             }
             awm->close_sub_menu();
+            awm->insert_sub_menu(0,"Primer Design ...","");
+            {
+                AWMIMT( "primer_design_new",		"Primer Design ...", "P", "primer_new.hlp",			AWM_PRB, AW_POPUP, (AW_CL)create_primer_design_window, 0 );
+                AWMIMT("primer_design",		"Primer Design (old)",		"","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
+            }
+            awm->close_sub_menu();
+
             awm->insert_sub_menu( 0,   "Network", "N");
             {
                 AWMIMT("ors",	"ORS ...",		"O","ors.hlp",			AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
@@ -982,7 +992,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 }
                 awm->close_sub_menu();
             }
-            AWMIMT("primer_design",		"Primer Design ...",		"P","primer.hlp",	AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
 
             if (!GB_NOVICE) {
                 awm->insert_separator();
