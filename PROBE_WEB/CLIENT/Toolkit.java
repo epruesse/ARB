@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Sun Sep/21/2003 19:06 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/10/2003 12:44 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -16,7 +16,7 @@
 class Toolkit
 {
     public static String clientName    = "arb_probe_client";
-    public static String clientVersion = "1.0"; // this has to match to the server version (see ../SERVER/getVersion.cgi  )
+    public static String clientVersion = "0.9alpha"; // CLIENT_SERVER_VERSION -- this has to match the version in ../SERVER/getVersion.cgi
 
     private static String maintainer = "devel@arb-home.de";
 
