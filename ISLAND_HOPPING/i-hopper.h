@@ -12,7 +12,6 @@
 
 EXT char *Error;
 
-
 void Align(
  int nX,char X[],int secX[],char **XX,int nY,char Y[],int secY[],char **YY,
  int freqs,double fT,double fC,double fA,double fG,

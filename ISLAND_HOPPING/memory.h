@@ -1,21 +1,23 @@
-void undispose(void);
-void clearUp(void);
-size_t allocated(void); 
-void *newBlock(size_t s);
-void freeBlock(void **v);
-void **newMatrix(size_t nrow,size_t ncol,size_t s);
-void freeMatrix(void ***m);
+void     undispose(void);
+void     clearUp(void);
+size_t   allocated(void);
+void    *newBlock(size_t s);
+void     freeBlock(void **v);
+void   **newMatrix(size_t nrow,size_t ncol,size_t s);
+void     freeMatrix(void ***m);
+
+void test_mem();
 
 #define newVector(n,s) newBlock((n)*(s))
 
 #define freeBlock(v) freeBlock((void **)(v))
 
 #define newDoubleVector(n) (double *)(newVector((size_t)(n),sizeof(double)))
-#define newFloatVector(n) (float *)(newVector((size_t)(n),sizeof(float)))
-#define newShortVector(n) (short *)(newVector((size_t)(n),sizeof(short)))
-#define newLongVector(n) (long *)(newVector((size_t)(n),sizeof(long)))
-#define newIntVector(n) (int *)(newVector((size_t)(n),sizeof(int)))
-#define newCharVector(n) (char *)(newVector((size_t)(n),sizeof(char)))
+#define newFloatVector(n)  (float *)(newVector((size_t)(n),sizeof(float)))
+#define newShortVector(n)  (short *)(newVector((size_t)(n),sizeof(short)))
+#define newLongVector(n)   (long *)(newVector((size_t)(n),sizeof(long)))
+#define newIntVector(n)    (int *)(newVector((size_t)(n),sizeof(int)))
+#define newCharVector(n)   (char *)(newVector((size_t)(n),sizeof(char)))
 
 #define newDoubleMatrix(r,c) (double **)(newMatrix((size_t)(r),(size_t)(c),sizeof(double)))
 #define newFloatMatrix(r,c) (float **)(newMatrix((size_t)(r),(size_t)(c),sizeof(float)))

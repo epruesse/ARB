@@ -4,100 +4,120 @@
 
 typedef const char *GB_ERROR;
 
+class IslandHopping;
+
+class IslandHoppingParameter {
+private:
+    int    freqs;
+    double fT;
+    double fC;
+    double fA;
+    double fG;
+
+    int rates;
+    double rTC;
+    double rTA;
+    double rTG;
+    double rCA;
+    double rCG;
+    double rAG;
+
+    double dist;
+    double supp;
+    double gap;
+    double thres;
+
+    friend class IslandHopping;
+
+public:
+    IslandHoppingParameter(int    freqs_,
+                           double fT_, double fC_, double fA_, double fG_,
+                           int    rates_,
+                           double rTC_, double rTA_, double rTG_, double rCA_, double rCG_, double rAG_,
+                           double dist_, double supp_, double gap_, double thres_);
+
+    virtual ~IslandHoppingParameter();
+
+};
+
+
 class IslandHopping {
 
- private:
+private:
+    static IslandHoppingParameter *para;
 
-  int alignment_length;
+    int alignment_length;
 
-  int firstColumn;
-  int lastColumn;
+    int firstColumn;
+    int lastColumn;
 
-  const char *ref_sequence;   // with gaps
+    const char *ref_sequence;   // with gaps
 
-  const char *toAlign_sequence; // with gaps
+    const char *toAlign_sequence; // with gaps
 
-  const char *helix; // with gaps
+    const char *helix; // with gaps
 
-  char *output_sequence;
+    char *aligned_ref_sequence; //aligned (ref_sequence)
+    char *output_sequence;      // aligned (toAlign_sequence)
 
-  int freqs;
-  double fT;
-  double fC;
-  double fA;
-  double fG;
+    int output_alignment_length;
 
-  int rates;
-  double rTC;
-  double rTA;
-  double rTG;
-  double rCA;
-  double rCG;
-  double rAG;
 
-  double dist;
-  double supp;
-  double gap;
-  double thres;
+public:
 
- public:
+    IslandHopping() {
 
-  IslandHopping() {
+        alignment_length = 0;
 
-   alignment_length = 0;
+        firstColumn = 0;
+        lastColumn = -1;
 
-   firstColumn = 0;
-   lastColumn = -1;
+        ref_sequence = 0;
 
-   ref_sequence = 0;
+        toAlign_sequence = 0;
 
-   toAlign_sequence = 0;
+        helix = 0;
 
-   helix = 0;
+        output_sequence         = 0;
+        aligned_ref_sequence    = 0;
+        output_alignment_length = 0;
+    }
 
-   output_sequence = 0;
+    void set_parameters(int    freqs,
+                        double fT, double fC, double fA, double fG,
+                        int    rates,
+                        double rTC, double rTA, double rTG, double rCA, double rCG, double rAG,
+                        double dist, double supp, double gap, double thres)
+    {
+        delete para;
+        para = new IslandHoppingParameter(freqs, fT, fC , fA, fG, rates, rTC, rTA, rTG, rCA, rCG, rAG , dist, supp, gap, thres);
+    }
 
-   freqs=0;
-   fT=0.25;
-   fC=0.25;
-   fA=0.25;
-   fG=0.25;
+    virtual ~IslandHopping() {
+        delete output_sequence;
+        delete aligned_ref_sequence;
+    }
 
-   rates=0;
-   rTC=4.0;
-   rTA=1.0;
-   rTG=1.0;
-   rCA=1.0;
-   rCG=1.0;
-   rAG=4.0;
+    void set_alignment_length(int len) { alignment_length = len; }
 
-   dist=0.3;
-   supp=0.5;
-   gap=10.;
-   thres=0.005;
+    void set_ref_sequence(const char *ref_seq) { ref_sequence = ref_seq; }
 
-  }
+    void set_toAlign_sequence(const char *toAlign_seq) { toAlign_sequence = toAlign_seq; }
 
-  virtual ~IslandHopping() {
-   delete output_sequence;
-  }
+    void set_helix(const char *hel) { helix = hel; }
 
-  void set_alignment_length(int len) { alignment_length = len; }
+    void set_range(int first_col,int last_col) {
+        firstColumn=first_col;
+        lastColumn=last_col;
+    }
 
-  void set_ref_sequence(const char *ref_seq) { ref_sequence = ref_seq; }
+    const char *get_result() const { return output_sequence; }
+    const char *get_result_ref() const { return aligned_ref_sequence; }
+    int get_result_length() const { return output_alignment_length; }
 
-  void set_toAlign_sequence(const char *toAlign_seq) { toAlign_sequence = toAlign_seq; }
+    bool was_aligned() const { return output_sequence && aligned_ref_sequence; }
 
-  void set_helix(const char *hel) { helix = hel; }
-
-  void set_range(int first_col,int last_col) {
-   firstColumn=first_col;
-   lastColumn=last_col;
-  }
-
-  const char *get_result() const { return output_sequence; }
-
-  GB_ERROR do_align();
+    GB_ERROR do_align();
 
 };
 

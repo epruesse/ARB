@@ -686,8 +686,8 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                 printf(" saligned = '%s'\n", lstr(saligned, len));
 #endif
 
-                AWTC_SequencePosition masterPos(master, moffset),
-                    slavePos(slaveSequence, soffset);
+                AWTC_SequencePosition masterPos(master, moffset);
+                AWTC_SequencePosition slavePos(slaveSequence, soffset);
 
                 error = insertClustalValigned(alignBuffer, masterPos, slavePos, maligned, saligned, len, report);
 
@@ -1171,6 +1171,18 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
 
     if (island_hopper) {
         error = island_hopper->do_align();
+        if (!error) {
+            awtc_assert(island_hopper->was_aligned());
+
+            printf("Island-Hopper returns:\n");
+            printf("maligned = '%s'\n", lstr(island_hopper->get_result_ref(), island_hopper->get_result_length()));
+            printf("saligned = '%s'\n", lstr(island_hopper->get_result(), island_hopper->get_result_length()));
+
+            AWTC_SequencePosition masterPos(alignTo->sequence(), 0);
+            AWTC_SequencePosition slavePos(*toAlignSequence, 0);
+
+            error = insertClustalValigned(&alignBuffer, masterPos, slavePos, island_hopper->get_result_ref(), island_hopper->get_result(), island_hopper->get_result_length(), &report);
+        }
     }
     else {
         error = alignTo->fast_align(*toAlignSequence, &alignBuffer, max_seq_length, 2, -10, &report); // <- here we align
@@ -2177,7 +2189,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     awtc_assert(island_hopper == 0);
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping();
-	island_hopper->set_helix(cd->helix_string);
+        island_hopper->set_helix(cd->helix_string);
     }
 
     switch (alignWhat=root->awar(FA_AWAR_TO_ALIGN)->read_int()) {

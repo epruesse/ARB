@@ -11,58 +11,58 @@
 /*============================================================================*/
 
 void identity(double **i) {
- i[T][T]=1; i[T][C]=0; i[T][A]=0; i[T][G]=0;  
- i[C][T]=0; i[C][C]=1; i[C][A]=0; i[C][G]=0;  
- i[A][T]=0; i[A][C]=0; i[A][A]=1; i[A][G]=0;  
- i[G][T]=0; i[G][C]=0; i[G][A]=0; i[G][G]=1;  
+ i[T][T]=1; i[T][C]=0; i[T][A]=0; i[T][G]=0;
+ i[C][T]=0; i[C][C]=1; i[C][A]=0; i[C][G]=0;
+ i[A][T]=0; i[A][C]=0; i[A][A]=1; i[A][G]=0;
+ i[G][T]=0; i[G][C]=0; i[G][A]=0; i[G][G]=1;
 }
 
 /*............................................................................*/
 
-void copy(double **i,double **j) {              
- i[T][T]=j[T][T]; i[T][C]=j[T][C]; i[T][A]=j[T][A]; i[T][G]=j[T][G];  
- i[C][T]=j[C][T]; i[C][C]=j[C][C]; i[C][A]=j[C][A]; i[C][G]=j[C][G];  
- i[A][T]=j[A][T]; i[A][C]=j[A][C]; i[A][A]=j[A][A]; i[A][G]=j[A][G];  
- i[G][T]=j[G][T]; i[G][C]=j[G][C]; i[G][A]=j[G][A]; i[G][G]=j[G][G];  
+void copy(double **i,double **j) {
+ i[T][T]=j[T][T]; i[T][C]=j[T][C]; i[T][A]=j[T][A]; i[T][G]=j[T][G];
+ i[C][T]=j[C][T]; i[C][C]=j[C][C]; i[C][A]=j[C][A]; i[C][G]=j[C][G];
+ i[A][T]=j[A][T]; i[A][C]=j[A][C]; i[A][A]=j[A][A]; i[A][G]=j[A][G];
+ i[G][T]=j[G][T]; i[G][C]=j[G][C]; i[G][A]=j[G][A]; i[G][G]=j[G][G];
 }
 
 /*............................................................................*/
 
 void ipol(double **i,double **j,double **k,double f) { double g; g=1.0-f;
- i[T][T]=g*j[T][T]+f*k[T][T]; i[T][C]=g*j[T][C]+f*k[T][C]; i[T][A]=g*j[T][A]+f*k[T][A]; i[T][G]=g*j[T][G]+f*k[T][G];  
- i[C][T]=g*j[C][T]+f*k[C][T]; i[C][C]=g*j[C][C]+f*k[C][C]; i[C][A]=g*j[C][A]+f*k[C][A]; i[C][G]=g*j[C][G]+f*k[C][G];  
- i[A][T]=g*j[A][T]+f*k[A][T]; i[A][C]=g*j[A][C]+f*k[A][C]; i[A][A]=g*j[A][A]+f*k[A][A]; i[A][G]=g*j[A][G]+f*k[A][G];  
- i[G][T]=g*j[G][T]+f*k[G][T]; i[G][C]=g*j[G][C]+f*k[G][C]; i[G][A]=g*j[G][A]+f*k[G][A]; i[G][G]=g*j[G][G]+f*k[G][G];  
+ i[T][T]=g*j[T][T]+f*k[T][T]; i[T][C]=g*j[T][C]+f*k[T][C]; i[T][A]=g*j[T][A]+f*k[T][A]; i[T][G]=g*j[T][G]+f*k[T][G];
+ i[C][T]=g*j[C][T]+f*k[C][T]; i[C][C]=g*j[C][C]+f*k[C][C]; i[C][A]=g*j[C][A]+f*k[C][A]; i[C][G]=g*j[C][G]+f*k[C][G];
+ i[A][T]=g*j[A][T]+f*k[A][T]; i[A][C]=g*j[A][C]+f*k[A][C]; i[A][A]=g*j[A][A]+f*k[A][A]; i[A][G]=g*j[A][G]+f*k[A][G];
+ i[G][T]=g*j[G][T]+f*k[G][T]; i[G][C]=g*j[G][C]+f*k[G][C]; i[G][A]=g*j[G][A]+f*k[G][A]; i[G][G]=g*j[G][G]+f*k[G][G];
 }
 
 /*............................................................................*/
 
 void addmul(double **i,double **j,double f) {
- i[T][T]+=j[T][T]*f; i[T][C]+=j[T][C]*f; i[T][A]+=j[T][A]*f; i[T][G]+=j[T][G]*f;  
- i[C][T]+=j[C][T]*f; i[C][C]+=j[C][C]*f; i[C][A]+=j[C][A]*f; i[C][G]+=j[C][G]*f;  
- i[A][T]+=j[A][T]*f; i[A][C]+=j[A][C]*f; i[A][A]+=j[A][A]*f; i[A][G]+=j[A][G]*f;  
- i[G][T]+=j[G][T]*f; i[G][C]+=j[G][C]*f; i[G][A]+=j[G][A]*f; i[G][G]+=j[G][G]*f;  
+ i[T][T]+=j[T][T]*f; i[T][C]+=j[T][C]*f; i[T][A]+=j[T][A]*f; i[T][G]+=j[T][G]*f;
+ i[C][T]+=j[C][T]*f; i[C][C]+=j[C][C]*f; i[C][A]+=j[C][A]*f; i[C][G]+=j[C][G]*f;
+ i[A][T]+=j[A][T]*f; i[A][C]+=j[A][C]*f; i[A][A]+=j[A][A]*f; i[A][G]+=j[A][G]*f;
+ i[G][T]+=j[G][T]*f; i[G][C]+=j[G][C]*f; i[G][A]+=j[G][A]*f; i[G][G]+=j[G][G]*f;
 }
 
 /*............................................................................*/
 
-void dot(double **i,double **j,double **k) {             
- i[T][T]=j[T][T]*k[T][T]+j[T][C]*k[C][T]+j[T][A]*k[A][T]+j[T][G]*k[G][T];  
- i[T][C]=j[T][T]*k[T][C]+j[T][C]*k[C][C]+j[T][A]*k[A][C]+j[T][G]*k[G][C];  
- i[T][A]=j[T][T]*k[T][A]+j[T][C]*k[C][A]+j[T][A]*k[A][A]+j[T][G]*k[G][A];  
- i[T][G]=j[T][T]*k[T][G]+j[T][C]*k[C][G]+j[T][A]*k[A][G]+j[T][G]*k[G][G];  
- i[C][T]=j[C][T]*k[T][T]+j[C][C]*k[C][T]+j[C][A]*k[A][T]+j[C][G]*k[G][T];  
- i[C][C]=j[C][T]*k[T][C]+j[C][C]*k[C][C]+j[C][A]*k[A][C]+j[C][G]*k[G][C];  
- i[C][A]=j[C][T]*k[T][A]+j[C][C]*k[C][A]+j[C][A]*k[A][A]+j[C][G]*k[G][A];  
- i[C][G]=j[C][T]*k[T][G]+j[C][C]*k[C][G]+j[C][A]*k[A][G]+j[C][G]*k[G][G];  
- i[A][T]=j[A][T]*k[T][T]+j[A][C]*k[C][T]+j[A][A]*k[A][T]+j[A][G]*k[G][T];  
- i[A][C]=j[A][T]*k[T][C]+j[A][C]*k[C][C]+j[A][A]*k[A][C]+j[A][G]*k[G][C];  
- i[A][A]=j[A][T]*k[T][A]+j[A][C]*k[C][A]+j[A][A]*k[A][A]+j[A][G]*k[G][A];  
- i[A][G]=j[A][T]*k[T][G]+j[A][C]*k[C][G]+j[A][A]*k[A][G]+j[A][G]*k[G][G];  
- i[G][T]=j[G][T]*k[T][T]+j[G][C]*k[C][T]+j[G][A]*k[A][T]+j[G][G]*k[G][T];  
- i[G][C]=j[G][T]*k[T][C]+j[G][C]*k[C][C]+j[G][A]*k[A][C]+j[G][G]*k[G][C];  
- i[G][A]=j[G][T]*k[T][A]+j[G][C]*k[C][A]+j[G][A]*k[A][A]+j[G][G]*k[G][A];  
- i[G][G]=j[G][T]*k[T][G]+j[G][C]*k[C][G]+j[G][A]*k[A][G]+j[G][G]*k[G][G];  
+void dot(double **i,double **j,double **k) {
+ i[T][T]=j[T][T]*k[T][T]+j[T][C]*k[C][T]+j[T][A]*k[A][T]+j[T][G]*k[G][T];
+ i[T][C]=j[T][T]*k[T][C]+j[T][C]*k[C][C]+j[T][A]*k[A][C]+j[T][G]*k[G][C];
+ i[T][A]=j[T][T]*k[T][A]+j[T][C]*k[C][A]+j[T][A]*k[A][A]+j[T][G]*k[G][A];
+ i[T][G]=j[T][T]*k[T][G]+j[T][C]*k[C][G]+j[T][A]*k[A][G]+j[T][G]*k[G][G];
+ i[C][T]=j[C][T]*k[T][T]+j[C][C]*k[C][T]+j[C][A]*k[A][T]+j[C][G]*k[G][T];
+ i[C][C]=j[C][T]*k[T][C]+j[C][C]*k[C][C]+j[C][A]*k[A][C]+j[C][G]*k[G][C];
+ i[C][A]=j[C][T]*k[T][A]+j[C][C]*k[C][A]+j[C][A]*k[A][A]+j[C][G]*k[G][A];
+ i[C][G]=j[C][T]*k[T][G]+j[C][C]*k[C][G]+j[C][A]*k[A][G]+j[C][G]*k[G][G];
+ i[A][T]=j[A][T]*k[T][T]+j[A][C]*k[C][T]+j[A][A]*k[A][T]+j[A][G]*k[G][T];
+ i[A][C]=j[A][T]*k[T][C]+j[A][C]*k[C][C]+j[A][A]*k[A][C]+j[A][G]*k[G][C];
+ i[A][A]=j[A][T]*k[T][A]+j[A][C]*k[C][A]+j[A][A]*k[A][A]+j[A][G]*k[G][A];
+ i[A][G]=j[A][T]*k[T][G]+j[A][C]*k[C][G]+j[A][A]*k[A][G]+j[A][G]*k[G][G];
+ i[G][T]=j[G][T]*k[T][T]+j[G][C]*k[C][T]+j[G][A]*k[A][T]+j[G][G]*k[G][T];
+ i[G][C]=j[G][T]*k[T][C]+j[G][C]*k[C][C]+j[G][A]*k[A][C]+j[G][G]*k[G][C];
+ i[G][A]=j[G][T]*k[T][A]+j[G][C]*k[C][A]+j[G][A]*k[A][A]+j[G][G]*k[G][A];
+ i[G][G]=j[G][T]*k[T][G]+j[G][C]*k[C][G]+j[G][A]*k[A][G]+j[G][G]*k[G][G];
 }
 
 /*============================================================================*/
@@ -70,6 +70,7 @@ void dot(double **i,double **j,double **k) {
 char encodeBase(char c) {
 
  switch(c) {
+  case 'U': return T;
   case 'T': return T;
   case 'C': return C;
   case 'A': return A;
@@ -110,7 +111,7 @@ void normalizeBaseFreqs(
  if(fT<ATOLPARAM) fT=ATOLPARAM;
  if(fC<ATOLPARAM) fC=ATOLPARAM;
  if(fA<ATOLPARAM) fA=ATOLPARAM;
- if(fG<ATOLPARAM) fG=ATOLPARAM; 
+ if(fG<ATOLPARAM) fG=ATOLPARAM;
 
  F[T]=fT; F[C]=fC; F[A]=fA; F[G]=fG;
 
@@ -120,7 +121,7 @@ void normalizeBaseFreqs(
 
 void normalizeRateParams(
  double *X,double a,double b,double c,double d,double e,double f
-) { /* TC TA TG CA CG AG */ 
+) { /* TC TA TG CA CG AG */
  double s;
 
  s=a+b+c+d+e+f;
@@ -148,7 +149,7 @@ void initTrnsprob(double ****PP) {
  for(j=0;j<128;j++) P[j]=(double **)newMatrix(N,N,sizeof(double));
 
  *PP=P;
- 
+
 }
 
 /*............................................................................*/
@@ -171,7 +172,7 @@ void getTrnsprob(double **P,double ***PP,double d) {
  double *Z[N],ZT[N],ZC[N],ZA[N],ZG[N];
  double *X[N],XT[N],XC[N],XA[N],XG[N];
 
- d/=EPS; I=(long)d;       
+ d/=EPS; I=(long)d;
 
  if( I < 0        ) {copy(P,PP[0]); return;}
 
@@ -217,7 +218,7 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
  double *Q[N],QT[N],QC[N],QA[N],QG[N];
  double *R[N],RT[N],RC[N],RA[N],RG[N];
  double *S[N],ST[N],SC[N],SA[N],SG[N];
- 
+
  Q[T]=QT; Q[C]=QC; Q[A]=QA; Q[G]=QG;
  R[T]=RT; R[C]=RC; R[A]=RA; R[G]=RG;
  S[T]=ST; S[C]=SC; S[A]=SA; S[G]=SG;
@@ -272,7 +273,7 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
  dot(PP[  2 + 96 ],PP[  1 + 96 ],PP[  1 + 96 ]);
  dot(PP[  4 + 96 ],PP[  2 + 96 ],PP[  2 + 96 ]);
  dot(PP[  8 + 96 ],PP[  4 + 96 ],PP[  4 + 96 ]);
- dot(PP[ 16 + 96 ],PP[  8 + 96 ],PP[  8 + 96 ]); 
+ dot(PP[ 16 + 96 ],PP[  8 + 96 ],PP[  8 + 96 ]);
 
  dot(PP[  3      ],PP[  2      ],PP[  1      ]);
  dot(PP[  6      ],PP[  3      ],PP[  3      ]);
@@ -289,7 +290,7 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
  dot(PP[  3 + 96 ],PP[  2 + 96 ],PP[  1 + 96 ]);
  dot(PP[  6 + 96 ],PP[  3 + 96 ],PP[  3 + 96 ]);
  dot(PP[ 12 + 96 ],PP[  6 + 96 ],PP[  6 + 96 ]);
- dot(PP[ 24 + 96 ],PP[ 12 + 96 ],PP[ 12 + 96 ]); 
+ dot(PP[ 24 + 96 ],PP[ 12 + 96 ],PP[ 12 + 96 ]);
 
  dot(PP[  5      ],PP[  3      ],PP[  2      ]);
  dot(PP[ 10      ],PP[  5      ],PP[  5      ]);

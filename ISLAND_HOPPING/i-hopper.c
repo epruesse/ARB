@@ -8,14 +8,13 @@
 /*============================================================================*/
 
 #ifndef ARB
-
 int main(void) {
 
  Error=NULL;
 
  fprintf(stdout,"\nAligning ...");
 
- { 
+ {
 /*
   char X[]="CGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTCCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAACTAGCTGGTCTGAGAGGGATGACCAGCCACACTGGTGCACTAGCTGGTCGAGAGGATGACCAGCCACACTGGTGGGCGCAAGCCTGATGCAGCCA";
   int secX[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
@@ -96,5 +95,4 @@ int main(void) {
  return(EXIT_FAILURE);
 
 }
-
 #endif
