@@ -2,12 +2,16 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <fstream.h>
-#include <stdlib.h>
-#include <time.h>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 #include "a3_basen.h"
 #include "a3_seq.hxx"
+
+using std::ifstream;
+using std::cout;
 
 // -----------------------------------------------------------------------------
 //	Erzeugen einer Zufallssequenz mit vorgebener Laenge

@@ -2,17 +2,21 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <iostream.h>
-#include <fstream.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <cstdlib>
 
 #include "a3_arbdb.hxx"
 #include "a3_bihelix.hxx"
 #include "a3_ali.hxx"
 
+using std::cout;
+using std::ifstream;
+using std::flush;
+
 // -----------------------------------------------------------------------------
-	static void Usage ( void )
+static void Usage ( void )
 // -----------------------------------------------------------------------------
 {
 	cout << "\nAUFRUF: aliv3 <Datenbank> <Sequenz>\n";

@@ -2,16 +2,19 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <string.h>
-#include <stdlib.h>
-#include <fstream.h>
+#include <cstring>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 #include "a3_darray.hxx"
 
+using std::cout;
+
 // -----------------------------------------------------------------------------
-	void DArray::Init ( int num,
-					    int inc,
-					    int del )
+void DArray::Init ( int num,
+                    int inc,
+                    int del )
 // -----------------------------------------------------------------------------
 {
 	elements  = num;

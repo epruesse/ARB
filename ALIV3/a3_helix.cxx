@@ -2,15 +2,18 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <string.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
+#include <cstring>
 
 #include "a3_helix.hxx"
 #include "a3_ali.hxx"
 #include "a3_matrix.hxx"
 
+using std::cout;
+
 // -----------------------------------------------------------------------------
-	static str CleanHelix ( str hel )
+static str CleanHelix ( str hel )
 // -----------------------------------------------------------------------------
 {
 	str heli = strdup(hel),
