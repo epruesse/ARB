@@ -76,26 +76,32 @@ extern ad_item_selector AWT_organism_selector;
 *********************		File Selection Boxes 	*******************
 ***************************************************************************/
 
-void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", AW_BOOL show_dir = AW_TRUE );
-			/* Create a file selection box, this box needs 3 AWARS:
-				1. "$awar_prefix/filter"
-				2. "$awar_prefix/directory"
-				3. "$awar_prefix/file_name"
-				the "$awar_prefix/file_name" contains the whole path
+void  awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", AW_BOOL show_dir = AW_TRUE );
+/* Create a file selection box, this box needs 3 AWARS:
 
-				The items are placed at
-				1. "$at_prefix""filter"
-				2. "$at_prefix""box"
-				3. "$at_prefix""file_name"
+1. "$awar_prefix/filter"
+2. "$awar_prefix/directory"
+3. "$awar_prefix/file_name"
 
-				if show_dir== AW_TRUE than show directories and files
-				else only files
-
-				pwd is a 'shell enviroment variable' which indicates the base directory
-					( mainly PWD or ARBHOME )
-			*/
+the "$awar_prefix/file_name" contains the full filename
+Use awt_get_selected_fullname() to read it.
 
 
+The items are placed at
+
+1. "$at_prefix""filter"
+2. "$at_prefix""box"
+3. "$at_prefix""file_name"
+
+if show_dir== AW_TRUE than show directories and files
+else only files
+
+pwd is a 'shell enviroment variable' which indicates the base directory
+( mainly PWD or ARBHOME ) */
+
+char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
+
+void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix);
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
 AW_window *create_load_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
@@ -106,7 +112,7 @@ void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid);
 *********************	Various	Database Selection Boxes 	***********
 ***************************************************************************/
 /***********************	Macros 	************************/
-AW_window *awt_open_macro_window(AW_root *aw_root,const char *default_dir);
+AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id);
 /***********************	Alignments 	************************/
 void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws,const char *varname,const char *comm);
 			/* Create selection lists on alignments, if comm is set, then
