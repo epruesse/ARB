@@ -1,0 +1,4 @@
+SUFFIX		fasta
+BEGIN
+>*(name)	*(|sequence|len(.-)) bp		*(|sequence_type)
+*(|sequence|remove(".-")|format_sequence(firsttab=0;tab=0;width=50))
