@@ -905,6 +905,7 @@ tg:		$(TREEGEN)
 # acc:	$(ACORR)
 
 ds:		$(DBSERVER)
+pt:		$(PROBE)
 pr:		$(PROBE)
 pg:		$(PROBE_GROUP)
 chip:	$(CHIP)
