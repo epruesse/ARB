@@ -44,7 +44,9 @@ private TreeNode father;
 private Vector   childNodes;
 private int      noOfChildren = 0;
 private boolean  grouped      = false;
-private int  marked           = 0; // 0 = none marked, 1 = has marked, 2 = all marked (1 and 2 only differ for internal nodes)
+
+    // marks
+private int  marked = 0;        // 0 = none marked, 1 = has marked, 2 = all marked (1 and 2 only differ for internal nodes)
 
     // test and internals
 public int         level;
@@ -90,6 +92,21 @@ public TreeNode(boolean is_leaf)
 //         return noOfChildren;
 //     }
 
+
+public TreeNode getRoot() {
+    TreeNode root = this;
+    while (father != root) {
+        root = father;
+    }
+    return root;
+}
+
+public TreeNode getBrother() {
+    if (father == this) return null; // root has no brother
+    int myIdx = (TreeNode)(father.childNodes.elementAt(0)) == this ? 0 : 1;
+    return (TreeNode)(father.childNodes.elementAt(1-myIdx));
+
+}
 
 public void setGrouped(boolean b)
     {
@@ -300,9 +317,12 @@ public double getMaxDepth()
         : ((TreeNode)getChilds().elementAt(1)).getMaxDepth();
 }
 
-public void setMarked(int marker)
+public boolean setMarked(int marker)
 {
+    if (marker == marked) return false;
+
     marked = marker;
+    return true;
 }
 
 public int isMarked()
@@ -310,12 +330,21 @@ public int isMarked()
     return marked;
 }
 
-private void markSubtree_rek(boolean flag) {
-    marked = flag ? 2 : 0;
-    if (!isLeaf) {
-        ((TreeNode)childNodes.elementAt(0)).markSubtree_rek(flag);
-        ((TreeNode)childNodes.elementAt(1)).markSubtree_rek(flag);
+private boolean markSubtree_rek(boolean flag) {
+    boolean marks_changed = false;
+
+    int new_marked = flag ? 2 : 0;
+    if (new_marked != marked) {
+        marked        = new_marked;
+        marks_changed = true;
     }
+
+    if (!isLeaf) {
+        marks_changed = ((TreeNode)childNodes.elementAt(0)).markSubtree_rek(flag) || marks_changed;
+        marks_changed = ((TreeNode)childNodes.elementAt(1)).markSubtree_rek(flag) || marks_changed;
+    }
+
+    return marks_changed;
 }
 
 private int recalcMarkedState() {
@@ -338,48 +367,83 @@ private int recalcMarkedState() {
     return 1; // partially marked
 }
 
-private void propagateMarkUpwards() {
-    if (father != this) { // not at root
+private boolean propagateMarkUpwards() {
+    boolean marks_changed = false;
+    if (father != this) {       // not at root
         if (marked == 1) {          // partially marked
-            father.setMarked(1);
+            marks_changed = father.setMarked(1) || marks_changed;
         }
         else {
-            int      myIdx   = (TreeNode)(father.childNodes.elementAt(0)) == this ? 0 : 1;
-            TreeNode brother = (TreeNode)(father.childNodes.elementAt(1-myIdx));
-
-            int bmarked = brother.recalcMarkedState();
+            TreeNode brother = getBrother();
+            int      bmarked = brother.recalcMarkedState();
 
             if (bmarked == marked) {
-                father.setMarked(marked);
+                marks_changed = father.setMarked(marked) || marks_changed;
             }
             else {
-                father.setMarked(1); // partially marked
+                marks_changed = father.setMarked(1) || marks_changed; // partially marked
             }
         }
-        father.propagateMarkUpwards();
+        marks_changed = father.propagateMarkUpwards() || marks_changed;
     }
+    return marks_changed;
 }
 
-public void markSubtree(boolean flag)
+public boolean unmarkRestOfTree()
 {
-    markSubtree_rek(flag);
-    propagateMarkUpwards();
+    if (father == this) return false; // at root -> no rest
+
+    boolean marks_changed = getBrother().unmarkSubtree();
+    marks_changed         = father.unmarkRestOfTree() || marks_changed;
+
+    return marks_changed;
 }
 
-public void markSpecies(String speciesList)
+public boolean markSubtree()
+{
+    boolean marks_changed = markSubtree_rek(true);
+    marks_changed         = propagateMarkUpwards() || marks_changed;
+    marks_changed         = unmarkRestOfTree() || marks_changed;
+
+    return marks_changed;
+}
+
+public boolean unmarkSubtree()
+{
+    boolean marks_changed = markSubtree_rek(false);
+    marks_changed         = propagateMarkUpwards() || marks_changed;
+    return marks_changed;
+}
+
+public boolean markSpecies_rek(String speciesList)
+{
+    boolean marks_changed = false;
+    if (isLeaf) {
+        if (speciesList.indexOf(","+shortName+",") != -1) {
+            marks_changed = setMarked(2);
+        }
+        else {
+            marks_changed = setMarked(0);
+        }
+        marks_changed = propagateMarkUpwards() || marks_changed;
+    }
+    else {
+        marks_changed = ((TreeNode)childNodes.elementAt(0)).markSpecies_rek(speciesList);
+        marks_changed = ((TreeNode)childNodes.elementAt(1)).markSpecies_rek(speciesList) || marks_changed;
+    }
+    return marks_changed;
+}
+
+public boolean markSpecies(String speciesList)
 {
     // speciesList contains sth like ",name1,name2,name3,name4,"
 
-    if (isLeaf) {
-        if (speciesList.indexOf(","+shortName+",") != -1) {
-            marked = 2;
-            propagateMarkUpwards();
-        }
+    if (father != this) {
+        System.out.println("markSpecies has to be called for root!");
+        return getRoot().markSpecies(speciesList);
     }
-    else {
-        ((TreeNode)childNodes.elementAt(0)).markSpecies(speciesList);
-        ((TreeNode)childNodes.elementAt(1)).markSpecies(speciesList);
-    }
+
+    return markSpecies_rek(speciesList);
 }
 
 public void setPath(String path)
