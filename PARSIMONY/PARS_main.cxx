@@ -1413,6 +1413,8 @@ static void create_all_awars(AW_root *awr, AW_default aw_def)
     create_parsimony_variables(awr, gb_main);
     create_nds_vars(awr,aw_def,gb_main);
 
+    ARB_init_global_awars(awr, aw_def, gb_main);
+
     free(dali);
 }
 
