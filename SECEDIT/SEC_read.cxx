@@ -90,14 +90,18 @@ void SEC_region::read(istream & in, SEC_root *root) {
                 sequence_start = root->ap[(int) seq_start];
             }
             else {
+#if defined(DEBUG)
                 sec_assert(0);
+#endif // DEBUG
                 sequence_start = int(seq_start);
             }
             if (seq_end < root->ap_length) {
                 sequence_end = root->ap[(int) seq_end];
             }
             else {
+#if defined(DEBUG)
                 sec_assert(0);
+#endif // DEBUG
                 sequence_end = int(seq_end);
             }
         }

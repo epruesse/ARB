@@ -299,7 +299,9 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             break;
         }
         default: {
+#if defined(DEBUG)
             sec_assert(0);
+#endif // DEBUG
             break;
         }
     }
@@ -810,7 +812,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/edit4)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode( 0, "lzoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_LZOOM); // logical ZOOM 
+    awm->create_mode( 0, "lzoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_LZOOM); // logical ZOOM
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
     awm->create_mode( 0, "setroot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_SETROOT);
     awm->create_mode( 0, "rot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ROT);

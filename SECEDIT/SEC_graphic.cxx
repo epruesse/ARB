@@ -88,10 +88,10 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
 		     "+-User2$#B8E2F8",
 		     "-Probe$#B8E2F8",
 		     "+-Primer(l)$#A9FE54",
-		     "+-Primer(r)$#A9FE54", 
+		     "+-Primer(r)$#A9FE54",
 		     "-Primer(g)$#A9FE54",
-		     "+-Sig(l)$#DBB0FF", 
-		     "+-Sig(r)$#DBB0FF", 
+		     "+-Sig(l)$#DBB0FF",
+		     "+-Sig(r)$#DBB0FF",
 		     "-Sig(g)$#DBB0FF",
 		     "+-MISMATCHES$#FF9AFF",
                      0 );
@@ -653,10 +653,9 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
             if (err) {
                 reason = (char*)malloc(200);
 #if defined(DEBUG)
-                int printed =
-#endif // DEBUG
-                    sprintf(reason, "an error (%s) which occurred while loading your secondary structure", err);
+                int printed = sprintf(reason, "an error (%s) which occurred while loading your secondary structure", err);
                 sec_assert(printed<200);
+#endif // DEBUG
                 create_default = 1;
             }
         }
