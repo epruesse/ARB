@@ -2,7 +2,7 @@
 <!--                                                                      -->
 <!--   File      : arb_help.dtd                                           -->
 <!--   Purpose   :                                                        -->
-<!--   Time-stamp: <Fri Dec/03/2004 12:05 MET Coder@ReallySoft.de>        -->
+<!--   Time-stamp: <Thu Feb/03/2005 20:46 MET Coder@ReallySoft.de>        -->
 <!--                                                                      -->
 <!--                                                                      -->
 <!-- Coded by Ralf Westram (coder@reallysoft.de) in October 2001          -->
@@ -19,10 +19,12 @@
 
 <!ELEMENT UP EMPTY>
 <!ATTLIST UP dest CDATA #REQUIRED >
+<!ATTLIST UP source_line CDATA #IMPLIED > <!--line no in source file-->
 <!ATTLIST UP missing (0|1) #IMPLIED > <!--set to 1 if destination is missing-->
 
 <!ELEMENT SUB EMPTY>
 <!ATTLIST SUB dest CDATA #REQUIRED >
+<!ATTLIST SUB source_line CDATA #IMPLIED > <!--line no in source file-->
 <!ATTLIST SUB missing (0|1) #IMPLIED > <!--set to 1 if destination is missing-->
 
 <!ELEMENT TITLE (#PCDATA) >
