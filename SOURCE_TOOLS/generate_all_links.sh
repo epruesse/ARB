@@ -244,3 +244,6 @@ ln -s ../LIBLINK          TOOLS/LIBLINK
 ln -s ../AISC/aisc             MAKEBIN/aisc
 ln -s ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt
 
+# help files (make sure the files is present in user distribution!)
+
+ln -s ../inputMasks/format.readme lib/help/input_mask_format.hlp
