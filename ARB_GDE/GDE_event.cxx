@@ -215,40 +215,51 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             if (gb_species) {   /* new element that already exists !!!!*/
                 int select_mode;
                 const char *msg = GBS_global_string(
-                                                    "You importet a species '%s' which already exists\n"
-                                                    "   You may:\n"
-                                                    "       - delete old species\n"
-                                                    "       - overwrite sequence of old species\n"
-                                                    "       - not change this species\n"
-                                                    "       - overwrite sequence of all species\n"
-                                                    "   Remember: There is still an undo button",
+                                                    "You are (re-)importing a species '%s'.\n"
+                                                    "That species already exists in your database!\n"
+                                                    "\n"
+                                                    "Possible actions:\n"
+                                                    "\n"
+                                                    "       - delete and overwrite the existing species\n"
+                                                    "       - skip - don't change the species\n"
+                                                    "       - reimport only the sequence of the existing species\n"
+                                                    "       - reimport all sequences (don't ask again)\n"
+                                                    "\n"
+                                                    "Note: After aligning it's recommended to choose 'reimport all'.",
                                                     savename);
-                if (!load_all){
+                if (!load_all) {
                     select_mode = aw_message(msg,
-                                             "delete old,"
-                                             "sequence only,"
+                                             "delete existing,"
                                              "skip,"
-                                             "all sequences"
+                                             "reimport sequence,"
+                                             "reimport all"
                                              );
-                }else{
-                    select_mode = 1;
+
+                    if (select_mode == 3) { // load all sequences
+                        load_all = 1;
+                    }
                 }
 
+                if (load_all) {
+                    select_mode = 2; // reimport sequence
+                }
+
+                gde_assert(select_mode >= 0 && select_mode <= 2);
+
                 switch(select_mode) {
-                    case 0:
-                        GB_delete(gb_species);
-                    case 1:
-                        gb_species =    GBT_create_species_rel_species_data(gb_species_data, savename);
-                        break;
-                    case 2:
+                    case 1:     // skip
                         gb_species = 0;
-                        continue;
-                    case 3:
-                        load_all = 1;
-                        gb_species =    GBT_create_species_rel_species_data(gb_species_data, savename);
+                        continue; // continue with next species
+
+                    case 0:     // delete existing species
+                        GB_delete(gb_species);
+                        // fall-through!
+                    case 2:     // reimport sequence
+                        gb_species = GBT_create_species_rel_species_data(gb_species_data, savename);
                         break;
                 }
-            }else{
+            }
+            else {
                 gb_species = GBT_create_species_rel_species_data(gb_species_data, savename);
             }
             if (!gb_species) continue;
