@@ -37,7 +37,7 @@
 
 // @yadhu : please don't remove any code here until it works on all machines
 
-#define OPEN_GL_WAY_TO_INCLUDE 1
+#define OPEN_GL_WAY_TO_INCLUDE 3
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 1)
 // working on waltz:
