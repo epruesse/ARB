@@ -18,6 +18,9 @@
 #include <di_matr.hxx>
 #include <di_view_matrix.hxx>
 
+#define AWAR_DIST_SHOW_PREFIX   AWAR_DIST_PREFIX "show/"
+#define AWAR_DIST_SHOW_MIN_DIST AWAR_DIST_SHOW_PREFIX "min_dist"
+#define AWAR_DIST_SHOW_MAX_DIST AWAR_DIST_SHOW_PREFIX "max_dist"
 
 void vertical_change_cb(AW_window *aww,PH_dmatrix *dis)
 {
@@ -324,25 +327,25 @@ void ph_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
     AW_root *aw_root = aww->get_root();
 
     update_display_on_dist_change = 0;
-    aw_root->awar("dist/show/min_dist")->write_float(0.0);
+    aw_root->awar(AWAR_DIST_SHOW_MIN_DIST)->write_float(0.0);
     update_display_on_dist_change = 1;
-    aw_root->awar("dist/show/max_dist")->write_float(max_d);
+    aw_root->awar(AWAR_DIST_SHOW_MAX_DIST)->write_float(max_d);
 }
 
 void ph_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
     PH_dmatrix *dmatrix = (PH_dmatrix *)cl_dmatrix;
-    double max_dist = awr->awar("dist/show/max_dist")->read_float();
-    double min_dist = awr->awar("dist/show/min_dist")->read_float();
+    double max_dist = awr->awar(AWAR_DIST_SHOW_MAX_DIST)->read_float();
+    double min_dist = awr->awar(AWAR_DIST_SHOW_MIN_DIST)->read_float();
     int old = update_display_on_dist_change;
 
     update_display_on_dist_change = 0;
     if (cl_setmax) { // !=0 -> set max and fix min
         dmatrix->set_slider_max(max_dist);
-        if (min_dist>max_dist) awr->awar("dist/show/min_dist")->write_float(max_dist);
+        if (min_dist>max_dist) awr->awar(AWAR_DIST_SHOW_MIN_DIST)->write_float(max_dist);
     }
     else { // ==0 -> set min and fix max
         dmatrix->set_slider_min(min_dist);
-        if (min_dist>max_dist) awr->awar("dist/show/max_dist")->write_float(min_dist);
+        if (min_dist>max_dist) awr->awar(AWAR_DIST_SHOW_MAX_DIST)->write_float(min_dist);
     }
     update_display_on_dist_change = old;
     if (update_display_on_dist_change) {
@@ -358,10 +361,10 @@ void ph_change_dist(AW_window *aww, AW_CL cl_mode) {
     gb_assert(cl_mode>=0 && cl_mode<=3);
 
     if (cl_mode<2) { // change min
-        awar_name = "dist/show/min_dist";
+        awar_name = AWAR_DIST_SHOW_MIN_DIST;
     }
     else { // change max
-        awar_name = "dist/show/max_dist";
+        awar_name = AWAR_DIST_SHOW_MAX_DIST;
     }
 
     double dist = awr->awar(awar_name)->read_float();
@@ -373,8 +376,8 @@ void ph_change_dist(AW_window *aww, AW_CL cl_mode) {
 }
 
 void ph_view_create_awars(AW_root *aw_root, PH_dmatrix *dmatrix) {
-    aw_root->awar_float( "dist/show/min_dist", 0.0)->add_callback(ph_view_set_distances, (AW_CL)0, (AW_CL)dmatrix);
-    aw_root->awar_float( "dist/show/max_dist", 0.0)->add_callback(ph_view_set_distances, (AW_CL)1, (AW_CL)dmatrix);
+    aw_root->awar_float( AWAR_DIST_SHOW_MIN_DIST, 0.0)->add_callback(ph_view_set_distances, (AW_CL)0, (AW_CL)dmatrix);
+    aw_root->awar_float( AWAR_DIST_SHOW_MAX_DIST, 0.0)->add_callback(ph_view_set_distances, (AW_CL)1, (AW_CL)dmatrix);
 }
 
 AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
@@ -403,7 +406,7 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
                       0);
 
     awm->create_menu(0,"File","F");
-    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)"tmp/dist/save_matrix" );
+    awm->insert_menu_topic("save_matrix",   "Save Matrix to File",  "S","save_matrix.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_save_matrix_window, (AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
     awm->insert_menu_topic("close",     "Close",    "C",0,  AWM_ALL,    (AW_CB)AW_POPDOWN, (AW_CL)0, 0 );
 
     awm->create_menu(0,"Props","P");
@@ -422,7 +425,7 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
 #define BUTTON_XSIZE 25
 
     awm->label("Dist min:");
-    awm->create_input_field("dist/show/min_dist", 7);
+    awm->create_input_field(AWAR_DIST_SHOW_MIN_DIST, 7);
     x += FIELD_XSIZE;
 
     awm->at_x(x);
@@ -437,7 +440,7 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
 
     awm->at_x(x);
     awm->label("Dist max:");
-    awm->create_input_field("dist/show/max_dist", 7);
+    awm->create_input_field(AWAR_DIST_SHOW_MAX_DIST, 7);
     x += FIELD_XSIZE;
 
     awm->at_x(x);
