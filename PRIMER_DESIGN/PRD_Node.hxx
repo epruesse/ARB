@@ -16,7 +16,7 @@ private:
 public:
 
     Node            *parent;
-    Node            *child[5];				// 0=C 1=G 2=A 3=T/U 4=IUPAC
+    Node            *child[4];				// 0=C 1=G 2=A 3=T/U
     char             base;
     unsigned int     child_bits:4;				// see BitField in PRD_Globals.hxx
     PRD_Sequence_Pos offset;				// index of base in sequence : left = index of first base of primer, right = index of last base of primer
