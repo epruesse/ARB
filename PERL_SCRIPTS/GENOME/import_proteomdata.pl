@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
+use strict;
+use warnings;
+
 use lib "$ENV{'ARBHOME'}/lib/";
 use ARB;
 
-use lib "$ENV{'ARBHOME'}/lib/macros/GENOME/";
+use lib "$ENV{'ARBHOME'}/lib/PERL_SCRIPTS/GENOME/";
 use GI;
 
 # -----------------------
