@@ -50,6 +50,7 @@ NOTES		There's a second function to merge species: see LINK{merge_species.hlp}
 
                 There's a special new function to concatenate alignments: see LINK{concatenate.hlp}
 
-WARNINGS	None
+WARNINGS	'Join marked species' does only merge fields of type STRING, all other fields are skipped
+                (taken from one of the joined species).
 
 BUGS		No bugs known
