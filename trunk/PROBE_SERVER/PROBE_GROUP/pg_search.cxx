@@ -1,5 +1,5 @@
 /*********************************************************************************
- *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2003               *
+ *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2004               *
  *  Institute of Microbiology (Technical University Munich)                      *
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
@@ -86,7 +86,6 @@ static char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, G
     for (int i=0;i<1000; ++i) {
         char *aServer = GBS_ptserver_id_to_choice(i);
         if (aServer) {
-            //printf("server='%s'\n",aServer);
             if (strcmp(aServer, servername)==0) {
                 serverid = i;
                 print("Found pt-server: %s", aServer);
@@ -211,15 +210,10 @@ static const char *PG_find_next_probe_internal(GB_ERROR& error) {
     bool    ok = aisc_put(fpd.gl.link, PT_PEP, fpd.pep, PEP_FIND_PROBES, 0, 0) == 0;
 
     if (ok) {
-//         fpd.restart = 0;
-
         static char *result;
-
         if (result) { free(result); result = 0; }
 
-        ok = aisc_get(fpd.gl.link, PT_PEP, fpd.pep,
-                      PEP_RESULT, &result,
-                      0)==0;
+        ok = aisc_get(fpd.gl.link, PT_PEP, fpd.pep, PEP_RESULT, &result, 0)==0;
 
         if (ok) {
             if (result && result[0]) {
@@ -256,8 +250,7 @@ const char *PG_find_next_probe(GB_ERROR& error) {
     static const char *result_ptr;
 
     if (!result) {
-        result = PG_find_next_probe_internal(error);
-        // printf("result='%s'\n", result);
+        result     = PG_find_next_probe_internal(error);
         result_ptr = result;
 
         if (!result) return 0; // got all probes
@@ -329,10 +322,6 @@ public:
 
 // ================================================================================
 
-//  ----------------------------------------------------------------------------------------------------------------
-//      static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para)
-//  ----------------------------------------------------------------------------------------------------------------
-// static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_probe_match_para& para) {
 static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const probe_config_data& para) {
     int     i;
     char    buffer[256];
@@ -358,14 +347,11 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const pro
     return true;
 }
 
-//  -----------------------------------------------------------------------------------------------------
-//      GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const char *for_probe)
-//  -----------------------------------------------------------------------------------------------------
-//  calls probe-match for 'for_probe' and inserts all matching species into PG_Group 'g'
-
 GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const char *for_probe) {
+    //  calls probe-match for 'for_probe' and inserts all matching species into PG_Group 'group'
+    
     static PT_server_connection *my_server = 0;
-    GB_ERROR             error     = 0;
+    GB_ERROR                     error     = 0;
 
     if (!my_server) {
         my_server = new PT_server_connection();
@@ -382,13 +368,6 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
             return error;
         }
     }
-
-    //     char         *match_info, *match_name;
-    //     GBDATA       *gb_species_data = 0;
-    //     GBDATA       *gb_species;
-    //     int       show_status     = 0;
-    //     GBT_TREE*         p   = 0;
-    //     T_PT_PDC&         pdc   = my_server->get_pdc();
 
     struct gl_struct&    pd_gl = my_server->get_pd_gl();
 
@@ -459,107 +438,140 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
     return 0;
 }
 
-typedef SpeciesBag::const_iterator SpeciesBagIter;
+static GBDATA *PG_find_probe_group_for_species(GBDATA *pb_tree_or_path, SpeciesBagIter start, SpeciesBagIter end, size_t size) {
+    for (GBDATA *pb_path = GB_find(pb_tree_or_path, "path", 0, down_level);
+         pb_path;
+         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
+    {
+        GBDATA *pb_members = GB_find(pb_path, "members", 0, down_level);
+        pg_assert(pb_members);
 
-GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species) {
-    SpeciesBagIter i;
-    for (i=species.begin(); i != species.end() && node; ++i) {
-        node           = GB_find(node, "num", (const char *)&*i, down_2_level);
-        if (node) node = GB_get_father(node);
+        const char     *members = GB_read_char_pntr(pb_members);
+        SpeciesBagIter  last_match;
+        const char     *mismatch;
+        size_t          same    = PG_match_path(members, start, end, last_match, mismatch);
+
+        if (same) {
+            if (mismatch) { // "members" contain species NOT contained in 'species'
+                // -> searched group does not exist
+                return 0;
+            }
+
+            if (same == size) { // perfect match
+                GBDATA *pb_probes = GB_find(pb_path, "probes", 0, down_level);
+                return pb_probes;
+            }
+
+            // all species in "members" were in 'species'
+            ++last_match;
+            return PG_find_probe_group_for_species(pb_path, last_match, end, size-same); // search for rest
+        }
     }
 
-    if (node) node = GB_find(node, "group", 0, down_level);
-    return node;
+    return 0;
 }
 
-// static void dumpSpecies(SpeciesBagIter start, SpeciesBagIter end) {
-//     while (start != end) {
-//         fprintf(stdout, "%i ", *start);
-//         ++start;
-//     }
-// }
+GBDATA *PG_find_probe_group_for_species(GBDATA *pb_tree_or_path, const SpeciesBag& species) {
+    return PG_find_probe_group_for_species(pb_tree_or_path, species.begin(), species.end(), species.size());
+}
 
-// static void dumpBestCover(SpeciesBagIter start, SpeciesBagIter end, int allowed_non_hits, int left_non_hits) {
-//     fprintf(stdout, "Found cover for ");
-//     dumpSpecies(start, end);
-//     fprintf(stdout, "allowed_non_hits=%i left_non_hits=%i\n", allowed_non_hits, left_non_hits);
-// }
+static bool path_is_subset_of(const char *path, SpeciesBagIter start, SpeciesBagIter end, int allowed_mismatches,
+                              SpeciesBagIter& nextToMatch, int& unused_mismatches, int& matched)
+{
+    int used_mismatches = 0;
 
-static GBDATA *best_covering_probe_group(GBDATA *pb_node, SpeciesBagIter start, SpeciesBagIter end, int allowed_non_hits, int& left_non_hits) {
-    GBDATA *pb_best_group = 0;
+    pg_assert(start != end);
+    int curr_member = *start;
+    matched         = 0;
 
-//     fprintf(stdout, "Searching cover for ");
-//     dumpSpecies(start, end);
-//     fprintf(stdout, " (allowed_non_hits=%i)\n", allowed_non_hits);
+    for (int path_member = atoi(path); path_member >= 0; path_member = path ? atoi(path) : -1) {
+        const char *comma = strchr(path, ',');
+        path              = comma ? comma+1 : 0;
 
-    pg_assert(allowed_non_hits >= 0);
+        while (curr_member != path_member) {
+            if (path_member<curr_member) return false; // 'path_member' is not member of SpeciesBag
+            if (used_mismatches >= allowed_mismatches) return false; // too many mismatches
 
-    if (start == end) {         // all specied found or skipped
-        pb_best_group = GB_find(pb_node, "group", 0, down_level);
-        left_non_hits = allowed_non_hits;
+            ++used_mismatches;  // count as mismatch
+            if (++start == end) return false;
+            curr_member = *start;
+        }
+
+        matched++;
+
+        if (++start == end) {
+            if (!path) break; // end of bag AND end of path
+            return false;
+        }
+
+        curr_member = *start;
     }
-    else {
-        // try direct path
-        int            max_left_non_hits = -1;
-        SpeciesBagIter next              = start;
-        ++next;
 
-        {
-            SpeciesID  id      = *start;
-            GBDATA    *pb_num = GB_find(pb_node, "num", (const char *)&id, down_2_level);
+    pg_assert(used_mismatches <= allowed_mismatches);
+    unused_mismatches = allowed_mismatches-used_mismatches;
+    nextToMatch       = start;
 
-            if (pb_num) { // yes there may be such a group
-                GBDATA *pb_subnode = GB_get_father(pb_num);
-                int     unused_non_hits;
-                GBDATA *pb_group   = best_covering_probe_group(pb_subnode, next, end, allowed_non_hits, unused_non_hits);
+    return true;
+}
 
-                if (pb_group) {
-//                     dumpBestCover(next, end, allowed_non_hits, unused_non_hits);
+static GBDATA *best_covering_probe_group(GBDATA *pb_tree_or_path, SpeciesBagIter start, SpeciesBagIter end, int size, int allowed_mismatches, int& used_mismatches) {
+    pg_assert(allowed_mismatches >= 0);
 
-                    pb_best_group     = pb_group;
-                    max_left_non_hits = unused_non_hits;
+    if (start == end) {
+        used_mismatches = 0;
+        return GB_find(pb_tree_or_path, "probes", 0, down_level);
+    }
+
+    int     min_used_mismatches = INT_MAX;
+    GBDATA *best_covering_group = 0;
+
+    // test all existing paths
+    for (GBDATA *pb_path = GB_find(pb_tree_or_path, "path", 0, down_level);
+         pb_path;
+         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
+    {
+        GBDATA         *pb_members = GB_find(pb_path, "members", 0, down_level);
+        pg_assert(pb_members);
+        const char     *members    = GB_read_char_pntr(pb_members);
+        SpeciesBagIter  nextToMatch;
+        int             curr_unused_mismatches;
+        int             matched_members;
+
+        if (path_is_subset_of(members, start, end, allowed_mismatches, nextToMatch, curr_unused_mismatches, matched_members)) {
+            int     sub_allowed_mismatches = curr_unused_mismatches;
+            int     sub_used_mismatches;
+            GBDATA *pb_best_sub_group      = best_covering_probe_group(pb_path, nextToMatch, end, size-matched_members, sub_allowed_mismatches, sub_used_mismatches);
+
+            if (pb_best_sub_group) {
+                pg_assert(sub_used_mismatches >= 0 && sub_used_mismatches <= sub_allowed_mismatches);
+
+                int used_mismatches = sub_used_mismatches + (allowed_mismatches-curr_unused_mismatches); 
+                pg_assert(used_mismatches >= 0 && used_mismatches <= allowed_mismatches);
+
+                if (used_mismatches<min_used_mismatches) {
+                    min_used_mismatches = used_mismatches;
+                    best_covering_group = pb_best_sub_group;
+
+                    if (allowed_mismatches>min_used_mismatches) {
+                        allowed_mismatches = min_used_mismatches; // restrict further searches
+                    }
                 }
             }
         }
 
-        if (allowed_non_hits) { // try to find group w/o current species
-            int     unused_non_hits;
-            GBDATA *pb_group = 0;
-
-            if (max_left_non_hits == -1) {
-                pb_group = best_covering_probe_group(pb_node, next, end, allowed_non_hits-1, unused_non_hits);
-            }
-            else {
-                // we already found a group with 'max_left_non_hits' left hits
-                // try to find better group only
-                if (allowed_non_hits > max_left_non_hits) {
-                    pb_group         = best_covering_probe_group(pb_node, next, end, allowed_non_hits-(max_left_non_hits+1), unused_non_hits);
-                    unused_non_hits += (max_left_non_hits+1);
-                }
-            }
-
-//             if (pb_group) dumpBestCover(next, end, allowed_non_hits, unused_non_hits);
-
-            if (pb_group && unused_non_hits>max_left_non_hits) {
-                pb_best_group  = pb_group;
-                max_left_non_hits = unused_non_hits;
-            }
-        }
-
-        left_non_hits = max_left_non_hits;
     }
 
-    return pb_best_group;
+    used_mismatches = min_used_mismatches;
+    return best_covering_group;
 }
 
 GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *pb_rootNode, const SpeciesBag& species, int /*min_non_matched*/, int max_non_matched, int& groupsize) {
-    int     unused_non_matched;
-    GBDATA *pb_group = best_covering_probe_group(pb_rootNode, species.begin(), species.end(), max_non_matched, unused_non_matched);
+    int     used_non_matched;
+    GBDATA *pb_group = best_covering_probe_group(pb_rootNode, species.begin(), species.end(), species.size(), max_non_matched, used_non_matched);
 
     if (pb_group) {
-        int non_matched = max_non_matched-unused_non_matched;
-        pg_assert(non_matched >= 0); // otherwise an exact group exists and we should not be here!
-        groupsize       = species.size()-non_matched;
+        pg_assert(used_non_matched >= 0 && used_non_matched <= max_non_matched); // otherwise an exact group exists and we should not be here!
+        groupsize = species.size() - used_non_matched;
     }
     else {
         groupsize = 0;
@@ -567,13 +579,4 @@ GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *pb_rootNode, const
 
     return pb_group;
 }
-
-
-// return the id number stored in num under node
-SpeciesID PG_get_id(GBDATA *node){
-    GBDATA *pg_node = GB_find(node,"num",0,down_level);
-    return GB_read_int(pg_node);
-}
-
-
 

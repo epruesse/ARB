@@ -1,5 +1,5 @@
 /*********************************************************************************
- *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2003               *
+ *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2004               *
  *  Institute of Microbiology (Technical University Munich)                      *
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/

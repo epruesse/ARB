@@ -135,17 +135,11 @@ GB_ERROR PG_transfer_root_string_field(GBDATA *pb_src, GBDATA *pb_dest, const ch
     return error;
 }
 
-//  --------------------------------------------------------------------
-//      SpeciesID PG_SpeciesName2SpeciesID(const string& shortname)
-//  --------------------------------------------------------------------
 SpeciesID PG_SpeciesName2SpeciesID(const string& shortname) {
     pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
     return species2num_map[shortname];
 }
 
-//  --------------------------------------------------------------
-//      const string& PG_SpeciesID2SpeciesName(SpeciesID num)
-//  --------------------------------------------------------------
 const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
     pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
     return num2species_map[num];
@@ -153,144 +147,344 @@ const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
 
 int PG_NumberSpecies(){
     return num2species_map.size();
-}//PG_NumberSpecies
+}
 
-// db-structure of group_tree:
-//
-//                  <root>
-//                  |
-//                  |
-//                  "group_tree"
-//                  |
-//                  |
-//                  "node" <more nodes...>
-//                  | | |
-//                  | | |
-//                  | | "group" (contains all probes for this group; may be missing)
-//                  | |
-//                  | "num" (contains species-number (created by PG_SpeciesName2SpeciesID))
-//                  |
-//                  "node" <more nodes...>
-//
-//  Notes:  - the "node"s contained in the path from "group_tree" to any "group"
-//            describes the members of the group
+// // db-structure of group_tree (old outdated structure):
+// //
+// //                  <root>
+// //                  |
+// //                  |
+// //                  "group_tree"
+// //                  |
+// //                  |
+// //                  "node" <more nodes...>
+// //                  | | |
+// //                  | | |
+// //                  | | "group" (contains all probes for this group; may be missing)
+// //                  | |
+// //                  | "num" (contains species-number (created by PG_SpeciesName2SpeciesID))
+// //                  |
+// //                  "node" <more nodes...>
+// //
+// //  Notes:  - the "node"s contained in the path from "group_tree" to any "group"
+// //            describes the members of the group
+// // 
+// // end of old structure
+// 
+// db-structure of group_tree (current structure): 
+// 
+//              <root>
+//              |
+//              |
+//              "group_tree" ---- "path" ---- "members" (string: comma-separated list of SpeciesID's)
+//                             |           |        
+//                             |           |- "probes" (string: comma-separated list of probes)        
+//                             |           |        
+//                             |           |- [optional more] "path" (continued path)        
+//                             |
+//                             |
+//                             |- [optional more] "path" (other path)
+// 
+// 
+// Note: - the sum of all "members"-entries of all
+//         parent "path"-nodes forms the group of 
+//         species matched by the probes in "probes"
 
 
-//  ---------------------------------------------------
-//      static GBDATA *group_tree(GBDATA *pb_main)
-//  ---------------------------------------------------
 // search or create "group_tree"-entry
 static GBDATA *group_tree(GBDATA *pb_main) {
     return GB_search(pb_main, "group_tree", GB_CREATE_CONTAINER);
 }
 
-//  -------------------------------------------------------------------------------
-//      GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created)
-//  -------------------------------------------------------------------------------
-// search/create entry for group
+// typedef set<SpeciesID>::const_iterator SpeciesIter;
 
-GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created, int* numSpecies) {
+size_t PG_match_path(const char *members, SpeciesBagIter start, SpeciesBagIter end, SpeciesBagIter& lastMatch, const char *&mismatch) {
+    SpeciesID first       = atoi(members);
+    size_t    match_count = 0;
+
+    lastMatch = end;
+    mismatch  = 0;
+
+    while (start != end) {
+        if (*start == first) {
+            ++match_count;
+            lastMatch = start;
+
+            const char *comma = strchr(members, ',');
+            if (!comma) {
+                members = 0;
+                break;          // end of members in path
+            }
+
+            members = comma+1;
+            first   = atoi(members);
+
+            ++start;
+        }
+        else {                  // mismatch
+            break;
+        }
+    }
+
+    if (members) mismatch = members; // not all members matched 
+
+    return match_count;
+}
+
+bool PG_match_path_with_mismatches(const char *members, SpeciesBagIter start, SpeciesBagIter end, int size, int allowed_mismatches,
+                                   SpeciesBagIter& nextToMatch, int& used_mismatches, int& matched_members)
+{
+#warning currently unused
+    bool            path_matched = false;
+    const char     *mismatch;
+    SpeciesBagIter  lastMatch;
+
+    used_mismatches = 0;
+    matched_members = 0;
+    nextToMatch     = start;
+
+    while (1) {
+        size_t matched = PG_match_path(members, nextToMatch, end, lastMatch, mismatch);
+        if (matched) {
+            matched_members += matched;
+
+            if (matched == size) { // complete (rest of) path matched
+                nextToMatch  = end;
+                path_matched = true;
+                break;
+            }
+
+            // partial match
+            nextToMatch = lastMatch;
+            ++nextToMatch;
+
+            if (!mismatch) {
+                // all "members" were matched
+                path_matched = true;
+                break;
+            }
+
+            if (used_mismatches >= allowed_mismatches) break; // no (more) mismatches allowed
+
+            ++used_mismatches; // count mismatches
+
+            const char *comma = strchr(members, ',');
+            if (!comma) { // mismatch on last element of "members"
+                path_matched = true;
+                break;
+            }
+
+            members  = comma+1;
+            size    -= matched; // calculate size of rest of SpeciesBag
+        }
+        else {
+            if (used_mismatches >= allowed_mismatches) break; // no (more) mismatches allowed
+
+            ++used_mismatches;  // count mismatches
+
+            const char *comma = strchr(members, ',');
+            if (!comma) { // "members" only contain 1 element
+                path_matched = true;
+                break;
+            }
+            members = comma+1;
+        }
+    }
+
+    pg_assert(used_mismatches <= allowed_mismatches);
+    return path_matched;
+}
+
+static string generate_path_string(SpeciesBagIter start, SpeciesBagIter end, size_t size) {
+    string result;
+    result.reserve((5+1)*size);
+
+    for (; start != end; ++start) {
+        char buffer[30];
+        sprintf(buffer, "%i,", *start);
+        result += buffer;
+    }
+
+    result.resize(result.length()-1, 'x'); // remove trailing comma
+
+    return result;
+}
+
+static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, SpeciesBagIter end, size_t size, bool& created) {
+    GBDATA   *pb_probes = 0;    // result
+    GB_ERROR  error     = 0;
+
+    for (GBDATA *pb_path = GB_find(pb_father, "path", 0, down_level);
+         pb_path && !error;
+         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
+    {
+        GBDATA     *pb_members = GB_find(pb_path, "members", 0, down_level);
+        const char *members    = GB_read_char_pntr(pb_members);
+
+        SpeciesBagIter  last_match;
+        const char  *mismatch;
+        size_t       same = PG_match_path(members, start, end, last_match, mismatch);
+
+        if (same) {             // at least one member of path matched
+            GBDATA *pb_dest_path = 0; // father of result probe entry
+
+            if (same == size && !mismatch) { // complete match -> existing group
+                pg_assert(last_match != end);
+
+                pb_dest_path = pb_path; // "probes" entry here
+            }
+            else {
+                pg_assert(last_match != end);
+                SpeciesBagIter  first_of_rest    = last_match;
+                ++first_of_rest;
+                GBDATA         *pb_restpath_root = pb_path;
+
+                if (mismatch) { // partial match
+                    // 1. split existing path
+                    string common_path(members, mismatch-1);
+
+                    GBDATA *pb_sub         = GB_create_container(pb_path, "path");
+                    GBDATA *pb_sub_members = GB_create(pb_sub, "members", GB_STRING);
+                    GB_write_string(pb_sub_members, mismatch);
+                    GB_write_string(pb_members, common_path.c_str());
+
+                    GBDATA *pb_old_probes = GB_find(pb_path, "probes", 0, down_level);
+                    if (pb_old_probes) {
+                        GBDATA *pb_sub_probes = GB_create(pb_sub, "probes", GB_STRING);
+
+                        if (!error) error = GB_copy(pb_sub_probes, pb_old_probes);
+                        if (!error) error = GB_delete(pb_old_probes); // delete splitted probe_group
+                    }
+#if defined(DEBUG)
+                    else {
+                        // group w/o "probes" entry should have at least two "path" entries
+                        GBDATA *pb_first_path = GB_find(pb_path, "path", 0, down_level);
+
+                        pg_assert(pb_first_path != 0);
+                        pg_assert(GB_find(pb_first_path, "path", 0, this_level|search_next) != 0);
+                    }
+#endif // DEBUG
+
+                    // copy all other path-entries
+
+                    for (GBDATA *pb_sub_path = GB_find(pb_path, "path", 0, down_level), *pb_next_sub = 0;
+                         pb_sub_path && !error;
+                         pb_sub_path = pb_next_sub)
+                    {
+                        pb_next_sub = GB_find(pb_sub_path, "path", 0, this_level|search_next);
+
+                        if (pb_sub_path != pb_sub) { // do not copy NEW sub-path
+                            GBDATA *pb_sub_path_copy = GB_create_container(pb_sub, "path");
+                            error                    = GB_copy(pb_sub_path_copy, pb_sub_path);
+                            if (!error) error        = GB_delete(pb_sub_path);
+                        }
+                    }
+                }
+                else {
+                    // complete match, but SpeciesBag has additional members
+                    pg_assert(first_of_rest != end);
+                }
+
+                // 2. generate distinct path for tail of set
+
+                if (first_of_rest != end) {
+                    pb_probes = groupEntry_recursive(pb_restpath_root, first_of_rest, end, size-same, created);
+                    pg_assert(pb_probes);
+                }
+                else {
+                    pb_dest_path = pb_restpath_root;
+                }
+            }
+
+            if (pb_dest_path) {
+                pg_assert(!pb_probes);
+
+                pb_probes    = GB_find(pb_dest_path, "probes", 0, down_level);
+                if (!pb_probes) {
+                    pb_probes = GB_create(pb_dest_path, "probes", GB_STRING);
+                    pg_assert(pb_probes);
+                    GB_write_string(pb_probes, "");
+                    created = true;
+                }
+            }
+
+            pg_assert(pb_probes);
+
+            break;              // break main loop (only 1 path does match partially)
+        }
+    }
+
+    if (!pb_probes && !error) { // no match at all -> create distinct group
+        GBDATA *pb_path    = GB_create_container(pb_father, "path");
+        GBDATA *pb_members = GB_create(pb_path, "members", GB_STRING);
+        string  path       = generate_path_string(start, end, size);
+
+        GB_write_string(pb_members, path.c_str());
+        pb_probes = GB_create(pb_path, "probes", GB_STRING);
+        error     = GB_write_string(pb_probes, "");
+        created   = true;
+    }
+
+    if (error) {
+        fprintf(stderr, "Error in groupEntry_recursive: '%s'\n", error);
+        return 0;
+    }
+
+    return pb_probes;
+}
+
+// search/create entry for group
+GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created) {
     GB_transaction  dummy(pb_main);
     GBDATA         *pb_group_tree   = group_tree(pb_main);
     GBDATA         *pb_current_node = pb_group_tree;
 
     created = false;
 
-    *numSpecies=0;
+    pg_assert(create == true); // groupEntry_recursive always creates missing entries
+    GBDATA *pb_probes = groupEntry_recursive(pb_current_node, begin(), end(), size(), created);
 
-    for (set<SpeciesID>::const_iterator i = begin(); i != end(); ++i)
-    {
-        SpeciesID  id      = *i;
-        GBDATA    *pb_num  = GB_find(pb_current_node, "num", (const char *)&id, down_2_level);
-        GBDATA    *pb_node = 0;
-
-        if (pb_num) {
-            pb_node = GB_get_father(pb_num);
-        }
-        else {
-            if (!create) return 0; // not found
-
-            pb_node = GB_create_container(pb_current_node, "node");
-            pg_assert(pb_node);
-
-            pb_num = GB_create(pb_node, "num", GB_INT);
-            pg_assert(pb_num);
-            GB_write_int(pb_num, id);
-
-            created = true;
-        }
-        pg_assert(pb_node);
-        pb_current_node = pb_node;
-    }
-
-    GBDATA *pb_group = GB_find(pb_current_node, "group", 0, down_level);
-    if (!pb_group) {
-        pb_group    = GB_create_container(pb_current_node, "group");
-        created     = true;
-        *numSpecies = size();
-    }
-    return pb_group;
+    return pb_probes;
 }
 
-//  -----------------------------------------------------
-//      GBDATA *PG_get_first_probe(GBDATA *pb_group)
-//  -----------------------------------------------------
-GBDATA *PG_get_first_probe(GBDATA *pb_group) {
-    return GB_find(pb_group, "probe", 0, down_level);
-}
-//  ----------------------------------------------------
-//      GBDATA *PG_get_next_probe(GBDATA *pb_probe)
-//  ----------------------------------------------------
-GBDATA *PG_get_next_probe(GBDATA *pb_probe) {
-    return GB_find(pb_probe, "probe", 0, this_level|search_next);
-}
-
-//  ----------------------------------------------------
-//      const char *PG_read_probe(GBDATA *pb_probe)
-//  ----------------------------------------------------
-const char *PG_read_probe(GBDATA *pb_probe) {
-    return GB_read_char_pntr(pb_probe);
-}
-
-//  --------------------------------------------
-//      inline bool is_upper(const char *s)
-//  --------------------------------------------
+#if defined(DEBUG)
 inline bool is_upper(const char *s) {
     for (int i = 0; s[i]; ++i) {
         if (!isupper(s[i])) return false;
     }
     return true;
 }
+#endif // DEBUG
 
-
-//  -------------------------------------------------------------------
-//      GBDATA *PG_find_probe(GBDATA *pb_group, const char *probe)
-//  -------------------------------------------------------------------
-GBDATA *PG_find_probe(GBDATA *pb_group, const char *probe) {
-    pg_assert(is_upper(probe));
-
-    for (GBDATA *pb_probe = PG_get_first_probe(pb_group);
-         pb_probe;
-         pb_probe = PG_get_next_probe(pb_probe))
-    {
-        if (strcmp(PG_read_probe(pb_probe), probe) == 0) {
-            return pb_probe;
-        }
-    }
-    return 0;
-}
-//  ------------------------------------------------------------------
-//      GBDATA *PG_add_probe(GBDATA *pb_group, const char *probe)
-//  ------------------------------------------------------------------
 // adds probe to group (if not already existing)
-
-GBDATA *PG_add_probe(GBDATA *pb_group, const char *probe) {
+bool PG_add_probe(GBDATA *pb_group, const char *probe) {
+    GB_ERROR error = 0;
     pg_assert(is_upper(probe));
-    GBDATA *pb_probe = PG_find_probe(pb_group, probe);
 
-    if (!pb_probe) {
-        pb_probe = GB_create(pb_group, "probe", GB_STRING);
-        GB_write_string(pb_probe, probe);
+    const char *existing = GB_read_char_pntr(pb_group);
+    const char *exists   = strstr(existing, probe);
+    bool        inserted = false;
+
+    if (exists) {
+        if (exists != existing) { // not first
+            pg_assert(exists[-1] == ',');
+        }
+
+        pg_assert(exists[strlen(probe)] == ',');
     }
-    return pb_probe;
+    else {
+        string newProbes(existing);
+        if (existing[0]) newProbes += ',';
+        newProbes += probe;
+
+        error    = GB_write_string(pb_group, newProbes.c_str());
+        inserted = true;
+    }
+
+    if (error) {
+        fprintf(stderr, "error in PG_add_probe: '%s'\n", error);
+        pg_assert(0);
+    }
+
+    return inserted;
 }

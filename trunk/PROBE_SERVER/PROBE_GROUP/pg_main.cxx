@@ -1,10 +1,10 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Thu Feb/12/2004 15:53 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Feb/23/2004 23:50 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
+//  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -13,6 +13,7 @@
 //  ==================================================================== //
 
 // #define DUMP_SMART_PTRS
+// #define DUMP_COVERAGE_SEARCH
 
 #ifndef PG_SEARCH_HXX
 #include "pg_search.hxx"
@@ -29,8 +30,6 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-// #include "../global_defs.h"
-
 #define NEED_encodeTreeNode 
 #define NEED_saveProbeContainerToString 
 #define NEED_setDatabaseState
@@ -41,7 +40,7 @@
 // #define SAVE_AFTER_XXX_NEW_GROUPS 10000
 
 
-// bond values used: (read from config now)
+// bond values used: (are read from config now)
 // #define AA  0
 // #define AC  0
 // #define AG  0.5
@@ -68,7 +67,7 @@ using namespace std;
 // ----------------------------------------
 // types
 
-typedef SmartPtr<SpeciesBag, Counted<SpeciesBag, auto_free_ptr<SpeciesBag> > > SpeciesBagPtr;
+typedef SmartPtr<SpeciesBag, Counted<SpeciesBag, auto_delete_ptr<SpeciesBag> > > SpeciesBagPtr;
 typedef deque<SpeciesBagPtr> SpeciesBagStack;
 
 typedef enum { TS_LINKED_TO_SPECIES, TS_LINKED_TO_SUBTREES } TreeState;
@@ -224,16 +223,12 @@ GB_ERROR scanArguments(int argc,  char *argv[]) {
         para.db_out_alt_name   = name + ".arb";
         argc                  -= 5; argv += 5;
 
-#if 0
-        only needed for options:
-
-            while (!error && argc>=2) {
-                string arg = argv[1];
-                argc--; argv++;
-
-
-            }
-#endif
+//         only needed for options:
+//             while (!error && argc>=2) {
+//                 string arg = argv[1];
+//                 argc--; argv++;
+//             }
+        
     }
     else {
         error = "Missing arguments";
@@ -305,7 +300,7 @@ int percent(int part, int all) {
     return 0;
 }
 
-inline void convert_kommas_to_underscores(char *s) {
+inline void convert_commas_to_underscores(char *s) {
     if (s) {
         for (int i = 0; s[i]; ++i) {
             if (s[i] == ',') s[i] = '_';
@@ -335,7 +330,7 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
         GBDATA *gb_fullname = GB_find(node->gb_node, "full_name", 0, down_level);
         if (gb_fullname) {
             fullname = GB_read_string(gb_fullname);
-            convert_kommas_to_underscores(fullname);
+            convert_commas_to_underscores(fullname);
         }
         else {
             error = GBS_global_string("no 'full_name' for species '%s'", node->name);
@@ -345,7 +340,7 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
             GBDATA *gb_acc = GB_find(node->gb_node, "acc", 0, down_level);
             if (gb_acc) {
                 acc = GB_read_string(gb_acc);
-                convert_kommas_to_underscores(acc);
+                convert_commas_to_underscores(acc);
             }
             else {
                 error = GBS_global_string("no 'acc' for species '%s'", node->name);
@@ -392,7 +387,7 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
     if (!error) {
         const char *name = para.db_out_name.c_str();
 
-        out.put("Opening probe-group-database '%s'..", name);
+        out.put("Create probe-group-database '%s'..", name);
         pb_main = GB_open(name, "wcN");//"rwch");
         if (!pb_main) {
             error             = GB_get_error();
@@ -408,7 +403,7 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
     if (!error) {
         const char *name = para.db_out_alt_name2.c_str();
 
-        out.put("Opening path-mapping-database '%s'..",name);
+        out.put("Create path-mapping-database '%s'..",name);
         pbb_main = GB_open(name,"wch");
         if (!pbb_main){
             error            = GB_get_error();
@@ -424,7 +419,7 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
     if (!error) {
         const char *name = para.db_out_alt_name.c_str();
 
-        out.put("Opening probe-group-subtree-result-database '%s'..",name);
+        out.put("Create probe-group-subtree-result-database '%s'..",name);
         pba_main = GB_open(name,"wch");
         if (!pba_main){
             error            = GB_get_error();
@@ -515,6 +510,14 @@ static GB_ERROR pathMappingWriteGlobals(GBDATA *pm_main, int depth) {
 static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
     GB_transaction dummy(gb_main);
 
+    if (para.tree_name == "DEFAULT") {
+        GBDATA *gb_tree_name = GB_search(gb_main, "focus/tree_name", GB_FIND);
+        pg_assert(gb_tree_name);
+        para.tree_name       = GB_read_char_pntr(gb_tree_name);
+
+        out.put("Selecting DEFAULT tree '%s'.", para.tree_name.c_str());
+    }
+
     out.put("Reading tree '%s'..", para.tree_name.c_str());
     GBT_TREE *gbt_tree = GBT_read_tree(gb_main, para.tree_name.c_str(),sizeof(GBT_TREE));
 
@@ -538,6 +541,18 @@ static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
     }
 
     return gbt_tree;
+}
+
+static string PG_SpeciesBag_Content(const SpeciesBag& species) {
+    string result;
+    pg_assert(!species.empty());
+    for (SpeciesBag::const_iterator s = species.begin(); s != species.end(); ++s) {
+        char buffer[100];
+        sprintf(buffer, "%i,", *s);
+        result += buffer;
+    }
+    result.erase(result.length()-1);
+    return result;
 }
 
 static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_config, GB_alignment_type ali_type) {
@@ -617,8 +632,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
                         {
                             GB_transaction  pb_dummy(pb_main);
                             bool            created;
-                            int             numSpecies;
-                            GBDATA         *pb_group = group.groupEntry(pb_main, true, created, &numSpecies);
+                            GBDATA         *pb_group = group.groupEntry(pb_main, true, created);
 
                             PG_add_probe(pb_group, probe);
                             if (probe_compl_matches_same) PG_add_probe(pb_group, probe_compl);
@@ -628,6 +642,8 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
                                 if ((group_count%dot_devisor) == 0) out.point();
                             }
                         }
+
+                        free(probe_compl);
                     }
                 }
             }
@@ -635,13 +651,6 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
             PG_exit_find_probes();
         }
     }
-
-//     GB_begin_transaction(pb_main);
-//     gb_status = GB_search(pb_main,"status",GB_CREATE_CONTAINER);
-//     GBDATA *gb_probesMatched = GB_search(gb_status,"probes_matched",GB_INT);
-//     error = GB_write_int(gb_probesMatched,1);
-//     if (error) GB_abort_transaction(pb_main);
-//     else GB_commit_transaction(pb_main);
 
     PG_exit_pt_server();
     out.put("Overall groups found: %i (of %i possible groups)", group_count, max_possible_groups);
@@ -671,25 +680,55 @@ static GB_ERROR storeProbeGroupStatistic(GBDATA *pba_main, int *statistic, int s
     return error;
 }
 
-static string PG_SpeciesBag_Content(const SpeciesBag& species) {
-    string result;
-    pg_assert(!species.empty());
-    for (SpeciesBag::const_iterator s = species.begin(); s != species.end(); ++s) {
-        char buffer[100];
-        sprintf(buffer, "%i,", *s);
-        result += buffer;
+static void PG_get_probes(GBDATA *pg_probes, deque<string>& probes) {
+    const char *probes_str = GB_read_char_pntr(pg_probes);
+
+    for (const char *comma = strchr(probes_str, ',');
+         comma;
+         probes_str = comma+1, comma = strchr(probes_str, ','))
+    {
+        probes.push_back(string(probes_str, comma));
     }
-    result.erase(result.length()-1);
-    return result;
+
+    probes.push_back(probes_str); // last probe
 }
 
-static void PG_get_probes(GBDATA *pg_group, deque<string>& probes) {
-    for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
-         pg_probe;
-         pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
-    {
-        probes.push_back(GB_read_char_pntr(pg_probe));
+static GB_ERROR getSpeciesInGroup(GBDATA *pb_group, SpeciesBag& species) {
+    GBQUARK   group_tree_quark = GB_key_2_quark(pb_group, "group_tree");
+    GB_ERROR  error            = 0;
+    GBDATA   *pb_path          = GB_get_father(pb_group);
+    if (!pb_path) {
+        error = "'probes' w/o father";
     }
+
+    while (pb_path && !error) {
+        if (pb_path) {
+            if (GB_get_quark(pb_path) == group_tree_quark) { // test if we reached "group_tree"
+                pb_path = 0; // exit loop
+            }
+            else {
+                GBDATA *pb_members = GB_find(pb_path, "members", 0, down_level);
+                if (pb_members) {
+                    const char *members = GB_read_char_pntr(pb_members);
+                    while (members) {
+                        SpeciesID id = atoi(members);
+                        species.insert(id);
+                        const char *comma = strchr(members, ',');
+                        members           = comma ? comma+1 : 0;
+                    }
+                }
+                else {
+                    error = "'path' w/o 'members'";
+                }
+                pb_path = GB_get_father(pb_path);
+            }
+        }
+        else {
+            error = "'path' w/o father";
+        }
+    }
+
+    return error;
 }
 
 static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *pba_main, GBDATA *pbb_main) {
@@ -725,13 +764,8 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         subtreeCounter++;
         count++;
 
-//         fprintf(stderr, "path='%s'\n", tt.getPath().c_str());
-
-        const SpeciesBag& species = tt.getSpecies();
-//         out.put("subtree '%s' = %s", tt.getPath().c_str(), PG_SpeciesBag_Content(species).c_str());
-
-
-        const char *encodedPath = 0;
+        const SpeciesBag&  species     = tt.getSpecies();
+        const char        *encodedPath = 0;
         {
             const string& path = tt.getPath();
             encodedPath        = encodePath(path.c_str(), path.length(), error);
@@ -753,14 +787,23 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
         }
 
         if (!error) {
-            // deque<string> probes;
             GBDATA *pb_group = 0;
 
             {
-                // GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
-                // PG_find_probe_for_subtree(pbnode, species, probes);
-
                 pb_group = PG_find_probe_group_for_species(pb_tree, species);
+#if defined(DEBUG) && 0
+                if (pb_group) {
+                    SpeciesBag check;
+                    GB_ERROR   error  = getSpeciesInGroup(pb_group, check);
+                    pg_assert(!error);
+                    if (check != species) {
+                        cout << "\nMismatch:\n";
+                        cout << "species=" << PG_SpeciesBag_Content(species) << "\n";
+                        cout << "check  =" << PG_SpeciesBag_Content(check) << "\n";
+                        cout << "probes = '" << GB_read_char_pntr(pb_group) << "'\n";
+                    }
+                }
+#endif // DEBUG
             }
 
             // create 'subtree' for all nodes
@@ -796,16 +839,7 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
                 error                   = GB_write_string(st_group_id, group_id);
 
                 if (!error) {
-
-#ifdef PG_UNCOMPRESSED
-                    GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
-                    for (deque<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
-                        GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
-                        error            = GB_write_string(st_probe, j->c_str());
-                    }
-#else
                     error = saveProbeContainerToString<deque<string> >(st_group, "matched_probes", false, probes.begin(), probes.end());
-#endif // PG_UNCOMPRESSED
                 }
 
 
@@ -858,7 +892,6 @@ static GBT_TREE *PG_find_subtree_by_path(GBT_TREE *node, const char *path) {
              break;
         }
     }
-
 
     // leaf reached
     if (node && restPath[0]) {
@@ -1084,42 +1117,6 @@ static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& group_hits, const ch
     return error;
 }
 
-static GB_ERROR getSpeciesInGroup(GBDATA *pb_group_or_node, SpeciesBag& species) {
-    GB_ERROR error = 0;
-
-    while (pb_group_or_node && !error) {
-        GBDATA *pb_node = GB_get_father(pb_group_or_node);
-        if (pb_node) {
-            GBDATA *pb_num = GB_find(pb_node, "num", 0, down_level);
-
-            if (!pb_num) {
-                // test whether we reached the 'group_tree'
-                GBDATA *pb_root = GB_get_father(pb_node);
-                pg_assert(pb_root);
-
-                GBDATA *pb_group_tree = GB_find(pb_root, "group_tree", 0, down_level);
-                if (pb_group_tree == pb_node) { // we reached 'group_tree'
-                    pb_group_or_node = 0; // exit loop
-                }
-                else {
-                    error = "'num' expected";
-                }
-            }
-            else {
-                SpeciesID id = GB_read_int(pb_num);
-                species.insert(id);
-
-                pb_group_or_node = pb_node; // continue upwards
-            }
-        }
-        else {
-            error = "group/node has no father";
-        }
-    }
-
-    return error;
-}
-
 static int independent_group_counter = 0; // counter
 
 static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pba_probe_groups, GB_ERROR &error) {
@@ -1152,15 +1149,7 @@ static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pb
     error               = GB_write_string(st_group_id, new_group_name.c_str());
 
     if (!error) {
-#if defined(PG_UNCOMPRESSED)
-        GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
-        for (deque<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
-            GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
-            error            = GB_write_string(st_probe, j->c_str());
-        }
-#else
         error = saveProbeContainerToString<deque<string> >(st_group, "matched_probes", false, probes.begin(), probes.end());
-#endif // PG_UNCOMPRESSED
     }
 
     if (!error) {
@@ -1216,7 +1205,10 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
 
                         if (pb_group) {
 #if defined(DUMP_COVERAGE_SEARCH)
-                            out.put("Found better coverage: %i", group_size);
+                            SpeciesBag groupMembers;
+                            getSpeciesInGroup(pb_group, groupMembers);
+                            out.put("Found better coverage: %i (%s)", group_size, PG_SpeciesBag_Content(groupMembers).c_str());
+                            pg_assert(group_size >= 0 && groupMembers.size() == static_cast<size_t>(group_size));
 #endif // DUMP_COVERAGE_SEARCH
 
                             string new_group_id = add_or_find_subtree_independent_group(pb_group, pba_probe_groups, error);
@@ -1278,7 +1270,7 @@ GB_ERROR searchLeastMishitGroups() {
 }
 
 int main(int argc,char *argv[]) {
-    out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
+    out.put("arb_probe_group v2.1 -- (C) 2001-2004 by Tina Lai & Ralf Westram");
 
     GB_ERROR          error = 0;
     probe_config_data probe_config;
@@ -1305,12 +1297,7 @@ int main(int argc,char *argv[]) {
             PG_initSpeciesMaps(gb_main, pb_main);
             initDecodeTable();
 
-            GBT_TREE *gbt_tree   = readAndLinkTree(gb_main, error);
-            // GB_HASH  *gb_hash = 0;
-            // if (!error) {
-            // GB_transaction dummy(gb_main);
-            // gb_hash = generate_GBT_TREE_hash(gbt_tree);
-            // }
+            GBT_TREE *gbt_tree = readAndLinkTree(gb_main, error);
             if (!error) {
                 GB_transaction dummy(pb_main);
                 error = GBT_write_plain_tree(pb_main, pb_main, 0, gbt_tree);

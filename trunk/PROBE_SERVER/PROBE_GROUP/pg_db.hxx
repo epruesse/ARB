@@ -1,5 +1,5 @@
 /*********************************************************************************
- *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2003               *
+ *  Coded by Tina Lai/Ralf Westram (coder@reallysoft.de) 2001-2004               *
  *  Institute of Microbiology (Technical University Munich)                      *
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
@@ -25,6 +25,8 @@
 //
 
 typedef int SpeciesID;
+typedef std::set<SpeciesID> SpeciesBag;
+typedef SpeciesBag::const_iterator SpeciesBagIter;
 
 GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main); // call this at startup
 GB_ERROR PG_transfer_root_string_field(GBDATA *pb_src, GBDATA *pb_dest, const char *field_name);
@@ -34,12 +36,16 @@ const std::string& PG_SpeciesID2SpeciesName(SpeciesID id);
 
 int PG_NumberSpecies();
 
+size_t PG_match_path(const char *members, SpeciesBagIter start, SpeciesBagIter end, SpeciesBagIter& lastMatch, const char *&mismatch);
+bool   PG_match_path_with_mismatches(const char *members, SpeciesBagIter start, SpeciesBagIter end, int size, int allowed_mismatches,
+                                     /*result parameters : */ SpeciesBagIter& nextToMatch, int& used_mismatches, int& matched_members);
+
 //  --------------------
 //      class PG_Group
 //  --------------------
 class PG_Group {
 private:
-    std::set<SpeciesID> species;
+    SpeciesBag species;
 
 public:
     PG_Group() {}
@@ -48,25 +54,19 @@ public:
     void add(SpeciesID id) { species.insert(id); }
     void add(const std::string& species_name) { add(PG_SpeciesName2SpeciesID(species_name)); }
 
-    std::set<SpeciesID>::const_iterator 	begin() const { return species.begin(); }
-    std::set<SpeciesID>::const_iterator 	end() const { return species.end(); }
+    SpeciesBagIter begin() const { return species.begin(); }
+    SpeciesBagIter end() const { return species.end(); }
+    const SpeciesBag& bag() const { return species; }
 
-    size_t 	size() const { return species.size(); }
-    size_t 	empty() const { return species.empty(); }
+    size_t size() const { return species.size(); }
+    size_t empty() const { return species.empty(); }
 
-    GBDATA *groupEntry(GBDATA *pb_main, bool create, bool& created, int *numSpecies); // searches or creates a group-entry in pb-db
+    GBDATA *groupEntry(GBDATA *pb_main, bool create, bool& created); // searches or creates a group-entry in pb-db
 
     bool operator == (const PG_Group& other) const { return species == other.species; }
 };
 
-GBDATA *PG_get_first_probe(GBDATA *pb_group);
-GBDATA *PG_get_next_probe(GBDATA *pb_probe);
-
-const char *PG_read_probe(GBDATA *pb_probe);
-
-GBDATA *PG_find_probe(GBDATA *pb_group, const char *probe);
-GBDATA *PG_add_probe(GBDATA *pb_group, const char *probe);
-
+bool PG_add_probe(GBDATA *pb_group, const char *probe);
 
 #else
 #error pg_db.hxx included twice
