@@ -715,27 +715,24 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader)
     FILE *in;
     in = fopen(path,"r");
 
-    if (in)
-    {
+    if (in) {
+        printf("ARB: Opening FastLoad File '%s' ...\n",path);
         fread((char *)mheader, sizeof(*mheader),1,in);
         fclose(in);
 
-        if (strcmp(mheader->mapfileID,ADMAP_ID)!=0)
-        {
+        if (strcmp(mheader->mapfileID,ADMAP_ID)!=0) {
             GB_export_error("'%s' is not a ARB-FastLoad-File", path);
             GB_print_error();
             return 0;
         }
-        if (mheader->version!=ADMAP_VERSION)
-        {
+        if (mheader->version!=ADMAP_VERSION) {
             GB_export_error("FastLoad-File '%s' has wrong version\n"
                             "   It is no longer needed, you should remove it", path);
             GB_print_error();
             return 0;
         }
 
-        if (mheader->byte_order!=ADMAP_BYTE_ORDER)
-        {
+        if (mheader->byte_order!=ADMAP_BYTE_ORDER) {
             GB_export_error("FastLoad-File '%s' has wrong byte order", path);
             GB_print_error();
             return 0;
@@ -762,11 +759,10 @@ GBDATA *gb_map_mapfile(const char *path)
 {
     struct gb_map_header mheader;
 
-    printf("    ARB:    Opening FastLoad File '%s' ...\n",path);
-
     if (gb_is_valid_mapfile(path, &mheader)>0)
     {
-        char *mapped = GB_map_file(path, 1);
+        char *mapped;
+        mapped = GB_map_file(path, 1);
 
         if (mapped)
         {
