@@ -1,16 +1,15 @@
+
 #include "phylip.h"
 
-/* version 3.56c. (c) Copyright 1988-1993 by Joseph Felsenstein and
-   Christopher Meacham.
+/* version 3.6. (c) Copyright 1988-2002 by the University of Washington.
    A program to factor multistate character trees.
-   Originally programmed 29 May 1983 by C. A. Meacham, Botany Department,
+   Originally version 29 May 1983 by C. A. Meacham, Botany Department,
      University of Georgia
    Additional code by Joe Felsenstein, 1988-1991
    C version code by Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
-#define nmlngth         10   /* Length of species name                       */
 #define maxstates       20   /* Maximum number of states in multi chars      */
 #define maxoutput       80   /* Maximum length of output line                */
 #define sizearray       5000 /* Size of symbarray; must be >= the sum of     */
@@ -19,140 +18,97 @@
 #define factchar        ':'  /* character to indicate state connections      */
 #define unkchar         '?'  /* input character to indicate state unknown    */
 
-#define ibmpc0          false /* true if terminal is an IBM PC screen        */
-#define ansi0           true  /* true if terminal is an ANSI terminal        */
-#define vt520           false /* true if terminal is a VT52  terminal        */
-
-typedef struct node {     /* Node of multifurcating tree */
-  struct node *ancstr, *sibling, *descendant;
+typedef struct statenode {     /* Node of multifurcating tree */
+  struct statenode *ancstr, *sibling, *descendant;
   Char state;             /* Symbol of character state   */
-  short edge;             /* Number of subtending edge   */
-} node;
+  long edge;             /* Number of subtending edge   */
+} statenode;
 
-Static FILE *infile, *outfile;
-Static short neus, nchars, charindex, lastindex;
-Static Char ch;
-Static boolean ancstrrequest, factorrequest, rooted,  ibmpc, vt52,
-	       ansi, progress;
-Static Char symbarray[sizearray];
+#ifndef OLDC
+/* function prototypes */
+void   getoptions(void);
+void   nextch(Char *ch);
+void   readtree(void);
+void   attachnodes(statenode *, Char *);
+void   maketree(statenode *, Char *);
+void   construct(void);
+void   numberedges(statenode *, long *);
+void   factortree(void);
+void   dotrees(void);
+void   writech(Char ch, long *);
+void   writefactors(long *);
+void   writeancestor(long *);
+void   doeu(long *, long);
+void   dodatamatrix(void);
+/* function prototypes */
+#endif
+
+
+Char infilename[FNMLNGTH], outfilename[FNMLNGTH];
+long neus, nchars, charindex, lastindex;
+Char ch;
+boolean ancstrrequest, factorrequest, rooted, progress;
+Char symbarray[sizearray];
  /* Holds multi symbols and their factored equivs        */
-Static short *charnum;     /* Multis           */
-Static short *chstart;     /* Position of each */
-Static short *numstates;   /* Number of states */
-Static Char  *ancsymbol;   /* Ancestral state  */
+long *charnum;     /* Multis           */
+long *chstart;     /* Position of each */
+long *numstates;   /* Number of states */
+Char  *ancsymbol;   /* Ancestral state  */
 
 /*  local variables for dotrees, propagated to global level. */
-  short npairs, offset, charnumber, nstates;
-  node *root;
+  long npairs, offset, charnumber, nstates;
+  statenode *root;
   Char pair[maxstates][2];
-  node *nodes[maxstates];
+  statenode *nodes[maxstates];
 
-
-openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
-{
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-        printf("%s:  can't read %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      case 'w':
-      case 'a':
-        printf("%s: can't write %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      }
-    }
-  }
-  *fp=of;
-  if (perm != NULL)
-    strcpy(perm,file);
-}
-
-void uppercase(ch)
-Char *ch;
-{  /* convert a character to upper case -- either ASCII or EBCDIC */
-   *ch = (islower(*ch) ?  toupper(*ch) : (*ch));
-}  /* uppercase */
 
 void getoptions()
 {
   /* interactively set options */
   Char ch;
-  boolean done;
 
-  ibmpc = ibmpc0;
-  vt52 = vt520;
-  ansi = ansi0;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
   progress = true;
   factorrequest = false;
   ancstrrequest = false;
   putchar('\n');
   for (;;){
-    printf(ansi ? "\033[2J\033[H" :
-	   vt52 ? "\033E\033H"    : "\n");
+    printf(ansi ? "\033[2J\033[H" : "\n");
     printf("\nFactor -- multistate to binary recoding program, version %s\n\n"
-	   ,VERSION);
+           ,VERSION);
     printf("Settings for this run:\n");
     printf("  A      put ancestral states in output file?  %s\n",
-	   ancstrrequest ? "Yes" : "No");
+           ancstrrequest ? "Yes" : "No");
     printf("  F   put factors information in output file?  %s\n",
-	   factorrequest ? "Yes" : "No");
-    printf("  0       Terminal type (IBM PC, VT52, ANSI)?  %s\n",
-	   ibmpc ? "IBM PC" :
-	   ansi  ? "ANSI"   :
-	   vt52  ? "VT52"   : "(none)");
+           factorrequest ? "Yes" : "No");
+    printf("  0       Terminal type (IBM PC, ANSI, none)?  %s\n",
+           ibmpc ? "IBM PC" : ansi  ? "ANSI" : "(none)");
     printf("  1      Print indications of progress of run  %s\n",
-	   (progress ? "Yes" : "No"));
+           (progress ? "Yes" : "No"));
     printf("\nAre these settings correct? (type Y or the letter for one to change)\n");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
     uppercase(&ch);
     if (ch == 'Y')
       break;
-    if (ch == 'A' || ch == 'F' || ch == '0' || ch == '1') {
+    if (strchr("AF01", ch) != NULL) {
       switch (ch) {
-	
+        
       case 'A':
-	ancstrrequest = !ancstrrequest;
-	break;
-	
+        ancstrrequest = !ancstrrequest;
+        break;
+        
       case 'F':
-	factorrequest = !factorrequest;
-	break;
-	
+        factorrequest = !factorrequest;
+        break;
+        
       case '0':
-	if (ibmpc) {
-	  ibmpc = false;
-	  vt52 = true;
-	} else {
-	  if (vt52) {
-	    vt52 = false;
-	    ansi = true;
-	  } else if (ansi)
-	    ansi = false;
-	  else
-	    ibmpc = true;
-	}
-	break;
+        initterminal(&ibmpc, &ansi);
+        break;
 
       case '1':
         progress = !progress;
@@ -163,13 +119,14 @@ void getoptions()
   }
 }  /* getoptions */
 
-void nextch(ch)
-Char *ch;
+
+void nextch(Char *ch)
 {
   *ch = ' ';
   while (*ch == ' ' && !eoln(infile))
-    *ch = getc(infile);
+    *ch = gettc(infile);
 }  /* nextch */
+
 
 void readtree()
 {
@@ -185,83 +142,80 @@ void readtree()
     pair[npairs - 1][0] = ch;
     nextch(&ch);
     if (eoln(infile) || (ch != factchar)) {
-      printf("CHARACTER%4hd:  ERROR IN CHARACTER STATE TREE FORMAT\n",
-	     charnumber);
-      exit(-1);}
+      printf("\n\nERROR: Character %ld:  bad character state tree format\n\n",
+             charnumber);
+      exxit(-1);}
 
     nextch(&pair[npairs - 1][1]);
     if (eoln(infile) && pair[npairs - 1][1] == ' '){
-      printf("CHARACTER%4hd:  ERROR IN CHARACTER STATE TREE FORMAT\n",
-	     charnumber);
-      exit(-1);}
+      printf("\n\nERROR: Character %ld:  bad character state tree format\n\n",
+             charnumber);
+      exxit(-1);}
   }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-
+  scan_eoln(infile);
 }  /* readtree */
 
-void attachnodes(poynter,otherone)
-node *poynter;
-Char *otherone;
+
+void attachnodes(statenode *poynter, Char *otherone)
 {
   /* Makes linked list of all nodes to which passed node is
      ancestral.  First such node is 'descendant'; second
      such node is 'sibling' of first; third such node is
      sibling of second; etc.  */
-  node *linker, *ptr;
-  short i, j, k;
+  statenode *linker, *ptr;
+  long i, j, k;
 
   linker = poynter;
   for (i = 0; i < (npairs); i++) {
     for (j = 1; j <= 2; j++) {
       if (poynter->state == pair[i][j - 1]) {
-	if (j == 1)
-	  *otherone = pair[i][1];
-	else
-	  *otherone = pair[i][0];
-	if (*otherone != '.' && *otherone != poynter->ancstr->state) {
-	  k = offset + 1;
-	  while (*otherone != symbarray[k - 1])
-	    k++;
-	  if (nodes[k - offset - 1] != NULL)
-	    exit(-1);
-	  ptr = (node *)Malloc(sizeof(node));
-	  ptr->ancstr = poynter;
-	  ptr->descendant = NULL;
-	  ptr->sibling = NULL;
-	  ptr->state = *otherone;
-	  if (linker == poynter)   /* If not first */
-	    poynter->descendant = ptr;   /* If first */
-	  else
-	    linker->sibling = ptr;
-	  nodes[k - offset - 1] = ptr;
-	      /* Save pntr to node */
-	  linker = ptr;
-	}
+            if (j == 1)
+              *otherone = pair[i][1];
+            else
+              *otherone = pair[i][0];
+            if (*otherone != '.' && *otherone != poynter->ancstr->state) {
+              k = offset + 1;
+              while (*otherone != symbarray[k - 1])
+                k++;
+              if (nodes[k - offset - 1] != NULL)
+                exxit(-1);
+              ptr = (statenode *)Malloc(sizeof(statenode));
+              ptr->ancstr = poynter;
+              ptr->descendant = NULL;
+              ptr->sibling = NULL;
+              ptr->state = *otherone;
+              if (linker == poynter)   /* If not first */
+                poynter->descendant = ptr;   /* If first */
+              else
+                linker->sibling = ptr;
+              nodes[k - offset - 1] = ptr;
+              /* Save pntr to node */
+              linker = ptr;
+            }
       }
     }
   }
 }  /* attachnodes */
 
-void maketree(poynter, otherone)
-node *poynter;
-Char *otherone;
+
+void maketree(statenode *poynter, Char *otherone)
 {
   /* Recursively attach nodes */
-  if (poynter == NULL )
+  if (poynter == NULL)
     return;
   attachnodes(poynter, otherone);
   maketree(poynter->descendant, otherone);
   maketree(poynter->sibling, otherone);
 }  /* maketree */
 
+
 void construct()
 {
   /* Puts tree together from array 'pairs' */
   Char rootstate;
-  short i, j, k;
+  long i, j, k;
   boolean done;
-  node *poynter;
+  statenode *poynter;
   char otherone;
 
   rooted = false;
@@ -273,38 +227,38 @@ void construct()
       k = 1;
       done = false;
       while (!done) {
-	if (k > nstates) {
-	  done = true;
-	  break;
-	}
-	if (pair[i][j - 1] == symbarray[offset + k - 1])
-	  done = true;
-	else
-	  k++;
+        if (k > nstates) {
+          done = true;
+          break;
+        }
+        if (pair[i][j - 1] == symbarray[offset + k - 1])
+          done = true;
+        else
+          k++;
       }
       if (k > nstates) {
-	if (pair[i][j - 1] == '.') {
-	  if (rooted)
-	    exit(-1);
-	  rooted = true;
-	  ancsymbol[charindex - 1] = '0';
-	  if (j == 1)
-	    rootstate = pair[i][1];
-	  else
-	    rootstate = pair[i][0];
-	} else {
-	  nstates++;
-	  symbarray[offset + nstates - 1] = pair[i][j - 1];
-	}
+        if (pair[i][j - 1] == '.') {
+          if (rooted)
+            exxit(-1);
+          rooted = true;
+          ancsymbol[charindex - 1] = '0';
+          if (j == 1)
+            rootstate = pair[i][1];
+          else
+            rootstate = pair[i][0];
+        } else {
+          nstates++;
+          symbarray[offset + nstates - 1] = pair[i][j - 1];
+        }
       }
     }
   }
   if ((rooted && nstates != npairs) ||
       (!rooted && nstates != npairs + 1))
-    exit(-1);
-  root = (node *)Malloc(sizeof(node));
+    exxit(-1);
+  root = (statenode *)Malloc(sizeof(statenode));
   root->state = ' ';
-  root->descendant = (node *)Malloc(sizeof(node));
+  root->descendant = (statenode *)Malloc(sizeof(statenode));
   root->descendant->ancstr = root;
   root = root->descendant;
   root->descendant = NULL;
@@ -320,26 +274,26 @@ void construct()
   for (i = 0; i < (nstates); i++) {
     if (nodes[i] != root) {
       if (nodes[i] == NULL){
-	printf("CHARACTER%4hd:  INVALID CHARACTER STATE TREE DESCRIPTION\n",
-	       charnumber);
-	exit(-1);}
+        printf(
+        "\n\nERROR: Character %ld: invalid character state tree description\n",
+               charnumber);
+        exxit(-1);}
       else {
-	poynter = nodes[i]->ancstr;
-	while (poynter != root && poynter != nodes[i])
-	  poynter = poynter->ancstr;
-	if (poynter != root){
-	  printf("CHARACTER%4hd:  INVALID CHARACTER STATE TREE DESCRIPTION\n",
-		 charnumber);
-	  exit(-1);}
+        poynter = nodes[i]->ancstr;
+        while (poynter != root && poynter != nodes[i])
+          poynter = poynter->ancstr;
+        if (poynter != root){
+          printf(
+          "ERROR: Character %ld: invalid character state tree description\n\n",
+                 charnumber);
+          exxit(-1);}
       }
     }
   }
 }  /* construct */
 
 
-void numberedges(poynter,edgenum)
-node *poynter;
-short *edgenum;
+void numberedges(statenode *poynter, long *edgenum)
 {
   /* Assign to each node a number for the edge below it.
      The root is zero */
@@ -351,13 +305,14 @@ short *edgenum;
   numberedges(poynter->sibling, edgenum);
 }  /* numberedges */
 
+
 void factortree()
 {
   /* Generate the string of 0's and 1's that will be
      substituted for each symbol of the multistate char. */
-  short i, j, place, factoroffset;
-  node *poynter;
-  short edgenum=0;
+  long i, j, place, factoroffset;
+  statenode *poynter;
+  long edgenum=0;
 
   numberedges(root, &edgenum);
   factoroffset = offset + nstates;
@@ -377,17 +332,18 @@ void factortree()
 void dotrees()
 {
   /* Process character-state trees */
-  short lastchar;
+  long lastchar;
 
   charindex = 0;
   lastchar = 0;
   offset = 0;
   charnumber = 0;
-  fscanf(infile, "%hd", &charnumber);
+  fscanf(infile, "%ld", &charnumber);
   while (charnumber < 999) {
     if (charnumber < lastchar) {
-      printf("CHARACTER%4hd:  OUT OF ORDER", charnumber);
-      exit(-1);
+      printf("\n\nERROR: Character state tree");
+      printf(" for character %ld: out of order\n\n", charnumber);
+      exxit(-1);
     }
     charindex++;
     lastindex = charindex;
@@ -404,20 +360,15 @@ void dotrees()
     chstart[charindex - 1] = offset;
     numstates[charindex - 1] = nstates;
     offset += nstates * nstates;
-    fscanf(infile, "%hd", &charnumber);
+    fscanf(infile, "%ld", &charnumber);
   }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-
+  scan_eoln(infile);
   /*    each multistate character */
   /*    symbol  */
 }  /* dotrees */
 
 
-
-void writech(ch, chposition)
-Char ch;
-short *chposition;
+void writech(Char ch, long *chposition)
 {
   /* Writes a single character to output */
   if (*chposition > maxoutput) {
@@ -428,11 +379,11 @@ short *chposition;
   (*chposition)++;
 }  /* writech */
 
-Local Void writefactors(chposition)
-short *chposition;
+
+void writefactors(long *chposition)
 {  /* Writes 'FACTORS' line */
 
-  short i, charindex;
+  long i, charindex;
   Char symbol;
 
   fprintf(outfile, "FACTORS   ");
@@ -444,20 +395,20 @@ short *chposition;
     else
       symbol = '-';
     if (numstates[charindex] == 0)
-      writech(symbol,chposition);
+      writech(symbol, chposition);
     else {
       for (i = 1; i < (numstates[charindex]); i++)
-	writech(symbol, chposition);
+        writech(symbol, chposition);
     }
   }
   putc('\n', outfile);
 }  /* writefactors */
 
-void writeancestor(chposition)
-short *chposition;
+
+void writeancestor(long *chposition)
 {
   /* Writes 'ANCESTOR' line */
-  short i, charindex;
+  long i, charindex;
 
   charindex = 1;
   while (ancsymbol[charindex - 1] == '?')
@@ -471,62 +422,68 @@ short *chposition;
       writech(ancsymbol[charindex], chposition);
     else {
       for (i = 1; i < (numstates[charindex]); i++)
-	writech(ancsymbol[charindex], chposition);
+        writech(ancsymbol[charindex], chposition);
     }
   }
   putc('\n', outfile);
 }  /* writeancestor */
 
-void doeu(chposition,eu)
-short *chposition,eu;
+
+void doeu(long *chposition, long eu)
 {
   /* Writes factored data for a single species  */
-  short i, charindex, place;
+  long i, charindex, place;
   Char *multichar;
 
   for (i = 1; i <= nmlngth; i++) {
-    ch = getc(infile);
+    ch = gettc(infile);
     putc(ch, outfile);
+    if ((ch == '(') || (ch == ')') || (ch == ':')
+        || (ch == ',') || (ch == ';') || (ch == '[')
+        || (ch == ']')) {
+      printf(
+        "\n\nERROR: Species name may not contain characters ( ) : ; , [ ] \n");
+      printf("       In name of species number %ld there is character %c\n\n",
+              i+1, ch);
+      exxit(-1);
+    }
   }
   multichar = (Char *)Malloc(nchars*sizeof(Char));
   *chposition = 11;
   for (i = 0; i < (nchars); i++) {
     do {
-      if (eoln(infile)) {
-	fscanf(infile, "%*[^\n]");
-	getc(infile);
-      }
-      ch = getc(infile);
+      if (eoln(infile))
+        scan_eoln(infile);
+      ch = gettc(infile);
     } while (ch == ' ');
     multichar[i] = ch;
   }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
+  scan_eoln(infile);
   for (charindex = 0; charindex < (lastindex); charindex++) {
     if (numstates[charindex] == 0)
       writech(multichar[charnum[charindex] - 1], chposition);
     else {
       i = 1;
       while (symbarray[chstart[charindex] + i - 1] !=
-	     multichar[charnum[charindex] - 1] && i <= numstates[charindex])
-	i++;
+             multichar[charnum[charindex] - 1] && i <= numstates[charindex])
+        i++;
       if (i > numstates[charindex]) {
-	if( multichar[charnum[charindex] - 1] == unkchar){
-	  for (i = 1; i < (numstates[charindex]); i++)
-	    writech('?', chposition);
-	} else {
-	  putc('\n', outfile);
-	  printf("IN SPECIES %3hd, MULTISTATE CHARACTER%4hd:  ",
-		 eu,charnum[charindex]);
-	  printf("'%c' IS NOT A DOCUMENTED STATE\n",
-		 multichar[charnum[charindex] - 1]);
-	  exit(-1);
-	}
+        if( multichar[charnum[charindex] - 1] == unkchar){
+          for (i = 1; i < (numstates[charindex]); i++)
+            writech('?', chposition);
+        } else {
+          putc('\n', outfile);
+          printf("\n\nERROR: In species %ld, multistate character %ld:  ",
+                 eu, charnum[charindex]);
+          printf("'%c' is not a documented state\n\n",
+                 multichar[charnum[charindex] - 1]);
+          exxit(-1);
+        }
       } else {
-	place = chstart[charindex] + numstates[charindex] +
-		(numstates[charindex] - 1) * (i - 1);
-	for (i = 0; i <= (numstates[charindex] - 2); i++)
-	  writech(symbarray[place + i], chposition);
+        place = chstart[charindex] + numstates[charindex] +
+                (numstates[charindex] - 1) * (i - 1);
+        for (i = 0; i <= (numstates[charindex] - 2); i++)
+          writech(symbarray[place + i], chposition);
       }
     }
   }
@@ -538,7 +495,8 @@ short *chposition,eu;
 void dodatamatrix()
 {
   /* Reads species information and write factored data set */
-  short charindex, totalfactors,eu,chposition;
+  long charindex, totalfactors, eu, chposition;
+
   totalfactors = 0;
   for (charindex = 0; charindex < (lastindex); charindex++) {
     if (numstates[charindex] == 0)
@@ -547,13 +505,9 @@ void dodatamatrix()
       totalfactors += numstates[charindex] - 1;
   }
   if (rooted && ancstrrequest)
-    fprintf(outfile, "%5hd %5hd    A", neus + 1, totalfactors);
+    fprintf(outfile, "%5ld %4ld    A\n", neus + 1, totalfactors);
   else
-    fprintf(outfile, "%5hd %5hd", neus, totalfactors);
-  if (factorrequest)
-    fprintf(outfile, " F\n");
-  else
-    fprintf(outfile, "\n");
+    fprintf(outfile, "%5ld %4ld\n", neus, totalfactors);
   if (factorrequest)
     writefactors(&chposition);
   if (ancstrrequest)
@@ -561,31 +515,29 @@ void dodatamatrix()
   eu = 1;
   while (eu <= neus) {
     eu++;
-    doeu(&chposition,eu);
+    doeu(&chposition, eu);
   }
   if (progress)
-    printf("\nData matrix written on output file\n\n");
+    printf("\nData matrix written on file \"%s\"\n\n", outfilename);
 }  /* dodatamatrix */
 
 
-main(argc, argv)
-int argc;
-Char *argv[];
+int main(int argc, Char *argv[])
 {
-char infilename[100],outfilename[100];
 #ifdef MAC
-  macsetup("Factor","");
+  argc = 1;                /* macsetup("Factor","");        */
   argv[0] = "Factor";
 #endif
-  openfile(&infile,INFILE,"r",argv[0],infilename);
-  openfile(&outfile,OUTFILE,"w",argv[0],outfilename);
+  init(argc,argv);
+  openfile(&infile,INFILE,"input file", "r",argv[0],infilename);
+  openfile(&outfile,OUTFILE,"output file", "w",argv[0],outfilename);
 
   getoptions();
-  fscanf(infile, "%hd%hd%*[^\n]", &neus, &nchars);
-  getc(infile);
-  charnum = (short *)Malloc(nchars*sizeof(short));
-  chstart = (short *)Malloc(nchars*sizeof(short));
-  numstates = (short *)Malloc(nchars*sizeof(short));
+  fscanf(infile, "%ld%ld%*[^\n]", &neus, &nchars);
+  gettc(infile);
+  charnum = (long *)Malloc(nchars*sizeof(long));
+  chstart = (long *)Malloc(nchars*sizeof(long));
+  numstates = (long *)Malloc(nchars*sizeof(long));
   ancsymbol = (Char *)Malloc(nchars*sizeof(Char));
   dotrees();   /* Read and factor character-state trees */
   dodatamatrix();
@@ -594,53 +546,9 @@ char infilename[100],outfilename[100];
 #ifdef MAC
   fixmacfile(outfilename);
 #endif
-  exit(0);
+  printf("Done.\n\n");
+#ifdef WIN32
+  phyRestoreConsoleAttributes();
+#endif
+  return 0;
 }  /* factor */
-
-
-int eof(f)
-FILE *f;
-{
-    register int ch;
-
-    if (feof(f))
-	return 1;
-    if (f == stdin)
-	return 0;
-    ch = getc(f);
-    if (ch == EOF)
-	return 1;
-    ungetc(ch, f);
-    return 0;
-}
-
-
-int eoln(f)
-FILE *f;
-{
-    register int ch;
-
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-MALLOCRETURN *mymalloc(x)
-long x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)malloc(x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
-

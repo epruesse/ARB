@@ -1,181 +1,180 @@
-#include "phylip.h"
 
-/* version 3.56c. (c) Copyright 1993 by Joseph Felsenstein.
-   Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
+#include "phylip.h"
+#include "seq.h"
+
+/* version 3.6. (c) Copyright 1993-2002 by the University of Washington.
+   Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, Andrew Keeffe,
+   Dan Fineman, and Patrick Colacurcio.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
-#define maxcategs       9
-#define maxtrees        10   /* maximum number of user trees for test        */
-#define smoothings      7    /* number of passes through smoothing algorithm */
-#define iterations      9    /* number of iterates for each branch           */
-#define nmlngth         10   /* max. number of characters in species name    */
-
-#define epsilon         0.0001   /* used in getthree, makenewv */
-
-#define ibmpc0          false
-#define ansi0           true
-#define vt520           false
-#define down            2
-#define over            60
-#define point           "."
-
-
-typedef enum {  A, C, G, T} base;
-typedef double sitelike[(short)T - (short)A + 1];
-typedef sitelike *ratelike;
-typedef ratelike *phenotype;
-typedef Char **sequence;
-typedef double contribarr[maxcategs];
-typedef Char naym[nmlngth];
-typedef short longer[6];
-
-typedef struct node {
-  struct node *next, *back;
-  boolean tip, iter;
-  short number;
-  phenotype x;
-  naym nayme;
-  double v;
-  short xcoord, ycoord, ymin, ymax;
-} node;
-
-typedef struct tree {
-  node **nodep;
-  double likelihood;
-  node *start;
-} tree;
-
-typedef double *lf[maxtrees];
-
 typedef struct valrec {
-  double rat, ratxi, ratxv, zz, z1, y1, ww1, zz1, ww2, zz2, z1zz, z1yy, xiz1,
-	 xiy1xv, ww1zz1, vv1zz1, ww2zz2, vv2zz2;
+  double rat, ratxi, ratxv, orig_zz, z1, y1, z1zz, z1yy, xiz1, xiy1xv;
+  double *ww, *zz, *wwzz, *vvzz; 
 } valrec;
 
-extern short categs,endsite,sites,numsp,numsp2,jumb,lengths,njumble,weightsum,
-            outgrno;
-extern double *probcat;
-extern double *rate;
-extern contribarr *contribution;
-extern short   *category,*weight,*alias,*ally,*location,*aliasweight;
-extern double xi,xv,ttratio,freqa,freqc,freqg,freqt,freqr,freqy,freqar,
-              freqcy,freqgr,freqty,lambda,fracchange;
-extern short   *enterorder;
-extern boolean auto_,usertree,global,progress,treeprint,outgropt,trout,
-               ctgry,jumble,lngths;
-extern lf l0gf;
-extern tree curtree,bestree,bestree2;
-extern FILE *infile, *outfile, *treefile;
-extern longer seed;
+typedef long vall[maxcategs];
+typedef double contribarr[maxcategs];
 
-boolean lngths;
-double *rate,*probcat;
-FILE *infile, *outfile, *treefile;
-short numsp, numsp1, numsp2, sites, endsite, weightsum, categs, inseed,
-	    outgrno, datasets, ith, i, j, l, jumb, njumble=0;
-boolean  freqsfrom, global, jumble,  outgropt, weights,
-	       trout, usertree, ctgry, auto_, ttr, printdata, progress,
-	       treeprint, mulsets, firstset, interleaved, ibmpc, vt52, ansi;
-tree curtree, bestree, bestree2;
+#ifndef OLDC
+/* function prototypes */
+void   dnamlcopy(tree *, tree *, long, long);
+void   getoptions(void);
+void   allocrest(void);
+void   doinit(void);
+void   inputoptions(void);
+void   makeweights(void);
+void   getinput(void);
+void   inittable_for_usertree(FILE *);
+void   inittable(void);
+double evaluate(node *, boolean);
+
+void   alloc_nvd (long, nuview_data *);
+void   free_nvd (nuview_data *);
+void   nuview(node *);
+void   slopecurv(node *, double, double *, double *, double *);
+void   makenewv(node *);
+void   update(node *);
+void   smooth(node *);
+void   insert_(node *, node *, boolean);
+void   dnaml_re_move(node **, node **);
+void   buildnewtip(long, tree *);
+
+void   buildsimpletree(tree *);
+void   addtraverse(node *, node *, boolean);
+void   rearrange(node *, node *);
+void   initdnamlnode(node **, node **, node *, long, long, long *, long *,
+                 initops, pointarray, pointarray, Char *, Char *, FILE *);
+void   dnaml_coordinates(node *, double, long *, double *);
+void   dnaml_printree(void);
+void   sigma(node *, double *, double *, double *);
+void   describe(node *);
+void   reconstr(node *, long);
+void   rectrav(node *, long, long);
+void   summarize(void);
+void   dnaml_treeout(node *);
+void   inittravtree(node *);
+void   treevaluate(void);
+void   maketree(void);
+void   clean_up(void);
+void   reallocsites(void);
+/* function prototypes */
+#endif
+
+
+extern sequence y;
+
+double fracchange;
+long rcategs;
+boolean haslengths;
+
+Char infilename[FNMLNGTH], outfilename[FNMLNGTH], intreename[FNMLNGTH], outtreename[FNMLNGTH],
+     catfilename[FNMLNGTH], weightfilename[FNMLNGTH];
+double *rate, *rrate, *probcat;
+long nonodes2, sites, weightsum, categs, datasets, ith, njumble, jumb;
+long parens;
+boolean  freqsfrom, global, jumble, weights, trout, usertree, reconsider,
+  ctgry, rctgry, auto_, hypstate, ttr, progress, mulsets, justwts,
+  firstset, improve, smoothit, polishing, lngths, gama, invar;
+tree curtree, bestree, bestree2, priortree;
+node *qwhere, *grbg;
 double xi, xv, ttratio, ttratio0, freqa, freqc, freqg, freqt, freqr,
-	      freqy, freqar, freqcy, freqgr, freqty, fracchange, sumrates,
-	      lambda;
+  freqy, freqar, freqcy, freqgr, freqty, 
+  cv, alpha, lambda, invarfrac, bestyet;
+long *enterorder, inseed, inseed0;
+steptr aliasweight;
+contribarr *contribution, like, nulike, clai;
+double **term, **slopeterm, **curveterm;
 longer seed;
-short *enterorder;
-sequence y;
-short *category, *weight, *alias, *ally, *location, *aliasweight;
+Char* progname;
+char basechar[16]="acmgrsvtwyhkdbn";
 
-contribarr *contribution;
-lf l0gf;
+/* Local variables for maketree, propagated globally for c version: */
+long k, nextsp, numtrees, maxwhich, mx, mx0, mx1;
+double dummy, maxlogl;
+boolean succeeded, smoothed;
+double **l0gf;
+double *l0gl;
+valrec ***tbl;
+Char ch, ch2;
+long col;
+vall *mp=NULL;
 
-openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
+
+void dnamlcopy(tree *a, tree *b, long nonodes, long categs)
 {
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-        printf("%s:  can't read %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);
-          }
-        break;
-      case 'w':
-        printf("%s: can't write %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);
-          }
-        break;
+  /* used in dnaml & dnamlk */
+  long i, j;
+  node *p, *q;
+
+  for (i = 0; i < spp; i++) {
+    copynode(a->nodep[i], b->nodep[i], categs);
+    if (a->nodep[i]->back) {
+      if (a->nodep[i]->back == a->nodep[a->nodep[i]->back->index - 1])
+        b->nodep[i]->back = b->nodep[a->nodep[i]->back->index - 1];
+      else if (a->nodep[i]->back == a->nodep[a->nodep[i]->back->index - 1]->next)
+        b->nodep[i]->back = b->nodep[a->nodep[i]->back->index - 1]->next;
+      else
+        b->nodep[i]->back = b->nodep[a->nodep[i]->back->index - 1]->next->next;
+    }
+    else b->nodep[i]->back = NULL;
+  }
+  for (i = spp; i < nonodes; i++) {
+    p = a->nodep[i];
+    q = b->nodep[i];
+    for (j = 1; j <= 3; j++) {
+      copynode(p, q, categs);
+      if (p->back) {
+        if (p->back == a->nodep[p->back->index - 1])
+          q->back = b->nodep[p->back->index - 1];
+        else if (p->back == a->nodep[p->back->index - 1]->next)
+          q->back = b->nodep[p->back->index - 1]->next;
+        else
+          q->back = b->nodep[p->back->index - 1]->next->next;
       }
+      else
+        q->back = NULL;
+      p = p->next;
+      q = q->next;
     }
   }
-  *fp=of;
-  if (perm != NULL)
-    strcpy(perm,file);
-}
+  b->likelihood = a->likelihood;
+  b->start = a->start;               /* start used in dnaml only */
+  b->root = a->root;                 /* root used in dnamlk only */
+}  /* dnamlcopy plc*/
 
-
-
-
-void uppercase(ch)
-Char *ch;
-{
-  /* convert ch to upper case -- either ASCII or EBCDIC */
-   *ch = isupper(*ch) ? *ch : toupper(*ch);
-}  /* uppercase */
-
-Local Void getnums()
-{
-  /* input number of species, number of sites */
-  fprintf(outfile, "\n\n");
-  fscanf(infile, "%hd%hd", &numsp, &sites);
-  if (printdata)
-    fprintf(outfile, "%4hd Species, %4hd Sites\n", numsp, sites);
-  numsp1 = numsp + 1;
-  numsp2 = numsp * 2 - 2;
-}  /* getnums */
 
 void getoptions()
 {
   /* interactively set options */
-  short i, j, inseed0;
+  long i, loopcount, loopcount2;
   Char ch;
-  char line[256];
-  char rest[256];
-  int scanned;
-  boolean done1, done2, didchangecat;
+  boolean didchangecat, didchangercat;
   double probsum;
 
   fprintf(outfile, "\nNucleic acid sequence Maximum Likelihood");
   fprintf(outfile, " method, version %s\n\n",VERSION);
   putchar('\n');
-  auto_ = false;
   ctgry = false;
   didchangecat = false;
+  rctgry = false;
+  didchangercat = false;
   categs = 1;
+  rcategs = 1;
+  auto_ = false;
   freqsfrom = true;
+  gama = false;
   global = false;
+  hypstate = false;
+  improve = false;
+  invar = false;
   jumble = false;
   njumble = 1;
   lngths = false;
   lambda = 1.0;
   outgrno = 1;
   outgropt = false;
+  reconsider = false;
   trout = true;
   ttratio = 2.0;
   ttr = false;
@@ -185,65 +184,90 @@ void getoptions()
   progress = true;
   treeprint = true;
   interleaved = true;
+  loopcount = 0;
   for (;;){
-    printf((ansi) ? "\033[2J\033[H" :
-	   (vt52) ? "\033E\033H"    : "\n");
-    printf("\nNucleic acid sequence Maximum Likelihood");
+    cleerhome();
+    printf("Nucleic acid sequence Maximum Likelihood");
     printf(" method, version %s\n\n",VERSION);
     printf("Settings for this run:\n");
     printf("  U                 Search for best tree?  %s\n",
-	   (usertree ? "No, use user trees in input file" : "Yes"));
+           (usertree ? "No, use user trees in input file" : "Yes"));
     if (usertree) {
       printf("  L          Use lengths from user trees?  %s\n",
-	     (lngths ? "Yes" : "No"));
+               (lngths ? "Yes" : "No"));
     }
     printf("  T        Transition/transversion ratio:%8.4f\n",
-	   (ttr ? ttratio : 2.0));
+           (ttr ? ttratio : 2.0));
     printf("  F       Use empirical base frequencies?  %s\n",
-	   (freqsfrom ? "Yes" : "No"));
-    printf("  C   One category of substitution rates?");
+           (freqsfrom ? "Yes" : "No"));
+    printf("  C                One category of sites?");
     if (!ctgry || categs == 1)
       printf("  Yes\n");
+    else
+      printf("  %ld categories of sites\n", categs);
+    printf("  R           Rate variation among sites?");
+    if (!rctgry)
+      printf("  constant rate\n");
     else {
-      printf("  %hd categories\n", categs);
-      printf("  R   Rates at adjacent sites correlated?");
+      if (gama)
+        printf("  Gamma distributed rates\n");
+      else {
+        if (invar)
+          printf("  Gamma+Invariant sites\n");
+        else
+          printf("  user-defined HMM of rates\n");
+      }
+      printf("  A   Rates at adjacent sites correlated?");
       if (!auto_)
-	printf("  No, they are independent\n");
+        printf("  No, they are independent\n");
       else
-	printf("  Yes, mean block length =%6.1f\n", 1.0 / lambda);
+        printf("  Yes, mean block length =%6.1f\n", 1.0 / lambda);
+    }
+    printf("  W                       Sites weighted?  %s\n",
+           (weights ? "Yes" : "No"));
+    if ((!usertree) || reconsider) {
+      printf("  S        Speedier but rougher analysis?  %s\n",
+             (improve ? "No, not rough" : "Yes"));
+      printf("  G                Global rearrangements?  %s\n",
+             (global ? "Yes" : "No"));
     }
     if (!usertree) {
-      printf("  G                Global rearrangements?  %s\n",
-	     (global ? "Yes" : "No"));
       printf("  J   Randomize input order of sequences?");
       if (jumble)
-        printf("  Yes (seed =%8hd,%3hd times)\n", inseed0, njumble);
+        printf("  Yes (seed =%8ld,%3ld times)\n", inseed0, njumble);
       else
-	printf("  No. Use input order\n");
+        printf("  No. Use input order\n");
     }
-    printf("  O                        Outgroup root?  %s%3hd\n",
-	   (outgropt ? "Yes, at sequence number" :
+    else
+       printf("  V    Rearrange starting with user tree?  %s\n",
+             (reconsider ? "Yes" : "No"));
+    printf("  O                        Outgroup root?  %s%3ld\n",
+           (outgropt ? "Yes, at sequence number" :
                        "No, use as outgroup species"),outgrno);
     printf("  M           Analyze multiple data sets?");
     if (mulsets)
-      printf("  Yes, %2hd sets\n", datasets);
+      printf("  Yes, %2ld %s\n", datasets,
+               (justwts ? "sets of weights" : "data sets"));
     else
       printf("  No\n");
     printf("  I          Input sequences interleaved?  %s\n",
-	   (interleaved ? "Yes" : "No, sequential"));
-    printf("  0   Terminal type (IBM PC, VT52, ANSI)?  %s\n",
-	   (ibmpc ? "IBM PC" :
-	    ansi  ? "ANSI"   :
-            vt52  ? "VT52"   : "(none)"));
+           (interleaved ? "Yes" : "No, sequential"));
+    printf("  0   Terminal type (IBM PC, ANSI, none)?  %s\n",
+           (ibmpc ? "IBM PC" : ansi  ? "ANSI" : "(none)"));
     printf("  1    Print out the data at start of run  %s\n",
-	   (printdata ? "Yes" : "No"));
+           (printdata ? "Yes" : "No"));
     printf("  2  Print indications of progress of run  %s\n",
-	   (progress ? "Yes" : "No"));
+           (progress ? "Yes" : "No"));
     printf("  3                        Print out tree  %s\n",
-	   (treeprint ? "Yes" : "No"));
+           (treeprint ? "Yes" : "No"));
     printf("  4       Write out trees onto tree file?  %s\n",
-	   (trout ? "Yes" : "No"));
-    printf("\nAre these settings correct? (type Y or the letter for one to change)\n");
+           (trout ? "Yes" : "No"));
+    printf("  5   Reconstruct hypothetical sequences?  %s\n",
+           (hypstate ? "Yes" : "No"));
+    printf("\n  Y to accept these or type the letter for one to change\n");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
     if (ch == '\n')
@@ -251,694 +275,314 @@ void getoptions()
     uppercase(&ch);
     if (ch == 'Y')
       break;
-    uppercase(&ch);
-    if (strchr("JOUCRFGLTMI01234",ch) != NULL){
+    if (strchr("ULTFCRAWSGJVOMI012345",ch) != NULL){
       switch (ch) {
+
+      case 'F':
+        freqsfrom = !freqsfrom;
+        if (!freqsfrom) {
+          initfreqs(&freqa, &freqc, &freqg, &freqt);
+        }
+        break;
+        
       case 'C':
-	ctgry = !ctgry;
-	if (!ctgry)
-	  auto_ = false;
-	if (ctgry) {
-	  do {
-	    printf("Number of categories (1 - %ld)?\n",(long)maxcategs);
-	    gets(line);
-	    categs = (short)atoi(line);
-	  } while (categs < 1 || categs > maxcategs);
-          if (probcat){
-            free(probcat);
-	    free(rate);
+        ctgry = !ctgry;
+        if (ctgry) {
+          printf("\nSitewise user-assigned categories:\n\n");
+          initcatn(&categs);
+          if (rate){
+            free(rate);
           }
-          probcat = (double *)Malloc(categs * sizeof(double));
-          rate    = (double *)Malloc(categs * sizeof(double));
+          rate    = (double *) Malloc(categs * sizeof(double));
           didchangecat = true;
-	  for (;;){
-            printf("Rate for each category? (use a space to separate)\n");
-            gets(line);
-            done1 = true;
-            for (i = 0; i < categs; i++){
-              scanned = sscanf(line,"%lf %[^\n]", &rate[i],rest);
-              if ((scanned != 2 && i < (categs - 1)) ||
-                 (scanned != 1 && i == (categs - 1))) {
-                printf("Please enter exactly %hd values.\n",categs);
-                done1 = false;
-	        break;
-              }
-              strcpy(line,rest);
-            }
-	    if (done1)
-	      break;
-	  }
-        probsum = 0.0;
-        for (;;){
-          printf("Probability for each category? (use a space to separate)\n");
-          gets(line);
-          done1 = true;
-          probsum = 0.0;
-          for (i = 0; i < categs; i++){
-            scanned = sscanf(line,"%lf %[^\n]", &probcat[i],rest);
-            if ((scanned != 2 && i < (categs - 1)) ||
-                (scanned != 1 && i == (categs - 1))){
-              printf("Please enter exactly %hd values.\n",categs);
-              done1 = false;
-              break;
-            }
-            strcpy(line,rest);
-            probsum += probcat[i];
-          }
-	  if (!done1)
-	    continue;
-          if (fabs(1.0 - probsum) > 0.001) {
-            done1  = false;
-	    printf("Probabilities must add up to 1.0, plus or minus 0.001.\n");
-	  }
-  	  else
-	    done1 = true;
-  	  if (done1)
-	    break;
+          initcategs(categs, rate);
+        }
+        break;
+
+      case 'R':
+        if (!rctgry) {
+          rctgry = true;
+          gama = true;
+        } else {
+          if (gama) {
+            gama = false;
+            invar = true;
+          } else {
+            if (invar)
+              invar = false;
+            else
+              rctgry = false;
           }
         }
-	break;
-	
-      case 'R':
-	auto_ = !auto_;
-	if (auto_) {
-	  do {
-	    printf(
-		"Mean block length of sites having the same rate (greater than 1)?\n");
-	    scanf("%lf%*[^\n]", &lambda);
-	    getchar();
-	    } while (lambda <= 1.0);
-	  lambda = 1.0 / lambda;
-	}
-	break;
-	
-      case 'F':
-	freqsfrom = !freqsfrom;
-	if (!freqsfrom) {
-	  printf("Base frequencies for A, C, G, T/U (use blanks to separate)?\n");
-	  scanf("%lf%lf%lf%lf%*[^\n]", &freqa, &freqc, &freqg, &freqt);
-	  getchar();
-	}
-	break;
-	
+        break;
+        
+      case 'A':
+        auto_ = !auto_;
+        if (auto_)
+          initlambda(&lambda);
+        break;
+        
+      case 'W':
+        weights = !weights;
+        break;
+
+      case 'S':
+        improve = !improve;
+        break;
+
       case 'G':
-	global = !global;
-	break;
-	
+        global = !global;
+        break;
+        
       case 'J':
-	jumble = !jumble;
-	if (jumble) {
-	  printf("Random number seed (must be odd)?\n");
-	  scanf("%hd%*[^\n]", &inseed);
-	  getchar();
-	  inseed0 = inseed;
-	  for (i = 0; i <= 5; i++)
-	    seed[i] = 0;
-	  i = 0;
-	  do {
-	    seed[i] = inseed & 63;
-	    inseed /= 64;
-	    i++;
-	  } while (inseed != 0);
-	  printf("Number of times to jumble?\n");
-	  scanf("%hd%*[^\n]", &njumble);
-	  getchar();
-	}
-	else njumble = 1;
-	break;
-	
+        jumble = !jumble;
+        if (jumble)
+          initjumble(&inseed, &inseed0, seed, &njumble);
+        else njumble = 1;
+        break;
+        
       case 'L':
-	lngths = !lngths;
-	break;
-	
+        lngths = !lngths;
+        break;
+        
       case 'O':
-	outgropt = !outgropt;
-	if (outgropt) {
-	  for (;;) {
-	    printf("Type number of the outgroup:\n");
-	    scanf("%hd%*[^\n]", &outgrno);
-	    getchar();
-	    if (outgrno >= 1 || outgrno <= numsp)
-	      break;
-	    else {
-	      printf("BAD OUTGROUP NUMBER: %4hd\n", outgrno);
-	      printf("  Must be in range 1 -%2hd\n", numsp);
-	    }
-	  }
-	}
-	break;
-	
+        outgropt = !outgropt;
+        if (outgropt)
+          initoutgroup(&outgrno, spp);
+        break;
+        
       case 'T':
-	ttr = !ttr;
-	if (ttr) {
-	  do {
-	    printf("Transition/transversion ratio?\n");
-	    scanf("%lf%*[^\n]", &ttratio);
-	    getchar();
-	  } while (ttratio < 0.0);
-	}
-	break;
-	
+        ttr = !ttr;
+        if (ttr) {
+          initratio(&ttratio);
+        }
+        break;
+        
       case 'U':
-	usertree = !usertree;
-	break;
-	
+        usertree = !usertree;
+        break;
+
+      case 'V':
+        reconsider = !reconsider;
+        break;
+
       case 'M':
-	mulsets = !mulsets;
-	if (mulsets) {
-	  for(;;) {
-	    printf("How many data sets?\n");
-	    scanf("%hd%*[^\n]", &datasets);
-	    getchar();
-	    if (datasets >= 1)
-	      break;
-	    else
-	      printf("BAD DATA SETS NUMBER:  it must be greater than 1\n");
-	  }
-	}
-	break;
-	
+        mulsets = !mulsets;
+        if (mulsets) {
+          printf("Multiple data sets or multiple weights?");
+          loopcount2 = 0;
+          do {
+            printf(" (type D or W)\n");
+            scanf("%c%*[^\n]", &ch2);
+            getchar();
+            if (ch2 == '\n')
+              ch2 = ' ';
+            uppercase(&ch2);
+            countup(&loopcount2, 10);
+          } while ((ch2 != 'W') && (ch2 != 'D'));
+          justwts = (ch2 == 'W');
+          if (justwts)
+            justweights(&datasets);
+          else
+            initdatasets(&datasets);
+          if (!jumble) {
+            jumble = true;
+            initjumble(&inseed, &inseed0, seed, &njumble);
+          }
+        }
+        break;
+        
       case 'I':
-	interleaved = !interleaved;
-	break;
-	
+        interleaved = !interleaved;
+        break;
+        
       case '0':
-	if (ibmpc) {
-	  ibmpc = false;
-	  vt52 = true;
-	} else {
-	  if (vt52) {
-	    vt52 = false;
-	    ansi = true;
-	  } else if (ansi)
-	    ansi = false;
-	  else
-	    ibmpc = true;
-	}
-	break;
-	
+        initterminal(&ibmpc, &ansi);
+        break;
+        
       case '1':
-	printdata = !printdata;
-	break;
-	
+        printdata = !printdata;
+        break;
+        
       case '2':
-	progress = !progress;
-	break;
-	
+        progress = !progress;
+        break;
+        
       case '3':
-	treeprint = !treeprint;
-	break;
-	
+        treeprint = !treeprint;
+        break;
+        
       case '4':
-	trout = !trout;
-	break;
+        trout = !trout;
+        break;
+
+      case '5':
+        hypstate = !hypstate;
+        break;
       }
     } else
       printf("Not a possible option!\n");
+    countup(&loopcount, 100);
   }
-if (!didchangecat){
-     rate       = Malloc(categs*sizeof(double));
-     probcat    = Malloc(categs*sizeof(double));
-     rate[0]    = 1.0;
-     probcat[0] = 1.0;
-   }
+  if (gama || invar) {
+    loopcount = 0;
+    do {
+      printf(
+"\nCoefficient of variation of substitution rate among sites (must be positive)\n");
+      printf(
+  " In gamma distribution parameters, this is 1/(square root of alpha)\n");
+#ifdef WIN32
+      phyFillScreenColor();
+#endif
+      scanf("%lf%*[^\n]", &cv);
+      getchar();
+      countup(&loopcount, 10);
+    } while (cv <= 0.0);
+    alpha = 1.0 / (cv * cv);
+  }
+  if (!rctgry)
+    auto_ = false;
+  if (rctgry) {
+    printf("\nRates in HMM");
+    if (invar)
+      printf(" (including one for invariant sites)");
+    printf(":\n");
+    initcatn(&rcategs);
+    if (probcat){
+      free(probcat);
+      free(rrate);
+    }
+    probcat = (double *) Malloc(rcategs * sizeof(double));
+    rrate   = (double *) Malloc(rcategs * sizeof(double));
+    didchangercat = true;
+    if (gama)
+      initgammacat(rcategs, alpha, rrate, probcat); 
+    else {
+      if (invar) {
+        loopcount = 0;
+        do {
+          printf("Fraction of invariant sites?\n");
+          scanf("%lf%*[^\n]", &invarfrac);
+          getchar();
+          countup (&loopcount, 10);
+        } while ((invarfrac <= 0.0) || (invarfrac >= 1.0));
+        initgammacat(rcategs-1, alpha, rrate, probcat); 
+        for (i = 0; i < rcategs-1; i++)
+          probcat[i] = probcat[i]*(1.0-invarfrac);
+        probcat[rcategs-1] = invarfrac;
+        rrate[rcategs-1] = 0.0;
+      } else {
+        initcategs(rcategs, rrate);
+        initprobcat(rcategs, &probsum, probcat);
+      }
+    }
+  }
+  if (!didchangercat){
+    rrate      = (double *) Malloc(rcategs*sizeof(double));
+    probcat    = (double *) Malloc(rcategs*sizeof(double));
+    rrate[0]   = 1.0;
+    probcat[0] = 1.0;
+  }
+  if (!didchangecat){
+    rate       = (double *) Malloc(categs*sizeof(double));
+    rate[0]    = 1.0;
+  }
 }  /* getoptions */
 
 
-void doinit()
+void reallocsites(void)
 {
-  /* initializes variables */
-  short i, j;
-  node *p, *q;
+  long i;
 
-  getnums();
+  for (i=0; i < spp; i++) {
+    free(y[i]);
+    y[i] = (Char *) Malloc(sites*sizeof(Char));
+  }
+  free(category);
+  free(weight);
+  free(alias);
+  free(ally);
+  free(location);
+  free(aliasweight);
+
+  category    = (long *) Malloc(sites*sizeof(long));
+  weight      = (long *) Malloc(sites*sizeof(long));
+  alias       = (long *) Malloc(sites*sizeof(long));
+  ally        = (long *) Malloc(sites*sizeof(long));
+  location    = (long *) Malloc(sites*sizeof(long));
+  aliasweight = (long *) Malloc(sites*sizeof(long));
+
+}
+
+void allocrest()
+{
+  long i;
+
+  y = (Char **) Malloc(spp*sizeof(Char *));
+  for (i = 0; i < spp; i++)
+    y[i] = (Char *) Malloc(sites*sizeof(Char));
+  nayme       = (naym *) Malloc(spp*sizeof(naym));;
+  enterorder  = (long *) Malloc(spp*sizeof(long));
+  category    = (long *) Malloc(sites*sizeof(long));
+  weight      = (long *) Malloc(sites*sizeof(long));
+  alias       = (long *) Malloc(sites*sizeof(long));
+  ally        = (long *) Malloc(sites*sizeof(long));
+  location    = (long *) Malloc(sites*sizeof(long));
+  aliasweight = (long *) Malloc(sites*sizeof(long));
+}  /* allocrest */
+
+
+void doinit()
+{ /* initializes variables */
+
+  inputnumbers(&spp, &sites, &nonodes2, 2);
   getoptions();
-  y = (Char **)Malloc(numsp*sizeof(Char *));
-  for (i = 0; i < numsp; i++)
-    y[i] = (Char *)Malloc(sites*sizeof(Char));
-  curtree.nodep = (node **)Malloc(numsp2*sizeof(node *));
-  for (i = 0; i < numsp; i++)
-    curtree.nodep[i] = (node *)Malloc(sizeof(node));
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    q = NULL;
-    for (j = 1; j <= 3; j++) {
-      p = (node *)Malloc(sizeof(node));
-      p->next = q;
-      q = p;
-    }
-    p->next->next->next = p;
-    curtree.nodep[i] = p;
-  }
-  if (usertree)
+  if (printdata)
+    fprintf(outfile, "%2ld species, %3ld  sites\n", spp, sites);
+  alloctree(&curtree.nodep, nonodes2, usertree);
+  allocrest();
+  if (usertree && !reconsider)
     return;
-  bestree.nodep = (node **)Malloc(numsp2*sizeof(node *));
-  for (i = 0; i < numsp; i++)
-    bestree.nodep[i] = (node *)Malloc(sizeof(node));
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    q = NULL;
-    for (j = 1; j <= 3; j++) {
-      p = (node *)Malloc(sizeof(node));
-      p->next = q;
-      q = p;
-    }
-    p->next->next->next = p;
-    bestree.nodep[i] = p;
-  }
+  alloctree(&bestree.nodep, nonodes2, 0);
+  alloctree(&priortree.nodep, nonodes2, 0);
   if (njumble <= 1)
     return;
-  bestree2.nodep = (node **)Malloc(numsp2*sizeof(node *));
-  for (i = 0; i < numsp; i++)
-    bestree2.nodep[i] = (node *)Malloc(sizeof(node));
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    q = NULL;
-    for (j = 1; j <= 3; j++) {
-      p = (node *)Malloc(sizeof(node));
-      p->next = q;
-      q = p;
-    }
-    p->next->next->next = p;
-    bestree2.nodep[i] = p;
-  }
+  alloctree(&bestree2.nodep, nonodes2, 0);
 }  /* doinit */
 
 
-
-void inputweights()
-{
-  /* input the character weights, 0 or 1 */
-  Char ch;
-  short i;
-
-  for (i = 1; i < nmlngth; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-  }
-  weightsum = 0;
-  for (i = 0; i < sites; i++) {
-    do {
-      if (eoln(infile)) {
-	fscanf(infile, "%*[^\n]");
-	getc(infile);
-      }
-      ch = getc(infile);
-      if (ch == '\n')
-	ch = ' ';
-    } while (ch == ' ');
-    weight[i] = 1;
-    if (ch == '0' || ch == '1')
-      weight[i] = ch - '0';
-    else {
-      printf("BAD WEIGHT CHARACTER: %c -- WEIGHTS IN DNAML MUST BE 0 OR 1\n",
-	     ch);
-      exit(-1);
-    }
-    weightsum += weight[i];
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  weights = true;
-}  /* inputweights */
-
-void printweights()
-{
-  /* print out the weights of sites */
-  short i, j;
-
-  fprintf(outfile, "\n   Sites are weighted as follows:\n");
-  for (i = 1; i <= sites; i++) {
-    if ((i - 1) % 60 == 0) {
-      putc('\n', outfile);
-      for (j = 1; j <= nmlngth + 3; j++)
-	putc(' ', outfile);
-    }
-    fprintf(outfile, "%hd", weight[i - 1]);
-    if (i % 10 == 0 && i % 60 != 0)
-      putc(' ', outfile);
-  }
-  fprintf(outfile, "\n\n");
-}  /* printweights */
-
 void inputoptions()
 {
-  Char ch;
-  short i, extranum, cursp, curst;
+  long i;
 
-  if (!firstset) {
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    fscanf(infile, "%hd%hd", &cursp, &curst);
-    if (cursp != numsp) {
-      printf("\nERROR: INCONSISTENT NUMBER OF SPECIES IN DATA SET %4hd\n",
-	     ith);
-      exit(-1);
-    }
-    sites = curst;
+  if (!firstset && !justwts) {
+    samenumsp(&sites, ith);
+    reallocsites();
   }
   for (i = 0; i < sites; i++)
     category[i] = 1;
   for (i = 0; i < sites; i++)
     weight[i] = 1;
-  weightsum = sites;
-  extranum = 0;
-  while (!(eoln(infile))) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-    uppercase(&ch);
-    if (ch == 'C' || ch == 'W')
-      extranum++;
-    else if (ch != ' ') {
-      printf("BAD OPTION CHARACTER: %c\n", ch);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  for (i = 1; i <= extranum; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-    uppercase(&ch);
-    if (ch != 'W'){
-      printf("ERROR: INCORRECT AUXILIARY OPTIONS LINE WHICH STARTS WITH %c\n",
-	     ch);
-      exit(-1);
-      }
-    else
-      inputweights();
-  }
-  if (categs > 1) {
-    fprintf(outfile, "\nSite category   Rate of change    Probability\n\n");
-    for (i = 1; i <= categs; i++)
-      fprintf(outfile, "%12hd%13.3f%17.3f\n", i, rate[i - 1], probcat[i-1]);
-    putc('\n', outfile);
-    if (auto_)
-      fprintf(outfile,
-     "\nExpected length of a patch of sites having the same rate = %8.3f\n",
-             1/lambda);
+  
+  if (justwts || weights)
+    inputweights(sites, weight, &weights);
+  weightsum = 0;
+  for (i = 0; i < sites; i++)
+    weightsum += weight[i];
+  if (ctgry && categs > 1) {
+    inputcategs(0, sites, category, categs, "DnaML");
+    if (printdata)
+      printcategs(outfile, sites, category, "Site categories");
   }
   if (weights && printdata)
-    printweights();
+    printweights(outfile, 0, sites, weight, "Sites");
 }  /* inputoptions */
 
-void getbasefreqs()
-{
-  double aa, bb;
-
-  putc('\n', outfile);
-  if (freqsfrom)
-    fprintf(outfile, "Empirical ");
-  fprintf(outfile, "Base Frequencies:\n\n");
-  fprintf(outfile, "   A    %10.5f\n", freqa);
-  fprintf(outfile, "   C    %10.5f\n", freqc);
-  fprintf(outfile, "   G    %10.5f\n", freqg);
-  fprintf(outfile, "  T(U)  %10.5f\n", freqt);
-  freqr = freqa + freqg;
-  freqy = freqc + freqt;
-  freqar = freqa / freqr;
-  freqcy = freqc / freqy;
-  freqgr = freqg / freqr;
-  freqty = freqt / freqy;
-  fprintf(outfile, "\nTransition/transversion ratio = %10.6f\n\n", ttratio);
-  aa = ttratio * freqr * freqy - freqa * freqg - freqc * freqt;
-  bb = freqa * freqgr + freqc * freqty;
-  xi = aa / (aa + bb);
-  xv = 1.0 - xi;
-  ttratio = xi / xv;
-  if (xi <= 0.0) {
-    printf("WARNING: This transition/transversion ratio\n");
-    printf("is impossible with these base frequencies!\n");
-    xi = 3.0 / 5;
-    xv = 2.0 / 5;
-    fprintf(outfile, " Transition/transversion parameter reset\n\n");
-  }
-  fprintf(outfile, "(Transition/transversion parameter = %10.6f)\n\n",
-	  xi / xv);
-  fracchange = xi * (2 * freqa * freqgr + 2 * freqc * freqty) +
-      xv * (1.0 - freqa * freqa - freqc * freqc - freqg * freqg - freqt * freqt);
-}  /* getbasefreqs */
-
-void setuptree(a)
-tree *a;
-{
-  short i, j;
-  node *p;
-
-  for (i = 1; i <= numsp; i++) {
-    a->nodep[i - 1]->tip = true;
-    a->nodep[i - 1]->iter = true;
-    a->nodep[i - 1]->number = i;
-  }
-  for (i = numsp1; i <= numsp2; i++) {
-    p = a->nodep[i - 1];
-    for (j = 1; j <= 3; j++) {
-      p->tip = false;
-      p->iter = true;
-      p->number = i;
-      p = p->next;
-    }
-  }
-  a->likelihood = -999999.0;
-  a->start = a->nodep[0];
-}  /* setuptree */
-
-void getdata()
-{
-  /* read sequences */
-  short i, j, k, l, basesread, basesnew;
-  Char ch;
-  boolean allread, done;
-
-  putc('\n', outfile);
-  j = nmlngth + (sites + (sites - 1) / 10) / 2 - 5;
-  if (j < nmlngth - 1)
-    j = nmlngth - 1;
-  if (j > 37)
-    j = 37;
-  if (printdata) {
-    fprintf(outfile, "Name");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "Sequences\n");
-    fprintf(outfile, "----");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "---------\n\n");
-  }
-  setuptree(&curtree);
-  basesread = 0;
-  allread = false;
-  while (!(allread)) {
-    allread = true;
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    i = 1;
-    while (i <= numsp) {
-      if ((interleaved && basesread == 0) || !interleaved) {
-	for (j = 0; j < nmlngth; j++) {
-	  if (eof(infile) || eoln(infile)){
-	    printf("ERROR: END-OF-LINE OR END-OF-FILE");
-            printf(" IN THE MIDDLE OF A SPECIES NAME\n");
-	    exit(-1);
-            }
-	  curtree.nodep[i - 1]->nayme[j] = getc(infile);
-	}
-      }
-      if (interleaved)
-	j = basesread;
-      else
-	j = 0;
-      done = false;
-      while (!done & !eof(infile)) {
-	if (interleaved)
-	  done = true;
-	while (((j < sites) & (!(eoln(infile) | eof(infile))))) {
-	  ch = getc(infile);
-	  if (ch == '\n')
-	    ch = ' ';
-	  if (ch == ' ' || (ch >= '0' && ch <= '9'))
-	    continue;
-	  uppercase(&ch);
-	  if (strchr("ABCDGHKMNRSTUVWXY?O-.",ch) == NULL){
-	    printf("ERROR: BAD BASE:%c AT POSITION%5hd OF SPECIES %3ld\n",
-		   ch, j, i);
-	    exit(-1);
-	  }
-	  j++;
-	  if (ch == '.')
-	    ch = y[0][j - 1];
-	  y[i - 1][j - 1] = ch;
-	}
-	if (interleaved)
-	  continue;
-	if (j < sites) {
-	  fscanf(infile, "%*[^\n]");
-	  getc(infile);
-	} else if (j == sites)
-	  done = true;
-      }
-      if (interleaved && i == 1)
-	basesnew = j;
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-      if ((interleaved && j != basesnew) || ((!interleaved) && j != sites)){
-	printf("ERROR: SEQUENCES OUT OF ALIGNMENT\n");
-	exit(-1);
-        }
-     i++;
-    }
-    if (interleaved) {
-      basesread = basesnew;
-      allread = (basesread == sites);
-    } else
-      allread = (i > numsp);
-  }
-  if (printdata) {
-    for (i = 1; i <= ((sites - 1) / 60 + 1); i++) {
-      for (j = 1; j <= numsp; j++) {
-	for (k = 0; k < nmlngth; k++)
-	  putc(curtree.nodep[j - 1]->nayme[k], outfile);
-	fprintf(outfile, "   ");
-	l = i * 60;
-	if (l > sites)
-	  l = sites;
-	for (k = (i - 1) * 60 + 1; k <= l; k++) {
-	  if (j > 1 && y[j - 1][k - 1] == y[0][k - 1])
-	    ch = '.';
-	  else
-	    ch = y[j - 1][k - 1];
-	  putc(ch, outfile);
-	  if (k % 10 == 0 && k % 60 != 0)
-	    putc(' ', outfile);
-	}
-	putc('\n', outfile);
-      }
-      putc('\n', outfile);
-    }
-  }
-  if (!usertree) {
-    setuptree(&bestree);
-    if (njumble > 1)
-      setuptree(&bestree2);
-  }
-}  /* getdata */
-
-void sitesort()
-{
-  /* Shell sort keeping sites, weights in same order */
-  short gap, i, j, jj, jg, k, itemp;
-  boolean flip, tied;
-
-  gap = sites / 2;
-  while (gap > 0) {
-    for (i = gap + 1; i <= sites; i++) {
-      j = i - gap;
-      flip = true;
-      while (j > 0 && flip) {
-	jj = alias[j - 1];
-	jg = alias[j + gap - 1];
-        tied = (weight[jj - 1] == weight[jg - 1]);
-        flip = (weight[jj - 1] < weight[jg - 1]);
-	k = 1;
-	while (k <= numsp && tied) {
-	  flip = (y[k - 1][jj - 1] > y[k - 1][jg - 1]);
-	  tied = (tied && y[k - 1][jj - 1] == y[k - 1][jg - 1]);
-	  k++;
-	}
-	if (!flip)
-	  break;
-	itemp = alias[j - 1];
-	alias[j - 1] = alias[j + gap - 1];
-	alias[j + gap - 1] = itemp;
-	itemp = aliasweight[j - 1];
-	aliasweight[j - 1] = aliasweight[j + gap - 1];
-	aliasweight[j + gap - 1] = itemp;
-	j -= gap;
-      }
-    }
-    gap /= 2;
-  }
-}  /* sitesort */
-
-void sitecombine()
-{
-  /* combine sites that have identical patterns */
-  short i, j, k;
-  boolean tied;
-
-  i = 1;
-  while (i < sites) {
-    j = i + 1;
-    tied = true;
-    while (j <= sites && tied) {
-      tied = (weight[alias[i - 1] - 1] == weight[alias[j - 1] - 1]);
-      k = 1;
-      while (k <= numsp && tied) {
-	tied = (tied &&
-	    y[k - 1][alias[i - 1] - 1] == y[k - 1][alias[j - 1] - 1]);
-	k++;
-      }
-      if (!tied)
-	break;
-      aliasweight[i - 1] += aliasweight[j - 1];
-      aliasweight[j - 1] = 0;
-      ally[alias[j - 1] - 1] = alias[i - 1];
-      j++;
-    }
-    i = j;
-  }
-}  /* sitecombine */
-
-void sitescrunch()
-{
-  /* move so positively weighted sites come first */
-  short i, j, itemp;
-  boolean done, found;
-
-  done = false;
-  i = 1;
-  j = 2;
-  while (!done) {
-    found = false;
-    if (aliasweight[i - 1] > 0)
-      i++;
-    else {
-      if (j <= i)
-	j = i + 1;
-      if (j <= sites) {
-	found = false;
-	do {
-	  found = (aliasweight[j - 1] > 0);
-	  j++;
-	} while (!(found || j > sites));
-	if (found) {
-	  j--;
-	  itemp = alias[i - 1];
-	  alias[i - 1] = alias[j - 1];
-	  alias[j - 1] = itemp;
-	  itemp = aliasweight[i - 1];
-	  aliasweight[i - 1] = aliasweight[j - 1];
-	  aliasweight[j - 1] = itemp;
-	} else
-	  done = true;
-      } else
-	done = true;
-    }
-    done = (done || i >= sites);
-  }
-}  /* sitescrunch */
 
 void makeweights()
 {
   /* make up weights vector to avoid duplicate computations */
-  int i,j,k;
-  node *p;
-  double temp;
+  long i;
 
   for (i = 1; i <= sites; i++) {
     alias[i - 1] = i;
@@ -946,229 +590,29 @@ void makeweights()
     aliasweight[i - 1] = weight[i - 1];
     location[i - 1] = 0;
   }
-  sitesort();
-  sitecombine();
-  sitescrunch();
+  sitesort2   (sites, aliasweight);
+  sitecombine2(sites, aliasweight);
+  sitescrunch2(sites, 1, 2, aliasweight);
   for (i = 1; i <= sites; i++) {
-    weight[i - 1] = aliasweight[i - 1];
-    if (weight[i - 1] > 0)
+    if (aliasweight[i - 1] > 0)
       endsite = i;
   }
   for (i = 1; i <= endsite; i++) {
     location[alias[i - 1] - 1] = i;
     ally[alias[i - 1] - 1] = alias[i - 1];
   }
-  sumrates = 0.0;
-  for (i = 0; i < categs; i++)
-    sumrates += probcat[i] * rate[i];
-  for (i = 0; i < categs; i++)
-    rate[i] /= sumrates;
-  if (usertree)
-    for (i = 0; i < maxtrees; i++)
-      l0gf[i] = (double *)Malloc(endsite*sizeof(double));
-  contribution = (contribarr *)Malloc(endsite*sizeof(contribarr));
-  for (i = 0; i < numsp; i++){
-    curtree.nodep[i]->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-    for (j=0;j<endsite;j++)
-      curtree.nodep[i]->x[j]  = (ratelike)Malloc(categs*sizeof(sitelike));
-  }
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    p = curtree.nodep[i];
-    for (j = 1; j <= 3; j++) {
-      p->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-      for (k=0;k<endsite;++k)
-           p->x[k] = (ratelike)Malloc(categs*sizeof(sitelike));
-      p = p->next;
-    }
-  }
-  if (usertree)
-    return;
-  for (i = 0; i < numsp; i++){
-    bestree.nodep[i]->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-    for (j=0;j<endsite;++j)
-        bestree.nodep[i]->x[j] = (ratelike)Malloc(categs*sizeof(sitelike));
-      }
-
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    p = bestree.nodep[i];
-    for (j = 1; j <= 3; j++) {
-      p->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-      for (k=0;k<endsite;++k)
-        p->x[k] = (ratelike)Malloc(categs*sizeof(sitelike));
-      p = p->next;
-    }
-  }
-  if (njumble <= 1)
-    return;
-  for (i = 0; i < numsp; i++) {
-    bestree2.nodep[i]->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-    for (j=0;j<endsite;++j)
-        bestree2.nodep[i]->x[j] = (ratelike)Malloc(categs*sizeof(sitelike));
-  }
-  for (i = numsp1 - 1; i < numsp2; i++) {
-    p = bestree2.nodep[i];
-    for (j = 1; j <= 3; j++) {
-      p->x = (phenotype)Malloc(endsite*sizeof(ratelike));
-      for (k=0;k<endsite;++k)
-        p->x[k] = (ratelike)Malloc(categs*sizeof(sitelike));
-      p = p->next;
-    }
-  }
+  term = (double **) Malloc( endsite * sizeof(double *));
+  for (i = 0; i < endsite; i++)
+     term[i] = (double *) Malloc( rcategs * sizeof(double));
+  slopeterm = (double **) Malloc( endsite * sizeof(double *));
+  for (i = 0; i < endsite; i++)
+     slopeterm[i] = (double *) Malloc( rcategs * sizeof(double));
+  curveterm = (double **) Malloc(endsite * sizeof(double *));
+  for (i = 0; i < endsite; i++)
+     curveterm[i] = (double *) Malloc( rcategs * sizeof(double));
+  mp = (vall *) Malloc( sites*sizeof(vall));
+  contribution = (contribarr *) Malloc( endsite*sizeof(contribarr));
 }  /* makeweights */
-
-void makevalues()
-{
-  /* set up fractional likelihoods at tips */
-  short i, j, k, l;
-  base b;
-
-  for (k = 0; k < endsite; k++) {
-    j = alias[k];
-    for (i = 0; i < numsp; i++) {
-      for (l = 0; l < categs; l++) {
-	for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	  curtree.nodep[i]->x[k][l][(short)b - (short)A] = 0.0;
-	switch (y[i][j - 1]) {
-
-	case 'A':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  break;
-
-	case 'C':
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  break;
-
-	case 'G':
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  break;
-
-	case 'T':
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'U':
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'M':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  break;
-
-	case 'R':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  break;
-
-	case 'W':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'S':
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  break;
-
-	case 'Y':
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'K':
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'B':
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'D':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'H':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)T - (short)A] = 1.0;
-	  break;
-
-	case 'V':
-	  curtree.nodep[i]->x[k][l][0] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)C - (short)A] = 1.0;
-	  curtree.nodep[i]->x[k][l][(short)G - (short)A] = 1.0;
-	  break;
-
-	case 'N':
-	  for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	    curtree.nodep[i]->x[k][l][(short)b - (short)A] = 1.0;
-	  break;
-
-	case 'X':
-	  for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	    curtree.nodep[i]->x[k][l][(short)b - (short)A] = 1.0;
-	  break;
-
-	case '?':
-	  for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	    curtree.nodep[i]->x[k][l][(short)b - (short)A] = 1.0;
-	  break;
-
-	case 'O':
-	  for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	    curtree.nodep[i]->x[k][l][(short)b - (short)A] = 1.0;
-	  break;
-
-	case '-':
-	  for (b = A; (short)b <= (short)T; b = (base)((short)b + 1))
-	    curtree.nodep[i]->x[k][l][(short)b - (short)A] = 1.0;
-	  break;
-	}
-      }
-    }
-  }
-}  /* makevalues */
-
-Local Void empiricalfreqs()
-{
-  /* Get empirical base frequencies from the data */
-  short i, j, k;
-  double sum, suma, sumc, sumg, sumt, w;
-
-  freqa = 0.25;
-  freqc = 0.25;
-  freqg = 0.25;
-  freqt = 0.25;
-  for (k = 1; k <= 8; k++) {
-    suma = 0.0;
-    sumc = 0.0;
-    sumg = 0.0;
-    sumt = 0.0;
-    for (i = 0; i < numsp; i++) {
-      for (j = 0; j < endsite; j++) {
-	w = weight[j];
-	sum = freqa * curtree.nodep[i]->x[j][0][0];
-	sum += freqc * curtree.nodep[i]->x[j][0][(short)C - (short)A];
-	sum += freqg * curtree.nodep[i]->x[j][0][(short)G - (short)A];
-	sum += freqt * curtree.nodep[i]->x[j][0][(short)T - (short)A];
-	suma += w * freqa * curtree.nodep[i]->x[j][0][0] / sum;
-	sumc += w * freqc * curtree.nodep[i]->x[j][0][(short)C - (short)A] / sum;
-	sumg += w * freqg * curtree.nodep[i]->x[j][0][(short)G - (short)A] / sum;
-	sumt += w * freqt * curtree.nodep[i]->x[j][0][(short)T - (short)A] / sum;
-      }
-    }
-    sum = suma + sumc + sumg + sumt;
-    freqa = suma / sum;
-    freqc = sumc / sum;
-    freqg = sumg / sum;
-    freqt = sumt / sum;
-  }
-}  /* empiricalfreqs */
 
 
 void getinput()
@@ -1176,49 +620,1734 @@ void getinput()
   /* reads the input data */
   inputoptions();
   if (!freqsfrom)
-    getbasefreqs();
-  getdata();
+    getbasefreqs(freqa, freqc, freqg, freqt, &freqr, &freqy, &freqar, &freqcy,
+                 &freqgr, &freqty, &ttratio, &xi, &xv, &fracchange,
+                 freqsfrom, true);
+  if (!justwts || firstset)
+    inputdata(sites);
   makeweights();
-  makevalues();
-  if (freqsfrom) {
-    empiricalfreqs();
-    getbasefreqs();
+  setuptree2(curtree);
+  if (!usertree || reconsider) {
+    setuptree2(bestree);
+    setuptree2(priortree);
+    if (njumble > 1)
+      setuptree2(bestree2);
   }
+  allocx(nonodes2, rcategs, curtree.nodep, usertree);
+  if (!usertree || reconsider) {
+    allocx(nonodes2, rcategs, bestree.nodep, 0);
+    allocx(nonodes2, rcategs, priortree.nodep, 0);
+    if (njumble > 1)
+      allocx(nonodes2, rcategs, bestree2.nodep, 0);
+  }
+  makevalues2(rcategs, curtree.nodep, endsite, spp, y, alias);  
+  if (freqsfrom) {
+    empiricalfreqs(&freqa, &freqc, &freqg, &freqt, aliasweight,
+                    curtree.nodep);
+    getbasefreqs(freqa, freqc, freqg, freqt, &freqr, &freqy, &freqar, &freqcy,
+                 &freqgr, &freqty, &ttratio, &xi, &xv, &fracchange,
+                 freqsfrom, true);
+  }
+  if (!justwts || firstset)
+    fprintf(outfile, "\nTransition/transversion ratio = %10.6f\n\n", ttratio);
 }  /* getinput */
 
 
-main(argc, argv)
-int argc;
-Char *argv[];
-{  /* DNA Maximum Likelihood */
-char infilename[100],outfilename[100],trfilename[100];
-#ifdef MAC
-  macsetup("Dnaml","");
-  argv[0] = "Dnaml";
+void inittable_for_usertree(FILE *intree)
+{
+  /* If there's a user tree, then the ww/zz/wwzz/vvzz elements need
+     to be allocated appropriately. */
+  long num_comma;
+  long i, j;
+
+  /* First, figure out the largest possible furcation, i.e. the number
+     of commas plus one */
+  countcomma(&intree, &num_comma);
+  num_comma++;
+  
+  for (i = 0; i < rcategs; i++) {
+    for (j = 0; j < categs; j++) {
+      /* Free the stuff allocated assuming bifurcations */
+      free (tbl[i][j]->ww);
+      free (tbl[i][j]->zz);
+      free (tbl[i][j]->wwzz);
+      free (tbl[i][j]->vvzz);
+
+      /* Then allocate for worst-case multifurcations */
+      tbl[i][j]->ww   = (double *) Malloc( num_comma * sizeof (double));
+      tbl[i][j]->zz   = (double *) Malloc( num_comma * sizeof (double));
+      tbl[i][j]->wwzz = (double *) Malloc( num_comma * sizeof (double));
+      tbl[i][j]->vvzz = (double *) Malloc( num_comma * sizeof (double));
+    }
+  }
+}  /* inittable_for_usertree */
+
+void inittable()
+{
+  /* Define a lookup table. Precompute values and print them out in tables */
+  long i, j;
+  double sumrates;
+  
+  tbl = (valrec ***) Malloc(rcategs * sizeof(valrec **));
+  for (i = 0; i < rcategs; i++) {
+    tbl[i] = (valrec **) Malloc(categs*sizeof(valrec *));
+    for (j = 0; j < categs; j++)
+      tbl[i][j] = (valrec *) Malloc(sizeof(valrec));
+  }
+
+  for (i = 0; i < rcategs; i++) {
+    for (j = 0; j < categs; j++) {
+      tbl[i][j]->rat = rrate[i]*rate[j];
+      tbl[i][j]->ratxi = tbl[i][j]->rat * xi;
+      tbl[i][j]->ratxv = tbl[i][j]->rat * xv;
+
+      /* Allocate assuming bifurcations, will be changed later if
+         neccesarry (i.e. there's a user tree) */
+      tbl[i][j]->ww   = (double *) Malloc( 2 * sizeof (double));
+      tbl[i][j]->zz   = (double *) Malloc( 2 * sizeof (double));
+      tbl[i][j]->wwzz = (double *) Malloc( 2 * sizeof (double));
+      tbl[i][j]->vvzz = (double *) Malloc( 2 * sizeof (double));
+    }
+  }
+  if (!lngths) {            /* restandardize rates */
+    sumrates = 0.0;
+    for (i = 0; i < endsite; i++) {
+      for (j = 0; j < rcategs; j++)
+        sumrates += aliasweight[i] * probcat[j] 
+          * tbl[j][category[alias[i] - 1] - 1]->rat;
+    }
+    sumrates /= (double)sites;
+    for (i = 0; i < rcategs; i++)
+      for (j = 0; j < categs; j++) {
+        tbl[i][j]->rat /= sumrates;
+        tbl[i][j]->ratxi /= sumrates;
+        tbl[i][j]->ratxv /= sumrates;
+      }
+  }
+  if (rcategs > 1) {
+    if (gama) {
+      fprintf(outfile, "\nDiscrete approximation to gamma distributed rates\n");
+      fprintf(outfile,
+      " Coefficient of variation of rates = %f  (alpha = %f)\n",
+        cv, alpha);
+    }
+    fprintf(outfile, "\nState in HMM    Rate of change    Probability\n\n");
+    for (i = 0; i < rcategs; i++)
+      if (probcat[i] < 0.0001)
+        fprintf(outfile, "%9ld%16.3f%20.6f\n", i+1, rrate[i], probcat[i]);
+      else if (probcat[i] < 0.001)
+          fprintf(outfile, "%9ld%16.3f%19.5f\n", i+1, rrate[i], probcat[i]);
+        else if (probcat[i] < 0.01)
+            fprintf(outfile, "%9ld%16.3f%18.4f\n", i+1, rrate[i], probcat[i]);
+          else
+            fprintf(outfile, "%9ld%16.3f%17.3f\n", i+1, rrate[i], probcat[i]);
+    putc('\n', outfile);
+    if (auto_)
+      fprintf(outfile,
+     "Expected length of a patch of sites having the same rate = %8.3f\n",
+             1/lambda);
+    putc('\n', outfile);
+  }
+  if (categs > 1) {
+    fprintf(outfile, "\nSite category   Rate of change\n\n");
+    for (i = 0; i < categs; i++)
+      fprintf(outfile, "%9ld%16.3f\n", i+1, rate[i]);
+  }
+  if ((rcategs  > 1) || (categs >> 1))
+    fprintf(outfile, "\n\n");
+}  /* inittable */
+
+
+double evaluate(node *p, boolean saveit)
+{
+  contribarr tterm;
+  double sum, sum2, sumc, y, lz, y1, z1zz, z1yy, prod12, prod1, prod2, prod3,
+         sumterm, lterm;
+  long i, j, k, lai;
+  node *q;
+  sitelike x1, x2;
+
+  sum = 0.0;
+  q = p->back;
+  y = p->v;
+  lz = -y;
+  for (i = 0; i < rcategs; i++)
+    for (j = 0; j < categs; j++) {
+    tbl[i][j]->orig_zz = exp(tbl[i][j]->ratxi * lz);
+    tbl[i][j]->z1 = exp(tbl[i][j]->ratxv * lz);
+    tbl[i][j]->z1zz = tbl[i][j]->z1 * tbl[i][j]->orig_zz;
+    tbl[i][j]->z1yy = tbl[i][j]->z1 - tbl[i][j]->z1zz;
+  }
+  for (i = 0; i < endsite; i++) {
+    k = category[alias[i]-1] - 1;
+    for (j = 0; j < rcategs; j++) {
+      if (y > 0.0) {
+        y1 = 1.0 - tbl[j][k]->z1;
+        z1zz = tbl[j][k]->z1zz;
+        z1yy = tbl[j][k]->z1yy;
+      } else {
+        y1 = 0.0;
+        z1zz = 1.0;
+        z1yy = 0.0;
+      }
+      memcpy(x1, p->x[i][j], sizeof(sitelike));
+      prod1 = freqa * x1[0] + freqc * x1[(long)C - (long)A] +
+             freqg * x1[(long)G - (long)A] + freqt * x1[(long)T - (long)A];
+      memcpy(x2, q->x[i][j], sizeof(sitelike));
+      prod2 = freqa * x2[0] + freqc * x2[(long)C - (long)A] +
+             freqg * x2[(long)G - (long)A] + freqt * x2[(long)T - (long)A];
+      prod3 = (x1[0] * freqa + x1[(long)G - (long)A] * freqg) *
+              (x2[0] * freqar + x2[(long)G - (long)A] * freqgr) +
+          (x1[(long)C - (long)A] * freqc + x1[(long)T - (long)A] * freqt) *
+         (x2[(long)C - (long)A] * freqcy + x2[(long)T - (long)A] * freqty);
+      prod12 = freqa * x1[0] * x2[0] +
+               freqc * x1[(long)C - (long)A] * x2[(long)C - (long)A] +
+               freqg * x1[(long)G - (long)A] * x2[(long)G - (long)A] +
+               freqt * x1[(long)T - (long)A] * x2[(long)T - (long)A];
+      tterm[j] = z1zz * prod12 + z1yy * prod3 + y1 * prod1 * prod2;
+    }
+    sumterm = 0.0;
+    for (j = 0; j < rcategs; j++)
+      sumterm += probcat[j] * tterm[j];
+    lterm = log(sumterm);
+    for (j = 0; j < rcategs; j++)
+      clai[j] = tterm[j] / sumterm;
+    memcpy(contribution[i], clai, rcategs*sizeof(double));
+    if (saveit && !auto_ && usertree)
+      l0gf[which - 1][i] = lterm;
+    sum += aliasweight[i] * lterm;
+  }
+  for (j = 0; j < rcategs; j++)
+    like[j] = 1.0;
+  for (i = 0; i < sites; i++) {
+    sumc = 0.0;
+    for (k = 0; k < rcategs; k++)
+      sumc += probcat[k] * like[k];
+    sumc *= lambda;
+    if ((ally[i] > 0) && (location[ally[i]-1] > 0)) {
+      lai = location[ally[i] - 1];
+      memcpy(clai, contribution[lai - 1], rcategs*sizeof(double));
+      for (j = 0; j < rcategs; j++)
+        nulike[j] = ((1.0 - lambda) * like[j] + sumc) * clai[j];
+    } else {
+      for (j = 0; j < rcategs; j++)
+        nulike[j] = ((1.0 - lambda) * like[j] + sumc);
+    }
+    memcpy(like, nulike, rcategs*sizeof(double));
+  }
+  sum2 = 0.0;
+  for (i = 0; i < rcategs; i++)
+    sum2 += probcat[i] * like[i];
+  sum += log(sum2);
+  curtree.likelihood = sum;
+  if (!saveit || auto_ || !usertree)
+    return sum;
+  l0gl[which - 1] = sum;
+  if (which == 1) {
+    maxwhich = 1;
+    maxlogl = sum;
+    return sum;
+  }
+  if (sum > maxlogl) {
+    maxwhich = which;
+    maxlogl = sum;
+  }
+  return sum;
+}  /* evaluate */
+
+
+void alloc_nvd (long num_sibs, nuview_data *local_nvd)
+{
+  /* Allocate blocks of memory appropriate for the number of siblings
+     a given node has */
+  local_nvd->yy     = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->wwzz   = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->vvzz   = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->vzsumr = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->vzsumy = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->sum    = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->sumr   = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->sumy   = (double *) Malloc( num_sibs * sizeof (double));
+  local_nvd->xx     = (sitelike *) Malloc( num_sibs * sizeof (sitelike));
+}  /* alloc_nvd */
+
+
+void free_nvd (nuview_data *local_nvd)
+{
+  /* The natural complement to the alloc version */
+  free (local_nvd->yy);
+  free (local_nvd->wwzz);
+  free (local_nvd->vvzz);
+  free (local_nvd->vzsumr);
+  free (local_nvd->vzsumy);
+  free (local_nvd->sum);
+  free (local_nvd->sumr);
+  free (local_nvd->sumy);
+  free (local_nvd->xx);
+}  /* free_nvd */
+
+
+void nuview(node *p)
+{
+  long i, j, k, num_sibs, sib_index;
+  nuview_data *local_nvd;
+  node *sib_ptr, *sib_back_ptr;
+  sitelike p_xx;
+  double lw;
+
+  /* Figure out how many siblings the current node has */
+  num_sibs    = count_sibs (p);
+
+  /* Recursive calls, should be called for all children */
+  sib_ptr = p;
+  for (i=0 ; i < num_sibs; i++) {
+    sib_ptr      = sib_ptr->next;
+    sib_back_ptr = sib_ptr->back;
+
+    if (!sib_back_ptr->tip &&
+        !sib_back_ptr->initialized)
+      nuview (sib_back_ptr);
+  }
+
+  /* Allocate the structure and blocks therein for variables used in
+     this function */
+  local_nvd = (nuview_data *) Malloc( sizeof (nuview_data));
+  alloc_nvd (num_sibs, local_nvd);
+
+
+  /* Loop 1: makes assignments to tbl based on some combination of
+     what's already in tbl and the children's value of v */
+  sib_ptr = p;
+  for (sib_index=0; sib_index < num_sibs; sib_index++) {
+    sib_ptr      = sib_ptr->next;
+    sib_back_ptr = sib_ptr->back;
+    
+    lw = - (sib_back_ptr->v);
+
+    for (i = 0; i < rcategs; i++)
+      for (j = 0; j < categs; j++) {
+        tbl[i][j]->ww[sib_index]   = exp(tbl[i][j]->ratxi * lw);
+        tbl[i][j]->zz[sib_index]   = exp(tbl[i][j]->ratxv * lw);
+        tbl[i][j]->wwzz[sib_index] = tbl[i][j]->ww[sib_index] * tbl[i][j]->zz[sib_index];
+        tbl[i][j]->vvzz[sib_index] = (1.0 - tbl[i][j]->ww[sib_index]) *
+          tbl[i][j]->zz[sib_index];
+      }
+  }
+  
+  /* Loop 2: */
+  for (i = 0; i < endsite; i++) {
+    k = category[alias[i]-1] - 1;
+    for (j = 0; j < rcategs; j++) {
+
+      /* Loop 2.1 */
+      sib_ptr = p;
+      for (sib_index=0; sib_index < num_sibs; sib_index++) {
+        sib_ptr         = sib_ptr->next;
+        sib_back_ptr    = sib_ptr->back;
+
+        local_nvd->wwzz[sib_index] = tbl[j][k]->wwzz[sib_index];
+        local_nvd->vvzz[sib_index] = tbl[j][k]->vvzz[sib_index];
+        local_nvd->yy[sib_index]   = 1.0 - tbl[j][k]->zz[sib_index];
+        memcpy(local_nvd->xx[sib_index],
+               sib_back_ptr->x[i][j],
+               sizeof(sitelike));
+      }
+
+      /* Loop 2.2 */
+      for (sib_index=0; sib_index < num_sibs; sib_index++) {
+        local_nvd->sum[sib_index] =
+          local_nvd->yy[sib_index] *
+          (freqa * local_nvd->xx[sib_index][(long)A] +
+           freqc * local_nvd->xx[sib_index][(long)C] +
+           freqg * local_nvd->xx[sib_index][(long)G] +
+           freqt * local_nvd->xx[sib_index][(long)T]);
+        local_nvd->sumr[sib_index] =
+          freqar * local_nvd->xx[sib_index][(long)A] +
+          freqgr * local_nvd->xx[sib_index][(long)G];
+        local_nvd->sumy[sib_index] =
+          freqcy * local_nvd->xx[sib_index][(long)C] +
+          freqty * local_nvd->xx[sib_index][(long)T];
+        local_nvd->vzsumr[sib_index] =
+          local_nvd->vvzz[sib_index] * local_nvd->sumr[sib_index];
+        local_nvd->vzsumy[sib_index] =
+          local_nvd->vvzz[sib_index] * local_nvd->sumy[sib_index];
+      }
+
+      /* Initialize to one, multiply incremental values for every
+         sibling a node has */
+      p_xx[(long)A] = 1 ;
+      p_xx[(long)C] = 1 ; 
+      p_xx[(long)G] = 1 ;
+      p_xx[(long)T] = 1 ;
+
+      for (sib_index=0; sib_index < num_sibs; sib_index++) {
+        p_xx[(long)A] *=
+          local_nvd->sum[sib_index] +
+          local_nvd->wwzz[sib_index] *
+          local_nvd->xx[sib_index][(long)A] +
+          local_nvd->vzsumr[sib_index];
+        p_xx[(long)C] *=
+          local_nvd->sum[sib_index] +
+          local_nvd->wwzz[sib_index] *
+          local_nvd->xx[sib_index][(long)C] +
+          local_nvd->vzsumy[sib_index];
+        p_xx[(long)G] *=
+          local_nvd->sum[sib_index] +
+          local_nvd->wwzz[sib_index] *
+          local_nvd->xx[sib_index][(long)G] +
+          local_nvd->vzsumr[sib_index];
+        p_xx[(long)T] *=
+          local_nvd->sum[sib_index] +
+          local_nvd->wwzz[sib_index] *
+          local_nvd->xx[sib_index][(long)T] +
+          local_nvd->vzsumy[sib_index];
+      }
+
+      /* And the final point of this whole function: */
+      memcpy(p->x[i][j], p_xx, sizeof(sitelike));
+    }
+  }
+
+  p->initialized = true;
+
+  free_nvd (local_nvd);
+  free (local_nvd);
+}  /* nuview */
+
+
+void slopecurv(node *p,double y,double *like,double *slope,double *curve)
+{
+   /* compute log likelihood, slope and curvature at node p */
+  long i, j, k, lai;
+  double sum, sumc, sumterm, lterm, sumcs, sumcc, sum2, slope2, curve2,
+        temp;
+  double lz, zz, z1, zzs, z1s, zzc, z1c, aa, bb, cc,
+         prod1, prod2, prod12, prod3;
+  contribarr thelike, nulike, nuslope, nucurve,
+    theslope, thecurve, clai, cslai, cclai;
+  node *q;
+  sitelike x1, x2;
+
+  q = p->back;
+  sum = 0.0;
+  lz = -y;
+  for (i = 0; i < rcategs; i++)
+    for (j = 0; j < categs; j++) {
+      tbl[i][j]->orig_zz = exp(tbl[i][j]->rat * lz);
+      tbl[i][j]->z1 = exp(tbl[i][j]->ratxv * lz);
+    }
+  for (i = 0; i < endsite; i++) {
+    k = category[alias[i]-1] - 1;
+    for (j = 0; j < rcategs; j++) {
+      if (y > 0.0) {
+        zz = tbl[j][k]->orig_zz;
+        z1 = tbl[j][k]->z1;
+      } else {
+        zz = 1.0;
+        z1 = 1.0;
+      }
+      zzs = -tbl[j][k]->rat * zz ;
+      z1s = -tbl[j][k]->ratxv * z1 ;
+      temp = tbl[j][k]->rat;
+      zzc = temp * temp * zz;
+      temp = tbl[j][k]->ratxv;
+      z1c = temp * temp * z1;
+      memcpy(x1, p->x[i][j], sizeof(sitelike));
+      prod1 = freqa * x1[0] + freqc * x1[(long)C - (long)A] +
+            freqg * x1[(long)G - (long)A] + freqt * x1[(long)T - (long)A];
+      memcpy(x2, q->x[i][j], sizeof(sitelike));
+      prod2 = freqa * x2[0] + freqc * x2[(long)C - (long)A] +
+            freqg * x2[(long)G - (long)A] + freqt * x2[(long)T - (long)A];
+      prod3 = (x1[0] * freqa + x1[(long)G - (long)A] * freqg) *
+              (x2[0] * freqar + x2[(long)G - (long)A] * freqgr) +
+        (x1[(long)C - (long)A] * freqc + x1[(long)T - (long)A] * freqt) *
+        (x2[(long)C - (long)A] * freqcy + x2[(long)T - (long)A] * freqty);
+      prod12 = freqa * x1[0] * x2[0] +
+               freqc * x1[(long)C - (long)A] * x2[(long)C - (long)A] +
+               freqg * x1[(long)G - (long)A] * x2[(long)G - (long)A] +
+               freqt * x1[(long)T - (long)A] * x2[(long)T - (long)A];
+      aa = prod12 - prod3;
+      bb = prod3 - prod1*prod2;
+      cc = prod1 * prod2;
+      term[i][j] = zz * aa + z1 * bb + cc;
+      slopeterm[i][j] = zzs * aa + z1s * bb;
+      curveterm[i][j] = zzc * aa + z1c * bb;
+    }
+    sumterm = 0.0;
+    for (j = 0; j < rcategs; j++)
+      sumterm += probcat[j] * term[i][j];
+    lterm = log(sumterm);
+    for (j = 0; j < rcategs; j++) {
+      term[i][j] = term[i][j] / sumterm;
+      slopeterm[i][j] = slopeterm[i][j] / sumterm;
+      curveterm[i][j] = curveterm[i][j] / sumterm; 
+    }
+    sum += aliasweight[i] * lterm;
+  }
+  for (i = 0; i < rcategs; i++) {
+    thelike[i] = 1.0;
+    theslope[i] = 0.0;
+    thecurve[i] = 0.0;
+  }
+  for (i = 0; i < sites; i++) {
+    sumc = 0.0;
+    sumcs = 0.0;
+    sumcc = 0.0;
+    for (k = 0; k < rcategs; k++) {
+      sumc += probcat[k] * thelike[k];
+      sumcs += probcat[k] * theslope[k];
+      sumcc += probcat[k] * thecurve[k];
+    }
+    sumc *= lambda;
+    sumcs *= lambda;
+    sumcc *= lambda;
+    if ((ally[i] > 0) && (location[ally[i]-1] > 0)) {
+      lai = location[ally[i] - 1];
+      memcpy(clai, term[lai - 1], rcategs*sizeof(double));
+      memcpy(cslai, slopeterm[lai - 1], rcategs*sizeof(double));
+      memcpy(cclai, curveterm[lai - 1], rcategs*sizeof(double));
+      if (weight[i] > 1) {
+        for (j = 0; j < rcategs; j++) {
+          if (clai[j] > 0.0)
+            clai[j] = exp(weight[i]*log(clai[j]));
+          else clai[j] = 0.0;
+          if (cslai[j] > 0.0)
+            cslai[j] = exp(weight[i]*log(cslai[j]));
+          else cslai[j] = 0.0;
+          if (cclai[j] > 0.0)
+            cclai[j] = exp(weight[i]*log(cclai[j])); 
+          else cclai[j] = 0.0;
+      }
+    }
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] = ((1.0 - lambda) * thelike[j] + sumc) * clai[j];
+        nuslope[j] = ((1.0 - lambda) * theslope[j] + sumcs) * clai[j]
+                   + ((1.0 - lambda) * thelike[j] + sumc) * cslai[j];
+        nucurve[j] = ((1.0 - lambda) * thecurve[j] + sumcc) * clai[j]
+             + 2.0 * ((1.0 - lambda) * theslope[j] + sumcs) * cslai[j]
+                   + ((1.0 - lambda) * thelike[j] + sumc) * cclai[j];
+      }
+    } else {
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] = ((1.0 - lambda) * thelike[j] + sumc);
+        nuslope[j] = ((1.0 - lambda) * theslope[j] + sumcs);
+        nucurve[j] = ((1.0 - lambda) * thecurve[j] + sumcc);
+      }
+    }
+    memcpy(thelike, nulike, rcategs*sizeof(double));
+    memcpy(theslope, nuslope, rcategs*sizeof(double));
+    memcpy(thecurve, nucurve, rcategs*sizeof(double));
+  }
+  sum2 = 0.0;
+  slope2 = 0.0;
+  curve2 = 0.0;
+  for (i = 0; i < rcategs; i++) {
+    sum2 += probcat[i] * thelike[i];
+    slope2 += probcat[i] * theslope[i];
+    curve2 += probcat[i] * thecurve[i];
+  }
+  sum += log(sum2);
+  (*like) = sum;
+  (*slope) = slope2 / sum2;
+  (*curve) = (curve2 - slope2 * slope2 / sum2) / sum2;
+} /* slopecurv */
+
+
+void makenewv(node *p)
+{
+  /* Newton-Raphson algorithm improvement of a branch length */
+  long it, ite;
+  double y, yold=0, yorig, like, slope, curve, oldlike=0;
+  boolean done, firsttime, better;
+  node *q;
+
+  q = p->back;
+  y = p->v;
+  yorig = y;
+  done = false;
+  firsttime = true;
+  it = 1;
+  ite = 0;
+  while ((it < iterations) && (ite < 20) && (!done)) {
+    slopecurv (p, y, &like, &slope, &curve);
+    better = false;
+    if (firsttime) {
+      yold = y;
+      oldlike = like;
+      firsttime = false;
+      better = true;
+    } else {
+      if (like > oldlike) {
+        yold = y;
+        oldlike = like;
+        better = true;
+        it++;
+      }
+    }
+    if (better) {
+      y = y + slope/fabs(curve);
+      if (yold < epsilon)
+        yold = epsilon;
+    } else {
+      if (fabs(y - yold) < epsilon)
+        ite = 20;
+      y = (y + 19*yold) / 20.0;
+    }
+    ite++;
+    done = fabs(y-yold) < epsilon;
+  }
+  smoothed = (fabs(yold-yorig) < epsilon) && (yorig > 1000.0*epsilon);
+  p->v = yold;
+  q->v = yold;
+  curtree.likelihood = oldlike;
+}  /* makenewv */
+
+
+void update(node *p)
+{
+  long num_sibs, i;
+  node *sib_ptr;
+
+  if (!p->tip && !p->initialized)
+    nuview(p);
+  if (!p->back->tip && !p->back->initialized)
+    nuview(p->back);
+  if ((!usertree) || (usertree && !lngths) || p->iter) {
+    makenewv(p);
+
+    if (!p->tip) {
+      num_sibs = count_sibs (p);
+      sib_ptr  = p;
+      for (i=0; i < num_sibs; i++) {
+        sib_ptr              = sib_ptr->next;
+        sib_ptr->initialized = false;
+      }
+    }
+
+    if (!p->back->tip) {
+      num_sibs = count_sibs (p->back);
+      sib_ptr  = p->back;
+      for (i=0; i < num_sibs; i++) {
+        sib_ptr              = sib_ptr->next;
+        sib_ptr->initialized = false;
+      }
+    }
+  }
+}  /* update */
+
+
+void smooth(node *p)
+{
+  long i, num_sibs;
+  node *sib_ptr;
+  
+  smoothed = false;
+  update (p);
+  if (p->tip)
+    return;
+
+  num_sibs = count_sibs (p);
+  sib_ptr  = p;
+  
+  for (i=0; i < num_sibs; i++) {
+    sib_ptr = sib_ptr->next;
+    
+    if (polishing || (smoothit && !smoothed)) {
+      smooth(sib_ptr->back);
+      p->initialized = false;
+      sib_ptr->initialized = false;
+    }
+  }
+}  /* smooth */
+
+
+void insert_(node *p, node *q, boolean dooinit)
+{
+  /* Insert q near p */
+  long i, j, num_sibs;
+  node *r, *sib_ptr;
+
+  r = p->next->next;
+  hookup(r, q->back);
+  hookup(p->next, q);
+  q->v = 0.5 * q->v;
+  q->back->v = q->v;
+  r->v = q->v;
+  r->back->v = r->v;
+  p->initialized = false;
+  p->next->initialized = false;
+  p->next->next->initialized = false;
+  if (dooinit) {
+    inittrav(p);
+    inittrav(q);
+    inittrav(q->back);
+  }
+  i = 1;
+  while (i <= smoothings) {
+    smooth (p);
+    if (!smoothit) {
+      if (!p->tip) {
+        num_sibs = count_sibs (p);
+        sib_ptr  = p;
+        for (j=0; j < num_sibs; j++) {
+          smooth (sib_ptr->next->back);
+          sib_ptr = sib_ptr->next;
+        }
+      }
+    }
+    else 
+      smooth(p->back);
+    i++;
+  }
+}  /* insert_ */
+
+
+void dnaml_re_move(node **p, node **q)
+{
+  /* remove p and record in q where it was */
+  long i;
+
+  /** assumes bifurcations */
+  *q = (*p)->next->back;
+  hookup(*q, (*p)->next->next->back);
+  (*p)->next->back = NULL;
+  (*p)->next->next->back = NULL;
+  inittrav((*q));
+  inittrav((*q)->back);
+  i = 1;
+  while (i <= smoothings) {
+    smooth(*q);
+    if (smoothit)
+      smooth((*q)->back);
+    i++;
+  }
+}  /* dnaml_re_move */
+
+
+void buildnewtip(long m, tree *tr)
+{
+  node *p;
+
+  p = tr->nodep[nextsp + spp - 3];
+  hookup(tr->nodep[m - 1], p);
+  p->v = initialv;
+  p->back->v = initialv;
+}  /* buildnewtip */
+
+
+void buildsimpletree(tree *tr)
+{
+  hookup(tr->nodep[enterorder[0] - 1], tr->nodep[enterorder[1] - 1]);
+  tr->nodep[enterorder[0] - 1]->v = 0.1;
+  tr->nodep[enterorder[0] - 1]->back->v = 0.1;
+  tr->nodep[enterorder[1] - 1]->v = 0.1;
+  tr->nodep[enterorder[1] - 1]->back->v = 0.1;
+  buildnewtip(enterorder[2], tr);
+  insert_(tr->nodep[enterorder[2] - 1]->back,
+          tr->nodep[enterorder[0] - 1], false);
+}  /* buildsimpletree2 */
+
+
+void addtraverse(node *p, node *q, boolean contin)
+{
+  /* try adding p at q, proceed recursively through tree */
+  long i, num_sibs;
+  double like, vsave = 0;
+  node *qback = NULL, *sib_ptr;
+
+  if (!smoothit) {
+    vsave = q->v;
+    qback = q->back;
+  }
+  insert_(p, q, false);
+  like = evaluate(p, false);
+  if (like > bestyet || bestyet == UNDEFINED) {
+    bestyet = like;
+    if (smoothit)
+      dnamlcopy(&curtree, &bestree, nonodes2, rcategs);
+    else
+      qwhere = q;
+    succeeded = true;
+  }
+  if (smoothit)
+    dnamlcopy(&priortree, &curtree, nonodes2, rcategs);
+  else {
+    hookup (q, qback);
+    q->v = vsave;
+    q->back->v = vsave;
+    curtree.likelihood = bestyet;
+  }
+  if (!q->tip && contin) {
+    num_sibs = count_sibs (q);
+    if (q == curtree.start)
+      num_sibs++;
+    sib_ptr  = q;
+    for (i=0; i < num_sibs; i++) {
+      addtraverse(p, sib_ptr->next->back, contin);
+      sib_ptr = sib_ptr->next;
+    }
+  }
+
+}  /* addtraverse */
+
+
+void rearrange(node *p, node *pp)
+{
+  /* rearranges the tree, globally or locally moving pp around near p */
+  long i, num_sibs;
+  double v3 = 0, v4 = 0, v5 = 0;
+  node *q, *r, *sib_ptr;
+
+  if (!p->tip && !p->back->tip) {
+    curtree.likelihood = bestyet;
+    if (p->back->next != pp)
+      r = p->back->next;
+    else
+      r = p->back->next->next;
+    /* assumes bifurcations? */
+    if (!smoothit) {
+      v3 = r->v;
+      v4 = r->next->v;
+      v5 = r->next->next->v;
+    }
+    else
+      dnamlcopy(&curtree, &bestree, nonodes2, rcategs);
+    dnaml_re_move(&r, &q);
+    if (smoothit)
+      dnamlcopy(&curtree, &priortree, nonodes2, rcategs);
+    else
+      qwhere = q;
+    num_sibs = count_sibs (p);
+    sib_ptr  = p;
+    for (i=0; i < num_sibs; i++) {
+      sib_ptr = sib_ptr->next;
+      addtraverse(r, sib_ptr->back, (boolean)(global && (nextsp == spp)));
+    }
+    if (global && nextsp == spp && !succeeded) {
+      p = p->back;
+      if (!p->tip) {
+        num_sibs = count_sibs (p);
+        sib_ptr  = p;
+        for (i=0; i < num_sibs; i++) {
+          sib_ptr = sib_ptr->next;
+          addtraverse(r, sib_ptr->back,(boolean)(global && (nextsp == spp)));
+        }
+      }
+      p = p->back;
+    }
+    if (smoothit)
+      dnamlcopy(&bestree, &curtree, nonodes2, rcategs);
+    else {
+      insert_(r, qwhere, true);
+      if (qwhere == q) {
+        r->v = v3;
+        r->back->v = v3;
+        r->next->v = v4;
+        r->next->back->v = v4;
+        r->next->next->v = v5;
+        r->next->next->back->v = v5;
+        curtree.likelihood = bestyet;
+      }
+      else {
+        smoothit = true;
+        for (i = 1; i<=smoothings; i++) {
+          smooth (r);
+          smooth (r->back);
+        }
+        smoothit = false;
+        dnamlcopy(&curtree, &bestree, nonodes2, rcategs);
+      }
+    }
+    if (global && nextsp == spp && progress) {
+      putchar('.');
+      fflush(stdout);
+    }
+  }
+  if (!p->tip) {
+    num_sibs = count_sibs (p);
+    if (p == curtree.start)
+      num_sibs++;
+    sib_ptr  = p;
+    for (i=0; i < num_sibs; i++) {
+      sib_ptr = sib_ptr->next;
+      rearrange(sib_ptr->back, p);
+    }
+  }
+}  /* rearrange */
+
+
+void initdnamlnode(node **p, node **grbg, node *q, long len, long nodei,
+                        long *ntips, long *parens, initops whichinit,
+                        pointarray treenode, pointarray nodep, Char *str, Char *ch,
+                        FILE *intree)
+{
+  /* initializes a node */
+  boolean minusread;
+  double valyew, divisor;
+
+  switch (whichinit) {
+  case bottom:
+    gnu(grbg, p);
+    (*p)->index = nodei;
+    (*p)->tip = false;
+    malloc_pheno((*p), endsite, rcategs);
+    nodep[(*p)->index - 1] = (*p);
+    break;
+  case nonbottom:
+    gnu(grbg, p);
+    malloc_pheno(*p, endsite, rcategs);
+    (*p)->index = nodei;
+    break;
+  case tip:
+    match_names_to_data (str, nodep, p, spp);
+    break;
+  case iter:
+    (*p)->initialized = false;
+    (*p)->v = initialv;
+    (*p)->iter = true;
+    if ((*p)->back != NULL)
+      (*p)->back->iter = true;
+    break;
+  case length:
+    processlength(&valyew, &divisor, ch, &minusread, intree, parens);
+    (*p)->v = valyew / divisor / fracchange;
+    (*p)->iter = false;
+    if ((*p)->back != NULL) {
+      (*p)->back->v = (*p)->v;
+      (*p)->back->iter = false;
+    }
+    break;
+  case hsnolength:
+    haslengths = false;
+    break;
+  default:        /* cases hslength, treewt, unittrwt */
+    break;        /* should never occur                                */
+  }
+} /* initdnamlnode */
+
+
+void dnaml_coordinates(node *p, double lengthsum, long *tipy,
+                        double *tipmax)
+{
+  /* establishes coordinates of nodes */
+  node *q, *first, *last;
+  double xx;
+
+  if (p->tip) {
+    p->xcoord = (long)(over * lengthsum + 0.5);
+    p->ycoord = (*tipy);
+    p->ymin = (*tipy);
+    p->ymax = (*tipy);
+    (*tipy) += down;
+    if (lengthsum > (*tipmax))
+      (*tipmax) = lengthsum;
+    return;
+  }
+  q = p->next;
+  do {
+    xx = fracchange * q->v;
+    if (xx > 100.0)
+      xx = 100.0;
+    dnaml_coordinates(q->back, lengthsum + xx, tipy,tipmax);
+    q = q->next;
+  } while ((p == curtree.start || p != q) &&
+           (p != curtree.start || p->next != q));
+  first = p->next->back;
+  q = p;
+  while (q->next != p)
+    q = q->next;
+  last = q->back;
+  p->xcoord = (long)(over * lengthsum + 0.5);
+  if (p == curtree.start)
+    p->ycoord = p->next->next->back->ycoord;
+  else
+    p->ycoord = (first->ycoord + last->ycoord) / 2;
+  p->ymin = first->ymin;
+  p->ymax = last->ymax;
+}  /* dnaml_coordinates */
+
+
+void dnaml_printree()
+{
+  /* prints out diagram of the tree2 */
+  long tipy;
+  double scale, tipmax;
+  long i;
+
+  if (!treeprint)
+    return;
+  putc('\n', outfile);
+  tipy = 1;
+  tipmax = 0.0;
+  dnaml_coordinates(curtree.start, 0.0, &tipy, &tipmax);
+  scale = 1.0 / (long)(tipmax + 1.000);
+  for (i = 1; i <= (tipy - down); i++)
+    drawline2(i, scale, curtree);
+  putc('\n', outfile);
+}  /* dnaml_printree */
+
+
+void sigma(node *p, double *sumlr, double *s1, double *s2)
+{
+  /* compute standard deviation */
+  double tt, aa, like, slope, curv;
+
+  slopecurv (p, p->v, &like, &slope, &curv);
+  tt = p->v;
+  p->v = epsilon;
+  p->back->v = epsilon;
+  aa = evaluate(p, false);
+  p->v = tt;
+  p->back->v = tt;
+  (*sumlr) = evaluate(p, false) - aa;
+  if (curv < -epsilon) {
+    (*s1) = p->v + (-slope - sqrt(slope * slope -  3.841 * curv)) / curv;
+    (*s2) = p->v + (-slope + sqrt(slope * slope -  3.841 * curv)) / curv;
+  }
+  else {
+    (*s1) = -1.0;
+    (*s2) = -1.0;
+  }
+}  /* sigma */
+
+
+void describe(node *p)
+{
+  /* print out information for one branch */
+  long i, num_sibs;
+  node *q, *sib_ptr;
+  double sumlr, sigma1, sigma2;
+
+  if (!p->tip && !p->initialized)
+    nuview(p);
+  if (!p->back->tip && !p->back->initialized)
+    nuview(p->back);
+  q = p->back;
+  if (q->tip) {
+    fprintf(outfile, " ");
+    for (i = 0; i < nmlngth; i++)
+      putc(nayme[q->index-1][i], outfile);
+    fprintf(outfile, "    ");
+  } else
+    fprintf(outfile, "  %4ld          ", q->index - spp);
+  if (p->tip) {
+    for (i = 0; i < nmlngth; i++)
+      putc(nayme[p->index-1][i], outfile);
+  } else
+    fprintf(outfile, "%4ld      ", p->index - spp);
+  fprintf(outfile, "%15.5f", q->v * fracchange);
+  if (!usertree || (usertree && !lngths) || p->iter) {
+    sigma(q, &sumlr, &sigma1, &sigma2);
+    if (sigma1 <= sigma2)
+      fprintf(outfile, "     (     zero,    infinity)");
+    else {
+      fprintf(outfile, "     (");
+      if (sigma2 <= 0.0)
+        fprintf(outfile, "     zero");
+      else
+        fprintf(outfile, "%9.5f", sigma2 * fracchange);
+      fprintf(outfile, ",%12.5f", sigma1 * fracchange);
+      putc(')', outfile);
+      }
+    if (sumlr > 1.9205)
+      fprintf(outfile, " *");
+    if (sumlr > 2.995)
+      putc('*', outfile);
+    }
+  putc('\n', outfile);
+  if (!p->tip) {
+    num_sibs = count_sibs (p);
+    sib_ptr  = p;
+    for (i=0; i < num_sibs; i++) {
+      sib_ptr = sib_ptr->next;
+      describe(sib_ptr->back);
+    }
+  }
+}  /* describe */
+
+
+void reconstr(node *p, long n)
+{
+  /* reconstruct and print out base at site n+1 at node p */
+  long i, j, k, m, first, second, num_sibs;
+  double f, sum, xx[4];
+  node *q;
+
+  if ((ally[n] == 0) || (location[ally[n]-1] == 0))
+    putc('.', outfile);
+  else {
+    j = location[ally[n]-1] - 1;
+    for (i = 0; i < 4; i++) {
+      f = p->x[j][mx-1][i];
+      num_sibs = count_sibs(p);
+      q = p;
+      for (k = 0; k < num_sibs; k++) {
+        q = q->next;
+        f *= q->x[j][mx-1][i];
+      }
+      f = sqrt(f);
+      xx[i] = f;
+    }
+    xx[0] *= freqa;
+    xx[1] *= freqc;
+    xx[2] *= freqg;
+    xx[3] *= freqt;
+    sum = xx[0]+xx[1]+xx[2]+xx[3];
+    for (i = 0; i < 4; i++)
+      xx[i] /= sum;
+    first = 0;
+    for (i = 1; i < 4; i++)
+      if (xx [i] > xx[first])
+        first = i;
+    if (first == 0)
+      second = 1;
+    else
+      second = 0;
+    for (i = 0; i < 4; i++)
+      if ((i != first) && (xx[i] > xx[second]))
+        second = i;
+    m = 1 << first;
+    if (xx[first] < 0.4999995)
+      m = m + (1 << second);
+    if (xx[first] > 0.95)
+      putc(toupper(basechar[m - 1]), outfile);
+    else
+      putc(basechar[m - 1], outfile);
+    if (rctgry && rcategs > 1)
+      mx = mp[n][mx - 1];    
+    else
+      mx = 1;
+  }
+} /* reconstr */
+
+
+void rectrav(node *p, long m, long n)
+{
+  /* print out segment of reconstructed sequence for one branch */
+  long i;
+
+  putc(' ', outfile);
+  if (p->tip) {
+    for (i = 0; i < nmlngth; i++)
+      putc(nayme[p->index-1][i], outfile);
+  } else
+    fprintf(outfile, "%4ld      ", p->index - spp);
+  fprintf(outfile, "  ");
+  mx = mx0;
+  for (i = m; i <= n; i++) {
+    if ((i % 10 == 0) && (i != m))
+      putc(' ', outfile);
+    if (p->tip)
+      putc(y[p->index-1][i], outfile);
+    else
+      reconstr(p, i);
+  }
+  putc('\n', outfile);
+  if (!p->tip) {
+    rectrav(p->next->back, m, n);
+    rectrav(p->next->next->back, m, n);
+  }
+  mx1 = mx;
+}  /* rectrav */
+
+
+void summarize()
+{
+  /* print out branch length information and node numbers */
+  long i, j, mm, num_sibs;
+  double mode, sum;
+  double like[maxcategs], nulike[maxcategs];
+  double **marginal;
+  node   *sib_ptr;
+
+  if (!treeprint)
+    return;
+  fprintf(outfile, "\nremember: ");
+  if (outgropt)
+    fprintf(outfile, "(although rooted by outgroup) ");
+  fprintf(outfile, "this is an unrooted tree!\n\n");
+  fprintf(outfile, "Ln Likelihood = %11.5f\n", curtree.likelihood);
+  fprintf(outfile, "\n Between        And            Length");
+  if (!(usertree && lngths && haslengths))
+    fprintf(outfile, "      Approx. Confidence Limits");
+  fprintf(outfile, "\n");
+  fprintf(outfile, " -------        ---            ------");
+  if (!(usertree && lngths && haslengths))
+    fprintf(outfile, "      ------- ---------- ------");
+  fprintf(outfile, "\n\n");
+  for (i = spp; i < nonodes2; i++) {
+    /* So this works with arbitrary multifurcations */
+    if (curtree.nodep[i]) {
+      num_sibs = count_sibs (curtree.nodep[i]);
+      sib_ptr  = curtree.nodep[i];
+      for (j = 0; j < num_sibs; j++) {
+        sib_ptr->initialized = false;
+        sib_ptr              = sib_ptr->next;
+      }
+    }
+  }
+
+  describe(curtree.start->back);
+
+  /* So this works with arbitrary multifurcations */
+  num_sibs = count_sibs (curtree.start);
+  sib_ptr  = curtree.start;
+  for (i=0; i < num_sibs; i++) {
+    sib_ptr = sib_ptr->next;
+    describe(sib_ptr->back);
+  }
+
+  fprintf(outfile, "\n");
+  if (!(usertree && lngths && haslengths)) {
+    fprintf(outfile, "     *  = significantly positive, P < 0.05\n");
+    fprintf(outfile, "     ** = significantly positive, P < 0.01\n\n");
+  }
+  dummy = evaluate(curtree.start, false);
+  if (rctgry && rcategs > 1) {
+    for (i = 0; i < rcategs; i++)
+      like[i] = 1.0;
+    for (i = sites - 1; i >= 0; i--) {
+      sum = 0.0;
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] = (1.0 - lambda + lambda * probcat[j]) * like[j];
+        mp[i][j] = j + 1;
+        for (k = 1; k <= rcategs; k++) {
+          if (k != j + 1) {
+            if (lambda * probcat[k - 1] * like[k - 1] > nulike[j]) {
+              nulike[j] = lambda * probcat[k - 1] * like[k - 1];
+              mp[i][j] = k;
+            }
+          }
+        }
+        if ((ally[i] > 0) && (location[ally[i]-1] > 0))
+          nulike[j] *= contribution[location[ally[i] - 1] - 1][j];
+        sum += nulike[j];
+      }
+      for (j = 0; j < rcategs; j++)
+        nulike[j] /= sum;
+      memcpy(like, nulike, rcategs * sizeof(double));
+    }
+    mode = 0.0;
+    mx = 1;
+    for (i = 1; i <= rcategs; i++) {
+      if (probcat[i - 1] * like[i - 1] > mode) {
+        mx = i;
+        mode = probcat[i - 1] * like[i - 1];
+      }
+    }
+    mx0 = mx;
+    fprintf(outfile,
+ "Combination of categories that contributes the most to the likelihood:\n\n");
+    for (i = 1; i <= nmlngth + 3; i++)
+      putc(' ', outfile);
+    for (i = 1; i <= sites; i++) {
+      fprintf(outfile, "%ld", mx);
+      if (i % 10 == 0)
+        putc(' ', outfile);
+      if (i % 60 == 0 && i != sites) {
+        putc('\n', outfile);
+        for (j = 1; j <= nmlngth + 3; j++)
+          putc(' ', outfile);
+      }
+      mx = mp[i - 1][mx - 1];
+    }
+    fprintf(outfile, "\n\n");
+    marginal = (double **) Malloc( sites*sizeof(double *));
+    for (i = 0; i < sites; i++)
+      marginal[i] = (double *) Malloc( rcategs*sizeof(double));
+    for (i = 0; i < rcategs; i++)
+      like[i] = 1.0;
+    for (i = sites - 1; i >= 0; i--) {
+      sum = 0.0;
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] = (1.0 - lambda + lambda * probcat[j]) * like[j];
+        for (k = 1; k <= rcategs; k++) {
+          if (k != j + 1)
+              nulike[j] += lambda * probcat[k - 1] * like[k - 1];
+        }
+        if ((ally[i] > 0) && (location[ally[i]-1] > 0))
+          nulike[j] *= contribution[location[ally[i] - 1] - 1][j];
+        sum += nulike[j];
+      }
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] /= sum;
+        marginal[i][j] = nulike[j];
+      }
+      memcpy(like, nulike, rcategs * sizeof(double));
+    }
+    for (i = 0; i < rcategs; i++)
+      like[i] = 1.0;
+    for (i = 0; i < sites; i++) {
+      sum = 0.0;
+      for (j = 0; j < rcategs; j++) {
+        nulike[j] = (1.0 - lambda + lambda * probcat[j]) * like[j];
+        for (k = 1; k <= rcategs; k++) {
+          if (k != j + 1)
+              nulike[j] += lambda * probcat[k - 1] * like[k - 1];
+        }
+        marginal[i][j] *= like[j] * probcat[j];
+        sum += nulike[j];
+      }
+      for (j = 0; j < rcategs; j++)
+        nulike[j] /= sum;
+      memcpy(like, nulike, rcategs * sizeof(double));
+      sum = 0.0;
+      for (j = 0; j < rcategs; j++)
+        sum += marginal[i][j];
+      for (j = 0; j < rcategs; j++)
+        marginal[i][j] /= sum;
+    }
+    fprintf(outfile, "Most probable category at each site if > 0.95 probability (\".\" otherwise)\n\n");
+    for (i = 1; i <= nmlngth + 3; i++)
+      putc(' ', outfile);
+    for (i = 0; i < sites; i++) {
+      sum = 0.0;
+      for (j = 0; j < rcategs; j++)
+        if (marginal[i][j] > sum) {
+          sum = marginal[i][j];
+          mm = j;
+        }
+      if (sum >= 0.95)
+        fprintf(outfile, "%ld", mm+1);
+      else
+        putc('.', outfile);
+      if ((i+1) % 60 == 0) {
+        if (i != 0) {
+          putc('\n', outfile);
+          for (j = 1; j <= nmlngth + 3; j++)
+            putc(' ', outfile);
+        }
+      }
+      else if ((i+1) % 10 == 0)
+        putc(' ', outfile);
+    }
+    putc('\n', outfile);
+    for (i = 0; i < sites; i++)
+      free(marginal[i]);
+    free(marginal);
+  }
+  putc('\n', outfile);
+  if (hypstate) {
+    fprintf(outfile, "Probable sequences at interior nodes:\n\n");
+    fprintf(outfile, "  node       ");
+    for (i = 0; (i < 13) && (i < ((sites + (sites-1)/10 - 39) / 2)); i++)
+      putc(' ', outfile);
+    fprintf(outfile, "Reconstructed sequence (caps if > 0.95)\n\n");
+    if (!rctgry || (rcategs == 1))
+      mx0 = 1;
+    for (i = 0; i < sites; i += 60) {
+      k = i + 59;
+      if (k >= sites)
+        k = sites - 1;
+      rectrav(curtree.start, i, k);
+      rectrav(curtree.start->back, i, k);
+      putc('\n', outfile);
+      mx0 = mx1;
+    }
+  }
+}  /* summarize */
+
+
+void dnaml_treeout(node *p)
+{
+  /* write out file with representation of final tree2 */
+  /* Only works for bifurcations! */
+  long i, n, w;
+  Char c;
+  double x;
+
+  if (p->tip) {
+    n = 0;
+    for (i = 1; i <= nmlngth; i++) {
+      if (nayme[p->index-1][i - 1] != ' ')
+        n = i;
+    }
+    for (i = 0; i < n; i++) {
+      c = nayme[p->index-1][i];
+      if (c == ' ')
+        c = '_';
+      putc(c, outtree);
+    }
+    col += n;
+  } else {
+    putc('(', outtree);
+    col++;
+    dnaml_treeout(p->next->back);
+    putc(',', outtree);
+    col++;
+    if (col > 45) {
+      putc('\n', outtree);
+      col = 0;
+    }
+    dnaml_treeout(p->next->next->back);
+    if (p == curtree.start) {
+      putc(',', outtree);
+      col++;
+      if (col > 45) {
+        putc('\n', outtree);
+        col = 0;
+      }
+      dnaml_treeout(p->back);
+    }
+    putc(')', outtree);
+    col++;
+  }
+  x = p->v * fracchange;
+  if (x > 0.0)
+    w = (long)(0.43429448222 * log(x));
+  else if (x == 0.0)
+    w = 0;
+  else
+    w = (long)(0.43429448222 * log(-x)) + 1;
+  if (w < 0)
+    w = 0;
+  if (p == curtree.start)
+    fprintf(outtree, ";\n");
+  else {
+    fprintf(outtree, ":%*.5f", (int)(w + 7), x);
+    col += w + 8;
+  }
+}  /* dnaml_treeout */
+
+
+void inittravtree(node *p)
+{
+  /* traverse tree to set initialized and v to initial values */
+
+  p->initialized = false;
+  p->back->initialized = false;
+  if (!p->tip) {
+    inittravtree(p->next->back);
+    inittravtree(p->next->next->back);
+  }
+} /* inittravtree */
+
+
+void treevaluate()
+{
+  /* evaluate a user tree */
+  long i;
+
+  inittravtree(curtree.start);
+  polishing = true;
+  smoothit = true;
+  for (i = 1; i <= smoothings * 4; i++)
+    smooth (curtree.start);
+  dummy = evaluate(curtree.start, true);
+}  /* treevaluate */
+
+
+void maketree()
+{
+  long i, j;
+  boolean dummy_first, goteof;
+  pointarray dummy_treenode=NULL;
+  long nextnode;
+  node *root, *q, *r;
+
+  inittable();
+
+  if (usertree) {
+    openfile(&intree,INTREE,"input tree file", "r",progname,intreename);
+    inittable_for_usertree (intree);
+    numtrees = countsemic(&intree);
+    if (numtrees > 2)
+      initseed(&inseed, &inseed0, seed);
+    l0gl = (double *) Malloc(numtrees * sizeof(double));
+    l0gf = (double **) Malloc(numtrees * sizeof(double *));
+    for (i=0; i < numtrees; ++i)
+      l0gf[i] = (double *) Malloc(endsite * sizeof(double));
+    if (treeprint) {
+      fprintf(outfile, "User-defined tree");
+      if (numtrees > 1)
+        putc('s', outfile);
+      fprintf(outfile, ":\n\n");
+    }
+    which = 1;
+
+    /* This taken out of tree read, used to be [spp-1], but referring
+       to [0] produces output identical to what the pre-modified dnaml
+       produced. */
+
+    while (which <= numtrees) {
+      
+      /* These initializations required each time through the loop
+         since multiple trees require re-initialization */
+      haslengths = true;
+      nextnode         = 0;
+      dummy_first      = true;
+      goteof           = false;
+
+      treeread(intree, &root, dummy_treenode, &goteof, &dummy_first,
+               curtree.nodep, &nextnode,
+               &haslengths, &grbg, initdnamlnode);
+      q = root;
+      r = root;
+      while (!(q->next == root))
+        q = q->next;
+      q->next = root->next;
+      root = q;
+      chuck(&grbg, r);
+      curtree.nodep[spp] = q;
+      if (goteof && (which <= numtrees)) {
+        /* if we hit the end of the file prematurely */
+        printf ("\n");
+        printf ("ERROR: trees missing at end of file.\n");
+        printf ("\tExpected number of trees:\t\t%ld\n", numtrees);
+        printf ("\tNumber of trees actually in file:\t%ld.\n\n", which - 1);
+        exxit(-1);
+      }
+
+      curtree.start = curtree.nodep[0]->back;
+      
+      treevaluate();
+      if (reconsider) {
+        bestyet = UNDEFINED;
+        succeeded = true;
+        while (succeeded) {
+          succeeded = false;
+          rearrange(curtree.start, curtree.start->back);
+        }
+        treevaluate();
+      }
+      dnaml_printree();
+      summarize();
+      if (trout) {
+        col = 0;
+        dnaml_treeout(curtree.start);
+      }
+      which++;
+    }
+    FClose(intree);
+    putc('\n', outfile);
+    if (!auto_ && numtrees > 1 && weightsum > 1 )
+      standev2(numtrees, maxwhich, 0, endsite-1, maxlogl,
+               l0gl, l0gf, aliasweight, seed);
+  } else {
+    /* If there's no input user tree, */
+    for (i = 1; i <= spp; i++)
+      enterorder[i - 1] = i;
+    if (jumble)
+      randumize(seed, enterorder);
+    if (progress) {
+      printf("\nAdding species:\n");
+      writename(0, 3, enterorder);
+#ifdef WIN32
+      phyFillScreenColor();
 #endif
-  openfile(&infile,"infile","r",argv[0],infilename);
-  openfile(&outfile,"outfile","w",argv[0],outfilename);
+    }
+    nextsp = 3;
+    polishing = false;
+    buildsimpletree(&curtree);
+    curtree.start = curtree.nodep[enterorder[0] - 1]->back;
+    smoothit = improve;
+    nextsp = 4;
+    while (nextsp <= spp) {
+      buildnewtip(enterorder[nextsp - 1], &curtree);
+      bestyet = UNDEFINED;
+      if (smoothit)
+        dnamlcopy(&curtree, &priortree, nonodes2, rcategs);
+      addtraverse(curtree.nodep[enterorder[nextsp - 1] - 1]->back,
+                  curtree.start, true);
+      if (smoothit)
+        dnamlcopy(&bestree, &curtree, nonodes2, rcategs);
+      else {
+        insert_(curtree.nodep[enterorder[nextsp - 1] - 1]->back, qwhere, true);
+        smoothit = true;
+        for (i = 1; i<=smoothings; i++) {
+          smooth (curtree.start);
+          smooth (curtree.start->back);
+        }
+        smoothit = false;
+        dnamlcopy(&curtree, &bestree, nonodes2, rcategs);
+        bestyet = curtree.likelihood;
+      }
+      if (progress) {
+        writename(nextsp - 1, 1, enterorder);
+#ifdef WIN32
+        phyFillScreenColor();
+#endif
+      }
+      if (global && nextsp == spp && progress) {
+        printf("Doing global rearrangements\n");
+        printf("  !");
+        for (j = 1; j <= (spp - 3); j++)
+          putchar('-');
+        printf("!\n");
+      }
+      succeeded = true;
+      while (succeeded) {
+        succeeded = false;
+        if (global && nextsp == spp && progress) {
+          printf("   ");
+          fflush(stdout);
+        }
+        rearrange(curtree.start, curtree.start->back);
+        if (global && nextsp == spp && progress)
+          putchar('\n');
+      }
+      for (i = spp; i < nextsp + spp - 2; i++) {
+        curtree.nodep[i]->initialized = false;
+        curtree.nodep[i]->next->initialized = false;
+        curtree.nodep[i]->next->next->initialized = false;
+      }
+      if (!smoothit) {
+        smoothit = true;
+        for (i = 1; i<=smoothings; i++) {
+          smooth (curtree.start);
+          smooth (curtree.start->back);
+        }
+        smoothit = false;
+        dnamlcopy(&curtree, &bestree, nonodes2, rcategs);
+        bestyet = curtree.likelihood;
+      }
+      nextsp++;
+    }
+    if (global && progress) {
+      putchar('\n');
+      fflush(stdout);
+    }
+    if (njumble > 1) {
+      if (jumb == 1)
+        dnamlcopy(&bestree, &bestree2, nonodes2, rcategs);
+      else
+        if (bestree2.likelihood < bestree.likelihood)
+          dnamlcopy(&bestree, &bestree2, nonodes2, rcategs);
+    }
+    if (jumb == njumble) {
+      if (njumble > 1)
+        dnamlcopy(&bestree2, &curtree, nonodes2, rcategs);
+      curtree.start = curtree.nodep[outgrno - 1]->back;
+      for (i = 0; i < nonodes2; i++) {
+        if (i < spp)
+          curtree.nodep[i]->initialized = false;
+        else {
+          curtree.nodep[i]->initialized = false;
+          curtree.nodep[i]->next->initialized = false;
+          curtree.nodep[i]->next->next->initialized = false;
+        } 
+      }
+      treevaluate();
+      dnaml_printree();
+      summarize();
+      if (trout) {
+        col = 0;
+        dnaml_treeout(curtree.start);
+      }
+    }
+  }
+  if (usertree) {
+    free(l0gl);
+    for (i=0; i < numtrees; i++)
+      free(l0gf[i]);
+    free(l0gf);
+  }
+  for (i = 0; i < rcategs; i++)
+    for (j = 0; j < categs; j++)
+      free(tbl[i][j]);
+  for (i = 0; i < rcategs; i++)
+    free(tbl[i]);
+  free(tbl);
+  if (jumb < njumble)
+    return;
+  free(contribution);
+  free(mp);
+  for (i=0; i < endsite; i++)
+     free(term[i]);
+  free(term);
+  for (i=0; i < endsite; i++)
+     free(slopeterm[i]);
+  free(slopeterm);
+  for (i=0; i < endsite; i++)
+     free(curveterm[i]);
+  free(curveterm);
+  free_all_x_in_array (nonodes2, curtree.nodep);
+  if (!usertree || reconsider) {
+    free_all_x_in_array (nonodes2, bestree.nodep);
+    free_all_x_in_array (nonodes2, priortree.nodep);
+    if (njumble > 1)
+      free_all_x_in_array (nonodes2, bestree2.nodep);
+  }
+  if (progress) {
+    printf("\n\nOutput written to file \"%s\"\n\n", outfilename);
+    if (trout)
+      printf("Tree also written onto file \"%s\"\n", outtreename);
+    putchar('\n');
+  }
+}  /* maketree */
+
+
+void clean_up()
+{
+  /* Free and/or close stuff */
+  long i;
+
+    free (rrate);
+    free (probcat);
+    free (rate);
+    /* Seems to require freeing every time... */
+    for (i = 0; i < spp; i++) {
+      free (y[i]);
+    }
+    free (y);
+    free (nayme);
+    free (enterorder);
+    free (category);
+    free (weight);
+    free (alias);
+    free (ally);
+    free (location);
+    free (aliasweight);
+
+#if 0          /* ???? debug ???? */
+  freetree2(curtree.nodep, nonodes2);
+
+  if (! (usertree && !reconsider)) {
+    freetree2(bestree.nodep, nonodes2);
+    freetree2(priortree.nodep, nonodes2);
+  }
+  
+  if (! (njumble <= 1))
+    freetree2(bestree2.nodep, nonodes2);
+#endif
+  FClose(infile);
+  FClose(outfile);
+  FClose(outtree);
+#ifdef MAC
+  fixmacfile(outfilename);
+  fixmacfile(outtreename);
+#endif
+}   /* clean_up */
+
+
+int main(int argc, Char *argv[])
+{  /* DNA Maximum Likelihood */
+#ifdef MAC
+  argc = 1;                /* macsetup("DnaML","");        */
+  argv[0] = "DnaML";
+#endif
+  init(argc,argv);
+  progname = argv[0];
+  openfile(&infile,INFILE,"input file","r",argv[0],infilename);
+  openfile(&outfile,OUTFILE,"output file","w",argv[0],outfilename);
   mulsets = false;
   datasets = 1;
   firstset = true;
-  ibmpc = ibmpc0;
-  ansi = ansi0;
-  vt52 = vt520;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
+  grbg = NULL;
   doinit();
-  ttratio0    = ttratio;
-  enterorder  = (short *)Malloc(numsp*sizeof(short));
-  category    = (short *)Malloc(sites*sizeof(short));
-  weight      = (short *)Malloc(sites*sizeof(short));
-  alias       = (short *)Malloc(sites*sizeof(short));
-  ally        = (short *)Malloc(sites*sizeof(short));
-  location    = (short *)Malloc(sites*sizeof(short));
-  aliasweight = (short *)Malloc(sites*sizeof(short));
+  ttratio0 = ttratio;
+  if (ctgry)
+    openfile(&catfile,CATFILE,"categories file","r",argv[0],catfilename);
+  if (weights || justwts)
+    openfile(&weightfile,WEIGHTFILE,"weights file","r",argv[0],weightfilename);
   if (trout)
-    openfile(&treefile,"treefile","w",argv[0],trfilename);
+    openfile(&outtree,OUTTREE,"output tree file","w",argv[0],outtreename);
   for (ith = 1; ith <= datasets; ith++) {
     if (datasets > 1) {
-      fprintf(outfile, "Data set # %hd:\n", ith);
-      printf("\nData set # %hd:\n", ith);
+      fprintf(outfile, "Data set # %ld:\n", ith);
+      printf("\nData set # %ld:\n", ith);
     }
     ttratio = ttratio0;
     getinput();
@@ -1227,60 +2356,12 @@ char infilename[100],outfilename[100],trfilename[100];
     for (jumb = 1; jumb <= njumble; jumb++)
       maketree();
   }
-  FClose(infile);
-  FClose(outfile);
-  FClose(treefile);
-#ifdef MAC
-  fixmacfile(outfilename);
-  fixmacfile(trfilename);
+
+  clean_up();
+  printf("Done.\n\n");
+#ifdef WIN32
+  phyRestoreConsoleAttributes();
 #endif
-  exit(0);
+  return 0;
 }  /* DNA Maximum Likelihood */
-
-int eof(f)
-FILE *f;
-{
-    register int ch;
-
-    if (feof(f))
-	return 1;
-    if (f == stdin)
-	return 0;
-    ch = getc(f);
-    if (ch == EOF)
-	return 1;
-    ungetc(ch, f);
-    return 0;
-}
-
-
-int eoln(f)
-FILE *f;
-{
-    register int ch;
-
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-MALLOCRETURN *mymalloc(x)
-long  x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)calloc(1,x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
-
-
+ 

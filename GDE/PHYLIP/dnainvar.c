@@ -1,121 +1,81 @@
-#include "phylip.h"
 
-/* version 3.52c. (c) Copyright 1993 by Joseph Felsenstein.
+#include "phylip.h"
+#include "seq.h"
+
+/* version 3.6. (c) Copyright 1993-2002 by the University of Washington.
    Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
 #define maxsp           4   /* maximum number of species -- must be 4 */
-#define nmlngth         10   /* max. number characters in species name */
-
-#define ibmpc0          false
-#define ansi0           true
-#define vt520           false
-
 
 typedef enum {
   xx, yy, zz, ww
 } simbol;
-typedef Char **sequence;
-typedef Char naym[nmlngth];
+
+#ifndef OLDC
+/* function prototypes */
+void getoptions(void);
+void allocrest(void);
+void doinit(void);
+void dnainvar_sitecombine(void);
+void makeweights(void);
+void doinput(void);
+void prntpatterns(void);
+void makesymmetries(void);
+
+void prntsymbol(simbol);
+void prntsymmetries(void);
+void tabulate(long,long,long,long,double *,double *,double *,double *);
+void dnainvar_writename(long);
+void writetree(long, long, long, long);
+void exacttest(long, long);
+void invariants(void);
+void makeinv(void);
+void reallocsites(void);
+/* function prototypes */
+#endif
 
 
-Static FILE *infile, *outfile;
-Static long numsp, sites, endsite, datasets, ith;
-Static boolean weights, anerror, printdata, progress, prntpat, printinv,
-               mulsets, interleaved, ibmpc, vt52, ansi, firstset;
-Static naym nayme[maxsp];
-Static sequence y;
-Static long *weight,*alias,*aliasweight;
+extern sequence y;
+
+Char infilename[FNMLNGTH], outfilename[FNMLNGTH], weightfilename[FNMLNGTH];
+long sites, msets, ith;
+boolean weights, progress, prntpat, printinv, mulsets, firstset, justwts;
+steptr aliasweight;
 
 long f[(long)ww - (long)xx + 1][(long)ww - (long)xx + 1]
        [(long)ww - (long)xx + 1]; /* made global from being local to makeinv */
 
-openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
-{
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-        printf("%s:  can't read %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      case 'w':
-      case 'a':
-        printf("%s: can't write %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      }
-    }
-  }
-  *fp=of;
-  if (perm != NULL)
-    strcpy(perm,file);
-}
-
-
-void uppercase(ch)
-Char *ch;
-{
-   *ch = (islower(*ch) ?  toupper(*ch) : (*ch));
-}  /* uppercase */
-
-
-void getnums()
-{
-  /* input number of species, number of sites */
-  fscanf(infile, "%ld%ld", &numsp, &sites);
-  if (numsp > maxsp){
-    printf("TOO MANY SPECIES: only 4 allowed\n");
-    exit(-1);}
-  if (printdata)
-    fprintf(outfile, "%4ld Species, %4ld Sites\n", numsp, sites);
-}  /* getnums */
-
 void getoptions()
 {
   /* interactively set options */
-  Char ch;
-  boolean done, done1;
+  long loopcount, loopcount2;
+  boolean done;
+  Char ch, ch2;
 
   fprintf(outfile, "\nNucleic acid sequence Invariants ");
   fprintf(outfile, "method, version %s\n\n",VERSION);
   putchar('\n');
   printdata = false;
+  weights = false;
+  dotdiff = true;
   progress = true;
   prntpat = true;
   printinv = true;
   interleaved = true;
+  loopcount = 0;
   do {
-    if (ansi)
-      printf("\033[2J\033[H");
-    else if (vt52)
-      printf("\033E\033H");
-    else
-      putchar('\n');
+    cleerhome();
     printf("\nNucleic acid sequence Invariants ");
     printf("method, version %s\n\n",VERSION);
     printf("Settings for this run:\n");
+    printf("  W                       Sites weighted?  %s\n",
+           (weights ? "Yes" : "No"));
     printf("  M           Analyze multiple data sets?");
     if (mulsets)
-      printf("  Yes, %2ld sets\n", datasets);
+      printf("  Yes, %2ld %s\n", msets,
+              (justwts ? "sets of weights" : "data sets"));
     else
       printf("  No\n");
     printf("  I          Input sequences interleaved?");
@@ -123,22 +83,23 @@ void getoptions()
       printf("  Yes\n");
     else
       printf("  No, sequential\n");
-    printf("  0   Terminal type (IBM PC, VT52, ANSI)?");
+    printf("  0   Terminal type (IBM PC, ANSI, none)?");
     if (ibmpc)
       printf("  IBM PC\n");
     if (ansi)
       printf("  ANSI\n");
-    if (vt52)
-      printf("  VT52\n");
-    if (!(ibmpc || vt52 || ansi))
+    if (!(ibmpc || ansi))
       printf("  (none)\n");
     printf("  1    Print out the data at start of run");
     if (printdata)
       printf("  Yes\n");
     else
       printf("  No\n");
+    if (printdata)
+      printf("  .  Use dot-differencing to display them  %s\n",
+           dotdiff ? "Yes" : "No");
     printf("  2  Print indications of progress of run  %s\n",
-	   (progress ? "Yes" : "No"));
+           (progress ? "Yes" : "No"));
     printf("  3      Print out the counts of patterns");
     if (prntpat)
       printf("  Yes\n");
@@ -148,361 +109,136 @@ void getoptions()
     if (printinv)
       printf("  Yes\n");
     else
-      printf("  No\n");
-    printf("\nAre these settings correct? (type Y or the letter for one to change)\n");
+        printf("  No\n");
+    if(weights && justwts){
+        printf(
+              "WARNING:  W option and Multiple Weights options are both on.  ");
+        printf(
+         "The W menu option is unnecessary and has no additional effect. \n");
+    }
+    printf("\n  Y to accept these or type the letter for one to change\n");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
     uppercase(&ch);
     done = (ch == 'Y');
     if (!done) {
-      if (ch == 'M' || ch == 'I' || ch == '1' || ch == '2' || ch == '3' ||
-	  ch == '4' || ch == '0') {
-	switch (ch) {
+      if (strchr("WMI01.234",ch) != NULL) {
+        switch (ch) {
 
-	case 'M':
-	  mulsets = !mulsets;
-	  if (mulsets) {
-	    done1 = false;
-	    do {
-	      printf("How many data sets?\n");
-	      scanf("%ld%*[^\n]", &datasets);
-	      getchar();
-	      done1 = (datasets >= 1);
-	      if (!done1)
-		printf("BAD DATA SETS NUMBER:  it must be greater than 1\n");
-	    } while (done1 != true);
-	  }
-	  break;
+        case 'W':
+          weights = !weights;
+          break;
 
-	case 'I':
-	  interleaved = !interleaved;
-	  break;
+        case 'M':
+          mulsets = !mulsets;
+          if (mulsets){
+            printf("Multiple data sets or multiple weights?");
+            loopcount2 = 0;
+            do {
+              printf(" (type D or W)\n");
+#ifdef WIN32
+              phyFillScreenColor();
+#endif
+              scanf("%c%*[^\n]", &ch2);
+              getchar();
+              if (ch2 == '\n')
+                ch2 = ' ';
+                uppercase(&ch2);
+                countup(&loopcount2, 10);
+            } while ((ch2 != 'W') && (ch2 != 'D'));
+            justwts = (ch2 == 'W');
+            if (justwts)
+              justweights(&msets);
+            else
+              initdatasets(&msets);
+            }
+            break;
 
-	case '0':
-	  if (ibmpc) {
-	    ibmpc = false;
-	    vt52 = true;
-	  } else {
-	    if (vt52) {
-	      vt52 = false;
-	      ansi = true;
-	    } else if (ansi)
-	      ansi = false;
-	    else
-	      ibmpc = true;
-	  }
-	  break;
+        case 'I':
+          interleaved = !interleaved;
+          break;
 
-	case '1':
-	  printdata = !printdata;
-	  break;
+        case '0':
+          initterminal(&ibmpc, &ansi);
+          break;
+
+        case '1':
+          printdata = !printdata;
+          break;
+
+        case '.':
+          dotdiff = !dotdiff;
+          break;
 
         case '2':
-	  progress = !progress;
-    	  break;
-	
-	case '3':
-	  prntpat = !prntpat;
-	  break;
+          progress = !progress;
+              break;
+        
+        case '3':
+          prntpat = !prntpat;
+          break;
 
-	case '4':
-	  printinv = !printinv;
-	  break;
-	}
+        case '4':
+          printinv = !printinv;
+          break;
+        }
       } else
-	printf("Not a possible option!\n");
+        printf("Not a possible option!\n");
     }
+    countup(&loopcount, 100);
   } while (!done);
 }  /* getoptions */
+
+void reallocsites(void) 
+{
+  long i;
+
+  for (i=0;  i < spp; i++) {
+    free(y[i]);
+    y[i] = (Char *)Malloc(sites*sizeof(Char));
+  }
+  free(weight);
+  free(alias);
+  free(aliasweight);
+  weight       = (steptr)Malloc(sites * sizeof(long));
+  alias        = (steptr)Malloc(sites * sizeof(long));
+  aliasweight  = (steptr)Malloc(sites * sizeof(long));
+}
+
+
+void allocrest()
+{
+  long i;
+
+  y       = (Char **)Malloc(spp*sizeof(Char *));
+  for (i = 0; i < spp; i++)
+    y[i] = (Char *)Malloc(sites*sizeof(Char));
+  nayme        = (naym *)Malloc(maxsp * sizeof(naym));
+  weight       = (steptr)Malloc(sites * sizeof(long));
+  alias        = (steptr)Malloc(sites * sizeof(long));
+  aliasweight  = (steptr)Malloc(sites * sizeof(long));
+}
 
 
 void doinit()
 {
   /* initializes variables */
-  long i;
 
-  getnums();
-  if (!anerror)
-    getoptions();
-  y       = (Char **)Malloc(numsp*sizeof(Char *));
-  for (i = 0; i < numsp; i++)
-    y[i] = (Char *)Malloc(sites*sizeof(Char));
-
-  weight       = (long *)Malloc(sites * sizeof(long));
-  alias        = (long *)Malloc(sites * sizeof(long));
-  aliasweight  = (long *)Malloc(sites * sizeof(long));
+  inputnumbers(&spp, &sites, &nonodes, 1);
+  if (spp > maxsp){
+    printf("TOO MANY SPECIES: only 4 allowed\n");
+    exxit(-1);}
+  getoptions();
+  if (printdata)
+    fprintf(outfile, "%2ld species, %3ld  sites\n", spp, sites);
+  allocrest();
 }  /* doinit*/
 
 
-void inputweights()
-{
-  /* input the character weights, which must be 0 or 1 */
-  Char ch;
-  long i;
-
-  for (i = 1; i < nmlngth; i++)
-    ch = getc(infile);
-  for (i = 0; i < sites; i++) {
-    do {
-      if (eoln(infile)) {
-	fscanf(infile, "%*[^\n]");
-	getc(infile);
-      }
-      ch = getc(infile);
-    } while (ch == ' ');
-    weight[i] = 1;
-    if (ch == '0')
-      weight[i] = 0;
-    else if (ch != '1') {
-      printf("BAD WEIGHT CHARACTER: %c\n", ch);
-      anerror = true;
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  weights = true;
-}  /* inputweights */
-
-void printweights()
-{
-  /* print out the weights of sites */
-  long i, j, k;
-
-  fprintf(outfile, "\n\n   Sites are weighted as follows:\n");
-  fprintf(outfile, "        ");
-  for (i = 0; i <= 9; i++)
-    fprintf(outfile, "%3ld", i);
-  fprintf(outfile, "\n     *---------------------------------\n");
-  for (j = 0; j <= (sites/10); j++) {
-    fprintf(outfile, "%5ld!  ", j * 10);
-    for (i = 0; i <= 9; i++) {
-      k = j * 10 + i;
-      if (k > 0 && k <= sites)
-	fprintf(outfile, "%3ld", weight[k - 1]);
-      else
-	fprintf(outfile, "   ");
-    }
-    putc('\n', outfile);
-  }
-  putc('\n', outfile);
-}  /* printweights */
-
-void inputoptions()
-{
-  /* input the information on the options */
-  Char ch;
-  long extranum, i, cursp, curst;
-
-  if (!firstset) {
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    fscanf(infile, "%ld%ld", &cursp, &curst);
-    if (cursp != numsp) {
-      printf("\nERROR: INCONSISTENT NUMBER OF SPECIES IN DATA SET %4ld\n", ith);
-      anerror = true;
-    }
-    sites = curst;
-  }
-  weights = false;
-  extranum = 0;
-  while (!(eoln(infile) || anerror)) {
-    ch = getc(infile);
-    uppercase(&ch);
-    if (ch == 'W')
-      extranum++;
-    else if (ch != ' ') {
-      printf("BAD OPTION CHARACTER: %c\n", ch);
-      anerror = true;
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  for (i = 0; i < sites; i++)
-    weight[i] = 1;
-  for (i = 1; i <= extranum; i++) {
-    if (!anerror) {
-      ch = getc(infile);
-      uppercase(&ch);
-      if (ch == 'W')
-	inputweights();
-      anerror = (ch != 'W');
-      if (anerror)
-	printf("ERROR: INCORRECT AUXILIARY OPTIONS LINE WHICH STARTS WITH %c\n",
-	       ch);
-    }
-  }
-  if (weights)
-    printweights();
-}  /* inputoptions */
-
-void inputdata()
-{
-  /* Input the names and sequences for each species */
-  long i, j, k, l, basesread, basesnew;
-  Char charstate;
-  boolean allread, done;
-
-  putc('\n', outfile);
-  j = nmlngth + (sites + (sites - 1) / 10) / 2 - 5;
-  if (j < nmlngth - 1)
-    j = nmlngth - 1;
-  if (j > 37)
-    j = 37;
-  if (printdata) {
-    fprintf(outfile, "Name");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "Sequences\n");
-    fprintf(outfile, "----");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "---------\n\n");
-  }
-  basesread = 0;
-  allread = false;
-  while (!(allread || anerror)) {
-    allread = true;
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    i = 1;
-    while (i <= numsp && !anerror) {
-      if ((interleaved && basesread == 0) || !interleaved) {
-	for (j = 0; j < nmlngth; j++) {
-	  if (!anerror) {
-	    nayme[i - 1][j] = getc(infile);
-	    anerror = (anerror || eof(infile) || eoln(infile));
-	    if (anerror)
-	      printf(
-		"ERROR: END-OF-LINE OR END-OF-FILE IN THE MIDDLE OF A SPECIES NAME\n");
-	  }
-	}
-      }
-      if (interleaved)
-	j = basesread;
-      else
-	j = 0;
-      done = false;
-      while (!done && !eof(infile) && !anerror) {
-	if (interleaved)
-	  done = true;
-	while (j < sites && !(eoln(infile) || eof(infile)) && !anerror) {
-	  charstate = getc(infile);
-	  if (charstate == ' ' || (charstate >= '0' && charstate <= '9'))
-	    continue;
-	  uppercase(&charstate);
-	  if (charstate != 'A' && charstate != 'B' && charstate != 'C' &&
-	      charstate != 'D' && charstate != 'G' && charstate != 'H' &&
-	      charstate != 'K' && charstate != 'M' && charstate != 'N' &&
-	      charstate != 'R' && charstate != 'S' && charstate != 'T' &&
-	      charstate != 'U' && charstate != 'V' && charstate != 'W' &&
-	      charstate != 'X' && charstate != 'Y' && charstate != '?' &&
-	      charstate != 'O' && charstate != '-' && charstate != '.') {
-
-	    printf("ERROR: BAD BASE:%c AT POSITION%5ld OF SPECIES %3ld\n",
-		   charstate, j, i);
-	    anerror = true;
-	  }
-	  j++;
-	  if (charstate == '.')
-	    charstate = y[0][j - 1];
-	  y[i - 1][j - 1] = charstate;
-	}
-	if (interleaved)
-	  continue;
-	if (j < sites) {
-	  fscanf(infile, "%*[^\n]");
-	  getc(infile);
-	} else if (j == sites)
-	  done = true;
-      }
-      if (interleaved && i == 1)
-	basesnew = j;
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-      if (interleaved)
-	anerror = (anerror || j != basesnew);
-      else
-	anerror = (anerror || j != sites);
-      if (anerror)
-	printf("ERROR: SEQUENCES OUT OF ALIGNMENT\n");
-      i++;
-    }
-    if (interleaved) {
-      basesread = basesnew;
-      allread = (basesread == sites);
-    } else
-      allread = (i > numsp);
-  }
-  if (!printdata || anerror)
-    return;
-  for (i = 1; i <= ((sites - 1) / 60 + 1); i++) {
-    for (j = 1; j <= numsp; j++) {
-      for (k = 0; k < nmlngth; k++)
-	putc(nayme[j - 1][k], outfile);
-      fprintf(outfile, "   ");
-      l = i * 60;
-      if (l > sites)
-	l = sites;
-      for (k = (i - 1) * 60 + 1; k <= l; k++) {
-	if (!anerror) {
-	  if (j > 1 && y[j - 1][k - 1] == y[0][k - 1])
-	    charstate = '.';
-	  else
-	    charstate = y[j - 1][k - 1];
-	  putc(charstate, outfile);
-	  if (k % 10 == 0 && k % 60 != 0)
-	    putc(' ', outfile);
-	}
-      }
-      putc('\n', outfile);
-    }
-    putc('\n', outfile);
-  }
-  putc('\n', outfile);
-}  /* inputdata */
-
-void sitesort()
-{
-  /* Shell sort keeping sites, weights in same order */
-  long gap, i, j, jj, jg, k, itemp;
-  boolean flip, tied;
-
-  gap = sites / 2;
-  while (gap > 0) {
-    for (i = gap + 1; i <= sites; i++) {
-      j = i - gap;
-      flip = true;
-      while (j > 0 && flip) {
-	jj = alias[j - 1];
-	jg = alias[j + gap - 1];
-	flip = false;
-	k = 1;
-	tied = true;
-	while (k <= numsp && tied) {
-	  flip = (y[k - 1][jj - 1] > y[k - 1][jg - 1]);
-	  tied = (tied && y[k - 1][jj - 1] == y[k - 1][jg - 1]);
-	  k++;
-	}
-	if (!flip)
-	  break;
-	itemp = alias[j - 1];
-	alias[j - 1] = alias[j + gap - 1];
-	alias[j + gap - 1] = itemp;
-	itemp = aliasweight[j - 1];
-	aliasweight[j - 1] = aliasweight[j + gap - 1];
-	aliasweight[j + gap - 1] = itemp;
-	j -= gap;
-      }
-    }
-    gap /= 2;
-  }
-}  /* sitesort */
-
-void sitecombine()
+void dnainvar_sitecombine()
 {
   /* combine sites that have identical patterns */
   long i, j, k;
@@ -514,58 +250,21 @@ void sitecombine()
     tied = true;
     while (j <= sites && tied) {
       k = 1;
-      while (k <= numsp && tied) {
-	tied = (tied &&
-	    y[k - 1][alias[i - 1] - 1] == y[k - 1][alias[j - 1] - 1]);
-	k++;
+      while (k <= spp && tied) {
+        tied = (tied &&
+            y[k - 1][alias[i - 1] - 1] == y[k - 1][alias[j - 1] - 1]);
+        k++;
       }
       if (tied && aliasweight[j - 1] > 0) {
-	aliasweight[i - 1] += aliasweight[j - 1];
-	aliasweight[j - 1] = 0;
+        aliasweight[i - 1] += aliasweight[j - 1];
+        aliasweight[j - 1] = 0;
       }
       j++;
     }
     i = j - 1;
   }
-}  /* sitecombine */
+}  /* dnainvar_sitecombine */
 
-void sitescrunch()
-{
-  /* Bubble sort so positively weighted sites come first */
-  long i, j, itemp;
-  boolean done, found;
-
-  done = false;
-  i = 1;
-  j = 2;
-  while (!done) {
-    found = false;
-    if (aliasweight[i - 1] > 0)
-      i++;
-    else {
-      if (j <= i)
-	j = i + 1;
-      if (j <= sites) {
-	found = false;
-	do {
-	  found = (aliasweight[j - 1] > 0);
-	  j++;
-	} while (!(found || j > sites));
-	if (found) {
-	  j--;
-	  itemp = alias[i - 1];
-	  alias[i - 1] = alias[j - 1];
-	  alias[j - 1] = itemp;
-	  itemp = aliasweight[i - 1];
-	  aliasweight[i - 1] = aliasweight[j - 1];
-	  aliasweight[j - 1] = itemp;
-	} else
-	  done = true;
-      }
-    }
-    done = (done || i >= sites);
-  }
-}  /* sitescrunch */
 
 void makeweights()
 {
@@ -576,9 +275,9 @@ void makeweights()
     alias[i - 1] = i;
     aliasweight[i - 1] = weight[i - 1];
   }
-  sitesort();
-  sitecombine();
-  sitescrunch();
+  sitesort(sites, aliasweight);
+  dnainvar_sitecombine();
+  sitescrunch2(sites, 1, 2, aliasweight);
   for (i = 1; i <= sites; i++) {
     weight[i - 1] = aliasweight[i - 1];
     if (weight[i - 1] > 0)
@@ -588,15 +287,40 @@ void makeweights()
 
 
 void doinput()
-{  /* getinput */
+{
   /* reads the input data */
-  if (!anerror)
-    inputoptions();
-  if (!anerror)
-    inputdata();
-  if (!anerror)
-    makeweights();
-}  /* getinput */
+  long i;
+
+  if (justwts) {
+    if (firstset)
+      inputdata(sites);
+    for (i = 0; i < sites; i++)
+      weight[i] = 1;
+    inputweights(sites, weight, &weights);
+    if (justwts) {
+      fprintf(outfile, "\n\nWeights set # %ld:\n\n", ith);
+      if (progress)
+        printf("\nWeights set # %ld:\n\n", ith);
+    }
+    if (printdata)
+      printweights(outfile, 0, sites, weight, "Sites");
+  } else {
+    if (!firstset){
+      samenumsp(&sites, ith);
+      reallocsites();
+    }
+    inputdata(sites);
+    for (i = 0; i < sites; i++)
+      weight[i] = 1;
+    if (weights) {
+      inputweights(sites, weight, &weights);
+      if (printdata)
+        printweights(outfile, 0, sites, weight, "Sites");
+    }
+  }
+
+  makeweights();
+}  /* doinput */
 
 
 
@@ -611,7 +335,7 @@ void prntpatterns()
   fprintf(outfile, "\n\n");
   for (i = 0; i < endsite; i++) {
     fprintf(outfile, "     ");
-    for (j = 0; j < numsp; j++)
+    for (j = 0; j < spp; j++)
       putc(y[j][alias[i] - 1], outfile);
     if (prntpat)
       fprintf(outfile, "  %8ld", weight[i]);
@@ -619,6 +343,7 @@ void prntpatterns()
   }
   putc('\n', outfile);
 }  /* prntpatterns */
+
 
 void makesymmetries()
 {
@@ -632,46 +357,46 @@ void makesymmetries()
   for (s1 = xx; (long)s1 <= (long)ww; s1 = (simbol)((long)s1 + 1)) {
     for (s2 = xx; (long)s2 <= (long)ww; s2 = (simbol)((long)s2 + 1)) {
       for (s3 = xx; (long)s3 <= (long)ww; s3 = (simbol)((long)s3 + 1))
-	f[(long)s1 - (long)xx][(long)s2 - (long)xx]
-	  [(long)s3 - (long)xx] = 0;
+        f[(long)s1 - (long)xx][(long)s2 - (long)xx]
+          [(long)s3 - (long)xx] = 0;
     }
   }
   for (i = 0; i < endsite; i++) {
     drop = false;
-    for (j = 0; j < numsp; j++) {
+    for (j = 0; j < spp; j++) {
       ch = y[j][alias[i] - 1];
       drop = (drop ||
-	      (ch != 'A' && ch != 'C' && ch != 'G' && ch != 'T' && ch != 'U'));
+              (ch != 'A' && ch != 'C' && ch != 'G' && ch != 'T' && ch != 'U'));
     }
     ch1 = y[0][alias[i] - 1];
     if (!drop) {
       usedz = false;
       zchar = ' ';
-      for (j = 2; j <= numsp; j++) {
-	ch = y[j - 1][alias[i] - 1];
-	if (ch == ch1)
-	  t[j - 2] = xx;
-	else if ((ch1 == 'A' && ch == 'G') || (ch1 == 'G' && ch == 'A') ||
-		 (ch1 == 'C' && (ch == 'T' || ch == 'U')) ||
-		 ((ch1 == 'T' || ch1 == 'U') && ch == 'C'))
-	  t[j - 2] = yy;
-	else if (!usedz) {
-	  t[j - 2] = zz;
-	  usedz = true;
-	  zchar = ch;
-	} else if (usedz && ch == zchar)
-	  t[j - 2] = zz;
-	else if (usedz && ch != zchar)
-	  t[j - 2] = ww;
+      for (j = 2; j <= spp; j++) {
+        ch = y[j - 1][alias[i] - 1];
+        if (ch == ch1)
+          t[j - 2] = xx;
+        else if ((ch1 == 'A' && ch == 'G') || (ch1 == 'G' && ch == 'A') ||
+                 (ch1 == 'C' && (ch == 'T' || ch == 'U')) ||
+                 ((ch1 == 'T' || ch1 == 'U') && ch == 'C'))
+          t[j - 2] = yy;
+        else if (!usedz) {
+          t[j - 2] = zz;
+          usedz = true;
+          zchar = ch;
+        } else if (usedz && ch == zchar)
+          t[j - 2] = zz;
+        else if (usedz && ch != zchar)
+          t[j - 2] = ww;
       }
       f[(long)t[0] - (long)xx][(long)t[1] - (long)xx]
-	[(long)t[2] - (long)xx] += weight[i];
+        [(long)t[2] - (long)xx] += weight[i];
     }
   }
 }  /* makesymmetries */
 
-void prntsymbol(s)
-simbol s;
+
+void prntsymbol(simbol s)
 {
   /* print 1, 2, 3, 4 as appropriate */
   switch (s) {
@@ -694,6 +419,7 @@ simbol s;
   }
 }  /* prntsymbol */
 
+
 void prntsymmetries()
 {
   /* print out symmetrized pattern numbers */
@@ -706,27 +432,26 @@ void prntsymmetries()
   for (s1 = xx; (long)s1 <= (long)ww; s1 = (simbol)((long)s1 + 1)) {
     for (s2 = xx; (long)s2 <= (long)ww; s2 = (simbol)((long)s2 + 1)) {
       for (s3 = xx; (long)s3 <= (long)ww; s3 = (simbol)((long)s3 + 1)) {
-	if (f[(long)s1 - (long)xx][(long)s2 - (long)xx]
-	    [(long)s3 - (long)xx] > 0) {
-	  fprintf(outfile, "     1");
-	  prntsymbol(s1);
-	  prntsymbol(s2);
-	  prntsymbol(s3);
-	  if (prntpat)
-	    fprintf(outfile, "   %7ld",
-		    f[(long)s1 - (long)xx][(long)s2 - (long)xx]
-		    [(long)s3 - (long)xx]);
-	  putc('\n', outfile);
-	}
+        if (f[(long)s1 - (long)xx][(long)s2 - (long)xx]
+            [(long)s3 - (long)xx] > 0) {
+          fprintf(outfile, "     1");
+          prntsymbol(s1);
+          prntsymbol(s2);
+          prntsymbol(s3);
+          if (prntpat)
+            fprintf(outfile, "   %7ld",
+                    f[(long)s1 - (long)xx][(long)s2 - (long)xx]
+                    [(long)s3 - (long)xx]);
+          putc('\n', outfile);
+        }
       }
     }
   }
 }  /* prntsymmetries */
 
 
-void tabulate(mm, nn, pp, qq, mr,nr,pr,qr)
-long mm, nn, pp, qq;
-double *mr,*nr,*pr,*qr;
+void tabulate(long mm, long nn, long pp, long qq, double *mr,
+                        double *nr, double *pr, double *qr)
 {
   /* make quadratic invariant, table, chi-square */
   long total;
@@ -742,11 +467,11 @@ double *mr,*nr,*pr,*qr;
   total = mm + nn + pp + qq;
   if (printinv)
     fprintf(outfile, "   Quadratic invariant = %15.1f\n\n",
-	    (*nr) * (*pr) - (*mr) * (*qr));
+            (*nr) * (*pr) - (*mr) * (*qr));
   fprintf(outfile, "   Chi-square = ");
   TEMP = (*mr) * (*qr) - (*nr) * (*pr);
   k = total * (TEMP * TEMP) / (((*mr) + (*nr)) * ((*mr) + (*pr)) *
-			       ((*nr) + (*qr)) * ((*pr) + (*qr)));
+                               ((*nr) + (*qr)) * ((*pr) + (*qr)));
   fprintf(outfile, "%10.5f", k);
   if ((*mr) * (*qr) > (*nr) * (*pr) && k > 2.71)
     fprintf(outfile, " (P < 0.05)\n");
@@ -756,8 +481,7 @@ double *mr,*nr,*pr,*qr;
 }  /* tabulate */
 
 
-void writename(m)
-long m;
+void dnainvar_writename(long m)
 {
   /* write out a species name */
   long i, n;
@@ -769,25 +493,25 @@ long m;
     n = 1;
   for (i = 0; i < n; i++)
     putc(nayme[m - 1][i], outfile);
-}  /* writename */
+}  /* dnainvar_writename */
 
-void writetree(i, j, k, l)
-long i, j, k, l;
+
+void writetree(long i, long j, long k, long l)
 {
   /* write out tree topology ((i,j),(k,l)) using names */
   fprintf(outfile, "((");
-  writename(i);
+  dnainvar_writename(i);
   putc(',', outfile);
-  writename(j);
+  dnainvar_writename(j);
   fprintf(outfile, "),(");
-  writename(k);
+  dnainvar_writename(k);
   putc(',', outfile);
-  writename(l);
+  dnainvar_writename(l);
   fprintf(outfile, "))\n");
 }  /* writetree */
 
-void exacttest(m, n)
-long m, n;
+
+void exacttest(long m, long n)
 {
   /* exact binomial test that m <= n */
   long i;
@@ -808,6 +532,7 @@ long m, n;
     fprintf(outfile, "               no\n");
 }  /* exacttest */
 
+
 void invariants()
 {
   /* compute invariants */
@@ -826,9 +551,9 @@ void invariants()
   fprintf(outfile,
     " (these are expected to be zero for the two incorrect tree topologies.\n");
   fprintf(outfile,
-	  "  This is tested by testing the equality of the two parts\n");
+          "  This is tested by testing the equality of the two parts\n");
   fprintf(outfile,
-	  "  of each expression using a one-sided exact binomial test.\n");
+          "  of each expression using a one-sided exact binomial test.\n");
   fprintf(outfile,
     "  The null hypothesis is that the first part is no larger than the second.)\n\n");
   fprintf(outfile, " Tree                           ");
@@ -860,7 +585,7 @@ void invariants()
   fprintf(outfile, "\n\nCavender's quadratic invariants (type L)");
   fprintf(outfile, " using purines vs. pyrimidines\n");
   fprintf(outfile,
-	  " (these are expected to be zero, and thus have a nonsignificant\n");
+          " (these are expected to be zero, and thus have a nonsignificant\n");
   fprintf(outfile, "  chi-square, for the correct tree topology)\n");
   fprintf(outfile, "They will be misled if there are substantially\n");
   fprintf(outfile, "different evolutionary rate between sites, or\n");
@@ -1007,7 +732,7 @@ void invariants()
   fprintf(outfile, "\n\nCavender's quadratic invariants (type K)");
   fprintf(outfile, " using purines vs. pyrimidines\n");
   fprintf(outfile,
-	  " (these are expected to be zero for the correct tree topology)\n");
+          " (these are expected to be zero for the correct tree topology)\n");
   fprintf(outfile, "They will be misled if there are substantially\n");
   fprintf(outfile, "different evolutionary rate between sites, or\n");
   fprintf(outfile, "different purine:pyrimidine ratios from 1:1.\n");
@@ -1016,6 +741,7 @@ void invariants()
   fprintf(outfile, "  Tree II:  %15.1f\n", L3 - L1);
   fprintf(outfile, "  Tree III: %15.1f\n\n", L1 - L2);
 }  /* invariants */
+
 
 void makeinv()
 {
@@ -1029,99 +755,48 @@ void makeinv()
 }  /* makeinv */
 
 
-main(argc, argv)
-int argc;
-Char *argv[];
+int main(int argc, Char *argv[])
 {  /* DNA Invariants */
-char infilename[100],outfilename[100];
 #ifdef MAC
-  macsetup("Dnainvar","");
-  argv[0] = "Dnainvar";
+  argc = 1;                /* macsetup("Dnainvar","");                */
+  argv[0] = "Dnainvar";         
 #endif
-openfile(&infile,INFILE,"r",argv[0],infilename);
-openfile(&outfile,OUTFILE,"w",argv[0],outfilename);
+  init(argc,argv);
+  openfile(&infile,INFILE,"input file", "r",argv[0],infilename);
+  openfile(&outfile,OUTFILE,"output file", "w",argv[0],outfilename);
 
-  ibmpc = ibmpc0;
-  ansi = ansi0;
-  vt52 = vt520;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
   mulsets = false;
   firstset = true;
-  datasets = 1;
-  anerror = false;
+  msets = 1;
   doinit();
-  if (!anerror) {
-    for (ith = 1; ith <= datasets; ith++) {
-      if (!anerror)
-	doinput();
-      if (ith == 1)
-	firstset = false;
-      if (!anerror) {
-        if (datasets > 1) {
-          if (progress)
-            printf("\nData set # %ld:\n",ith);
-          fprintf(outfile, "Data set # %ld:\n\n",ith);
-        }
-	makeinv();
-      }
-      if (progress) {
-        putchar('\n');
-        if (!anerror)
-	  printf("Output written to output file\n");
-        putchar('\n');
-      }
+  if (weights || justwts)
+    openfile(&weightfile,WEIGHTFILE,"weights file","r",argv[0],weightfilename);
+  for (ith = 1; ith <= msets; ith++) {
+    doinput();
+    if (ith == 1)
+      firstset = false;
+    if (msets > 1 && !justwts) {
+      if (progress)
+        printf("\nData set # %ld:\n",ith);
+      fprintf(outfile, "Data set # %ld:\n\n",ith);
     }
+    makeinv();
+  }
+  if (progress) {
+    putchar('\n');
+    printf("Output written to output file \"%s\"\n", outfilename);
+    putchar('\n');
   }
   FClose(outfile);
   FClose(infile);
 #ifdef MAC
   fixmacfile(outfilename);
 #endif
-  exit(0);
+  printf("Done.\n\n");
+#ifdef WIN32
+  phyRestoreConsoleAttributes();
+#endif
+  return 0;
 }  /* DNA Invariants */
-
-int eof(f)
-FILE *f;
-{
-    register int ch;
-
-    if (feof(f))
-	return 1;
-    if (f == stdin)
-	return 0;
-    ch = getc(f);
-    if (ch == EOF)
-	return 1;
-    ungetc(ch, f);
-    return 0;
-}
-
-
-int eoln(f)
-FILE *f;
-{
-    register int ch;
-
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-MALLOCRETURN *mymalloc(x)
-long x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)malloc(x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
-

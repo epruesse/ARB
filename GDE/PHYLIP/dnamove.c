@@ -1,129 +1,129 @@
-#include "phylip.h"
 
-/* version 3.56c. (c) Copyright 1993 by Joseph Felsenstein.
+#include "phylip.h"
+#include "moves.h"
+#include "seq.h"
+
+/* version 3.6. (c) Copyright 1993-2002 by the University of Washington.
    Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
-#define nmlngth         10   /* number of characters in species name    */
-#define ibmpc0          false
-#define ansi0           true
-#define vt520           false
-#define downn           2
 #define overr           4
+#define which           1
 
-  typedef short *steptr;
-typedef enum {  A, C, G, U, O } bases;
-typedef long *baseptr;
 typedef enum {
-  horiz, vert, up, over, upcorner, downcorner, aa, cc, gg, tt, quest
+  horiz, vert, up, overt, upcorner, downcorner, aa, cc, gg, tt, question
   } chartype;
-/* nodes will form a binary tree */
+
 typedef enum {
   rearr, flipp, reroott, none
   } rearrtype;
 
-typedef struct node {         /* describes a tip species or an ancestor */
-  struct node *next, *back;   /* pointers to nodes                      */
-  short index;                /* number of the node                     */
-  boolean tip;                /* present species are tips of tree       */
-  baseptr base;             /* the sequence                           */
-  Char state;                 /* stores state for printing              */
-  short xcoord, ycoord;       /* used by printree                       */
-  short ymin, ymax;
-} node;
-
-typedef node **pointptr;
-typedef Char naym[nmlngth];
-typedef struct gbase {
-  baseptr base;
-  struct gbase *next;
-} gbase;
+typedef struct gbase2 {
+  baseptr2 base2;
+  struct gbase2 *next;
+} gbase2;
 
 typedef enum {
   arb, use, spec
   } howtree;
 
-char infilename[100],outfilename[100],trfilename[100];
-Static node *root;
-Static FILE *infile, *outfile, *treefile;
-Static short spp, nonodes, chars, outgrno, screenlines, col;
-/* spp = number of species
-   nonodes = number of nodes in tree
-   chars = number of sites in actual sequences
-   outgrno indicates outgroup */
-Static boolean outgropt, weights, thresh,  waswritten, interleaved,
-  ibmpc, vt52, ansi;
-Static steptr weight;
-Static pointptr treenode;   /* pointers to all nodes in tree */
-Static naym *nayme;   /* names of species */
-Static double threshold;
-Static double *threshwt;
-Static boolean reversed[11];
-Static boolean graphic[11];
-Static Char chh[11];
-Static howtree how;
-Static gbase *garbage;
-Char progname[20];
-Char  ch;
+typedef node **pointptr;
+
+#ifndef OLDC
+/* function prototypes */
+void dnamove_gnu(gbase2 **);
+void dnamove_chuck(gbase2 *);
+void getoptions(void);
+void inputoptions(void);
+void dnamove_inputdata(void);
+void allocrest(void);
+void doinput(void);
+void configure(void);
+void prefix(chartype);
+void postfix(chartype);
+       
+void makechar(chartype);
+void dnamove_add(node *, node *, node *);
+void dnamove_re_move(node **, node **);
+void dnamove_fillin(node *);
+void dnamove_postorder(node *);
+void evaluate(node *);
+void dnamove_reroot(node *);
+void dnamove_ancestset(long, long, long *);
+void firstrav(node *, long);
+void dnamove_hyptrav(node *, long *, long, boolean *);
+
+void dnamove_hypstates(void);
+void grwrite(chartype, long, long *);
+void dnamove_drawline(long);
+void dnamove_printree(void);
+void arbitree(void);
+void yourtree(void);
+void initdnamovenode(node **, node **, node *, long, long, long *,
+        long *, initops, pointarray, pointarray, Char *, Char *,
+        FILE *);
+void buildtree(void);
+void setorder(void);
+void mincomp(void);
+       
+void rearrange(void);
+void dnamove_nextinc(void);
+void dnamove_nextchar(void);
+void dnamove_prevchar(void);
+void dnamove_show(void);
+void tryadd(node *, node **, node **, double *);
+void addpreorder(node *, node *, node *, double *);
+void try(void);
+void undo(void);
+void treewrite(boolean);
+       
+void clade(void);
+void flip(void);
+void changeoutgroup(void);
+void redisplay(void);
+void treeconstruct(void);
+/* function prototypes */
+#endif
+
+
+
+char infilename[FNMLNGTH],intreename[FNMLNGTH],outtreename[FNMLNGTH], weightfilename[FNMLNGTH];
+node *root;
+long chars, screenlines, col, treelines, leftedge, topedge, vmargin,
+   hscroll, vscroll, scrollinc, screenwidth, farthest;
+boolean weights, thresh, waswritten;
+boolean usertree, goteof, firsttree, haslengths;  /*treeread variables*/
+pointarray nodep;                                  /*treeread variables*/
+node *grbg = NULL;                                  /*treeread variables*/
+long *zeros;                                          /*treeread variables*/
+pointptr treenode;   /* pointers to all nodes in tree */
+double threshold;
+double *threshwt;
+boolean reversed[11];
+boolean graphic[11];
+unsigned char chh[11];
+howtree how;
+gbase2 *garbage;
+char *progname;
+
 /* Local variables for treeconstruct, propogated global for C version: */
 
-short dispchar, atwhat, what, fromwhere, towhere, oldoutgrno, compatible;
+long dispchar, atwhat, what, fromwhere, towhere, oldoutgrno, compatible;
 double like, bestyet, gotlike;
 boolean display, newtree, changed, subtree, written, oldwritten, restoring,
   wasleft, oldleft, earlytree;
 steptr necsteps;
-boolean *intree;
+boolean *in_tree;
 long sett[31];
 steptr numsteps;
 node *nuroot;
 rearrtype lastop;
+Char  ch;
+boolean *names;
 
 
-openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
-{
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-        printf("%s:  can't read %s\n",application,file);
-        file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      case 'w':
-      case 'a':
-        printf("%s: can't write %s\n",application,file);
-        file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      }
-    }
-  }
-  *fp=of;
-
-  if (perm != NULL)
-    strcpy(perm,file);
-}
-
-
-
-void gnu(p)
-     gbase **p;
+void dnamove_gnu(gbase2 **p)
 {
   /* this and the following are do-it-yourself garbage collectors.
      Make a new node or pull one off the garbage list */
@@ -131,463 +131,299 @@ void gnu(p)
     *p = garbage;
     garbage = garbage->next;
   } else {
-    *p = (gbase *)Malloc(sizeof(gbase));
-    (*p)->base = (baseptr)Malloc(chars*sizeof(long));
+    *p = (gbase2 *)Malloc(sizeof(gbase2));
+    (*p)->base2 = (baseptr2)Malloc(chars*sizeof(long));
   }
   (*p)->next = NULL;
-}  /* gnu */
+}  /* dnamove_gnu */
 
 
-void chuck(p)
-     gbase *p;
+void dnamove_chuck(gbase2 *p)
 {
   /* collect garbage on p -- put it on front of garbage list */
   p->next = garbage;
   garbage = p;
-}  /* chuck */
-
-void uppercase(ch)
-     Char *ch;
-{  /* convert a character to upper case -- either ASCII or EBCDIC */
-  *ch = (islower(*ch) ?  toupper(*ch) : (*ch));
-}  /* uppercase */
-
-
-
-void inpnum(n, success)
-short *n;
-boolean *success;
-{
-  int fields;
-  char line[100];
-  gets(line);
-  *n = atof(line);
-  fields = sscanf(line,"%hd",n);
-  *success = (fields == 1);
-
-}  /* inpnum */
-
-void inputnumbers()
-{
-  /* input the numbers of species and of sites */
-  fscanf(infile, "%hd%hd", &spp, &chars);
-  printf("\n%2hd species, %3hd  sites\n", spp, chars);
-  putc('\n', outfile);
-  nonodes = spp * 2 - 1;
-}  /* inputnumbers */
+}  /* dnamove_chuck */
 
 void getoptions()
 {
   /* interactively set options */
   Char ch;
-  boolean done, done1, gotopt;
+  boolean done, gotopt;
+  long loopcount;
 
   how = arb;
+  usertree = false;
+  goteof = false;
   outgrno = 1;
   outgropt = false;
   thresh = false;
   weights = false;
   interleaved = true;
+  loopcount = 0;
   do {
-    printf((ansi || ibmpc) ?  "\033[2J\033[H" :
-	   vt52 ?  "\033E\033H"    : "\n");
+    cleerhome();
     printf("\nInteractive DNA parsimony, version %s\n\n",VERSION);
     printf("Settings for this run:\n");
-    printf("  O                           Outgroup root?");
+    printf("  O                             Outgroup root?");
     if (outgropt)
-      printf("  Yes, at sequence number%3hd\n", outgrno);
+      printf("  Yes, at sequence number%3ld\n", outgrno);
     else
-      printf("  No, use as outgroup species%3hd\n", outgrno);
-    printf("  T                 Use Threshold parsimony?");
+      printf("  No, use as outgroup species%3ld\n", outgrno);
+    printf("  W                            Sites weighted?  %s\n",
+           (weights ? "Yes" : "No"));
+    printf("  T                   Use Threshold parsimony?");
     if (thresh)
       printf("  Yes, count up to%4.1f per site\n", threshold);
     else
       printf("  No, use ordinary parsimony\n");
-    printf("  I             Input sequences interleaved?  %s\n",
-	   (interleaved ? "Yes" : "No, sequential"));
+    printf("  I               Input sequences interleaved?  %s\n",
+           (interleaved ? "Yes" : "No, sequential"));
 
-    printf("  U Initial tree (arbitrary, user, specify)?  %s\n",
-	   (how == arb) ? "Arbitrary"                :
-	   (how == use) ? "User tree from tree file" : "Tree you specify");
-    printf("  0      Graphics type (IBM PC, VT52, ANSI)?  %s\n",
-	   ibmpc ? "IBM PC\n" :
-	   ansi  ? "ANSI"     :
-	   vt52  ? "VT52"     : "(none)");
-    printf("  L               Number of lines on screen?%4hd\n",screenlines);
-    do {
-      printf("\nAre these settings correct? ");
-      printf("(type Y or the letter for one to change)\n");
-      scanf("%c%*[^\n]", &ch);
-      getchar();
-      uppercase(&ch);
-      done = (ch == 'Y');
-      gotopt = (strchr("OTIU0L",ch) != NULL) ? true : false;
-      if (gotopt) {
-        switch (ch) {
-	
-        case 'O':
-          outgropt = !outgropt;
-          if (outgropt) {
-            done1 = true;
-            do {
-              printf("Type number of the outgroup:\n");
-              scanf("%hd%*[^\n]", &outgrno);
-              getchar();
-              done1 = (outgrno >= 1 && outgrno <= spp);
-              if (!done1) {
-                printf("BAD OUTGROUP NUMBER: %4hd\n", outgrno);
-                printf("  Must be in range 1 -%2hd\n", spp);
-              }
-            } while (done1 != true);
-          }
-          break;
-	
+    printf("  U   Initial tree (arbitrary, user, specify)?  %s\n",
+           (how == arb) ? "Arbitrary"                :
+           (how == use) ? "User tree from tree file" : "Tree you specify");
+    printf("  0        Graphics type (IBM PC, ANSI, none)?  %s\n",
+           ibmpc ? "IBM PC\n" : ansi  ? "ANSI"     : "(none)");
+    printf("  S                  Width of terminal screen?");
+    printf("%4ld\n", screenwidth);
+    printf("  L                 Number of lines on screen?%4ld\n",screenlines);
+    printf("\nAre these settings correct? ");
+    printf("(type Y or the letter for one to change)\n");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
+    scanf("%c%*[^\n]", &ch);
+    getchar();
+    uppercase(&ch);
+    done = (ch == 'Y');
+    gotopt = (strchr("SOTIU0WL",ch) != NULL) ? true : false;
+    if (gotopt) {
+      switch (ch) {
+        
+      case 'O':
+        outgropt = !outgropt;
+        if (outgropt)
+          initoutgroup(&outgrno, spp);
+        break;
+        
         case 'T':
           thresh = !thresh;
-          if (thresh) {
-            done1 = false;
-            do {
-              printf("What will be the threshold value?\n");
-              scanf("%lf%*[^\n]", &threshold);
-              getchar();
-              done1 = (threshold >= 1.0);
-              if (!done1)
-                printf("BAD THRESHOLD VALUE:  it must be greater than 1\n");
-              else
-                threshold = (long)(threshold * 10.0 + 0.5) / 10.0;
-            } while (done1 != true);
-          }
+          if (thresh)
+            initthreshold(&threshold);
           break;
-	
+        
         case 'I':
           interleaved = !interleaved;
           break;
-	
+
+        case 'W':
+          weights = !weights;
+          break;
+
         case 'U':
-          if (how == arb)
+          if (how == arb){
             how = use;
-          else if (how == use)
+            usertree = 1;}
+          else if (how == use){
             how = spec;
+            usertree = 0;}
           else
             how = arb;
           break;
-	
+        
         case '0':
-          if (ibmpc) {
-            ibmpc = false;
-            vt52 = true;
-          } else {
-            if (vt52) {
-              vt52 = false;
-              ansi = true;
-            } else if (ansi)
-              ansi = false;
-            else
-              ibmpc = true;
-          }
+          initterminal(&ibmpc, &ansi);
           break;
-	
+        
+        case 'S':
+          screenwidth= readlong("Width of terminal screen (in characters)?\n");
+          break;
+
         case 'L':
-          do {
-            printf("Number of lines on screen?\n");
-            scanf("%hd%*[^\n]", &screenlines);
-            getchar();
-          } while (screenlines <= 12);
+          initnumlines(&screenlines);
           break;
         }
       }
-      if (!(gotopt || done))
-        printf("Not a possible option!\n");
-    } while (!(gotopt || done));
+    if (!(gotopt || done))
+      printf("Not a possible option!\n");
+    countup(&loopcount, 100);   
   } while (!done);
+  if (scrollinc < screenwidth / 2.0)
+    hscroll = scrollinc;
+  else
+    hscroll = screenwidth / 2;
+  if (scrollinc < screenlines / 2.0)
+    vscroll = scrollinc;
+  else
+    vscroll = screenlines / 2;
 }  /* getoptions */
 
-void inputweights()
-{
-  /* input the site weights, 0-9 and A-Z for weights 0 - 35 */
-  Char ch;
-  short i;
-
-  for (i = 1; i < nmlngth; i++)
-    ch = getc(infile);
-  for (i = 0; i < (chars); i++) {
-    do {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-    } while (ch == ' ');
-    weight[i] = 1;
-    if (isdigit(ch))
-      weight[i] = ch - '0';
-    else if (isalpha(ch)) {
-      uppercase(&ch);
-      if (ch >= 'A' && ch <= 'I')
-        weight[i] = ch - 55;
-      else if (ch >= 'J' && ch <= 'R')
-        weight[i] = ch - 55;
-      else
-        weight[i] = ch - 55;
-    } else {
-      printf("BAD WEIGHT CHARACTER: %c\n", ch);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  weights = true;
-}  /* inputweights */
-
-void printweights()
-{
-  /* print out the weights of sites */
-  short i, j, k;
-
-  printf("Sites are weighted as follows:\n");
-  printf("        ");
-  for (i = 0; i <= 9; i++)
-    printf("%3hd", i);
-  putc('\n', outfile);
-  printf("\n     *---------------------------------\n");
-  for (j = 0; j <= (chars / 10); j++) {
-    printf("%5hd!  ", j * 10);
-    for (i = 0; i <= 9; i++) {
-      k = j * 10 + i;
-      if (k > 0 && k <= chars)
-        printf("%3hd", weight[k - 1]);
-      else
-        printf("   ");
-    }
-    putchar('\n');
-  }
-  putchar('\n');
-}  /* printweights */
 
 void inputoptions()
 {
   /* input the information on the options */
-  Char ch;
-  short extranum, i;
+  long i;
 
-  extranum = 0;
-  while (!eoln(infile)) {
-    ch = getc(infile);
-    uppercase(&ch);
-    if (ch == 'W')
-      extranum++;
-    else if (ch != ' ') {
-      printf("BAD OPTION CHARACTER: %c\n\n", ch);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
   for (i = 0; i < (chars); i++)
     weight[i] = 1;
-  for (i = 1; i <= extranum; i++) {
-    ch = getc(infile);
-    uppercase(&ch);
-    if (ch == 'W')
-      inputweights();
-    if (ch != 'W'){
-      printf("ERROR: INCORRECT AUXILIARY OPTIONS LINE WHICH STARTS WITH %c\n",
-	     ch);
-      exit(-1);}
+  if (weights){
+      inputweights(chars, weight, &weights);
+      printweights(stdout, 0, chars, weight, "Sites");
   }
-  if (weights)
-    printweights();
   if (!thresh)
     threshold = spp;
   for (i = 0; i < (chars); i++)
     threshwt[i] = threshold * weight[i];
 }  /* inputoptions */
 
-void inputdata()
+
+void dnamove_inputdata()
 {
   /* input the names and sequences for each species */
-  short i, j, basesread, basesnew;
+  long i,j, basesread, basesnew=0;
   Char charstate;
   boolean allread, done;
-  long ns;   /* temporary base set for input */
-  node *p, *q;
+  long ns = 0;   /* temporary base set for input */
 
-  treenode = (node **)Malloc(nonodes*sizeof(node *));
-  for (i = 0; i < (spp); i++) {
-    treenode[i] = (node *)Malloc(sizeof(node));
-    treenode[i]->base = (baseptr)Malloc(chars*sizeof(long));
-  }
-  for (i = spp; i < (nonodes); i++) {
-    q = NULL;
-    for (j = 1; j <= 3; j++) {
-      p = (node *)Malloc(sizeof(node));
-      p->base = (baseptr)Malloc(chars*sizeof(long));
-      p->next = q;
-      q = p;
-    }
-    p->next->next->next = p;
-    treenode[i] = p;
-  }
-  for (i = 1; i <= (nonodes); i++) {
-    treenode[i - 1]->back = NULL;
-    treenode[i - 1]->tip = (i <= spp);
-    treenode[i - 1]->index = i;
-    if (i > spp) {
-      p = treenode[i - 1]->next;
-      while (p != treenode[i - 1]) {
-        p->back = NULL;
-        p->tip = false;
-        p->index = i;
-        p = p->next;
-      }
-    }
-  }
   basesread = 0;
   allread = false;
   while (!(allread)) {
-    allread = true;
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
+    if (eoln(infile)) 
+      scan_eoln(infile);
     i = 1;
     while (i <= spp ) {
-      if ((interleaved && basesread == 0) || !interleaved) {
-        for (j = 0; j < nmlngth; j++) {
-	  if (eof(infile) || eoln(infile)){
-	    printf("ERROR: END-OF-LINE OR END-OF-FILE");
-	    printf(" IN THE MIDDLE OF A SPECIES NAME\n");
-            exit(-1);}
-	  nayme[i - 1][j] = getc(infile);
-        }
-      }
+      if ((interleaved && basesread == 0) || !interleaved)
+        initname(i - 1);
       if (interleaved)
         j = basesread;
       else
         j = 0;
       done = false;
-      while (!done && !eof(infile)) {
+      while (!done && !eoff(infile)) {
         if (interleaved)
           done = true;
-        while (j < chars && !(eoln(infile) || eof(infile))) {
-          charstate = getc(infile);
-	  if (ch == '\n')
-	    ch = ' ';
+        while (j < chars && !(eoln(infile) || eoff(infile))) {
+          charstate = gettc(infile);
+          if (ch == '\n')
+            ch = ' ';
           if (charstate == ' ' || (charstate >= '0' && charstate <= '9'))
             continue;
           uppercase(&charstate);
-	  if (strchr("ABCDGHKMNRSTUVWXY?O-.",charstate) == NULL){
-            printf("ERROR: BAD BASE:%c AT POSITION%5hd OF SPECIES %3hd\n",
-                   charstate, j, i);
-	    exit(-1);
+          if ((strchr("ABCDGHKMNRSTUVWXY?O-",charstate)) == NULL){
+            printf("ERROR: bad base: %c at site %5ld of species %3ld\n",
+                   charstate, j+1, i);
+            if (charstate == '.') {
+              printf("       Periods (.) may not be used as gap characters.\n");
+              printf("       The correct gap character is (-)\n");
+            }
+            exxit(-1);
           }
           j++;
           switch (charstate) {
-	
+        
           case 'A':
             ns = 1L << ((long)A);
             break;
-	
+        
           case 'C':
             ns = 1L << ((long)C);
             break;
-	
+        
           case 'G':
             ns = 1L << ((long)G);
             break;
-	
+        
           case 'U':
-            ns = 1L << ((long)U);
+            ns = 1L << ((long)T);
             break;
-	
+        
           case 'T':
-            ns = 1L << ((long)U);
+            ns = 1L << ((long)T);
             break;
-	
+        
           case 'M':
             ns = (1L << ((long)A)) | (1L << ((long)C));
             break;
-	
+        
           case 'R':
             ns = (1L << ((long)A)) | (1L << ((long)G));
             break;
-	
+        
           case 'W':
-            ns = (1L << ((long)A)) | (1L << ((long)U));
+            ns = (1L << ((long)A)) | (1L << ((long)T));
             break;
-	
+        
           case 'S':
             ns = (1L << ((long)C)) | (1L << ((long)G));
             break;
-	
+        
           case 'Y':
-            ns = (1L << ((long)C)) | (1L << ((long)U));
+            ns = (1L << ((long)C)) | (1L << ((long)T));
             break;
-	
+        
           case 'K':
-            ns = (1L << ((long)G)) | (1L << ((long)U));
+            ns = (1L << ((long)G)) | (1L << ((long)T));
             break;
-	
+        
           case 'B':
-            ns = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)U));
+            ns = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)T));
             break;
-	
+        
           case 'D':
-            ns = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)U));
+            ns = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)T));
             break;
-	
+        
           case 'H':
-            ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)U));
+            ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)T));
             break;
-	
+        
           case 'V':
             ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G));
             break;
-	
+        
           case 'N':
             ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
-	      (1L << ((long)U));
+              (1L << ((long)T));
             break;
-	
+        
           case 'X':
             ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
-	      (1L << ((long)U));
+              (1L << ((long)T));
             break;
-	
+        
           case '?':
             ns = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
-   	         (1L << ((long)U)) | (1L << ((long)O));
+                    (1L << ((long)T)) | (1L << ((long)O));
             break;
-	
+        
           case 'O':
             ns = 1L << ((long)O);
             break;
-	
+        
           case '.':
-            ns = treenode[0]->base[j - 1];
+            ns = treenode[0]->base2[j - 1];
             break;
-	
+        
           case '-':
             ns = 1L << ((long)O);
             break;
           }
-          treenode[i - 1]->base[j - 1] = ns;
+          treenode[i - 1]->base2[j - 1] = ns;
         }
         if (interleaved)
           continue;
-        if (j < chars) {
-          fscanf(infile, "%*[^\n]");
-          getc(infile);
-        } else if (j == chars)
+        if (j < chars)
+          scan_eoln(infile);
+        else if (j == chars)
           done = true;
       }
       if (interleaved && i == 1)
         basesnew = j;
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
+      scan_eoln(infile);
       if ((interleaved && j != basesnew) || ((!interleaved) && j != chars)){
-        printf("ERROR: SEQUENCES OUT OF ALIGNMENT\n");
-	exit(-1);}
+        printf("ERROR: sequences out of alignment\n");
+        exxit(-1);}
       i++;
     }
     if (interleaved) {
@@ -598,35 +434,59 @@ void inputdata()
   }
   root = NULL;
   printf("\n\n");
-}  /* inputdata */
+}  /* dnamove_inputdata */
+
+
+void allocrest()
+{
+  nayme = (naym *)Malloc(spp*sizeof(naym));
+  in_tree = (boolean *)Malloc(nonodes*sizeof(boolean));
+  weight = (steptr)Malloc(chars*sizeof(long));
+  numsteps = (steptr)Malloc(chars*sizeof(long));
+  necsteps = (steptr)Malloc(chars*sizeof(long));
+  threshwt = (double *)Malloc(chars*sizeof(double));
+}  /* allocrest */
 
 
 void doinput()
 {
   /* reads the input data */
-  short j;
+  long i, j;
+  node *p;
 
-  inputnumbers();
+  inputnumbers(&spp, &chars, &nonodes, 1);
+  printf("%2ld species, %3ld  sites\n", spp, chars);
   getoptions();
   printf("\nReading input file ...\n\n");
-  nayme = (naym *)Malloc(spp*sizeof(naym));
-  intree = (boolean *)Malloc(nonodes*sizeof(boolean));
-  weight = (steptr)Malloc(chars*sizeof(short));
-  numsteps = (steptr)Malloc(chars*sizeof(short));
-  necsteps = (steptr)Malloc(chars*sizeof(short));
-  threshwt = (double *)Malloc(chars*sizeof(double));
+  if (weights)
+    openfile(&weightfile,WEIGHTFILE,"weights file","r",progname,weightfilename);
+  allocrest();
   inputoptions();
-  inputdata();
+  alloctree(&treenode, nonodes, usertree);
+  for (i = 0; i < (spp); i++)
+    treenode[i]->base2 = (baseptr2)Malloc(chars*sizeof(long));
+  if(!usertree) {
+        for (i = spp; i < (nonodes); i++) {
+          p = treenode[i];
+          for (j = 1; j <= 3; j++) {
+            p->base2 = (baseptr2)Malloc(chars*sizeof(long));
+            p = p->next;
+          }
+        }
+  } 
+  setuptree(treenode, nonodes, usertree);
+  dnamove_inputdata();
 }  /* doinput */
+
 
 void configure()
 {
   /* configure to machine -- set up special characters */
   chartype a;
 
-  for (a = horiz; (long)a <= (long)quest; a = (chartype)((long)a + 1))
+  for (a = horiz; (long)a <= (long)question; a = (chartype)((long)a + 1))
     reversed[(long)a] = false;
-  for (a = horiz; (long)a <= (long)quest; a = (chartype)((long)a + 1))
+  for (a = horiz; (long)a <= (long)question; a = (chartype)((long)a + 1))
     graphic[(long)a] = false;
   if (ibmpc) {
     chh[(long)horiz] = 205;
@@ -635,8 +495,8 @@ void configure()
     graphic[(long)vert] = true;
     chh[(long)up] = 186;
     graphic[(long)up] = true;
-    chh[(long)over] = 205;
-    graphic[(long)over] = true;
+    chh[(long)overt] = 205;
+    graphic[(long)overt] = true;
     chh[(long)upcorner] = 200;
     graphic[(long)upcorner] = true;
     chh[(long)downcorner] = 201;
@@ -645,32 +505,7 @@ void configure()
     chh[(long)cc] = 178;
     chh[(long)gg] = 177;
     chh[(long)tt] = 219;
-    chh[(long)quest] = '\001';
-    return;
-  }
-  if (vt52) {
-    chh[(long)horiz] = ' ';
-    reversed[(long)horiz] = true;
-    chh[(long)vert] = chh[(long)horiz];
-    reversed[(long)vert] = true;
-    chh[(long)up] = '`';
-    graphic[(long)up] = true;
-    chh[(long)over] = 'a';
-    graphic[(long)over] = true;
-    chh[(long)upcorner] = 'e';
-    graphic[(long)upcorner] = true;
-    chh[(long)downcorner] = 'f';
-    graphic[(long)downcorner] = true;
-    chh[(long)aa] = 'w';
-    graphic[(long)aa] = true;
-    chh[(long)cc] = ' ';
-    reversed[(long)cc] = true;
-    chh[(long)gg] = 'j';
-    graphic[(long)gg] = true;
-    chh[(long)tt] = 'i';
-    graphic[(long)tt] = true;
-    chh[(long)quest] = '?';
-    reversed[(long)quest] = true;
+    chh[(long)question] = '\001';
     return;
   }
   if (ansi) {
@@ -680,8 +515,8 @@ void configure()
     reversed[(long)vert] = true;
     chh[(long)up] = 'x';
     graphic[(long)up] = true;
-    chh[(long)over] = 'q';
-    graphic[(long)over] = true;
+    chh[(long)overt] = 'q';
+    graphic[(long)overt] = true;
     chh[(long)upcorner] = 'm';
     graphic[(long)upcorner] = true;
     chh[(long)downcorner] = 'l';
@@ -694,8 +529,8 @@ void configure()
     reversed[(long)gg] = true;
     chh[(long)tt] = 't';
     reversed[(long)tt] = true;
-    chh[(long)quest] = '?';
-    reversed[(long)quest] = true;
+    chh[(long)question] = '?';
+    reversed[(long)question] = true;
     return;
   }
   chh[(long)horiz] = '=';
@@ -703,81 +538,36 @@ void configure()
   chh[(long)up] = '!';
   chh[(long)upcorner] = '`';
   chh[(long)downcorner] = ',';
-  chh[(long)over] = '-';
+  chh[(long)overt] = '-';
   chh[(long)aa] = 'a';
   chh[(long)cc] = 'c';
   chh[(long)gg] = 'g';
   chh[(long)tt] = 't';
-  chh[(long)quest] = '.';
+  chh[(long)question] = '.';
 }  /* configure */
 
 
-void pregraph()
-{
-  /* turn on graphic characters */
-  if (vt52)
-    printf("\033F");
-  if (ansi) {
-    printf("\033(0");
-    printf("\033[10m");
-  }
-}  /* pregraph */
-
-void prereverse()
-{
-  /* turn on reverse video */
-  if (vt52)
-    printf("\033p");
-  if (ansi)
-    printf("\033[7m");
-}  /* prereverse */
-
-
-void prefix(a)
-     chartype a;
+void prefix(chartype a)
 {
   /* give prefix appropriate for this character */
   if (reversed[(long)a])
-    prereverse();
+    prereverse(ansi);
   if (graphic[(long)a])
-    pregraph();
+    pregraph2(ansi);
 }  /* prefix */
 
 
-void postgraph()
-{
-  /* turn off graphic characters */
-  if (vt52)
-    printf("\033G");
-  if (ansi) {
-    printf("\033[11m");
-    printf("\033(B");
-  }
-}  /* postgraph */
-
-void postreverse()
-{
-  /* turn off reverse video */
-  if (vt52)
-    printf("\033q");
-  if (ansi)
-    printf("\033[0m");
-}  /* postreverse */
-
-
-void postfix(a)
-     chartype a;
+void postfix(chartype a)
 {
   /* give postfix appropriate for this character */
   if (reversed[(long)a])
-    postreverse();
+    postreverse(ansi);
   if (graphic[(long)a])
-    postgraph();
+    postgraph2(ansi);
 }  /* postfix */
 
 
-void makechar(a)
-     chartype a;
+void makechar(chartype a)
 {
   /* print out a character with appropriate prefix or postfix */
   prefix(a);
@@ -785,8 +575,8 @@ void makechar(a)
   postfix(a);
 }  /* makechar */
 
-void add(below, newtip, newfork)
-     node *below, *newtip, *newfork;
+
+void dnamove_add(node *below, node *newtip, node *newfork)
 {
   /* inserts the nodes newfork and its left descendant, newtip,
      to the tree.  below becomes newfork's right descendant */
@@ -815,10 +605,10 @@ void add(below, newtip, newfork)
   if (root == below)
     root = newfork;
   root->back = NULL;
-}  /* add */
+}  /* dnamove_add */
 
-void re_move(item, fork)
-     node **item, **fork;
+
+void dnamove_re_move(node **item, node **fork)
 {
   /* removes nodes item and its ancestor, fork, from the tree.
      the new descendant of fork's ancestor is made to be
@@ -853,56 +643,56 @@ void re_move(item, fork)
     p = p->next;
   }
   (*item)->back = NULL;
-}  /* remove */
+}  /* dnamove_re_move */
 
-void fillin(p)
-     node *p;
+
+void dnamove_fillin(node *p)
 {
   /* sets up for each node in the tree the base sequence
      at that point and counts the changes.  The program
      spends much of its time in this PROCEDURE */
-  short i;
+  long i;
   long ns, rs, ls;
 
   for (i = 0; i < (chars); i++) {
-    ls = p->next->back->base[i];
-    rs = p->next->next->back->base[i];
+    ls = p->next->back->base2[i];
+    rs = p->next->next->back->base2[i];
     ns = ls & rs;
     if (ns == 0) {
       ns = ls | rs;
       numsteps[i] += weight[i];
     }
-    p->base[i] = ns;
+    p->base2[i] = ns;
   }
-}  /* fillin */
+}  /* dnamove_fillin */
 
-void postorder(p)
-     node *p;
+
+void dnamove_postorder(node *p)
 {
   /* traverses a binary tree, calling PROCEDURE fillin at a
      node's descendants before calling fillin at the node */
 
   if (p->tip)
     return;
-  postorder(p->next->back);
-  postorder(p->next->next->back);
-  fillin(p);
-}  /* postorder */
+  dnamove_postorder(p->next->back);
+  dnamove_postorder(p->next->next->back);
+  dnamove_fillin(p);
+}  /* dnamove_postorder */
 
-void evaluate(r)
-     node *r;
+
+void evaluate(node *r)
 {
   /* determines the number of steps needed for a tree. this is
      the minimum number of steps needed to evolve sequences on
      this tree */
-  short i, steps;
+  long i, steps;
   double sum;
 
   compatible = 0;
   sum = 0.0;
   for (i = 0; i < (chars); i++)
     numsteps[i] = 0;
-  postorder(r);
+  dnamove_postorder(r);
   for (i = 0; i < (chars); i++) {
     steps = numsteps[i];
     if (steps <= threshwt[i])
@@ -916,8 +706,8 @@ void evaluate(r)
   /*printf("like: %f\n",like);*/
 }  /* evaluate */
 
-void reroot(outgroup)
-     node *outgroup;
+
+void dnamove_reroot(node *outgroup)
 {
   /* reorients tree, putting outgroup in desired position. */
   node *p, *q, *newbottom, *oldbottom;
@@ -967,181 +757,162 @@ void reroot(outgroup)
     outgroup->back = root->next;
   }
   treenode[newbottom->index - 1] = newbottom;
-}  /* reroot */
+}  /* dnamove_reroot */
 
 
-void ancestset(a, b, c)
-     long a, b, *c;
+void dnamove_ancestset(long a, long b, long *c)
 {
   /* make the set of ancestral states below nodes
      whose base sets are a and b */
   *c = a & b;
   if (*c == 0)
     *c = a | b;
-}  /* ancestset */
+}  /* dnamove_ancestset */
 
-void firstrav(r,i)
-     node *r;
-     short i;
+
+void firstrav(node *r, long i)
 {
   /* initial traverse for hypothetical states */
   if (r->tip)
     return;
   firstrav(r->next->back, i);
   firstrav(r->next->next->back, i);
-  ancestset(r->next->back->base[i - 1],
-            r->next->next->back->base[i - 1], &r->base[i - 1]);
+  dnamove_ancestset(r->next->back->base2[i - 1],
+            r->next->next->back->base2[i - 1], &r->base2[i - 1]);
 }  /* firstrav */
 
-void hyptrav(r, hypset, i,bottom)
-     node *r;
-     long *hypset;
-     short i;
-     boolean *bottom;
+
+void dnamove_hyptrav(node *r, long *hypset, long i, boolean *bottom)
 {
   /*  compute, print out state at one interior node */
   long tempset, left, rt, anc;
-  gbase *temparray, *ancset;
+  gbase2 *temparray, *ancset;
 
-  gnu(&ancset);
-  gnu(&temparray);
+  dnamove_gnu(&ancset);
+  dnamove_gnu(&temparray);
   anc = hypset[i - 1];
   if (!r->tip) {
-    left = r->next->back->base[i - 1];
-    rt = r->next->next->back->base[i - 1];
+    left = r->next->back->base2[i - 1];
+    rt = r->next->next->back->base2[i - 1];
     tempset = left & rt & anc;
     if (tempset == 0) {
       tempset = (left & rt) | (left & anc) | (rt & anc);
       if (tempset == 0)
         tempset = left | rt | anc;
     }
-    r->base[i - 1] = tempset;
+    r->base2[i - 1] = tempset;
   }
-  if (!(*bottom))
-    anc = treenode[r->back->index - 1]->base[i - 1];
   r->state = '?';
-  if (r->base[dispchar - 1] == 1L << ((long)A))
+  if (r->base2[dispchar - 1] == 1L << ((long)A))
     r->state = 'A';
-  if (r->base[dispchar - 1] == 1L << ((long)C))
+  if (r->base2[dispchar - 1] == 1L << ((long)C))
     r->state = 'C';
-  if (r->base[dispchar - 1] == 1L << ((long)G))
+  if (r->base2[dispchar - 1] == 1L << ((long)G))
     r->state = 'G';
-  if (r->base[dispchar - 1] == 1L << ((long)U))
+  if (r->base2[dispchar - 1] == 1L << ((long)T))
     r->state = 'T';
-  /*printf("%c",r->state);*/
   *bottom = false;
   if (!r->tip) {
-    memcpy(temparray->base, r->next->back->base, chars*sizeof(long));
-    ancestset(hypset[i - 1], r->next->next->back->base[i - 1],
-              &ancset->base[i - 1]);
-    hyptrav(r->next->back, ancset->base, i,bottom);
-    ancestset(hypset[i - 1], temparray->base[i - 1],
-              &ancset->base[i - 1]);
-    hyptrav(r->next->next->back, ancset->base, i,bottom);
+    memcpy(temparray->base2, r->next->back->base2, chars*sizeof(long));
+    dnamove_ancestset(hypset[i - 1], r->next->next->back->base2[i - 1],
+              &ancset->base2[i - 1]);
+    dnamove_hyptrav(r->next->back, ancset->base2, i,bottom);
+    dnamove_ancestset(hypset[i - 1], temparray->base2[i - 1],
+              &ancset->base2[i - 1]);
+    dnamove_hyptrav(r->next->next->back, ancset->base2, i,bottom);
   }
-  chuck(temparray);
-  chuck(ancset);
-}  /* hyptrav */
+  dnamove_chuck(temparray);
+  dnamove_chuck(ancset);
+}  /* dnamove_hyptrav */
 
-void hypstates()
+void dnamove_hypstates()
 {
   /* fill in and describe states at interior nodes */
-  /* Local variables for hypstates: */
-  short i;
+  long i;
   boolean bottom;
-  baseptr nothing;
+  baseptr2 nothing;
 
   i = dispchar;
-  nothing = (baseptr)Malloc(chars*sizeof(long));
+  nothing = (baseptr2)Malloc(chars*sizeof(long));
   nothing[i - 1] = 0;
   bottom = true;
   firstrav(root, i);
-  hyptrav(root, nothing, i,&bottom);
+  dnamove_hyptrav(root, nothing, i,&bottom);
   free(nothing);
-}  /* hypstates */
+}  /* dnamove_hypstates */
 
 
-void coordinates(p, tipy)
-     node *p;
-     short *tipy;
+void grwrite(chartype c, long num, long *pos)
 {
-  /* establishes coordinates of nodes */
-  node *q, *first, *last;
+  long i;
 
-  if (p->tip) {
-    p->xcoord = 0;
-    p->ycoord = *tipy;
-    p->ymin = *tipy;
-    p->ymax = *tipy;
-    (*tipy) += downn;
-    return;
+  prefix(c);
+  for (i = 1; i <= num; i++) {
+    if ((*pos) >= leftedge && (*pos) - leftedge + 1 < screenwidth)
+      putchar(chh[(long)c]);
+    (*pos)++;
   }
-  q = p->next;
-  do {
-    coordinates(q->back, tipy);
-    q = q->next;
-  } while (p != q);
-  first = p->next->back;
-  q = p->next;
-  while (q->next != p)
-    q = q->next;
-  last = q->back;
-  p->xcoord = (last->ymax - first->ymin) * 3 / 2;
-  p->ycoord = (first->ycoord + last->ycoord) / 2;
-  p->ymin = first->ymin;
-  p->ymax = last->ymax;
-}  /* coordinates */
+  postfix(c);
+}  /* grwrite */
 
-void drawline(i, lastline)
-     short i, lastline;
+
+void dnamove_drawline(long i)
 {
   /* draws one row of the tree diagram by moving up tree */
-  node *p, *q, *r, *first, *last;
-  short n, j;
+  node *p, *q, *r, *first =NULL, *last =NULL;
+  long n, j, pos;
   boolean extra, done;
   Char st;
   chartype c, d;
 
+  pos = 1;
   p = nuroot;
   q = nuroot;
   extra = false;
   if (i == p->ycoord && (p == root || subtree)) {
-    c = over;
+    extra = true;
+    c = overt;
     if (display) {
       switch (p->state) {
-	
+        
       case 'A':
         c = aa;
         break;
-	
+        
       case 'C':
         c = cc;
         break;
-	
+        
       case 'G':
         c = gg;
         break;
-	
+        
       case 'T':
         c = tt;
         break;
-	
+        
       case '?':
-        c = quest;
+        c = question;
         break;
       }
     }
-    if (p->index >= 10) {
-      makechar(c);
-      printf("%2hd", p->index);
+    if ((subtree))
+      stwrite("Subtree:", 8, &pos, leftedge, screenwidth);
+    if (p->index >= 100)
+      nnwrite(p->index, 3, &pos, leftedge, screenwidth);
+    else if (p->index >= 10) {
+      grwrite(c, 1, &pos);
+      nnwrite(p->index, 2, &pos, leftedge, screenwidth);
     } else {
-      makechar(c);
-      makechar(c);
-      printf("%hd", p->index);
+      grwrite(c, 2, &pos);
+      nnwrite(p->index, 1, &pos, leftedge, screenwidth);
     }
-    extra = true;
-  } else
-    printf("  ");
+  } else {
+    if ((subtree))
+      stwrite("          ", 10, &pos, leftedge, screenwidth);
+    else
+      stwrite("  ", 2, &pos, leftedge, screenwidth);
+  }
   do {
     if (!p->tip) {
       r = p->next;
@@ -1172,44 +943,44 @@ void drawline(i, lastline)
         d = upcorner;
       else
         d = downcorner;
-      c = over;
+      c = overt;
       if (display) {
         switch (q->state) {
-	
+        
         case 'A':
           c = aa;
           break;
-	
+        
         case 'C':
           c = cc;
           break;
-	
+        
         case 'G':
           c = gg;
           break;
-	
+        
         case 'T':
           c = tt;
           break;
-	
+        
         case '?':
-          c = quest;
+          c = question;
           break;
         }
         d = c;
       }
       if (n > 1) {
-        makechar(d);
-        prefix(c);
-        for (j = 1; j <= n - 2; j++)
-          putchar(chh[(long)c]);
-        postfix(c);
+        grwrite(d, 1, &pos);
+        grwrite(c, n - 3, &pos);
       }
-      if (q->index >= 10)
-        printf("%2hd", q->index);
-      else {
-        makechar(c);
-        printf("%hd", q->index);
+      if (q->index >= 100)
+        nnwrite(q->index, 3, &pos, leftedge, screenwidth);
+      else if (q->index >= 10) {
+        grwrite(c, 1, &pos);
+        nnwrite(q->index, 2, &pos, leftedge, screenwidth);
+      } else {
+        grwrite(c, 2, &pos);
+        nnwrite(q->index, 1, &pos, leftedge, screenwidth);
       }
       extra = true;
     } else if (!q->tip) {
@@ -1221,81 +992,97 @@ void drawline(i, lastline)
           st = p->next->next->back->state;
         if (display) {
           switch (st) {
-	
+        
           case 'A':
             c = aa;
             break;
-	
+        
           case 'C':
             c = cc;
             break;
-	
+        
           case 'G':
             c = gg;
             break;
-	
+        
           case 'T':
             c = tt;
             break;
-	
+        
           case '?':
-            c = quest;
+            c = question;
             break;
           }
         }
-        makechar(c);
-        for (j = 1; j < n; j++)
-          putchar(' ');
-      } else {
-        for (j = 1; j <= n; j++)
-          putchar(' ');
-      }
-    } else {
-      for (j = 1; j <= n; j++)
-        putchar(' ');
-    }
+        grwrite(c, 1, &pos);
+        chwrite(' ', n - 1, &pos, leftedge, screenwidth);
+      } else
+        chwrite(' ', n, &pos, leftedge, screenwidth);
+    } else
+      chwrite(' ', n, &pos, leftedge, screenwidth);
     if (p != q)
       p = q;
   } while (!done);
   if (p->ycoord == i && p->tip) {
-    putchar(':');
-    for (j = 0; j < nmlngth; j++)
-      putchar(nayme[p->index - 1][j]);
+    n = 0;
+    for (j = 1; j <= nmlngth; j++) {
+      if (nayme[p->index - 1][j - 1] != '\0')
+        n = j;
+    }
+    chwrite(':', 1, &pos, leftedge, screenwidth);
+    for (j = 0; j < n; j++)
+      chwrite(nayme[p->index - 1][j], 1, &pos, leftedge, screenwidth);
   }
-  if (i == 1) {
-    if (display)
-      printf("  SITE%4hd", dispchar);
-    else
-      printf("           ");
-    if (subtree)
-      printf(" Subtree ");
-    else
-      printf("         ");
-    printf("(unrooted)");
-  }
-  if (i == 3 && display) {
-    printf("   ");
+  putchar('\n');
+}  /* dnamove_drawline */
+
+void dnamove_printree()
+{
+  /* prints out diagram of the tree */
+  long tipy;
+  long i, dow;
+
+  if (!subtree)
+    nuroot = root;
+  if (changed || newtree)
+    evaluate(root);
+  if (display)
+    dnamove_hypstates();
+  printf((ansi || ibmpc) ? "\033[2J\033[H" : "\n");
+  tipy = 1;
+  dow = down;
+  if (spp * dow > screenlines && !subtree)
+    dow--;
+
+  printf("(unrooted)");
+  if (display) {
+    printf(" ");
     makechar(aa);
-    printf(":A, ");
+    printf(":A ");
     makechar(cc);
-    printf(":C, ");
+    printf(":C ");
     makechar(gg);
-    printf(":G, ");
+    printf(":G ");
     makechar(tt);
-    printf(":T, ");
-    makechar(quest);
+    printf(":T ");
+    makechar(question);
     printf(":?");
+  } else
+    printf("                    ");
+  if (!earlytree) {
+    printf("%10.1f Steps", -like);
   }
-  if ((i == 5 || (lastline < 5 && i == lastline)) && !earlytree) {
-    if (lastline < 5)
-      printf("\n                   ");
-    printf("   Steps:%10.5f", - like);
-    gotlike = -like;
+  if (display)
+    printf("  SITE%4ld", dispchar);
+  else
+    printf("         ");
+  if (!earlytree) {
+    printf("  %3ld sites compatible\n", compatible);
   }
-  if ((i == 7 || (lastline < 7 && i == lastline)) && changed && !earlytree) {
-    if (lastline < 7)
-      printf("\n                     ");
-    if (-like <bestyet) {
+
+  printf("                            ");
+  if (changed && !earlytree) {
+    if (-like < bestyet) {
       printf("     BEST YET!");
       bestyet = -like;
     } else if (fabs(-like - bestyet) < 0.000001)
@@ -1307,70 +1094,58 @@ void drawline(i, lastline)
         printf("     worse!");
     }
   }
-  if ((i == 9 || (lastline < 9 && i == lastline)) && !earlytree) {
-    if (lastline < 9)
-      printf("\n                       ");
-    printf("     %3hd sites compatible", compatible);
-  }
-  putchar('\n');
-}  /* drawline */
+  printf("\n");
 
-void printree()
-{
-  /* prints out diagram of the tree */
-  short tipy;
-  short i, rover, dow;
-
-  if (!subtree)
-    nuroot = root;
-  if (changed || newtree)
-    evaluate(root);
-  if (display)
-    hypstates();
-  printf((ansi || ibmpc) ? "\033[2J\033[H" :
-	 vt52 ? "\033E\033H"    : "\n");
-  tipy = 1;
-  rover = 100 / spp;
-  if (rover > overr)
-    rover = overr;
-  dow = downn;
-  if (spp * dow > screenlines && !subtree) {
-    dow--;
-    rover--;
+  farthest = 0;
+  coordinates(nuroot, &tipy, 1.5, &farthest);
+  vmargin = 4;
+  treelines = tipy - dow;
+  if (topedge != 1) {
+    printf("** %ld lines above screen **\n", topedge - 1);
+    vmargin++;
   }
-  coordinates(nuroot, &tipy);
-  for (i = 1; i <= (tipy - dow); i++)
-    drawline(i, tipy-dow);
-  if (spp <= screenlines / 2 || subtree)
+  if ((treelines - topedge + 1) > (screenlines - vmargin))
+    vmargin++;
+  for (i = 1; i <= treelines; i++) {
+    if (i >= topedge && i < topedge + screenlines - vmargin)
+      dnamove_drawline(i);
+  }
+  if ((treelines - topedge + 1) > (screenlines - vmargin)) {
+    printf("** %ld", treelines - (topedge - 1 + screenlines - vmargin));
+    printf(" lines below screen **\n");
+  }
+  if (treelines - topedge + vmargin + 1 < screenlines)
     putchar('\n');
+  gotlike = -like;
   changed = false;
-}  /* printree */
+}  /* dnamove_printree */
+
 
 void arbitree()
-
 {
-  short i;
+  long i;
 
   root = treenode[0];
-  add(treenode[0], treenode[1], treenode[spp]);
+  dnamove_add(treenode[0], treenode[1], treenode[spp]);
   for (i = 3; i <= (spp); i++)
-    add(treenode[spp + i - 3], treenode[i - 1], treenode[spp + i - 2]);
+    dnamove_add(treenode[spp + i - 3], treenode[i - 1], treenode[spp + i - 2]);
   for (i = 0; i < (nonodes); i++)
-    intree[i] = true;
+    in_tree[i] = true;
 }  /* arbitree */
+
 
 void yourtree()
 {
-  short i, j;
+  long i, j;
   boolean ok;
 
   root = treenode[0];
-  add(treenode[0], treenode[1], treenode[spp]);
+  dnamove_add(treenode[0], treenode[1], treenode[spp]);
   i = 2;
   do {
     i++;
-    printree();
-    printf("Add species%3hd: ", i);
+    dnamove_printree();
+    printf("Add species%3ld: ", i);
     for (j = 0; j < nmlngth; j++)
       putchar(nayme[i - 1][j]);
     do {
@@ -1380,147 +1155,51 @@ void yourtree()
       if (!ok)
         printf("Impossible number. Please try again:\n");
     } while (!ok);
-    add(treenode[j - 1], treenode[i - 1], treenode[spp + i - 2]);
+    dnamove_add(treenode[j - 1], treenode[i - 1], treenode[spp + i - 2]);
   } while (i != spp);
   for (i = 0; i < (nonodes); i++)
-    intree[i] = true;
+    in_tree[i] = true;
 }  /* yourtree */
 
 
-void findch(c)
-     Char c;
+void initdnamovenode(node **p, node **grbg, node *q, long len, long nodei,
+                        long *ntips, long *parens, initops whichinit,
+                        pointarray treenode, pointarray nodep, Char *str, Char *ch,
+                        FILE *intree)
 {
-  /* scan forward until find character c */
-  boolean done;
+  /* initializes a node */
+  /* LM 7/27  I added this function and the commented lines around */
+  /* treeread() to get the program running, but all 4 move programs*/
+  /* are improperly integrated into the v4.0 support files.  As is */
+  /* endsite = chars and this is a patchwork function                   */
+  boolean minusread;
+  double valyew, divisor;
 
-  done = false;
-  while (!(done)) {
-    if (c == ',') {
-      if (ch == '(' || ch == ')' || ch == ';') {
-        printf("\nERROR IN USER TREE: UNMATCHED PARENTHESIS OR MISSING COMMA\n");
-	exit(-1);
-      } else if (ch == ',')
-        done = true;
-    } else if (c == ')') {
-      if (ch == '(' || ch == ',' || ch == ';') {
-        printf("\nERROR IN USER TREE: UNMATCHED PARENTHESIS OR NOT BIFURCATED NODE\n");
-	exit(-1);
-      } else {
-        if (ch == ')')
-          done = true;
-      }
-    } else if (c == ';') {
-      if (ch != ';') {
-        printf("\nERROR IN USER TREE: UNMATCHED PARENTHESIS OR MISSING SEMICOLON\n");
-	exit(-1);
-      } else
-        done = true;
-    }
-    if ((done && ch == ')') || !(done)) {
-      if (eoln(treefile)) {
-        fscanf(treefile, "%*[^\n]");
-        getc(treefile);
-      }
-      ch = getc(treefile);
-    }
+  switch (whichinit) {
+  case bottom:
+    gnutreenode(grbg, p, nodei, endsite, zeros);
+    treenode[nodei - 1] = *p;
+    break;
+  case nonbottom:
+    gnutreenode(grbg, p, nodei, endsite, zeros);
+    break;
+  case tip:
+    match_names_to_data (str, treenode, p, spp);
+    break;
+  case length:
+    processlength(&valyew, &divisor, ch, &minusread, intree, parens);
+    /* process lengths and discard */
+  default:      /*cases hslength,hsnolength,treewt,unittrwt,iter,*/
+    break;
   }
-}  /* findch */
+} /* initdnamovenode */
 
-void addelement(p, nextnode,lparens)
-     node **p;
-     short *nextnode,*lparens;
-{
-  /* recursive procedure adds nodes to user-defined tree */
-  node *q;
-  short i, n;
-  boolean found;
-  Char str[nmlngth];
-
-  do {
-    if (eoln(treefile)) {
-      fscanf(treefile, "%*[^\n]");
-      getc(treefile);
-    }
-    ch = getc(treefile);
-  } while (ch == ' ' );
-  if (ch == '(' ) {
-    if (*lparens>= spp - 1) {
-      printf("\nERROR IN USER TREE: TOO MANY LEFT PARENTHESES\n");
-      exit(-1);
-    }
-    (*nextnode)++;
-    (*lparens)++;
-    q = treenode[*nextnode - 1];
-    addelement(&q->next->back, nextnode,lparens);
-    q->next->back->back = q->next;
-    findch(',');
-    addelement(&q->next->next->back, nextnode,lparens);
-    q->next->next->back->back = q->next->next;
-    findch(')');
-    *p = q;
-    return;
-  }
-  for (i = 0; i < nmlngth; i++)
-    str[i] = ' ';
-  n = 1;
-  do {
-    if (ch == '_')
-      ch = ' ';
-    str[n - 1] = ch;
-    if (eoln(treefile)) {
-      fscanf(treefile, "%*[^\n]");
-      getc(treefile);
-    }
-    ch = getc(treefile);
-    n++;
-  } while (ch != ',' && ch != ')' && ch != ':' && n <= nmlngth);
-  n = 1;
-  do {
-    found = true;
-    for (i = 0; i < nmlngth; i++)
-      found = (found && str[i] == nayme[n - 1][i]);
-    if (found) {
-      if (intree[n - 1] == false) {
-        *p = treenode[n - 1];
-        intree[n - 1] = true;
-      } else {
-        printf("\nERROR IN USER TREE: DUPLICATE NAME FOUND -- ");
-        for (i = 0; i < nmlngth; i++)
-          putchar(nayme[n - 1][i]);
-        putchar('\n');
-	exit(-1);
-      }
-    } else
-      n++;
-  } while (!(n > spp || found));
-  if (n <= spp)
-    return;
-  printf("CANNOT FIND SPECIES: ");
-  for (i = 0; i < nmlngth; i++)
-    putchar(str[i]);
-  putchar('\n');
-}  /* addelement */
-
-void treeread()
-{
-  /* read in user-defined tree and set it up */
-  short nextnode, lparens;
-  short i;
-  openfile(&treefile,trfilename,"r",progname,trfilename);
-  root = treenode[spp];
-  nextnode = spp;
-  root->back = NULL;
-  for (i = 0; i < (spp); i++)
-    intree[i] = false;
-  lparens = 0;
-  addelement(&root, &nextnode,&lparens);
-  findch(';');
-  printf("\n\n");
-  FClose(treefile);
-}  /* treeread */
 
 void buildtree()
 {
+  long i, nextnode;
+  node *p;
+  long j;
 
   changed = false;
   newtree = false;
@@ -1531,7 +1210,31 @@ void buildtree()
     break;
 
   case use:
-    treeread();
+    openfile(&intree,intreename,"input tree file", "r",progname,intreename);
+    names = (boolean *)Malloc(spp*sizeof(boolean));
+    firsttree = true;                                        /**/
+    nodep = NULL;                                        /**/
+    nextnode = 0;                                        /**/
+    haslengths = 0;                                        /**/
+    endsite = chars;                        /*debug*/
+    zeros = (long *)Malloc(endsite*sizeof(long));        /**/
+    for (i = 0; i < endsite; i++)                        /**/
+      zeros[i] = 0;                                        /**/
+    treeread(intree, &root, treenode, &goteof, &firsttree,
+                nodep, &nextnode, &haslengths,
+                &grbg, initdnamovenode); /*debug*/
+    for (i = spp; i < (nonodes); i++) {
+      p = treenode[i];
+      for (j = 1; j <= 3; j++) {
+        p->base2 = (baseptr2)Malloc(chars*sizeof(long));
+        p = p->next;
+      } 
+    } /* debug: see comment at initdnamovenode() */
+
+    for (i = 0; i < (spp); i++)
+      in_tree[i] = names[i];
+    free(names);
+    FClose(intree);
     break;
 
   case spec:
@@ -1540,9 +1243,10 @@ void buildtree()
   }
   if (!outgropt)
     outgrno = root->next->back->index;
-  if (outgropt && intree[outgrno - 1])
-    reroot(treenode[outgrno - 1]);
+  if (outgropt && in_tree[outgrno - 1])
+    dnamove_reroot(treenode[outgrno - 1]);
 }  /* buildtree */
+
 
 void setorder()
 {
@@ -1550,48 +1254,49 @@ void setorder()
   sett[0] = 1L << ((long)A);
   sett[1] = 1L << ((long)C);
   sett[2] = 1L << ((long)G);
-  sett[3] = 1L << ((long)U);
+  sett[3] = 1L << ((long)T);
   sett[4] = 1L << ((long)O);
   sett[5] = (1L << ((long)A)) | (1L << ((long)C));
   sett[6] = (1L << ((long)A)) | (1L << ((long)G));
-  sett[7] = (1L << ((long)A)) | (1L << ((long)U));
+  sett[7] = (1L << ((long)A)) | (1L << ((long)T));
   sett[8] = (1L << ((long)A)) | (1L << ((long)O));
   sett[9] = (1L << ((long)C)) | (1L << ((long)G));
-  sett[10] = (1L << ((long)C)) | (1L << ((long)U));
+  sett[10] = (1L << ((long)C)) | (1L << ((long)T));
   sett[11] = (1L << ((long)C)) | (1L << ((long)O));
-  sett[12] = (1L << ((long)G)) | (1L << ((long)U));
+  sett[12] = (1L << ((long)G)) | (1L << ((long)T));
   sett[13] = (1L << ((long)G)) | (1L << ((long)O));
-  sett[14] = (1L << ((long)U)) | (1L << ((long)O));
+  sett[14] = (1L << ((long)T)) | (1L << ((long)O));
   sett[15] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G));
-  sett[16] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)U));
+  sett[16] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)T));
   sett[17] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)O));
-  sett[18] = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)U));
+  sett[18] = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)T));
   sett[19] = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)O));
-  sett[20] = (1L << ((long)A)) | (1L << ((long)U)) | (1L << ((long)O));
-  sett[21] = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)U));
+  sett[20] = (1L << ((long)A)) | (1L << ((long)T)) | (1L << ((long)O));
+  sett[21] = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)T));
   sett[22] = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)O));
-  sett[23] = (1L << ((long)C)) | (1L << ((long)U)) | (1L << ((long)O));
-  sett[24] = (1L << ((long)G)) | (1L << ((long)U)) | (1L << ((long)O));
+  sett[23] = (1L << ((long)C)) | (1L << ((long)T)) | (1L << ((long)O));
+  sett[24] = (1L << ((long)G)) | (1L << ((long)T)) | (1L << ((long)O));
   sett[25] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
-    (1L << ((long)U));
+    (1L << ((long)T));
   sett[26] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
     (1L << ((long)O));
-  sett[27] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)U)) |
+  sett[27] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)T)) |
     (1L << ((long)O));
-  sett[28] = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)U)) |
+  sett[28] = (1L << ((long)A)) | (1L << ((long)G)) | (1L << ((long)T)) |
     (1L << ((long)O));
-  sett[29] = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)U)) |
+  sett[29] = (1L << ((long)C)) | (1L << ((long)G)) | (1L << ((long)T)) |
     (1L << ((long)O));
   sett[30] = (1L << ((long)A)) | (1L << ((long)C)) | (1L << ((long)G)) |
-    (1L << ((long)U)) | (1L << ((long)O));
+    (1L << ((long)T)) | (1L << ((long)O));
 }  /* setorder */
+
 
 void mincomp()
 {
   /* computes for each site the minimum number of steps
      necessary to accomodate those species already
      in the analysis */
-  short i, j, k;
+  long i, j, k;
   boolean done;
 
   for (i = 0; i < (chars); i++) {
@@ -1602,8 +1307,8 @@ void mincomp()
       done = true;
       k = 1;
       do {
-        if (intree[k - 1])
-          done = (done && (treenode[k - 1]->base[i] & sett[j - 1]) != 0);
+        if (in_tree[k - 1])
+          done = (done && (treenode[k - 1]->base2[i] & sett[j - 1]) != 0);
         k++;
       } while (k <= spp && done);
     }
@@ -1622,34 +1327,9 @@ void mincomp()
 }  /* mincomp */
 
 
-void help()
-{
-  /* display help information */
-  printf("\n\nR Rearrange a tree by moving a node or group\n");
-  printf("# Show the states of the next site that doesn't fit tree\n");
-  printf("+             ... of the next site\n");
-  printf("-             ... of the previous site\n");
-  printf("S Show the states of a given site\n");
-  printf(". redisplay the same tree again\n");
-  printf("T Try all possible positions of a node or group\n");
-  printf("U Undo the most recent rearrangement\n");
-  printf("W Write tree to a file\n");
-  printf("O select an Outgroup for the tree\n");
-  printf("F Flip (rotate) branches at a node\n");
-  printf("C show only one Clade (subtree) (useful if tree is too big)\n");
-  printf("H Help (this screen)\n");
-  printf("?  \"     \"      \"   \n");
-  printf("Q (Quit) Exit from program\n");
-  printf("X Exit from program\n\n\n");
-  printf("TO CONTINUE, PRESS ON THE Return OR Enter KEY");
-  scanf("%c%*[^\n]", &ch);
-  getchar();
-  printree();
-}  /* help */
-
 void rearrange()
 {
-  short i, j;
+  long i, j;
   boolean ok1, ok2;
   node *p, *q;
 
@@ -1675,14 +1355,14 @@ void rearrange()
         else
           fromwhere = q->next->back->index;
         towhere = j;
-        re_move(&treenode[i - 1], &q);
-        add(treenode[j - 1], treenode[i - 1], q);
+        dnamove_re_move(&treenode[i - 1], &q);
+        dnamove_add(treenode[j - 1], treenode[i - 1], q);
       }
       lastop = rearr;
     }
   }
   changed = (ok1 && ok2);
-  printree();
+  dnamove_printree();
   if (!(ok1 && ok2))
     printf("Not a possible rearrangement.  Try again: \n");
   else {
@@ -1691,10 +1371,10 @@ void rearrange()
   }
 }  /* rearrange */
 
-Local Void nextinc()
+void dnamove_nextinc()
 {
   /* show next incompatible site */
-  short disp0;
+  long disp0;
   boolean done;
 
   display = true;
@@ -1708,32 +1388,32 @@ Local Void nextinc()
     }
   } while (!(necsteps[dispchar - 1] != numsteps[dispchar - 1] ||
              dispchar == disp0 || done));
-  printree();
-}  /* nextinc */
+  dnamove_printree();
+}  /* dnamove_nextinc */
 
-void nextchar()
+void dnamove_nextchar()
 {
   /* show next site */
   display = true;
   dispchar++;
   if (dispchar > chars)
     dispchar = 1;
-  printree();
-}  /* nextchar */
+  dnamove_printree();
+}  /* dnamove_nextchar */
 
-void prevchar()
+void dnamove_prevchar()
 {
   /* show previous site */
   display = true;
   dispchar--;
   if (dispchar < 1)
     dispchar = chars;
-  printree();
-}  /* prevchar */
+  dnamove_printree();
+}  /* dnamove_prevchar */
 
-void show()
+void dnamove_show()
 {
-  short i;
+  long i;
   boolean ok;
 
   do {
@@ -1747,26 +1427,22 @@ void show()
     if (ok && i == 0)
       display = false;
   } while (!ok);
-  printree();
-}  /* show */
+  dnamove_printree();
+}  /* dnamove_show */
 
-/* Local variables for addpreorder: */
 
-void tryadd(p,item,nufork,place)
-     node *p,**item,**nufork;
-     double *place;
+void tryadd(node *p, node **item, node **nufork, double *place)
 {
   /* temporarily adds one fork and one tip to the tree.
      Records scores in ARRAY place */
-  add(p, *item, *nufork);
+  dnamove_add(p, *item, *nufork);
   evaluate(root);
   place[p->index - 1] = -like;
-  re_move(item, nufork);
+  dnamove_re_move(item, nufork);
 }  /* tryadd */
 
-void addpreorder(p, item_, nufork_,place)
-     node *p, *item_, *nufork_;
-     double *place;
+
+void addpreorder(node *p, node *item_, node *nufork_, double *place)
 {
   /* traverses a binary tree, calling PROCEDURE tryadd
      at a node before calling tryadd at its descendants */
@@ -1783,12 +1459,12 @@ void addpreorder(p, item_, nufork_,place)
   }
 }  /* addpreorder */
 
+
 void try()
 {
   /* Remove node, try it in all possible places */
-  /* Local variables for try: */
   double *place;
-  short i, j, oldcompat;
+  long i, j, oldcompat;
   double current;
   node *q, *dummy, *rute;
   boolean tied, better, ok;
@@ -1819,13 +1495,13 @@ void try()
     else
       rute = treenode[treenode[i - 1]->back->index - 1]->next->back;
   }
-  re_move(&treenode[i - 1], &dummy);
+  dnamove_re_move(&treenode[i - 1], &dummy);
   oldleft = wasleft;
   root = rute;
   addpreorder(root, treenode[i - 1], dummy, place);
   wasleft = oldleft;
   restoring = true;
-  add(treenode[fromwhere - 1], treenode[what - 1], dummy);
+  dnamove_add(treenode[fromwhere - 1], treenode[what - 1], q);
   like = -current;
   compatible = oldcompat;
   restoring = false;
@@ -1833,7 +1509,7 @@ void try()
   printf("       BETTER: ");
   for (j = 1; j <= (nonodes); j++) {
     if (place[j - 1] < current && place[j - 1] >= 0.0) {
-      printf("%3hd:%6.2f", j, place[j - 1]);
+      printf("%3ld:%6.2f", j, place[j - 1]);
       better = true;
     }
   }
@@ -1844,9 +1520,9 @@ void try()
   for (j = 1; j <= (nonodes); j++) {
     if (fabs(place[j - 1] - current) < 1.0e-6 && j != fromwhere) {
       if (j < 10)
-        printf("%2hd", j);
+        printf("%2ld", j);
       else
-        printf("%3hd", j);
+        printf("%3ld", j);
       tied = true;
     }
   }
@@ -1858,10 +1534,11 @@ void try()
   free(place);
 }  /* try */
 
+
 void undo()
 {
   /* restore to tree before last rearrangement */
-  short temp;
+  long temp;
   boolean btemp;
   node *q;
 
@@ -1870,10 +1547,10 @@ void undo()
   case rearr:
     restoring = true;
     oldleft = wasleft;
-    re_move(&treenode[what - 1], &q);
+    dnamove_re_move(&treenode[what - 1], &q);
     btemp = wasleft;
     wasleft = oldleft;
-    add(treenode[fromwhere - 1], treenode[what - 1],q);
+    dnamove_add(treenode[fromwhere - 1], treenode[what - 1],q);
     wasleft = btemp;
     restoring = false;
     temp = fromwhere;
@@ -1896,7 +1573,7 @@ void undo()
     temp =oldoutgrno;
     oldoutgrno = outgrno;
     outgrno = temp;
-    reroot(treenode[outgrno - 1]);
+    dnamove_reroot(treenode[outgrno - 1]);
     restoring = false;
     break;
 
@@ -1904,7 +1581,7 @@ void undo()
     /* blank case */
     break;
   }
-  printree();
+  dnamove_printree();
   if (lastop == none) {
     printf("No operation to undo! ");
     return;
@@ -1914,98 +1591,39 @@ void undo()
   written = btemp;
 }  /* undo */
 
-void treeout(p)
-     node *p;
-{
-  /* write out file with representation of final tree */
-  short i, n;
-  Char c;
 
-  if (p->tip) {
-    n = 0;
-    for (i = 1; i <= nmlngth; i++) {
-      if (nayme[p->index - 1][i - 1] != ' ')
-        n = i;
-    }
-    for (i = 0; i < n; i++) {
-      c = nayme[p->index - 1][i];
-      if (c == ' ')
-        c = '_';
-      putc(c, treefile);
-    }
-    col += n;
-  } else {
-    putc('(', treefile);
-    col++;
-    treeout(p->next->back);
-    putc(',', treefile);
-    col++;
-    if (col > 65) {
-      putc('\n', treefile);
-      col = 0;
-    }
-    treeout(p->next->next->back);
-    putc(')', treefile);
-    col++;
-  }
-  if (p == root)
-    fprintf(treefile, ";\n");
-}  /* treeout */
-
-void treewrite(done)
-     boolean done;
+void treewrite(boolean done)
 {
   /* write out tree to a file */
+  Char ch;
 
-  if (waswritten) {
-    printf("\nTree file already was open.\n");
-    printf("   A   Add to this tree to tree file\n");
-    printf("   R   Replace tree file contents by this tree\n");
-    printf("   F   Write out tree to a different tree file\n");
-    printf("   N   Do Not write out this tree\n");
-    do {
-      printf("Which should we do? ");
-      scanf("%c%*[^\n]", &ch);
-      getchar();
-      uppercase(&ch);
-    } while (ch != 'A' && ch != 'R' && ch != 'N'  && ch != 'F');
-  }
-  if (ch == 'F'){
-    trfilename[0] = '\0';
-    while (trfilename[0] =='\0'){
-      printf("Please enter a tree file name>");
-      gets(trfilename);}
-  }
-
-  if (ch == 'R' || ch == 'A' || !waswritten){
-    openfile(&treefile,trfilename, (ch == 'A' && waswritten) ? "a" : "w",
-	     progname,trfilename);
-  }
+  treeoptions(waswritten, &ch, &outtree, outtreename, progname);
   if (!done)
-    printree();
+    dnamove_printree();
   if (waswritten && ch != 'A' && ch != 'R')
     return;
   col = 0;
-  treeout(root);
-  printf("\nTree written to file\n\n");
+  treeout(root, 1, &col, root);
+  printf("\nTree written to file \"%s\"\n\n", outtreename);
   waswritten = true;
   written = true;
-  FClose(treefile);
+  FClose(outtree);
 #ifdef MAC
-  fixmacfile(trfilename);
+  fixmacfile(outtreename);
 #endif
 }
 /* treewrite */
 
+
 void clade()
 {
   /* pick a subtree and show only that on screen */
-  short i;
+  long i;
   boolean ok;
 
   printf("Select subtree rooted at which node (0 for whole tree)? ");
   inpnum(&i, &ok);
-  ok = (ok && (unsigned)i <= nonodes);
+  ok = (ok && ((unsigned)i) <= ((unsigned)nonodes));
   if (ok) {
     subtree = (i > 0);
     if (subtree)
@@ -2013,15 +1631,16 @@ void clade()
     else
       nuroot = root;
   }
-  printree();
+  dnamove_printree();
   if (!ok)
     printf("Not possible to use this node. ");
 }  /* clade */
 
+
 void flip()
 {
   /* flip at a node left-right */
-  short i;
+  long i;
   boolean ok;
   node *p;
 
@@ -2037,7 +1656,7 @@ void flip()
     atwhat = i;
     lastop = flipp;
   }
-  printree();
+  dnamove_printree();
   if (ok) {
     oldwritten = written;
     written = false;
@@ -2051,101 +1670,125 @@ void flip()
 
 void changeoutgroup()
 {
-  short i;
+  long i;
   boolean ok;
 
   oldoutgrno = outgrno;
   do {
     printf("Which node should be the new outgroup? ");
     inpnum(&i, &ok);
-    ok = (ok && intree[i - 1] && i >= 1 && i <= nonodes &&
+    ok = (ok && in_tree[i - 1] && i >= 1 && i <= nonodes &&
           i != root->index);
     if (ok)
       outgrno = i;
   } while (!ok);
-  if (intree[outgrno - 1])
-    reroot(treenode[outgrno - 1]);
+  if (in_tree[outgrno - 1])
+    dnamove_reroot(treenode[outgrno - 1]);
   changed = true;
   lastop = reroott;
-  printree();
+  dnamove_printree();
   oldwritten = written;
   written = false;
 }  /* changeoutgroup */
 
+
 void redisplay()
 {
-  /* Local variables for redisplay: */
   boolean done = false;
   waswritten = false;
   do {
-    printf("NEXT? (Options: R # + - S . T U W O F C H ? X Q) ");
-    printf("(H or ? for Help) ");
+    printf("NEXT? (Options: R # + - S . T U W O F H J K L C ? X Q) ");
+    printf("(? for Help) ");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
-    uppercase(&ch);
-    if (strchr("CFORSTUXQ+#-.WH?",ch)){
+    uppercase(&ch); 
+    if (strchr("HJKLCFORSTUXQ+#-.W?",ch) != NULL){
       switch (ch) {
-	
+        
       case 'R':
         rearrange();
         break;
-	
+        
       case '#':
-        nextinc();
+        dnamove_nextinc();
         break;
-	
+        
       case '+':
-        nextchar();
+        dnamove_nextchar();
         break;
-	
+        
       case '-':
-        prevchar();
+        dnamove_prevchar();
         break;
-	
+        
       case 'S':
-        show();
+        dnamove_show();
         break;
-	
+        
       case '.':
-        printree();
+        dnamove_printree();
         break;
-	
+        
       case 'T':
         try();
         break;
-	
+        
       case 'U':
         undo();
         break;
-	
+        
       case 'W':
         treewrite(done);
         break;
-	
+        
       case 'O':
         changeoutgroup();
         break;
-	
+        
       case 'F':
         flip();
         break;
-	
+        
+      case 'H':
+        window(left, &leftedge, &topedge, hscroll, vscroll, treelines,
+                 screenlines, screenwidth, farthest, subtree);
+        dnamove_printree();
+        break;
+
+      case 'J':
+        window(downn, &leftedge, &topedge, hscroll, vscroll, treelines,
+                 screenlines, screenwidth, farthest, subtree);
+        dnamove_printree();
+        break;
+
+      case 'K':
+        window(upp, &leftedge, &topedge, hscroll, vscroll, treelines,
+                 screenlines, screenwidth, farthest, subtree);
+        dnamove_printree();
+        break;
+
+      case 'L':
+        window(right, &leftedge, &topedge, hscroll, vscroll, treelines,
+                 screenlines, screenwidth, farthest, subtree);
+        dnamove_printree();
+        break;
+
       case 'C':
         clade();
         break;
-	
-      case 'H':
-        help();
-        break;
-	
+        
       case '?':
-        help();
+        help("site");
+        dnamove_printree();
         break;
-	
+        
       case 'X':
         done = true;
         break;
-	
+        
       case 'Q':
         done = true;
         break;
@@ -2156,12 +1799,16 @@ void redisplay()
     return;
   do {
     printf("Do you want to write out the tree to a file? (Y or N) ");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
     if (ch == 'Y' || ch == 'y')
       treewrite(done);
   } while (ch != 'Y' && ch != 'y' && ch != 'N' && ch != 'n');
 }  /* redisplay */
+
 
 void treeconstruct()
 {
@@ -2179,7 +1826,7 @@ void treeconstruct()
   mincomp();
   newtree = true;
   earlytree = false;
-  printree();
+  dnamove_printree();
   bestyet = -like;
   gotlike = -like;
   lastop = none;
@@ -2188,90 +1835,42 @@ void treeconstruct()
   redisplay();
 }  /* treeconstruct */
 
-main(argc, argv)
-     int argc;
-     Char *argv[];
 
-{  /* Interactive DNA parsimony */
+int main(int argc, Char *argv[])
+{ /* Interactive DNA parsimony */
   /* reads in spp, chars, and the data. Then calls treeconstruct to
      construct the tree and query the user */
 #ifdef MAC
-  macsetup("Dnamove","");
+  argc = 1;                /* macsetup("Dnamove","");        */
   argv[0] = "Dnamove";
 #endif
-  strcpy(progname,argv[0]);
+  init(argc, argv);
+  progname = argv[0];
   strcpy(infilename,INFILE);
-  strcpy(outfilename,OUTFILE);
-  strcpy(trfilename,TREEFILE);
+  strcpy(intreename,INTREE);
+  strcpy(outtreename,OUTTREE);
 
-  openfile(&infile,infilename,"r",argv[0],infilename);
-  openfile(&outfile,outfilename,"w",argv[0],outfilename);
+  openfile(&infile,infilename,"input file", "r",argv[0],infilename);
+  openfile(&outtree,outtreename,"output file", "w",argv[0],outtreename);
 
   garbage = NULL;
   screenlines = 24;
-  ibmpc = ibmpc0;
-  ansi = ansi0;
-  vt52 = vt520;
+  scrollinc = 20;
+  screenwidth = 80;
+  topedge = 1;
+  leftedge = 1;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
   doinput();
   configure();
   treeconstruct();
-  if (waswritten) {
-    FClose(treefile);
-#ifdef MAC
-    fixmacfile(trfilename);
-#endif
-  }
   FClose(infile);
-  FClose(outfile);
+  FClose(outtree);
 #ifdef MAC
-  fixmacfile(outfilename);
+  fixmacfile(outtreename);
 #endif
-  exit(0);
-}  /* Interactive DNA parsimony */
-
-int eof(f)
-     FILE *f;
-{
-  register int ch;
-
-  if (feof(f))
-    return 1;
-  if (f == stdin)
-    return 0;
-  ch = getc(f);
-  if (ch == EOF)
-    return 1;
-  ungetc(ch, f);
+#ifdef WIN32
+  phyRestoreConsoleAttributes();
+#endif
   return 0;
-}
-
-
-int eoln(f)
-     FILE *f;
-{
-  register int ch;
-
-  ch = getc(f);
-  if (ch == EOF)
-    return 1;
-  ungetc(ch, f);
-  return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-MALLOCRETURN *mymalloc(x)
-long x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)malloc(x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
-
+}  /* Interactive DNA parsimony */

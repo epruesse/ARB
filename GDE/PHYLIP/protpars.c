@@ -1,81 +1,99 @@
-#include "phylip.h"
 
-/* version 3.52c. (c) Copyright 1993 by Joseph Felsenstein.
+#include "phylip.h"
+#include "seq.h"
+
+/* version 3.6. (c) Copyright 1993-2002 by the University of Washington.
    Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
-#define nmlngth         10   /* number of characters in species name    */
-#define maxtrees        50   /* maximum number of tied trees stored     */
-#define maxuser         8    /* maximum number of user-defined trees    */
-#define down            2
+#define maxtrees        100   /* maximum number of tied trees stored */
 
-#define ibmpc0          false
-#define ansi0           false /* avoid clearing of screen */
-/* #define ansi0           true */
-#define vt520           false
-
-
-typedef long *steptr;
 typedef enum {
-  ala, arg, asn, asp, cys, gln, glu, gly, his, ileu, leu, lys, met, phe, pro,
-  ser1, ser2, thr, trp, tyr, val, del, stop, asx, glx, ser, unk, quest
-} aas;
-typedef long sitearray[3];
-typedef sitearray *seqptr;
+  universal, ciliate, mito, vertmito, flymito, yeastmito
+} codetype;
 
 /* nodes will form a binary tree */
-
-typedef struct node {        /* describes a tip species or an ancestor */
-  struct node *next, *back;  /* pointers to nodes                      */
-  long index;                /* number of the node                     */
-  boolean tip, bottom;       /* present species are tips of tree       */
-  aas *seq;                  /* the sequence                           */
-  seqptr siteset;            /* temporary storage for aa's             */
-  steptr numsteps;           /* bookkeeps steps                        */
-  long xcoord, ycoord, ymin; /* used by printree                       */
-
-  long ymax;
-} node;
-
-typedef node **pointptr;
-typedef long longer[6];
 
 typedef struct gseq {
   seqptr seq;
   struct gseq *next;
 } gseq;
 
+#ifndef OLDC
+/* function prototypes */
+void   protgnu(gseq **);
+void   protchuck(gseq *);
+void   code(void);
+void   setup(void);
+void   getoptions(void);
+void   protalloctree(void);
+void   allocrest(void);
+void   doinit(void);
+void   protinputdata(void);
 
-Static node *root;
-Static FILE *infile, *outfile, *treefile;
-Static long spp, nonodes, chars, inseed, outgrno, col, datasets, ith,
-       i, j, l, jumb, njumble;
-/* spp = number of species
-   nonodes = number of nodes in tree
-   chars = number of sites in actual sequences
-   outgrno indicates outgroup */
-Static boolean jumble, usertree, weights, thresh, trout, outgropt,
-               printdata, progress, treeprint, stepbox, ancseq, mulsets,
-               interleaved, ibmpc, vt52, ansi, firstset;
-Static long fullset, fulldel;
-Static steptr weight;
-Static pointptr treenode;   /* pointers to all nodes in tree */
-Static Char **nayme;   /* names of species */
-Static double threshold;
-Static steptr threshwt;
-Static longer seed;
-Static long *enterorder;
-Static sitearray translate[(long)quest - (long)ala + 1];
-Static long **fsteps;
-Static long **bestrees;
-Static gseq *garbage;
-Static node *temp, *temp1;
+void   protmakevalues(void);
+void   doinput(void);
+void   protfillin(node *, node *, node *);
+void   protpreorder(node *);
+void   protadd(node *, node *, node *);
+void   protre_move(node **, node **);
+void   evaluate(node *);
+void   protpostorder(node *);
+void   protreroot(node *);
+void   protsavetraverse(node *, long *, boolean *);
+
+void   protsavetree(long *, boolean *);
+void   tryadd(node *, node **, node **);
+void   addpreorder(node *, node *, node *);
+void   tryrearr(node *, boolean *);
+void   repreorder(node *, boolean *);
+void   rearrange(node **);
+void   protgetch(Char *);
+void   protaddelement(node **, long *, long *, boolean *);
+void   prottreeread(void);
+void   protancestset(long *, long *, long *, long *, long *);
+                
+void   prothyprint(long , long , boolean *, node *, boolean *, boolean *);
+void   prothyptrav(node *, sitearray *, long, long, long *, boolean *,
+                sitearray);
+void   prothypstates(long *);
+void   describe(void);
+void   maketree(void);
+void   reallocnode(node* p);
+void   reallocchars(void);
+/* function prototypes */
+#endif
+
+
+
+Char infilename[FNMLNGTH], outfilename[FNMLNGTH], intreename[FNMLNGTH], outtreename[FNMLNGTH], weightfilename[FNMLNGTH];
+node *root;
+long chars, col, msets, ith, njumble, jumb;
+/*   chars = number of sites in actual sequences */
+long inseed, inseed0;
+boolean jumble, usertree, weights, thresh, trout, progress, stepbox,
+    justwts, ancseq, mulsets, firstset;
+codetype whichcode;
+long fullset, fulldel;
+pointarray treenode;   /* pointers to all nodes in tree */
+double threshold;
+steptr threshwt;
+longer seed;
+long *enterorder;
+sitearray translate[(long)quest - (long)ala + 1];
+aas trans[4][4][4];
+long **fsteps;
+bestelm *bestrees;
+boolean dummy;
+gseq *garbage;
+node *temp, *temp1;
 Char ch;
 aas tmpa;
+char *progname;
 
 /* Local variables for maketree, propagated globally for c version: */
-long nextree, which, minwhich;
+long minwhich;
 double like, bestyet, bestlike, minsteps, bstlike2;
 boolean lastrearr, recompute;
 node *there;
@@ -84,196 +102,157 @@ long *place;
 boolean *names;
 
 
-
-openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
-{
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-        printf("%s:  can't read %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      case 'w':
-      case 'a':
-        printf("%s: can't write %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      }
-    }
-  }
-  *fp=of;
-  if (perm != NULL)
-    strcpy(perm,file);
-}
-
-
-void gnu(p)
-gseq **p;
+void protgnu(gseq **p)
 {
   /* this and the following are do-it-yourself garbage collectors.
      Make a new node or pull one off the garbage list */
   if (garbage != NULL) {
     *p = garbage;
+    free((*p)->seq);
+    (*p)->seq = (seqptr)Malloc(chars*sizeof(sitearray));
     garbage = garbage->next;
   } else {
     *p = (gseq *)Malloc(sizeof(gseq));
     (*p)->seq = (seqptr)Malloc(chars*sizeof(sitearray));
   }
   (*p)->next = NULL;
-}  /* gnu */
+}  /* protgnu */
 
 
-void chuck(p)
-gseq *p;
+void protchuck(gseq *p)
 {
   /* collect garbage on p -- put it on front of garbage list */
   p->next = garbage;
   garbage = p;
-}  /* chuck */
+}  /* protchuck */
+
+
+void code()
+{
+  /* make up table of the code 1 = u, 2 = c, 3 = a, 4 = g */
+  trans[0][0][0] = phe;
+  trans[0][0][1] = phe;
+  trans[0][0][2] = leu;
+  trans[0][0][3] = leu;
+  trans[0][1][0] = ser;
+  trans[0][1][1] = ser1;
+  trans[0][1][2] = ser1;
+  trans[0][1][3] = ser1;
+  trans[0][2][0] = tyr;
+  trans[0][2][1] = tyr;
+  trans[0][2][2] = stop;
+  trans[0][2][3] = stop;
+  trans[0][3][0] = cys;
+  trans[0][3][1] = cys;
+  trans[0][3][2] = stop;
+  trans[0][3][3] = trp;
+  trans[1][0][0] = leu;
+  trans[1][0][1] = leu;
+  trans[1][0][2] = leu;
+  trans[1][0][3] = leu;
+  trans[1][1][0] = pro;
+  trans[1][1][1] = pro;
+  trans[1][1][2] = pro;
+  trans[1][1][3] = pro;
+  trans[1][2][0] = his;
+  trans[1][2][1] = his;
+  trans[1][2][2] = gln;
+  trans[1][2][3] = gln;
+  trans[1][3][0] = arg;
+  trans[1][3][1] = arg;
+  trans[1][3][2] = arg;
+  trans[1][3][3] = arg;
+  trans[2][0][0] = ileu;
+  trans[2][0][1] = ileu;
+  trans[2][0][2] = ileu;
+  trans[2][0][3] = met;
+  trans[2][1][0] = thr;
+  trans[2][1][1] = thr;
+  trans[2][1][2] = thr;
+  trans[2][1][3] = thr;
+  trans[2][2][0] = asn;
+  trans[2][2][1] = asn;
+  trans[2][2][2] = lys;
+  trans[2][2][3] = lys;
+  trans[2][3][0] = ser2;
+  trans[2][3][1] = ser2;
+  trans[2][3][2] = arg;
+  trans[2][3][3] = arg;
+  trans[3][0][0] = val;
+  trans[3][0][1] = val;
+  trans[3][0][2] = val;
+  trans[3][0][3] = val;
+  trans[3][1][0] = ala;
+  trans[3][1][1] = ala;
+  trans[3][1][2] = ala;
+  trans[3][1][3] = ala;
+  trans[3][2][0] = asp;
+  trans[3][2][1] = asp;
+  trans[3][2][2] = glu;
+  trans[3][2][3] = glu;
+  trans[3][3][0] = gly;
+  trans[3][3][1] = gly;
+  trans[3][3][2] = gly;
+  trans[3][3][3] = gly;
+  if (whichcode == mito)
+    trans[0][3][2] = trp;
+  if (whichcode == vertmito) {
+    trans[0][3][2] = trp;
+    trans[2][3][2] = stop;
+    trans[2][3][3] = stop;
+    trans[2][0][2] = met;
+  }
+  if (whichcode == flymito) {
+    trans[0][3][2] = trp;
+    trans[2][0][2] = met;
+    trans[2][3][2] = ser2;
+  }
+  if (whichcode == yeastmito) {
+    trans[0][3][2] = trp;
+    trans[1][0][2] = thr;
+    trans[2][0][2] = met;
+  }
+} /* code */
 
 
 void setup()
 {
   /* set up set table to get aasets from aas */
   aas a, b;
-  long s;
+  long i, j, k, l, s;
 
-  for (a = ala; (long)a <= (long)stop; a = (aas)((long)a + 1))
+  for (a = ala; (long)a <= (long)stop; a = (aas)((long)a + 1)) {
     translate[(long)a - (long)ala][0] = 1L << ((long)a);
-  translate[0]
-    [1] = (1L << ((long)ala)) | (1L << ((long)asp)) | (1L << ((long)glu)) |
-          (1L << ((long)gly)) | (1L << ((long)ser1)) | (1L << ((long)pro)) |
-          (1L << ((long)thr)) | (1L << ((long)val));
-  translate[(long)arg - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)cys)) | (1L << ((long)gln)) |
-          (1L << ((long)gly)) | (1L << ((long)his)) | (1L << ((long)ileu)) |
-          (1L << ((long)leu)) | (1L << ((long)lys)) | (1L << ((long)met)) |
-          (1L << ((long)pro)) | (1L << ((long)ser2)) | (1L << ((long)thr)) |
-          (1L << ((long)trp)) | (1L << ((long)stop));
-  translate[(long)asn - (long)ala]
-    [1] = (1L << ((long)asn)) | (1L << ((long)asp)) | (1L << ((long)his)) |
-          (1L << ((long)ileu)) | (1L << ((long)lys)) | (1L << ((long)ser2)) |
-          (1L << ((long)thr)) | (1L << ((long)tyr));
-  translate[(long)asp - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)asp)) | (1L << ((long)asn)) |
-          (1L << ((long)glu)) | (1L << ((long)gly)) | (1L << ((long)his)) |
-          (1L << ((long)tyr)) | (1L << ((long)val));
-  translate[(long)cys - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)cys)) | (1L << ((long)gly)) |
-          (1L << ((long)phe)) | (1L << ((long)ser1)) | (1L << ((long)ser2)) |
-          (1L << ((long)trp)) | (1L << ((long)tyr)) | (1L << ((long)stop));
-  translate[(long)gln - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)gln)) | (1L << ((long)glu)) |
-          (1L << ((long)his)) | (1L << ((long)leu)) | (1L << ((long)lys)) |
-          (1L << ((long)pro)) | (1L << ((long)stop));
-  translate[(long)glu - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)asp)) | (1L << ((long)gln)) |
-          (1L << ((long)glu)) | (1L << ((long)gly)) | (1L << ((long)lys)) |
-          (1L << ((long)val)) | (1L << ((long)stop));
-  translate[(long)gly - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)arg)) | (1L << ((long)asp)) |
-          (1L << ((long)cys)) | (1L << ((long)glu)) | (1L << ((long)gly)) |
-          (1L << ((long)ser2)) | (1L << ((long)trp)) | (1L << ((long)val)) |
-          (1L << ((long)stop));
-  translate[(long)his - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)asn)) | (1L << ((long)asp)) |
-          (1L << ((long)gln)) | (1L << ((long)his)) | (1L << ((long)leu)) |
-          (1L << ((long)pro)) | (1L << ((long)tyr));
-  translate[(long)ileu - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)asn)) | (1L << ((long)ileu)) |
-          (1L << ((long)leu)) | (1L << ((long)lys)) | (1L << ((long)met)) |
-          (1L << ((long)phe)) | (1L << ((long)ser2)) | (1L << ((long)thr)) |
-          (1L << ((long)val));
-  translate[(long)leu - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)gln)) | (1L << ((long)his)) |
-          (1L << ((long)ileu)) | (1L << ((long)leu)) | (1L << ((long)met)) |
-          (1L << ((long)phe)) | (1L << ((long)pro)) | (1L << ((long)ser1)) |
-          (1L << ((long)trp)) | (1L << ((long)val)) | (1L << ((long)stop));
-  translate[(long)lys - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)asn)) | (1L << ((long)gln)) |
-          (1L << ((long)glu)) | (1L << ((long)ileu)) | (1L << ((long)lys)) |
-          (1L << ((long)met)) | (1L << ((long)thr)) | (1L << ((long)stop));
-  translate[(long)met - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)ileu)) | (1L << ((long)leu)) |
-          (1L << ((long)lys)) | (1L << ((long)met)) | (1L << ((long)val)) |
-          (1L << ((long)thr));
-  translate[(long)phe - (long)ala]
-    [1] = (1L << ((long)cys)) | (1L << ((long)ileu)) | (1L << ((long)leu)) |
-          (1L << ((long)phe)) | (1L << ((long)ser1)) | (1L << ((long)tyr)) |
-          (1L << ((long)val));
-  translate[(long)pro - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)arg)) | (1L << ((long)gln)) |
-          (1L << ((long)his)) | (1L << ((long)leu)) | (1L << ((long)pro)) |
-          (1L << ((long)ser1)) | (1L << ((long)thr));
-  translate[(long)ser1 - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)cys)) | (1L << ((long)leu)) |
-          (1L << ((long)phe)) | (1L << ((long)pro)) | (1L << ((long)ser1)) |
-          (1L << ((long)thr)) | (1L << ((long)trp)) | (1L << ((long)tyr)) |
-          (1L << ((long)stop));
-  translate[(long)ser2 - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)asn)) | (1L << ((long)cys)) |
-          (1L << ((long)gly)) | (1L << ((long)ileu)) | (1L << ((long)ser2)) |
-          (1L << ((long)thr));
-  translate[(long)thr - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)arg)) | (1L << ((long)asn)) |
-          (1L << ((long)ileu)) | (1L << ((long)lys)) | (1L << ((long)met)) |
-          (1L << ((long)pro)) | (1L << ((long)ser1)) | (1L << ((long)ser2)) |
-          (1L << ((long)thr));
-  translate[(long)trp - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)cys)) | (1L << ((long)gly)) |
-          (1L << ((long)leu)) | (1L << ((long)ser1)) | (1L << ((long)stop)) |
-          (1L << ((long)trp));
-  translate[(long)tyr - (long)ala]
-    [1] = (1L << ((long)asn)) | (1L << ((long)asp)) | (1L << ((long)cys)) |
-          (1L << ((long)his)) | (1L << ((long)phe)) | (1L << ((long)ser1)) |
-          (1L << ((long)stop)) | (1L << ((long)tyr));
-  translate[(long)val - (long)ala]
-    [1] = (1L << ((long)ala)) | (1L << ((long)asp)) | (1L << ((long)glu)) |
-          (1L << ((long)gly)) | (1L << ((long)ileu)) | (1L << ((long)leu)) |
-          (1L << ((long)met)) | (1L << ((long)phe)) | (1L << ((long)val));
-  translate[(long)stop - (long)ala]
-    [1] = (1L << ((long)arg)) | (1L << ((long)cys)) | (1L << ((long)gln)) |
-          (1L << ((long)glu)) | (1L << ((long)gly)) | (1L << ((long)leu)) |
-          (1L << ((long)lys)) | (1L << ((long)ser1)) | (1L << ((long)trp)) |
-          (1L << ((long)tyr)) | (1L << ((long)stop));
+    translate[(long)a - (long)ala][1] = 1L << ((long)a);
+  }
+  for (i = 0; i <= 3; i++) {
+    for (j = 0; j <= 3; j++) {
+      for (k = 0; k <= 3; k++) {
+        for (l = 0; l <= 3; l++) {
+          translate[(long)trans[i][j][k]][1] |= (1L << (long)trans[l][j][k]);
+          translate[(long)trans[i][j][k]][1] |= (1L << (long)trans[i][l][k]);
+          translate[(long)trans[i][j][k]][1] |= (1L << (long)trans[i][j][l]);
+        }
+      }
+    }
+  }
   translate[(long)del - (long)ala][1] = 1L << ((long)del);
   fulldel = (1L << ((long)stop + 1)) - (1L << ((long)ala));
   fullset = fulldel & (~(1L << ((long)del)));
-  translate[(long)asx - (long)ala]
-    [0] = (1L << ((long)asn)) | (1L << ((long)asp));
-  translate[(long)glx - (long)ala]
-    [0] = (1L << ((long)gln)) | (1L << ((long)glu));
-  translate[(long)ser - (long)ala]
-    [0] = (1L << ((long)ser1)) | (1L << ((long)ser2));
+  translate[(long)asx - (long)ala][0]
+    = (1L << ((long)asn)) | (1L << ((long)asp));
+  translate[(long)glx - (long)ala][0]
+    = (1L << ((long)gln)) | (1L << ((long)glu));
+  translate[(long)ser - (long)ala][0]
+    = (1L << ((long)ser1)) | (1L << ((long)ser2));
   translate[(long)unk - (long)ala][0] = fullset;
   translate[(long)quest - (long)ala][0] = fulldel;
-  translate[(long)asx - (long)ala]
-    [1] = translate[(long)asn - (long)ala]
-          [1] | translate[(long)asp - (long)ala][1];
-  translate[(long)glx - (long)ala]
-    [1] = translate[(long)gln - (long)ala]
-          [1] | translate[(long)glu - (long)ala][1];
-  translate[(long)ser - (long)ala]
-    [1] = translate[(long)ser1 - (long)ala]
-          [1] | translate[(long)ser2 - (long)ala][1];
+  translate[(long)asx - (long)ala][1] = translate[(long)asn - (long)ala][1]
+                                       | translate[(long)asp - (long)ala][1];
+  translate[(long)glx - (long)ala][1] = translate[(long)gln - (long)ala][1]
+                                       | translate[(long)glu - (long)ala][1];
+  translate[(long)ser - (long)ala][1] = translate[(long)ser1 - (long)ala][1]
+                                       | translate[(long)ser2 - (long)ala][1];
   translate[(long)unk - (long)ala][1] = fullset;
   translate[(long)quest - (long)ala][1] = fulldel;
   for (a = ala; (long)a <= (long)quest; a = (aas)((long)a + 1)) {
@@ -287,69 +266,11 @@ void setup()
 }  /* setup */
 
 
-double randum(seed)
-long *seed;
-{
-  /* random number generator -- slow but machine independent */
-  long i, j, k, sum;
-  longer mult, newseed;
-  double x;
-
-  mult[0] = 13;
-  mult[1] = 24;
-  mult[2] = 22;
-  mult[3] = 6;
-  for (i = 0; i <= 5; i++)
-    newseed[i] = 0;
-  for (i = 0; i <= 5; i++) {
-    sum = newseed[i];
-    k = i;
-    if (i > 3)
-      k = 3;
-    for (j = 0; j <= k; j++)
-      sum += mult[j] * seed[i - j];
-    newseed[i] = sum;
-    for (j = i; j <= 4; j++) {
-      newseed[j + 1] += newseed[j] / 64;
-      newseed[j] &= 63;
-    }
-  }
-  memcpy(seed, newseed, sizeof(longer));
-  seed[5] &= 3;
-  x = 0.0;
-  for (i = 0; i <= 5; i++)
-    x = x / 64.0 + seed[i];
-  x /= 4.0;
-  return x;
-}  /* randum */
-
-
-
-void uppercase(ch)
-Char *ch;
-{
-  /* convert ch to upper case -- either ASCII or EBCDIC */
-    *ch = (islower (*ch) ? toupper(*ch) : (*ch));
-}  /* uppercase */
-
-
-void inputnumbers()
-{
-  /* input the numbers of species and of characters */
-  fscanf(infile, "%ld%ld", &spp, &chars);
-  if (printdata)
-    fprintf(outfile, "%2ld species, %3ld  sites\n", spp, chars);
-  if (printdata)
-    putc('\n', outfile);
-  nonodes = spp * 2 - 1;
-}  /* inputnumbers */
-
 void getoptions()
 {
   /* interactively set options */
-  long i, inseed0;
-  Char ch;
-  boolean done, done1;
+  long loopcount, loopcount2;
+  Char ch, ch2;
 
   fprintf(outfile, "\nProtein parsimony algorithm, version %s\n\n",VERSION);
   putchar('\n');
@@ -361,14 +282,16 @@ void getoptions()
   trout = true;
   usertree = false;
   weights = false;
+  whichcode = universal;
   printdata = false;
   progress = true;
   treeprint = true;
   stepbox = false;
   ancseq = false;
   interleaved = true;
+  loopcount = 0;
   for (;;) {
-    printf(ansi ? "\033[2J\033[H" : vt52 ? "\033E\033H" : "\n");
+    cleerhome();
     printf("\nProtein parsimony algorithm, version %s\n\n",VERSION);
     printf("Setting for this run:\n");
     printf("  U                 Search for best tree?  %s\n",
@@ -390,15 +313,25 @@ void getoptions()
       printf("  Yes, count steps up to%4.1f per site\n", threshold);
     else
       printf("  No, use ordinary parsimony\n");
+    printf("  C               Use which genetic code?  %s\n",
+      (whichcode == universal) ? "Universal"                  :
+      (whichcode == ciliate)   ? "Ciliate"                    :
+      (whichcode == mito)      ? "Universal mitochondrial"    :
+      (whichcode == vertmito)  ? "Vertebrate mitochondrial"   :
+      (whichcode == flymito)   ? "Fly mitochondrial"          :
+      (whichcode == yeastmito) ? "Yeast mitochondrial"        : "");
+    printf("  W                       Sites weighted?  %s\n",
+           (weights ? "Yes" : "No"));
     printf("  M           Analyze multiple data sets?");
     if (mulsets)
-      printf("  Yes, %2ld sets\n", datasets);
+        printf("  Yes, %2ld %s\n", msets,
+               (justwts ? "sets of weights" : "data sets"));
     else
       printf("  No\n");
     printf("  I          Input sequences interleaved?  %s\n",
            (interleaved ? "Yes" : "No"));
-    printf("  0   Terminal type (IBM PC, VT52, ANSI)?  %s\n",
-           (ibmpc ? "IBM PC" : ansi ? "ANSI" : vt52 ? "VT52" : "(none)"));
+    printf("  0   Terminal type (IBM PC, ANSI, none)?  %s\n",
+           (ibmpc ? "IBM PC" : ansi ? "ANSI" : "(none)"));
     printf("  1    Print out the data at start of run  %s\n",
            (printdata ? "Yes" : "No"));
     printf("  2  Print indications of progress of run  %s\n",
@@ -411,6 +344,12 @@ void getoptions()
            (ancseq ? "Yes" : "No"));
     printf("  6       Write out trees onto tree file?  %s\n",
            (trout ? "Yes" : "No"));
+    if(weights && justwts){
+        printf(
+         "WARNING:  W option and Multiple Weights options are both on.  ");
+        printf(
+         "The W menu option is unnecessary and has no additional effect. \n");
+    }
     printf(
    "\nAre these settings correct? (type Y or the letter for one to change)\n");
     scanf("%c%*[^\n]", &ch);
@@ -418,142 +357,154 @@ void getoptions()
     uppercase(&ch);
     if (ch == 'Y')
       break;
-    if (strchr("JOTUMI1234560",ch)){
+    if (strchr("WCJOTUMI1234560",ch) != NULL){
       switch (ch) {
-
+        
       case 'J':
-	jumble = !jumble;
-	if (jumble) {
-	  printf("Random number seed (must be odd)?\n");
-	  scanf("%ld%*[^\n]", &inseed);
-	  getchar();
-	  inseed0 = inseed;
-	  for (i = 0; i <= 5; i++)
-	    seed[i] = 0;
-	  i = 0;
-	  do {
-	    seed[i] = inseed & 63;
-	    inseed /= 64;
-	    i++;
-	  } while (inseed != 0);
-	  printf("Number of times to jumble?\n");
-	  scanf("%ld%*[^\n]", &njumble);
-	  getchar();
-	}
-	else njumble = 1;
-	break;
-
+        jumble = !jumble;
+        if (jumble)
+          initjumble(&inseed, &inseed0, seed, &njumble);
+        else njumble = 1;
+        break;
+      
+      case 'W':
+        weights = !weights;
+        break;
+  
       case 'O':
-	outgropt = !outgropt;
-	if (outgropt) {
-	  done1 = true;
-	  do {
-	    printf("Type number of the outgroup:\n");
-	    scanf("%ld%*[^\n]", &outgrno);
-	    getchar();
-	    done1 = (outgrno >= 1 && outgrno <= spp);
-	    if (!done1) {
-	      printf("BAD OUTGROUP NUMBER: %4ld\n", outgrno);
-	      printf("  Must be in range 1 -%2ld\n", spp);
-	    }
-	  } while (done1 != true);
-	} else outgrno = 1;
-	break;
-
+        outgropt = !outgropt;
+        if (outgropt)
+          initoutgroup(&outgrno, spp);
+        else outgrno = 1;
+        break;
+        
       case 'T':
-	thresh = !thresh;
-	if (thresh) {
-	  done1 = false;
-	  do {
-	    printf("What will be the threshold value?\n");
-	    scanf("%lf%*[^\n]", &threshold);
-	    getchar();
-	    done1 = (threshold >= 1.0);
-	    if (!done1)
-	      printf("BAD THRESHOLD VALUE:  it must be greater than 1\n");
-	    else
-	      threshold = (long)(threshold * 10.0 + 0.5) / 10.0;
-	  } while (done1 != true);
-	}
-	break;
+        thresh = !thresh;
+        if (thresh)
+          initthreshold(&threshold);
+        break;
+
+      case 'C':
+        printf("\nWhich genetic code?\n");
+        printf(" type         for\n\n");
+        printf("   U           Universal\n");
+        printf("   M           Mitochondrial\n");
+        printf("   V           Vertebrate mitochondrial\n");
+        printf("   F           Fly mitochondrial\n");
+        printf("   Y           Yeast mitochondrial\n\n");
+        loopcount2 = 0;
+        do {
+          printf("type U, M, V, F, or Y\n");
+          scanf("%c%*[^\n]", &ch);
+          getchar();
+          if (ch == '\n')
+            ch = ' ';
+          uppercase(&ch);
+          countup(&loopcount2, 10);
+        } while (ch != 'U' && ch != 'M' && ch != 'V'
+                  && ch != 'F' && ch != 'Y');
+        switch (ch) {
+
+        case 'U':
+          whichcode = universal;
+          break;
+
+        case 'M':
+          whichcode = mito;
+          break;
+
+        case 'V':
+          whichcode = vertmito;
+          break;
+
+        case 'F':
+          whichcode = flymito;
+          break;
+
+        case 'Y':
+          whichcode = yeastmito;
+          break;
+        }
+        break;
 
       case 'M':
-	mulsets = !mulsets;
-	if (mulsets) {
-	  done1 = false;
-	  do {
-	    printf("How many data sets?\n");
-	    scanf("%ld%*[^\n]", &datasets);
-	    getchar();
-	    done1 = (datasets >= 1);
-	    if (!done1)
-	      printf("BAD DATA SETS NUMBER:  it must be greater than 1\n");
-	  } while (done1 != true);
-	}
-	break;
-
+        mulsets = !mulsets;
+        if (mulsets){
+            printf("Multiple data sets or multiple weights?");
+          loopcount2 = 0;
+          do {
+            printf(" (type D or W)\n");
+#ifdef WIN32
+            phyFillScreenColor();
+#endif
+            scanf("%c%*[^\n]", &ch2);
+            getchar();
+            if (ch2 == '\n')
+              ch2 = ' ';
+            uppercase(&ch2);
+            countup(&loopcount2, 10);
+          } while ((ch2 != 'W') && (ch2 != 'D'));
+          justwts = (ch2 == 'W');
+          if (justwts)
+            justweights(&msets);
+          else
+            initdatasets(&msets);
+          if (!jumble) {
+            jumble = true;
+            initjumble(&inseed, &inseed0, seed, &njumble);
+          }
+        }
+        break;
+        
       case 'I':
-	interleaved = !interleaved;
-	break;
-
+        interleaved = !interleaved;
+        break;
+        
       case 'U':
-	usertree = !usertree;
-	break;
-
+        usertree = !usertree;
+        break;
+        
       case '0':
-	if (ibmpc) {
-	  ibmpc = false;
-	  vt52 = true;
-	} else {
-	  if (vt52) {
-	    vt52 = false;
-	    ansi = true;
-	  } else if (ansi)
-	    ansi = false;
-	  else
-	    ibmpc = true;
-	}
-	break;
-
+        initterminal(&ibmpc, &ansi);
+        break;
+        
       case '1':
-	printdata = !printdata;
-	break;
-
+        printdata = !printdata;
+        break;
+        
       case '2':
-	progress = !progress;
-	break;
-
+        progress = !progress;
+        break;
+        
       case '3':
-	treeprint = !treeprint;
-	break;
-
+        treeprint = !treeprint;
+        break;
+        
       case '4':
-	stepbox = !stepbox;
-	break;
-
+        stepbox = !stepbox;
+        break;
+        
       case '5':
-	ancseq = !ancseq;
-	break;
-
+        ancseq = !ancseq;
+        break;
+        
       case '6':
-	trout = !trout;
-	break;
+        trout = !trout;
+        break;
       }
     } else
         printf("Not a possible option!\n");
+    countup(&loopcount, 100);
   }
 }  /* getoptions */
 
 
-void doinit()
-{
-  /* initializes variables */
-  long i;
+void protalloctree()
+{ /* allocate treenode dynamically */
+  long i, j;
   node *p, *q;
 
-  inputnumbers();
-  getoptions();
-  treenode = (pointptr)Malloc(nonodes*sizeof(node *));
+  treenode = (pointarray)Malloc(nonodes*sizeof(node *));
   for (i = 0; i < (spp); i++) {
     treenode[i] = (node *)Malloc(sizeof(node));
     treenode[i]->numsteps = (steptr)Malloc(chars*sizeof(long));
@@ -573,219 +524,169 @@ void doinit()
     p->next->next->next = p;
     treenode[i] = p;
   }
-}  /* doinit*/
+}  /* protalloctree */
 
-void inputweights()
+
+void reallocnode(node* p) 
 {
-  /* input the character weights, 0-9 and A-Z for weights 10 - 35 */
-  Char ch;
+  free(p->numsteps);
+  free(p->siteset);
+  free(p->seq);
+  p->numsteps = (steptr)Malloc(chars*sizeof(long));
+  p->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
+  p->seq = (aas *)Malloc(chars*sizeof(aas));
+}
+
+
+void reallocchars(void) 
+{ /* reallocates variables that are dependand on the number of chars
+   * do we need to reallocate the garbage list too? */
+  long i;
+  node *p;
+
+  if (usertree)
+    for (i = 0; i < maxuser; i++) {
+      free(fsteps[i]);
+      fsteps[i] = (long *)Malloc(chars*sizeof(long));
+    }
+  
+  for (i = 0; i < nonodes; i++) {
+    reallocnode(treenode[i]);  
+    if (i >= spp) {
+      p=treenode[i]->next;
+      while (p != treenode[i])  {
+        reallocnode(p); 
+        p = p->next;
+      }
+    }
+  }
+
+  free(weight);
+  free(threshwt);
+  free(temp->numsteps);
+  free(temp->siteset);
+  free(temp->seq);
+  free(temp1->numsteps);
+  free(temp1->siteset); 
+  free(temp1->seq);
+
+  weight = (steptr)Malloc(chars*sizeof(long));
+  threshwt = (steptr)Malloc(chars*sizeof(long));
+  temp->numsteps = (steptr)Malloc(chars*sizeof(long));
+  temp->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
+  temp->seq = (aas *)Malloc(chars*sizeof(aas));
+  temp1->numsteps = (steptr)Malloc(chars*sizeof(long));
+  temp1->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
+  temp1->seq = (aas *)Malloc(chars*sizeof(aas));
+}
+
+
+void allocrest()
+{ /* allocate remaining global arrays and variables dynamically */
   long i;
 
-  for (i = 1; i < nmlngth; i++)
-    ch = getc(infile);
-  for (i = 0; i < (chars); i++) {
-    do {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-    } while (ch == ' ');
-    weight[i] = 1;
-    if (isdigit(ch))
-      weight[i] = ch - '0';
-    else if (isalpha(ch)) {
-      uppercase(&ch);
-      if (ch >= 'A' && ch <= 'I')
-        weight[i] = ch - 55;
-      else if (ch >= 'J' && ch <= 'R')
-        weight[i] = ch - 55;
-      else
-        weight[i] = ch - 55;
-    } else {
-      printf("BAD WEIGHT CHARACTER: %c\n", ch);
-      exit(-1);
-    }
+  if (usertree) {
+    fsteps = (long **)Malloc(maxuser*sizeof(long *));
+    for (i = 0; i < maxuser; i++)
+      fsteps[i] = (long *)Malloc(chars*sizeof(long));
   }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  weights = true;
-}  /* inputweights */
+  bestrees = (bestelm *)Malloc(maxtrees*sizeof(bestelm));
+  for (i = 1; i <= maxtrees; i++)
+    bestrees[i - 1].btree = (long *)Malloc(spp*sizeof(long));
+  nayme = (naym *)Malloc(spp*sizeof(naym));
+  enterorder = (long *)Malloc(spp*sizeof(long));
+  place = (long *)Malloc(nonodes*sizeof(long));
+  weight = (steptr)Malloc(chars*sizeof(long));
+  threshwt = (steptr)Malloc(chars*sizeof(long));
+  temp = (node *)Malloc(sizeof(node));
+  temp->numsteps = (steptr)Malloc(chars*sizeof(long));
+  temp->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
+  temp->seq = (aas *)Malloc(chars*sizeof(aas));
+  temp1 = (node *)Malloc(sizeof(node));
+  temp1->numsteps = (steptr)Malloc(chars*sizeof(long));
+  temp1->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
+  temp1->seq = (aas *)Malloc(chars*sizeof(aas));
+}  /* allocrest */
 
-void printweights()
+
+void doinit()
 {
-  /* print out the weights of sites */
-  long i, j, k;
+  /* initializes variables */
 
-  fprintf(outfile, "    Sites are weighted as follows:\n");
-  fprintf(outfile, "        ");
-  for (i = 0; i <= 9; i++)
-    fprintf(outfile, "%3ld", i);
-  fprintf(outfile, "\n     *---------------------------------\n");
-  for (j = 0; j <= (chars / 10); j++) {
-    fprintf(outfile, "%5ld!  ", j * 10);
-    for (i = 0; i <= 9; i++) {
-      k = j * 10 + i;
-      if (k > 0 && k <= chars)
-        fprintf(outfile, "%3ld", weight[k - 1]);
-      else
-        fprintf(outfile, "   ");
-    }
-    putc('\n', outfile);
-  }
-  putc('\n', outfile);
-}  /* printweights */
+  inputnumbers(&spp, &chars, &nonodes, 1);
+  getoptions();
+  if (printdata)
+    fprintf(outfile, "%2ld species, %3ld  sites\n\n", spp, chars);
+  protalloctree();
+  allocrest();
+}  /* doinit*/
 
-void inputoptions()
-{
-  /* input the information on the options */
-  Char ch;
-  long extranum, i, cursp, curchs, FORLIM;
-
-  if (!firstset) {
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    fscanf(infile, "%ld%ld", &cursp, &curchs);
-    if (cursp != spp) {
-      printf("\nERROR: INCONSISTENT NUMBER OF SPECIES IN DATA SET %4ld\n",ith);
-      exit(-1);
-    }
-    chars = curchs;
-  }
-  extranum = 0;
-  while (!(eoln(infile))) {
-    ch = getc(infile);
-    uppercase(&ch);
-    if (ch == 'W')
-      extranum++;
-    else if (ch != ' ') {
-      printf("BAD OPTION CHARACTER: %c\n", ch);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  for (i = 0; i < (chars); i++)
-    weight[i] = 1;
-  for (i = 1; i <= extranum; i++) {
-    ch = getc(infile);
-    uppercase(&ch);
-    if (ch != 'W') {
-      printf("ERROR: INCORRECT AUXILIARY OPTIONS LINE");
-      printf(" WHICH STARTS WITH %c\n", ch);
-      exit(-1);
-    }
-    if (ch == 'W')
-        inputweights();
-  }
-  if (weights)
-    printweights();
-  if (!thresh)
-    threshold = spp * 3.0;
-  for (i = 0; i < (chars); i++) {
-    weight[i] *= 10;
-    threshwt[i] = (long)(threshold * weight[i] + 0.5);
-  }
-}  /* inputoptions */
-
-void inputdata()
+void protinputdata()
 {
   /* input the names and sequences for each species */
-  long i, j, k, l, aasread, aasnew;
+  long i, j, k, l, aasread, aasnew = 0;
   Char charstate;
   boolean allread, done;
   aas aa;   /* temporary amino acid for input */
-  long FORLIM, FORLIM1;
 
-  if (progress)
-    putchar('\n');
-  j = nmlngth + (chars + (chars - 1) / 10) / 2 - 5;
-  if (j < nmlngth - 1)
-    j = nmlngth - 1;
-  if (j > 37)
-    j = 37;
-  if (printdata) {
-    fprintf(outfile, "Name");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "Sequences\n");
-    fprintf(outfile, "----");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "---------\n\n");
-  }
+  if (printdata)
+    headings(chars, "Sequences", "---------");
   aasread = 0;
   allread = false;
   while (!(allread)) {
     allread = true;
     if (eoln(infile)) {
       fscanf(infile, "%*[^\n]");
-      getc(infile);
+      gettc(infile);
     }
     i = 1;
     while (i <= spp) {
-      if ((interleaved && aasread == 0) || !interleaved) {
-        for (j = 0; j < nmlngth; j++) {
-          if (eof(infile) || eoln(infile)){
-            printf("ERROR: END-OF-LINE OR END-OF-FILE");
-            printf(" IN THE MIDDLE OF A SPECIES NAME\n");
-            exit(-1);
-          }
-          nayme[i - 1][j] = getc(infile);
-        }
-      }
+      if ((interleaved && aasread == 0) || !interleaved)
+        initname(i - 1);
       j = interleaved ? aasread : 0;
       done = false;
-      while (!done && !eof(infile)) {
+      while (!done && !eoff(infile)) {
         if (interleaved)
           done = true;
-        while (j < chars && !(eoln(infile) || eof(infile))) {
-          charstate = getc(infile);
+        while (j < chars && !(eoln(infile) || eoff(infile))) {
+          charstate = gettc(infile);
           if (charstate == ' ' || (charstate >= '0' && charstate <= '9'))
             continue;
           uppercase(&charstate);
-          if ((!isalpha(charstate) && charstate != '.' && charstate != '?' &&
+          if ((!isalpha(charstate) && charstate != '?' &&
                charstate != '-' && charstate != '*') || charstate == 'J' ||
               charstate == 'O' || charstate == 'U') {
             printf("WARNING -- BAD AMINO ACID:%c",charstate);
-	    printf(" AT POSITION%5ld OF SPECIES %3ld\n",j,i);
-	    exit(-1);
+            printf(" AT POSITION%5ld OF SPECIES %3ld\n",j,i);
+            exxit(-1);
           }
           j++;
-          if (charstate == '.') {
-            treenode[i - 1]->seq[j - 1] = treenode[0]->seq[j - 1];
-            memcpy(treenode[i - 1]->siteset[j - 1],
-                   treenode[0]->siteset[j - 1], sizeof(sitearray));
-            continue;
-          }
-            aa =  (charstate == 'A') ?  ala :
-                  (charstate == 'B') ?  asx :
-                  (charstate == 'C') ?  cys :
-                  (charstate == 'D') ?  asp :
-                  (charstate == 'E') ?  glu :
-                  (charstate == 'F') ?  phe :
-                  (charstate == 'G') ?  gly : aa;
-            aa =  (charstate == 'H') ?  his :
-                  (charstate == 'I') ? ileu :
-                  (charstate == 'K') ?  lys :
-                  (charstate == 'L') ?  leu :
-                  (charstate == 'M') ?  met :
-                  (charstate == 'N') ?  asn :
-                  (charstate == 'P') ?  pro :
-                  (charstate == 'Q') ?  gln :
-                  (charstate == 'R') ?  arg : aa;
-             aa = (charstate == 'S') ?  ser :
-                  (charstate == 'T') ?  thr :
-                  (charstate == 'V') ?  val :
-                  (charstate == 'W') ?  trp :
-                  (charstate == 'X') ?  unk :
-                  (charstate == 'Y') ?  tyr :
-                  (charstate == 'Z') ?  glx :
-                  (charstate == '*') ? stop :
-                  (charstate == '?') ? quest:
-                  (charstate == '-') ? del  :  aa;
+          aa = (charstate == 'A') ?  ala :
+               (charstate == 'B') ?  asx :
+               (charstate == 'C') ?  cys :
+               (charstate == 'D') ?  asp :
+               (charstate == 'E') ?  glu :
+               (charstate == 'F') ?  phe :
+               (charstate == 'G') ?  gly : aa;
+          aa = (charstate == 'H') ?  his :
+               (charstate == 'I') ? ileu :
+               (charstate == 'K') ?  lys :
+               (charstate == 'L') ?  leu :
+               (charstate == 'M') ?  met :
+               (charstate == 'N') ?  asn :
+               (charstate == 'P') ?  pro :
+               (charstate == 'Q') ?  gln :
+               (charstate == 'R') ?  arg : aa;
+          aa = (charstate == 'S') ?  ser :
+               (charstate == 'T') ?  thr :
+               (charstate == 'V') ?  val :
+               (charstate == 'W') ?  trp :
+               (charstate == 'X') ?  unk :
+               (charstate == 'Y') ?  tyr :
+               (charstate == 'Z') ?  glx :
+               (charstate == '*') ? stop :
+               (charstate == '?') ? quest:
+               (charstate == '-') ? del  :  aa;
 
           treenode[i - 1]->seq[j - 1] = aa;
           memcpy(treenode[i - 1]->siteset[j - 1],
@@ -793,19 +694,17 @@ void inputdata()
         }
         if (interleaved)
           continue;
-        if (j < chars) {
-          fscanf(infile, "%*[^\n]");
-          getc(infile);
-        } else if (j == chars)
+        if (j < chars) 
+          scan_eoln(infile);
+        else if (j == chars)
           done = true;
       }
       if (interleaved && i == 1)
         aasnew = j;
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
+      scan_eoln(infile);
       if ((interleaved && j != aasnew) || ((!interleaved) && j != chars)){
         printf("ERROR: SEQUENCES OUT OF ALIGNMENT\n");
-	exit(-1);}
+        exxit(-1);}
       i++;
     }
     if (interleaved) {
@@ -868,9 +767,10 @@ void inputdata()
     putc('\n', outfile);
   }
   putc('\n', outfile);
-}  /* inputdata */
+}  /* protinputdata */
 
-void makevalues()
+
+void protmakevalues()
 {
   /* set up fractional likelihoods at tips */
   long i, j;
@@ -894,32 +794,64 @@ void makevalues()
       }
     }
   }
-}  /* makevalues */
+}  /* protmakevalues */
+
 
 void doinput()
 {
   /* reads the input data */
-  inputoptions();
-  inputdata();
-  makevalues();
+  long i;
+
+  if (justwts) {
+    if (firstset)
+      protinputdata();
+    for (i = 0; i < chars; i++)
+      weight[i] = 1;
+    inputweights(chars, weight, &weights);
+    if (justwts) {
+      fprintf(outfile, "\n\nWeights set # %ld:\n\n", ith);
+      if (progress)
+        printf("\nWeights set # %ld:\n\n", ith);
+    }
+    if (printdata)
+      printweights(outfile, 0, chars, weight, "Sites");
+  } else {
+    if (!firstset){
+      samenumsp(&chars, ith);
+      reallocchars();
+    }
+    for (i = 0; i < chars; i++)
+      weight[i] = 1;
+    if (weights) {
+      inputweights(chars, weight, &weights);
+    }
+    if (weights)
+      printweights(outfile, 0, chars, weight, "Sites");
+    protinputdata();
+  }
+  if(!thresh)
+    threshold = spp * 3.0;
+  for(i = 0 ; i < (chars) ; i++){
+    weight[i]*=10;
+    threshwt[i] = (long)(threshold * weight[i] + 0.5);      
+  }
+
+  protmakevalues();
 }  /* doinput */
 
 
-
-void fillin(p, left, rt)
-node *p, *left, *rt;
+void protfillin(node *p, node *left, node *rt)
 {
   /* sets up for each node in the tree the aa set for site m
      at that point and counts the changes.  The program
-     spends much of its time in this PROCEDURE */
+     spends much of its time in this function */
   boolean counted;
   aas aa;
-  long s;
+  long s = 0;
   sitearray ls, rs, qs;
-  long i, j, k, m, n;
+  long i, m, n;
 
   for (m = 0; m < chars; m++) {
-    k = 0;
     if (left != NULL)
       memcpy(ls, left->siteset[m], sizeof(sitearray));
     if (rt != NULL)
@@ -934,11 +866,16 @@ node *p, *left, *rt;
     }
     else {
       n = left->numsteps[m] + rt->numsteps[m];
-      counted = false;
-      for (i = 0; i <= 5; i++) {
-        if (k < 3) {
+      if (ls[0] == rs[0]) {
+        qs[0] = ls[0];
+        qs[1] = ls[1];
+        qs[2] = ls[2];
+      }
+      else {
+        counted = false;
+        for (i = 0; (!counted) && (i <= 3); i++) {
           switch (i) {
-
+ 
             case 0:
               s = ls[0] & rs[0];
               break;
@@ -955,55 +892,47 @@ node *p, *left, *rt;
               s = ls[0] | (ls[1] & rs[2]) | (ls[2] & rs[1]) | rs[0];
               break;
 
-            case 4:
-              s = ls[1] | (ls[2] & rs[2]) | rs[1];
-              break;
-
-            case 5:
-              s = ls[2] | rs[2];
-              break;
-            }
-          if (counted || s != 0) {
-            qs[k] = s;
-            k++;
+          }
+          if (s != 0) {
+            qs[0] = s;
             counted = true;
-          } else if (!counted)
-            n += weight[m];
+          } else
+              n += weight[m];
         }
-      }
-    }
-    for (i = 0; i <= 1; i++) {
-      for (aa = ala; (long)aa <= (long)stop; aa = (aas)((long)aa + 1)) {
-        if (((1L << ((long)aa)) & qs[i]) != 0) {
-          for (j = i + 1; j <= 2; j++)
-            qs[j] |= translate[(long)aa - (long)ala][j - i];
+        qs[1] = 0;
+        qs[2] = 0;
+        for (i = 0; i <= 1; i++) {
+          for (aa = ala; (long)aa <= (long)stop; aa = (aas)((long)aa + 1)) {
+            if (((1L << ((long)aa)) & qs[i]) != 0)
+              qs[i+1] |= translate[(long)aa - (long)ala][1];
+          }
         }
       }
     }
     p->numsteps[m] = n;
     memcpy(p->siteset[m], qs, sizeof(sitearray));
   }
-}  /* fillin */
+}  /* protfillin */
 
-void preorder(p)
-node *p;
+
+void protpreorder(node *p)
 {
   /* recompute number of steps in preorder taking both ancestoral and
      descendent steps into account */
   if (p != NULL && !p->tip) {
-    fillin (p->next, p->next->next->back, p->back);
-    fillin (p->next->next, p->back, p->next->back);
-    preorder (p->next->back);
-    preorder (p->next->next->back);
+    protfillin (p->next, p->next->next->back, p->back);
+    protfillin (p->next->next, p->back, p->next->back);
+    protpreorder (p->next->back);
+    protpreorder (p->next->next->back);
   }
-} /* preorder */
+} /* protpreorder */
 
 
-void add(below, newtip, newfork)
-node *below, *newtip, *newfork;
+void protadd(node *below, node *newtip, node *newfork)
 {
   /* inserts the nodes newfork and its left descendant, newtip,
      to the tree.  below becomes newfork's right descendant */
+
   if (below != treenode[below->index - 1])
     below = treenode[below->index - 1];
   if (below->back != NULL)
@@ -1016,16 +945,17 @@ node *below, *newtip, *newfork;
   if (root == below)
     root = newfork;
   root->back = NULL;
-  if (recompute) {
-    fillin (newfork, newfork->next->back, newfork->next->next->back);
-    preorder(newfork);
-    if (newfork != root)
-      preorder(newfork->back);
-  }
-}  /* add */
 
-void re_move(item, fork)
-node **item, **fork;
+  if (recompute) {
+    protfillin (newfork, newfork->next->back, newfork->next->next->back);
+    protpreorder(newfork);
+    if (newfork != root)
+      protpreorder(newfork->back);
+  }
+}  /* protadd */
+
+
+void protre_move(node **item, node **fork)
 {
   /* removes nodes item and its ancestor, fork, from the tree.
      the new descendant of fork's ancestor is made to be
@@ -1055,13 +985,13 @@ node **item, **fork;
   } while (p != (*fork));
   (*item)->back = NULL;
   if (recompute) {
-    preorder(other);
-    if (other != root) preorder(other->back);
+    protpreorder(other);
+    if (other != root) protpreorder(other->back);
   }
-}  /* re_move */
+}  /* protre_move */
 
-void evaluate(r)
-node *r;
+
+void evaluate(node *r)
 {
   /* determines the number of steps needed for a tree. this is the
      minimum number of steps needed to evolve sequences on this tree */
@@ -1092,20 +1022,20 @@ node *r;
   like = -sum;
 }  /* evaluate */
 
-void postorder(p)
-node *p;
+
+void protpostorder(node *p)
 {
   /* traverses a binary tree, calling PROCEDURE fillin at a
      node's descendants before calling fillin at the node */
   if (p->tip)
     return;
-  postorder(p->next->back);
-  postorder(p->next->next->back);
-  fillin(p,    p->next->back, p->next->next->back);
-}  /* postorder */
+  protpostorder(p->next->back);
+  protpostorder(p->next->next->back);
+  protfillin(p, p->next->back, p->next->next->back);
+}  /* protpostorder */
 
-void reroot(outgroup)
-node *outgroup;
+
+void protreroot(node *outgroup)
 {
   /* reorients tree, putting outgroup in desired position. */
   node *p, *q;
@@ -1120,28 +1050,23 @@ node *outgroup;
   q->back = outgroup->back;
   outgroup->back->back = q;
   outgroup->back = p;
-}  /* reroot */
+}  /* protreroot */
 
 
-
-void savetraverse(p, pos,found)
-node *p;
-long *pos;
-boolean *found;
+void protsavetraverse(node *p, long *pos, boolean *found)
 {
   /* sets BOOLEANs that indicate which way is down */
   p->bottom = true;
   if (p->tip)
     return;
   p->next->bottom = false;
-  savetraverse(p->next->back, pos,found);
+  protsavetraverse(p->next->back, pos,found);
   p->next->next->bottom = false;
-  savetraverse(p->next->next->back, pos,found);
-}  /* savetraverse */
+  protsavetraverse(p->next->next->back, pos,found);
+}  /* protsavetraverse */
 
-void savetree(pos,found)
-long *pos;
-boolean *found;
+
+void protsavetree(long *pos, boolean *found)
 {
   /* record in place where each species has to be
      added to reconstruct this tree */
@@ -1149,8 +1074,8 @@ boolean *found;
   node *p;
   boolean done;
 
-  reroot(treenode[outgrno - 1]);
-  savetraverse(root, pos,found);
+  protreroot(treenode[outgrno - 1]);
+  protsavetraverse(root, pos,found);
   for (i = 0; i < (nonodes); i++)
     place[i] = 0;
   place[root->index - 1] = 1;
@@ -1177,77 +1102,24 @@ boolean *found;
       }
     }
   }
-}  /* savetree */
+}  /* protsavetree */
 
-void findtree(pos,found)
-long *pos;
-boolean *found;
-{
-  /* finds tree given by ARRAY place in ARRAY
-     bestrees by binary search */
-  long i, lower, upper;
-  boolean below, done;
 
-  below = false;
-  lower = 1;
-  upper = nextree - 1;
-  *found = false;
-  while (!(*found) && lower <= upper) {
-    (*pos) = (lower + upper) / 2;
-    i = 3;
-    done = false;
-    while (!done) {
-      done = (i > spp);
-      if (!done)
-        done = (place[i - 1] != bestrees[(*pos) - 1][i - 1]);
-      if (!done)
-        i++;
-    }
-    (*found) = (i > spp);
-    below = (place[i - 1] < bestrees[(*pos) - 1][i - 1]);
-    if (*found)
-      break;
-    if (below)
-      upper = (*pos) - 1;
-    else
-      lower = (*pos) + 1;
-  }
-  if (!(*found) && !below)
-    (*pos)++;
-}  /* findtree */
-
-void addtree(pos,found)
-long *pos;
-boolean *found;
-{
-  /* puts tree from ARRAY place in its proper position
-     in ARRAY bestrees */
-  long i, FORLIM;
-
-  for (i = nextree - 1; i >= (*pos); i--)
-    memcpy(bestrees[i], bestrees[i - 1], spp*sizeof(long));
-  for (i = 0; i < (spp); i++)
-    bestrees[(*pos) - 1][i] = place[i];
-  nextree++;
-}  /* addtree */
-
-void tryadd(p, item,nufork)
-node *p,**item,**nufork;
+void tryadd(node *p, node **item, node **nufork)
 {
   /* temporarily adds one fork and one tip to the tree.
      if the location where they are added yields greater
      "likelihood" than other locations tested up to that
      time, then keeps that location as there */
-/* Local variables for tryadd: */
   long pos;
   boolean found;
   node *rute, *q;
 
   if (p == root)
-    fillin(temp, *item, p);
+    protfillin(temp, *item, p);
   else {
-    fillin(temp1, *item, p);
-    fillin(temp, temp1, p->back);
+    protfillin(temp1, *item, p);
+    protfillin(temp, temp1, p->back);
   }
   evaluate(temp);
   if (lastrearr) {
@@ -1261,24 +1133,24 @@ node *p,**item,**nufork;
     }
     else if (like >= bstlike2) {
       recompute = false;
-      add (p, (*item), (*nufork));
+      protadd(p, (*item), (*nufork));
       rute = root->next->back;
-      savetree(&pos,&found);
-      reroot(rute);
+      protsavetree(&pos,&found);
+      protreroot(rute);
       if (like > bstlike2) {
         bestlike = bstlike2 = like;
         pos = 1;
         nextree = 1;
-        addtree(&pos,&found);
+        addtree(pos, &nextree, dummy, place, bestrees);
       } else {
         pos = 0;
-        findtree(&pos,&found);
+        findtree(&found, &pos, nextree, place, bestrees);
         if (!found) {
           if (nextree <= maxtrees)
-            addtree(&pos,&found);
+            addtree(pos, &nextree, dummy, place, bestrees);
         }
       }
-      re_move (item, nufork);
+      protre_move (item, nufork);
       recompute = true;
     }
   }
@@ -1288,8 +1160,8 @@ node *p,**item,**nufork;
   }
 }  /* tryadd */
 
-void addpreorder(p, item, nufork)
-node *p, *item, *nufork;
+
+void addpreorder(node *p, node *item, node *nufork)
 {
   /* traverses a binary tree, calling PROCEDURE tryadd
      at a node before calling tryadd at its descendants */
@@ -1303,9 +1175,8 @@ node *p, *item, *nufork;
   }
 }  /* addpreorder */
 
-void tryrearr(p, success)
-node *p;
-boolean *success;
+
+void tryrearr(node *p, boolean *success)
 {
   /* evaluates one rearrangement of the tree.
      if the new tree has greater "likelihood" than the old
@@ -1329,9 +1200,9 @@ boolean *success;
     q = whereto->next->next->back;
   else
     q = whereto->next->back;
-  fillin(temp1, frombelow, q);
-  fillin(temp, temp1, p);
-  fillin(temp1, temp, whereto->back);
+  protfillin(temp1, frombelow, q);
+  protfillin(temp, temp1, p);
+  protfillin(temp1, temp, whereto->back);
   evaluate(temp1);
   if (like <= oldlike) {
     if (p == forknode->next->next->back) {
@@ -1343,18 +1214,17 @@ boolean *success;
   }
   else {
     recompute = false;
-    re_move(&p, &forknode);
-    fillin(whereto, whereto->next->back, whereto->next->next->back);
+    protre_move(&p, &forknode);
+    protfillin(whereto, whereto->next->back, whereto->next->next->back);
     recompute = true;
-    add(whereto, p, forknode);
+    protadd(whereto, p, forknode);
     *success = true;
     bestyet = like;
   }
 }  /* tryrearr */
 
-void repreorder(p,success)
-node *p;
-boolean *success;
+
+void repreorder(node *p, boolean *success)
 {
   /* traverses a binary tree, calling PROCEDURE tryrearr
      at a node before calling tryrearr at its descendants */
@@ -1367,8 +1237,8 @@ boolean *success;
   }
 }  /* repreorder */
 
-void rearrange(r)
-node **r;
+
+void rearrange(node **r)
 {
   /* traverses the tree (preorder), finding any local
      rearrangement which decreases the number of steps.
@@ -1382,52 +1252,20 @@ node **r;
 }  /* rearrange */
 
 
-void findch(c)
-Char c;
+void protgetch(Char *c)
 {
-  /* scan forward until find character c */
-  boolean done;
+  /* get next nonblank character */
+  do {
+    if (eoln(intree))
+      scan_eoln(intree);
+    *c = gettc(intree);
+    if (*c == '\n' || *c == '\t')
+      *c = ' ';
+  } while (!(*c != ' ' || eoff(intree)));
+}  /* protgetch */
 
-  done = false;
-  while (!done) {
-    if (c == ',') {
-      if (ch == '(' || ch == ')' ||ch == ';') {
-        printf("\nERROR IN USER TREE:");
-	printf(" UNMATCHED PARENTHESIS OR MISSING COMMA\n");
-	exit(-1);
-      } else if (ch == ',')
-        done = true;
-    } else if (c == ')') {
-      if (ch == '(' || ch == ',' || ch == ';') {
-        printf("\nERROR IN USER TREE:");
-	printf(" UNMATCHED PARENTHESIS OR NOT BIFURCATED NODE\n");
-	exit(-1);
-      } else {
-        if (ch == ')')
-          done = true;
-      }
-    } else if (c == ';') {
-      if (ch != ';') {
-        printf("\nERROR IN USER TREE:");
-	printf(" UNMATCHED PARENTHESIS OR MISSING SEMICOLON\n");
-	exit(-1);
-      } else
-        done = true;
-    }
-    if ((done && ch == ')') || !done) {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-    }
-  }
-}  /* findch */
 
-void addelement(p, nextnode,lparens,names)
-node **p;
-long *nextnode,*lparens;
-boolean *names;
+void protaddelement(node **p,long *nextnode,long *lparens,boolean *names)
 {
   /* recursive procedure adds nodes to user-defined tree */
   node *q;
@@ -1435,27 +1273,22 @@ boolean *names;
   boolean found;
   Char str[nmlngth];
 
-  do {
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    ch = getc(infile);
-  } while (ch == ' ');
+  protgetch(&ch);
+  
   if (ch == '(' ) {
     if ((*lparens) >= spp - 1) {
       printf("\nERROR IN USER TREE: TOO MANY LEFT PARENTHESES\n");
-      exit(-1);
+      exxit(-1);
     }
     (*nextnode)++;
     (*lparens)++;
     q = treenode[(*nextnode) - 1];
-    addelement(&q->next->back, nextnode,lparens,names);
+    protaddelement(&q->next->back, nextnode,lparens,names);
     q->next->back->back = q->next;
-    findch(',');
-    addelement(&q->next->next->back, nextnode,lparens,names);
+    findch(',', &ch, which);
+    protaddelement(&q->next->next->back, nextnode,lparens,names);
     q->next->next->back->back = q->next->next;
-    findch(')');
+    findch(')', &ch, which);
     *p = q;
     return;
   }
@@ -1466,18 +1299,17 @@ boolean *names;
     if (ch == '_')
       ch = ' ';
     str[n - 1] = ch;
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    ch = getc(infile);
+    if (eoln(intree))
+      scan_eoln(intree);
+    ch = gettc(intree);
     n++;
   } while (ch != ',' && ch != ')' && ch != ':' && n <= nmlngth);
   n = 1;
   do {
     found = true;
     for (i = 0; i < nmlngth; i++)
-      found = (found && str[i] == nayme[n - 1][i]);
+      found = (found && ((str[i] == nayme[n - 1][i]) ||
+                         ((nayme[n - 1][i] == '_') && (str[i] == ' '))));
     if (found) {
       if (names[n - 1] == false) {
         *p = treenode[n - 1];
@@ -1487,7 +1319,7 @@ boolean *names;
         for (i = 0; i < nmlngth; i++)
           putchar(nayme[n - 1][i]);
         putchar('\n');
-	exit(-1);
+        exxit(-1);
       }
     } else
       n++;
@@ -1498,171 +1330,38 @@ boolean *names;
   for (i = 0; i < nmlngth; i++)
     putchar(str[i]);
   putchar('\n');
-}  /* addelement */
+}  /* protaddelement */
 
-void treeread()
+
+void prottreeread()
 {
   /* read in user-defined tree and set it up */
-  long nextnode, lparens;
-  long i;
+  long nextnode, lparens, i;
 
   root = treenode[spp];
   nextnode = spp;
   root->back = NULL;
+  names = (boolean *)Malloc(spp*sizeof(boolean));
   for (i = 0; i < (spp); i++)
     names[i] = false;
   lparens = 0;
-  addelement(&root, &nextnode,&lparens,names);
-  findch(';');
+  protaddelement(&root, &nextnode,&lparens,names);
+  if (ch == '[') {
+    do
+      ch = gettc(intree);
+    while (ch != ']');
+    ch = gettc(intree);
+  }
+  findch(';', &ch, which);
   if (progress)
     printf("\n\n");
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-}  /* treeread */
+  fscanf(intree, "%*[^\n]");
+  gettc(intree);
+  free(names);
+}  /* prottreeread */
 
 
-void coordinates(p, tipy)
-node *p;
-long *tipy;
-{
-  /* establishes coordinates of nodes */
-  node *q, *first, *last;
-
-  if (p->tip) {
-    p->xcoord = 0;
-    p->ycoord = (*tipy);
-    p->ymin = (*tipy);
-    p->ymax = (*tipy);
-    (*tipy) += down;
-    return;
-  }
-  q = p->next;
-  do {
-    coordinates(q->back,tipy);
-    q = q->next;
-  } while (p != q);
-  first = p->next->back;
-  q = p->next;
-  while (q->next != p)
-    q = q->next;
-  last = q->back;
-  p->xcoord = last->ymax - first->ymin;
-  p->ycoord = (first->ycoord + last->ycoord) / 2;
-  p->ymin = first->ymin;
-  p->ymax = last->ymax;
-}  /* coordinates */
-
-void drawline(i, scale)
-long i;
-double scale;
-{
-  /* draws one row of the tree diagram by moving up tree */
-  node *p, *q, *r, *first, *last;
-  long n, j;
-  boolean extra, done;
-
-  p = root;
-  q = root;
-  extra = false;
-  if (i == p->ycoord && p == root) {
-    if (p->index - spp >= 10)
-      fprintf(outfile, "-%2ld", p->index - spp);
-    else
-      fprintf(outfile, "--%ld", p->index - spp);
-    extra = true;
-  } else
-    fprintf(outfile, "  ");
-  do {
-    if (!p->tip) {
-      r = p->next;
-      done = false;
-      do {
-        if (i >= r->back->ymin && i <= r->back->ymax) {
-          q = r->back;
-          done = true;
-        }
-        r = r->next;
-      } while (!(done || r == p));
-      first = p->next->back;
-      r = p->next;
-      while (r->next != p)
-        r = r->next;
-      last = r->back;
-    }
-    done = (p == q);
-    n = (long)(scale * (p->xcoord - q->xcoord) + 0.5);
-    if (n < 3 && !q->tip)
-      n = 3;
-    if (extra) {
-      n--;
-      extra = false;
-    }
-    if (q->ycoord == i && !done) {
-      putc('+', outfile);
-      if (!q->tip) {
-        for (j = 1; j <= n - 2; j++)
-          putc('-', outfile);
-        if (q->index - spp >= 10)
-          fprintf(outfile, "%2ld", q->index - spp);
-        else
-          fprintf(outfile, "-%ld", q->index - spp);
-        extra = true;
-      } else {
-        for (j = 1; j < n; j++)
-          putc('-', outfile);
-      }
-    } else if (!p->tip) {
-      if (last->ycoord > i && first->ycoord < i && i != p->ycoord) {
-        putc('!', outfile);
-        for (j = 1; j < n; j++)
-          putc(' ', outfile);
-      } else {
-        for (j = 1; j <= n; j++)
-          putc(' ', outfile);
-      }
-    } else {
-      for (j = 1; j <= n; j++)
-        putc(' ', outfile);
-    }
-    if (p != q)
-      p = q;
-  } while (!done);
-  if (p->ycoord == i && p->tip) {
-    for (j = 0; j < nmlngth; j++)
-      putc(nayme[p->index - 1][j], outfile);
-  }
-  putc('\n', outfile);
-}  /* drawline */
-
-void printree()
-{
-  /* prints out diagram of the tree */
-/* Local variables for printree: */
-  long tipy;
-  double scale;
-  long i;
-
-  putc('\n', outfile);
-  if (!treeprint)
-    return;
-  putc('\n', outfile);
-  tipy = 1;
-  coordinates(root, &tipy);
-  scale = 1.5;
-  putc('\n', outfile);
-  for (i = 1; i <= (tipy - down); i++)
-    drawline(i, scale);
-  fprintf(outfile, "\n  remember:");
-  if (outgropt)
-    fprintf(outfile, " (although rooted by outgroup)");
-  fprintf(outfile, " this is an unrooted tree!\n\n");
-}  /* printree */
-
-
-
-void ancestset(a, b, c, d, k)
-long *a, *b, *c, *d;
-long *k;
+void protancestset(long *a, long *b, long *c, long *d, long *k)
 {
   /* sets up the aa set array. */
   aas aa;
@@ -1709,19 +1408,16 @@ long *k;
       }
     }
   }
-}  /* ancestset */
+}  /* protancestset */
 
 
-void hyprint(b1, b2,bottom,r,nonzero,maybe,nothing)
-long b1, b2;
-boolean *bottom,*nonzero,*maybe;
-node *r;
-sitearray nothing;
+void prothyprint(long b1, long b2, boolean *bottom, node *r,
+                        boolean *nonzero, boolean *maybe)
 {
   /* print out states in sites b1 through b2 at node */
   long i;
   boolean dot;
-  Char ch;
+  Char ch = 0;
   aas aa;
 
   if (*bottom) {
@@ -1878,28 +1574,25 @@ sitearray nothing;
       putc(' ', outfile);
   }
   putc('\n', outfile);
-}  /* hyprint */
+}  /* prothyprint */
 
-void hyptrav(r, hypset, b1, b2, k,bottom,nothing)
-node *r;
-sitearray *hypset;
-long b1, b2,*k;
-boolean *bottom;
-sitearray nothing;
+
+void prothyptrav(node *r, sitearray *hypset, long b1, long b2, long *k,
+                        boolean *bottom, sitearray nothing)
 {
   boolean maybe, nonzero;
   long i;
   aas aa;
-  long anc, hset;
+  long anc = 0, hset;
   gseq *ancset, *temparray;
 
-  gnu(&ancset);
-  gnu(&temparray);
+  protgnu(&ancset);
+  protgnu(&temparray);
   maybe = false;
   nonzero = false;
   for (i = b1 - 1; i < b2; i++) {
     if (!r->tip) {
-      ancestset(hypset[i], r->next->back->siteset[i],
+      protancestset(hypset[i], r->next->back->siteset[i],
                 r->next->next->back->siteset[i], temparray->seq[i], k);
       memcpy(r->siteset[i], temparray->seq[i], sizeof(sitearray));
     }
@@ -1924,24 +1617,24 @@ sitearray nothing;
     nonzero = (nonzero || (r->siteset[i][0] & anc) == 0);
     maybe = (maybe || r->siteset[i][0] != anc);
   }
-  hyprint(b1, b2,bottom,r,&nonzero,&maybe,nothing);
+  prothyprint(b1, b2,bottom,r,&nonzero,&maybe);
   *bottom = false;
   if (!r->tip) {
     memcpy(temparray->seq, r->next->back->siteset, chars*sizeof(sitearray));
     for (i = b1 - 1; i < b2; i++)
-      ancestset(hypset[i], r->next->next->back->siteset[i], nothing,
+      protancestset(hypset[i], r->next->next->back->siteset[i], nothing,
                 ancset->seq[i], k);
-    hyptrav(r->next->back, ancset->seq, b1, b2,k,bottom,nothing );
+    prothyptrav(r->next->back, ancset->seq, b1, b2,k,bottom,nothing );
     for (i = b1 - 1; i < b2; i++)
-      ancestset(hypset[i], temparray->seq[i], nothing, ancset->seq[i],k);
-    hyptrav(r->next->next->back, ancset->seq, b1, b2, k,bottom,nothing);
+      protancestset(hypset[i], temparray->seq[i], nothing, ancset->seq[i],k);
+    prothyptrav(r->next->next->back, ancset->seq, b1, b2, k,bottom,nothing);
   }
-  chuck(temparray);
-  chuck(ancset);
-}  /* hyptrav */
+  protchuck(temparray);
+  protchuck(ancset);
+}  /* prothyptrav */
 
-void hypstates(k)
-long *k;
+
+void prothypstates(long *k)
 {
   /* fill in and describe states at interior nodes */
   boolean bottom;
@@ -1963,52 +1656,11 @@ long *k;
     if (n > chars)
       n = chars;
     bottom = true;
-    hyptrav(root, hypset, i * 40 - 39, n, k,&bottom,nothing);
+    prothyptrav(root, hypset, i * 40 - 39, n, k,&bottom,nothing);
   }
   free(hypset);
-}  /* hypstates */
+}  /* prothypstates */
 
-void treeout(p)
-node *p;
-{
-  /* write out file with representation of final tree */
-  long i, n;
-  Char c;
-
-  if (p->tip) {
-    n = 0;
-    for (i = 1; i <= nmlngth; i++) {
-      if (nayme[p->index - 1][i - 1] != ' ')
-        n = i;
-    }
-    for (i = 0; i < n; i++) {
-      c = nayme[p->index - 1][i];
-      if (c == ' ')
-        c = '_';
-      putc(c, treefile);
-    }
-    col += n;
-  } else {
-    putc('(', treefile);
-    col++;
-    treeout(p->next->back);
-    putc(',', treefile);
-    col++;
-    if (col > 65) {
-      putc('\n', treefile);
-      col = 0;
-    }
-    treeout(p->next->next->back);
-    putc(')', treefile);
-    col++;
-  }
-  if (p != root)
-    return;
-  if (nextree > 2)
-    fprintf(treefile, "[%6.4f];\n", 1.0 / (nextree - 1));
-  else
-    fprintf(treefile, ";\n");
-}  /* treeout */
 
 void describe()
 {
@@ -2021,7 +1673,7 @@ void describe()
   if (stepbox) {
     putc('\n', outfile);
     if (weights)
-      fprintf(outfile, " weighted");
+      fprintf(outfile, "weighted ");
     fprintf(outfile, "steps in each position:\n");
     fprintf(outfile, "      ");
     for (i = 0; i <= 9; i++)
@@ -2041,13 +1693,13 @@ void describe()
     }
   }
   if (ancseq) {
-    hypstates(&k);
+    prothypstates(&k);
     putc('\n', outfile);
   }
   putc('\n', outfile);
   if (trout) {
     col = 0;
-    treeout(root);
+    treeout(root, nextree, &col, root);
   }
 }  /* describe */
 
@@ -2057,52 +1709,35 @@ void maketree()
   /* constructs a binary tree from the pointers in treenode.
      adds each node at location which yields highest "likelihood"
      then rearranges the tree for greatest "likelihood" */
-  long i, j, k, numtrees, num;
-  double gotlike, wt, sumw, sum, sum2, sd;
+  long i, j, numtrees;
+  double gotlike;
   node *item, *nufork, *dummy;
-  double TEMP;
 
   if (!usertree) {
     for (i = 1; i <= (spp); i++)
       enterorder[i - 1] = i;
-    if (jumble) {
-      for (i = 0; i < (spp); i++) {
-        j = (long)(randum(seed) * spp) + 1;
-        k = enterorder[j - 1];
-        enterorder[j - 1] = enterorder[i];
-        enterorder[i] = k;
-      }
-    }
+    if (jumble)
+      randumize(seed, enterorder);
     root = treenode[enterorder[0] - 1];
     recompute = true;
-    add(treenode[enterorder[0] - 1], treenode[enterorder[1] - 1],
+    protadd(treenode[enterorder[0] - 1], treenode[enterorder[1] - 1],
         treenode[spp]);
     if (progress) {
-      printf("Adding species:\n");
-      printf("   ");
-      for (i = 0; i < nmlngth; i++)
-        putchar(nayme[enterorder[0] - 1][i]);
-      printf("\n   ");
-      for (i = 0; i < nmlngth; i++)
-        putchar(nayme[enterorder[1] - 1][i]);
-      putchar('\n');
+      printf("\nAdding species:\n");
+      writename(0, 2, enterorder);
     }
     lastrearr = false;
     for (i = 3; i <= (spp); i++) {
-      bestyet = -1.0e6;
+      bestyet = -30.0*spp*chars;
       there = root;
       item = treenode[enterorder[i - 1] - 1];
       nufork = treenode[spp + i - 2];
       addpreorder(root, item, nufork);
-      add(there, item, nufork);
+      protadd(there, item, nufork);
       like = bestyet;
       rearrange(&root);
-      if (progress) {
-        printf("   ");
-        for (j = 0; j < nmlngth; j++)
-          putchar(nayme[enterorder[i - 1] - 1][j]);
-        putchar('\n');
-      }
+      if (progress)
+        writename(i - 1, 1, enterorder);
       lastrearr = (i == spp);
       if (lastrearr) {
         if (progress) {
@@ -2122,18 +1757,19 @@ void maketree()
             printf("   ");
           gotlike = bestlike;
           for (j = 0; j < (nonodes); j++) {
-            bestyet = -1.0e6;
+            bestyet = -30.0*spp*chars;
             item = treenode[j];
             if (item != root) {
               nufork = treenode[treenode[j]->back->index - 1];
-              re_move(&item, &nufork);
+              protre_move(&item, &nufork);
               there = root;
               addpreorder(root, item, nufork);
-              add(there, item, nufork);
+              protadd(there, item, nufork);
             }
-            if (progress){
+            if (progress) {
               putchar('.');
-	      fflush(stdout);}
+              fflush(stdout);
+            }
           }
           if (progress)
             putchar('\n');
@@ -2143,7 +1779,7 @@ void maketree()
     if (progress)
       putchar('\n');
     for (i = spp - 1; i >= 1; i--)
-      re_move(&treenode[i], &dummy);
+      protre_move(&treenode[i], &dummy);
     if (jumb == njumble) {
       if (treeprint) {
         putc('\n', outfile);
@@ -2162,22 +1798,22 @@ void maketree()
       recompute = false;
       for (i = 0; i <= (nextree - 2); i++) {
         root = treenode[0];
-        add(treenode[0], treenode[1], treenode[spp]);
+        protadd(treenode[0], treenode[1], treenode[spp]);
         for (j = 3; j <= (spp); j++)
-          add(treenode[bestrees[i][j - 1] - 1], treenode[j - 1],
+          protadd(treenode[bestrees[i].btree[j - 1] - 1], treenode[j - 1],
               treenode[spp + j - 2]);
-        reroot(treenode[outgrno - 1]);
-        postorder(root);
+        protreroot(treenode[outgrno - 1]);
+        protpostorder(root);
         evaluate(root);
-        printree();
+        printree(root, 1.0);
         describe();
         for (j = 1; j < (spp); j++)
-          re_move(&treenode[j], &dummy);
+          protre_move(&treenode[j], &dummy);
       }
     }
   } else {
-    fscanf(infile, "%ld%*[^\n]", &numtrees);
-    getc(infile);
+    openfile(&intree,INTREE,"input tree file", "r",progname,intreename);
+    numtrees = countsemic(&intree);
     if (treeprint) {
       fprintf(outfile, "User-defined tree");
       if (numtrees > 1)
@@ -2186,117 +1822,57 @@ void maketree()
     }
     which = 1;
     while (which <= numtrees) {
-      treeread();
+      prottreeread();
       if (outgropt)
-        reroot(treenode[outgrno - 1]);
-      postorder(root);
+        protreroot(treenode[outgrno - 1]);
+      protpostorder(root);
       evaluate(root);
-      printree();
+      printree(root, 1.0);
       describe();
       which++;
     }
+    FClose(intree);
     putc('\n', outfile);
-    if (numtrees > 1 && chars > 1 ) {
-      fprintf(outfile, "Tree    Steps   Diff Steps   Its S.D.");
-      fprintf(outfile, "   Significantly worse?\n\n");
-      if (numtrees > maxuser)
-        num = maxuser;
-      else
-        num = numtrees;
-      which = 1;
-      while (which <= num) {
-        fprintf(outfile, "%3ld%10.1f", which, nsteps[which - 1] / 10);
-        if (minwhich == which)
-          fprintf(outfile, "  <------ best\n");
-        else {
-          sumw = 0.0;
-          sum = 0.0;
-          sum2 = 0.0;
-          for (j = 0; j < (chars); j++) {
-            if (weight[j] > 0) {
-              wt = weight[j] / 10.0;
-              sumw += wt;
-              sum += (fsteps[which - 1][j] -
-                      fsteps[minwhich - 1][j]) / 10.0;
-              TEMP = (fsteps[which - 1][j] -
-                      fsteps[minwhich - 1][j]) / 10.0;
-              sum2 += TEMP * TEMP / wt;
-            }
-          }
-          TEMP = sum / sumw;
-          sd = sqrt(sumw / (sumw - 1.0) * (sum2 - TEMP * TEMP));
-          fprintf(outfile, "%10.1f%12.4f",
-                  (nsteps[which - 1] - minsteps) / 10, sd);
-          if (sum > 1.95996 * sd)
-            fprintf(outfile, "           Yes\n");
-          else
-            fprintf(outfile, "           No\n");
-        }
-        which++;
-      }
-      fprintf(outfile, "\n\n");
-    }
+    if (numtrees > 1 && chars > 1 )
+      standev(chars, numtrees, minwhich, minsteps, nsteps, fsteps, seed);
   }
   if (jumb == njumble && progress) {
-    printf("Output written to output file\n\n");
+    printf("Output written to file \"%s\"\n\n", outfilename);
     if (trout)
-      printf("Trees also written onto file\n\n");
+      printf("Trees also written onto file \"%s\"\n\n", outtreename);
   }
 }  /* maketree */
 
 
-main(argc, argv)
-int argc;
-Char *argv[];
+int main(int argc, Char *argv[])
 {  /* Protein parsimony by uphill search */
-char infilename[100],outfilename[100],trfilename[100];
 #ifdef MAC
-  macsetup("Protpars","");
+  argc = 1;         /* macsetup("Protpars","");                */
   argv[0] = "Protpars";
 #endif
-  openfile(&infile,INFILE,"r",argv[0],infilename);
-  openfile(&outfile,OUTFILE,"w",argv[0],outfilename);
+  init(argc,argv);
+  progname = argv[0];
+  openfile(&infile,INFILE,"input file", "r",argv[0],infilename);
+  openfile(&outfile,OUTFILE,"output file", "w",argv[0],outfilename);
 
-  ibmpc = ibmpc0;
-  ansi = ansi0;
-  vt52 = vt520;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
   garbage = NULL;
   mulsets = false;
-  datasets = 1;
+  msets = 1;
   firstset = true;
+  code();
   setup();
   doinit();
-  if (usertree) {
-    fsteps = (long **)Malloc(maxuser*sizeof(long *));
-    for (j = 1; j <= maxuser; j++)
-      fsteps[j - 1] = (long *)Malloc(chars*sizeof(long));
-  }
-  bestrees = (long **)Malloc(maxtrees*sizeof(long *));
-  for (j = 1; j <= maxtrees; j++)
-    bestrees[j - 1] = (long *)Malloc(spp*sizeof(long));
-  nayme = (Char **)Malloc(spp*sizeof(Char *));
-  for (j = 1; j <= spp; j++)
-    nayme[j - 1] = (Char *)Malloc(nmlngth*sizeof(Char));
-  enterorder = (long *)Malloc(spp*sizeof(long));
-  names = (boolean *)Malloc(spp*sizeof(boolean));
-  place = (long *)Malloc(nonodes*sizeof(long));
-  weight = (steptr)Malloc(chars*sizeof(long));
-  threshwt = (steptr)Malloc(chars*sizeof(long));
-  temp = (node *)Malloc(sizeof(node));
-  temp->numsteps = (steptr)Malloc(chars*sizeof(long));
-  temp->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
-  temp->seq = (aas *)Malloc(chars*sizeof(aas));
-  temp1 = (node *)Malloc(sizeof(node));
-  temp1->numsteps = (steptr)Malloc(chars*sizeof(long));
-  temp1->siteset = (seqptr)Malloc(chars*sizeof(sitearray));
-  temp1->seq = (aas *)Malloc(chars*sizeof(aas));
+  if (weights || justwts)
+    openfile(&weightfile,WEIGHTFILE,"weights file","r",argv[0],weightfilename);
   if (trout)
-    openfile(&treefile,TREEFILE,"w",argv[0],trfilename);
-  for (ith = 1; ith <= datasets; ith++) {
+    openfile(&outtree,OUTTREE,"output tree file", "w",argv[0],outtreename);
+  for (ith = 1; ith <= msets; ith++) {
     doinput();
     if (ith == 1)
       firstset = false;
-    if (datasets > 1) {
+    if (msets > 1 && !justwts) {
       fprintf(outfile, "Data set # %ld:\n\n",ith);
       if (progress)
         printf("Data set # %ld:\n\n",ith);
@@ -2306,57 +1882,10 @@ char infilename[100],outfilename[100],trfilename[100];
   }
   FClose(infile);
   FClose(outfile);
-  FClose(treefile);
+  FClose(outtree);
 #ifdef MAC
   fixmacfile(outfilename);
-  fixmacfile(trfilename);
+  fixmacfile(outtreename);
 #endif
-  exit(0);
+  return 0;
 }  /* Protein parsimony by uphill search */
-
-
-int eof(f)
-FILE *f;
-{
-    register int ch;
-
-    if (feof(f))
-        return 1;
-    if (f == stdin)
-        return 0;
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return 0;
-}
-
-
-int eoln(f)
-FILE *f;
-{
-    register int ch;
-
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-MALLOCRETURN *mymalloc(x)
-long x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)malloc(x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
