@@ -33,6 +33,7 @@ public:
 
     virtual long getTrueIndicesFor(  const long _index, PS_BitSet::IndexSet &_index_set );
     virtual long getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set );
+    virtual long getCountOfTrues();
 
     virtual bool get( const long _row, const long _col );
     virtual bool set( const long _row, const long _col, const bool _value );
@@ -49,6 +50,7 @@ public:
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
+            bool copy( const PS_BitMap *_other_bitmap );
     virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap( const bool _bias, const long _capacity ) : bias(_bias), max_row(0), capacity(_capacity) {
@@ -90,6 +92,7 @@ public:
 class PS_BitMap_Fast : public PS_BitMap {
 private:
 
+            bool copy( const PS_BitSet *_other_bitset ); // declared but not implemented
     virtual bool do_reserve( const long _capacity, const bool _init_sets );
 
     PS_BitMap_Fast( const PS_BitMap_Fast& );
@@ -104,6 +107,7 @@ public:
 
     virtual bool load( PS_FileBuffer *_file );
 
+            bool copy( const PS_BitMap_Fast *_other_bitmap );
     virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap_Fast( const bool _bias, const long _capacity ) : PS_BitMap(_bias,0,_capacity) {
@@ -144,6 +148,7 @@ private:
 
     long *count_true_per_index;
 
+            bool copy( const PS_BitSet *_other_bitset ); // declared but not implemented because PS_BitSet has no count_true_per_index array
     virtual bool do_reserve( const long _capacity, const bool _init_sets );
 
     PS_BitMap_Counted( const PS_BitMap_Counted& );
@@ -156,6 +161,7 @@ public:
 
     virtual long getTrueIndicesFor(  const long _index, PS_BitSet::IndexSet &_index_set );
     virtual long getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set );
+    virtual long getCountOfTrues();
 
     virtual bool get( const long _row, const long _col );
     virtual bool set( const long _row, const long _col, const bool _value );
@@ -166,6 +172,7 @@ public:
     virtual void printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
+    virtual bool copy( const PS_BitMap_Counted *_other_bitmap );
     virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap_Counted( PS_FileBuffer *_file ) : PS_BitMap(false,0,0) {
@@ -229,6 +236,19 @@ long PS_BitMap::getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_ind
 
 
 // ************************************************************
+// * PS_BitMap::getCountOfTrues()
+// ************************************************************
+long PS_BitMap::getCountOfTrues() {
+    long count = 0;
+    // sum up trues in the rows
+    for (long row = 0; row <= max_row; ++row) {
+        count += data[ row ]->getCountOfTrues();
+    }
+    return count;
+}
+
+
+// ************************************************************
 // * PS_BitMap::set( _row,_col,_value )
 // ************************************************************
 bool PS_BitMap::set( const long _row, const long _col, const bool _value ) {
@@ -268,6 +288,21 @@ bool PS_BitMap::triangle_get( const long _row, const long _col ) {
     } else {
         return get( _row,_col );
     }
+}
+
+
+// ************************************************************
+// * PS_BitMap::copy( _other_bitmap )
+// ************************************************************
+bool PS_BitMap::copy( const PS_BitMap *_other_bitmap ) {
+    bias = _other_bitmap->bias;
+    if (!do_reserve( _other_bitmap->capacity, false )) return false;
+    for (long i = 0; i < capacity; ++i) {
+        if (!data[i]) data[i] = new PS_BitSet( bias, _other_bitmap->data[i]->capacity );
+        if (!data[i]->copy( _other_bitmap->data[i] )) return false;
+    }
+    max_row = _other_bitmap->max_row;
+    return true;
 }
 
 
@@ -458,6 +493,19 @@ bool PS_BitMap_Fast::load( PS_FileBuffer *_file ) {
     return true;
 }
 
+// ************************************************************
+// * PS_BitMap_Fast::copy( _other_bitmap )
+// ************************************************************
+bool PS_BitMap_Fast::copy( const PS_BitMap_Fast *_other_bitmap ) {
+    bias = _other_bitmap->bias;
+    if (!do_reserve( _other_bitmap->capacity, false )) return false;
+    for (long i = 0; i < capacity; ++i) {
+        if (!data[i]) data[i] = new PS_BitSet_Fast( bias, _other_bitmap->data[i]->capacity );
+        if (!data[i]->copy( _other_bitmap->data[i] )) return false;
+    }
+    max_row = _other_bitmap->max_row;
+    return true;
+}
 
 // ************************************************************
 // * PS_BitMap_Fast::reserve( _capacity )
@@ -519,6 +567,19 @@ long PS_BitMap_Counted::getFalseIndicesFor( const long _index, PS_BitSet::IndexS
         if (!(data[ row ]->get( _index ))) _index_set.insert( row );
     }
     return _index_set.size();
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::getCountOfTrues()
+// ************************************************************
+long PS_BitMap_Counted::getCountOfTrues() {
+    long count = 0;
+    // sum up trues in the rows
+    for (long row = 0; row <= max_row; ++row) {
+        count += data[ row ]->getCountOfTrues( row );
+    }
+    return count;
 }
 
 
@@ -591,6 +652,22 @@ bool PS_BitMap_Counted::load( PS_FileBuffer *_file ) {
 //         printf( "PS_BitMap_Counted::load(%p) data[%li] = %p capacity(%li)\n", this, i, data[i], data[i]->capacity );
     }
     recalcCounters();
+    return true;
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::copy( _other_bitmap )
+// ************************************************************
+bool PS_BitMap_Counted::copy( const PS_BitMap_Counted *_other_bitmap ) {
+    bias = _other_bitmap->bias;
+    if (!do_reserve( _other_bitmap->capacity, false )) return false;
+    memcpy( count_true_per_index, _other_bitmap->count_true_per_index, (capacity * sizeof(long)) );
+    for (long i = 0; i < capacity; ++i) {
+        if (!data[i]) data[i] = new PS_BitSet_Fast( bias, _other_bitmap->data[i]->capacity );
+        if (!data[i]->copy( _other_bitmap->data[i] )) return false;
+    }
+    max_row = _other_bitmap->max_row;
     return true;
 }
 
