@@ -1,9 +1,15 @@
+Major changes for next Beta:
+----------------------------
+
+ - redesign of ARB help:
+     - a HTML version is in $ARBHOME/lib/help_html
+     - a text version is in $ARBHOME/lib/help (like before, but now generated)
 
 Major changes in Beta 20011107:
 -------------------------------
  - design probes to maximum length of 60 nucleotides
  - fastAligner1.03 bug fixed (chooses best match now in 'auto search' mode)
- - import default changed to foreign data format, ali name '16s' 
+ - import default changed to foreign data format, ali name '16s'
  - printing of multi-page-trees works again
  - implemented user defineable masks to access database fields
  - fixed bugs in pt-server (lockup, unknown species just after building pt-server)
