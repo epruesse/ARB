@@ -1855,12 +1855,13 @@ void        ED4_compression_toggle_changed_cb   (AW_root *root, AW_CL cd1, AW_CL
 
 AW_window   *ED4_create_new_seq_window      (AW_root *root, AW_CL cl_creation_mode);
 
-void        ED4_jump_to_current_species     (AW_window *, AW_CL);
-void        ED4_get_and_jump_to_actual      (AW_window *, AW_CL);
-void        ED4_get_and_jump_to_actual_from_menu    (AW_window *aw, AW_CL cl, AW_CL);
-void        ED4_get_and_jump_to_species     (GB_CSTR species_name);
-void        ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
-void        ED4_selected_species_changed_cb     (AW_root *aw_root);
+void ED4_jump_to_current_species     (AW_window *, AW_CL);
+void ED4_get_and_jump_to_actual      (AW_window *, AW_CL);
+void ED4_get_and_jump_to_actual_from_menu    (AW_window *aw, AW_CL cl, AW_CL);
+void ED4_get_and_jump_to_species     (GB_CSTR species_name);
+void ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
+void ED4_selected_species_changed_cb     (AW_root *aw_root);
+void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
 
 extern int  ED4_elements_in_species_container; // # of elements in species container
 void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
