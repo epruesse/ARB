@@ -49,6 +49,8 @@ public:
     virtual double SQ_calc_consensus_conformity(const char *sequence) const = 0;
     virtual void   SQ_add_sequence(const char *sequence)                    = 0;
     virtual void   SQ_add(const SQ_GroupData& other)                        = 0;
+    
+    int getSize() const { return size; }
 
 protected:
     int  size;
