@@ -7,6 +7,7 @@
 #include "BI_helix.hxx"
 
 #include "SQ_consensus_marked.h"
+#include "SQ_ambiguities.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -71,6 +72,7 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     my_helix.init(gb_main, alignment_name);
     SQ_consensus_marked cons_mkd;
 
+
     if (marked_only) {
 	getFirst = GBT_first_marked_species;
 	getNext  = GBT_next_marked_species;
@@ -98,19 +100,19 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 		if (read_sequence) {
 
-		    int count_bases = 0;
-		    int count_scores = 0;
-		    int count_dots = 0;
-		    int percent_scores = 0;
-		    int percent_dots = 0;
-		    int percent_bases = 0;
-		    int sequenceLength = 0;
+		    int count_bases       = 0;
+		    int count_scores      = 0;
+		    int count_dots        = 0;
+		    int percent_scores    = 0;
+		    int percent_dots      = 0;
+		    int percent_bases     = 0;
+		    int sequenceLength    = 0;
 
-		    int j = 0;
-		    int count_helix = 0;
-		    int count_weak_helix = 0;
-		    int count_no_helix = 0;
-		    int temp = 0;
+		    int j                 = 0;
+		    int count_helix       = 0;
+		    int count_weak_helix  = 0;
+		    int count_no_helix    = 0;
+		    int temp              = 0;
 		    char left;
 		    char right;
 
@@ -119,6 +121,19 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
 		    count_bases    = sequenceLength;
+
+		    /*get values for  ambiguities*/
+		    {
+		    SQ_ambiguities ambi;
+		    ambi.SQ_count_ambiguities(rawSequence, sequenceLength);
+		    int x = ambi.SQ_get_nr_ambiguities();
+		    int y = ambi.SQ_get_percent_ambiguities();
+		    int z = ambi.SQ_get_iupac_value();
+		    //printf("\n ambiguities: %i %i %i \n", x, y, z);
+		    GBDATA *gb_result1 = GB_search(gb_quality, "iupac_value", GB_INT);
+		    seq_assert(gb_result1);
+		    GB_write_int(gb_result1, z);
+		    }
 
 		    for (int i = 0; i < sequenceLength; i++) {
 
@@ -156,8 +171,6 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 			/*calculate consensus*/
 			cons_mkd.SQ_calc_consensus(rawSequence[i], i);
-			//char c = cons_mkd.SQ_get_consensus(i);
-			//printf("%c",c);
 		    }
 
 
@@ -200,7 +213,7 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     /*calculate the average number of bases in group*/
     if (worked_on_sequences != 0) {
 	avg_bases = avg_bases / worked_on_sequences;
-	printf("%i",avg_bases);
+	//printf("%i",avg_bases);
     }
     //debug
     else {
@@ -325,7 +338,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 
 
 
-void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus){
+void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac){
 
 
     char *alignment_name;
@@ -365,6 +378,7 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 		int result     = 0;
 		int nh         = 0;
 		int cc         = 0;
+		int iv         = 0;
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
 
@@ -376,16 +390,18 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 		nh = GB_read_int(gb_result3);
 		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_conformity", GB_INT);
 		cc = GB_read_int(gb_result4);
+		GBDATA *gb_result5 = GB_search(gb_quality, "iupac_value", GB_INT);
+		iv = GB_read_int(gb_result5);
 
 		/*this is the equation for the evaluation of the stored values*/
-		printf("\n debug info:%i %i %i %i \n", bases, dfa, nh, cc );
-		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * nh) + (weight_consensus * cc);
+		//printf("\n debug info:%i %i %i %i \n", bases, dfa, nh, cc );
+		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * nh) + (weight_consensus * cc) + (weight_iupac * iv);
 		result = 2 * result / 45;
 
 		/*write the final value of the evaluation*/
-		GBDATA *gb_result5 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
-		seq_assert(gb_result5);
-		GB_write_int(gb_result5, result);
+		GBDATA *gb_result6 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
+		seq_assert(gb_result6);
+		GB_write_int(gb_result6, result);
 
 	    }
 	}
