@@ -1,3 +1,17 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_main.cxx                                            //
+//    Purpose   : Entrypoint to Seq. Quality analysis; calls funktions   //
+//    Time-stamp: <Wed Feb/04/2004 14:34 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -82,23 +96,6 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
     if (!error) {
-      //const char *option = "number_of_bases";// "consensus_conformity";
-
-        /*
-          "option" is variable which is passed to function "SQ_get_value()".
-          SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
-          Right now the options you have are:
-
-          number_of_bases
-          percent_of_bases
-          diff_from_average
-          number_of_helix
-          number_of_weak_helix
-          number_of_no_helix
-          value_of_evaluation
-	  consensus
-	  evaluation
-        */
 
         int weight_bases             = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
         int weight_diff_from_average = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
@@ -127,9 +124,13 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    aw_closestatus();
 	    aw_openstatus("Calculating pass 2 of 2 ...");
 	    SQ_pass2_no_tree(globalData, gb_main);
+	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac, weight_gc);
 	    aw_closestatus();
-	    //int value = SQ_get_value_no_tree(gb_main, option);
-	    //aw_message(GBS_global_string("Value in container %s : %i",option, value));
+            if (mark_flag) {
+                aw_openstatus("Marking Sequences...");
+                SQ_mark_species(gb_main, mark_below);
+                aw_closestatus();
+            }
 	    delete globalData;
 
 	}
