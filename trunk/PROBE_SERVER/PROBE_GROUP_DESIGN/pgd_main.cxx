@@ -10,6 +10,8 @@
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
+// #include <arb_assert.h>
+#define pgd_assert(cond) arb_assert(cond)
 
 #include "../global_defs.h"
 #include "../common.h"
@@ -218,7 +220,7 @@ static PT_server_connection *my_server;
 static void helpArguments(){
     fprintf(stderr,
             "\n"
-            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length> [(-c|-x) <treefile> <versionumber>]\n"
+            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length> [<treefile> <versionumber>]\n"
             "\n"
             "db_name        name of ARB-database to build groups for\n"
             "pt_server      name of pt_server\n"
@@ -236,18 +238,15 @@ static void helpArguments(){
 static GB_ERROR scanArguments(int argc,char *argv[]){
     GB_ERROR error = 0;
 
-    if (argc == 5 || argc == 8) {
+    if (argc == 5 || argc == 7) {
         para.db_name        = argv[1];
         para.pt_server_name = string("localhost: ")+argv[2];
         para.pd_db_name     = string(argv[3])+argv[4];
         para.pb_length      = atoi(argv[4]);
-        if (argc == 8) {
-            if      (strcmp(argv[5], "-c") == 0) para.gen_treefile = TF_CREATE;
-            else if (strcmp(argv[5], "-x") == 0) para.gen_treefile = TF_EXTEND;
-            else error = GBS_global_string("'-c' or '-x' expected, '%s' found", argv[5]);
-
-            para.treefile     = string(argv[6]);
-            para.versionumber = string(argv[7]);
+        if (argc == 7) {
+            para.gen_treefile = TF_CREATE;
+            para.treefile     = string(argv[5]);
+            para.versionumber = string(argv[6]);
         }
         else {
             para.gen_treefile = TF_NONE;
@@ -543,11 +542,14 @@ static GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
     return error;
 }
 static GB_ERROR PGD_encodeBranchNames(GBT_TREE *node) {
-    if (node->is_leaf) {
-        if (!node->name) return "node w/o name";
+    if (node->name) { // all nodes
         char *newName = encodeTreeNode(node->name);
         free(node->name);
         node->name    = newName;
+    }
+
+    if (node->is_leaf) {
+        if (!node->name) return "node w/o name";
         return 0;
     }
 
@@ -842,6 +844,58 @@ static GB_ERROR designProbes() {
     return error;
 }
 
+static char *appendNodeInfo(char *oldInfo, const char *token, int value) {
+    if (oldInfo == 0) {
+        return GBS_global_string_copy("%s=%i", token, value);
+    }
+    else {
+        char *newInfo = GBS_global_string_copy("%s,%s=%i", oldInfo, token, value);
+        free(oldInfo);
+        return newInfo;
+    }
+}
+
+static GB_ERROR setNodeInfo(GBDATA *pd_subtree, GBT_TREE *node) {
+//     int exact_matches    = 0;
+//     int max_coverage     = 100;
+//     int min_nongrouphits = 0;
+    int speccount;
+
+    GBDATA *pd_speccount = GB_find(pd_subtree, "speccount", 0, down_level);
+    if (pd_speccount) { // inner node
+        speccount = GB_read_int(pd_speccount);
+    }
+    else { // leaf
+        speccount = 1;
+    }
+
+    GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+    if (pd_exact) { // has exact probes
+        int exact_matches = GB_read_int(pd_exact);
+        pgd_assert(exact_matches != 0);
+        node->name        = appendNodeInfo(node->name, "em", exact_matches);
+    }
+    else {
+        GBDATA *pd_coverage = GB_find(pd_subtree, "coverage", 0, down_level);
+        if (pd_coverage) {
+            int covered_species = GB_read_int(pd_coverage);
+            int max_coverage    = int(double(covered_species)/speccount*100.0+.5);
+            if (max_coverage == 100 && covered_species != speccount) {
+                max_coverage = 99; // avoid "false" 100% coverage
+            }
+            else if (max_coverage == 0 && covered_species != 0) {
+                max_coverage = 1; // avoid "false" 0% coverage
+            }
+            node->name = appendNodeInfo(node->name, "mc", max_coverage);
+        }
+
+
+        // @@@ FIXME: handle "ng=" (aka non group hits)
+    }
+
+    return 0;
+}
+
 static GB_ERROR createOrUpdateTree() {
     GB_ERROR error = 0;
 
@@ -866,30 +920,18 @@ static GB_ERROR createOrUpdateTree() {
              pd_subtree && !error;
              pd_subtree = GB_find(pd_subtree,"subtree",0,this_level|search_next))
         {
-            GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
-            if (pd_exact) { // has exact probes
-                GBDATA *pd_path = GB_find(pd_subtree, "path", 0, down_level);
-                if (!pd_path) {
-                    error = "no 'path' in 'subtree'";
+            GBDATA *pd_path = GB_find(pd_subtree, "path", 0, down_level);
+            if (!pd_path) {
+                error = "no 'path' in 'subtree'";
+            }
+            else {
+                const char *path = GB_read_char_pntr(pd_path);
+                GBT_TREE   *node = PGD_find_subtree_by_path(tree, path);
+                if (!node) {
+                    error = GBS_global_string("cannot find node '%s'", path);
                 }
                 else {
-                    const char *path = GB_read_char_pntr(pd_path);
-                    GBT_TREE   *node = PGD_find_subtree_by_path(tree, path);
-                    if (!node) {
-                        error = GBS_global_string("cannot find node '%s'", path);
-                    }
-                    else {
-                        long exact_matches = GB_read_int(pd_exact);
-
-                        if (node->name) {
-                            char *newName      = GBS_global_string_copy("%s,em=%li", node->name, exact_matches);
-                            free(node->name);
-                            node->name = newName;
-                        }
-                        else {
-                            node->name = GBS_global_string_copy("em=%li", exact_matches);
-                        }
-                    }
+                    error = setNodeInfo(pd_subtree, node);
                 }
             }
         }
