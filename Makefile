@@ -393,7 +393,7 @@ first_target:
 		@echo ''
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
-		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
+		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
 #		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
