@@ -21,6 +21,7 @@ arb_edit4
 arb_export_rates
 arb_export_tree
 arb_gde
+arb_gene_probe
 arb_help2xml
 arb_message
 arb_naligner
@@ -71,7 +72,6 @@ fastdnaml
 findall
 fitch
 gendist
-gene_probe
 heapsortHGL
 kitsch
 lsadt
