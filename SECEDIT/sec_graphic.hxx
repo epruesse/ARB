@@ -151,7 +151,9 @@ public:
 
 };
 
+#if defined(DEVEL_RALF)
 #warning replace SEC_font_info by AW_font_group
+#endif // DEVEL_RALF
 class SEC_font_info
 {
     int width,  // maximum letter sizes
