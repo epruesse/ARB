@@ -150,7 +150,7 @@
 #define ED4_AWAR_PRIMER3_SEARCH_COMPLEMENT	    "search/primer3/complement"
 #define ED4_AWAR_PRIMER3_SEARCH_EXACT		    "search/primer3/exact"
 
-#define ED4_AWAR_SIG1_SEARCH_PATTERN		    "search/sig1/pattern"
+#define ED4_AWAR_SIG1_SEARCH_PATTERN		    AWAR_GENE_CONTENT
 #define ED4_AWAR_SIG1_SEARCH_MIN_MISMATCHES	    "search/sig1/min_mismatches"
 #define ED4_AWAR_SIG1_SEARCH_MAX_MISMATCHES	    "search/sig1/max_mismatches"
 #define ED4_AWAR_SIG1_SEARCH_CASE		        "search/sig1/case"
