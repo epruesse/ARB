@@ -11,7 +11,7 @@ getsize(ifp, maxspc, numsite, commentp)
 FILE *ifp;
 int *maxspc;
 int *numsite;
-char **commentp; 
+char **commentp;
 {
 	char *cp, *np;
 	char line[BUFLINE];
@@ -375,7 +375,7 @@ int maxspc, numsite;
 void
 fputid(ofp, name, maxcolumn)
 FILE *ofp;
-char *name;
+const char *name;
 int maxcolumn;
 {
 	int i, imax;
@@ -409,7 +409,7 @@ int maxspc, maxsite;
 	for (nst = 0; nst < maxsite; nst++) { /* make consensus sequence */
 		for (i = 0; i < Tpmradix + 1; i++) counti[i] = 0;
 		for (nsp = 0; nsp < maxspc; nsp++) { /* count char */
-			counti[ seqchar[nsp][nst] ]++; 
+			counti[ seqchar[nsp][nst] ]++;
 		}
 		consenseq[nst] = '.';
 		for (i = 0; i < Tpmradix; i++) { /* + 1 */
@@ -441,7 +441,7 @@ int maxspc, maxsite;
 			}
 			fputc('\n', ofp);
 		}
-		fputid(ofp, "", 10); 
+		fputid(ofp, "", 10);
 		for (nst = i; nst < maxst; nst+=10) {
 			if (nst+10 <= maxst) printf(" %10d", nst+10);
 		}
