@@ -84,7 +84,7 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
 		nextBackColor = searchCols[absPos+1] - COLORLINK;
 		if(backColor==nextBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
 	    }
-	
+
 	device->circle(backColor, true, last_x, last_y-lineCenter, radius, radius, -1, 0, 0);
     }
 }
@@ -99,15 +99,15 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
 	switch (searchColor){
 	case SEC_GC_SBACK_0 :
 	    device->text(searchColor, "USER 1 ", xPos,yPos, 0, 1, 0, 0, 0);
-	    cout<<"USER 1"<<endl; 
+	    cout<<"USER 1"<<endl;
 	    break;
 	case SEC_GC_SBACK_1 :
 	    device->text(searchColor, "USER 2 ", xPos,yPos, 0, 1, 0, 0, 0);
-	    cout<<"USER 2"<<endl; 
+	    cout<<"USER 2"<<endl;
 	    break;
 	case SEC_GC_SBACK_2 :
 	    device->text(searchColor, "PROBE ", xPos,yPos, 0, 1, 0, 0, 0);
-	    cout<<"PROBE"<<endl; 
+	    cout<<"PROBE"<<endl;
 	    break;
 	case SEC_GC_SBACK_3 :
 	    device->text(searchColor, "PRIMER (LOCAL)", xPos,yPos, 0, 1, 0, 0, 0);
@@ -146,7 +146,7 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
 
     /*####################################################################################################*/
                                //to paint debugging informaition
-void paintDebugInfo(AW_device *device, int color, double xPos, double yPos,char *txt){
+void paintDebugInfo(AW_device *device, int color, double xPos, double yPos,const char *txt){
     device->circle(color, true, xPos, yPos, 0.2, 0.2, -1, 0, 0);
     device->text(SEC_GC_DEFAULT,txt, xPos, yPos, 0, 1, 0, 0, 0);
 }
@@ -377,7 +377,7 @@ int SEC_region::get_faked_basecount(void) {
 }
 
 
-void SEC_loop::compute_umfang(void) {   //Calculates the circumferance of the loop 
+void SEC_loop::compute_umfang(void) {   //Calculates the circumferance of the loop
     SEC_segment *segment_pointer = segment;
     SEC_helix_strand *strand_pointer;
     SEC_region *region_pointer;
@@ -467,7 +467,7 @@ void SEC_segment::update_center_point(double start_x, double start_y, double end
 }
 
 
-void SEC_segment::update_alpha(void) {  //alpha is an angle of segment 
+void SEC_segment::update_alpha(void) {  //alpha is an angle of segment
     region.count_bases(root);
     int base_count = region.get_faked_basecount();
     alpha = ( (double) base_count / loop->get_umfang() ) * (2*M_PI);
@@ -549,7 +549,7 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
     }
 
     SEC_helix *helix_info = caller->get_helix_info();  //getting info from SEC_helix
-    double gamma = helix_info->get_delta(); //getting delta from SEC_helix class 
+    double gamma = helix_info->get_delta(); //getting delta from SEC_helix class
     if (!is_root) gamma += helix_info->get_deltaIn();  // add deltaIn for caller
 
     double delta_direction;
@@ -640,13 +640,13 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
     //now we will test, if delta points away from the current loop, or to it. If it points to this loop, then it will be mirrored
     delta_direction = ( (cos(gamma) * cos(strand_angle)) + (sin(gamma) * sin(strand_angle)) );
     if (delta_direction < 0) {
-	strand_angle += 2*M_PI; 
+	strand_angle += 2*M_PI;
     }
     attachp1_x = previous_strand_pointer->get_attachp1_x();
     attachp1_y = previous_strand_pointer->get_attachp1_y();
     attachp2_x = strand_pointer->get_attachp2_x();
     attachp2_y = strand_pointer->get_attachp2_y();
-   
+
     if (segment_pointer->get_alpha() >= M_PI) {
         //in this case the first point becomes actually the second, so we have to switch the computed points,
         //otherwise the vector computed in update_center_point, would point towards the opposite direction, causing a wrong center point for the segment
@@ -1062,7 +1062,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
     double radius     = transform_size(device, font_info[SEC_GC_HELIX].get_ascent())*0.75;
     double lineWidth  = font_info[SEC_GC_HELIX].get_max_width();
 
-    const char *otherBgColor, *thisBgColor;    
+    const char *otherBgColor, *thisBgColor;
 
     char thisBgColor_buf[seqEnd-seqStart+1];
     {
@@ -1322,7 +1322,7 @@ void SEC_helix_strand::paint(AW_device *device, int show_constraints) {
     paint_strands(device, v, length_of_v);
 
     other_strand->loop->paint(other_strand, device, show_constraints);
-    
+
     if(root->show_debug) {
 	paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp1_x, other_strand->attachp1_y,"AP1");
 	paintDebugInfo(device,SEC_GC_HELIX, other_strand->attachp2_x,other_strand->attachp2_y, "AP2");
@@ -1374,7 +1374,7 @@ void SEC_loop::paint(SEC_helix_strand *caller, AW_device *device, int show_const
     if (is_root) {
         caller->paint(device, show_constraints);
     }
-   
+
     if(root->show_debug) {
 	paintDebugInfo(device,SEC_GC_LOOP,  caller->get_attachp1_x(), caller->get_attachp1_y(), "AP1");
 	paintDebugInfo(device,SEC_GC_LOOP,  caller->get_attachp2_x(), caller->get_attachp2_y(), "AP2");
