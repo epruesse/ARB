@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -24,7 +24,7 @@
 #  include <sysent.h>	/* c++ only for sun */
 # endif
 #else
-# if defined(HP) || defined(LINUX) || defined(DIGITAL)
+# if defined(HP) || defined(LINUX) || defined(DIGITAL) || defined(DARWIN)
 #  define SIG_PF void (*)(int)
 # endif
 #endif

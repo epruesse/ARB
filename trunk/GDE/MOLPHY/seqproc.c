@@ -29,7 +29,7 @@ int maxspc, numptrn;
 		}
 	} putchar('\n');
 	}
-#endif	
+#endif
 } /*_ convseq */
 
 
@@ -93,8 +93,7 @@ double *freqemp;
 } /* convfreq */
 
 
-void
-radixsort(seqchar, alias, maxspc, maxsite, numptrn)
+void a_radixsort(seqchar, alias, maxspc, maxsite, numptrn)
 cmatrix seqchar;
 ivector alias;
 int maxspc, maxsite;
@@ -147,7 +146,7 @@ int *numptrn;
 		}
 	}
 #endif
-} /*_ radixsort */
+} /*_ a_radixsort */
 
 
 void
@@ -212,7 +211,7 @@ int numptrn;
 		}
 		numsites[i] = n;
 	/*	printf("numsites %3d %5d\n", i ,n); */
-	 } 
+	 }
 } /* getnumsites */
 
 
@@ -233,7 +232,7 @@ int numptrn;
 		maxj = ((numptrn < k+LINESITES) ? numptrn : (k+LINESITES));
 		putchar('\n');
 		for (i = 0; i < numspc; i++) {
-			fputid(stdout, identif[i], 10); 
+			fputid(stdout, identif[i], 10);
 			putchar(' ');
 			for (j = k; j < maxj; j++) {
 				if (i == 0 || seqconint[i][j] != seqconint[0][j])

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <math.h>
@@ -169,7 +169,7 @@ void            ph_mldist::build_predikt_table(int pos){
 		    dp = 0.0;
 		    d2p = 0.0;
 		    predict(tt, b1, b2);
-		
+
 		    if (p > 0.0){
 			double ip = 1.0/p;
 			akt_slopes[0][b1][b2] = dp * ip;

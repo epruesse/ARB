@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <arbdb.h>
@@ -34,7 +34,7 @@
 
 		AC_SEQUENCE_INFO	*run_ptr = NULL;
 		for( run_ptr = root->sequences; run_ptr ;
-			run_ptr = run_ptr->next )  
+			run_ptr = run_ptr->next )
 		{
 			printf("Nr: %5i  ", run_ptr->number);
 			printf("| ");
@@ -70,7 +70,7 @@
 
 		AC_SEQUENCE_INFO	*run_ptr = NULL;
 		for( run_ptr = root->sequences; run_ptr ;
-			run_ptr = run_ptr->next )  
+			run_ptr = run_ptr->next )
 		{
 			printf("Nr: %5i  ", run_ptr->number);
 			printf("| ");
@@ -100,7 +100,7 @@
 
 		AC_SEQUENCE_INFO	*run_ptr = NULL;
 		for( run_ptr = root->sequences; run_ptr ;
-			run_ptr = run_ptr->next )  
+			run_ptr = run_ptr->next )
 		{
 			if(run_ptr->state == LEFTEND) printf("LEFTEND		");
 			else if(run_ptr->state == RIGHTEND) printf("RIGHTEND	");

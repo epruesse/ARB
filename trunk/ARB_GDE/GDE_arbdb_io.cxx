@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 
 #include <arbdb.h>
@@ -53,16 +53,16 @@ extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
 int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,unsigned char **the_sequences,
 		    unsigned long numberspecies,unsigned long maxalignlen,AP_filter *filter, long compress)
-{ 
+{
     GBDATA *gb_name;
     GBDATA *gb_species;
     GBDATA *gbd;
     int newfiltercreated=0;
     NA_Sequence *this_elem;
-    
+
     gde_assert((the_species==0) != (the_names==0));
- 
-    if(filter==0) 
+
+    if(filter==0)
     {
 	filter = new AP_filter;
 	filter->init(maxalignlen);
@@ -74,17 +74,17 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 	    maxalignlen = fl;
 	}
     }
-	
+
     size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies,sizeof(size_t));
     // sequences may have different length
     {
 	unsigned long i;
 	for(i=0;i<numberspecies;i++){
 	    seqlen[i] = strlen((char *)the_sequences[i]);
-	}	
+	}
     }
 
-	
+
     uchar **sequfilt=(uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
     if(compress==2)  // compress all gaps and filter positions
     {
@@ -132,7 +132,7 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 	    sequfilt[i]=(uchar*)malloc((unsigned int)len+1);
 	    sequfilt[i][len] = 0;
 	    memset(sequfilt[i],'.',len);		// Generate empty sequences
-	    
+
 	    size_t col;
 	    for(col=0;(col<maxalignlen)&&(c=the_sequences[i][col]);col++){
 		if ( filter->filter_mask[col] )
@@ -149,12 +149,12 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 	GB_write_string(gb_filter,string);
 	delete string;
     }
-	
+
     delete seqlen;
 
     long number=0;
     int	curelem;
-    
+
     if (the_species) {
 	for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number] ) {
 	    if((number/10)*10==number)
@@ -171,7 +171,7 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 	    this_elem->gb_species = gb_species;
 
 	    strncpy(this_elem->short_name,GB_read_char_pntr(gb_name),31);
-		
+
 	    gbd = GB_find(gb_species,"author",0,down_level);
 	    if (gbd)	strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
 	    gbd = GB_find(gb_species,"full_name",0,down_level);
@@ -184,7 +184,7 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 		AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
 		delete sequfilt[number]; sequfilt[number] = 0;
 	    }
-		
+
 	    this_elem->comments = strdup("no comments");
 	    this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
@@ -209,30 +209,30 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
     }
     else {	// use the_names
 	unsigned char *species_name;
-	
+
 	for (species_name=the_names[number]; species_name; species_name=the_names[++number]) {
 	    if ((number/10)*10==number) {
 		if (aw_status((double)number/(double)numberspecies)) {
 		    return 1;
 		}
 	    }
-	    
+
 	    curelem = Arbdb_get_curelem(dataset);
 	    this_elem = &(dataset->element[curelem]);
 	    InitNASeq(this_elem, RNA);
 	    this_elem->attr = DEFAULT_X_ATTR;
 	    this_elem->gb_species = 0;
-	    
+
 	    strncpy((char*)this_elem->short_name, (char*)species_name, 31);
 	    this_elem->authority[0] = 0;
 	    this_elem->seq_name[0] = 0;
 	    this_elem->id[0] = 0;
-	    
+
 	    {
 		AppendNA((NA_Base *)sequfilt[number],strlen((const char *)sequfilt[number]),this_elem);
 		delete sequfilt[number]; sequfilt[number] = 0;
 	    }
-		
+
 	    this_elem->comments = strdup("no comments");
 	    this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
 
@@ -244,7 +244,7 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
 	    }
 	}
     }
-    
+
     {
 	unsigned long i;
 	for(i=0;i<dataset->numelements;i++)
@@ -272,7 +272,7 @@ void ReadArbdb(char *filename,NA_Alignment *dataset,int type)
 int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
 {
 	dataset->gb_main = gb_main;
-	GBDATA **the_species; 
+	GBDATA **the_species;
 	long maxalignlen;
 	long numberspecies=0;
 	uchar **the_sequences;
@@ -280,9 +280,9 @@ int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
 	char *error = gde_cgss.get_sequences(gde_cgss.THIS,
 					     the_species, the_names, the_sequences,
 					     numberspecies, maxalignlen);
-	
+
 	gde_assert((the_species==0) != (the_names==0));
-	
+
 	if (error) {
 		aw_message(error);
 		return 1;

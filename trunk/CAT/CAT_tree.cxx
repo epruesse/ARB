@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 
 #include <arbdb.h>
@@ -12,7 +12,7 @@
 
 const char *CAT_field_names[CAT_FIELD_MAX];	// Fields which are extracted from the arb database
 			// syntax:	field[:word/(range of words]
-			// ex	full_name 
+			// ex	full_name
 
 double CATL_tree_max_deep(GBT_TREE *tree){
 	if (tree->is_leaf) return 0.0;
@@ -84,7 +84,7 @@ GB_ERROR cat_write_cat_tree(CAT_tree *cat_tree, FILE *out){
 		if (!fwrite( cat_strings[i], (int)cat_sizes[i], 1, out) ) {
 			return GB_export_error("Disk Full");
 		}
-	}	
+	}
 	return 0;
 }
 
@@ -106,24 +106,24 @@ long cat_convert_tree_2_cat_rek(GBT_TREE *tree, CAT_tree *cat_tree, int deep, do
 				level_counter,leaf_counter,node_counter);
 		cat_tree->nodes[node->leftson].father = nodec;
 		cat_tree->nodes[node->rightson].father = nodec;
-		
+
 		double l = tree->leftlen;
 		double r = tree->rightlen;
-		
+
 		if (l<0) l = 0.0;
 		if (r<0) r = 0.0;
-		
+
 		cat_tree->nodes[node->leftson].branch_length_float = l;
 		cat_tree->nodes[node->rightson].branch_length_float = r;
 
 		l *= scale;
 		r *= scale;
-		if (l>0 && l<1) l = 1; 
+		if (l>0 && l<1) l = 1;
 		if (r>0 && r<1) r = 1;
 
 		if (l> 255) l = 255;
 		if (r > 255) l = 255;
-		
+
 		cat_tree->nodes[node->leftson].branch_length_byte = (unsigned char)l;
 		cat_tree->nodes[node->rightson].branch_length_byte = (unsigned char)r;
 	}
@@ -163,11 +163,11 @@ long cat_convert_tree_2_cat_rek(GBT_TREE *tree, CAT_tree *cat_tree, int deep, do
 			}else{
 			    fullname = name;
 			}
-			
+
 			node->field_offsets[CAT_FIELD_NAME] = GBS_memoffset(cat_mem_files[CAT_FIELD_NAME]);
 			GBS_strcat(cat_mem_files[CAT_FIELD_NAME],name);
 			GBS_chrcat(cat_mem_files[CAT_FIELD_NAME],1);	// seperated by '^A'
-			
+
 			node->field_offsets[CAT_FIELD_FULL_NAME] = GBS_memoffset(cat_mem_files[CAT_FIELD_FULL_NAME]);
 			GBS_strcat(cat_mem_files[CAT_FIELD_FULL_NAME],fullname);
 			GBS_chrcat(cat_mem_files[CAT_FIELD_FULL_NAME],1);// seperated by '^A'
@@ -206,7 +206,7 @@ CAT_tree *convert_GBT_tree_2_CAT_tree(GBT_TREE *tree) {
 	int *level_counter = (int *)calloc(sizeof(int),size_of_tree);
 
 	double scale = 255/CATL_tree_max_deep(tree);
-	cat_convert_tree_2_cat_rek(tree, cat_tree, 0,scale, 
+	cat_convert_tree_2_cat_rek(tree, cat_tree, 0,scale,
 				level_counter, leaf_counter, node_counter);
 	int i;
 	for (i = 1; i < size_of_tree; i++) level_counter[i] += level_counter[i-1];
@@ -227,7 +227,7 @@ void cat_debug_tree(CAT_tree *cat_tree){
 	for (i=0;i< cat_tree->nnodes; i++){
 		CAT_node *node = & cat_tree->nodes[i];
 		printf("%4i f%4li l%4li r%4li lfn%4li lvl%4li d%4li bl%4i    ",
-			i, 
+			i,
 			node->father,
 			node->leftson,
 			node->rightson,
@@ -239,7 +239,7 @@ void cat_debug_tree(CAT_tree *cat_tree){
 		for (j=0;j<CAT_FIELD_MAX;j++){
 			if (node->field_offsets[j]) {
 				printf("%15s ",cat_tree->data+node->field_offsets[j]);
-			}	
+			}
 		}
 		printf("\n");
 	}

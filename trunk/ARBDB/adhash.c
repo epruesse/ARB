@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <ctype.h>
 
@@ -135,7 +135,7 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){	/* destroys data */
             }
         }
         val = atoi(dp+1);
-        GBS_write_hash_no_strdup(hash,str,val); 
+        GBS_write_hash_no_strdup(hash,str,val);
     }
 
     return error;
@@ -199,7 +199,7 @@ long GBS_write_hash(GB_HASH *hs,const char *key,long val)
         }
         return i2;
     }
-	
+
     if (val == 0) return 0;
 
     e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
@@ -235,7 +235,7 @@ long GBS_write_hash_no_strdup(GB_HASH *hs,char *key,long val)
         e->val = val;
         return i2;
     }
-	
+
     e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
     e->next = hs->entries[i];
     e->key = key;
@@ -282,7 +282,7 @@ void GBS_free_hash_entries(GB_HASH *hs)
     e2 = hs->size;
     for (i = 0; i < e2; i++) {
         for (e = hs->entries[i]; e; e = ee) {
-            free(e->key); 
+            free(e->key);
             ee = e->next;
             gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
         }
@@ -376,7 +376,7 @@ void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
     }
     hs->loop_entry = 0;
 }
-	    
+
 void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
     struct gbs_hash_entry *e;
     register long i,e2;
@@ -401,12 +401,12 @@ gbs_hash_sort_func_type gbh_sort_func;
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
     long g_bs_compare_two_items(void *v0, void *v1, char *unused) {
         struct gbs_hash_entry *e0 = (struct gbs_hash_entry*)v0;
         struct gbs_hash_entry *e1 = (struct gbs_hash_entry*)v1;
         GBUSE(unused);
-    
+
         return gbh_sort_func(e0->key, e0->val, e1->key, e1->val);
     }
 
@@ -618,7 +618,7 @@ char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, lon
     register long n,p;
     register long i;
     char *data = 0;
-    
+
     while ( ( (!cs->firstfree_entry) || ( needed_size + cs->sum_data_size >= max_data_size))
             && cs->oldest_entry) {
         i = cs->oldest_entry;
@@ -659,7 +659,7 @@ char *gb_alloc_cache_index(GBDATA *gbd,long size) {
     register struct gb_cache_struct *cs = &Main->cache;
     register long i;
     char *data = 0;
-	
+
     data = delete_old_cache_entries(cs, size, cs->max_data_size); /* delete enough old memory */
 
     i = cs->firstfree_entry;
@@ -684,7 +684,7 @@ char *gb_alloc_cache_index(GBDATA *gbd,long size) {
     cs->entries[i].data = data;
     cs->entries[i].gbd = gbd;
     gbd->cache_index = (short)i;
-    
+
     return data;
 }
 

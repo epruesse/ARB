@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include "tc.hxx"
@@ -115,7 +115,7 @@ void master_gap_compress::write(long rel, long abs){
 		memsize = MEM_ALLOC_INIT_MASTER;
 		rel_2_abs = (long *)calloc(sizeof(long),memsize);
 	}
-	
+
 	if (rel >= memsize) {
 		memsize = memsize * MEM_ALLOC_FACTOR;
 		rel_2_abs = (long *)realloc((char *)rel_2_abs,sizeof(long)*memsize);
@@ -136,7 +136,7 @@ long master_gap_compress::read(long rel, long def_abs){
 }
 
 void client_gap_compress::basic_write(long rel, long x, long y){
-	
+
 	if (rel >= memsize) {
 		memsize = (int)rel * MEM_ALLOC_FACTOR;
 		l = (client_gap_compress_data *)realloc(
@@ -171,7 +171,7 @@ void client_gap_compress::write(long rel, long abs) {
 	}else{
 		cgc_search_by_divide:
 		long l;
-		l = 0; r = master->len-1;	
+		l = 0; r = master->len-1;
 		while (l<r-1) {			// search the masters rel_2_abs[?] == abs
 			m = (l+r)>>1;
 			if ( ml[m] <= abs ) {
@@ -187,7 +187,7 @@ void client_gap_compress::write(long rel, long abs) {
 	this->basic_write(rel,m - rel,abs - ml[m] );
 }
 
-	// remove (eval. ) duplicated entries in client compress 
+	// remove (eval. ) duplicated entries in client compress
 	//  eg.   (4,20,5) (5,21,5) -> delete second
 
 void client_gap_compress::optimize(int realloc_flag) {
@@ -382,7 +382,7 @@ gap_index gap_compress::write_sequence(char *sequence, long seq_len, int gap1,in
 	}
 	master->ref_cnt++;
 
-	if (nmasters >= MAX_MASTERS) {	// maximum masters exceeded delete 
+	if (nmasters >= MAX_MASTERS) {	// maximum masters exceeded delete
 		int j;			// search single refed masters and search new master
 					// for the only single child
 		for (j=0;j<MAX_MASTERS_REMOVE_N;j++){
@@ -402,7 +402,7 @@ gap_index gap_compress::write_sequence(char *sequence, long seq_len, int gap1,in
 			}
 			nmasters--;
 			delete masters[i];
-		}	
+		}
 	}
 
 	if (nclients >= memclients) {
@@ -582,7 +582,7 @@ int gap_compress::load(FILE *in, char *baseaddr){
 }
 
 	// pt_species_class::set destroys the sequence !!!!!!
-	// name and fullname must be a new copy 
+	// name and fullname must be a new copy
 void pt_species_class::set(char *sequence, long seq_len, char *name, char *fullname){
 	delete this->fullname;
 	this->fullname = fullname;
@@ -620,7 +620,7 @@ void pt_species_class::set(char *sequence, long seq_len, char *name, char *fulln
 			case 'u':
 			case 'T':
 			case 't': *(dest++) = PT_T;*(abs++) = '+';SET_NN; break;
-			case '.': *(dest)++ = PT_QU;*(abs++) = '+'; 
+			case '.': *(dest)++ = PT_QU;*(abs++) = '+';
 					while (*src =='.') { src++; *(abs++) = '-'; }
 					SET_NN;
 					break;
@@ -636,7 +636,7 @@ void pt_species_class::set(char *sequence, long seq_len, char *name, char *fulln
 				}
 				break;
 		}
-		
+
 	}
 	*dest = PT_QU;
 	*abs = 0;
@@ -716,7 +716,7 @@ pt_main_class::pt_main_class(void) {
 }
 
 pt_main_class::~pt_main_class(void) {
-	GB_CORE;	
+	GB_CORE;
 }
 
 void pt_main_class::calc_name_hash(void){
@@ -924,7 +924,7 @@ int pt_main_class::import_all(char *basename){
 	return 0;
 }
 
-int 
+int
 main(int argc, char **argv)
 {
 	char           *path;
@@ -955,7 +955,7 @@ main(int argc, char **argv)
 	return 0;
 }
 
-#if 0 
+#if 0
 	char		*cmp;
 	int		i;
 		cmp = gc.read_sequence(index);

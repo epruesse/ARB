@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <aw_root.hxx>
@@ -125,7 +125,7 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
 	GB_begin_transaction(gb_main);
 
 	error = GBT_rename_alignment(gb_main,source,dest,(int)copy,(int)dele);
-	
+
 	if (!error){
 	    char *nfield = strdup(GBS_global_string("%s/data",dest));
 	    awt_add_new_changekey( gb_main,nfield,GB_STRING);
@@ -148,7 +148,7 @@ AW_window *create_alignment_copy_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the new name\nof the alignment");
@@ -158,7 +158,7 @@ AW_window *create_alignment_copy_window(AW_root *root)
 
 	aws->at("ok");
 	aws->callback(aa_copy_delete_rename,1,0);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -170,7 +170,7 @@ AW_window *create_alignment_rename_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the name\nof the new alignment");
@@ -180,7 +180,7 @@ AW_window *create_alignment_rename_window(AW_root *root)
 
 	aws->at("ok");
 	aws->callback(aa_copy_delete_rename,1,1);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -202,7 +202,7 @@ void aa_create_alignment(AW_window *aww)
 	    GB_commit_transaction(gb_main);
 	}else{
 	    GB_abort_transaction(gb_main);
-	}		
+	}
 	if (error) aw_message(error);
 	delete name;
 }
@@ -215,7 +215,7 @@ AW_window *create_alignment_create_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("label");
 	aws->create_button(0,"Please enter the new name\nof the alignment");
@@ -225,7 +225,7 @@ AW_window *create_alignment_create_window(AW_root *root)
 
 	aws->at("ok");
 	aws->callback(aa_create_alignment);
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	return (AW_window *)aws;
 }
@@ -239,37 +239,37 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"ad_align.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->button_length(13);
 
 	aws->at("delete");
 	aws->callback(ad_al_delete_cb);
-	aws->create_button("DELETE","DELETE","D");			   
+	aws->create_button("DELETE","DELETE","D");
 
 	aws->at("rename");
 	aws->callback(AW_POPUP,(AW_CL)create_alignment_rename_window,0);
-	aws->create_button("RENAME","RENAME","R");			   
+	aws->create_button("RENAME","RENAME","R");
 
 	aws->at("create");
 	aws->callback(AW_POPUP,(AW_CL)create_alignment_create_window,0);
-	aws->create_button("CREATE","CREATE","N");			   
+	aws->create_button("CREATE","CREATE","N");
 
 	aws->at("copy");
 	aws->callback(AW_POPUP,(AW_CL)create_alignment_copy_window,0);
-	aws->create_button("COPY","COPY","C");			   
+	aws->create_button("COPY","COPY","C");
 
 	aws->at("check_len");
 	aws->callback(ed_al_check_len_cb);
-	aws->create_button("CHECK_LEN","CHECK LEN","L");			   
+	aws->create_button("CHECK_LEN","CHECK LEN","L");
 
 	aws->at("align");
 	aws->callback(ed_al_align_cb);
-	aws->create_button("FORMAT","FORMAT","F");			   
+	aws->create_button("FORMAT","FORMAT","F");
 
 	aws->at("list");
 	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,"presets/use","*=");

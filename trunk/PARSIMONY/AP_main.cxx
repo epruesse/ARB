@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <iostream.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <math.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 
 
 /*********************************************
-AP_ERR 
+AP_ERR
 *************************/
 
 int AP_ERR::modus = 0;
@@ -52,8 +52,8 @@ AP_ERR::AP_ERR (const char *pntr,const char *pntr2,const int core)
 }
 
 AP_ERR::AP_ERR (const char *pntr, const int core)
-    // setzt den Fehlertext 
-    // bricht ab 
+    // setzt den Fehlertext
+    // bricht ab
 {
     text = pntr;
     cout << "\n*** FATAL ERROR *** " << core << "\n" << text << "\n";
@@ -84,7 +84,7 @@ AP_main::~AP_main(void) {
     if (use) delete use;
     if (stack) delete stack;
 }
-			
+
 char *AP_main::open(char *db_server)
 {
     char *error = 0 ;
@@ -92,7 +92,7 @@ char *AP_main::open(char *db_server)
     gb_main = GB_open(db_server,"rwt");
     if (!gb_main) return (char *)GB_get_error();
     if (error) return error;
-	
+
     return 0;
 }
 
@@ -110,7 +110,7 @@ void AP_main::user_pop(void) {
     }
     return;
 }
-	
+
 void AP_main::push(void) {
     // if count > 1 the nodes are buffered more than once
     // WARNING:: node only has to be buffered once in the stack
@@ -128,7 +128,7 @@ void AP_main::pop(void) {
 	new AP_ERR("AP_main::pop()","Stack underflow !");
 	return;
     }
-    while ( (knoten = stack->pop()) ) {			
+    while ( (knoten = stack->pop()) ) {
 	if (stack_level != knoten->stack_level) {
 	    GB_internal_error("AP_main::pop","Error in stack_level");
 	    cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
@@ -145,13 +145,13 @@ void AP_main::pop(void) {
     }else{
 	user_push_counter = 0;
     }
-    return;	
-}	
+    return;
+}
 
 void AP_main::clear(void) {
     // removes count elements from the list
     // because the current tree is used
-    // 
+    //
     // if stack_counter greater than last user_push then
     // moves all not previous buffered nodes in the
     // previous stack
@@ -189,17 +189,17 @@ void AP_main::clear(void) {
 	} else {
 	    new AP_ERR("AP_main::clear");
 	}
-    }		
+    }
     stack_level --;
     if (stack) user_push_counter = stack->last_user_buffer;
     else user_push_counter = 0;
 
 }
-		
+
 void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     //
-    //	stores node 
-    // 
+    //	stores node
+    //
     if (!stack) {
 	if (mode & SEQUENCE) 	node->unhash_sequence();
 	return;
@@ -213,7 +213,7 @@ void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     if (node->push(mode,stack_level)) 	stack->push(node);
 }
 
-	
+
 void AP_main::set_tree_root(AP_tree *new_root) {
     // removes old root and sets it
     // to the father of the new_root

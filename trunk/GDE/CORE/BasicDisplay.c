@@ -1,4 +1,4 @@
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <xview/xview.h>
@@ -68,7 +68,7 @@ NA_Alignment *DataSet;
 		    0);
 		/*
 *	For all menus defined in the .GDEmenu file, create a corresponding
-*	menu on the menu bar, and tie its XView object to the internal 
+*	menu on the menu bar, and tie its XView object to the internal
 *	menu structure.
 */
 		for(j=0;j<num_menus ;j++)
@@ -377,7 +377,7 @@ MakeNAADisplay()
 	    OPENWIN_SPLIT,
 	    OPENWIN_SPLIT_INIT_PROC,InitEditSplit,
 	    OPENWIN_SPLIT_DESTROY_PROC,DestroySplit,
-	    NULL, 
+	    NULL,
 	    WIN_INHERIT_COLORS,FALSE,
 	    WIN_BELOW,menubar,
 		CANVAS_REPAINT_PROC,RepaintNACan,
@@ -587,7 +587,7 @@ Canvas Can,NamCan;
 		    ddata->font_dy * (aln->numelements+2)),
 		    CANVAS_RETAINED,FALSE,
 		    0);
-	
+
 		xv_set(NamCan,
 		    WIN_HEIGHT,MIN(MAX_STARTUP_CANVAS_HEIGHT,
 		    ddata->font_dy * (aln->numelements+2)),

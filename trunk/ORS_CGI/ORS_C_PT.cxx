@@ -1,4 +1,4 @@
-/* 
+/*
 #################################
 #                               #
 #    ORS_CLIENT:  PT            #
@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <arbdb.h>
 
@@ -29,7 +29,7 @@ struct pdgl_struct {
 	} pd_gl;
 
 // results of probe match
-struct result_struct {	
+struct result_struct {
 	T_PT_MATCHLIST match_list;
 	long match_list_cnt;
 	bytestring bs;
@@ -65,7 +65,7 @@ char *probe_pt_look_for_server(int server_nr)	// 0 = 16s 1 = 23s ...
 }
 
 /******************************************************************************
-  PROBE MATCH: 
+  PROBE MATCH:
  		Send probe request to server and receive probe match results
 *******************************************************************************/
 void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
@@ -105,10 +105,10 @@ void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
 
 	pt_result.bs.data = 0;
 
-	aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+	aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
 		LOCS_MATCH_LIST,	&pt_result.match_list,		// short names of species
 		LOCS_MATCH_LIST_CNT,	&pt_result.match_list_cnt,	// count of species short names
-		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server 
+		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server
 		LOCS_ERROR,		&locs_error,
 		0);
 	if (*locs_error) {
@@ -122,7 +122,7 @@ void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
 }
 
 /******************************************************************************
-  PROBE FIND: 
+  PROBE FIND:
  		Send probe request to server and receive probe match results
 *******************************************************************************/
 #if 0
@@ -154,10 +154,10 @@ void probe_find (int server_nr, char *probe_seq)
 
 	pt_result.bs.data = 0;
 
-	aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+	aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
 		LOCS_MATCH_LIST,	&pt_result.match_list,		// short names of species
 		LOCS_MATCH_LIST_CNT,	&pt_result.match_list_cnt,	// count of species short names
-		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server 
+		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server
 		LOCS_ERROR,		&locs_error,
 		0);
 	if (*locs_error) {

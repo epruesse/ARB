@@ -1,4 +1,4 @@
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <xview/xview.h>
@@ -238,7 +238,7 @@ GC gc;
 
 			wid -= j;
 			j=0;
-			buffer[j] = tmat? 
+			buffer[j] = tmat?
 			    tmat[base]:base;
 /*
 *	If in map view, set character to '>' '<' '+' or ' '

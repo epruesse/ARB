@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <PT_server.h>
 #define IMPLEMENT_PROBE_TREE

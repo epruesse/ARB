@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <math.h>
 #include <arbdb.h>
@@ -55,7 +55,7 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
 	if (!tree->gb_node) return 0;	// zombie
 	GBDATA *gb_data = GBT_read_sequence(tree->gb_node,ali_name);
 	if (!gb_data) return 0;		// no sequence
-	if (GB_read_string_count(gb_data) < seq_len) 
+	if (GB_read_string_count(gb_data) < seq_len)
 	    seq_len = GB_read_string_count(gb_data);
 	sequence = GB_read_char_pntr(gb_data);
 
@@ -113,7 +113,7 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
 
 // Calculate the positional variability: control procedure
 GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
-    GB_ERROR error = 0;	
+    GB_ERROR error = 0;
     int i;
 
     if (is_dna) {
@@ -189,7 +189,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
 
     GBDATA *gb_extended = GBT_create_SAI(gb_main,sai_name);
 
-	
+
     {	sprintf(buffer,"%s/_TYPE",ali_name);
     GBDATA *gb_description  = GB_search( gb_extended, buffer, GB_STRING);
     sprintf(buffer,"PVP: Positional Variability by Parsimony: tree '%s' ntaxa %li",tree_name, treesize/2);
@@ -255,7 +255,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
 	char *h = GBS_strclose(strstruct,0);
 	sprintf(buffer,"%s/_CATEGORIES",ali_name);
 	GBDATA *gb_categories  = GB_search( gb_extended, buffer, GB_STRING);
-	GB_write_string(gb_categories, h); 
+	GB_write_string(gb_categories, h);
 	delete h;
     }
 
@@ -280,10 +280,10 @@ void AP_calc_pos_var_pars(AW_window *aww){
 	    aw_message("Please select a valid tree");
 	    return;
 	}
-	GBT_link_tree(tree,gb_main, GB_TRUE);		
+	GBT_link_tree(tree,gb_main, GB_TRUE);
     }
     aw_status("Counting Mutations");
-	
+
     char *ali_name = GBT_get_default_alignment(gb_main);
     long ali_len = GBT_get_alignment_len(gb_main,ali_name);
     if (ali_len <=0) {
@@ -300,7 +300,7 @@ void AP_calc_pos_var_pars(AW_window *aww){
 	// 	if ( !strcmp(ali_type,"dna") || ! strcmp(ali_type,"rna"))
 	// 	    isdna = 1;
 	// 	delete ali_type;
-	
+
 	GB_alignment_type at = GBT_get_alignment_type(gb_main, ali_name);
 	isdna = at==GB_AT_DNA || at==GB_AT_RNA;
     }
@@ -336,10 +336,10 @@ AW_window *AP_open_pos_var_pars_window( AW_root *root ){
     delete largest_tree; largest_tree = 0;
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");		       
-	
+    aws->create_button("CLOSE","CLOSE","C");
+
     aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"pos_var_pars.hlp");
-    aws->create_button("HELP","HELP","H");		       
+    aws->create_button("HELP","HELP","H");
 
     aws->at("name");
     aws->create_input_field(AWAR_PVP_SAI);
@@ -353,7 +353,7 @@ AW_window *AP_open_pos_var_pars_window( AW_root *root ){
     aws->at("go");
     aws->highlight();
     aws->callback(AP_calc_pos_var_pars);
-    aws->create_button("GO","GO");		       
+    aws->create_button("GO","GO");
 
     return (AW_window *)aws;
 }

@@ -1,4 +1,4 @@
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <xview/xview.h>
@@ -137,7 +137,7 @@ Notify_event_type       type;
 		currentx=(int)xv_get(hsc,SCROLLBAR_VIEW_START)/SCALE;
 		deltax=(int)xv_get(hsc,SCROLLBAR_VIEW_LENGTH);
 
-		lasty=(int)xv_get(vsc,	
+		lasty=(int)xv_get(vsc,
 		SCROLLBAR_LAST_VIEW_START);
 
 		currenty=(int)xv_get(vsc,SCROLLBAR_VIEW_START);
@@ -180,12 +180,12 @@ Notify_event_type       type;
 		xv_set(right_foot,PANEL_LABEL_STRING,buffer,0);
 		return(XV_OK);
 	}
-	
+
 /*
 	test for hsc && vsc attempts to fix warnings at split
 */
 	else if ((event_action(event) == ACTION_SPLIT_HORIZONTAL ||
-	event_action(event) == ACTION_SPLIT_VERTICAL ) && 
+	event_action(event) == ACTION_SPLIT_VERTICAL ) &&
 	hsc && vsc)
 	{
 		xv_set(hsc,SCROLLBAR_VIEW_START,0,0);
@@ -208,7 +208,7 @@ int x,y;
 	int j,dx,dy;
 	Xv_xrectlist area;
 	Xv_window win;
-	
+
 	hsc = (Scrollbar)xv_get(EditCan,OPENWIN_HORIZONTAL_SCROLLBAR,view);
 	vsc = (Scrollbar)xv_get(EditCan,OPENWIN_VERTICAL_SCROLLBAR,view);
 	win = (Xv_window)xv_get(view,CANVAS_VIEW_PAINT_WINDOW);

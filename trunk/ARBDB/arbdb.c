@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <rpc/types.h>
@@ -21,7 +21,7 @@ long	GB_NOVICE  = 0;
 char *GB_rel(void *struct_adress,long rel_adress)
 {
     if (!rel_adress) return NULL;
-    return (char*)struct_adress+rel_adress;	
+    return (char*)struct_adress+rel_adress;
 }
 /********************************************************************************************
 					GB local data
@@ -60,7 +60,7 @@ double GB_atof(const char *str)
 
 
 /********************************************************************************************
-					compression tables 
+					compression tables
 ********************************************************************************************/
 int gb_convert_type_2_compression_flags[] = {
     /* GB_NONE 0 */	GB_COMPRESSION_NONE,
@@ -268,7 +268,7 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
 		GB_internal_error("Cannot unfold local_mode database");
 		return 0;
     }
-    
+
     do {
 		if (index_pos<0 ) break;
 		if (index_pos >= gbd->d.nheader) break;
@@ -367,7 +367,7 @@ GB_CPNTR GB_read_pntr(GBDATA *gbd){
     type = GB_TYPE(gbd);
     data = GB_GETDATA(gbd);
     if (!data) return 0;
-    if (gbd->flags.compressed_data) {	/* uncompressed data return pntr to 
+    if (gbd->flags.compressed_data) {	/* uncompressed data return pntr to
 										   database entry	*/
 		char *ca = gb_read_cache(gbd);
 		char *da;
@@ -445,7 +445,7 @@ GB_CPNTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
     data = GB_GETDATA(gbd);
     size = GB_GETSIZE(gbd);
     if (!size) return 0;
-    {	
+    {
 		char *ca = gb_read_cache(gbd);
 		char *da;
 		if (ca) return ca;
@@ -660,7 +660,7 @@ GB_ERROR gb_write_compressed_pntr(GBDATA *gbd,const char *s, long memsize , long
     return 0;
 }
 
-int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type) 
+int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
 {
     struct gb_key_struct *ks = &Main->keys[key];
     int compression_mask;
@@ -675,19 +675,19 @@ int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
     return compression_mask;
 }
 
-GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_size) 
+GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_size)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GBQUARK key = GB_KEY_QUARK(gbd);
     char *d;
     int compression_mask;
     long memsize;
-    
+
     gb_free_cache(Main,gbd);
     gb_save_extern_data_in_ts(gbd);
 
     compression_mask = gb_get_compression_mask(Main, key, GB_TYPE(gbd));
-    
+
     if (compression_mask){
 		d = gb_compress_data(gbd, key, s, bytes_size, &memsize, compression_mask, GB_FALSE);
     }else{
@@ -704,13 +704,13 @@ GB_ERROR GB_write_pntr(GBDATA *gbd,const char *s, long bytes_size, long stored_s
     GB_SETSMDMALLOC(gbd,stored_size,memsize,d);
     gb_touch_entry(gbd,gb_changed);
     GB_DO_CALLBACKS(gbd);
-    
+
     return 0;
 }
 
 GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
 {
-    long size;    
+    long size;
     /*fprintf(stderr, "GB_write_string(%p, %s);\n", gbd, s);*/
     GB_TEST_WRITE(gbd,GB_STRING,"GB_write_string");
     GB_TEST_NON_BUFFER(s,"GB_write_string");
@@ -772,7 +772,7 @@ GB_ERROR GB_write_ints(GBDATA *gbd,const GB_UINT4 *i,long size)
 
     GB_TEST_WRITE(gbd,GB_INTS,"GB_write_ints");
     GB_TEST_NON_BUFFER((char *)i,"GB_write_ints");		/* compress will destroy the other buffer */
-    
+
     if ( 0x01020304 != htonl((GB_UINT4)0x01020304) ) {
 		register long j;
 		char *buf2 = GB_give_other_buffer((char *)i,size<<2);
@@ -856,7 +856,7 @@ GB_ERROR GB_write_security_write(GBDATA *gbd,unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
-	
+
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
 		return gb_security_error(gbd);
     if (GB_GET_SECURITY_WRITE(gbd) == level) return 0;
@@ -869,7 +869,7 @@ GB_ERROR GB_write_security_read(GBDATA *gbd,unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
-    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level) 
+    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
 		return gb_security_error(gbd);
     if (GB_GET_SECURITY_READ(gbd) == level) return 0;
     GB_PUT_SECURITY_READ(gbd,level);
@@ -882,7 +882,7 @@ GB_ERROR GB_write_security_delete(GBDATA *gbd,unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
-    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)  
+    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
 		return gb_security_error(gbd);
     if (GB_GET_SECURITY_DELETE(gbd) == level) return 0;
     GB_PUT_SECURITY_DELETE(gbd,level);
@@ -894,7 +894,7 @@ GB_ERROR GB_write_security_levels(GBDATA *gbd,unsigned long readlevel,unsigned l
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     GB_TEST_TRANSACTION(gbd);
-    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)  
+    if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
 		return gb_security_error(gbd);
     GB_PUT_SECURITY_WRITE(gbd,writelevel);
     GB_PUT_SECURITY_READ(gbd,readlevel);
@@ -923,7 +923,7 @@ GB_ERROR GB_push_my_security(GBDATA *gbd)
     if (Main->pushed_security_level>1){
 		return 0;
     }
-    
+
     Main->old_security_level = Main->security_level;
     Main->security_level = 7;
     return 0;
@@ -1005,7 +1005,7 @@ long	GB_read_transaction(GBDATA *gbd)
 ********************************************************************************************/
 
 GBDATA *GB_get_father(GBDATA *gbd) /* Get the father of an entry */
-{	
+{
     GBDATA *father;
 
     GB_TEST_TRANSACTION(gbd);
@@ -1106,23 +1106,23 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
 GB_ERROR GB_delete(GBDATA *source)
 {
     GBDATA *gb_main;
-    
+
     GB_TEST_TRANSACTION(source);
     if (GB_GET_SECURITY_DELETE(source)>GB_MAIN(source)->security_level) {
 		return GB_export_error("Security error in GB_delete: %s",GB_read_key_pntr(source));
     }
-    
-    gb_main = GB_get_root(source); 
-    
+
+    gb_main = GB_get_root(source);
+
     if (source->flags.compressed_data) {
 		GB_set_compression(gb_main, 0); /* disable compression */
-		gb_set_compression(source); /* write data w/o compression (otherwise GB_read_old_value... won't work) */ 
+		gb_set_compression(source); /* write data w/o compression (otherwise GB_read_old_value... won't work) */
 		GB_set_compression(gb_main, -1); /* allow all types of compressions */
     }
-	
+
     if (GB_MAIN(source)->transaction<0){
 		gb_delete_entry(source);
-		gb_do_callback_list(gb_main); 
+		gb_do_callback_list(gb_main);
     }else{
 		gb_touch_entry(source,gb_deleted);
     }
@@ -1172,7 +1172,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 			break;
 		case GB_LINK:		/* No local compression */
 			error = GB_write_link(dest,GB_read_link_pntr(source));
-			break;	
+			break;
 		case GB_BITS:		/* only local compressions for the following types */
 		case GB_BYTES:
 		case GB_INTS:
@@ -1182,13 +1182,13 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 							GB_GETMEMSIZE(source),
 							GB_GETDATA(source));
 			dest->flags.compressed_data	= source->flags.compressed_data;
-	
+
 			break;
 		case GB_DB:
-	
+
 			destc = (GBCONTAINER *)dest;
 			sourcec = (GBCONTAINER *)source;
-	
+
 			if (GB_TYPE(destc) != GB_DB)
 			{
 				GB_ERROR err = GB_export_error("GB_COPY Type conflict %s:%i != %s:%i",
@@ -1196,7 +1196,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 				GB_internal_error("%s",err);
 				return err;
 			}
-	
+
 			if (source->flags2.folded_container) 	gb_unfold((GBCONTAINER *)source,-1,-1);
 			if (dest->flags2.folded_container) 	gb_unfold((GBCONTAINER *)dest,0,-1);
 
@@ -1205,18 +1205,18 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 				 gb_p = GB_find(gb_p,0,0,this_level|search_next))
 			{
 				GB_TYPES type2 = (GB_TYPES)GB_TYPE(gb_p);
-	    
+
 				key = GB_read_key_pntr(gb_p);
 				if (type2 == GB_DB)
 				{
 					gb_d = GB_create_container(dest,key);
-					gb_create_header_array((GBCONTAINER *)gb_d, ((GBCONTAINER *)gb_p)->d.size); 
+					gb_create_header_array((GBCONTAINER *)gb_d, ((GBCONTAINER *)gb_p)->d.size);
 				}
 				else
 				{
 					gb_d = GB_create(dest,key,type2);
 				}
-		
+
 				if (!gb_d) return GB_get_error();
 				error = GB_copy(gb_d, gb_p);
 				if (error) break;
@@ -1224,9 +1224,9 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 
 			destc->flags3 = sourcec->flags3;
 			break;
-				
+
 		default:
-			error = GB_export_error("GB_copy error unknown type"); 
+			error = GB_export_error("GB_copy error unknown type");
     }
     if (error) return error;
 
@@ -1249,35 +1249,35 @@ char* GB_get_subfields(GBDATA *gbd)
 {
     long type;
     char *result = 0;
-    
+
     GB_TEST_TRANSACTION(gbd);
     type = GB_TYPE(gbd);
-    
+
     if (type==GB_DB) { /* we are a container */
 		GBCONTAINER *gbc = (GBCONTAINER*)gbd;
 		GBDATA *gbp;
 		int result_length = 0;
-	
+
 		if (gbc->flags2.folded_container) {
 			gb_unfold(gbc, -1, -1);
 		}
-	
+
 		for (gbp = GB_find(gbd, 0, 0, down_level);
 			 gbp;
 			 gbp = GB_find(gbp, 0, 0, this_level|search_next))
 		{
 			const char *key = GB_read_key_pntr(gbp);
 			int keylen = strlen(key);
-	    
+
 			if (result) {
 				char *neu_result = (char*)malloc(result_length+keylen+1+1);
-		
+
 				if (neu_result) {
 					char *p = stpcpy(neu_result, result);
 					p = stpcpy(p, key);
 					*p++ = ';';
 					p[0] = 0;
-		    
+
 					free(result);
 					result = neu_result;
 					result_length += keylen+1;
@@ -1295,11 +1295,11 @@ char* GB_get_subfields(GBDATA *gbd)
 				result_length = keylen+2;
 			}
 		}
-    }	
+    }
     else {
 		result = GB_strdup(";");
     }
-    
+
     return result;
 }
 
@@ -1394,7 +1394,7 @@ long	GB_read_temporary(GBDATA *gbd)
 ********************************************************************************************/
 
 GB_ERROR GB_push_local_transaction(GBDATA *gbd){ /* Starts a read only transaction !!;
-													be shure that all data is cached 
+													be shure that all data is cached
 													be extremely carefull !!!!! */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
@@ -1467,8 +1467,8 @@ GB_ERROR GB_begin_transaction(GBDATA *gbd)
 		gb_untouch_me(gbd);
 		if (error) return error;
     }
-    gb_do_callback_list(gbd);		/* do all callbacks 
-									   cb that change the db are no problem 
+    gb_do_callback_list(gbd);		/* do all callbacks
+									   cb that change the db are no problem
 									   'cause it's the beginning of a ta */
     Main->clock ++;
     return 0;
@@ -1634,7 +1634,7 @@ GB_ERROR gb_add_changed_callback_list(GBDATA *gbd,struct gb_transaction_save *ol
     cbl->type = gbtype;
     gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
-    
+
     return 0;
 }
 
@@ -1701,7 +1701,7 @@ GB_CPNTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
     type = GB_TYPE_TS(ts);
     data = GB_GETDATA_TS(ts);
     if (!data) return 0;
-    if (ts->flags.compressed_data) {	/* uncompressed data return pntr to 
+    if (ts->flags.compressed_data) {	/* uncompressed data return pntr to
 										   database entry	*/
 		size = GB_GETSIZE_TS(ts) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
 		data = gb_uncompress_data(gbd,data,size);
@@ -1712,7 +1712,7 @@ GB_CPNTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
 /* get last array value in callbacks */
 void *GB_read_old_value(){
     char *data;
-    
+
     if (!g_b_old_callback_list) {
 		GB_export_error("You cannot call GB_read_old_value outside a ARBDB callback");
 		return 0;
@@ -1723,7 +1723,7 @@ void *GB_read_old_value(){
     }
     data = GB_GETDATA_TS(g_b_old_callback_list->old);
     if (!data) return 0;
-    
+
     return gb_read_pntr_ts(g_b_old_callback_list->gbd, g_b_old_callback_list->old);
 }
 /* same for size */
@@ -1794,7 +1794,7 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func
 			return NULL;		/* already in cb list */
 		}
     }
-    return GB_add_callback(gbd,type,func,clientdata); 
+    return GB_add_callback(gbd,type,func,clientdata);
 }
 /********************************************************************************************
 					RELEASE
@@ -1869,22 +1869,22 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
     long new_index;
     GBCONTAINER *father;
     struct gb_header_list_struct *hl, h;
-    
+
     if (GB_read_clients(gb_main)<0)
 		return GB_export_error("Sorry: this program is not the arbdb server, you cannot resort your data");
 
     if (GB_read_clients(gb_main)>0)
 		return GB_export_error("There are %i clients (editors, tree programms) connected to this server,\n"
 							   "please close clients and rerun operation",
-							   GB_read_clients(gb_main)); 
+							   GB_read_clients(gb_main));
 
     if (listsize <=0) return 0;
-    
+
     father = GB_FATHER(new_order_list[0]);
     GB_disable_quicksave(gb_main,"some entries in the database got a new order");
     hl = GB_DATA_LIST_HEADER(father->d);
 
-    for (new_index= 0 ; new_index< listsize; new_index++ ) 
+    for (new_index= 0 ; new_index< listsize; new_index++ )
     {
 		long old_index = new_order_list[new_index]->index;
 
@@ -1897,14 +1897,14 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
 			GBDATA *ogb;
 			ogb = GB_HEADER_LIST_GBD(hl[old_index]);
 			ngb = GB_HEADER_LIST_GBD(hl[new_index]);
-	    
+
 			h = hl[new_index];
 			hl[new_index] = hl[old_index];
 			hl[old_index] = h;				/* Warning: Relative Pointers are incorrect !!! */
 
 			SET_GB_HEADER_LIST_GBD(hl[old_index], ngb );
 			SET_GB_HEADER_LIST_GBD(hl[new_index], ogb );
-	    
+
 			if ( ngb )	ngb->index = old_index;
 			if ( ogb )	ogb->index = new_index;
 		}
@@ -1998,7 +1998,7 @@ GB_ERROR GB_write_flag(GBDATA *gbd,long flag)
 
     prev = GB_ARRAY_FLAGS(gbc).flags;
     gbd->flags.saved_flags = prev;
-    
+
     if (flag){
 		GB_ARRAY_FLAGS(gbc).flags |= ubit;
     }else{
@@ -2042,11 +2042,11 @@ void dump(const char *data, int size)
 
     printf("\nDump %p (%i Byte):\n", data, size);
 
-    while (size--) 
+    while (size--)
     {
 		const char *hex = "0123456789abcdef";
 		char c = *data++;
-		
+
 		printf("%c%c ", hex[(c&0xf0)>>4], hex[c&0x0f]);
 
 		if (++x==32)
@@ -2085,7 +2085,7 @@ int gb_info(GBDATA *gbd, int deep){
     char	*data;
     int		size ;
     GB_MAIN_TYPE *Main;
-	
+
     if (gbd==NULL) { printf("NULL\n"); return -1; }
     GB_push_transaction(gbd);
     type = (GB_TYPES)GB_TYPE(gbd);
@@ -2093,9 +2093,9 @@ int gb_info(GBDATA *gbd, int deep){
     if (deep) {
 		printf("	");
     }
-    
+
     printf("(GBDATA*)0x%lx (GBCONTAINER*)0x%lx ",(long)gbd,(long)gbd);
-    
+
     if (gbd->rel_father==0)	{ printf("father=NULL\n"); return -1; }
 
     if (type==GB_DB)	{gbc = (GBCONTAINER*) gbd; Main = GBCONTAINER_MAIN(gbc);}
@@ -2112,7 +2112,7 @@ int gb_info(GBDATA *gbd, int deep){
 			gbc = (GBCONTAINER *)gbd;
 			size = gbc->d.size;
 			printf("Size %i	nheader %i hmemsize %i", gbc->d.size, gbc->d.nheader, gbc->d.headermemsize);
-			printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd)); 
+			printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
 			if (size < GB_info_deep){
 				int index;
 				struct gb_header_list_struct *header;
@@ -2127,17 +2127,17 @@ int gb_info(GBDATA *gbd, int deep){
 		default:
 			data = GB_read_as_string(gbd);
 			if (data) {printf("%s",data); free(data);}
-			printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd)); 
+			printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
     }
 
 
     GB_pop_transaction(gbd);
-    
+
     return 0;
 }
 
 
-int GB_info(GBDATA *gbd) 
+int GB_info(GBDATA *gbd)
 {
     return gb_info(gbd,0);
 }
@@ -2146,10 +2146,10 @@ long GB_number_of_subentries(GBDATA *gbd)
 {
     GBCONTAINER *gbc;
     GB_TYPES type = (GB_TYPES)GB_TYPE(gbd);
-    
+
     switch(type)
     {
-		case GB_DB:			/* @@@ client size < actual size!!! => use GB_rescan_number_of_subentries() from client */ 
+		case GB_DB:			/* @@@ client size < actual size!!! => use GB_rescan_number_of_subentries() from client */
 			gbc = (GBCONTAINER *)gbd;
 			return gbc->d.size;
 		default:
@@ -2159,7 +2159,7 @@ long GB_number_of_subentries(GBDATA *gbd)
 
 long GB_rescan_number_of_subentries(GBDATA *gbd) {
 	/* this is just a workaround for the above function, cause GB_number_of_subentries does not work in clients; it's used in ARB_EDIT4 */
-    
+
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     /*    int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit; */
     int index;

@@ -3,7 +3,7 @@
 #define _ALI_SEQUENCE_INC_
 
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_misc.hxx"
 
@@ -38,7 +38,7 @@ public:
 		return seq[position];
 	}
 	int check(void);
-	char *string(void); 
+	char *string(void);
 	char *name(void) {
 		return seq_name;
 	}

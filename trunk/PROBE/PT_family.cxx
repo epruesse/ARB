@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <PT_server.h>
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
@@ -49,7 +49,7 @@ int mark_all_matches( PT_local  *locs,
              * Check rest of probe
              */
             while (mismatches <= max_mismatches && *probe) {
-                if (psg.data[ref_name].data[ref_pos++] != *probe) {     
+                if (psg.data[ref_name].data[ref_pos++] != *probe) {
                     mismatches++;
                 }
                 probe++;
@@ -88,7 +88,7 @@ int mark_all_matches( PT_local  *locs,
     }
     return 0;
 }
- 
+
 /* Clear all informations in psg.data[i].stat */
 void clear_statistic(){
     int i;
@@ -123,7 +123,7 @@ extern "C" {
     static long compare_probe_input_data0(void *pid_ptr1, void *pid_ptr2, char*) {
         struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
         struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
-    
+
         if (d1->stat.match_count < d2->stat.match_count) return 1;
         if (d1->stat.match_count == d2->stat.match_count) return 0;
         return -1;
@@ -132,7 +132,7 @@ extern "C" {
     static long compare_probe_input_data1(void *pid_ptr1, void *pid_ptr2, char*) {
         struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
         struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
-    
+
         if (d1->stat.rel_match_count < d2->stat.rel_match_count) return 1;
         if (d1->stat.rel_match_count == d2->stat.rel_match_count) return 0;
         return -1;
@@ -171,7 +171,7 @@ int make_PT_family_list(PT_local *locs)
         fl->name = strdup(my_list[i]->name);
         fl->matches = my_list[i]->stat.match_count;
         fl->rel_matches = my_list[i]->stat.rel_match_count;
-        aisc_link((struct_dllpublic_ext*)&locs->pfl,(struct_dllheader_ext*)fl);	
+        aisc_link((struct_dllpublic_ext*)&locs->pfl,(struct_dllheader_ext*)fl);
     }
     free((char *)my_list);
     return 0;
@@ -222,7 +222,7 @@ extern "C" int find_family(PT_local *locs, bytestring *species)
 				if (probe_is_ok(probe,probe_len,first_c,second_c))
 					mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
 	}
-		
+
     make_match_statistic(locs->pr_len);
     make_PT_family_list(locs);
     free(species->data);

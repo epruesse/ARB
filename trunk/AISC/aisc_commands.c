@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <memory.h>
 
 #include "aisc.h"
@@ -20,7 +20,7 @@ void memcopy(char *dest, const char *source, int len)
     register int    i;
     register const char  *s;
     register char  *d;
-    
+
     i = len;
     s = source;
     d = dest;
@@ -66,7 +66,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
     int lenf, len;
     char *lastbr;
     char c;
-    
+
     ld = find_string(&str[2], "$(");
     fi = 0;
     if (ld) {
@@ -161,7 +161,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
 }
 
 
-int 
+int
 calc_line(char *str, char *buf)
 {
     char           *ld;
@@ -180,7 +180,7 @@ calc_line(char *str, char *buf)
     return 0;
 }
 
-int 
+int
 calc_line2(char *str, char *buf)
 {				/* erstes $( nicht auswerten ) !!! */
     char           *ld;
@@ -206,7 +206,7 @@ calc_line2(char *str, char *buf)
     return 0;
 }
 
-void 
+void
 write_aisc(AD * ad, FILE * out, int deep)
 {
     AD             *item, *line;
@@ -234,7 +234,7 @@ write_aisc(AD * ad, FILE * out, int deep)
     }
 }
 
-void 
+void
 write_prg(CL * cl, FILE * out, int deep)
 {
     CL             *line;
@@ -247,14 +247,14 @@ write_prg(CL * cl, FILE * out, int deep)
 }
 
 
-int 
+int
 do_com_dbg(char *str)
 {
     write_aisc(gl->root, stdout, 0);
     str = str;
     return 0;
 }
-int 
+int
 do_com_data(char *str)
 {
     char           *in;
@@ -276,7 +276,7 @@ do_com_data(char *str)
     return 0;
 }
 
-int 
+int
 do_com_write(FILE * out, char *str)
 {
     register char  *p;
@@ -344,20 +344,20 @@ do_com_write(FILE * out, char *str)
     return 0;
 }
 
-int 
+int
 do_com_print(char *str)
 {
     do_com_write(gl->out, str);
     return 0;
 }
-int 
+int
 do_com_print2(char *str)
 {
     do_com_write(stdout, str);
     return 0;
 }
 
-int 
+int
 do_com_tabstop(char *str)
 {
     int             ts, i;
@@ -372,7 +372,7 @@ do_com_tabstop(char *str)
     return 0;
 }
 
-int 
+int
 do_com_tab(char *str)
 {
     int             ts, val;
@@ -393,7 +393,7 @@ do_com_tab(char *str)
     return 0;
 }
 
-int 
+int
 do_com_error(char *str)
 {
     print_error("runtime_error");
@@ -725,7 +725,7 @@ int do_com_gosub(char *str)
         return 1;
     }
     gl->pc = fun = (CL *)atol(fn);
-	
+
     err = calc_line(gl->pc->str, gl->linebuf);
     if (err)	return err;
     fpara = gl->linebuf;
@@ -747,7 +747,7 @@ int do_com_gosub(char *str)
         print_error(error_buf);
         return 1;
         }
-        write_hash(gl->st->hs, fpara, para);	
+        write_hash(gl->st->hs, fpara, para);
     }
     if (*fpara) {
         sprintf(error_buf,"Too less Parameters %s",fpara);
@@ -784,7 +784,7 @@ int do_com_exit(char *str)
     return 1;
 }
 
-int 
+int
 do_com_for(char *str)
 {
     AD             *fo;
@@ -887,7 +887,7 @@ int do_com_next(const char *str)
 #define COMMAND2(str,string,len,func) if ( string[0]==str[0]\
 		&&!strncmp(string,str,len)) { char *s=str+len;\
 		if (func(s)) break; continue;}
-int 
+int
 run_prg(void)
 {
     int             err;

@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <math.h>
 #include "DNAml_rates_1_0.h"

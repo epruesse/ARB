@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <arbdb.h>
 #include "arbdb++.hxx"
@@ -53,13 +53,13 @@ char * ADT_COMPLEMENT::make_char_array()
 	for( int i=0 ; i <= 255 ; i++ ) {
 		local_char_array[i] = (char) i;
 	}
-	return local_char_array;	
+	return local_char_array;
 }
 
 //*******************
 AD_ERR * ADT_COMPLEMENT::complement_compile(void) {  //Veraendert Zeichensatz
 
-	delete char_array;			
+	delete char_array;
 	char_array = make_char_array();
 
 	char_array[(int)'C'] = 'G';
@@ -126,10 +126,10 @@ AD_ERR * ADT_COMPLEMENT::complement_buffers(void) {  //Puffer fuer Seq + Index
 	buffer_len = sequence_length;
 
 	seq_buff = (char *)calloc( ((int)buffer_len + 1), sizeof(char) );
-	memset(seq_buff, (int)'.', ((int)buffer_len)); 
+	memset(seq_buff, (int)'.', ((int)buffer_len));
 	sequence_buffer = seq_buff;
 
-	
+
 	ind_buff = (long *) calloc( ((int)buffer_len + 1), sizeof(long) );
 	ind_buff[buffer_len] = -1;
 	index_buffer = ind_buff;
@@ -174,8 +174,8 @@ ADT_SEARCH::ADT_SEARCH() {
 	replace_string		= NULL;
 	mistakes_allowed	= 0;
 	gaps			= -1;		//gaps werden nicht ignoriert
-	upper_eq_lower 		=  0;		//gross/KLEIN-Schreibung, 
-	t_equal_u 		=  0;		//t und u gleichbehandeln, 
+	upper_eq_lower 		=  0;		//gross/KLEIN-Schreibung,
+	t_equal_u 		=  0;		//t und u gleichbehandeln,
 	search_start_cursor_pos =  0;
 	replace_start_cursor_pos=  0;
 	search_direction 	= ADT_SEARCH_FORWARD;	//Vorwaertssuche
@@ -199,13 +199,13 @@ char * ADT_SEARCH::show_search_array()
 	for( int i=0 ; i <= 255 ; i++ ) {
 		search_array[i] = (char) i;
 	}
-	return search_array;	
+	return search_array;
 }
 
 //***********************************
 			//Veraendert Zeichensatz, Liefert Matchpattern ohne Gaps
-AD_ERR * ADT_SEARCH::compile(void) {		
-	delete search_array;			
+AD_ERR * ADT_SEARCH::compile(void) {
+	delete search_array;
 	search_array = show_search_array();
 
 	if(t_equal_u) {
@@ -229,11 +229,11 @@ AD_ERR * ADT_SEARCH::compile(void) {
 			char	*matchp_copy_loop;
 			char	*matchp_buffer_start, *matchp_buffer_loop;
 
-			matchp_buffer_start = matchp_buffer_loop = 
+			matchp_buffer_start = matchp_buffer_loop =
 							matchpattern_buffer;
 
-			for( matchp_copy_loop = matchpattern ; 
-				*matchp_copy_loop != '\0' ; 
+			for( matchp_copy_loop = matchpattern ;
+				*matchp_copy_loop != '\0' ;
 							matchp_copy_loop++ ) {
 				if(*matchp_copy_loop != '-') {
 					*matchp_buffer_loop  = *matchp_copy_loop;
@@ -254,7 +254,7 @@ AD_ERR * ADT_SEARCH::compile(void) {
 //	=> Pointer auf Sequenz-Puffer)
 //
 //**************************************************************************
-AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH 
+AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 				      *ptr_adt_search, ADT_EDIT *ptr_adt_edit) {
 
 	//-------------------------------------------------start sequencebuffer
@@ -269,7 +269,7 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 	//------------------------------------------memory for sequence-buffer
 	seq_buffer_start = (char *)calloc(strlen(seq_anfang)+1,sizeof(char));
 
-	if (!seq_buffer_start) { 
+	if (!seq_buffer_start) {
 //		printf("\n**** ERROR sequence-buffer no memory allocated");
 	}
 	seq_buffer_loop = seq_buffer_start;
@@ -278,7 +278,7 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 	//---------------------------------------------memory for index-buffer
 	seq_index_start = (long *) calloc(strlen(seq_anfang)+1,sizeof(long));
 
-	if (!seq_index_start) { 
+	if (!seq_index_start) {
 //		printf("\n**** ERROR index-buffer no memory allocated");
 	}
 	seq_index_loop = seq_index_start;
@@ -289,13 +289,13 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 	     seq_copy_loop++ ) {
 		if(*seq_copy_loop != '-') {
 			*(seq_buffer_loop++) = source;	//kopiert Zeichen
-			*(seq_index_loop++)  = seq_copy_loop - seq_anfang;	
+			*(seq_index_loop++)  = seq_copy_loop - seq_anfang;
 							//Index des Zeichens
 			}
 		}
 	*seq_buffer_loop	= '\0';
 	*seq_index_loop		= -1;
-	ptr_adt_search->seq_anfang = seq_buffer_start; //SEQUENCE START 
+	ptr_adt_search->seq_anfang = seq_buffer_start; //SEQUENCE START
 	//--------------------------------------------------end sequencebuffer
 
 	// -------------------------------------neu search/replace cursorstart
@@ -304,9 +304,9 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 					// Fuer die Neuberechnung der Startpos.
 	long	buffer_index = 0;		//zaehlvariable fuer
 						//Cursorberechnung
-	for(  buffer_index = 0 ; 
-			(seq_index_start[buffer_index] < 
-				   		       var_cursorpos_editor) && 
+	for(  buffer_index = 0 ;
+			(seq_index_start[buffer_index] <
+				   		       var_cursorpos_editor) &&
 				  (seq_index_start[buffer_index] != -1 ) ;
 							buffer_index++ ) {
 	}
@@ -320,13 +320,13 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 	if( ptr_adt_search->search_direction == ADT_SEARCH_FORWARD) {
 		if( (seq_index_start[buffer_index] == var_cursorpos_editor) &&
 						 (var_cursorpos_editor > 0) ) {
-			ptr_adt_search->search_start_cursor_pos = 
+			ptr_adt_search->search_start_cursor_pos =
 							   buffer_index + 1;
 		}
 		else {
-			ptr_adt_search->search_start_cursor_pos = 
+			ptr_adt_search->search_start_cursor_pos =
 							       buffer_index;
-		}	
+		}
 	} // end if
 	else {
 		ptr_adt_search->search_start_cursor_pos = buffer_index - 1;
@@ -345,7 +345,7 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 //**************************************************************************
 //
 //**************************************************************************
-AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH 
+AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH
 				    *ptr_adt_search, ADT_EDIT  *ptr_adt_edit) {
 
 	char	*seq_anfang;		//Sequenz
@@ -354,23 +354,23 @@ AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH
 	long	found_cursor_pos_buffer = ptr_adt_search->found_cursor_pos;
 
 	//--------------------------------found_cursor_pos nach Suche ohne Gaps
-	if (( ptr_adt_edit->found_matchp == 1 ) && 
+	if (( ptr_adt_edit->found_matchp == 1 ) &&
 			( ptr_adt_search->replace_option == ADT_NO_REPLACE )) {
-		ptr_adt_search->found_cursor_pos = 
+		ptr_adt_search->found_cursor_pos =
 		      ptr_adt_search->seq_index_start[found_cursor_pos_buffer];
 	}
 	//-------------------------------------------------END found_cursor_pos
 
 	//---------------------------------------rewrite Seq-Puffer auf Sequenz
 	if( ptr_adt_search->replace_option != ADT_NO_REPLACE )  {
-		seq_buffer_start = ptr_adt_search->seq_anfang; 	
+		seq_buffer_start = ptr_adt_search->seq_anfang;
 		seq_index_start  = ptr_adt_search->seq_index_start;
 		seq_anfang = get();
 
-		long	buffer_index = 0;		//zaehlvariable 
+		long	buffer_index = 0;		//zaehlvariable
  		register char source;
 
-		for( ; (source = seq_buffer_start[buffer_index]) ; 
+		for( ; (source = seq_buffer_start[buffer_index]) ;
 							     buffer_index++ ) {
 			*(seq_anfang + seq_index_start[buffer_index]) = source;
 		}
@@ -378,16 +378,16 @@ AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH
 		//-------------------------------------------------end rewrite
 
 		char	*replace_anfang	= ptr_adt_search->replace_string;
-		long	var_start_cursor_pos =  
+		long	var_start_cursor_pos =
 				       ptr_adt_search->replace_start_cursor_pos;
 
 		//--------------------------------------------cursorpos_editor
-		long  buffer_end_replace = 
+		long  buffer_end_replace =
 			var_start_cursor_pos + strlen(replace_anfang);
-	
-		ptr_adt_edit->actual_cursorpos_editor = 
+
+		ptr_adt_edit->actual_cursorpos_editor =
 			ptr_adt_search->seq_index_start[buffer_end_replace-1];
-					//  nur bei Suchrichtung 
+					//  nur bei Suchrichtung
 					//  "Vorwaerts" !!!
 		//----------------------------------------end cursorpos_editor
 
@@ -410,7 +410,7 @@ AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH
 //**************************************************************************
 //
 //**************************************************************************
-AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search, 
+AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 						     ADT_EDIT *ptr_adt_edit) {
 	AD_ERR	*ad_err;
 
@@ -420,19 +420,19 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 	ptr_adt_search->seq_anfang	=  get();
 
 
-					// Sicherheitsabfrage fuer die 
+					// Sicherheitsabfrage fuer die
 					// Rueckwaertssuche !!
-	if(ptr_adt_search->search_start_cursor_pos > len()) { 	
+	if(ptr_adt_search->search_start_cursor_pos > len()) {
 						//Cursorpos > Sequenzlaenge?
 		ptr_adt_search->search_start_cursor_pos = len() - 1;
 	}
 
 	//-----------------------------------------------------Sequenz puffern
  	if( (ptr_adt_search->gaps == 0) ||  (ptr_adt_search->gaps == 1) ) {
-		make_sequence_buffer(ptr_adt_search, ptr_adt_edit); 
+		make_sequence_buffer(ptr_adt_search, ptr_adt_edit);
 		///////////////////////////////////////////////////
 	} //end if,  >>Sequenz<< OHNE Gaps.
-	//---------------------------------------------------- end seq puffern 
+	//---------------------------------------------------- end seq puffern
 
 	//---------------------------------Sicherungskopie der Seq fuer REPLACE
 	if( ptr_adt_search->replace_option != ADT_NO_REPLACE ) {
@@ -441,7 +441,7 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 	//--------------------------------------------------END Sicherungskopie
 
 	//---------------------------------------korrigiert die Start Cursorpos
-				// bis Ende.., da erst search(), dann replace() 
+				// bis Ende.., da erst search(), dann replace()
 	if( ( (ptr_adt_search->replace_option == ADT_REPLACE_ONLY)         ||
 	      (ptr_adt_search->replace_option == ADT_REPLACE_AND_SEARCH_NEXT)||
 	      (ptr_adt_search->replace_option == ADT_REPLACE_REST_SEQUENCE)||
@@ -453,16 +453,16 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 	//----------------------------------------------------END start_cursor
 
 	//====================================================================
-	//=================================================while(replace_loop) 
+	//=================================================while(replace_loop)
 	long max_loop = this->seq_len;
 	do {						 // END Sequenz/Editor
 
-		//------------------------------------------------------SEARCH  
+		//------------------------------------------------------SEARCH
 		ptr_adt_edit->found_matchp = 0;
-						
+
 		show_edit_search(ptr_adt_search, ptr_adt_edit);
 		//////////////////////////////////////////////
-		//------------------------------------------------- END SEARCH 
+		//------------------------------------------------- END SEARCH
 
 		if( ((ptr_adt_search->replace_option == ADT_REPLACE_ONLY) ||
 		     (ptr_adt_search->replace_option == ADT_REPLACE_AND_SEARCH_NEXT)) &&
@@ -473,16 +473,16 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 		} // end if ( ... == ADT_REPLACE_ONLY)
 
 		else {
-			ptr_adt_search->replace_start_cursor_pos = 
+			ptr_adt_search->replace_start_cursor_pos =
 					      ptr_adt_search->found_cursor_pos;
 		}
 
-		//---------------------------------------------------- REPLACE 
-		if( (ptr_adt_edit->found_matchp == 1) && 
+		//---------------------------------------------------- REPLACE
+		if( (ptr_adt_edit->found_matchp == 1) &&
 			(ptr_adt_search->replace_option != ADT_NO_REPLACE) ) {
-						
+
 			ad_err = show_edit_replace(ptr_adt_search,ptr_adt_edit);
-				 //////////////////////////////////////////////	
+				 //////////////////////////////////////////////
 			if(ad_err) 	return ad_err;
 		}
 		//-------------------------------------------------END REPLACE
@@ -491,23 +491,23 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 		if( (ptr_adt_search->replace_option == ADT_REPLACE_AND_SEARCH_NEXT) &&
 		    (ptr_adt_search->string_replace == 1) )  		    {
 			ptr_adt_search->string_replace = 0;
-			ptr_adt_search->search_start_cursor_pos = 
+			ptr_adt_search->search_start_cursor_pos =
 				ptr_adt_edit->actual_cursorpos_editor + 1;
 			ptr_adt_search->replace_option = ADT_NO_REPLACE;
 		}
 						//---------end repl/find next
-		else  {	
+		else  {
 			if( (ptr_adt_search->replace_option == 	ADT_REPLACE_REST_SEQUENCE) ||
 			    (ptr_adt_search->replace_option == 	ADT_REPLACE_REST_EDITOR) )  {
 
 				replace_loop = ptr_adt_search->replace_loop_sequence;
-				ptr_adt_search->search_start_cursor_pos = 
+				ptr_adt_search->search_start_cursor_pos =
 						( ptr_adt_edit->actual_cursorpos_editor + 1 );
 
 					// ABBRECHEN, sonst naechste Sequenz
 				if( replace_loop == ADT_STOPP_REPLACE ) {
 					ptr_adt_edit->found_matchp = 1;
-				} 
+				}
 				if (max_loop-- <0) replace_loop = ADT_STOPP_REPLACE;
 			} else {
 				replace_loop = ADT_STOPP_REPLACE;
@@ -535,20 +535,20 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 //			printf("**** ERROR  ADT_SEARCH	show_edit_replace(), put() \n");
 			return  ad_err;
 		}
- 		
+
 		show_update();
 	}
 	//---------------------------------------------------end write into DB
 
-	if( (ptr_adt_edit->found_matchp == 1) && 
-				      (ptr_adt_search->string_replace == 0) ) {	
-		ptr_adt_edit->actual_cursorpos_editor = 
+	if( (ptr_adt_edit->found_matchp == 1) &&
+				      (ptr_adt_search->string_replace == 0) ) {
+		ptr_adt_edit->actual_cursorpos_editor =
 					       ptr_adt_search->found_cursor_pos;
 	}
 
 					//   nichts gefunden,
 	//---------------------------------- cursorpos in next sequence
-	if( (ptr_adt_edit->found_matchp == 0)  ||  
+	if( (ptr_adt_edit->found_matchp == 0)  ||
 	    (ptr_adt_search->replace_option == ADT_REPLACE_REST_EDITOR) ) {
 		if( ptr_adt_search->search_direction == ADT_SEARCH_FORWARD ) {
 			ptr_adt_edit->actual_cursorpos_editor   = 0;
@@ -573,17 +573,17 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_search(ADT_SEARCH *ptr_adt_search,
 //**************************************************************************
 //
 //**************************************************************************
-AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search, 
+AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 						      ADT_EDIT *ptr_adt_edit) {
 
 	char	*seq_anfang, *seq_loop_start, *seq_loop_ptr;	// Suche Sequenz
-	char	*matchp_anfang, *matchp_loop_ptr;		// Suche 
+	char	*matchp_anfang, *matchp_loop_ptr;		// Suche
 								// Matchpattern
 
 	long	matchp_len;
 	long	vorgabefehler, realfehler=0, equal_chars;
 	long	seq_empty_var;
-	long 	search_var;	
+	long 	search_var;
 
 	search_var	=  ptr_adt_search->search_direction;
 
@@ -599,7 +599,7 @@ AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 	seq_loop_start	=  seq_anfang + var_start_cursor_pos;
 
 	//---------------------------------------------------------start search
-	for(  ; (*seq_loop_start != '\0') && 
+	for(  ; (*seq_loop_start != '\0') &&
 				(seq_loop_start >= seq_anfang) ;
 				 seq_loop_start+=search_var )     {
 		realfehler  = 0;
@@ -608,11 +608,11 @@ AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 
 		for( matchp_loop_ptr=matchp_anfang ; *matchp_loop_ptr != '\0' ;
  							matchp_loop_ptr++ ) {
-			
+
 		       unsigned char index_seq = *(unsigned char *)seq_loop_ptr;
 		       unsigned char index_mat=*(unsigned char*)matchp_loop_ptr;
 			char i_s = ptr_adt_search->search_array[(int)index_seq];
- 			char i_m = ptr_adt_search->search_array[(int)index_mat]; 			
+ 			char i_m = ptr_adt_search->search_array[(int)index_mat];
 			if( i_m == '?' ) {	// Wilde Karten
 				equal_chars++;
 			}
@@ -623,15 +623,15 @@ AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 				else {
 					equal_chars++;
 				}
-						//   mehr Fehler als erlaubt?	
+						//   mehr Fehler als erlaubt?
 			if(realfehler > vorgabefehler) {
 				ptr_adt_edit->found_matchp = 0;
 				break;
 			}
-					//gefunden? (noetig, da Restsequenz 
-					//kuerzer 
-					//als Suchstringlaenge sein kann.)   
-					//Fehler + Uebereinstimmungen = Laenge 
+					//gefunden? (noetig, da Restsequenz
+					//kuerzer
+					//als Suchstringlaenge sein kann.)
+					//Fehler + Uebereinstimmungen = Laenge
 					//des Matchpatterns
 			if(realfehler+equal_chars == matchp_len) {
 				ptr_adt_edit->found_matchp = 1;
@@ -640,29 +640,29 @@ AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 			}
 
 			seq_loop_ptr++;		//  Ende der Sequenz erreicht?
-			if( *seq_loop_ptr == '\0') {		// 
+			if( *seq_loop_ptr == '\0') {		//
 				seq_empty_var = 1;
 				break;
 			}
 
 		} // end for()
 
-		if( *(seq_loop_ptr+1) == '\0') {	
-			ptr_adt_search->replace_loop_sequence = 
+		if( *(seq_loop_ptr+1) == '\0') {
+			ptr_adt_search->replace_loop_sequence =
 							    ADT_STOPP_REPLACE;
 		}
 		//----------------------------------------search end found y/n
 
 		//---------------------------------found cursorpos in sequence
 		if( ptr_adt_edit->found_matchp == 1)  {
-			ptr_adt_search->found_cursor_pos = 
+			ptr_adt_search->found_cursor_pos =
 						  seq_loop_start - seq_anfang;
 			break;
 		}
 		//-----------------------------------end cursorpos in sequence
 
 		if( (ptr_adt_search->replace_option == ADT_REPLACE_ONLY) ||
-		    (ptr_adt_search->replace_option == 
+		    (ptr_adt_search->replace_option ==
 					       ADT_REPLACE_AND_SEARCH_NEXT)) {
 			break;		 //for schleife nur einmal ausfuehren.
 		}
@@ -678,17 +678,17 @@ AD_ERR * ADT_SEQUENCE::show_edit_search(ADT_SEARCH *ptr_adt_search,
 
 //**************************************************************************
 //
-//	Ueberprueft zuerst, ob die Sequenz ab der Cursorposition mit dem 
+//	Ueberprueft zuerst, ob die Sequenz ab der Cursorposition mit dem
 //	Matchpattern uebereinstimmt. Wenn ja, dann erfolgt die Ersetzung.
 //	Mit GAPS: durch remove(), und insert() der AD_SEQ-Klasse;
-//	Ohne Gaps: direktes ueberschreiben im Sequenzpuffer, danach 
+//	Ohne Gaps: direktes ueberschreiben im Sequenzpuffer, danach
 //		ueberschreiben der Sequenzkopie im Cache.
-//	Beide Varianten schreiben die geaenderte Sequenz mittels put() in 
+//	Beide Varianten schreiben die geaenderte Sequenz mittels put() in
 //	die Datenbank zurueck. (Security-Level nicht vergessen!!)
-// 
+//
 //**************************************************************************
-AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search, 
-							ADT_EDIT *ptr_adt_edit) 
+AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search,
+							ADT_EDIT *ptr_adt_edit)
 
 {
 	char	*seq_anfang, *seq_loop_start, *seq_loop_ptr;	// Sequenz
@@ -700,8 +700,8 @@ AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search,
 	replace_anfang			=  ptr_adt_search->replace_string;
 	seq_anfang			=  ptr_adt_search->seq_anfang;
 
-	ptr_adt_search->string_replace = 0; 
-	long	var_start_cursor_pos	=  
+	ptr_adt_search->string_replace = 0;
+	long	var_start_cursor_pos	=
 				       ptr_adt_search->replace_start_cursor_pos;
 
 	seq_loop_start = seq_anfang + var_start_cursor_pos;
@@ -717,13 +717,13 @@ AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search,
 
 		//----------------------------------------------------replace
 		seq_loop_ptr = seq_loop_start;
-		for( replace_loop_ptr = replace_anfang ; 
+		for( replace_loop_ptr = replace_anfang ;
 			    *replace_loop_ptr != '\0' ; replace_loop_ptr++ ) {
 			*seq_loop_ptr = *replace_loop_ptr;
 			seq_loop_ptr++;
 		} // end for()
 	} // end if(match_len == replace_len)
-	
+
 	else {
 		//-----------------------------------------------------remove
 		ad_err = remove( strlen(matchp_anfang),
@@ -736,8 +736,8 @@ AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search,
 		}
 
 		//-----------------------------------------------------insert
-		else if( strlen(replace_anfang) != 0 ){			
-			ad_err = insert( replace_anfang, 
+		else if( strlen(replace_anfang) != 0 ){
+			ad_err = insert( replace_anfang,
 					(int)var_start_cursor_pos ,1 );
 
 			if (ad_err) {	// Fehler bei replace
@@ -749,10 +749,10 @@ AD_ERR * ADT_SEQUENCE::show_edit_replace(ADT_SEARCH *ptr_adt_search,
 			ptr_adt_search->seq_anfang = get();
 		}
 	}
-	//========================================================END REPLACE 
+	//========================================================END REPLACE
 	//-------------------------------------------------- Cursorpos Editor
-	ptr_adt_edit->actual_cursorpos_editor = 
-				   ptr_adt_search->replace_start_cursor_pos + 
+	ptr_adt_edit->actual_cursorpos_editor =
+				   ptr_adt_search->replace_start_cursor_pos +
 						   strlen(replace_anfang) - 1;
 	//-----------------------------------------------------END Cursorpos
 
@@ -780,12 +780,12 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_compl(
 
 	//-------------------------------------------------------- border check
 	if( ptr_adt_complement->take_borders == YES ) {
-		if( (ptr_adt_complement->sequence_length - 1) < 
+		if( (ptr_adt_complement->sequence_length - 1) <
 							ptr_adt_complement->right_border )  {
-			ptr_adt_complement->right_border = 
+			ptr_adt_complement->right_border =
 							ptr_adt_complement->sequence_length - 1;
 		}
-		if( (ptr_adt_complement->sequence_length - 1) < 
+		if( (ptr_adt_complement->sequence_length - 1) <
 							ptr_adt_complement->left_border )  {
 			return 0;
 		}
@@ -818,7 +818,7 @@ AD_ERR * ADT_SEQUENCE::show_edit_seq_compl(
 //			printf("**** ERROR  ADT_COMPLEMENT, no rewrite into DB\n");
 			return  ad_err;
 		}
- 		
+
 		show_update();
 	}
 	//---------------------------------------------------end write into DB
@@ -835,13 +835,13 @@ printf("Alignment-name:		%s\n", ptr_adt_complement->alignment_name );
 printf("SEQUENCE:\n");
 //printf("SEQUENCE:   (ab Cursorpos 200)\n");
 	//seq_loop+=200;
-	for(int k=0; (k<100) && (*seq_loop); k++) { 
+	for(int k=0; (k<100) && (*seq_loop); k++) {
 		printf("%c", *seq_loop);
 		seq_loop++;
 	}
 	printf("\n");
 printf("alignment_length:	%d\n", ptr_adt_complement->alignment_length );
-printf("Borders [left..right]:	[%d  ..  %d]\n", 
+printf("Borders [left..right]:	[%d  ..  %d]\n",
 	ptr_adt_complement->left_border, ptr_adt_complement->right_border );
 printf("seq_is_complemented:	%d\n", ptr_adt_complement->seq_is_complemented );
 printf("seq_is_inverted:	%d\n", ptr_adt_complement->seq_is_inverted );
@@ -884,7 +884,7 @@ AD_ERR * ADT_SEQUENCE::show_edit_complement(ADT_COMPLEMENT *ptr_adt_complement,
 	//-------------------------------------------------------end Intervall
 
 	//-------------------------------------------------erledigt complement
-	for( compl_loop = compl_start; 
+	for( compl_loop = compl_start;
 	     (*compl_loop) && (compl_loop <= right_border) ; compl_loop++ )  {
 		*compl_loop = ptr_adt_complement->char_array[(int)*compl_loop];
 	}
@@ -948,10 +948,10 @@ AD_ERR * ADT_SEQUENCE::show_edit_invert(ADT_COMPLEMENT *ptr_adt_complement,
 		index_buffer_loop	= index_buffer_loop_start;
 
 	//========================================== kopieren der Seq in Puffer
-	for( sequence_loop = sequence_loop_start; 
+	for( sequence_loop = sequence_loop_start;
 		( source = *sequence_loop) && (sequence_loop <= right_border) ;
 											 sequence_loop++ ) {
-		if( !((source == '-') || (source == '.')) )   
+		if( !((source == '-') || (source == '.')) )
 		{	*( seq_buffer_loop++ )	= source;
 			*( index_buffer_loop++ )	= sequence_loop - sequence;
 			char_counter++;
@@ -992,20 +992,20 @@ AD_ERR * ADT_SEQUENCE::show_edit_invert(ADT_COMPLEMENT *ptr_adt_complement,
 	sequence_loop = sequence_loop_start;
 
 	if(ptr_adt_complement->remove_gaps_points == YES) {
-		for( seq_buffer_loop = seq_buffer_loop_start ; 
+		for( seq_buffer_loop = seq_buffer_loop_start ;
 		    (source = *seq_buffer_loop) && (seq_buffer_loop <= right_border);
-											 seq_buffer_loop++ ) { 
+											 seq_buffer_loop++ ) {
 			*(sequence_loop++) = source;
 		}
 	}
 	else {		//////////// ptr_adt_complement->remove_gaps_points == NO
-		for(	; (source = seq_buffer[buffer_index]) && 
+		for(	; (source = seq_buffer[buffer_index]) &&
 			  	(seq_buffer[buffer_index] != '.');
 			buffer_index++) {
 			*(sequence + index_buffer[buffer_index]) = source;
-			
-		} 
-	}		
+
+		}
+	}
 	//=========================================== end ueberschreiben der Seq
 	ptr_adt_complement->seq_is_inverted = YES;
 

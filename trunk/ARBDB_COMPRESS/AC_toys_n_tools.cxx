@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <math.h>
 
@@ -14,10 +14,10 @@
 
 
 
-	
+
 //*********************************************************************
 //
-//	zur Festlegung der Sortierrichtung des ARRAYS bei dem 
+//	zur Festlegung der Sortierrichtung des ARRAYS bei dem
 //	Funktionsaufruf von:
 //
 //				GB_mergesort()
@@ -43,16 +43,16 @@ long seq_info_cmp(void *i,void *j, char *)
 
 //*********************************************************************
 //
-//		get_intersection_expglaettg		  
-//		
+//		get_intersection_expglaettg
+//
 //	diese Funktion bestimmt den Schnittpunkt folgendermassen:
 //
 //
 //*********************************************************************
-	
+
 double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_of)
 {
-	
+
 	AC_SEQUENCE_INFO	**array_ptr = sort_array;
 
 	double	x, prev_x  = 0;			// Relationship
@@ -63,23 +63,23 @@ double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_
 	double	base    = 0;			// Basis fuer Exponentialfunktion
 	double  nenner	= 0;
 	double  zaehler = 0;
-	double	potenz_nenner  = 0;	
-	double	potenz_zaehler = 0;	
+	double	potenz_nenner  = 0;
+	double	potenz_zaehler = 0;
 	double	intersection_value = 0;		// Schnittpunkt
-	long	anzahl_aller_seq  = 0; 
+	long	anzahl_aller_seq  = 0;
 	long	anzahl_seq_links  = 0;
 	long	anzahl_seq_rechts = 0;
 	long 	dekrement   = 0;
 
 	double	min_x  = 0;		// Min Relationship -> Schnittpunkt
 	double	min_zpar   = 0;			// Minimum
-	double	min_max_anzahl_lire_product = 0;  // maximales Produkt aus 
-						  // 	AnzahlLinkerSeqs x AnzahlRechterSeqs 
+	double	min_max_anzahl_lire_product = 0;  // maximales Produkt aus
+						  // 	AnzahlLinkerSeqs x AnzahlRechterSeqs
 						  // 	eines Minimums !!!
 	long	min_sequenznumber  = 0;		// Nummer der Sequenz
 
 	dekrement    = number_of;
-	anzahl_aller_seq  = number_of; 	
+	anzahl_aller_seq  = number_of;
 	anzahl_seq_links  = 0;
 	anzahl_seq_rechts = anzahl_aller_seq;	// schnittpkt wird die erste seq des re knotens
 
@@ -90,7 +90,7 @@ double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_
 
 	//-------------------------------- f(x[i]) = f(x[i-1]) * ( 1/32^[f(x[i])-f(x[i-1])] +1 )
 	for( array_ptr,dekrement; 0 < dekrement; )  {
-		
+
 		//------------------------------------------ Zuweisung Relationship
 		x = (*array_ptr)->relationship;
 		//------------------------------------- Ende Zuweisung Relationship
@@ -98,7 +98,7 @@ double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_
 		//---------------------------------------- Bestimmung der Abstaende
 		y = x - prev_x;
 		//----------------------------------- Ende Bestimmung der Abstaende
-		
+
 		//------------------------------------------------ Glaettungsfunktion
 		if( dekrement == number_of )  {		// NUR BEI erster Sequenz "LEFTEND" !!
 			z = 1;
@@ -134,7 +134,7 @@ double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_
 		//------------------------------------------ Ende Gewichtungsfunktion
 
 		//------------------------------------- Bestimmung des Schnittpunktes
-		if(   (zpar < min_zpar) || 
+		if(   (zpar < min_zpar) ||
 		     ((zpar == min_zpar) && (anzahl_lire_product > min_max_anzahl_lire_product))   )  {
 			min_x = x;
 			min_zpar  = zpar;
@@ -160,7 +160,7 @@ double	get_intersection_expglaettg(AC_SEQUENCE_INFO **sort_array, double number_
 #endif
 
 		prev_y = y;
-		prev_x = x; 
+		prev_x = x;
 		prev_z  = z;
 
 

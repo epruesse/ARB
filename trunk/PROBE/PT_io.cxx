@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <string.h>
 #include <PT_server.h>
@@ -10,14 +10,14 @@
 extern "C" { char *gbs_malloc_copy(char *,long); }
 
 
-/* change a sequence with normal bases the PT_? format and delete all other signs */ 
+/* change a sequence with normal bases the PT_? format and delete all other signs */
 int compress_data(char *probestring)
 {
     char	c;
     char	*src,
         *dest;
     dest = src = probestring;
-	
+
     while((c=*(src++)))
     {
         switch (c) {
@@ -35,7 +35,7 @@ int compress_data(char *probestring)
             case 'n': *(dest++) = PT_N;break;
             default: break;
         }
-		
+
     }
     *dest = PT_QU;
     return 0;
@@ -49,7 +49,7 @@ int PT_base_2_string(char *id_string, long len)
         *dest;
     if (!len) len = strlen(id_string);
     dest = src = id_string;
-	
+
     while((len--)>0){
         c=*(src++);
         switch (c) {
@@ -61,7 +61,7 @@ int PT_base_2_string(char *id_string, long len)
             case 0:	*(dest++) = '0'; break;
             default: *(dest++) = c;break;
         }
-		
+
     }
     *dest = '\0';
     return 0;
@@ -99,9 +99,9 @@ int probe_compress_sequence(char *seq)
         tab['G'] = tab['g'] = PT_G;
         tab['T'] = tab['t'] = PT_T;
         tab['U'] = tab['u'] = PT_T;
-        tab['.'] = PT_QU;		 
+        tab['.'] = PT_QU;
     }
-		
+
     char *dest;
     uchar c;
     char *source;

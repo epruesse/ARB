@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/tcsh
 
 # Liblink
 
@@ -25,8 +25,8 @@ ln -s ../WINDOW/libAW.so LIBLINK/libAW.so
 ln -s ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0
 
 # Motif stuff
-ln -s ../Motif/libXm.so.2 LIBLINK/libXm.so.2
-ln -s /usr/lib/Motif1.2/libXm.1 LIBLINK/libXm.sl
+ln -s $MOTIF_LIBPATH LIBLINK/libXm.so.3
+ln -s $LIBDIR/libXm.1.dylib LIBLINK/libXm.sl
 
 # Links in bin directory
 cd bin

@@ -6,7 +6,7 @@
 #include <aw_preset.hxx>
 #include <demo.hxx>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 AW_HEADER_MAIN;

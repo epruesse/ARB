@@ -10,7 +10,7 @@
 //#include <xview/panel.h>
 #include <arbdb.h>
 #include <arbdbt.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>

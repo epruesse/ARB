@@ -1,6 +1,6 @@
 
 #include <ctype.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <stdlib.h>
 
 #include "ali_misc.hxx"
@@ -81,7 +81,7 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *sequence,
     d = -1.0 * context->ext_max_weight / (float) pt_ext_list->cardinality();
 
     /*
-     * calculate the extension of the family 
+     * calculate the extension of the family
      */
     number = 0;
     while (!pt_ext_list->is_empty()) {
@@ -180,7 +180,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     /*
      * allocate memory for costs
      */
-    
+
     base_weights = (float (**) [4]) CALLOC((unsigned int) prof_len,	sizeof(float [4]));
     //base_weights = (float (*) [1][4]) CALLOC((unsigned int) prof_len,	sizeof(float [4]));
     sub_costs = (float (**) [6])  CALLOC((unsigned int) prof_len,		sizeof(float [6]));
@@ -192,7 +192,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     //gap_costs = (float *(*)[1]) CALLOC((unsigned int) prof_len,		sizeof(float *));
     gap_percents = (float***) CALLOC((unsigned int) prof_len,		sizeof(float *));
     //gap_percents = (float*(*)[1]) CALLOC((unsigned int) prof_len,		sizeof(float *));
-    if (binding_costs == 0 || sub_costs == 0 || lmin == 0 || lmax == 0 || 
+    if (binding_costs == 0 || sub_costs == 0 || lmin == 0 || lmax == 0 ||
         gap_costs == 0 || gap_percents == 0 || base_weights == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -218,7 +218,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
          */
         for (i = 0; i < 7; i++)
             a[i] = w[i] = sm[5][i] = sm[i][5] = sm[6][i] = sm[i][6] = 0.0;
-        for (i = 0; i < 6; i++) 
+        for (i = 0; i < 6; i++)
             (*sub_costs)[p][i] = 0.0;
         w_sum = 0.0;
         w_bg_sum = 0.0;
@@ -244,7 +244,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
         /*
          * Relative weight of bases
          */
-        if (w_sum != 0) 
+        if (w_sum != 0)
             for (i = 0; i < 4; i++)
                 (*base_weights)[p][i] = w[i] / w_sum;
         else
@@ -391,7 +391,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
 /*
  * find the next helix
  */
-int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len, 
+int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
                                  unsigned long pos,
                                  unsigned long *helix_nr,
                                  unsigned long *start, unsigned long *end)
@@ -399,7 +399,7 @@ int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
     unsigned long i;
 
     for (i = pos; i < h_len && !isdigit(h[i]); i++);
-    if (i >= h_len) 
+    if (i >= h_len)
         return -1;
 
     *start = i;
@@ -423,7 +423,7 @@ int ALI_PROFILE::find_comp_helix(char h[], unsigned long h_len,
     i = pos;
     do {
         for (; i < h_len && !isdigit(h[i]); i++);
-        if (i >= h_len) 
+        if (i >= h_len)
             return -1;
         *start = i;
         sscanf(&h[i],"%ld",&nr);
@@ -456,7 +456,7 @@ int ALI_PROFILE::map_helix(char h[], unsigned long h_len,
     unsigned long p1, p2;
     unsigned long last1, last2;
 
-    if (end1 >= h_len || end2 >= h_len || start1 > end1 || start2 > end2) 
+    if (end1 >= h_len || end2 >= h_len || start1 > end1 || start2 > end2)
         ali_fatal_error("Inconsistent parameters","ALI_PROFILE::map_helix()");
 
     p1 = start1;
@@ -508,7 +508,7 @@ void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context)
     //helix = (long (*) [1]) CALLOC((unsigned int) helix_len, sizeof(long));
     helix_borders = (char **) CALLOC((unsigned int) helix_len, sizeof(long));
     //helix_borders = (char (*) [1]) CALLOC((unsigned int) helix_len, sizeof(long));
-    if (helix == 0 || helix_borders == 0) 
+    if (helix == 0 || helix_borders == 0)
         ali_fatal_error("Out of memory");
 
     /*
@@ -522,8 +522,8 @@ void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context)
 }
 
 
-ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *sequence, ALI_PROFILE_CONTEXT *context) 
-{ 
+ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *sequence, ALI_PROFILE_CONTEXT *context)
+{
     char message_buffer[100];
     ali_family_member *family_member;
     ALI_TLIST<ali_family_member *> *family_list;
@@ -603,7 +603,7 @@ ALI_PROFILE::~ALI_PROFILE(void)
 /*
  * test whether a position is inside a helix
  */
-int ALI_PROFILE::is_in_helix(unsigned long pos, 
+int ALI_PROFILE::is_in_helix(unsigned long pos,
                              unsigned long *first, unsigned long *last) {
     long i;
 
@@ -654,7 +654,7 @@ int ALI_PROFILE::is_in_helix(unsigned long pos,
 /*
  * test, whether a position is outside a helix
  */
-int ALI_PROFILE::is_outside_helix(unsigned long pos, 
+int ALI_PROFILE::is_outside_helix(unsigned long pos,
                                   unsigned long *first, unsigned long *last) {
     long i;
 
@@ -703,7 +703,7 @@ int ALI_PROFILE::is_outside_helix(unsigned long pos,
  */
 char *ALI_PROFILE::cheapest_sequence(void)
 {
-   
+
     char *seq;
     size_t p;
     int i, min_i;
@@ -744,8 +744,8 @@ char *ALI_PROFILE::cheapest_sequence(void)
 /*
  * calculate the costs of a binding
  */
-float ALI_PROFILE::w_binding(unsigned long first_seq_pos, 
-                             ALI_SEQUENCE *sequence) 
+float ALI_PROFILE::w_binding(unsigned long first_seq_pos,
+                             ALI_SEQUENCE *sequence)
 {
     unsigned long pos_1_seq, pos_2_seq, last_seq_pos;
     long pos_compl;
@@ -767,5 +767,5 @@ float ALI_PROFILE::w_binding(unsigned long first_seq_pos,
 
     return costs;
 }
-		
-		  
+
+

@@ -29,7 +29,7 @@
 #define MINCAT 4    /* discrete Gamma categories */
 #define MAXCAT 16
 
-#define RMHROOT    5.0     /* upper relative bound for height of root         */    
+#define RMHROOT    5.0     /* upper relative bound for height of root         */
 #define MAXARC     900.0   /* upper limit on branch length (PAM) = 6.0        */
 #define MINARC     0.001   /* lower limit on branch length (PAM) = 0.00001    */
 #define EPSILON    0.0001  /* error in branch length (PAM) = 0.000001         */
@@ -132,7 +132,7 @@ EXTERN int approxp_optn;   /* approximate parameter estimation                */
 EXTERN int chi2fail;       /* flag for chi2 test                              */
 EXTERN int Converg;        /* flag for ML convergence (no clock)              */
 EXTERN int Convergc;       /* flag for ML convergence (clock)                 */
-EXTERN int data_optn;      /* type of sequence input data                     */  
+EXTERN int data_optn;      /* type of sequence input data                     */
 EXTERN int Dayhf_optn;     /* Dayhoff model                                   */
 EXTERN int HKY_optn;       /* use HKY model                                   */
 EXTERN int Jtt_optn;       /* JTT model                                       */
@@ -173,7 +173,7 @@ EXTERN int bestratefound;
 /* function prototypes of all ml function */
 
 void convfreq(dvector);
-void radixsort(cmatrix, ivector, int, int, int *);
+void a_radixsort(cmatrix, ivector, int, int, int *);
 void condenceseq(cmatrix, ivector, cmatrix, ivector, int, int, int);
 void countconstantsites(cmatrix, ivector, int, int, int *, int*);
 void evaluateseqs(void);

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -27,21 +27,21 @@ extern AW_window *preset_window( AW_root *root );
 extern AW_window *genetic_window(AW_root *root);
 
 AW_window *create_kernighan_window(AW_root *aw_root) {
-    
+
        	AW_window_simple *aws = new AW_window_simple;
 	aws->init( aw_root, "OPTIMIZATION_PROPS", "Kernighan Lin Properties", 10, 10 );
 	aws->load_xfig("PARS/kernlin.fig");
 	aws->button_length( 10 );
-	
+
 	aws->at("close");
 	aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
-	
-	
+	aws->create_button("CLOSE","CLOSE","C");
+
+
 	aws->at("help");
 	aws->callback((AW_CB1)AW_POPUP_HELP,(AW_CL)"kernlin.hlp");
-	aws->create_button("HELP","HELP","H");			   
-	
+	aws->create_button("HELP","HELP","H");
+
 	aws->button_length( 6 );
 
 	aws->at("nodes");
@@ -67,7 +67,7 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 	aws->at("input_10");
 	aws->create_input_field("genetic/kh/static/depth4");
 
-	
+
 	aws->at("dynamic");
 	aws->create_toggle("genetic/kh/dynamic/enable");
 
@@ -79,7 +79,7 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 	aws->at("maxy");
 	aws->create_input_field("genetic/kh/dynamic/maxy");
 
-#if 0	
+#if 0
 	aws->at("button_4");
        	aws->create_option_menu("genetic/kh/function_type",0,"");
 	aws->insert_option("start_x^2","d",AP_QUADRAT_START);
@@ -89,4 +89,4 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 #endif
 	return (AW_window *)aws;
 }
-	
+

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <arbdb.h>
 int main(int argc,char **argv)
 {
@@ -7,7 +7,7 @@ int main(int argc,char **argv)
     char *path;
     GB_ERROR fehler;
 	char *species_name;
-    if(argc==1) path=":"; 
+    if(argc==1) path=":";
     else path=argv[1];
     gb_main=GB_open(path,"r");
     if(!gb_main)
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
         return(-1);
     }
     fehler=GB_begin_transaction(gb_main);
-    if(fehler) 
+    if(fehler)
     {
         printf("fehler:%s\n",fehler);
         return(-1);
@@ -30,14 +30,14 @@ int main(int argc,char **argv)
         free(species_name);
         gb_speciesname=GB_search(gb_species,"full_name",GB_FIND);
         if(!gb_speciesname) printf("\n");
-        else 
+        else
         {
             species_name=GB_read_string(gb_speciesname);
             printf("   %s\n",species_name);
             free(species_name);
-        }   
+        }
     }
     GB_commit_transaction(gb_main);
-}  
-   
+}
+
 

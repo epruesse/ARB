@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <client_privat.h>
 #include <client.h>
 #include <arbdb.h>

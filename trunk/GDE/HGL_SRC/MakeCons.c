@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include "global_defs.h"
 
 main(ac,av)
@@ -16,10 +16,10 @@ main(ac,av)
     if(ac == 1)
     {
 	fprintf(stderr, "Usage:\n");
-	fprintf(stderr, 
+	fprintf(stderr,
 		"%s %s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n",
 		av[0],
-		"sequence-file", 
+		"sequence-file",
 		"[-iupac]            IUPAC consensus. Default",
 		"[-majority percent] Majority consensus (default percent: 75)",
 		"[-maskv colorv]     Variable position color",
@@ -31,14 +31,14 @@ main(ac,av)
     }
 
     InitRecord(&cons);
-    
+
     if((file = fopen(av[1],"r")) == NULL)
     {
 	fprintf(stderr, "Can't open sequence-file %s.\n", av[1]);
 	exit(1);
     }
 
-    
+
     master = (Sequence*)Calloc(maxsize,sizeof(Sequence));
 
     cursize = 0;
@@ -127,7 +127,7 @@ main(ac,av)
 	    fprintf(maskout_fp, "length:%d\n", cons.seqlen);
 	    fprintf(maskout_fp, "start:\n");
 	}
-	
+
 	if((cons_type == 'i' &&
 	    MakeConsensus(master,cursize,&cons,0,cons_type)==FALSE) ||
 	   (cons_type == 'm' &&
@@ -146,9 +146,9 @@ main(ac,av)
 	    exit(1);
 	}
 
-	/*WriteRecord(stdout, &cons, NULL, 0); 
+	/*WriteRecord(stdout, &cons, NULL, 0);
 	printf("\n\n");*/
-	
+
 	if(maskout_fp == NULL)
 	{
 	    maskout_fp = stdout;

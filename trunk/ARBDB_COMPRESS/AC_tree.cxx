@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <math.h>
 
@@ -42,7 +42,7 @@ AC_SEQUENCE_LIST::~AC_SEQUENCE_LIST()  {
 //
 //	class AC_SEQUENCE_LIST:: remove_sequence()
 //
-//		gibt den Speicher der Liste wieder frei 	
+//		gibt den Speicher der Liste wieder frei
 //
 //*********************************************************************
 void	AC_SEQUENCE_LIST::remove_sequence(AC_SEQUENCE_INFO *sequence)  {
@@ -61,7 +61,7 @@ void	AC_SEQUENCE_LIST::remove_sequence(AC_SEQUENCE_INFO *sequence)  {
 //
 //	class AC_SEQUENCE_LIST:: remove_sequence_list()
 //
-//		gibt den Speicher der Liste wieder frei 	
+//		gibt den Speicher der Liste wieder frei
 //
 //*********************************************************************
 void	AC_SEQUENCE_LIST::remove_sequence_list(AC_SEQUENCE_INFO *sequence_list)  {
@@ -96,7 +96,7 @@ void AC_SEQUENCE_LIST::insert( AC_SEQUENCE_INFO *new_seq)  {
 	if (this->sequences) this->sequences->previous = new_seq;
 	this->sequences = new_seq;
 	new_seq->previous = NULL;
-	
+
 	this->nsequences = ++this->nsequences;
 
 } // end AC_SEQUENCE_LIST::insert()
@@ -128,7 +128,7 @@ AC_SEQUENCE_INFO  *AC_SEQUENCE_LIST::get_high_quality_sequence()  {
 #endif
 
 	for( ptr = ac_sequence_info ; ptr ; ptr = ptr->next )
-	{	
+	{
 		if( maximum < ptr->seq->quality ) {
 			maximum = ptr->seq->quality;
 			highest_quality_sequence = ptr;
@@ -142,7 +142,7 @@ AC_SEQUENCE_INFO  *AC_SEQUENCE_LIST::get_high_quality_sequence()  {
 #endif
 
 	} // endfor
-	
+
 //printf("\n\nMaxQuality :  %d\n\n", maximum);
 
 
@@ -158,7 +158,7 @@ AC_SEQUENCE_INFO  *AC_SEQUENCE_LIST::get_high_quality_sequence()  {
 //
 //	class AC_SEQUENCE_LIST::determine_distances_to()
 //
-//		bestimmt die reale_Distanz und 
+//		bestimmt die reale_Distanz und
 //		bestimmt die relative Distanz
 //		zwischen zwei Sequenzen.
 //
@@ -205,7 +205,7 @@ void AC_SEQUENCE_LIST::determine_distances_to(AC_SEQUENCE_INFO *reverence_seq,
 //
 //	class AC_SEQUENCE_LIST::get_seq_with_max_dist_to()
 //
-//		liefert die erste Sequence mit 
+//		liefert die erste Sequence mit
 //			dem groessten Abstand
 //		bei
 //			der groessten Qualitaet
@@ -224,14 +224,14 @@ AC_SEQUENCE_INFO  *AC_SEQUENCE_LIST::get_seq_with_max_dist_to()  {
 	ac_sequence_info = this->sequences;
 
 	for( ptr = ac_sequence_info ; ptr ; ptr = ptr->next )
-	{	
+	{
 		product = ptr->relative_leftdistance * ptr->seq->quality;
 		if( maxvalue <= product ) {
 			maxvalue = product;
 			seq_with_max_dist = ptr;
 		} // endif
 	} // endfor
-	
+
 	if( 0 == maxvalue )  seq_with_max_dist = NULL;
 
 	return seq_with_max_dist;
@@ -244,27 +244,27 @@ AC_SEQUENCE_INFO  *AC_SEQUENCE_LIST::get_seq_with_max_dist_to()  {
 //
 //	class AC_SEQUENCE_LIST::determine_basepoints()
 //
-//		
+//
 //		betrachte die Kanten vom Leftend zum Rightend,
 //			der Abstand relative_leftdistance vom Rightend
 //			ist die Summe der Kanten.
 //
-//		berechne ueber ein Gleichungssystem den Schnittpunkt 
+//		berechne ueber ein Gleichungssystem den Schnittpunkt
 //			der aktuellen Sequenz mit obiger Gerade.
-//			 
-//			
+//
+//
 //
 //*********************************************************************
 void	AC_SEQUENCE_LIST::determine_basepoints()  {
 
-	
+
 	AC_SEQUENCE_INFO	*ac_sequence_info;
 	AC_SEQUENCE_INFO	*ptr;
 	double			baseline, basepoint;
 	double			li, re;
 
 	ac_sequence_info = this->sequences;
-	
+
 	baseline = this->rightend->relative_leftdistance; // baseline = Abstand zwischen
 							  // Leftend und Rightend
 #ifdef GNUPLOT_relationship
@@ -274,7 +274,7 @@ void	AC_SEQUENCE_LIST::determine_basepoints()  {
 #endif
 
 	for( ptr = ac_sequence_info ; ptr ; ptr = ptr->next )
-	{	
+	{
 		li = ptr->relative_leftdistance;
 		re = ptr->relative_rightdistance;
 		basepoint = (baseline - (baseline - li + re)/2) * 100;
@@ -299,14 +299,14 @@ void	AC_SEQUENCE_LIST::determine_basepoints()  {
 //
 //	class AC_SEQUENCE_LIST::reset_AC_SEQUENCE_INFO_struct_values()
 //
-//		Setzt folgende Werte im Struct AC_SEQUENCE_INFO auf die  
+//		Setzt folgende Werte im Struct AC_SEQUENCE_INFO auf die
 //		Default-Werte zurueck:
 //			AC_SEQUENCE_INFO_STATE	state,
-//			long		real_leftdistance;			
-//			double		relative_leftdistance;			
+//			long		real_leftdistance;
+//			double		relative_leftdistance;
 //			long		real_rightdistance;
-//			double		relative_rightdistance;	
-//			double		relationship;	
+//			double		relative_rightdistance;
+//			double		relationship;
 //
 //*********************************************************************
 void AC_SEQUENCE_LIST::reset_AC_SEQUENCE_INFO_struct_values() {
@@ -317,12 +317,12 @@ void AC_SEQUENCE_LIST::reset_AC_SEQUENCE_INFO_struct_values() {
 	ac_sequence_info = sequences;
 
 	for(ptr = ac_sequence_info; ptr; ptr = ptr->next ) {
-		ptr->state			= ORDINARY;	
+		ptr->state			= ORDINARY;
 		ptr->real_leftdistance		= 0;
 		ptr->relative_leftdistance	= 0.0;
 		ptr->real_rightdistance		= 0;
 		ptr->relative_rightdistance	= 0.0;
-		ptr->relationship		= 0; 
+		ptr->relationship		= 0;
 	} // endfor
 
 } // end AC_SEQUENCE_LIST::reset_AC_SEQUENCE_INFO_struct_values()
@@ -368,7 +368,7 @@ AC_TREE::~AC_TREE()  {
 //
 //	class AC_TREE:: remove_tree()
 //
-//		hier wird rekursiv der Clusterbaum geloescht 	
+//		hier wird rekursiv der Clusterbaum geloescht
 //
 //*********************************************************************
 void	AC_TREE::remove_tree()  {
@@ -376,14 +376,14 @@ void	AC_TREE::remove_tree()  {
 	AC_SEQUENCE_INFO	*sequence_list;
 
 	if(this)  {
-		
+
 		sequence_list = this->sequences;
-		if(sequence_list)  {			
+		if(sequence_list)  {
 			 remove_sequence_list(sequence_list);
 		}
-	
 
-		if(this->left) this->left->remove_tree(); 
+
+		if(this->left) this->left->remove_tree();
 		if(this->right) this->right->remove_tree();
 		free (this);
 	}
@@ -399,7 +399,7 @@ void	AC_TREE::remove_tree()  {
 //
 //	class AC_TREE::print_tree()
 //
-//		hier wird rekursiv der Clusterbaum rausgeschrieben 	
+//		hier wird rekursiv der Clusterbaum rausgeschrieben
 //
 //*********************************************************************
 void	AC_TREE::print_tree()  {
@@ -419,7 +419,7 @@ void	AC_TREE::print_tree()  {
 
 		}
 	}
-	if(this->left) this->left->print_tree(); 
+	if(this->left) this->left->print_tree();
 	if(this->right) this->right->print_tree();
 
 
@@ -433,7 +433,7 @@ void	AC_TREE::print_tree()  {
 //
 //	class AC_TREE::print_formated_dbtree()
 //
-//		hier wird rekursiv der Clusterbaum rausgeschrieben 
+//		hier wird rekursiv der Clusterbaum rausgeschrieben
 //		und das in dem wunderbaren ARB-Format
 //		(Knoten,Knoten) oder so	??
 //
@@ -444,10 +444,10 @@ void	AC_TREE::print_formated_dbtree()  {
 
 	if(this->node_state == I_NODE)  {
 		printf("\n(");
-		this->left->print_formated_dbtree(); 
+		this->left->print_formated_dbtree();
 
-		if( (this->right->node_state == I_NODE) || 
-					( (this->right->node_state == LEAF) && 
+		if( (this->right->node_state == I_NODE) ||
+					( (this->right->node_state == LEAF) &&
 					     (this->right->sequences != NULL) )  )  {
 			printf(",");
 			this->right->print_formated_dbtree();
@@ -484,7 +484,7 @@ void	AC_TREE::print_formated_dbtree()  {
 //	class AC_TREE::make_clustertree()
 //
 //		hier wird rekursiv der Clusterbaum aufgebaut.
-//		Die Sequenzliste am root Knoten ist nicht leer.  	
+//		Die Sequenzliste am root Knoten ist nicht leer.
 //
 //*********************************************************************
 void	AC_TREE::make_clustertree()  {
@@ -495,7 +495,7 @@ void	AC_TREE::make_clustertree()  {
 	}
 
 	if ( (this->node_state == I_NODE) ) {
-		this->left->make_clustertree(); 
+		this->left->make_clustertree();
 		this->right->make_clustertree();
 	}
 
@@ -509,7 +509,7 @@ void	AC_TREE::make_clustertree()  {
 //*********************************************************************
 //	class AC_TREE::split()
 //
-//		bestimme LEFTEND		
+//		bestimme LEFTEND
 //		bestimme Distanzen zum LEFTEND (real/relativ)
 //		bestimme RIGHTEND
 //		bestimme	Distanzen zum RIGHTEND (real/relativ)
@@ -518,7 +518,7 @@ void	AC_TREE::make_clustertree()  {
 //
 //		legen den Schnittpunkt fest
 //		generiere zwei neue Knoten
-//		teile die Sequenzliste auf die Knoten auf	
+//		teile die Sequenzliste auf die Knoten auf
 //
 //*********************************************************************
 void	AC_TREE::split()  {
@@ -531,7 +531,7 @@ void	AC_TREE::split()  {
 		//--------------------------------------------------- rightend
 		this->rightend = get_seq_with_max_dist_to();
 
-		if( this->rightend != NULL )  { 
+		if( this->rightend != NULL )  {
 			this->rightend->state = RIGHTEND;
 			this->determine_distances_to(rightend, RIGHTEND); // real,relative
 
@@ -547,7 +547,7 @@ void	AC_TREE::split()  {
 
 			//---------------------------------------------- zwei neue Soehne = I_Nodes
 			AC_TREE *inode_left = new AC_TREE;
-			this->left = inode_left;	
+			this->left = inode_left;
 			AC_TREE *inode_right	= new AC_TREE;
 			this->right	= inode_right;
 			//-------------------------------------- Aufteilen der Liste auf die Soehne
@@ -555,7 +555,7 @@ void	AC_TREE::split()  {
 
 
 			//========================== Abbruchsbedingung fuer Seqenz-Listenaufteilung
-			if( (this->left->max_relationship <= breakcondition_relationship_distance) || 
+			if( (this->left->max_relationship <= breakcondition_relationship_distance) ||
 			    (this->left->nsequences <= breakcondition_min_sequencenumber) ) {
 				this->left->node_state = LEAF;
 			}
@@ -566,13 +566,13 @@ void	AC_TREE::split()  {
 			//=========================================================================
 
 		} //endif
-		
+
 		else {	this->node_state = LEAF;	// kein rightend gefunden
 		}
 
 } // end AC_TREE::split()
 //*********************************************************************
- 
+
 
 
 
@@ -582,10 +582,10 @@ void	AC_TREE::split()  {
 //
 //		allokiert Speicher fuer das Sortier-Array
 //		liest die Werte in das Array ein
-//		
+//
 //
 //*********************************************************************
-void AC_TREE::divide_sequence_list(AC_TREE *that, AC_TREE *inode_left, 
+void AC_TREE::divide_sequence_list(AC_TREE *that, AC_TREE *inode_left,
 						  AC_TREE *inode_right)  {
 
 	//------------------------------------------------------- allokieren memory sortarray[]
@@ -594,8 +594,8 @@ void AC_TREE::divide_sequence_list(AC_TREE *that, AC_TREE *inode_left,
 	number_of = this->nsequences;
 	sort_array = (AC_SEQUENCE_INFO **)calloc(sizeof(void *),number_of);
 
-#ifdef DEBUG_print_unsorted_array	
-	printf("\n\nunsorted array: \n\n"); 
+#ifdef DEBUG_print_unsorted_array
+	printf("\n\nunsorted array: \n\n");
 #endif
 	//------------------------------------------------------ einlesen der seqenptr in array
 	AC_SEQUENCE_INFO  *ac_sequence_info;
@@ -629,7 +629,7 @@ printf("%f	", (*array_ptr)->relationship);
 
 // zum GNUPLOT Ausdruck
 long dekrement;
-#ifdef GNUPLOT_print_sorted_array 
+#ifdef GNUPLOT_print_sorted_array
 //	long 	dekrement;
 	dekrement = number_of;
 	printf("\n\n#GNU sorted array: \n\n");
@@ -637,20 +637,20 @@ long dekrement;
 		printf("%f	\n", (*array_ptr)->relationship);
 //		printf("%f	10\n", (*array_ptr)->relationship);
 //		printf("%f	", (*array_ptr)->relationship);
-	} 
+	}
 	printf("\n\n");
 #endif
 
-#ifdef GNUPLOT_print_sorted_left_right_reldist 
-//	long dekrement; 
-	dekrement = number_of; 
+#ifdef GNUPLOT_print_sorted_left_right_reldist
+//	long dekrement;
+	dekrement = number_of;
 	printf("\n\nsorted array relative left/right distances : \n\n");
 	for(array_ptr = sort_array; 0 < dekrement; array_ptr++, dekrement--)  {
 		printf("%f ",
 		(*array_ptr)->relative_leftdistance);
-		printf("%f\n", 
+		printf("%f\n",
 		(*array_ptr)->relative_rightdistance);
-	} 
+	}
 	printf("\n\n");
 #endif
 
@@ -676,17 +676,17 @@ long dekrement;
 //
 //	class AC_TREE::separate_sequencelist()
 //
-//		geht das sortierte array durch und haengt den ersten Teil an 
-//		den linken Knoten, 
-//		den zweiten Knoten, d.h. das Element das den intersection_value 
+//		geht das sortierte array durch und haengt den ersten Teil an
+//		den linken Knoten,
+//		den zweiten Knoten, d.h. das Element das den intersection_value
 //		liefert sammt Rest an den zweiten Knoten.
 //		Zu merken ist der Verwandtschaftsgrad der beiden Seqs zu den
 //		aktuellen Referenz-Sequenzen.
 //
-//							
+//
 //
 //*********************************************************************
-void AC_TREE::separate_sequencelist(AC_SEQUENCE_INFO **sort_array, 
+void AC_TREE::separate_sequencelist(AC_SEQUENCE_INFO **sort_array,
 						double intersection_value )
 {
 	AC_TREE		 *inode;
@@ -695,42 +695,42 @@ void AC_TREE::separate_sequencelist(AC_SEQUENCE_INFO **sort_array,
 	double	basepoint;
 
 	for( array_ptr,dekrement; 0 < dekrement; array_ptr++, dekrement--) {
-		basepoint = (*array_ptr)->relationship;			
+		basepoint = (*array_ptr)->relationship;
 
-		if( (*array_ptr)->state != ORDINARY ) { 
+		if( (*array_ptr)->state != ORDINARY ) {
 			if( (*array_ptr)->state == LEFTEND ) {		// LEFTEND nach links
 				inode = this->left;
-			} 
+			}
 			else if( (*array_ptr)->state == RIGHTEND ) {	// RIGHTEND nach rechts
 				inode = this->right;
-			} 
+			}
 		}
 
 		else {					// state == ORDINARY
 
 			if( (basepoint < intersection_value) || (0 == basepoint) ) {
 				inode = this->left;
-			} 
+			}
 			else if( intersection_value == basepoint ) {
 				inode = this->right;
 			}
 			else if( basepoint >= intersection_value) {
 				inode = this->right;
-			} 
-		} 
+			}
+		}
 
 		inode->insert(*array_ptr);	// einfuegen des listenelements nach left oder right
 //		inode->nsequences++;		// wird bereits von insert() erledigt !
 
-		if( basepoint < intersection_value ) {	// Abbruchsbedingung groesster Abstand zu 
+		if( basepoint < intersection_value ) {	// Abbruchsbedingung groesster Abstand zu
 			this->left->max_relationship = basepoint;	// LEFTEND/RIGHTEND
 		}
 		else {
 			this->right->max_relationship = abs(100 - intersection_value);
 		}
-	} 
+	}
 	this->sequences = NULL; 		// sicher ist sicher !!!
-						// d.h. am aktuellen Knoten haengt 
+						// d.h. am aktuellen Knoten haengt
 						// keine !! Sequenzenliste mehr
 
 #ifdef DEBUG_print_nodeinfo
@@ -745,7 +745,7 @@ void AC_TREE::separate_sequencelist(AC_SEQUENCE_INFO **sort_array,
 	printf("Anzahl Seqs im Knoten:			%d\n", this->nsequences);
 	printf("Anzahl Seqs LEFT/RIGHT:		%d		", this->left->nsequences);
 	printf("%d", this->right->nsequences);
-	
+
 	printf("\n\n");
 	printf("Relationship zu LEFT/RIGHT:	%f	", this->left->max_relationship);
 	printf("%f\n", this->right->max_relationship);
@@ -765,10 +765,10 @@ void AC_TREE::separate_sequencelist(AC_SEQUENCE_INFO **sort_array,
 	printf("Seq_Nr : %d		", subnode_list->number);
 		printf("left_side : %f\n", subnode_list->relationship);
 		subnode_list = subnode_list->next;
-	}		
+	}
 	printf("\n\n");
 	subnode_list = this->right->sequences;
-	for( subnode_list; subnode_list; ) { 
+	for( subnode_list; subnode_list; ) {
 		printf("Seq_Nr : %d		", subnode_list->number);
 		printf("right_side : %f\n", subnode_list->relationship);
 		subnode_list = subnode_list->next;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <PT_com.h>
@@ -97,7 +97,7 @@ void probe_design_event() {
     T_PT_PDC  pdc;
     T_PT_TPROBE tprobe;
     bytestring bs;
-    char *match_info; 
+    char *match_info;
 
     if( !(servername=(char *)probe_pt_look_for_server()) ){
         return;
@@ -149,7 +149,7 @@ void probe_design_event() {
                     SEQUENCE_SEQUENCE, &bs_seq,
                     0);
     }
-	
+
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_NAMES,&bs,
              PDC_GO, 0,
@@ -157,7 +157,7 @@ void probe_design_event() {
 
     {
         char *locs_error = 0;
-        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
                       LOCS_ERROR	,&locs_error,
                       0)){
             aw_message ("Connection to PT_SERVER lost (1)");
@@ -169,11 +169,11 @@ void probe_design_event() {
         delete locs_error;
     }
 
-    aisc_get( pd_gl.link, PT_PDC, pdc, 
+    aisc_get( pd_gl.link, PT_PDC, pdc,
               PDC_TPROBE, &tprobe,
               0);
 
-	
+
     if (tprobe) {
         aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                   TPROBE_INFO_HEADER,	&match_info,
@@ -249,7 +249,7 @@ void probe_match_event()
     long match_list_cnt;
     bytestring bs;
     bs.data = 0;
-    aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+    aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
 	      LOCS_MATCH_LIST,	&match_list,
 	      LOCS_MATCH_LIST_CNT,	&match_list_cnt,
 	      LOCS_MATCH_STRING,	&bs,

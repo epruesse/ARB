@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <xview/xview.h>
 #include <xview/notice.h>
 #include <xview/panel.h>
@@ -372,7 +372,7 @@ int method,maskable;
 	if(maskable && (method != SELECT_REGION))
 	{
 		for(j=0;j<aln->numelements;j++)
-			if(seqs[j].elementtype == MASK && 
+			if(seqs[j].elementtype == MASK &&
 			    seqs[j].selected)
 				mask = j;
 	}
@@ -394,8 +394,8 @@ int method,maskable;
 			sprintf(offset_str,"(%d)",offset+aln->rel_offset);
 		else
 			offset_str[0] = '\0';
-		
-		if(((j!=mask) && (seqs[j].selected) && method != SELECT_REGION) 
+
+		if(((j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
 		|| (method == SELECT_REGION && seqs[j].subselected)
 		|| method == ALL)
 		{
@@ -687,7 +687,7 @@ char *filename;
 
 			if(IGNORE_DASH && (indx != -1))
 			{
-				for(jj=0,j=0;(j<curlen) && 
+				for(jj=0,j=0;(j<curlen) &&
 				    (jj<aln->element[indx].seqlen);j++,jj++)
 				{
 					offset = aln->element[indx].offset;
@@ -703,7 +703,7 @@ char *filename;
 *	to the sequence, not the alignment.
 *
 *	The allocated space is equal the seqlen of the matched sequence.
-*	
+*
 */
 					if(aln->element[indx].tmatrix)
 						for(;(getelem(&(aln->element[indx]),jj
@@ -945,7 +945,7 @@ char *filename;
 			}
 		}
 	}
-	
+
 */
 }
 
@@ -999,7 +999,7 @@ int method,maskable;
 	if(maskable && (method != SELECT_REGION))
 	{
 		for(j=0;j<aln->numelements;j++)
-			if(seqs[j].elementtype == MASK && 
+			if(seqs[j].elementtype == MASK &&
 			    seqs[j].selected)
 				mask = j;
 	}
@@ -1021,8 +1021,8 @@ int method,maskable;
 			sprintf(offset_str,"(%d)",offset+aln->rel_offset);
 		else
 			offset_str[0] = '\0';
-		
-		if(((j!=mask) && (seqs[j].selected) && method != SELECT_REGION) 
+
+		if(((j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
 		|| (method == SELECT_REGION && seqs[j].subselected)
 		|| method == ALL)
 		{

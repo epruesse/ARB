@@ -3,7 +3,7 @@
 #include <xview/canvas.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include "loop.h"
 #include "globals.h"
 
@@ -12,7 +12,7 @@ SaveTemp()
 	int i,j;
 	FILE *outfile;
 	Base base;
-	
+
 	outfile = fopen("loop.temp","w");
 	if(outfile == NULL)
 	{

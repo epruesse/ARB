@@ -1,4 +1,4 @@
-/* 
+/*
 #################################
 #                               #
 #    ORS_CLIENT:  PROBE         #
@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <arbdb.h>
 
@@ -27,20 +27,20 @@
 **********************************************************/
 void OC_save_probedb(void) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_DAILYPW,		ors_gl.dailypw, 
+		LOCAL_DAILYPW,		ors_gl.dailypw,
 		LOCAL_REMOTE_HOST, 	ors_gl.remote_host,
-		LOCAL_SAVE_PROBEDB,	"", 
+		LOCAL_SAVE_PROBEDB,	"",
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (save_probedb)")); 
+		quit_with_error(ORS_export_error("Server communication failed (save_probedb)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR       , &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (save_probedb2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (save_probedb2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }
@@ -51,7 +51,7 @@ void OC_save_probedb(void) {
 **********************************************************/
 void OC_put_probe_field(char *field_section, char *field_name, char *field_data) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	static bytestring bs = {0,0};
 	delete bs.data;
 
@@ -65,17 +65,17 @@ void OC_put_probe_field(char *field_section, char *field_name, char *field_data)
 	bs.size = strlen(bs.data)+1;
 
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_PROBE_FIELD_DATA,		bs, 
-		LOCAL_PROBE_FIELD_SECTION,	field_section, 
-		LOCAL_PUT_PROBE_FIELD,		field_name, 
+		LOCAL_PROBE_FIELD_DATA,		bs,
+		LOCAL_PROBE_FIELD_SECTION,	field_section,
+		LOCAL_PUT_PROBE_FIELD,		field_name,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (put_probe_field:%s/%s)",field_section,field_name)); 
+		quit_with_error(ORS_export_error("Server communication failed (put_probe_field:%s/%s)",field_section,field_name));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR       , &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (put_probe_field2:%s/%s)",field_section,field_name)); 
+		quit_with_error(ORS_export_error("Server communication failed (put_probe_field2:%s/%s)",field_section,field_name));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }
@@ -85,18 +85,18 @@ void OC_put_probe_field(char *field_section, char *field_name, char *field_data)
 **********************************************************/
 void OC_put_probe_ta_id(int ta_id) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_PROBE_TA_ID,	ta_id, 
+		LOCAL_PROBE_TA_ID,	ta_id,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (put_probe_ta_id)")); 
+		quit_with_error(ORS_export_error("Server communication failed (put_probe_ta_id)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR       , &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (put_probe_ta_id2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (put_probe_ta_id2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }
@@ -107,7 +107,7 @@ void OC_put_probe_ta_id(int ta_id) {
 **********************************************************/
 char *OC_get_probe_field(char *field_section, char *field_name) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	char *field_data;
 	static bytestring bs = {0,0};
 	delete bs.data;
@@ -116,17 +116,17 @@ char *OC_get_probe_field(char *field_section, char *field_name) {
 	if (!field_section) field_section = empty_str;
 
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_PROBE_FIELD_SECTION,	field_section, 
-		LOCAL_PROBE_FIELD_NAME,		field_name, 
+		LOCAL_PROBE_FIELD_SECTION,	field_section,
+		LOCAL_PROBE_FIELD_NAME,		field_name,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (get_probe_field:%s/%s)",field_section,field_name)); 
+		quit_with_error(ORS_export_error("Server communication failed (get_probe_field:%s/%s)",field_section,field_name));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR, 			&locs_error,
-		LOCAL_GET_PROBE_FIELD,		&bs, 
+		LOCAL_GET_PROBE_FIELD,		&bs,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (get_probe_field2:%s/%s)",field_section,field_name)); 
+		quit_with_error(ORS_export_error("Server communication failed (get_probe_field2:%s/%s)",field_section,field_name));
 	}
 	OC_server_error_if_not_empty(locs_error);
 	return bs.data;
@@ -138,14 +138,14 @@ char *OC_get_probe_field(char *field_section, char *field_name) {
 **********************************************************/
 int OC_get_probe_ta_id(void) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	int field_data;
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR, 			&locs_error,
-		LOCAL_PROBE_TA_ID,		&field_data, 
+		LOCAL_PROBE_TA_ID,		&field_data,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (get_probe_ta_id)")); 
+		quit_with_error(ORS_export_error("Server communication failed (get_probe_ta_id)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 	return field_data;
@@ -157,19 +157,19 @@ int OC_get_probe_ta_id(void) {
 **********************************************************/
 void OC_work_on_probe(char *action) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_DAILYPW,		ors_gl.dailypw, 
+		LOCAL_DAILYPW,		ors_gl.dailypw,
 		LOCAL_REMOTE_HOST, 	ors_gl.remote_host,
-		LOCAL_WORK_ON_PROBE,		action, 
+		LOCAL_WORK_ON_PROBE,		action,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (work_on_probe:%s)",action)); 
+		quit_with_error(ORS_export_error("Server communication failed (work_on_probe:%s)",action));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR       , &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (work_on_probe2:%s)",action)); 
+		quit_with_error(ORS_export_error("Server communication failed (work_on_probe2:%s)",action));
 	}
 	OC_server_error_if_not_empty(locs_error);
 
@@ -187,19 +187,19 @@ void OC_work_on_probe(char *action) {
 **********************************************************/
 void OC_probe_select(char *probe_id ) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_DAILYPW,		ors_gl.dailypw, 
+		LOCAL_DAILYPW,		ors_gl.dailypw,
 		LOCAL_REMOTE_HOST, 	ors_gl.remote_host,
-		LOCAL_PROBE_SELECT,	probe_id, 
+		LOCAL_PROBE_SELECT,	probe_id,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (select_probe)")); 
+		quit_with_error(ORS_export_error("Server communication failed (select_probe)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR, &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (select_probe2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (select_probe2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }
@@ -214,21 +214,21 @@ char * OC_probe_query(int max_count) {
 	static bytestring result = {0,0};
 	delete result.data;
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_DAILYPW,			ors_gl.dailypw, 
+		LOCAL_DAILYPW,			ors_gl.dailypw,
 		LOCAL_REMOTE_HOST, 		ors_gl.remote_host,
-		LOCAL_PROBE_LIST_TYPE,		10, 
-		LOCAL_PROBE_LIST_MAX_COUNT,  	max_count, 
+		LOCAL_PROBE_LIST_TYPE,		10,
+		LOCAL_PROBE_LIST_MAX_COUNT,  	max_count,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (probe_query)")); 
+		quit_with_error(ORS_export_error("Server communication failed (probe_query)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
-		LOCAL_PROBE_QUERY,	&result, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
+		LOCAL_PROBE_QUERY,	&result,
 		LOCAL_ERROR, 		&locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (probe_query2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (probe_query2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 
@@ -240,22 +240,22 @@ char * OC_probe_query(int max_count) {
 **********************************************************/
 char * OC_get_probe_list(int type, int count) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	static bytestring result = {0,0};
 	delete result.data;
 
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_PROBE_LIST_TYPE,		type, 
-		LOCAL_PROBE_LIST_MAX_COUNT,	count, 
+		LOCAL_PROBE_LIST_TYPE,		type,
+		LOCAL_PROBE_LIST_MAX_COUNT,	count,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (get_probe_list)")); 
+		quit_with_error(ORS_export_error("Server communication failed (get_probe_list)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_GET_PROBE_LIST,	&result,
 		LOCAL_ERROR, 		&locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (get_probe_list2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (get_probe_list2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 
@@ -266,10 +266,10 @@ char * OC_get_probe_list(int type, int count) {
   CREATE NEW PDB-LIST ELEMENT
 *****************************************************************************/
 OC_pdb_list *OC_create_pdb_list_elem(void) {
-	
+
 	OC_pdb_list *THIS		= (OC_pdb_list *)calloc(sizeof(OC_pdb_list), 1);
 	if(!THIS) quit_with_error(ORS_export_error("Malloc error in OC_create_pdb_list_elem!"));
-	return THIS; 
+	return THIS;
 }
 
 /*****************************************************************************
@@ -376,7 +376,7 @@ void OC_read_probedb_fields_into_pdb_list(void) {
 				quit_with_error(ORS_export_error("Wrong number of fields in line %i of " ORS_LIB_PATH "probedb_fields", line));
 			}
 			pdb_list_elem = OC_create_pdb_list_elem();
-	
+
 			tmp = strtok(buffer,",");	// extract section/name or name
 			if (strchr(tmp,'/')) {
 				pdb_list_elem->section = strdup(strtok(tmp,"/"));
@@ -413,7 +413,7 @@ void OC_read_probedb_fields_into_pdb_list(void) {
 			pdb_list_elem->content		= 0;
 
 			// printf("name=%s, type=%s, width=%i <BR>",pdb_list_elem->name, pdb_list_elem->type, pdb_list_elem->width);
-	
+
 			OC_pdb_list_insert(&ors_gl.pdb_list, pdb_list_elem); 	// put element into list
 		}
 	}
@@ -424,14 +424,14 @@ void OC_read_probedb_fields_into_pdb_list(void) {
 	CLEAR ALL PROBEDB FIELD CONTENTS in server
 *****************************************************************************/
 void OC_clear_pdb_fields_in_server(void) {
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	char *dummy;
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_CLEAR_PROBE_FIELDS,	&dummy,
 		LOCAL_ERROR, 			&locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (clear_pdb_fields)")); 
+		quit_with_error(ORS_export_error("Server communication failed (clear_pdb_fields)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }
@@ -600,20 +600,20 @@ char * OC_read_file_into_list(char *file_name) {
 **********************************************************/
 void OC_probe_user_transfer(char *from_userpath, char *to_userpath, char *probe_id) {
 
-	char *locs_error = 0; 
+	char *locs_error = 0;
 	if (aisc_nput(ors_gl.link, ORS_LOCAL, ors_gl.locs,
-		LOCAL_DAILYPW,			ors_gl.dailypw, 
+		LOCAL_DAILYPW,			ors_gl.dailypw,
 		LOCAL_REMOTE_HOST, 		ors_gl.remote_host,
 		LOCAL_SEL_USERPATH, 		from_userpath,
-		LOCAL_PROBE_USER_TRANSFER,	to_userpath, 
+		LOCAL_PROBE_USER_TRANSFER,	to_userpath,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (probe_transfer)")); 
+		quit_with_error(ORS_export_error("Server communication failed (probe_transfer)"));
 	}
 
-	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs, 
+	if (aisc_get(ors_gl.link, ORS_LOCAL, ors_gl.locs,
 		LOCAL_ERROR, &locs_error,
 		NULL)) {
-		quit_with_error(ORS_export_error("Server communication failed (probe_transfer2)")); 
+		quit_with_error(ORS_export_error("Server communication failed (probe_transfer2)"));
 	}
 	OC_server_error_if_not_empty(locs_error);
 }

@@ -4,7 +4,7 @@
 #define _ALI_POSTREE_INC_
 
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_misc.hxx"
 #include "ali_tlist.hxx"
@@ -31,7 +31,7 @@ struct ALI_POSTREE_NODE {
       } node;
    };
 
-   ALI_POSTREE_NODE(ALI_POSTREE_NODE_TYPE t, 
+   ALI_POSTREE_NODE(ALI_POSTREE_NODE_TYPE t,
 					     unsigned long nochild_position = 0);
    ~ALI_POSTREE_NODE(void);
 
@@ -117,22 +117,22 @@ class ALI_POSTREE {
 	unsigned long maximal_position(ALI_POSTREE_NODE *first,
 											 ALI_POSTREE_NODE *last);
 	void handle_remaining_sequence(
-					unsigned char *seq, unsigned long seq_len, 
+					unsigned char *seq, unsigned long seq_len,
 					unsigned long seq_pos, unsigned long im_seq_len,
 					unsigned long min_pos, unsigned long max_pos,
 					unsigned long ref_pos, unsigned long errors,
 					ALI_TSTACK<char> *stack,
 					ALI_TLIST<ali_postree_sol *> *sol_list);
 	void finder(ALI_POSTREE_NODE *n,
-					unsigned char *seq, unsigned long seq_len, 
+					unsigned char *seq, unsigned long seq_len,
 					unsigned long seq_pos, unsigned long im_seq_len,
 					unsigned long min_pos, unsigned long max_pos,
-					unsigned long errors, 
+					unsigned long errors,
 					ALI_TSTACK<char> *stack,
 					ALI_TLIST<ali_postree_sol *> *sol_list);
 
 public:
-   ALI_POSTREE(unsigned long branches, 
+   ALI_POSTREE(unsigned long branches,
 					unsigned char *seq, unsigned long seq_len,
 					unsigned char terminal = 4);
 	~ALI_POSTREE(void) {

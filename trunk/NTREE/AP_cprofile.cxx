@@ -7,14 +7,14 @@
  *
  * Global Functions:              x
  *
- * Global Variables:        
+ * Global Variables:
  *                                  AWARS
  *               AW_STRING, "cpro/alignment" : name of alignment
  *               AW_STRING, "cpro/which_species" : all/marked
  *               AW_STRING, "cpro/countgaps" : if off, drop gaps
- *               AW_FLOAT, "cpro/rateofgroup" : how to rate, when two 
+ *               AW_FLOAT, "cpro/rateofgroup" : how to rate, when two
  *                 characters belong to the same group [ 0.0 means don't rate ]
- *               AW_INT, AWAR_CURSOR_POSITION: 
+ *               AW_INT, AWAR_CURSOR_POSITION:
  *                           column shown in func. CPRO_drawstatistic_cb
  *
  * Global Structures:             CPRO
@@ -29,7 +29,7 @@
  *                                 CPROxpert.fig CPROcalc.fig
  *
  * Description:                   x
- * 
+ *
  * Integration Notes: The main function using this module must have a
  *                    callback to the function
  *                    AW_window *AP_open_cprofile_window( AW_root *aw_root)
@@ -43,7 +43,7 @@
 #include <iostream.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <math.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -78,7 +78,7 @@ struct CPRO_result_struct {
 	long maxaccu;              // highest number of compares per distance
 	long memneeded;            // memory required for this statistic
 	char which_species[20];    // "marked vs all" , ...
-	char drawmode;             // smoothing 
+	char drawmode;             // smoothing
 	char alignname[80];        // name of alignment
 	char statisticexists;      // was there yet a statistic calculated/loaded ?
 	long leastcompares;        // if less overlap between two sequences
@@ -87,15 +87,15 @@ struct CPRO_result_struct {
 };
 
 struct CPRO_struct {
-	long numspecies;           // number of species 
+	long numspecies;           // number of species
 	long maxresneeded;         // not yet used (max distance of calculation)
 	long partition;            // size of partition in matrix of compares
 	long leastaccu;            // if less compares per distance don't show
 	char *agonist;             // list of species that contribute to statistic
 	char *antagonist;          // -^-
-	char convtable[256];         // converts character to a token 
+	char convtable[256];         // converts character to a token
 	char grouptable[MAX_AMINOS]; // gives number of group, in which token is
-	                             // member 
+	                             // member
 	float grouprate;           // ratio between transitions and transversions
 	float distancecorrection;  // results out of grouprate
 	long column;               // column of alignment that is shown
@@ -109,18 +109,18 @@ struct CPRO_struct {
 
 
 /* -----------------------------------------------------------------
- * Function:                     CPRO_readandallocate 
+ * Function:                     CPRO_readandallocate
  *
  * Arguments:                    char versus,char *align (name of alignment)
  *
- * Returns:                      modifies:   
+ * Returns:                      modifies:
  *                               char **&speciesdata,GBDATA **&speciesdatabase
  *
  * Description:     Memory for 'statistic', 'speciesdata', 'speciesdatabase',
  *                  'agonist' and 'antagonist' is allocated.
  *                  Pointers to the sequences in the database are
- *                  read into array 'speciesdatabase'. 
- *                 
+ *                  read into array 'speciesdatabase'.
+ *
  *
  * NOTE:                         .
  *
@@ -131,8 +131,8 @@ struct CPRO_struct {
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
@@ -146,10 +146,10 @@ void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
 	long nrofspecies=0;
 	gb_species = GBT_first_species_rel_species_data(gb_species_data);
 	while(gb_species)
-	{	   	
+	{
 		if(GBT_read_sequence(gb_species,align)){
 			nrofspecies++;	  }
-		gb_species = GBT_next_species(gb_species);	
+		gb_species = GBT_next_species(gb_species);
 	}
 	CPRO.numspecies=nrofspecies;
 
@@ -163,12 +163,12 @@ void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
 	long countspecies=0;
 	gb_species = GBT_first_species_rel_species_data(gb_species_data);
 	while(gb_species)
-	{	   	
-		if( (alidata=GBT_read_sequence(gb_species,align)) ) 
+	{
+		if( (alidata=GBT_read_sequence(gb_species,align)) )
 			{
-			speciesdatabase[countspecies++]=alidata;	  
+			speciesdatabase[countspecies++]=alidata;
 			}
-   		gb_species = GBT_next_species(gb_species);	
+   		gb_species = GBT_next_species(gb_species);
 	}
 
 	for(long i=0;i<CPRO.numspecies;i++)
@@ -182,7 +182,7 @@ void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
 		for(long j=0;j<CPRO.numspecies;j++)
 		{
 			CPRO.antagonist[j]=0;
-			if(GB_read_flag(GB_get_father(GB_get_father(speciesdatabase[j])))) 
+			if(GB_read_flag(GB_get_father(GB_get_father(speciesdatabase[j]))))
 					CPRO.antagonist[j]=(char)1;
 		}
 	}
@@ -213,11 +213,11 @@ void CPRO_allocstatistic(char which_statistic)
 		CPRO.result[which_statistic].statistic=(STATTYPE **)calloc(
 	    	    (size_t)CPRO.result[which_statistic].resolution*3+3,
 				sizeof(STATTYPE *));
-		for(long i=0;i<CPRO.result[which_statistic].resolution*3;i++) 
+		for(long i=0;i<CPRO.result[which_statistic].resolution*3;i++)
 		{
 			CPRO.result[which_statistic].statistic[i]=(STATTYPE *)calloc(
 	        	(size_t)CPRO.result[which_statistic].maxalignlen,
-				sizeof(STATTYPE)); 
+				sizeof(STATTYPE));
 		}
 }
 
@@ -262,7 +262,7 @@ void CPRO_workupstatistic(char which_statistic)
 			{
  				CPRO.result[which_statistic].maxaccu=sum;
 				colmax=column;
-			} 
+			}
 		}
 		if(hits) memneeded+=CPRO.result[which_statistic].maxalignlen;
 		else {  delete(CPRO.result[which_statistic].statistic[base+0]);
@@ -282,37 +282,37 @@ void CPRO_workupstatistic(char which_statistic)
 
 
 /* -----------------------------------------------------------------
- * Function:          CPRO_maketables           
+ * Function:          CPRO_maketables
  *
  * Arguments:         char isamino
  *
- * Returns:           modifies: char *CPRO.convtable, 
+ * Returns:           modifies: char *CPRO.convtable,
  *                              char *CPRO.grouptable
  *
- * Description:       Fills tables CPRO.convtable and CPRO.grouptable, that are 
+ * Description:       Fills tables CPRO.convtable and CPRO.grouptable, that are
  *                    used later, when making the statistic. Meaning of tables:
- *                    E.g. CPRO.convtable['a']=BAS_A means that char. 'a' is 
+ *                    E.g. CPRO.convtable['a']=BAS_A means that char. 'a' is
  *                    converted into number BAS_A. Then CPRO.grouptable[BAS_A]=1
  *                    and CPRO.grouptable[BAS_G]=1 means, that characters 'a'
-  *                   and 'g' are both members of group 1. 
+  *                   and 'g' are both members of group 1.
  *
  * NOTE:                         .
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    char *CPRO.convtable, char *CPRO.grouptable 
+ * Global Variables modified:    char *CPRO.convtable, char *CPRO.grouptable
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:                 .  
+ *
+ * Dependencies:                 .
  * -----------------------------------------------------------------
  */
 void CPRO_maketables(char isamino,char countgaps)
 {
 	long i;
-	for(i=0;i<256;i++)  { 
+	for(i=0;i<256;i++)  {
 		CPRO.convtable[i]=0; }
 	if(!isamino)
 	{
@@ -323,10 +323,10 @@ void CPRO_maketables(char isamino,char countgaps)
 		CPRO.convtable['t']=BAS_T;	CPRO.convtable['T']=BAS_T;
 		CPRO.convtable['u']=BAS_T;	CPRO.convtable['U']=BAS_T;
 
-		for(i=0;i<MAX_AMINOS;i++) { 
+		for(i=0;i<MAX_AMINOS;i++) {
 			CPRO.grouptable[i]=0; }
 		CPRO.grouptable[BAS_A]=1;	CPRO.grouptable[BAS_G]=1;
-		CPRO.grouptable[BAS_C]=2;	CPRO.grouptable[BAS_T]=2;		
+		CPRO.grouptable[BAS_C]=2;	CPRO.grouptable[BAS_T]=2;
 	}
 	else
 	{
@@ -350,7 +350,7 @@ void CPRO_maketables(char isamino,char countgaps)
 			                   /* LIVM */
 		SC(5,'F');SC(5,'Y');SC(5,'W');
 		                       /* FYW */
-#undef SC		
+#undef SC
 	}
 }
 
@@ -365,11 +365,11 @@ void CPRO_entryinstatistic(char **speciesdata,
 	register long numofcolumns=0;
 	float distance=0.0;
 
-	
+
 	if(elemx==elemy) return;
 	if(!(CPRO.agonist[elemx])) return;
 	if(!(CPRO.antagonist[elemy])) return;
-	if((CPRO.agonist[elemy])&&(CPRO.antagonist[elemx])&&(elemy<elemx)) return;	
+	if((CPRO.agonist[elemy])&&(CPRO.antagonist[elemx])&&(elemy<elemx)) return;
 
 	//add similarities (added 1.0 means equal, 0.0 means different)
 	register long counter;
@@ -378,10 +378,10 @@ void CPRO_entryinstatistic(char **speciesdata,
 		if((value1=*firstseq)&&(value2=*secondseq))
 		{
 			numofcolumns++;
-			if(value1==value2) { 
+			if(value1==value2) {
 				rate=rate+1.0; }
 			else if(CPRO.grouptable[value1]==CPRO.grouptable[value2]) {
-					rate=rate+CPRO.grouprate; } // add transition weighted 
+					rate=rate+CPRO.grouprate; } // add transition weighted
 												// between 1.0 and 0.0
 		}
 		firstseq++;
@@ -395,7 +395,7 @@ void CPRO_entryinstatistic(char **speciesdata,
 	long column=(long)(distance*CPRO.result[which_statistic].resolution);
 
 	if (column < 0 || column>= CPRO.result[which_statistic].resolution) return;
-	
+
 	register STATTYPE *equalentry=
 				CPRO.result[which_statistic].statistic[3*column];
 	register STATTYPE *samegroupentry=
@@ -407,7 +407,7 @@ void CPRO_entryinstatistic(char **speciesdata,
 
 	for(counter=0;counter<CPRO.result[which_statistic].maxalignlen;counter++)
 	{
-		if((value1=*firstseq)&&(value2=*secondseq))  
+		if((value1=*firstseq)&&(value2=*secondseq))
 		// when gap or unaligned base goto next position
 		{
 			if(value1==value2) { (*equalentry)++; }
@@ -420,14 +420,14 @@ void CPRO_entryinstatistic(char **speciesdata,
 		equalentry++;
 		samegroupentry++;
 		differententry++;
-	}	
-	
+	}
+
 
 
 }
 
 // is used by function CPRO_makestatistic
-// reads sequences of a segment into memory, converts them 
+// reads sequences of a segment into memory, converts them
 // and frees older sequences
 void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
          long elemx1,long elemx2,long elemy1,long elemy2,char which_statistic)
@@ -436,15 +436,15 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
 	char *tempdata;
 	for(i=0;i<CPRO.numspecies;i++)
 	{
-		if((speciesdata[i])&&(i<elemy1)&&(i>elemy2)&&(i<elemx1)&&(i>elemx2)) 
-		{ 
-			 delete(speciesdata[i]); speciesdata[i]=0; 
+		if((speciesdata[i])&&(i<elemy1)&&(i>elemy2)&&(i<elemx1)&&(i>elemx2))
+		{
+			 delete(speciesdata[i]); speciesdata[i]=0;
 		}
-	}	
+	}
 
 	if(elemx1<CPRO.numspecies)
 	{
-		for(i=elemx1;(i<=elemx2 && i<CPRO.numspecies);i++) 
+		for(i=elemx1;(i<=elemx2 && i<CPRO.numspecies);i++)
 		{
 			if( (CPRO.agonist[i])&&(!(speciesdata[i])) )
 			{
@@ -456,15 +456,15 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
 			}
 		}
 	}
-	if(elemy1<CPRO.numspecies)		
+	if(elemy1<CPRO.numspecies)
 	{
-		for(i=elemy1;(i<=elemy2 && i<CPRO.numspecies);i++) 
+		for(i=elemy1;(i<=elemy2 && i<CPRO.numspecies);i++)
 		{
 			if( (CPRO.antagonist[i])&&(!(speciesdata[i])) )
 			{
 				tempdata=GB_read_char_pntr(speciesdatabase[i]);
 				speciesdata[i]=(char*)calloc((unsigned int)
-						CPRO.result[which_statistic].maxalignlen,1); 
+						CPRO.result[which_statistic].maxalignlen,1);
 				for(j=0;j<CPRO.result[which_statistic].maxalignlen;j++)  {
 					speciesdata[i][j]=CPRO.convtable[tempdata[j]];  }
 		 	}
@@ -474,13 +474,13 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
 
 
 /* -----------------------------------------------------------------
- * Function:                     CPRO_makestatistic 
+ * Function:                     CPRO_makestatistic
  *
  * Arguments:                    char **speciesdata,
- *                               GBDATA **speciesdatabase 
+ *                               GBDATA **speciesdatabase
  *
- * Returns:                      1 if successful, 0 if user abort 
- *                                   (without consequences) 
+ * Returns:                      1 if successful, 0 if user abort
+ *                                   (without consequences)
  *
  * Description:    This function compares every sequence with every sequence.
  *                 It devides the matrix into segments and goes through each
@@ -488,26 +488,26 @@ void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
  *                 MAX_MEMORY/2 is available.
  *                 When a new segment is entered, the corresponding
  *                 sequences are loaded into array 'speciesdata' by the function
- *                 CPRO_readneededdata. 'speciesdatabase' contains pointers of 
+ *                 CPRO_readneededdata. 'speciesdatabase' contains pointers of
  *                 sequences to the database. Comparison and evaluation of two
  *                 sequences is done by function CPRO_entryinstatistic.
  *
  * NOTE:                         .
  *
- * Global Variables referenced: 
- *      CPRO.numspecies,CPRO.result[which_statistic].maxalignlen 
- *                                
- * Global Variables modified:    x 
+ * Global Variables referenced:
+ *      CPRO.numspecies,CPRO.result[which_statistic].maxalignlen
+ *
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:          CPRO.result[which_statistic].statistic  is modified
- * 
- * Dependencies:                 CPRO_entryinstatistic , CPRO_readneededdata  
+ *
+ * Dependencies:                 CPRO_entryinstatistic , CPRO_readneededdata
  * -----------------------------------------------------------------
  */
 char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase,
-	                    char which_statistic) 
+	                    char which_statistic)
 {
 	long widthmatrix=CPRO.partition;
 	long n=CPRO.numspecies;
@@ -547,7 +547,7 @@ char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase,
 						CPRO_entryinstatistic(speciesdata,
 						                      elemx,elemy,which_statistic);
 						compares++;
-						if(((compares/30)*30)==compares) 
+						if(((compares/30)*30)==compares)
 						{
 							if(aw_status((double)compares
 							   /(double)comparesneeded))  return(0);
@@ -580,14 +580,14 @@ char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase,
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             cpro/alignment , cpro/which_species
  *                               cpro/countgaps , cpro/rateofgroups
  *
  * AWARs modified:               x
- * 
- * Dependencies:   CPRO_readandallocate , CPRO_makestatistic , CPRO_deallocate 
+ *
+ * Dependencies:   CPRO_readandallocate , CPRO_makestatistic , CPRO_deallocate
  * -----------------------------------------------------------------
  */
 void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
@@ -620,7 +620,7 @@ void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 	                          "m vs all\0");
 	else strcpy(CPRO.result[which_statistic].which_species,"all vs all\0");
 
-	if( (faultmessage=GB_push_transaction(gb_main)) ) 
+	if( (faultmessage=GB_push_transaction(gb_main)) )
 	{
 		aw_message(faultmessage,"OK,EXIT");
 		delete   align;
@@ -639,10 +639,10 @@ void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 	char isamino= GBT_is_alignment_protein(gb_main,align);
 	aw_openstatus("calculating");aw_status((double)0);
 
-	GBDATA **speciesdatabase; // array of GBDATA-pointers to the species 
-	char **speciesdata;//array of pointers to strings that hold data of species 
+	GBDATA **speciesdatabase; // array of GBDATA-pointers to the species
+	char **speciesdata;//array of pointers to strings that hold data of species
 
-// allocate memory for 'CPRO.statistic','speciesdata' and fill 
+// allocate memory for 'CPRO.statistic','speciesdata' and fill
 //                'speciesdatabase','agonist' and 'antagonist'
 	CPRO_readandallocate(speciesdata,speciesdatabase,versus,align);
 
@@ -667,11 +667,11 @@ void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 
 	CPRO_deallocate(speciesdata,speciesdatabase);
 	delete   align;
-	if( (faultmessage=GB_pop_transaction(gb_main)) ) 
+	if( (faultmessage=GB_pop_transaction(gb_main)) )
 	{
 		aw_message(faultmessage,"OK,EXIT");
 		return;
-	}	
+	}
 
 	CPRO_memrequirement_cb(awr,0,0);
 
@@ -695,7 +695,7 @@ void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
 
 	aw_root->awar("tmp/cpro/which1")->write_string(CPRO.result[0].which_species);
 	aw_root->awar("tmp/cpro/which2")->write_string(CPRO.result[1].which_species);
-	
+
 	sprintf(buf,"%5ld",CPRO.result[0].resolution);
 	aw_root->awar("tmp/cpro/nowres1")->write_string(buf);
 	sprintf(buf,"%5ld",CPRO.result[1].resolution);
@@ -703,7 +703,7 @@ void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
 
 	if(!(CPRO.result[0].statisticexists))
 			aw_root->awar("tmp/cpro/memfor1")->write_string("0KB\0");
-	else 
+	else
 	{
 		sprintf(buf,"%ldKB",CPRO.result[0].memneeded/1024);
 		aw_root->awar("tmp/cpro/memfor1")->write_string(buf);
@@ -711,13 +711,13 @@ void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
 
 	if(!(CPRO.result[1].statisticexists))
 			aw_root->awar("tmp/cpro/memfor2")->write_string("0KB\0");
-	else 
+	else
 	{
 		sprintf(buf,"%ldKB",CPRO.result[1].memneeded/1024);
 		aw_root->awar("tmp/cpro/memfor2")->write_string(buf);
 	}
 
-	if( (faultmessage=GB_push_transaction(gb_main)) ) 
+	if( (faultmessage=GB_push_transaction(gb_main)) )
 	{
 		aw_message(faultmessage,"OK,EXIT");
 		delete   align;
@@ -743,29 +743,29 @@ void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
 		gb_species = GBT_first_species(gb_species_data);
 	}
 	while(gb_species)
-	{	   	
+	{
 		if(GBT_read_sequence(gb_species,align)){
-			nrofspecies++;	  
+			nrofspecies++;
 		}
    		if (versus==1) {
 			gb_species = GBT_next_marked_species(gb_species);
 	   	}else{
 			gb_species = GBT_next_species(gb_species);
-   	   	}	
+   	   	}
 	}
 	CPRO.numspecies=nrofspecies; */
 	long mem;
 
 	/*if(CPRO.numspecies<=2*CPRO.partition) mem=CPRO.numspecies*len;
 	else mem=CPRO.partition*2*len; */
-	mem=CPRO.partition*len*2;    // *2, because of row and column in matrix 
+	mem=CPRO.partition*len*2;    // *2, because of row and column in matrix
 	sprintf(buf,"%ldKB",mem/1024);
 	aw_root->awar("tmp/cpro/mempartition")->write_string(buf);
-	
+
 	mem+=resolution*3*sizeof(STATTYPE)*len;
 	sprintf(buf,"%ldKB",mem/1024);
 	aw_root->awar("tmp/cpro/memstatistic")->write_string(buf);
-	
+
 	delete align;
 	if( (faultmessage=GB_pop_transaction(gb_main)) )
 	{
@@ -793,7 +793,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
 	aw_root->awar_int( "cpro/firsttoreach",50,aw_def);
 	aw_root->awar_int( "cpro/firstreachedstep",4,aw_def);
 	aw_root->awar_int( "cpro/leastcompares",300,aw_def);
-	aw_root->awar_string("tmp/cpro/mempartition","",aw_def);	
+	aw_root->awar_string("tmp/cpro/mempartition","",aw_def);
 	aw_root->awar_int( "cpro/gridhorizontal",20,aw_def);
 	aw_root->awar_int( "cpro/gridvertical",20,aw_def);
 	aw_root->awar_string( "tmp/cpro/which1","",aw_def);
@@ -851,18 +851,18 @@ void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column,
 	else different=CPRO.result[which_statistic].statistic[base+2][column];
 
 	sum=hits+group+different;
-	
+
 	if(!(mode))
 	{
-		if(sum) 
+		if(sum)
 		{
 			equal=(float)hits/(float)sum;
-			ingroup=((float)hits+(float)group)/(float)sum; 
+			ingroup=((float)hits+(float)group)/(float)sum;
 		}
-		else 
+		else
 		{
 			equal=1.0;
-			ingroup=1.0; 
+			ingroup=1.0;
 		}
 	return;
 	}
@@ -870,15 +870,15 @@ void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column,
 	{
 		float accu=pow(sum/(float)CPRO.result[which_statistic].maxaccu,0.0675);
 		float distance=(float)CPRO.result[which_statistic].drawmode*.01*
-		               CPRO.result[which_statistic].resolution; 
+		               CPRO.result[which_statistic].resolution;
 		float alpha=0.0;   // alpha=0.0 no smoothing; alpha=0.99 high smoothing
-		if(distance>0.0000001) 
+		if(distance>0.0000001)
 		{
 			alpha=1.0-accu/distance;
 			if(alpha<0) alpha=0;
 		}
 
-		if(res==0) 
+		if(res==0)
 		{
 			CPRO.Z_it_group=1.0;
 			CPRO.Z_it_equal=1.0;
@@ -903,10 +903,10 @@ void CPRO_getfromstatistic(float &equal,float &ingroup,long res,long column,
 
 void CPRO_box(AW_device *device,int gc,float l,float t,float width,float high)
 {
-	device->line(gc,l,t,l+width,t,1,(AW_CL)0,(AW_CL)0);	
-	device->line(gc,l+width,t,l+width,t+high,1,(AW_CL)0,(AW_CL)0);	
-	device->line(gc,l,t+high,l+width,t+high,1,(AW_CL)0,(AW_CL)0);	
-	device->line(gc,l,t,l,t+high,1,(AW_CL)0,(AW_CL)0);	
+	device->line(gc,l,t,l+width,t,1,(AW_CL)0,(AW_CL)0);
+	device->line(gc,l+width,t,l+width,t+high,1,(AW_CL)0,(AW_CL)0);
+	device->line(gc,l,t+high,l+width,t+high,1,(AW_CL)0,(AW_CL)0);
+	device->line(gc,l,t,l,t+high,1,(AW_CL)0,(AW_CL)0);
 }
 
 float CPRO_confidinterval(long res,long column,char which_statistic,char mode)
@@ -934,7 +934,7 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 	float rightdistance=20.0,bottomdistance=10.0;
 	float betweendistance=30.0;
 	float firstavailable=.65;
-	float secondavailable=.35; 
+	float secondavailable=.35;
 	/* points are in the areas and without the frame */
 	float topfirst, leftfirst, widthfirst, highfirst;
  	float topsecond, leftsecond, widthsecond, highsecond;
@@ -951,7 +951,7 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 	leftfirst=20.0;
 	widthfirst=(rect.r-rect.l)-leftdistance-1-rightdistance;
 	widthsecond=(rect.r-rect.l)-leftdistance-1-rightdistance;
-	highboth=(rect.b-rect.t)-topdistance-bottomdistance-betweendistance-4; 
+	highboth=(rect.b-rect.t)-topdistance-bottomdistance-betweendistance-4;
 	if((highboth<12.0)||(widthfirst<10.0)) return;
 
 	highfirst=(float)(long)(highboth*firstavailable);
@@ -966,7 +966,7 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 	            widthfirst+2,highfirst+2);
 	CPRO_box(device,GC_black,leftsecond-1,topsecond-1,
 	            widthsecond+2,highsecond+2);
-	
+
 	device->text(GC_black,"column",leftdistance+82,14,0,1,0,0);
 
 /* draw grid and inscribe axes*/
@@ -984,7 +984,7 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 		device->line(GC_grid,xpos,ypos,xpos+widthfirst,ypos,1,0,0);
 		sprintf(buf,"%3ld%%",gridy);
 		device->text(GC_black,buf,xpos-27,ypos+4,0,1,0,0);
-	}		
+	}
 	device->text(GC_black,"100%",leftdistance-26,topdistance+5,0,1,0,0);
 
 	device->text(GC_black,"sequence distance",
@@ -997,7 +997,7 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 										gridx+=CPRO.gridvertical)
 	{
 		xpos=leftdistance+1+(float)gridx*0.01/CPRO.maxdistance*widthfirst;
-		if((float)gridx*0.01<1.0*CPRO.maxdistance) 
+		if((float)gridx*0.01<1.0*CPRO.maxdistance)
 				device->line(GC_grid,xpos,ypos,xpos,ypos+highfirst,1,0,0);
 		sprintf(buf,"%3ld%%",gridx);
 		device->text(GC_black,buf,xpos-12,ypos+13+highfirst,0,1,0,0);
@@ -1029,40 +1029,40 @@ void CPRO_drawstatistic (AW_device *device,char which_statistic)
 
 			// do not draw outside canvas-box
 			if(xpos+linelength > leftfirst+widthfirst+1) continue;
-			
+
 			confidinterval=highfirst*
 				CPRO_confidinterval(firstx,CPRO.column-1,which_statistic,mode);
-	
+
 			ytop=ypos-confidinterval;
-			if(ytop>=topfirst) { 
+			if(ytop>=topfirst) {
 				device->line(GC_blue,xpos,ytop,xpos+linelength,ytop,1,0,0); }
 			else { ytop=topfirst; }
 			device->line(GC_blue,xpos+linelength/2,ytop,xpos+linelength/2,ypos,1,0,0);
 
 			ybottom=ypos+confidinterval;
-			if(ybottom<topfirst+highfirst) { 
+			if(ybottom<topfirst+highfirst) {
 				device->line(GC_blue,xpos,ybottom,xpos+linelength,ybottom,1,0,0);}
 			else { ybottom=topfirst+highfirst-1; }
 			device->line(GC_blue,xpos+linelength/2,ybottom,xpos+linelength/2,ypos,1,0,0);
 
 			ypos=topfirst+ingroup*highfirst;
 			ytop=ypos-confidinterval;
-			if(ytop>=topfirst) { 
+			if(ytop>=topfirst) {
 				device->line(GC_green,xpos,ytop,xpos+linelength,ytop,1,0,0); }
 			else { ytop=topfirst; }
 			device->line(GC_green,xpos+linelength/2,ytop,xpos+linelength/2,ypos,1,0,0);
-		
+
 			ybottom=ypos+confidinterval;
-			if(ybottom<topfirst+highfirst){ 
+			if(ybottom<topfirst+highfirst){
 				device->line(GC_green,xpos,ybottom,xpos+linelength,ybottom,1,0,0);}
 			else { ybottom=topfirst+highfirst-1; }
 			device->line(GC_green,xpos+linelength/2,ybottom,xpos+linelength/2,ypos,1,0,0);
-		
+
 		}
 	}
 
 	float resaccu;
-	float rate;            
+	float rate;
 	sprintf(buf," %5ld",CPRO.result[which_statistic].maxaccu);
 	device->text(GC_black,"   max",leftsecond-50,topsecond,0,1,0,0);
 	device->text(GC_black,buf,leftsecond-43,topsecond+10*1,0,1,0,0);
@@ -1092,9 +1092,9 @@ void CPRO_resize_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
 
 	AW_device *device=aws->get_device(AW_INFO_AREA);
 	device->reset();
-	CPRO_drawstatistic(device,(char)which_statistic);	
+	CPRO_drawstatistic(device,(char)which_statistic);
 }
-	
+
 void CPRO_expose_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
 {
 	AWUSE(cd2);
@@ -1112,8 +1112,8 @@ void CPRO_expose_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
 	if((maxd>0)&&(maxd<101))CPRO.maxdistance=(float)maxd/100.0;
 
 	AW_device *device=aws->get_device (AW_INFO_AREA);
-	CPRO_drawstatistic(device,(char)which_statistic);	
-}	
+	CPRO_drawstatistic(device,(char)which_statistic);
+}
 
 void CPRO_column_cb(AW_root *awr,AW_window *aws,AW_CL which_statistic)
 {
@@ -1166,7 +1166,7 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
 	GBDATA *gb_param=GB_create(newbase,"cpro_resolution",GB_INT);
 	GB_write_int(gb_param,CPRO.result[which_statistic].resolution);
 	gb_param=GB_create(newbase,"cpro_maxalignlen",GB_INT);
-	GB_write_int(gb_param,CPRO.result[which_statistic].maxalignlen);	
+	GB_write_int(gb_param,CPRO.result[which_statistic].maxalignlen);
 	gb_param=GB_create(newbase,"cpro_maxaccu",GB_INT);
 	GB_write_int(gb_param,CPRO.result[which_statistic].maxaccu);
 	gb_param=GB_create(newbase,"cpro_memneeded",GB_INT);
@@ -1174,14 +1174,14 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
 	gb_param=GB_create(newbase,"cpro_alignname",GB_STRING);
 	GB_write_string(gb_param,CPRO.result[which_statistic].alignname);
 	gb_param=GB_create(newbase,"cpro_which_species",GB_STRING);
-	GB_write_string(gb_param,CPRO.result[which_statistic].which_species);	
+	GB_write_string(gb_param,CPRO.result[which_statistic].which_species);
 	gb_param=GB_create(newbase,"cpro_ratio",GB_FLOAT);
 	GB_write_float(gb_param,CPRO.result[which_statistic].ratio);
 	gb_param=GB_create(newbase,"cpro_gaps",GB_INT);
 	GB_write_int(gb_param,CPRO.result[which_statistic].countgaps);
 
-	
-	long maxalignlen=CPRO.result[which_statistic].maxalignlen;	
+
+	long maxalignlen=CPRO.result[which_statistic].maxalignlen;
 
 	GBDATA *gb_colrescontainer;
 	GBDATA *gb_colentry;
@@ -1205,7 +1205,7 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
 			GB_write_ints(gb_colentry,pointer,maxalignlen);
 		}
 	}
-		
+
 	if( (error=GB_commit_transaction(newbase)) )
 	{
 		aw_message(error);
@@ -1277,7 +1277,7 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
 
 	gb_param=GB_search(oldbase,"cpro_which_species",GB_FIND);
 	if(gb_param) strcpy(CPRO.result[which_statistic].which_species,
-	       GB_read_char_pntr(gb_param));	
+	       GB_read_char_pntr(gb_param));
 
 	CPRO.result[which_statistic].statistic=(STATTYPE **)calloc(
 	   	    (size_t)CPRO.result[which_statistic].resolution*3+3,
@@ -1327,14 +1327,14 @@ AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("save");aws->callback(CPRO_savestatistic_cb,which_statistic);
-	aws->create_button("SAVE","SAVE","S");			   
+	aws->create_button("SAVE","SAVE","S");
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel");
-	aws->create_button("CANCEL","CANCEL","C");			   
+	aws->create_button("CANCEL","CANCEL","C");
 
 	awt_create_selection_box((AW_window *)aws,"cpro/save");
 
@@ -1348,10 +1348,10 @@ AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("save");aws->callback(CPRO_loadstatistic_cb,which_statistic);
-	aws->create_button("LOAD","LOAD","S");			   
+	aws->create_button("LOAD","LOAD","S");
 
 	awt_create_selection_box((AW_window *)aws,"cpro/load");
 
@@ -1360,7 +1360,7 @@ AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
 
 // search point of resolution when half maximum if reached (for condense)
 float CPRO_gethalfmaximum(long column,float maximum,float firsttoreach,
-                          char transversion,char which_statistic,char mode) 
+                          char transversion,char which_statistic,char mode)
 {
 	float equal,ingroup,interest;
 	float interval,sum;
@@ -1384,7 +1384,7 @@ float CPRO_gethalfmaximum(long column,float maximum,float firsttoreach,
 		}
 	}
 	halfmax=(float)res/(float)CPRO.result[which_statistic].resolution;
-	return(halfmax-(float)CPRO.result[which_statistic].drawmode*0.01); 
+	return(halfmax-(float)CPRO.result[which_statistic].drawmode*0.01);
 	       // delay depending on drawmode
 }
 
@@ -1414,7 +1414,7 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 {
 	AW_root *aw_root = aw->get_root();
 	char mode=CPRO.result[which_statistic].drawmode;
-	if(!(CPRO.result[which_statistic].statisticexists)) 
+	if(!(CPRO.result[which_statistic].statisticexists))
 	{
 		aw_message("statistic doesn't exist !");
 		return;
@@ -1431,7 +1431,7 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 	long maxcol=CPRO.result[which_statistic].maxalignlen;
 
 	char *savename=aw_root->awar("cpro/condensename")->read_string();
-	if(savename[0]==0) 
+	if(savename[0]==0)
 	{
 		delete savename;
 		return;
@@ -1443,21 +1443,21 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 
 	float maximum;
 	float reachedhalf;
-	char steps; 
+	char steps;
 	for(long column=0;column<maxcol;column++)
 	{
 		if(((column/100)*100)==column) aw_status((double)column/(double)maxcol);
 		maximum=CPRO_getmaximum(column,transversion,(char)which_statistic,mode);
 		if(maximum<-100.0) result[column]='.';
 		else if(maximum<=0.0) result[column]='-';
-		else 
+		else
 		{
 			if(maximum>=leastmax) result[column]='A';
 			else result[column]='a';
 			reachedhalf=CPRO_gethalfmaximum(column,maximum,firsttoreach,
 			                           transversion,(char)which_statistic,mode);
 			for(steps=0;(reachedhalf>firstreachedstep)&&(steps<'Y'-'A');steps++)
-				reachedhalf-=firstreachedstep;	
+				reachedhalf-=firstreachedstep;
 			result[column]+=steps;
 		}
 	}
@@ -1508,7 +1508,7 @@ AW_window *CPRO_condensewindow_cb( AW_root *aw_root,AW_CL which_statistic )
   	aws->button_length( 8 );
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at( "which_result" );
 	aws->create_toggle_field( "cpro/which_result", NULL ,"" );
@@ -1518,7 +1518,7 @@ AW_window *CPRO_condensewindow_cb( AW_root *aw_root,AW_CL which_statistic )
 
 	aws->button_length(11);
 	aws->at("begin");aws->callback(CPRO_condense_cb,which_statistic);
-	aws->create_button("CONDENSE_AND_EXPORT", "CONDENSE\nAND EXPORT","E");	
+	aws->create_button("CONDENSE_AND_EXPORT", "CONDENSE\nAND EXPORT","E");
 
 	aws->at("name");aws->create_input_field("cpro/condensename",11);
 
@@ -1539,8 +1539,8 @@ AW_window *CPRO_xpert_cb( AW_root *aw_root )
   	aws->button_length( 8 );
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
-	
+	aws->create_button("CLOSE","CLOSE","C");
+
 	aws->at("partition");
 	aws->create_input_field("cpro/partition",6);
 
@@ -1582,37 +1582,37 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
 	aws->button_length(6);
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	//aws->at("xpert");aws->callback(AW_POPUP,(AW_CL)CPRO_xpert_cb,0);
 
 
 	aws->at("column");
 	aws->create_input_field(AWAR_CURSOR_POSITION,4);
-	
+
 	aws->button_length(3);
 	aws->at("d");aws->callback((AW_CB0)CPRO_columnminus_cb);
 	aws->create_button(0,"-","1");
 	aws->at("u");aws->callback((AW_CB2)CPRO_columnplus_cb,which_statistic,0);
 	aws->create_button(0,"+","2");
-	
+
 	sprintf(buf,"cpro/drawmode%d",(int)which_statistic);
 	aws->at("drawmode");aws->create_option_menu(buf);
-		aws->insert_option( "no smoothing", "n",0); 
-		aws->insert_option( "smoothing 1", "1",1); 
-		aws->insert_option( "smoothing 2", "2",2); 
-		aws->insert_option( "smoothing 3", "3",3); 
-		aws->insert_option( "smoothing 5", "5",5); 
-		aws->insert_option( "smoothing 10", "6",10); 
+		aws->insert_option( "no smoothing", "n",0);
+		aws->insert_option( "smoothing 1", "1",1);
+		aws->insert_option( "smoothing 2", "2",2);
+		aws->insert_option( "smoothing 3", "3",3);
+		aws->insert_option( "smoothing 5", "5",5);
+		aws->insert_option( "smoothing 10", "6",10);
 		aws->insert_option( "smoothing 15", "7",15);
-	aws->update_option_menu(); 
+	aws->update_option_menu();
 
 	aw_root->awar(buf)->add_callback(
-		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);	
+		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
 	aw_root->awar("cpro/gridhorizontal")->add_callback(
-		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);	
+		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
 	aw_root->awar("cpro/gridvertical")->add_callback(
-		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);	
+		(AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
 
 	aws->at("maxdistance");
 	//aws->label("max distance");
@@ -1627,7 +1627,7 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
 	aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb,
 				(AW_CL)aws,which_statistic);
 	aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb,
-				(AW_CL)aws,which_statistic);	
+				(AW_CL)aws,which_statistic);
 	aws->button_length( 6);
 
 	AW_device *device=aws->get_device (AW_INFO_AREA);
@@ -1639,14 +1639,14 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
 	device->set_font(GC_black,0,10);
 	device->new_gc( GC_blue );
 	device->set_line_attributes(GC_blue,0.3,AW_SOLID);
-	device->set_foreground_color(GC_blue,AW_WINDOW_C1);	
+	device->set_foreground_color(GC_blue,AW_WINDOW_C1);
  	device->new_gc( GC_green );
 	device->set_line_attributes(GC_green,0.3,AW_SOLID);
 	device->set_foreground_color(GC_green,AW_WINDOW_C2);
 	device->new_gc( GC_grid );
 	device->set_line_attributes(GC_grid,0.3,AW_DOTTED);
 	device->set_foreground_color(GC_grid,AW_WINDOW_C3);
-	
+
 	return (AW_window *)aws;
 }
 
@@ -1660,7 +1660,7 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root,AW_CL which_statistic)
   	aws->button_length( 10 );
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("resolution");
 	aws->create_input_field("cpro/resolution",8);
@@ -1678,7 +1678,7 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root,AW_CL which_statistic)
 
 	aws->at("calculate");
 		aws->callback(CPRO_calculate_cb,(AW_CL)which_statistic);
-    	aws->create_button("CALCULATE","CALCULATE","A");			   
+    	aws->create_button("CALCULATE","CALCULATE","A");
 
 	aws->at( "which_species" );
 	aws->create_toggle_field( "cpro/which_species", NULL ,"" );
@@ -1714,13 +1714,13 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root,AW_CL which_statistic)
  *
  * Global Variables referenced:  .
  *
- * Global Variables modified:    x 
+ * Global Variables modified:    x
  *
  * AWARs referenced:             .
  *
  * AWARs modified:               x
- * 
- * Dependencies:      Needs xfig file cprofile.fig  
+ *
+ * Dependencies:      Needs xfig file cprofile.fig
  * -----------------------------------------------------------------
  */
 AW_window *
@@ -1734,11 +1734,11 @@ AP_open_cprofile_window( AW_root *aw_root)
 	GB_push_transaction(gb_main);
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
-	
+	aws->create_button("CLOSE","CLOSE","C");
+
 	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"pos_variability.ps");
-	aws->create_button("HELP","HELP","H");			   
-	
+	aws->create_button("HELP","HELP","H");
+
 	aws->button_length(10);
 	aws->at("xpert");aws->callback(AW_POPUP,(AW_CL)CPRO_xpert_cb,0);
     	aws->create_button("EXPERT_OPTIONS","expert...","x");
@@ -1748,7 +1748,7 @@ AP_open_cprofile_window( AW_root *aw_root)
 	aws->at("calculate1");aws->callback(AW_POPUP,(AW_CL)CPRO_calculatewin_cb,0);
     	aws->create_button("GO_STAT_1", "calculate as\nstatistic 1 ...","c");
 	aws->at("calculate2");aws->callback(AW_POPUP,(AW_CL)CPRO_calculatewin_cb,1);
-    	aws->create_button("GO_STAT_2", "calculate as\nstatistic 2 ...","a");	
+    	aws->create_button("GO_STAT_2", "calculate as\nstatistic 2 ...","a");
 
 	aws->button_length(17);
 	aws->at("save1");aws->callback(AW_POPUP,(AW_CL)CPRO_savestatisticwindow_cb,0);
@@ -1787,7 +1787,7 @@ AP_open_cprofile_window( AW_root *aw_root)
 	aw_root->awar("cpro/resolution")->add_callback(
 		(AW_RCB)CPRO_memrequirement_cb,0,0);
 	aw_root->awar("cpro/which_species")->add_callback(
-		(AW_RCB)CPRO_memrequirement_cb,0,0);	
+		(AW_RCB)CPRO_memrequirement_cb,0,0);
 
 	GB_pop_transaction(gb_main);
 

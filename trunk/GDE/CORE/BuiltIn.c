@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <xview/xview.h>
 #include <xview/scrollbar.h>
@@ -126,13 +126,13 @@ Menu_item mnuitm;
 
 	popup = xv_get(pframe,FRAME_CMD_PANEL);
 	(void)xv_create (popup,PANEL_BUTTON,
-	    PANEL_LABEL_STRING,"OK", 
-	    PANEL_NOTIFY_PROC,SaveAsFileName,    
+	    PANEL_LABEL_STRING,"OK",
+	    PANEL_NOTIFY_PROC,SaveAsFileName,
 	    0);
 
 	(void)xv_create (popup,PANEL_BUTTON,
-	    PANEL_LABEL_STRING,"Cancel", 
-	    PANEL_NOTIFY_PROC,DONT,    
+	    PANEL_LABEL_STRING,"Cancel",
+	    PANEL_NOTIFY_PROC,DONT,
 	    0);
 
 	(void)xv_set(popup,
@@ -403,7 +403,7 @@ Event *event;
 
 	(void)xv_set(popup,PANEL_LAYOUT,PANEL_VERTICAL,0);
 
-	(void)xv_create(popup,PANEL_CHOICE_STACK,    
+	(void)xv_create(popup,PANEL_CHOICE_STACK,
 	    PANEL_LAYOUT,PANEL_VERTICAL,
 	    PANEL_LABEL_STRING,"Color type",
 	    PANEL_NOTIFY_PROC,ChColor,
@@ -440,7 +440,7 @@ Event *event;
 		break;
 	}
 
-	(void)xv_create(popup,PANEL_CHOICE_STACK,    
+	(void)xv_create(popup,PANEL_CHOICE_STACK,
 	    PANEL_LAYOUT,PANEL_VERTICAL,
 	    PANEL_NOTIFY_PROC,ChFontSize,
 	    PANEL_LABEL_STRING,"Font Size",
@@ -468,8 +468,8 @@ Event *event;
 	    PANEL_CHOICE_STRINGS,
 	    "Inverted","Lock vertical scroll","Key clicks","Message panel",
 	    0,
-	    PANEL_NOTIFY_PROC,ChDisAttr, 
-	    PANEL_VALUE,DisplayAttr,  
+	    PANEL_NOTIFY_PROC,ChDisAttr,
+	    PANEL_VALUE,DisplayAttr,
 	    0);
 
 	(void)xv_set(popup,PANEL_LAYOUT,PANEL_HORIZONTAL,0);
@@ -829,7 +829,7 @@ Event *event;
 	dpy = (Display*)xv_get(EditNameCan, XV_DISPLAY);
 	DrawNANames(dpy,xv_get(canvas_paint_window(EditNameCan),XV_XID));
 	view = (Xv_window)xv_get(EditCan,OPENWIN_NTH_VIEW,0);
-	
+
 	OPENWIN_EACH_VIEW(EditCan,view)
 		JumpTo(view, 0,lastselected);
 	OPENWIN_END_EACH;
@@ -1155,7 +1155,7 @@ Menu_item mnuitm;
 	    PANEL_LABEL_STRING,"Type:",
 	    PANEL_CHOICE_STRINGS,
 	    "RNA",
-	    "DNA", 
+	    "DNA",
 	    "TEXT",
 	    "MASK",
 	    "PROTEIN",
@@ -1173,7 +1173,7 @@ Menu_item mnuitm;
 
 	(void)xv_create(popup,PANEL_CHOICE_STACK,
 	    PANEL_NOTIFY_PROC,ChAttrType,
-	    PANEL_LABEL_STRING,"Strand", 
+	    PANEL_LABEL_STRING,"Strand",
 	    PANEL_CHOICE_STRINGS,
 	    "Primary",
 	    "Secondary",
@@ -1194,7 +1194,7 @@ Menu_item mnuitm;
 	(void)xv_create(popup,PANEL_CHOICE_STACK,
 	    PANEL_LAYOUT,PANEL_HORIZONTAL,
 	    PANEL_NOTIFY_PROC,ChAttrType,
-	    PANEL_LABEL_STRING,"Direction", 
+	    PANEL_LABEL_STRING,"Direction",
 	    PANEL_CHOICE_STRINGS,
 	    "5' to 3'",
 	    "3' to 5'",
@@ -1244,8 +1244,8 @@ Menu_item mnuitm;
 
 #ifdef HGL
 	if(sel_count == 1)
-		(void)xv_create(popup,PANEL_TEXT, 
-		    PANEL_VALUE_DISPLAY_LENGTH,40, 
+		(void)xv_create(popup,PANEL_TEXT,
+		    PANEL_VALUE_DISPLAY_LENGTH,40,
 		    PANEL_LABEL_STRING,"Membrane  ",
 		    PANEL_VALUE,this_elem->membrane,
 		    PANEL_NOTIFY_PROC,ChAttr,
@@ -1256,8 +1256,8 @@ Menu_item mnuitm;
 #endif
 
 	if(sel_count == 1)
-		(void)xv_create(popup,PANEL_TEXT, 
-		    PANEL_VALUE_DISPLAY_LENGTH,40, 
+		(void)xv_create(popup,PANEL_TEXT,
+		    PANEL_VALUE_DISPLAY_LENGTH,40,
 		    PANEL_LABEL_STRING,"Author    ",
 		    PANEL_VALUE,this_elem->authority,
 		    PANEL_NOTIFY_PROC,ChAttr,
@@ -1268,8 +1268,8 @@ Menu_item mnuitm;
 
 #ifdef HGL
 	if(sel_count == 1)
-		(void)xv_create(popup,PANEL_TEXT, 
-		    PANEL_VALUE_DISPLAY_LENGTH,40, 
+		(void)xv_create(popup,PANEL_TEXT,
+		    PANEL_VALUE_DISPLAY_LENGTH,40,
 		    PANEL_LABEL_STRING,"Barcode   ",
 		    PANEL_VALUE,this_elem->barcode,
 		    PANEL_NOTIFY_PROC,ChAttr,
@@ -1347,7 +1347,7 @@ Menu_item mnuitm;
 			baggage_tsw = xv_create(pframe,TEXTSW,
 			    WIN_INHERIT_COLORS,TRUE,
 			    WIN_BELOW,comments_tsw,
-			    XV_X,0, XV_HEIGHT,90,   
+			    XV_X,0, XV_HEIGHT,90,
 			    TEXTSW_CONTENTS,this_elem->baggage?
 			    this_elem->baggage:"",
 			    TEXTSW_READ_ONLY,TRUE,
@@ -1384,13 +1384,13 @@ Destroy_status status;
 	{
 		Cfree(DataSet->element[lastselected].comments);
 
-		DataSet->element[lastselected].comments = 
+		DataSet->element[lastselected].comments =
 		    Calloc(xv_get(client,TEXTSW_LENGTH)+1,sizeof(char));
 
 		DataSet->element[lastselected].comments_len =
 		    strlen(DataSet->element[lastselected].comments);
 
-		DataSet->element[lastselected].comments_maxlen = 
+		DataSet->element[lastselected].comments_maxlen =
 		    xv_get(client,TEXTSW_LENGTH);
 
 		(void)xv_get(client,TEXTSW_CONTENTS,0,
@@ -1981,7 +1981,7 @@ Event *event;
 			    sizeof(NA_Base));
 			for(i=0;i<slen;i++)
 			{
-				rev_seq[i] = 
+				rev_seq[i] =
 				    (NA_Base)getelem(&(element[j]),
 				    slen+offset - i - 1);
 			}

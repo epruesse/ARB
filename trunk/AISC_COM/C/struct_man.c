@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include "aisc.h"
 
@@ -350,7 +350,7 @@ int aisc_server_dllint_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset
     bs->data = 0;
     bs->size = 0;
     if (pb->cnt == 0) return 0;
-	
+
     bs->size = sizeof(int) * pb->cnt;
     ptr = (int *)malloc(bs->size);
     bs->data = (char *)ptr;
@@ -373,7 +373,7 @@ int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int off
     bs->data = 0;
     bs->size = 0;
     if (pb->cnt == 0) return 0;
-	
+
     size = sizeof(int) * (pb->cnt+1);
     stringlenghts = 0;
     for (mh=pb->first;mh;mh=mh->next) {

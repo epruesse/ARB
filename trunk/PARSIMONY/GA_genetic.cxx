@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <iostream.h>
 #include "AP_buffer.hxx"
 #include "parsimony.hxx"
@@ -27,7 +27,7 @@ GA_genetic::GA_genetic(void) {
 }
 
 GA_genetic::~GA_genetic(void) {
-	if (fout) { 
+	if (fout) {
 		if (fclose(fout) != 0) {
 			new AP_ERR("~GA_genetic","coldnt close output");
 		}
@@ -42,14 +42,14 @@ void GA_genetic::init(GBDATA *gbmain) {
 	gb_tree_start = GB_find(gb_genetic,"tree_start",NULL,down_level);
 	gb_tree_opt = GB_find(gb_genetic,"tree_opt",NULL,down_level);
 	gb_joblist = GB_find(gb_genetic,"job_list",NULL,down_level);
-	gb_bestTree = GB_find(gb_presets,"bestTree",NULL,down_level);	
+	gb_bestTree = GB_find(gb_presets,"bestTree",NULL,down_level);
 	gb_jobCount = GB_find(gb_presets,"jobCount",NULL,down_level);
 	gb_maxTree = GB_find(gb_presets,"maxTree",NULL,down_level);
 	gb_treeName = GB_find(gb_presets,"treeName",NULL,down_level);
-	
+
 	if (gb_presets == 0) {
 		new AP_ERR("init","No presets defined");
-		return; 
+		return;
 	}
 	if (gb_joblist == 0){
 		gb_joblist = GB_create_container(gb_genetic,0,"job_list");
@@ -73,28 +73,28 @@ void GA_genetic::init(GBDATA *gbmain) {
 		return;
 	}
 	max_cluster = (int)GB_read_int(gbp);
-	
+
 	  if ( (gbp = GB_find(gb_presets,"maxTree",NULL,down_level)) == 0) {
 	  new AP_ERR("GA_init","some preset not found");
 	  GB_pop_transaction(gb_main);
 	  return;
 	  }
 	  maxTree = (int)GB_read_int(gbp);
-       
+
 	if ( (gbp = GB_find(gb_presets,"max_jobs",NULL,down_level)) == 0) {
 		new AP_ERR("GA_init","some preset not found");
 		GB_pop_transaction(gb_main);
 		return;
 	}
 	max_jobs = (int)GB_read_int(gbp);
-	
+
 	// allocate memory
 	treelist = (long **)calloc((size_t)max_cluster+1,sizeof(long **));
 	for (int i=0;i<max_cluster;i++) {
 		treelist[i] = (long *)calloc((size_t)maxTree+1,sizeof(long *));
 	}
 	treePerCluster = (int *)calloc((size_t)max_cluster+1,sizeof(int));
-	
+
 	GB_pop_transaction(gb_main);
 	//
 	// open Filestream for output
@@ -115,8 +115,8 @@ void GA_genetic::init_first(GBDATA *gbmain) {
 	gb_tree_start = GB_create_container(gb_genetic,0,"tree_start");
 	gb_tree_opt = GB_create_container(gb_genetic,0,"trees_opt");
 	gb_joblist = GB_create_container(gb_genetic,0,"job_list");
-	
-       
+
+
 
 	// write presets
 	GBDATA *gbp;
@@ -141,7 +141,7 @@ void GA_genetic::init_first(GBDATA *gbmain) {
 	GB_write_int(gbp,5);
 
        	GB_pop_transaction(gb_main);
-	
+
 	tree_prototype = (AP_tree *) new AP_tree_nlen;
 	return;
 }
@@ -151,7 +151,7 @@ void GA_genetic::exit() {
 
 AP_ERR * GA_genetic::read_presets() {
 	GBDATA *gbp;
-	if (gb_presets == 0) 
+	if (gb_presets == 0)
 		return new AP_ERR("GA_genetic","not inited");
 	if ( (gbp = GB_find(gb_presets,"jobOpt",NULL,down_level)) == 0) {
 		return new AP_ERR("GA_genetic","some preset not found");
@@ -169,7 +169,7 @@ AP_ERR * GA_genetic::read_presets() {
 	if (gb_jobCount) jobCount = (int)GB_read_int(gb_jobCount);
 	if (gb_bestTree) bestTree = GB_read_APfloat(gb_bestTree);
 	if (gb_maxTree) maxTree = (int)GB_read_int(gb_maxTree);
-			
+
 	return 0;
 }
 
@@ -246,7 +246,7 @@ GBDATA *GA_genetic::get_tree(GBDATA *container,long treeid) {
 	GBDATA *gb_tree,*gbid;
 	char treename[20];
 	long id;
-	
+
 	if (container == 0) {
 		new AP_ERR("get_tree","container valid !");
 		return 0;
@@ -324,7 +324,7 @@ AP_tree *GA_genetic::read_tree_rek(char **data)
 		*(p1++) = 0;
 		node->rightlen = AP_atof(*data);
 		*data = p1;
-		
+
 		node->leftson = read_tree_rek(data);
 		if (!node->leftson) {
 			free((char *)node);
@@ -377,15 +377,15 @@ AP_ERR *GA_genetic::write_tree( GBDATA *gb_cluster, GA_tree *ga_tree)
        	if (ga_tree->id < 0) {
 		ga_tree->id = GB_read_int(gb_treeName);
 		GB_write_int(gb_treeName,1+ga_tree->id);
-	} 
+	}
 	if ((gb_tree = get_tree(gb_cluster,ga_tree->id))==0) {
 		 gb_tree = GB_create_container(gb_cluster,0,"tree");
-	} 
-	
+	}
+
 	gb_ref_count = GB_create(gb_tree,0,"ref_count");
 	gb_criteria = GB_create(gb_tree,0,"criteria");
 	gb_id = GB_create(gb_tree,0,"id");
-	
+
 	GB_write_int(gb_ref_count,ga_tree->ref_count);
 	GB_write_APfloat(gb_criteria, ga_tree->criteria);
 	GB_write_int(gb_id,ga_tree->id);
@@ -416,7 +416,7 @@ AP_ERR *GA_genetic::write_tree( GBDATA *gb_cluster, GA_tree *ga_tree)
 
 
 GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster,long tree_id)
-	/* read a tree 
+	/* read a tree
 	   and removes it if no referenz is existing */
 {
 
@@ -427,10 +427,10 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster,long tree_id)
 	int count;
 	char *cptr[1];
 	GA_tree *tree;
-	
+
 	gb_count = GB_find(gb_cluster,"count",0,down_level);
 	count = (int)GB_read_int(gb_count);
-       
+
 	gb_tree = get_tree(gb_cluster,tree_id);
 	if(gb_tree == 0) {
 			new AP_ERR("read_tree","this tree not found");
@@ -445,7 +445,7 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster,long tree_id)
 	GBDATA *gb_ref_count = GB_search(gb_tree,"ref_count",GB_FIND);
 	GBDATA *gb_criteria = GB_search(gb_tree,"criteria",GB_FIND);
 	GBDATA *gb_id = GB_search(gb_tree,"id",GB_FIND);
-	
+
 	if (gb_ref_count)
 		tree->ref_count = (int)GB_read_int(gb_ref_count);
 	if (gb_criteria)
@@ -454,14 +454,14 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster,long tree_id)
 		tree->id = GB_read_int(gb_id);
 
 	gb_treedata = GB_search(gb_tree,"tree_data",GB_FIND);
-	if (gb_treedata) {	
+	if (gb_treedata) {
 		fbuf =cptr[0] = GB_read_string(gb_treedata);
 		tree->tree = (AP_tree_nlen *)read_tree_rek(cptr);
 		free (fbuf);
 	}
 	delete_tree(gb_cluster,gb_tree);
 	GBT_link_tree((GBT_TREE*)tree->tree,gb_main);
-	return tree;		
+	return tree;
 }
 
 
@@ -492,14 +492,14 @@ AP_ERR * GA_genetic::put_start_tree(AP_tree *tree,const long tree_id, int  clust
 		GB_pop_transaction(gb_main);
 		return new AP_ERR("put_start_tree","cluster unvalid");
 	}
-	
+
 	if (gb_tree_start == 0) {
 		GB_pop_transaction(gb_main);
 		ap_err = new AP_ERR("Couldn't create container");
 		return ap_err;
 	}
 	gb_cluster = get_cluster(gb_tree_start,cluster);
-	
+
 	if (gb_cluster ==0) {
 		char clustername[20];
 		sprintf(clustername,"cl_%d",cluster);
@@ -519,9 +519,9 @@ AP_ERR * GA_genetic::put_start_tree(AP_tree *tree,const long tree_id, int  clust
 	ga_tree->criteria  = tree->mutation_rate;
 	ga_tree->id = tree_id;
 	ga_tree->tree = (AP_tree_nlen *)tree;
-    
+
 	ap_err = write_tree(gb_cluster,ga_tree);
-	
+
 	if (ap_err == 0) {
 		anzahl ++;
 		GB_write_int(gb_anzahl,anzahl);
@@ -559,7 +559,7 @@ AP_ERR * GA_genetic::put_optimized(GA_tree *tree,int cluster) {
 	GBDATA *gb_cluster;
        	int anzahl = 0;
 	GBDATA *gb_anzahl;
-	
+
 	GB_push_transaction(gb_main);
 	gb_cluster = this->get_cluster(gb_tree_opt,cluster);
 	if (gb_cluster ==0) {
@@ -573,20 +573,20 @@ AP_ERR * GA_genetic::put_optimized(GA_tree *tree,int cluster) {
 		gb_anzahl = GB_create(gb_cluster,0,"count");
 		GB_write_int(gb_anzahl,0);
 	}
-	
+
 	gb_anzahl = GB_find(gb_cluster,"count",0,down_level);
 	anzahl = (int)GB_read_int(gb_anzahl);
 	while (anzahl >= maxTree) {
 		remove_job(gb_cluster);
 	}
-	
+
 	// baum speichern und anzahl erhoehen
 	// kreire jobs
 	tree->id = -1;
 	write_tree(gb_cluster,tree);
 	anzahl ++;
 	GB_write_int(gb_anzahl,anzahl);
-	create_jobs(tree,cluster);      
+	create_jobs(tree,cluster);
       	GB_pop_transaction(gb_main);
 	return 0;
 }
@@ -597,7 +597,7 @@ AP_ERR *GA_genetic::delete_tree(GBDATA *gb_cluster,GBDATA *gb_tree) {
 	if (gb_tree == 0) {
 		return new AP_ERR("delete_tree","no tree given");
 	}
-	
+
 	GBDATA *gb_ref_count = GB_search(gb_tree,"ref_count",GB_FIND);
 	if (gb_ref_count) {
 		ref_count = (int)GB_read_int(gb_ref_count);
@@ -616,7 +616,7 @@ AP_ERR *GA_genetic::delete_tree(GBDATA *gb_cluster,GBDATA *gb_tree) {
 /**************************************************
 Alles was mit jobs zu tuen hat
 **************************************************/
-  
+
 GA_job * GA_genetic::get_job(int cluster) {
 	int count;
 	GBDATA * gb_cluster;
@@ -634,14 +634,14 @@ GA_job * GA_genetic::get_job(int cluster) {
 		GB_pop_transaction(gb_main);
 		return 0;
 	}
-	
+
        	count = (int)GB_read_int(gb_jobCount); // globaler zaehler
 	if (count <= 0) {
 		new AP_ERR("get_job","no job");
 		GB_pop_transaction(gb_main);
 		return 0;
 	}
-		
+
 	//
 	// suche besten job aus cluster und liefer ihn zurueck
 	//
@@ -660,18 +660,18 @@ GA_job * GA_genetic::get_job(int cluster) {
 	}
 
 	gb_best_job = gbp_job = GB_find(gb_cluster,"job",0,down_level);
-	if (gbp_job != 0) 
+	if (gbp_job != 0)
 		gbp_criteria = GB_find(gbp_job,"criteria",0,down_level);
-	
+
 	if (gbp_criteria != 0)
 		crit_best = GB_read_APfloat(gbp_criteria);
-	
+
 	while ((gbp_job = GB_find(gbp_job,"job",0,this_level|search_next)) !=0) {
 		gbp_criteria = GB_find(gbp_job,"criteria",0,down_level);
 		crit_next = GB_read_APfloat(gbp_criteria);
 		if (crit_next > crit_best ) {
 			crit_best = crit_next;
-			gb_best_job = gbp_job;	
+			gb_best_job = gbp_job;
 		}
 	}
     	if (gb_best_job == 0) {
@@ -699,8 +699,8 @@ GA_job * GA_genetic::get_job(int cluster) {
 	// Der erste Baum ist im selben Cluster !
 	gb_cluster = get_cluster(gb_tree_opt,job->cluster0);
 	job->tree0 = read_tree(gb_cluster,job->id0);
-	
-	if (job->id1 != -1 ){ // falls zweiter baum angegeben 
+
+	if (job->id1 != -1 ){ // falls zweiter baum angegeben
 		gb_cluster = get_cluster(gb_tree_opt,job->cluster1);
 		job->tree1 = read_tree(gb_cluster,job->id1);
 	}
@@ -725,7 +725,7 @@ AP_ERR *GA_genetic::put_job(int cluster,GA_job *job) {
 	AP_ERR *aperr = 0;
 	char *err =0;
 	GBDATA *gbp;
-	
+
 	if (job == 0) {
 		return new AP_ERR("put_job","no job given !");
 	}
@@ -736,7 +736,7 @@ AP_ERR *GA_genetic::put_job(int cluster,GA_job *job) {
         // beide referenzcounter erhoehen
 	gb_jobcluster = gb_cluster = get_cluster(gb_joblist,job->cluster0);
 	gb_anzahl = GB_find(gb_cluster,"count",0,down_level);
-	anzahl =GB_read_int(gb_anzahl);	
+	anzahl =GB_read_int(gb_anzahl);
 	// Criteria Ausrechnen !!
 	if (job->id1 >= 0) {
 		GBDATA *gbcl = get_cluster(gb_tree_opt,job->cluster1);
@@ -771,7 +771,7 @@ AP_ERR *GA_genetic::put_job(int cluster,GA_job *job) {
 	err = GB_write_int(gbp,job->id0);
 	gbp =  GB_search(gb_job,"id1",GB_CREATE);
 	err = GB_write_int(gbp,job->id1);
-	
+
 	if (err !=0) {
 		aperr = new AP_ERR("put job","error while writing job to database");
 		GB_abort_transaction(gb_main);
@@ -791,11 +791,11 @@ AP_ERR *GA_genetic::put_job(int cluster,GA_job *job) {
 	}
 
 	jobCount = (int)GB_read_int(gb_jobCount);
-	
+
 	while (jobCount >= max_jobs) {
 		remove_job(0);
 	}
-	
+
 	GB_pop_transaction(gb_main);
 	job->printl();
 	return aperr;
@@ -812,7 +812,7 @@ AP_ERR * GA_genetic::delete_job(GBDATA *gb_job) {
 	job = new GA_job;
 	GBDATA *jobcl;
 
-	if (gb_job == 0) 
+	if (gb_job == 0)
 		return new AP_ERR("delete_job","no job given !");
 	jobcl = GB_get_father(gb_job);
 
@@ -828,10 +828,10 @@ AP_ERR * GA_genetic::delete_job(GBDATA *gb_job) {
 	// finde baeume
 	// Der erste Baum ist im selben Cluster !
 	gbcl = gb_cluster = get_cluster(gb_tree_opt,job->cluster0);
-	
+
 	gbt = get_tree(gb_cluster,job->id0);
 	delete_tree(gb_cluster,gbt);
-	if (job->id1 != -1 ){ // falls zweiter baum angegeben 
+	if (job->id1 != -1 ){ // falls zweiter baum angegeben
 		gb_cluster = get_cluster(gb_tree_opt,job->cluster1);
 		gbt = get_tree(gb_cluster,job->id1);
 		delete_tree(gb_cluster,gbt);
@@ -874,9 +874,9 @@ AP_ERR * GA_genetic::remove_job(GBDATA *gb_cluster) {
 			}
 		}
 	}
-	
+
 	gbjob = GB_find(gb_cluster,"job",0,down_level);
-	
+
 	if (gbjob != 0) {
 		gbp_criteria = GB_find(gbjob,"criteria",0,down_level);
 		if (gbp_criteria != 0) {
@@ -888,7 +888,7 @@ AP_ERR * GA_genetic::remove_job(GBDATA *gb_cluster) {
 			crit_next = GB_read_APfloat(gbp_criteria);
 			if (crit_next > crit_worst ) {
 				crit_worst = crit_next;
-				gbworst = gbjob;	
+				gbworst = gbjob;
 			}
 		}
 	}
@@ -896,11 +896,11 @@ AP_ERR * GA_genetic::remove_job(GBDATA *gb_cluster) {
 		cout << "Ccluster" << cl;
 		return new AP_ERR("remove_job","No job found");
 	}
-	
+
 	delete_job(gbworst);
 	return 0;
 }
- 
+
 
 
 AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
@@ -912,7 +912,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 		return new AP_ERR("create_jobs","no tree given");
 
 	read_presets();
-	
+
 	/*
 	  for (i=0;i<jobOpt;i++){	// Optimierungsjobs
 	  job = new GA_job;
@@ -921,7 +921,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 	  job->cluster1 = -1;
 	  job->id1 = -1;
 	  job->modus = GA_KERNIGHAN;
-	  if (put_job(job->cluster0,job) !=0) 
+	  if (put_job(job->cluster0,job) !=0)
 	  ;
 	  delete job;
 	  }
@@ -957,7 +957,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 	clusterCount = i;
 	cout << "\n";
 	cout.flush();
-	
+
 	for (i=0;i<jobCrossover;i++){	// Crossoverjobs
 		if (treePerCluster[cluster] > 1) { // in same cluster
 			job = new GA_job;
@@ -992,7 +992,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 		job->id0 = tree->id;
 				// search random cluster other than cluster
 		rcl = (int)random()%clusterCount;
-		
+
 		int safty = 0;
 		while ((rcl == cluster) || (treePerCluster[rcl] < 1) )  {
 			safty ++;
@@ -1007,9 +1007,9 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 		treeid = (int)random()%treePerCluster[rcl];
 		//	while (treelist[rcl][treeid] == job->id0) {
 			treeid = (int)random()%treePerCluster[rcl];
-		
+
 		//};
-	
+
 		// remove it from treelist by a swap
 		job->id1 = treelist[rcl][treeid];
 		treelist[rcl][treeid] =
@@ -1019,7 +1019,7 @@ AP_ERR *GA_genetic::create_jobs(GA_tree *tree,int cluster) {
 		if (put_job(job->cluster0,job) ==0)
 			jc++;
 		delete job;
-	}	
+	}
 	if (jc < 1) {	// create jobs falls keine anderen aufgetaucht sind
 		job = new GA_job;
 		job->cluster0 = cluster;

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "global_defs.h"
-#include <malloc.h>
+/* #include <malloc.h> */
 
 /*
 *	Alloc.c
@@ -66,7 +66,7 @@ char* block;
         {
 #ifdef SUN4
 	    if(free(block) == 0)
-	      Warning("Error in Cfree..."); 
+	      Warning("Error in Cfree...");
 #endif
         }
 /*        else
@@ -103,8 +103,8 @@ int indx;	/*Index relative to the global offset*/
 }
 
 /*
-*	Replace the array element at seq[indx] with elem.  The index 
-*       is relative to the alignment. 
+*	Replace the array element at seq[indx] with elem.  The index
+*       is relative to the alignment.
 */
 
 void ReplaceElem(seq,indx,elem)
@@ -189,7 +189,7 @@ char ch;       /*element to insert */
     char c[2];
     c[0]=ch;
     c[1] = '\0';
-       
+
     return (InsertElems(a,b,c));
 }
 
@@ -273,10 +273,10 @@ int min,max;
 	}
 
 	seq->direction *= -1;
-	
+
 	SeqNormal(seq);
 	return;
-} 
+}
 
 
 /* sequence complementing. */
@@ -288,7 +288,7 @@ Sequence *seq;
 	char *c;
         static int tmatr[16] = {'-','a','c','m','g','r','s','v',
                         't','w','y','h','k','d','b','n'};
- 
+
         static int matr[128] = {
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x00,
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -297,7 +297,7 @@ Sequence *seq;
         0x0b,0,0,0x0c,0,0x03,0x0f,0,0x05,0,0x05,0x06,0x08,0x08,0x07,0x09,0x00,0x0a,
         0,0,0,0,0x00,0
         };
- 
+
 	c = seq->c_elem;
 	for(j=0;j<seq->seqlen;j++)
 	{
@@ -327,5 +327,5 @@ Sequence *seq;
 	                    ( seq->strandedness == 1)?2:
                             0;
 	return;
-		
+
 }

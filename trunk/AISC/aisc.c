@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include "aisc.h"
 #include "aisc_proto.h"
@@ -14,7 +14,7 @@ AD             *read_aisc(char ** in);
 #define get_byte(io)  {gl->lastchar = *((*io)++);\
 		if (gl->lastchar == '\n') gl->line_cnt++;}
 
-char *read_aisc_file(char *path) 
+char *read_aisc_file(char *path)
 {
     FILE *input;
     int data_size;
@@ -37,7 +37,7 @@ char *read_aisc_file(char *path)
 }
 
 
-void 
+void
 aisc_init()
 {
     int             i;
@@ -87,7 +87,7 @@ aisc_init()
 	}
 	if ((i == (int) ' ') ||
 	    (i == (int) '\t') ||
-	    (i == (int) '\n') 
+	    (i == (int) '\n')
 	    ) {
 	    gl->s3_tab[i] = 1;
 	} else {
@@ -106,76 +106,76 @@ aisc_init()
 	gl->outtab[i] = i;
     }
     gl->outtab['n'] = '\n';
-    gl->outtab['t'] = '\t';	
-    gl->outtab['0'] = 0;	
-    gl->outtab['1'] = 0;	
-    gl->outtab['2'] = 0;	
-    gl->outtab['3'] = 0;	
-    gl->outtab['4'] = 0;	
-    gl->outtab['5'] = 0;	
-    gl->outtab['6'] = 0;	
-    gl->outtab['7'] = 0;	
-    gl->outtab['8'] = 0;	
-    gl->outtab['9'] = 0;	
+    gl->outtab['t'] = '\t';
+    gl->outtab['0'] = 0;
+    gl->outtab['1'] = 0;
+    gl->outtab['2'] = 0;
+    gl->outtab['3'] = 0;
+    gl->outtab['4'] = 0;
+    gl->outtab['5'] = 0;
+    gl->outtab['6'] = 0;
+    gl->outtab['7'] = 0;
+    gl->outtab['8'] = 0;
+    gl->outtab['9'] = 0;
     gl->outtab['\\'] = 0;
 }
-void 
+void
 p_err_eof(void)
 {
     fprintf(stderr, "Unexpected end of file seen in line %i file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_brih(void)
 {
     fprintf(stderr, "You tried to insert a bracket in a named field: line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_nobr(void)
 {
     fprintf(stderr, "{} found; missing contents: line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_nocbr(void)
 {
     fprintf(stderr, "missing '}': line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_emwbr(void)
 {
     fprintf(stderr, "string expected ',' found: line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_hewnoid(void)
 {
     fprintf(stderr, "string expected ';' found: line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_mixhnh(void)
 {
     fprintf(stderr, "you cannot use the symbol @ in this line (or it mussed be the thirst symbol in a line): line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_misscom()
 {
     fprintf(stderr, "missing ';': line %i  file %s\n",
 	    gl->line_cnt,gl->line_path);
     gl->error_flag = 1;
 }
-void 
+void
 p_error_missco()
 {
     fprintf(stderr, "missing ',' or ';' or 'newline': line %i  file %s\n",
@@ -426,7 +426,7 @@ read_aisc_line(char ** in, HS ** hs)
 				    return 0;
 				}
 				break;
-			    case 4:	
+			    case 4:
 			    case 5:
 				item->val = strdup("");
 				break;

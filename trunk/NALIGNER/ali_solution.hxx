@@ -5,7 +5,7 @@
 
 
 
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_profile.hxx"
 #include "ali_sequence.hxx"
@@ -128,10 +128,10 @@ public:
     int is_konsistent(void);
     int is_equal(ALI_MAP *map) {
 	unsigned long i;
-	if (first_seq_base != map->first_seq_base || 
+	if (first_seq_base != map->first_seq_base ||
 	    last_seq_base != map->last_seq_base ||
 	    first_ref_base != map->first_ref_base ||
-	    last_ref_base != map->last_ref_base) 
+	    last_ref_base != map->last_ref_base)
 	    return 0;
 	for (i = 0; i < last_seq_base - first_seq_base + 1; i++)
 	    if ((*mapping)[i] != (*map->mapping)[i])
@@ -186,6 +186,6 @@ int delete_map(ALI_MAP *map);
 ALI_MAP *make_one_map(void);
 void print(void);
 };
-      
+
 
 #endif

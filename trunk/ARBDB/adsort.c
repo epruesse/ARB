@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <memory.h>
 
 #include "arbdb.h"
@@ -11,7 +11,7 @@
 
 	compare(2,3) should be	<0;
 	compare(x,x) 		= 0;
-	compare(4,3)		>0; 
+	compare(4,3)		>0;
 
 */
 
@@ -78,10 +78,10 @@ char *GB_mergesort(void **array,long start, long end, gb_compare_two_items_type 
     }
     while(i<mid) buffer[dest++] = array[i++];
     while(j<end) buffer[dest++] = array[j++];
-    
+
     memcpy( (char *)(array+start),(char *)buffer,(int)size * sizeof(void *));
-    
+
     if (size>=256) free((char *)buffer);
-    
+
     return error;
 }

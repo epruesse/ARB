@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <arbdb.h>
 #include <time.h>
@@ -57,7 +57,7 @@ char *ORS_export_error(char *templat, ...)
 	va_list	parg;
 	// sprintf (buffer,"ORS ERROR: ");
 	p += strlen(p);
-	va_start(parg,templat);	
+	va_start(parg,templat);
 
 	vsprintf(p,templat,parg);
 
@@ -73,7 +73,7 @@ char *ORS_sprintf(char *templat, ...)
 	char *p = buffer;
 	va_list	parg;
 	p += strlen(p);
-	va_start(parg,templat);	
+	va_start(parg,templat);
 
 	vsprintf(p,templat,parg);
 
@@ -84,7 +84,7 @@ char *ORS_sprintf(char *templat, ...)
 /*******************************************************************************
 	Time & Date Strings
 				type determines output format
-				time = desired time/date value or 0	
+				time = desired time/date value or 0
 ********************************************************************************/
 char *ORS_time_and_date_string(int type, long time) {
 	long current_time;
@@ -129,7 +129,7 @@ int ORS_strncmp(char *str1, char *str2)
   compare str2 with the tail of str1 (length of str2)
 *******************************************************/
 int ORS_strncase_tail_cmp(char *str1, char *str2) {
-	
+
 	if (!str1 || !str2) return 1;
 
 	return strncasecmp(str1 + strlen(str1) - strlen(str2), str2, strlen(str2));
@@ -163,14 +163,14 @@ char *ORS_trim(char *str) {
 int ORS_contains_word(char *buffer, char *word, char seperator) {
 	char 	*pos = buffer;
 	int	len;
-	
+
 	if (!word || !buffer) return 0;
 
 	len = strlen(word);
 	while (pos) {
 		pos = strstr(pos, word);
 		if (!pos) break;
-		if ( (pos == buffer || *(pos-1) == seperator) && (*(pos+len) == seperator || *(pos+len) == 0 ) ) 
+		if ( (pos == buffer || *(pos-1) == seperator) && (*(pos+len) == seperator || *(pos+len) == 0 ) )
 			return 1;  // found it!
 		pos++;
 	}
@@ -262,8 +262,8 @@ char * ORS_calculate_gc_ratio(char *sequence) {
 	char *pos = sequence;
 	while (*pos) {
 		switch(*pos) {
-			case 'G': 
-			case 'C': 
+			case 'G':
+			case 'C':
 			case 'S': min++; break;
 			default: break;
 		}
@@ -275,18 +275,18 @@ char * ORS_calculate_gc_ratio(char *sequence) {
 	pos = sequence;
 	while (*pos) {
 		switch(*pos) {
-			case 'G': 
-			case 'C': 
-			case 'M': 
-			case 'R': 
-			case 'S': 
-			case 'Y': 
-			case 'K': 
-			case 'V': 
-			case 'H': 
-			case 'D': 
-			case 'B': 
-			case 'X': 
+			case 'G':
+			case 'C':
+			case 'M':
+			case 'R':
+			case 'S':
+			case 'Y':
+			case 'K':
+			case 'V':
+			case 'H':
+			case 'D':
+			case 'B':
+			case 'X':
 			case 'N': max++; break;
 			default: break;
 		}
@@ -299,7 +299,7 @@ char * ORS_calculate_gc_ratio(char *sequence) {
 }
 
 /******************************************************
-  STRCMP: can compare NULL-pointers! 
+  STRCMP: can compare NULL-pointers!
 	NULL == NULL
 	NULL == ""
 				returns true or false
@@ -347,7 +347,7 @@ int OC_find_next_chr(char **start, char **end, char chr) {
 int ORS_is_parent_of(char *user1, char *user2) {
 
 	if (!user1 || !*user1 || !user2 || !*user2) return 0;
-	
+
 	if (!strcmp(user1,ROOT_USERPATH)) return 1; // root ist everybody's father
 	int len1=strlen(user1);
 	if ( !strncmp(user1,user2,len1) && user2[len1] == '/') return 1;	// user1 is begin of user2 and user2 continues -> ok

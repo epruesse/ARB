@@ -150,9 +150,14 @@ void primer_design_event_go(AW_window *aww) {
             PD->run(0);
 #endif
         }
+
+#ifdef DARWIN
+		// This seems to generate an internal compiler error with gcc 2.95 on OSX
+#else
         catch (string& s) {
             error = GBS_global_string(s.c_str());
         }
+#endif
         catch (...) {
             error = "Unknown error (maybe out of memory ? )";
         }

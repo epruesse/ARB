@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -225,7 +225,7 @@ GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structu
 	// structure_size >= sizeof(GBT_TREE);
 	// lower triangular matrix
 	// size: size of matrix
-	
+
 
 	PH_NEIGHBOURJOINING *nj = new PH_NEIGHBOURJOINING(m,size);
 	long i;

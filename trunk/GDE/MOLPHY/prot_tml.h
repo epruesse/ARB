@@ -24,7 +24,7 @@ void prsequence P_((FILE *ofp, char **identif, char **seqchar, int maxspc, int m
 void convseq P_((imatrix seqconint, int maxspc, int numptrn));
 void getfreqepm P_((cmatrix seqchar, double *freqemp, int maxspc, int maxsite));
 void convfreq P_((double *freqemp));
-void radixsort P_((cmatrix seqchar, ivector alias, int maxspc, int maxsite, int *numptrn));
+void a_radixsort P_((cmatrix seqchar, ivector alias, int maxspc, int maxsite, int *numptrn));
 void condenceseq P_((cmatrix seqchar, ivector alias, imatrix seqconint, ivector weight, int maxspc, int maxsite, int numptrn));
 void getnumsites P_((imatrix seqconint, ivector numsites, ivector weight, int numspc, int numptrn));
 void prcondenceseq P_((char **identif, imatrix seqconint, ivector weight, int numspc, int numsite, int numptrn));

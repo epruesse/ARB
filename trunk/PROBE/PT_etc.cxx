@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
@@ -14,8 +14,8 @@ void set_table_for_PT_N_mis()
 {
     int i;
     psg.w_N_mismatches[0] = 0;
-    psg.w_N_mismatches[1] = 0;	
-    psg.w_N_mismatches[2] = 1;	
+    psg.w_N_mismatches[1] = 0;
+    psg.w_N_mismatches[2] = 1;
     psg.w_N_mismatches[3] = 2;
     psg.w_N_mismatches[4] = 4;
     psg.w_N_mismatches[5] = 5;
@@ -31,7 +31,7 @@ void pt_export_error(PT_local *locs, const char *error)
 extern "C" char *virt_name(PT_probematch *ml)
 {
     return psg.data[ml->name].name;
-}	
+}
 
 extern "C" char *virt_fullname(PT_probematch * ml) {
     if (psg.data[ml->name].fullname) {
@@ -40,13 +40,13 @@ extern "C" char *virt_fullname(PT_probematch * ml) {
         return (char*)"";
     }
 }
-    
+
 /* copy one mismatch table to a new one allocating memory */
 int *table_copy(int *mis_table, int length)
 {
     int	*result_table;
     int	i;
-	
+
     result_table = (int *)calloc(length, sizeof(int));
     for (i=0; i<length; i++)
         result_table[i] = mis_table[i];
@@ -59,7 +59,7 @@ void table_add(int *mis_tabled, int *mis_tables, int length)
     for (i=0; i<length; i++)
         mis_tabled[i] += mis_tables[i];
 }
- 
+
 /* read the name list seperated by # and set the flag for the group members, + returns a list of names which have not been found */
 char *ptpd_read_names(PT_local * locs, char *names_listi, char *checksumsi)
 {
@@ -172,7 +172,7 @@ void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
             str[i] = initval;
             if (!i) str[i]=255;	/* end flag */
         }else{
-            break;	
+            break;
         }
     }
-}	
+}

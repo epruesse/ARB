@@ -66,7 +66,7 @@ void convfreq(dvector freqemp)
 		sum += freqemp[i];
 	}
 	freqemp[maxi] += 1.0 - sum;
-	
+
 	for (i = 0; i < tpmradix - 1; i++) {
 		for (j = i + 1; j < tpmradix; j++) {
 			if (freqemp[i] == freqemp[j]) {
@@ -78,7 +78,7 @@ void convfreq(dvector freqemp)
 }
 
 /* sort site patters of original input data */
-void radixsort(cmatrix seqchar, ivector ali, int maxspc, int maxsite,
+void a_radixsort(cmatrix seqchar, ivector ali, int maxspc, int maxsite,
 	int *numptrn)
 {
 	int i, j, k, l, n, pass;
@@ -191,20 +191,20 @@ void countconstantsites(cmatrix seqpat, ivector weight, int maxspc, int numptrn,
 
 
 void evaluateseqs()
-{	
+{
 	ivector ali;
 
 	convfreq(Freqtpm); /* make all frequencies slightly different */
 	ali = new_ivector(Maxsite);
-	radixsort(Seqchar, ali, Maxspc, Maxsite, &Numptrn);
+	a_radixsort(Seqchar, ali, Maxspc, Maxsite, &Numptrn);
 	Seqpat = new_cmatrix(Maxspc, Numptrn);
 	constpat = new_ivector(Numptrn);
 	Weight = new_ivector(Numptrn);
 	condenceseq(Seqchar, ali, Seqpat, Weight, Maxspc, Maxsite, Numptrn);
 	free_ivector(ali);
 	countconstantsites(Seqpat, Weight, Maxspc, Numptrn, &Numconst, &Numconstpat);
-	fracconstpat = (double) Numconstpat / (double) Numptrn;	
-	fracconst    = (double) Numconst / (double) Maxsite;	
+	fracconstpat = (double) Numconstpat / (double) Numptrn;
+	fracconst    = (double) Numconst / (double) Maxsite;
 }
 
 
@@ -616,7 +616,7 @@ void hqr2(int n, int low, int hgh, dmatrix h,
 								x = h[i][i + 1];
 								y = h[i + 1][i];
 								vr = (wr[i] - p) * (wr[i] - p);
-								vr = vr + wi[i] * wi[i] - q * q;	
+								vr = vr + wi[i] * wi[i] - q * q;
 								vi = (wr[i] - p) * 2.0 * q;
 								if (vr == 0.0 && vi == 0.0) {
 									tst1 = norm * (fabs(w) + fabs(q) + fabs(x) +
@@ -734,9 +734,9 @@ void eigensystem(dvector eval, dmatrix evec)
 	b = new_dmatrix(tpmradix,tpmradix);
 
 	rtfdata(a, forg); /* get relative transition matrix and frequencies */
-	
+
 	onepamratematrix(a); /* make 1 PAM rate matrix */
-	
+
 	/* copy a to b */
 	for (i = 0; i < tpmradix; i++)
 		for (j = 0; j < tpmradix; j++)
@@ -745,7 +745,7 @@ void eigensystem(dvector eval, dmatrix evec)
 	elmhes(a, ordr, tpmradix); /* compute eigenvalues and eigenvectors */
 	eltran(a, evec, ordr, tpmradix);
 	hqr2(tpmradix, 1, tpmradix, a, evec, eval, evali);
-	
+
 	/* check eigenvalue equation */
 	error = FALSE;
 	for (j = 0; j < tpmradix; j++) {
@@ -753,7 +753,7 @@ void eigensystem(dvector eval, dmatrix evec)
 			for (k = 0; k < tpmradix; k++) zero += b[i][k] * evec[k][j];
 			zero -= eval[j] * evec[i][j];
 			if (fabs(zero) > 1.0e-5)
-				error = TRUE;	
+				error = TRUE;
 		}
 	}
 	if (error)
@@ -776,15 +776,15 @@ void luinverse(dmatrix inmat, dmatrix imtrx, int size)
 	double *wk;
 	dmatrix omtrx;
 
-	
+
 	index = new_ivector(tpmradix);
 	omtrx = new_dmatrix(tpmradix,tpmradix);
-	
+
 	/* copy inmat to omtrx */
 	for (i = 0; i < tpmradix; i++)
 		for (j = 0; j < tpmradix; j++)
 			omtrx[i][j] = inmat[i][j];
-	
+
 	wk = (double *) malloc((unsigned)size * sizeof(double));
 	aw = 1.0;
 	for (i = 0; i < size; i++) {
@@ -955,28 +955,28 @@ double comptotloglkl(dmatrix cdl)
 	loglkl = 0.0;
 	fv = 1.0-fracinv;
 	fv2 = (1.0-fracinv)/(double) numcats;
-	
+
 	if (numcats == 1) {
 
-		for (k = 0; k < Numptrn; k++) {	
-		
+		for (k = 0; k < Numptrn; k++) {
+
 			/* compute likelihood for pattern k */
 			sitelkl = cdl[0][k]*fv;
 			if (constpat[k] == TRUE)
 				sitelkl += fracinv*Freqtpm[(int) Seqpat[0][k]];
-		
+
 			/* total log-likelihood */
 			loglkl += log(sitelkl)*Weight[k];
-		
+
 		}
 
 	} else {
-	
+
 		for (k = 0; k < Numptrn; k++) {
-			
-			/* this general routine works always but it's better 
+
+			/* this general routine works always but it's better
                to run it only when it's really necessary */
-		
+
 			/* compute likelihood for pattern k */
 			sitelkl = 0.0;
 			for (r = 0; r < numcats; r++)
@@ -984,19 +984,19 @@ double comptotloglkl(dmatrix cdl)
 			sitelkl = fv2*sitelkl;
 			if (constpat[k] == TRUE)
 				sitelkl += fracinv*Freqtpm[(int) Seqpat[0][k]];
-		
+
 			/* total log-likelihood */
 			loglkl += log(sitelkl)*Weight[k];
-		
+
 		}
 
 	}
-	
+
 	return loglkl;
 }
 
 
-/* computes the site log-likelihoods 
+/* computes the site log-likelihoods
    input: likelihoods for each site and non-zero rate
    output: log-likelihood for each site */
 void allsitelkl(dmatrix cdl, dvector aslkl)
@@ -1006,27 +1006,27 @@ void allsitelkl(dmatrix cdl, dvector aslkl)
 
 	fv = 1.0-fracinv;
 	fv2 = (1.0-fracinv)/(double) numcats;
-	
+
 	if (numcats == 1) {
 
-		for (k = 0; k < Numptrn; k++) {	
-		
+		for (k = 0; k < Numptrn; k++) {
+
 			/* compute likelihood for pattern k */
 			sitelkl = cdl[0][k]*fv;
 			if (constpat[k] == TRUE)
 				sitelkl += fracinv*Freqtpm[(int) Seqpat[0][k]];
-		
+
 			/* site log-likelihood */
 			aslkl[k] = log(sitelkl);
 		}
 
 	} else {
-	
+
 		for (k = 0; k < Numptrn; k++) {
-			
-			/* this general routine works always but it's better 
+
+			/* this general routine works always but it's better
                to run it only when it's really necessary */
-		
+
 			/* compute likelihood for pattern k */
 			sitelkl = 0.0;
 			for (r = 0; r < numcats; r++)
@@ -1034,10 +1034,10 @@ void allsitelkl(dmatrix cdl, dvector aslkl)
 			sitelkl = fv2*sitelkl;
 			if (constpat[k] == TRUE)
 				sitelkl += fracinv*Freqtpm[(int) Seqpat[0][k]];
-		
+
 			/* total log-likelihood */
 			aslkl[k] = log(sitelkl);
-		
+
 		}
 	}
 }
@@ -1051,7 +1051,7 @@ double pairlkl(double arc)
 	int k, r, ci, cj;
 	double loglkl, fv, sitelkl;
 
-	
+
 	/* compute tpms */
 	for (r = 0; r < numcats; r++)
 		/* compute tpm for rate category r */
@@ -1059,11 +1059,11 @@ double pairlkl(double arc)
 
 	loglkl = 0.0;
 	fv = 1.0-fracinv;
-	
+
 	if (numcats == 1) {
 
-		for (k = 0; k < Numptrn; k++) {	
-		
+		for (k = 0; k < Numptrn; k++) {
+
 			/* compute likelihood for site k */
 			ci = seqchi[k];
 			cj = seqchj[k];
@@ -1073,19 +1073,19 @@ double pairlkl(double arc)
 				sitelkl = fv;
 			if (ci == cj && ci != tpmradix)
 				sitelkl += fracinv*Freqtpm[ci];
-		
+
 			/* total log-likelihood */
 			loglkl += log(sitelkl)*Weight[k];
-		
+
 		}
 
 	} else {
-	
+
 		for (k = 0; k < Numptrn; k++) {
-			
-			/* this general routine works always but it's better 
+
+			/* this general routine works always but it's better
                to run it only when it's really necessary */
-		
+
 			/* compute likelihood for site k */
 			ci = seqchi[k];
 			cj = seqchj[k];
@@ -1093,19 +1093,19 @@ double pairlkl(double arc)
 				sitelkl = 0.0;
 				for (r = 0; r < numcats; r++)
 					sitelkl += ltprobr[r][ci][cj];
-				sitelkl = fv*sitelkl/(double) numcats;	
+				sitelkl = fv*sitelkl/(double) numcats;
 			} else
 				sitelkl = fv;
 			if (ci == cj && ci != tpmradix)
 				sitelkl += fracinv*Freqtpm[ci];
-		
+
 			/* total log-likelihood */
 			loglkl += log(sitelkl)*Weight[k];
-		
+
 		}
 
 	}
-	
+
 	/* return negative log-likelihood as we use a minimizing procedure */
 	return -loglkl;
 }
@@ -1118,10 +1118,10 @@ double pairlkl(double arc)
 double mldistance(int i, int j)
 {
 	double dist, fx, f2x;
-	
+
 	if (i == j) return 0.0;
-	
-	/* use old distance as start value */	
+
+	/* use old distance as start value */
 	dist = Distanmat[i][j];
 
 	if (dist == 0.0) return 0.0;
@@ -1131,9 +1131,9 @@ double mldistance(int i, int j)
 
 	if (dist <= MINARC) dist = MINARC+1.0;
 	if (dist >= MAXARC) dist = MAXARC-1.0;
-	
+
  	dist = onedimenmin(MINARC, dist, MAXARC, pairlkl, EPSILON, &fx, &f2x);
-  	
+
 	return dist;
 }
 
@@ -1143,13 +1143,13 @@ void initdistan()
 {
 	int i, j, k, diff, x, y;
 	double obs, temp;
-	
+
 	for (i = 0; i < Maxspc; i++) {
 		Distanmat[i][i] = 0.0;
 		for (j = i + 1; j < Maxspc; j++) {
 			seqchi = Seqpat[i];
 			seqchj = Seqpat[j];
-			
+
 			/* count observed differences */
 			diff = 0;
 			for (k = 0; k < Numptrn; k++) {
@@ -1239,7 +1239,7 @@ void partialsinternal(Node *op)
 			tprobmtrx((op->length)*Rates[r], ltprobr[r]);
 		}
 	}
-	
+
 	oprob = op->partials;
 	cprob = op->kinp->isop->partials;
 	for (r = 0; r < numcats; r++) {
@@ -1296,10 +1296,10 @@ void initpartials(Tree *tr)
 	cp = rp = tr->rootp;
 	do {
 		cp = cp->isop->kinp;
-		if (cp->isop == NULL) { /* external node */			
+		if (cp->isop == NULL) { /* external node */
 			cp = cp->kinp; /* not descen */
 			partialsexternal(cp);
-		} else { /* internal node */	
+		} else { /* internal node */
 			if (!cp->descen) {
 				productpartials(cp->kinp->isop);
 				partialsinternal(cp);
@@ -1324,11 +1324,11 @@ double intlkl(double arc)
 	for (r = 0; r < numcats; r++) {
 		for (s = 0; s < Numptrn; s++) {
 			sumlk = 0.0;
-			for (i = 0; i < tpmradix; i++) {			
+			for (i = 0; i < tpmradix; i++) {
 				slk = 0.0;
-				for (j = 0; j < tpmradix; j++) 
-					slk += partialj[r][s][j] * ltprobr[r][i][j];		
-				sumlk += Freqtpm[i] * partiali[r][s][i] * slk;	
+				for (j = 0; j < tpmradix; j++)
+					slk += partialj[r][s][j] * ltprobr[r][i][j];
+				sumlk += Freqtpm[i] * partiali[r][s][i] * slk;
 			}
 			cdl[r][s] = sumlk;
 		}
@@ -1354,7 +1354,7 @@ void optinternalbranch(Node *op)
 	arc = onedimenmin(MINARC, arc, MAXARC, intlkl, EPSILON, &fx, &f2x);
 	op->kinp->length = arc;
 	op->length = arc;
-	
+
 	/* variance of branch length */
 	f2x = fabs(f2x);
 	if (1.0/(MAXARC*MAXARC) < f2x)
@@ -1372,7 +1372,7 @@ double extlkl(double arc)
 	int r, s, i, j;
 	dvector opb;
 	dmatrix cdl;
-	
+
 	cdl = Ctree->condlkl;
 	for (r = 0; r < numcats; r++) {
 		tprobmtrx(arc*Rates[r], ltprobr[r]);
@@ -1391,7 +1391,7 @@ double extlkl(double arc)
 			cdl[r][s] = sumlk;
 		}
 	}
-	
+
 	/* compute total log-likelihood for current tree */
 	Ctree->lklhd = comptotloglkl(cdl);
 
@@ -1411,7 +1411,7 @@ void optexternalbranch(Node *op)
 	arc = onedimenmin(MINARC, arc, MAXARC, extlkl, EPSILON, &fx, &f2x);
 	op->kinp->length = arc;
 	op->length = arc;
-	
+
 	 /* variance of branch length */
 	f2x = fabs(f2x);
 	if (1.0/(MAXARC*MAXARC) < f2x)
@@ -1443,7 +1443,7 @@ void finishlkl(Node *op)
 				for (j = 0; j < tpmradix; j++)
 					slk += partialj[r][k][j] * ltprobr[r][i][j];
 				sumlk += Freqtpm[i] * partiali[r][k][i] * slk;
-			}			
+			}
 			cdl[r][k] = sumlk;
 		}
 	}
@@ -1459,45 +1459,45 @@ double optlkl(Tree *tr)
 	Node *cp, *rp;
 	int nconv;
 	double lendiff;
-	
+
 	clockmode = 0; /* nonclocklike branch lengths */
 	nconv = 0;
 	Converg = FALSE;
 	initpartials(tr);
 	for (Numit = 1; (Numit <= MAXIT) && (!Converg); Numit++) {
-		
+
 		cp = rp = tr->rootp;
 		do {
 			cp = cp->isop->kinp;
 			productpartials(cp->kinp->isop);
-			if (cp->isop == NULL) { /* external node */	
+			if (cp->isop == NULL) { /* external node */
 				cp = cp->kinp; /* not descen */
-				
+
 				lendiff = cp->length;
 				optexternalbranch(cp);
 				lendiff = fabs(lendiff - cp->length);
 				if (lendiff < EPSILON) nconv++;
-				else nconv = 0;				
-				
+				else nconv = 0;
+
 				partialsexternal(cp);
 			} else { /* internal node */
 				if (cp->descen) {
 					partialsinternal(cp);
 				} else {
-					
+
 					lendiff = cp->length;
 					optinternalbranch(cp);
 					lendiff = fabs(lendiff - cp->length);
 					if (lendiff < EPSILON) nconv++;
 					else nconv = 0;
-					
+
 					/* eventually compute likelihoods for each site */
 					if ((cp->number == Numibrnch-1 && lendiff < EPSILON) ||
 					Numit == MAXIT-1) finishlkl(cp);
 
 					partialsinternal(cp);
 				}
-			}			
+			}
 			if (nconv >= Numbrnch) { /* convergence */
 				Converg = TRUE;
 				cp = rp; /* get out of here */
@@ -1533,8 +1533,8 @@ double treelkl(Tree *tr)
 				sumlk += Freqtpm[i] * (prob1[r][k][i] * prob2[r][k][i]);
 			cdl[r][k] = sumlk;
 		}
-	}	
-	
+	}
+
 	/* return total log-likelihood for current tree */
 	return comptotloglkl(cdl);
 }
@@ -1634,7 +1634,7 @@ void luequation(dmatrix amat, dvector yvec, int size)
 
 
 /* least square estimation of branch lengths
-   used for the approximate ML and as starting point 
+   used for the approximate ML and as starting point
    in the calculation of the exact value of the ML */
 void lslength(Tree *tr, dvector distanvec, int numspc, int numibrnch, dvector Brnlength)
 {
@@ -1712,7 +1712,7 @@ void lslength(Tree *tr, dvector distanvec, int numspc, int numibrnch, dvector Br
 		} else { /* no clock */
 			ebp[i]->length = leng;
 			ebp[i]->kinp->length = leng;
-		}	
+		}
 		Brnlength[i] = leng;
 	}
 	for (i = 0, j = numspc; i < numibrnch; i++, j++) {

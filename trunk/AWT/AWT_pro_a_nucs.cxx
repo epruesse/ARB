@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <arbdb.h>
@@ -9,7 +9,7 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_codon_table.hxx>
 
-struct arb_r2a_struct *awt_pro_a_nucs = 0; 
+struct arb_r2a_struct *awt_pro_a_nucs = 0;
 
 char *AP_create_dna_to_ap_bases(void){
 	int	i;
@@ -143,13 +143,13 @@ static void awt_pro_a_nucs_build_table(char pbase, const char *tri_pro, const ch
 		if ( nucs->nucbits[0] != n0 ) c++;
 		if ( nucs->nucbits[1] != n1 ) c++;
 		if ( nucs->nucbits[2] != n2 ) c++;
-		if (c <= 1) break; 
+		if (c <= 1) break;
 	}
 	if (!nucs) {
 		nucs = (struct arb_r2a_pro_2_nucs *)GB_calloc(sizeof(struct arb_r2a_pro_2_nucs),1);
 		nucs->next = str->nucs;
 		str->nucs = nucs;
-	}	
+	}
 	nucs->nucbits[0] |= n0;
 	nucs->nucbits[1] |= n1;
 	nucs->nucbits[2] |= n2;
@@ -206,35 +206,35 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     awt_pro_a_nucs = (struct arb_r2a_struct *)GB_calloc(sizeof(struct arb_r2a_struct),1);
     awt_pro_a_nucs->nuc_2_bitset = AP_create_dna_to_ap_bases();
     awt_pro_a_nucs->t2i_hash = GBS_create_hash(1024,1); // case insensitive
-    
+
     AWT_initialize_codon_tables();
 
-    int code_nr = GBT_read_int(gb_main,AP_PRO_TYPE_AWAR);    
-    
+    int code_nr = GBT_read_int(gb_main,AP_PRO_TYPE_AWAR);
+
     {
 	char *D_codons = GB_strdup(AWT_get_codons('D', code_nr));
 	char *N_codons = GB_strdup(AWT_get_codons('N', code_nr));
 	char *E_codons = GB_strdup(AWT_get_codons('E', code_nr));
 	char *Q_codons = GB_strdup(AWT_get_codons('Q', code_nr));
-	
+
 	char protein;
 	for (protein='*'; protein<='Z'; protein = (protein=='*' ? 'A' : protein+1)) {
 	    if (protein!='J' && protein!='O' && protein!='U') { // JOU are no aminos
-		const char *codons; 
+		const char *codons;
 		if (protein=='D') 	codons = D_codons;
 		else if (protein=='N') 	codons = N_codons;
 		else if (protein=='E') 	codons = E_codons;
 		else if (protein=='Q') 	codons = Q_codons;
-		else			codons = AWT_get_codons(protein, code_nr); 
+		else			codons = AWT_get_codons(protein, code_nr);
 		// codons now contains a 0-terminated-string containing all possible codons for protein
-		
+
 		const char *protein_name = AWT_get_protein_name(protein);
-	    
+
 		for (int off=0; codons[off]; off+=3) {
-		    char codon[4]; 
+		    char codon[4];
 		    memcpy(codon, codons+off, 3);
 		    codon[3] = 0;
-		    
+
 		    if (protein=='B') {
 			if (!codon_defined_in(codon, D_codons) && !codon_defined_in(codon, N_codons)) {
 			    awt_pro_a_nucs_build_table(protein, protein_name, codon);
@@ -251,21 +251,21 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 		}
 	    }
 	}
-    
-	
+
+
 	free(Q_codons);
 	free(E_codons);
 	free(N_codons);
 	free(D_codons);
     }
-    
-    T('-', "---", "---"); 
+
+    T('-', "---", "---");
     T('.', "...", "...");
     T('.', "???", "???");
     T('X', "NNN", "NNN");
 
-    
-/*    
+
+/*
     T("A","Ala","GCT");
     T("A","Ala","GCC");
     T("A","Ala","GCA");
@@ -275,26 +275,26 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     T("R","Arg","CGC");
     T("R","Arg","CGA");
     T("R","Arg","CGG");				T("R","Arg","CGX");
-    
+
 	T("R","Arg","AGA");
 	T("R","Arg","AGG");
 		T("R","Arg","AGR");
 		T("R","Arg","MGR");
 	T("N","Asn","AAT");
 	T("N","Asn","AAC");			T("N","Asn","AAY");
-	
+
 	T("D","Asp","GAT");
 	T("D","Asp","GAC");			T("D","Asp","GAY");
-	
+
 	T("C","Cys","TGT");
 	T("C","Cys","TGC");			T("C","Cys","TGY");
-	
+
 	T("Q","Gln","CAA");
 	if ( code_nr == AP_YEASTMITO ) {
 	}else{
 	    T("Q","Gln","CAG");			T("Q","Gln","CAR");
 	}
-	
+
 	T("E","Glu","GAA");
 	if (code_nr == AP_MITO ||
 	    code_nr == AP_VERTMITO ||
@@ -323,7 +323,7 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 	T("L","Leu","CTA");
 	T("L","Leu","CTG");		T("L","Leu","CTX");
 					T("L","Leu","YTR");
-					
+
 	T("K","Lys","AAA");
 	T("K","Lys","AAG");		T("K","Lys","AAR");
 	if (code_nr == AP_MITO ||
@@ -334,32 +334,32 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 	}else{
 	    T("M","Met","ATG");
 	}
-	    
+
 	T("F","Phe","TTT");
 	T("F","Phe","TTC");			T("F","Phe","TTY");
-	
+
 	T("P","Pro","CCT");
 	T("P","Pro","CCC");
 	T("P","Pro","CCA");
 	T("P","Pro","CCG");			T("P","Pro","CCX");
-	
+
 	T("s","Ser","TCT");		// Special insertion, why?? see phylip
 	T("s","Ser","TCC");
 	T("s","Ser","TCG");
 	T("s","Ser","TCA");			T("s","Ser","TCX");
-	
+
 	T("S","Ser","AGT");
 	T("S","Ser","AGC");			T("S","Ser","AGY");
-	
+
 	T("T","Thr","ACT");
 	T("T","Thr","ACC");
 	T("T","Thr","ACA");
 	T("T","Thr","ACG");			T("T","Thr","ACX");
-	
+
 	if (	code_nr == AP_YEASTMITO ){
 	    T("T","Thr","CAG");
 	}
-	
+
 	T("W","Trp","TGG");
 	if (code_nr == AP_MITO ||
 	    code_nr == AP_VERTMITO ||
@@ -371,7 +371,7 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 	T("Y","Tyr","TAT");
 	T("Y","Tyr","TAC");			T("Y","Tyr","TAY");
 
-	
+
 	T("V","Val","GTA");
 	T("V","Val","GTC");
 	if (	code_nr == AP_VERTMITO ||
@@ -380,12 +380,12 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 		T("V","Val","GTY");
 	    }else{
 		T("V","Val","GTT");		T("V","Val","GTH");
-	    }	    
+	    }
 	}else{
 	    T("V","Val","GTT");
 	    T("V","Val","GTG");			T("V","Val","GTX");
 	}
-	
+
 	T("*","End","TAA");
 	T("*","End","TAG");
 	T("*","End","TGA");			T("*","End","TAR");
@@ -394,15 +394,15 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 		code_nr == AP_FLYMITO ){
 	    T("*","End","GTG");
 	}
-	
+
 	if (	code_nr == AP_VERTMITO ){
 	    T("*","End","GTT");
 	}
-	    
+
 		awt_pro_a_nucs->realmax_aa = awt_pro_a_nucs->max_aa;
 	T("-","---","---");
-	    
-	    
+
+
 	// T("B","Asx","AAC");
 	// T("B","Asx","AAT");
 	// T("B","Asx","GAC");
@@ -413,12 +413,12 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 		T("B","Asx","RAT");
 		T("B","Asx","RAY");
 	T("Z","Glx","SAR");
-		
+
 	T(".","...","...");
 	T(".","???","???");
 	T(".","NNN","NNN");
-*/	
-	
+*/
+
 	awt_pro_a_nucs->pro_2_bitset = awt_nuc_create_pro_to_bits();
 }
 
@@ -451,7 +451,7 @@ void awt_pro_a_nucs_debug(void) {
 	for (s = 0; s< awt_pro_a_nucs->max_aa; s++){
 				// check bits should not be present in distpad
 		if (s<awt_pro_a_nucs->realmax_aa) for (i=0;i<2;i++) {
-			if (	awt_pro_a_nucs->dist[s]->patd[i] & 
+			if (	awt_pro_a_nucs->dist[s]->patd[i] &
 				~awt_pro_a_nucs->dist[s]->patd[i+1]) GB_CORE;
 		}
 		printf("Base %c[%i]: Dist to ",awt_pro_a_nucs->index_2_spro[s],s);
@@ -518,5 +518,5 @@ void awt_pro_a_nucs_gen_dist(GBDATA *gb_main){
 	}
 #ifndef NDEBUG
 	awt_pro_a_nucs_debug();
-#endif	
+#endif
 }
