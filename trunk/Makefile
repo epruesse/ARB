@@ -235,7 +235,6 @@ ifdef HPCC
    ARLIB =	ld -b -o
    HPSPECIALS = -D$(MACH) -DNO_REGEXPR -DNO_INLINE
    XMKMF = /usr/local/bin/X11/xmkmf
-   NOTEMPLATES = 1
 
    CPP = LDOPTS='+s'; export LDOPTS;CC $(HPSPECIALS)
    ACC = LDOPTS='+s'; export LDOPTS;cc $(HPSPECIALS) -Ae
@@ -886,17 +885,9 @@ rebuild:
 #*** basic arb libraries
 arbbasic: links
 		$(MAKE) arbbasic2
-arbbasic2: mbin menus com nas ${MAKE_RTC} help
+arbbasic2: mbin menus com nas ${MAKE_RTC}
 
-#*** New arb programs (Version 2.0) (Motif)
-arbv2: db aw dp awt dbs nt pa ed e4 we pr pg na al di db2 ph ds trs
-arbv1: db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs
-
-ifdef NOTEMPLATES
-arb: arbbasic arbv2
-else
-arb: arbbasic arbv1
-endif
+arb: arbbasic db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs help
 
 save:	rmbak
 	util/arb_save
