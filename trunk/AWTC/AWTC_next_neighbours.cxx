@@ -101,7 +101,7 @@ AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY(void)
 GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hits)
 {
     T_PT_FAMILYLIST f_list;
-    char *compressed_sequence = GB_command_interpreter(gb_main,sequence,"|keep(acgtunACGTUN)",0);
+    char *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
 
     bytestring bs;
     bs.data = compressed_sequence;

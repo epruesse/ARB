@@ -628,7 +628,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                             if (err_flag) error = GB_get_error();
                             else {
                                 dup           = dele;
-                                dele          = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species);
+                                dele          = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species, 0);
                                 if (!s) error = GB_get_error();
                                 free(dup);
                             }
@@ -710,8 +710,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             }
 
             if (ifo->sequenceaci) {
-                char *h = GB_command_interpreter(GB_MAIN,
-                                                 sequence,ifo->sequenceaci,gb_species);
+                char *h = GB_command_interpreter(GB_MAIN, sequence,ifo->sequenceaci,gb_species, 0);
                 free(sequence);
                 if (!h) return GB_get_error();
                 sequence = h;
