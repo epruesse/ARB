@@ -6,66 +6,66 @@
 
 typedef struct GargChoicetype
 {
-	char *label;		        /* name for display in dialog box */
-	char *method;	            /* value (if null, return choice number) */
+    char *label;                /* name for display in dialog box */
+    char *method;               /* value (if null, return choice number) */
 } GargChoice;
 
 typedef struct GmenuItemArgtype
 {
-	int		    optional;	    /* is this optional? */
-	int		    type;		    /* TEXT, SLIDER, CHOOSER, etc. */
-    int		    ivalue;
-    double	    min;		    /* minimum range value */
-	double 	    max;		    /* maximum range value */
-	double 	    fvalue;		    /* default numeric value(or choice) */
-	int		    numchoices;	    /* number of choices */
-	char       *textvalue;	    /* default text value */
+    int         optional;       /* is this optional? */
+    int         type;           /* TEXT, SLIDER, CHOOSER, etc. */
+    int         ivalue;
+    double      min;            /* minimum range value */
+    double      max;            /* maximum range value */
+    double      fvalue;         /* default numeric value(or choice) */
+    int         numchoices;     /* number of choices */
+    char       *textvalue;      /* default text value */
     int         textwidth;      /* text width used for input field */
-	char	   *label;		    /* description of arg function */
-	char	   *symbol;	        /* internal symbol table mapping */
-	char	   *method;	        /* commandline interpretation */
-	GargChoice *choice;	        /* choices */
+    char       *label;          /* description of arg function */
+    char       *symbol;         /* internal symbol table mapping */
+    char       *method;         /* commandline interpretation */
+    GargChoice *choice;         /* choices */
     /*ARB BEGIN*/
-    /*	Panel_item	X;*/		/* Xview menu item entry */
+    /*  Panel_item  X;*/        /* Xview menu item entry */
 
 
 } GmenuItemArg;
 
 typedef struct GfileFormattype
 {
-	int	  save;		            /* how should file be saved */
-	int	  overwrite;	        /* how should file be loaded */
-	int	  format;		        /* what format is each field */
-	int	  maskable;	            /* Can a write through mask be used? */
-	int	  select;		        /* what type of selection */
-	char *symbol;	            /* internal symbol table mapping */
-	char *name;		            /* file name */
+    int   save;                 /* how should file be saved */
+    int   overwrite;            /* how should file be loaded */
+    int   format;               /* what format is each field */
+    int   maskable;             /* Can a write through mask be used? */
+    int   select;               /* what type of selection */
+    char *symbol;               /* internal symbol table mapping */
+    char *name;                 /* file name */
 } GfileFormat;
 
 typedef struct GmenuItemtype
 {
-	int		      numargs;	    /* number of agruments to cmnd */
-	int		      numoutputs;	/* number of outputs from cmnd */
-	int		      numinputs;	/* number of input files to cmnd */
-	char		 *label;		/* item name */
-	char		 *method;	    /* commandline produced */
-	GfileFormat	 *input;		/* input definitions */
-	GfileFormat	 *output;	    /* output definitions */
-	GmenuItemArg *arg;		    /* arguement definitions */
-	char		  meta;		    /* Meta character for function */
+    int           numargs;      /* number of agruments to cmnd */
+    int           numoutputs;   /* number of outputs from cmnd */
+    int           numinputs;    /* number of input files to cmnd */
+    char         *label;        /* item name */
+    char         *method;       /* commandline produced */
+    GfileFormat  *input;        /* input definitions */
+    GfileFormat  *output;       /* output definitions */
+    GmenuItemArg *arg;          /* arguement definitions */
+    char          meta;         /* Meta character for function */
     char         *help;         /* commandline help */
     /* ARB BEGIN */
-    /*	Panel_item	X; */		/* Xview panel */
+    /*  Panel_item  X; */       /* Xview panel */
 } GmenuItem;
 
 typedef struct Gmenutype
 {
-	int		   numitems;	    /* number of items in menu */
-	char	  *label;		    /* menu heading */
-	GmenuItem *item;		    /* menu items */
+    int        numitems;        /* number of items in menu */
+    char      *label;           /* menu heading */
+    GmenuItem *item;            /* menu items */
     /* ARB BEGIN */
-    /*	Panel_item	button;*/		/* Button to activate menu */
-    /*	Menu		X;*/		/* XView menu structure */
+    /*  Panel_item  button;*/       /* Button to activate menu */
+    /*  Menu        X;*/        /* XView menu structure */
 
 
 
@@ -73,8 +73,8 @@ typedef struct Gmenutype
 
 typedef struct AWwindowinfotype
 {
-	Gmenu 	  *gmenu;
-	GmenuItem *gmenuitem;
+    Gmenu     *gmenu;
+    GmenuItem *gmenuitem;
 
 } AWwindowinfo;
 
