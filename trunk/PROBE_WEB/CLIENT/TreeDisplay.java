@@ -129,7 +129,7 @@ public class TreeDisplay extends Canvas
         xPointer = (int)(visibleSubtree.calculateTotalDist(0)*xSpreading+0.5);
         yPointer = 0;
         calculateYValues(visibleSubtree);
-        System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
+        // System.out.println("xPointer="+xPointer+" yPointer="+yPointer);
     }
 
     private void recalcLayout() {
