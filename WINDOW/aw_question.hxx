@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.hxx                                        //
 //    Purpose   : Functions to ask questions to user                     //
-//    Time-stamp: <Fri Aug/08/2003 07:37 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -16,7 +16,7 @@
 #ifndef AW_QUESTION_HXX
 #define AW_QUESTION_HXX
 
-#ifndef aw_root_hxx_included
+#ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
 #ifndef _STDLIB_H

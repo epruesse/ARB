@@ -1,5 +1,5 @@
-#ifndef aw_root_hxx_included
-#define aw_root_hxx_included
+#ifndef AW_ROOT_HXX
+#define AW_ROOT_HXX
 
 #ifndef _STDIO_H
 #include <stdio.h>
