@@ -21,9 +21,10 @@ protected:
 public:
 
 	GAParser();
-	virtual ~GAParser();
+	virtual ~GAParser(){}
 	virtual void parse() = 0;
 	void update(std::string*);
+	static bool writeMessage(std::string *);
 };
 
 };
