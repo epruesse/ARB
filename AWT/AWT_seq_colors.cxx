@@ -28,7 +28,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
 
 	aws->at           ( 10,10 );
 	aws->auto_space(0,3);
-	
+
 	aws->callback     ( AW_POPDOWN );aws->create_button( "CLOSE", "CLOSE", "C" );
 	aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
 	aws->at_newline();
@@ -47,26 +47,37 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
 	}
 	aws->update_toggle_field();
 	aws->at_newline();
-	
-	aws->create_button(0,"Char");
-	for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-	    sprintf(buf,"S %i",set);
-	    aws->create_button(0,buf);
-	}
+
+    for (int big_columns = 0; big_columns <= 1; ++big_columns) {
+        aws->create_button(0,"Char");
+        for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
+            sprintf(buf,"S %i",set);
+            aws->create_button(0,buf);
+        }
+
+        buf[0] = 0; aws->create_button(0,buf); // empty
+    }
 	aws->at_newline();
 	aws->auto_space(2,2);
-	
-	for (elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS;elem++){
-	    sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
-	    awr->awar_string(buf);
-	    aws->create_input_field(buf,4);
-	    for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-		sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,set,elem);
-		awr->awar_string(buf);
-		aws->create_input_field(buf,4);
-	    }
+
+	for (elem = 0; elem < (AWT_SEQ_COLORS_MAX_ELEMS/2); elem++){
+        for (int big_columns = 0; big_columns <= 1; ++big_columns) {
+            int my_elem = elem+big_columns*AWT_SEQ_COLORS_MAX_ELEMS/2;
+
+            sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,my_elem);
+            awr->awar_string(buf);
+            aws->create_input_field(buf,4);
+            for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
+                sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,set,my_elem);
+                awr->awar_string(buf);
+                aws->create_input_field(buf,4);
+            }
+            if (big_columns == 0)  {
+                buf[0] = 0; aws->create_button(0,buf); // empty
+            }
+        }
 	    aws->at_newline();
-	}	
+	}
 
 	aws->window_fit();
 	return (AW_window *)aws;
@@ -164,13 +175,13 @@ void AWT_reference::expand_to_length(int len){
 }
 
 void AWT_reference::init(const char *species_name, const char *alignment_name) {
-    
+
     awt_assert(species_name);
     awt_assert(alignment_name);
-    
+
     GB_transaction dummy(gb_main);
     GBDATA *gb_species = GBT_find_species(gb_main,species_name);
-    
+
     init();
     if (gb_species){
 	GBDATA *gb_data = GBT_read_sequence(gb_species,alignment_name);
@@ -185,13 +196,13 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
 }
 
 void AWT_reference::init(const char *name, const char *sequence_data, int len) {
-    
+
     awt_assert(name);
     awt_assert(sequence_data);
     awt_assert(len>0);
-    
+
     init();
-    
+
     reference = (char*)GB_calloc(sizeof(char), len+1);
     memcpy(reference, sequence_data, len);
     reference[len] = 0;
