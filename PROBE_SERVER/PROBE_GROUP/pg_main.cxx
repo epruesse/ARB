@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Tue Oct/07/2003 18:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Oct/08/2003 20:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -29,47 +29,60 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-#include "../global_defs.h"
+// #include "../global_defs.h"
+
 #define SKIP_GETDATABASESTATE
 #define SKIP_DECODETREENODE
 #include "../common.h"
 #include "../path_code.h"
+#include "../read_config.h"
 
 // #define SAVE_AFTER_XXX_NEW_GROUPS 10000
 
 
-// bond values used:
-#define AA  0
-#define AC  0
-#define AG  0.5
-#define AU  1.1
+// bond values used: (read from config now)
+// #define AA  0
+// #define AC  0
+// #define AG  0.5
+// #define AU  1.1
 
-#define CA  AC
-#define CC  0
-#define CG  1.5
-#define CU  0
+// #define CA  AC
+// #define CC  0
+// #define CG  1.5
+// #define CU  0
 
-#define GA  AG
-#define GC  CG
-#define GG  0
-#define GU  0.9
+// #define GA  AG
+// #define GC  CG
+// #define GG  0
+// #define GU  0.9
 
-#define UA  AU
-#define UC  CU
-#define UG  GU
-#define UU  0
+// #define UA  AU
+// #define UC  CU
+// #define UG  GU
+// #define UU  0
+//
 
 using namespace std;
 
-// globals:
-
-GBDATA *gb_main = 0;
-
+// ----------------------------------------
+// types
 
 typedef SmartPtr<SpeciesBag, Counted<SpeciesBag, auto_free_ptr<SpeciesBag> > > SpeciesBagPtr;
 typedef deque<SpeciesBagPtr> SpeciesBagStack;
 
 typedef enum { TS_LINKED_TO_SPECIES, TS_LINKED_TO_SUBTREES } TreeState;
+
+// ----------------------------------------
+// globals
+
+GBDATA *gb_main = 0;
+
+// ----------------------------------------
+// module globals
+
+static output out;
+
+// ----------------------------------------
 
 //  --------------------------
 //      class TreeTraversal
@@ -146,9 +159,6 @@ public:
         return *this;
     }
 };
-
-
-static output out;
 
 //  -------------------------------------------------------
 //      static void my_output(const char *format, ...)
@@ -486,14 +496,14 @@ static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
     return gbt_tree;
 }
 
-static GB_ERROR collectProbes(GBDATA *pb_main) {
+static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_config) {
     GB_ERROR error = 0;
     string pt_server_name = "localhost: "+para.pt_server_name;
     PG_init_pt_server(gb_main, pt_server_name.c_str(), my_output);
 
     size_t group_count = 0;
+    int    length      = para.pb_length;
 
-    int length = para.pb_length;
     out.put("Searching probes with length %i ..", length);
 
     size_t probe_count = 0;
@@ -511,28 +521,34 @@ static GB_ERROR collectProbes(GBDATA *pb_main) {
         out.put("Probes found: %i", probe_count);
     }
 
-    size_t max_possible_groups = probe_count; // not quite correct (but only used for % display)
+    size_t       max_possible_groups = probe_count; // not quite correct (but only used for % display)
+    const size_t dot_devisor         = 10; // slow down dots
 
     if (!error) {
         out.put("Calculating probe-groups for found probes:");
-        out.setMaxPoints(max_possible_groups);
+        out.setMaxPoints(max_possible_groups/dot_devisor);
         indent i1(out);
 
         PG_init_find_probes(length, error);
         if (!error) {
             const char *probe;
-            size_t probe_count2 = 0;
-            PG_probe_match_para pm_para =
-                {
-                    // bonds:
-                    { AA, AC, AG, AU, CA, CC, CG, CU, GA, GC, GG, GU, UA, UC, UG, UU},
-                    0.5, 0.5, 0.5
-                };
+            size_t      probe_count2 = 0;
+
+//             PG_probe_match_para pm_para;
+//             PG_init_probe_match_para(pm_para, probe_config);
+
+//             PG_probe_match_para pm_para =
+//                 {
+//                     // bonds:
+//                     { AA, AC, AG, AU, CA, CC, CG, CU, GA, GC, GG, GU, UA, UC, UG, UU },
+//                     0.5, 0.5, 0.5
+//                 };
 
             while ((probe = PG_find_next_probe(error)) && !error) {
                 probe_count2++;
                 PG_Group group;
-                error = PG_probe_match(group, pm_para, probe);
+//                 error = PG_probe_match(group, pm_para, probe);
+                error = PG_probe_match(group, probe_config, probe);
 
                 if (!error) {
                     if (group.empty()) {
@@ -552,8 +568,9 @@ static GB_ERROR collectProbes(GBDATA *pb_main) {
                             PG_add_probe(pb_group, probe);
 
                             if (created) {
-                                out.point();
                                 ++group_count;
+                                if ((group_count%dot_devisor) == 0)
+                                    out.point();
                             }
                         }
                     }
@@ -1177,7 +1194,16 @@ static GB_ERROR searchBetterCoverage_repeated(GBT_TREE *tree, GBDATA *pb_main, G
 
 int main(int argc,char *argv[]) {
     out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
-    GB_ERROR error = scanArguments(argc, argv);
+
+    GB_ERROR          error = 0;
+    probe_config_data probe_config;
+
+    {
+        Config config("probe_parameters.conf", probe_config);
+        error = config.getError();
+    }
+
+    if (!error) error = scanArguments(argc, argv);
 
 #if defined(DEBUG) && 0
     {
@@ -1217,7 +1243,7 @@ int main(int argc,char *argv[]) {
                 error = GBT_write_plain_tree(pb_main, pb_main, 0, gbt_tree);
             }
 
-            if (!error) error = collectProbes(pb_main);
+            if (!error) error = collectProbes(pb_main, probe_config);
             if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);
             if (!error) {
                 GB_transaction dummy(gb_main);
@@ -1254,7 +1280,7 @@ int main(int argc,char *argv[]) {
 
         // save databases
 
-        {
+        if (!error) {
             out.put("Saving databases..");
             indent i(out);
             if (!error) error = save(pb_main, para.db_out_name, "complete");
