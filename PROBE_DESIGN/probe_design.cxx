@@ -237,7 +237,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GBDATA  *gb_data;
     GBDATA *gene_pos_begin_ptr;
     GBDATA *gene_pos_end_ptr;
-    GBDATA *gb_data_temp;
+//     GBDATA *gb_data_temp;
     char *temp;
     char *ali_genom;
     int pos_begin,pos_end;
