@@ -1094,34 +1094,26 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
     printf("Show main_manager\n");
 #endif
 
+    AW_device *device = ED4_ROOT->temp_device;
+
     if (flag.hidden) {
         if (last_window_reached && update_info.refresh) {
             clear_refresh();
         }
     }
     else if (refresh_all || update_info.refresh) {
-        // int f;
-        // ED4_font_info::reset_maximas();
-        // for (f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
-            // ED4_ROOT->font_info[f].update(ED4_ROOT->temp_device->get_font_information(f, 'A'));
-        // }
-        
-        ED4_ROOT->font_group.unregisterAll();
-        for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
-            ED4_ROOT->font_group.registerFont(ED4_ROOT->temp_device, f);
-        }
-
         AW_rectangle area_rect;
-        ED4_ROOT->temp_device->get_area_size(&area_rect);
+        device->get_area_size(&area_rect);
 
         // if update all -> clear_background
 
         if (update_info.clear_at_refresh && !is_cleared) {
-            ED4_ROOT->temp_device->push_clip_scale();
-            ED4_ROOT->temp_device->reduceClipBorders(area_rect.t, area_rect.b, area_rect.l, area_rect.r);
-            clear_background();
+            device->push_clip_scale();
+            if (device->reduceClipBorders(area_rect.t, area_rect.b, area_rect.l, area_rect.r)) {
+                clear_background();
+            }
             is_cleared = 1;
-            ED4_ROOT->temp_device->pop_clip_scale();
+            device->pop_clip_scale();
         }
 
         // loop through all rectangles between folding lines:
@@ -1170,17 +1162,20 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
                     }
                 }
 
-                ED4_ROOT->temp_device->push_clip_scale();
-                ED4_ROOT->temp_device->reduceClipBorders(y1, y2, x1, x2);
                 if (lastRow && lastColumn) {
                     last_window_reached = old_last_window_reached;
                 }
-                ED4_manager::Show(refresh_all, is_cleared);
+                
+                device->push_clip_scale();
+                if (device->reduceClipBorders(y1, y2-1, x1, x2-1)) {
+                    ED4_manager::Show(refresh_all, is_cleared);
+                }
+                device->pop_clip_scale();
+                
                 if (last_window_reached) {
                     update_info.set_refresh(0);
                     update_info.set_clear_at_refresh(0);
                 }
-                ED4_ROOT->temp_device->pop_clip_scale();
 
                 if (!flh) break; // break out after drawing lowest range
                 y1 = y2;
@@ -1189,6 +1184,21 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
 
             x1 = x2;
         }
+    }
+
+    // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
+    {
+        device->push_clip_scale();
+        const AW_rectangle& clip_rect = device->clip_rect;
+        device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
+        
+        int char_width = ED4_ROOT->font_group.get_max_width();
+        device->set_left_clip_border(clip_rect.l-char_width);
+        device->set_right_clip_border(clip_rect.r+char_width);
+
+        get_top_middle_spacer_terminal()->Show(true, false);
+        get_top_middle_line_terminal()->Show(true, false);
+        device->pop_clip_scale();
     }
 
 #ifdef TEST_REFRESH_FLAG
@@ -1322,17 +1332,21 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared)
                 AW_pos x,y;
                 child->calc_world_coords(&x, &y);
 
-                if (!(( y >= rect.b) ||	// does child overlap with clipping range?
-                      ( x >= rect.r) ||
-                      ((y+child->extension.size[HEIGHT]) <= rect.t) ||
-                      ((x+child->extension.size[WIDTH])  <= rect.l)))
+                AW_device *device = ED4_ROOT->temp_device;
+
+                if (!(((y-rect.b)>0.5) ||
+                      ((rect.t-(y+child->extension.size[HEIGHT]-1))>0.5) ||
+                      ((x-rect.r)>0.5) ||
+                      ((rect.l-(x+child->extension.size[WIDTH]-1))>0.5)
+                      ))
                 {
                     // they overlap -> show it
-                    ED4_ROOT->temp_device->push_clip_scale();
-                    child->adjust_clipping_rectangle();
-                    child->Show(refresh_all, is_cleared);
+                    device->push_clip_scale();
+                    if (child->adjust_clipping_rectangle()) {
+                        child->Show(refresh_all, is_cleared);
+                    }
                     flags_cleared = 1;
-                    ED4_ROOT->temp_device->pop_clip_scale();
+                    device->pop_clip_scale();
                 }
             }
 
