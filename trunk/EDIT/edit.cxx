@@ -1937,15 +1937,15 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
 void aed_initialize_device(AW_device *device) {
     device->new_gc( 0 );
     device->set_line_attributes( 0, 0.3, AW_SOLID );
-    device->set_font( 0, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
+    device->set_font( 0, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12, 0);
     device->set_foreground_color( 0, AW_WINDOW_FG );
 
     device->new_gc( 1 );
-    device->set_font( 1, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
+    device->set_font( 1, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12, 0);
     device->set_foreground_color( 1, AW_WINDOW_FG );
 
     device->new_gc( 2 );
-    device->set_font( 2, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
+    device->set_font( 2, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12, 0);
     device->set_foreground_color( 2,AW_WINDOW_DRAG );
     device->set_function( 2, AW_XOR );
 
