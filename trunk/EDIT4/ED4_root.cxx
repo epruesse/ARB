@@ -1642,19 +1642,26 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     int db_pathx,db_pathy;
     awmm->get_at_position( &db_pathx,&db_pathy );
     awmm->callback( ED4_quit_editor, 0, 0);
-    awmm->button_length(0);
-    awmm->help_text("quit.hlp");
 
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
 
+    // ----------------------------------------------------------------------------------------------------    
+    awmm->button_length(7);
+    awmm->help_text("quit.hlp");
     awmm->at("quit");
-    if (ED4_window::no_of_windows == 1)     awmm->create_button("QUIT","Quit"); // this is the first window
-    else                    awmm->create_button("CLOSE","Close");
+    if (ED4_window::no_of_windows == 1)     awmm->create_button("QUIT","QUIT"); // this is the first window
+    else                    awmm->create_button("CLOSE","CLOSE");
 
+    awmm->at("help");
+    awmm->callback(AW_POPUP_HELP,(AW_CL)"e4.hlp");
+    awmm->create_button("HELP","HELP");
+
+    awmm->button_length(0);
     awmm->at("fold");
     awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "edit/folded.bitmap", "edit/unfolded.bitmap");
 
+    // ----------------------------------------------------------------------------------------------------
     int db_treex,db_treey;
     awmm->get_at_position( &db_treex,&db_treey );
     awmm->button_length(200);
@@ -1673,18 +1680,22 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("iupac");
     awmm->callback((AW_CB)ED4_set_iupac,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,6);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,5);
 
     awmm->at("helixnr");
     awmm->callback((AW_CB)ED4_set_helixnr,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_helixNr, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_helixNr,5);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_helixNr,6);
 
+    // ----------------------------------------------------------------------------------------------------
+    awmm->button_length(8);
     awmm->at("insert");
     awmm->create_toggle(AWAR_INSERT_MODE, "edit/replace.bitmap", "edit/insert.bitmap");
 
+    awmm->button_length(8);
     awmm->at("edit");
     awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.bitmap", "edit/noalign.bitmap");
 
+    awmm->button_length(8);
     awmm->at("direct");
     awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/r2l.bitmap","edit/l2r.bitmap");
 
@@ -1697,30 +1708,31 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->at("key");
     awmm->create_toggle("key_mapping/enable", "edit/nokeymap.bitmap", "edit/keymap.bitmap");
 
+    // ----------------------------------------------------------------------------------------------------
     awmm->button_length(0);
 
     awmm->at("secedit");
     awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
     awmm->create_button("SECEDIT", "#edit/edit_sec.bitmap");
 
-    awmm->at("jump");
-    awmm->callback(ED4_jump_to_current_species, 0);
-    awmm->create_button("JUMP", "Jump");
-    awmm->at("get");
-    awmm->callback(ED4_get_and_jump_to_actual, 0);
-    awmm->create_button("GET", "Get");
-
+    awmm->button_length(6);
     awmm->at("undo");
     awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
-    awmm->create_button("UNDO", "Undo");
+    awmm->create_button("UNDO", "UNDO");
+
     awmm->at("redo");
     awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
-    awmm->create_button("REDO", "Redo");
+    awmm->create_button("REDO", "REDO");
 
-    awmm->at("help");
-    awmm->callback(AW_POPUP_HELP,(AW_CL)"e4.hlp");
-    awmm->create_button("HELP","Help");
+    awmm->at("jump");
+    awmm->callback(ED4_jump_to_current_species, 0);
+    awmm->create_button("JUMP", "JUMP");
 
+    awmm->at("get");
+    awmm->callback(ED4_get_and_jump_to_actual, 0);
+    awmm->create_button("GET", "GET");
+
+    awmm->button_length(5);
     awmm->at("protect");
     awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
     awmm->insert_option("0",0,0);
@@ -1733,7 +1745,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->update_option_menu();
 
     // search
-
+    awmm->button_length(0);
 #define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix) insert_search_fields(awmm, #label_prefix, #prefix, ED4_AWAR_##prefix##_SEARCH_PATTERN, ED4_##prefix##_PATTERN, ED4_AWAR_##prefix##_SEARCH_SHOW, Short)
 
     INSERT_SEARCH_FIELDS(0, u1, USER1);
