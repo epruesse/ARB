@@ -11,6 +11,7 @@
 #include <set>
 #endif
 
+typedef std::set<SpeciesID> SpeciesBag;
 
 // initialization (needed for all functions below):
 GB_ERROR 	PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...));
@@ -34,7 +35,8 @@ struct PG_probe_match_para {
 GB_ERROR 	PG_probe_match(PG_Group& g, const PG_probe_match_para& para, const char *for_probe);
 
 GBDATA *PG_find_species(GBDATA *node,int id,long gbs);
-GBDATA *PG_find_probe_group_for_species(GBDATA *node, const std::set<SpeciesID>& species);
+GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species);
+GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *rootNode, const SpeciesBag& species, int min_non_matched, int max_non_matched, int& groupsize);
 
 // void       PG_find_probe_for_subtree(GBDATA *node,const std::deque<SpeciesID>& species, std::deque<std::string>& probe);
 // SpeciesID  PG_get_id(GBDATA *node);
