@@ -16,11 +16,11 @@ void ED4_SECEDIT_start(AW_window *aw, AW_CL, AW_CL)
     static AW_window *aw_sec = 0;
     
     if (!aw_sec) { // do not open window twice
-	aw_sec = SEC_create_main_window(aw->get_root());
-	if (!aw_sec) {
-	    aw_message("Couldn't start secondary structure editor");
-	    return;
-	}
+        aw_sec = SEC_create_main_window(aw->get_root());
+        if (!aw_sec) {
+            aw_message("Couldn't start secondary structure editor");
+            return;
+        }
     }
     aw_sec->show();
 }
