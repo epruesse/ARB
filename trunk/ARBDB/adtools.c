@@ -781,10 +781,28 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
 
         if (gb_any){
             gb_id = GB_search(node->gb_node,"id",GB_INT);
+#if defined(DEBUG) && defined(DEVEL_RALF)
+            {
+                int old = GB_read_int(gb_id);
+                if (old != me) {
+                    printf("id changed in gbt_write_tree_nodes(): old=%i new=%li (tree-node=%p; gb_node=%p)\n",
+                           old, me, node, node->gb_node);
+                }
+            }
+#endif /* DEBUG */
             error = GB_write_int(gb_id,me);
             GB_write_usr_private(node->gb_node,0);
             if (error) return -1;
         }else{
+#if defined(DEBUG) && defined(DEVEL_RALF)
+            {
+                GBDATA *gb_id2 = GB_find(node->gb_node, "id", 0, down_level);
+                int     id     = 0;
+                if (gb_id2) id = GB_read_int(gb_id2);
+                
+                printf("deleting node w/o info: tree-node=%p; gb_node=%p prev.id=%i\n", node, node->gb_node, id);
+            }
+#endif /* DEBUG */
             GB_delete(node->gb_node);
             node->gb_node = 0;
         }
