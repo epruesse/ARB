@@ -17,12 +17,15 @@ BEGIN {
   @ISA       = qw(Exporter);
   @EXPORT    = qw( &print_header
                    &print_special_header
+                   &print_download_header
                    &wait_answer
                    &send_std_result
                    &write_std_request
                    &print_error
                    &print_critical_error
                    &generate_filenames
+                   &treefilename
+                   &clientfilename
                  );
   @EXPORT_OK = qw( $q
                    %params
@@ -39,6 +42,11 @@ my $root_dir;
 
 sub print_header() {
   print $probe_server::q->header(-type=>'text/plain');
+  $header_printed=1;
+}
+sub print_download_header($$) {
+  my ($type,$fname) = @_;
+  print $probe_server::q->header(-type=>$type, -attachment=>$fname );
   $header_printed=1;
 }
 sub print_special_header($) {
@@ -120,9 +128,9 @@ sub send_std_result($) {
   return;
 }
 
-sub treefilename() {
-  return $datadir.'/current.tree.gz';
-}
+sub treefilename() { return $datadir.'/current.tree.gz'; }
+sub clientbasename() { return 'arb_probe_library.jar.gz'; }
+sub clientfilename() { return $datadir.'/'.&clientbasename(); }
 
 END { }                         # module clean-up code here (global destructor)
 1;                              # don't forget to return a true value from the file
