@@ -10,15 +10,25 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Merge Similar Species
 
-OCCURRENCE	Species/Merge Similar Species     Sequence/Concatenate sequences/alignments
+OCCURRENCE	ARB_NT/Species/Merge Similar Species
+                ARB_NT/Sequence/Concatenate sequences/alignments
 
-DESCRIPTION "Merge Similar Species" function merges the database fields of the similar species found in the database.
-    
-            Select the database field entry by clicking on the button to set the criterion field to merge species in the database (for e.g., full_name).
+DESCRIPTION
 
-            Specify the new field name to which the "number of merged species" information is to be stored (e.g., merged_species).
+            "Merge Similar Species" function merges the database
+            fields of the similar species found in the database.
 
-            Press MERGE SIMILAR SPECIES button to generate new species by merging similar species having selected database entry as a criterion. 
+            Select the database field entry by clicking on the button
+            to set the criterion field to merge species in the
+            database (for e.g., full_name).
+
+            Specify the new field name to which the "number of merged
+            species" information is to be stored (e.g.,
+            merged_species).
+
+            Press MERGE SIMILAR SPECIES button to generate new species
+            by merging similar species having selected database entry
+            as a criterion.
 
 NOTES		None
 
