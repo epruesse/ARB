@@ -48,6 +48,10 @@ void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_searchManuallyNames(AW_root *aw_root);
 
+/* NT_MAUS.cxx */
+void NT_create_MAUS_awars(AW_root *aw_root, AW_default aw_def, AW_default gb_def);
+AW_window *NT_create_MAUS_window(AW_root *aw_root, AW_CL dummy_1x);
+
 /* NT_ins_col.cxx */
 
 /* NT_import.cxx */
