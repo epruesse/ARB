@@ -13,7 +13,7 @@
 #include "parsimony.hxx"
 #include "ap_tree_nlen.hxx"
 
-#include <aw_root.hxx>
+// #include <aw_root.hxx>
 
 using namespace std;
 
