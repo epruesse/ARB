@@ -244,7 +244,7 @@ void PS_BitMap::print() {
     printf( "PS_BitMap : bias (%5s) size(%6li) capacity(%6li)\n",(bias) ? "true" : "false",size,capacity );
     for (long i = 0; i <= size; ++i) {
         printf( "[%5li] ",i);
-        data[i]->print();
+        data[i]->print( i );
     }
 }
 

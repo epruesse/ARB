@@ -297,15 +297,19 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
 //    getchar();
 
     printf( "\n\n----------------- no matches ---------------\n\n" );
-    for (ID2IDSetCIter i = noMatch.begin(); i != noMatch.end(); ++i) {
-        printf( "%6i %6i\n", i->first, i->second );
+    if (!_result_filename) {
+        for (ID2IDSetCIter i = noMatch.begin(); i != noMatch.end(); ++i) {
+            printf( "%6i %6i\n", i->first, i->second );
+        }
     }
     printf( "%u no matches\n(enter to continue)\n", noMatch.size() );
 //    getchar();
 
     printf( "\n\n----------------- one match ---------------\n\n" );
-    for (ID2IDSetCIter i = oneMatch.begin(); i != oneMatch.end(); ++i) {
-        printf( "%6i %6i\n", i->first, i->second );
+    if (!_result_filename) {
+        for (ID2IDSetCIter i = oneMatch.begin(); i != oneMatch.end(); ++i) {
+            printf( "%6i %6i\n", i->first, i->second );
+        }
     }
     printf( "%u one matches\n(enter to continue)\n", oneMatch.size() );
 //    getchar();
@@ -327,21 +331,21 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     for (IDID2IDSetMapCIter i = __PAIR2PATH->begin();
          i != __PAIR2PATH->end();
          ++i) {
-        printf( "Pair (%i,%i) Setsize (%d)", i->first.first, i->first.second, i->second.size() );
+        printf( "\nPair (%i,%i) Setsize (%d)", i->first.first, i->first.second, i->second.size() );
         PS_NodePtr current_node = _root_node;
         long c = 0;
         for (IDSetCIter path_id=i->second.begin();
              path_id !=i->second.end();
              ++path_id,++c) {
             current_node = current_node->getChild( *path_id ).second;
-//             if (c % 10 == 0) printf( "\n" );
-//             printf( "%6i%s ", *path_id, (current_node->hasProbes()) ? ((current_node->hasInverseProbes()) ? "*" : "+") : "-" );
+            if (c % 10 == 0) printf( "\n" );
+            printf( "%6i%s ", *path_id, (current_node->hasProbes()) ? ((current_node->hasInverseProbes()) ? "*" : "+") : "-" );
         }
         printf( "\nFinal Node : %p ", &(*current_node) );
         current_node->printOnlyMe();
-        printf( "\n\n" );
+        printf( "\n" );
     }
-    printf( "%u paths\n", __PAIR2PATH->size() );
+    printf( "\n%u paths\n", __PAIR2PATH->size() );
     //
     // oups
     //
@@ -370,14 +374,14 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             for (IDSetCIter path_id = i->second.begin(); path_id != i->second.end(); ++path_id) {
                 if (id == *path_id) continue;   // obviously an probe cant differ a species from itself
                 if (id > *path_id) {
-                    preset->set( id,*path_id,true );
+                    preset->setTrue( id,*path_id );
                 } else {
-                    preset->set( *path_id,id,true );
+                    preset->setTrue( *path_id,id );
                 }
             }
         }
     }
-    preset->print();
+    if (!_result_filename) preset->print();
     //
     // save results
     //
@@ -396,6 +400,10 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
         for (IDID2IDSetMapCIter i = __PAIR2PATH->begin(); i != __PAIR2PATH->end(); ++i) {
             result_file->put_int( i->first.first );
             result_file->put_int( i->first.second );
+            result_file->put_long( i->second.size() );
+            for (IDSetCIter path_id=i->second.begin(); path_id !=i->second.end(); ++path_id) {
+                result_file->put_int( *path_id );
+            }
         }
         // preset bitmap
         printf( "saving preset bitmap to %s...\n", _result_filename );

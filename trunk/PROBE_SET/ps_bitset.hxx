@@ -49,7 +49,7 @@ public:
     virtual void invert();
     virtual void xor( const PS_BitSet *_other_set );
     
-    virtual void print();
+    virtual void print( long _fill_index );
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
@@ -216,14 +216,22 @@ void PS_BitSet::xor( const PS_BitSet *_other_set ) {
 
 
 // ************************************************************
-// * PS_BitSet::print()
+// * PS_BitSet::print( _fill_index )
 // ************************************************************
-void PS_BitSet::print() {
+void PS_BitSet::print( long _fill_index = -1 ) {
     printf( "PS_BitSet : bias (%5s) size(%6li) capacity(%6li) ",(bias) ? "true" : "false", size,capacity );
     for (long i = 0; i <= size; ++i) {
         printf( get(i) ? "+" : "_" );
     }
-//    if (size >= 0) 
+    if (bias) {
+        for (long i = (size > 0) ? size+1 : 0; i <= _fill_index; ++i) {
+            printf( "+" );
+        }
+    } else {
+        for (long i = (size > 0) ? size+1 : 0; i <= _fill_index; ++i) {
+            printf( "_" );
+        }
+    }
     printf( "\n" );
 }
 

@@ -234,11 +234,7 @@ public:
 		printf(" ");
 	    }
 	}
-	printf( "] C[ " );
-        for (PS_NodeMapConstIterator i=children.begin(); i!=children.end(); ++i) {
-            printf( "N[%d] P[%d] C[%d] ", i->first, i->second->countProbes(), i->second->countChildren() );
-        }
-	printf( "]" );
+	printf( "] C[ %i ]", children.size() );
     }
 
     //
