@@ -26,7 +26,7 @@ DESCRIPTION	Calculates consensus for marked or all sequences.
 		3. Define whether to use or to ignore gaps entirely. If you count
 			gaps and the gap frequency exceeds 'threshold for gaps', the
 			result will be shown as '-'. If the switch is 'off',
-			the algorythm will virtually remove all gaps.
+			the algorithm will virtually remove all gaps.
 			That means if you have a coloumn with two 'A's
 			and 500 gaps the program thinks
 			of 100% 'A'. If the switch would be 'on', the relative
