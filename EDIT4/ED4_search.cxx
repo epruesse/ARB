@@ -1803,7 +1803,7 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
     return 0;
 }
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  //yadhu
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  
     ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
     ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
 
