@@ -62,7 +62,12 @@ public:
     void setProbeTarget(const char *target) {
         sai_assert(target);
         free(probeTarget);
-        probeTarget    = strdup(target);
+        unsigned int len = strlen(target);
+        char temp[len];temp[len] = '\0';
+        for( unsigned int i = 0; i < len; i++) {
+            temp[i] = toupper(target[i]);  // converting the Bases to Upper case
+        }
+        probeTarget    = strdup(temp);
         probeTargetLen = strlen(probeTarget);
     }
     void setHeadline(const char *hline) {
