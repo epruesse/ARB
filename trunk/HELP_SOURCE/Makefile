@@ -37,10 +37,15 @@ endif
 		@echo ---------------------------------------------------
 		@echo ------------ Converting xml 2 hlp:
 		$(MAKE) help
+		$(MAKE) $(HLP_DEST)/FORM.hlp
 		@echo ---------------------------------------------------
 		@echo ------------ Converting xml 2 html:
 		$(MAKE) html
 		$(MAKE) html_index
+
+$(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
+		cp -p $< $@
+
 
 dirs:
 		mkdir -p $(XML_LOCATION)
