@@ -477,9 +477,9 @@ extern "C" int server_save(AN_main *main, int dummy)
     char	*sec_name;
     dummy = dummy;
     if (main->touched) {
-
         sec_name = (char *)calloc(sizeof(char),strlen(aisc_main->server_file)+2);
         sprintf(sec_name,"%s%%",aisc_main->server_file);
+        printf("Saving '%s'..\n", aisc_main->server_file);
         file = fopen(sec_name,"w");
         if (!file) {
             fprintf(stderr,"ERROR cannot save file %s\n",sec_name);
@@ -531,6 +531,10 @@ int names_server_shutdown(void)
     return 0;
 }
 
+int names_server_save(void) {
+    server_save(aisc_main, 0);
+    return 0;
+}
 
 extern "C" int server_shutdown(AN_main *pm,aisc_string passwd){
     /** passwdcheck **/
@@ -589,7 +593,8 @@ int main(int argc,char **argv)
 
     if (AN_global.cl_link) {
         if( !strcmp(argv[1],"-look")) {
-            aisc_close(AN_global.cl_link);AN_global.cl_link=0;
+            printf("No client - terminating.\n");
+            aisc_close(AN_global.cl_link);AN_global.cl_link = 0;
             exit(0);
         }
 
