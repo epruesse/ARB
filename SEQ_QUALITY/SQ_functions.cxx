@@ -238,8 +238,8 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
 	    if (!gb_ali) {
-            error = no_data_error(gb_species, alignment_name);
-        }
+		error = no_data_error(gb_species, alignment_name);
+	    }
 	    else {
 		int diff = 0;
 		int temp = 0;
@@ -259,33 +259,6 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		seq_assert(gb_result2);
 		GB_write_int(gb_result2, diff_percent);
-
-
-		/*calculate consensus conformity*/
-// 		if (read_sequence) {
-// 		    int sequenceLength      = 0;
-// 		    const char *rawSequence = 0;
-// 		    int cons_conf           = 0;
-// 		    int cons_conf_percent   = 0;
-// 		    rawSequence    = GB_read_char_pntr(read_sequence);
-// 		    sequenceLength = GB_read_count(read_sequence);
-
-
-// 		    for (int i = 0; i < sequenceLength; i++) {
-// 			char c;
-// 			c = cons_mkd.SQ_get_consensus(i);
-// 			if (rawSequence[i] == c) {
-// 			    cons_conf++;
-// 			}
-// 		    }
-// 		    cons_conf_percent = (cons_conf * 100) / sequenceLength;
-
-// 		    GBDATA *gb_result6 = GB_search(gb_quality, "consensus_conformity", GB_INT);
-// 		    seq_assert(gb_result6);
-// 		    GB_write_int(gb_result6, cons_conf_percent);
-// 		}
-
-
 	    }
 	}
     }
