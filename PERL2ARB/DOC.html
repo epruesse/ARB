@@ -41,9 +41,9 @@ Basic idea:
 
 		$gb_main = ARB::open("new_db.arb","wc");	// create new db
 				// we are operating
-				// in a multi user env., so we have to 
+				// in a multi user env., so we have to
 				// get exclusive rights to the server:
-		ARB::begin_transaction($gb_main);	
+		ARB::begin_transaction($gb_main);
 				// create a dbelem key = "name"
 				//			type = "STRING"
 		$gb_name = ARB::create($gb_main,"name","STRING");
@@ -59,7 +59,7 @@ Basic idea:
 
 	What has been done:
 
-		The first argument of nearly ARB-Database (ARBDB) functions
+		The first argument of nearly all ARB-Database (ARBDB) functions
 		is an existing database element.
 		You may change or read this element or use it to find or
 		create other elements.
@@ -75,14 +75,14 @@ Basic idea:
 		Because the root node of the database is always a container
 		we can simply add new items to it.
 
-	
+
 	****************************** Example 2 ***************
 
 	We have the same situation as in Example 1 but we want to store
 	the name, tel .. of different persons in the database.
 
 	So we simply store the person's data not in the root container,
-	but in a person container. 
+	but in a person container.
 
 		$gb_main = ....
 		ARB::begin_transaction($gb_main);
@@ -94,7 +94,7 @@ Basic idea:
 			if ($error) .....
 			$gb_tel = ARB::create($gb_person,"tel", STRING);
 			$error = ARB:write_string($gb_tel,"telnr of person");
-		}	
+		}
 		commit and save
 
 	******************************* END 2 ***************************
@@ -103,10 +103,10 @@ Basic idea:
 
 		We created sub containers for each person. All this
 		have the key 'person', so in this case the key is really
-		useless. Some people might think that it would be much 
+		useless. Some people might think that it would be much
 		better to give each container the name of the person.
 		But that would limit you to search for only one field.
-		So we decided not to index the keys of the database 
+		So we decided not to index the keys of the database
 		elements but their values. So you should not use the
 		key for indexing.
 
@@ -115,7 +115,7 @@ Searching the database:
 	There are three main ways to find your data:
 
 		1. Use the key of the elements:
-			This is good if all your keys are unique in 
+			This is good if all your keys are unique in
 			a container and if there are only a few elements
 			in a container.
 
@@ -141,7 +141,7 @@ Searching the database:
 	$gb_searched = ARB:search($gb_start,"key1","none");
 		searches in the container $gb_start for an element with
 		the key 'key1'
-	
+
 	$gb_searched = ARB:search($gb_start,"key1/key2","none");
 		searches a container $gb_h with key 'key1' in $gb_start
 		and if found continues searching in $gb_h for an element
@@ -177,15 +177,15 @@ Searching the database:
 	"down" than ARB::find will behave like ARB::search.
 
 	mode indicates the direction of the search:
-	"down"	 means that $gb_start_point is a container and it 
+	"down"	 means that $gb_start_point is a container and it
 		looks for an element in that container
 	"down_2" means that $gb_start_point is a container and all its
 		elements are containers and it looks for elements in
 		the subcontainers of $gb_start_point
-	"this"	forces ARB::search to look for a brother 
+	"this"	forces ARB::search to look for a brother
 		of $gb_start_point.
 	"this_next" continues a search started by mode == "down",
-		The first parameter should be the last hit 
+		The first parameter should be the last hit
 	"down_next" continues a search started by mode == "down_2",
 		The first parameter should be the father of the last hit.
 		To get the father of an element call
@@ -226,7 +226,7 @@ Now the rest is really trivial: only a lot of functions
 	Some name conventions:
 		$gb_xxx	indicates are variable which is a database
 			element
-		$gb_cxxx is any container 
+		$gb_cxxx is any container
 		$gb_main is always the root element
 		$error is an error string
 
@@ -262,7 +262,7 @@ $error = ARB::save_as($gb_main,"path of the database",mode)
 
 
 $error = ARB::save_quick($gb_main,"existing path of the database");
-	Save all changes to a file "xxxx.quickX" where X is an 
+	Save all changes to a file "xxxx.quickX" where X is an
 	autoincremented number between 0 and 7
 
 $error = ARB::save_quick_as($gb_main,"new path");
@@ -330,7 +330,7 @@ $val = ARB::read_byte($gb_xxx);
 $val = ARB::read_int($gb_xxx);
 $val = ARB::read_float($gb_xxx);
 	// array types
-$val = ARB::read_string($gb_xxx);	// read the value 
+$val = ARB::read_string($gb_xxx);	// read the value
 $val = ARB::read_bytes($gb_xxx);	// may contain \0 characters
 $val = ARB::read_ints_using_index($gb_xx, "index");
 					// read the integer #index of an
@@ -414,13 +414,13 @@ $key = ARB::read_key($gb_xxx);
 
 $clock = ARB::read_clock($gb_xxx);
 	gets the last modification time of an entry.
-	The modification time of a container is always greater or equal 
+	The modification time of a container is always greater or equal
 	then the modification time of it's subelements.
 	The clock counts transactions, not seconds
 
 
 $error = ARB::set_temporary($gb_xxx);
-	Marks a field in the database as a temporary field. 
+	Marks a field in the database as a temporary field.
 	That means that this fiels is never saved to a file.
 $error = ARB::clear_temporary($gb_xxx);
 	Clears tmp flag
@@ -455,7 +455,7 @@ $value = ARB::read_usr_private($gb_xxx);
 ************************** ETC ************************
 
 $error = ARB::release($gb_xxx);
-	By default all clients cach all data which have been searched,
+	By default all clients cache all data which has been searched,
 	read or modified.
 	If you want to get rid of some cached items you may call
 	ARB::release, which frees all data below $gb_xxx.
@@ -507,7 +507,7 @@ $time = ARB::last_saved_time($gb_main);
 	the same but in seconds after 1 Jan 0:00 1970
 
 $error = ARB::set_cache_size($gb_main, "size_in_bytes");
-	ARB uses datacompression for long strings. If some strings 
+	ARB uses datacompression for long strings. If some strings
 	are used very intensivly the program bay slow down.
 	Therefor a small cache is used and it's size can be set
 	by this function. If you are working with sequences, a value
