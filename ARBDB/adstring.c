@@ -241,11 +241,11 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
         char buffer[GBS_GLOBAL_STRING_SIZE];
 
         if (action) {
-            if (filename) sprintf(buffer, "ARB ERROR: When %s '%s': '%s'", action, filename, error_message);
-            else sprintf(buffer, "ARB ERROR: When %s <unknown file>: '%s'", action, error_message);
+            if (filename) sprintf(buffer, "ARB ERROR: When %s '%s': %s", action, filename, error_message);
+            else sprintf(buffer, "ARB ERROR: When %s <unknown file>: %s", action, error_message);
         }
         else {
-            if (filename) sprintf(buffer, "ARB ERROR: Concerning '%s': '%s'", filename, error_message);
+            if (filename) sprintf(buffer, "ARB ERROR: Concerning '%s': %s", filename, error_message);
             else sprintf(buffer, "ARB ERROR: %s", error_message);
         }
 

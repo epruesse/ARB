@@ -104,8 +104,7 @@ $(HELP) : $(STYLE_HELP) $(DTD)
 
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
-		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' \
-				|| rm $@
+		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
 
 # --------------------------------------------------------------------------------
 
@@ -113,8 +112,7 @@ $(HTML) : $(STYLE_HTML) $(DTD)
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 		@-test -f $@ && rm $@
-		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' \
-				|| (rm $@ && test -f $@)
+		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
 
 # --------------------------------------------------------------------------------
 
