@@ -37,3 +37,6 @@ if [ "X$ok" = 'Xy' ]; then
 	done
 fi
 
+# export names.dat:
+gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
+
