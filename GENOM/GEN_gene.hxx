@@ -32,16 +32,21 @@ public:
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_);
     virtual ~GEN_gene();
 
-    void paint(AW_device *device, int &x, int &y);
-
     inline bool operator<(const GEN_gene& other) const {
-        int cmp = pos1-other.pos1;
+        long cmp     = pos1-other.pos1;
         if (cmp) cmp = pos2-other.pos2;
         return cmp<0;
     }
+
+    long StartPos() const { return pos1; }
+    long EndPos() const { return pos2; }
+    int Level() const { return level; }
+    const string& Name() const { return name; }
+    const GBDATA *GbGene() const { return gb_gene; }
 };
 
 typedef set<GEN_gene> GEN_gene_set;
+typedef GEN_gene_set::iterator GEN_iterator;
 
 //  -----------------------
 //      class GEN_root
@@ -57,7 +62,7 @@ private:
     long          bp_per_line;  // base positions per line
 
 public:
-    GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment);
+    GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment, int lines);
     virtual ~GEN_root();
 
     const string& GeneName() const { return gene_name; }
