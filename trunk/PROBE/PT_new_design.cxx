@@ -852,7 +852,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     // int         name;
     int         partsize;
     char        partstring[256];
-    const long  defhash      = 50000;
+    const long  defhash      = 500000;
     int        *group_idx    = new int[group_count];
     int         maxseqlength = 0; // of marked species/genes
 
@@ -876,12 +876,12 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     pt_assert(partsize<256);
     {
         int partitions = partsize == 0 ? 1 : 4;
-        
+
         for (int p = 1; p < partsize; ++p) partitions *= 4;
 
         if (partitions>100) {
-            printf("Performance warning: Due to the max. sequence length this probe design will\n"
-                   "                     be very slow (%i times slower than possible)\n", partitions);
+            printf("Performance warning: Due to the max. sequence length and the number of probes\n"
+                   "this probe design will be very slow (%i times slower than possible)\n", partitions);
         }
 
 #if defined(DEBUG)
