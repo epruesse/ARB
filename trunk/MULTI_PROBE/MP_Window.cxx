@@ -121,116 +121,135 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     return result_window;
 }
 
-char *mp_get_word_before_newline(char **string)         //new_line wird durch 0-Zeichen ersetzt
-{
-    char *end, *merk;
+static const char *parse_word(const char *& line, int& wordlen) {
+    gb_assert(line);
+    
+    while (line[0] == ' ') ++line; // eat whitespace
+    if (line[0] == 0) return 0; // at EOL
 
-    if (!*string || !*string[0])
-        return NULL;
+    const char *behind_word       = strchr(line, ' ');
+    if (!behind_word) behind_word = strchr(line, 0); // get EOL
+    gb_assert(behind_word);
 
-    end = strchr(*string, '\n');
-    if (!end)
-        end = strchr(*string, 0);
+    wordlen = behind_word-line;
+    gb_assert(wordlen);
 
-    if (end)
-    {
-        *end = 0;
-        merk = end+1;
-        end--;
-        while (*end != ' ' && *end != '\t' && end > *string)
-            end--;
+    static char *word_buffer = 0;
+    if (word_buffer) free(word_buffer);
+    word_buffer              = (char*)malloc(wordlen+1);
+    memcpy(word_buffer, line, wordlen);
+    word_buffer[wordlen]     = 0;
 
-        if (*end == ' ' || *end == '\t')
-            end++;
+    line = behind_word;
 
-        *string = merk;
-        return end;
+    return word_buffer;
+}
+
+static GB_ERROR parse_probe_list_entry(const char *one_line, char*& probe_string, int& ecoli_position) {
+    const char *start  = one_line;
+    const char *reason = "more tokens expected";
+    int         wordlen;
+    const char *word   = parse_word(one_line, wordlen);
+    probe_string       = 0;
+
+    if (word) {
+        int target_length = wordlen;
+        word              = parse_word(one_line, wordlen);
+        if (word) {
+            int length = atoi(word);
+
+            if (length != target_length) {
+                reason = "Length mismatch between 'Target' and 'le'";
+            }
+            else {
+                word = parse_word(one_line, wordlen);
+                if (word && wordlen == 2) { // spaces between 'A=' and number
+                    word = parse_word(one_line, wordlen); // parse number
+                }
+                if (word) word = parse_word(one_line, wordlen); // parse ecoli
+                if (word) {
+                    ecoli_position = atoi(word);
+                    if (word) word = parse_word(one_line, wordlen); // parse 'grps'
+                    if (word) word = parse_word(one_line, wordlen); // parse 'G+C'
+                    if (word) word = parse_word(one_line, wordlen); // parse '4GC+2AT'
+                    if (word) word = parse_word(one_line, wordlen); // parse 'Probe sequence'
+                    if (word) {
+                        if (wordlen != target_length) {
+                            reason = "Length mismatch between 'Target' and 'Probe sequence'";
+                        }
+                        else {
+                            probe_string = strdup(word);
+                            return 0; // success
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    return NULL;    //sollte nie vorkommen
+    return GBS_global_string("can't parse line '%s' (Reason: %s)", start, reason);
 }
 
-int MP_get_ecoli_pos(char *ko)              //gedacht fuer ein probedesign file
+
+void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *base_name)
 {
-    char *op = ko;
-    char *marke;
-
-    while (*op != ' ' && *op != '\t')    // ueberspringt ein Wort
-        op++;                //mit Leerzeichen
-    while (*op == ' ' || *op == '\t')    //diese Schleife gehoert
-        op++;                //auch dazu
-
-
-    while (*op != ' ' && *op != '\t')    // ueberspringt ein Wort
-        op++;                //mit Leerzeichen
-    while (*op == ' ' || *op == '\t')    //diese Schleife gehoert
-        op++;                //auch dazu
-
-
-    while (*op != ' ' && *op != '\t')    // ueberspringt ein Wort
-        op++;                //mit Leerzeichen
-    while (*op == ' ' || *op == '\t')    //diese Schleife gehoert
-        op++;                //auch dazu
-
-
-    marke = op;
-
-    while (*op != ' ' && *op != '\t')    // ueberspringt ein Wort
-        op++;
-    *op = 0;
-
-    return atoi(marke);
-}
-
-void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afilename)
-{
-    char *ko;           //display und value sollen gleichen Wert haben; Der Ausleser muss formatieren
-    char *pl;
-    char *real_disp = NULL;
-    char *next_word = NULL;
-    char *beg_line;
-    int  ecoli_pos;
-
     aww->clear_selection_list(selection_list);
     char *data;
     {
-        char *filename = aww->get_root()->awar(afilename)->read_string();
-        data = GB_read_file(filename);
+        const char *awar_file = GBS_global_string("%s/file_name", base_name);
+        char *filename  = aww->get_root()->awar(awar_file)->read_string();
+        data            = GB_read_file(filename);
         free(filename);
-    }
-    if (!data){
-        aw_message(GB_get_error());
-        return;
-    }
-
-    if (strstr(data,"Probe design Parameters:"))        //designliste nach Sonden filtern
-    {
-        ko = data;
-
-        beg_line = ko;
-        while ( (pl = mp_get_word_before_newline(&ko)))
-        {
-
-            if (strlen(pl) > 10 &&
-                MP_is_probe(pl) &&
-                (selection_list == selected_list || selection_list == probelist))
-            {
-                real_disp = new char[5+7+strlen(pl)];
-                ecoli_pos = MP_get_ecoli_pos(beg_line);
-
-                sprintf(real_disp,"%1d#%1d#%6d#%s",QUALITYDEFAULT,0,ecoli_pos,pl);
-                aww->insert_selection(selection_list,real_disp,real_disp);
-                delete [] real_disp;
-            }
-            beg_line = ko;
+        if (!data){
+            aw_message(GB_get_error());
+            return;
         }
-        free(data);
     }
-    else
-    {
-        for (pl = data; pl && pl[0]; pl = next_word)
+
+    if (strstr(data,"Probe design Parameters:")) { // designliste nach Sonden filtern
+        char     *next_line   = 0;
+        int       target_seen = 0;
+        GB_ERROR  error       = 0;
+
+        for (char *line = data; line; line = next_line) {
+            {
+                char *nl = strchr(line, '\n');
+                if (nl) {
+                    nl[0]     = 0;
+                    next_line = nl+1;
+                }
+                else {
+                    next_line = 0;
+                }
+            }
+
+            if (!target_seen) {
+                if (strncmp(line, "Target ", 7) == 0) {
+                    target_seen = 1;
+                }
+            }
+            else {
+                char *probe_string;
+                int   ecoli_position;
+                error = parse_probe_list_entry(line, probe_string, ecoli_position);
+
+                if (error) {
+                    next_line = 0;
+                }
+                else {
+                    const char *real_disp = GBS_global_string("%1d#%1d#%6d#%s", QUALITYDEFAULT, 0, ecoli_position, probe_string);
+                    aww->insert_selection(selection_list, real_disp, real_disp);
+                }
+
+                free(probe_string);
+            }
+        }
+    }
+    else {
+        char *next_word = 0;
+        for (char *pl = data; pl && pl[0]; pl = next_word)
         {
-            ko = strchr(pl,'\n');
+            char *ko = strchr(pl,'\n');
             if (ko)
             {
                 *(ko++) = 0;
@@ -241,6 +260,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 
             ko = strchr(pl,',');
 
+            char *real_disp = 0;
             if (ko)
             {
                 *(ko++) = 0;
@@ -272,9 +292,9 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
             aww->insert_selection(selection_list,real_disp,real_disp);
             delete real_disp;
         }
-        delete data;
     }
 
+    free(data);
 
     aww->insert_default_selection(selection_list,"","");
     //  aww->sort_selection_list( selection_list );
@@ -284,6 +304,7 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
     char *base_name = GBS_global_string_copy("tmp/load_box_sel_%li",(long)selid);
+
     aw_create_selection_box_awars(aw_root, base_name, ".", ".list", "");
 
     AW_window_simple *aws = new AW_window_simple;
@@ -296,11 +317,10 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 
     aws->at("load");
     aws->highlight();
-    aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)strdup(""));
+    aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)base_name); // transfers ownership of base_name
     aws->create_button("LOAD","LOAD","L");
 
     awt_create_selection_box((AW_window *)aws,base_name);
-    free(base_name);
     return (AW_window*) aws;
 }
 
