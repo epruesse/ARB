@@ -184,10 +184,11 @@ char *ptpd_read_names(PT_local * locs, char *names_listi, char *checksumsi)
         i = GBS_read_hash(psg.namehash, name);
         if (i){
             i--;
-	    /* if (checksum && atol(checksum)!= psg.data[i].checksum){
+	    // IDP Checksumme
+	    if (checksum && atol(checksum)!= psg.data[i].checksum){
                 psg.data[i].is_group = -1;
                 goto not_found;	// sequence has changed meanwhile !!
-		}*/
+	    }
             psg.data[i].is_group = 1;
             locs->group_count++;
         }else{

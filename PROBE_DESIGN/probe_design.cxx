@@ -235,6 +235,13 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GBDATA *gb_gene;
     GBDATA *gb_name;
     GBDATA  *gb_data;
+    GBDATA *gene_pos_begin_ptr;
+    GBDATA *gene_pos_end_ptr;
+    GBDATA *gb_data_temp;
+    char *temp;
+    char *ali_genom;
+    int pos_begin,pos_end;
+
     long    len;
 
     void *names = GBS_stropen(1024);
@@ -248,6 +255,22 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
       for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
 	gb_name = GB_find(gb_gene, "name", 0, down_level);
 	if (!gb_name) continue;
+	gb_data = GBT_read_sequence(gb_species, use);
+	if(!gb_data){
+	  return (char *)GB_export_error("Species '%s' has no sequence '%s'", GB_read_char_pntr(gb_name), use);
+        }
+
+	gene_pos_begin_ptr = GB_find(gb_gene,"pos_begin",0,down_level);
+	gene_pos_end_ptr = GB_find(gb_gene,"pos_end",0,down_level);
+	pos_begin = GB_read_int(gene_pos_begin_ptr)-1;
+	pos_end = GB_read_int(gene_pos_end_ptr)-1;
+	ali_genom = GB_read_char_pntr(gb_data);
+	temp = new char[pos_end - pos_begin + 2];
+	ali_genom += pos_begin;
+	strncpy(temp,ali_genom,pos_end - pos_begin + 1);
+	temp[pos_end - pos_begin + 1]= '\0';
+
+	GBS_intcat(checksums, GBS_checksum(temp, 1, ".-"));
 	GBS_strcat(names, GB_read_char_pntr(gb_name));
 	GBS_chrcat(checksums, '#');
 	GBS_chrcat(names, '#');
@@ -718,6 +741,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	if (gene_flag) {
 	  temp_gene_str = new char[strlen(match_info)+1];
 	  strcpy(temp_gene_str,match_info);
+	  temp_gene_str[strlen(temp_gene_str)] = '\0';
 	  gene_str = strtok_r(temp_gene_str," ",ptrptr);
 	  gene_str = strtok_r(NULL," ",ptrptr);
 	}
