@@ -45,8 +45,8 @@ endif
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
 DEVEL_DEF=
 else
-ifeq ($(DEVELOPER),RALF) # special settings for RALF
-DEVEL_DEF=-DDEVEL_$(DEVELOPER) -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS
+ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
+DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS
 else
 DEVEL_DEF=-DDEVEL_$(DEVELOPER)
 endif
@@ -84,7 +84,7 @@ endif
    GMAKE = gmake -r
    CPP = g++ -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
    PP = cpp
-   ACC = gcc -W -Wall -fenum-int-equiv -D$(MACH) -pipe#				# Ansi C
+   ACC = gcc -W -Wall $(enumequiv) -D$(MACH) -pipe#				# Ansi C
    CCLIB = $(ACC)#			# Ansii C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
    AR = ld -r -o#			# Archive Linker
@@ -214,7 +214,7 @@ ifdef SUN5
 
 ifdef ECGS
    CPP = g++ -W -Wall $(enumequiv) -D$(MACH) -D$(MACH)_ECGS $(havebool) -pipe#		# C++ Compiler /Linker
-   ACC = gcc -Wall -fenum-int-equiv -D$(MACH) -D$(MACH)_ECGS -pipe#				# Ansi C
+   ACC = gcc -Wall $(enumequiv) -D$(MACH) -D$(MACH)_ECGS -pipe#				# Ansi C
 
 else
    #AR = $(FORCEMASK);ld -r -o#			# Archive Linker
