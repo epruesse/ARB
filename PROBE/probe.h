@@ -4,6 +4,7 @@
 
 #ifdef DEVEL_IDP
 #include <list.h>
+#include <map.h>
 #include <PT_server.h>
 #endif
 
