@@ -19,11 +19,9 @@ class SQ_consensus {
 
 public:
     SQ_consensus(int size_);
-//     ~SQ_consensus();
 //     void SQ_init_consensus(int size);
     void SQ_calc_consensus(const char *sequence);
-    int* SQ_get_consensus();
-    void SQ_add_consensus(int **consensus_add);
+    int* SQ_get_consensus(int row, int col);
 
 private:
     int size;
@@ -31,17 +29,16 @@ private:
 
 };
 
+
 // @@@ ab hier gehoert alles nach .cxx
+
 
 SQ_consensus::SQ_consensus(int size_)
     : size(size_)
-    , v2(size_, PosCounter(6))
+    , v2(size_, PosCounter(7))
 {
 }
 
-
-// SQ_consensus::~SQ_consensus() {
-// }
 
 // void SQ_consensus::SQ_init_consensus(int size){
 //     this->size = size;
@@ -54,13 +51,13 @@ SQ_consensus::SQ_consensus(int size_)
 void SQ_consensus::SQ_calc_consensus(const char *sequence){
     char temp;
 
-    for (int i; i < size; i++) {
+    for (int i=0; i < size; i++) {
         temp = sequence[i];
         switch(temp) {
             case 'A':
                 v2[i][0]++;
                 break;
-            case 'T':           // @@@ U fehlt
+            case 'T':
                 v2[i][1]++;
                 break;
             case 'C':
@@ -69,29 +66,23 @@ void SQ_consensus::SQ_calc_consensus(const char *sequence){
             case 'G':
                 v2[i][3]++;
                 break;
-            case '.':
+            case 'U':
                 v2[i][4]++;
                 break;
-            case '-':
+            case '.':
                 v2[i][5]++;
+                break;
+            case '-':
+                v2[i][6]++;
                 break;
         }
     }
+
 }
 
-int* SQ_consensus::SQ_get_consensus() {
+int* SQ_consensus::SQ_get_consensus(int row, int col) {
     int* pa;
 
-    pa = &v2[0][0];
+    pa = &v2[row][col];
     return pa;
-}
-
-
-void SQ_consensus::SQ_add_consensus(int **consensus_add) {
-
-    for (int i = 0; i < size; i++){
-        for (int j = 0; i < 6; i++){
-            v2[i][j] = v2[i][j] + consensus_add[i][j];
-        }
-    }
 }
