@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Mon Mar/15/2004 12:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Mar/15/2004 18:36 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -31,12 +31,26 @@ class Toolkit
     public static void unregisterClient() { theClient = null; }
 
     public static void showError(String error) {
-        System.out.println(error);
-        if (theClient != null) theClient.show_error(error);
+        try {
+            System.out.println(error);
+            if (theClient != null) theClient.show_error(error);
+        }
+        catch (Exception e) {
+            System.out.println("Exception caught in showError(): ");
+            e.printStackTrace();
+            System.out.println("Message: "+e.getMessage());
+        }
     }
     public static void showMessage(String message) {
-        System.out.println(message);
-        if (theClient != null) theClient.show_message(message);
+        try {
+            System.out.println(message);
+            if (theClient != null) theClient.show_message(message);
+        }
+        catch (Exception e) {
+            System.out.println("Exception caught in showMessage(): ");
+            e.printStackTrace();
+            System.out.println("Message: "+e.getMessage());
+        }
     }
 
     private static void AbortWithError_Internal(String kind_of_error, String error_message, int exitcode) throws Exception {
@@ -104,7 +118,7 @@ class Toolkit
     public static void clickButton(String title, String text, String button) {
         Vector buttons = new Vector();
         buttons.add(button);
-        
+
  	DialogWrapper dw     = new DialogWrapper(getFrame(), title, text, buttons);
         String        answer = dw.getResult();
     }
@@ -129,13 +143,13 @@ class Toolkit
             pathLength = pathLength/16;
             coded.insert(0,hexToken[remain]);
         }
-        
+
         int value = 0;
         int position;
         for (position = 0; position < path.length(); position++ ) {
             if (path.charAt(position) == '1') {
                 value += bitmask[position%4];
-                
+
 //                 switch (position%4) {
 //                     case 0: value += 8; break;
 //                     case 1: value += 4; break;
