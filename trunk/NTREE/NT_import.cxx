@@ -22,6 +22,13 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
 	}
 }
 
+
+/**
+ * Opens the "Import Sequences" dialog from the
+ * ARB main window (arb_ntree)
+ *
+ * O-Ton Harald: Saugehaecke
+ */
 void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
 	if (gb_merge){
