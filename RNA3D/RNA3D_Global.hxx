@@ -16,6 +16,8 @@
 #define AWAR_3D_HELIX_TO        "rna3d/helix_to"
 #define AWAR_3D_HELIX_NUMBER    "rna3d/helix_number"
 
+#define AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS    "rna3d/tertiary_interactions"
+
 // Awars for Bases
 #define AWAR_3D_DISPLAY_BASES         "rna3d/display_bases"
 #define AWAR_3D_DISPLAY_SIZE          "rna3d/display_size"
@@ -42,7 +44,9 @@
 #define AWAR_3D_SELECTED_SPECIES             "rna3d/selected_species"
 #define AWAR_3D_CURSOR_POSITION              "rna3d/cursor_postion"
 
-#define AWAR_3D_MAP_SAI  "rna3d/map_sai"
+#define AWAR_3D_MAP_ENABLE          "rna3d/map_enable"
+#define AWAR_3D_MAP_SAI             "rna3d/map_sai"
+#define AWAR_3D_MAP_SEARCH_STRINGS  "rna3d/map_search_strings"
 
 typedef struct Vector3 {
 public:

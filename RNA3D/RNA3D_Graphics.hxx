@@ -40,6 +40,9 @@ enum {
     RNA3D_GC_CBACK_8,
     RNA3D_GC_CBACK_9,
 
+    RNA3D_GC_PSEUDOKNOT,
+    RNA3D_GC_TRIPLE_BASE,
+
     RNA3D_GC_MAX
 };
 

@@ -42,8 +42,8 @@ Vector3 Viewer = Vector3(0.0, 0.0, -2);
 Vector3 Center = Vector3(0.0, 0.0, 0.0);
 Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 
-bool rotateMolecule = false;
-bool autoRotate     = false;
+bool bRotateMolecule = false;
+bool bAutoRotate     = false;
 bool bPointSpritesSupported = false;
 float scale = 0.01;
 int iScreenWidth, iScreenHeight;
@@ -52,7 +52,8 @@ int iRotateMolecule; // Used for Rotation of Molecule
 static bool bMapSpDispListCreated     = false;
 static bool bCursorPosDispListCreated = false;
 static bool bHelixNrDispListCreated   = false;
-bool bMapSaiDispListCreated    = false;
+bool bMapSaiDispListCreated           = false;
+bool bMapSearchStringsDispListCreated = false;
 
 using namespace std;
 
@@ -113,7 +114,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     cout<<"Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
 
     saved_x = saved_y = 2.0f;
-    RotateMolecule(1,1);
+    ComputeRotationXY(1,1);
     
 	//Get Information about Vendor & Version
 	ShowVendorInformation();
@@ -143,7 +144,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     glClearDepth(1.0);			     // Enables Clearing Of The Depth Buffer
     glDepthFunc(GL_LESS);		     // The Type Of Depth Test To Do
     glEnable(GL_DEPTH_TEST);	   	 // Enables Depth Testing
-    glShadeModel(GL_SMOOTH);			 
+    glShadeModel(GL_FLAT);			 
 
     glPointSize(1.0);
     if (!glIsEnabled(GL_POINT_SMOOTH)) {
@@ -169,7 +170,7 @@ void PrintString(float x, float y, float z, char *s) {
     }
 }
 
-void RotateMolecule(int x, int y) {
+void ComputeRotationXY(int x, int y) {
     GLfloat dx, dy;
     dx = saved_x - x; 
     dy = saved_y - y;
@@ -211,12 +212,6 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->fSkeletonSize   = root->awar(AWAR_3D_MOL_SIZE)->read_float();
     cRenderer->iDispPos        = root->awar(AWAR_3D_MOL_DISP_POS)->read_int();
     cStructure->iInterval      = root->awar(AWAR_3D_MOL_POS_INTERVAL)->read_int();
-    cStructure->iMapSAI        = root->awar(AWAR_3D_MAP_SAI)->read_int();
-    cRenderer->iMapSpecies     = root->awar(AWAR_3D_MAP_SPECIES)->read_int();
-    cRenderer->iMapSpeciesBase = root->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->read_int();
-    cRenderer->iMapSpeciesPos  = root->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->read_int();
-    cRenderer->iMapSpeciesDels = root->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->read_int();
-    cRenderer->iMapSpeciesMiss = root->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->read_int();
     cRenderer->iDispCursorPos  = root->awar(AWAR_3D_CURSOR_POSITION)->read_int();
     iRotateMolecule            = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
 
@@ -239,42 +234,69 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iHelixBackBone = root->awar(AWAR_3D_HELIX_BACKBONE)->read_int();
     cRenderer->iStartHelix    = root->awar(AWAR_3D_HELIX_FROM)->read_int();
     cRenderer->iEndHelix      = root->awar(AWAR_3D_HELIX_TO)->read_int();
+    cRenderer->iDispTerInt    = root->awar(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS)->read_int();
 
-    if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > 50 ) {
-        cout<<"Invalid Helix NUMBER !!"<<endl;
-        root->awar(AWAR_3D_HELIX_FROM)->write_int(1);
-    }
-    if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > 50 ) {
-        cout<<"Invalid Helix NUMBER !!"<<endl;
-        root->awar(AWAR_3D_HELIX_TO)->write_int(50);
+    // Mapping Sequence Data Section
+    cStructure->iMapSAI        = root->awar(AWAR_3D_MAP_SAI)->read_int();
+    cStructure->iMapSearch     = root->awar(AWAR_3D_MAP_SEARCH_STRINGS)->read_int();
+    cStructure->iMapEnable     = root->awar(AWAR_3D_MAP_ENABLE)->read_int();
+    cRenderer->iMapSpecies     = root->awar(AWAR_3D_MAP_SPECIES)->read_int();
+    cRenderer->iMapSpeciesBase = root->awar(AWAR_3D_MAP_SPECIES_DISP_BASE)->read_int();
+    cRenderer->iMapSpeciesPos  = root->awar(AWAR_3D_MAP_SPECIES_DISP_POS)->read_int();
+    cRenderer->iMapSpeciesDels = root->awar(AWAR_3D_MAP_SPECIES_DISP_DELETIONS)->read_int();
+    cRenderer->iMapSpeciesMiss = root->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->read_int();
+
+    { // Validation of Helix Numbers entered by the User
+        if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > 50 ) {
+            cout<<"Invalid Helix NUMBER !!"<<endl;
+            root->awar(AWAR_3D_HELIX_FROM)->write_int(1);
+        }
+        if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > 50 ) {
+            cout<<"Invalid Helix NUMBER !!"<<endl;
+            root->awar(AWAR_3D_HELIX_TO)->write_int(50);
+        }
+
+        if(cRenderer->iStartHelix > cRenderer->iEndHelix) {
+            root->awar(AWAR_3D_HELIX_FROM)->write_int(cRenderer->iEndHelix - 1);
+        } 
+        else if(cRenderer->iEndHelix < cRenderer->iStartHelix) {
+            root->awar(AWAR_3D_HELIX_TO)->write_int(cRenderer->iStartHelix + 1);
+        }
     }
 
-    if(cRenderer->iStartHelix > cRenderer->iEndHelix) {
-        root->awar(AWAR_3D_HELIX_FROM)->write_int(cRenderer->iEndHelix - 1);
-    } 
-    else if(cRenderer->iEndHelix < cRenderer->iStartHelix) {
-        root->awar(AWAR_3D_HELIX_TO)->write_int(cRenderer->iStartHelix + 1);
-    }
+    // Generation of DisplayLists for displaying Helix Numbers
+    if (!bHelixNrDispListCreated && 
+        (cRenderer->iHelixNrs || cRenderer->iHelixMidPoint)) 
+        {
+            cStructure->GenerateHelixNrDispList(cRenderer->iStartHelix, cRenderer->iEndHelix);
+            bHelixNrDispListCreated = true;
+        }
 
+    // Validation of Base Position display
     if(cStructure->iInterval < 1) {
         cout<<"WARNING: Invalid POSITION Interval!! Setting it to Default Value (25)."<<endl;
         root->awar(AWAR_3D_MOL_POS_INTERVAL)->write_int(25);
     }
 
-    if(!bMapSpDispListCreated && cRenderer->iMapSpecies) {
-        cStructure->MapCurrentSpeciesToEcoliTemplate(root);
-        bMapSpDispListCreated = true;
-    }
-
-    if (!bHelixNrDispListCreated && (cRenderer->iHelixNrs || cRenderer->iHelixMidPoint)) {
-        cStructure->GenerateHelixNrDispList(cRenderer->iStartHelix, cRenderer->iEndHelix);
-        bHelixNrDispListCreated = true;
-    }
-
-    if (!bMapSaiDispListCreated && cStructure->iMapSAI) {
-        cStructure->MapSaiToEcoliTemplate(root);
-    }
+    if (cStructure->iMapEnable) 
+        {
+            if (cStructure->iMapSearch) {
+                if (!bMapSearchStringsDispListCreated) {
+                    cStructure->MapSearchStringsToEcoliTemplate(root);
+                }
+            }
+            if (cStructure->iMapSAI) {
+                if (!bMapSaiDispListCreated) {
+                    cStructure->MapSaiToEcoliTemplate(root);
+                }
+            }
+            if(!bMapSpDispListCreated) {
+                cStructure->MapCurrentSpeciesToEcoliTemplate(root);
+                bMapSpDispListCreated = true;
+            }
+        }
 }
+    
 
 void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
     MapDisplayParameters(awr);
@@ -284,24 +306,46 @@ void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
 }
 
 void MapSelectedSpeciesChanged_CB(AW_root *awr) {
-    MapDisplayParameters(awr);
 
     if (bMapSpDispListCreated) {
         glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
         cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
     }
+
+    // If selected species changed then regenerate the SearchStrings DisplayList
+    MapSearchStringsToEcoliTemplateChanged_CB(awr);
+
     RefreshOpenGLDisplay();
 }
 
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
-    MapDisplayParameters(awr);
+    //if SAI changed in EDIT4 then diplay lists should be recalculated
 
-    if (bMapSaiDispListCreated) {
-        bMapSaiDispListCreated = false;
-        glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
-        cStructure->MapSaiToEcoliTemplate(awr);
-    }
+    if (cStructure->iMapEnable  &&
+        cStructure->iMapSAI     &&
+        bMapSaiDispListCreated ) 
+        {   
+            bMapSaiDispListCreated = false;
+            glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
+            cStructure->MapSaiToEcoliTemplate(awr);
+        }
+
     RefreshOpenGLDisplay();
+}
+
+void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr) {
+
+    // If selected species changed then regenerate the 
+    // SearchStrings DisplayList
+
+    if (cStructure->iMapEnable  &&
+        cStructure->iMapSearch  &&
+        bMapSearchStringsDispListCreated) 
+        {
+            bMapSearchStringsDispListCreated = false;
+            glDeleteLists(MAP_SEARCH_STRINGS_TO_STRUCTURE,2);
+            cStructure->MapSearchStringsToEcoliTemplate(awr);
+        }
 }
 
 void CursorPositionChanged_CB(AW_root *awr) {
@@ -369,7 +413,9 @@ void RenderOpenGLScene(Widget w){
 
     glScalef(scale,scale,scale);
 
-    if(rotateMolecule || autoRotate)  CalculateRotationMatrix();
+    if(bRotateMolecule || bAutoRotate) {
+        CalculateRotationMatrix();
+    }
 
     glPushMatrix();
     glMultMatrixf(rotation_matrix); 
@@ -420,9 +466,9 @@ void InitializeOpenGLWindow( Widget w ) {
 				printf("direct rendering supported\n");
 			
 			GLwDrawingAreaMakeCurrent(w, glx_context);
-			
+
 			_glw = w;
-			
+
 			OpenGLEngineState = CREATED;
 		}
 	}

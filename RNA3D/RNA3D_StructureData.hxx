@@ -1,3 +1,5 @@
+#define SAI    0
+#define SEARCH 1
 
 // DisplayLists
 enum { 
@@ -15,8 +17,11 @@ enum {
     MAP_SPECIES_BASE_DIFFERENCE_POS, MAP_SPECIES_BASE_DIFFERENCE_POS_ANCHOR,
     MAP_SPECIES_BASE_A, MAP_SPECIES_BASE_G, MAP_SPECIES_BASE_C, MAP_SPECIES_BASE_U,
     MAP_SPECIES_DELETION, MAP_SPECIES_MISSING,
-    MAP_SAI_TO_STRUCTURE,
-    ECOLI_CURSOR_POSITION
+    MAP_SAI_TO_STRUCTURE, 
+    MAP_SEARCH_STRINGS_TO_STRUCTURE,MAP_SEARCH_STRINGS_BACKBONE,
+    ECOLI_CURSOR_POSITION, 
+    ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS,
+    ECOLI_TERTIARY_INTRACTION_TRIPLE_BASES
 };
 
 struct Struct2Dplus3D {
@@ -74,7 +79,10 @@ public:
 
     int iInterval;
     int iMapSAI;
+    int iMapSearch;
+    int iMapEnable;
     int iStartPos, iEndPos;
+    int iEColiStartPos, iEColiEndPos;
     
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;
@@ -106,6 +114,8 @@ public:
     void GenerateSecStructureNonHelixRegions(void);
     void GenerateSecStructureUnpairedHelixRegions(void);
 
+    void GenerateTertiaryInteractionsDispLists(void);
+
     void MapCurrentSpeciesToEcoliTemplate(AW_root *awr);
     void StoreCurrSpeciesDifference(char base, int pos);
     void DeleteOldSpeciesData();
@@ -116,5 +126,6 @@ public:
     void GenerateCursorPositionDispList(long pos);
 
     void MapSaiToEcoliTemplate(AW_root *awr);
-    int  ValidateSearchColor(int iColor);
+    void MapSearchStringsToEcoliTemplate(AW_root *awr);
+    int  ValidateSearchColor(int iColor, int mode);
 };

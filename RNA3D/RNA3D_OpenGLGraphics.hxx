@@ -28,6 +28,7 @@ public:
     void DrawCursor(int x, int y);
     void SetBackGroundColor(int color);
     void PrintString(float x, float y, float z, char *s, void *font);
+    void PrintCharacter(float x, float y, float z, char c, void *font);
     void SetColor(int gc);
     ColorRGBf GetColor(int gc);
 
