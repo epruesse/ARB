@@ -522,6 +522,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		if (read_sequence) {
 		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
+		    const char *groupname   = 0;
 		    double value            = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
@@ -548,7 +549,20 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GB_write_int(gb_result2, diff_percent);
 
 		    value = globalData->SQ_test_against_consensus(rawSequence);
-		    //printf("Value: %f ",value);
+
+
+		    //voraussichtlich 3. pass
+		    Groupnames * curr = globalData->SQ_get_groupname();
+		    while (curr) {
+			groupname = curr->name;
+			//in map mit namen nach consensus suchen
+			//gegen diesen testen
+                        //wert speichern
+			curr=curr->next;
+		    }
+
+
+
 		}
 	    }
     }
@@ -759,11 +773,46 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 	    delete rightData;
 
 	}
-	if (node->name) {  //  group identified!
+	if (node->name) {                             //  group identified
+	    data->SQ_set_groupname(node->name);	      //  keep track of visited groups
 	    create_multi_level_consensus(node, data);
-	    //SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
+	    SQ_pass2(data, gb_main, node);
 	    globalcounter++;
 	    aw_status(double(globalcounter)/groupcounter);
 	}
     }
 }
+
+
+// void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data) {
+
+//     if (node->is_leaf){
+// 	if (node->gb_node) {
+// 	    //pass2
+// 	}
+//     }
+
+//     else {
+// 	GBT_TREE *node1 = node->leftson;
+// 	GBT_TREE *node2 = node->rightson;
+
+// 	if (node1) {
+// 	    SQ_GroupData *leftData  = data->clone();
+// 	    SQ_calc_and_apply_group_data(node1, gb_main, leftData);
+// 	    data->SQ_add(*leftData);
+// 	    delete leftData;
+// 	}
+// 	if (node2) {
+// 	    SQ_GroupData *rightData = data->clone();
+// 	    SQ_calc_and_apply_group_data(node2, gb_main, rightData);
+// 	    data->SQ_add(*rightData);
+// 	    delete rightData;
+
+// 	}
+// 	if (node->name) {                             //  group identified
+// 	    data->SQ_set_groupname(node->name);	      //  keep track of visited groups
+// 	    globalcounter++;
+// 	    aw_status(double(globalcounter)/groupcounter);
+// 	}
+//     }
+// }
