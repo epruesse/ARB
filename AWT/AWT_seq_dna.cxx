@@ -25,7 +25,7 @@ char	*AP_sequence_parsimony::table;
 ******************************/
 
 AP_sequence_parsimony::AP_sequence_parsimony(AP_tree_root *rooti) : AP_sequence(rooti)
-	{
+{
 	sequence = 0;
 }
 
@@ -36,12 +36,12 @@ AP_sequence_parsimony::~AP_sequence_parsimony(void)
 }
 
 AP_sequence *AP_sequence_parsimony::dup(void)
-	{
+{
 	return (AP_sequence *)new AP_sequence_parsimony(root);
 }
 
 void AP_sequence_parsimony::build_table(void)
-	{
+{
 	table = (char *)AP_create_dna_to_ap_bases();
 }
 
@@ -53,8 +53,8 @@ set(char *isequence)
 
 for wagner & fitch parsimony algorithm
 is_set_flag is used by AP_tree_nlen::parsimony_rek()
-*************************************************************************/	
-	
+*************************************************************************/
+
 void AP_sequence_parsimony::set(char *isequence)
 {
     register char *s,*d,*f1,c;
@@ -101,7 +101,7 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 
 	AP_sequence_parsimony *left = (AP_sequence_parsimony *)lefts;
 	AP_sequence_parsimony *right = (AP_sequence_parsimony *)rights;
-	
+
 	if (sequence == 0)	{
 		sequence_len = root->filter->real_len;
 		sequence = new char[root->filter->real_len +1];
@@ -118,57 +118,57 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 	    w = root->weights->weights;
 	    char *mutpsite = mutation_per_site;
 	    while ( p1 < end_seq1 ) {
-		c1 = *(p1);
-		c2 = *(p2);
-		p1++; p2++;
-		if ( !(c1&c2)) {
-		    *(p++) = c1 | c2;
-		    mutpsite[0]++;
-		    result += *w;
-		}else{
-		    *(p++) = c1&c2;
-		}
-		w++;
-		mutpsite++;
+            c1 = *(p1);
+            c2 = *(p2);
+            p1++; p2++;
+            if ( !(c1&c2)) {
+                *(p++) = c1 | c2;
+                mutpsite[0]++;
+                result += *w;
+            }else{
+                *(p++) = c1&c2;
+            }
+            w++;
+            mutpsite++;
 	    }
 	}else 	if (root->weights->dummy_weights){
 	    while ( p1 < end_seq1 ) {
-		c1 = *(p1);
-		c2 = *(p2);
-		p1++; p2++;
-		if ( !(c1&c2)) {
-		    *(p++) = c1 | c2;
-		    result += 1;
-		}else{
-		    *(p++) = c1&c2;
-		}
+            c1 = *(p1);
+            c2 = *(p2);
+            p1++; p2++;
+            if ( !(c1&c2)) {
+                *(p++) = c1 | c2;
+                result += 1;
+            }else{
+                *(p++) = c1&c2;
+            }
 	    }
 	}else{
 	    register GB_UINT4 *w;
 	    w = root->weights->weights;
 	    while ( p1 < end_seq1 ) {
-		c1 = *(p1);
-		c2 = *(p2);
-		p1++; p2++;
-		if ( !(c1&c2)) {
-		    *(p++) = c1 | c2;
-		    result += *(w++);
-		}else{
-		    *(p++) = c1&c2;
-		    w++;
-		}
+            c1 = *(p1);
+            c2 = *(p2);
+            p1++; p2++;
+            if ( !(c1&c2)) {
+                *(p++) = c1 | c2;
+                result += *(w++);
+            }else{
+                *(p++) = c1&c2;
+                w++;
+            }
 	    }
 	}
-	
+
 	global_combineCount++;
-	this->is_set_flag = AP_TRUE;		 	
+	this->is_set_flag = AP_TRUE;
 	cashed_real_len = -1.0;
 	return (AP_FLOAT)result;
 }
 
 
 AP_FLOAT AP_sequence_parsimony::real_len(void)	// count all bases
-	{
+{
 	if (!sequence) return -1.0;
 	if (cashed_real_len>=0.0) return cashed_real_len;
 	char hits[256];
@@ -178,7 +178,7 @@ AP_FLOAT AP_sequence_parsimony::real_len(void)	// count all bases
 	sum = 0;
 	p = sequence;
 	for (i=0;i<256;i++){	// count ambigous characters half
-		 hits[i] = 1;
+        hits[i] = 1;
 	}
 	hits[AP_A] = 2;		// real characters full
 	hits[AP_C] = 2;
