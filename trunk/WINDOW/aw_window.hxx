@@ -1,8 +1,14 @@
-#ifndef aw_window_hxx_included
-#define aw_window_hxx_included
+#ifndef AW_WINDOW_HXX
+#define AW_WINDOW_HXX
 
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
+#endif
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
+#endif
+#ifndef AW_KEYSYM_HXX
+#include <aw_keysym.hxx>
 #endif
 
 class AW_window;
@@ -20,16 +26,7 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*,AW_CL);
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
 
-#ifndef _AW_DEVICE_INCLUDED
-#include <aw_device.hxx>
-#endif
-
-#ifndef _AW_KEY_CODES_INCLUDED
-typedef enum {AW_KEY_NONE} AW_key_code;
-typedef enum {AW_KEYMODE_NONE = 0} AW_key_mod;
-#endif
-
-#ifndef _AW_AT_INCLUDED
+#ifndef AW_AT_HXX
 class AW_at;
 #endif
 
@@ -139,7 +136,6 @@ enum {
 
 typedef char *AW_pixmap;
 typedef struct GBDATA_SET_STRUCT GBDATA_SET;
-typedef struct gb_data_base_type GBDATA;
 
 class AW_window_Motif;
 
@@ -220,13 +216,6 @@ public:
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color );
     void update_toggle_field( int toggle_field_number );
     void update_selection_list_intern( AW_selection_list *selection_list );
-#ifdef __AW_WINDOW_XM_INCLUDED
-    Widget _aw_create_toggle_entry(Widget toggle_field,
-                                   const char *label,const char *mnemonic,
-                                   AW_variable_update_struct *awus,
-                                   AW_toggle_struct *awts,
-                                   AW_BOOL default_toggle);
-#endif
     void _set_activate_callback(void *widget);
     void unset_at_commands( void );
     void increment_at_commands( int width, int height );
@@ -567,4 +556,6 @@ public:
     void set_detach_button(Widget w) { detach_button = w; }
 };
 
+#else
+#error aw_window.hxx included twice
 #endif
