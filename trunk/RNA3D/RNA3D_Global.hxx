@@ -74,3 +74,45 @@ public:
 	Vector3 operator/(float num) { return Vector3(x / num, y / num, z / num); }
 };
 
+
+// Class to store all the GLOBAL variables that are used in the application
+
+class RNA3D_Global {
+public:
+    Widget      glw;
+    AW_root    *root;
+    AWT_canvas *gl_Canvas;
+
+    int OpenGLEngineState;
+    int iRotateMolecule;
+
+    bool bPointSpritesSupported;
+    bool bAutoRotate;
+    bool bRotateMolecule;
+    bool bEColiRefInitialised;
+    bool bMapSearchStringsDispListCreated;
+    bool bMapSaiDispListCreated;
+
+    float ROTATION_SPEED;
+	float saved_x, saved_y;
+    float scale;
+
+    RNA3D_Global(){
+        OpenGLEngineState = -1;
+        iRotateMolecule   = 0;
+        bPointSpritesSupported           = false;
+        bEColiRefInitialised             = false;
+        bMapSaiDispListCreated           = false;
+        bAutoRotate                      = false;
+        bRotateMolecule                  = false;
+        bMapSearchStringsDispListCreated = false;
+
+        ROTATION_SPEED = 0.5;
+        scale = 0.01;
+    }
+    
+    ~RNA3D_Global(){
+    }
+};
+
+extern RNA3D_Global *GLOBAL;

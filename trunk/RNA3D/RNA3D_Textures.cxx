@@ -1,6 +1,7 @@
 #include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
 #include "RNA3D_Textures.hxx"
+#include "RNA3D_OpenGLEngine.hxx"
 
 using namespace std;
 
@@ -59,9 +60,7 @@ void Texture2D::LoadGLTextures(void) {
             throw string(GBS_global_string("Error loading %s", ImageFile));
         }
 
-    extern bool bPointSpritesSupported;
-
-    if (!bPointSpritesSupported) {
+    if (!GLOBAL->bPointSpritesSupported) {
        glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
     }
     else {

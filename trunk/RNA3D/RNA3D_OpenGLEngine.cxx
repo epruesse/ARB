@@ -12,16 +12,14 @@ OpenGLGraphics *cGraphics  = new OpenGLGraphics();
 Structure3D    *cStructure = new Structure3D();
 Texture2D      *cTexture   = new Texture2D();
 GLRenderer     *cRenderer  = new GLRenderer();
+RNA3D_Global   *GLOBAL     = new RNA3D_Global();
 
 float fAspectRatio;
 float fViewAngle = 90.0;
 float fClipNear  = 0.01;
 float fClipFar   = 100000;
 
-int OpenGLEngineState = -1;
 GBDATA *OpenGL_gb_main;
-
-Widget _glw;
 
 static Display *dpy;
 static GLXContext glx_context;
@@ -51,26 +49,17 @@ static int SingleBuffer[] = { GLX_RGBA,
                               None };
 
 static GLfloat rotation_matrix[16];
-float ROTATION_SPEED = 0.5;
 static GLfloat rot_x = 0.0, rot_y = 0.0;
-GLfloat saved_x, saved_y;
 
 Vector3 Viewer = Vector3(0.0, 0.0, -2);
 Vector3 Center = Vector3(0.0, 0.0, 0.0);
 Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 
-bool bRotateMolecule = false;
-bool bAutoRotate     = false;
-bool bPointSpritesSupported = false;
-float scale = 0.01;
 int iScreenWidth, iScreenHeight;
-int iRotateMolecule; // Used for Rotation of Molecule
 
 static bool bMapSpDispListCreated     = false;
 static bool bCursorPosDispListCreated = false;
 static bool bHelixNrDispListCreated   = false;
-bool bMapSaiDispListCreated           = false;
-bool bMapSearchStringsDispListCreated = false;
 
 using namespace std;
 
@@ -103,12 +92,12 @@ void initExtensions() {
 	if (strlen(missingExtensions) > 0) {
 		printf("Some extra extensions are not present:%s\n",missingExtensions);
 		printf("Molecule Display: Quality of Rendering is LOW!!\n");
-		bPointSpritesSupported = false;
+		GLOBAL->bPointSpritesSupported = false;
 	} else {		
-#ifdef _DEBUG
-			printf("DEBUG: All extra extensions seem to be ok as well.\n");
-#endif // _DEBUG
-		bPointSpritesSupported = true ;
+#ifdef DEBUG
+        printf("DEBUG: All extra extensions seem to be ok as well.\n");
+#endif // DEBUG
+        GLOBAL->bPointSpritesSupported = true ;
 	}
 }
 
@@ -116,7 +105,6 @@ void ReshapeOpenGLWindow( GLint width, GLint height ) {
 	iScreenWidth  = width; 
     iScreenHeight = height;
 
-	extern float fAspectRatio;
 	fAspectRatio = (float) width / (float) height;
 
 	glViewport( 0, 0, width, height );
@@ -130,7 +118,7 @@ void ReshapeOpenGLWindow( GLint width, GLint height ) {
 void InitializeOpenGLEngine(GLint width, GLint height ) {
     cout<<"RNA3D: Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
 
-    saved_x = saved_y = 2.0f;
+    GLOBAL->saved_x = GLOBAL->saved_y = 2.0f;
     ComputeRotationXY(1,1);
     
 	//Get Information about Vendor & Version
@@ -174,12 +162,12 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
 void ComputeRotationXY(int x, int y) {
     GLfloat dx, dy;
-    dx = saved_x - x; 
-    dy = saved_y - y;
-    rot_y = (GLfloat)(x - saved_x) * ROTATION_SPEED;
-    rot_x = (GLfloat)(y - saved_y) * ROTATION_SPEED;
-    saved_x = x;
-    saved_y = y;
+    dx = GLOBAL->saved_x - x; 
+    dy = GLOBAL->saved_y - y;
+    rot_y = (GLfloat)(x - GLOBAL->saved_x) * GLOBAL->ROTATION_SPEED;
+    rot_x = (GLfloat)(y - GLOBAL->saved_y) * GLOBAL->ROTATION_SPEED;
+    GLOBAL->saved_x = x;
+    GLOBAL->saved_y = y;
 }
 
 void CalculateRotationMatrix(){
@@ -215,7 +203,7 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iDispPos        = root->awar(AWAR_3D_MOL_DISP_POS)->read_int();
     cStructure->iInterval      = root->awar(AWAR_3D_MOL_POS_INTERVAL)->read_int();
     cRenderer->iDispCursorPos  = root->awar(AWAR_3D_CURSOR_POSITION)->read_int();
-    iRotateMolecule            = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
+    GLOBAL->iRotateMolecule    = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
 
     // Display Bases Section
     cRenderer->iDisplayBases     = root->awar(AWAR_3D_DISPLAY_BASES)->read_int();
@@ -285,12 +273,12 @@ void MapDisplayParameters(AW_root *root){
     if (cStructure->iMapEnable) 
         {
             if (cStructure->iMapSearch) {
-                if (!bMapSearchStringsDispListCreated) {
+                if (!GLOBAL->bMapSearchStringsDispListCreated) {
                     cStructure->MapSearchStringsToEcoliTemplate(root);
                 }
             }
             if (cStructure->iMapSAI) {
-                if (!bMapSaiDispListCreated) {
+                if (!GLOBAL->bMapSaiDispListCreated) {
                     cStructure->MapSaiToEcoliTemplate(root);
                 }
             }
@@ -336,9 +324,9 @@ void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
 
     if (cStructure->iMapEnable  &&
         cStructure->iMapSAI     &&
-        bMapSaiDispListCreated ) 
+        GLOBAL->bMapSaiDispListCreated ) 
         {   
-            bMapSaiDispListCreated = false;
+            GLOBAL->bMapSaiDispListCreated = false;
             glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
             cStructure->MapSaiToEcoliTemplate(awr);
         }
@@ -353,17 +341,17 @@ void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr) {
 
     if (cStructure->iMapEnable  &&
         cStructure->iMapSearch  &&
-        bMapSearchStringsDispListCreated) 
+        GLOBAL->bMapSearchStringsDispListCreated) 
         {
-            bMapSearchStringsDispListCreated = false;
+            GLOBAL->bMapSearchStringsDispListCreated = false;
             glDeleteLists(MAP_SEARCH_STRINGS_TO_STRUCTURE,2);
             cStructure->MapSearchStringsToEcoliTemplate(awr);
         }
 }
 
 void CursorPositionChanged_CB(AW_root *awr) {
-    extern bool bEColiRefInitialised;
-    if(bEColiRefInitialised) {
+
+    if(GLOBAL->bEColiRefInitialised) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
         long EColiPos, dummy;
         cStructure->EColiRef->abs_2_rel(iCursorPos, EColiPos, dummy);
@@ -426,9 +414,9 @@ void RenderOpenGLScene(Widget w){
         cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);
     }
 
-    glScalef(scale,scale,scale);
+    glScalef(GLOBAL->scale, GLOBAL->scale, GLOBAL->scale);
 
-    if(bRotateMolecule || bAutoRotate) {
+    if(GLOBAL->bRotateMolecule || GLOBAL->bAutoRotate) {
         CalculateRotationMatrix();
     }
 
@@ -444,12 +432,11 @@ void RenderOpenGLScene(Widget w){
 }
 
 void InitializeOpenGLWindow( Widget w ) {
-    extern int OpenGLEngineState;
-	if (OpenGLEngineState == CREATED) return;
+
+	if (GLOBAL->OpenGLEngineState == CREATED) return;
 	
 	Arg args[1];
 	XVisualInfo *vi;
-	extern Widget _glw;
 	
 	XtSetArg(args[0], (char *) GLwNvisualInfo, &vi);
 	XtGetValues(w, args, 1);
@@ -485,9 +472,9 @@ void InitializeOpenGLWindow( Widget w ) {
             
 			GLwDrawingAreaMakeCurrent(w, glx_context);
 
-			_glw = w;
+			GLOBAL->glw = w;
 
-			OpenGLEngineState = CREATED;
+			GLOBAL->OpenGLEngineState = CREATED;
 		}
 	}
 }
