@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_helix.h                                             //
 //    Purpose   : Class used for calculation of helix layout             //
-//    Time-stamp: <Thu Sep/25/2003 17:58 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 11:12 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -33,13 +33,13 @@ public:
 
 
 private:
-    const char *sequence;
+    const char * sequence;
     int count_strong_helix;
     int count_weak_helix;
     int count_no_helix;
     size_t size;
 
-}; 
+};
 
 
 
@@ -48,19 +48,23 @@ SQ_helix::SQ_helix(size_t size){
     count_strong_helix      = 0;
     count_weak_helix = 0;
     count_no_helix   = 0;
-    sequence = new char[size];
+    sequence = new char[size]; // @@@ wird nie mehr freigegeben
 }
 
 
 SQ_helix::~SQ_helix() {
-     delete [] sequence;
+    delete [] sequence; // @@@ im Prinzip richtig, allerdings zeigt sequence nicht mehr auf
+    // @@@ den Speicher, den Du im constructor allociert hast. (s. SQ_calc_helix_layout())
 }
 
 
 void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality){
-    this->sequence = sequence;
-    int j                 = 0;
-    int temp              = 0;
+    this->sequence = sequence;  // @@@ hier aenderst Du einfach die Adresse von sequence.
+    // @@@ Dadurch kann die Original sequence nie mehr freigegeben werden.
+    // @@@ Wahrscheinlich willst Du den String kopieren (-> man strcpy)
+
+    int  j    = 0;
+    int  temp = 0;
     char left;
     char right;
 
