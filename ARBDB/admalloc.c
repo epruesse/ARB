@@ -115,6 +115,18 @@ char *GB_strdup(const char *p)
     return NULL;
 }
 
+char *GB_strduplen(const char *p, unsigned len) {
+    if (p) {
+        char *neu;
+
+        ad_assert(strlen(p) == len);
+        neu = (char*)malloc(len+1);
+        memcpy(neu, p, len+1);
+        return neu;
+    }
+    return 0;
+}
+
 void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
 {
     size_t nsize = nelem*elsize;
