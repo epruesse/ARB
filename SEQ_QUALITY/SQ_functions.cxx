@@ -262,7 +262,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		value += result;
 
 		//evaluate the difference in number of bases from sequence to group
-		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
 		dfa = GB_read_int(gb_result2);
 		if (abs(dfa) < 2) result = 2;
 		else {
@@ -302,7 +302,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		value += result;
 
 		//evaluate the difference in the GC proportion from sequence to group
-		GBDATA *gb_result6 = GB_search(gb_quality, "GC_difference", GB_INT);
+		GBDATA *gb_result6 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
 		gcprop = GB_read_int(gb_result6);
 		if (abs(gcprop) < 6) result = 2;
 		else {
@@ -388,7 +388,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 		    globalData->SQ_set_avg_gc(ps_chan->SQ_get_gc_proportion());
 		    delete ps_chan;
 
-		    /*get values for  ambiguities*/
+		    /*get values for ambiguities*/
 		    SQ_ambiguities* ambi_chan = new SQ_ambiguities();
 		    ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
 		    delete ambi_chan;
@@ -564,10 +564,8 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		if (read_sequence) {
 		    const char *rawSequence    = 0;
 		    int         sequenceLength = 0;
-		    char        temp[10];
-// 		    char cons_dev[1000]        = "<dev>";
                     string      cons_dev       = "<dev>";
-		    char cons_conf[1000]       = "<conf>";
+                    string      cons_conf      = "<conf>";
 		    double      value1         = 0;
 		    double      value2         = 0;
 		    double      eval           = 0;
@@ -575,10 +573,10 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    int         evaluation     = 0;
 		    int         bases          = 0;
 		    int         avg_bases      = 0;
-		    int         diff           = 0;
+		    double      diff           = 0;
 		    int         diff_percent   = 0;
-		    int         avg_gc         = 0;
-		    int         gcp            = 0;
+		    double      avg_gc         = 0;
+		    double      gcp            = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
@@ -594,10 +592,11 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 
 		    if (avg_bases !=0) {
 			diff = bases - avg_bases;
-			diff_percent = (100*diff) / avg_bases;
+			diff = (100*diff) / avg_bases;
+			diff_percent = round(diff);
 		    }
 
-		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		    GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
 
@@ -605,16 +604,17 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		      calculate the average gc proportion in group, and the difference of
 		      a single seqeunce in group from it
 		    */
-		    GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_INT);
-		    gcp = GB_read_int(gb_result6);
+		    GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_FLOAT);
+		    gcp = GB_read_float(gb_result6);
 		    avg_gc = globalData->SQ_get_avg_gc();
 
 		    if (avg_gc !=0) {
 			diff = gcp - avg_gc;
-			diff_percent = (100*diff) / avg_gc;
+			diff = (100*diff) / avg_gc;
+			diff_percent = round(diff);
 		    }
 
-		    GBDATA *gb_result7 = GB_search(gb_quality, "GC_difference", GB_INT);
+		    GBDATA *gb_result7 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
 		    seq_assert(gb_result7);
 		    GB_write_int(gb_result7, diff_percent);
 
@@ -634,29 +634,13 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 				value2 = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
 				value3 = GD_ptr->SQ_get_nr_sequences();
 
-				//format: <Groupname:value:numberofspecies>
-				strcat(cons_conf, "<");
-				strcat(cons_conf, backup->name);
-				strcat(cons_conf, ":");
-				sprintf(temp,"%f",value1);
-				strcat(cons_conf, temp);
-				strcat(cons_conf, ":");
-				sprintf(temp,"%i",value3);
-				strcat(cons_conf, temp);
-				strcat(cons_conf, ">");
 
-                                const char *entry = GBS_global_string("<%s:%f:%i>", backup->name, value2, value3);
+				//format: <Groupname:value:numberofspecies>
+                                const char *entry = GBS_global_string("<%s:%f:%i>", backup->name, value1, value3);
+                                cons_conf += entry;
+                                entry = GBS_global_string("<%s:%f:%i>", backup->name, value2, value3);
                                 cons_dev += entry;
 
-// 				strcat(cons_dev, "<");
-// 				strcat(cons_dev, backup->name);
-// 				strcat(cons_dev, ":");
-// 				sprintf(temp,"%f",value2);
-// 				strcat(cons_dev, temp);
-// 				strcat(cons_dev, ":");
-// 				sprintf(temp,"%i",value3);
-// 				strcat(cons_dev, temp);
-// 				strcat(cons_dev, ">");
 
 				//if you parse the upper two values in the evaluate() function cut the following out
 				//for time reasons i do the evaluation here, as i still have the upper two values
@@ -677,13 +661,12 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			}
 			backup = backup->father;
 		    }
-		    strcat(cons_conf, "</conf>"); //eof character
-                    // strcat(cons_dev, "</dev>");
-		    cons_dev += "</dev>";
+		    cons_conf += "</conf>";
+		    cons_dev  += "</dev>";
 
 		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
 		    seq_assert(gb_result3);
-		    GB_write_string(gb_result3, cons_conf);
+		    GB_write_string(gb_result3, cons_conf.c_str());
 		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
 		    seq_assert(gb_result4);
 		    GB_write_string(gb_result4, cons_dev.c_str());
@@ -937,6 +920,7 @@ void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData
 }
 
 
+//marks species that are below threshold "evaluation"
 GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
 
     char *alignment_name;
@@ -945,7 +929,6 @@ GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
     GBDATA *gb_species_data;
-//     GBDATA *gb_name;
     GB_ERROR error = 0;
 
 
@@ -957,9 +940,6 @@ GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
     for (gb_species = GBT_first_species(gb_main);
 	 gb_species;
 	 gb_species = GBT_next_species(gb_species) ) {
-
-// 	gb_name = GB_find(gb_species, "name", 0, down_level);
-//         seq_assert(gb_name);
 
         GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
         bool    marked = false;

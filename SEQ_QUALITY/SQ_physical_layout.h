@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_physical_layout.h                                   //
 //    Purpose   : Class used for calculation of the phys. layout of seq. //
-//    Time-stamp: <Wed Jan/28/2004 16:58 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/2/2004 14:48> MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -24,33 +24,43 @@ public:
     SQ_physical_layout();
     void SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality);
     int SQ_get_number_of_bases() const;
-    int SQ_get_gc_proportion() const;
+    double SQ_get_gc_proportion() const;
 
 
 private:
-    int count_bases;
-    int count_scores;
-    int count_dots;
-    int percent_scores;
-    int percent_dots;
-    int percent_bases;
-    int GC;
-    int GC_proportion;
+    int roundme(double value);
+
+    double temp;
+    double count_bases;
+    double count_scores;
+    double count_dots;
+    double GC;
+    double GC_proportion;
+    int    percent_bases;
+    int    count_bases2;
 
 };
 
 
 SQ_physical_layout::SQ_physical_layout(){
+    temp              = 0;
     count_bases       = 0;
     count_scores      = 0;
     count_dots        = 0;
-    percent_scores    = 0;
-    percent_dots      = 0;
     percent_bases     = 0;
     GC                = 0;
     GC_proportion     = 0;
+    count_bases2      = 0;
 }
 
+
+int SQ_physical_layout::roundme(double value) {
+    int x;
+
+    value += 0.5;
+    x = (int) floor(value);
+    return x;
+}
 
 
 void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality){
@@ -81,36 +91,36 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
 
     /*calculate layout in percent*/
     if (GC!=0) {
-      GC_proportion = (100 * count_bases) / GC; //this is a hack, as ARB can't save real values
+        GC_proportion = GC / count_bases; //this is a hack, as ARB can't save real values
     }
-    percent_scores = (100 * count_scores) / size;
-    percent_dots   = (100 * count_dots) / size;
-    percent_bases  = 100 - (percent_scores + percent_dots);
+    temp = 100 - (100*((count_scores + count_dots)/size));
+    percent_bases = roundme(temp);
+    count_bases2 = roundme(count_bases);
 
 
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
     seq_assert(gb_result1);
-    GB_write_int(gb_result1, count_bases);
+    GB_write_int(gb_result1, count_bases2);
 
     GBDATA *gb_result2 = GB_search(gb_quality, "percent_of_bases", GB_INT);
     seq_assert(gb_result2);
     GB_write_int(gb_result2, percent_bases);
 
-    GBDATA *gb_result3 = GB_search(gb_quality, "GC_proportion", GB_INT);
+    GBDATA *gb_result3 = GB_search(gb_quality, "GC_proportion", GB_FLOAT);
     seq_assert(gb_result3);
-    GB_write_int(gb_result3, GC_proportion);
+    GB_write_float(gb_result3, GC_proportion);
 }
 
 
 inline int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
-    i = count_bases;
+    i = count_bases2;
     return i;
 }
 
 
-inline int SQ_physical_layout::SQ_get_gc_proportion() const {
-    int i;
+inline double SQ_physical_layout::SQ_get_gc_proportion() const {
+    double i;
     i = GC_proportion;
     return i;
 }
