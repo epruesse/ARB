@@ -53,6 +53,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_button.o: $(ARBHOME)/INCLUDE/inline.h
 
 AW_click.o: aw_click.hxx
 AW_click.o: aw_commn.hxx
