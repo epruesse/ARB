@@ -2326,7 +2326,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
 }
 
 
-void AW_window_message::init(AW_root *root_in, const char *windowname) {
+void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
     //  Arg args[10];
 
     root = root_in;             // for makro
@@ -2341,7 +2341,7 @@ void AW_window_message::init(AW_root *root_in, const char *windowname) {
 
     // create shell for message box
 
-    p_w->shell= aw_create_shell(this,AW_TRUE, AW_FALSE, width, height, posx, posy);
+    p_w->shell= aw_create_shell(this, AW_TRUE, allow_close, width, height, posx, posy);
 
     p_w->areas[AW_INFO_AREA] =
         new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
@@ -3197,7 +3197,7 @@ void aw_macro_message( const char *templat, ... )
     if (!aw_msg) {
         aw_msg = new AW_window_message;
 
-        aw_msg->init( root, "MESSAGE");
+        aw_msg->init( root, "MESSAGE", false);
         aw_msg->load_xfig("macro_message.fig");
 
         aw_msg->at("clear");
