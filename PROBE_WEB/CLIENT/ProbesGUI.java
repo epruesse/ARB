@@ -17,6 +17,8 @@ public class ProbesGUI extends Frame
 //     private ProbesGUIActionListener al;
     private ProbeListActionListener ll;
     private Client                  client;
+    private IOManager iom;      // wrapper to save functions
+
 
     public ProbesGUI(int levels, String title, Client cl) throws Exception
     {
@@ -83,5 +85,16 @@ public class ProbesGUI extends Frame
     public ProbeList getProbeList() { return probe_list; }
     public Client getClient() { return client; }
     public TextArea getDetails() { return details; }
+
+
+    public void setIOManager(IOManager io){
+	iom = io;
+	if (iom == null){System.out.println("Cannot set IOManager null"); System.exit(1);}
+    }
+
+    public IOManager getIOManager(){
+	return iom;
+    }
+
 
 }
