@@ -21,7 +21,7 @@
 #include <sec_graphic.hxx>
 #include "secedit.hxx"
 
-// yadhus includes
+// to get search results from primary editor window
 #include "../EDIT4/ed4_defs.hxx"
 #include "../EDIT4/ed4_class.hxx"
 
@@ -40,6 +40,17 @@ void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw)
 
     root->set_distance_between_strands(distance);
     root->update(0);
+    ntw->refresh();
+}
+
+void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool show_debug = awr->awar(AWAR_SECEDIT_SHOW_DEBUG)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_show_debug(show_debug);
+    //    root->update(0);
     ntw->refresh();
 }
 
@@ -269,12 +280,16 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
     sec_root->show_constraints = 0;
 
     switch(mode){
-        case AWT_MODE_ZOOM: {
+    case AWT_MODE_ZOOM: {
             text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
             break;
         }
-	case AWT_MODE_LZOOM: {
-            text="LOGICAL ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
+    case AWT_MODE_STRETCH: {
+	    text="STRETCH MODE    LEFT: Click and drag to EXPAND    RIGHT: Click and drag to COMPRESS";
+            break;
+        }
+	case AWT_MODE_PROINFO: {
+            text="PROBE INFO MODE    LEFT: Displays PROBE information (Please click on the PROBE)   RIGHT: Clears the Display";
             break;
         }
         case AWT_MODE_MOVE: {
@@ -744,7 +759,7 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "CLOSE", "C");    
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"sec_layout.hlp");
     aws->at("help");
@@ -753,6 +768,12 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
     aws->at("strand_dist");
     aws->label("Distance between strands:");
     aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+
+#ifdef DEBUG
+    aws->at("debug");
+    aws->label("Show debugging info:");
+    aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
+#endif
 
     int x, dummy;
     aws->at("chars");
@@ -816,12 +837,13 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/edit4)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
-    awm->create_mode( 0, "lzoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_LZOOM); // logical ZOOM
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
     awm->create_mode( 0, "setroot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_SETROOT);
     awm->create_mode( 0, "rot.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ROT);
+    awm->create_mode( 0, "stretch.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_STRETCH); 
     awm->create_mode( 0, "info.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOD);
     awm->create_mode( 0, "sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_LINE);
+    awm->create_mode( 0, "probeInfo.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_PROINFO); 
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);

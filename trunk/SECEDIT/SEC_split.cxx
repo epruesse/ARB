@@ -515,7 +515,7 @@ void SEC_loop::update_caller(void){
     double delta = helix_info->get_delta();
     double fixpoint_x = caller->get_fixpoint_x();
     double fixpoint_y = caller->get_fixpoint_y();
-    double direction = (cos(delta)*(fixpoint_x - x)) + (sin(delta)*(fixpoint_y - y));
+    double direction = (cos(delta)*(fixpoint_x - x_loop)) + (sin(delta)*(fixpoint_y - y_loop));
 
     if (direction > 0) {
         helix_info->set_delta(delta + M_PI);

@@ -39,6 +39,7 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
     }
 
     aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
+    aw_root->awar_int(AWAR_SECEDIT_SHOW_DEBUG, 0, def);
 
 #define DEFINE_PAIR(type, pairs, character)                             \
     aw_root->awar_string(AWAR_SECEDIT_##type##_PAIRS, pairs);           \
@@ -174,12 +175,12 @@ static GB_ERROR change_constraints(GB_CSTR constraint_type, GB_CSTR element_type
 
     return error;
 }
-
+    
 void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AWUSE(cl);
     AW_pos world_x;
     AW_pos world_y;
-    device->rtransform(screen_x, screen_y, world_x, world_y);
+    device->rtransform(screen_x, screen_y, world_x, world_y); // x and y positions on the screen
 
     if (cmd!=AWT_MODE_MOD) {
         sec_root->show_constraints = 0;
@@ -191,9 +192,120 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             break;
         }
         /* ******************************************************** */
-        case AWT_MODE_LZOOM: {
-            break;
-        }
+        case AWT_MODE_STRETCH: {
+	    if(button==AWT_M_MIDDLE) {
+                break;
+            }
+	    SEC_Base *base;
+	    SEC_helix_strand *strand;
+	    SEC_helix *helix_info;
+	    SEC_segment *segment;
+	    SEC_loop *loop;
+
+            if(button==AWT_M_LEFT) {
+		switch(type){
+		case AW_Mouse_Press: {
+		    base = (SEC_Base*)ct->client_data1;
+		    if (base) {
+			if(base->getType()==SEC_HELIX_STRAND) {
+			    strand = (SEC_helix_strand*)base;
+			    helix_info = strand->get_helix_info();
+			    helix_info->get_min_length_ref() = helix_info->get_length();
+			}
+			if(base->getType()==SEC_SEGMENT) {
+			    segment = (SEC_segment*)base;
+			    loop = segment->get_loop();
+			    loop->get_min_radius_ref()= loop->get_radius();
+			}
+		    }
+		    break;
+		}
+		case AW_Mouse_Drag:{  
+		    base = (SEC_Base*)ct->client_data1;
+		    if (base) {
+			if(base->getType()==SEC_HELIX_STRAND) {
+			    strand = (SEC_helix_strand*)base;
+			    helix_info = strand->get_helix_info();
+			    helix_info->get_min_length_ref()+=0.1;
+			}
+			if(base->getType()==SEC_SEGMENT) {
+				segment = (SEC_segment*)base;
+				loop = segment->get_loop();
+				loop->get_min_radius_ref()+=0.1;
+			}
+		    }
+		    sec_root->update();
+		    exports.refresh = 1;
+		    break;
+		}
+		default:
+		    break;
+		}
+	    }
+	    if(button==AWT_M_RIGHT) {	
+		switch(type){
+		case AW_Mouse_Press: {
+		    base = (SEC_Base*)ct->client_data1;
+		    if (base) {
+			if(base->getType()==SEC_HELIX_STRAND) {
+			    strand = (SEC_helix_strand*)base;
+			    helix_info = strand->get_helix_info();
+			    helix_info->get_min_length_ref() = helix_info->get_length();
+			}
+			if(base->getType()==SEC_SEGMENT) {
+			    segment = (SEC_segment*)base;
+			    loop = segment->get_loop();
+			    loop->get_min_radius_ref()= loop->get_radius();
+			}
+		    }
+		    break;
+		}
+		case AW_Mouse_Drag:{  
+		    base = (SEC_Base*)ct->client_data1;
+		    if (base) {
+			if(base->getType()==SEC_HELIX_STRAND) {
+			    strand = (SEC_helix_strand*)base;
+			    helix_info = strand->get_helix_info();
+			    helix_info->get_min_length_ref()-=0.1;
+			}
+			if(base->getType()==SEC_SEGMENT) {
+				segment = (SEC_segment*)base;
+				loop = segment->get_loop();
+				loop->get_min_radius_ref()-=0.1;
+			}
+		    }
+		    sec_root->update();
+		    exports.refresh = 1;
+		    break;
+		}
+		default:
+		    break;
+		}	
+	    }
+	    break;
+	}
+	//***************************************************************************
+
+        case AWT_MODE_PROINFO: {
+            if(button==AWT_M_MIDDLE) {
+                break;
+            }
+	    if (button==AWT_M_LEFT) { // should paint the pattern which user selects
+                if (type==AW_Mouse_Press) {
+                    SEC_Base *base  = (SEC_Base*)ct->client_data1;
+                    int clicked_pos = ct->client_data2;
+                    if (base) 
+			sec_root->paintSearchPatternStrings(device, clicked_pos, world_x+1, world_y);
+		}
+	    }
+            if(button==AWT_M_RIGHT) {
+		exports.refresh = 1;
+		sec_root->update(0);
+		//awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)probe);
+                break; // should popup probe search pattern window 
+            }
+	    break;
+	}
 	//***************************************************************************
         case AWT_MODE_MOVE: { // helix<->loop-exchange-modus
             if(button==AWT_M_MIDDLE) {
@@ -390,7 +502,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                             //special treating for root_loop's caller
                             SEC_loop *root_loop = (sec_root->get_root_segment())->get_loop();
                             if (strand_pointer == root_loop->get_segment()->get_next_helix()) {
-                                //turn around root_loop caller's angle
+                                //turn around root_loop caller's angle  -- warum??
                                 helix_info = strand_pointer->get_helix_info();
                                 double tmp_delta = helix_info->get_delta();
                                 helix_info->set_delta(tmp_delta + M_PI);
@@ -515,6 +627,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
             break;  //break for case AWT_MODE_MOD
         }
         /* ******************************************************** */
+
         case AWT_MODE_LINE: { // set-cursor-mode (in ARB_EDIT4)
             if (button==AWT_M_MIDDLE) {
                 break;
@@ -569,6 +682,7 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic() {
     rot_cl.exists = AW_FALSE;
     sec_root = 0;
     sec_root = new SEC_root(NULL, 0, aw_rooti->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->read_float());
+    sec_root->set_show_debug(aw_rooti->awar(AWAR_SECEDIT_SHOW_DEBUG)->read_int());
 }
 
 SEC_graphic::~SEC_graphic(void) {
@@ -968,8 +1082,10 @@ void SEC_bond_def::paint(AW_device *device, SEC_root *root, char base1, char bas
     }
 }
 
+
 void SEC_add_awar_callbacks(AW_root *aw_root,AW_default /*def*/, AWT_canvas *ntw) {
     aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->add_callback(SEC_distance_between_strands_changed_cb, (AW_CL)ntw);
+    aw_root->awar(AWAR_SECEDIT_SHOW_DEBUG)->add_callback(SEC_show_debug_toggled_cb, (AW_CL)ntw);
 
     char *ali_name = GBT_get_default_alignment(gb_main);
     GBDATA *gb_alignment = GBT_get_alignment(gb_main,ali_name);
