@@ -10,7 +10,6 @@
 #include <aw_awars.hxx>
 
 #include "ad_trees.hxx"
-#include "ad_ext.hxx"
 #include "ad_spec.hxx"
 #include <awt.hxx>
 #include <awt_nds.hxx>
@@ -38,7 +37,6 @@
 #include "nt_join.hxx"
 #include "nt_edconf.hxx"
 #include "ap_pos_var_pars.hxx"
-#include "ad_ali.hxx"
 #include "nt_import.hxx"
 #include "nt_date.h"
 #include "nt_internal.h"
@@ -222,15 +220,15 @@ void create_all_awars(AW_root *awr, AW_default def)
     create_probe_design_variables(awr,def,gb_main);
     create_primer_design_variables(awr,def, gb_main);
     create_trees_var(awr,def);
-    create_extendeds_var(awr,def);
+    NT_create_extendeds_var(awr,def);
     create_species_var(awr,def);
     create_consensus_var(awr,def);
     create_gde_var(awr,def);
     create_cprofile_var(awr,def);
-    create_transpro_variables(awr,def);
+    NT_create_transpro_variables(awr,def);
     NT_build_resort_awars(awr,def);
 
-    create_alignment_vars(awr,def);
+    NT_create_alignment_vars(awr,def);
     create_nds_vars(awr,def,gb_main);
     create_export_nds_awars(awr,def);
     AWTC_create_rename_variables(awr,def);
@@ -1116,8 +1114,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
-            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
-            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp",    AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,       0             );
+            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0); 
+            AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,   0); 
             SEP________________________SEP();
 
             awm->insert_sub_menu(0, "Edit Sequences","E");
@@ -1140,14 +1138,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0, "Align Sequences",  "S");
             {
                 AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_ALL, (AW_CB) AW_POPUP_HELP,(AW_CL)"align.hlp",0   );
-                AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_realign_dna_window, 0);
+                AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0);
                 GDE_load_menu(awm,"align");
             }
             awm->close_sub_menu();
             AWMIMT("seq_concat","Concatenate Sequences/Alignments", "C","concatenate_align.hlp", AWM_EXP,    AW_POPUP, (AW_CL)NT_createConcatenationWindow, (AW_CL)ntw );
             SEP________________________SEP();
 
-            AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)create_dna_2_pro_window, 0      );
+            AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0      );
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
             SEP________________________SEP();
 
@@ -1163,7 +1161,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"SAI","A","extended.hlp",    AWM_ALL);
         {
-            AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)create_extendeds_window,   0 );
+            AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
             SEP________________________SEP();
             awm->insert_sub_menu(0, "Create SAI using ...", "C");
             {
