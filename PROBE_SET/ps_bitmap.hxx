@@ -26,6 +26,9 @@ protected:
 
 public:
 
+    virtual long getTrueIndicesFor(  const long _index, PS_BitSet::IndexSet &_index_set );
+    virtual long getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set );
+
     virtual bool get( const long _row, const long _col );
     virtual bool set( const long _row, const long _col, const bool _value );
     // triangle_ - functions reverse _row and _col if _row is greater than _col
@@ -33,13 +36,14 @@ public:
     bool triangle_get( const long _row, const long _col );
     bool triangle_set( const long _row, const long _col, const bool _value );
 
-    virtual bool reserve( const long _capacity );
     virtual void invert();
     virtual void xor( const PS_BitMap *_other_map );
 
     virtual void print();
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
+
+    virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap( const bool _bias, const long _capacity ) : bias(_bias), max_row(0), capacity(_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
@@ -82,12 +86,12 @@ private:
 
 public:
 
-    bool get( const long _row, const long _col );
-    bool set( const long _row, const long _col, const bool _value );
-    void setTrue(  const long _row, const long _col );
-    void setFalse( const long _row, const long _col );
+    virtual bool get( const long _row, const long _col );
+    virtual bool set( const long _row, const long _col, const bool _value );
+    virtual void setTrue(  const long _row, const long _col );
+    virtual void setFalse( const long _row, const long _col );
 
-    bool reserve( const long _capacity );
+    virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap_Fast( const bool _bias, const long _capacity ) : PS_BitMap(_bias,0,_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
@@ -131,17 +135,21 @@ private:
 
 public:
 
-    bool get( const long _row, const long _col );
-    bool set( const long _row, const long _col, const bool _value );
-    void setTrue(  const long _row, const long _col );
-    void setFalse( const long _row, const long _col );
-
-    bool reserve( const long _capacity );
     void recalcCounters();
-    long getCountFor( long _index ) { return count_true_per_index[ _index ]; }
+    long getCountFor( const long _index ) { return count_true_per_index[ _index ]; }
 
-    void print();
-    bool load( PS_FileBuffer *_file );
+    virtual long getTrueIndicesFor(  const long _index, PS_BitSet::IndexSet &_index_set );
+    virtual long getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set );
+
+    virtual bool get( const long _row, const long _col );
+    virtual bool set( const long _row, const long _col, const bool _value );
+    virtual void setTrue(  const long _row, const long _col );
+    virtual void setFalse( const long _row, const long _col );
+
+    virtual void print();
+    virtual bool load( PS_FileBuffer *_file );
+
+    virtual bool reserve( const long _capacity );
 
     explicit PS_BitMap_Counted( PS_FileBuffer *_file ) : PS_BitMap(false,0,0) {
         data                 = 0;
@@ -156,10 +164,38 @@ public:
         memset( count_true_per_index, (bias) ? capacity : 0, capacity * sizeof(long) );
     }
 
-    ~PS_BitMap_Counted() {
+    virtual ~PS_BitMap_Counted() {
         if (count_true_per_index) free( count_true_per_index );
     }
 };
+
+
+// ************************************************************
+// * PS_BitMap::getTrueIndicesFor( _index, _index_set )
+// ************************************************************
+long PS_BitMap::getTrueIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set ) {
+    // get trues in the row
+    data[ _index ]->getTrueIndices( _index_set, _index );
+    // scan column _index in the remaining rows
+    for (long row = _index+1; row <= max_row; ++row) {
+        if (data[ row ]->get( _index )) _index_set.insert( row );
+    }
+    return _index_set.size();
+}
+
+
+// ************************************************************
+// * PS_BitMap::getFalseIndicesFor( _index, _index_set )
+// ************************************************************
+long PS_BitMap::getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set ) {
+    // get falses in the row
+    data[ _index ]->getFalseIndices( _index_set, _index );
+    // scan column _index in the remaining rows
+    for (long row = _index+1; row <= max_row; ++row) {
+        if (!(data[ row ]->get( _index ))) _index_set.insert( row );
+    }
+    return _index_set.size();
+}
 
 
 // ************************************************************
@@ -297,7 +333,7 @@ bool PS_BitMap::load( PS_FileBuffer *_file ) {
 // ************************************************************
 // * PS_BitMap_Fast::set( _row, _col, _value )
 // ************************************************************
-bool PS_BitMap_Fast::set( const long _row, const long _col, const bool _value ) {
+inline bool PS_BitMap_Fast::set( const long _row, const long _col, const bool _value ) {
     if (_row > max_row) max_row = _row;
     return data[_row]->set( _col, _value );
 }
@@ -306,7 +342,7 @@ bool PS_BitMap_Fast::set( const long _row, const long _col, const bool _value ) 
 // ************************************************************
 // * PS_BitMap_Fast::get( _row, _col )
 // ************************************************************
-bool PS_BitMap_Fast::get( const long _row, const long _col ) {
+inline bool PS_BitMap_Fast::get( const long _row, const long _col ) {
     if (_row > max_row) max_row = _row;
     return data[_row]->get( _col );
 }
@@ -315,7 +351,7 @@ bool PS_BitMap_Fast::get( const long _row, const long _col ) {
 // ************************************************************
 // * PS_BitMap_Fast::setTrue( _row, _col )
 // ************************************************************
-void PS_BitMap_Fast::setTrue( const long _row, const long _col ) {
+inline void PS_BitMap_Fast::setTrue( const long _row, const long _col ) {
     if (_row > max_row) max_row = _row;
     data[_row]->setTrue( _col );
 }
@@ -324,7 +360,7 @@ void PS_BitMap_Fast::setTrue( const long _row, const long _col ) {
 // ************************************************************
 // * PS_BitMap_Fast::setFalse( _row, _col )
 // ************************************************************
-void PS_BitMap_Fast::setFalse( const long _row, const long _col ) {
+inline void PS_BitMap_Fast::setFalse( const long _row, const long _col ) {
     if (_row > max_row) max_row = _row;
     data[_row]->setFalse( _col );
 }
@@ -353,6 +389,42 @@ bool PS_BitMap_Fast::reserve( const long _capacity ) {
 
 
 // ************************************************************
+// * PS_BitMap_Counted::getTrueIndicesFor( _index,_index_set )
+// ************************************************************
+long PS_BitMap_Counted::getTrueIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set ) {
+    // get total number of trues
+    unsigned long total_count_trues = count_true_per_index[ _index ];
+    // get trues in the row
+    data[ _index ]->getTrueIndices( _index_set, _index );
+    // scan column _index in the remaining rows until all trues are found
+    for (long row = _index+1;
+         ((row <= max_row) && (_index_set.size() < total_count_trues));
+         ++row) {
+        if (data[ row ]->get( _index )) _index_set.insert( row );
+    }
+    return _index_set.size();
+}
+
+
+// ************************************************************
+// * PS_BitMap_Counted::getFalseIndicesFor( _index,_index_set )
+// ************************************************************
+long PS_BitMap_Counted::getFalseIndicesFor( const long _index, PS_BitSet::IndexSet &_index_set ) {
+    // get total number of falses
+    unsigned long total_count_falses = capacity - count_true_per_index[ _index ];
+    // get falses in the row
+    data[ _index ]->getFalseIndices( _index_set, _index );
+    // scan column _index in the remaining rows until all falses are found
+    for (long row = _index+1;
+         ((row <= max_row) && (_index_set.size() < total_count_falses));
+         ++row) {
+        if (!(data[ row ]->get( _index ))) _index_set.insert( row );
+    }
+    return _index_set.size();
+}
+
+
+// ************************************************************
 // * PS_BitMap_Counted::set( _row,_col,_value )
 // ************************************************************
 bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value ) {
@@ -372,7 +444,8 @@ bool PS_BitMap_Counted::set( const long _row, const long _col, const bool _value
 // ************************************************************
 // * PS_BitMap_Counted::get( _row,_col )
 // ************************************************************
-bool PS_BitMap_Counted::get( const long _row, const long _col ) {
+inline bool PS_BitMap_Counted::get( const long _row, const long _col ) {
+    if (_row > max_row) max_row = _row;
     return data[_row]->get( _col );
 }
 
@@ -380,7 +453,7 @@ bool PS_BitMap_Counted::get( const long _row, const long _col ) {
 // ************************************************************
 // * PS_BitMap_Counted::setTrue( _row, _col )
 // ************************************************************
-void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
+inline void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
     if (_row > max_row) max_row = _row;
     data[_row]->setTrue( _col );
 }
@@ -389,7 +462,7 @@ void PS_BitMap_Counted::setTrue( const long _row, const long _col ) {
 // ************************************************************
 // * PS_BitMap_Counted::setFalse( _row, _col )
 // ************************************************************
-void PS_BitMap_Counted::setFalse( const long _row, const long _col ) {
+inline void PS_BitMap_Counted::setFalse( const long _row, const long _col ) {
     if (_row > max_row) max_row = _row;
     data[_row]->setFalse( _col );
 }
