@@ -200,7 +200,7 @@ void set_cgi_var(char *name, char *content) {
 	GBS_strcat(file, name);
 	GBS_strcat(file, "=");
 	GBS_strcat(file, content);
-	ors_gl.cgi_vars[i] = GBS_strclose(file,0);
+	ors_gl.cgi_vars[i] = GBS_strclose(file);
 }
 
 /*****************************************************************************

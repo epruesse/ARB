@@ -272,7 +272,7 @@ char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
         GBS_strcat(strstruct,":      <");
         GBS_strcat(strstruct,GB_read_char_pntr(gb_type));
         GBS_strcat(strstruct,">");
-        return GBS_strclose(strstruct,0);
+        return GBS_strclose(strstruct);
     }
     return 0;
 }

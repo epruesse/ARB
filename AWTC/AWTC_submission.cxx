@@ -158,7 +158,7 @@ static void ed_submit_info_event(AW_window *aww)
     }else{
         GBS_strcat(strstruct,"Species not found");
     }
-    parser = GBS_strclose(strstruct,0);
+    parser = GBS_strclose(strstruct);
     aw_root->awar(AWAR_PARSER)->write_string(parser);
 
     free(parser);

@@ -139,7 +139,7 @@ extern "C" int PT_find_exProb(PT_exProb *pep) {
         GBS_strcat(gbs_str, pep->next_probe.data);
     }
 
-    pep->result = GBS_strclose(gbs_str, 0);
+    pep->result = GBS_strclose(gbs_str);
 
     return 0;
 }

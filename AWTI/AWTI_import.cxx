@@ -453,7 +453,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
             GBS_strcat(s,tag);
             GBS_strcat(s,"] ");
             GBS_strcat(s,str);
-            char *val = GBS_strclose(s,0);
+            char *val = GBS_strclose(s);
             GB_write_string(gbk,val);
             free(val);
         }else{
@@ -670,7 +670,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                 if (strlen(p) <= ifo->sequencecolumn) continue;
                 GBS_strcat(strstruct,p+ifo->sequencecolumn);
             }
-            sequence = GBS_strclose(strstruct,0);
+            sequence = GBS_strclose(strstruct);
 
             GBDATA *gb_data = GBT_add_data(gb_species,ali_name,"data", GB_STRING);
             if (ifo->sequencesrt) {

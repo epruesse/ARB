@@ -247,10 +247,10 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
 
     free(use);
 
-    bs.data = GBS_strclose(names, 0);
+    bs.data = GBS_strclose(names);
     bs.size = strlen(bs.data)+1;
 
-    checksum.data = GBS_strclose(checksums, 0);
+    checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
@@ -317,10 +317,10 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
         }
     }
 
-    bs.data = GBS_strclose(names, 0);
+    bs.data = GBS_strclose(names);
     bs.size = strlen(bs.data)+1;
 
-    checksum.data = GBS_strclose(checksums, 0);
+    checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
@@ -1652,7 +1652,7 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strcat(strstruct,"echo;echo Running ARB Programms:;");
     GBS_strcat(strstruct,rsh);
     GBS_strcat(strstruct,"$ARBHOME/bin/arb_who");
-    char *sys = GBS_strclose(strstruct,0);
+    char *sys = GBS_strclose(strstruct);
     GB_xcmd(sys,GB_TRUE, GB_FALSE);
     delete sys;
     delete rsh;

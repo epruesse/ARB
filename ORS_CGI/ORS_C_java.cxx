@@ -664,7 +664,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 			GBS_chrcat(memfile,' ');
 		}
 	}
-	char *result = GBS_strclose(memfile,0);
+	char *result = GBS_strclose(memfile);
 	if (focusout) {
 		*focusout = 0;
 		if (maxnodeout ) *maxnodeout = 0;

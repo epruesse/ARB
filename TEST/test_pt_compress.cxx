@@ -27,7 +27,7 @@ char *pt_getstring(FILE *in){
 		if (c== EOF) return 0;
 		GBS_chrcat(strstruct,c);
 	}
-	p = GBS_strclose(strstruct,0);
+	p = GBS_strclose(strstruct);
 
 	if (!p[0]){
 		delete p;

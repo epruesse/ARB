@@ -591,7 +591,7 @@ char * OC_read_file_into_list(char *file_name) {
 		GBS_strcat(mem_file, buffer);
 	}
 	fclose(file);
-	return GBS_strclose(mem_file,0);
+	return GBS_strclose(mem_file);
 }
 
 /*********************************************************

@@ -145,7 +145,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 GBS_strcat(clrDefStr, ";");
             }
 
-            char    *colorDef = GBS_strclose(clrDefStr, 0);
+            char    *colorDef = GBS_strclose(clrDefStr);
             AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
             awar_def->write_string(colorDef); // writing clr defnition to clr trans table awar
             free(colorDef);
@@ -438,7 +438,7 @@ static void deleteColorTranslationTable(AW_window *aws){
         }
 
         aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
-        char *new_name = GBS_strclose(newTransTabName, 0);
+        char *new_name = GBS_strclose(newTransTabName);
         awar_tabNames->write_string(new_name); // updates selection list
         free(new_name);
 

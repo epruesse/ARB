@@ -1313,7 +1313,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
                                         void *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
                                         GBS_strcat(strstr,old);
                                         GBS_strcat(strstr,value);
-                                        char *v = GBS_strclose(strstr,0);
+                                        char *v = GBS_strclose(strstr);
                                         error = GB_write_as_string(gb_new,v);
                                         free(v);
                                     }else{
@@ -1353,7 +1353,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
     //                             void *strstr = GBS_stropen(1024);
     //                             GBS_strcat(strstr,old);
     //                             GBS_strcat(strstr,value);
-    //                             char *v = GBS_strclose(strstr,0);
+    //                             char *v = GBS_strclose(strstr);
     //                             error = GB_write_as_string(gb_new,v);
     //                             delete v;
     //                         }else{

@@ -565,7 +565,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         loaded = 1;
 
         {
-            char *out_message = GBS_strclose(not_found_message,0);
+            char *out_message = GBS_strclose(not_found_message);
             not_found_message = 0;
             if (all_found != 0) aw_message(out_message);
             free(out_message);
@@ -697,7 +697,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));
 
         {
-            char *out_message = GBS_strclose(not_found_message,0);
+            char *out_message = GBS_strclose(not_found_message);
             not_found_message = 0;
             if (all_found != 0) aw_message(out_message);
             free(out_message);

@@ -271,9 +271,9 @@ int main(int argc, char **argv)
                 }
             }
         }
-        char *sargs = GBS_strclose(args,0);
+        char *sargs = GBS_strclose(args);
         if (sargs[0] == ',') sargs++;
-        char *sparams = GBS_strclose(params,0);
+        char *sparams = GBS_strclose(params);
         GBS_strnprintf(out,1000,"%s\n",type);
         GBS_strnprintf(out,1000,"%s(%s)\n%s\n",perl_func_name,sargs,sparams);
 
@@ -297,9 +297,9 @@ int main(int argc, char **argv)
 
     if (inComment) error("Comment until end of file");
 
-    printf("%s",GBS_strclose(gb_out,0));
+    printf("%s",GBS_strclose(gb_out));
     printf("MODULE = ARB   PACKAGE = BIO  PREFIX = P2AT_\n\n");
-    printf("%s",GBS_strclose(gbt_out,0));
+    printf("%s",GBS_strclose(gbt_out));
 
     return EXIT_SUCCESS;
 }

@@ -104,7 +104,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         }
         GBS_strcat(strstruct,str);
         GBS_chrcat(strstruct,'\n');
-        data = GBS_strclose(strstruct,0);
+        data = GBS_strclose(strstruct);
         aw_root->awar(cbs->def_len)   ->write_int(flen);    // export filter
         aw_root->awar(cbs->def_filter)->write_string(str);  // export filter
         aw_root->awar(cbs->def_source)->write_string(data); // set display
