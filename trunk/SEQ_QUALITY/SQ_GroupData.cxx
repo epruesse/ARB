@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.cxx                                       //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Tue Mar/30/2004 14:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Mar/30/2004 17:12 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -325,6 +325,7 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 		consensus[i].i[5] = consensus[i].i[5] + 1;
                 break;
             default :
+                fprintf(stderr, "Illegal character '%c'", sequence[i]);
                 seq_assert(0); // unhandled character
                 break;
         }
