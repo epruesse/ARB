@@ -254,18 +254,29 @@ void tree_copy_cb(AW_window *aww){
 }
 
 void create_tree_last_window(AW_window *aww) {
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+
     GB_begin_transaction(gb_main);
-    GBDATA *gb_tree_data =  GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name =  GB_find(gb_tree_data,source,0,down_level);
-    GBDATA *gb_dest = GB_create_container(gb_tree_data,source);
-    error = GB_copy(gb_dest,gb_tree_name);
-    if (!error) error = GB_delete(gb_tree_name);
+
+    GBDATA *gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
+
+    if (!gb_tree_name) {
+        error = GB_export_error("No tree selected.");
+    }
+    else {
+        GBDATA *gb_dest   = GB_create_container(gb_tree_data,source);
+        error             = GB_copy(gb_dest,gb_tree_name);
+        if (!error) error = GB_delete(gb_tree_name);
+    }
+
     if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    else GB_abort_transaction(gb_main);
+
     if (error) aw_message(error);
-    delete source;
+
+    free(source);
 
 }
 
@@ -316,7 +327,7 @@ void tree_save_cb(AW_window *aww){
 AW_window *create_tree_export_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "SAVE_TREE", "TREE SAVE", 100, 100 );
+    aws->init( root, "SAVE_TREE", "TREE SAVE");
     aws->load_xfig("sel_box.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -396,7 +407,7 @@ void tree_load_cb(AW_window *aww){
 AW_window *create_tree_import_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "LOAD_TREE", "TREE LOAD", 100, 100 );
+    aws->init( root, "LOAD_TREE", "TREE LOAD");
     aws->load_xfig("sel_box.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -425,7 +436,7 @@ AW_window *create_tree_import_window(AW_root *root)
 AW_window *create_tree_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_TREE","TREE RENAME", 100, 100 );
+    aws->init( root, "RENAME_TREE","TREE RENAME");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -448,7 +459,7 @@ AW_window *create_tree_rename_window(AW_root *root)
 AW_window *create_tree_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_TREE", "TREE COPY", 100, 100 );
+    aws->init( root, "COPY_TREE", "TREE COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -505,7 +516,7 @@ AW_window *create_tree_diff_window(AW_root *root){
     if (aws) return aws;
     GB_transaction dummy(gb_main);
     aws = new AW_window_simple;
-    aws->init( root, "CMP_TOPOLOGY", "COMPARE TREE TOPOLOGIES", 200, 0 );
+    aws->init( root, "CMP_TOPOLOGY", "COMPARE TREE TOPOLOGIES");
     aws->load_xfig("ad_tree_cmp.fig");
 
     aws->callback( AW_POPDOWN);
@@ -537,7 +548,7 @@ AW_window *create_tree_cmp_window(AW_root *root){
     if (aws) return aws;
     GB_transaction dummy(gb_main);
     aws = new AW_window_simple;
-    aws->init( root, "COPY_NODE_INFO_OF_TREE", "TREE COPY INFO", 200, 0 );
+    aws->init( root, "COPY_NODE_INFO_OF_TREE", "TREE COPY INFO");
     aws->load_xfig("ad_tree_cmp.fig");
 
     aws->callback( AW_POPDOWN);
@@ -599,7 +610,7 @@ AW_window *create_trees_window(AW_root *aw_root)
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init( aw_root, "TREE_ADMIN","TREE ADMIN", 200, 0 );
+        aws->init( aw_root, "TREE_ADMIN","TREE ADMIN");
         aws->load_xfig("ad_tree.fig");
 
         aws->callback( AW_POPDOWN);
