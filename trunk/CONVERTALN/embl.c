@@ -1321,12 +1321,12 @@ char	*string;
 	for(indi=index=0,len=Lenstr(string)-1; indi<len; indi++, index++)	{
 		if(string[indi]==','||string[indi]==';')	{
 			token[index--]='\0';
-			if(string[indi]==',')
-				if(Lenstr(author)>0)
-					Append(&(author), ",");
-				else ;
-			else if(Lenstr(author)>0)
-				Append(&(author), " and");
+			if(string[indi]==',') {
+                            if(Lenstr(author)>0) Append(&(author), ",");
+                        }
+			else if(Lenstr(author)>0) {
+                            Append(&(author), " and");
+                        }
 			/* search backward to find the first blank and replace the blank by ',' */
 			for(indk=0; index>0&&indk==0; index--)
 				if(token[index]==' ')	{
