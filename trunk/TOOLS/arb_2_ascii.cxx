@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <arbdb.h>
 
 static void to_stderr(const char *msg) {
