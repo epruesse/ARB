@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : tree_merge.cxx                                         //
 //    Purpose   : merges multiple trees saved by arb_probe_group_design  //
-//    Time-stamp: <Thu Oct/02/2003 13:13 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/07/2003 02:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -253,7 +253,7 @@ static string mergeDifferingLines(set<string>& lines, GB_ERROR& error) {
         }
     }
 
-    fprintf(stdout, "format=<%s>\n", format.c_str());
+    // fprintf(stdout, "format=<%s>\n", format.c_str());
 
     if (!error) {
         deque<string> mergedInfos;
@@ -286,7 +286,7 @@ static string mergeDifferingLines(set<string>& lines, GB_ERROR& error) {
                 format.erase(pos, 2);
             }
 
-            fprintf(stdout, "format=<%s>\n", format.c_str());
+            // fprintf(stdout, "format=<%s>\n", format.c_str());
             mergedInfos.pop_front();
         }
 
