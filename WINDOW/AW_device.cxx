@@ -382,20 +382,24 @@ void AW_gc::new_gc(int gc) {
 
 
 void AW_gc::set_fill(int gc,AW_grey_level grey_level){
+    aw_assert(common->gcs[gc]);
     common->gcs[gc]->set_fill(grey_level);}
 
 
 void AW_gc::set_font(int gc,AW_font font_nr, int size){
+    aw_assert(common->gcs[gc]);
     common->gcs[gc]->set_font(font_nr,size);
 }
 
 
 void AW_gc::set_line_attributes(int gc,AW_pos width,AW_linestyle style){
+    aw_assert(common->gcs[gc]);
     common->gcs[gc]->set_lineattributes(width,style);
 }
 
 
 void AW_gc::set_function(int gc,AW_function function){
+    aw_assert(common->gcs[gc]);
     common->gcs[gc]->set_function(function);
 }
 
