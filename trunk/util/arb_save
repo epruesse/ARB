@@ -23,7 +23,7 @@ rm -f arbsrc_*.tgz
 		./lib/*.dat ./lib/pictures ./lib/pixmaps ./lib/config.* \
 		./lib/submit ./lib/help ./lib/Makefile ./lib/macros \
 		./lib/import ./lib/export ./lib/sellists ./lib/arb_default \
-		./lib/macro.head	arb_* util GDEHELP -print; \
+		./lib/macro.head	arb_* util GDEHELP ./SOURCE_TOOLS -print; \
 	)|sort|uniq|cpio -oH tar |gzip - >$name
 
 rm -f arbsrc
