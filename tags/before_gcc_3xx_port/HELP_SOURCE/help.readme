@@ -1,0 +1,14 @@
+
+Plan:
+
+    - remove 'oldhelp'
+    - edit helpfiles in 'xml'
+
+State:
+
+    - Helpfiles are currently edited in 'oldhelp'
+
+    - needed changes for Plan: - in ARB-Help the 'Edit'-Button should edit the .xml file
+                                (see: get_full_qualified_help_file_name() )
+
+

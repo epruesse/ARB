@@ -1,0 +1,96 @@
+.SUFFIXES: .doc .help .html
+
+# GENHELPDEST, GENDOCDEST and HELPFILELIST are passed from 'Makefile'
+
+HELP_NAMES=$(shell cat $(HELPFILELIST))
+HELP_TARGETS=$(addprefix $(GENHELPDEST)/,$(HELP_NAMES))
+HELP_PLAIN=./HELP_PLAIN
+HEADER=arb_help.head
+
+all: info forcedoc $(HELP_TARGETS)
+
+info:
+	@echo "----------------------------------------------------------------"
+	@echo "Collecting documentation for external programs used in GDE menus"
+#	@echo "HELP_TARGETS=$(HELP_TARGETS)"
+
+# ------------------------------------------------------------
+# rules to generate helpfiles
+# we need rules here for each helpfile specified on an 'itemhelp' line in GDE menus.
+
+ARBHOME=..
+GDE=$(ARBHOME)/GDE
+
+CLUSTALW=$(GDE)/CLUSTALW
+CLUSTALW_HELP=$(CLUSTALW)/clustalw_help
+CLUSTALW_DOC=$(CLUSTALW)/clustalw.doc
+
+$(GENHELPDEST)/clustalw.help: $(CLUSTALW_HELP) $(CLUSTALW_DOC)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
+
+AXML_HELP=$(GDE)/AxML/AxML.doc
+FASTDNAML_DOC=$(GDE)/FASTDNAML/fastDNAml.doc
+
+$(GENHELPDEST)/dnaml.help: $(AXML_HELP) $(FASTDNAML_DOC)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
+
+PROTML=$(GDE)/MOLPHY/doc
+PROTML_DOC_NAMES=protml protml_cli
+PROTML_DOCS=$(addsuffix .doc,$(addprefix $(PROTML)/,$(PROTML_DOC_NAMES)))
+
+$(GENHELPDEST)/protml.help: $(PROTML_DOCS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
+
+READSEQ=$(ARBHOME)/READSEQ
+READSEQ_DOC_NAMES=Readme Formats Readseq.help
+READSEQ_DOCS=$(addprefix $(READSEQ)/,$(READSEQ_DOC_NAMES))
+
+$(GENHELPDEST)/readseq.help: $(READSEQ_DOCS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
+
+PHYLIP_DISTANCE_HELP_NAMES=fitch kitsch neighbor dnadist protdist
+PHYLIP_DISTANCE_HELPS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(PHYLIP_DISTANCE_HELP_NAMES)))
+
+$(GENHELPDEST)/phylip_distance.help: $(PHYLIP_DISTANCE_HELPS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $^
+
+# all help files in ./HELP_PLAIN are automatically found
+
+$(GENHELPDEST)/%.help: $(HELP_PLAIN)/%.help $(HEADER)
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+
+# all help files in ./HELP_DOC_GEN are automatically found
+
+$(GENHELPDEST)/%.help: $(GENDOCDEST)/%.doc $(HEADER)
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+
+# ------------------------------------------------------------
+# rules to generate plain doc from provided html files
+
+HELP_TREEPUZZLE=../GDE/TREEPUZZLE/doc
+HELP_PHYLIP=../GDE/PHYLIP/doc
+
+FORCED_DOC_NAMES=proml dnapars protpars
+
+$(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html
+	lynx -dump -nolist $< | sed -e 's/©/(C)/' > $@
+	test -s $@ || (echo $@ not generated or empty && false)
+
+$(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html
+	lynx -dump -nolist $< | sed -e 's/©/(C)/' > $@
+	test -s $@ || (echo $@ not generated or empty && false)
+
+FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
+forcedoc: $(FORCED_DOCS)
+
+# ------------------------------------------------------------
+# default rule to raise error if no rule is given to generate a helpfile
+
+$(GENHELPDEST)/%.help:
+	@echo "Makefile.helpfiles:18: Error: No rule to make $(notdir $@) (to which is referred to in a GDE menu)"
+	grep -n $(notdir $@) MENUS/*.menu
+#	false
+
+clean:
+	-rm $(GENHELPDEST)/*.help
+	-rm $(GENDOCDEST)/*.doc

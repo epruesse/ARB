@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		RESET MODE
+
+OCCURRENCE	ARB_NT <RESET> button in the left column
+
+DESCRIPTION	The 'RESET MODE' allows to restore the previous tree topology
+		after using the 'ROTATE', 'LENGTH', and 'MOVE MODE' pressing
+		The left, middle, or right mouse buttons respectively.
+
+		Click on the 'RESET' button to activate the 'RESET MODE'.
+
+NOTES		Short descriptions of the 'MODE' and the functions assigned
+		to the mouse buttons are given in the fourth line of the
+		'ARB_NT' window.
+
+EXAMPLES	None
+
+WARNINGS	!!! Only the most recent previous topology can be restored!!!
+
+BUGS		No bugs known

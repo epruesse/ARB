@@ -1,0 +1,53 @@
+item:Protein_ML (molphy; max 40 species)
+itemmeta: L
+itemmethod:(GEN_INFILE(in1);\
+            cat infile |tr '?' '-' >in1.in;\
+            mv in1.in infile;\
+            RUN_IN_WINDOW((arb_protml $MODEL $SEARCH $REARRANGE $CALCLENGTH infile ;\
+                           (test -f treefile && $DISPLAY_FUNC)));\
+            RM_LOCAL_FILES(in1))&
+itemhelp:protml.help
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_ph_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_ph_$$ treefile "PRG=protml MODEL=$MODEL SEARCH=$SEARCH FILTER=$FILTER REARRANGE=$REARRANGE PKG=molphy"
+argchoice:TextEdit:arb_textedit treefile &
+argchoice:Treetool:treetool treefile
+
+arg:MODEL
+argtype:choice_menu
+arglabel:Which model to use ?
+argchoice:JTT:-j
+argchoice:Dayhoff:-d
+argchoice:mtREV24:-m
+argchoice:Poisson:-p
+argchoice:JTT-F:-jf
+argchoice:Dayhoff-F:-df
+argchoice:mtREV24-F:-mf
+argchoice:Proportional:-pf
+
+arg:SEARCH
+argtype:choice_menu
+arglabel:Search strategy
+argchoice:Star decomposition:-s
+argchoice:Exhaustive:-e
+argchoice:Quick add:-q
+
+arg:CALCLENGTH
+argtype:choice_menu
+arglabel:Calc branchlengths?
+argchoice:Yes:1
+argchoice:No:0
+
+arg:REARRANGE
+argtype:choice_menu
+arglabel:Rearrangement
+argchoice:None:0
+argchoice:local Rearrangement search:-R
+argchoice:LBP only:-RX
+
+in:in1
+informat:genbank
+inmask:
+insave:

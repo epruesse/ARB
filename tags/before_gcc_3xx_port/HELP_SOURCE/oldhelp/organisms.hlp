@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	species.hlp
+SUB	genes.hlp
+SUB	gene_species.hlp
+SUB	organism_mark.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		What are Organisms?
+
+OCCURRENCE	Everywhere
+
+DESCRIPTION     An Organism is a special kind of species.
+
+                It contains the whole genom sequence of a micro-organism
+                in an alignment called 'ali_genom'. The sequence stored in
+                that alignment has to be unaligned (=no gaps).
+
+                Further it contains information about genes.
+
+                Organisms do not occur in a normal ARB database (i.e. a 16s database).
+                To work with organisms you have to import a genome-flatfile into a new database.
+
+NOTES		To create alignments of genes you need to create gene-species.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,16 @@
+SUFFIX		seq
+BEGIN
+ID   *(name)   *(|sequence_type); *(|sequence|len(.-)) BP.
+AC   *(acc|extract_words("0123456789",4.0));
+DT   *(date)
+OS   *(full_name)
+RA   *(author)
+RT   *(title)
+FT   strain=*(strain)
+SQ   Sequence *(|sequence|len(.-)) BP;
+
+  *(name) Length: *(|sequence|len(.-)) Check: *(|sequence|remove(.-)|gcgchecksum) ..
+
+*(|sequence|remove(.-)|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10)) 
+
+//

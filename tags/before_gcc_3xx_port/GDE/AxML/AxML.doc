@@ -1,0 +1,15 @@
+
+AxML
+----
+
+AxML is an accelerated version of fastdnaML.
+
+- AxML produces the same results as fastdnaML does.
+- AxML is about 35%-47% faster than fastdnaML
+
+More information in AxML can be found at the homepage
+of Alexandros Stamatakis:
+
+        http://wwwbode.cs.tum.edu/~stamatak/index.html
+
+

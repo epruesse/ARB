@@ -1,0 +1,28 @@
+
+ProtML 2.3b3(July 1 1996) Maximum Likelihood Inference of Protein Phylogeny
+Copyright (C) 1992-1996 J. Adachi & M. Hasegawa. All rights reserved.
+Usage: protml [switches] sequence_file [topology_file]
+sequence_file = MOLPHY_format | Sequential(-S) | Interleaved(-I)
+topology_file = users_trees(-u) | constrained_tree(-e)
+
+Model:
+-j  JTT (default)   -jf  JTT-F         Jones, Taylor & Thornton(1992)
+-d  Dayhoff         -df  Dayhoff-F     Dayhoff et al.(1978)
+-m  mtREV24         -mf  mtREV24-F     Adachi & Hasegawa(1995)
+-p  Poisson         -pf  Proportional  (-f: with data Frequencies)
+-r  users RSR       -rf  users RSR-F   (Relative Substitution Rate)
+
+Search strategy or Mode:
+-u  Users trees (need users_trees file)
+-R  local Rearrangement search   -RX  LBP only
+-e  Exhaustive search (with/without constrained_tree file)
+-s  Star decomposition search (may not be the ML tree)
+-q  Quick add OTUs search (may not be the ML tree)
+-D  maximum likelihood Distance matrix --> NJDIST
+
+Others:
+-n num  retained top ranking trees (default -e:105,-q:50)
+-P num  Per cent (default -e:30, if possible trees<=945 : 200)
+-b  no RELL-BP          -M  Minimum evolution (with -e)
+-S  Sequential format   -I  Interleaved format
+-v  verbose to stderr   -i, -w  output some information

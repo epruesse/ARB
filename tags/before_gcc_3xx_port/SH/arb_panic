@@ -1,0 +1,65 @@
+#!/bin/sh
+
+err () {
+	echo "*********** ERROR **********" 1>&2
+	echo "`basename $0`: $@" 1>&2
+	exit 1
+}
+
+seperator() {
+	echo ''
+	echo '*****************************'
+}
+
+chooser="/tmp/arb_pids_${USER}_*"
+
+echo '*****************************'
+echo "********* P A N I C *********"
+echo '*****************************'
+echo ""
+echo "	This Module tries to save a running database"
+echo "	There may be more than database server (ARB_NT):"
+echo "		--------------------------------"
+
+for i in $chooser ; do
+	/bin/echo "		- >" `ls $i` "<";
+done
+echo "		--------------------------------"
+
+echo "Please choose one line and enter the rightmost number"
+
+read ARB_PID
+if [ ! -f /tmp/arb_pids_${USER}_${ARB_PID} ]; then
+	err "Incorrect Choice"
+fi
+
+seperator
+echo "Please enter file name (full path):"
+read FILE
+
+panicfile="/tmp/arb_panic_${USER}_${ARB_PID}"
+rm -f $panicfile
+echo "$FILE" >$panicfile
+ok=false
+for i in `cat /tmp/arb_pids_${USER}_${ARB_PID}`; do
+	if kill -1 $i 2>/dev/null; then
+		ok=true
+		break
+	fi
+done
+if [ "$ok" = "false" ]; then
+	err	"Sorry could not find a running server"
+fi
+seperator
+echo "Wait until database is saved (1000 sequences == 1min ) or press <ctrl-c> to abort"
+while [ -f $panicfile ]; do
+	sleep 1
+	echo "		waiting"
+done
+
+seperator
+echo "enter 'kill' if you want to kill the server and its clients"
+read ki
+if [ "$ki" = "kill" ] ; then
+	arb_clean
+fi

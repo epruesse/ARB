@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	sp_rename.hlp
+UP	mg_names.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Autorename Species
+
+OCCURRENCE	ARB_NT/Species/Rename
+		ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Check Consistency
+		of Names> CHECK NAMES <RENAME DATASBASE .>
+
+DESCRIPTION	Starts the 'NAME SERVER' to update names within the specified
+		database according to the information storted in the file
+		'$ARBHOME/lib/nas/names.dat'.
+
+		Press the 'GO' button.
+
+NOTES		It is possible to link names.dat to a central names.dat, but you should
+                be aware, that there may occur temporary inconsitencies. When you didn't
+                use the NAME SERVER for 4 minutes (i.e. you didn't call 'Generate new names'
+                and you didn't import or create new species), these inconsistencies will not occur.
+
+                The normal way to use a central NAME SERVER is to edit '$ARBHOME/lib/arb_tcp.dat'
+                and to specify a central server for ARB_NAME_SERVER. The drawback is: This currently
+                uses 'rsh' (not ssh), which makes it impossible in most environments.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

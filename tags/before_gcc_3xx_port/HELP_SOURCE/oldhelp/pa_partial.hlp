@@ -1,0 +1,33 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pa_quick.hlp
+UP	pa_add.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	partial_sequences.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Add marked partial species
+
+OCCURRENCE	ARB_PARRSIMONY/Tree/Add species to tree
+
+DESCRIPTION     Use this to add partial sequences into an existing tree.
+
+NOTES		The branchlengths of the added partial sequences represent the
+                number of mutations against the full sequence.
+
+                Adding species using this function marks them as "partial sequence" if
+                they have no 'ARB_partial' entry yet. Otherwise insertion is aborted.
+
+                All species already in tree are marked as "full sequence" if
+                they have no 'ARB_partial' entry yet.
+
+EXAMPLES	None
+
+WARNINGS	Calculating branch length after adding partial sequences
+                will lead to wrong lengths.
+
+BUGS		No bugs known

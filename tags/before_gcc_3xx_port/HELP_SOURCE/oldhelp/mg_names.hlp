@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	rename.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Check and Update Names
+
+DESCRIPTION	Merging two databases species names assigned to the
+		corresponding accession numbers and other information have to be
+		identical in both databases.
+
+		To enshure this, press the 'RENAME DATABASE' buttons to display
+			the 'AUTORENAME SPECIES' window.
+
+		To save modifications pres the 'Save result' button of the
+			'ARB_MERGE' window.
+
+
+NOTES		Creates automatically unique names (=identifiers) for the
+		species entries in the database. The entries are identified by
+		their accession numbers (public databases). The names are given
+		using the 'full_name' information. Usually, the first three
+		letters are taken from the genus designation, the remaining
+		letters from the species name.
+
+		If there are duplicated entries (same accession number -
+		different 'full_name'; no accession number - same 'full_name')
+		the different versions are indicated by appending running
+		numbers separated from the 'name' by a dot.
+
+		 
+WARNINGS	If any species has lost is accession number it will not be
+		renamed correctly.
+
+BUGS		No bugs known

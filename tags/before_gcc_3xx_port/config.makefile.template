@@ -1,0 +1,54 @@
+# --------------------------------------------------------------------------------
+# If this file is named config.makefile.template then copy it to config.makefile
+# DO NOT EDIT config.makefile.template
+# --------------------------------------------------------------------------------
+
+# Enter your name (upper case, no spaces) here, to enable '#ifdef DEVEL_YOURNAME #endif' sections
+DEVELOPER=ANY
+
+DEBUG=0# build with debug information
+DEBUG_GRAPHICS = 0# force instant graphic update
+# SEER = 1
+
+# --------------------------------------------------------------------------------
+# target machine section
+# [Note: Uncomment one section, depending on your machine type and compiler options]
+
+# ********* LINUX / gcc g++ / static ********
+MACH  = LINUX# Linux g++  and gcc
+LINUX = 1
+ECGS  = 1# use GCC? (always 1 for LINUX)
+
+# export DEBIAN = 1
+
+# uncomment next line for REDHAT systems
+# REDHAT = 1
+
+# ********* Mac OSX ********
+
+# MACH   = DARWIN#
+# DARWIN = 1
+
+# ********* SUN4 / acc CC / dynamic ********
+
+# MACH = SUN4#
+# SUN4 = 1#                              # Exportable Version
+
+# MACH = SUN5#
+# SUN5 = 1
+# ECGS  = 1# use GCC? 
+# SUN_WS_50 = 1 # compile with Workshop 5.0
+
+# ********* HP ****************
+# HPCC = 1
+# HPGCC = 1
+# MACH = HP#
+
+# *******  SGI  ***********
+# SGI = 1
+# MACH = SGI#
+
+# *******  DIGITAL OSF  ***********
+# DIGITAL = 1
+# MACH = DIGITAL#
+

@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_edit.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Define Helix Symbols
+
+OCCURRENCE	ARB_NT/ARB_EDIT/Props/Helix Symbols
+
+DESCRIPTION	@@@@@ Eigentliche Hilfe sollte hier stehen
+			Paerchen durch ' ' getrennt
+			Reihenfolge egal
+			Gross / Kleinschrift egal
+
+			Falls Paerchen auftritt -> Symbol auf der rechten Seite
+			Falls nicht gefunden -> Default
+			Non_Standard 0-9
+
+
+
+		Different base pairs can be indicated by user-defined symbols.
+
+		Press the 'Helix Symbols' button of the 'ARB_NT/ARB_EDIT/Props'
+			menu to display the 'HELIX_PROPERTIES' window. Type the
+			base pairs in the large subwindows and the corresponding
+			symbols in the small subwindows.
+
+NOTES		Upper and lower case letters are not differentiated.	
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
