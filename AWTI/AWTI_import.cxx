@@ -798,6 +798,7 @@ void AWTC_import_go_cb(AW_window *aww)
                   aw_openstatus("Reading input files");
                   for (int count = 0; !error && fnames[count]; ++count) {
                       aw_status(GBS_global_string("Reading %s", fnames[count]));
+		      GB_warning("Reading file: '%s' read", fnames[count]);
 #if defined(DEBUG)
                       printf("Reading '%s' ...\n", fnames[count]);
 #endif // DEBUG
