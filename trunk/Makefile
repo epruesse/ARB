@@ -1061,22 +1061,27 @@ depends: $(ARCHS:.a=.depends) \
 
 #********************************************************************************
 
+TAGFILE=TAGS
+TAGFILE_TMP=TAGS.tmp
+
 tags: tags_$(MACH)
+	mv $(TAGFILE_TMP) $(TAGFILE) 
+
 tags_LINUX: tags2
 tags_SUN5: tags1
 
 tags1:
 # first search class definitions
-		$(CTAGS)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-		$(CTAGS) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
+		$(CTAGS) -f $(TAGFILE_TMP)         --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+		$(CTAGS) -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-		$(CTAGS) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-		$(CTAGS) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+		$(CTAGS) -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
+		$(CTAGS) -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 
 # if the above tag creation does not work -> try tags2:
 tags2:
-		ctags    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
-		ctags -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+		ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+		ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 
 #********************************************************************************
 
