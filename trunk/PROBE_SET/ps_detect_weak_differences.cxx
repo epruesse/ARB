@@ -466,7 +466,6 @@ int main( int argc,  char *argv[] ) {
 
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
     if (!bitmap_filename || (bitmap_filename[0] != '-')) {
-        printf( "PS_detect_weak_differences\n" );
         PS_detect_weak_differences( db->getRootNode() );
         if (bitmap_filename) {
             printf( "saving bitmap to file %s\n", bitmap_filename );
@@ -483,7 +482,6 @@ int main( int argc,  char *argv[] ) {
     printf( "(enter to continue)\n" );
 //    getchar();
 
-    printf( "PS_print_and_evaluate_map\n" );
     PS_print_and_evaluate_map( db->getRootNode(), result_filename );
     printf( "(enter to continue)\n" );
 //    getchar();
