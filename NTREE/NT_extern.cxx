@@ -75,12 +75,22 @@ AW_window *create_tree_window(AW_root *aw_root,AWT_graphic *awd);
 
 void NT_show_message(AW_root *awr)
 {
-    char *mesg = awr->awar("tmp/message")->read_string();
-    if (*mesg){
-        aw_message(mesg);
-        awr->awar("tmp/message")->write_string("");
+    GB_transaction dummy(gb_main); // lock database to avoid insertion of new messages
+
+    char *msg = awr->awar("tmp/message")->read_string();
+    while (msg[0]){
+        char *last_nl = strrchr(msg, '\n');
+        if (!last_nl) {
+            aw_message(msg);
+            msg[0] = 0;
+        }
+        else {
+            if (last_nl[1]) aw_message(last_nl+1);
+            last_nl[0] = 0;
+        }
     }
-    free(mesg);
+    awr->awar("tmp/message")->write_string(msg);
+    free(msg);
 }
 
 void nt_test_ascii_print(AW_window *aww){
