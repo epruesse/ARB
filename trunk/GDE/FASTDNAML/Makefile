@@ -1,10 +1,14 @@
 .SUFFIXES: .o .c
 
-OBJECT        = fastDNAml_1_2_1.o
-FASTDNAML_DOC = fastDNAml_doc_1.2.txt
+OBJECT        = fastDNAml.o
+FASTDNAML_DOC = fastDNAml.doc
+TARGET		  = $(ARBHOME)/bin/fastdnaml
 
-$(ARBHOME)/bin/fastdnaml: $(OBJECT) doc
+all : $(TARGET) doc
+
+$(TARGET) : $(OBJECT)
 	$(ACC) $(cflags) -o $@ $< $(LIB) -lm
+	$(MAKE) doc
 
 .c.o:
 	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES)
@@ -22,4 +26,4 @@ $(ARB_DOC) : $(ARB_DOC_PREFIX) $(FASTDNAML_DOC)
 
 # DO NOT DELETE
 
-fastDNAml_1_2_1.o:  fastDNAml_1_2_1.h
+fastDNAml.o:  fastDNAml.h
