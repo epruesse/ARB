@@ -324,7 +324,7 @@ GB_ERROR gb_login_remote P_((struct gb_main_type *gb_main, const char *path, con
 
 /* admap.c */
 int gb_save_mapfile P_((GB_MAIN_TYPE *Main, GB_CSTR path));
-int gb_is_valid_mapfile P_((const char *path, struct gb_map_header *mheader));
+int gb_is_valid_mapfile P_((const char *path, struct gb_map_header *mheader, int verbose));
 GBDATA *gb_map_mapfile P_((const char *path));
 int gb_isMappedMemory P_((char *mem));
 
