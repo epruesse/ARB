@@ -23,6 +23,7 @@ GB_ERROR GEN_read(GBDATA *gb_main, const char *filename, const char *ali_name);
 
 AW_window *GEN_create_gene_window(AW_root *aw_root);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
+AW_window *GEN_map(AW_root *aw_root);
 
 // genes:
 
