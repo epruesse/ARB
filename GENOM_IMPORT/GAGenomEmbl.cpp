@@ -518,9 +518,9 @@ void gellisary::GAGenomEmbl::parseSequence(string * source_str)
             target_str += tmp_char;
         }
     }
-    GAGenomUtilities::trimString(&target_str);
-    GAGenomUtilities::onlyOneDelimerChar(&target_str,' ');
-    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&target_str,' ',false);
-    target_str = GAGenomUtilities::toOneString(&tmp_vector,false);
+//    GAGenomUtilities::trimString(&target_str);
+//    GAGenomUtilities::onlyOneDelimerChar(&target_str,' ');
+//    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&target_str,' ',false);
+//    target_str = GAGenomUtilities::toOneString(&tmp_vector,false);
     *source_str = target_str;
 }
