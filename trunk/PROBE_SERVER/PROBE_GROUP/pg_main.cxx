@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Fri Oct/10/2003 11:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Oct/11/2003 11:58 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -527,7 +527,7 @@ static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
     return gbt_tree;
 }
 
-static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_config) {
+static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_config, GB_alignment_type ali_type) {
     GB_ERROR error = 0;
     string pt_server_name = "localhost: "+para.pt_server_name;
     PG_init_pt_server(gb_main, pt_server_name.c_str(), my_output);
@@ -542,11 +542,6 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
     if (!error) {
         const char *probe;
         while ((probe = PG_find_next_probe(error)) && !error) {
-#if defined(DEBUG)
-            if (strcmp("CCCUGGGGUCCGGGA", probe) == 0 || strcmp("UCCCGGACCCCAGGG", probe) == 0) {
-                fprintf(stderr, "probe %s occurred\n", probe);
-            }
-#endif // DEBUG
             probe_count++;
         }
         PG_exit_find_probes();
@@ -556,6 +551,9 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
         indent i(out);
         out.put("Probes found: %i", probe_count);
     }
+
+    char T_or_U;
+    if (!error) error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
 
     size_t       max_possible_groups = probe_count; // not quite correct (but only used for % display)
     const size_t dot_devisor         = 10; // slow down dots
@@ -570,43 +568,51 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
             const char *probe;
             size_t      probe_count2 = 0;
 
-//             PG_probe_match_para pm_para;
-//             PG_init_probe_match_para(pm_para, probe_config);
-
-//             PG_probe_match_para pm_para =
-//                 {
-//                     // bonds:
-//                     { AA, AC, AG, AU, CA, CC, CG, CU, GA, GC, GG, GU, UA, UC, UG, UU },
-//                     0.5, 0.5, 0.5
-//                 };
-
             while ((probe = PG_find_next_probe(error)) && !error) {
+                pg_assert(strlen(probe) == (size_t)length);
                 probe_count2++;
+
                 PG_Group group;
-//                 error = PG_probe_match(group, pm_para, probe);
                 error = PG_probe_match(group, probe_config, probe);
 
                 if (!error) {
                     if (group.empty()) {
                         static bool warned = false;
                         if (!warned) {
-                            out.put("Warning: pt-server seems to be out-of-date");
+                            out.put("Warning: pt-server seems to be out-of-date (probe '%s' has no matches)", probe);
                             warned = true;
                         }
                     }
-                    else {
-                        if (group.size()>0) {
+                    else {      // probe matched at least 1 species
+                        char *probe_compl = strdup(probe);
+                        GBT_reverseComplementNucSequence(probe_compl, length, T_or_U);
+
+                        bool probe_compl_matches      = false;
+                        bool probe_compl_matches_same = false;
+
+                        if (strcmp(probe_compl, probe) != 0) { // if complement differs original
+                            PG_Group group_compl;
+                            error = PG_probe_match(group_compl, probe_config, probe_compl);
+                            if (!error && !group_compl.empty()) {
+                                probe_compl_matches = true;
+                                probe_compl_matches_same = (group_compl == group);
+                            }
+                        }
+
+                        if (!error &&
+                            (!probe_compl_matches || probe_compl_matches_same)) // accept only if complement doesn't match (or if it matches the same species)
+                        {
                             GB_transaction  pb_dummy(pb_main);
                             bool            created;
                             int             numSpecies;
                             GBDATA         *pb_group = group.groupEntry(pb_main, true, created, &numSpecies);
 
                             PG_add_probe(pb_group, probe);
+                            if (probe_compl_matches_same) PG_add_probe(pb_group, probe_compl);
 
                             if (created) {
                                 ++group_count;
-                                if ((group_count%dot_devisor) == 0)
-                                    out.point();
+                                if ((group_count%dot_devisor) == 0) out.point();
                             }
                         }
                     }
@@ -1288,7 +1294,23 @@ int main(int argc,char *argv[]) {
                 error = GBT_write_plain_tree(pb_main, pb_main, 0, gbt_tree);
             }
 
-            if (!error) error = collectProbes(pb_main, probe_config);
+            GB_alignment_type ali_type = GB_AT_UNKNOWN;
+            if (!error) {
+                GB_transaction dummy(gb_main);
+                GB_transaction dummy2(pba_main);
+
+                char *ali_name = GBT_get_default_alignment(gb_main);
+                ali_type       = GBT_get_alignment_type(gb_main, ali_name);
+
+                GBDATA *pba_ali_name = GB_search(pba_main, "alignment", GB_STRING);
+                GBDATA *pba_ali_type = GB_search(pba_main, "alignment_type", GB_INT);
+                GB_write_string(pba_ali_name, ali_name);
+                GB_write_int(pba_ali_type, long(ali_type));
+
+                free(ali_name);
+            }
+
+            if (!error) error = collectProbes(pb_main, probe_config, ali_type);
             if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);
             if (!error) {
                 GB_transaction dummy(gb_main);
@@ -1300,21 +1322,6 @@ int main(int argc,char *argv[]) {
             }
 
             if (!error) error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
-            if (!error) {
-                GB_transaction dummy(gb_main);
-                GB_transaction dummy2(pba_main);
-
-                char              *ali_name = GBT_get_default_alignment(gb_main);
-                GB_alignment_type  ali_type = GBT_get_alignment_type(gb_main, ali_name);
-
-                GBDATA *pba_ali_name = GB_search(pba_main, "alignment", GB_STRING);
-                GBDATA *pba_ali_type = GB_search(pba_main, "alignment_type", GB_INT);
-                GB_write_string(pba_ali_name, ali_name);
-                GB_write_int(pba_ali_type, long(ali_type));
-
-                free(ali_name);
-            }
-
             if (!error) {
                 GB_transaction dummy(pba_main);
 
