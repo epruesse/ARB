@@ -1,6 +1,5 @@
 //################################
 // chip-reader
-// v1.0
 //################################
 
 
@@ -8,108 +7,140 @@
 #include <iostream.h>
 #include <fstream.h>
 #include <string.h>
-//#include "stdlib.h"
+#include <stdlib.h>
 //using namespace std;
-//#include <vector>
+#include <vector.h>
 
 
 // ##########
 // STRUKTUREN
 // ##########
 
-
-// ###################
-// KLASSENDEFINITIONEN
-// ###################
-
-
-// Klasse textdata
-// liest eine Textdatei ein und parst diese in ein ARRAY
-//
-class textdata {
-private:
-  int arr[255][32];
-  char v[255][32];
-  //list<const char *> v;
-public:
-  textdata() {
-  }
-  ~textdata() {
-  }
-  // liest eine Textdatei ein
-  int read(char *fn) {
-    char line[255];
-    int rowcount = 0;
-    int colcount = 0;
-    int v_count = 0;
-    ifstream iF;
-    iF.open(fn);
-    if(iF) {
-
-      cout << "File was opened ...\n";    // DEBUG !!!
-
-      while(!iF.eof()) {
-	iF.getline(line, 255);
-
-	cout << "Reading new row \"" << rowcount << "\"\n";   // DEBUG !!!
-
-	int i = 0;
-	bool eol = 0;
-	char wbuf[255];
-
-	while(!eol) {
-	  cout << "Reading new col \"" << colcount << "\"\n";    // DEBUG !!!
-
-	  while(line[i] == '\t' || line[i] == ' ') i++;
-	  int wbuf_count = 0;
-	  while(line[i] != '\t' && line[i] != ' ' && line[i] != 0) {
-	    wbuf[wbuf_count++] = line[i++];
-	  }
-	  if(line[i] == 0) {
-	    eol= 1;
-	    wbuf_count--;  // ACHTUNG: Koennte bei Unix-texten zu Problemen fuehren (besser oben anpassen)
-	  }
-	  wbuf[wbuf_count] = 0;
-	  strcpy(v[v_count], wbuf);
-
-	  printf("    String \"%s\" was added\n", wbuf);
-
-	  arr[rowcount][colcount] = v_count;
-	  colcount++;
-	  v_count++;  
-	}
-	rowcount++;
-	colcount = 0;
-      }
-      iF.close();
-      return 0;
-    }
-    else {
-      return -1;
-    }
-  }
-  // liefert den Text an der Position row,col
-  int data(char &ptr, int row, int col){
-    return 0;
-  }
+struct datarow {
+  unsigned int m_row;
+  unsigned int m_col;
+  unsigned int row;
+  unsigned int col;
+  char name[64];
+  float sig;
+  float bg;
+  float delta;
 };
 
 
-// #############
-// Hauptfunktion
-// #############
+// ############
+// DEFINITIONEN
+// ############
+
+vector<datarow> vData;
 
 
-int main(int argc, char **argv) {
-  if(argc == 2) {
-    textdata td;
-    if(!(td.read(argv[1]))) {
-      cout << "...hat scheinbar funktioniert...\n";
+// ##########
+// FUNKTIONEN
+// ##########
+
+int readdata(char *fn) {
+  bool rawdata= 0;
+  char line[255];
+  ifstream iS;
+
+  iS.open(fn);
+  if(iS) {
+    while(!iS.eof()) {
+      iS.getline(line, 255);
+
+      // finde Anfang und Ende der Daten
+      if(strstr(line,"Begin Raw Data")) {
+	iS.getline(line, 255); // Zeile++
+	rawdata= 1;
+      }
+      if(strstr(line,"End Raw Data")) {
+	rawdata= 0;
+      }
+
+      // lese Daten ein
+      if(rawdata) {
+	// Zeile durchgehen und einlesen
+	int i= 0;
+	char buf[32];
+	int buf_count= 0;
+	datarow dr;
+	int dr_count= 0;
+
+	while(line[i] && (i < 255)) {
+	  while(line[i]== ' ' || line[i]== '\t' && line[i]) i++;
+	  buf_count= 0;
+	  while(line[i]!= ' ' && line[i]!= '\t' && line[i]) {
+	    buf[buf_count]= line[i];
+	    i++;
+	    buf_count++;
+	  }
+	  buf[buf_count]= 0;
+
+	  // Spalten aufdroeseln ...
+	  switch(dr_count) {
+	    case 1:
+	      dr.m_row= atoi(buf);
+	      break;
+	    case 2:
+	      dr.m_col= atoi(buf);
+	      break;
+	    case 3:
+	      dr.row= atoi(buf);
+	      break;
+	    case 4:
+	      dr.col= atoi(buf);
+	      break;
+	    case 5:
+	      strcpy(dr.name, buf); // Check >64Bytes fehlt noch!
+	      break;
+	    case 7:
+	      dr.sig= atof(buf);
+	      break;
+	    case 8:
+	      dr.bg= atof(buf);
+	      break;
+	    default:
+	      break;
+	  }
+	  dr_count++;
+	}
+
+	// Daten in vData abspeichern
+	dr.delta= dr.sig - dr.bg;
+	vData.push_back(dr);
+      }
     }
+    iS.close();
+
+    // ###DEBUG
+    for(unsigned int x= 0; x < vData.size(); x++) {
+      cout << "reading...  m_row=" << vData[x].m_row << "  m_col=" << vData[x].m_col;
+      cout << "  row=" << vData[x].row << "  col=" << vData[x].col << "  name=" << vData[x].name;
+      cout << "  sig=" << vData[x].sig << "  bg=" << vData[x].bg << "  --> delta=" << vData[x].delta << endl;
+    }
+    // ###DEBUG
+
+    return 0;
   }
   else {
-    cout << "\nUSAGE: wrong number of arguments...\n";
+    return -1;
   }
-
-  return 0;
 }
+
+
+// #############
+// HAUPTFUNKTION
+// #############
+
+int main(int argc, char **argv) {
+
+  if(argc == 2) {
+    readdata(argv[1]);
+  }
+  else {
+    cout << "\nwrong number of arguments...\n";
+  }
+  return(0);
+}
+
