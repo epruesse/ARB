@@ -688,7 +688,7 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
     return right ? right : left;
 }
 
-static void nt_add_partial(AW_window * aww, AWT_canvas *ntw) {
+static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
     GB_begin_transaction(gb_main);
     GB_ERROR error                 = 0;
     int      full_marked_sequences = 0;
@@ -1391,8 +1391,8 @@ static GB_ERROR pars_check_size(AW_root *awr){
             error  = GB_export_error("Very big tree");
         }
     }
-    delete filter;
-    delete tree_name;
+    free(filter);
+    free(tree_name);
     return error;
 }
 
@@ -1639,13 +1639,11 @@ static void pars_start_cb(AW_window *aww)
     awm->at_x(db_stackx);
     awm->callback((AW_CB1)AP_user_pop_cb,(AW_CL)ntw);
     awm->help_text("ap_stack.hlp");
-//     awm->create_button("POP","#minus.bitmap",0);
     awm->create_button("POP","RESTORE",0);
 
     awm->button_length(6);
     awm->callback((AW_CB1)AP_user_push_cb,(AW_CL)ntw);
     awm->help_text("ap_stack.hlp");
-//     awm->create_button("PUSH", "#plus.bitmap",0);
     awm->create_button("PUSH", "STORE",0);
 
     awm->button_length(7);
@@ -1808,7 +1806,7 @@ static void create_all_awars(AW_root *awr, AW_default aw_def)
     GBDATA *gb_tree_name = GB_search(gb_main,AWAR_TREE,GB_STRING);
     char *tree_name = GB_read_string(gb_tree_name);
     awr->awar_string( AWAR_TREE,0 ,aw_def )->write_string(tree_name);
-    delete tree_name;
+    free(tree_name);
 
 
     awr->awar_int( AWAR_PARSIMONY,0 ,aw_def );
