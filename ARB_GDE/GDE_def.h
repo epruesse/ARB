@@ -29,17 +29,19 @@ All rights reserved.
 #define grey_height 8
 #define grey_width 8
 
+#define TEXTFIELDWIDTH 15
+
 /*
-*	Definable dialog types
-*/
-#define	TEXTFIELD	0x1
-#define SLIDER		0x2
-#define CHOOSER		0x3
-#define CHOICE_MENU	0x4
-#define CHOICE_LIST	0x5
-#define CHOICE_TREE	0x6
-#define CHOICE_SAI	0x7
-#define CHOICE_WEIGHTS	0x8
+ *	Definable dialog types
+ */
+#define	TEXTFIELD	   0x1
+#define SLIDER		   0x2
+#define CHOOSER		   0x3
+#define CHOICE_MENU	   0x4
+#define CHOICE_LIST	   0x5
+#define CHOICE_TREE	   0x6
+#define CHOICE_SAI	   0x7
+#define CHOICE_WEIGHTS 0x8
 
 /*
 *	File Formats
@@ -104,9 +106,9 @@ All rights reserved.
 #define IS_ORIG_5_TO_3	0x200	/* Original sequence was 5_to_3 */
 #define IS_ORIG_3_TO_5	0x400	/* Original sequence was 3_to_5 */
 
-#ifdef HGL 
+#ifdef HGL
 #define DEFAULT_X_ATTR  0
-#else 
+#else
 #define DEFAULT_X_ATTR  IS_5_TO_3+IS_PRIMARY;
 #endif
 
@@ -128,7 +130,7 @@ All rights reserved.
 #define COLOR_SEQ_MASK	0x43	/* Each sequence has a color mask*/
 #define COLOR_STRAND	0x44	/* Color based on original strandedness*/
 
- 
+
 
 /*
 *	Data types
@@ -226,7 +228,7 @@ typedef struct
 	size_t numgroups;			/* number of groups */
 	NA_Sequence **group;		/* link to array of pointers into
 					   each group */
-	char *na_ddata;			/* display data */ 
+	char *na_ddata;			/* display data */
 	int format;			/* default file format */
 	char *selection_mask;		/* Sub sequence selection mask */
 	int selection_mask_len;		/* Sub selection mask length */
