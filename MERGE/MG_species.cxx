@@ -963,10 +963,12 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     int d;
     for (s=0,d=0;D_alignment_names[s];s++){
         char *type2 = GBT_get_alignment_type_string(gb_dest,D_alignment_names[s]);
-        if (!strcmp(type, type2)){
-            D_alignment_names[d++] = D_alignment_names[s];
-            D_alignment_names[s]   = 0;
-        }else{
+        if (strcmp(type, type2) == 0) {
+            D_alignment_names[d] = D_alignment_names[s];
+            if (d != s) D_alignment_names[s] = 0;
+            ++d;
+        }
+        else {
             free(D_alignment_names[s]);
             D_alignment_names[s] = 0;
         }
