@@ -15,10 +15,10 @@ OBJECT = ca_mark.o ca_probe.o
 all: $(OBJECT:%.o=$(ARBHOME)/bin/%)
 
 $(ARBHOME)/bin/ca_probe: ca_probe.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB)
+	$(CPP) $(cflags) -ggdb  -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB)
 
 $(ARBHOME)/bin/%: %.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB)
+	$(CPP) $(cflags) -ggdb -o $@ $< $(CPPINCLUDES) $(LIB)
 
 # DO NOT DELETE
 
