@@ -220,30 +220,30 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
     GBDATA *gb_configuration_data = GB_search(cbs->gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
     GBDATA *gb_config;
     for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
-	 gb_config;
-	 gb_config = GB_find(gb_config,0,0,this_level | search_next))
+         gb_config;
+         gb_config = GB_find(gb_config,0,0,this_level | search_next))
     {
-	GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
-	if (!gb_name){
-	    aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
-	    gb_name = GB_create(gb_config, "name", GB_STRING);
-	    if (!gb_name) {
-		char *err = strdup(GB_get_error());
-		GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
-						     "Do you like do delete the unnamed configuration?", err);
-		free(err);
+        GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
+        if (!gb_name){
+            aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
+            gb_name = GB_create(gb_config, "name", GB_STRING);
+            if (!gb_name) {
+                char *err = strdup(GB_get_error());
+                GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
+                                                     "Do you like do delete the unnamed configuration?", err);
+                free(err);
 
-		int del_config = 0==aw_message(question, "Yes,No");
-		if (del_config) {
-		    GB_delete(gb_config);
-		    goto restart;
-		}
-		continue;
-	    }
-	    GB_write_string(gb_name, "unnamed_config");
-	}
-	char *name = GB_read_char_pntr(gb_name);
-	cbs->aws->insert_selection( cbs->id, name, name );
+                int del_config = 0==aw_message(question, "Yes,No");
+                if (del_config) {
+                    GB_delete(gb_config);
+                    goto restart;
+                }
+                continue;
+            }
+            GB_write_string(gb_name, "unnamed_config");
+        }
+        char *name = GB_read_char_pntr(gb_name);
+        cbs->aws->insert_selection( cbs->id, name, name );
     }
 
     cbs->aws->insert_default_selection( cbs->id, "????", "????" );
@@ -270,6 +270,50 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 		(GB_CB)awt_create_selection_list_on_configurations_cb, (int *)cbs);
 
 	GB_pop_transaction(gb_main);
+}
+
+char *awt_create_string_on_configurations(GBDATA *gb_main) {
+    GB_push_transaction(gb_main);
+ restart:
+    char   *result                = 0;
+	GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
+    GBDATA *gb_config;
+
+    for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
+         gb_config;
+         gb_config = GB_find(gb_config,0,0,this_level | search_next))
+    {
+        GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
+        if (!gb_name){
+            aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
+            gb_name = GB_create(gb_config, "name", GB_STRING);
+            if (!gb_name) {
+                char *err = strdup(GB_get_error());
+                GB_CSTR question = GBS_global_string("Rename of configuration failed (reason: '%s')\n"
+                                                     "Do you like do delete the unnamed configuration?", err);
+                free(err);
+
+                int del_config = 0==aw_message(question, "Yes,No");
+                if (del_config) {
+                    GB_delete(gb_config);
+                    goto restart;
+                }
+                continue;
+            }
+            GB_write_string(gb_name, "unnamed_config");
+        }
+        char *name = GB_read_char_pntr(gb_name);
+        if (result) {
+            char *neu = GB_strdup(GBS_global_string("%s;%s", result, name));
+            free(result);
+            result    = neu;
+        }
+        else {
+            result = GB_strdup(name);
+        }
+    }
+	GB_pop_transaction(gb_main);
+    return result;
 }
 
 // ******************** selection boxes on SAIs ********************

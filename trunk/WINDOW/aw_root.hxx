@@ -65,16 +65,17 @@ typedef struct {
 
 typedef char *AW_error;
 
-int aw_message( const char *msg, const char *buttons );
-void aw_set_local_message();	// no message window, AWAR tmp/Message instead
+int          aw_message( const char *msg, const char *buttons );
+void         aw_set_local_message(); // no message window, AWAR tmp/Message instead
 // interactive message: buttons = "OK,CANCEL,...."
-void aw_message(const char *msg);
-extern char AW_ERROR_BUFFER[1024];
-void aw_message();			// prints AW_ERROR_BUFFER;
-void aw_macro_message(const char *temp,...);// gives control to the user
-char *aw_input(const char *title, const char *awar_value, const char *default_input=0);
+void         aw_message(const char *msg);
+extern char  AW_ERROR_BUFFER[1024];
+void         aw_message();		// prints AW_ERROR_BUFFER;
+void aw_macro_message(const char *temp,...); // gives control to the user
+char        *aw_input(const char *title, const char *awar_value, const char *default_input=0);
+char        *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list);
 // Reads a string from the user
-void AW_ERROR(const char *templat, ...);
+void         AW_ERROR(const char *templat, ...);
 
 void aw_initstatus( void );		// call this function only once as early as possible
 void aw_openstatus( const char *title );	// show status

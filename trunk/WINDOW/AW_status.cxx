@@ -685,8 +685,97 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
 }
 
 
+//  ------------------------------------------------------------------------------------------------------------------------------
+//      char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list)
+//  ------------------------------------------------------------------------------------------------------------------------------
+// A modal input window. A String may be entered by hand or selected from value_list
+//
+//      title           window title
+//      awar_name       name of awar to use for inputfield (if NULL => internal awar)
+//      default_value   default value (if NULL => "")
+//      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
+//
+char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list)
+{
+    if (!value_list) return aw_input(title, awar_name, default_value);
 
+    AW_root *root = AW_root::THIS;
 
+    static AW_window_message *aw_msg = 0;
+    static AW_selection_list *sel = 0;
+
+    root->awar_string(AW_INPUT_TITLE_AWAR)->write_string((char *)title);
+    if (awar_name) {
+        root->awar_string(AW_INPUT_AWAR)->map(awar_name);
+    }else{
+        root->awar_string(AW_INPUT_AWAR)->write_string(default_value ? default_value : "");
+    }
+
+    if (!aw_msg) {
+        aw_msg = new AW_window_message;
+
+        aw_msg->init( root, "ENTER OR SELECT A STRING", 1000, 1000, 300, 300 );
+
+        aw_msg->label_length( 0 );
+        aw_msg->button_length( 30 );
+
+        aw_msg->at( 10, 10 );
+        aw_msg->auto_space( 10, 10 );
+        aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
+
+        aw_msg->at_newline();
+        aw_msg->create_input_field((char *)AW_INPUT_AWAR,30);
+        aw_msg->at_newline();
+
+        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, 0, 0, 30, 10);
+        aw_msg->insert_default_selection(sel, "", "");
+        aw_msg->update_selection_list(sel);
+
+        aw_msg->at_newline();
+
+        aw_msg->button_length( 0 );
+
+        aw_msg->callback     ( input_cb, 0 );
+        aw_msg->create_button( "OK", "OK", "O" );
+
+        aw_msg->callback     ( input_cb, -1 );
+        aw_msg->create_button( "CANCEL", "CANCEL", "C" );
+
+        aw_msg->window_fit();
+    }
+
+    // update the selection box :
+    aw_assert(sel);
+    aw_msg->clear_selection_list(sel);
+    {
+        char *values = GB_strdup(value_list);
+        char *word;
+
+        for (word = strtok(values, ";"); word; word = strtok(0, ";")) {
+            aw_msg->insert_selection(sel, word, word);
+        }
+        free(values);
+    }
+    aw_msg->update_selection_list(sel);
+
+    // do modal loop :
+    aw_msg->show_grabbed();
+    char dummy[] = "";
+    aw_input_cb_result = dummy;
+
+    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,	aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->disable_callbacks = AW_TRUE;
+    while (aw_input_cb_result == dummy) {
+        root->process_events();
+    }
+    root->disable_callbacks = AW_FALSE;
+    aw_msg->hide();
+
+    if (awar_name){
+        root->awar_string(AW_INPUT_AWAR)->unmap();
+    }
+    return aw_input_cb_result;
+}
 
 /***********************************************************************/
 /*****************		AW_FILESELECTION     *******************/
@@ -699,8 +788,9 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
 
 
 char *aw_file_selection( const char *title, const char *dir, const char *def_name, const char *suffix )
-{
 
+{
+    aw_assert(0); // function is not used yet
     AW_root *root = AW_root::THIS;
 
     static AW_window_message *aw_msg = 0;
@@ -722,7 +812,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
         aw_msg->create_button( 0,AW_FILE_SELECT_TITLE_AWAR );
 
         aw_msg->at_newline();
-        //awt_create_selection_box(aw_msg,"tmp/file_select",80,30);
+        // awt_create_selection_box(aw_msg,"tmp/file_select",80,30);
 
         aw_msg->at_newline();
 
@@ -751,7 +841,6 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
 
     return aw_input_cb_result;
 }
-
 
 /***********************************************************************/
 /**********************		HELP WINDOW	************************/

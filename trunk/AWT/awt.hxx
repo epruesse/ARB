@@ -141,7 +141,8 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid);
 
 /***********************	CONFIGURATIONS	 	************************/
 
-void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws, const char *varname);
+void  awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws, const char *varname);
+char *awt_create_string_on_configurations(GBDATA *gb_main);
 
 /***********************	FILES IN GENERAL	 	************************/
 
