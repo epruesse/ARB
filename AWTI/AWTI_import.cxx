@@ -794,23 +794,30 @@ void AWTC_import_go_cb(AW_window *aww)
                 error = GB_export_error("Cannot find selected file");
             }
             else {
-                aw_openstatus("Reading input files");
-                for (int count = 0; !error && fnames[count]; ++count) {
-                    aw_status(GBS_global_string("Reading %s", fnames[count]));
-                    GB_warning("Trying to import: '%s' ", fnames[count]);
+		aw_openstatus("Reading input files");
+		for (int count = 0; !error && fnames[count]; ++count) {
+		    aw_status(GBS_global_string("Reading %s", fnames[count]));
+		    GB_warning("Trying to import: '%s' ", fnames[count]);
 #if defined(DEBUG)
-                    printf("Reading '%s' ...\n", fnames[count]);
+		    printf("Reading '%s' ...\n", fnames[count]);
 #endif // DEBUG
-                    if (toggle_value==0) {
-                        error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
-                    }
-                    else if (toggle_value==1) {
-                        error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
-                    }
-                    GB_warning("File '%s' successfully imported", fnames[count]);
-                }
-                aw_closestatus();
-            }
+		    try {
+			if (toggle_value==0) {
+			    error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
+			}
+			else if (toggle_value==1) {
+			    error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
+			}
+			GB_warning("File '%s' successfully imported", fnames[count]);
+		    }
+		    catch (...) {
+			error = GB_export_error("Error: %s not imported", fnames[count]);
+			//error = GB_export_error("Error: %s (programmers error)", err.c_str());
+		    }
+
+		}
+		aw_closestatus();
+	    }
 
             GBT_free_names(fnames);
             free(mask);
