@@ -11,6 +11,7 @@
 /*#include "arbdb.h"*/
 #include "adlocal.h"
 #include "admap.h"
+#include "arbdbt.h"
 
 #define READING_BUFFER_SIZE (1024*32)
 
