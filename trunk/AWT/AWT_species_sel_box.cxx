@@ -526,7 +526,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
         } else {		// change old element
             key_name = GB_read_key(gbd);
             if (GB_get_father(gbd) == cbs->gb_user &&!strcmp(key_name, "name")) { // This is a real rename !!!
-                int answer = aw_message("Changing the 'name' field may harm your database! Really continue?", "Yes,No", true);
+                int answer = aw_message("Changing the 'name' field will harm your database! Really continue?", "Yes,No", true);
                 if (answer == 0) {
                     GBT_begin_rename_session(cbs->gb_main,0);
                     GBDATA *gb_name = GB_find(cbs->gb_user,"name",0,down_level);
