@@ -359,6 +359,7 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
 
     root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(ED4_selected_species_changed_cb);
     root->awar_string(AWAR_SAI_NAME, "", gb_main)->add_callback(ED4_selected_SAI_changed_cb);
+    root->awar_string(AWAR_SAI_GLOBAL, "", gb_main);
     //    root->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
 
     root->awar_string(AWAR_EDIT_CONFIGURATION,config_name,gb_main);

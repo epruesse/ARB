@@ -126,7 +126,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
     GBDATA *gb_presets;
     AW_root *aw_root  = aws->get_root();
     char    *ali_type = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();  //reading sequence type from the concatenation window
-    ali_type          = GBS_global_string_copy("%s=", ali_type);            // copying the awar with '=' appended to it
+    ali_type          = GBS_global_string_copy("%s=", ali_type);               // copying the awar with '=' appended to it
 
     db_alignment_list = aws->create_selection_list(awarName,0,"",10,20);
 

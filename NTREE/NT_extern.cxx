@@ -201,6 +201,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 
     awr->awar_string( AWAR_SPECIES_NAME, "" ,   gb_main);
     awr->awar_string( AWAR_SAI_NAME, "" ,   gb_main);
+    awr->awar_string( AWAR_SAI_GLOBAL, "" ,   gb_main);
     awr->awar_string( AWAR_MARKED_SPECIES_COUNTER, "unknown" ,  gb_main);
     awr->awar_string( AWAR_SEARCH_BUTTON_TEXT, "Species Information" ,  gb_main);
     awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_SEARCH_BUTTON_TEXT_change_cb);
