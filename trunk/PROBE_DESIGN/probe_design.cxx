@@ -566,6 +566,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
     GBDATA *gb_species_data = 0;
     GBDATA *gb_species;
+#ifdef DEVEL_IDP
+    GBDATA *gb_gene;
+    int gene_flag = 0;
+    char *gene_str;
+    char *temp_gene_str;
+#endif
     int show_status = 0;
     int extras = 1; // mark species, write to temp fields,
 
@@ -647,6 +653,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (show_status) aw_status("Unmark all species");
             for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
                 GB_write_flag(gb_species,0);
+
             }
         }
         if (write_2_tmp){
@@ -688,21 +695,37 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
     if (hinfo) {
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
+#ifdef DEVEL_IDP
+	if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
+#endif
     }
 
     while (hinfo && (match_name = strtok(0,toksep)) ) {
         match_info = strtok(0,toksep);
-        if (!match_info) break;
-
-        char flag  = 'x';
+	if (!match_info) break;
+#ifdef DEVEL_IDP
+	if (gene_flag) {
+	  temp_gene_str = new char[strlen(match_info)+1];
+	  strcpy(temp_gene_str,match_info);
+	  gene_str = strtok(temp_gene_str," ");
+	  gene_str = strtok(NULL," ");
+	}
+#endif
+	char flag  = 'x';
         if (gb_main){
             gb_species = GBT_find_species_rel_species_data(gb_species_data,match_name);
 
             if (gb_species) {
                 if (mark) {
                     GB_write_flag(gb_species,1);
-                    flag = '*';
-                }
+#ifdef DEVEL_IDP
+		    if (gene_flag) {
+		      gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
+		      GB_write_flag(gb_gene,1);
+		    }
+#endif
+		    flag = '*';
+		}
                 else {
                     flag = GB_read_flag(gb_species) ? '*' : ' ';
                 }
@@ -859,6 +882,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
 #ifdef DEVEL_IDP
     root->awar_int( "probe_design/gene", 0, db1);
+    
 #endif
 
     root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
@@ -1442,6 +1466,12 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
     char     *server;
     char     *file;
     GB_ERROR  error;
+#ifdef DEVEL_IDP
+    int i;
+    char *tempfile;
+    char *extention;
+    char command[1024];
+#endif
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     if (aw_message(
                    "This function will send your currently loaded data as the new data to the pt_server !!!\n"
@@ -1458,11 +1488,40 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
         if (*file) file += strlen(file)+1;  /* now i got the command string */
         if (*file) file += strlen(file)+1;  /* now i got the file */
         if (*file == '-') file += 2;
+#ifdef DEVEL_IDP       
+	printf ("\n\nGENSERVER: %i\n\n",server_type);
+	if (server_type == 1) {
+	  tempfile = (char*) malloc((strlen(file)+5));
+	  strcpy (tempfile,file);
+	  for (i = strlen(tempfile);i>0;i--) {
+	    if (tempfile[i] == '/') break;
+	  }
+	  i++;
+	  extention = &tempfile[i];
+	  strcpy(extention,"t.arb");
+	}
+#endif
 
         aw_status("Exporting the database");
+#ifdef DEVEL_IDP
+	if (server_type == 1) {
+	  error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
+	}
+	else {
+#endif
         error = GB_save_as(gb_main,file,"bfm"); // save PT-server database with Fastload file
+#ifdef DEVEL_IDP
+	}
+#endif
 
         if (!error) { // set pt-server database file to same permissions as pts directory
+#ifdef DEVEL_IDP
+	  if (server_type == 1 ) {
+	    sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
+	    system(command);
+	  }
+#endif
+
             char *dir = strrchr(file,'/');
             if (dir) {
                 *dir = 0;
@@ -1483,84 +1542,6 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
         aw_closestatus();
     }
 }
-
-#ifdef DEVEL_IDP
-
-#error Too much code duplicated
-// Das meint ihr aber nicht ernst, dass ihr hier mit copy&paste programmiert, oder?
-// Die Unterschiede zwischen pd_export_pt_server und pd_export_gene_pt_server sind ja marginal.
-//
-// Fasst bitte die beiden wieder zusammen - ich hab Euch ein Flag 'server_type' eingebaut,
-// anhand dessen ihr unterscheiden koennt, welcher Knopf gedrueckt wurde.
-
-void pd_export_gene_pt_server(AW_window *aww, AW_CL cl_server_type)
-{
-    int       server_type = (int)cl_server_type;
-    AW_root  *awr         = aww->get_root();
-    char      pt_server[256];
-    int       i;
-    char     *server;
-    char     *file;
-    char     *tempfile;
-    char      command [1024];
-    GB_ERROR  error;
-    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    if (aw_message(
-                   "This function will send your currently loaded data as the new data to the pt_server !!!\n"
-                   "The server will need a long time (up to several hours) to analyse the data.\n"
-                   "Until the new server has analyzed all data, no server functions are available.\n\n"
-                   "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
-                   "Note 2: The server will do the job in background,\n"
-                   "        quitting this program won't affect the server","Cancel,Do it")){
-        aw_openstatus("Export db to server");
-        aw_status("Search server to kill");
-        arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
-        server = GBS_read_arb_tcp(pt_server);
-        file = server;              /* i got the machine name of the server */
-        if (*file) file += strlen(file)+1;  /* now i got the command string */
-        if (*file) file += strlen(file)+1;  /* now i got the file */
-        if (*file == '-') file += 2;
-	tempfile = (char*) malloc((strlen(file)+5));
-	strcpy (tempfile,file);
-	for (i = strlen(tempfile);i>0;i--) {
-	  if (tempfile[i] == '/') break;
-	}
-	i++;
-	tempfile[i++] = 't';
-	tempfile[i++] = '.';
-	tempfile[i++] = 'a';
-	tempfile[i++] = 'r';
-	tempfile[i++] = 'b';
-	tempfile[i++] = '\0';
-#warning man strcpy
-
-        aw_status("Exporting the database");
-        error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
-
-        if (!error) { // set pt-server database file to same permissions as pts directory
-	  sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
-	  system(command);
-            char *dir = strrchr(file,'/');
-            if (dir) {
-                *dir = 0;
-                long modi = GB_mode_of_file(file);
-                *dir = '/';
-                modi &= 0666;
-                error = GB_set_mode_of_file(file,modi);
-            }
-        }
-
-        if (!error ) {
-	  aw_status("Start new server");
-	  error = arb_start_server(pt_server,gb_main,0);
-        }
-        if (error) {
-            aw_message(error);
-        }
-        aw_closestatus();
-    }
-}
-#endif
 
 void pd_edit_arb_tcp(AW_window *aww){
     awt_edit(aww->get_root(),"$(ARBHOME)/lib/arb_tcp.dat",900,400);
@@ -1612,7 +1593,7 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
 
 #ifdef DEVEL_IDP
     aws->at( "idp" );
-    aws->callback(pd_export_gene_pt_server, 1);
+    aws->callback(pd_export_pt_server, 1);
     aws->create_button("idp","IDP");
 #endif
 

@@ -1980,6 +1980,19 @@ GBDATA *GBT_next_marked_gene(GBDATA *gb_species)
 {
     return GB_next_marked(gb_species,"gene");
 }
+
+GBDATA *GBT_find_gene_rel_species(GBDATA *gb_species,const char *name)
+{
+
+    GBDATA *gb_gene_name;
+    GBDATA *gb_gene_data;
+    gb_gene_data = GB_find(gb_species,"gene_data",0,down_level);
+    gb_gene_name = GB_find(gb_gene_data,"name",name,down_2_level);
+    if (!gb_gene_name) return 0;
+    return GB_get_father(gb_gene_name);
+}
+
+
 #endif
 
 GBDATA *GBT_next_marked_species(GBDATA *gb_species)
