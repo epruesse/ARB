@@ -3,10 +3,12 @@ import java.awt.*;
 import java.awt.event.*;
 
 class ProbeList extends java.awt.List {
-    private int             count = 0;
-    private NodeProbes      probes;
-    private String          error;
-    private ProbesGUI gui;
+    private int        count             = 0;
+    private NodeProbes probes;
+    private String     error;
+    private ProbesGUI  gui;
+    private Probe      lastSelectedProbe;
+    // private Probe      lastSelectedIndex = -1;
 
     public ProbeList(ProbesGUI gui, Color back_color) {
         this.gui = gui;
@@ -39,27 +41,63 @@ class ProbeList extends java.awt.List {
     public ProbesGUI getGUI() { return gui; }
 
 //     public int getSelectedIndex() { return getSelectedIndex(); }
-    public Probe getProbe(int index) {
-        return probes == null
-            ? null
-            : probes.getProbe(index);
-    }
+    public Probe getProbe(int index) { return probes == null ? null : probes.getProbe(index); }
+    
+    public int getSortedIndexOf(Probe p) { return probes == null ? -1 : probes.getSortedIndexOf(p); }
+    public int getSortedIndexOf(String probeSeq) { return probes == null ? -1 : probes.getSortedIndexOf(probeSeq); }
 
     public void showOverlap(Probe p) throws Exception {
         if (Probe.setOverlapProbe(p)) {
             System.out.println("showOverlap refreshes List");
-            int index = getSelectedIndex();
-            
+
+            // int old_index = getSelectedIndex();
             refreshList();
-            select(index);
+//             if (p == null) {
+//                 selectProbe(old_index);
+//             }
+//             else {
+//                 selectProbe(getSortedIndexOf(p));
+//             }
         }
     }
 
 
     public void selectProbe(int index) throws Exception {
-        Probe p = getProbe(index);
-        select(index);
-        getGUI().getClient().matchProbes(p);
+        if (index != -1) {
+            System.out.println("selectProbe index="+index);
+            select(index);
+
+            Probe p = getProbe(index);
+            getGUI().getClient().matchProbes(p);
+            if (p != null) lastSelectedProbe = p;
+        }
+        else {
+            System.out.println("Details should be cleared."); // only if displaying probe details
+        }
+    }
+
+    public void selectLastSelectedProbe() throws Exception {
+        if (lastSelectedProbe != null) {
+            int new_index = getSortedIndexOf(lastSelectedProbe);
+            if (new_index == -1) {
+                new_index = getSortedIndexOf(lastSelectedProbe.sequence());
+                if (new_index == -1) {
+                    new_index = 0; // select first
+                }
+            }
+            System.out.println("selectLastSelectedProbe (new_index="+new_index+")");
+            selectProbe(new_index);
+        }
+        else {
+            System.out.println("selectLastSelectedProbe selects first element)");
+            selectProbe(0);
+        }
+    }
+    // public Probe getLastSelectedProbe() { return lastSelectedProbe; }
+
+    public void deselectCurrent() {
+        int sel_idx = getSelectedIndex();
+        if (sel_idx != -1) deselect(sel_idx);
     }
 
     private void refreshList() throws Exception {
@@ -67,20 +105,26 @@ class ProbeList extends java.awt.List {
             throw new Exception("count does not match listsize in 'refreshList'");
         }
 
+        deselectCurrent();
+
         setVisible(false);
         for (int i = 0; i<count; i++) {
             add(getProbe(i).getDisplayString(), i);
             remove(i+1);
         }
         setVisible(true);
+        selectLastSelectedProbe();
     }
 
     private void rebuildList() throws Exception {
+        deselectCurrent();
+
         removeAll();
         if (count>0) {
             for (int i = 0; i<count; i++) {
                 add(getProbe(i).getDisplayString());
             }
+            selectLastSelectedProbe();
         }
         else {
             add("No probes found.");
@@ -89,7 +133,8 @@ class ProbeList extends java.awt.List {
 
     public void setContents(NodeProbes nodeProbes) throws Exception {
         probes = nodeProbes;
-        count  = probes.size();
+        probes.resortProbes();
+        count = probes.size();
         rebuildList();
     }
 
@@ -107,6 +152,11 @@ class ProbeList extends java.awt.List {
         }
     }
     public void setSort(int mode) throws Exception {
+        if (mode == Probe.SORT_BY_OVERLAP) {
+            if (Probe.getOverlapProbe() == null) {
+                Toolkit.AbortWithError("No overlap active");
+            }
+        }
         Probe.setCompareOrder(mode);
         resort();
     }
