@@ -1,6 +1,8 @@
 #ifndef awt_hxx_included
 #define awt_hxx_included
 
+
+
 char *AWT_fold_path(char *path, const char *pwd = "PWD");
 char *AWT_unfold_path(const char *path, const char *pwd = "PWD");
 const char *AWT_valid_path(const char *path);
@@ -170,8 +172,8 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
 // same as awt_add_new_changekey but with given keypath (with this you can add fields to any item (species, gene, ...))
 
 
-GBDATA   *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path);
-GB_TYPES  awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path);
+GBDATA   *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_path);
+GB_TYPES  awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path);
 
 /***********************	FILTERS 	************************/
 AW_CL	awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
@@ -324,5 +326,31 @@ enum AD_MAP_VIEWER_TYPE {
 };
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
+// open database viewer using input-mask-file
+class awt_item_type_selector;
+void  AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector& sel, const char* mask_name);
+
+//  ----------------------------------------
+//      class awt_input_mask_descriptor
+//  ----------------------------------------
+class awt_input_mask_descriptor {
+private:
+    char *title;               // title of the input mask
+    char *maskname;            // file name w/o path
+    char *itemtypename;        // name of the itemtype
+
+public:
+    awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_);
+    awt_input_mask_descriptor(const awt_input_mask_descriptor& other);
+    virtual ~awt_input_mask_descriptor();
+
+    awt_input_mask_descriptor& operator = (const awt_input_mask_descriptor& other);
+
+    const char *get_title() const { return title; }
+    const char *get_maskname() const { return maskname; }
+    const char *get_itemtypename() const { return itemtypename; }
+};
+
+const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 0; returns 0 if no more masks
 
 #endif

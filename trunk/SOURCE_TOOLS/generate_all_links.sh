@@ -53,6 +53,10 @@ ln -s GENH/aisc_com.h           ORS_COM/ors_client.h
 ln -s GENH/aisc_server_proto.h  ORS_COM/ors_prototypes.h
 ln -s GENH/aisc.h               ORS_COM/ors_server.h
 
+# TEMPLATES directory
+
+ln -s ../TEMPLATES/smartptr.h INCLUDE/smartptr.h
+
 # INCLUDE directory
 
 ln -s ../AISC_COM/C/aisc_func_types.h INCLUDE/aisc_func_types.h
@@ -89,6 +93,7 @@ ln -s ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx
 ln -s ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx
 ln -s ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx
 ln -s ../AWT/awt_www.hxx INCLUDE/awt_www.hxx
+ln -s ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx
 ln -s ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx
 ln -s ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx
 ln -s ../AWTC/awtc_fast_aligner.hxx INCLUDE/awtc_fast_aligner.hxx

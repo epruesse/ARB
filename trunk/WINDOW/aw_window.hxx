@@ -217,7 +217,7 @@ public:
     //******************* Global layout functions **********************
 	void show(void);		// bring hidden window to front of screen
 	void hide(void);		// hide (dont destroy) a window (<->show)
-	AW_BOOL get_show(void);	// is window shown (== AW_TREE) or hidden (== AW_FALSE)
+	AW_BOOL get_show(void);	// is window shown (== AW_TRUE) or hidden (== AW_FALSE)
 	void message( char *title, int ms );	// Set for ms milliseconds the title of the window
 	void set_window_title( char *title );	// Set the window title forever
 	void set_icon( const char *pixmap_name = 0,const char *default_icon = 0); // Set the Pixmap
