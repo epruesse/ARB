@@ -262,6 +262,7 @@ first_target:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
+		@echo ' release     - make tarfile + make save
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
@@ -1216,6 +1217,8 @@ save:	rmbak
 
 savedepot: rmbak
 	util/arb_save_depot
+
+release: tarfile save
 
 # --------------------------------------------------------------------------------
 
