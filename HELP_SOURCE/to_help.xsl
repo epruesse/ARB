@@ -397,10 +397,25 @@
   <!-- ============================== -->
   <xsl:template name="header">
     <xsl:param name="title" select="'Untitled'"/>
-    <xsl:text xml:space="preserve"># Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de)
+    <xsl:param name="for"/>
+    <xsl:text xml:space="preserve"># Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de)</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$for='release'">
+        <xsl:text xml:space="preserve">
+#
+#  ****  You may edit this file, but the next ARB update will overwrite your changes  ****
+</xsl:text>
+      </xsl:when>
+      <xsl:when test="$for='devel'">
+        <xsl:text xml:space="preserve">
 #
 #  ****  DO NOT EDIT (edit in $(ARBHOME)/HELP_SOURCE/oldhelp instead)  ****
 </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:call-template name="error"><xsl:with-param name="text">Illegal content in edit_warning</xsl:with-param></xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="PAGE">
@@ -411,6 +426,7 @@
       </xsl:variable>
       <xsl:call-template name="header">
         <xsl:with-param name="title" select="$title"/>
+        <xsl:with-param name="for" select="@edit_warning"/>
       </xsl:call-template>#
 # This page was converted by arb_help2xml and may look strange.
 # If you think it's really bad, please send a
