@@ -23,7 +23,9 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
 
     cbs->aws->clear_selection_list(cbs->id);
 
-    cbs->aws->insert_selection(cbs->id, ALL_FIELDS_PSEUDO_FIELD, ALL_FIELDS_PSEUDO_FIELD);
+    if (cbs->add_all_fields_pseudo_field) {
+        cbs->aws->insert_selection(cbs->id, ALL_FIELDS_PSEUDO_FIELD, ALL_FIELDS_PSEUDO_FIELD);
+    }
 
     GBDATA *gb_key;
     GBDATA *gb_key_name;
@@ -32,12 +34,26 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
             gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
     {
         GBDATA *key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
-        if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(key_type)))) continue;
+        if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(key_type)))) continue; // type does not match filter
 
         gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
-        if (!gb_key_name) continue;
+        if (!gb_key_name) continue; // key w/o name -> don't show
         char *name  = GB_read_char_pntr(gb_key_name);
-        cbs->aws->insert_selection( cbs->id, name, name );
+
+        GBDATA *gb_hidden = GB_find(gb_key, CHANGEKEY_HIDDEN, 0, down_level);
+        if (!gb_hidden) { // it's an older db version w/o hidden flag -> add it
+            gb_hidden = GB_create(gb_key, CHANGEKEY_HIDDEN, GB_INT);
+            GB_write_int(gb_hidden, 0); // default is non-hidden
+        }
+
+        if (GB_read_int(gb_hidden)) {
+            if (!cbs->include_hidden_fields) continue; // don't show hidden fields
+
+            cbs->aws->insert_selection( cbs->id, GBS_global_string("[hidden] %s", name), name );
+        }
+        else { // normal field
+            cbs->aws->insert_selection( cbs->id, name, name );
+        }
     }
 
     cbs->aws->insert_default_selection( cbs->id, "????", "----" );
@@ -109,26 +125,102 @@ inline bool is_in_reserved_path(const char *fieldpath)  {
         is_in_GENE_path(fieldpath) ||
         is_in_EXPERIMENT_path(fieldpath);
 }
+// --------------------------------------------------------------------------------------------------------------------
+//      static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, const char *change_key_path)
+// --------------------------------------------------------------------------------------------------------------------
+// deletes all keys from 'change_key_path' which are not listed in 'names'
 
-void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
+static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, const char *change_key_path) {
+    GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
+    GBDATA *gb_key      = GB_find(gb_key_data, CHANGEKEY, 0, down_level);
+
+    while (gb_key) {
+        bool        found = false;
+        int         key_type;
+        const char *key_name;
+
+        {
+            GBDATA *gb_key_type = GB_find(gb_key, CHANGEKEY_TYPE, 0, down_level);
+            key_type            = GB_read_int(gb_key_type);
+
+            GBDATA *gb_key_name = GB_find(gb_key, CHANGEKEY_NAME, 0, down_level);
+            key_name            = GB_read_char_pntr(gb_key_name);
+        }
+
+        for (const char **name = names; *name; ++name) {
+            if (strcmp(key_name, (*name)+1) == 0) { // key with this name exists
+                if (key_type == (*name)[0]) {
+                    found = true;
+                }
+                // otherwise key exists, byt type mismatches = > delete this key
+                break;
+            }
+        }
+
+        GBDATA *gb_next_key = GB_find(gb_key, CHANGEKEY, 0, this_level|search_next);
+
+        if (!found) {
+            if (key_type == GB_DB) { // it's a container
+                // test if any subkey is used
+                int keylen = strlen(key_name);
+                for (const char **name = names; *name; ++name) {
+                    const char *n = (*name)+1;
+
+                    if (strncmp(key_name, n, keylen) == 0 && n[keylen] == '/') { // found a subkey -> do not delete
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {       // key no longer exists = > delete from key list
+                GB_delete(gb_key);
+            }
+        }
+
+        gb_key = gb_next_key;
+    }
+}
+// -------------------------------------------------------------------------------------------
+//      static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path)
+// -------------------------------------------------------------------------------------------
+static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
+    GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
+    for (GBDATA *gb_key = GB_find(gb_key_data, CHANGEKEY, 0, down_level);
+         gb_key;
+         gb_key = GB_find(gb_key, CHANGEKEY, 0, this_level|search_next))
+    {
+        GBDATA *gb_key_hidden = GB_find(gb_key, CHANGEKEY_HIDDEN, 0, down_level);
+        if (gb_key_hidden) {
+            if (GB_read_int(gb_key_hidden)) GB_write_int(gb_key_hidden, 0); // unhide
+        }
+    }
+}
+
+void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
     GB_push_transaction(gb_main);
-    char 		**names;
-    char 		**name;
-    GBDATA 		 *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    char   **names;
+    char   **name;
+    GBDATA 	*gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
-    names = GBT_scan_db(gb_species_data);
+    names = GBT_scan_db(gb_species_data, 0);
 
-    awt_add_new_changekey(gb_main,"name",GB_STRING);
-    awt_add_new_changekey(gb_main,"acc",GB_STRING);
-    awt_add_new_changekey(gb_main,"full_name",GB_STRING);
-    awt_add_new_changekey(gb_main,"group_name",GB_STRING);
-    awt_add_new_changekey(gb_main,"tmp",GB_STRING);
-    for (name = names; *name; name++) {
-        if ( (1<<(**name)) & bitfilter ) {	// look if already exists
-			if (!is_in_reserved_path((*name)+1)) { // ignore gene, experiment, ... entries
-// 			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) != 0) { // ignore gene entries
-				awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
-			}
+    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, const_cast<const char **>(names), CHANGE_KEY_PATH);
+    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH);
+
+    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+        awt_add_new_changekey(gb_main,"name",GB_STRING);
+        awt_add_new_changekey(gb_main,"acc",GB_STRING);
+        awt_add_new_changekey(gb_main,"full_name",GB_STRING);
+        awt_add_new_changekey(gb_main,"group_name",GB_STRING);
+        awt_add_new_changekey(gb_main,"tmp",GB_STRING);
+
+        for (name = names; *name; name++) {
+            if ( (1<<(**name)) & bitfilter ) {	// look if already exists
+                if (!is_in_reserved_path((*name)+1)) { // ignore gene, experiment, ... entries
+                    awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
+                }
+            }
         }
     }
 
@@ -136,33 +228,39 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GB_pop_transaction(gb_main);
 }
 
-void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
+
+
+void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
     GB_push_transaction(gb_main);
-    char **names;
-    char **name;
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    char   **names;
+    char   **name;
+    GBDATA  *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
-    names = GBT_scan_db(gb_species_data);
+    names = GBT_scan_db(gb_species_data, GENE_DATA_PATH);
 
-    awt_add_new_gene_changekey(gb_main,"name", GB_STRING);
+    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, const_cast<const char **>(names), CHANGE_KEY_PATH_GENES);
+    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH_GENES);
 
-    awt_add_new_gene_changekey(gb_main,"pos_begin", GB_INT);
-    awt_add_new_gene_changekey(gb_main,"pos_end", GB_INT);
-    awt_add_new_gene_changekey(gb_main,"pos_uncertain", GB_STRING);
+    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+        awt_add_new_gene_changekey(gb_main,"name", GB_STRING);
 
-    awt_add_new_gene_changekey(gb_main,"pos_begin2", GB_INT);
-    awt_add_new_gene_changekey(gb_main,"pos_end2", GB_INT);
-    awt_add_new_gene_changekey(gb_main,"pos_uncertain2", GB_STRING);
+        awt_add_new_gene_changekey(gb_main,"pos_begin", GB_INT);
+        awt_add_new_gene_changekey(gb_main,"pos_end", GB_INT);
+        awt_add_new_gene_changekey(gb_main,"pos_uncertain", GB_STRING);
 
-    awt_add_new_gene_changekey(gb_main,"pos_joined", GB_INT);
-    awt_add_new_gene_changekey(gb_main,"complement", GB_BYTE);
+        awt_add_new_gene_changekey(gb_main,"pos_begin2", GB_INT);
+        awt_add_new_gene_changekey(gb_main,"pos_end2", GB_INT);
+        awt_add_new_gene_changekey(gb_main,"pos_uncertain2", GB_STRING);
 
-    for (name = names; *name; name++) {
-        if ( (1<<(**name)) & bitfilter ) {		// look if already exists
-// 			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) == 0) {
-			if (is_in_GENE_path((*name)+1)) {
-				awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
-			}
+        awt_add_new_gene_changekey(gb_main,"pos_joined", GB_INT);
+        awt_add_new_gene_changekey(gb_main,"complement", GB_BYTE);
+
+        for (name = names; *name; name++) {
+            if ( (1<<(**name)) & bitfilter ) {		// look if already exists
+                if (is_in_GENE_path((*name)+1)) {
+                    awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
+                }
+            }
         }
     }
 
@@ -170,21 +268,26 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GB_pop_transaction(gb_main);
 }
 
-void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
+void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
     GB_push_transaction(gb_main);
-    char **names;
-    char **name;
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    char   **names;
+    char   **name;
+    GBDATA  *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
-    names = GBT_scan_db(gb_species_data);
+    names = GBT_scan_db(gb_species_data, EXPERIMENT_DATA_PATH);
 
-    awt_add_new_experiment_changekey(gb_main,"name", GB_STRING);
+    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, const_cast<const char **>(names), CHANGE_KEY_PATH_EXPERIMENTS);
+    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH_EXPERIMENTS);
 
-    for (name = names; *name; name++) {
-        if ( (1<<(**name)) & bitfilter ) {		// look if already exists
-			if (is_in_EXPERIMENT_path((*name)+1)) {
-				awt_add_new_experiment_changekey(gb_main,(*name)+1+EXPERIMENT_DATA_PATH_LEN,(int)*name[0]);
-			}
+    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+        awt_add_new_experiment_changekey(gb_main,"name", GB_STRING);
+
+        for (name = names; *name; name++) {
+            if ( (1<<(**name)) & bitfilter ) {		// look if already exists
+                if (is_in_EXPERIMENT_path((*name)+1)) {
+                    awt_add_new_experiment_changekey(gb_main,(*name)+1+EXPERIMENT_DATA_PATH_LEN,(int)*name[0]);
+                }
+            }
         }
     }
 
@@ -192,23 +295,20 @@ void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter)
     GB_pop_transaction(gb_main);
 }
 
-void awt_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
-{
-    AWUSE(dummy);
-    awt_selection_list_rescan(gb_main,bitfilter);
-}
+void awt_selection_list_scan_unknown_cb(AW_window *,GBDATA *gb_main, long bitfilter)    { awt_selection_list_rescan(gb_main,bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
+void awt_selection_list_delete_unused_cb(AW_window *,GBDATA *gb_main, long bitfilter)   { awt_selection_list_rescan(gb_main,bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
+void awt_selection_list_unhide_all_cb(AW_window *,GBDATA *gb_main, long bitfilter)      { awt_selection_list_rescan(gb_main,bitfilter, AWT_RS_SHOW_ALL); }
+void awt_selection_list_update_cb(AW_window *,GBDATA *gb_main, long bitfilter)          { awt_selection_list_rescan(gb_main,bitfilter, AWT_RS_UPDATE_FIELDS); }
 
-void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
-{
-    AWUSE(dummy);
-    awt_gene_field_selection_list_rescan(gb_main,bitfilter);
-}
+void awt_gene_field_selection_list_scan_unknown_cb(AW_window *,GBDATA *gb_main, long bitfilter)     { awt_gene_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
+void awt_gene_field_selection_list_delete_unused_cb(AW_window *,GBDATA *gb_main, long bitfilter)    { awt_gene_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
+void awt_gene_field_selection_list_unhide_all_cb(AW_window *,GBDATA *gb_main, long bitfilter)    { awt_gene_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_SHOW_ALL); }
+void awt_gene_field_selection_list_update_cb(AW_window *,GBDATA *gb_main, long bitfilter)           { awt_gene_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_UPDATE_FIELDS); }
 
-void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter)
-{
-    AWUSE(dummy);
-    awt_experiment_field_selection_list_rescan(gb_main,bitfilter);
-}
+void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *,GBDATA *gb_main, long bitfilter)   { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
+void awt_experiment_field_selection_list_delete_unused_cb(AW_window *,GBDATA *gb_main, long bitfilter)  { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
+void awt_experiment_field_selection_list_unhide_all_cb(AW_window *,GBDATA *gb_main, long bitfilter)  { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_SHOW_ALL); }
+void awt_experiment_field_selection_list_update_cb(AW_window *,GBDATA *gb_main, long bitfilter)         { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_UPDATE_FIELDS); }
 
 AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL)
 {
@@ -225,7 +325,8 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           size_t                  columns,
                                           size_t                  visible_rows,
                                           AW_BOOL                 popup_list_in_window,
-                                          AW_BOOL                 add_all_fields_pseudo_field)
+                                          AW_BOOL                 add_all_fields_pseudo_field,
+                                          AW_BOOL                 include_hidden_fields)
 {
     AW_selection_list*  id              = 0;
     GBDATA	           *gb_key_data;
@@ -276,6 +377,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     cbs->def_filter                  = (char *)type_filter;
     cbs->selector                    = selector;
     cbs->add_all_fields_pseudo_field = add_all_fields_pseudo_field;
+    cbs->include_hidden_fields       = include_hidden_fields;
 
     if (rescan_xfig_label) {
         aws->at(rescan_xfig_label);
@@ -691,8 +793,12 @@ refresh_again:
              gb_key;
              gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
         {
+            GBDATA *gb_key_hidden = GB_find(gb_key,CHANGEKEY_HIDDEN,0,down_level);
+            if (gb_key_hidden && GB_read_int(gb_key_hidden)) continue; // dont show hidden fields in 'species information' window
+
             GBDATA *gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
             if (!gb_key_name) continue;
+
             GBDATA *gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
 
             const char *name = GB_read_char_pntr(gb_key_name);
