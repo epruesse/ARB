@@ -2,7 +2,7 @@
 <!--                                                                      -->
 <!--   File      : arb_help.dtd                                           -->
 <!--   Purpose   :                                                        -->
-<!--   Time-stamp: <Fri Nov/08/2002 23:58 MET Coder@ReallySoft.de>        -->
+<!--   Time-stamp: <Fri Dec/03/2004 12:05 MET Coder@ReallySoft.de>        -->
 <!--                                                                      -->
 <!--                                                                      -->
 <!-- Coded by Ralf Westram (coder@reallysoft.de) in October 2001          -->
@@ -15,6 +15,7 @@
 
 <!ELEMENT PAGE (UP*,SUB*,TITLE,SECTION*) >
 <!ATTLIST PAGE name CDATA #REQUIRED > <!--name of page (equal to filename)-->
+<!ATTLIST PAGE edit_warning (release|devel) #REQUIRED > <!--name of page (equal to filename)-->
 
 <!ELEMENT UP EMPTY>
 <!ATTLIST UP dest CDATA #REQUIRED >
