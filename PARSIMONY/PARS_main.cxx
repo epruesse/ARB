@@ -1230,18 +1230,19 @@ static void pars_start_cb(AW_window *aww)
 
 
     int db_stackx,db_stacky;
-    awm->label_length(5);
-    awm->label("Stack");
+    awm->label_length(8);
+    awm->label("Stored");
     awm->get_at_position( &db_stackx,&db_stacky );
-    awm->button_length(5);
+    awm->button_length(6);
     awm->callback( AW_POPUP_HELP, (AW_CL)"ap_stack.hlp");
     awm->help_text("ap_stack.hlp");
     awm->create_button(0,AWAR_STACKPOINTER);
 
     int db_parsx,db_parsy;
-    awm->label_length(10);
-    awm->label("Current Parsimony:");
+    awm->label_length(14);
+    awm->label("Current Pars:");
     awm->get_at_position( &db_parsx,&db_parsy );
+
     awm->button_length(10);
     awm->create_button(0,AWAR_PARSIMONY);
 
@@ -1257,16 +1258,18 @@ static void pars_start_cb(AW_window *aww)
 
     awm->at_newline();
 
-    awm->button_length(5);
-
+    awm->button_length(8);
     awm->at_x(db_stackx);
     awm->callback((AW_CB1)AP_user_pop_cb,(AW_CL)ntw);
     awm->help_text("ap_stack.hlp");
-    awm->create_button("POP","#minus.bitmap",0);
+//     awm->create_button("POP","#minus.bitmap",0);
+    awm->create_button("POP","RESTORE",0);
 
+    awm->button_length(6);
     awm->callback((AW_CB1)AP_user_push_cb,(AW_CL)ntw);
     awm->help_text("ap_stack.hlp");
-    awm->create_button("PUSH", "#plus.bitmap",0);
+//     awm->create_button("PUSH", "#plus.bitmap",0);
+    awm->create_button("PUSH", "STORE",0);
 
     awm->button_length(7);
 
@@ -1280,8 +1283,10 @@ static void pars_start_cb(AW_window *aww)
     awm->create_button("LIST_TREE", "#list.bitmap",0);
 
     awm->at_x(db_parsx);
-    awm->label("Optimal Parsimony:");
-    awm->button_length(16);
+    awm->label_length(14);
+    awm->label("Optimal Pars:");
+
+    awm->button_length(10);
     awm->create_button(0,AWAR_BEST_PARSIMONY);
 
     awm->at_newline();
