@@ -241,9 +241,9 @@ class Client
             int hit_count          = probe.no_of_hits();
             int species_in_subtree = lastNode.getNoOfLeaves();
 
-            theText.append("\nThe probe matches " + hit_count + " " +
+            theText.append("\nThe probe matches " + hit_count + " species (=" +
                            (int)((hit_count*100.0/species_in_subtree)+0.5)+"% of "+
-                           species_in_subtree + " species.\n");
+                           species_in_subtree + ")\n");
 
             komma = 0;
             begin = 0;
