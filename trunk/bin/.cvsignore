@@ -22,6 +22,7 @@ arb_export_rates
 arb_export_tree
 arb_gde
 arb_help2xml
+arb_message
 arb_naligner
 arb_name_server
 arb_newick_2_otb
@@ -70,6 +71,7 @@ fastdnaml
 findall
 fitch
 gendist
+gene_probe
 heapsortHGL
 kitsch
 lsadt
@@ -78,6 +80,7 @@ mix
 move
 neighbor
 penny
+proml
 protdist
 protml
 protpars
