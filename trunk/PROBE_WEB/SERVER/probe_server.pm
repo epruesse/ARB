@@ -80,8 +80,8 @@ BEGIN {
   $q              = new CGI;
   %params         = $q->Vars();
 
-  $root_dir='/home/westram/ARB/PROBE_SERVER';
-  # $root_dir='/trance1/ARB/source/ARB/PROBE_SERVER';
+  # $root_dir='/home/westram/ARB/PROBE_SERVER';
+  $root_dir='/trance1/ARB/source/ARB/PROBE_SERVER';
 
   $requestdir = $root_dir.'/ps_workerdir';
   $datadir    = $root_dir.'/ps_serverdata';
@@ -166,12 +166,12 @@ sub send_std_result($) {
 }
 
 sub treefilename() { return $datadir.'/current.tree.gz'; }
-sub clientbasename() { return 'arb_probe_library.jar.gz'; }
+sub clientbasename() { return 'arb_probe_library.jar'; }
 sub clientfilename() { return $datadir.'/'.&clientbasename(); }
 
 sub available_servers() { # needed for testing only to reduce # of available_servers
-  return (15,16);
-#   return (15,16,17,18,19,20);
+#  return (15,16);
+   return (15,16,17,18,19,20);
 }
 
 END { }                         # module clean-up code here (global destructor)
