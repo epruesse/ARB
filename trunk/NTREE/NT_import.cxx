@@ -4,7 +4,7 @@
 #include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
-#include <awtc_import.hxx>
+#include <awti_import.hxx>
 
 #include <mg_merge.hxx>
 #include "nt_import.hxx"

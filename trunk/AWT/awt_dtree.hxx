@@ -5,6 +5,7 @@
 #define AWAR_DTREE_VERICAL_DIST	"awt/dtree/verticaldist"
 #define AWAR_DTREE_AUTO_JUMP	"awt/dtree/autojump"
 #define AWAR_DTREE_SHOW_CIRCLE	"awt/dtree/show_circle"
+#define AWAR_DTREE_CIRCLE_ZOOM	"awt/dtree/circle_zoom"
 #define AWAR_DTREE_GREY_LEVEL	"awt/dtree/greylevel"
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
@@ -47,7 +48,7 @@ class AWT_graphic_tree : public AWT_graphic {
 	void scale_text_koordinaten(AW_device *device, int gc, double& x,double& y,double orientation,int flag );
 
 	AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
-	AW_bitset ruler_filter, root_filter;	
+	AW_bitset ruler_filter, root_filter;
 	int treemodus;
 
 	// functions to compute displayinformation
@@ -65,15 +66,16 @@ class AWT_graphic_tree : public AWT_graphic {
 	const char *show_ruler(AW_device *device, int gc);
 	void rot_show_triangle( AW_device *device);
 	void rot_show_line( AW_device *device );
-    
+
     void show_irs(AP_tree *at,AW_device *device, int height);
     int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
     int paint_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
-    
+
 	void unload();
 	char		*species_name;
 	int		baselinewidth;
-        int		show_circle;
+    int		show_circle;
+    float circle_zoom_factor;
     public:
 		// *********** read only variables !!!
 	AW_root	*aw_root;
@@ -94,7 +96,7 @@ class AWT_graphic_tree : public AWT_graphic {
 	virtual	void show(AW_device *device);
 	virtual void info(AW_device *device, AW_pos x, AW_pos y,
 				AW_clicked_line *cl, AW_clicked_text *ct);
-	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, 
+	virtual void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,
 				AW_pos x, AW_pos y,
 				AW_clicked_line *cl, AW_clicked_text *ct);
 
@@ -108,7 +110,7 @@ class AWT_graphic_tree : public AWT_graphic {
 	GB_ERROR load(GBDATA *gb_main, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs);
 	GB_ERROR save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2);
 	int check_update(GBDATA *gb_main);	// reload tree if needed
-	void update(GBDATA *gb_main);	
+	void update(GBDATA *gb_main);
 	void set_tree_type(AP_tree_sort type);
 
 };
