@@ -24,6 +24,7 @@ void		MP_del_sel_result		(AW_window *aww);
 void		MP_stop_comp			(AW_window *aww);
 void		MP_result_chosen		(AW_window *aww);
 void 		MP_close_main			(AW_window *aww);
+void        MP_group_all_except_marked(AW_window *aww);
 void 		MP_normal_colors_in_tree	(AW_window *aww);
 void		MP_selected_chosen		(AW_window *aww);
 

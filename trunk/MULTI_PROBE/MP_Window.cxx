@@ -74,6 +74,10 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root)
     result_window->callback(MP_mark_probes_in_tree);
     result_window->create_button("MARK_TREE", "GO");
 
+    result_window->at("GroupAll");
+    result_window->callback(MP_group_all_except_marked);
+    result_window->create_button("GROUP_UNMARKED", "GO");
+
     result_window->at("StandardColor");
     result_window->callback(MP_normal_colors_in_tree);
     result_window->create_button("RESET_COLORS", "GO");

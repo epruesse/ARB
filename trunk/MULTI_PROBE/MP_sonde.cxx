@@ -101,7 +101,7 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
 		return NULL;
 	}
 	
-	aw_message("Running DB-query");
+	//aw_message("Running DB-query");
 	
 	if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,
 		     LOCS_MATCH_REVERSED,		match_kompl,		// Komplement
