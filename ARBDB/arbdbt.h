@@ -16,7 +16,11 @@ typedef float GBT_LEN;
 	char			*name;                          \
 	char			*remark_branch
 
-/* @@@ FIXME: remark_branch should not be saved to treefiles */
+// remark_branch normally contains some bootstrap value in format 'xx%'
+// if you store other info there, please make sure that this info does not
+// start with digits!!
+// Otherwise the tree export routines will not work correctly!
+// --------------------------------------------------------------------------------
 
 #define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)           \
 (tree_obj_ptr)->is_leaf = GB_FALSE;                     \

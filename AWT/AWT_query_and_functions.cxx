@@ -977,7 +977,7 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
 //  ------------------------------------------------------------------------
 //      static void awt_colorize(void *dummy, struct adaqbsstruct *cbs)
 //  ------------------------------------------------------------------------
-static void awt_colorize(void *dummy, struct adaqbsstruct *cbs) {
+static void awt_colorize(void */*dummy*/, struct adaqbsstruct *cbs) {
 	GB_transaction trans_dummy(cbs->gb_main);
     GB_ERROR       error = 0;
 

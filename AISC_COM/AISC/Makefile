@@ -46,16 +46,16 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
+	$(COMPILER) -Wno-unused -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -Wno-unused -c -o $@ $(@:.o=.c) -IGENH -I. -IC
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) -c -o $@ $< -IGENH -I. -IC
+	$(COMPILER) -Wno-unused -c -o $@ $< -IGENH -I. -IC
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -Wno-unused -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
 GENH/%.h: AISC/%.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
 	$(AISC) $< $(MAIN_SOURCE) $@
@@ -65,7 +65,7 @@ GENC/%.c: AISC/%.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN)
 
 
 $(IMPORT_PROTO): GENC/aisc_server.c
-	echo $@ 
+	echo $@
 
 $(AISC_SERVER_EXTERN): $(AISC_EXTERNALS)
 	rm -f $(AISC_SERVER_EXTERN)

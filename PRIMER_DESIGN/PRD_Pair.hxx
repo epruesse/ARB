@@ -18,7 +18,7 @@ public:
   Pair ();
   ~Pair () {};
 
-  void        print        ( char *prefix, char *suffix, const char *sequence_ ); // print pair with the values of the items
+  void        print        ( const char *prefix, const char *suffix, const char *sequence_ ); // print pair with the values of the items
   const char *get_result   ( const char *sequence_ , int max_primer_length, int max_position_length, int max_length_length);
   const char * get_primers ( const char *sequence_ );
 };

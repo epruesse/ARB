@@ -1103,7 +1103,7 @@ static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, AWT_QUERY_RANGE) 
     return GBT_get_species_data(gb_dest);
 }
 
-static GBDATA *mg_get_selected_species1(GBDATA *gb_main, AW_root *aw_root) {
+static GBDATA *mg_get_selected_species1(GBDATA */*gb_main*/, AW_root *aw_root) {
     GB_transaction dummy(gb_merge);
     char   *species_name            = aw_root->awar(AWAR_SPECIES1)->read_string();
     GBDATA *gb_species              = 0;
@@ -1111,7 +1111,7 @@ static GBDATA *mg_get_selected_species1(GBDATA *gb_main, AW_root *aw_root) {
     free(species_name);
     return gb_species;
 }
-static GBDATA *mg_get_selected_species2(GBDATA *gb_main, AW_root *aw_root) {
+static GBDATA *mg_get_selected_species2(GBDATA */*gb_main*/, AW_root *aw_root) {
     GB_transaction dummy(gb_dest);
     char   *species_name            = aw_root->awar(AWAR_SPECIES2)->read_string();
     GBDATA *gb_species              = 0;

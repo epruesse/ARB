@@ -29,7 +29,7 @@ AW_HEADER_MAIN
 #define NT_CHECK_DB_TIMER 200
 
 GBDATA *gb_main;
-NT_global nt = { 0,0,0};
+NT_global nt = { 0, 0, 0, AW_FALSE };
 
 
 void

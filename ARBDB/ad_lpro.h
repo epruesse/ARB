@@ -17,6 +17,7 @@ GB_ERROR gbl_keep P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinp
 GB_ERROR gbl_echo P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR _gbl_mid P_((int argcinput, GBL *argvinput, int *argcout, GBL **argvout, int start, int mstart, int end, int relend));
 GB_ERROR gbl_dd P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
+GB_ERROR gbl_string_convert P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_head P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_tail P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));
 GB_ERROR gbl_mid0 P_((GBDATA *gb_species, char *com, int argcinput, GBL *argvinput, int argcparam, GBL *argvparam, int *argcout, GBL **argvout));

@@ -776,9 +776,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     char       *tree_name          = awr->awar_string(awar_tree)->read_string();
     char       *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
     delete tree_name;
-#if defined(DEBUG)
-    existing_tree_name             = 0;
-#endif                          // DEBUG
+// #if defined(DEBUG)
+//     existing_tree_name             = 0;
+// #endif                          // DEBUG
     if (existing_tree_name) {
         awr->awar(awar_tree)->write_string(existing_tree_name);
 

@@ -22,7 +22,7 @@ GB_ERROR GBT_write_tree_rem P_((GBDATA *gb_main, const char *tree_name, const ch
 GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size));
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
-GBT_TREE *GBT_load_tree P_((char *path, int structuresize));
+GBT_TREE *GBT_load_tree P_((char *path, int structuresize, char **commentPtr));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));
 char *GBT_find_largest_tree P_((GBDATA *gb_main));

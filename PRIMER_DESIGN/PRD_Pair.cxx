@@ -50,7 +50,7 @@ const char * Pair::get_primers ( const char *sequence_ )
 }
 
 
-const char * Pair::get_result ( const char *sequence_ , int max_primer_length, int max_position_length, int max_length_length ) 
+const char * Pair::get_result ( const char *sequence_ , int max_primer_length, int max_position_length, int max_length_length )
 {
   static char *result     = 0;
   static int   result_len = 0;
@@ -96,7 +96,7 @@ const char * Pair::get_result ( const char *sequence_ , int max_primer_length, i
 //
 // print pair with the values of the items
 //
-void Pair::print ( char *prefix_, char *suffix_, const char *sequence_ )
+void Pair::print ( const char *prefix_, const char *suffix_, const char *sequence_ )
 {
     const char *result = get_result(sequence_, 0, 0, 0);
     printf("%s[%s]%s", prefix_, result, suffix_);

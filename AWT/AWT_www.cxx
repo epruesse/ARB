@@ -115,11 +115,11 @@ static void www_init_config(AW_window *aww) {
     }
 }
 
-static char *www_store_config(AW_window *aww, AW_CL cl1, AW_CL cl2) {
+static char *www_store_config(AW_window *aww, AW_CL /*cl1*/, AW_CL /*cl2*/) {
     www_init_config(aww);
     return AWT_store_configDefinition();
 }
-static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL cl1, AW_CL cl2) {
+static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL /*cl1*/, AW_CL /*cl2*/) {
     www_init_config(aww);
     AWT_restore_configDefinition(stored_string);
 }

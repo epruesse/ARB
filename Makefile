@@ -32,21 +32,23 @@ endif
 #----------------------
 
 ifdef DEBUG
-   dflags = -DDEBUG
-   cflags = $(dflag1) $(dflags)
-   lflags = $(dflag1)
-   fflags = $(dflag1) -C
+		dflags = -DDEBUG
+		cflags = $(dflag1) $(dflags)
+		lflags = $(dflag1)
+		fflags = $(dflag1) -C
+		extended_warnings = -Wwrite-strings -Wunused -Wreorder -Wno-aggregate-return -Wconversion
 else
-   dflags = -DNDEBUG
-   cflags = -O $(dflags)
-   lflags = -O
-   fflags = -O
+		dflags = -DNDEBUG
+		cflags = -O $(dflags)
+		lflags = -O
+		fflags = -O
+		extended_warnings =
 endif
 
    XHOME = /usr/X11
 
    GMAKE = gmake -r
-   CPP = g++ -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
+   CPP = g++ -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
    PP = cpp
    ACC = gcc -Wall -fenum-int-equiv -D$(MACH) -pipe#				# Ansi C
    CCLIB = $(ACC)#			# Ansii C. for shared libraries
@@ -73,7 +75,7 @@ ifdef LINUX
 
    LINUX_SPECIALS = -DNO_REGEXPR
    SITE_DEPENDEND_TARGETS = perl
-   CPP := $(CPP) $(LINUX_SPECIALS) -Wunused
+   CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings)
    ACC := $(ACC) $(LINUX_SPECIALS)
    CCLIB = $(ACC) -fpic
    CCPLIB = $(CPP) -fpic	#			# Same for c++

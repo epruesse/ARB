@@ -316,7 +316,7 @@ void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 
 static int update_display_on_dist_change = 1;
 
-void ph_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL clmatr){
+void ph_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
     AWUSE(aww);
     //PH_dmatrix *dmatrix = (PH_dmatrix *)clmatr;
     double max_d = cl_max_d*0.01;

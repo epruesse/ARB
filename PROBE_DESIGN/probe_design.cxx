@@ -1395,7 +1395,7 @@ static struct pg_global_struct {
 
 
 
-static void pg_result_selected(AW_window *aww) {
+static void pg_result_selected(AW_window */*aww*/) {
 
     AW_root *aw_root = pg_global.aw_root;
     long position = aw_root->awar(AWAR_PG_SELECTED_RESULT)->read_int();

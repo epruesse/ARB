@@ -1513,7 +1513,7 @@ Widget aw_create_shell(
     XtAddEventHandler(shell, EnterWindowMask, FALSE, (XtEventHandler)AW_root_focusCB,  (XtPointer)  aww->get_root());
 
     Atom WM_DELETE_WINDOW;
-    WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell),"WM_DELETE_WINDOW",False);
+    WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell),(char*)"WM_DELETE_WINDOW",False);
 
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
