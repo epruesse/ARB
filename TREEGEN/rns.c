@@ -1,11 +1,9 @@
 #include "rns.h"
+#include "spreadin.h"
 
-#ifndef __SPREADIN_H
-    #include "spreadin.h"
-#endif
-#ifndef __LIMITS_H
-    #include <limits.h>
-#endif
+#include <limits.h>
+#include <stdlib.h>
+
 
 /* /------------------------\ */
 /* |  Erzeugung der Ur-RNS  | */

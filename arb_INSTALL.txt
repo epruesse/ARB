@@ -1,24 +1,37 @@
 
+To install ARB follow these steps:
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-install/ )
+
+   Files needed: 'arb.tgz', 'arb_install.sh' and 'zcat'
+   (Note: zcat is a copy gzip for most systems)
+
+2. get root
+3. run arb_install.sh and follow the instructions
+4. Install the following packages:
+
 Software that is needed to run ARB:
-------------------------------------
+-----------------------------------
 
 - xview
-- motif
+- (open)motif
 
 
 Software that is useful together with ARB:
 ------------------------------------------
 
 - gnuplot
+- ghostview (gv)
 - xfig
 
 
-Software that is needed to compile ARB:
----------------------------------------
+Additional software that is needed to compile ARB:
+--------------------------------------------------
 
-- rxp
-- sablotron
-
+- expat, rxp, sablotron (needed for target 'help' only)
+- STLport
+- xaw
 
 ----------------------------------------------------------------------
 If we forgot something (or if your OS needs something special)

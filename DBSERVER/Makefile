@@ -14,10 +14,7 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-db_server.o:  
-db_server.o:  
-db_server.o:  
-db_server.o:  
-db_server.o:  $(ARBHOME)/INCLUDE/arbdb.h
+db_server.o: $(ARBHOME)/INCLUDE/arbdb.h
+db_server.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h

@@ -1,21 +1,13 @@
 #ifndef BI_helix_hxx_included
 #define BI_helix_hxx_included
 
-#define HELIX_MAX_NON_ST 10
-
-#ifndef NDEBUG
-# define bi_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define bi_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define bi_assert(bed) arb_assert(bed)
 
-#define HELIX_AWAR_PAIR_TEMPLATE "Helix/pairs/%s"
+#define HELIX_MAX_NON_ST           10
+#define HELIX_AWAR_PAIR_TEMPLATE   "Helix/pairs/%s"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
 
 typedef enum {
@@ -65,9 +57,9 @@ class BI_helix {
 	// ***** read and write
 	BI_helix(void);
 #ifdef _USE_AW_WINDOW
-	BI_helix(AW_root *aw_root); 
+	BI_helix(AW_root *aw_root);
 #endif
-	~BI_helix(void);	
+	~BI_helix(void);
 
 	const char *init(GBDATA *gb_main);
 	const char *init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name = "HELIX_NR", const char *helix_name = "HELIX");

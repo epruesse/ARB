@@ -33,11 +33,10 @@ void ad_use(int dummy, ...);
 
 /* ================ Assert's ======================== */
 
-#ifdef DEBUG
-#define ad_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-#else
-#define ad_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define ad_assert(bed) arb_assert(bed)
 
 /* ================================================== */
 

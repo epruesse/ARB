@@ -1,7 +1,10 @@
 #ifndef awtc_seq_search_hxx_included
 #define awtc_seq_search_hxx_included
 
-#include "awtc_assert.hxx"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define awtc_assert(bed) arb_assert(bed)
 
 #define SEQ_CHARS 			26
 #define MAX_TRIPLES			(SEQ_CHARS*SEQ_CHARS*SEQ_CHARS+1)	// one faked triple for all non-char triples

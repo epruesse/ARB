@@ -15,11 +15,10 @@
 class AW_window;
 class SEC_graphic;
 
-#ifndef NDEBUG
-# define sec_assert(bed) do { if (!(bed)) { *(char*)0 = 0; } } while(0)
-#else
-# define sec_a3ssert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define sec_assert(bed) arb_assert(bed)
 
 class SEC_segment;
 class SEC_root;
@@ -99,7 +98,7 @@ class SEC_helix_strand : public SEC_Base {
     double fixpoint_y;
     double attachp1_x, attachp1_y, attachp2_x, attachp2_y;   // 2 points where the segments meet this strand from left and right
 
-    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;               //these variables are used for prainting searchbackground in the 
+    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;               //these variables are used for prainting searchbackground in the
     int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;  // secondary editor
     char   thisBase[2],otherBase[2];
 
@@ -176,7 +175,7 @@ struct SEC_base_position { // stores a base position and the last position where
     AW_pos y;
 };
 
-class ED4_sequence_terminal; //to access ED4_sequence_terminal class with in the other classes 
+class ED4_sequence_terminal; //to access ED4_sequence_terminal class with in the other classes
 
 class SEC_root {
 private:
@@ -224,7 +223,7 @@ public:
 
     GBDATA *gb_template;
     int template_length;		// length of template string
-    char *template_sequence;    
+    char *template_sequence;
 
     GBDATA *gb_sequence;
     int sequence_length;		// length of string
@@ -234,10 +233,10 @@ public:
     BI_ecoli_ref *ecoli;
 
     ED4_sequence_terminal *seqTerminal;     //declaring a pointer class
-    const  char *getSearchResults(int startPos,int endPos); // defining a function to build color string 
+    const  char *getSearchResults(int startPos,int endPos); // defining a function to build color string
     void paintSearchBackground(AW_device *device, const char* searchCols, int absPos, double x, double y, double next_x, double next_y, double radius,double lineWidth,int otherStrand);
     void paintSearchPatternStrings(AW_device *device, int clickedPos,  AW_pos xPos,  AW_pos yPos);
-    //used in SEC_paint.cxx 
+    //used in SEC_paint.cxx
 
     SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
     ~SEC_root();
@@ -465,7 +464,7 @@ private:
     double delta;
     double deltaIn; //yadhu
     double max_length, min_length; // constraints
-    
+
 public:
 
     SEC_helix(double delta=7.7,double deltaIn=0.0, double max_length=0, double min_length=0);
@@ -496,11 +495,11 @@ public:
 	delta = delta_;
     }
 
-    void set_deltaIn (double deltaIn_) {  
+    void set_deltaIn (double deltaIn_) {
 	while(deltaIn_ >= (2*M_PI)) {
 	    deltaIn_ -= (2*M_PI);
 	}
-	deltaIn = deltaIn_; 
+	deltaIn = deltaIn_;
     } //yadhu
 };
 

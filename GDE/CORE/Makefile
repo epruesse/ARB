@@ -45,6 +45,7 @@ Scroll.o:  menudefs.h defines.h functions.h
 CutCopyPaste.o: menudefs.h defines.h functions.h
 HGLfile.o:  menudefs.h defines.h functions.h
 arbdb_io.o:  $(ARBHOME)/INCLUDE/arbdb.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h defines.h

@@ -17,52 +17,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  $(ARBHOME)/INCLUDE/arbdb.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h xmalloc.h
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:  
-io_arbdb.o:   lenstring.h
-io_arbdb.o: hash.h careful.h
-getopt.o:  
-getopt.o:  
-getopt.o:  
-getopt.o:  
-getopt.o: 
+io_arbdb.o:  lenstring.h hash.h careful.h
 getopt1.o: getopt.h  
-getopt1.o:  
-getopt1.o:  
-getopt1.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:  
-xmalloc.o:   
 xmalloc.o:  xmalloc.h
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  
-lenstring.o:  lenstring.h xmalloc.h
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o:  
-careful.o: 
+lenstring.o:   lenstring.h
+lenstring.o: xmalloc.h

@@ -2,17 +2,10 @@
 #include <PT_com.h>
 #include <arbdb.h>
 
-#ifndef NDEBUG
-# define pt_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define pt_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define pt_assert(bed) arb_assert(bed)
 
 #define PTM_DEBUG
 typedef unsigned long ulong;
@@ -82,7 +75,7 @@ typedef struct PTMM_struct {
 
 
 /* Probe search */
-   
+
 
 struct probe_statistic {
 	int	match_count;		/* Counter for matches */

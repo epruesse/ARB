@@ -20,17 +20,10 @@
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
 
-#ifndef NDEBUG
-# define tpl_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define tpl_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define tpl_assert(bed) arb_assert(bed)
 
 // --------------------------------------------------------------------------------
 //     SmartPointers

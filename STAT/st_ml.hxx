@@ -1,15 +1,8 @@
 
-#ifndef NDEBUG
-# define st_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define st_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define st_assert(bed) arb_assert(bed)
 
 enum AWT_dna_base {
     ST_A,
@@ -61,17 +54,17 @@ public:
 class ST_ML;
 class AWT_csp;
 
-/** Note: Because we have only limited memory we split the 
+/** Note: Because we have only limited memory we split the
 		sequence into ST_MAX_SEQ_PART long parts */
 class ST_sequence_ml: private AP_sequence {
     friend class ST_ML;
 public:
-    
+
     GBDATA		*gb_data;		// the sequence
     static ST_base_vector *tmp_out;		// len = alignment length
-    
+
 protected:
-    
+
     ST_ML		*st_ml;			// link to a global ST object
     ST_base_vector	*sequence;		// A part of the sequence
     int		last_updated;
@@ -80,7 +73,7 @@ protected:
 
 public:
     void	delete_sequence();		// remove link to database
-    void	sequence_change();		// sequence has changed in db	
+    void	sequence_change();		// sequence has changed in db
     AP_FLOAT combine(const AP_sequence* lefts,const AP_sequence *rights);
     ST_sequence_ml(AP_tree_root *rooti, ST_ML	*st_ml);
     ~ST_sequence_ml();
@@ -88,10 +81,10 @@ public:
 
     void set( char *sequence );
     void set_gb( GBDATA *gbd);
-    
+
     void set_sequence();			// start at st_ml->base
 
-    void go(	const ST_sequence_ml *lefts, double leftl,	
+    void go(	const ST_sequence_ml *lefts, double leftl,
 		const ST_sequence_ml *rights, double rightl);
     void ungo();	// undo go
 
@@ -123,7 +116,7 @@ public:
     int	to;
     AW_CB0	refresh_func;
     AW_window *aw_window;
-	
+
     GBDATA		*gb_main;
     float		*ttratio;		// column independent
     ST_base_vector	*base_frequencies;	// column independent
@@ -144,17 +137,17 @@ public:
     int		is_inited;
 
     GB_ERROR init(const char *tree_name, const char *alignment_name, const char *species_names, int marked_only,
-		  const char *filter_string, AWT_csp *awt_csp);    
+		  const char *filter_string, AWT_csp *awt_csp);
     // species_names is 0 -> all [marked] species (else species_names is a (char)1 seperated list of species)
     // filter_string==0 -> no filter
-    
+
     void clear_all();		// delete all caches
 
 
     ST_sequence_ml *get_ml_vectors(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
     ST_ML_Color *get_color_string(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
-    
+
     int update_ml_likelihood(char *result[4], int *latest_update, char *species_name, AP_tree *node);
-    
+
     int	refresh_needed();
 };

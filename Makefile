@@ -363,36 +363,62 @@ MAKEDEPENDINC = -I. -I$(DIR)/DUMMYINC -I$(DIR)/INCLUDE
 
 #*****		List of all Directories
 ARCHS = \
-			SEER/SEER.a \
-			CONSENSUS_TREE/CONSENSUS_TREE.a \
-			AISC/dummy.a AISC_MKPTPS/dummy.a \
-			PROBE_COM/server.a \
-			NAMES_COM/server.a \
-			ORS_COM/server.a \
-			ORS_SERVER/ORS_SERVER.a ORS_CGI/ORS_CGI.a \
+			AISC/dummy.a \
+			AISC_MKPTPS/dummy.a \
+			ALEIO/ALEIO.a \
+			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
-			ARBDBS/libARBDB.a ARBDBPP/libARBDBPP.a \
 			ARBDB2/libARBDB.a \
+			ARBDBPP/libARBDBPP.a \
+			ARBDBS/libARBDB.a \
 			ARBDB_COMPRESS/ARBDB_COMPRESS.a \
-			AWT/libAWT.a WINDOW/libAW.a \
-			EDIT/EDIT.a  STAT/STAT.a \
-			PROBE/PROBE.a GDE/GDE.a CONVERTALN/CONVERTALN.a \
+			ARB_GDE/ARB_GDE.a \
+			AWDEMO/AWDEMO.a \
+			AWT/libAWT.a \
+			AWTC/AWTC.a \
+			AWTI/AWTI.a \
+			CAT/CAT.a \
+			CHIP/CHIP.a \
+			CONSENSUS_TREE/CONSENSUS_TREE.a \
+			CONVERTALN/CONVERTALN.a \
+			DBSERVER/DBSERVER.a \
+			DIST/DIST.a \
+			EDIT/EDIT.a \
+			EDIT4/EDIT4.a \
+			EISPACK/EISPACK.a \
+			GDE/GDE.a \
+			GENOM/GENOM.a \
+			ISLAND_HOPPING/ISLAND_HOPPING.a \
+			MERGE/MERGE.a \
+			MULTI_PROBE/MULTI_PROBE.a \
 			NALIGNER/NALIGNER.a \
-			SERVERCNTRL/SERVERCNTRL.a DIST/DIST.a \
-			PHYLO/PHYLO.a MERGE/MERGE.a \
-			DBSERVER/DBSERVER.a NAMES/NAMES.a \
+			NAMES/NAMES.a \
+			NAMES_COM/server.a \
+			NTREE/NTREE.a \
+			ORS_CGI/ORS_CGI.a \
+			ORS_COM/server.a \
+			ORS_SERVER/ORS_SERVER.a \
+			PARSIMONY/PARSIMONY.a \
+			PHYLO/PHYLO.a \
+			PRIMER_DESIGN/PRIMER_DESIGN.a \
+			PROBE/PROBE.a \
+			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
 			PROBE_GROUP/PROBE_GROUP.a \
 			PROBE_SET/PROBE_SET.a \
-			CHIP/CHIP.a \
-			PRIMER_DESIGN/PRIMER_DESIGN.a \
-			AWTC/AWTC.a AWTI/AWTI.a AWDEMO/AWDEMO.a NTREE/NTREE.a \
-			ARB_GDE/ARB_GDE.a  ALIV3/ALIV3.a \
-			PARSIMONY/PARSIMONY.a TOOLS/TOOLS.a READSEQ/READSEQ.a \
-			SECEDIT/SECEDIT.a ALEIO/.a \
-			TEST/TEST.a WETC/WETC.a CAT/CAT.a TRS/TRS.a \
-			EDIT4/EDIT4.a MULTI_PROBE/MULTI_PROBE.a EISPACK/EISPACK.a \
-			GENOM/GENOM.a XML/XML.a ISLAND_HOPPING/ISLAND_HOPPING.a
+			READSEQ/READSEQ.a \
+			SECEDIT/SECEDIT.a \
+			SEER/SEER.a \
+			SERVERCNTRL/SERVERCNTRL.a \
+			STAT/STAT.a \
+			TEST/TEST.a \
+			TOOLS/TOOLS.a \
+			TREEGEN/TREEGEN.a \
+			TRS/TRS.a \
+			WETC/WETC.a \
+			WINDOW/libAW.a \
+			XML/XML.a \
+
 
 ARCHS_CLIENTACC = PROBE_COM/client.a
 ARCHS_CLIENTCPP = NAMES_COM/client.a
@@ -430,19 +456,14 @@ ARCHS_NTREE = \
 		STAT/STAT.a \
 		XML/XML.a \
 
-$(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
+$(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy # aw db awt awtc awti
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)
-
-#		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
-#		AWTC/AWTC.a AWTI/AWTI.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) GENOM/GENOM.a \
-#		PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a ISLAND_HOPPING/ISLAND_HOPPING.a \
-#		$(ARCHS_CLIENTACC) -lAWT $(LIBS)
 
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
 ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a XML/XML.a
-$(EDIT): $(ARCHS_EDIT)
+$(EDIT): $(ARCHS_EDIT:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)
 
@@ -451,14 +472,14 @@ EDIT4 = bin/arb_edit4
 ARCHS_EDIT4 = NAMES_COM/client.a AWTC/AWTC.a EDIT4/EDIT4.a SECEDIT/SECEDIT.a \
 	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a XML/XML.a
-$(EDIT4): $(ARCHS_EDIT4) aw db
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS)
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
 ARCHS_WETC = WETC/WETC.a XML/XML.a
-$(WETC): $(ARCHS_WETC)
+$(WETC): $(ARCHS_WETC:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)
 
@@ -467,22 +488,28 @@ DIST = bin/arb_dist
 ARCHS_DIST = DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a CONSENSUS_TREE/CONSENSUS_TREE.a \
 		EISPACK/EISPACK.a  XML/XML.a
 #		FINDCORRWIN/FINDCORRWIN.a FINDCORRMATH/FINDCORRMATH.a
-$(DIST): $(ARCHS_DIST)
+$(DIST): $(ARCHS_DIST:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) $(GUI_LIBS)
 
 #***********************************	arb_pars **************************************
-PARSIMONY =		bin/arb_pars
+PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a  XML/XML.a
-$(PARSIMONY): $(ARCHS_PARSIMONY)
+$(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)
 
+#*********************************** arb_treegen **************************************
+TREEGEN = bin/arb_treegen
+ARCHS_TREEGEN =	TREEGEN/TREEGEN.a
+$(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
+	@echo $(SEP) Link $@
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN)
 
 #***********************************	arb_naligner **************************************
 NALIGNER = bin/arb_naligner
 ARCHS_NALIGNER = PROBE_COM/server.a NALIGNER/NALIGNER.a SERVERCNTRL/SERVERCNTRL.a
-$(NALIGNER): $(ARCHS_NALIGNER)
+$(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy)
 	@echo $(SEP) Link $@
 	cp NALIGNER/NALIGNER.com $@
 # no LIB_NALIGNER defined: see NALIGNER/Makefile
@@ -490,29 +517,30 @@ $(NALIGNER): $(ARCHS_NALIGNER)
 #***********************************	arb_secedit **************************************
 SECEDIT = bin/arb_secedit
 ARCHS_SECEDIT = SECEDIT/SECEDIT.a  XML/XML.a
-$(SECEDIT):	$(ARCHS_SECEDIT)
+$(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
 
+ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
 #***********************************	arb_probe_group **************************************
 PROBE_GROUP = bin/arb_probe_group
 ARCHS_PROBE_GROUP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) PROBE_GROUP/PROBE_GROUP.a
-$(PROBE_GROUP):	$(ARCHS_PROBE_GROUP) PROBE_COM/server.a PROBE/PROBE.a
+$(PROBE_GROUP):	$(ARCHS_PROBE_GROUP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
 ARCHS_CHIP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) CHIP/CHIP.a
-$(CHIP):	$(ARCHS_CHIP) PROBE_COM/server.a PROBE/PROBE.a
+$(CHIP):	$(ARCHS_CHIP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
 ARCHS_PHYLO = PHYLO/PHYLO.a  XML/XML.a
-$(PHYLO): $(ARCHS_PHYLO)
+$(PHYLO): $(ARCHS_PHYLO:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)
 
@@ -524,14 +552,14 @@ $(PHYLO): $(ARCHS_PHYLO)
 #***********************************	arb_db_server **************************************
 DBSERVER = bin/arb_db_server
 ARCHS_DBSERVER = DBSERVER/DBSERVER.a SERVERCNTRL/SERVERCNTRL.a
-$(DBSERVER): $(ARCHS_DBSERVER)
+$(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) -lARBDB $(SYSLIBS)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
 ARCHS_PROBE = PROBE_COM/server.a PROBE/PROBE.a SERVERCNTRL/SERVERCNTRL.a
-$(PROBE): $(ARCHS_PROBE)
+$(PROBE): $(ARCHS_PROBE:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) PROBE/PROBE.a PROBE_COM/server.a \
 			SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a $(STATIC) -lARBDB $(CCPLIBS) $(DYNAMIC) $(SYSLIBS)
@@ -539,27 +567,27 @@ $(PROBE): $(ARCHS_PROBE)
 #***********************************	arb_name_server **************************************
 NAMES = bin/arb_name_server
 ARCHS_NAMES = NAMES_COM/server.a NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a
-$(NAMES): $(ARCHS_NAMES)
+$(NAMES): $(ARCHS_NAMES:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) NAMES/NAMES.a SERVERCNTRL/SERVERCNTRL.a NAMES_COM/server.a NAMES_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 #***********************************	ors **************************************
 ORS_SERVER = tb/ors_server
 ARCHS_ORS_SERVER = ORS_COM/server.a ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a
-$(ORS_SERVER): $(ARCHS_ORS_SERVER)
+$(ORS_SERVER): $(ARCHS_ORS_SERVER:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/server.a ORS_COM/client.a $(STATIC) -lARBDB $(DYNAMIC) $(SYSLIBS) $(CCPLIBS) $(CRYPTLIB)
 
 ORS_CGI = tb/ors_cgi
 ARCHS_ORS_CGI = ORS_COM/server.a ORS_CGI/ORS_CGI.a SERVERCNTRL/SERVERCNTRL.a
-$(ORS_CGI): $(ARCHS_ORS_CGI)
+$(ORS_CGI): $(ARCHS_ORS_CGI:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_CGI/ORS_CGI.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/client.a $(STATIC) -lARBDB $(DYNAMIC) $(SYSLIBS) $(CCPLIBS)
 
 
 EDITDB = tb/editDB
 ARCHS_EDITDB = EDITDB/EDITDB.a  XML/XML.a
-$(EDITDB): $(ARCHS_EDITDB)
+$(EDITDB): $(ARCHS_EDITDB:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(ARCHS_EDITDB) -lARBDB -lAWT $(LIBS)
 
@@ -567,33 +595,33 @@ $(EDITDB): $(ARCHS_EDITDB)
 #***********************************	TEST SECTION  **************************************
 AWDEMO = tb/awdemo
 ARCHS_AWDEMO = AWDEMO/AWDEMO.a
-$(AWDEMO): $(ARCHS_AWDEMO)
+$(AWDEMO): $(ARCHS_AWDEMO:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(ARCHS_AWDEMO) $(LIBS)
 
 TEST = tb/dbtest
 ARCHS_TEST = TEST/TEST.a  XML/XML.a
-$(TEST):	$(ARCHS_TEST)
+$(TEST):	$(ARCHS_TEST:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
 
 ALIV3 = tb/aliv3
 ARCHS_ALIV3 = PROBE_COM/server.a ALIV3/ALIV3.a SERVERCNTRL/SERVERCNTRL.a
-$(ALIV3): $(ARCHS_ALIV3)
+$(ALIV3): $(ARCHS_ALIV3:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ALIV3/ALIV3.a SERVERCNTRL/SERVERCNTRL.a PROBE_COM/client.a -lARBDB $(SYSLIBS) $(CCPLIBS)
 
 
 ACORR = tb/acorr
 ARCHS_ACORR = 	DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a FINDCORRASC/FINDCORRASC.a FINDCORRMATH/FINDCORRMATH.a FINDCORRWIN/FINDCORRWIN.a  XML/XML.a
-$(ACORR): $(ARCHS_ACORR)
+$(ACORR): $(ARCHS_ACORR:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) $(ARCHS_CLIENT) -lAWT -lARBDBPP $(LIBS)
 
 
 ARBDB_COMPRESS = tb/arbdb_compress
 ARCHS_ARBDB_COMPRESS = ARBDB_COMPRESS/ARBDB_COMPRESS.a
-$(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
+$(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS:.a=.dummy)
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) ARBDB_COMPRESS/ARBDB_COMPRESS.a -lARBDB
 
@@ -650,7 +678,7 @@ com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 help:   xml HELP_SOURCE/dummy.dummy
 
-dball: db dbs db2
+dball:	db dbs db2
 db:		ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
 db2:	ARBDB2/libARBDB.dummy
@@ -666,37 +694,38 @@ mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
-nt:		$(ARCHS_NTREE:.a=.dummy)	$(NTREE)
-ed:		$(ARCHS_EDIT:.a=.dummy)		$(EDIT)
+nt:		$(NTREE)
+ed:		$(EDIT)
 
-al:		$(ARCHS_ALIGNER:.a=.dummy)	$(ALIGNER)
-nal:		$(ARCHS_NALIGNER:.a=.dummy)	$(NALIGNER)
-a3:		$(ARCHS_ALIV3:.a=.dummy)	$(ALIV3)
+al:		$(ALIGNER)
+nal:	$(NALIGNER)
+a3:		$(ALIV3)
 
-di:		$(ARCHS_DIST:.a=.dummy)		$(DIST)
-ph:		$(ARCHS_PHYLO:.a=.dummy)	$(PHYLO)
-pa:		$(ARCHS_PARSIMONY:.a=.dummy)	$(PARSIMONY)
-se:		$(ARCHS_SECEDIT:.a=.dummy)	$(SECEDIT)
-acc:		$(ARCHS_ACORR:.a=.dummy)	$(ACORR)
+di:		$(DIST)
+ph:		$(PHYLO)
+pa:		$(PARSIMONY)
+tg:		$(TREEGEN)
+se:		$(SECEDIT)
+acc:	$(ACORR)
 
-ds:		$(ARCHS_DBSERVER:.a=.dummy)	$(DBSERVER)
-pr:		$(ARCHS_PROBE:.a=.dummy)	$(PROBE)
-pg:		$(ARCHS_PROBE_GROUP:.a=.dummy)	$(PROBE_GROUP)
-chip:		$(ARCHS_CHIP:.a=.dummy)	$(CHIP)
+ds:		$(DBSERVER)
+pr:		$(PROBE)
+pg:		$(PROBE_GROUP)
+chip:	$(CHIP)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
-na:		$(ARCHS_NAMES:.a=.dummy)	$(NAMES)
-os:		$(ARCHS_ORS_SERVER:.a=.dummy)	$(ORS_SERVER)
-oc:		$(ARCHS_ORS_CGI:.a=.dummy)	$(ORS_CGI)
+na:		$(NAMES)
+os:		$(ORS_SERVER)
+oc:		$(ORS_CGI)
 
-ac:		$(ARCHS_ARBDB_COMPRESS:.a=.dummy)	$(ARBDB_COMPRESS)
+ac:		$(ARBDB_COMPRESS)
 
-te:		$(ARCHS_TEST:.a=.dummy)	$(TEST)
-sec:		$(ARCHS_SECEDIT:.a=.dummy)
-de:		$(ARCHS_AWDEMO:.a=.dummy)	$(AWDEMO)
+te:		$(TEST)
+sec:	$(SECEDIT)
+de:		$(AWDEMO)
 
-e4:		$(ARCHS_EDIT4:.a=.dummy) $(EDIT4)
-we:		$(ARCHS_WETC:.a=.dummy)		$(WETC)
-eb:		$(ARCHS_EDITDB:.a=.dummy)	$(EDITDB)
+e4:		$(EDIT4)
+we:		$(WETC)
+eb:		$(EDITDB)
 
 xml:	XML/XML.dummy
 
@@ -739,14 +768,13 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 gde:		GDE/GDE.dummy
 agde: 		ARB_GDE/ARB_GDE.dummy
 #ps:		$(ARCHS_PROBE_SET:.a=.dummy) $(PROBE_SET)
-ps:		PROBE_SET/PROBE_SET.dummy
+ps:			PROBE_SET/PROBE_SET.dummy
 tools:		TOOLS/TOOLS.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
 convert:	CONVERTALN/CONVERTALN.dummy
 readseq:	READSEQ/READSEQ.dummy
 aleio:		ALEIO/.dummy
-
 
 #***************************************************************************************
 #			Some user commands
@@ -887,10 +915,18 @@ arbbasic: links
 		$(MAKE) arbbasic2
 arbbasic2: mbin menus com nas ${MAKE_RTC}
 
-arb: arbbasic db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs help
+arbxtras: tg
+
+arbshared: dball aw dp awt
+arbapplications: nt pa ed e4 we pr pg na al nal di ph ds trs
+
+arb: arbbasic arbshared arbapplications help arbxtras
+#arb: arbbasic db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs help arbxtras
 
 save:	rmbak
 	util/arb_save
+
 savedepot: rmbak
 	util/arb_save_depot
+
 # DO NOT DELETE

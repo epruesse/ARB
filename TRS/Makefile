@@ -28,39 +28,9 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:  
-trs_hash.o:   
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:  
-tree_lib.o:   
-tree_lib.o:  
-tree_lib.o:  
 tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o:  
-trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx tree_lib.hxx trs_proto.h
+trs_server.o:  $(ARBHOME)/INCLUDE/cat_tree.hxx
+trs_server.o: tree_lib.hxx trs_proto.h

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Thu Jul/11/2002 13:47 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Aug/23/2002 19:22 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -11,17 +11,10 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef NDEBUG
-# define mg_assert(bed) do { if (!(bed)) *(int *)0 = 0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define mg_assert(bed)
-#endif /* NDEBUG */
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define mg_assert(bed) arb_assert(bed)
 
 #define AWAR_MERGE_DB "tmp/merge1/db"
 #define AWAR_MAIN_DB  "tmp/merge2/db"

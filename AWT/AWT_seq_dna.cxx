@@ -8,9 +8,13 @@
 #include <arbdbt.h>
 #include <awt_tree.hxx>
 #include "awt_seq_dna.hxx"
-#include "awt_assert.hxx"
 
-char	*AP_sequence_parsimony::table;
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define awt_assert(bed) arb_assert(bed)
+
+char *AP_sequence_parsimony::table;
 
 
 /*************************8

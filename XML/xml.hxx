@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Wed Jul/03/2002 13:54 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri Aug/23/2002 21:53 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -27,17 +27,10 @@
 #include <cstdio>
 #endif
 
-#ifndef NDEBUG
-# define xml_assert(bed) do { if (!(bed)) *(int *)0 = 0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define xml_assert(bed)
-#endif /* NDEBUG */
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define xml_assert(bed) arb_assert(bed)
 
 
 /** @memo Classes used to write xml

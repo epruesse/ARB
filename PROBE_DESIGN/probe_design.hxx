@@ -1,17 +1,10 @@
 #ifndef probe_design_hxx_included
 #define probe_design_hxx_included
 
-#ifndef NDEBUG
-# define pd_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define pd_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define pd_assert(bed) arb_assert(bed)
 
 void probe_design_build_pt_server_choices(AW_window *aws,const char *var, AW_BOOL sel_list);
 

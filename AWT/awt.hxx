@@ -9,17 +9,10 @@ const char *AWT_valid_path(const char *path);
 
 int AWT_is_dir(const char *path);
 
-#ifndef NDEBUG
-# define awt_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define awt_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define awt_assert(bed) arb_assert(bed)
 
 #ifndef aw_window_hxx_included
 #include <aw_window.hxx>

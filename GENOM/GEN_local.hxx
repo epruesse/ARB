@@ -11,17 +11,10 @@
 #include "GEN.hxx"
 #endif
 
-#ifndef NDEBUG
-# define gen_assert(bed) do { if (!(bed)) *(int *)0 = 0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define gen_assert(bed)
-#endif /* NDEBUG */
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define gen_assert(bed) arb_assert(bed)
 
 // to create new genes:
 #define AWAR_GENE_DEST "tmp/gene/dest"
