@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : bugex.h                                                //
 //    Purpose   : Debugging code                                         //
-//    Time-stamp: <Wed Apr/30/2003 12:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Apr/30/2003 13:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in April 2003            //
@@ -36,6 +36,7 @@
 #define BUGEX_MAX_STRING_PRINT 40
 #define RALF_DUMP_VAL(var)  ALL_DUMP_VAL(var)
 #define RALF_DUMP_STR(var)  ALL_DUMP_STR(var)
+#define RALF_DUMP_PTR(var)  ALL_DUMP_PTR(var)
 #define RALF_DUMP_MARK()    ALL_DUMP_MARK()
 
 #else
@@ -55,6 +56,7 @@
 #define BUGEX_MAX_STRING_PRINT 40
 #define YADHU_DUMP_VAL(var)  ALL_DUMP_VAL(var)
 #define YADHU_DUMP_STR(var)  ALL_DUMP_STR(var)
+#define YADHU_DUMP_PTR(var)  ALL_DUMP_PTR(var)
 #define YADHU_DUMP_MARK()    ALL_DUMP_MARK()
 
 #else
@@ -77,10 +79,12 @@
 // Do NOT use the following macros!!!
 #define ALL_DUMP_VAL(var) bugex_dump_value(&var, #var, sizeof(var), __FILE__, __LINE__)
 #define ALL_DUMP_STR(var) bugex_dump_string(&var, #var, __FILE__, __LINE__)
+#define ALL_DUMP_PTR(var) bugex_dump_pointer(&var, #var, __FILE__, __LINE__)
 #define ALL_DUMP_MARK()   bugex_dump_mark(__FILE__, __LINE__)
 
 static void bugex_dump_mark(const char *file, size_t lineno) {
     fprintf(stderr, "%s:%u: ------------------------------ MARK\n", file, lineno);
+    fflush(stderr);
 }
 
 static void bugex_printString(const char *str, size_t len) {
@@ -97,6 +101,11 @@ static void bugex_printString(const char *str, size_t len) {
             }
         }
     }
+}
+
+static void bugex_dump_pointer(void *somePtr, const char *someName, const char *file, size_t lineno) {
+    fprintf(stderr, "%s:%u: %s: %p -> %p\n", file, lineno, someName, somePtr, *(void**)somePtr);
+    fflush(stderr);
 }
 
 static void bugex_dump_string(void *strPtr, const char *strName, const char *file, size_t lineno) {
@@ -121,6 +130,7 @@ static void bugex_dump_string(void *strPtr, const char *strName, const char *fil
         }
         fprintf(stderr, "\" (len=%u, &=%p -> %p)\n", len, strPtr, s);
     }
+    fflush(stderr);
 }
 
 
@@ -192,6 +202,7 @@ static void bugex_dump_value(void *valuePtr, const char *valueName, size_t size,
         }
     }
     fprintf(stderr, "\n");
+    fflush(stderr);
 }
 
 #endif // BUGEX_DUMPS
