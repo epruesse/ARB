@@ -33,7 +33,7 @@
 #include "nt_sort.hxx"
 #include "ap_consensus.hxx"
 #include "ap_csp_2_gnuplot.hxx"
-#include <awtc_export.hxx>
+#include <awti_export.hxx>
 #include "nt_join.hxx"
 #include "nt_edconf.hxx"
 #include "ap_pos_var_pars.hxx"
@@ -483,6 +483,10 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 	aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
 	aws->at_newline();
 
+	aws->label("Bootstrap circle zoom factor");
+	aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM,4);
+	aws->at_newline();
+
 	aws->label("Grey Level of Groups%");
 	aws->create_input_field(AWAR_DTREE_GREY_LEVEL,4);
 	aws->at_newline();
@@ -650,6 +654,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awr->awar( AWAR_SPECIES_NAME)->add_callback( (AW_RCB)NT_jump_cb_auto, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_VERICAL_DIST)->add_callback( (AW_RCB)AWT_resize_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_DTREE_SHOW_CIRCLE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_DTREE_CIRCLE_ZOOM)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
 
     GBDATA *gb_arb_presets =	GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);

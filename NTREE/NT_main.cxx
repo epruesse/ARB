@@ -15,7 +15,7 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt.hxx>
-#include <awtc_import.hxx>
+#include <awti_import.hxx>
 
 #include "ntree.hxx"
 #include "nt_cb.hxx"
@@ -31,18 +31,18 @@ GBDATA *gb_main;
 NT_global nt = { 0,0,0};
 
 
-void 
+void
 serve_db_interrupt(AW_root *awr){
     GB_BOOL succes = GBCMS_accept_calls(gb_main,GB_FALSE);
     while (succes){
 	awr->check_for_remote_command((AW_default)gb_main,AWAR_NT_REMOTE_BASE);
 	succes = GBCMS_accept_calls(gb_main,GB_TRUE);
     }
-    
+
     awr->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);
 }
 
-void 
+void
 check_db_interrupt(AW_root *awr){
     awr->check_for_remote_command((AW_default)gb_main,AWAR_NT_REMOTE_BASE);
     awr->add_timed_callback(NT_CHECK_DB_TIMER,(AW_RCB)check_db_interrupt,0,0);
@@ -171,11 +171,11 @@ AW_window *nt_create_intro_window(AW_root *awr)
 
 	aws->callback( (AW_CB0)exit);
 	aws->at("close");
-	aws->create_button("CANCEL","CANCEL","C");			   
+	aws->create_button("CANCEL","CANCEL","C");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"arb_intro.hlp");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	awt_create_selection_box(aws,"tmp/nt/arbdb");
 
@@ -189,15 +189,15 @@ AW_window *nt_create_intro_window(AW_root *awr)
 
 	aws->at("old");
 	aws->callback(nt_intro_start_old);
-	aws->create_button("OPEN_SELECTED","OPEN SELECTED","O");			   
+	aws->create_button("OPEN_SELECTED","OPEN SELECTED","O");
 
 	aws->at("merge");
 	aws->callback((AW_CB1)nt_intro_start_merge,0);
-	aws->create_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");			   
+	aws->create_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
 
 	aws->at("new_complex");
 	aws->callback(nt_intro_start_import);
-	aws->create_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");			   
+	aws->create_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");
 
 	aws->at("novice");
 	aws->create_toggle("NT/GB_NOVICE");
@@ -206,7 +206,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
 	aws->at("del");
 	aws->button_length(15);
 	aws->callback(nt_delete_database);
-	aws->create_button("DELETE_SELECTED","DELETE SELECTED");			   
+	aws->create_button("DELETE_SELECTED","DELETE SELECTED");
 	return (AW_window *)aws;
 }
 
@@ -226,7 +226,7 @@ main(int argc, char **argv)
 	}
 	aw_initstatus();
 	GB_set_verbose();
-	
+
 	aw_root = new AW_root;
 	nt.awr = aw_root;
 	aw_default = aw_root->open_default(".arb_prop/ntree.arb");
@@ -257,11 +257,11 @@ main(int argc, char **argv)
                     "w/o arguments      => start database browser\n"
                     "\n"
                     );
-            
+
             exit(1);
         }
-        
-        
+
+
 		if ( strcmp(argv[1],"-export")==0) {
 			MG_create_all_awars(aw_root,aw_default,":","noname.arb");
 			gb_merge = GBT_open(":","rw",0);
@@ -270,7 +270,7 @@ main(int argc, char **argv)
 				exit(0);
 			}
 			gb_dest = GBT_open("noname.arb","cw",0);
-			
+
 			MG_start_cb2(0,aw_root);
 			aw_root->main_loop();
 		}
@@ -283,7 +283,7 @@ main(int argc, char **argv)
 			switch(aw_message(msg,	"Continue (dangerous),Start Converter,Exit")) {
 				case 0:	break;
 				case 2: return 0;
-				case 1: 				
+				case 1:
 					gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
 					aw_root->main_loop();
 				default:	break;
@@ -305,7 +305,7 @@ main(int argc, char **argv)
 	    }else{
             iws = nt_create_intro_window(aw_root);
 	    }
-	    iws->show();			
+	    iws->show();
 	    aw_root->main_loop();
 	}
 
