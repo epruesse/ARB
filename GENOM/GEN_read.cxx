@@ -108,13 +108,13 @@ public:
     }
 };
 
-//  ----------------------------------------------------
-//      inline int parseLine_genbank(const string& line, string& section_name)
-//  ----------------------------------------------------
-// returns:  0 -> no section
-//           1 -> main section (starting in column 0)
-//           2 -> sub section (starting in column 2 or 3)
-//           3 -> sub feature (starting in column 5)
+//  -------------------------------------------------------------------------------------------------------------
+//      inline int parseLine_genbank(const string& line, size_t data_start, string& section_name, string& rest)
+//  -------------------------------------------------------------------------------------------------------------
+//    returns:  0 -> no section
+//              1 -> main section (starting in column 0)
+//              2 -> sub section (starting in column 2 or 3)
+//              3 -> sub feature (starting in column 5)
 
 inline bool space(char c) { return c==' '; }
 
@@ -169,6 +169,7 @@ inline int parseLine_genbank(const string& line, size_t data_start, string& sect
 //  ---------------------------------------------------
 //      inline int count_qm(const string& content)
 //  ---------------------------------------------------
+
 inline size_t count_qm(const string& content) {
     size_t count = 0;
     for (size_t p=0; p<content.length(); ++p) {
@@ -180,6 +181,7 @@ inline size_t count_qm(const string& content) {
 //  ------------------------------------------------------------------------------------------------------------
 //      void completeSection(FileBuffer& file, string& content, size_t data_start, bool smart_spaces=false)
 //  ------------------------------------------------------------------------------------------------------------
+
 void completeSection(FileBuffer& file, string& content, size_t data_start, bool smart_spaces=false) {
     string next_line;
     string dummy;
@@ -208,6 +210,7 @@ void completeSection(FileBuffer& file, string& content, size_t data_start, bool 
 //  ---------------------------------------------------------------------------------------------------------------------------------------
 //      static bool parseFeatureEntry(const char *& buffer, string& entry_name, string& entry_content, bool& is_alpha, GB_ERROR error)
 //  ---------------------------------------------------------------------------------------------------------------------------------------
+
 static bool parseFeatureEntry(const char *& buffer, string& entry_name, string& entry_content, bool& is_alpha, GB_ERROR error) {
     while (space(buffer[0])) ++buffer;
 
@@ -287,6 +290,7 @@ static string removeFunction(string& content, const char *&error) {
 //  -------------------------
 //      class GeneBorder
 //  -------------------------
+
 class GeneBorder { 
 private:
     char sureness;              // 0 -> sure; '<' -> maybe lower; '>' -> maybe higher
@@ -320,6 +324,7 @@ public:
 //  ---------------------------
 //      class GenePosition
 //  ---------------------------
+
 class GenePosition {
 private:
     GeneBorder lower, upper;
@@ -360,39 +365,11 @@ public:
     const GeneBorder& getUpper() const { return upper; }
 };
 
-// //  ---------------------------
-// //      class GenePosition2
-// //  ---------------------------
-// class GenePosition2 {
-// private:
-//     GeneBorder2 lower, upper;
-
-// public:
-//     // format of pos_string:
-//     //  ['<'|'>']<num>'...'['<'|'>']<num>
-//     //  ['<'|'>']<num>'^'['<'|'>']<num>
-//     GenePosition2(const string& pos_string, const char *&error) {
-//         size_t roof         = pos_string.find("^");
-// 	//        size_t points         = pos_string.find("..");
-//         if (roof != string::npos) {
-//             error             = lower.parsePosString(pos_string.substr(0, roof));
-// 	    //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
-//             if (!error) error = upper.parsePosString(pos_string.substr(points+2));
-//         }
-//         else {                  // lower equal upper border
-//             error             = lower.parsePosString(pos_string);
-//             if (!error) upper = lower;
-//         }
-//     }
-//     virtual ~GenePosition() {}
-
-//     const GeneBorder& getLower() const { return lower; }
-//     const GeneBorder& getUpper() const { return upper; }
-// };
 
 //  --------------------------------------------------------------------------
 //      GB_ERROR GEN_insert_warning(GBDATA *gb_item, const char *warning)
 //  --------------------------------------------------------------------------
+
 GB_ERROR GEN_insert_warning(GBDATA *gb_item, const char *warning) {
     // @@@ FIXME: Should append and not overwrite ARB_warning
     GBDATA *gb_warning = GB_search(gb_item, "ARB_warning", GB_STRING);
@@ -403,6 +380,11 @@ GB_ERROR GEN_insert_warning(GBDATA *gb_item, const char *warning) {
 
 
 typedef map<string, string> GeneNameSubstitute;
+
+
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR parseFeature(string section_name, string content, FileBuffer& file, GeneNameSubstitute& gene_name_subst, GBDATA* gb_species, unsigned long data_length)
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 GB_ERROR parseFeature(string section_name, string content, FileBuffer& file,
                       GeneNameSubstitute& gene_name_subst, GBDATA* gb_species, unsigned long data_length)
@@ -483,7 +465,6 @@ GB_ERROR parseFeature(string section_name, string content, FileBuffer& file,
 
         bool used = false;
 
-        // --------------------------------------------------------------------------------
         if (section_name=="source") { // insert feature-entries of source entry into organism
             for (EntryMap::const_iterator e=featureEntries.begin();e!=featureEntries.end();++e) {
                 const string& entry_name = e->first;
@@ -511,8 +492,6 @@ GB_ERROR parseFeature(string section_name, string content, FileBuffer& file,
             used = true;
         }
 
-
-        // --------------------------------------------------------------------------------
         if (!used) {
             string                       gene_name; // not necessarily a gene (i.e rRNA.xx, misc_feature.xx, etc.)
             EntryMap::iterator           gene_entry     = featureEntries.find("gene");
@@ -686,6 +665,7 @@ GB_ERROR parseFeature(string section_name, string content, FileBuffer& file,
 //  ---------------------------------------------------------------------------------------
 //      GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali_name)
 //  ---------------------------------------------------------------------------------------
+
 GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali_name){
     GB_ERROR       error            = 0;
     FileBuffer     file(filename);
@@ -707,9 +687,9 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
     if (!file.good()) error = GBS_global_string("Can't open '%s'", filename);
 
     while (!error && file.getLine(line)) {
-        int section_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
+        int line_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
 
-        if (section_type==1) {
+        if (line_type==1) {
             if (section_name=="ORIGIN") {
                 if (data_length==0) error = "could not detect sequence length -- check input format";
                 gen_assert(data_length!=0);
@@ -765,8 +745,8 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
             else if (section_name=="FEATURES") {
                 completeSection(file, content, STD_DATA_START);
                 while (file.getLine(line)) {
-                    int section_type = parseLine_genbank(line, FEATURE_DATA_START, section_name, content);
-                    if (section_type!=3) {
+                    int line_type = parseLine_genbank(line, FEATURE_DATA_START, section_name, content);
+                    if (line_type!=3) {
                         file.backLine(line);
                         break;
                     }
@@ -807,8 +787,8 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
                 else if (section_name=="SOURCE") {
                     string full_name = content;
                     if (file.getLine(line)) {
-                        section_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
-                        if (section_type==2 && section_name=="ORGANISM") {
+                        line_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
+                        if (line_type==2 && section_name=="ORGANISM") {
                             full_name = content;
                             content = "";
                             completeSection(file, content, STD_DATA_START);
@@ -831,8 +811,8 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
                     reference++;
                     completeSection(file, content, STD_DATA_START);
                     while (file.getLine(line)) {
-                        section_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
-                        if (section_type!=2) {
+                        line_type = parseLine_genbank(line, STD_DATA_START, section_name, content);
+                        if (line_type!=2) {
                             file.backLine(line);
                             break;
                         }
@@ -871,50 +851,53 @@ GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali
     return error;
 }
 
-//  ----------------------------------------------------
-//      inline int parseLine_embl(const string& sub_section, string& content)
-//  ----------------------------------------------------
-// returns:  0 -> no section
-//           1 -> main section (starting in column 0)
-//           2 -> sub section (starting in column 2 or 3)
-//           3 -> sub feature (starting in column 5)
+//  --------------------------------------------------------------------------
+//      inline int parseLine_embl(const string& feature_section, string& content)
+//  --------------------------------------------------------------------------
+//   returns:  0 -> no section
+//             1 -> main section (starting in column 0)
+//             2 -> sub section (starting in column 2 or 3)
+//             3 -> sub feature (starting in column 5)
 
-const char* SECTION_INDICATOR[] = {   "  ", "FT", "ID",   "XX",   "AC",  "SV",  "DT",  "DE",  "KW",  "OS",  "OC",  "RN",  "RA",  "RT",  "RL",  "RP",  "CC",  "FH",  "SQ" , "DR"};
-enum sc_section                 { SC_SQ2 = 0, SC_FT, SC_ID, SC_XX, SC_AC, SC_SV, SC_DT, SC_DE, SC_KW, SC_OS, SC_OC, SC_RN, SC_RA, SC_RT, SC_RL, SC_RP, SC_CC, SC_FH, SC_SQ, SC_DR, SC_MAX };
+//const char* LINE_INDICATOR[] = {   "  ", "FT", "ID",   "XX",   "AC",  "SV",  "DT",  "DE",  "KW",  "OS",  "OC",  "OG", "RN",  "RA",  "RT",  "RL",  "RP",  "CC",  "FH",  "SQ" , "DR"};
+//enum sc_section                 { SC_SQ2 = 0, SC_FT, SC_ID, SC_XX, SC_AC, SC_SV, SC_DT, SC_DE, SC_KW, SC_OS, SC_OC, SC_OG, SC_RN, SC_RA, SC_RT, SC_RL, SC_RP, SC_CC, SC_FH, SC_SQ, SC_DR, SC_MAX };
 
-const char* SUBSECTION_INDICATOR[] = { 	"Key", "source", "CDS", "misc_feature", "promoter", "protein_bind","stem_loop", "repeat_region", "tRNA",   "rRNA", "mRNA", "repeat_unit", "misc_difference", "misc_RNA", "5'UTR", "3'UTR", "RBS", "terminator", "intron", "LTR", "variation", "rep_origin", "D-loop", "mat_peptide", "exon", "gene", "snoRNA", " polyA_signal", "-35_signal", "-10_signal", "snRNA", "scRNA", "misc_structure", "sig_peptide", "primer_bind", "misc_signal", "conflict" };
+const char* LINE_INDICATOR[] = {   "  ", "ID", "AC", "SV", "DT", "DE", "KW", "OS", "OC", "OG", "RN", "RC", "RP", "RX", "RG", "RA", "RT", "RL", "DR", "AH", "AS", "CO", "FH", "FT", "SQ", "CC", "XX" };
+enum ln_section                 { SC_SQ2 = 0, SC_ID, SC_AC, SC_SV, SC_DT, SC_DE, SC_KW, SC_OS, SC_OC, SC_OG, SC_RN, SC_RC, SC_RP, SC_RX, SC_RG, SC_RA, SC_RT, SC_RL, SC_DR, SC_AH, SS_AS, SC_CO, SC_FH, SC_FT, SC_SQ, SC_CC, SC_XX, SC_MAX };
 
-enum ss_sections              { SS_KEY = 0, SS_SOURCE, SS_CDS, SS_MISC_FEATURE, SS_PROMOTER, SS_PROTEIN_BIND, SS_STEM, SS_REPEAT_REGION, SS_TRNA, SS_RRNA, SS_MRNA, SS_REPEAT_UNIT, SS_MISC_DIFFERENCE, SS_MISC_RNA, SS_5UTR, SS_3UTR, SS_RBS, SS_TERMINATOR, SS_INTRON, SS_LTR, SS_VARIATION, SS_REP_ORI, SS_D_LOOP, SS_MAT_PEPTIDE, SS_EXON, SS_GENE, SS_SNORNA, SS_POLYA, SS_35_SIG, SS_10_SIG, SS_SNRNA, SS_SCRNA, SS_MISC_STRUCTURE, SS_SIG_PEPTIDE, SS_PRIMER_BIND, SS_MISC_SIGNAL, SS_CONFLICT, SS_MAX };
+const char* FEATURE_INDICATOR[] = { 	"Key", "source", "CDS", "misc_feature", "promoter", "protein_bind","stem_loop", "repeat_region", "tRNA",   "rRNA", "mRNA", "repeat_unit", "misc_difference", "misc_RNA", "5'UTR", "3'UTR", "RBS", "terminator", "intron", "LTR", "variation", "rep_origin", "D-loop", "mat_peptide", "exon", "gene", "snoRNA", " polyA_signal", "-35_signal", "-10_signal", "snRNA", "scRNA", "misc_structure", "sig_peptide", "primer_bind", "misc_signal", "conflict" };
 
-inline int parseLine_embl(const string& line, int& sub_section, string& content) {
+enum ft_sections              { SS_KEY = 0, SS_SOURCE, SS_CDS, SS_MISC_FEATURE, SS_PROMOTER, SS_PROTEIN_BIND, SS_STEM, SS_REPEAT_REGION, SS_TRNA, SS_RRNA, SS_MRNA, SS_REPEAT_UNIT, SS_MISC_DIFFERENCE, SS_MISC_RNA, SS_5UTR, SS_3UTR, SS_RBS, SS_TERMINATOR, SS_INTRON, SS_LTR, SS_VARIATION, SS_REP_ORI, SS_D_LOOP, SS_MAT_PEPTIDE, SS_EXON, SS_GENE, SS_SNORNA, SS_POLYA, SS_35_SIG, SS_10_SIG, SS_SNRNA, SS_SCRNA, SS_MISC_STRUCTURE, SS_SIG_PEPTIDE, SS_PRIMER_BIND, SS_MISC_SIGNAL, SS_CONFLICT, SS_MAX };
+
+inline int parseLine_embl(const string& line, int& feature_section, string& content) {
     if (line.empty()) return 0;
 
     int i, first, last;
-    int section_type = -1;	// Standardmaessig "no section"
+    int line_type = -1;	// Standardmaessig "no line"
     const char* l = line.c_str();
 
-    sub_section = -1;
+    feature_section = -1;
 
     // Auswertung der Sektion - 2 Zeichen-Kuerzel am Anfang von (fast) jeder Zeile
     for(i=0;i<SC_MAX;i++)
-        if ((SECTION_INDICATOR[i][0] == l[0]) &&
-            (SECTION_INDICATOR[i][1] == l[1])) {
-            section_type = i;
+        if ((LINE_INDICATOR[i][0] == l[0]) &&
+            (LINE_INDICATOR[i][1] == l[1])) {
+            line_type = i;
             break;
         }
 
     for(first = 2; l[first] == ' '; first++);
     for(last = first; l[last] != ' ' && l[last] != 0; last++);
-    if (first==last) return section_type;
+    if (first==last) return line_type;
 
     // Subsections only for FT and FH
-    if ((section_type == SC_FT) || (section_type == SC_FH)) {
+    if ((line_type == SC_FT) || (line_type == SC_FH)) {
         if (first > 10)
-            sub_section = SS_MAX;
+            feature_section = SS_MAX;
         else {
             for(i=0;i<SS_MAX;i++)
-                if (strncmp(l+first, SUBSECTION_INDICATOR[i], last-first) == 0) {
-                    sub_section = i;
+                if (strncmp(l+first, FEATURE_INDICATOR[i], last-first) == 0) {
+                    feature_section = i;
                     break;
                 }
 
@@ -924,9 +907,9 @@ inline int parseLine_embl(const string& line, int& sub_section, string& content)
     content = string(line.data()+first, line.length()-first);
 
 #if defined(DEBUG)
-    //cout << " section type is " << section_type << "\n";
+    //cout << " line type is " << line_type << "\n";
 #endif // DEBUG
-    return section_type;
+    return line_type;
 }
 
 
@@ -951,8 +934,12 @@ char* get_sequenceline(char* dp, const char* s)
 }
 
 
-GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file,
-                           GeneNameSubstitute& gene_name_subst, GBDATA* gb_species, unsigned long data_length)
+
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file, GeneNameSubstitute& gene_name_subst, GBDATA* gb_species, unsigned long data_length)
+//  --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file, GeneNameSubstitute& gene_name_subst, GBDATA* gb_species, unsigned long data_length)
 {
     GB_ERROR       error            = 0;
 
@@ -1060,7 +1047,6 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
 
         bool used = false;
 
-        // --------------------------------------------------------------------------------
         if (section_name=="source") { // insert feature-entries of source entry into organism
             for (EntryMap::const_iterator e=featureEntries.begin();e!=featureEntries.end();++e) {
                 const string& entry_name = e->first;
@@ -1088,7 +1074,6 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
         }
 
 
-        // --------------------------------------------------------------------------------
         if (!used) {
             string                       gene_name; // not necessarily a gene (i.e rRNA.xx, misc_feature.xx, etc.)
             EntryMap::iterator           gene_entry     = featureEntries.find("gene");
@@ -1173,44 +1158,10 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
             }
 
 
-
-//                 else if (section_name == "rRNA") {
-//                     EntryMap::iterator note  = featureEntries.find("note");
-//                     EntryMap::iterator product  = featureEntries.find("product");
-// 		    EntryMap::iterator standard_name = featureEntries.find("standard_name");
-//                     if (note == featureEntries.end()) {
-// 			gene_name = product->second;
-// 			handle_as_gene = true;
-// 			    //error = "No note found in rRNA feature";
-// 			    //return error;
-//                     }
-
-//                     else if {
-// 		    gene_name = note->second;
-//                     //gene_name = product->second;
-//                     handle_as_gene = true;
-// 		    }
-		    
-// 		    else {
-// 		      gene_name = standard_name->second;
-// 		      handle_as_gene = true;
-// 		    }
-
-
-//                 }
-
-//                 else {
-//                     gene_name      = section_name;
-//                     subst          = gene_name_subst.find(gene_name);
-//                     handle_as_gene = true;
-//                 }
-//             }
-
-            GBDATA *gb_gene          = GEN_create_gene(gb_species, gene_name.c_str()); // create or search gene
+	    GBDATA *gb_gene          = GEN_create_gene(gb_species, gene_name.c_str()); // create or search gene
             GBDATA *gb_sub_container = 0;
 
-            if (handle_as_gene) {
-                // test if gene with same name exists:
+            if (handle_as_gene) {          // test if gene with same name exists
                 GBDATA *pos_begin = GB_find(gb_gene, "pos_begin", 0, down_level);
 
                 if (pos_begin) // oops - gene with same name exists already
@@ -1355,6 +1306,14 @@ GB_ERROR parseFeature_embl(string section_name, string content, FileBuffer& file
 }
 
 
+//  --------------------------------------------------------------------------------------------------------------
+//   >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    CURRENTLY NOT USED    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//  --------------------------------------------------------------------------------------------------------------
+
+//  ---------------------------------------------------------------------------------------------------------------
+//      const char* parse_features_embl(const char *str, string& subsubsection, string& subsubcontent)
+//  ----------------------------------------------------------------------------------------------------------------
+
 #if 0
 // Get next <section,content> pair out of a Features string (NOT USED!)
 const char* parse_features_embl(const char *str, string& subsubsection, string& subsubcontent)
@@ -1388,6 +1347,11 @@ const char* parse_features_embl(const char *str, string& subsubsection, string& 
 }
 #endif
 
+
+//  ---------------------------------------------------------------------------------------
+//      bool get_range_embl(const char *str, int& from, int& to)
+//  ---------------------------------------------------------------------------------------
+
 // Parse a range string (e.g. "23..49"), returning true if it was a range (NOT USED!)
 bool get_range_embl(const char *str, int& from, int& to)
 {
@@ -1401,10 +1365,15 @@ bool get_range_embl(const char *str, int& from, int& to)
     return (from>0 && to>0);
 }
 
+//  --------------------------------------------------------------------------------------------------------------
+//   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<    CURRENTLY NOT USED     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//  --------------------------------------------------------------------------------------------------------------
+
 
 //  ---------------------------------------------------------------------------------------
 //      GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_name)
 //  ---------------------------------------------------------------------------------------
+
 GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_name){
     GB_ERROR       error            = 0;
     FileBuffer     file(filename);
@@ -1420,7 +1389,7 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
     bool           data_read        = false;
     unsigned long  data_length      = 0;
 
-    int         section_type, subsection_type = -1, new_section_type, new_subsection_type;
+    int         line_type, feature_type = -1, new_line_type, new_feature_type;
     int         line_number                   = 0;
     const char* ccontent;
 
@@ -1435,34 +1404,34 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 
     // Read Embl format until sequence data
     content      = "";
-    section_type = -2;
+    line_type = -2;
     while(file.getLine(line)) {
         line_number++;
-        new_section_type = parseLine_embl(line, new_subsection_type, new_content);
+        new_line_type = parseLine_embl(line, new_feature_type, new_content);
 
         // Special handling of FT and FH: Continuating lines have subsection type SS_MAX
-        if ((new_section_type == SC_FT) || (new_section_type == SC_FH)) {
-            if (new_subsection_type == SS_MAX) {
-                content = content + " " + new_content;
+        if ((new_line_type == SC_FT) || (new_line_type == SC_FH)) {
+            if (new_feature_type == SS_MAX) {
+	      content = content + " " + new_content;        // !!! Harald zur Erinnerung: Überprüfe noch, ob codon_start fälschlicherweise als absoluter Positions-Beginn für die Translation definiert wird !!!! Harald
                 continue;
             }
         }
         else {
             // For other sections, all sections with same type are concatenated
-            if (new_section_type == section_type) {
-                if (section_type == SC_SQ2)
+            if (new_line_type == line_type) {
+                if (line_type == SC_SQ2)
                     break;
                 else
                     content = content + " " + new_content;
                 continue;
             }
         }
-        if (section_type>=0)
+        if (line_type>=0)
 #if defined(DEBUG)
-            cout << "Parsing line " << line_number  <<", Section " << SECTION_INDICATOR[section_type] << ": ";
+            cout << "Parsing line " << line_number  <<", Section " << LINE_INDICATOR[line_type] << ": ";
 #endif // DEBUG
         ccontent = content.c_str();
-        switch(section_type) {
+        switch(line_type) {
             case SC_AC:
                 GB_write_string( GB_search(gb_species, "acc", GB_STRING), ccontent);
 #if defined(DEBUG)
@@ -1573,17 +1542,17 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
                 break;
 
             case SC_FT:
-                gen_assert(subsection_type != -1);
-                if (subsection_type>=0) {
-                    error = parseFeature_embl( string(SUBSECTION_INDICATOR[subsection_type]), content, file,
+                gen_assert(feature_type != -1);
+                if (feature_type>=0) {
+                    error = parseFeature_embl( string(FEATURE_INDICATOR[feature_type]), content, file,
                                                gene_name_subst, gb_species, data_length);
 #if defined(DEBUG)
-                    cout << "Feature " << SUBSECTION_INDICATOR[subsection_type] << "\n";
+                    cout << "Feature " << FEATURE_INDICATOR[feature_type] << "\n";
 #endif // DEBUG
                 }
                 else {
 #if defined(DEBUG)
-                    cout << "Subsection " << subsection_type << " ??\n";
+                    cout << "Subsection " << feature_type << " ??\n";
 #endif // DEBUG
                 }
                 break;
@@ -1597,8 +1566,8 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 
         if (error) return error;
 
-        section_type = new_section_type;
-        subsection_type = new_subsection_type;
+        line_type = new_line_type;
+        feature_type = new_feature_type;
         content = new_content;
     }
 

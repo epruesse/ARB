@@ -740,7 +740,7 @@ GB_ERROR awtc_read_data(char *ali_name)
     return 0;
 }
 
-void AWTC_import_go_cb(AW_window *aww)
+void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzdatenbanken + Aufruf der Importfunktion für  Gen/Genom Sequenzdateien
 {
     char     buffer[1024];
     AW_root *awr         = aww->get_root();
@@ -752,10 +752,10 @@ void AWTC_import_go_cb(AW_window *aww)
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
-                aw_message("Only genom flatfiles (GENBANK/EMBL-format) are imported into an ARB Genom Database.");
+                aw_message("You can only import whole genom sequences (GENBANK/EMBL-format) into a genom database.");
             }
             else {
-                aw_message("Does not import whole genom sequences (GENBANK/EMBL-format) into a ARB Gen-Database format.");
+                aw_message("You can't import whole genom sequences (GENBANK/EMBL-format) into a non-genom ARB database.");
             }
             return;
         }
@@ -792,7 +792,7 @@ void AWTC_import_go_cb(AW_window *aww)
     }
 
     GB_change_my_security(GB_MAIN,6,"");
-    GB_begin_transaction(GB_MAIN);
+    GB_begin_transaction(GB_MAIN);			//first transaction start
     char *ali_name;
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
@@ -817,9 +817,13 @@ void AWTC_import_go_cb(AW_window *aww)
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int());
 
     bool ask_generate_names = true;
+    GB_commit_transaction(GB_MAIN);                            //harald
 
-    if (!error) {
-        if (is_genom_db) {
+
+    if (!error) {				//Falls Formatchecks erfolgreich
+        if (is_genom_db) {			//Falls Genomdatenbank
+	  
+	    GB_begin_transaction(GB_MAIN);				//harald
             char *mask   = awr->awar(AWAR_FILE)->read_string();
             char **fnames = GBS_read_dir(mask, 0);
 
@@ -827,35 +831,102 @@ void AWTC_import_go_cb(AW_window *aww)
                 error = GB_export_error("Cannot find selected file");
             }
             else {
-                aw_openstatus("Reading input files");
-                for (int count = 0; !error && fnames[count]; ++count) {
-                    aw_status(GBS_global_string("Reading %s", fnames[count]));
-                    GB_warning("Start import of '%s' ", fnames[count]);
-#if defined(DEBUG)
-                    printf("Reading '%s' ...\n", fnames[count]);
-#endif // DEBUG
-                    try {
-                        if (toggle_value==0) {
-                            error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
-                        }
-                        else if (toggle_value==1) {
-                            error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
-                        }
-                        GB_warning("File '%s' successfully imported", fnames[count]);
-                    }
-                    catch (...) {
-                        error = GB_export_error("Error: %s not imported", fnames[count]);
-                        //error = GB_export_error("Error: %s (programmers error)", err.c_str());
-                    }
 
-                }
-                aw_closestatus();
+                aw_openstatus("Reading input files");
+		GB_commit_transaction(GB_MAIN);				//harald
+                for (int count = 0; !error && fnames[count]; ++count) {
+
+		  GB_begin_transaction(GB_MAIN);				//harald
+		  aw_status(GBS_global_string("Reading %s", fnames[count]));
+		  GB_warning("Trying to import: '%s' ", fnames[count]);
+#if defined(DEBUG)
+		  printf("Reading '%s' ...\n", fnames[count]);
+#endif // DEBUG
+
+		  try {					//Importfunktionen je nach Togglestellung aufrufen
+		    
+		    if (toggle_value==0) {
+		      error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
+		    }
+		    else if (toggle_value==1) {
+		      error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
+		    }
+		  
+		  }
+		  catch (...) {				// Beim Import einer Datei aufgetretenen Fehler auffangen
+		    error = GB_export_error("Error: %s not imported", fnames[count]);
+		  }
+
+
+		  if (!error) {
+		    GB_commit_transaction(GB_MAIN);				//harald
+		    GB_warning("File '%s' successfully imported", fnames[count]);
+		  }
+
+		  else {				//Wird bei Fehler der Importfunktionen durchgeführt
+
+		    error = GB_export_error("Error: %s not imported", fnames[count]);
+		    GB_warning("Import Error: File '%s' not imported", fnames[count]);
+		    GB_abort_transaction(GB_MAIN);				//harald
+		    
+		    //-------------------------------------------------------------------------------------
+		    aw_closestatus();
+		    GB_begin_transaction(GB_MAIN);		
+		    GBT_free_names(fnames);
+		    free(mask);
+		    free(ali_name);
+
+		    aww->hide();
+
+		    aw_openstatus("Checking and Scanning database");
+		    aw_status("Pass 1: Check entries");
+
+		    // scan for hidden/unknown fields :
+		    awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+		    if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+
+		    GBT_mark_all(GB_MAIN,1);
+		    sleep(1);
+		    aw_status("Pass 2: Check sequence lengths");
+		    GBT_check_data(GB_MAIN,0);
+		    sleep(1);
+
+		    GB_commit_transaction(GB_MAIN);
+
+		    if (ask_generate_names) {
+		      if (aw_message("You may generate short names using the full_name and accession entry of the species",
+				     "Generate new short names,use old names")==0)
+		      {
+			aw_status("Pass 3: Generate unique names");
+			error = AWTC_pars_names(GB_MAIN,1);
+		      }
+		    }
+
+		    aw_closestatus();
+		    //		    if (error) aw_message(error);
+
+		    GB_begin_transaction(GB_MAIN);
+		    GB_change_my_security(GB_MAIN,0,"");
+		    GB_commit_transaction(GB_MAIN);
+
+		    awtcig.func(awr, awtcig.cd1,awtcig.cd2);
+		    //------------------------------------------------------------------------------------
+		    return;
+		  }
+
+		}
+		GB_begin_transaction(GB_MAIN);				//harald		
+		aw_closestatus();
+
             }
 
             GBT_free_names(fnames);
             free(mask);
-        }
+	}
+
+
         else {
+
             char *f = awr->awar(AWAR_FILE)->read_string();
             awtcig.filenames = GBS_read_dir(f,0);
             free(f);
@@ -892,7 +963,6 @@ void AWTC_import_go_cb(AW_window *aww)
             aw_closestatus();
         }
     }
-
     free(ali_name);
 
     if (error) {
