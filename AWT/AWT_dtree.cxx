@@ -49,19 +49,6 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
     return preset_window;
 }
 
-void AWT_graphic_tree::mark_tree(AP_tree *at, int mark)
-{
-    if(!at) return;
-    GB_transaction dummy(this->tree_static->gb_species_data);
-    if (at->is_leaf) {
-        if(at->gb_node){
-            GB_write_flag(at->gb_node, mark);
-        }
-    }
-    mark_tree(at->leftson, mark);
-    mark_tree(at->rightson, mark);
-}
-
 AP_tree *AWT_graphic_tree::search(AP_tree *root, const char *name)
 {
     if(!root) return 0;
@@ -98,44 +85,111 @@ void AWT_graphic_tree::jump(AP_tree *at, const char *name)
     }
 }
 
-int AWT_graphic_tree::group_tree(AP_tree *at, int mode)	// run on father !!!
+void AWT_graphic_tree::mark_tree(AP_tree *at, int mark, int color_group)
 {
-    /* mode	0	all
-       1	all but marked
-       2	all but groups with subgroups
-       4	non
+    /*
+      mode      does
+
+      0	        unmark all
+      1	        mark all
+      2	        invert all marks
+
+      or mix above mark values with :
+
+      4         apply to color_group only
+      8         apply to all but color_group
+
     */
 
-    int flag;
-    int ret_val;
-    GBDATA *gn;
-    if(!at) return 1;
+    if (!at) return;
+
+    awt_assert((mark&(4|8)) != (4|8)); // mark 4 and 8 not allowed together
+
     GB_transaction dummy(this->tree_static->gb_species_data);
 
     if (at->is_leaf) {
-        ret_val=0;
-        if ( mode == 4){
-            ret_val=1;
-        }else{
-            if ( (mode & 1) &&
-                 at->gb_node &&
-                 GB_read_flag(at->gb_node) ){
-                ret_val=1;
+        if(at->gb_node) {       // not a zombie
+            bool apply = true;
+            if (mark&(4|8)) { // if has to match color_group
+                int my_color_group = AW_find_color_group(at->gb_node, AW_TRUE);
+                if (mark&4) {
+                    if (my_color_group != color_group) apply = false;
+                }
+                else {
+                    awt_assert(mark&8);
+                    if (my_color_group == color_group) apply = false;
+                }
+            }
+
+            if (apply) {
+                if (mark&1) {
+                    GB_write_flag(at->gb_node, 1);
+                }
+                else if (mark&2) {
+                    GB_write_flag(at->gb_node, !GB_read_flag(at->gb_node));
+                }
+                else {
+                    awt_assert((mark&(1|2)) == 0);
+                    GB_write_flag(at->gb_node, 0);
+                }
             }
         }
-        return ret_val;
     }
 
-    flag = this->group_tree(at->leftson, mode);
-    flag += this->group_tree(at->rightson, mode);
-    at->gr.grouped=0;
-    if (!flag) {
-        if (at->gb_node) {
-            gn = GB_find(at->gb_node, "group_name",NULL,down_level);
+    mark_tree(at->leftson, mark, color_group);
+    mark_tree(at->rightson, mark, color_group);
+}
+
+int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)	// run on father !!!
+{
+    /*
+      mode      does group
+
+      0	        all
+      1	        all but marked
+      2	        all but groups with subgroups
+      4         none (ungroups all)
+      8         all but color_group
+
+    */
+
+    if (!at) return 1;
+
+    GB_transaction dummy(this->tree_static->gb_species_data);
+
+    if (at->is_leaf) {
+        int ungroup_me = 0;
+
+        if (mode & 4) ungroup_me = 1;
+        if (at->gb_node) { // not a zombie
+            if (!ungroup_me && (mode & 1)) { // do not group marked
+                if (GB_read_flag(at->gb_node)) { // i am a marked species
+                    ungroup_me = 1;
+                }
+            }
+            if (!ungroup_me && (mode & 8)) { // do not group one color_group
+                int my_color_group = AW_find_color_group(at->gb_node, AW_TRUE);
+                if (my_color_group == color_group) { // i am of that color group
+                    ungroup_me = 1;
+                }
+            }
+        }
+
+        return ungroup_me;
+    }
+
+    int flag  = this->group_tree(at->leftson, mode, color_group);
+    flag     += this->group_tree(at->rightson, mode, color_group);
+
+    at->gr.grouped = 0;
+
+    if (!flag) { // no son requests to be shown
+        if (at->gb_node) { // i am a group
+            GBDATA *gn = GB_find(at->gb_node, "group_name",NULL,down_level);
             if (gn) {
-                if (strlen(GB_read_char_pntr(gn))>0){
-                    at->gr.grouped=1;
-                    if (mode & 2) flag = 1;
+                if (strlen(GB_read_char_pntr(gn))>0){ // and I have a name
+                    at->gr.grouped     = 1;
+                    if (mode & 2) flag = 1; // do not group non-terminal groups
                 }
             }
         }
@@ -1036,14 +1090,13 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
                 GB_transaction dummy(this->tree_static->gb_species_data);
                 switch(button){
                     case AWT_M_LEFT:
-                        this->mark_tree(at, 1);
+                        this->mark_tree(at, 1, 0);
                         break;
                     case AWT_M_RIGHT:
-
-                        this->mark_tree(at, 0);
+                        this->mark_tree(at, 0, 0);
                         break;
                 }
-                this->exports.refresh                                        = 1;
+                this->exports.refresh = 1;
                 this->tree_static->update_timers(); // do not reload the tree
                 this->tree_root->calc_color();
             }                   /* if type */
