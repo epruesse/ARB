@@ -84,6 +84,7 @@ ifdef LINUX
    ARLIB = gcc -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
+
 ifndef DEBIAN
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
@@ -487,9 +488,12 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/[^ 	]*\.h//g" \
 			-e "s&$(ARBHOME)&\\\$$(ARBHOME)&g" \
+			-e '/^[A-Za-z][A-Za-z0-9_]*\.o:[ ]*$$/d' \
 		>$(@D)/Makefile.2 && \
 		mv $(@D)/Makefile.2 $(@D)/Makefile) || echo nop
 
+#
+#			-e "s/^[A-Za-z0-9_]+\.o: *$/\#deleted/g" \
 #			-e "s/\/[^ 	]*\/INCLUDE/\\\$$(ARBHOME)\/INCLUDE/g"
 
 
