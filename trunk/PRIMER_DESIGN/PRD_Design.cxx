@@ -93,7 +93,7 @@ void PrimerDesign::setPositionalParameters( Range pos1_, Range pos2_, Range leng
     while ( i->nextBase() != SequenceIterator::EOS ) ;
     primer2.max( i->pos );
 
-  // primer1.max > primer2_.min =>  distance must be given
+    // primer1.max > primer2_.min =>  distance must be given
     if ( (primer2.min() <= primer1.max()) && (distance_.min() <= 0) ) {
         error = "using overlapping primer positions you MUST give a primer distance";
         return;
@@ -193,26 +193,36 @@ void PrimerDesign::run ( int print_stages_ )
 
 // add new child to parent or update existing child
 // returns child_index
-int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_ )
+int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ )
 {
-    int  index     = CHAR2CHILD.INDEX[ base_ ];
-    bool is_primer = primer_length.includes( delivered_ );			// new child is primer if true
+  int  index     = CHAR2CHILD.INDEX[ base_ ];
+  bool is_primer = primer_length.includes( delivered_ );			// new child is primer if true
 
-    //
-    // create new node if necessary or update existing node if its a primer
-    //
-    if ( current_->child[index] == NULL ) {
-        if ( is_primer )
-            current_->child[index] = new Node ( current_,base_,pos_,offset_ );	// primer => new child with positive last_base_index
-        else
-            current_->child[index] = new Node ( current_,base_,0 );			// no primer => new child with zero position
-        current_->child_bits |= CHAR2BIT.FIELD[ base_ ];				// update child_bits of current node
-    }
-    else {
-        if ( is_primer ) current_->child[index]->last_base_index = -pos_;		// primer, but already exists => set pos to negative
-    }
+  //
+  // create new node if necessary or update existing node if its a primer
+  //
+  if ( current_->child[index] == NULL ) {
+    total_node_counter_left  += left_;
+    total_node_counter_right += right_;
 
-    return index;
+    if ( is_primer ) {
+      current_->child[index] = new Node ( current_,base_,pos_,offset_ );	// primer => new child with positive last_base_index
+      primer_node_counter_left  += left_;
+      primer_node_counter_right += right_;
+    } else
+      current_->child[index] = new Node ( current_,base_,0 );			// no primer => new child with zero position
+
+    current_->child_bits |= CHAR2BIT.FIELD[ base_ ];				// update child_bits of current node
+  }
+  else {
+    if ( is_primer ) {
+      current_->child[index]->last_base_index = -pos_;				// primer, but already exists => set pos to negative
+      primer_node_counter_left  -= left_;
+      primer_node_counter_right -= right_;
+    }
+  }
+
+  return index;
 }
 
 // check if (sub)tree contains a valid primer
@@ -220,13 +230,34 @@ bool PrimerDesign::treeContainsPrimer ( Node *start )
 {
     if ( start->isValidPrimer() ) return true;
 
-    for ( int i = 0; i < 5; i++ ) {
+    for ( int i = 0; i < 4; i++ ) {
         if ( start->child[i] != NULL ) {
             if ( treeContainsPrimer( start->child[i] ) ) return true;
         }
     }
 
     return false;
+}
+
+// remove non-primer-leaves and branches from the tree
+void PrimerDesign::clearTree ( Node *start, int left_, int right_ )
+{
+  // check children
+  for ( int i = 0; i < 4; i++ )
+    if ( start->child[i] != NULL ) clearTree( start->child[i], left_, right_ );
+
+  // check self
+  if ( start->isLeaf() && (!start->isValidPrimer()) && (start->parent != NULL) ) {
+    total_node_counter_left   -= left_;
+    total_node_counter_right  -= right_;
+
+    // remove self from parent
+    start->parent->child[ CHAR2CHILD.INDEX[ start->base ] ] = NULL;
+    start->parent->child_bits &= ~CHAR2BIT.FIELD[ start->base ];
+
+    // erase node
+    delete start;
+  }
 }
 
 void PrimerDesign::buildPrimerTrees ()
@@ -247,6 +278,10 @@ void PrimerDesign::buildPrimerTrees ()
     if (root2) delete root2;
     root1 = new Node();
     root2 = new Node();
+    total_node_counter_left   = 0;
+    total_node_counter_right  = 0;
+    primer_node_counter_left  = 0;
+    primer_node_counter_right = 0;
 
     //
     // init iterator with sequence
@@ -268,6 +303,7 @@ void PrimerDesign::buildPrimerTrees ()
     // build first tree
     //
     long int primer1_length = primer1.max()-primer1.min()+1;
+    show_status("searching possible primers -- left");
 
     for ( PRD_Sequence_Pos start_pos = primer1.min();
           (start_pos < primer1.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
@@ -289,9 +325,9 @@ void PrimerDesign::buildPrimerTrees ()
         // iterate through sequence till end-of-sequence or primer_length.max bases read
         base = sequence_iterator->nextBase();
         while ( base != SequenceIterator::EOS ) {
-            child_index  = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset );
-            current_node = current_node->child[child_index];
             if (! ((base == 'A') || (base == 'T') || (base == 'U') || (base == 'C') || (base == 'G')) ) break; // stop at IUPAC-Codes
+            child_index  = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset, 1,0 );
+            current_node = current_node->child[child_index];
 
             // get next base
             base = sequence_iterator->nextBase();
@@ -299,6 +335,19 @@ void PrimerDesign::buildPrimerTrees ()
 
         offset++;
     }
+
+    //
+    // clear left tree
+    //
+#ifdef DEBUG
+    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("		clearing left tree\n" );
+#endif
+    show_status("clearing left primertree");
+    clearTree( root1, 1, 0 );
+#ifdef DEBUG
+    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+#endif
 
     //
     // count bases till right range
@@ -317,6 +366,7 @@ void PrimerDesign::buildPrimerTrees ()
     // build second tree
     //
     long int primer2_length = primer2.max()-primer2.min()+1;
+    show_status("searching possible primers -- right");
 
     for ( PRD_Sequence_Pos start_pos = primer2.min();
           (start_pos < primer2.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
@@ -338,9 +388,9 @@ void PrimerDesign::buildPrimerTrees ()
         // iterate through sequence till end-of-sequence or primer_length.max bases read
         base = sequence_iterator->nextBase();
         while ( base != SequenceIterator::EOS ) {
-            child_index = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset+sequence_iterator->delivered );
-            current_node = current_node->child[child_index];
             if (! ((base == 'A') || (base == 'T') || (base == 'U') || (base == 'C') || (base == 'G')) ) break; // stop at unsure bases
+            child_index = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset+sequence_iterator->delivered, 0,1 );
+            current_node = current_node->child[child_index];
 
             // get next base
             base = sequence_iterator->nextBase();
@@ -354,6 +404,19 @@ void PrimerDesign::buildPrimerTrees ()
     }
 
     delete sequence_iterator;
+
+    //
+    // clear left tree
+    //
+#ifdef DEBUG
+    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("		clearing right tree\n" );
+#endif
+    show_status("clearing right primertree");
+    clearTree( root2, 0, 1 );
+#ifdef DEBUG
+    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+#endif
 }
 
 
@@ -373,15 +436,14 @@ PRD_Sequence_Pos PrimerDesign::followUp( Node *node_, deque<char> *primer_, int 
 void PrimerDesign::findNextPrimer( Node *start_at_, int depth_, int *counter_, int direction_ )
 {
     // current node
-    printf (  "findNextPrimer : start_at_ [ %c,%4li,%2i (%c %c %c %c %c) ]\n",
+    printf (  "findNextPrimer : start_at_ [ %c,%4li,%2i (%c %c %c %c) ]\n",
               start_at_->base,
               start_at_->last_base_index,
               start_at_->child_bits,
               (start_at_->child[1] != NULL) ? 'G' : ' ',
               (start_at_->child[0] != NULL) ? 'C' : ' ',
               (start_at_->child[3] != NULL) ? 'T' : ' ',
-              (start_at_->child[2] != NULL) ? 'A' : ' ',
-              (start_at_->child[4] != NULL) ? 'X' : ' ' );
+              (start_at_->child[2] != NULL) ? 'X' : ' ' );
     if ( primer_length.includes(depth_) && start_at_->isValidPrimer() )
         //   {
         //     (*counter_)++;
@@ -443,10 +505,11 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     PRD_Sequence_Pos   pos;
 
 #ifdef DEBUG
-    printf( "root1 : [C %p, G %p, A %p, TU %p, %p]\n",root1->child[0],root1->child[1],root1->child[2],root1->child[3],root1->child[4] );
-    printf( "root2 : [C %p, G %p, A %p, TU %p, %p]\n",root2->child[0],root2->child[1],root2->child[2],root2->child[3],root2->child[4] );
+    printf( "root1 : [C %p, G %p, A %p, TU %p]\n",root1->child[0],root1->child[1],root1->child[2],root1->child[3] );
+    printf( "root2 : [C %p, G %p, A %p, TU %p]\n",root2->child[0],root2->child[1],root2->child[2],root2->child[3] );
 #endif
 
+    show_status("match possible primers against sequence -- forward");
     base    = sequence_iterator->nextBase();
     while ( base != SequenceIterator::EOS ) {
         pos = sequence_iterator->pos;
@@ -487,6 +550,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     fifo1->flush();
     fifo2->flush();
 
+    show_status("match possible primers against sequence -- backward");
     base = INVERT.BASE[ sequence_iterator->nextBase() ];
     while ( base != SequenceIterator::EOS ) {
         pos = sequence_iterator->pos;
@@ -583,7 +647,7 @@ void PrimerDesign::convertTreesToLists ()
     cur_item = NULL;
     stack = new deque< pair<Node*,int> >;
     // push children of root on stack
-    for ( int index = 0; index < 5; index++ )
+    for ( int index = 0; index < 4; index++ )
         if ( root1->child[index] != NULL ) {
             new_pair = pair<Node*,int>( root1->child[index],1 );
             stack->push_back( new_pair );
@@ -624,7 +688,7 @@ void PrimerDesign::convertTreesToLists ()
             }
 
             // push children on stack
-            for ( int index = 0; index < 5; index++ )
+            for ( int index = 0; index < 4; index++ )
                 if ( cur_node->child[index] != NULL ) {
                     new_pair = pair<Node*,int>( cur_node->child[index],depth+1 );
                     stack->push_back( new_pair );
@@ -653,7 +717,7 @@ void PrimerDesign::convertTreesToLists ()
     stack->clear();
     bool distance_matched = false;
     // push children of root on stack
-    for ( int index = 0; index < 5; index++ )
+    for ( int index = 0; index < 4; index++ )
         if ( root2->child[index] != NULL )
         {
             new_pair = pair<Node*,int>( root2->child[index],1 );
@@ -670,7 +734,7 @@ void PrimerDesign::convertTreesToLists ()
             stack->pop_back();
 
             // push children on stack
-            for ( int index = 0; index < 5; index++ )
+            for ( int index = 0; index < 4; index++ )
                 if ( cur_node->child[index] != NULL )
                 {
                     new_pair = pair<Node*,int>( cur_node->child[index],depth+1 );
