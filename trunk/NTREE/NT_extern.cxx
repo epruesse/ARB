@@ -1203,7 +1203,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genome_db) GEN_create_genes_submenu(awm, true, ntw);
+        if (is_genome_db) GEN_create_genes_submenu(awm, true/*, ntw*/);
 
         // --------------------------------------------------------------------------------
         //     Sequence
@@ -1508,7 +1508,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode(0, "select.bitmap",   "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
     awm->create_mode(0, "mark.bitmap",     "mode_mark.hlp",   AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK  );
     awm->create_mode(0, "group.bitmap",    "mode_group.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP );
-    awm->create_mode(0, "zoom.bitmap",     "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM  );
+    awm->create_mode(0, "pzoom.bitmap",     "mode_pzoom.hlp",  AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM  );
     awm->create_mode(0, "lzoom.bitmap",    "mode_lzoom.hlp",  AWM_EXP, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM );
     awm->create_mode(0, "modify.bitmap",   "mode_info.hlp",   AWM_ALL, (AW_CB)NT_modify_cb,  (AW_CL)ntw, (AW_CL)AWT_MODE_MOD   );
     awm->create_mode(0, "www_mode.bitmap", "mode_www.hlp",    AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_WWW   );
@@ -1623,7 +1623,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     if (is_genome_db) {
         awm->button_length(4);
-        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map, (AW_CL)ntw);
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0/*, (AW_CL)ntw*/); // initial gene map
         awm->help_text("gene_map.hlp");
         awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
     }
@@ -1686,12 +1686,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->insert_default_option("6",0,6);
         awm->update_option_menu();
     }else{
-        awm->get_root()->awar(AWAR_SECURITY_LEVEL)->write_int(6);
+        awr->awar(AWAR_SECURITY_LEVEL)->write_int(6);
     }
 
     awm->set_info_area_height( last_liney+4 ); windowHeight = last_liney+4;
     awm->set_bottom_area_height( 0 );
-    awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
+    awr->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
     //  -----------------------------------
     //  Autostarts for development
@@ -1703,6 +1703,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     // NT_test_AWT(awm);
     // NT_test_input_mask(awm->get_root());
+    GEN_map_first(awr)->show();
 
 #endif // DEVEL_RALF
 
