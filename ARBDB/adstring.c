@@ -2318,6 +2318,14 @@ void GB_delete_set(GBDATA_SET *set){
     GB_FREE(set);
 }
 
+/* be CAREFUL : this function is used to save ARB ASCII database (i.e. properties)
+ * used as well to save perl macros
+ *
+ * when changing GBS_fwrite_string -> GBS_fread_string needs to be fixed as well
+ *
+ * always keep in mind, that many users have databases/macros written with older
+ * versions of this function. They MUST load proper!!!
+ */
 GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
     register unsigned char *strng = (unsigned char *)strngi;
     register int c;
@@ -2331,9 +2339,9 @@ GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
             else if (c == '\t')
                 putc('t',out);
             else if ( c<25 ) {
-                putc(c+'@',out);
+                putc(c+'@',out); /* characters ASCII 0..24 encoded as \@..\X    (\n and \t are done above) */
             }else{
-                putc(c+('0'-25),out);
+                putc(c+('0'-25),out);/* characters ASCII 25..31 encoded as \0..\6 */
             }
         }else if (c == '"'){
             putc('\\',out);
@@ -2352,33 +2360,95 @@ GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
 /*  Read a string from a file written by GBS_fwrite_string,
  *  Searches first '"'
  *  if optimize == 0 than much more memory than needed is allocated, but faster
-*/
+ *
+ *  WARNING : changing this function affects perl-macro execution (read warnings for GBS_fwrite_string)
+ *  any changes should be done in GBS_fconvert_string too.
+ */
+
 char *GBS_fread_string(FILE *in,int optimize){
-    void *strstr = GBS_stropen(1024);
-    register int x;
+    void         *strstr = GBS_stropen(1024);
+    register int  x;
+
     while ((x = getc(in)) != '"' ) if (x == EOF) break; /* Search first '"' */
-    while ((x = getc(in)) != '"' ){
-        if (x == EOF) break;
-        if (x == '\\'){
-            x = getc(in); if (x==EOF) break;
-            if (x == 'n'){
-                GBS_chrcat(strstr,'\n');continue;
+
+    if (x != EOF) {
+        while ((x = getc(in)) != '"' ){
+            if (x == EOF) break;
+            if (x == '\\'){
+                x = getc(in); if (x==EOF) break;
+                if (x == 'n') {
+                    GBS_chrcat(strstr,'\n');
+                    continue;
+                }
+                if (x == 't') {
+                    GBS_chrcat(strstr,'\t');
+                    continue;
+                }
+                if (x>='@' && x <='@'+ 25) {
+                    GBS_chrcat(strstr,x-'@');
+                    continue;
+                }
+                if (x>='0' && x <='9') {
+                    GBS_chrcat(strstr,x-('0'-25));
+                    continue;
+                }
+                /* all other backslashes are simply skipped */
             }
-            if (x == 't'){
-                GBS_chrcat(strstr,'\t');continue;
-            }
-            if (x>='@' && x <='@'+ 25) {
-                GBS_chrcat(strstr,x-'@');continue;
-            }
-            if (x>='0' && x <='9') {
-                GBS_chrcat(strstr,x-('0'-25));continue;
-            }
+            GBS_chrcat(strstr,x);
         }
-        GBS_chrcat(strstr,x);
     }
     return GBS_strclose(strstr,optimize);
 }
 
+/* does similiar decoding as GBS_fread_string but works directly on an existing buffer
+ * (WARNING : GBS_fconvert_string is used by gb_read_file which reads ARB ASCII databases!!)
+ *
+ * inserts \0 behind decoded string (removes the closing '"')
+ * returns a pointer behind the end (") of the _encoded_ string
+ * returns NULL if a 0-character is found
+ */
+char *GBS_fconvert_string(char *buffer) {
+    char         *t = buffer;
+    char         *f = buffer;
+    register int  x;
+
+    ad_assert(f[-1] == '"');
+    /* the opening " has already been read */
+
+    while ((x = *f++) != '"') {
+        if (!x) break;
+
+        if (x == '\\') {
+            x = *f++;
+            if (!x) break;
+
+            if (x == 'n') {
+                *t++ = '\n';
+                continue;
+            }
+            if (x == 't') {
+                *t++ = '\t';
+                continue;
+            }
+            if (x>='@' && x <='@'+ 25) {
+                *t++ = x-'@';
+                continue;
+            }
+            if (x>='0' && x <='9') {
+                *t++ = x-('0'-25);
+                continue;
+            }
+            /* all other backslashes are simply skipped */
+        }
+        *t++ = x;
+    }
+
+    if (!x) return 0;           // error (string should not contain 0-character)
+    ad_assert(x == '"');
+
+    t[0] = 0;
+    return f;
+}
 
 char *GBS_replace_tabs_by_spaces(const char *text){
     int tlen = strlen(text);
