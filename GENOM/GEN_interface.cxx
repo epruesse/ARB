@@ -276,7 +276,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
 
                 GBDATA *gb_organism = GEN_get_current_organism(gb_main, awr);
                 if (gb_organism) {
-                    GBDATA     *gb_seq   = GBT_read_sequence(gb_organism, "ali_genom");
+                    GBDATA     *gb_seq   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
                     const char *seq_data = GB_read_char_pntr(gb_seq);
 
                     long  len    = end_pos-start_pos+1;
@@ -358,6 +358,7 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_GENE_DEST, "" ,   aw_def);
     aw_root->awar_string(AWAR_GENE_POS1, "" ,   aw_def);
     aw_root->awar_string(AWAR_GENE_POS2, "" ,   aw_def);
+    aw_root->awar_int(AWAR_GENE_COMPLEMENT, 0,   aw_def);
 
     aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,   aw_def);
 }
@@ -555,29 +556,57 @@ void gene_create_cb(AW_window *aww){
     char     *dest         = aw_root->awar(AWAR_GENE_DEST)->read_string();
     int       pos1         = atoi(aw_root->awar(AWAR_GENE_POS1)->read_string());
     int       pos2         = atoi(aw_root->awar(AWAR_GENE_POS2)->read_string());
+    int       complement   = aw_root->awar(AWAR_GENE_COMPLEMENT)->read_int();
     GBDATA   *gb_gene_data = GEN_get_current_gene_data(gb_main, aw_root);
     GBDATA   *gb_dest      = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
 
-    if (!gb_gene_data) error = "Please select a species first";
-    else if (pos2<pos1) error     = "Illegal positions (endpos has to be greater than startpos)";
-    else if (gb_dest) error  = GB_export_error("Sorry: gene '%s' already exists", dest);
+    if (!gb_gene_data) error  = "Please select a species first";
+    else if (gb_dest) error   = GBS_global_string("Gene '%s' already exists", dest);
     else {
-        gb_dest = GEN_create_gene_rel_gene_data(gb_gene_data, dest);
-        if (gb_dest) {
-            GBDATA *gb_pos     = GB_create(gb_dest, "pos_begin", GB_INT);
-            if (!gb_pos) error = GB_get_error();
-            else    GB_write_int(gb_pos, pos1);
-
-            if (!error) {
-                gb_pos             = GB_create(gb_dest, "pos_end", GB_INT);
-                if (!gb_pos) error = GB_get_error();
-                else GB_write_int(gb_pos, pos2);
-            }
+        GB_ERROR pos_error = 0;
+        if (pos1<1 || pos2<1) {
+            pos_error = "positions have to be above zero";
+        }
+        else if (pos2<pos1) {
+            pos_error = "endpos has to be greater than startpos";
         }
         else {
-            error = GB_get_error();
+            GBDATA *gb_organism   = GB_get_father(gb_gene_data);
+            GBDATA *gb_genome     = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+            int     genome_length = GB_read_count(gb_genome);
+
+            if (pos2 > genome_length) {
+                pos_error = GBS_global_string("endpos is behind sequence end (%i)", genome_length);
+            }
         }
-        if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+
+        if (pos_error) {
+            error = GBS_global_string("Illegal position(s): %s", pos_error);
+        }
+        else {
+            gb_dest = GEN_create_gene_rel_gene_data(gb_gene_data, dest);
+            if (gb_dest) {
+                GBDATA *gb_pos     = GB_create(gb_dest, "pos_begin", GB_INT);
+                if (!gb_pos) error = GB_get_error();
+                else    GB_write_int(gb_pos, pos1);
+
+                if (!error) {
+                    gb_pos             = GB_create(gb_dest, "pos_end", GB_INT);
+                    if (!gb_pos) error = GB_get_error();
+                    else GB_write_int(gb_pos, pos2);
+                }
+
+                if (!error) {
+                    GBDATA *gb_compl     = GB_create(gb_dest, "complement", GB_BYTE);
+                    if (!gb_compl) error = GB_get_error();
+                    else    GB_write_byte(gb_compl, complement);
+                }
+            }
+            else {
+                error = GB_get_error();
+            }
+            if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+        }
     }
     if (!error) GB_commit_transaction(gb_main);
     else    GB_abort_transaction(gb_main);
@@ -598,14 +627,18 @@ AW_window *create_gene_create_window(AW_root *root)
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("label"); aws->create_button(0,"Please enter the name\nof the new gene");
+    aws->at("label"); aws->create_autosize_button(0,"Please enter the name\nof the new gene");
     aws->at("input"); aws->create_input_field(AWAR_GENE_DEST,15);
 
-    aws->at("label1"); aws->create_button(0,"Start position");
+    aws->at("label1"); aws->create_autosize_button(0,"Start position");
     aws->at("input1"); aws->create_input_field(AWAR_GENE_POS1,12);
 
-    aws->at("label2"); aws->create_button(0,"End position");
+    aws->at("label2"); aws->create_autosize_button(0,"End position");
     aws->at("input2"); aws->create_input_field(AWAR_GENE_POS2,12);
+
+    aws->at("toggle");
+    aws->label("Complentary strand");
+    aws->create_toggle(AWAR_GENE_COMPLEMENT);
 
     aws->at("ok");
     aws->callback(gene_create_cb);
