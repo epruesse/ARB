@@ -761,11 +761,9 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
                     str = aci_result;
                 }
                 else {          // error
-                    const char *plain_error = GB_get_error();
-                    error                   = GBS_global_string("While applying '%s' on '%s': %s", aci_srt, str, plain_error);
-
+                    error = GB_get_error();
                     free(str);
-                    str = GBS_global_string_copy("<error: %s>", plain_error);
+                    str   = GBS_global_string_copy("<error: %s>", error);
                 }
             }
         }
