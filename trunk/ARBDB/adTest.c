@@ -61,23 +61,23 @@ void testContainer(GB_MAIN_TYPE *Main,GBCONTAINER *gbc, long server_id, int key_
     if (gbc->server_id != server_id) {
         errGBC(gbc, actQuark, "illegal server id");
     }
-	
+
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (item=0; item<gbc->d.nheader; item++) {
         GBDATA *gbd = GB_HEADER_LIST_GBD(header[item]);
         GBCONTAINER *father;
         int 	type, quark = header[item].flags.key_quark;
-        
+
         if (!gbd) continue;
 
         if (quark>=Main->sizeofkeys) {
             fprintf(stderr, "Illegal quark %i\n", quark);
             continue;
         }
-			
+
 
         if (!gbd) errGBC(gbc,key_quark,"NULL-GBDATA in header-list");
-		
+
         type = GB_TYPE(gbd);
 
         if (type==GB_DB) testContainer(Main,(GBCONTAINER*)gbd, server_id, quark);
@@ -116,7 +116,7 @@ void gb_testDB(GBDATA *gbd)
 
     gbc = GB_FATHER(gbd);
     Main = GBCONTAINER_MAIN(gbc);
-    
+
     if (!gbc) {
         fprintf(stderr, "(GBDATA*)0x%p has no father\n", gbd);
         err_hook();
@@ -124,7 +124,7 @@ void gb_testDB(GBDATA *gbd)
     if (!Main) {
         fprintf(stderr, "(GBCONTAINER*)0x%p has no main-entry\n", gbc);
         err_hook();
-    } 
+    }
 
     gbc = Main->data;
     if (!gbc) {
@@ -140,7 +140,7 @@ void gb_testDB(GBDATA *gbd)
         errGBC(Main->dummy_father, actQuark, "illegal server id");
     }
 
-    if (!err) testContainer(Main,gbc,server_id,0);	
+    if (!err) testContainer(Main,gbc,server_id,0);
 
     printf("testDB passed.\n");
 }
@@ -149,9 +149,9 @@ void GB_dump(GBDATA *gbd) {
     long type = GB_TYPE(gbd);
     const char *type_name = 0;
     static int indent;
-    int i;
+/*     int i; */
     const char *content = 0;
-    
+
     switch (type) {
         case GB_INT: {
             type_name = "GB_INT";
@@ -205,42 +205,42 @@ void GB_dump(GBDATA *gbd) {
             break;
         }
     }
-    
-    if (content==0) content = "<unknown>";    
+
+    if (content==0) content = "<unknown>";
     /*for (i=0; i<indent; ++i) printf(" ");*/
-    printf("%*s gbd=%p type=%s content='%s'\n", indent, "", gbd, type_name, content);    
-    
+    printf("%*s gbd=%p type=%s content='%s'\n", indent, "", gbd, type_name, content);
+
     if (type==GB_DB) {
-        GBCONTAINER *gbc = (GBCONTAINER*)gbd;        
+        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
         GBDATA *gbp;
-        
-        if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);            
+
+        if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
         for (gbp = GB_find(gbd, 0, 0, down_level); gbp; gbp = GB_find(gbp, 0, 0, this_level|search_next)) {
             ++indent;
             GB_dump(gbp);
             --indent;
         }
-    }    
+    }
 }
 
-char *GB_ralfs_test(GBDATA *gb_main) 
-{ 
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main); 
-    GB_push_transaction(gb_main); 
-    system("date"); 
-    gb_create_dictionaries(Main,10000000); 
-    system("date"); 
-    GB_pop_transaction(gb_main); 
+char *GB_ralfs_test(GBDATA *gb_main)
+{
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    GB_push_transaction(gb_main);
+    system("date");
+    gb_create_dictionaries(Main,10000000);
+    system("date");
+    GB_pop_transaction(gb_main);
 
-    return NULL; 
-} 
+    return NULL;
+}
 
-#ifndef NDEBUG 
-char *GB_ralfs_menupoint(GBDATA *main_data) 
-{ 
-    return GB_ralfs_test(main_data); 
-} 
-#endif 
+#ifndef NDEBUG
+char *GB_ralfs_menupoint(GBDATA *main_data)
+{
+    return GB_ralfs_test(main_data);
+}
+#endif
 
 
 

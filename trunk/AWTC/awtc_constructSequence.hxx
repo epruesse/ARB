@@ -1,3 +1,9 @@
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
+
 #ifndef awtc_constructSequence_hxx_included
 #define awtc_constructSequence_hxx_included
 

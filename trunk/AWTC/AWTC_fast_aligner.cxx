@@ -1,5 +1,12 @@
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 1998                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
+
+
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <ctype.h>
 #include <memory.h>
 #include <math.h>
@@ -11,7 +18,7 @@
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
- 
+
 #include "awtc_next_neighbours.hxx"
 #include "awtc_seq_search.hxx"
 #include "awtc_ClustalV.hxx"
@@ -46,23 +53,23 @@ char AWTC_complementBase(char c, char T_or_U)
     {
         case 'A': n = T_or_U; break;			// A <-> TU
         case 'a': n = tolower(T_or_U); break;
-        case 'U':				
+        case 'U':
         case 'T': n = 'A'; break;
         case 'u':
         case 't': n = 'a'; break;
 
         case 'C': n = 'G'; break;			// C <-> G
         case 'c': n = 'g'; break;
-        case 'G': n = 'C'; break;			
+        case 'G': n = 'C'; break;
         case 'g': n = 'c'; break;
-	    
+
         case 'M': n = 'K'; break;			// M=A/C <-> TU/G=K
         case 'm': n = 'k'; break;
         case 'K': n = 'M'; break;
-        case 'k': n = 'm'; break;    
+        case 'k': n = 'm'; break;
 
         case 'R': n = 'Y'; break;			// R=A/G <-> TU/C=Y
-        case 'r': n = 'y'; break;    
+        case 'r': n = 'y'; break;
         case 'Y': n = 'R'; break;
         case 'y': n = 'r'; break;
 
@@ -74,7 +81,7 @@ char AWTC_complementBase(char c, char T_or_U)
         case 'H': n = 'D'; break;    			// H=A/C/TU <-> TU/G/A=D
         case 'h': n = 'd'; break;
         case 'D': n = 'H'; break;
-        case 'd': n = 'h'; break;    
+        case 'd': n = 'h'; break;
 
         case 'S':					// S=C/G <-> G/C=S
         case 's':
@@ -84,7 +91,7 @@ char AWTC_complementBase(char c, char T_or_U)
         case 'n':
         case '.':
         case '-': break;
-	    
+
         default: break;
     }
 
@@ -94,29 +101,29 @@ char AWTC_complementBase(char c, char T_or_U)
 char *AWTC_reverseString(const char *s, int len) {
     char *n = (char*)malloc(len+1);
     int p;
-    
+
     if (!n) {
         GB_memerr();
         return 0;
     }
-    
+
     len--;
     for (p=0; len>=0; p++,len--) {
         n[p] = s[len];
     }
     n[p] = 0;
-    
+
     return n;
 }
 char *AWTC_complementString(const char *s, int len, char T_or_U) {
     char *n = (char*)malloc(len+1);
     int p;
-    
+
     for (p=0; p<len; p++) {
         n[p] = AWTC_complementBase(s[p], T_or_U);
     }
     n[p] = 0;
-    
+
     return n;
 }
 
@@ -125,23 +132,23 @@ GB_ERROR AWTC_mirrorSequence(char *seq, long length, GB_alignment_type alignment
     long i,l;
     char T_or_U = 0;
     GB_ERROR error = 0;
-    
+
     switch (alignment_type)
     {
         case GB_AT_RNA: T_or_U = 'U'; break;
         case GB_AT_DNA: T_or_U = 'T'; break;
         default: error = GB_export_error("Cannot turn sequence for current alignment-type"); break;
     }
-    
+
     if (!error) {
         for (i=0,l=length-1; i<l; i++,l--) {
             char c = seq[i];
-	
+
             seq[i] = AWTC_complementBase(seq[l], T_or_U);
             seq[l] = AWTC_complementBase(c, T_or_U);
         }
     }
-    
+
     return error;
 }
 
@@ -149,28 +156,28 @@ GB_ERROR AWTC_mirrorSequence(char *seq, long length, GB_alignment_type alignment
 
 static inline GB_ERROR species_not_found(GB_CSTR species_name) {
     return GB_export_error("No species '%s' found!", species_name);
-} 
+}
 
 extern GBDATA *gb_main;
 
 static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_protection) {
     GBDATA *gbd = GBT_read_sequence(gb_species, ali);
     GB_ERROR error = 0;
-    
+
     if (!gbd) {
         char *name = GBT_read_name(gb_species);
         error = GB_export_error("No 'data' found for species '%s'", name ? name : "(unknown)");
     }
     else {
         int my_protection = GB_read_security_write(gbd);
-	
+
         if (my_protection<=max_protection) { // ok
             char *seq = GB_read_string(gbd);
             int length = GB_read_string_count(gbd);
             GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, ali);
-	    
-            error = AWTC_mirrorSequence(seq, length, ali_type);	    
-	    
+
+            error = AWTC_mirrorSequence(seq, length, ali_type);
+
             if (!error) {
                 error = GB_write_string(gbd, seq);
             }
@@ -179,9 +186,9 @@ static GB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prote
             char *name = GBT_read_name(gb_species);
             error = GB_export_error("Cannot reverse-complement species '%s' because of protection level", name ? name : "(unknown)");
         }
-	
+
     }
-    
+
     return error;
 }
 
@@ -193,26 +200,26 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
     GB_CSTR alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
     GB_ERROR error = 0;
     int max_protection = root->awar(FA_AWAR_PROTECTION)->read_int();
-    
+
     switch (revComplWhat) {
         case 0: { // current species
             GB_CSTR species_name = root->awar(AWAR_SPECIES_NAME)->read_string();
-            GBDATA *gb_species = GBT_find_species(gb_main, species_name); 
+            GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (!gb_species) error = species_not_found(species_name);
             if (!error) error = reverseComplement(gb_species, alignment, max_protection);
             break;
         }
         case 1: { // marked species
             GBDATA *gb_species = GBT_first_marked_species(gb_main);
-	    
+
             if (!gb_species) {
                 error = GB_export_error("There is no marked species");
             }
             while (gb_species) {
                 error = reverseComplement(gb_species, alignment, max_protection);
                 if (error) break;
-                gb_species = GBT_next_marked_species(gb_species);		
-            } 
+                gb_species = GBT_next_marked_species(gb_species);
+            }
             break;
         }
         case 2: { // selected species
@@ -221,7 +228,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
             AWTC_get_next_selected_species  get_next_selected_species = cd->get_next_selected_species;
             int count = 0;
             GBDATA *gb_species = get_first_selected_species(&count);
-	    
+
             if (!gb_species) {
                 error = GB_export_error("There is no selected species!");
             }
@@ -229,7 +236,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
                 error = reverseComplement(gb_species, alignment, max_protection);
                 if (error) break;
                 gb_species = get_next_selected_species();
-            } 
+            }
             break;
         }
         default: {
@@ -237,7 +244,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
             break;
         }
     }
-    
+
     if (error) {
         aw_message(error);
         GB_abort_transaction(gb_main);
@@ -253,15 +260,15 @@ class UnalignedBasesList;
 class UnalignedBases
 {
     int start,			// absolute positions
-        end;		
+        end;
     UnalignedBases *next;
-    
+
     friend class UnalignedBasesList;
-    
-public:    
+
+public:
     UnalignedBases(int pos1, int posn) 		{ start = pos1; end = posn; next = 0; }
     ~UnalignedBases() 				{ delete next; }
-    
+
     int get_start() const { return start; }
     int get_end() const { return end; }
 };
@@ -269,17 +276,17 @@ public:
 class UnalignedBasesList
 {
     UnalignedBases *head;
-public:    
+public:
     UnalignedBasesList() { head = 0; }
     ~UnalignedBasesList() { delete head; }
-    
+
     void clear() { delete head; head = 0; }
     int is_empty() const { return head==0; }
-    
+
     void memorize(int start, int end) {
-#ifdef DEBUG	
+#ifdef DEBUG
         printf("memorize %i-%i\n", start, end);
-#endif	
+#endif
         awtc_assert(start<=end);
         UnalignedBases *ub = new UnalignedBases(start, end);
         ub->next = head;
@@ -287,19 +294,19 @@ public:
     }
     void recall(int *start, int *end) {
         UnalignedBases *ub = head;
-	
+
         if (start) *start = ub->start;
         if (end) *end = ub->end;
-	
-#ifdef DEBUG	
+
+#ifdef DEBUG
         printf("recall %i-%i\n", ub->start, ub->end);
-#endif	
-	
+#endif
+
         head = head->next;
         ub->next = 0;
         delete ub;
     }
-    
+
     void add(UnalignedBasesList *ubl);
     void add_and_recalc_positions(UnalignedBasesList *ubl, AWTC_CompactedSubSequence *oldSequence, AWTC_CompactedSubSequence *newSequence);
 };
@@ -312,7 +319,7 @@ inline void UnalignedBasesList::add(UnalignedBasesList *ubl)
         }
         else {
             UnalignedBases *last = head;
-	    
+
             while (last->next) {
                 last = last->next;
             }
@@ -326,39 +333,39 @@ inline void UnalignedBasesList::add_and_recalc_positions(UnalignedBasesList *ubl
 {
     if (!ubl->is_empty()) {
         UnalignedBases *toCorrect = ubl->head;
-	
+
         awtc_assert(oldSequence->length()==newSequence->length());
-	
+
         add(ubl);
         while (toCorrect) {
             int cs = oldSequence->compPosition(toCorrect->start);	// compressed positions in oldSequence = compressed positions in newSequence
             int ce = oldSequence->compPosition(toCorrect->end);
-	    
-#ifdef DEBUG	    
+
+#ifdef DEBUG
             printf("add_and_recalc_positions %i/%i -> ", toCorrect->start, toCorrect->end);
-#endif	    
-	    
+#endif
+
             toCorrect->start = newSequence->expdPosition(cs) - newSequence->no_of_gaps_before(cs);
             toCorrect->end = newSequence->expdPosition(ce)   + newSequence->no_of_gaps_after(ce);
-	    
+
             // 	    if (cs>0) {
             // 		toCorrect->start = newSequence->expdPosition(cs-1)+1;	// first position after left neighbour (to get all gaps left of part)
             // 	    }
             // 	    else {
             // 		toCorrect->start = newSequence->expdStartPosition(); //newSequence->expdPosition(cs);
             // 	    }
-	    
+
             // 	    if (ce<newSequence->length()) {
             // 		toCorrect->end = newSequence->expdPosition(ce+1)-1; 	// last position before right neighbour (to get all gaps right of part)
             // 	    }
             // 	    else {
             // 		toCorrect->end = newSequence->expdPosition(ce);
             // 	    }
-	    
-#ifdef DEBUG	    
+
+#ifdef DEBUG
             printf("%i/%i\n", toCorrect->start, toCorrect->end);
-#endif	    
-	    
+#endif
+
             toCorrect = toCorrect->next;
         }
     }
@@ -458,13 +465,13 @@ static inline void dump_rest(const char *seq, long len, int idx, long offset)
 static void dump_n_compare(const char *text, const char *seq1, long len1, const char *seq2, long len2)
 {
     long offset = 0;
-    
+
     printf(" Comparing %s:\n", text);
-    
+
     while (len1>0 && len2>0)
     {
         long done = 0;
-	
+
         if (len1>=BUFLEN && len2>=BUFLEN)
         {
             dump_n_compare_one(seq1, seq2, done=BUFLEN, offset);
@@ -550,8 +557,8 @@ static inline GB_ERROR bufferTooSmall()
 static inline long insertsToNextBase(AWTC_alignBuffer *alignBuffer, const AWTC_SequencePosition& master)
 {
     int inserts;
-    int nextBase; 
-    
+    int nextBase;
+
     if (master.rightOf()>0) {
         nextBase = master.expdPosition();
     }
@@ -559,7 +566,7 @@ static inline long insertsToNextBase(AWTC_alignBuffer *alignBuffer, const AWTC_S
         nextBase = master.sequence().expdPosition(master.sequence().length());
     }
     inserts = nextBase-alignBuffer->offset();
-    
+
     return inserts;
 }
 
@@ -569,7 +576,7 @@ static inline void insertBase(AWTC_alignBuffer *alignBuffer,
 {
     char slaveBase = *slave.text();
     char masterBase = *master.text();
-    
+
     alignBuffer->set(slaveBase, alignQuality(slaveBase, masterBase));
     report->count_aligned_base(slaveBase!=masterBase);
     ++slave;
@@ -591,28 +598,28 @@ static inline void insertGap(AWTC_alignBuffer *alignBuffer,
                              AWTC_fast_align_report *report)
 {
     char masterBase = *master.text();
-    
+
     alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, masterBase));
     report->count_aligned_base(masterBase!=GAP_CHAR);
     ++master;
 }
 
 static inline GB_ERROR insertClustalValigned(AWTC_alignBuffer *alignBuffer,
-                                             AWTC_SequencePosition& master, 
-                                             AWTC_SequencePosition& slave, 
+                                             AWTC_SequencePosition& master,
+                                             AWTC_SequencePosition& slave,
                                              const char *masterAlignment, const char *slaveAlignment, long alignmentLength,
                                              AWTC_fast_align_report *report)
     // inserts bases of 'slave' to 'alignBuffer' according to alignment in 'masterAlignment' and 'slaveAlignment'
 {
 #define ACID '*'	// contents of 'masterAlignment' and 'slaveAlignment'
-#define GAP  '-'    
+#define GAP  '-'
 
     int pos;
     int baseAtLeft = 0;		// TRUE -> last position in alignBuffer contains a base
 
     for (pos=0; pos<alignmentLength; pos++) {
         long insert = insertsToNextBase(alignBuffer, master); // in expanded seq
-	
+
         if (masterAlignment[pos]==ACID) {
             if (insert>0) {
                 if (insert>alignBuffer->free()) return bufferTooSmall();
@@ -634,41 +641,41 @@ static inline GB_ERROR insertClustalValigned(AWTC_alignBuffer *alignBuffer,
         else {
             int slave_bases;
             //int memo = 0;
-	    
+
             awtc_assert(masterAlignment[pos]==GAP);
             for (slave_bases=1; pos+slave_bases<alignmentLength && masterAlignment[pos+slave_bases]==GAP; slave_bases++) {
                 ; // count gaps in master (= # of slave bases to insert)
             }
             if (!baseAtLeft && insert>slave_bases) {
                 int ins_gaps = insert-slave_bases;
-		
+
                 awtc_assert(alignBuffer->free()>=ins_gaps);
                 alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ins_gaps);
                 insert -= ins_gaps;
             }
-	    
+
             if (insert<slave_bases) { // master has less gaps than slave bases to insert
-                report->memorize_insertion(master.expdPosition(), slave_bases-insert); 
+                report->memorize_insertion(master.expdPosition(), slave_bases-insert);
             }
             else if (insert>slave_bases) { // master has more gaps than slave bases to insert
                 awtc_assert(baseAtLeft);
             }
-	    
+
             int start = slave.expdPosition(); // memorize base positions without counterpart in master
             int end = slave.expdPosition(slave_bases-1);
             unaligned_bases.memorize(start, end);
-	    
+
             if (slave_bases>alignBuffer->free()) return bufferTooSmall();
             insertSlaveBases(alignBuffer, slave, slave_bases, report);
             pos += slave_bases-1; // -1 compensates for()-increment
             baseAtLeft = 1;
         }
     }
-    
+
     return 0;
 
 #undef GAP
-#undef ACID    
+#undef ACID
 }
 
 static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
@@ -685,8 +692,8 @@ static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
             long min_insert = insert;
 
             report->memorize_insertion(master.expdPosition(), -insert);
-	    
-            while (insert<0 && partLength) { 
+
+            while (insert<0 && partLength) {
                 if (insert<min_insert) min_insert = insert;
                 if (!alignBuffer->free()) {
                     return bufferTooSmall();
@@ -695,7 +702,7 @@ static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
                 partLength--;
                 insert = insertsToNextBase(alignBuffer,master);
             }
-	    
+
             awtc_assert(partLength>=0);
             if (partLength==0) { // all inserted
                 return NULL;
@@ -703,7 +710,7 @@ static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
         }
 
         awtc_assert(insert>=0);
-	    
+
         if (insert>0) { // insert gaps into slave
             if (insert>alignBuffer->free()) return bufferTooSmall();
             alignBuffer->set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), insert);
@@ -733,7 +740,7 @@ static inline GB_ERROR insertAligned(AWTC_alignBuffer *alignBuffer,
     return NULL;
 }
 
-static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long moffset, long mlength, 
+static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master, long moffset, long mlength,
                                          const AWTC_CompactedSubSequence& slaveSequence, long soffset, long slength,
                                          int max_seq_length,
                                          AWTC_alignBuffer *alignBuffer,
@@ -753,17 +760,17 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
             printf("ClustalV-Align:\n");
             printf(" mseq = '%s'\n", lstr(mtext, mlength));
             printf(" sseq = '%s'\n", lstr(stext, slength));
-#endif	    
+#endif
 
             int is_dna = -1;
-	    
+
             switch (global_alignmentType) {
                 case GB_AT_RNA:
                 case GB_AT_DNA: is_dna = 1; break;
-		    
+
                 case GB_AT_PRO:
                 case GB_AT_AMI: is_dna = 0; break;
-		    
+
                 default: error = GB_export_error("Unknown alignment type - aligner aborted"); break;
             }
 
@@ -775,7 +782,7 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                                             max_seq_length,
                                             &maligned, &saligned, &len, &score);
             }
-	    
+
             if (!error) {
 #if defined(DEBUG) && 1
                 printf("ClustalV returns:\n");
@@ -793,10 +800,10 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                 AWTC_SequencePosition master2(master->sequence(), moffset);
                 AWTC_SequencePosition slave2(slaveSequence, soffset);
                 char *cmp = new char[len];
-	    
+
                 for (int l=0; l<len; l++) {
                     int gaps = 0;
-		
+
                     if (maligned[l]=='*') {
                         maligned[l] = *master2.text();
                         ++master2;
@@ -804,7 +811,7 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                     else {
                         gaps++;
                     }
-		
+
                     if (saligned[l]=='*') {
                         saligned[l] = *slave2.text();
                         ++slave2;
@@ -821,14 +828,14 @@ static inline GB_ERROR cannot_fast_align(const AWTC_CompactedSubSequence& master
                 printf("          '%s'\n", lstr(cmp,len));
 
                 delete [] cmp;
-#endif	    
+#endif
             }
         }
         else { // master is empty here, so we just copy in the slave bases
             if (slength<=alignBuffer->free()) {
                 int start = slaveSequence.expdPosition(soffset);
                 int end = slaveSequence.expdPosition(soffset+slength-1);
-		
+
                 unaligned_bases.memorize(start, end);
                 // 		int fill = start-alignBuffer->offset();
                 // 		if (fill>0) {
@@ -865,7 +872,7 @@ do								\
 }								\
 while (0)
 
-#define CAN_SCORE_LEFT() 	(masterLeft.leftOf() && slaveLeft.leftOf())		
+#define CAN_SCORE_LEFT() 	(masterLeft.leftOf() && slaveLeft.leftOf())
 #define CAN_SCORE_RIGHT() 	(masterRight.rightOf() && slaveRight.rightOf())
 
 #define SCORE_LEFT()									\
@@ -893,7 +900,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
                                              int max_seq_length,
                                              int match, int mismatch,
                                              AWTC_fast_align_report *report) const
-    //	
+    //
     // aligns 'slaveSequence' to 'this'
     //
     // returns ==NULL -> all ok -> 'alignBuffer' contains aligned sequence
@@ -905,7 +912,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
 
     // set the following #if to zero to test ClustalV-Aligner (not fast_aligner)
 #if 1
-    
+
     static double lowSignificance;
     static int lowSignificanceInitialized;
 
@@ -914,7 +921,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
         //printf("lowSignificance=%f\n", lowSignificance);
         lowSignificanceInitialized = 1;
     }
-    
+
     AWTC_SequencePosition slave(slaveSequence);
     long bestScore=0;
     AWTC_SequencePosition bestMasterLeft(sequence());
@@ -923,7 +930,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
 
     while (slave.rightOf()>=3) { // with all triples of slaveSequence
         AWTC_FastSearchOccurance occurance(*this, slave.text()); // "search" first
-        AWTC_SequencePosition rightmostSlave = slave;	
+        AWTC_SequencePosition rightmostSlave = slave;
 
         while (occurance.found()) { // with all occurances of the triple
             long score = match*3;
@@ -978,14 +985,14 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
             long slaveLeftOf = bestSlaveLeft.leftOf();
             long slaveRightStart = slaveLeftOf+bestLength;
             long slaveRightOf = bestSlaveLeft.rightOf()-bestLength;
-	
+
 #define MIN_ALIGNMENT_RANGE 4
 
             if (!error) {
                 if (masterLeftOf >= MIN_ALIGNMENT_RANGE && slaveLeftOf >= MIN_ALIGNMENT_RANGE) {
                     AWTC_CompactedSubSequence 	leftCompactedMaster(sequence(), 0, masterLeftOf);
                     AWTC_FastSearchSequence 	leftMaster(leftCompactedMaster);
-		    
+
                     error = leftMaster.fast_align(AWTC_CompactedSubSequence(slaveSequence, 0, slaveLeftOf),
                                                   alignBuffer, max_seq_length, match, mismatch, report);
                 }
@@ -1004,12 +1011,12 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
 #if (defined(DEBUG) && 0)
                 long offset = alignBuffer->offset();
                 long used;
-#endif		
+#endif
                 error = insertAligned(alignBuffer, bestMasterLeft, bestSlaveLeft, bestLength, report);
 #if (defined(DEBUG) && 0)
                 used = alignBuffer->offset()-offset;
                 printf("aligned '%s' (len=%li, address=%li)\n", lstr(alignBuffer->text()+offset, used), used, long(alignBuffer));
-#endif		
+#endif
                 aligned = 1;
             }
 
@@ -1017,7 +1024,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
                 if (masterRightOf >= MIN_ALIGNMENT_RANGE && slaveRightOf >= MIN_ALIGNMENT_RANGE) {
                     AWTC_CompactedSubSequence rightCompactedMaster(sequence(), masterRightStart, masterRightOf);
                     AWTC_FastSearchSequence rightMaster(rightCompactedMaster);
-		
+
                     error = rightMaster.fast_align(AWTC_CompactedSubSequence(slaveSequence, slaveRightStart, slaveRightOf),
                                                    alignBuffer,
                                                    max_seq_length, match, mismatch, report);
@@ -1030,7 +1037,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
 
                 aligned = 1;
             }
-	    
+
         }
         else {
             //printf("Not significant!\n");
@@ -1038,7 +1045,7 @@ GB_ERROR AWTC_FastSearchSequence::fast_align(const AWTC_CompactedSubSequence& sl
     }
 
 #endif
-    
+
     if (!aligned && !error) {
         error = cannot_fast_align(sequence(), 0, sequence().length(),
                                   slaveSequence, 0, slaveSequence.length(),
@@ -1079,7 +1086,7 @@ static long calcSequenceChecksum(const char *data, int length)
 
         gaps[cnt] = 0;
     }
-    
+
     long sum = GB_checksum(data, length, 1, gaps);
     return sum;
 }
@@ -1090,18 +1097,18 @@ static char *readExpandedSequence(GBDATA *gb_species, const char *ali, GB_ERROR 
     GBDATA *gbd;
     char *name = GBT_read_name(gb_species);
     char *data = 0;
-    
+
     *errorPtr = 0;
-    
+
     gbd = GBT_read_sequence(gb_species, ali);
     if (gbd) {
         data = GB_read_string(gbd);
         *readLength = GB_read_string_count(gbd);
     }
     else {
-        *errorPtr = GB_export_error("No 'data' found for species '%s'", name ? name : "(unknown)");	
+        *errorPtr = GB_export_error("No 'data' found for species '%s'", name ? name : "(unknown)");
     }
-    
+
     return data;
 }
 #endif
@@ -1134,7 +1141,7 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA *gb_species, cons
         if (firstColumn!=0 || lastColumn!=-1) {		// take only part of sequence
             awtc_assert(firstColumn>=0);
             awtc_assert(firstColumn<=lastColumn);
-	    
+
             // include all surrounding gaps
             while (firstColumn>0 && AWTC_is_gap(data[firstColumn-1])) {
                 firstColumn--;
@@ -1147,10 +1154,10 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA *gb_species, cons
 
             partData = data+firstColumn;
             int slen = length-firstColumn;
-	    
+
             awtc_assert(slen>=0);
             awtc_assert((size_t)slen==strlen(partData));
-	    
+
             if (lastColumn==-1)	{ // take all till end of sequence
                 partLength = slen;
             }
@@ -1163,12 +1170,12 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA *gb_species, cons
             partLength = length;
             partData = data;
         }
-	
+
         if (!error) {
             if (seqChksum) {
                 *seqChksum = calcSequenceChecksum(partData, partLength);
             }
-	    
+
             seq = new AWTC_CompactedSubSequence(partData, partLength, name, firstColumn);
         }
 
@@ -1180,12 +1187,12 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA *gb_species, cons
         error = GB_export_error("No 'data' found for species '%s'", name ? name : "(unknown)");
         if (dataPtr) *dataPtr = NULL; // (user must not care to free data if we fail)
     }
-    
+
     awtc_assert(errorPtr);
     *errorPtr = error;
 
     free(name);
-    
+
     return seq;
 }
 
@@ -1205,7 +1212,7 @@ static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB
     else
     {
         GBDATA *gb_species_name = GB_find(gb_species, "name", 0, down_level);
-	
+
         error = GB_export_error("Cannot create entry '%s' for '%s'",
                                 data_name,
                                 gb_species_name ? GB_read_char_pntr(gb_species_name) : "(noname)");
@@ -1216,7 +1223,7 @@ static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB
 
 // --------------------------------------------------------------------------------
 
-static int actualSequenceNumber,	// only used for counter in 
+static int actualSequenceNumber,	// only used for counter in
     overallSequenceNumber;
 
 static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
@@ -1231,26 +1238,26 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
 {
     AWTC_alignBuffer alignBuffer(max_seq_length);
     char *master_name = AWTC_read_name(gb_alignTo);
-    
+
     AWTC_fast_align_report report(master_name, showGapsMessages);
 
     {
         char stat_buf[200];
         char *to_align_name = AWTC_read_name(gb_toAlign);
         char *align_to_name = AWTC_read_name(gb_alignTo);
-	
+
         sprintf(stat_buf, "Aligning #%i:%i %s (to %s)",
                 actualSequenceNumber, overallSequenceNumber,
                 to_align_name, align_to_name);
-	
+
         static GBDATA *last_gb_toAlign;
         if (gb_toAlign!=last_gb_toAlign) {
             last_gb_toAlign = gb_toAlign;
             actualSequenceNumber++;
         }
-	
+
         aw_status(stat_buf);
-	
+
         delete to_align_name;
         delete align_to_name;
     }
@@ -1258,29 +1265,29 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
 #if (defined(DEBUG) && 1)
     printf("alignCompactedTo(): master='%s' ", master_name);
     printf("slave='%s'\n", toAlignSequence->name());
-#endif    
-    
+#endif
+
     GB_ERROR error = GB_pop_transaction(gb_toAlign);
     GB_ERROR err;
-    
+
     if (error) goto ende;
 
     error = alignTo->fast_align(*toAlignSequence, &alignBuffer, max_seq_length, 2, -10, &report);		// <- here we align
     if (!error) {
-        alignBuffer.correctUnalignedPositions(); 
+        alignBuffer.correctUnalignedPositions();
         if (alignBuffer.free()) {
-            alignBuffer.set('-', alignQuality(GAP_CHAR,GAP_CHAR), alignBuffer.free());	// rest of alignBuffer is set to '-'	
+            alignBuffer.set('-', alignQuality(GAP_CHAR,GAP_CHAR), alignBuffer.free());	// rest of alignBuffer is set to '-'
         }
         alignBuffer.expandPoints(*toAlignSequence);
     }
-    
+
 #if (defined(DEBUG) && 1)
     {
         AWTC_CompactedSubSequence alignedSlave(alignBuffer.text(), alignBuffer.length(), toAlignSequence->name());
         dump_n_compare("reference vs. aligned:", alignTo->sequence(), alignedSlave);
     }
-#endif    
-    
+#endif
+
     err = GB_push_transaction(gb_toAlign);
     if (!error) error = err;
     if (error) goto ende;
@@ -1288,7 +1295,7 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
     if (calcSequenceChecksum(alignBuffer.text(), alignBuffer.length())!=toAlignChksum) { // sequence-chksum changed
         error = GB_export_error("Internal aligner error (sequence checksum changed) -- aborted");
 
-# ifdef DEBUG		
+# ifdef DEBUG
         AWTC_CompactedSubSequence alignedSlave(alignBuffer.text(), alignBuffer.length(), toAlignSequence->name());
         dump_n_compare("Old Slave vs. new Slave", *toAlignSequence, alignedSlave);
 # endif
@@ -1303,7 +1310,7 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
                 error = GB_export_error("Can't find/create sequence data");
             }
             else {
-                if (firstColumn!=0 || lastColumn!=-1) {							// we aligned just a part of the sequence 
+                if (firstColumn!=0 || lastColumn!=-1) {							// we aligned just a part of the sequence
                     char *buffer = GB_read_string(gbd);							// so we read old sequence data
                     long len = GB_read_string_count(gbd);
 
@@ -1314,9 +1321,9 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
                         int lenToCopy = lastColumn-firstColumn+1;
                         long wholeChksum = calcSequenceChecksum(buffer,len);
                         //long partChksum = calcSequenceChecksum(buffer+firstColumn, lenToCopy);
-			
+
                         memcpy(buffer+firstColumn, alignBuffer.text()+firstColumn, lenToCopy);	// copy in the aligned part
-			
+
                         if (calcSequenceChecksum(buffer, len)!=wholeChksum) {
                             error = GB_export_error("Internal aligner error (sequence checksum changed) -- aborted");
                         }
@@ -1341,16 +1348,16 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
         if (temporary)
         {
             // create temp-entry for slave containing alignment quality:
-	
+
             error = writeStringToAlignment(gb_toAlign, alignment, QUALITY_NAME, alignBuffer.quality(), temporary==1);
             if (error) goto ende;
-		
+
             // create temp-entry for master containing insert points:
-	
+
             int buflen = max_seq_length*2;
             char *buffer = (char*)malloc(buflen+1);
             char *afterLast = buffer;
-	
+
             if (!buffer)
             {
                 AWTC_memerr();
@@ -1359,14 +1366,14 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence *toAlignSequence,
             memset(buffer, '-', buflen);
             buffer[buflen] = 0;
 
-            const AWTC_fast_align_insertion *inserts = report.insertion(); 
+            const AWTC_fast_align_insertion *inserts = report.insertion();
             while (inserts)
             {
                 memset(buffer+inserts->offset(), '>', inserts->gaps());
                 afterLast = buffer+inserts->offset()+inserts->gaps();
                 inserts = inserts->next();
             }
-	
+
             *afterLast = 0;
             if (gb_alignTo) {
                 error = writeStringToAlignment(gb_alignTo, alignment, INSERTS_NAME, buffer,temporary==1);
@@ -1382,7 +1389,7 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment)
 {
     awtc_assert(gb_species);
     awtc_assert(alignment);
-    
+
     GBDATA *gb_ali = GB_search(gb_species, alignment, GB_FIND);
     GB_ERROR error = NULL;
 
@@ -1393,14 +1400,14 @@ GB_ERROR AWTC_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment)
             error = GB_delete(gb_name);
 #if defined(DEBUG)
             printf("deleted '%s' of '%s'\n", QUALITY_NAME, GBT_read_name(gb_species));
-#endif	    
+#endif
         }
 
         if (!error) {
             gb_name = GB_search(gb_ali, INSERTS_NAME, GB_FIND);
             if (gb_name) {
                 error = GB_delete(gb_name);
-#if defined(DEBUG)	    
+#if defined(DEBUG)
                 printf("deleted '%s' of '%s'\n", INSERTS_NAME, GBT_read_name(gb_species));
 #endif
             }
@@ -1419,10 +1426,10 @@ static GB_ERROR GB_align_error(GB_ERROR olderr, GBDATA *gb_toAlign, GBDATA *gb_a
     char *name_toAlign = AWTC_read_name(gb_toAlign);
     char *name_alignTo = AWTC_read_name(gb_alignTo);
     GB_ERROR neu = GB_export_error("..while aligning '%s' to '%s'", name_toAlign, name_alignTo);
-    
+
     free(name_alignTo);
     free(name_toAlign);
-    
+
     return neu;
 }
 
@@ -1445,12 +1452,12 @@ static GB_ERROR alignTo(GBDATA *gb_toAlign, GB_CSTR alignment,
         if (error) error = GB_align_error(error, gb_toAlign, gb_alignTo);
         delete toAlignSequence;
     }
-    
+
     return error;
 }
 
 static GB_ERROR alignToGroupConsensus(GBDATA *gb_toAlign, GB_CSTR alignment,
-                                      AWTC_get_consensus_func get_consensus, 
+                                      AWTC_get_consensus_func get_consensus,
                                       int max_seq_length, int temporary,
                                       int firstColumn, int lastColumn, int showGapsMessages)
 {
@@ -1459,15 +1466,15 @@ static GB_ERROR alignToGroupConsensus(GBDATA *gb_toAlign, GB_CSTR alignment,
     char *consensus = get_consensus(species_name, firstColumn, lastColumn);
 
     AWTC_CompactedSubSequence compacted(consensus, strlen(consensus), "group consensus");
-    
+
     {
         AWTC_FastSearchSequence fast(compacted);
     	error = alignTo(gb_toAlign, alignment, &fast, NULL, max_seq_length, temporary, firstColumn, lastColumn, showGapsMessages);
     }
-    
+
     free(consensus);
     free(species_name);
-    
+
     return error;
 }
 
@@ -1506,10 +1513,10 @@ inline void bubbleSort(long *score, char **relative, int anz)
         int h = anz-1;
         int h2;
         int i;
-	
+
         while (1) {
             int changes;
-	    
+
             h2 = h+1;
             changes = 0;
             for (i=l; i<h; i++) {
@@ -1522,7 +1529,7 @@ inline void bubbleSort(long *score, char **relative, int anz)
             }
             h = h2-1;
             if (!changes) break;
-	    
+
             l2 = l-1;
             changes = 0;
             for (i=h; i>l; i--) {
@@ -1542,9 +1549,9 @@ inline void bubbleSort(long *score, char **relative, int anz)
 inline void mixBelow(const char *toMix, char *mixTo, int firstPos, int lastPos)
 {
     int i;
-    
+
     awtc_assert(firstPos<=lastPos);
-    
+
     for (i=firstPos; i<=lastPos; i++) {
         if (AWTC_is_gap(mixTo[i])) {
             mixTo[i] = toMix[i];
@@ -1552,7 +1559,7 @@ inline void mixBelow(const char *toMix, char *mixTo, int firstPos, int lastPos)
     }
 }
 
-inline int min(int i, int j) { return i<j ? i : j; } 
+inline int min(int i, int j) { return i<j ? i : j; }
 
 static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                                     int temporary, int mirrorAllowed,
@@ -1567,7 +1574,7 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
     long *relativeScore = new long[maxNextRelatives];
     int next_relatives;
     int i;
-    
+
     for (next_relatives=0; next_relatives<maxNextRelatives; next_relatives++) {
         nearestRelative[next_relatives] = 0;
     }
@@ -1577,7 +1584,7 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
         restart = 0;
         toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, &toAlignExpSequence,
                                                 &chksum, firstColumn, lastColumn);
-	
+
         if (error) {
             return error;
         }
@@ -1587,11 +1594,11 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
             free(nearestRelative[next_relatives]);
             nearestRelative[next_relatives] = 0;
         }
-    
+
         {						// find relatives
             AWTC_FIND_FAMILY family(gb_main);
             AWTC_FIND_FAMILY_MEMBER *fl;
-            long bestScore = -1;  
+            long bestScore = -1;
 
             aw_status("Starting PT_SERVER");
             error = family.go(pt_server_id,toAlignExpSequence,0,maxNextRelatives+1);
@@ -1602,7 +1609,7 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                             if (fl->matches>=bestScore) {
                                 bestScore = fl->matches;
                             }
-				
+
                             if (next_relatives<maxNextRelatives) {
                                 nearestRelative[next_relatives] = strdup(fl->name);
                                 relativeScore[next_relatives] = fl->matches;
@@ -1645,7 +1652,7 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                         turnIt = 1;
                     }
                 }
-	    
+
                 if (turnIt) { // write mirrored sequence
                     GBDATA *gbd = GBT_read_sequence(gb_toAlign, alignment);
                     error = GB_push_my_security(gbd);
@@ -1672,41 +1679,41 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
         else {
             typedef GBDATA *GBDATAP;
             GBDATAP *gb_reference = new GBDATAP[maxNextRelatives];
-	    
+
             // sort relatives
-	    
+
             if (next_relatives>1) {
                 bubbleSort(relativeScore, nearestRelative, next_relatives);
-#ifdef DEBUG		
+#ifdef DEBUG
                 for (i=1; i<next_relatives; i++) {
                     awtc_assert(relativeScore[i-1]>=relativeScore[i]);
                 }
-#endif		
+#endif
             }
-	    
+
             // get data pointers
-	    
-            for (i=0; i<next_relatives; i++) { 
-                gb_reference[i] = GBT_find_species(gb_main, nearestRelative[i]); 
+
+            for (i=0; i<next_relatives; i++) {
+                gb_reference[i] = GBT_find_species(gb_main, nearestRelative[i]);
                 if (!gb_reference[i]) {
-                    error = species_not_found(nearestRelative[i]);		    
+                    error = species_not_found(nearestRelative[i]);
                 }
             }
-	    
+
             // align
-	    
+
             if (!error) {
                 AWTC_CompactedSubSequence *alignToSequence = readCompactedSequence(gb_reference[0], alignment, &error, NULL, NULL, firstColumn, lastColumn);
-		
+
                 {
                     AWTC_FastSearchSequence referenceFastSeq(*alignToSequence);
-		
+
                     error = alignCompactedTo(toAlignSequence, &referenceFastSeq,
                                              max_seq_length, alignment, chksum, temporary,
                                              gb_toAlign, gb_reference[0],
                                              firstColumn, lastColumn, showGapsMessages);
                 }
-		
+
                 if (error) {
                     error = GB_align_error(error, gb_toAlign, gb_reference[0]);
                 }
@@ -1715,55 +1722,55 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                     if (/*0 && */!unaligned_bases.is_empty()) {
                         UnalignedBasesList ubl;
                         UnalignedBasesList ubl_for_next_relative;
-			
+
                         {
                             AWTC_CompactedSubSequence *alignedSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, firstColumn, lastColumn);
-			    
+
                             ubl.add_and_recalc_positions(&unaligned_bases, toAlignSequence, alignedSequence);
-                            // now ubl holds the unaligned (and recalculated) parts from last relative 
+                            // now ubl holds the unaligned (and recalculated) parts from last relative
                             delete alignedSequence;
                         }
-		    
+
                         for (i=1; i<next_relatives && !error; i++) {
                             ubl.add(&ubl_for_next_relative);
                             while (!ubl.is_empty() && !error) {
                                 int start, end;
                                 ubl.recall(&start, &end);
-				
+
                                 awtc_assert(firstColumn<=start && start<=end && (end<=lastColumn || lastColumn==-1));
 
                                 AWTC_CompactedSubSequence *alignToPart = readCompactedSequence(gb_reference[i], alignment, &error, 0, 0, start, end);
                                 if (error) break;
-				
+
                                 long part_chksum;
                                 AWTC_CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, start, end);
                                 if (error) break;
-				
+
                                 AWTC_FastSearchSequence referenceFastSeq(*alignToPart);
                                 error = alignCompactedTo(toAlignPart, &referenceFastSeq,
                                                          max_seq_length, alignment, part_chksum, temporary,
                                                          gb_toAlign, gb_reference[i], start, end, showGapsMessages);
-				
+
                                 AWTC_CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, start, end);
                                 ubl_for_next_relative.add_and_recalc_positions(&unaligned_bases, toAlignPart, alignedPart);
-				
-                                delete alignedPart;    
+
+                                delete alignedPart;
                                 delete alignToPart;
                                 delete toAlignPart;
                             }
                         }
                     }
                 }
-		
+
                 delete alignToSequence;
             }
-		
+
             delete [] gb_reference;
         }
     }
 
     delete toAlignSequence;
-    
+
     for (i=0; i<next_relatives; i++) {
         free(nearestRelative[i]);
         nearestRelative[i] = 0;
@@ -1801,16 +1808,16 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
     int search_by_pt_server = reference==NULL && get_consensus==NULL;
     int err_count = 0;
     int wasNotAllowedToAlign = 0; // incremented for every sequence which has higher protection level (and was not aligned)
-    
+
     awtc_assert(reference==NULL || get_consensus==NULL);	// can't do both modes
 
     if (mirrorAllowed) {
         if ((firstColumn!=0 || lastColumn!=-1) || !search_by_pt_server) {
-            // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..' 
-            mirrorAllowed = 0; // then disable mirroring for the actual call 
+            // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..'
+            mirrorAllowed = 0; // then disable mirroring for the actual call
         }
     }
-     
+
     if (!error && !alignment) {
         alignment = (GB_CSTR)GBT_get_default_alignment(gb_main); // get default alignment
         if (!alignment) {
@@ -1843,7 +1850,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                                                                                 NULL, &referenceChksum, firstColumn, lastColumn);
                 if (!error) {
                     AWTC_FastSearchSequence referenceFastSeq(*referenceSeq);
-		    
+
                     switch (alignWhat) {
                         case 0: { // align one sequence
                             awtc_assert(toalign);
@@ -1885,7 +1892,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                                 else {
                                     wasNotAllowedToAlign++;
                                 }
-			    
+
                                 if (error) {
                                     aw_message(error);
                                     error = 0;
@@ -1895,10 +1902,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                                 else {
                                     GB_pop_transaction(gb_main);
                                 }
-			    
+
                                 done++;
                                 GB_status(double(done)/double(count));
-			    
+
                                 GB_push_transaction(gb_main);
                                 gb_species = GBT_next_marked_species(gb_species);
                             }
@@ -1908,17 +1915,17 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                             int count;
                             int done = 0;
                             GBDATA *gb_species = get_first_selected_species(&count);
-			    
+
                             actualSequenceNumber = 1;
                             overallSequenceNumber = count;
-			    
+
                             if (!gb_species) {
                                 aw_message("There is no selected species!");
                             }
-			    
+
                             while (gb_species) {
                                 int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-				
+
                                 error = 0;
                                 if (myProtection<=maxProtection) {
                                     error = alignTo(gb_species, alignment, &referenceFastSeq, gb_reference,
@@ -1928,7 +1935,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                                 else {
                                     wasNotAllowedToAlign++;
                                 }
-				
+
                                 if (error) {
                                     aw_message(error);
                                     error = 0;
@@ -1938,18 +1945,18 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                                 else {
                                     GB_pop_transaction(gb_main);
                                 }
-				
+
                                 done++;
                                 GB_status(double(done)/double(count));
-				
+
                                 GB_push_transaction(gb_main);
                                 gb_species = get_next_selected_species();
                             }
-			    
+
                             break;
                         }
                     }
-			
+
                     delete referenceSeq;
                 }
             }
@@ -1967,12 +1974,12 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                     }
                     else {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
-			
+
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToGroupConsensus(gb_toalign, alignment,
-                                                          get_consensus, 
-                                                          max_seq_length, temporary, 
+                                                          get_consensus,
+                                                          max_seq_length, temporary,
                                                           firstColumn, lastColumn, showGapsMessages);
                         }
                         else {
@@ -1988,10 +1995,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
 
                     actualSequenceNumber = 1;
                     overallSequenceNumber = count;
-			
+
                     while (gb_species) {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-			
+
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToGroupConsensus(gb_species, alignment,
@@ -2002,7 +2009,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             wasNotAllowedToAlign++;
                         }
-		    
+
                         if (error) {
                             aw_message(error);
                             error = 0;
@@ -2012,10 +2019,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             GB_pop_transaction(gb_main);
                         }
-		    
+
                         done++;
                         GB_status(double(done)/double(count));
-		    
+
                         GB_push_transaction(gb_main);
                         gb_species = GBT_next_marked_species(gb_species);
                     }
@@ -2025,17 +2032,17 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                     int count;
                     int done = 0;
                     GBDATA *gb_species = get_first_selected_species(&count);
-			    
+
                     actualSequenceNumber = 1;
                     overallSequenceNumber = count;
-			    
+
                     if (!gb_species) {
                         aw_message("There is no selected species!");
                     }
-			    
+
                     while (gb_species) {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-			
+
                         if (myProtection<=maxProtection) {
                             error = alignToGroupConsensus(gb_species, alignment,
                                                           get_consensus,
@@ -2045,7 +2052,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             wasNotAllowedToAlign++;
                         }
-				
+
                         if (error) {
                             aw_message(error);
                             error = 0;
@@ -2055,10 +2062,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             GB_pop_transaction(gb_main);
                         }
-				
+
                         done++;
                         GB_status(double(done)/double(count));
-				
+
                         GB_push_transaction(gb_main);
                         gb_species = get_next_selected_species();
                     }
@@ -2079,7 +2086,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                     }
                     else {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
-			
+
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, max_seq_length,
@@ -2100,10 +2107,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
 
                     actualSequenceNumber = 1;
                     overallSequenceNumber = count;
-			
+
                     while (gb_species) {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-			
+
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, max_seq_length,
@@ -2114,7 +2121,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             wasNotAllowedToAlign++;
                         }
-		    
+
                         if (error) {
                             aw_message(error);
                             error = 0;
@@ -2124,10 +2131,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             GB_pop_transaction(gb_main);
                         }
-		    
+
                         done++;
                         GB_status(double(done)/double(count));
-		    
+
                         GB_push_transaction(gb_main);
                         gb_species = GBT_next_marked_species(gb_species);
                     }
@@ -2137,17 +2144,17 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                     int count;
                     int done = 0;
                     GBDATA *gb_species = get_first_selected_species(&count);
-			    
+
                     actualSequenceNumber = 1;
                     overallSequenceNumber = count;
-			    
+
                     if (!gb_species) {
                         aw_message("There is no selected species!");
                     }
-			    
+
                     while (gb_species) {
                         int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-			
+
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, max_seq_length,
                                                         temporary, mirrorAllowed,
@@ -2157,7 +2164,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             wasNotAllowedToAlign++;
                         }
-				
+
                         if (error) {
                             aw_message(error);
                             error = 0;
@@ -2167,10 +2174,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         else {
                             GB_pop_transaction(gb_main);
                         }
-				
+
                         done++;
                         GB_status(double(done)/double(count));
-				
+
                         GB_push_transaction(gb_main);
                         gb_species = get_next_selected_species();
                     }
@@ -2182,19 +2189,19 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
 
     AWTC_ClustalV_align_exit();
     unaligned_bases.clear();
-    
+
     if (error) {
         GB_abort_transaction(gb_main);
     }
     else {
         GB_pop_transaction(gb_main);
     }
-    
+
     if (wasNotAllowedToAlign>0) {
         const char *mess = GB_export_error("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
         aw_message(mess, "OK");
     }
-    
+
     if (err_count) {
         if (error) {
             aw_message(error);
@@ -2209,7 +2216,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
 //	Parameter-Window for Fast-Aligner
 // --------------------------------------------------------------------------------
 
-void AWTC_start_faligning(AW_window *aw, AW_CL cd2) 
+void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
 {
     AW_root *root = aw->get_root();
     char *reference = NULL;	// align against next relatives
@@ -2221,10 +2228,10 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     AWTC_get_first_selected_species get_first_selected_species = 0;
     AWTC_get_next_selected_species  get_next_selected_species = 0;
     int alignWhat;
-    
+
     switch (alignWhat=root->awar(FA_AWAR_TO_ALIGN)->read_int()) {
         case 0: { // align current species
-            toalign = root->awar(AWAR_SPECIES_NAME)->read_string(); 
+            toalign = root->awar(AWAR_SPECIES_NAME)->read_string();
             break;
         }
         case 1: { // align marked species
@@ -2240,16 +2247,16 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
             break;
         }
     }
-    
+
     switch (root->awar(FA_AWAR_REFERENCE)->read_int())
     {
         case 0: // align against specified species
-	    
-            reference = root->awar(FA_AWAR_REFERENCE_NAME)->read_string();	    
+
+            reference = root->awar(FA_AWAR_REFERENCE_NAME)->read_string();
             break;
-	    
+
         case 1: // align against group consensus
-	    
+
             if (cd->get_group_consensus) {
                 get_consensus = 1;
             }
@@ -2257,19 +2264,19 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
                 error = "Can't get group consensus here.";
             }
             break;
-	    
+
         case 2: // align against species searched via pt_server
-	    
+
             pt_server_id = root->awar(AWAR_PT_SERVER)->read_int();
             if (pt_server_id<0) {
-                error = "No pt_server selected"; 
+                error = "No pt_server selected";
             }
             break;
-	    
+
         default: awtc_assert(0);
             break;
     }
-    
+
     int firstColumn = 0;
     int lastColumn = -1;
 
@@ -2289,21 +2296,21 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
             if (!cd->get_selected_range(&firstColumn, &lastColumn)) {
                 error = "There is no selected species!";
             }
-#ifdef DEBUG	    
+#ifdef DEBUG
             else {
                 printf("Selected range: %i .. %i\n", firstColumn, lastColumn);
             }
-#endif	    
+#endif
             break;
         }
         default: { awtc_assert(0); break; }
     }
-    
+
     if (!error) {
         GB_push_transaction(gb_main);
         char *default_alignment = GBT_get_default_alignment(gb_main);
         GB_pop_transaction(gb_main);
-	    
+
         aw_openstatus("FastAligner");
         error = AWTC_aligner(reference, get_consensus ? cd->get_group_consensus : NULL,
                              pt_server_id,
@@ -2333,9 +2340,9 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_string(  FA_AWAR_REFERENCE_NAME, 		"My name is nobody!",    	db1);
     root->awar_int(	FA_AWAR_RANGE, 				0, 	db1);
 #ifdef DEBUG
-    root->awar_int(     FA_AWAR_PROTECTION,			0, 	db1)->write_int(6); 
-#else    
-    root->awar_int(     FA_AWAR_PROTECTION,			0, 	db1)->write_int(0); 
+    root->awar_int(     FA_AWAR_PROTECTION,			0, 	db1)->write_int(6);
+#else
+    root->awar_int(     FA_AWAR_PROTECTION,			0, 	db1)->write_int(0);
 #endif
     root->awar_int(	FA_AWAR_AROUND, 			25, 	db1);
     root->awar_int(	FA_AWAR_MIRROR, 			1, 	db1);
@@ -2354,7 +2361,7 @@ static void copy_species_name(AW_window */*aww*/, AW_CL cl_AW_root)
 {
     AW_root *root = (AW_root*)cl_AW_root;
     char *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
-    
+
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
 }
@@ -2405,7 +2412,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->at( "sagainst" );
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
-    
+
     aws->at("copy");
     aws->callback(copy_species_name, (AW_CL)root);
     aws->create_button("Copy", "Copy", "");
@@ -2439,7 +2446,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     }
     aws->insert_default_option( "select a PT_SERVER", "d", -1);
     aws->update_option_menu();
-    
+
     aws->at("relatives");
     aws->label("Number of relatives to use:");
     aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
@@ -2456,7 +2463,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->at("around");
     aws->create_input_field(FA_AWAR_AROUND, 2);
-    
+
     aws->at("protection");
     aws->create_option_menu(FA_AWAR_PROTECTION, "Protection", "");
     aws->insert_default_option("0", 0, 0);
@@ -2478,17 +2485,17 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->update_option_menu();
 
     // Report
-    
+
     aws->at("insert");
     aws->create_option_menu(FA_AWAR_INSERT, "Report", "");
     aws->insert_option("No report", "", 0);
     aws->insert_default_option("Report to temporary entries", "", 1);
     aws->insert_option("Report to resident entries", "", 2);
     aws->update_option_menu();
-    
+
     aws->at("gaps");
     aws->create_toggle(FA_AWAR_SHOW_GAPS_MESSAGES);
-    
+
     return (AW_window *)aws;
 }
 

@@ -270,6 +270,7 @@ void GBS_free_hash P_((GB_HASH *hs));
 void GBS_free_hash_entries_free_pointer P_((GB_HASH *hs));
 void GBS_free_hash_free_pointer P_((GB_HASH *hs));
 void GBS_hash_do_loop P_((GB_HASH *hs, gb_hash_loop_type func));
+void GBS_hash_do_loop2 P_((GB_HASH *hs, gb_hash_loop_type2 func, void *parameter));
 void GBS_hash_next_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_first_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter));
@@ -293,7 +294,7 @@ void GB_install_command_table P_((GBDATA *gb_main, struct GBL_command_table *tab
 char *GB_command_interpreter P_((GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd));
 
 /* ad_save_load.c */
-GB_ERROR GB_save P_((GBDATA *gb, char *path, const char *savetype));
+GB_ERROR GB_save P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_save_in_home P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_save_as P_((GBDATA *gb, const char *path, const char *savetype));
 GB_ERROR GB_delete_database P_((GB_CSTR filename));
