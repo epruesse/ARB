@@ -68,8 +68,17 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
   //  typedef StrL* StrLPtr;
   string tmpString;
   StrL fileContent;
-  const char* fileName;
-  fileName = "lib/unixnames.txt";
+  char* fileName =  getenv("ARBHOME");
+  //  char* baseName
+  printf ("fileName is now: %s\n", fileName);
+
+  if (fileName == 0){
+    aw_message(GBS_global_string("$ARBHOME is not set"));
+  }
+  fileName = strcat(fileName, "/lib/unixnames.txt");
+
+  printf ("fileName has changed to: %s\n", fileName);
+
   DescList myDescs;
   // file select dialog goes here
 
@@ -175,7 +184,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 
   }
   catch (...) {
-    aw_message("unable to open Valid Names File");
+    aw_message(GBS_global_string("unable to open Valid Names File: %s", fileName));
     //    std::cout << "unable to open Valid Names File" << std::endl;
   }
 
