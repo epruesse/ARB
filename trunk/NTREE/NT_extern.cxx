@@ -638,7 +638,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
     aws->create_button("HELP","HELP","H");
 
     aws->at("what");
-    aws->create_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
+    aws->create_autosize_button("WHAT", (bug_report ? "Bug report" : "ARB Registration"));
 
     char *awar_name_start = GBS_global_string_copy("/tmp/nt/feedback/%s", bug_report ? "bugreport" : "registration");
 
@@ -1549,8 +1549,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("props_menu",    "Frame settings", "F","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
             awm->insert_sub_menu(0, "Tree settings",  "T");
             {
-                AWMIMT("props_tree2",   "Tree options",  "o","nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
-                AWMIMT("props_tree",    "Tree colors",   "c","nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+                AWMIMT("props_tree2",   "Tree options",        "o","nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
+                AWMIMT("props_tree",    "Tree colors & fonts", "c","nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
             }
             awm->close_sub_menu();
             AWMIMT("props_www",      "Search world wide web (WWW)",                 "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
