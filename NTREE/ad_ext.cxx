@@ -169,7 +169,7 @@ void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
 	GBDATA *gb_extended = GBT_find_SAI(gb_main,source);
 	awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_main);
-	free(source);
+	delete source;
 }
 
 void ad_ad_remark(AW_window *aww){
