@@ -66,7 +66,7 @@ private:
 
   // erweitern der IUPAC-Codes beim matching der sequence gegen die primerbaeume ?
   // expand IUPAC-Codes while matching sequence vs. primertrees ?
-  
+
   bool expand_IUPAC_Codes;
 
 
@@ -86,7 +86,7 @@ private:
 
   // primerpairs
   Pair* pairs;
-  
+
   GB_ERROR error;
 
 public:
@@ -114,9 +114,13 @@ public:
   void evaluatePrimerPairs ();
   void printPrimerPairs    ();
 
-  void run ( int print_stages_ );
+    void run ( int print_stages_ );
 
-  GB_ERROR get_error() const { return error; }
+    GB_ERROR get_error() const { return error; }
+
+    PRD_Sequence_Pos get_max_primer_length() const { return primer_length.max(); }
+    PRD_Sequence_Pos get_max_primer_pos() const { return primer2.max(); }
+    const char *get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length) const; // return 0 if no more results (primers is set to "leftPrimer,rightPrimer")
 
 public:
   const static int PRINT_RAW_TREES     = 1;

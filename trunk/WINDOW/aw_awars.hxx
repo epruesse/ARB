@@ -19,11 +19,12 @@
 
 #define AWAR_DB_COMMENT             "description"
 
-#define AWAR_PT_SERVER	            "nt/pt_server"
-#define AWAR_TARGET_STRING          "nt/target_string"
-#define AWAR_MIN_MISMATCHES         "nt/min_mismatches"
-#define AWAR_MAX_MISMATCHES         "nt/max_mismatches"
-#define AWAR_ITARGET_STRING         "nt/itarget_string"
+#define AWAR_PT_SERVER	          "nt/pt_server"
+#define AWAR_TARGET_STRING        "nt/target_string"
+#define AWAR_PRIMER_TARGET_STRING "nt/primer_target_string"
+#define AWAR_MIN_MISMATCHES       "nt/min_mismatches"
+#define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
+#define AWAR_ITARGET_STRING       "nt/itarget_string"
 
 /* local awars for edit and edit4: */
 
