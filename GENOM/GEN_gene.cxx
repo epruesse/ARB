@@ -35,7 +35,8 @@
 //
 // fields used for display:
 // ------------------------
-// display_hidden           = 1 -> do not display this gene (depends on AWAR_GENMAP_SHOW_HIDDEN too)
+// ARB_display_hidden       = 1 -> do not display this gene (depends on AWAR_GENMAP_SHOW_HIDDEN too)
+// ARB_color                = color group
 
 using namespace std;
 
@@ -150,7 +151,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                     bool show_this = show_hidden;
 
                     if (!show_this) {
-                        GBDATA *gbd = GB_find(gb_gene, "display_hidden", 0, down_level);
+                        GBDATA *gbd = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
 
                         if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
                             show_this = true;

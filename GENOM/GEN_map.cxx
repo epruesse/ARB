@@ -26,7 +26,9 @@
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 #include "GEN_nds.hxx"
+#include "GEN_interface.hxx"
 #include "EXP.hxx"
+#include "EXP_interface.hxx"
 #include "../NTREE/ad_spec.hxx" // needed for species query window
 
 using namespace std;
@@ -298,6 +300,11 @@ typedef enum  {
     GEN_INVERT_MARKED,
     GEN_COUNT_MARKED,
 
+    //     GEN_MARK_COLORED,              done by awt_colorize_marked now
+//     GEN_UNMARK_COLORED,
+//     GEN_INVERT_COLORED,
+//     GEN_COLORIZE_MARKED,
+
     GEN_EXTRACT_MARKED,
 
     GEN_MARK_HIDDEN,
@@ -508,31 +515,44 @@ static long gen_count_marked_genes = 0; // used to count marked genes
 //      static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL cl_user)
 //  --------------------------------------------------------------------------------------------------
 static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL cl_user) {
-    GEN_MARK_MODE mode = (GEN_MARK_MODE)imode;
+    GEN_MARK_MODE mode  = (GEN_MARK_MODE)imode;
+    GB_ERROR      error = 0;
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_species);
-         gb_gene;
+         !error && gb_gene;
          gb_gene = GEN_next_gene(gb_gene))
     {
         bool mark_flag     = GB_read_flag(gb_gene) != 0;
         bool org_mark_flag = mark_flag;
+//         int wantedColor;
 
         switch (mode) {
             case GEN_MARK:              mark_flag = 1; break;
             case GEN_UNMARK:            mark_flag = 0; break;
             case GEN_INVERT_MARKED:     mark_flag = !mark_flag; break;
-            case GEN_COUNT_MARKED:     if (mark_flag) ++gen_count_marked_genes; break;
-            case GEN_EXTRACT_MARKED: {
-                if (mark_flag) {
-                    GEN_extract_gene_2_pseudoSpecies(gb_species, gb_gene, (const char *)cl_user);
-                }
+
+            case GEN_COUNT_MARKED:     {
+                if (mark_flag) ++gen_count_marked_genes;
                 break;
             }
+            case GEN_EXTRACT_MARKED: {
+                if (mark_flag) GEN_extract_gene_2_pseudoSpecies(gb_species, gb_gene, (const char *)cl_user);
+                break;
+            }
+//             case GEN_COLORIZE_MARKED:  {
+//                 if (mark_flag) error = AW_set_color_group(gb_gene, wantedColor);
+//                 break;
+//             }
             default: {
-                GBDATA *gb_hidden = GB_find(gb_gene, "display_hidden", 0, down_level);
+                GBDATA *gb_hidden = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
                 bool    hidden    = gb_hidden ? GB_read_byte(gb_hidden) != 0 : false;
+//                 long    myColor   = AW_find_color_group(gb_gene, true);
 
                 switch (mode) {
+//                     case GEN_MARK_COLORED:      if (myColor == wantedColor) mark_flag = 1; break;
+//                     case GEN_UNMARK_COLORED:    if (myColor == wantedColor) mark_flag = 0; break;
+//                     case GEN_INVERT_COLORED:    if (myColor == wantedColor) mark_flag = !mark_flag; break;
+
                     case GEN_MARK_HIDDEN:       if (hidden) mark_flag = 1; break;
                     case GEN_UNMARK_HIDDEN:     if (hidden) mark_flag = 0; break;
                     case GEN_MARK_VISIBLE:      if (!hidden) mark_flag = 1; break;
@@ -543,9 +563,11 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
         }
 
         if (mark_flag != org_mark_flag) {
-            GB_write_flag(gb_gene, mark_flag?1:0);
+            error = GB_write_flag(gb_gene, mark_flag?1:0);
         }
     }
+
+    if (error) aw_message(error);
 }
 
 //  --------------------------------------------------------------------------------------------------
@@ -560,7 +582,7 @@ static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
     {
         bool marked = GB_read_flag(gb_gene) != 0;
 
-        GBDATA *gb_hidden  = GB_find(gb_gene, "display_hidden", 0, down_level);
+        GBDATA *gb_hidden  = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
         bool    hidden     = gb_hidden ? (GB_read_byte(gb_hidden) != 0) : false;
         bool    org_hidden = hidden;
 
@@ -575,7 +597,7 @@ static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
         }
 
         if (hidden != org_hidden) {
-            if (!gb_hidden) gb_hidden = GB_create(gb_gene, "display_hidden", GB_BYTE);
+            if (!gb_hidden) gb_hidden = GB_create(gb_gene, ARB_HIDDEN, GB_BYTE);
             GB_write_byte(gb_hidden, hidden ? 1 : 0); // change gene visibility
         }
     }
@@ -940,7 +962,8 @@ void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_pre
 //      void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
 //  -----------------------------------------------------------------------------------------------------------------------------------------
 void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
-                              const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode) {
+                              const char *help_file, void (*command)(AW_window*, AW_CL, AW_CL), AW_CL command_mode)
+{
     awm->insert_sub_menu(0, submenu_name, hot_key);
 
     char macro_name_buffer[50];
@@ -963,7 +986,8 @@ void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefi
 //      void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
 //  ----------------------------------------------------------------------------------------------------------------------------------------
 void GEN_insert_mark_submenu(AW_window_menu_modes *awm, const char *macro_prefix, const char *submenu_name, const char *hot_key,
-                             const char *help_file, GEN_MARK_MODE mark_mode) {
+                             const char *help_file, GEN_MARK_MODE mark_mode)
+{
     GEN_insert_multi_submenu(awm, macro_prefix, submenu_name, hot_key, help_file, GEN_mark_command, (AW_CL)mark_mode);
 }
 //  ----------------------------------------------------------------------------------------------------------------------------------------
@@ -1064,6 +1088,15 @@ static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window);
 }
+
+static AW_window *GEN_create_gene_colorize_window(AW_root *aw_root) {
+    return awt_create_item_colorizer(aw_root, gb_main, &GEN_item_selector);
+}
+
+static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root) {
+    return awt_create_item_colorizer(aw_root, gb_main, &AWT_organism_selector);
+}
+
 //  ------------------------------------------------------------------------------------------------------------
 //      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_canvas *ntree_canvas)
 //  ------------------------------------------------------------------------------------------------------------
@@ -1085,6 +1118,8 @@ void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu, AWT_ca
         AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "organism_mark.hlp", AWM_ALL, mark_organisms, 2, (AW_CL)ntree_canvas);
         awm->insert_separator();
         AWMIMT("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, mark_organisms_with_marked_genes, (AW_CL)ntree_canvas, 0);
+        awm->insert_separator();
+        AWMIMT( "organism_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_organism_colorize_window, 0);
     }
     if (submenu) awm->close_sub_menu();
 }
@@ -1105,7 +1140,6 @@ void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu, AW
         AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "I", "gene_species_mark.hlp", AWM_ALL, mark_gene_species, 2, (AW_CL)ntree_canvas);
         awm->insert_separator();
         AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "M", "gene_species_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, (AW_CL)ntree_canvas, 0);
-        awm->insert_separator();
         AWMIMT("mark_gene_species", "Mark all gene-species using Current alignment", "C", "gene_species_mark.hlp", AWM_ALL, mark_gene_species_using_current_alignment, (AW_CL)ntree_canvas, 0);
     }
 
@@ -1116,8 +1150,6 @@ struct GEN_update_info {
     AWT_canvas *canvas1;        // just canvasses of different windows (needed for updates)
     AWT_canvas *canvas2;
 };
-
-
 
 //  ---------------------------------------------------------------------------------------------------------------
 //      void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT_canvas *ntree_canvas)
@@ -1151,7 +1183,9 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE, AWT
         GEN_insert_mark_submenu(awm, "gene_mark_all", "Mark all genes", "M", "gene_mark.hlp",  GEN_MARK);
         GEN_insert_mark_submenu(awm, "gene_unmark_all", "Unmark all genes", "U", "gene_mark.hlp", GEN_UNMARK);
         GEN_insert_mark_submenu(awm, "gene_invert_marked", "Invert marked genes", "I", "gene_mark.hlp", GEN_INVERT_MARKED);
-        GEN_insert_mark_submenu(awm, "gene_count_marked", "Count marked genes", "I", "gene_mark.hlp", GEN_COUNT_MARKED);
+        GEN_insert_mark_submenu(awm, "gene_count_marked", "Count marked genes", "C", "gene_mark.hlp", GEN_COUNT_MARKED);
+
+        AWMIMT( "gene_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_colorize_window, 0);
 
         awm->insert_separator();
 
