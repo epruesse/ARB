@@ -55,6 +55,8 @@ public class ProbeMenu extends MenuBar
         add_menu_entry("Fold", "Smart expand",                  KeyEvent.VK_X);
         add_menu_entry("Fold", "Smart collapse",                KeyEvent.VK_C);
         add_menu_entry("Fold", "Show marked",                   KeyEvent.VK_Z);
+        
+        add_menu_entry("Help", "Help",                          0);
     }
 
     public void performCommand(String cmd) throws Exception {
@@ -83,12 +85,14 @@ public class ProbeMenu extends MenuBar
         else if (cmd.equals("Collapse fully marked"))   tree_display().foldCompleteMarked();
         else if (cmd.equals("Collapse partial marked")) tree_display().foldPartiallyMarked();
         else if (cmd.equals("Expand all"))              tree_display().unfoldAll();
-        else if (cmd.equals("Expand unmarked"))         tree_display().unfoldUnmarked();              
-        else if (cmd.equals("Expand fully marked"))     tree_display().unfoldCompleteMarked();              
+        else if (cmd.equals("Expand unmarked"))         tree_display().unfoldUnmarked();
+        else if (cmd.equals("Expand fully marked"))     tree_display().unfoldCompleteMarked();
         else if (cmd.equals("Expand partial marked"))   tree_display().unfoldPartiallyMarked();
         else if (cmd.equals("Smart expand"))            tree_display().smartUnfold();
         else if (cmd.equals("Smart collapse"))          tree_display().smartFold();
         else if (cmd.equals("Show marked"))             tree_display().unfoldMarkedFoldRest();
+        
+        else if (cmd.equals("Help"))                    gui.showHelp();
 
         else {
             System.out.println("Command not implemented yet: '"+cmd+"'");
@@ -112,7 +116,7 @@ public class ProbeMenu extends MenuBar
 
             String       entry  = (String)menuEntries.get(idx);
             MenuItem     item   = new MenuItem(entry);
-            MenuShortcut hotkey = (MenuShortcut)hotkeys.get(idx);            
+            MenuShortcut hotkey = (MenuShortcut)hotkeys.get(idx);
             if (hotkey != null) {
                 item.setShortcut(hotkey);
                 if (usedKeys.contains(hotkey)) {
@@ -145,7 +149,7 @@ public class ProbeMenu extends MenuBar
                     }
                     catch (Exception ex) {
                         Toolkit.showError("in ProbeMenu/ActionListener: "+ex.getMessage());
-                        ex.printStackTrace();                        
+                        ex.printStackTrace();
                     }
                 }
             });
