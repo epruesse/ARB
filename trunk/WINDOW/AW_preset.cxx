@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <awt_canvas.hxx>
 #include "aw_preset.hxx"
+#include "aw_def.hxx" 
 
 #ifdef _ARB_WINDOW
 
@@ -232,19 +233,53 @@ void AW_preset_create_scale_chooser(AW_window *aws, char *awar, char *label)
 
 struct AW_MGC_awar_cb_struct;
 
+class aw_gc_manager {
+    const char            *field;
+    const char            *default_value;
+    AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
+    AW_MGC_awar_cb_struct *font_change_cb_parameter;
+    struct aw_gc_manager  *next;
+
+    ~aw_gc_manager() {} // unused
+public:
+    aw_gc_manager(const char *field_, const char *default_value_)
+        : field(field_)
+        , default_value(default_value_)
+        , font_size_handle(0)
+        , next(0)
+    {}
+
+    void enqueue(aw_gc_manager *next_) {
+        aw_assert(!next);
+        next = next_;
+    }
+
+    const char *get_field() const { return field; }
+    const char *get_default_value() const { return default_value; }
+    const aw_gc_manager *get_next() const { return next; }
+    aw_gc_manager *get_next() { return next; }
+
+    void set_font_size_handle(AW_option_menu_struct *oms) { font_size_handle = oms; }
+    AW_option_menu_struct *get_font_size_handle() const { return font_size_handle; }
+
+    void set_font_change_parameter(AW_MGC_awar_cb_struct *cb_data) { font_change_cb_parameter = cb_data; }
+    AW_MGC_awar_cb_struct *get_font_change_parameter() const { return font_change_cb_parameter; }
+};
+
 struct AW_MGC_cb_struct {   // one for each window
     AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i, AW_CL cd2i);
+
     AW_window *aw;
     void (*f)(AW_window*,AW_CL ,AW_CL);
-    AW_CL cd1;
-    AW_CL cd2;
-    char *window_awar_name;
+    AW_CL      cd1;
+    AW_CL      cd2;
+    char      *window_awar_name;
     AW_device *device;
+
     struct AW_MGC_awar_cb_struct *next_drag;
 };
 
-AW_MGC_cb_struct::AW_MGC_cb_struct( AW_window *awi,
-                                    void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i ) {
+AW_MGC_cb_struct::AW_MGC_cb_struct( AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i ) {
     memset((char*)this,0,sizeof(AW_MGC_cb_struct));
     aw  = awi;
     f   = g;
@@ -255,38 +290,100 @@ AW_MGC_cb_struct::AW_MGC_cb_struct( AW_window *awi,
 }
 
 struct AW_MGC_awar_cb_struct {  // one for each awar
-    struct AW_MGC_cb_struct *cbs;
-    const char *fontbasename;
-    const char *colorbasename;
-    short       gc;
-    short       gc_drag;
-    short       colorindex;
+    struct AW_MGC_cb_struct      *cbs;
+    const char                   *fontbasename;
+    const char                   *colorbasename;
+    short                         gc;
+    short                         gc_drag;
+    short                         colorindex;
+    aw_gc_manager                *gcmgr;
+    AW_window                    *gc_def_window;
     struct AW_MGC_awar_cb_struct *next;
 };
 
-struct aw_gc_manager {
-    const char *field;
-    const char *default_value;
-    struct aw_gc_manager *next;
-};
+static void add_font_sizes_to_option_menu(AW_window *aww, int count, int *available_sizes) {
+    char ssize[20];
+    bool default_size_set = false;
 
-void aw_gc_changed_cb(AW_root *awr,AW_MGC_awar_cb_struct *cbs, long mode)
+    for (int idx = 0; idx < count; ++idx) {
+        int size = available_sizes[idx];
+        if (!default_size_set && size > DEF_FONTSIZE) { // insert default size if missing
+            sprintf(ssize, "%i", DEF_FONTSIZE);
+            aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
+            default_size_set = true;
+        }
+        sprintf(ssize, "%i", size);
+        if (size == DEF_FONTSIZE) {
+            aww->insert_default_option(ssize, 0, (int) size);
+            default_size_set = true;
+        }
+        else {
+            aww->insert_option(ssize, 0, (int) size);
+        }
+    }
+
+    if (!default_size_set) {
+        sprintf(ssize, "%i", DEF_FONTSIZE);
+        aww->insert_default_option(ssize, 0, (int) DEF_FONTSIZE);
+    }
+
+    aww->update_option_menu();
+}
+
+static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool firstCall) {
+    AW_option_menu_struct *oms = cbs->gcmgr->get_font_size_handle();
+    aw_assert(oms);
+
+    if (oms) {                  // has font size definition
+        int  available_sizes[MAX_FONTSIZE-MIN_FONTSIZE+1];
+        char awar_name[256];
+        sprintf(awar_name,AWP_FONTNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
+
+        int        font_nr     = awr->awar(awar_name)->read_int();
+        int        found_sizes = cbs->cbs->device->get_available_fontsizes(cbs->gc, font_nr, available_sizes);
+        AW_window *aww         = cbs->gc_def_window;
+        aw_assert(aww);
+
+        if (!firstCall) aww->clear_option_menu(oms);
+        add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
+    }
+}
+
+static void aw_font_changed_cb(AW_root *awr, AW_CL cl_cbs) {
+    AW_MGC_awar_cb_struct *cbs = (AW_MGC_awar_cb_struct*)cl_cbs;
+    aw_init_font_sizes(awr, cbs, false);
+}
+
+static void aw_gc_changed_cb(AW_root *awr,AW_MGC_awar_cb_struct *cbs, long mode)
 {
-    // mode == -1 -> no callback
-    char awar_name[256];
-    int font;
-    int size;
+    static int dont_recurse = 0;
 
-    sprintf(awar_name,AWP_FONTNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
-    font = (int)awr->awar(awar_name)->read_int();
+    if (dont_recurse == 0) {
+        ++dont_recurse;
+        // mode == -1 -> no callback
+        char awar_name[256];
+        int  font;
+        int  size;
 
-    sprintf(awar_name,AWP_FONTSIZE_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
-    size = (int)awr->awar(awar_name)->read_int();
+        sprintf(awar_name,AWP_FONTNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
+        font = awr->awar(awar_name)->read_int();
 
-    cbs->cbs->device->set_font(cbs->gc,font,size);
-    cbs->cbs->device->set_font(cbs->gc_drag,font,size);
-    if (mode != -1) {
-        cbs->cbs->f(cbs->cbs->aw,cbs->cbs->cd1,cbs->cbs->cd2);
+        sprintf(awar_name,AWP_FONTSIZE_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
+        AW_awar *awar_font_size = awr->awar(awar_name);
+        size                    = awar_font_size->read_int();
+
+        int found_font_size;
+        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
+        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
+        if (found_font_size != -1 && found_font_size != size) {
+            // correct awar value if exact fontsize wasn't found
+            awar_font_size->write_int(found_font_size);
+        }
+
+        if (mode != -1) {
+            cbs->cbs->f(cbs->cbs->aw, cbs->cbs->cd1, cbs->cbs->cd2);
+        }
+        --dont_recurse;
     }
 }
 
@@ -491,12 +588,9 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     AW_BOOL first = AW_TRUE;
 
     aww->main_drag_gc = base_drag;
-    gcmgrfirst = gcmgrlast = new aw_gc_manager;
-    gcmgrfirst->next =0;
-    gcmgrfirst->field = mcbs->window_awar_name;
-    const char *old_font_base_name = "default";
+    gcmgrfirst = gcmgrlast = new aw_gc_manager(mcbs->window_awar_name, 0);
 
-    //    char *awar_background_name = 0;
+    const char *old_font_base_name = "default";
 
     char background[50];
     gb_assert(default_background_color[0]);
@@ -535,18 +629,19 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                     else color = (char*)"navy";
                 }
 
-                gcmgr2 = new aw_gc_manager;
-                gcmgr2->field = strdup(id_copy);
-                gcmgr2->default_value = color ? strdup(color) : 0;
-                gcmgr2->next = 0;
-                gcmgrlast->next  = gcmgr2;
+                gcmgr2 = new aw_gc_manager(strdup(id_copy), color ? strdup(color) : 0);
+
+                gcmgrlast->enqueue(gcmgr2);
                 gcmgrlast = gcmgr2;
 
-                acbs = new AW_MGC_awar_cb_struct;
-                acbs->cbs = mcbs;
+                acbs                = new AW_MGC_awar_cb_struct;
+                acbs->cbs           = mcbs;
                 acbs->colorbasename = GBS_string_2_key(id_copy);
-                acbs->gc    = base_gc;
-                acbs->gc_drag   = base_drag;
+                acbs->gc            = base_gc;
+                acbs->gc_drag       = base_drag;
+                acbs->gcmgr         = gcmgr2;
+                acbs->gc_def_window = 0;
+
                 if (!first) {
                     acbs->next = mcbs->next_drag;
                     mcbs->next_drag = acbs;
@@ -584,22 +679,28 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
             sprintf(awar_name,AWP_COLORNAME_TEMPLATE,mcbs->window_awar_name,acbs->colorbasename);
             acbs->colorindex = col;
 
-            aw_root->awar_string(awar_name, gcmgr2->default_value, aw_def);
+            aw_root->awar_string(awar_name, gcmgr2->get_default_value(), aw_def);
             aw_root->awar(awar_name)->add_callback( (AW_RCB)aw_gc_color_changed_cb,(AW_CL)acbs,(AW_CL)0);
 
             aw_gc_color_changed_cb(aw_root,acbs,-1);
 
-            if (!flag_no_fonts) {
-                old_font_base_name = acbs->fontbasename = acbs->colorbasename;
-            }else{
-                acbs->fontbasename = old_font_base_name;
+            if (flag_no_fonts) acbs->fontbasename = old_font_base_name;
+            else old_font_base_name = acbs->fontbasename = acbs->colorbasename;
+
+            {
+                sprintf(awar_name,AWP_FONTNAME_TEMPLATE,mcbs->window_awar_name,acbs->fontbasename);
+                AW_awar *font_awar = aw_root->awar_int(awar_name,def_font,aw_def);
+                sprintf(awar_name,AWP_FONTSIZE_TEMPLATE,   mcbs->window_awar_name,acbs->fontbasename);
+                AW_awar *font_size_awar = aw_root->awar_int(awar_name,DEF_FONTSIZE,aw_def);
+
+                if (!flag_no_fonts) {
+                    font_awar->add_callback(aw_font_changed_cb, (AW_CL)acbs);
+                    gcmgr2->set_font_change_parameter(acbs);
+                }
+
+                font_awar->add_callback((AW_RCB)aw_gc_changed_cb,(AW_CL)acbs,(AW_CL)0);
+                font_size_awar->add_callback((AW_RCB)aw_gc_changed_cb,(AW_CL)acbs,(AW_CL)0);
             }
-
-            sprintf(awar_name,AWP_FONTNAME_TEMPLATE,mcbs->window_awar_name,acbs->fontbasename);
-            aw_root->awar_int(awar_name,def_font,aw_def)->add_callback((AW_RCB)aw_gc_changed_cb,(AW_CL)acbs,(AW_CL)0);
-
-            sprintf(awar_name,AWP_FONTSIZE_TEMPLATE,   mcbs->window_awar_name,acbs->fontbasename);
-            aw_root->awar_int(awar_name,12,aw_def)->add_callback((AW_RCB)aw_gc_changed_cb,(AW_CL)acbs,(AW_CL)0);
 
             if (!first) {
                 aw_gc_changed_cb(aw_root,acbs,-1);
@@ -653,18 +754,15 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
     va_end(parg);
 }
 
-//  ---------------------------------------------------------------------------------------------------------------------------
-//      static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager *gcmgr, bool insert_color_groups)
-//  ---------------------------------------------------------------------------------------------------------------------------
 static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager *gcmgr, bool insert_color_groups) {
     // returns true if GCs starting with COLOR_GROUP_PREFIX were found
 
     bool        has_color_groups = false;
-    const char *window_awar_name = gcmgr->field;
+    const char *window_awar_name = gcmgr->get_field();
     AW_BOOL     first            = AW_TRUE;
 
-    for (gcmgr = gcmgr->next; gcmgr; gcmgr = gcmgr->next) {
-        const char *id = gcmgr->field;
+    for (gcmgr = gcmgr->get_next(); gcmgr; gcmgr = gcmgr->get_next()) {
+        const char *id = gcmgr->get_field();
 
         AW_BOOL flag_fixed_fonts_only    = AW_FALSE;
         AW_BOOL flag_no_color_selector   = AW_FALSE;
@@ -723,7 +821,8 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             aws->create_input_field(awar_name, 7);
 
             if (!flag_no_fonts) {
-                sprintf(awar_name, AWP_FONTNAME_TEMPLATE,window_awar_name, fontbasename);
+                sprintf(awar_name, AWP_FONTNAME_TEMPLATE, window_awar_name, fontbasename);
+
                 aws->label_length(5);
                 aws->create_option_menu(awar_name, "Font", 0);
                 {
@@ -742,17 +841,13 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 sprintf(awar_name, AWP_FONTSIZE_TEMPLATE,window_awar_name, fontbasename);
                 aws->label_length(5);
 
-                aws->create_option_menu(awar_name, "size", 0);
+                AW_option_menu_struct *oms = aws->create_option_menu(awar_name, "size", 0);
+                gcmgr->set_font_size_handle(oms);
 
-                int  size;
-                char ssize[20];
+                AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
+                acs->gc_def_window         = aws; 
 
-                for (size = 2; size < 25; size++) {
-                    sprintf(ssize, "%i", size);
-                    aws->insert_option(ssize, 0, (int) size);
-                }
-                aws->update_option_menu();
-
+                aw_init_font_sizes(aw_root, acs, true); // does update_option_menu
             }
             if (!flag_append_in_same_line)  aws->at_newline();
         }
@@ -910,8 +1005,7 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 
     if (has_color_groups) {
         aws->callback((AW_CB)AW_create_gc_color_groups_window, (AW_CL)aw_root, (AW_CL)id_par);
-        aws->button_length(19);
-        aws->create_button("EDIT_COLOR_GROUP","Edit color groups", "E");
+        aws->create_autosize_button("EDIT_COLOR_GROUP","Edit color groups", "E");
         aws->at_newline();
     }
 
