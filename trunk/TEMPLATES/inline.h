@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : inline.h                                               //
 //    Purpose   : general purpose inlined funcions                       //
-//    Time-stamp: <Fri Jun/14/2002 19:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/03/2002 15:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //
@@ -19,7 +19,7 @@
 #include <cctype>
 
 /** Like strcmp but ignoring case */
-inline int stricmp(const char *s1, const char *s2) {
+inline int ARB_stricmp(const char *s1, const char *s2) {
     int cmp = 0;
     size_t idx = 0;
     while (!cmp) {
@@ -31,6 +31,8 @@ inline int stricmp(const char *s1, const char *s2) {
     return cmp;
 }
 
+inline void ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); }
+inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); }
 
 #else
 #error inline.h included twice
