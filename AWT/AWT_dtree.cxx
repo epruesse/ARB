@@ -20,6 +20,7 @@
 
 
 
+
 /***************************
       class AP_tree
 ****************************/
@@ -1372,8 +1373,8 @@ void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, int width)
 // returns true if a bootstrap was DISPLAYED
 
 AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    const char *end          = 0;
-    int         bootstrap    = int(strtol(remark_branch, &(char*)end, 10));
+    char       *end          = 0;
+    int         bootstrap    = int(strtol(remark_branch, &end, 10));
     bool        is_bootstrap = end[0] == '%' && end[1] == 0;
     bool        show         = true;
     const char *text         = 0;
@@ -1407,7 +1408,7 @@ AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_
 
 double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double x_son)
 {
-    double          ny0, ny1, nx0, nx1, ry, l_min, l_max,offset;
+    double ny0, ny1, nx0, nx1, ry, l_min, l_max,offset;
     AWUSE(x_father);
     ny0 = y_pos;
 
@@ -1856,7 +1857,6 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
     disp_device->invisible(AWT_GC_CURSOR,0,0,-1,0,0);
     disp_device->invisible(AWT_GC_CURSOR,max_strlen*scale,y_position,-1,0,0);
 }
-
 
 void AWT_graphic_tree::show(AW_device *device)	{
     int nsort = tree_sort;

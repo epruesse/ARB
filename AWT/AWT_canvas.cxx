@@ -93,8 +93,7 @@ void AWT_canvas::init_device(AW_device *device) {
     device->zoom(this->trans_to_fit);
 }
 
-void
-AWT_canvas::zoom_reset( void )
+void AWT_canvas::zoom_reset( void )
 {
 	GB_transaction dummy(this->gb_main);
 
@@ -371,10 +370,10 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 				if(ntw->zoom_drag_sx!=event.x){
 					ntw->tree_zoom(device, ntw->zoom_drag_sx, ntw->zoom_drag_sy, event.x, event.y);
 				}else{
-					ntw->tree_zoom(device, AWT_ZOOM_OUT_STEP, AWT_ZOOM_OUT_STEP, 
+					ntw->tree_zoom(device, AWT_ZOOM_OUT_STEP, AWT_ZOOM_OUT_STEP,
 								   screenwidth  - AWT_ZOOM_OUT_STEP,
 								   screenheight - AWT_ZOOM_OUT_STEP);
-				}	
+				}
 				AWT_expose_cb(aww,ntw,0);
 			}
 			break;
@@ -390,12 +389,12 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 								 ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 				ntw->drag = 0;
 				if(ntw->zoom_drag_sx!=event.x){
-					ntw->tree_zoom(device, -(ntw->zoom_drag_sx*2), -(ntw->zoom_drag_sy*2), 
-								   ((screenwidth-event.x) + screenwidth)*2, 
+					ntw->tree_zoom(device, -(ntw->zoom_drag_sx*2), -(ntw->zoom_drag_sy*2),
+								   ((screenwidth-event.x) + screenwidth)*2,
 								   ((screenheight-event.y)+ screenheight)*2);
 				}
 				else{
-					ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP, 
+					ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP,
 								   screenwidth  + AWT_ZOOM_OUT_STEP,
 								   screenheight + AWT_ZOOM_OUT_STEP);
 				}
@@ -404,7 +403,7 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 			break;
 		}
 		break;
-	
+
 		/*** here appear all modes, which are to be handled by the object's command methods ***/
 
 	default:
@@ -508,7 +507,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 			break;
 		}
 		break;
-		
+
 	case AWT_M_RIGHT:
 		if(ntw->mode == AWT_MODE_ZOOM){
 			nt_draw_zoom_box(device, ntw->drag_gc,
@@ -543,7 +542,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 			}
 		}
 		break;
-		
+
 	case AWT_M_MIDDLE:
             /** in most modes the user shall be able to
                 shift the display by dragging MM */
