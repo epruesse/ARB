@@ -6,10 +6,11 @@ import java.util.*;
 
 public class TreeParser
 {
-private String treeString;
+private String   treeString;
 private TreeNode root;
-public long numOpen = 0;
-public long numClose = 0;
+public long      numOpen  = 0;
+public long      numClose = 0;
+public boolean   verbose  = false;
 
 public TreeParser(String ts)
     {
@@ -21,25 +22,25 @@ public TreeNode getRootNode()
     {
         if (root == null)
             {
-                try{ 
+                try{
                     root = generateTreeNodes(treeString);
                     root.setFather(root);
 
                return root;
-                } 
+                }
                 catch (Exception e)
                     {
                         System.out.println("opening paren's : >>>" + numOpen + "<<<");
                         System.out.println("closing paren's : >>>" + numClose + "<<<");
                         return null;
                     }
-                
+
 
             }
         else
             {
-                return root;    
-            }   
+                return root;
+            }
     }
 
 
@@ -47,22 +48,20 @@ public TreeNode getRootNode()
 private TreeNode generateTreeNodes(String ts)
 {
 
-    if (( ts.length() == 0) || (ts.charAt(0)!= '(') )
-        {
-            System.out.println("Error in function TreeNode.generateTreeNodes()");
-            System.out.println("Empty tree string or wrong format");
-            System.exit(1);
-        }
-    TreeNode anchor = new TreeNode();
+    if (( ts.length() == 0) || (ts.charAt(0)!= '(') ) {
+        Toolkit.AbortWithError("generateTreeNodes: Empty tree string or wrong format");
+    }
+
+    TreeNode anchor      = new TreeNode();
     //   r.setFather(r);
     TreeNode currentNode = anchor;
-    String lastToken = new String("(");
+    String   lastToken   = new String("(");
     anchor.setNodeName("anchor");
-    anchor.level = 0;
+    anchor.level         = 0;
 
-    StringTokenizer strTok = 
+    StringTokenizer strTok =
         new StringTokenizer(ts,
-                            "'():, \n\t", 
+                            "'():, \n\t",
                             true); // returns also the separators
 
     int indent = 0 ;
@@ -82,8 +81,8 @@ private TreeNode generateTreeNodes(String ts)
 //                 currentNode.appendNodeName(token);
 //                 continue;
 //             };
-            
-            
+
+
 
 
             while ( ( (token.equals(" ") || token.equals("\n") || token.equals("\t") ) )
@@ -91,7 +90,8 @@ private TreeNode generateTreeNodes(String ts)
                 {
                     token = strTok.nextToken();
                 }
-            System.out.println("actual token is :>>>" + token + "<<<");
+
+            if (verbose) System.out.println("current token is :>>>" + token + "<<<");
 
             if (insideString == true && !token.equals("'"))
                     {
@@ -124,10 +124,10 @@ private TreeNode generateTreeNodes(String ts)
 //                 }
 //             }
 
-            
+
             if(token.equals("(")) {
 //                     System.out.println("recognized token '(': >>>" + token + "<<<");
-                     ++ numOpen; 
+                     ++ numOpen;
                      lastToken = token;
                      TreeNode tmp = new TreeNode();
                      if (currentNode.getNodeName().equals("anchor")){
@@ -143,8 +143,8 @@ private TreeNode generateTreeNodes(String ts)
                 };
 
                 // token is identifier terminal node
-                if ( (lastToken.equals("(") || lastToken.equals(",")  ) 
-                     && ( !(token.equals("(") 
+                if ( (lastToken.equals("(") || lastToken.equals(",")  )
+                     && ( !(token.equals("(")
                             //|| token.equals(")")
                             ) ) )
                     {
@@ -192,7 +192,7 @@ private TreeNode generateTreeNodes(String ts)
 //                         {
 //                             tmp.appendNodeName(token);
 //                             token = strTok.nextToken();
-//                         }                        
+//                         }
 
                         currentNode = tmp; // ???
 //                        lastToken = token;
@@ -207,7 +207,7 @@ private TreeNode generateTreeNodes(String ts)
 //                 if (lastToken.equals("'") && token.equals("'"))
 //                     {
 //                                     token = strTok.nextToken();
-                                    
+
 //                                     while (!token.equals("'"))
 //                                         {
 //                                             currentNode.appendNodeName(token);
@@ -220,16 +220,16 @@ private TreeNode generateTreeNodes(String ts)
 
                 // token is identifier for internal node;; strange
 
-                if ( (lastToken.equals(")") 
-                      // || lastToken.equals(",") 
-                      ) // || lastToken.equals("'")  ) 
-                     && ( 
+                if ( (lastToken.equals(")")
+                      // || lastToken.equals(",")
+                      ) // || lastToken.equals("'")  )
+                     && (
                          ! (
                             //token.equals("(") ||
                             token.equals(":") ) ) )
                     {
 
-                        System.out.println("found internal node name : " + token);
+                        if (verbose) System.out.println("found internal node name : " + token);
                         //                 if(isIdentifier(token))//token is a identifier -> new named node
                         //                     {
                         //                     System.out.println("recognized identifier: >>>" + token + "<<<");
@@ -240,7 +240,7 @@ private TreeNode generateTreeNodes(String ts)
 //                             {
 //                                 token = strTok.nextToken();
 //                             }
-                        
+
 
 //                         if (token.equals("'"))
 //                             {
@@ -274,7 +274,7 @@ private TreeNode generateTreeNodes(String ts)
 
 //                             currentNode.appendNodeName(token);
 //                             token = strTok.nextToken();
-                            
+
 //                         }
                         lastToken = token; //token;
                         ++indent;
@@ -313,8 +313,7 @@ private TreeNode generateTreeNodes(String ts)
                  if(token.equals(")") ){
                      if (!lastToken.equals("dist"))
                          {
-                             System.out.println("missing distance");
-                             System.exit(1);
+                             Toolkit.AbortWithError("generateTreeNodes: missing distance");
                          };
 //                     System.out.println("recognized tokens: ')' >>>" + token + "<<<");
                      ++ numClose;
@@ -338,8 +337,7 @@ private TreeNode generateTreeNodes(String ts)
 
                      if (!lastToken.equals("dist"))
                          {
-                             System.out.println("missing distance, outside NodeName");
-                             System.exit(1);
+                             Toolkit.AbortWithError("generateTreeNodes: missing distance, outside NodeName");
                          };
 
 //                     System.out.println("recognized token: ',' >>>" + token + "<<<");
@@ -377,11 +375,11 @@ private TreeNode generateTreeNodes(String ts)
 //                 //                System.out.println(indentString + token);
             }
 
-        // stops at last node before root because root node has no distance  
+        // stops at last node before root because root node has no distance
         //      System.out.println("anchor hat " + anchor.getChilds().size() + "Kinder");
 
 
-        return (TreeNode) anchor.getChilds().elementAt(0); 
+        return (TreeNode) anchor.getChilds().elementAt(0);
 }
 
 
@@ -391,7 +389,7 @@ private TreeNode generateTreeNodes(String ts)
 // {
 //     int l = s.length();
 //     boolean status = true;
-//     if ((s.charAt(0) >= '0') && (s.charAt(0) <= '9')) 
+//     if ((s.charAt(0) >= '0') && (s.charAt(0) <= '9'))
 //         {
 //             status = false;
 //             //            System.out.println("not an identifier: " + s);
@@ -399,7 +397,7 @@ private TreeNode generateTreeNodes(String ts)
 //     for (int i = 0; (i < l) && (status == true); ++i)
 //         {
 //             char c = s.charAt(i);
-//             if (! ( ( (c >= 'A') && (c <= 'Z') ) || ((c >= 'a') && (c <= 'z')) 
+//             if (! ( ( (c >= 'A') && (c <= 'Z') ) || ((c >= 'a') && (c <= 'z'))
 //                     || ( c == '_') || ((c >= '0') && (c <= '9')) || (c == '#') // ) )
 //                                     || (c == '.') || (c == '\'') ) )
 //                 {
