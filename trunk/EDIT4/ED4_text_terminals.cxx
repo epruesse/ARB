@@ -231,11 +231,13 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
        
         char *saiColors = 0; int isSai;
         if(species_name && ED4_ROOT->visualizeSAI && !(isSai = checkSai(this->species_name))) {
-            saiColors = getSaiColorString(seq_start, seq_end);
+            if (is_marked)
+                saiColors = getSaiColorString(seq_start, seq_end);
+            else if (ED4_ROOT->visualizeSAI_allSpecies)
+                saiColors = getSaiColorString(seq_start, seq_end);
         }
 
-
-        if (colors || searchColors || is_marked || is_selected || color_group) {
+        if (colors || searchColors || is_marked || is_selected || color_group || saiColors) {
             int i;
             AW_pos font_height = ED4_ROOT->font_info[ED4_G_HELIX].get_ascent();
             AW_pos width = ED4_ROOT->font_info[ED4_G_HELIX].get_width();
@@ -268,8 +270,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                     if (color > ED4_G_CBACK_9) color = ED4_G_CBACK_9;
                 }
                 else if (saiColors) {
-                    color = saiColors[new_pos] + ED4_G_CBACK_0;
-                    if (color > ED4_G_CBACK_9 || color < 0) color = ED4_G_CBACK_0;
+                    color = saiColors[new_pos];
+                    if (color > ED4_G_CBACK_9)  color = ED4_G_STANDARD; 
                 }
                 else if (is_marked) {
                     color = ED4_G_MARKED;
