@@ -196,13 +196,9 @@ void AW_window::at( const char *id ) {
         AW_ERROR(" ID '%s' does not exist in xfig file", id);
         return;
     }
-    at( (pos->x - xfig->minx),
-        (pos->y - xfig->miny - this->get_root()->font_height - 9));
 
-    if ( pos->center ) {
-        _at->correct_for_at_center = pos->center;
-    }
-
+    at( (pos->x - xfig->minx), (pos->y - xfig->miny - this->get_root()->font_height - 9));
+    _at->correct_for_at_center = pos->center;
 
     if (1){
         sprintf( to_position, "to:%s", id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
@@ -224,7 +220,7 @@ void AW_window::at( const char *id ) {
         _at->to_position_exists = AW_TRUE;
         _at->to_position_x = (pos->x - xfig->minx);
         _at->to_position_y = (pos->y - xfig->miny);
-        _at->correct_for_at_center = 0; // left justified
+        _at->correct_for_at_center = 0; // always justify left when a to-position exists
     }else {
         _at->to_position_exists = AW_FALSE;
     }
@@ -253,7 +249,7 @@ void AW_window::at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff
     if (_at->to_position_x > _at->max_x_size) _at->max_x_size = _at->to_position_x;
     if (_at->to_position_y > _at->max_y_size) _at->max_y_size = _at->to_position_y;
 
-    _at->correct_for_at_center = xoff >= 0 ? 0 : 2; // left or right justified
+    _at->correct_for_at_center = xoff <= 0 ? 0 : 2; // justify left (=0) or right (=2)
 }
 
 void AW_window::at_unset_to() {
