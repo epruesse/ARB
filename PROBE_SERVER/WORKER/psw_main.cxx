@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Sat Oct/11/2003 13:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/11/2004 15:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -31,9 +31,7 @@
 #define psw_assert(x) arb_assert(x)
 
 #include "../global_defs.h"
-#define SKIP_SETDATABASESTATE
-#define SKIP_ENCODETREENODE
-#define SKIP_DECODETREENODE
+#define NEED_getDatabaseState
 #include "../common.h"
 #include "../mapping.h"
 
@@ -241,6 +239,35 @@ namespace {
 //      Helper functions for commands
 
 namespace {
+    static GB_ERROR loadProbeListFromString(std::list<const char *>& probes, GBDATA *gb_father,
+                                            const char *entry_name, const char *group_id)
+    {
+        GB_ERROR  error    = 0;
+        GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+
+        if (gb_entry) {
+            char *probe_string = GB_read_string(gb_entry);
+            if (!probe_string) {
+                error = GB_get_error();                
+                psw_assert(error);
+            }
+            else {
+                for (const char *tok = strtok(probe_string, ",");
+                     tok;
+                     tok = strtok(0, ","))
+                {
+                    probes.push_back(tok);
+                }
+            }
+        }
+        else {
+            fprintf(stderr, "no '%s' entry found for group_id '%s' -- ignored\n", entry_name, group_id);
+        }
+
+        return error;
+    }
+
+    
     GB_ERROR extractProbes(const char *group_id, list<const char *>& probes) {
         GB_ERROR  error          = 0;
         GBDATA   *gb_probe_group = (GBDATA*)GBS_read_hash(group_cache, group_id); // search for probe group
@@ -249,6 +276,9 @@ namespace {
             error = GBS_global_string("Can't find probe group '%s'", group_id);
         }
         else {
+            error = loadProbeListFromString(probes, gb_probe_group, "common_probes", group_id);
+            
+#if 0
             GBDATA *gb_probe_group_common = GB_search(gb_probe_group, "probe_group_common", GB_FIND);
 
             if (!gb_probe_group_common) {
@@ -263,6 +293,7 @@ namespace {
                     probes.push_back(GB_read_char_pntr(gb_probe));
                 }
             }
+#endif
         }
 
         return error;
@@ -391,7 +422,8 @@ namespace {
     }
 
     // returns a list of probes for a specific node
-    GB_ERROR CMD_getprobes(GBDATA *gb_main, const Arguments& args, FILE *out) {
+    // (Note: Not a real command - used by CMD_getexactprobes and CMD_getnonexactprobes)
+    GB_ERROR CMD_getprobes(GBDATA *gb_main, const Arguments& args, FILE *out, bool get_exact) {
         const char     *path;
         GB_ERROR        error = expectArgument(args, "path", path);
         GB_transaction  dummy(gb_main);
@@ -422,7 +454,7 @@ namespace {
                     error                = GBS_global_string("Illegal subtree path '%s' (enc_path=%s, dec_path=%s, error=%s)", path, enc_path, dec_path, error);
                 }
             }
-            else {              // we have a legal subtree
+            else {              // we have a legal subtree                
                 GBDATA *gb_exact = GB_search(gb_subtree, "exact", GB_FIND);
                 if (gb_exact) { // there are exact matches
                     size_t exact = GB_read_int(gb_exact);
@@ -430,27 +462,33 @@ namespace {
                         error = "exact has illegal value 0";
                     }
                     else {
-                        list<const char *> exactProbes; // probes exactly hitting the subtree
+                        if (get_exact) {
+                            list<const char *> exactProbes; // probes exactly hitting the subtree
 
-                        psw_assert(exact != 0); // in that case gb_exact should be 0
+                            psw_assert(exact != 0); // in that case gb_exact should be 0
 
-                        char *group_id = GBS_global_string_copy("p%s", enc_path);
-                        error          = extractProbes(group_id, exactProbes);
+                            char *group_id = GBS_global_string_copy("p%s", enc_path);
+                            error          = extractProbes(group_id, exactProbes);
 
-                        if (!error && (exactProbes.size() != exact)) {
-                            error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
-                        }
-
-                        if (!error) {
-                            fprintf(out, "result=ok\nfound=%i\n", exact);
-                            int count = 0;
-
-                            for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
-                                fprintf(out, "probe%i=%s,E,%s\n", count, *p, group_id);
+                            if (!error && (exactProbes.size() != exact)) {
+                                error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
                             }
-                        }
 
-                        free(group_id);
+                            if (!error) {
+                                fprintf(out, "result=ok\nfound=%i\n", exact);
+                                int count = 0;
+
+                                for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
+                                    fprintf(out, "probe%i=%s,E,%s\n", count, *p, group_id);
+                                }
+                            }
+
+                            free(group_id);
+                        }
+                        else {
+                            // only non-exact probes are requested -> return none
+                            fprintf(out, "result=ok\nfound=0\n");
+                        }
                     }
 
                     if (error) {
@@ -459,49 +497,55 @@ namespace {
                     }
                 }
                 else {
-                    list<const char *>  coverageProbes; // probes covering most of the subtree (w/o non group hits)
-                    list<const char *>  nonGroupHitProbes; // probes covering the whole subtree (with non group hits)
-                    int                 coverage_percentage = 0;
-                    int                 non_group_hits      = 0;
-                    const char         *covering_group_id   = 0;
-                    const char         *ngh_group_id        = 0;
+                    if (!get_exact) {
+                        list<const char *>  coverageProbes; // probes covering most of the subtree (w/o non group hits)
+                        list<const char *>  nonGroupHitProbes; // probes covering the whole subtree (with non group hits)
+                        int                 coverage_percentage = 0;
+                        int                 non_group_hits      = 0;
+                        const char         *covering_group_id   = 0;
+                        const char         *ngh_group_id        = 0;
 
-                    if (GBDATA *gb_coverage = GB_find(gb_subtree, "coverage", 0, down_level)) {
-                        int     coverage       = GB_read_int(gb_coverage);
-                        GBDATA *gb_coverage_id = GB_find(gb_subtree, "coverage_id", 0, down_level);
+                        if (GBDATA *gb_coverage = GB_find(gb_subtree, "coverage", 0, down_level)) {
+                            int     coverage       = GB_read_int(gb_coverage);
+                            GBDATA *gb_coverage_id = GB_find(gb_subtree, "coverage_id", 0, down_level);
 
-                        if (!gb_coverage_id) {
-                            error = "'coverage_id' expected";
-                        }
-                        else {
-                            GBDATA *gb_speccount = GB_find(gb_subtree, "speccount", 0, down_level);
-                            if (!gb_speccount) {
-                                error = "'speccount' expected";
+                            if (!gb_coverage_id) {
+                                error = "'coverage_id' expected";
                             }
                             else {
-                                int speccount     = GB_read_int(gb_speccount);
-                                covering_group_id = GB_read_char_pntr(gb_coverage_id);
+                                GBDATA *gb_speccount = GB_find(gb_subtree, "speccount", 0, down_level);
+                                if (!gb_speccount) {
+                                    error = "'speccount' expected";
+                                }
+                                else {
+                                    int speccount     = GB_read_int(gb_speccount);
+                                    covering_group_id = GB_read_char_pntr(gb_coverage_id);
 
-                                psw_assert(covering_group_id);
-                                psw_assert(speccount);
-                                psw_assert(coverage);
+                                    psw_assert(covering_group_id);
+                                    psw_assert(speccount);
+                                    psw_assert(coverage);
 
-                                coverage_percentage = int(double(coverage)/speccount*100.0+.5);
-                                error               = extractProbes(covering_group_id, coverageProbes);
+                                    coverage_percentage = int(double(coverage)/speccount*100.0+.5);
+                                    error               = extractProbes(covering_group_id, coverageProbes);
+                                }
+                            }
+                        }
+
+                        if (!error) {
+                            fprintf(out, "result=ok\nfound=%i\n", coverageProbes.size()+nonGroupHitProbes.size());
+                            int count = 0;
+
+                            for (list<const char*>::iterator p = coverageProbes.begin(); p != coverageProbes.end(); ++p, ++count) {
+                                fprintf(out, "probe%i=%s,C%i,%s\n", count, *p, coverage_percentage, covering_group_id);
+                            }
+                            for (list<const char*>::iterator p = nonGroupHitProbes.begin(); p != nonGroupHitProbes.end(); ++p, ++count) {
+                                fprintf(out, "probe%i=%s,N%i,%s\n", count, *p, non_group_hits, ngh_group_id);
                             }
                         }
                     }
-
-                    if (!error) {
-                        fprintf(out, "result=ok\nfound=%i\n", coverageProbes.size()+nonGroupHitProbes.size());
-                        int count = 0;
-
-                        for (list<const char*>::iterator p = coverageProbes.begin(); p != coverageProbes.end(); ++p, ++count) {
-                            fprintf(out, "probe%i=%s,C%i,%s\n", count, *p, coverage_percentage, covering_group_id);
-                        }
-                        for (list<const char*>::iterator p = nonGroupHitProbes.begin(); p != nonGroupHitProbes.end(); ++p, ++count) {
-                            fprintf(out, "probe%i=%s,N%i,%s\n", count, *p, non_group_hits, ngh_group_id);
-                        }
+                    else {
+                        // only exact probes are requested -> return none
+                        fprintf(out, "result=ok\nfound=0\n");
                     }
                 }
             }
@@ -510,8 +554,16 @@ namespace {
         return error;
     }
 
+    GB_ERROR CMD_getexactprobes(GBDATA *gb_main, const Arguments& args, FILE *out) {
+        return CMD_getprobes(gb_main, args, out, true);
+    }
+    GB_ERROR CMD_getnonexactprobes(GBDATA *gb_main, const Arguments& args, FILE *out) {
+        return CMD_getprobes(gb_main, args, out, false);
+    }
+
     void init_commands() {
-        command_list["getprobes"]  = CMD_getprobes;
+        command_list["getexactprobes"]  = CMD_getexactprobes;
+        command_list["getnonexactprobes"]  = CMD_getnonexactprobes;
         command_list["getmembers"] = CMD_getmembers;
     }
 }
