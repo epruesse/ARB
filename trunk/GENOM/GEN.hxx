@@ -22,7 +22,8 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
 // --------------------------------------------------------------------------------
 // import:
 
-GB_ERROR GEN_read(GBDATA *gb_main, const char *filename, const char *ali_name);
+GB_ERROR GEN_read_genbank(GBDATA *gb_main, const char *filename, const char *ali_name);
+GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_name);
 
 // --------------------------------------------------------------------------------
 // windows/menus:
