@@ -1,78 +1,173 @@
 AUTODETECT	"ID   *\nSQ*"
 	#Global settings:
-KEYWIDTH	5
+#KEYWIDTH	0
 FILETAG		"EBI"
 
 BEGIN	"ID*"
 
 MATCH	"ID *"
-	SRT "* *=*1"
+	SRT "ID   * *=*1"
 	WRITE "name"
 
 MATCH	"ID *"
-	SRT "* *=*1"
+	SRT "ID   * *=*1"
 	TAG	"EBI"
 	WRITE "id"
+
+MATCH	"ID *"
+	SRT "*;*;*; * BP.=*4"
+	TAG	"EBI"
+	WRITE "db_nuc"
 
 MATCH	"AC *"
 	ACI "extract_words("0123456789",4.0)"
 	WRITE "acc"
 
+MATCH	"AC *"
+	TAG	"EBI"
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "db_acc"
+
+MATCH	"SV *"
+	TAG	"EBI"
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "version"
+
 MATCH	"DT *"
+	SRT "DT   *=*"
 	TAG	"EBI"
 	APPEND "date"
 
+MATCH	"DE *"
+	SRT	"DE   *=*:;="
+	TAG	"EBI"
+	APPEND	"description"
+
+MATCH	"KW *"
+	SRT	"KW   *=*"
+	TAG	"EBI"
+	APPEND	"gene"
+
 MATCH	"OS *"
+	SRT "OS   *=*:* * *=*1 *2"
 	WRITE "full_name"
 
 MATCH	"OS *"
+	SRT "OS   *=*"
 	TAG	"EBI"
 	WRITE "db_name"
 
+MATCH	"OC *"
+	SRT "OC   *=*"
+	TAG	"EBI"
+	APPEND	"tax"
+
+MATCH	"RN *"
+	SRT	"RN   [*]=*"
+    SETVAR x
+	TAG	"EBI"
+	APPEND	"num_bib"
+
+MATCH	"RP *"
+	SRT	"RP   *=*"
+	TAG	"EB$x"
+	APPEND	"gene_pos"
+
+MATCH	"RX *"
+	SRT	"*medline-ID\:*\]*=*2"
+	TAG	"EBI"
+	APPEND	"medline"
+
 MATCH	"RA *"
-	SRT "*;=*1"
+	SRT "*\;=*1:RA   *=*"
+	TAG	"EBI"
+	APPEND "author_$x"
+
+MATCH	"RA *"
+	SRT "*\;=*1:RA   *=($x)\: *"
 	TAG	"EBI"
 	APPEND "author"
 
 MATCH	"RT *"
-	SRT ";=:\"=:?*=?1*1"
+	SRT ";=:\"=:?*=?1*1:RT   *=($x)\: *"
+    ACI "caps"
 	TAG	"EBI"
 	APPEND	"title"
 
-MATCH	"OC *"
-	TAG	"EBI"
-	APPEND	"tax"
-
-MATCH	"RL *"
-	SRT "?*=?1*1:*Unpublished*="
+MATCH	"RL *)."
+	SRT "RL   *=*"
 	TAG	"EBI"
 	APPEND	"journal"
+
+MATCH	"RL *Submit*."
+	SRT "RL   *=*"
+	TAG	"EBI"
+	APPEND	"submnitted"
+
+MATCH	"RL *"
+	SRT "RL   *=*:*).=:Submitt*="
+	TAG	"EBI"
+	APPEND	"auth_submiss"
+
+MATCH	"DR *SWISS*"
+	SRT	"*AccNumber\:*\]*=*2"
+	TAG	"EBI"
+	APPEND	"swiss_prot"
+
+MATCH	"OG *"
+	SRT "OG   *=*"
+	TAG	"EBI"
+	APPEND	"organelle"
+
+MATCH	"FT *clone=*"
+	SRT "FT   *\=*\"*=*2"
+	TAG	"EBI"
+	APPEND	"clone"
 
 MATCH	"FT */strain*"
 	SRT	"*/strain\=\"*\"=*2"
 	TAG	"EBI"
 	APPEND	"strain"
 
-MATCH	"FT */tissue_lib*"
-	SRT	"*/tissue_lib\=\"*\"=*2"
+MATCH	"FT */isolate*"
+	SRT	"*/isolate\=\"*\"=*2"
 	TAG	"EBI"
-	APPEND	"source"
+	APPEND	"strain"
 
-MATCH	"DE *"
-	SRT	";="
+MATCH	"FT */tissue_type*"
+	SRT	"*/tissue_type\=\"*\"=*2"
 	TAG	"EBI"
-	APPEND	"gene"
+	APPEND	"tissue"
 
-MATCH	"KW *"
-	SRT	";="
+MATCH	"FT */EC_number*"
+	SRT	"*/EC_number\=\"*\"=*2"
 	TAG	"EBI"
-	APPEND	"keywords"
+	APPEND	"EC_num"
 
+MATCH	"FT *note*"
+	SRT	"*\=\"*\"=*2"
+	TAG	"EBI"
+	APPEND	"note"
+
+MATCH	"FT */product*"
+	SRT	"*/product\=\"*\"=*2"
+	TAG	"EBI"
+	APPEND	"prod"
+
+MATCH	"FT */translation*"
+	SRT	"*\=\"*=*2"
+	TAG	"EBI"
+	APPEND	"transl_C_term"
+
+MATCH	"FT *"
+	SRT	"FT   *=*"
+	APPEND	"ebi_comment"
 
 SEQUENCEAFTER	"SQ*"
 SEQUENCESRT	"*Check*..*=*3"
 SEQUENCEACI	"remove("0123456789 /")"
 SEQUENCEEND	"//"
 CREATE_ACC_FROM_SEQUENCE
+# DONT_GEN_NAMES
 
 END	"//"
