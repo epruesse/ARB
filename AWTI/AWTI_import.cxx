@@ -22,6 +22,8 @@
 #include "awtc_rename.hxx"
 #include "awti_imp_local.hxx"
 
+using namespace std;
+
 struct awtcig_struct awtcig;
 #define MAX_COMMENT_LINES 2000
 
@@ -815,10 +817,10 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
         }
         free(ali_type);
     }
-    
+
 #ifndef DEVEL_ARTEM
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle is obsolete for Artems new importer
-#endif    
+#endif
     bool ask_generate_names = true;
 
     if (!error) {                               //Falls Formatchecks erfolgreich
@@ -838,11 +840,11 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                 GB_commit_transaction(GB_MAIN);
 
                 aw_openstatus("Reading input files");
-                
+
                 for (int count = 0; !error && fnames[count]; ++count) {
                     GB_ERROR error_this_file =  0;
 
-                    GB_begin_transaction(GB_MAIN); 
+                    GB_begin_transaction(GB_MAIN);
                     aw_status(GBS_global_string("Reading %s", fnames[count]));
                     GB_warning("Trying to import: '%s' ", fnames[count]);
 #if defined(DEBUG)
@@ -852,8 +854,7 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                     try {
 #ifdef DEVEL_ARTEM
                         printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
-                        //error_this_file = Genom_read_embl_universal(GB_MAIN,fnames[count], ali_name);
-			error_this_file = gellisary::GAGenomImport::executeQuery(GB_MAIN,fnames[count], ali_name);
+                        error_this_file = GI_importGenomeFile(GB_MAIN,fnames[count], ali_name);
 #else
                         // Importfunktionen je nach Togglestellung aufrufen
                         if (toggle_value==0) {
@@ -870,14 +871,14 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                     }
 
                     if (!error_this_file) {
-                        GB_commit_transaction(GB_MAIN); 
+                        GB_commit_transaction(GB_MAIN);
                         GB_warning("File '%s' successfully imported", fnames[count]);
                         successfull_imports++;
                     }
                     else {                              //Wird bei Fehler der Importfunktionen durchgeführt
                         error_this_file = GBS_global_string("'%s' not imported (Reason: %s)", fnames[count], error_this_file);
                         GB_warning("Import error: %s", error_this_file);
-                        GB_abort_transaction(GB_MAIN); 
+                        GB_abort_transaction(GB_MAIN);
                         failed_imports++;
                     }
                 }
@@ -890,7 +891,7 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                 }
 
                 aw_closestatus();
-                
+
                 // now open another transaction to "undo" the transaction close above
                 GB_begin_transaction(GB_MAIN);
             }
