@@ -6,8 +6,6 @@
 #endif
 #define pd_assert(bed) arb_assert(bed)
 
-void probe_design_build_pt_server_choices(AW_window *aws,const char *var, AW_BOOL sel_list);
-
 AW_window *create_probe_design_window( AW_root *root, AW_default def);
 AW_window *create_probe_match_window( AW_root *root, AW_default def);
 AW_window *create_probe_admin_window( AW_root *root, AW_default def);
