@@ -3,7 +3,6 @@ UP	arb.hlp
 UP	glossary.hlp
 UP	mark.hlp
 UP	phylo.hlp
-UP	bootstrap.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	user_matrix.hlp
@@ -12,6 +11,7 @@ SUB	props_frame.hlp
 SUB	sel_fil.hlp
 SUB	awt_csp.hlp
 SUB	props_nds.hlp
+SUB	bootstrap.hlp
 
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
