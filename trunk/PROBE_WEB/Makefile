@@ -7,7 +7,8 @@ SUBS = \
 $(MAIN): $(SUBS)
 
 depends:
-		@echo "No automatic dependencies here.."
+		@echo "removing auto-generated dependency files"
+		rm CLIENT/.depends
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
