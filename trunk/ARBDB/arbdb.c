@@ -388,7 +388,7 @@ int gb_read_nr(GBDATA *gbd){
     return gbd->index;
 }
 
-GB_CPNTR GB_read_char_pntr(GBDATA *gbd)
+GB_CPNTR GB_read_char_pntr(GBDATA *gbd) /* @@@ change return type to const char * */
 {
     GB_TEST_READ(gbd,GB_STRING,"GB_read_char_pntr");
     return GB_read_pntr(gbd);

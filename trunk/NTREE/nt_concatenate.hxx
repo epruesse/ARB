@@ -27,10 +27,10 @@
 struct conAlignStruct{
     GBDATA            *gb_main;
     AW_window         *aws;
-	AW_root           *awr;
+    AW_root           *awr;
     AW_selection_list *db_id;
     AW_selection_list *con_id;
-    char	          *seqType;
+    char              *seqType;
 };
 
 struct SPECIES_ConcatenateList {
