@@ -2,9 +2,10 @@
 
 if [ -z "$2" ] ; then
     echo "Usage: mv_if_diff source target"
-    echo "Moves source to target. If target does not differ from source"
-    echo "target is kept untouched."
+    echo "Moves source to target."
+    echo "If target does not differ from source, target is kept untouched."
     echo "If target does not exist, source is always moved to target."
+    echo "source always gets removed."
     exit 1
 fi
     
