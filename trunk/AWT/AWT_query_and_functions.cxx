@@ -1081,7 +1081,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
         char *macro_name  = GBS_global_string_copy("COLORIZE_%s", Sel->items_name);
         char *window_name = GBS_global_string_copy("Colorize %s %s", what, Sel->items_name);
 
-        aws->init( aw_root, macro_name, window_name, 300, 0 );
+        aws->init( aw_root, macro_name, window_name);
 
         free(window_name);
         free(macro_name);
@@ -1196,7 +1196,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
         char *macro_name = GBS_global_string_copy("MODIFY_DATABASE_FIELD_%s", cbs->selector->items_name);
         char *window_name = GBS_global_string_copy("MODIFY DATABASE FIELD of listed %s", cbs->selector->items_name);
 
-        aws->init( aw_root, macro_name, window_name, 600, 0 );
+        aws->init( aw_root, macro_name, window_name);
 
         free(window_name);
         free(macro_name);
@@ -1397,7 +1397,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple;
-    aws->init( aw_root, "SET_DATABASE_FIELD_OF_LISTED","SET MANY FIELDS", 600, 0 );
+    aws->init( aw_root, "SET_DATABASE_FIELD_OF_LISTED","SET MANY FIELDS");
     aws->load_xfig("ad_mset.fig");
 
     aws->at("close");
@@ -1491,7 +1491,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
 {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple;
-    aws->init( aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS", 600, 0 );
+    aws->init( aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
     aws->load_xfig("awt/set_protection.fig");
 
     aws->at("close");
@@ -1651,6 +1651,15 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
     AWT_restore_configDefinition(stored);
 }
 
+
+typedef AW_window *(*window_generator)(AW_root *);
+
+static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, AW_CL) {
+    window_generator  create_window = (window_generator)cl_create_window;
+    AW_window        *aw_viewer     = create_window(aww->get_root());
+    aw_viewer->show();
+}
+
 /***************** Create the database query box and functions *************************/
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs) // create the query box
 {
@@ -1798,7 +1807,8 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->result_pos_fig){
         aws->at(awtqs->result_pos_fig);
         if(awtqs->create_view_window) {
-            aws->callback(AW_POPUP,awtqs->create_view_window, 0);
+            aws->callback(query_box_popup_view_window,(AW_CL)awtqs->create_view_window, 0);
+//             aws->callback(AW_POPUP,awtqs->create_view_window, 0);
         }
         aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
 
