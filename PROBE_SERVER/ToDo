@@ -33,9 +33,10 @@ ToDo for arb_probe_library:
 ** for all subtrees w/o exact probes:
 *** search for non-group-hit probe groups
 
-** propagate groups upwards if they are equal to best group
-  (currently only propagated if better)
-  => store multiple groups in 'coverage_id'
+** for coverage-branches only:
+   propagate groups upwards if they are equal to best group 
+   (currently only propagated if better)
+   => store multiple groups in 'coverage_id'
 
 ** some nodes have no probes [bug]
 *** one cause was: probe_match had result, probe_design not
