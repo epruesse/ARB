@@ -544,10 +544,10 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
             width_of_button  = calculate_string_width(textwidth+1)+BUTTON_TEXT_PADDING;
             height_of_button = height_of_label*textheight+BUTTON_TEXT_PADDING;
 
-#if defined(DEBUG)
+#if defined(DUMP_BUTTON_CREATION)
             printf("checking text '%s' textwidth=%i textheight=%i -> width_of_button=%i height_of_button=%i\n",
                    buttonlabel, textwidth, textheight, width_of_button, height_of_button);
-#endif // DEBUG
+#endif // DUMP_BUTTON_CREATION
         }
     }
 
