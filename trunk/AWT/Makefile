@@ -10,7 +10,7 @@ OBJECTS =	\
 		BI_helix.o AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
 		AWT_query_and_functions.o AWT_file_selection.o AWT_species_sel_box.o \
 		AWT_imp_exp.o AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
-		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o
+		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o
 
 $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -112,6 +112,14 @@ AWT_csp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+
+AWT_db_browser.o: awt.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_dtree.o: awt.hxx
 AWT_dtree.o: awt_canvas.hxx
