@@ -549,7 +549,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
 
-		    value = globalData->SQ_test_against_consensus(rawSequence);
+		    //value = globalData->SQ_test_against_consensus(rawSequence);
 
 
 		    /* get groupnames of visited groups
@@ -562,7 +562,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			    SQ_GroupDataDictionary::iterator GDI = group_dict.find(backup->name);
 			    if( GDI != group_dict.end() ) {
 				SQ_GroupDataPtr GD_ptr = GDI->second;
-				double d = GD_ptr->SQ_test_against_consensus(rawSequence);
+				value = GD_ptr->SQ_test_against_consensus(rawSequence);
 			    }
 			}
 			backup = backup->father;
@@ -633,7 +633,6 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
-		    //int temp                = 0;
 		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
@@ -648,8 +647,10 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    bases = GB_read_int(gb_result1);
 		    avg_bases = globalData->SQ_get_avg_bases();
 
-		    diff = avg_bases - bases;
-		    diff_percent = (100*diff) / avg_bases;
+		    if (avg_bases != 0) {
+			diff = avg_bases - bases;
+			diff_percent = (100*diff) / avg_bases;
+		    }
 
 		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		    seq_assert(gb_result2);
@@ -749,7 +750,6 @@ void SQ_reset_counters(GBT_TREE *root) {
 
 void create_multi_level_consensus(GBT_TREE *node, const SQ_GroupData *data) {
     SQ_GroupData *newData  = data->clone();  //save actual consensus
-    //newData = data;
     group_dict[node->name] = newData;        //and link it with an name
 }
 
@@ -801,20 +801,12 @@ void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData
 	GBT_TREE *node2 = node->rightson;
 
 	if (node1) {
-	    SQ_GroupData *leftData  = data->clone();
-	    SQ_calc_and_apply_group_data2(node1, gb_main, leftData);
-	    data->SQ_add(*leftData);
-	    delete leftData;
+	    SQ_calc_and_apply_group_data2(node1, gb_main, data);
 	}
 	if (node2) {
-	    SQ_GroupData *rightData = data->clone();
-	    SQ_calc_and_apply_group_data2(node2, gb_main, rightData);
-	    data->SQ_add(*rightData);
-	    delete rightData;
-
+	    SQ_calc_and_apply_group_data2(node2, gb_main, data);
 	}
-	if (node->name) {                             //  group identified
-	    //data->SQ_set_groupname(node->name);	      //  keep track of visited groups
+	if (node->name) {      //  group identified
 	    globalcounter++;
 	    aw_status(double(globalcounter)/groupcounter);
 	}

@@ -12,6 +12,8 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include <iostream.h>
+
 #ifndef SQ_GROUPADTA_H
 #define SQ_GROUPDATA_H
 
@@ -24,10 +26,6 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-/* typedef struct Groupnames { */
-/*     const char *name; */
-/*     Groupnames *next; */
-/* } Groupnames; */
 
 class SQ_GroupData {
     SQ_GroupData(const SQ_GroupData& other);              // copying not allowed
@@ -41,8 +39,6 @@ public:
 
     void         SQ_set_avg_bases(int bases) { avg_bases = bases; }
     int          SQ_get_avg_bases() const { return avg_bases; }
-/*     void         SQ_set_groupname(const char* name); */
-/*     Groupnames * SQ_get_groupname() const { return head; } */
     bool         SQ_is_initialized() const { return initialized; }
 
     virtual void   SQ_init_consensus(int size)                     = 0;
@@ -55,7 +51,6 @@ protected:
     int  size;
     int  avg_bases;
     bool initialized;
-    //Groupnames * head;
 };
 
 template <int I>
@@ -158,7 +153,8 @@ template <int I>
 int SQ_GroupData_Impl<I>::SQ_print_on_screen() {
     for (int i=0; i < size; i++ ){
 	for (int j = 0; j<I; j++) {
-	    printf("%i",consensus[i].i[j]);
+	    cout << consensus[i].i[j];
+//	    printf("%i",consensus[i].i[j]);
 	}
     }
     return (0);

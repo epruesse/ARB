@@ -8,19 +8,10 @@ SQ_GroupData::SQ_GroupData() {
     size        = 0;
     avg_bases   = 0;
     initialized = false;
-    //head = NULL;
 }
 
 
 SQ_GroupData::~SQ_GroupData() { }
-
-
-// void SQ_GroupData::SQ_set_groupname(const char* name){
-//     Groupnames * current = new Groupnames;
-//     current->name = name;
-//     current->next = head;
-//     head = current;
-// }
 
 
 double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
@@ -31,6 +22,7 @@ double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
     int base_counter = 0;
     int current      = 0;
 
+    //printf(" %i",size);
     for (int i = 0; i < size; i++ ){
 	current = 0;
 	div     = 0;
@@ -84,8 +76,10 @@ double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
     else{
 	result=0;
     }
+    //printf(" %f",result);
     return result;
 }
+
 
 void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 
@@ -170,31 +164,18 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
             case '-':
 		consensus[i].i[6] = consensus[i].i[6] + 1;
                 break;
+            default :
+                seq_assert(0); // unhandled character
+                break;
         }
     }
-
-
-
-//     for (int i=0; i < size; i++) {
-// #warning has to work with IUPAC codes!
-//         switch(sequence[i]) {
-//             case 'A': consensus[i].i[0]++; break;
-//             case 'T': consensus[i].i[1]++; break;
-//             case 'C': consensus[i].i[2]++; break;
-//             case 'G': consensus[i].i[3]++; break;
-//             case 'U': consensus[i].i[4]++; break;
-//             case '.': consensus[i].i[5]++; break;
-//             case '-': consensus[i].i[6]++; break;
-//             default :
-//                 seq_assert(0); // unhandled character
-//                 break;
-//         }
-//     }
 }
+
 
 double SQ_GroupData_PRO::SQ_test_against_consensus(const char *sequence) {
 #warning implementation missing
 }
+
 
 void SQ_GroupData_PRO::SQ_add_sequence(const char *sequence) {
 #warning implementation missing
