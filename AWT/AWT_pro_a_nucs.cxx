@@ -193,6 +193,8 @@ static int codon_defined_in(const char *codon, const char *codons) {
 
 #define T(a,b,c)	awt_pro_a_nucs_build_table(a,b,c)
 
+static int awt_pro_a_nucs_convert_init_time_stamp = 0; // counts how often awt_pro_a_nucs_convert_init has been called
+
 void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
 {
     GB_transaction dummy(gb_main);
@@ -202,10 +204,12 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
         GB_add_callback(awar,GB_CB_CHANGED,(GB_CB)awt_pro_a_nucs_convert_init,0);
     }else{
         delete awt_pro_a_nucs;
+        awt_pro_a_nucs = 0;
     }
-    awt_pro_a_nucs = (struct arb_r2a_struct *)GB_calloc(sizeof(struct arb_r2a_struct),1);
+    awt_pro_a_nucs               = (struct arb_r2a_struct *)GB_calloc(sizeof(struct arb_r2a_struct),1);
+    awt_pro_a_nucs->time_stamp   = ++awt_pro_a_nucs_convert_init_time_stamp;
     awt_pro_a_nucs->nuc_2_bitset = AP_create_dna_to_ap_bases();
-    awt_pro_a_nucs->t2i_hash = GBS_create_hash(1024,1); // case insensitive
+    awt_pro_a_nucs->t2i_hash     = GBS_create_hash(1024,1); // case insensitive
 
     AWT_initialize_codon_tables();
 
@@ -517,7 +521,7 @@ void awt_pro_a_nucs_gen_dist(GBDATA *gb_main){
 			}
 		}
 	}
-#ifndef NDEBUG
+#ifdef DEBUG
 	awt_pro_a_nucs_debug();
 #endif
 }

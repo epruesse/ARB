@@ -46,13 +46,14 @@ typedef struct {
 extern struct arb_r2a_struct {
 	GB_HASH           *t2i_hash; // hash table trin >> singlepro
     arb_r2a_pro_2_nuc *s2str[256]; // singlecode protein >> dna ...
+    int                time_stamp; // unique for each arb_r2a_struct
 
     long	*pro_2_bitset;      //
 	char	*nuc_2_bitset;      // dna to
 	char	 index_2_spro[64];  // 64 > max_aa
 	int	     realmax_aa;        // only real aa + stop
 	int	     max_aa;            // incl. ambigous
-	AWT_PDP	*dist[64];          // 64 > max_aa  (gen. by awt_pro_a_nucs_gen_dist)
+	AWT_PDP	*dist[64];          // sets of proteins with special distance [64 > max_aa  (gen. by awt_pro_a_nucs_gen_dist)]
 	long	 transform07[256];  // like dist.patd[1] but for bits 0-7
 	long	 transform815[256];
 	long	 transform1623[256];

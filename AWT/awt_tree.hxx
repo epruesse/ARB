@@ -109,6 +109,7 @@ protected:
     friend class AP_sequence;
     friend class AP_sequence_parsimony;
     friend class AP_sequence_protein;
+    friend class AP_sequence_protein_old;
     GB_UINT4 *weights;
 public:
     long weight_len;
