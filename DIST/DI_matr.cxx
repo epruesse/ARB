@@ -38,7 +38,7 @@ void delete_matrix_cb(AW_root *dummy)
     delete PHMATRIX::ROOT;
     PHMATRIX::ROOT = 0;
     if (ph_dmatrix){
-        ph_dmatrix->resized();		// @@@ OLIVER
+        ph_dmatrix->resized();      // @@@ OLIVER
         ph_dmatrix->display();
     }
 }
@@ -80,7 +80,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
 
     DI_dna_matrix.create_awars(aw_root,AWAR_MATRIX_DNA_PREFIX);
 
-    aw_root->awar_int("tmp/" AWAR_MATRIX_DNA_PREFIX "/enable", 0)	->add_callback(delete_matrix_cb); // user matrix disabled by default
+    aw_root->awar_int("tmp/" AWAR_MATRIX_DNA_PREFIX "/enable", 0)   ->add_callback(delete_matrix_cb); // user matrix disabled by default
     {
         GBDATA *gbd = GB_search((GBDATA *)aw_root->application_database,AWAR_MATRIX_DNA_PREFIX,GB_FIND);
         GB_add_callback(gbd,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
@@ -91,33 +91,33 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
     aw_root->awar_string( "dist/which_species","marked",def)->add_callback(delete_matrix_cb);
     {
         char *default_ali = GBT_get_default_alignment(gb_main);
-        aw_root->awar_string( "dist/alignment","",def)		->add_callback(delete_matrix_cb)->write_string(default_ali);
-        delete default_ali;
+        aw_root->awar_string( "dist/alignment","",def)      ->add_callback(delete_matrix_cb)->write_string(default_ali);
+        free(default_ali);
     }
     aw_root->awar_string( "dist/filter/alignment","none",def);
     aw_root->awar_string( "dist/filter/name","none",def);
-    aw_root->awar_string( "dist/filter/filter","",def)		->add_callback(delete_matrix_cb);
-    aw_root->awar_int   ( "dist/filter/simplify",0,def)		->add_callback(delete_matrix_cb);
+    aw_root->awar_string( "dist/filter/filter","",def)      ->add_callback(delete_matrix_cb);
+    aw_root->awar_int   ( "dist/filter/simplify",0,def)     ->add_callback(delete_matrix_cb);
 
     aw_root->awar_string( "dist/col_stat/name","none",def);
     aw_root->awar_string( "dist/col_stat/alignment","none",def);
 
-    aw_root->awar_string( "dist/cancel/chars",".",def)		->add_callback(delete_matrix_cb);
-    aw_root->awar_int( "dist/correction/trans",0,def)		->add_callback(delete_matrix_cb);
+    aw_root->awar_string( "dist/cancel/chars",".",def)      ->add_callback(delete_matrix_cb);
+    aw_root->awar_int( "dist/correction/trans",0,def)       ->add_callback(delete_matrix_cb);
 
-    aw_root->awar("dist/filter/alignment")		->map("dist/alignment");
-    aw_root->awar("dist/col_stat/alignment")	->map("dist/alignment");
+    aw_root->awar("dist/filter/alignment")      ->map("dist/alignment");
+    aw_root->awar("dist/col_stat/alignment")    ->map("dist/alignment");
 
-    aw_root->awar_string( "tmp/dist/save_matrix/file_name", "infile",	def);
-    aw_root->awar_string( "tmp/dist/save_matrix/directory", ".",	def);
-    aw_root->awar_string( "tmp/dist/save_matrix/filter", "",	def);
-    aw_root->awar_int( 	"tmp/dist/save_matrix/type",	0,	def);
+    aw_root->awar_string( "tmp/dist/save_matrix/file_name", "infile",   def);
+    aw_root->awar_string( "tmp/dist/save_matrix/directory", ".",    def);
+    aw_root->awar_string( "tmp/dist/save_matrix/filter", "",    def);
+    aw_root->awar_int(  "tmp/dist/save_matrix/type",    0,  def);
 
     aw_root->awar_string( "dist/tree/tree_name","tree_temp",def);
     aw_root->awar_string( "dist/tree/list_tree_name","?????",def);
-    aw_root->awar_string( "dist/tree/sort_tree_name","?????",def)	->add_callback(delete_matrix_cb);
-    aw_root->awar_string( "dist/tree/compr_tree_name","?????",def)	->add_callback(delete_matrix_cb);
-    //	aw_root->awar_string( "dist/compress/tree_name","tree_main",def);
+    aw_root->awar_string( "dist/tree/sort_tree_name","?????",def)   ->add_callback(delete_matrix_cb);
+    aw_root->awar_string( "dist/tree/compr_tree_name","?????",def)  ->add_callback(delete_matrix_cb);
+    //  aw_root->awar_string( "dist/compress/tree_name","tree_main",def);
 
     aw_root->awar_float( "dist/alpha",1.0,def);
 
@@ -168,8 +168,8 @@ PHENTRY::~PHENTRY(void)
 {
     delete sequence_protein;
     delete sequence_parsimony;
-    delete name;
-    delete full_name;
+    free(name);
+    free(full_name);
 
 }
 
@@ -182,14 +182,15 @@ PHMATRIX::PHMATRIX(GBDATA *gb_maini,AW_root *awr)
 
 char *PHMATRIX::unload(void)
 {
-    delete use;
+    free(use);
     use = 0;
     long i;
     for (i=0;i<nentries;i++){
         delete entries[i];
     }
     delete tree_root;
-    delete entries;
+//     delete [] entries;
+    free(entries);
     entries = 0;
     nentries = 0;
     return 0;
@@ -218,10 +219,11 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
     this->gb_main = ::gb_main;
     GB_push_transaction(gb_main);
 
-    seq_len = GBT_get_alignment_len(gb_main,use);
-    is_AA = GBT_is_alignment_protein(gb_main,use);
-    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    seq_len          = GBT_get_alignment_len(gb_main,use);
+    is_AA            = GBT_is_alignment_protein(gb_main,use);
+    gb_species_data  = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     entries_mem_size = 1000;
+
     entries = (PHENTRY **)calloc(sizeof(PHENTRY*),(size_t)entries_mem_size);
 
     nentries = 0;
@@ -255,7 +257,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
             if (all || GB_read_flag(gb_species)) {
                 in_tree_species++;
                 phentry = new PHENTRY(gb_species,this);
-                if (phentry->sequence) {	// a species found
+                if (phentry->sequence) {    // a species found
                     entries[nentries++] = phentry;
                     if (nentries == entries_mem_size) {
                         entries_mem_size +=1000;
@@ -290,7 +292,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
         int count = 0;
 
         if (all) gb_species = GBT_first_species_rel_species_data(gb_species_data);
-        else	 gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+        else     gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
 
         while (gb_species) {
             int load_species = 0;
@@ -316,7 +318,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
             if (load_species) {
                 count++;
                 phentry = new PHENTRY(gb_species,this);
-                if (phentry->sequence) {	// a species found
+                if (phentry->sequence) {    // a species found
                     entries[nentries++] = phentry;
                     if (nentries == entries_mem_size) {
                         entries_mem_size +=1000;
@@ -332,7 +334,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
         }
     }
 
-    delete [] species_in_sort_tree;
+    free(species_in_sort_tree);
     if (sort_tree) GBT_delete_tree(sort_tree);
 
     GB_pop_transaction(gb_main);
@@ -342,7 +344,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
 
 
 /******************************************************************************************
-			Calculate the global rate_matrix
+            Calculate the global rate_matrix
 ******************************************************************************************/
 void PHMATRIX::clear(PH_MUT_MATR &hits)
 {
@@ -404,7 +406,7 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
     if (nentries<=1) {
         return "There are no species selected";
     }
-    register long	row,col,pos,s_len;
+    register long   row,col,pos,s_len;
     register char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
     this->clear(hrates);
@@ -438,7 +440,7 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
 }
 
 /******************************************************************************************
-	Some test functions to check correlated base correction
+    Some test functions to check correlated base correction
 ******************************************************************************************/
 
 
@@ -471,7 +473,7 @@ GB_ERROR PHMATRIX::haeschoe(const char *path)
     fprintf(out,"\nRatematrix non helical parts:\n");
     rate_write(temp2,out);
 
-    register long	row,col,pos,s_len;
+    register long   row,col,pos,s_len;
     register char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
     fprintf(out,"\nDistanzmatrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
@@ -487,7 +489,7 @@ GB_ERROR PHMATRIX::haeschoe(const char *path)
                 return "Aborted";
             }
         }
-        fprintf (out,"\n%s	",entries[row]->name);
+        fprintf (out,"\n%s  ",entries[row]->name);
 
         for (col=0; col<row; col++) {
             seq1 = entries[row]->sequence_parsimony->sequence;
@@ -543,10 +545,10 @@ char           *PHMATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX]
 {
     long            hits2[AP_MAX];
     long            sum = 0;
-    int		i,row;
-    register	char *seq1;
-    register	int pos;
-    register 	int b;
+    int     i,row;
+    register    char *seq1;
+    register    int pos;
+    register    int b;
     register long s_len = tree_root->filter->real_len;
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
@@ -558,8 +560,8 @@ char           *PHMATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX]
             hits2[b]++;
         }
     }
-    for (i = 0; i < AP_MAX; i++)	sum += hits2[i];
-    for (i = 0; i < AP_MAX; i++)	rel_frequencies[i] = hits2[i] / (double) sum;
+    for (i = 0; i < AP_MAX; i++)    sum += hits2[i];
+    for (i = 0; i < AP_MAX; i++)    rel_frequencies[i] = hits2[i] / (double) sum;
     return 0;
 }
 
@@ -581,7 +583,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
         return "Your matrizes have been written to 'outfile'\nSorry I can not make a tree";
     }
     int user_matrix_enabled = awr->awar("tmp/" AWAR_MATRIX_DNA_PREFIX "/enable")->read_int();
-    if (user_matrix_enabled){	// set transformation Matrix
+    if (user_matrix_enabled){   // set transformation Matrix
         switch (transformation){
             case PH_TRANSFORMATION_NONE:
             case PH_TRANSFORMATION_SIMILARITY:
@@ -589,8 +591,8 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                 break;
             default:
                 return GB_export_error("Sorry not implemented:\n"
-                                       "	This kind of distance correction does not support\n"
-                                       "	a user defined matrix");
+                                       "    This kind of distance correction does not support\n"
+                                       "    a user defined matrix");
         }
         DI_dna_matrix.read_awars(awr,AWAR_MATRIX_DNA_PREFIX);
         DI_dna_matrix.normize();
@@ -601,10 +603,10 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
     matrix = new AP_smatrix(nentries);
 
     register long s_len = tree_root->filter->real_len;
-    long	hits[AP_MAX][AP_MAX];
-    int	row;
-    int	col;
-    size_t	i;
+    long    hits[AP_MAX][AP_MAX];
+    int row;
+    int col;
+    size_t  i;
 
     if (nentries<=1) {
         return "There are no species selected";
@@ -616,7 +618,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
         j = AP_sequence_parsimony::table[j];
         cancel_columns[j] = 1;
     }
-    long	columns;
+    long    columns;
     double b;
     long frequencies[AP_MAX];
     double rel_frequencies[AP_MAX];
@@ -628,7 +630,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
             S_square = 0.0;
             for (i=0;i<AP_MAX; i++) S_square+= rel_frequencies[i]*rel_frequencies[i];
             break;
-        default:	break;
+        default:    break;
     };
 
     for (row = 0; row<nentries;row++){
@@ -649,7 +651,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                     b = 0.75;
                 case  PH_TRANSFORMATION_NONE:
                 case  PH_TRANSFORMATION_SIMILARITY:{
-                    double	dist = 0.0;
+                    double  dist = 0.0;
                     if (user_matrix_enabled){
                         memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
                         int pos;
@@ -687,7 +689,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                     }
                     if (transformation==PH_TRANSFORMATION_SIMILARITY){
                         dist =  (1.0-dist);
-                    }else 	if (b){
+                    }else   if (b){
                         double sigma;
                         dist = this->corr(dist,b,sigma);
                     }
@@ -698,7 +700,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                 case PH_TRANSFORMATION_OLSEN:
                 case PH_TRANSFORMATION_FELSENSTEIN:{
                     register int pos;
-                    double	dist = 0.0;
+                    double  dist = 0.0;
                     long N,P,Q,M;
                     double p,q;
                     memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
@@ -707,11 +709,11 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                     }
                     switch(transformation){
                         case PH_TRANSFORMATION_KIMURA:
-                            P =	hits[AP_A][AP_G] +
+                            P = hits[AP_A][AP_G] +
                                 hits[AP_G][AP_A] +
                                 hits[AP_C][AP_T] +
                                 hits[AP_T][AP_C];
-                            Q =	hits[AP_A][AP_C] +
+                            Q = hits[AP_A][AP_C] +
                                 hits[AP_A][AP_T] +
                                 hits[AP_C][AP_A] +
                                 hits[AP_T][AP_A] +
@@ -719,7 +721,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                                 hits[AP_G][AP_T] +
                                 hits[AP_C][AP_G] +
                                 hits[AP_T][AP_G];
-                            M =	hits[AP_A][AP_A] +
+                            M = hits[AP_A][AP_A] +
                                 hits[AP_C][AP_C] +
                                 hits[AP_G][AP_G] +
                                 hits[AP_T][AP_T];
@@ -755,7 +757,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                                 M += hits[i][i];;
                             }
                             if (N==0) N=1;
-                            if (transformation == PH_TRANSFORMATION_OLSEN){	// Calc sum square freq inividually for each line
+                            if (transformation == PH_TRANSFORMATION_OLSEN){ // Calc sum square freq inividually for each line
                                 S_square = 0.0;
                                 for (i=0;i<AP_MAX; i++) S_square+= frequencies[i]*frequencies[i];
                                 b = 1.0 - S_square/((double)N*(double)N);
@@ -774,7 +776,7 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                     break;
                 }
                 default:;
-            }	/* switch */
+            }   /* switch */
         }
     }
     return 0;
@@ -824,7 +826,7 @@ GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag) // returns
         return 0;
     }
     AW_root *aw_root = aww->get_root();
-    char	*use = aw_root->awar("dist/alignment")->read_string();
+    char    *use = aw_root->awar("dist/alignment")->read_string();
     long ali_len = GBT_get_alignment_len(gb_main,use);
     if (ali_len<=0) {
         GB_pop_transaction(gb_main);
@@ -839,7 +841,7 @@ GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag) // returns
 
     PHMATRIX *phm = new PHMATRIX(gb_main,aw_root);
     phm->matrix_type = PH_MATRIX_FULL;
-    char	*cancel = aw_root->awar("dist/cancel/chars")->read_string();
+    char    *cancel = aw_root->awar("dist/cancel/chars")->read_string();
 
     AP_filter *ap_filter = awt_get_filter(aw_root,dist_filter_cl);
     if (bootstrap_flag){
@@ -884,14 +886,14 @@ GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag) // returns
         phm->ROOT = phm;
 
     }
-    delete	load_what;
+    free(load_what);
 
-    delete cancel;
+    free(cancel);
     delete ap_filter;
     delete ap_weights;
     delete ap_ratematrix;
 
-    delete use;
+    free(use);
     return error;
 }
 
@@ -913,7 +915,7 @@ void ph_view_matrix_cb(AW_window *aww){
 }
 
 void ph_save_matrix_cb(AW_window *aww)
-{			// save the matrix
+{           // save the matrix
     GB_ERROR error = ph_calculate_matrix_cb(aww,0);
     if (error) return;
 
@@ -1075,7 +1077,7 @@ void ph_calculate_tree_cb(AW_window *aww,AW_CL bootstrap_flag)
             insert_ctree(tree,1);
             GBT_delete_tree(tree); tree = 0;
         }
-        delete names;
+        free(names);
 
     }while(bootstrap_flag);
 
@@ -1092,23 +1094,23 @@ void ph_calculate_tree_cb(AW_window *aww,AW_CL bootstrap_flag)
                 aw_message(error);
             }
             else {
-                //char *filter_name	= aw_root->awar("dist/filter/name")->read_string();
-                char *filter_name	= AWT_get_combined_filter_name(aw_root, "dist");
-                int transr		= aw_root->awar("dist/correction/trans")->read_int();
+                //char *filter_name = aw_root->awar("dist/filter/name")->read_string();
+                char *filter_name   = AWT_get_combined_filter_name(aw_root, "dist");
+                int transr      = aw_root->awar("dist/correction/trans")->read_int();
 
                 char *comment = (char *)GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB",
                                                           enum_trans_to_string[transr], filter_name);
 
-                delete filter_name;
+                free(filter_name);
                 GBT_write_tree_rem(gb_main,tree_name,comment);
                 GB_commit_transaction(gb_main);
             }
-            delete tree_name;
+            free(tree_name);
         }
     }
     if (tree) GBT_delete_tree(tree);
     aw_closestatus();
-    aw_status();		// remove flag
+    aw_status();        // remove flag
     if (bootstrap_flag){
         if (all_names) GBT_free_names(all_names);
         delete PHMATRIX::ROOT;
@@ -1127,7 +1129,7 @@ void ph_autodetect_callback(AW_window *aww)
         PHMATRIX::ROOT = 0;
     }
     AW_root *aw_root = aww->get_root();
-    char	*use = aw_root->awar("dist/alignment")->read_string();
+    char    *use = aw_root->awar("dist/alignment")->read_string();
     long ali_len = GBT_get_alignment_len(gb_main,use);
     if (ali_len<=0) {
         GB_pop_transaction(gb_main);
@@ -1140,8 +1142,8 @@ void ph_autodetect_callback(AW_window *aww)
     aw_status("Read the database");
 
     PHMATRIX *phm = new PHMATRIX(gb_main,aw_root);
-    char	*filter_str = aw_root->awar("dist/filter/filter")->read_string();
-    char	*cancel = aw_root->awar("dist/cancel/chars")->read_string();
+    char    *filter_str = aw_root->awar("dist/filter/filter")->read_string();
+    char    *cancel = aw_root->awar("dist/cancel/chars")->read_string();
 
     AP_filter *ap_filter = new AP_filter;
     long flen = strlen(filter_str);
@@ -1161,7 +1163,7 @@ void ph_autodetect_callback(AW_window *aww)
 
     AP_smatrix *ap_ratematrix = 0;
 
-    char	*load_what = aw_root->awar("dist/which_species")->read_string();
+    char    *load_what = aw_root->awar("dist/which_species")->read_string();
     char *sort_tree_name = aw_root->awar("dist/tree/sort_tree_name")->read_string();
     int all_flag = 0;
     if (!strcmp(load_what,"all")) all_flag = 1;
@@ -1184,15 +1186,15 @@ void ph_autodetect_callback(AW_window *aww)
     delete phm;
     if (error) aw_message(error);
 
-    delete	load_what;
+    free(load_what);
 
-    delete cancel;
+    free(cancel);
     delete ap_filter;
     delete ap_weights;
     delete ap_ratematrix;
 
-    delete use;
-    delete filter_str;
+    free(use);
+    free(filter_str);
 }
 
 void ap_exit(AW_window *)
@@ -1219,7 +1221,7 @@ void ph_compress_tree_cb(AW_window *aww){
     if (!tree) error = "Please select a valid tree first";
 
     if (PHMATRIX::ROOT && PHMATRIX::ROOT->matrix_type!=PH_MATRIX_COMPRESSED){
-        delete_matrix_cb(0);		// delete wrong matrix !!!
+        delete_matrix_cb(0);        // delete wrong matrix !!!
     }
 
     ph_calculate_matrix_cb(aww,0);
@@ -1235,40 +1237,40 @@ void ph_compress_tree_cb(AW_window *aww){
         aw_message(error);
     }
     else {
-        //	aww->hide();
+        //  aww->hide();
         if (ph_dmatrix){
             ph_dmatrix->resized();
             ph_dmatrix->display();
         }
     }
-    delete treename;
+    free(treename);
 }
 
 /*
-AW_window *create_select_compress_tree(AW_root *awr){
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+  AW_window *create_select_compress_tree(AW_root *awr){
+  static AW_window_simple *aws = 0;
+  if (aws) return (AW_window *)aws;
 
-    aws = new AW_window_simple;
-    aws->init( awr, "SELECT_TREE_TO_COMPRESS_MATRIX", "SELECT A TREE TO COMPRESS MATRIX", 400, 200 );
-    aws->at(10,10);
-    aws->auto_space(0,0);
-    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,"dist/compress/tree_name");
-    aws->at_newline();
+  aws = new AW_window_simple;
+  aws->init( awr, "SELECT_TREE_TO_COMPRESS_MATRIX", "SELECT A TREE TO COMPRESS MATRIX", 400, 200 );
+  aws->at(10,10);
+  aws->auto_space(0,0);
+  awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,"dist/compress/tree_name");
+  aws->at_newline();
 
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE","C");
+  aws->callback(AW_POPDOWN);
+  aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->callback(ph_compress_tree_cb);
-    aws->help_text("compress_tree.hlp");
-    aws->create_button("GO", "DO IT","D");
+  aws->callback(ph_compress_tree_cb);
+  aws->help_text("compress_tree.hlp");
+  aws->create_button("GO", "DO IT","D");
 
-    aws->callback(AW_POPUP_HELP,(AW_CL)"compress_tree.hlp");
-    aws->create_button("HELP", "HELP","H");
+  aws->callback(AW_POPUP_HELP,(AW_CL)"compress_tree.hlp");
+  aws->create_button("HELP", "HELP","H");
 
-    aws->window_fit();
-    return (AW_window *)aws;
-}
+  aws->window_fit();
+  return (AW_window *)aws;
+  }
 */
 
 static void ph_define_sort_tree_name_cb(AW_window *aww) {
@@ -1308,18 +1310,18 @@ AW_window *create_matrix_window(AW_root *aw_root) {
 
     GB_push_transaction(gb_main);
 
-    //	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    //	aws->create_button("CLOSE","C");
+    //  aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    //  aws->create_button("CLOSE","C");
 
-    aws->create_menu(       0,	"FILE",			"F", "HELP for Window",  AWM_ALL );
-    aws->insert_menu_topic( "macros",	"Macros  ...",		"M", "macro.hlp",	AWM_ALL, (AW_CB)AW_POPUP,  (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOR_JOINING" );
-    aws->insert_menu_topic( "quit", 	"Quit",			"Q", "quit.hlp", 	AWM_ALL, (AW_CB)ap_exit ,   0, 	0 );
+    aws->create_menu(       0,  "FILE",         "F", "HELP for Window",  AWM_ALL );
+    aws->insert_menu_topic( "macros",   "Macros  ...",      "M", "macro.hlp",   AWM_ALL, (AW_CB)AW_POPUP,  (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOR_JOINING" );
+    aws->insert_menu_topic( "quit",     "Quit",         "Q", "quit.hlp",    AWM_ALL, (AW_CB)ap_exit ,   0,  0 );
 
-    aws->create_menu(	0,	"Properties",		"P",	"properties.hlp", AWM_ALL);
-    aws->insert_menu_topic(	"frame_props",	"Frame ...",		"F",	"props_frame.hlp",		AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    aws->insert_menu_topic(	"save_props",	"Save Properties (in ~/.arb_prop/dist.arb)",	"S", "savedef.hlp",	AWM_ALL, (AW_CB)AW_save_defaults, 0, 0 );
+    aws->create_menu(   0,  "Properties",       "P",    "properties.hlp", AWM_ALL);
+    aws->insert_menu_topic( "frame_props",  "Frame ...",        "F",    "props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+    aws->insert_menu_topic( "save_props",   "Save Properties (in ~/.arb_prop/dist.arb)",    "S", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_defaults, 0, 0 );
 
-    aws->insert_help_topic(	"help",		"help ...",		"h",	"dist.hlp",			AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0 );
+    aws->insert_help_topic( "help",     "help ...",     "h",    "dist.hlp",         AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0 );
 
     aws->at( "which_species" );
     aws->create_option_menu( "dist/which_species" );
@@ -1359,28 +1361,28 @@ AW_window *create_matrix_window(AW_root *aw_root) {
 
     aws->at("which_correction");
     aws->create_option_menu( "dist/correction/trans", NULL ,"" );
-    aws->insert_option( "none",		"n",	(int)PH_TRANSFORMATION_NONE);
-    aws->insert_option( "similarity",	"n",	(int)PH_TRANSFORMATION_SIMILARITY);
-    aws->insert_option( "jukes-cantor (dna)","c",	(int)PH_TRANSFORMATION_JUKES_CANTOR );
-    aws->insert_option( "felsenstein (dna)", 	"f",	(int)PH_TRANSFORMATION_FELSENSTEIN );
-    aws->insert_option("olsen (dna)",		"o",	(int)PH_TRANSFORMATION_OLSEN);
-    aws->insert_option("felsenstein/voigt (exp)",	"1",	(int)PH_TRANSFORMATION_FELSENSTEIN_VOIGT);
-    aws->insert_option("olsen/voigt (exp)",	"2",	(int)PH_TRANSFORMATION_OLSEN_VOIGT);
-    aws->insert_option( "haesch (exp)", 		"f",	(int)PH_TRANSFORMATION_HAESCH );
-    aws->insert_option( "kimura (pro)", 		"k",	(int)PH_TRANSFORMATION_KIMURA );
-    aws->insert_option( "PAM (protein)",	"c", 	(int)PH_TRANSFORMATION_PAM );
-    aws->insert_option( "Cat. Hall(exp)",	"c",	(int)PH_TRANSFORMATION_CATEGORIES_HALL );
-    aws->insert_option( "Cat. Barker(exp)",	"c", 	(int)PH_TRANSFORMATION_CATEGORIES_BARKER );
-    aws->insert_option( "Cat.Chem (exp)",	"c",	(int)PH_TRANSFORMATION_CATEGORIES_CHEMICAL );
-    //		aws->insert_option("Maximum Likelihood (exp)","l",	(int)PH_TRANSFORMATION_NONE);
-    aws->insert_default_option("unknown",	"u",	(int)PH_TRANSFORMATION_NONE);
+    aws->insert_option( "none",     "n",    (int)PH_TRANSFORMATION_NONE);
+    aws->insert_option( "similarity",   "n",    (int)PH_TRANSFORMATION_SIMILARITY);
+    aws->insert_option( "jukes-cantor (dna)","c",   (int)PH_TRANSFORMATION_JUKES_CANTOR );
+    aws->insert_option( "felsenstein (dna)",    "f",    (int)PH_TRANSFORMATION_FELSENSTEIN );
+    aws->insert_option("olsen (dna)",       "o",    (int)PH_TRANSFORMATION_OLSEN);
+    aws->insert_option("felsenstein/voigt (exp)",   "1",    (int)PH_TRANSFORMATION_FELSENSTEIN_VOIGT);
+    aws->insert_option("olsen/voigt (exp)", "2",    (int)PH_TRANSFORMATION_OLSEN_VOIGT);
+    aws->insert_option( "haesch (exp)",         "f",    (int)PH_TRANSFORMATION_HAESCH );
+    aws->insert_option( "kimura (pro)",         "k",    (int)PH_TRANSFORMATION_KIMURA );
+    aws->insert_option( "PAM (protein)",    "c",    (int)PH_TRANSFORMATION_PAM );
+    aws->insert_option( "Cat. Hall(exp)",   "c",    (int)PH_TRANSFORMATION_CATEGORIES_HALL );
+    aws->insert_option( "Cat. Barker(exp)", "c",    (int)PH_TRANSFORMATION_CATEGORIES_BARKER );
+    aws->insert_option( "Cat.Chem (exp)",   "c",    (int)PH_TRANSFORMATION_CATEGORIES_CHEMICAL );
+    //      aws->insert_option("Maximum Likelihood (exp)","l",  (int)PH_TRANSFORMATION_NONE);
+    aws->insert_default_option("unknown",   "u",    (int)PH_TRANSFORMATION_NONE);
 
     aws->update_option_menu();
 
     aws->button_length(18);
 
     //     aws->at("compress");
-    //     aws->callback(AW_POPUP,	(AW_CL)create_select_compress_tree,0);
+    //     aws->callback(AW_POPUP,  (AW_CL)create_select_compress_tree,0);
     //     aws->help_text("compress_tree.hlp");
     //     aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed M. ...","C");
 
