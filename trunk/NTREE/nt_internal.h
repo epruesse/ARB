@@ -1,10 +1,11 @@
 
 /* NT_edconf.cxx */
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
-void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside);
+void       NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside);
 AW_window *NT_extract_configuration(AW_root *awr);
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf_name, int use_species_aside);
 GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside);
+AW_window *NT_create_configuration_admin_window(AW_root *root);
 
 /* NT_join.cxx */
 

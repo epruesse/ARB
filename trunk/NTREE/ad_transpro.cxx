@@ -13,6 +13,11 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_codon_table.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
 extern GBDATA *gb_main;
 
 int awt_pro_a_nucs_convert(char *data, long size, int pos)
@@ -81,7 +86,7 @@ GB_ERROR arb_r2a(GBDATA *gbmain, int startpos, char *ali_source, char *ali_dest)
 	    awt_add_new_changekey( 	gbmain,fname,GB_STRING);
 	    delete fname;
 	}
-		
+
 	if (!gb_dest){
 	    aw_closestatus();
 	    return GB_get_error();
@@ -134,7 +139,7 @@ void transpro_event(AW_window *aww){
     AW_root *aw_root = aww->get_root();
     GB_ERROR error;
     GB_begin_transaction(gb_main);
-    
+
 #if defined(DEBUG) && 0
     test_AWT_get_codons();
 #endif
@@ -173,11 +178,11 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");		       
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"translate_dna_2_pro.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");		       
+    aws->create_button("HELP","HELP","H");
 
     aws->at("source");
     awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
@@ -194,7 +199,7 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 	aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
     }
     aws->update_option_menu();
-    
+
 //     {
 // 	aws->insert_option("Universal","U",AP_UNIVERSAL);
 // 	aws->insert_option("Mito","M",AP_MITO);
@@ -203,7 +208,7 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 // 	aws->insert_option("Yeast-Mito","Y",AP_YEASTMITO);
 // 	aws->update_option_menu();
 //     }
-	
+
     aws->at("pos");
     aws->create_option_menu("transpro/pos",0,"");
     aws->insert_option( "1", "1", 0 );
@@ -216,18 +221,18 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
     aws->at("translate");
     aws->callback(transpro_event);
     aws->highlight();
-    aws->create_button("TRANSLATE","TRANSLATE","T");		       
+    aws->create_button("TRANSLATE","TRANSLATE","T");
 
     return (AW_window *)aws;
 }
 
-// Realign a dna alignment with a given protein source 
+// Realign a dna alignment with a given protein source
 
 #if 1
 
 static int synchronizeCodons(const char *proteins, const char *dna, int minCatchUp, int maxCatchUp, int *foundCatchUp,
 			     const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
-    
+
     for (int catchUp=minCatchUp; catchUp<=maxCatchUp; catchUp++) {
 	const char *dna_start = dna+catchUp;
 	AWT_allowedCode allowed_code;
@@ -235,19 +240,19 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 
 	for (int p=0; ; p++) {
 	    char prot = proteins[p];
-	    
+
 	    if (!prot) { // all proteins were synchronized
 		*foundCatchUp = catchUp;
 		return 1;
 	    }
-	    
-	    if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break; 
-	    
+
+	    if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
+
 	    allowed_code = allowed_code_left; // if synchronized: use left codes as allowed codes!
-	    dna_start += 3; 
+	    dna_start += 3;
 	}
-    } 
-    
+    }
+
     return 0;
 }
 
@@ -267,30 +272,30 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
     //     char *source;
     //     char *dest;
     //     char *buffer;
-    
-    AWT_initialize_codon_tables();    
+
+    AWT_initialize_codon_tables();
 #if defined(DEBUG) && 0
     AWT_dump_codons();
 #endif
-    
+
     GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source); 			if (!gb_source) return "Please select a valid source alignment";
     GBDATA *gb_dest = GBT_get_alignment(gbmain,ali_dest); 			if (!gb_dest) return "Please select a valid destination alignment";
-    
+
     long ali_len = GBT_get_alignment_len(gbmain,ali_dest);
     GB_ERROR error = 0;
-    
+
     aw_openstatus("Re-aligner");
     int no_of_marked_species = GBT_count_marked_species(gbmain);
     int no_of_realigned_species = 0;
     int ignore_fail_pos = 0;
-    
+
     for (GBDATA *gb_species = GBT_first_marked_species(gbmain);
          !error && gb_species;
          gb_species = GBT_next_marked_species(gb_species) ) {
-	
+
         {
             char stat[200];
-	    
+
             sprintf(stat, "Re-aligning #%i of %i ...", no_of_realigned_species+1, no_of_marked_species);
             aw_status(stat);
         }
@@ -301,45 +306,45 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
         GBDATA *gb_dest_data = GB_find(gb_dest,"data",0,down_level);	if (!gb_dest_data) continue;
 
         char *source = GB_read_string(gb_source_data);  		if (!source) { GB_print_error(); continue; }
-        char *dest = GB_read_string(gb_dest_data);			if (!dest) { GB_print_error(); continue; }	
-	
+        char *dest = GB_read_string(gb_dest_data);			if (!dest) { GB_print_error(); continue; }
+
         long source_len = GB_read_string_count(gb_source_data);
         long dest_len = GB_read_string_count(gb_dest_data);
-	
+
         // compress destination DNA (=remove align-characters):
         char *compressed_dest = (char*)malloc(dest_len+1);
         {
             char *f = dest;
             char *t = compressed_dest;
-	    
+
             while (1) {
                 char c = *f++;
                 if (!c) break;
-                if (c!='.' && c!='-') *t++ = c; 
+                if (c!='.' && c!='-') *t++ = c;
             }
             *t = 0;
         }
-	
+
         int failed = 0;
         const char *fail_reason = 0;
-	
-        char *buffer = (char*)malloc(ali_len+1); 
+
+        char *buffer = (char*)malloc(ali_len+1);
         if (ali_len<source_len*3) {
             failed = 1;
             fail_reason = GBS_global_string("Alignment '%s' is too short (increase its length at ARB_NT/Sequence/Admin to %li)", ali_dest, source_len*3L);
             ignore_fail_pos = 1;
         }
-	
+
         AWT_allowedCode allowed_code;
-	
+
         char *d = compressed_dest;
         char *s = source;
-	
+
         if (!failed) {
-            char *p = buffer;	
+            char *p = buffer;
             int x_count = 0;
             const char *x_start = 0;
-	    
+
             for (;;) {
                 char c = *s++;
                 if (!c) {
@@ -351,19 +356,19 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                     }
                     break;
                 }
-		
+
                 if (c=='.' || c=='-') {
                     p[0] = p[1] = p[2] = c;
                     p += 3;
                 }
                 else if (toupper(c)=='X') { // one X represents 1 to 3 DNAs
                     x_start = s-1;
-                    x_count = 1; 
+                    x_count = 1;
                     int gap_count = 0;
-		    
+
                     for (;;) {
                         char c2 = toupper(s[0]);
-			
+
                         if (c2=='X') {
                             x_count++;
                         }
@@ -372,25 +377,25 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                             gap_count++;
                         }
                         s++;
-                    } 
-		    
+                    }
+
                     int setgap = (x_count+gap_count)*3;
-                    memset(p, '.', setgap);		    
+                    memset(p, '.', setgap);
                     p += setgap;
                 }
                 else {
                     AWT_allowedCode allowed_code_left;
-		    
-                    if (x_count) { // synchronize			
-                        char protein[SYNC_LENGTH+1];  
+
+                    if (x_count) { // synchronize
+                        char protein[SYNC_LENGTH+1];
                         int count;
                         {
-                            int off; 
-			
+                            int off;
+
                             protein[0] = toupper(c);
                             for (count=1,off=0; count<SYNC_LENGTH; off++) {
                                 char c2 = s[off];
-			    
+
                                 if (c2!='.' && c2!='-') {
                                     c2 = toupper(c2);
                                     if (c2=='X') break; // can't sync X
@@ -398,24 +403,24 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                                 }
                             }
                         }
-			
-                        gb_assert(count>=1);
+
+                        nt_assert(count>=1);
                         protein[count] = 0;
-			
+
                         int catchUp;
                         if (count<SYNC_LENGTH) {
                             int sync_possibilities = 0;
                             int *sync_possible_with_catchup = new int[x_count*3+1];
                             int maxCatchup = x_count*3;
-			    
+
                             catchUp = x_count-1;
                             for (;;) {
-                                if (!synchronizeCodons(protein, d, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left)) {				
+                                if (!synchronizeCodons(protein, d, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left)) {
                                     break;
                                 }
                                 sync_possible_with_catchup[sync_possibilities++] = catchUp;
                             }
-			    
+
                             if (sync_possibilities==0) {
                                 delete sync_possible_with_catchup;
                                 failed = 1;
@@ -423,14 +428,14 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                                 break;
                             }
                             if (sync_possibilities>1) {
-                                delete sync_possible_with_catchup; 
+                                delete sync_possible_with_catchup;
                                 failed = 1;
                                 fail_reason = "Not enough data behind 'X' (please contact ARB-Support)";
-                                break; 
+                                break;
                             }
-			    
-                            gb_assert(sync_possibilities==1);
-                            catchUp = sync_possible_with_catchup[0]; 
+
+                            nt_assert(sync_possibilities==1);
+                            catchUp = sync_possible_with_catchup[0];
                             delete sync_possible_with_catchup;
                         }
                         else if (!synchronizeCodons(protein, d, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
@@ -438,18 +443,18 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                             fail_reason = "Can't syncronize after 'X'";
                             break;
                         }
-			
+
                         allowed_code = allowed_code_left;
-			
+
                         // copy 'catchUp' characters (they are the content of the found Xs):
                         {
                             const char *after = s-1;
                             const char *i;
-                            int off = int(after-x_start); 
-                            gb_assert(off>=x_count);
+                            int off = int(after-x_start);
+                            nt_assert(off>=x_count);
                             off = -(off*3);
                             int x_rest = x_count;
-			    
+
                             for (i=x_start; i<after; i++) {
                                 switch (i[0]) {
                                     case 'x':
@@ -475,7 +480,7 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                                         p[off++] = i[0];
                                         break;
                                     default:
-                                        gb_assert(0);
+                                        nt_assert(0);
                                         break;
                                 }
                             }
@@ -486,44 +491,44 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
                         if (!AWT_is_codon(c, d, allowed_code, allowed_code_left)) {
                             failed = 1;
                             fail_reason = "Not a codon";
-                            break; 
+                            break;
                         }
-			
+
                         allowed_code = allowed_code_left;
                     }
-			
+
                     // copy one codon:
                     p[0] = d[0];
                     p[1] = d[1];
                     p[2] = d[2];
-			
+
                     p += 3;
                     d += 3;
                 }
             }
-	    
+
             if (!failed) {
                 int len = p-buffer;
                 int rest = ali_len-len;
-		
+
                 memset(p, '.', rest);
-                p += rest; 
-                p[0] = 0;		
-            } 
+                p += rest;
+                p[0] = 0;
+            }
         }
-	
+
         if (failed) {
             int source_fail_pos = (s-1)-source+1;
             int dest_fail_pos = 0;
             {
                 int fail_d_base_count = d-compressed_dest;
                 char *dp = dest;
-		
+
                 for (;;) {
                     char c = *dp++;
-		    
+
                     if (!c) {
-                        gb_assert(c); 
+                        nt_assert(c);
                         break;
                     }
                     if (c!='.' && c!='-') {
@@ -537,42 +542,42 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
             }
 
             {
-                char *name = GBT_read_name(gb_species); 
-                if (!name) name = strdup("(unknown species)"); 
-	    
-                char *dup_fail_reason = strdup(fail_reason); // otherwise it may be destroyed by GBS_global_string 
+                char *name = GBT_read_name(gb_species);
+                if (!name) name = strdup("(unknown species)");
+
+                char *dup_fail_reason = strdup(fail_reason); // otherwise it may be destroyed by GBS_global_string
                 aw_message(GBS_global_string("Automatic re-align failed for '%s'", name));
-	    
+
                 if (ignore_fail_pos) {
                     aw_message(GBS_global_string("Reason: %s", dup_fail_reason));
                 }
                 else {
                     aw_message(GBS_global_string("Reason: %s at %s:%i / %s:%i", dup_fail_reason, ali_source, source_fail_pos, ali_dest, dest_fail_pos));
                 }
-	    
+
                 free(dup_fail_reason);
-                free(name); 
+                free(name);
             }
         }
         else {
-            gb_assert(strlen(buffer)==(unsigned)ali_len); 
+            nt_assert(strlen(buffer)==(unsigned)ali_len);
             error = GB_write_string(gb_dest_data,buffer);
         }
-	
+
         free(buffer);
         free(compressed_dest);
         free(dest);
         free(source);
-	
+
         no_of_realigned_species++;
         GB_status(double(no_of_realigned_species)/double(no_of_marked_species));
     }
     aw_closestatus();
     if (error) return error;
-    
+
     GBT_check_data(gbmain,ali_dest);
 
-    return 0;	
+    return 0;
 }
 
 #undef SYNC_LENGTH
@@ -608,16 +613,16 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 	gb_dest_data = GB_find(gb_dest,"data",0,down_level); 		if (!gb_dest_data) continue;
 
 	source = GB_read_string(gb_source_data);  			if (!source) { GB_print_error(); continue; }
-	dest = GB_read_string(gb_dest_data); 				if (!dest) { GB_print_error(); continue; }	
-	
+	dest = GB_read_string(gb_dest_data); 				if (!dest) { GB_print_error(); continue; }
+
 	buffer = (char *)calloc(sizeof(char), (size_t)(GB_read_string_count(gb_source_data)*3 + GB_read_string_count(gb_dest_data) + dest_len ) );
-	
+
 	char *p = buffer;
 	char *s = source;
 	char *d = dest;
-	
+
 	char *lastDNA = 0; // pointer to buffer
-	
+
 	for (; *s; s++){		/* source is pro */
 	    /* insert triple '.' for every '.'
 	       insert triple '-' for every -
@@ -628,11 +633,11 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 		    p[0] = p[1] = p[2] = s[0];
 		    p += 3;
 		    break;
-		    
+
 		default:
 		    while (*d && (*d=='.' || *d =='-')) d++;
 		    if(!*d) break;
-		    
+
 		    lastDNA = p;
 		    *(p++) = *(d++);	/* copy dna to dna */
 
@@ -641,18 +646,18 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 
 		    lastDNA = p;
 		    *(p++) = *(d++);	/* copy dna to dna */
-		    
+
 		    while (*d && (*d=='.' || *d =='-')) d++;
 		    if(!*d) break;
-		    
+
 		    lastDNA = p;
 		    *(p++) = *(d++);	/* copy dna to dna */
 
 		    break;
 	    }
 	}
-	
-	p = lastDNA+1;	
+
+	p = lastDNA+1;
 	while (*d) {
 	    if (*d == '.' || *d == '-') {
 		d++;
@@ -660,24 +665,24 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 		*(p++) = *(d++);	// append rest characters
 	    }
 	}
-	
-	while ((p-buffer)<dest_len) *(p++) = '.';	// append . 
+
+	while ((p-buffer)<dest_len) *(p++) = '.';	// append .
 	*p = 0;
-	
-	gb_assert(strlen(buffer)==dest_len); 
-	
+
+	nt_assert(strlen(buffer)==dest_len);
+
 	error = GB_write_string(gb_dest_data,buffer);
-	
+
 	free(source);
 	free(dest);
 	free(buffer);
-	
+
 	if (error) return error;
     }
 
     GBT_check_data(gbmain,ali_dest);
 
-    return 0;	
+    return 0;
 }
 
 #endif
@@ -687,7 +692,7 @@ void transdna_event(AW_window *aww)
 	{
 	AW_root *aw_root = aww->get_root();
 	GB_ERROR error;
-	
+
 	char *ali_source = aw_root->awar("transpro/dest")->read_string();
 	char *ali_dest = aw_root->awar("transpro/source")->read_string();
 	GB_begin_transaction(gb_main);
@@ -699,8 +704,8 @@ void transdna_event(AW_window *aww)
 		GBT_check_data(gb_main,ali_dest);
 		GB_commit_transaction(gb_main);
 	}
-	delete ali_source; 
-	delete ali_dest; 
+	delete ali_source;
+	delete ali_dest;
 
 }
 
@@ -715,11 +720,11 @@ AW_window *create_realign_dna_window(AW_root *root)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"realign_dna.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->at("source");
 	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
@@ -731,7 +736,7 @@ AW_window *create_realign_dna_window(AW_root *root)
 	aws->at("realign");
 	aws->callback(transdna_event);
 	aws->highlight();
-	aws->create_button("REALIGN","REALIGN","T");			   
+	aws->create_button("REALIGN","REALIGN","T");
 
 	return (AW_window *)aws;
 }
@@ -739,7 +744,7 @@ AW_window *create_realign_dna_window(AW_root *root)
 
 void create_transpro_menus(AW_window *awmm)
 {
-    awmm->insert_menu_topic("dna_2_pro",	"Translate Nucleic to Amino Acid ...","T","translate_dna_2_pro.hlp",		AWM_PRO,	AW_POPUP, (AW_CL)create_dna_2_pro_window, 0 );	
+    awmm->insert_menu_topic("dna_2_pro",	"Translate Nucleic to Amino Acid ...","T","translate_dna_2_pro.hlp",		AWM_PRO,	AW_POPUP, (AW_CL)create_dna_2_pro_window, 0 );
     awmm->insert_menu_topic("realign_dna",	"Realign Nucleic Acid according to Aligned Protein ...","r","realign_dna.hlp",	AWM_PRO,	AW_POPUP, (AW_CL)create_realign_dna_window, 0 );
 }
 

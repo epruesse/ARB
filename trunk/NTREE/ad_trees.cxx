@@ -3,7 +3,6 @@
 #include <memory.h>
 // #include <malloc.h>
 #include <string.h>
-#include <assert.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -15,6 +14,11 @@
 #include <awt_imp_exp.hxx>
 #include <cat_tree.hxx>
 #include <awt_tree_cmp.hxx>
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *gb_main;
 
@@ -126,20 +130,20 @@ void update_filter_cb(AW_root *root){
             switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
                 case AD_TREE_EXPORT_NODE_SPECIES_NAME:  filter_type = "ntree"; break;
                 case AD_TREE_EXPORT_NODE_NDS:           filter_type = "tree"; break;
-                default: assert(0); break;
+                default: nt_assert(0); break;
             }
             break;
-        default: assert(0); break;
+        default: nt_assert(0); break;
     }
 
-    assert(filter_type);
+    nt_assert(filter_type);
     root->awar(AWAR_TREE_EXPORT_FILTER)->write_string(filter_type);
 
 // 	switch(exportType){
 //         case AD_TREE_EXPORT_NDS:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("tree"); break;
 //         case AD_TREE_EXPORT_ORS:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("otb"); break;
 //         case AD_TREE_EXPORT_PLAIN:	root->awar(AWAR_TREE_EXPORT_FILTER)->write_string("ntree"); break;
-//         default: assert(0); break;
+//         default: nt_assert(0); break;
 // 	}
 }
 
@@ -283,7 +287,7 @@ void tree_save_cb(AW_window *aww){
                                         fname);
                 break;
             }
-			default: assert(0); break;
+			default: nt_assert(0); break;
 		}
 	}
 

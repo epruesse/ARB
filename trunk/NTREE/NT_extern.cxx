@@ -48,6 +48,11 @@
 #include <EXP.hxx>
 #include <awt_input_mask.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
@@ -722,7 +727,7 @@ static nt_item_type_species_selector item_type_species;
 static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
-    gb_assert(descriptor);
+    nt_assert(descriptor);
     if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
@@ -879,8 +884,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             NT_insert_mark_submenus(awm, ntw);
             awm->insert_separator();
-            AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB2)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
-            AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+            AWMIMT( "selection_admin","Selections ...", "S", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
+            //             AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB2)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
+            //             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
+
             // AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
 
             //             AWMIMT("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -17,6 +16,11 @@
 #include <awtlocal.hxx>
 #include <awtc_next_neighbours.hxx>
 #include <ntree.hxx>
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *gb_main;
 #define AD_F_ALL (AW_active)(-1)
@@ -561,7 +565,7 @@ void ad_spec_create_field_items(AW_window *aws) {
 
 void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
     struct adaqbsstruct *cbs        = (struct adaqbsstruct *)_cbs;
-    assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
+    nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
     GB_begin_transaction(gb_main);
     int                  pts        = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
     char                *dest_field = aww->get_root()->awar("next_neighbours/dest_field")->read_string();
