@@ -28,9 +28,10 @@
 
 extern GBDATA *gb_main;
 static AW_selection_list *clrTransTableLst;
-AW_window_simple *aws = new AW_window_simple;
-static int seqBufferSize = 100;
-static char *saiColors   = (char*)GB_calloc(seqBufferSize, sizeof(char));
+AW_window_simple *aws             = new AW_window_simple;
+static int seqBufferSize          = 100;
+static char *saiColors            = (char*)GB_calloc(seqBufferSize, sizeof(char));
+static bool clrDefinitionsChanged = false;
 
 /* --------------------------------------------------------- */
 #define BUFSIZE 100
@@ -108,6 +109,8 @@ void colorDefTabNameChanged_callback(AW_root *awr) {
         awr->awar(buf)->write_string(clrTabName);                   // writing the existing clr trans table names to the same
         free(saiName);
 
+        clrDefinitionsChanged = true;  // to calculate color string in getColorString() function
+
         {
             void *transTabNamesStr = GBS_stropen(500);
             const char *transTabName = clrTransTableLst->first_element();
@@ -135,6 +138,8 @@ void saiChanged_callback(AW_root *awr) {
 
     free(transTabName);
     free(saiName);
+
+    clrDefinitionsChanged = true;  // to calculate color string in getColorString() function
 
     //refresh editor
     ED4_ROOT->refresh_all_windows(1);
@@ -187,6 +192,8 @@ void colorDefChange_callback(AW_window *aws, long int awarNo){
 
         inCallback = false;
     }
+
+    clrDefinitionsChanged = true;  // to calculate color string in getColorString() function
     //refresh editor
     ED4_ROOT->refresh_all_windows(1);
 }
@@ -293,12 +300,18 @@ int checkSai(const char *species_name) {
     return matchesSai;
 }
 
+static int lastStart = -1;
+static int lastEnd   = -1;
+
 const char *getSaiColorString(int start, int end) {
 
-    // @@@ FIXME:  if 'start' and 'end' have the same values as last time (and no settings were changed)
-    // -> do not calculate again
-
     e4_assert(start<=end);
+
+    if(lastStart==start && lastEnd==end  && !clrDefinitionsChanged) {
+        return saiColors-start;    //if start and end positions are same as the previous positions and no settings 
+    }                              //were changed return the last calcualted saiColors string
+
+    lastStart = start; lastEnd = end; clrDefinitionsChanged = false; //storing start and end positions
 
     int seqSize = end-start+1;
 
@@ -348,15 +361,10 @@ const char *getSaiColorString(int start, int end) {
         }
     }
     free(alignment_name); free(saiSelected);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(gb_main);   
 
-    if (saiColors){
-        for (int i = end-start; i>=0; i--) {                      // checking for the negative values
-            if(saiColors[i]<0) saiColors[i] = ED4_G_STANDARD;     // setting Background color as a default for the negative values
-        }
-        return saiColors-start;
-    }
-    else  return 0;
+    if (saiColors)  return saiColors-start;
+    else            return 0;
 }
 
 
