@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # --------------------------------------------------------------------------------
 # configuration:
@@ -19,8 +19,8 @@ PTS=../lib/pts
 PT_SERVER=probe_server
 
 # which probelengths shall be generated
-CREATE="15 16"
-# CREATE=15 16 17 18 19 20
+# CREATE="15 16"
+CREATE="15 16 17 18 19 20"
 
 # does NOT work for probes longer than 20
 # CREATE="20 30 40"
@@ -197,11 +197,11 @@ else
 fi
 
 CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTNAME
-CLIENTZIP=$DEST_DIR/$CLIENTNAME.gz
+CLIENTDEST=$DEST_DIR/$CLIENTNAME
 
 if [ -f $CLIENTSOURCE ]; then
-    echo Packing client for download..
-    gzip -c $CLIENTSOURCE > $CLIENTZIP
+    echo Preparing client for download..
+    cp -p $CLIENTSOURCE > $CLIENTDEST
 else
     echo "Could not update client version (file not found '$CLIENTSOURCE')"
     exit 1
