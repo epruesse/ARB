@@ -146,56 +146,60 @@ void saiChanged_callback(AW_root *awr) {
 }
 
 void colorDefChange_callback(AW_window *aws, long int awarNo){
-    if(!inCallback){
-        inCallback   = true;
-        AW_root *awr = aws->get_root();
-        unsigned char charUsed[256]; memset(charUsed,255,256);
-        void *clrDefStr = GBS_stropen(500);            /* create output stream */
 
-        {
-            for (int i=0; i<10 ; i++){
-                char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
-                for(int c=0; awarString_next[c]; ++c){
-                    charUsed[awarString_next[c]] = i;
+    AW_root *awr     = aws->get_root();
+    char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+
+    if(clrTabName[0]!='?') {
+        if(!inCallback){
+            inCallback   = true;
+            unsigned char charUsed[256]; memset(charUsed,255,256);
+            void *clrDefStr = GBS_stropen(500);            /* create output stream */
+
+            {
+                for (int i=0; i<10 ; i++){
+                    char *awarString_next = awr->awar_string(getAwarName(i))->read_string();
+                    for(int c=0; awarString_next[c]; ++c){
+                        charUsed[awarString_next[c]] = i;
+                    }
+                    free(awarString_next);
                 }
-                free(awarString_next);
+
+                char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
+                for(int c=0; awarString[c]; ++c){
+                    charUsed[awarString[c]] = awarNo;
+                }
+                free(awarString);
             }
 
-            char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
-            for(int c=0; awarString[c]; ++c){
-                charUsed[awarString[c]] = awarNo;
+            typedef unsigned char mystr[256];
+            mystr s[10];
+            for (int i=0; i<10; i++)  s[i][0]=0; //initializing the strings
+
+            for (int i=0; i<256; i++) {
+                int table = charUsed[i];
+                if (table != 255) {
+                    char *eos = strchr((char *)s[table],0); // get pointer to end of string
+                    eos[0] = char(i);
+                    eos[1] = 0;
+                }
             }
-            free(awarString);
-        }
 
-        typedef unsigned char mystr[256];
-        mystr s[10];
-        for (int i=0; i<10; i++)  s[i][0]=0; //initializing the strings
-
-        for (int i=0; i<256; i++) {
-            int table = charUsed[i];
-            if (table != 255) {
-                char *eos = strchr((char *)s[table],0); // get pointer to end of string
-                eos[0] = char(i);
-                eos[1] = 0;
+            for(int i=0; i<10; i++){
+                awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
+                GBS_strcat(clrDefStr, (char *)s[i]);
+                GBS_strcat(clrDefStr, " ;");
             }
+            awr->awar(getClrDefAwar(clrTabName))->write_string(GBS_strclose(clrDefStr, 0)); // writing clr defnition to clr trans table awar
+            inCallback = false;
         }
+        clrDefinitionsChanged = true;  // to calculate color string in getColorString() function
 
-        for(int i=0; i<10; i++){
-            awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
-            GBS_strcat(clrDefStr, (char *)s[i]);
-            GBS_strcat(clrDefStr, " ;");
-        }
-        char *clrTabName = awr->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
-        if(clrTabName[0]!='?') awr->awar(getClrDefAwar(clrTabName))->write_string(GBS_strclose(clrDefStr, 0));
-        free(clrTabName);
-
-        inCallback = false;
+        //refresh editor
+        ED4_ROOT->refresh_all_windows(1);
     }
-
-    clrDefinitionsChanged = true;  // to calculate color string in getColorString() function
-    //refresh editor
-    ED4_ROOT->refresh_all_windows(1);
+    else aw_message("Please select a VALID Color Translation Table to EDIT.");
+    free(clrTabName);
 }
 
 void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // --- Creating and initializing AWARS -----
@@ -233,9 +237,21 @@ void createCopyClrTransTable(AW_window *aws, long int mode) {  // mode=0 copies 
         clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
         if(clrTabSourceName[0]!='?') {
             if (strcmp(newClrTransTabName,clrTabSourceName)!=0) {
-                aw_root->awar_string(getClrDefAwar(newClrTransTabName), aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string(), AW_ROOT_DEFAULT);
-                aws->insert_selection(clrTransTableLst, newClrTransTabName, newClrTransTabName);
-                aws->update_selection_list(clrTransTableLst);
+                int clrTransTableExists = 0;
+                const char *transTabName = clrTransTableLst->first_element();
+                while(transTabName){
+                    if (strcmp(newClrTransTabName,transTabName)==0){
+                        aw_message(GBS_global_string_copy("Color Translation Table \"%s\" EXISTS! Please enter a different name.",newClrTransTabName));
+                        clrTransTableExists = 1; break;
+                    }
+                    transTabName = clrTransTableLst->next_element();
+                }
+
+                if (!clrTransTableExists) {
+                    aw_root->awar_string(getClrDefAwar(newClrTransTabName), aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string(), AW_ROOT_DEFAULT);
+                    aws->insert_selection(clrTransTableLst, newClrTransTabName, newClrTransTabName);
+                    aws->update_selection_list(clrTransTableLst);
+                }
             }
             else aw_message("Source and Destination names are same!. Color Translation Table cannot be COPYIED!");
         }
