@@ -241,6 +241,10 @@ FUNCTION rec_structure
 		SET $(conds) $(c)
 
 		IF $(TYPE) = dllh
+			IF $(get_list[$(+ 0+$(+ $(a)+$(KEYC)))]) ~ 0
+                        ELSE
+                                ERROR Number for 'get_$(func)PRED:$(KEYC)' already in use: '$(get_list[$(+ 0+$(+ $(a)+$(KEYC)))])'
+                        ENDIF
 			SET $(get_list[$(+ 0+$(+ $(a)+$(KEYC)))])	get_$(func)PRED,
 			P $(maintype) $1*get_$(func)PRED($(maintype)$4 *THIS)$\
 			IF $(extern_get_$(func)PRED)
@@ -251,6 +255,10 @@ FUNCTION rec_structure
 				GOSUB create_condition
 				P $3return ($(maintype) *)$(ac)previous;}
 			ENDIF
+			IF $(get_list[$(+ 1+$(+ $(a)+$(KEYC)))]) ~ 0
+                        ELSE
+                                ERROR Number for 'get_$(func)NEXT:$(KEYC)' already in use: '$(get_list[$(+ 1+$(+ $(a)+$(KEYC)))])'
+                        ENDIF
 			SET $(get_list[$(+ 1+$(+ $(a)+$(KEYC)))])	get_$(func)NEXT,
 			P $(maintype) $1*get_$(func)NEXT($(maintype)$4 *THIS)$\
 			IF $(extern_get_$(func)NEXT)
@@ -281,7 +289,7 @@ FUNCTION rec_structure
 			IF $(REF) ~ o,d,l,r
 				SET $(type) $(TYPE) *
 			ELSE
-				SET $(type) $(TYPE) 
+				SET $(type) $(TYPE)
 			ENDIF
 			SET $(conds_init) $(conds_init)$3if(!$(access)) $(access) = ($(type)*)calloc(sizeof($(type)),$(index));$n
 			SET $(access) $(access)[index]
@@ -308,6 +316,10 @@ FUNCTION rec_structure
 	# ********************************** CREATE FUNCTIONS ****************************
 			IF $(ACC) !~ c
 			ELSE
+				IF $(create_list[$(+ $(a)+$(KEYC))]) ~ 0
+				ELSE
+                                        ERROR Number for 'create_$(func):$(KEYC)' already in use: '$(create_list[$(+ $(a)+$(KEYC))])'
+				ENDIF
 				SET $(create_list[$(+ $(a)+$(KEYC))])	create_$(func),
 				P $(TYPE) $1*create_$(func)($(maintype) *THIS)$\
 				IF $(extern_create_$(func))
@@ -333,6 +345,10 @@ FUNCTION rec_structure
 					P $3return obj;}
 				ENDIF
 	# ********************************** COPY FUNCTIONS ****************************
+				IF $(copy_list[$(+ $(a)+$(KEYC))]) ~ 0
+                                ELSE
+                                        ERROR Number for 'copy_$(func):$(KEYC)' already in use: '$(copy_list[$(+ $(a)+$(KEYC))])'
+                                ENDIF
 				SET $(copy_list[$(+ $(a)+$(KEYC))])	copy_$(func),
 				P $(TYPE) $1*copy_$(func)($(maintype)$4 *THIS)$\
 				IF $(extern_copy_$(func))
@@ -363,6 +379,10 @@ FUNCTION rec_structure
 	# ********************************** FIND FUNCTIONS ****************************
 			IF $(ACC) !~ f
 			ELSEIF $(REF) ~ d
+				IF $(find_list[$(+ $(a)+$(KEYC))]) ~ 0
+                                ELSE
+                                        ERROR Number for 'find_$(func):$(KEYC)' already in use: '$(find_list[$(+ $(a)+$(KEYC))])'
+                                ENDIF
 				SET $(find_list[$(+ $(a)+$(KEYC))])	find_$(func),
 				P $(TYPE) $1*find_$(func)($(maintype)$4 *THIS,char *key)$\
 				IF $(extern_find_$(func))
@@ -378,6 +398,10 @@ FUNCTION rec_structure
 			ENDIF
 	# ********************************** CNT FUNCTION ****************************
 			IF $(REF) ~ d
+        			IF $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))]) ~ 0
+	        		ELSE
+		        		ERROR Number for get_$(func)_CNT:$(KEYC) already in use: '$(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])'
+			        ENDIF
 				SET $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])	get_$(func)_CNT,
 				IF $(extern_get_$(func)_CNT)
 	#				P ;
@@ -393,7 +417,7 @@ FUNCTION rec_structure
 		ELSE
 			IF $(set_list[$(+ $(a)+$(KEYC))]) ~ 0
 			ELSE
-				PP WARNING Number for set $(KEY):$(KEYC) already in use: '$(set_list[$(+ $(a)+$(KEYC))])'
+				ERROR Number for set $(KEY):$(KEYC) already in use: '$(set_list[$(+ $(a)+$(KEYC))])'
 			ENDIF
 
 			IF $(ACC) !~ w
@@ -413,7 +437,7 @@ FUNCTION rec_structure
 				ELSEIF $(REF) ~ t,e
 					P void $1set_$(func)($(maintype)$4 *THIS,$(TYPE:bytestring=bytestring *) x)$\
 				ELSE
-					PP WARNING UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
+					ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
 				ENDIF
 				IF $(extern_set_$(func))
 					P ;
@@ -449,7 +473,7 @@ FUNCTION rec_structure
 	#**************** GET FUNCTIONS *********************
 		IF $(get_list[$(+ $(a)+$(KEYC))]) ~ 0
 		ELSE
-			PP WARNING Number for get $(KEY):$(KEYC) already in use: '$(set_list[$(+ $(a)+$(KEYC))])'
+			ERROR Number for get $(KEY):$(KEYC) already in use: '$(get_list[$(+ $(a)+$(KEYC))])'
 		ENDIF
 		IF $(ACC) !~ r
 		ELSEIF $(REF) ~ $(v)
@@ -464,7 +488,7 @@ FUNCTION rec_structure
 				OUT import	# Generate Prototypes for import
 				P extern $(TYPE:bytestring=bytestring *)  $2$(IDENT)($(maintype)*); /* (2) */
 				OUT save
-			ENDIF	
+			ENDIF
 
 		ELSE
 			SET $(get_list[$(+ $(a)+$(KEYC))])	get_$(func),
@@ -475,7 +499,7 @@ FUNCTION rec_structure
 				ELSEIF $(REF) ~ e,t
 					P $(TYPE:bytestring=bytestring *) $1get_$(func)$\
 				ELSE
-					PP WARNING UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
+					ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
 				ENDIF
 				P ($(maintype)$4 *THIS)$\
 				P {$\
@@ -556,7 +580,7 @@ FUNCTION delete_structure
 				ENDIF
 			ELSEIF $(REF) ~ l
 			ELSE
-				PP WARNING UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
+				ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
 			ENDIF
 			P $(end)$\
 		ENDIF
@@ -636,12 +660,12 @@ FUNCTION save_structure
 				ELSEIF $TYPE = float,double
 					P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %f",$(access));
 				ELSE
-					PP WARNING CANNOT SAVE TYPE $(TYPE)
+					ERROR CANNOT SAVE TYPE $(TYPE)
 				ENDIF
 			ELSEIF $(REF) ~ l
 				P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %i",$(access));
 			ELSE
-				PP WARNING UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
+				ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
 			ENDIF
 			P $(end)$\
 		ENDIF
@@ -684,7 +708,7 @@ FUNCTION load_token
 	P $2else if (c==' '){ if (p!=buffer) {*p=0;return 0;} }
 	P $2else if (c=='\n'){ if (p!=buffer) {*p=0;return 0;} }
 	P $2else if (c=='}') {*(p++) = '}'; *p=0;return 0;}
-	P $2else *(p++) = c; 
+	P $2else *(p++) = c;
 	P $1}
 	P $1*p = 0; return EOF;	/* read error maxsize reached */
 	P $1}
@@ -759,12 +783,12 @@ FUNCTION load_structure
 				ELSEIF $TYPE = float,double
 					P $3(access) = atof(token);
 				ELSE
-					PP WARNING CANNOT SAVE TYPE $(TYPE)
+					ERROR CANNOT SAVE TYPE $(TYPE)
 				ENDIF
 			ELSEIF $(REF) ~ l
 				P I cannot load links yet
 			ELSE
-				PP WARNING UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
+				ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
 			ENDIF
 			P $(end)$\
 		ENDIF
