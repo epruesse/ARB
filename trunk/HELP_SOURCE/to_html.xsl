@@ -14,7 +14,8 @@
                version="1.0"
                >
 
-  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>
+<!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
+  <xsl:output method="html" indent="no"/>
 
   <xsl:param name="myname"/>
   <xsl:param name="xml_location"/>
