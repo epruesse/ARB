@@ -5,8 +5,7 @@ KEYWIDTH	1
 BEGIN	">??*"
 
 MATCH	">*"
-    # The second space in the next line HAS TO be a TAB
-	SRT "* *=*1:*	*=*1"
+	SRT "* *=*1:*\t*=*1"
 	WRITE "name"
 
 SEQUENCEAFTER	"*"

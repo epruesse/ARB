@@ -56,6 +56,7 @@ ln -s GENH/aisc.h               ORS_COM/ors_server.h
 # TEMPLATES directory
 
 ln -s ../TEMPLATES/smartptr.h INCLUDE/smartptr.h
+ln -s ../TEMPLATES/inline.h INCLUDE/inline.h
 
 # INCLUDE directory
 
