@@ -118,14 +118,15 @@ static void awt_pro_a_nucs_build_table(char pbase, const char *tri_pro, const ch
     struct arb_r2a_pro_2_nucs *nucs;
     // search for existing protein, else generate new
     if ( !(str = awt_pro_a_nucs->s2str[pbase] )) {
-        str = (struct arb_r2a_pro_2_nuc *) GB_calloc(sizeof(struct arb_r2a_pro_2_nuc),1);
-        awt_pro_a_nucs->s2str[pbase] = str;
-        awt_pro_a_nucs->s2str[tolower(pbase)] = str;
-        str->index = awt_pro_a_nucs->max_aa++;
-        str->single_pro = pbase;
-        str->tri_pro[0] = tri_pro[0];
-        str->tri_pro[1] = tri_pro[1];
-        str->tri_pro[2] = tri_pro[2];
+        //         str                                      = (struct arb_r2a_pro_2_nuc *) GB_calloc(sizeof(struct arb_r2a_pro_2_nuc),1);
+        str                                      = new arb_r2a_pro_2_nuc;
+        awt_pro_a_nucs->s2str[pbase]             = str;
+        awt_pro_a_nucs->s2str[tolower(pbase)]    = str;
+        str->index                               = awt_pro_a_nucs->max_aa++;
+        str->single_pro                          = pbase;
+        str->tri_pro[0]                          = tri_pro[0];
+        str->tri_pro[1]                          = tri_pro[1];
+        str->tri_pro[2]                          = tri_pro[2];
         awt_pro_a_nucs->index_2_spro[str->index] = pbase;
     }
     // fast hash table
@@ -146,27 +147,56 @@ static void awt_pro_a_nucs_build_table(char pbase, const char *tri_pro, const ch
         if (c <= 1) break;
     }
     if (!nucs) {
-        nucs = (struct arb_r2a_pro_2_nucs *)GB_calloc(sizeof(struct arb_r2a_pro_2_nucs),1);
+        //         nucs       = (struct arb_r2a_pro_2_nucs *)GB_calloc(sizeof(struct arb_r2a_pro_2_nucs),1);
+        nucs       = new arb_r2a_pro_2_nucs;
         nucs->next = str->nucs;
-        str->nucs = nucs;
+        str->nucs  = nucs;
     }
     nucs->nucbits[0] |= n0;
     nucs->nucbits[1] |= n1;
     nucs->nucbits[2] |= n2;
 }
 
-arb_r2a_pro_2_nucs::~arb_r2a_pro_2_nucs(){
+arb_r2a_pro_2_nucs::arb_r2a_pro_2_nucs()
+    : next(0)
+{
+    memset(nucbits, 0, sizeof(nucbits));
+}
+arb_r2a_pro_2_nucs::~arb_r2a_pro_2_nucs() {
     delete next;
 }
 
-arb_r2a_pro_2_nuc::~arb_r2a_pro_2_nuc(){
+arb_r2a_pro_2_nuc::arb_r2a_pro_2_nuc()
+    : single_pro(0)
+    , index(0)
+    , nucs(0)
+{
+    memset(tri_pro, 0, sizeof(tri_pro));
+}
+arb_r2a_pro_2_nuc::~arb_r2a_pro_2_nuc() {
     delete nucs;
 }
 
-arb_r2a_struct::~arb_r2a_struct(){
-    delete pro_2_bitset;
+arb_r2a_struct::arb_r2a_struct()
+    : t2i_hash(0)
+    , time_stamp(0)
+    , pro_2_bitset(0)
+    , nuc_2_bitset(0)
+    , realmax_aa(0)
+    , max_aa(0)
+{
+    memset(s2str, 0, sizeof(s2str));
+    memset(index_2_spro, 0, sizeof(index_2_spro));
+    memset(dist, 0, sizeof(dist));
+    memset(transform07, 0, sizeof(transform07));
+    memset(transform815, 0, sizeof(transform815));
+    memset(transform1623, 0, sizeof(transform1623));
+}
 
-    delete nuc_2_bitset;
+arb_r2a_struct::~arb_r2a_struct() {
+    free(pro_2_bitset);
+
+    delete [] nuc_2_bitset;
     GBS_free_hash(t2i_hash);
     int i;
     for (i=0;i<64; i++){
@@ -212,7 +242,8 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
         delete awt_pro_a_nucs;
         awt_pro_a_nucs = 0;
     }
-    awt_pro_a_nucs               = (struct arb_r2a_struct *)GB_calloc(sizeof(struct arb_r2a_struct),1);
+//     awt_pro_a_nucs               = (struct arb_r2a_struct *)GB_calloc(sizeof(struct arb_r2a_struct),1);
+    awt_pro_a_nucs               = new arb_r2a_struct;
     awt_pro_a_nucs->time_stamp   = ++awt_pro_a_nucs_convert_init_time_stamp;
     awt_pro_a_nucs->nuc_2_bitset = AP_create_dna_to_ap_bases();
     awt_pro_a_nucs->t2i_hash     = GBS_create_hash(1024,1); // case insensitive
