@@ -2,6 +2,11 @@
 #include <PT_com.h>
 #include <arbdb.h>
 
+#ifdef DEVEL_IDP
+#include <list.h>
+#include <PT_server.h>
+#endif
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -162,5 +167,15 @@ extern struct probe_struct_global   {
     probe_statistic_struct  stat;
 } psg;
 
+#ifdef DEVEL_IDP
+struct gene_struct {
+  char gene_name[9];
+  char full_name[128];
+};
+
+extern list<gene_struct*> names_list;
+extern GBDATA *map_ptr_idp;
+extern int gene_flag;
+#endif
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)

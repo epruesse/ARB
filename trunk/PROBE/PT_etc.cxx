@@ -31,12 +31,26 @@ void pt_export_error(PT_local *locs, const char *error)
 extern "C" char *virt_name(PT_probematch *ml)
 {
 #ifdef DEVEL_IDP
-  if (is_gene_db == 1) {
-    return gene_map_reverse[psg.data[ml->name].name];
+  if (gene_flag) {
+
+    list<gene_struct*>::iterator gene_iterator;
+    gene_iterator = names_list.begin();
+    
+    while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list.end()) {
+      gene_iterator++;
+    }
+
+    if (gene_iterator == names_list.end()) {
+      printf("Error in Name Resolution\n");
+      exit(1);
+    }
+    else {
+      return (*gene_iterator)->full_name;
+    }
   }
   else {
     return psg.data[ml->name].name;
-  }
+    }
 #endif
   return psg.data[ml->name].name; 
 }
