@@ -1464,6 +1464,21 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->insert_option( "SEARCH UP TO 3 MISMATCHES", "", 3 );
     aws->insert_option( "SEARCH UP TO 4 MISMATCHES", "", 4 );
     aws->insert_option( "SEARCH UP TO 5 MISMATCHES", "", 5 );
+    aws->insert_option( "SEARCH UP TO 6 MISMATCHES", "", 6 );
+    aws->insert_option( "SEARCH UP TO 7 MISMATCHES", "", 7 );
+    aws->insert_option( "SEARCH UP TO 8 MISMATCHES", "", 8 );
+    aws->insert_option( "SEARCH UP TO 9 MISMATCHES", "", 9 );
+    aws->insert_option( "SEARCH UP TO 10 MISMATCHES", "", 10 );
+    aws->insert_option( "SEARCH UP TO 11 MISMATCHES", "", 11 );
+    aws->insert_option( "SEARCH UP TO 12 MISMATCHES", "", 12 );
+    aws->insert_option( "SEARCH UP TO 13 MISMATCHES", "", 13 );
+    aws->insert_option( "SEARCH UP TO 14 MISMATCHES", "", 14 );
+    aws->insert_option( "SEARCH UP TO 15 MISMATCHES", "", 15 );
+    aws->insert_option( "SEARCH UP TO 16 MISMATCHES", "", 16 );
+    aws->insert_option( "SEARCH UP TO 17 MISMATCHES", "", 17 );
+    aws->insert_option( "SEARCH UP TO 18 MISMATCHES", "", 18 );
+    aws->insert_option( "SEARCH UP TO 19 MISMATCHES", "", 19 );
+    aws->insert_option( "SEARCH UP TO 20 MISMATCHES", "", 20 );
     aws->update_option_menu();
 
     aws->at("tmp");
