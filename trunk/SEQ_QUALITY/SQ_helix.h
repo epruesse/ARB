@@ -27,9 +27,9 @@ public:
     SQ_helix(int size);
     ~SQ_helix();
     void SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality);
-    int  SQ_get_no_helix();
-    int  SQ_get_weak_helix();
-    int  SQ_get_strong_helix();
+    int  SQ_get_no_helix() const;
+    int  SQ_get_weak_helix() const;
+    int  SQ_get_strong_helix() const;
 
 
 private:
@@ -48,24 +48,17 @@ SQ_helix::SQ_helix(int size){
     count_strong_helix      = 0;
     count_weak_helix = 0;
     count_no_helix   = 0;
-    //sequence = new char[size]; // @@@ wird nie mehr freigegeben
 }
 
 
 SQ_helix::~SQ_helix() {
-    //delete [] sequence; // @@@ im Prinzip richtig, allerdings zeigt sequence nicht mehr auf
-    // @@@ den Speicher, den Du im constructor allociert hast. (s. SQ_calc_helix_layout())
 }
 
 
 void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality){
-    //this->sequence = sequence;  // @@@ hier aenderst Du einfach die Adresse von sequence.
-    // @@@ Dadurch kann die Original sequence nie mehr freigegeben werden.
-    // @@@ Wahrscheinlich willst Du den String kopieren (-> man strcpy)
 
     int  j     = 0;
     int  temp  = 0;
-    //int  check = 0;
     char left;
     char right;
 
@@ -119,21 +112,21 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char 
 }
 
 
-int SQ_helix::SQ_get_strong_helix() {
+inline int SQ_helix::SQ_get_strong_helix() const {
     int i;
     i = count_strong_helix;
     return i;
 }
 
 
-int SQ_helix::SQ_get_weak_helix() {
+inline int SQ_helix::SQ_get_weak_helix() const {
     int i;
     i = count_weak_helix;
     return i;
 }
 
 
-int SQ_helix::SQ_get_no_helix() {
+inline int SQ_helix::SQ_get_no_helix() const {
     int i;
     i = count_no_helix;
     return i;

@@ -24,12 +24,11 @@ class SQ_ambiguities {
 public:
     SQ_ambiguities();
     void SQ_count_ambiguities(const char *iupac, int length, GBDATA *gb_quality);
-    int SQ_get_nr_ambiguities();
-    int SQ_get_percent_ambiguities();
-    int SQ_get_iupac_value();
+    int SQ_get_nr_ambiguities() const;
+    int SQ_get_percent_ambiguities() const;
+    int SQ_get_iupac_value() const;
 
 private:
-    const char *iupac;
     int number;
     int percent;
     int iupac_value;
@@ -37,8 +36,7 @@ private:
 };
 
 
-SQ_ambiguities::SQ_ambiguities(){
-    iupac       = 0;
+inline SQ_ambiguities::SQ_ambiguities(){
     number      = 0;
     percent     = 0;
     iupac_value = 0;
@@ -46,7 +44,6 @@ SQ_ambiguities::SQ_ambiguities(){
 
 
 void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length, GBDATA *gb_quality){
-    this->iupac = iupac;
     char c;
 
     for (int i = 0; i <length; i++) {
@@ -106,15 +103,16 @@ void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length, GBDATA 
 }
 
 
-int SQ_ambiguities::SQ_get_nr_ambiguities() {
+inline int SQ_ambiguities::SQ_get_nr_ambiguities() const {
     return number;
 }
 
 
-int SQ_ambiguities::SQ_get_percent_ambiguities() {
+inline int SQ_ambiguities::SQ_get_percent_ambiguities() const {
     return percent;
 }
 
-int SQ_ambiguities::SQ_get_iupac_value() {
+
+inline int SQ_ambiguities::SQ_get_iupac_value() const {
     return iupac_value;
 }

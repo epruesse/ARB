@@ -23,7 +23,7 @@ class SQ_physical_layout {
 public:
     SQ_physical_layout();
     void SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality);
-    int SQ_get_number_of_bases();
+    int SQ_get_number_of_bases() const;
 
 
 private:
@@ -99,7 +99,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
 }
 
 
-int SQ_physical_layout::SQ_get_number_of_bases() {
+inline int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
     i = count_bases;
     return i;
