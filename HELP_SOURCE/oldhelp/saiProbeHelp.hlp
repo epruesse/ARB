@@ -28,8 +28,9 @@ DESCRIPTION
     
     One can change the COLOR RANGE by going to FILE -> SET COLORS AND FONTS menu.
 
-NOTES		
-    Please note that special characters like '.', '=' and '-', that are found in SAIs, are omited for Visualization.
+NOTES	    
+    Color Translation Defnitions defined for various SAIs can be saved by clicking SAVE button in DEFINE COLOR TRANSLATION window. (Press STORE to save the definitions and press RESTORE to restore the saved definitions).
+    To save the Color Translation Definitions permanently Go to ARB_NT window and save PROPERTIES under PROPERTIES MENU.
 
 EXAMPLES	None
 
