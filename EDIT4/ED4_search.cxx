@@ -403,7 +403,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                 int commentLen = comment ? strlen(comment) : 0;
 
                 if (s_reverse) {
-                    char *reverse = AWTC_reverseString(uni_tok, uni_tok_len);
+                    char *reverse = GBT_reverseNucSequence(uni_tok, uni_tok_len);
                     char *reverseComment = appendComment(comment, commentLen, "(reverse)");
 
                     if (!s_exact || (s_reverse && !s_complement)) {
@@ -413,7 +413,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                         e4_assert(IS_NUCLEOTIDE);
                         char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
 
-                        char *revcomp = AWTC_complementString(reverse, uni_tok_len, T_or_U);
+                        char *revcomp = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
                         char *revcompComment = appendComment(comment, commentLen, "(reverse complement)");
 
                         if (!s_exact || (s_reverse && s_complement)) {
@@ -433,7 +433,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                     e4_assert(ali_type==GB_AT_DNA || ali_type==GB_AT_RNA);
                     char T_or_U = ali_type==GB_AT_DNA ? 'T' : 'U';
 
-                    char *complement = AWTC_complementString(uni_tok, uni_tok_len, T_or_U);
+                    char *complement = GBT_complementNucSequence(uni_tok, uni_tok_len, T_or_U);
                     char *complementComment = appendComment(comment, commentLen, "(complement)");
 
                     if (!s_exact || (!s_reverse && s_complement)) {
