@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Wed Dec/10/2003 15:45 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Tue Dec/16/2003 14:23 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -64,6 +64,8 @@ extern "C" {
 
     /* -------------------------------------------------------------------------------- */
     /* organisms: */
+
+    GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name);
 
     GBDATA *GEN_first_organism(GBDATA *gb_main);
     GBDATA *GEN_next_organism(GBDATA *gb_organism);
