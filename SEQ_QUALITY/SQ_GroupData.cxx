@@ -23,6 +23,7 @@ SQ_GroupData::SQ_GroupData() {
     size         = 0;
     avg_bases    = 0;
     nr_sequences = 0;
+    gc_prop      = 0;
     initialized  = false;
 }
 

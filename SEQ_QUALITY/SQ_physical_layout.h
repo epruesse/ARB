@@ -2,10 +2,10 @@
 //                                                                       //
 //    File      : SQ_physical_layout.h                                   //
 //    Purpose   : Class used for calculation of the phys. layout of seq. //
-//    Time-stamp: <Thu Sep/25/2003 17:58 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jan/28/2004 16:58 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - October 2003                        //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -24,6 +24,7 @@ public:
     SQ_physical_layout();
     void SQ_calc_physical_layout(const char *sequence, int size, GBDATA *gb_quality);
     int SQ_get_number_of_bases() const;
+    int SQ_get_gc_proportion() const;
 
 
 private:
@@ -104,6 +105,13 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
 inline int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
     i = count_bases;
+    return i;
+}
+
+
+inline int SQ_physical_layout::SQ_get_gc_proportion() const {
+    int i;
+    i = GC_proportion;
     return i;
 }
  
