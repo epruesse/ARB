@@ -58,6 +58,7 @@ GBDATA *GBT_create_SAI P_((GBDATA *gb_main, const char *name));
 GBDATA *GBT_add_data P_((GBDATA *species, const char *ali_name, const char *key, GB_TYPES type));
 GB_ERROR GBT_write_sequence P_((GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence));
 GBDATA *GBT_gen_accession_number P_((GBDATA *gb_species, const char *ali_name));
+int GBT_is_partial P_((GBDATA *gb_species, int default_value, int define_if_undef));
 GBDATA *GBT_get_species_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_marked_species P_((GBDATA *gb_main));
@@ -78,6 +79,7 @@ char *GBT_create_unique_species_name P_((GBDATA *gb_main, const char *default_na
 GBDATA *GBT_find_configuration P_((GBDATA *gb_main, const char *name));
 GBDATA *GBT_create_configuration P_((GBDATA *gb_main, const char *name));
 void GBT_mark_all P_((GBDATA *gb_main, int flag));
+void GBT_mark_all_that P_((GBDATA *gb_main, int flag, int (*condition )(GBDATA *, void *), void *cd));
 long GBT_count_marked_species P_((GBDATA *gb_main));
 long GBT_count_species P_((GBDATA *gb_main));
 long GBT_recount_species P_((GBDATA *gb_main));
