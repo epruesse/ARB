@@ -1042,6 +1042,42 @@ GBDATA *gb_create_container(GBDATA *father, const char *key){
     return (GBDATA *)gbd;
 }
 
+void gb_rename(GBCONTAINER *gbc, const char *new_key) {
+    gb_rename_entry(gbc, new_key);
+}
+
+/* User accessible rename, check everything
+ * returns 0 if successful!
+ */
+int GB_rename(GBDATA *gbc, const char *new_key) {
+    GBCONTAINER *old_father, *new_father;
+    if (GB_check_key(new_key)) {
+        GB_print_error();
+        return -1;
+    }
+
+    GB_TEST_TRANSACTION(gbc);
+    old_father = GB_FATHER(gbc);
+
+    if (GB_TYPE(gbc) != GB_DB) {
+        GB_internal_error("GB_rename has to be called with container");
+        return -1;
+    }
+
+    gb_rename((GBCONTAINER*)gbc, new_key);
+
+    new_father = GB_FATHER(gbc);
+    if (old_father != new_father) {
+        GB_internal_error("father changed during rename");
+        return -1;
+    }
+
+    gb_touch_header(new_father);
+    gb_touch_entry(gbc, gb_changed);
+
+    return 0;
+}
+
 /* User accessible create, check everything */
 GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
 {
@@ -1058,10 +1094,12 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
         return NULL;
     }
 
-    if ( (*key == '\0')) {
-        GB_export_error("GB_create error: empty key");
-        return NULL;
-    }
+    /*     now checked by GB_check_key */
+    /*     if ( (*key == '\0')) { */
+    /*         GB_export_error("GB_create error: empty key"); */
+    /*         return NULL; */
+    /*     } */
+
     if ( !father ) {
         GB_internal_error("GB_create error in GB_create:\nno father (key = '%s')",key);
         return NULL;
@@ -1105,6 +1143,7 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
     gb_touch_entry((GBDATA *)gbd,gb_created);
     return (GBDATA *)gbd;
 }
+
 
 
 GB_ERROR GB_delete(GBDATA *source)
