@@ -192,8 +192,8 @@ public void downloadZippedTree(String fileName)
             toServer = new PrintWriter(probeSocket.getOutputStream());
             FileOutputStream outstream = new FileOutputStream(fileName);
             byteBuffer = new byte[4096];
-            toServer.print("GET /" + fileName + "\n\n");
-            System.out.println("Request:\nGET /" + fileName + "\n\n");
+            toServer.print("GET /pserverdata/" + fileName + "\n\n");
+            System.out.println("Request:\nGET /pserverdata/" + fileName + "\n\n");
             toServer.flush();
             int bytesRead;
             while((bytesRead = fromServer.read(byteBuffer)) != -1)
