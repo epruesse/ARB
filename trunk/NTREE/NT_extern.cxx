@@ -891,6 +891,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     }else{
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
+            AWMIMT("new_window",    "New Window",           "N","newwindow.hlp",        F_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1 );
             AWMIMT("save_changes",  "Quicksave Changes",            "s","save.hlp", AWM_ALL, (AW_CB)NT_save_quick_cb, 0,    0);
             AWMIMT("save_all_as",   "Save Whole Database As ...",       "W","save.hlp", AWM_ALL, AW_POPUP,  (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             awm->insert_separator();
@@ -916,7 +917,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
 
             AWMIMT("macros",    "Macros ",              "M", "macro.hlp",   AWM_ALL,        (AW_CB)AW_POPUP,    (AW_CL)awt_open_macro_window,(AW_CL)"ARB_NT");
-            AWMIMT("new_window",    "New Window",           "N","newwindow.hlp",        F_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1 );
+
             awm->insert_sub_menu(  0,"Registration/Bug report/Version info ",       "A" );
             {
                 AWMIMT( "registration", "Registration",         "R","registration.hlp", AWM_EXP, (AW_CB)AW_POPUP,   (AW_CL)NT_submit_bug, 0 );
@@ -974,14 +975,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
-            AWMIMT( "merge_species",    "Merge Similar Species",    "M", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
+            AWMIMT( "merge_species",    "Merge Similar Species",    "eb", "sp_merge.hlp", AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, (AW_CL)ntw );
 
             awm->insert_separator();
-            awm->insert_sub_menu(0, "Other Functions",              "O");
-            {
-                AWMIMT( "new_names",    "Generate New Names",   "G", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
-            }
-            awm->close_sub_menu();
+            AWMIMT( "new_names",    "Generate New Names",   "G", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
 
             awm->insert_separator();
             AWMIMT( "species_submission", "Submit Species", "",  "submission.hlp",   AWM_ALL,AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0 );
@@ -1128,6 +1125,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         AWMIMT("transversion",      "Transversion Analysis ",    "T","trans_anal.hlp",   AWM_TREE,   (AW_CB)AW_POPUP_HELP,   (AW_CL)"trans_anal.hlp", 0 );
         awm->insert_separator();
 
+        if (!clone){
+            awm->insert_sub_menu(0, "Reset Zoom ",         "Z");
+            {
+                AWMIMT("reset_logical_zoom",    "Logical Zoom ",       "L","rst_log_zoom.hlp",     AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
+                AWMIMT("reset_physical_zoom",   "Physical Zoom ",      "P","rst_phys_zoom.hlp",    AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
+            }
+            awm->close_sub_menu();
+        }
+
         awm->insert_sub_menu(0, "Collapse/Expand Tree",         "G");
         {
             AWMIMT("tree_group_all",        "Group All",            "A","tgroupall.hlp",    AWM_ALL,    (AW_CB)NT_group_tree_cb,    (AW_CL)ntw, 0 );
@@ -1163,37 +1169,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->close_sub_menu();
     }
 
-    // --------------------------------------------------------------------------------
-    //     View
-    // --------------------------------------------------------------------------------
-    awm->create_menu( 0,   "View", "V", "nt_view.hlp",  AWM_ALL );
-    {
-        if (!clone){
-            AWMIMT("reset_logical_zoom",    "Reset Logical Zoom ",       "o","rst_log_zoom.hlp",     AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
-            AWMIMT("reset_physical_zoom",   "Reset Physical Zoom ",      "y","rst_phys_zoom.hlp",    AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
-        }
-    }
-
     if(!clone){
-
-        // --------------------------------------------------------------------------------
-        //     Properties
-        // --------------------------------------------------------------------------------
-        awm->create_menu(0,"Properties","r","properties.hlp", AWM_ALL);
-        {
-            AWMIMT("props_menu",    "Frame Settings ",   "M","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
-            awm->insert_sub_menu(0, "Tree Settings ",            "B");
-            {
-                AWMIMT("props_tree2",   "Set Tree Options ",        "T","nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
-                AWMIMT("props_tree",    "Set Tree Colors ",   "C","nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-            }
-            awm->close_sub_menu();
-            AWMIMT("props_www", "Search World Wide Web (WWW) ",         "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
-            awm->insert_separator();
-            AWMIMT("enable_advices", "Reactivate advices ",  "","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
-            awm->insert_separator();
-            AWMIMT("save_props",    "Save Properties (in ~/.arb_prop/ntree.arb)",   "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
-        }
 
         // --------------------------------------------------------------------------------
         //     Tools
@@ -1235,6 +1211,25 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("debug_arbdb",   "Print Debug Information ",      "D",0   ,       AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)gb_main, 0 );
                 AWMIMT("test_compr",    "Test Compression ",       "C",0   ,       AWM_ALL, (AW_CB)GBT_compression_test, (AW_CL)gb_main, 0 );
             }
+        }
+
+        // --------------------------------------------------------------------------------
+        //     Properties
+        // --------------------------------------------------------------------------------
+        awm->create_menu(0,"Properties","r","properties.hlp", AWM_ALL);
+        {
+            AWMIMT("props_menu",    "Frame Settings ",   "M","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
+            awm->insert_sub_menu(0, "Tree Settings ",            "B");
+            {
+                AWMIMT("props_tree2",   "Set Tree Options ",        "T","nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
+                AWMIMT("props_tree",    "Set Tree Colors ",   "C","nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+            }
+            awm->close_sub_menu();
+            AWMIMT("props_www", "Search World Wide Web (WWW) ",         "W","props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window,  (AW_CL)gb_main );
+            awm->insert_separator();
+            AWMIMT("enable_advices", "Reactivate advices ",  "","advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0 );
+            awm->insert_separator();
+            AWMIMT("save_props",    "Save Properties (in ~/.arb_prop/ntree.arb)",   "S","savedef.hlp",AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
         }
     } // clone
 
