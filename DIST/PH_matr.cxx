@@ -1001,37 +1001,55 @@ const char *enum_trans_to_string[] = {
 
 void ph_calculate_tree_cb(AW_window *aww,AW_CL bootstrap_flag)
 {
-    AW_root *aw_root = aww->get_root();
-    GB_ERROR error = 0;
-    GBT_TREE *tree = 0;
-    char **all_names = 0;
-    int loop_count = 0;
-    PHMATRIX *matr;
+    AW_root   *aw_root    = aww->get_root();
+    GB_ERROR   error      = 0;
+    GBT_TREE  *tree       = 0;
+    char     **all_names  = 0;
+    int        loop_count = 0;
+    PHMATRIX  *matr;
+    bool       close_stat = false;
 
-    if (bootstrap_flag){
-        switch (aw_message("Are You ABSOLUTELY sure that You have READ\n"
-                           "the bootstrap help","Yes,Show Help,Cancel")){
-            case 1:
-                AW_POPUP_HELP(aww,(AW_CL)"bootstrap.hlp");
-                return;
-            case 2:
-                return;
-            default:
-                break;
-        }
-        aw_openstatus("Calculate tree");
-        ph_calculate_matrix_cb(aww,bootstrap_flag);
-        matr = PHMATRIX::ROOT;
-        if (!matr) return;
-        all_names = (char **)calloc(sizeof(char *),(size_t)matr->nentries+2);
-        for (long i=0;i<matr->nentries;i++){
-            all_names[i] = strdup(matr->entries[i]->name);
-        }
-        ctree_init(matr->nentries,all_names);
-    }else{
-        aw_openstatus("Calculate tree");
+    {
+        char *tree_name = aw_root->awar("dist/tree/tree_name")->read_string();
+        error           = GBT_check_tree_name(tree_name);
+        free(tree_name);
     }
+
+    if (!error) {
+        if (bootstrap_flag){
+            switch (aw_message("Are You ABSOLUTELY sure that You have READ\n"
+                               "the bootstrap help","Yes,Show Help,Cancel")){
+                case 1:
+                    AW_POPUP_HELP(aww,(AW_CL)"bootstrap.hlp");
+                    return;
+                case 2:
+                    return;
+                default:
+                    break;
+            }
+            aw_openstatus("Calculate tree");
+            close_stat = true;
+            ph_calculate_matrix_cb(aww,bootstrap_flag);
+            matr = PHMATRIX::ROOT;
+            if (!matr) {
+                error = "unexpected error in ph_calculate_matrix_cb (data missing)";
+            }
+            else {
+                all_names = (char **)calloc(sizeof(char *),(size_t)matr->nentries+2);
+                for (long i=0;i<matr->nentries;i++){
+                    all_names[i] = strdup(matr->entries[i]->name);
+                }
+                ctree_init(matr->nentries,all_names);
+            }
+        }else{
+            aw_openstatus("Calculate tree");
+            close_stat = true;
+        }
+    }
+
     do {
+        if (error) break;
+
         if (bootstrap_flag) {
             loop_count++;
             if (aw_status(GBS_global_string("Tree #%i",loop_count))) break; // end of bootstrap
@@ -1060,37 +1078,43 @@ void ph_calculate_tree_cb(AW_window *aww,AW_CL bootstrap_flag)
 
     }while(bootstrap_flag);
 
-    if (bootstrap_flag){
-        tree = get_ctree();
-    }
-    {
-        char *tree_name = aw_root->awar("dist/tree/tree_name")->read_string();
-        GB_begin_transaction(gb_main);
-        error = GBT_write_tree(gb_main,0,tree_name,tree);
-        if (error) {
-            GB_abort_transaction(gb_main);
-            aw_message(error);
-        }else{
-            //char *filter_name	= aw_root->awar("dist/filter/name")->read_string();
-            char *filter_name	= AWT_get_combined_filter_name(aw_root, "dist");
-            int transr		= aw_root->awar("dist/correction/trans")->read_int();
-
-            char *comment = (char *)GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB",
-                                                      enum_trans_to_string[transr], filter_name);
-
-            delete filter_name;
-            GBT_write_tree_rem(gb_main,tree_name,comment);
-            GB_commit_transaction(gb_main);
+    if (!error) {
+        if (bootstrap_flag){
+            tree = get_ctree();
         }
-        delete tree_name;
+        {
+            char *tree_name = aw_root->awar("dist/tree/tree_name")->read_string();
+            GB_begin_transaction(gb_main);
+            error = GBT_write_tree(gb_main,0,tree_name,tree);
+            if (error) {
+                GB_abort_transaction(gb_main);
+                aw_message(error);
+            }
+            else {
+                //char *filter_name	= aw_root->awar("dist/filter/name")->read_string();
+                char *filter_name	= AWT_get_combined_filter_name(aw_root, "dist");
+                int transr		= aw_root->awar("dist/correction/trans")->read_int();
+
+                char *comment = (char *)GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB",
+                                                          enum_trans_to_string[transr], filter_name);
+
+                delete filter_name;
+                GBT_write_tree_rem(gb_main,tree_name,comment);
+                GB_commit_transaction(gb_main);
+            }
+            delete tree_name;
+        }
     }
     if (tree) GBT_delete_tree(tree);
     aw_closestatus();
     aw_status();		// remove flag
     if (bootstrap_flag){
-        GBT_free_names(all_names);
-        delete PHMATRIX::ROOT;PHMATRIX::ROOT = 0;
+        if (all_names) GBT_free_names(all_names);
+        delete PHMATRIX::ROOT;
+        PHMATRIX::ROOT = 0;
     }
+
+    if (error) aw_message(error);
 }
 
 
