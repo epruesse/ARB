@@ -495,11 +495,13 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 
     if (use_species_aside==-1) {
         static int last_used_species_aside = 3;
+        {
+            const char *val                    = GBS_global_string("%i", last_used_species_aside);
+            char       *use_species            = aw_input("Enter number of extra species to view aside marked:", 0, val);
+            if (use_species) use_species_aside = atoi(use_species);
+            free(use_species);
+        }
 
-        const char *val         = GBS_global_string("%i", last_used_species_aside);
-        char       *use_species = aw_input("Enter number of extra species to view aside marked:", 0, val);
-
-        if (use_species) use_species_aside = atoi(use_species);
         if (use_species_aside<1) return GB_export_error("illegal # of species aside");
 
         last_used_species_aside = use_species_aside; // remember for next time
@@ -591,6 +593,7 @@ void nt_rename_configuration(AW_window *aww) {
                 err = "Can't find that selection";
             }
         }
+        free(new_name);
     }
 
     if (err) aw_message(err);
