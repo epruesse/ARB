@@ -30,6 +30,7 @@
 #include <netdb.h>
 
 #include "aisc_com.h"
+/* AISC_MKPT_PROMOTE:#include <aisc_func_types.h>*/
 #include "server.h"
 /* #include <SIG_PF.h> */
 
