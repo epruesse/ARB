@@ -36,7 +36,7 @@ agde_%.hlp : $(GDEDIR)/%.help
 
 agde.hlp: $(GDE_HLP) agde.footer
 	cp $(STD) $@
-	ls agde_*.hlp | grep -v 'agde_.*_sub'| sed -e 's/^/SUB /ig' >>$@
+	ls agde_*.hlp | grep -v 'agde_.*_sub'| sed -e 's/^/SUB /' >>$@
 	cat agde.footer >>$@
 
 clean:
