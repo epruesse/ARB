@@ -191,13 +191,20 @@ void awtc_check_input_format(AW_window *aww)
 		char *autodetect = GBS_remove_escape(awtcig.ifo->autodetect);
 		delete awtcig.ifo; awtcig.ifo = 0;
 
-		FILE *in;
+		FILE *in = 0;
 		{
 			char com[1024];
 			char *f = root->awar(AWAR_FILE)->read_string();
-			sprintf(com,"cat %s 2>/dev/null",f);
-			in = popen(com,"r");
-			if (!in) aw_message( "Cannot open any input file");
+
+            if (f[0]) {
+                sprintf(com,"cat %s 2>/dev/null",f);
+                in = popen(com,"r");
+            }
+			if (!in) {
+                aw_message( "Cannot open any input file");
+                *file = 0;
+                break;
+            }
 		}
 		if (in) {
 			int size = fread(buffer,1,AWTC_IMPORT_CHECK_BUFFER_SIZE,in);
@@ -801,9 +808,13 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awtcig.cd2 = cd2;
 
     awr->awar_string(AWAR_FILE,defname);
+    awr->awar_string(AWAR_FILE_BASE"/directory","");
+    awr->awar_string(AWAR_FILE_BASE"/filter","");
+
     awr->awar_string(AWAR_FORM"/directory","lib/import");
     awr->awar_string(AWAR_FORM"/filter",".ift");
     awr->awar_string(AWAR_FORM"/file_name","");
+
     awr->awar_string(AWAR_ALI,"16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
 
@@ -820,21 +831,24 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->load_xfig("awt/import_db.fig");
 
     aws->at("close");
-    if (do_exit){
-        aws->callback((AW_CB0)exit);
-    }else{
-        aws->callback(AW_POPDOWN);
-    }
+    if (do_exit) aws->callback((AW_CB0)exit);
+    else aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP,(AW_CL)"arb_import.hlp");
     aws->create_button("HELP", "HELP","H");
 
-    aws->at("pattern");
-    aws->create_input_field(AWAR_FILE,4);
+//     aws->at("pattern");
+//     aws->create_input_field(AWAR_FILE,4);
 
-    awt_create_selection_box(aws,AWAR_FORM,"","ARBHOME", AW_FALSE );
+//     aws->at("browser");
+//     aws->callback(awt_create_import_selection_window);
+//     aws->create_button("BROWSE", "BROWSE", "B");
+
+    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_","ARBHOME", AW_TRUE ); // select import filename
+
+    awt_create_selection_box(aws, AWAR_FORM, "","ARBHOME", AW_FALSE ); // select import filter
 
     aws->at("auto");
     aws->callback(awtc_check_input_format);
