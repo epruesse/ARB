@@ -50,9 +50,9 @@ void draw_top_seperator(){
     int y;
     irs_gl.ftrst_species = GB_FALSE;
     if (!irs_gl.is_size_device){
-	for (y = irs_gl.min_y; y< irs_gl.min_y+4;y++){
-	    irs_gl.device->line(gc,-10000,y,10000,y,-1,(AW_CL)0,(AW_CL)0);
-	}
+        for (y = irs_gl.min_y; y< irs_gl.min_y+4;y++){
+            irs_gl.device->line(gc,-10000,y,10000,y,-1,(AW_CL)0,(AW_CL)0);
+        }
     }
 }
 
@@ -66,121 +66,121 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
     /* *********************** Check clipping rectangle ************************ */
     if (!irs_gl.is_size_device){
-	if (irs_gl.y > irs_gl.max_y){
-	    return irs_gl.max_y;
-	}
-	int height_of_subtree = irs_gl.step_y*node->gr.view_sum;
-	if (irs_gl.y + height_of_subtree < irs_gl.min_y) {
-	    irs_gl.y+= height_of_subtree;
-	    return irs_gl.min_y;
-	}
+        if (irs_gl.y > irs_gl.max_y){
+            return irs_gl.max_y;
+        }
+        int height_of_subtree = irs_gl.step_y*node->gr.view_sum;
+        if (irs_gl.y + height_of_subtree < irs_gl.min_y) {
+            irs_gl.y+= height_of_subtree;
+            return irs_gl.min_y;
+        }
     }
 
 
 
     /* *********************** i'm a leaf ************************ */
     if (node->is_leaf) {
-	irs_gl.y+=irs_gl.step_y;
-	if (irs_gl.ftrst_species) {
-	    draw_top_seperator();
-	}
-	int x = x_offset;
-	int y = irs_gl.y + irs_gl.font_height_2;
-	int gc = node->gr.gc;
+        irs_gl.y+=irs_gl.step_y;
+        if (irs_gl.ftrst_species) {
+            draw_top_seperator();
+        }
+        int x = x_offset;
+        int y = irs_gl.y + irs_gl.font_height_2;
+        int gc = node->gr.gc;
 
 
 
-	if (node->name && node->name[0] == this->species_name[0] &&
+        if (node->name && node->name[0] == this->species_name[0] &&
 			!strcmp(node->name,this->species_name)) {
 			x_cursor = x; y_cursor = irs_gl.y;
-	}
+        }
 
-	const char *str = 0;
-	if (!irs_gl.is_size_device){
-	    if (node->gb_node && GB_read_flag(node->gb_node)){
-		NT_scalebox(gc,x, irs_gl.y, (int)NT_BOX_WIDTH);
-	    }
-	    str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
-	    irs_gl.device->text(gc,str, x, y,0.0,-1, (AW_CL)node,0);
-	}
-	return irs_gl.y;
+        const char *str = 0;
+        if (!irs_gl.is_size_device){
+            if (node->gb_node && GB_read_flag(node->gb_node)){
+                NT_scalebox(gc,x, irs_gl.y, (int)NT_BOX_WIDTH);
+            }
+            str = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
+            irs_gl.device->text(gc,str, x, y,0.0,-1, (AW_CL)node,0);
+        }
+        return irs_gl.y;
     }
 
     /* *********************** i'm a grouped subtree ************************ */
     int last_y = irs_gl.y;
     const char *node_string = 0;
     if (node->gb_node){
-	if (!irs_gl.is_size_device){
-	    node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
-	}else{
-	    node_string = "0123456789";
-	}
+        if (!irs_gl.is_size_device){
+            node_string = make_node_text_nds(gb_main,node->gb_node,0,node->get_gbt_tree());
+        }else{
+            node_string = "0123456789";
+        }
     }
     if (node->gr.grouped) {		// no recursion here	just a group symbol !!!
-	int vsize = node->gr.view_sum * irs_gl.step_y;
-	int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
-	if ( irs_gl.y >= irs_gl.min_y) {
-	    if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
-		draw_top_seperator();
-	    }
-	    int topy = irs_gl.y+irs_gl.step_y - 2;
-	    int boty = irs_gl.y+irs_gl.step_y+ vsize + 2;
-	    int rx = x_offset + vsize + vsize;
-	    int gc = AWT_GC_GROUPS;
-	    irs_gl.device->line(gc,x_offset, topy, rx, topy, -1,(AW_CL)node,0);
+        int vsize = node->gr.view_sum * irs_gl.step_y;
+        int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
+        if ( irs_gl.y >= irs_gl.min_y) {
+            if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
+                draw_top_seperator();
+            }
+            int topy = irs_gl.y+irs_gl.step_y - 2;
+            int boty = irs_gl.y+irs_gl.step_y+ vsize + 2;
+            int rx = x_offset + vsize + vsize;
+            int gc = AWT_GC_GROUPS;
+            irs_gl.device->line(gc,x_offset, topy, rx, topy, -1,(AW_CL)node,0);
 
-	    irs_gl.device->box(node->gr.gc,x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1),
-			       tipBoxSize, tipBoxSize, -1, (AW_CL)node,0);
+            irs_gl.device->box(node->gr.gc,x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1),
+                               tipBoxSize, tipBoxSize, -1, (AW_CL)node,0);
 
-	    irs_gl.device->line(gc,x_offset, topy, x_offset, boty, -1, (AW_CL)node,0);
-	    irs_gl.device->line(gc,x_offset, boty, rx,       boty, -1, (AW_CL)node,0);
+            irs_gl.device->line(gc,x_offset, topy, x_offset, boty, -1, (AW_CL)node,0);
+            irs_gl.device->line(gc,x_offset, boty, rx,       boty, -1, (AW_CL)node,0);
 
-	    irs_gl.device->box(node->gr.gc,x_offset+2,irs_gl.y+irs_gl.step_y,vsize,vsize, -1,(AW_CL)node,0);
+            irs_gl.device->box(node->gr.gc,x_offset+2,irs_gl.y+irs_gl.step_y,vsize,vsize, -1,(AW_CL)node,0);
 
-	    irs_gl.y += vsize + 2*irs_gl.step_y ;
-	    if (node_string) {
-		const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
-		irs_gl.device->text(node->gr.gc,s,x_offset + vsize + 10 + nodeBoxWidth,
-				    y_center + (irs_gl.step_y>>1),0.0, //  A node name should be displayed
-				    -1, (AW_CL)node, 0);
-	    }
-	}else{
-	    irs_gl.y+= vsize;
-	    y_center = irs_gl.min_y;
-	    if ( irs_gl.y > irs_gl.min_y) {
-		irs_gl.y = irs_gl.min_y;
-	    }
-	}
-	return y_center;
+            irs_gl.y += vsize + 2*irs_gl.step_y ;
+            if (node_string) {
+                const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
+                irs_gl.device->text(node->gr.gc,s,x_offset + vsize + 10 + nodeBoxWidth,
+                                    y_center + (irs_gl.step_y>>1),0.0, //  A node name should be displayed
+                                    -1, (AW_CL)node, 0);
+            }
+        }else{
+            irs_gl.y+= vsize;
+            y_center = irs_gl.min_y;
+            if ( irs_gl.y > irs_gl.min_y) {
+                irs_gl.y = irs_gl.min_y;
+            }
+        }
+        return y_center;
     }
 
     if ( irs_gl.pruneLevel != IRS_NOPRUNE ){
-	node_string = 0;
+        node_string = 0;
     }
 
     /* *********************** i'm a labeled node ************************ */
     /*	If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
 
     if (node_string != NULL) {		//  A node name should be displayed
-	if (last_y >= irs_gl.min_y) {
-	    if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
-		draw_top_seperator();
-	    }
-	    last_y = irs_gl.y + irs_gl.step_y;
-	}else{
-	    last_y = irs_gl.min_y;
-	    irs_gl.min_y += int(irs_gl.step_y * 1.8);
-	}
-	irs_gl.y+=int(irs_gl.step_y * 1.8);
-	int gc = AWT_GC_GROUPS;
-	irs_gl.device->line(gc,x_offset,last_y,  x_offset+400, last_y, -1, (AW_CL)node,0);
+        if (last_y >= irs_gl.min_y) {
+            if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
+                draw_top_seperator();
+            }
+            last_y = irs_gl.y + irs_gl.step_y;
+        }else{
+            last_y = irs_gl.min_y;
+            irs_gl.min_y += int(irs_gl.step_y * 1.8);
+        }
+        irs_gl.y+=int(irs_gl.step_y * 1.8);
+        int gc = AWT_GC_GROUPS;
+        irs_gl.device->line(gc,x_offset,last_y,  x_offset+400, last_y, -1, (AW_CL)node,0);
 
-	irs_gl.device->box(node->gr.gc,x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1),
-			   tipBoxSize,tipBoxSize,
-			   -1, (AW_CL)node,0);
-	const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
-	irs_gl.device->text(node->gr.gc,s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1,0.0,
-			    -1, (AW_CL)node,0);
+        irs_gl.device->box(node->gr.gc,x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1),
+                           tipBoxSize,tipBoxSize,
+                           -1, (AW_CL)node,0);
+        const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
+        irs_gl.device->text(node->gr.gc,s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1,0.0,
+                            -1, (AW_CL)node,0);
     }
 
     /* *********************** connect two nodes == draw branches ************************ */
@@ -195,45 +195,48 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     /* *********************** draw structure ************************ */
 
     if (left_y > irs_gl.min_y){
-	if (left_y < irs_gl.max_y){ // clip y on top border
-	    if (node->leftson->remark_branch ) {
-		disp_device->text(AWT_GC_BRANCH_REMARK, node->leftson->remark_branch ,
-			(AW_pos) left_x,(AW_pos) left_y,
-			(AW_pos) 1 , text_filter,
-			(AW_CL) node->leftson , (AW_CL) 0 );
-	    }
-	    irs_gl.device->line(node->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0);
-	}
+        if (left_y < irs_gl.max_y){ // clip y on top border
+            if (node->leftson->remark_branch ) {
+                AWT_show_remark_branch(disp_device, node->leftson->remark_branch, left_x, left_y, 1, text_filter, (AW_CL)node->leftson, 0);
+
+                //                 disp_device->text(AWT_GC_BRANCH_REMARK, node->leftson->remark_branch , // @@@ print bootstrap
+                //                                   (AW_pos) left_x,(AW_pos) left_y,
+                //                                   (AW_pos) 1 , text_filter,
+                //                                   (AW_CL) node->leftson , (AW_CL) 0 );
+            }
+            irs_gl.device->line(node->gr.gc,x_offset,left_y,  left_x,   left_y, -1, (AW_CL)node->leftson,0);
+        }
     }else{
-	left_y = irs_gl.min_y;
+        left_y = irs_gl.min_y;
     }
 
     y_center = (left_y + right_y) / 2; // clip conter on bottom border
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) {
-	if (node->rightson->remark_branch ) {
-	    disp_device->text(AWT_GC_BRANCH_REMARK, node->rightson->remark_branch ,
-			      (AW_pos) right_x,(AW_pos) right_y,
-			      (AW_pos) 1 , text_filter,
-			      (AW_CL) node->rightson , (AW_CL) 0 );
-	}
-	irs_gl.device->line(node->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
+        if (node->rightson->remark_branch ) {
+            AWT_show_remark_branch(disp_device, node->rightson->remark_branch, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
+            //             disp_device->text(AWT_GC_BRANCH_REMARK, node->rightson->remark_branch , // @@@ print bootstrap
+            //                               (AW_pos) right_x,(AW_pos) right_y,
+            //                               (AW_pos) 1 , text_filter,
+            //                               (AW_CL) node->rightson , (AW_CL) 0 );
+        }
+        irs_gl.device->line(node->gr.gc,x_offset,right_y,  right_x,   right_y, -1, (AW_CL)node->rightson,0);
     }
 
     irs_gl.device->line(node->gr.gc,x_offset,left_y,x_offset,   right_y, -1, (AW_CL)node,0);
 
     if (node_string != 0) {		//  A node name should be displayed
-	irs_gl.y+=irs_gl.step_y /2;
-	int gc = AWT_GC_GROUPS;
-	irs_gl.device->line(gc,x_offset-1,irs_gl.y, x_offset+400,  irs_gl.y, -1,(AW_CL)node,0);
-	irs_gl.device->line(gc,x_offset-1,last_y,   x_offset-1,  irs_gl.y, -1,(AW_CL)node,0);
+        irs_gl.y+=irs_gl.step_y /2;
+        int gc = AWT_GC_GROUPS;
+        irs_gl.device->line(gc,x_offset-1,irs_gl.y, x_offset+400,  irs_gl.y, -1,(AW_CL)node,0);
+        irs_gl.device->line(gc,x_offset-1,last_y,   x_offset-1,  irs_gl.y, -1,(AW_CL)node,0);
     }
     if (0 &&  !irs_gl.is_size_device){
-	if (irs_gl.nodes_nnnodes>irs_gl.nodes_ntip+1){
-	    irs_gl.nodes_nnnodes--;
-	    irs_gl.nodes_xpos[irs_gl.nodes_nnnodes] = x_offset;
-	    irs_gl.nodes_ypos[irs_gl.nodes_nnnodes] = y_center;
-	    irs_gl.nodes_id[irs_gl.nodes_nnnodes] = node;
-	}
+        if (irs_gl.nodes_nnnodes>irs_gl.nodes_ntip+1){
+            irs_gl.nodes_nnnodes--;
+            irs_gl.nodes_xpos[irs_gl.nodes_nnnodes] = x_offset;
+            irs_gl.nodes_ypos[irs_gl.nodes_nnnodes] = y_center;
+            irs_gl.nodes_id[irs_gl.nodes_nnnodes] = node;
+        }
     }
     return y_center;
 }
@@ -244,18 +247,18 @@ int AWT_graphic_tree::draw_slot(int x_offset, GB_BOOL draw_at_tips){
     int no_compress = 0;
     if (!draw_at_tips) no_compress = 1;
     for (i=0;i<irs_gl.nodes_ntip;i++){
-	AP_tree *tip = irs_gl.nodes_id[i];
-	const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree());
-	int len = irs_gl.device->get_string_size(tip->gr.gc,str,0);
-	int x = 0;
-	int y = irs_gl.nodes_ypos[i]+ irs_gl.font_height_2;
-	if (draw_at_tips) {
-	    x = x_offset + irs_gl.nodes_xpos[i];
-	}else{
-	    irs_gl.device->text(tip->gr.gc,str,x,irs_gl.nodes_ypos[i],0,-1,(AW_CL)tip,0);
-	}
-	if (x + len > maxx) maxx = x+len;
-	irs_gl.device->text(tip->gr.gc,str, x, y,0.0,-1, (AW_CL)tip,0);
+        AP_tree *tip = irs_gl.nodes_id[i];
+        const char *str = make_node_text_nds(gb_main,tip->gb_node,no_compress,tip->get_gbt_tree());
+        int len = irs_gl.device->get_string_size(tip->gr.gc,str,0);
+        int x = 0;
+        int y = irs_gl.nodes_ypos[i]+ irs_gl.font_height_2;
+        if (draw_at_tips) {
+            x = x_offset + irs_gl.nodes_xpos[i];
+        }else{
+            irs_gl.device->text(tip->gr.gc,str,x,irs_gl.nodes_ypos[i],0,-1,(AW_CL)tip,0);
+        }
+        if (x + len > maxx) maxx = x+len;
+        irs_gl.device->text(tip->gr.gc,str, x, y,0.0,-1, (AW_CL)tip,0);
     }
     return maxx;
 }
@@ -286,12 +289,12 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     irs_gl.x_scale = 600.0 / at->gr.tree_depth;
     irs_gl.is_size_device = 0;
     if (irs_gl.device->type() == AW_DEVICE_SIZE){
-	irs_gl.is_size_device = 1;
+        irs_gl.is_size_device = 1;
     }
 
     this->paint_sub_tree(at,0,AWT_IRS_NORMAL_TREE );
     if (irs_gl.is_size_device){
-	irs_gl.device->invisible(0,irs_gl.min_x,irs_gl.y + (irs_gl.min_y-y) + 200,-1,0,0);
+        irs_gl.device->invisible(0,irs_gl.min_x,irs_gl.y + (irs_gl.min_y-y) + 200,-1,0,0);
     }
     device->pop_clip_scale();
 }
