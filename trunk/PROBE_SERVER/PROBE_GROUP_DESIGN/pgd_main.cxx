@@ -16,6 +16,7 @@
 #include "../global_defs.h"
 #include "../common.h"
 #include "../mapping.h"
+#include "../path_code.h"
 
 #define MINTEMPERATURE 30.0
 #define MAXTEMPERATURE 100.0
@@ -66,7 +67,7 @@ struct gl_struct {
 static bool  server_initialized  = false;
 static char *current_server_name = 0;
 
-static GB_HASH *path2subtree        = 0;
+static GB_HASH *path2subtree        = 0; // uses encoded paths
 static long     no_of_subtrees      = 0;
 static int      max_subtree_pathlen = 0;
 static char    *pathbuffer          = 0;
@@ -263,49 +264,71 @@ static GB_ERROR scanArguments(int argc,char *argv[]){
 static GB_ERROR pgd_add_species(int len, set<SpeciesName> *species) {
     // uses the global buffer 'pathbuffer'
 
-    GBDATA *pd_subtree = (GBDATA*)GBS_read_hash(path2subtree, pathbuffer);
-
-    if (pd_subtree) {
-        pathbuffer[len]   = 'L';
-        pathbuffer[len+1] = 0;
-
-        if (pgd_add_species(len+1, species)) {
-            // error occurred -> we are a leaf
-            pathbuffer[len] = 0;
-
-            GBDATA *gb_member = GB_find(pd_subtree, "member", 0, down_level);
-            if (!gb_member) {
-                return GBS_global_string("'member' expected in '%s'", pathbuffer);
-            }
-
-            const string& name = PM_ID2name(GB_read_int(gb_member));
-            species->insert(name.c_str());
-            return 0; // ok
+    GB_ERROR  error = 0;
+    GBDATA   *pd_subtree;
+    {
+        const char *encoded_path = encodePath(pathbuffer, len, error);
+        if (!error) {
+            pd_subtree = (GBDATA*)GBS_read_hash(path2subtree, encoded_path);
         }
-
-        pathbuffer[len]   = 'R';
-        pathbuffer[len+1] = 0;
-
-        return pgd_add_species(len+1, species);
     }
 
-    return GBS_global_string("illegal path '%s'", pathbuffer);
+    if (!error) {
+        if (pd_subtree) {
+            pathbuffer[len]   = 'L';
+            pathbuffer[len+1] = 0;
+
+            if (pgd_add_species(len+1, species)) {
+                // error occurred -> we are a leaf
+                pathbuffer[len] = 0;
+
+                GBDATA *gb_member = GB_find(pd_subtree, "member", 0, down_level);
+                if (!gb_member) {
+                    return GBS_global_string("'member' expected in '%s'", pathbuffer);
+                }
+
+                const string& name = PM_ID2name(GB_read_int(gb_member));
+                species->insert(name.c_str());
+            }
+            else { // inner node
+                pathbuffer[len]   = 'R';
+                pathbuffer[len+1] = 0;
+
+                error = pgd_add_species(len+1, species);
+            }
+        }
+        else {
+            error = GBS_global_string("illegal path '%s'", pathbuffer);
+        }
+    }
+
+    return error;
 }
 
 static GB_ERROR pgd_init_species(GBDATA *pd_probe_group, set<SpeciesName> *species) {
-    GBDATA *pd_subtreepath = GB_find(pd_probe_group, "subtreepath", 0, down_level);
+    GB_ERROR  error       = 0;
+    GBDATA   *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
 
-    if (pd_subtreepath) {       // the probe group belongs to a subtree
-        const char *path = GB_read_char_pntr(pd_subtreepath);
-        int         len  = GB_read_count(pd_subtreepath);
-
-        memcpy(pathbuffer, path, len+1);
-        return pgd_add_species(len, species);
+    if (!pd_group_id) {
+        error = "entry 'id' expected";
+    }
+    else {
+        const char *group_id = GB_read_char_pntr(pd_group_id);
+        if (group_id[0] == 'p') { // probe group hits a subtree
+            // here group_id is 'pxxx' where xxx is the encoded path
+            const char *decoded_path = decodePath(group_id+1, error);
+            if (!error) {
+                int len = strlen(decoded_path);
+                memcpy(pathbuffer, decoded_path, len+1);
+                error   = pgd_add_species(len, species);
+            }
+        }
+        else {
+            error = "subtree-independant probe groups not implemented yet!";
+        }
     }
 
-    // probe group does not belong to subtree
-
-    return "subtree-independant probe groups not implemented yet!";
+    return error;
 }
 
 static char *pgd_get_the_names(set<SpeciesName> *species,bytestring &bs,bytestring &checksum){
@@ -753,24 +776,26 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group) {
             }
 
             if (!error) {
-                // if this is a subtree-group -> update number of found probes
-                GBDATA *pd_subtreepath = GB_find(pd_probe_group, "subtreepath", 0, down_level);
-                if (pd_subtreepath) {
-                    const char *path       = GB_read_char_pntr(pd_subtreepath);
-                    GBDATA     *pd_subtree = (GBDATA*)GBS_read_hash(path2subtree, path);
+                GBDATA *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
+                if (pd_group_id) {
+                    const char *group_id     = GB_read_char_pntr(pd_group_id);
+                    if (group_id[0] == 'p') { // if this is a subtree-group -> update number of found probes
+                        const char *encoded_path = group_id+1;
+                        GBDATA     *pd_subtree   = (GBDATA*)GBS_read_hash(path2subtree, encoded_path);
 
-                    if (pd_subtree) {
-                        GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
-                        if (!both_count) {
-                            if (pd_exact) error = GB_delete(pd_exact);
+                        if (pd_subtree) {
+                            GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+                            if (!both_count) {
+                                if (pd_exact) error = GB_delete(pd_exact);
+                            }
+                            else {
+                                if (!pd_exact) pd_exact = GB_create(pd_subtree, "exact", GB_INT);
+                                if (!error) error       = GB_write_int(pd_exact, both_count);
+                            }
                         }
                         else {
-                            if (!pd_exact) pd_exact = GB_create(pd_subtree, "exact", GB_INT);
-                            if (!error) error       = GB_write_int(pd_exact, both_count);
+                            error = GBS_global_string("couldn't update number of exact matches (subtree '%s' not found)", encoded_path);
                         }
-                    }
-                    else {
-                        error = GBS_global_string("couldn't update number of exact matches (subtree '%s' not found)", path);
                     }
                 }
             }
@@ -928,13 +953,16 @@ static GB_ERROR saveTreefile() {
                 error = "no 'path' in 'subtree'";
             }
             else {
-                const char *path = GB_read_char_pntr(pd_path);
-                GBT_TREE   *node = PGD_find_subtree_by_path(tree, path);
-                if (!node) {
-                    error = GBS_global_string("cannot find node '%s'", path);
-                }
-                else {
-                    error = setNodeInfo(pd_subtree, node);
+                const char *path         = GB_read_char_pntr(pd_path);
+                const char *decoded_path = decodePath(path, error);
+                if (!error) {
+                    GBT_TREE *node = PGD_find_subtree_by_path(tree, decoded_path);
+                    if (!node) {
+                        error = GBS_global_string("cannot find node '%s'", decoded_path);
+                    }
+                    else {
+                        error = setNodeInfo(pd_subtree, node);
+                    }
                 }
             }
         }
@@ -970,7 +998,10 @@ int main(int argc,char *argv[]) {
     GB_ERROR error    = scanArguments(argc, argv); // Check and init Parameters
     if (!error) error = openDatabases();
     if (!error) error = PM_initSpeciesMaps(pd_main);
-    if (!error) error = designProbes();
+    if (!error) {
+        initDecodeTable();
+        error = designProbes();
+    }
     if (!error) error = saveTreefile();
     if (!error) {
         error = setDatabaseState(pd_main, "probe_group_design_db", "complete"); // adjust database type
