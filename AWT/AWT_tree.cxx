@@ -1121,25 +1121,52 @@ const char *AP_tree::save(char  *tree_name)
 
 GB_ERROR AP_tree::move_group_info(AP_tree *new_group){
     GB_ERROR error = 0;
-    if (!this->name) {
-        return GB_export_error("Please select a valid group");
+    if (is_leaf || !name) {
+        error = GB_export_error("Please select a valid group");
     }
-    if (!this->gb_node){
-        return GB_export_error("Internal Error: group with name but no database");
+    else if (!gb_node){
+        error = GB_export_error("Internal Error: group with name is missing DB-entry");
+    }
+    else if (new_group->is_leaf) {
+        if (new_group->name) {
+            error = GB_export_error("'%s' is not a valid target for group information of '%s'.", new_group->name, name);
+        }
+        else if (new_group->gb_node) {
+            error = GB_export_error("Internal Error: Target node already has a database entry (but no name)");
+        }        
     }
 
-    if (new_group->gb_node && new_group->name) {
-        return GB_export_error("You cannot move a group onto a group '%s'", new_group->name);
+    if (!error) {
+        if (new_group->name) {
+            if (!new_group->gb_node) {
+                error = GB_export_error("Internal Error: Target node has a database entry (but no name)");
+            }
+            else { /* exchange two group infos */
+                GBDATA *tmp_node   = new_group->gb_node;
+                char   *tmp_name   = new_group->name;
+                new_group->gb_node = gb_node;
+                new_group->name    = name;
+                name               = tmp_name;
+                gb_node            = tmp_node;
+            }
+        }
+        else { /* move group info */
+            new_group->gb_node = this->gb_node;
+            new_group->name    = this->name;
+            this->name         = 0;
+            this->gb_node      = 0;
+        }
+
+        this->load_node_info();
+        new_group->load_node_info();
+
+        {
+            GBDATA *gb_group_name;
+            gb_group_name = GB_find(new_group->gb_node, "group_name", 0, down_level);
+            if (gb_group_name) GB_touch(gb_group_name); // force taxonomy reload
+        }
     }
-    if (new_group->gb_node) error = GB_delete(new_group->gb_node);
-    if (error) return error;
-    new_group->gb_node = this->gb_node;
-    new_group->name = this->name;
-    this->name = 0;
-    this->gb_node = 0;
-    this->load_node_info();
-    new_group->load_node_info();
-    return 0;
+    return error;
 }
 
 void AP_tree::update(  )
