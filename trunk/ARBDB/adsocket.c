@@ -545,6 +545,13 @@ int GB_is_regularfile(const char *path){
     return 0;
 }
 
+int GB_is_directory(const char *path){
+    struct stat stt;
+    if (stat(path, &stt)) return 0;
+    if (S_ISDIR(stt.st_mode)) return 1;
+    return 0;
+}
+
 
 long GB_getuid(){
     return getuid();
