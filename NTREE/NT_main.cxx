@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-// #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -19,12 +18,13 @@
 #include <awt.hxx>
 #include <awti_import.hxx>
 
-#include "ntree.hxx"
-#include "nt_cb.hxx"
 #include <mg_merge.hxx>
 #include <seer.hxx>
-#include <nt_concatenate.hxx>
 
+#include "nt_concatenate.hxx"
+#include "ntree.hxx"
+#include "nt_cb.hxx"
+#include "nt_date.h"
 
 AW_HEADER_MAIN
 
@@ -391,11 +391,17 @@ int main(int argc, char **argv)
     if (argc>=2) {
         start_db_browser = false;
 
-        if (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0) {
+        if (strcmp(argv[1], "--help")==0 ||
+            strcmp(argv[1], "-help")==0 ||
+            strcmp(argv[1], "-h")==0)
+        {
             fprintf(stderr,
                     "\n"
-                    "arb_ntree commandline reference:\n"
-                    "--------------------------------\n"
+                    "arb_ntree version " DATE "\n"
+                    "(C) 1993-" DATE_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
+                    "http://www.arb-home.de/\n"
+                    "\n"
+                    "Known command line arguments:\n"
                     "\n"
                     "db.arb             => start ARB_NTREE with database db.arb\n"
                     ":                  => start ARB_NTREE and connect to existing db_server\n"
@@ -422,53 +428,68 @@ int main(int argc, char **argv)
         }
 
         db_server = argv[1];
-        if (GBT_check_arb_file(db_server)) {
-            int answer = -1;
+        if (GB_ERROR load_file_err = GBT_check_arb_file(db_server)) {
+            int   answer    = -1;
             char *full_path = AWT_unfold_path(db_server);
+
+            printf("load_file_err='%s'\n", load_file_err);
+
             if (AWT_is_dir(full_path)) answer = 2; // autoselect browser
 
             if (answer == -1) {
-                char msg[1024];
-                sprintf(msg,"Your file is not an original arb file\n%s", GB_get_error());
-                answer = aw_message(msg, "Continue (dangerous),Start Converter,Browser,Exit");
+                if (!AWT_is_file(full_path)) {
+                    const char *msg = GBS_global_string("'%s' is neither a known option nor a legal file- or directory-name.\n(Error: %s)",
+                                                        full_path, load_file_err);
+                    answer          = aw_message(msg, "Browser,Exit");
+
+                    switch (answer) { // map answer to codes used by aw_message below
+                        case 0: answer = 2; break; // Browse
+                        case 1: answer = 3; break; // Exit
+                        default : nt_assert(0);
+                    }
+                }
+                else {
+                    const char *msg = GBS_global_string("Your file is not an original arb file\n(%s)", load_file_err);
+                    answer          = aw_message(msg, "Continue (dangerous),Start Converter,Browser,Exit");
+                }
             }
 
             switch (answer) {
-            case 0: {        // Continue
-                break;
-            }
-            case 1: {        // Start converter
-                aw_root->awar_int(AWAR_READ_GENOM_DB, 2);
-                gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
-                aw_root->main_loop();
-                break;
-            }
-            case 2: {        // Browse
-                char *dir = GB_strdup(full_path);
-                while (dir && !AWT_is_dir(dir)) {
-                    char *updir = AWT_extract_directory(dir);
+                case 0: {        // Continue
+                    break;
+                }
+                case 1: {        // Start converter
+                    aw_root->awar_int(AWAR_READ_GENOM_DB, 2);
+                    gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
+                    aw_root->main_loop();
+                    break;
+                }
+                case 2: {        // Browse
+                    char *dir = GB_strdup(full_path);
+                    while (dir && !AWT_is_dir(dir)) {
+                        char *updir = AWT_extract_directory(dir);
+                        free(dir);
+                        dir         = updir;
+                    }
+
+                    if (dir) {
+                        nt_assert(AWT_is_dir(dir));
+
+                        free(browser_startdir);
+                        browser_startdir = dir;
+                        dir              = 0;
+                        start_db_browser = true;
+                    }
                     free(dir);
-                    dir         = updir;
+                    break;
                 }
-
-                if (dir) {
-                    nt_assert(AWT_is_dir(dir));
-
-                    free(browser_startdir);
-                    browser_startdir = dir;
-                    dir              = 0;
-                    start_db_browser = true;
+                case 3: {        // Exit
+                    abort = true;
+                    break;
                 }
-                free(dir);
-                break;
-            }
-            case 3: {        // Exit
-                abort = true;
-                break;
-            }
-            default: {
-                break;
-            }
+                default: {
+                    break;
+                }
             }
             free(full_path);
         }
