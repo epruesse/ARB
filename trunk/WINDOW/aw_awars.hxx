@@ -32,6 +32,8 @@
 #define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
 #define AWAR_ITARGET_STRING       "nt/itarget_string"
 
+#define AWAR_SAI_COLOR_STR       "tmp/sai_color_str" //to visualize SAIs in probe Match window
+
 /* local awars for edit and edit4: */
 
 #define AWAR_SPECIES_NAME_LOCAL    "tmp/edit/species_name" /* string: name of selected species */

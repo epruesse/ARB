@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
+#include <iostream.h>
 // #include <malloc.h>
 
 #include <arbdb.h>
@@ -12,6 +13,7 @@
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
+#include <aw_awars.hxx>
 
 #define _USE_AW_WINDOW
 #include <BI_helix.hxx>

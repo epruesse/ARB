@@ -26,6 +26,9 @@
 #include <servercntrl.h>
 #include <probe_design.hxx>
 
+// for visualization of SAIs and Probes
+#include "SaiProbeVisualization.hxx"
+
 #include <awt_canvas.hxx>
 
 #ifdef DEVEL_IDP
@@ -71,6 +74,8 @@ void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is 
 #define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
 
 // ----------------------------------------
+
+saiProbeData *g_spd = 0;
 
 extern GBDATA *gb_main;     /* must exist */
 
@@ -237,6 +242,8 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GBDATA *gb_gene;
     GBDATA *gb_name;
     GBDATA  *gb_data;
+<<<<<<< probe_design.cxx
+=======
     GBDATA *gene_pos_begin_ptr;
     GBDATA *gene_pos_end_ptr;
 //     GBDATA *gb_data_temp;
@@ -244,6 +251,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     char *ali_genom;
     int pos_begin,pos_end;
 
+>>>>>>> 1.37
     long    len;
 
     void *names = GBS_stropen(1024);
@@ -254,6 +262,14 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
     len = 0;
     for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
+<<<<<<< probe_design.cxx
+      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+    gb_name = GB_find(gb_gene, "name", 0, down_level);
+    if (!gb_name) continue;
+    GBS_strcat(names, GB_read_char_pntr(gb_name));
+    GBS_chrcat(checksums, '#');
+    GBS_chrcat(names, '#');
+=======
       for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
 	gb_name = GB_find(gb_gene, "name", 0, down_level);
 	if (!gb_name) continue;
@@ -276,6 +292,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 	GBS_strcat(names, GB_read_char_pntr(gb_name));
 	GBS_chrcat(checksums, '#');
 	GBS_chrcat(names, '#');
+>>>>>>> 1.37
       }
     }
     bs.data = GBS_strclose(names, 0);
@@ -367,11 +384,11 @@ void probe_design_event(AW_window *aww)
 #ifdef DEVEL_IDP
       int flag = root->awar("probe_design/gene")->read_int();
       if(flag) {//Wenn toggle gesetzt
-	error = pd_get_the_gene_names(bs,check);
+    error = pd_get_the_gene_names(bs,check);
       }
       else {
 #endif
-	error = pd_get_the_names(bs,check);
+    error = pd_get_the_names(bs,check);
 #ifdef DEVEL_IDP
       }
 #endif
@@ -669,9 +686,16 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         return;
     }
 
+    char *matchName;
+    char *tmpMatchInfo;
+    char *tmpProbe;
+    g_spd = new saiProbeData; //saibaba
+
     if (selection_id) {
         sprintf(result, "Searched for                                     %s",probe);
         aww->insert_selection( selection_id, result, probe );
+        tmpProbe = strdup((const char *) probe);
+        g_spd->probeTarget = tmpProbe;
     }
     free(probe);
 
@@ -689,12 +713,18 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             {
                 GB_write_flag(gb_species,0);
 #ifdef DEVEL_IDP
+<<<<<<< probe_design.cxx
+        for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+          GB_write_flag(gb_gene,0);
+        }
+=======
 		for (gb_gene = GEN_first_marked_gene(GEN_get_gene_data(gb_species));
                      gb_gene;
                      gb_gene = GEN_next_marked_gene(gb_gene))
                 {
 		  GB_write_flag(gb_gene,0);
 		}
+>>>>>>> 1.37
 #endif
             }
         }
@@ -741,14 +771,25 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (hinfo) {
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
 #ifdef DEVEL_IDP
-	if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
+    if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
 #endif
     }
 
+    g_spd->probeSpecies.clear(); //saibaba
+    g_spd->probeSeq.clear();
+
     while (hinfo && (match_name = strtok(0,toksep)) ) {
         match_info = strtok(0,toksep);
-	if (!match_info) break;
+    if (!match_info) break;
 #ifdef DEVEL_IDP
+<<<<<<< probe_design.cxx
+    if (gene_flag) {
+      temp_gene_str = new char[strlen(match_info)+1];
+      strcpy(temp_gene_str,match_info);
+      gene_str = strtok_r(temp_gene_str," ",ptrptr);
+      gene_str = strtok_r(NULL," ",ptrptr);
+    }
+=======
 	if (gene_flag) {
 	  temp_gene_str = new char[strlen(match_info)+1];
 	  strcpy(temp_gene_str,match_info);
@@ -757,8 +798,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 	  gene_str = strtok_r(temp_gene_str," ",&ptrptr);
 	  gene_str = strtok_r(NULL," ",&ptrptr);
 	}
+>>>>>>> 1.37
 #endif
-	char flag  = 'x';
+    char flag  = 'x';
         if (gb_main){
             gb_species = GBT_find_species_rel_species_data(gb_species_data,match_name);
 
@@ -766,15 +808,22 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 if (mark) {
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
+<<<<<<< probe_design.cxx
+            if (gene_flag) {
+              gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
+              GB_write_flag(gb_gene,1);
+            }
+=======
 		    if (gene_flag) {
 		      if (strcmp(gene_str,"intron")) {
 			gb_gene = GEN_find_gene(gb_species,gene_str);
 			GB_write_flag(gb_gene,1);
 		      }
 		    }
+>>>>>>> 1.37
 #endif
-		    flag = '*';
-		}
+            flag = '*';
+        }
                 else {
                     flag = GB_read_flag(gb_species) ? '*' : ' ';
                 }
@@ -803,20 +852,32 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         sprintf(result, "%c %s", flag, match_info);
 
 #ifdef DEVEL_IDP
-	if (gene_flag) {
-	  gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
-	  sprintf(gene_match_name,"%s/%s",match_name,gene_str);
-	  if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
-	}
-	else {
+    if (gene_flag) {
+      gene_match_name = new char[strlen(match_name) + strlen(gene_str)+2];
+      sprintf(gene_match_name,"%s/%s",match_name,gene_str);
+      if (selection_id) aww->insert_selection( selection_id, result, gene_match_name ); // @@@ wert fuer awar eintragen
+    }
+    else {
 #endif
-	  if (selection_id) aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+      if (selection_id)  aww->insert_selection( selection_id, result, match_name ); // @@@ wert fuer awar eintragen
+
+      if(selection_id) {  //storing probe data into linked lists
+          tmpMatchInfo = strdup((const char*) match_info);
+          g_spd->probeSeq.push_back(tmpMatchInfo);
+
+          matchName = strdup((const char*) match_name);
+          g_spd->probeSpecies.push_back(matchName);
+      }
+      
 #ifdef DEVEL_IDP
-	}
+    }
 #endif
 
         mcount++;
     }
+
+    if (g_spd)  transferProbeData(root,g_spd);               // to update probe list in sai probe match window
+    root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //????
 
     if (counter) *counter = mcount;
 
@@ -830,7 +891,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         if (show_status) aw_status("Formatting output");
         aww->update_selection_list( selection_id );
     }
-
+    
     if (show_status) aw_closestatus();
     return;
 }
@@ -914,6 +975,12 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
+static void probeListChanged_cb(AW_root *root) {
+    if(g_spd) {
+        transferProbeData(root,g_spd); //transferring probe data to saiProbeMatch function
+    }
+}
+
 void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
 {
     char buffer[256]; memset(buffer,0,256);
@@ -923,6 +990,8 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_string( AWAR_PD_SELECTED_MATCH, "" , db1)->add_callback(selected_match_changed_cb);
     root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
     root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
+
+    root->awar_string( AWAR_PROBE_LIST, "" , global)->add_callback(probeListChanged_cb);; //saibaba
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -991,6 +1060,12 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
     root->awar_int( AWAR_PROBE_ADMIN_PT_SERVER, 0  ,    db1);
+    root->awar_string(AWAR_SAI_2_PROBE, "", global); // probe and sai visualization
+    //    root->awar_string(AWAR_SAI_COLOR_STR, "", global);
+
+//     for (int i=0;i<10;i++){   // initialising 10 color definition string AWARS
+//        AW_awar *def_awar = root->awar_string(getAwarName(i),"",global);
+//      }
 }
 /*
 AW_window *create_fig( AW_root *root, char *file)  {
@@ -1387,6 +1462,18 @@ AW_window *create_IUPAC_resolve_window(AW_root *root) {
     return aws;
 }
 
+void *matchSaiProbe(AW_window *aw) {  
+    AW_root *awr = aw->get_root();
+    static AW_window *awExists = 0;
+
+    if (!awExists) {
+        awExists = createSaiProbeMatchWindow(awr);
+    }
+    if(g_spd) transferProbeData(awr,g_spd); //transferring probe data to saiProbeMatch function
+
+    awExists->show();
+}
+
 AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     AW_window_simple *aws = new AW_window_simple;
     AWUSE(def);
@@ -1414,9 +1501,13 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->at("print");
     aws->create_button("PRINT","PRINT","P");
 
+    aws->at("matchSai");     
+    aws->callback((void(*)(AW_window*))matchSaiProbe);
+    aws->create_button("MATCH_SAI","Match SAI","S");
+
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
     aws->at("expert");
-    aws->create_button("EXPERT","EXPERT","S");
+    aws->create_button("EXPERT","EXPERT","X");
 
     aws->at( "pt_server" );
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
@@ -1497,7 +1588,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
     long max = 1000;
     long i;
     if (!kill_all) min = max = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    if (!aw_message("Are you shure to kill a server","YES,CANCEL")){
+    if (!aw_message("Are you sure to kill a server","YES,CANCEL")){
         aw_openstatus("Kill a server");
         GB_ERROR error;
         for (i= min ; i <=max ; i++) {
@@ -1590,22 +1681,22 @@ void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
 
         aw_status("Exporting the database");
 #ifdef DEVEL_IDP
-	if (server_type == 1) {
-	  error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
-	}
-	else {
+    if (server_type == 1) {
+      error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
+    }
+    else {
 #endif
         error = GB_save_as(gb_main,file,"bfm"); // save PT-server database with Fastload file
 #ifdef DEVEL_IDP
-	}
+    }
 #endif
 
         if (!error) { // set pt-server database file to same permissions as pts directory
 #ifdef DEVEL_IDP
-	  if (server_type == 1 ) {
-	    sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
-	    system(command);
-	  }
+      if (server_type == 1 ) {
+        sprintf(command,"$ARBHOME/bin/gene_probe %s %s", tempfile, file);
+        system(command);
+      }
 #endif
 
             char *dir = strrchr(file,'/');
@@ -1678,9 +1769,9 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
 
 #ifdef DEVEL_IDP
-    aws->at( "export_gene" );
+    aws->at( "idp" );
     aws->callback(pd_export_pt_server, 1);
-    aws->create_button("update_genesrv","Update GeneSrv");
+    aws->create_button("idp","IDP");
 #endif
 
     return aws;

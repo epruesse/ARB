@@ -1583,6 +1583,28 @@ int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_st
     return AW_sort_backward ? -cmp : cmp;
 }
 
+AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList){
+
+    if (destinationList) clear_selection_list(destinationList);
+    else { 
+        printf(" Destination list not initialised!!\n");  
+        return 0; 
+    }
+
+    const char *readListItem = sourceList->first_element();
+
+    while (readListItem) {
+        insert_selection(destinationList,readListItem,readListItem);
+        readListItem = sourceList->next_element();
+    }
+
+    insert_default_selection(destinationList,"END of List", "");
+    update_selection_list(destinationList);
+
+    return destinationList;
+}
+
+
 void AW_window::sort_selection_list( AW_selection_list * selection_list, int backward) {
 
     AW_select_table_struct *list_table;
