@@ -158,6 +158,7 @@ GB_TYPES GB_read_type P_((GBDATA *gbd));
 char *GB_read_key P_((GBDATA *gbd));
 GB_CSTR GB_read_key_pntr P_((GBDATA *gbd));
 GBQUARK GB_key_2_quark P_((GBDATA *gbd, const char *s));
+GBQUARK GB_get_quark P_((GBDATA *gbd));
 long GB_read_clock P_((GBDATA *gbd));
 long GB_read_transaction P_((GBDATA *gbd));
 GBDATA *GB_get_father P_((GBDATA *gbd));
@@ -236,7 +237,6 @@ GBDATA *GB_follow_link P_((GBDATA *gb_link));
 GB_ERROR GB_install_link_follower P_((GBDATA *gb_main, const char *link_type, GB_Link_Follower link_follower));
 
 /* adsocket.c */
-void GB_usleep P_((long usec));
 void GB_usleep P_((long usec));
 void GB_usleep P_((long usec));
 GB_ULONG GB_time_of_file P_((const char *path));
