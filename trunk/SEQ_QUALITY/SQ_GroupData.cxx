@@ -1,3 +1,17 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_GroupData.cxx                                       //
+//    Purpose   : Classes to store global information about sequences    //
+//    Time-stamp: <Sat Jan/20/2004 11:59 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
 #include <cstdio>
 #include <cctype>
 #include "SQ_GroupData.h"
@@ -6,80 +20,307 @@ using namespace std;
 
 
 SQ_GroupData::SQ_GroupData() {
-    size        = 0;
-    avg_bases   = 0;
-    initialized = false;
+    size         = 0;
+    avg_bases    = 0;
+    nr_sequences = 0;
+    initialized  = false;
 }
 
 
 SQ_GroupData::~SQ_GroupData() { }
 
 
-double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {
-    bool sema = false;
-    double result    = 0;
-    double div       = 0;
-    int temp         = 1;
-    int base_counter = 0;
-    int current      = 0;
+double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
+    double deviation = 0;
+    double value     = 0;
+    int current[7];
 
-    //printf(" %i",size);
+    for (int i = 0; i < 7; i++) {
+	current[i] = 0;
+    }
+
     for (int i = 0; i < size; i++ ){
-	current = 0;
-	div     = 0;
-	sema    = false;
-        switch(toupper(sequence[i])) {
+	//fill up current with decoded iupac values
+	switch(toupper(sequence[i])) {
             case 'A':
-                current = consensus[i].i[0];
-		sema=true;
-		base_counter++;
+                current[0] = current[0] + 100;
                 break;
             case 'T':
-                current = consensus[i].i[1];
-		sema=true;
-		base_counter++;
+		current[1] = current[1] + 100;
                 break;
             case 'C':
-                current = consensus[i].i[2];
-		sema=true;
-		base_counter++;
+		current[2] = current[2] + 100;
                 break;
             case 'G':
-                current = consensus[i].i[3];
-		sema=true;
-		base_counter++;
+		current[3] = current[3] + 100;
                 break;
             case 'U':
-                current = consensus[i].i[4];
-		sema=true;
-		base_counter++;
+		current[4] = current[4] + 100;
                 break;
-        }
-	if (sema==true){
-	    temp=0;
-	    for (int j = 0; j < 5; j++) {
-		temp = temp + consensus[i].i[j];
+            case 'R':
+		current[0] = current[0] + 50;
+		current[3] = current[3] + 50;
+                break;
+            case 'Y':
+		current[2] = current[2] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'M':
+		current[0] = current[0] + 50;
+		current[2] = current[2] + 50;
+                break;
+            case 'K':
+		current[3] = current[3] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'W':
+		current[0] = current[0] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'S':
+		current[3] = current[3] + 50;
+		current[2] = current[2] + 50;
+                break;
+            case 'B':
+		current[2] = current[2] + 25;
+		current[1] = current[1] + 25;
+		current[3] = current[3] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'D':
+		current[0] = current[0] + 25;
+		current[1] = current[1] + 25;
+		current[3] = current[3] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'H':
+		current[2] = current[2] + 25;
+		current[1] = current[1] + 25;
+		current[0] = current[0] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'V':
+		current[0] = current[0] + 33;
+		current[2] = current[2] + 33;
+		current[3] = current[3] + 33;
+                break;
+            case 'N':
+		current[2] = current[2] + 20;
+		current[1] = current[1] + 20;
+		current[0] = current[0] + 20;
+		current[3] = current[3] + 20;
+		current[4] = current[4] + 20;
+                break;
+            case '.':
+		current[5] = current[5] + 1;
+                break;
+            case '-':
+		current[6] = current[6] + 1;
+                break;
+            default :
+                seq_assert(0); // unhandled character
+                break;
+
+	}//end fill up current
+
+	for (int j = 0; j < 7; j++) {
+	    consensus[i].i[j] -= current[j];  //subtract actual value from consensus
+	    if (consensus[i].i[j] <= 0 && !(current[j]<=0)) {
+		deviation += current[j];
 	    }
-	    if (temp !=0) {
-	        div = current / temp;
-	    }
-	    else {
-	        div = 0;
-	    }
+	    consensus[i].i[j] += current[j];  //restore consensus
 	}
-	result = result + div;
-	//printf(" %f",result);
+
     }
-    if(base_counter!=0){
-	result = result / base_counter;
-	//printf(" %i",base_counter);
-    }
-    else{
-	result=0;
-    }
-    //printf(" %f",result);
-    return result;
+    deviation = (10000*size) / deviation;  //set deviation in relation to sequencelength and percent
+    return deviation;
 }
+
+
+double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) {
+    double conformity = 0;
+    double value = 0;
+    int sum = 0;
+    int current[7];
+
+    for (int i = 0; i < 7; i++) {
+	current[i] = 0;
+    }
+
+    for (int i = 0; i < size; i++ ){
+	//fill up current with decoded iupac values
+	switch(toupper(sequence[i])) {
+            case 'A':
+                current[0] = current[0] + 100;
+                break;
+            case 'T':
+		current[1] = current[1] + 100;
+                break;
+            case 'C':
+		current[2] = current[2] + 100;
+                break;
+            case 'G':
+		current[3] = current[3] + 100;
+                break;
+            case 'U':
+		current[4] = current[4] + 100;
+                break;
+            case 'R':
+		current[0] = current[0] + 50;
+		current[3] = current[3] + 50;
+                break;
+            case 'Y':
+		current[2] = current[2] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'M':
+		current[0] = current[0] + 50;
+		current[2] = current[2] + 50;
+                break;
+            case 'K':
+		current[3] = current[3] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'W':
+		current[0] = current[0] + 33;
+		current[1] = current[1] + 33;
+		current[4] = current[4] + 33;
+                break;
+            case 'S':
+		current[3] = current[3] + 50;
+		current[2] = current[2] + 50;
+                break;
+            case 'B':
+		current[2] = current[2] + 25;
+		current[1] = current[1] + 25;
+		current[3] = current[3] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'D':
+		current[0] = current[0] + 25;
+		current[1] = current[1] + 25;
+		current[3] = current[3] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'H':
+		current[2] = current[2] + 25;
+		current[1] = current[1] + 25;
+		current[0] = current[0] + 25;
+		current[4] = current[4] + 25;
+                break;
+            case 'V':
+		current[0] = current[0] + 33;
+		current[2] = current[2] + 33;
+		current[3] = current[3] + 33;
+                break;
+            case 'N':
+		current[2] = current[2] + 20;
+		current[1] = current[1] + 20;
+		current[0] = current[0] + 20;
+		current[3] = current[3] + 20;
+		current[4] = current[4] + 20;
+                break;
+            case '.':
+		current[5] = current[5] + 1;
+                break;
+            case '-':
+		current[6] = current[6] + 1;
+                break;
+            default :
+                seq_assert(0); // unhandled character
+                break;
+
+	}//end fill up current
+
+	for (int j = 0; j < 7; j++) {
+	    consensus[i].i[j] -= current[j];  //subtract actual value from consensus
+	    sum += consensus[i].i[j];
+	    if (consensus[i].i[j] > 0 && !(current[j]>0)) {
+		conformity += consensus[i].i[j];
+	    }
+	    consensus[i].i[j] += current[j];  //restore consensus
+	    if (conformity !=0) {
+		value += sum / conformity;
+	    }
+	    sum = 0;
+	    conformity = 0;
+	}
+
+    }
+    value = value / size;  //set conformity in relation to sequencelength
+    return value;
+}
+
+
+// double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
+//     bool sema = false;
+//     double result    = 0;
+//     double div       = 0;
+//     int temp         = 1;
+//     int base_counter = 0;
+//     int current      = 0;
+
+//     for (int i = 0; i < size; i++ ){
+// 	current = 0;
+// 	div     = 0;
+// 	sema    = false;
+//         switch(toupper(sequence[i])) {
+//             case 'A':
+//                 current = consensus[i].i[0];
+// 		sema=true;
+// 		base_counter++;
+//                 break;
+//             case 'T':
+//                 current = consensus[i].i[1];
+// 		sema=true;
+// 		base_counter++;
+//                 break;
+//             case 'C':
+//                 current = consensus[i].i[2];
+// 		sema=true;
+// 		base_counter++;
+//                 break;
+//             case 'G':
+//                 current = consensus[i].i[3];
+// 		sema=true;
+// 		base_counter++;
+//                 break;
+//             case 'U':
+//                 current = consensus[i].i[4];
+// 		sema=true;
+// 		base_counter++;
+//                 break;
+//         }
+//   	if (sema==true){
+// 	    temp=0;
+// 	    for (int j = 0; j < 5; j++) {
+// 		temp = temp + consensus[i].i[j];
+// 	    }
+// 	    if (temp !=0) {
+// 	        div = current / temp;
+// 	    }
+// 	    else {
+// 	        div = 0;
+// 	    }
+// 	}
+// 	result = result + div;
+// 	//printf(" %f",result);
+//     }
+//     if(base_counter!=0){
+// 	result = result / base_counter;
+// 	//printf(" %i",base_counter);
+//     }
+//     else{
+// 	result=0;
+//     }
+//     //printf(" %f",result);
+//     return result;
+// }
 
 
 void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
@@ -173,10 +414,13 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 }
 
 
-double SQ_GroupData_PRO::SQ_test_against_consensus(const char *sequence) {
+double SQ_GroupData_PRO::SQ_calc_consensus_deviation(const char *sequence) {
 #warning implementation missing
 }
 
+double SQ_GroupData_PRO::SQ_calc_consensus_conformity(const char *sequence) {
+#warning implementation missing
+}
 
 void SQ_GroupData_PRO::SQ_add_sequence(const char *sequence) {
 #warning implementation missing

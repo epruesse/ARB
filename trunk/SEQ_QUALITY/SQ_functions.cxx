@@ -5,7 +5,7 @@
 //    Time-stamp: <Tue Dec/16/2003 09:18 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - January 2003                        //
+//  Coded by Juergen Huber in July 2003 - February 2004                  //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -285,11 +285,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 
-
     char *alignment_name;
-
-    int avg_bases           = 0;
-    int worked_on_sequences = 0;
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
@@ -325,7 +321,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 
 	    /*real calculations start here*/
 	    if (read_sequence) {
-		    int i = 0;
 		    int sequenceLength = 0;
 		    const char *rawSequence = 0;
 
@@ -336,9 +331,10 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 		    /*calculate physical layout of sequence*/
 		    SQ_physical_layout* ps_chan = new SQ_physical_layout();
 		    ps_chan->SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
-		    i = ps_chan->SQ_get_number_of_bases();
-		    avg_bases = avg_bases + i;
-		    worked_on_sequences++;
+
+		    /*calculate the average number of bases in group*/
+		    globalData->SQ_count_sequences();
+		    globalData->SQ_set_avg_bases(ps_chan->SQ_get_number_of_bases());
 		    delete ps_chan;
 
 		    /*get values for  ambiguities*/
@@ -364,11 +360,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 	    }
     }
 
-    /*calculate the average number of bases in group*/
-    if (worked_on_sequences != 0) {
-	avg_bases = avg_bases / worked_on_sequences;
-    }
-    globalData->SQ_set_avg_bases(avg_bases);
     free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
@@ -539,17 +530,16 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
 		    bases = GB_read_int(gb_result1);
 		    avg_bases = globalData->SQ_get_avg_bases();
+		    //printf("\n%i avg :",avg_bases);
 
 		    if (avg_bases !=0) {
-			diff = avg_bases - bases;
+			diff = bases - avg_bases;
 			diff_percent = (100*diff) / avg_bases;
 		    }
 
 		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
-
-		    //value = globalData->SQ_test_against_consensus(rawSequence);
 
 
 		    /* get groupnames of visited groups
@@ -562,7 +552,9 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			    SQ_GroupDataDictionary::iterator GDI = group_dict.find(backup->name);
 			    if( GDI != group_dict.end() ) {
 			        SQ_GroupDataPtr GD_ptr = GDI->second;
-				value = GD_ptr->SQ_test_against_consensus(rawSequence);
+				value = GD_ptr->SQ_calc_consensus_conformity(rawSequence);
+				value = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
+				//printf("\n%f dev :",value);
 			    }
 			}
 			backup = backup->father;
@@ -656,7 +648,7 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
 		    //not useful without tree -> new function has to be made
-		    value = globalData->SQ_test_against_consensus(rawSequence);
+		    value = globalData->SQ_calc_consensus_deviation(rawSequence);
 		    pass2_counter_notree++;
 		    aw_status(double(globalcounter_notree)/pass2_counter_notree);
 		}
@@ -767,19 +759,12 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 	GBT_TREE *node1 = node->leftson;
 	GBT_TREE *node2 = node->rightson;
 
-	//	if (node1) {
-	//	    SQ_GroupData *leftData  = data->clone();
 	SQ_calc_and_apply_group_data(node1, gb_main, data); //Note: data is not used yet!
-	//	data->SQ_add(*leftData);
-	//	    delete leftData;
-	    //	}
-	    //	if (node2) {
 	SQ_GroupData *rightData = data->clone();
 	SQ_calc_and_apply_group_data(node2, gb_main, rightData);
 	data->SQ_add(*rightData);
-	    delete rightData;
+	delete rightData;
 
-	    //	}
 	if (node->name) {        //  group identified
 	    create_multi_level_consensus(node, data);
 	    globalcounter++;
