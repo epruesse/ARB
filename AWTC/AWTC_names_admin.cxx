@@ -11,7 +11,7 @@ void awtc_delete_names_file(AW_window *aws){
 	AWUSE(aws);
 	char *path = GBS_eval_env(NAMES_FILE_LOCATION);
 	char *newpath = GBS_string_eval(path,"*=*%",0);
-	GB_ERROR error = GB_rename(path,newpath);
+	GB_ERROR error = GB_rename_file(path,newpath);
 	if (error) aw_message(error);
 	delete path;
 	delete newpath;

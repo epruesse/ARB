@@ -487,7 +487,7 @@ extern "C" int server_save(AN_main *main, int dummy)
             error = save_AN_main(aisc_main,file);
             fclose(file);
             if (!error) {
-                if (GB_rename(sec_name,aisc_main->server_file)) {
+                if (GB_rename_file(sec_name,aisc_main->server_file)) {
                     GB_print_error();
                     fprintf(stderr,"ERROR cannot rename file %s %s\n",
                             sec_name,aisc_main->server_file);
