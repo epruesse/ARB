@@ -127,13 +127,19 @@ class Client
     {
         ProbeList list = display.getProbeList();
         list.removeAll();
+        
+        // String testAnswer = Toolkit.askUser("Online-Warnung", "Sonden vom Server holen?", "Ja,Nein,Egal");
+        // System.out.println("testAnswer='"+testAnswer+"'");
+
         list.add("retrieving probes..");
 
         String emptyMessage = null;
         try {
-            lastNode = clickedNode;
+            lastNode                = clickedNode;
             boolean    exactMatches = clickedNode.getExactMatches() > 0;
             NodeProbes probes       = clickedNode.getNodeProbes(exactMatches);
+
+            // Toolkit.clickOK("Nachricht", "Die Sonden wurden geholt");
 
             list.setContents(probes);
 
@@ -313,10 +319,19 @@ class Client
                                            "Please get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
                 }
                 if (!Toolkit.client_version.equals(cl.webAccess.getAvailableClientVersion())) {
-                    MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice",
-                                                            "A newer version of this client is available from\n"+
-                                                            cl.baseurl+"arb_probe_library.jar");
-                    while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+                    String whatToDo = Toolkit.askUser("Notice", "A newer version of this client is available", "Ignore,Exit");
+
+                    if (whatToDo.equals("Download")) {
+                        Toolkit.AbortWithError("download not implemented yet.");                        
+                    }
+                    if (whatToDo.equals("Exit")) {                        
+                        System.exit(1);
+                    }
+
+                    //                     MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice",
+                    //                                                             "A newer version of this client is available from\n"+
+                    //                                                             cl.baseurl+"arb_probe_library.jar");
+                    //                     while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 }
                 else {
                     Toolkit.showMessage("Your client is up to date.");
@@ -337,15 +352,19 @@ class Client
             }
             catch (ClientException e) {
                 Toolkit.showError(e.getMessage());
-                MessageDialog popup = new MessageDialog(cl.getDisplay(), e.get_kind(), e.get_plain_message());
-                while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+                Toolkit.clickButton(e.get_kind(), e.get_plain_message(), "Exit");
+
+                // MessageDialog popup = new MessageDialog(cl.getDisplay(), e.get_kind(), e.get_plain_message());
+                // while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+
                 System.exit(e.get_exitcode());
             }
             catch (Exception e) {
                 Toolkit.showError(e.getMessage());
                 e.printStackTrace();
-                MessageDialog popup = new MessageDialog(cl.getDisplay(), "Uncaught exception", e.getMessage());
-                while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+                Toolkit.clickButton("Uncaught exception", e.getMessage(), "Exit");
+                // MessageDialog popup = new MessageDialog(cl.getDisplay(), "Uncaught exception", e.getMessage());
+                // while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 System.exit(3);
             }
         }
