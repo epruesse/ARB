@@ -167,21 +167,40 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           size_t                  columns,
                                           size_t                  visible_rows,
                                           AW_BOOL                 popup_list_in_window        = false,
-                                          AW_BOOL                 add_all_fields_pseudo_field = false);
+                                          AW_BOOL                 add_all_fields_pseudo_field = false,
+                                          AW_BOOL                 include_hidden_fields       = false
+                                          );
 /* show fields of a species / extended / gene !!!
    type filter is a bitstring which controls what types are shown in
    the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
    ints and strings */
 
+enum awt_rescan_mode {
+    AWT_RS_SCAN_UNKNOWN_FIELDS  = 1, // scan database for unknown fields and add them
+    AWT_RS_DELETE_UNUSED_FIELDS = 2, // delete all unused fields
+    AWT_RS_SHOW_ALL             = 4, // unhide all hidden fields
 
-void awt_selection_list_rescan_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter); /* rescan it */
+    AWT_RS_UPDATE_FIELDS  = AWT_RS_SCAN_UNKNOWN_FIELDS|AWT_RS_DELETE_UNUSED_FIELDS
+} ;
 
-void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
+void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode); /* rescan it */
+void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
+void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
 
-void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
+void awt_selection_list_scan_unknown_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void awt_selection_list_delete_unused_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void awt_selection_list_unhide_all_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+void awt_selection_list_update_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
+
+void awt_gene_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_gene_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+
+void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
 
 GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
 /*	type == GB_TYPES
