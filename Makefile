@@ -457,6 +457,9 @@ endif
 GCC_VERSION_FOUND=$(shell $(GCC) --version | head -1)
 GCC_VERSION_ALLOWED=$(strip $(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring $(version),$(GCC_VERSION_FOUND))))
 
+check_same_GCC_VERSION:
+		$(ARBHOME)/SOURCE_TOOLS/check_same_gcc_version.pl $(GCC_VERSION_ALLOWED)
+
 check_GCC_VERSION:
 		@echo 'GCC version check:'
 		@echo "  - Your version is '$(GCC_VERSION_FOUND)'"
@@ -471,6 +474,7 @@ ifeq ('$(GCC_VERSION_ALLOWED)', '')
 else
 		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
+		$(MAKE) check_same_GCC_VERSION
 endif
 
 #---------------------- check ARBHOME
@@ -1311,6 +1315,7 @@ clean:	rmbak
 	rm -f NTREE/nt_date.h
 	$(MAKE) -C HELP_SOURCE clean
 	$(MAKE) -C GDEHELP clean
+	rm *.last_gcc
 
 realclean: clean
 	rm -f AISC/aisc
