@@ -227,8 +227,8 @@ float *PH_filter::calculate_column_homology(void){
         }
     }
 
-    // calculate homology
-    aw_status("Calculate homology");
+    // calculate similarity
+    aw_status("Calculate similarity");
     for(i=0;i<len;i++){
         if (aw_status(i/(double)len)) return 0;
         if(chars_counted[i][num_all_chars]==0)  // else: forget whole column
