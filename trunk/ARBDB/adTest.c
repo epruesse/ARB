@@ -205,9 +205,15 @@ void GB_dump_db_path(GBDATA *gbd) {
 void GB_dump(GBDATA *gbd) {
     int         type      = GB_TYPE(gbd);
     const char *type_name = GB_get_type_name(gbd);
-    static int  indent;
+    const char *key_name  = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
     const char *content   = 0;
 
+    static int indent;
+
+    if (indent == 0) {
+        printf("\nGB_dump of '%s':\n", GB_get_db_path(gbd));
+    }
+    
     switch (type) {
         case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
         case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
@@ -222,9 +228,9 @@ void GB_dump(GBDATA *gbd) {
         default:        { content = ""; break; }
     }
 
-    if (content==0) content = "<unknown>";
-    /*for (i=0; i<indent; ++i) printf(" ");*/
-    printf("%*s gbd=%p type=%s content='%s'\n", indent, "", gbd, type_name, content);
+    if (content==0) content = "<not examined>";
+
+    printf("%*s %-15s gbd=%p type=%s content='%s'\n", indent, "", key_name, gbd, type_name, content);
 
     if (type==GB_DB) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
@@ -243,9 +249,11 @@ char *GB_ralfs_test(GBDATA *gb_main)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
+    GB_push_my_security(gb_main);
     system("date");
     gb_create_dictionaries(Main,10000000);
     system("date");
+    GB_pop_my_security(gb_main);
     GB_pop_transaction(gb_main);
 
     return NULL;
