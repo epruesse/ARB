@@ -56,20 +56,10 @@ void create_multi_level_consensus(GBT_TREE *node, SQ_GroupData *data);
 int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
 
 int SQ_get_value(GBDATA *gb_main, const char *option);
-    /*
-      "option" is variable which is passed to function "SQ_get_value()".
-      SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
-      Right now the options you have are:
-
-      number_of_bases
-      number_of_spaces
-      number_of_dots
-      percent_of_bases
-      percent_of_spaces
-      percent_of_dots
-      diff_from_average
-      value_of_evaluation
-    */
+/*
+  "option" is variable which is passed to function "SQ_get_value()".
+  SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
+*/
 
 struct SQ_weights {
     int bases;

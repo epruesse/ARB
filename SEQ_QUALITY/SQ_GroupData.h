@@ -36,7 +36,7 @@ public:
     virtual SQ_GroupData *clone() const                             = 0;
 
     void         SQ_set_avg_bases(int bases) { avg_bases += bases; }
-    int          SQ_get_avg_bases() const { return (avg_bases/nr_sequences); } //probleme mit no tree?
+    int          SQ_get_avg_bases() const { return (avg_bases/nr_sequences); }
     void         SQ_set_avg_gc(double gc) { gc_prop += gc; }
     double       SQ_get_avg_gc() const { return (gc_prop/nr_sequences); }
     void         SQ_count_sequences() { nr_sequences++; }
@@ -183,8 +183,8 @@ void SQ_GroupData_Impl<I>::SQ_add(const SQ_GroupData& other_base) {
         consensus[i] += other.consensus[i];
     }
     nr_sequences+=other.nr_sequences;
-    avg_bases+=other.avg_bases;//????????
-    gc_prop += other.gc_prop;//???????????
+    avg_bases+=other.avg_bases;
+    gc_prop += other.gc_prop;
 }
 
 template <int I>
