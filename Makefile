@@ -315,7 +315,7 @@ dummy:
 		@echo 'Development targets:'
 		@echo ''
 		@echo ' depend      - create dependencies               (recommended for people not using our CVS)'
-		@echo ' XXX/.depend - create dependencies in dir XXX    (recommended for ARB developers)'
+		@echo ' XXX/.depend - create dependencies for dir XXX   (recommended for ARB developers)'
 		@echo ' tags        - create tags for xemacs'
 		@echo ' rmbak       - remove all "*%" and cores'
 		@echo ''
