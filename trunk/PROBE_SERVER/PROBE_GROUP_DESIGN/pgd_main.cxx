@@ -17,28 +17,33 @@
 #include "../common.h"
 #include "../mapping.h"
 #include "../path_code.h"
+#include "../read_config.h"
 
-#define MINTEMPERATURE 30.0
-#define MAXTEMPERATURE 100.0
-#define MINGC          50.0
-#define MAXGC          100.0
-#define MAXBOND        4.0
-#define MINPOSITION    0
-#define MAXPOSITION    10000
+// #define MINTEMPERATURE 30.0
+// #define MAXTEMPERATURE 100.0
+// #define MINGC          50.0
+// #define MAXGC          100.0
+// #define MAXBOND        4.0
+// #define MINPOSITION    0
+// #define MAXPOSITION    10000
 #define MISHIT         0
 #define MINTARGETS     100
-#define DTEDGE         0.5
-#define DT             0.5
-#define SPLIT          0.5
-#define CLIPRESULT     40       //??? length of output
+// #define DTEDGE         0.5
+// #define DT             0.5
+// #define SPLIT          0.5
+#define CLIPRESULT     40       // max. number of probes returned by pt-server
+
+// ----------------------------------------
 
 typedef string SpeciesName;
 typedef string Probes;
-
-static GBDATA *gb_main = 0;            //ARB-database
-static GBDATA *pd_main = 0;            //probe-design-database
-
 typedef enum { TF_NONE, TF_CREATE } Treefile_Action;
+
+struct gl_struct {
+    aisc_com  *link;
+    T_PT_LOCS  locs;
+    T_PT_MAIN  com;
+};
 
 struct InputParameter {
     string          db_name;
@@ -50,18 +55,17 @@ struct InputParameter {
     string          versionumber;
 };
 
-static InputParameter para;
+// ----------------------------------------
+// module globals
 
-static float bondval[16]={0.0,0.0,0.5,1.1,
-                   0.0,0.0,1.5,0.0,
-                   0.5,1.5,0.4,0.9,
-                   1.1,0.0,0.9,0.0};
+static GBDATA            *gb_main = 0; //ARB-database
+static GBDATA            *pd_main = 0; //probe-design-database
+static InputParameter     para;
 
-struct gl_struct {
-    aisc_com  *link;
-    T_PT_LOCS  locs;
-    T_PT_MAIN  com;
-};
+// static float bondval[16]={0.0,0.0,0.5,1.1,
+//                    0.0,0.0,1.5,0.0,
+//                    0.5,1.5,0.4,0.9,
+//                    1.1,0.0,0.9,0.0};
 
 
 static bool  server_initialized  = false;
@@ -72,7 +76,7 @@ static long     no_of_subtrees      = 0;
 static int      max_subtree_pathlen = 0;
 static char    *pathbuffer          = 0;
 
-
+// ----------------------------------------
 
 static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_subtrees) {
     GB_ERROR error = 0;
@@ -398,18 +402,23 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     return 0;
 }
 
-static int pgd_probe_design_send_data(){
-    if (aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                 PDC_DTEDGE,DTEDGE*100.0,
-                 PDC_DT,DT*100.0,
-                 PDC_SPLIT,SPLIT,
-                 PDC_CLIPRESULT,CLIPRESULT,
-                 0)) return 1;
+static int pgd_probe_design_send_data(const probe_config_data& probe_config) {
+    if (aisc_put(my_server->get_pd_gl().link,
+                 PT_PDC,            my_server->pdc,
+                 PDC_DTEDGE,        probe_config.dtedge*100.0,
+                 PDC_DT,            probe_config.dt*100.0,
+                 PDC_SPLIT,         probe_config.split,
+                 PDC_CLIPRESULT,    CLIPRESULT,
+                 0))
+        return 1;
+
     for (int i=0;i<16;i++) {
-        if (aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                     PT_INDEX,i,
-                     PDC_BONDVAL,bondval[i],
-                     0)) return 1;
+        if (aisc_put(my_server->get_pd_gl().link,
+                     PT_PDC,        my_server->pdc,
+                     PT_INDEX,      i,
+                     PDC_BONDVAL,   probe_config.bonds[i],
+                     0))
+            return 1;
     }
     return 0;
 }
@@ -696,7 +705,7 @@ class ConnectServer {
     GB_ERROR error;
 
 public:
-    ConnectServer() {
+    ConnectServer(const probe_config_data& probe_config) {
         PG_init_pt_server(gb_main,para.pt_server_name.c_str());
         my_server = new PT_server_connection();
         error     = my_server->get_error();
@@ -707,23 +716,27 @@ public:
         else {
             pt_server_initialized = true;
             //initialize parameters
-            aisc_create(my_server->get_pd_gl().link,PT_LOCS,my_server->get_pd_gl().locs,
-                        LOCS_PROBE_DESIGN_CONFIG,PT_PDC,&my_server->pdc,
-                        PDC_PROBELENGTH,para.pb_length,
-                        PDC_MINTEMP,MINTEMPERATURE,
-                        PDC_MAXTEMP,MAXTEMPERATURE,
-                        PDC_MINGC,MINGC/100.0,
-                        PDC_MAXGC,MAXGC/100.0,
-                        PDC_MAXBOND,MAXBOND,
+            aisc_create(my_server->get_pd_gl().link,
+                        PT_LOCS,                    my_server->get_pd_gl().locs,
+                        LOCS_PROBE_DESIGN_CONFIG,
+                        PT_PDC,                     &my_server->pdc,
+                        PDC_PROBELENGTH,            para.pb_length,
+                        PDC_MINTEMP,                probe_config.min_temperature,
+                        PDC_MAXTEMP,                probe_config.max_temperature,
+                        PDC_MINGC,                  probe_config.min_gccontent/100.0,
+                        PDC_MAXGC,                  probe_config.max_gccontent/100.0,
+                        PDC_MAXBOND,                double(probe_config.max_hairpin_bonds),
                         0);
-            aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                     PDC_MINPOS,MINPOSITION,
-                     PDC_MAXPOS,MAXPOSITION,
-                     PDC_MISHIT,MISHIT,
-                     PDC_MINTARGETS,MINTARGETS/100.0,
+
+            aisc_put(my_server->get_pd_gl().link,
+                     PT_PDC,            my_server->pdc,
+                     PDC_MINPOS,        double(probe_config.ecoli_min_pos),
+                     PDC_MAXPOS,        double(probe_config.ecoli_max_pos),
+                     PDC_MISHIT,        MISHIT,
+                     PDC_MINTARGETS,    MINTARGETS/100.0,
                      0);
 
-            if (pgd_probe_design_send_data()) {
+            if (pgd_probe_design_send_data(probe_config)) {
                 error        = "Connection to PT_SERVER lost (1)";
                 aisc_created = false;
             }
@@ -842,7 +855,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
     return error;
 }
 
-static GB_ERROR designProbes() {
+static GB_ERROR designProbes(const probe_config_data &probe_config) {
     GB_ERROR error = 0;
     GB_begin_transaction(pd_main);
 
@@ -872,7 +885,7 @@ static GB_ERROR designProbes() {
     }
 
     if (!error) {
-        ConnectServer connect;  // initialize pt-server connection
+        ConnectServer connect(probe_config);  // initialize pt-server connection
         error = connect.getError();
         if (!error) {
             printf("Designing probes for %li used probe groups:\n", probe_group_counter);
@@ -1033,12 +1046,19 @@ static GB_ERROR saveTreefile() {
 int main(int argc,char *argv[]) {
     printf("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram\n");
 
-    GB_ERROR error    = scanArguments(argc, argv); // Check and init Parameters
+    GB_ERROR          error = 0;
+    probe_config_data probe_config;
+    {
+        Config config("probe_parameters.conf", probe_config);
+        error = config.getError();
+    }
+
+    if (!error) error = scanArguments(argc, argv); // Check and init Parameters
     if (!error) error = openDatabases();
     if (!error) error = PM_initSpeciesMaps(pd_main);
     if (!error) {
         initDecodeTable();
-        error = designProbes();
+        error = designProbes(probe_config);
     }
     if (!error) error = saveTreefile();
     if (!error) {
