@@ -3,9 +3,6 @@
 #include <string.h>
 #include <sys/times.h>
 
-#ifndef __ALGORITHM__
-#include <algorithm>
-#endif
 #ifndef PS_DATABASE_HXX
 #include "ps_database.hxx"
 #endif
@@ -153,26 +150,29 @@ void PS_print_time_diff( const struct tms *_since ) {
 // common globals
 //
 
+bool                     __VERBOSE = false;
 SpeciesID                __MAX_ID;
 SpeciesID                __MIN_ID;
-unsigned long            __SPECIES_COUNT;
+SpeciesID                __SPECIES_COUNT;
+unsigned long            __BITS_IN_MAP;
 PS_BitMap_Counted       *__MAP;
 PS_BitMap_Counted       *__PRESET_MAP;
 IDSet                    __SOURCE_ID_SET;
 PS_BitSet::IndexSet      __TARGET_ID_SET;
 
 //
-// globals for PS_calc_next_sets
+// globals for PS_calc_next_speciesid_sets,
+//             PS_calc_next_speciesid_sets_for_candidate
 //
 
-//  count of trues for a source_id may be max 10%
+//  count of trues for a source_id may be max 5%
 //  (of the difference between __SPECIES_COUNT and the lowest
 //  count of trues per species) higher than the lowest count
 //  of trues for the species in __SOURCE_ID_SET
-#define __TRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET 10
-//  target_id must be at least in 90% of total target_id_sets
+#define __TRESHOLD_PERCENTAGE_NEXT_SOURCE_ID_SET  5
+//  target_id must be at least in 95% of total target_id_sets
 //  to be in __TARGET_ID_SET
-#define __TRESHOLD_PERCENTAGE_NEXT_TARGET_ID_SET 90
+#define __TRESHOLD_PERCENTAGE_NEXT_TARGET_ID_SET 95
 
 SpeciesID               __MIN_SETS_ID;
 SpeciesID               __MAX_SETS_ID;
@@ -195,6 +195,7 @@ float                   __TARGET_MAX_MATCH_COUNT;
 float                   __SOURCE_PERFECT_MATCH_COUNT;
 float                   __TARGET_PERFECT_MATCH_COUNT;
 unsigned long           __PROBES_COUNTER;
+unsigned long           __PROBES_REMOVED;
 PS_CandidatePtr         __CANDIDATES_ROOT;
 unsigned long           __CANDIDATES_COUNTER;
 unsigned long           __CANDIDATES_TODO;
@@ -215,38 +216,109 @@ char                   *__PATH_IN_CANDIDATES;
 
 
 //  ----------------------------------------------------
-//      void PS_test_candidate_on_bitmap()
+//      unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level,
+//                                                     PS_BitMap_Counted *_map )
 //  ----------------------------------------------------
 //  returns number of locations in __MAP that would be switched
 //  from false to true by __PATH
 //
-unsigned long int PS_test_candidate_on_bitmap() {
+unsigned long int PS_test_candidate_on_bitmap( float             *_filling_level = 0,
+                                               PS_BitMap_Counted *_map = 0 ) {
     // iterate over all IDs except path
     IDSetCIter path_iter    = __PATH.begin();
     SpeciesID  next_path_ID = *path_iter;
     unsigned long int gain  = 0;
-    for ( SpeciesID not_in_path_ID = __MIN_ID;
-          not_in_path_ID <= __MAX_ID;
-          ++not_in_path_ID) {
-        if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
-            ++path_iter;                        // advance to next path ID
-            next_path_ID = (path_iter == __PATH.end()) ? -1 : *path_iter;
-            continue;                           // skip this ID
+    if (_map) {
+        for ( SpeciesID not_in_path_ID = __MIN_ID;
+              not_in_path_ID <= __MAX_ID;
+              ++not_in_path_ID) {
+            if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
+                ++path_iter;                        // advance to next path ID
+                next_path_ID = (path_iter == __PATH.end()) ? -1 : *path_iter;
+                continue;                           // skip this ID
+            }
+            // iterate over path IDs
+            for ( IDSetCIter path_ID = __PATH.begin();
+                  path_ID != __PATH.end();
+                  ++path_ID) {
+                if (not_in_path_ID == *path_ID)
+                    continue;   // obviously a probe cant differ a species from itself
+                if (not_in_path_ID > *path_ID) {
+                    gain += (_map->get( not_in_path_ID, *path_ID ) == false);
+                } else {
+                    gain += (_map->get( *path_ID, not_in_path_ID ) == false);
+                }
+            }
         }
-        // iterate over path IDs
-        for ( IDSetCIter path_ID = __PATH.begin();
-              path_ID != __PATH.end();
-              ++path_ID) {
-            if (not_in_path_ID == *path_ID)
-                continue;   // obviously a probe cant differ a species from itself
-            if (not_in_path_ID > *path_ID) {
-                gain += (__MAP->get( not_in_path_ID, *path_ID ) == false);
-            } else {
-                gain += (__MAP->get( *path_ID, not_in_path_ID ) == false);
+    } else {
+        for ( SpeciesID not_in_path_ID = __MIN_ID;
+              not_in_path_ID <= __MAX_ID;
+              ++not_in_path_ID) {
+            if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
+                ++path_iter;                        // advance to next path ID
+                next_path_ID = (path_iter == __PATH.end()) ? -1 : *path_iter;
+                continue;                           // skip this ID
+            }
+            // iterate over path IDs
+            for ( IDSetCIter path_ID = __PATH.begin();
+                  path_ID != __PATH.end();
+                  ++path_ID) {
+                if (not_in_path_ID == *path_ID)
+                    continue;   // obviously a probe cant differ a species from itself
+                if (not_in_path_ID > *path_ID) {
+                    gain += (__MAP->get( not_in_path_ID, *path_ID ) == false);
+                } else {
+                    gain += (__MAP->get( *path_ID, not_in_path_ID ) == false);
+                }
             }
         }
     }
+    if (_filling_level) {
+        unsigned long int trues = (_map) ? _map->getCountOfTrues() + gain :  __MAP->getCountOfTrues() + gain;
+        *_filling_level = ((float)trues / __BITS_IN_MAP)*100.0;
+    }
     return gain;
+}
+
+
+//  ----------------------------------------------------
+//      bool PS_test_sets_on_path( float &_distance )
+//  ----------------------------------------------------
+//
+bool PS_test_sets_on_path( float &_distance ) {
+    long count_matched_source = 0;
+    long count_matched_target = 0;
+    SpeciesID  path_id;
+    IDSetCIter path_end   = __PATH.end();
+    IDSetCIter path       = __PATH.begin();
+    IDSetCIter source_end = __SOURCE_ID_SET.end();
+    IDSetCIter source     = __SOURCE_ID_SET.begin();
+    PS_BitSet::IndexSet::const_iterator target_end = __TARGET_ID_SET.end();
+    PS_BitSet::IndexSet::const_iterator target     = __TARGET_ID_SET.begin();
+
+    while (path != path_end) {
+        path_id = *path;
+        while ((*target < path_id) && (target != target_end)) {
+            ++target;
+        }
+        if ((target != target_end) && (*target == path_id))
+            ++count_matched_target;
+        while ((*source < path_id) && (source != source_end)) {
+            ++source;
+        }
+        if ((source != source_end) && (*source == path_id))
+            ++count_matched_source;
+        ++path;
+    }
+
+    if ((count_matched_source > __SOURCE_MIN_MATCH_COUNT) &&
+        (count_matched_source < __SOURCE_MAX_MATCH_COUNT) &&
+        (count_matched_target > __TARGET_MIN_MATCH_COUNT) &&
+        (count_matched_target < __TARGET_MAX_MATCH_COUNT)) {
+        _distance = fabs( __SOURCE_PERFECT_MATCH_COUNT - count_matched_source ) + fabs( __TARGET_PERFECT_MATCH_COUNT - count_matched_target );
+        return true;
+    }
+    return false;
 }
 
 
@@ -272,43 +344,30 @@ void PS_find_probe_for_sets( const PS_NodePtr      _ps_node,
     //
     if ((id >= __MIN_SETS_ID) && has_probes && !_candidate_parent->alreadyUsedNode(_ps_node)) {
         ++__PROBES_COUNTER;
+        if (__VERBOSE && (__PROBES_COUNTER % 100 == 0)) printf( "%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER ); fflush( stdout );
         // make intersections of __PATH with __SOURCE_ID_SET and __TARGET_ID_SET
-        IDSet matched_source_IDs;
-        IDSet matched_target_IDs;
-        set_intersection( __SOURCE_ID_SET.begin(), __SOURCE_ID_SET.end(),
-                          __PATH.begin(), __PATH.end(),
-                          inserter( matched_source_IDs, matched_source_IDs.begin() ) );
-        set_intersection( __TARGET_ID_SET.begin(), __TARGET_ID_SET.end(),
-                          __PATH.begin(), __PATH.end(),
-                          inserter( matched_target_IDs, matched_target_IDs.begin() ) );
-        long count_matched_source = matched_source_IDs.size();
-        long count_matched_target = matched_target_IDs.size();
-        if ((count_matched_source > __SOURCE_MIN_MATCH_COUNT) &&
-            (count_matched_source < __SOURCE_MAX_MATCH_COUNT) &&
-            (count_matched_target > __TARGET_MIN_MATCH_COUNT) &&
-            (count_matched_target < __TARGET_MAX_MATCH_COUNT)) {
-            if (!_candidate_parent->hasChild( _ps_node )) { // did i look at this probe yet ?
-                float distance_to_perfect_match = fabs( __SOURCE_PERFECT_MATCH_COUNT - count_matched_source ) + fabs( __TARGET_PERFECT_MATCH_COUNT - count_matched_target );
-                unsigned long gain = PS_test_candidate_on_bitmap();   // no -> calc gain and make new candidate node
-                int status = (gain < __SPECIES_COUNT / 100) ? 0 : _candidate_parent->addChild( distance_to_perfect_match, gain, _ps_node, __PATH );
-                if (status > 0) {
-                    if (status == 2) {
-//                         printf( " PS_find_probe_for_sets() : new candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
-//                                 count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
-//                                 count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
-//                                 distance_to_perfect_match,
-//                                 __PATH.size(), gain, &(*_ps_node) );
-                        ++__CANDIDATES_COUNTER;
-                    } else {
-//                         printf( " PS_find_probe_for_sets() : upd candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
-//                                 count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
-//                                 count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
-//                                 distance_to_perfect_match,
-//                                 __PATH.size(), gain, &(*_ps_node) );
-                    }
-                    fflush( stdout );
-                } // if status (of addChild)
-            } // if !hasChild
+        float distance_to_perfect_match;
+        if (PS_test_sets_on_path( distance_to_perfect_match )) {
+            unsigned long gain = PS_test_candidate_on_bitmap();   // no -> calc gain and make new candidate node
+            int status = (gain < (unsigned)__SPECIES_COUNT / 100) ? 0 : _candidate_parent->addChild( distance_to_perfect_match, gain, _ps_node, __PATH );
+            if (status > 0) {
+                if (status == 2) {
+//                     printf( " PS_find_probe_for_sets() : new candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
+//                             count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
+//                             count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
+//                             distance_to_perfect_match,
+//                             __PATH.size(), gain, &(*_ps_node) );
+                    ++__CANDIDATES_COUNTER;
+                    if (__VERBOSE) printf( "%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER ); fflush( stdout );
+//                } else {
+//                     printf( " PS_find_probe_for_sets() : upd candidate: count_matched_source (%li/%.0f) count_matched_target (%li/%.0f) distance (%4.0f) path (%i) gain (%li) node (%p)\n",
+//                             count_matched_source, __SOURCE_PERFECT_MATCH_COUNT,
+//                             count_matched_target, __TARGET_PERFECT_MATCH_COUNT,
+//                             distance_to_perfect_match,
+//                             __PATH.size(), gain, &(*_ps_node) );
+                }
+                fflush( stdout );
+            } // if status (of addChild)
         }
     }
 
@@ -368,10 +427,11 @@ void PS_find_probes( const PS_NodePtr      _root_node,
     PS_print_time_diff( &before );
     // reduce candidates to best,worst and middle gain
     _candidate_parent->reduceChildren( _filling_level );
-    for ( PS_CandidateMapCIter c = _candidate_parent->children.begin();
+    for ( PS_CandidateByGainMapCIter c = _candidate_parent->children.begin();
           c != _candidate_parent->children.end();
           ++c ) {
-        printf( "PS_find_probes(%i) : candidate (%p) gain (%li) distance (%.3f)\n", _round, &(*c->second->node), c->first, c->second->distance );
+        printf( "PS_find_probes(%i) : ", _round );
+        c->second->print();
         ++__CANDIDATES_TODO;
     }
     fflush( stdout );
@@ -391,6 +451,7 @@ void PS_calc_next_speciesid_sets() {
     SpeciesID highest_count;
     SpeciesID lowest_count;
     float     treshold;
+    SpeciesID count;
 
     // first pass -- get lowest count of trues and calc treshold
     lowest_count  = __SPECIES_COUNT;
@@ -398,7 +459,8 @@ void PS_calc_next_speciesid_sets() {
     for ( SpeciesID id = __MIN_ID;
           id <= __MAX_ID;
           ++id) {
-        SpeciesID count = __MAP->getCountFor( id );
+        count = __MAP->getCountFor( id );
+        if (count == __SPECIES_COUNT-__MIN_ID-1) continue; // i cannot improve species that can be differed from all others
         if (count > highest_count) highest_count = count;
         if (count < lowest_count)  lowest_count  = count;
     }
@@ -461,51 +523,82 @@ void PS_calc_next_speciesid_sets() {
 
 
 //  ----------------------------------------------------
-//      void PS_apply_path_to_bitmap( IDSet &_path, bool silent )
+//      void PS_apply_path_to_bitmap( IDSet             &_path,
+//                                    bool               _silent,
+//                                    PS_BitMap_Counted *_map )
 //  ----------------------------------------------------
 //  set true in __MAP for all combinations of IDs (in _path , not in _path)
 //
-void PS_apply_path_to_bitmap( IDSet &_path, bool silent = false ) {
+void PS_apply_path_to_bitmap( IDSet             &_path,
+                              const bool         _silent = false,
+                              PS_BitMap_Counted *_map = 0 ) {
     // iterate over all IDs except path
     IDSetCIter path_iter    = _path.begin();
     SpeciesID  next_path_ID = *path_iter;
     unsigned long int gain  = 0;
-    for ( SpeciesID not_in_path_ID = __MIN_ID;
-          not_in_path_ID <= __MAX_ID;
-          ++not_in_path_ID) {
-        if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
-            ++path_iter;                        // advance to next path ID
-            next_path_ID = (path_iter == _path.end()) ? -1 : *path_iter;
-            continue;                           // skip this ID
+    if (_map) { // called for a 'private' map ?
+        for ( SpeciesID not_in_path_ID = __MIN_ID;
+              not_in_path_ID <= __MAX_ID;
+              ++not_in_path_ID) {
+            if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
+                ++path_iter;                        // advance to next path ID
+                next_path_ID = (path_iter == _path.end()) ? -1 : *path_iter;
+                continue;                           // skip this ID
+            }
+            // iterate over path IDs
+            for ( IDSetCIter path_ID = _path.begin();
+                  path_ID != _path.end();
+                  ++path_ID) {
+                if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
+                if (not_in_path_ID > *path_ID) {
+                    gain += (_map->set( not_in_path_ID, *path_ID, true ) == false);
+                } else {
+                    gain += (_map->set( *path_ID, not_in_path_ID, true ) == false);
+                }
+            }
         }
-        // iterate over path IDs
-        for ( IDSetCIter path_ID = _path.begin();
-              path_ID != _path.end();
-              ++path_ID) {
-            if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
-            if (not_in_path_ID > *path_ID) {
-                gain += (__MAP->set( not_in_path_ID, *path_ID, true ) == false);
-            } else {
-                gain += (__MAP->set( *path_ID, not_in_path_ID, true ) == false);
+    } else { // called for __MAP
+        for ( SpeciesID not_in_path_ID = __MIN_ID;
+              not_in_path_ID <= __MAX_ID;
+              ++not_in_path_ID) {
+            if (not_in_path_ID == next_path_ID) {   // if i run into a ID in path
+                ++path_iter;                        // advance to next path ID
+                next_path_ID = (path_iter == _path.end()) ? -1 : *path_iter;
+                continue;                           // skip this ID
+            }
+            // iterate over path IDs
+            for ( IDSetCIter path_ID = _path.begin();
+                  path_ID != _path.end();
+                  ++path_ID) {
+                if (not_in_path_ID == *path_ID) continue;   // obviously a probe cant differ a species from itself
+                if (not_in_path_ID > *path_ID) {
+                    gain += (__MAP->set( not_in_path_ID, *path_ID, true ) == false);
+                } else {
+                    gain += (__MAP->set( *path_ID, not_in_path_ID, true ) == false);
+                }
             }
         }
     }
     unsigned long int sets =  (__SPECIES_COUNT-_path.size())*_path.size();
-    if (!silent) printf( "PS_apply_path_to_bitmap() : gain %lu of %lu -- %.2f%%  -> wasted %lu\n", gain, sets, ((float)gain/sets)*100.0, sets-gain );
+    if (!_silent) printf( "PS_apply_path_to_bitmap() : gain %lu of %lu -- %.2f%%  -> wasted %lu\n", gain, sets, ((float)gain/sets)*100.0, sets-gain );
     //__MAP->recalcCounters();
 }
 
 
 //  ----------------------------------------------------
-//      float PS_filling_level()
+//      float PS_filling_level( PS_CandidatePtr _candidate )
 //  ----------------------------------------------------
 //  returns filling level of __MAP
 //
-float PS_filling_level() {
-    unsigned long int all_bits   = ((__SPECIES_COUNT-1)*__SPECIES_COUNT)/2;
-    unsigned long int trues      = __MAP->getCountOfTrues();
-    float             percentage = ((float)trues / all_bits)*100.0;
-    printf( "PS_filling_level() : bitmap now has %lu trues and %lu falses -- %.2f%% filled\n", trues, all_bits-trues, percentage );
+float PS_filling_level( PS_CandidatePtr _candidate = 0 ) {
+    unsigned long trues      = __MAP->getCountOfTrues();
+    float         percentage = ((float)trues / __BITS_IN_MAP)*100.0;
+    if (_candidate) {
+        _candidate->filling_level = percentage;
+        _candidate->false_IDs     = __BITS_IN_MAP - trues;
+    } else {
+        printf( "PS_filling_level() : bitmap (%lu) now has %lu trues and %lu falses -- %.5f%% filled\n", __BITS_IN_MAP, trues, __BITS_IN_MAP-trues, percentage );
+    }
     return percentage;
 }
 
@@ -649,7 +742,7 @@ void PS_descend(       PS_CandidatePtr _candidate_parent,
     // descend down each (of the max 3) candidate(s)
     //
     char count = '0'+_candidate_parent->children.size();
-    for ( PS_CandidateMapRIter next_candidate_it = _candidate_parent->children.rbegin();
+    for ( PS_CandidateByGainMapRIter next_candidate_it = _candidate_parent->children.rbegin();
           next_candidate_it != _candidate_parent->children.rend();
           ++next_candidate_it, --count ) {
         PS_CandidatePtr next_candidate = &(*next_candidate_it->second);
@@ -657,13 +750,16 @@ void PS_descend(       PS_CandidatePtr _candidate_parent,
         //
         // apply candidate to __MAP
         //
+        printf( "[%p] ", next_candidate );
         PS_apply_path_to_bitmap( next_candidate->path );
-        next_candidate->filling_level = PS_filling_level();
-        next_candidate->depth         = _depth+1;
+        printf( "[%p] ", next_candidate );
+        PS_filling_level( next_candidate );
+        next_candidate->depth = _depth+1;
+        next_candidate->print( 0,false,false );
         //
         // step down
         //
-        if ((next_candidate->filling_level < 98.0) && (_depth+1 < __MAX_DEPTH)) {
+        if ((next_candidate->filling_level < 75.0) && (_depth+1 < __MAX_DEPTH)) {
             __PATH_IN_CANDIDATES[ _depth ] = count;
             __PATH_IN_CANDIDATES[ _depth+1 ] = '\x00';
             PS_descend( next_candidate, _root_node, _depth+1, next_candidate->filling_level );
@@ -685,24 +781,373 @@ void PS_descend(       PS_CandidatePtr _candidate_parent,
 }
 
 
+
 //  ----------------------------------------------------
-//      void PS_search_best_candidate( PS_CandidatePtr  _candidate_parent,
-//                                     PS_CandidatePtr &_best_candidate )
+//      void PS_make_map_for_candidate( PS_CandidatePtr _candidate )
 //  ----------------------------------------------------
+//  make __MAP for _candidate
 //
-void PS_search_best_candidate( PS_CandidatePtr  _candidate_parent,
-                               PS_CandidatePtr &_best_candidate ) {
-    for ( PS_CandidateMapRIter next_candidate_it = _candidate_parent->children.rbegin();
-          next_candidate_it != _candidate_parent->children.rend();
-          ++next_candidate_it ) {
-        PS_CandidatePtr next_candidate = &(*next_candidate_it->second);
-        if (next_candidate->filling_level > _best_candidate->filling_level) {
-            _best_candidate = next_candidate;
-        }
-        PS_search_best_candidate( next_candidate, _best_candidate );
+void PS_make_map_for_candidate( PS_CandidatePtr _candidate ) {
+    if (_candidate->map) return; // if candidate already has its map return
+    _candidate->map = new PS_BitMap_Counted( false, __MAX_ID+1 );
+    _candidate->map->copy( __PRESET_MAP );
+    PS_apply_path_to_bitmap( _candidate->path, true, _candidate->map ); // apply _candidate's path
+    PS_CandidatePtr parent = _candidate->parent;
+    while ((parent != 0) && (parent->path.size() > 0)) {        // apply parent's paths
+        PS_apply_path_to_bitmap( parent->path, true, _candidate->map );
+        parent = parent->parent;
     }
 }
 
+//  ----------------------------------------------------
+//      void PS_calc_next_speciesid_sets_for_candidate( PS_CandidatePtr _candidate )
+//  ----------------------------------------------------
+//  make __MAP for _candidate and search for best source/target-sets
+//
+// void PS_calc_next_speciesid_sets_for_candidate( PS_CandidatePtr _candidate ) {
+//     //
+//     // 1. __MAP for _candidate
+//     //
+//     PS_make_map_for_candidate( _candidate );
+//     //
+//     // 2. __SOURCE_ID_SET
+//     //    scan bitmap for species that need more matches
+//     //
+//     SpeciesID highest_count;
+//     SpeciesID lowest_count;
+//     SpeciesID count;
+
+//     // first pass -- get lowest/highest count of trues
+//     lowest_count  = __SPECIES_COUNT;
+//     highest_count = 0;
+//     for ( SpeciesID id = __MIN_ID;
+//           id <= __MAX_ID;
+//           ++id) {
+//         count = _candidate->map->getCountFor( id );
+//         if (count == __SPECIES_COUNT-__MIN_ID-1) continue; // i cannot improve species that can be differed from all others
+//         if (count < lowest_count)  lowest_count  = count;
+//         if (count > highest_count) highest_count = count;
+//     }
+//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : SOURCE count 1's [%i..%i]\n", lowest_count, highest_count ); 
+
+//     // second pass -- get IDs where count is equal to lowest_count or highest_count
+//     IDSet highest_count_src_ids;
+//     IDSet lowest_count_src_ids;
+//     for ( SpeciesID id = __MIN_ID;
+//           id <= __MAX_ID;
+//           ++id) {
+//         count = _candidate->map->getCountFor( id );
+//         if (count == lowest_count) lowest_count_src_ids.insert( id );
+//         if (count == highest_count) highest_count_src_ids.insert( id );
+//     }
+//     if (_candidate->source_set) {
+//         _candidate->source_set->clear();
+//         _candidate->source_set->insert( lowest_count_src_ids.begin(), lowest_count_src_ids.end() );
+//     } else {
+//         _candidate->source_set = new IDSet( lowest_count_src_ids );
+//     }
+//     _candidate->source_set->insert( highest_count_src_ids.begin(), highest_count_src_ids.end() );
+//     //PS_print_set_ranges( "   lowest_count_src_ids", lowest_count_src_ids  );
+//     //PS_print_set_ranges( "  highest_count_src_ids", highest_count_src_ids  );
+//     if (*(_candidate->source_set->begin())  < __MIN_SETS_ID) __MIN_SETS_ID = *(_candidate->source_set->begin());
+//     if (*(_candidate->source_set->rbegin()) > __MAX_SETS_ID) __MAX_SETS_ID = *(_candidate->source_set->rbegin());
+
+//     //
+//     // 3. __TARGET_ID_SET
+//     //    scan bitmap for species IDs that need to be distinguished from MOST species in lowest_count_src_ids
+//     //
+//     ID2IDMap count_falses_per_id;
+
+//     // first -- get the IDs that need differentiation from __SOURCE_ID_SET
+//     for ( IDSetCIter source_id = lowest_count_src_ids.begin();
+//           source_id != lowest_count_src_ids.end();
+//           ++source_id ) {
+//         // get 'next_target_set'
+//         _candidate->map->getFalseIndicesFor( *source_id, __TARGET_ID_SET );
+//         // count falses per SpeciesID
+//         for ( PS_BitSet::IndexSet::iterator target_id = __TARGET_ID_SET.begin();
+//               target_id != __TARGET_ID_SET.end();
+//               ++target_id) {
+//             if ((*target_id < __MIN_ID) || (*target_id > __MAX_ID)) continue; // skip ID's that are outside DB-IDs-range (like zero if __MIN_ID is one)
+//             if (*target_id != *source_id) ++count_falses_per_id[ *target_id ];
+//         }
+//     }
+//     //printf( "\n" );
+//     //PS_print_map_ranges( "PS_calc_next_speciesid_sets_for_candidate() : count_falses_per_id", count_falses_per_id, false );
+
+//     // second -- get highest count of falses and calc treshold
+//     lowest_count  = __SPECIES_COUNT;
+//     highest_count = 0;
+//     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
+//           count_per_id != count_falses_per_id.end();
+//           ++count_per_id ) {
+//         if (count_per_id->second > highest_count) highest_count = count_per_id->second;
+//         if (count_per_id->second < lowest_count)  lowest_count  = count_per_id->second;
+//     }
+//     //printf( "PS_calc_next_speciesid_sets_for_candidate() : TARGET count 0's [%i..%i]\n", lowest_count, highest_count ); 
+
+//     // third -- put all IDs in __TARGET_ID_SET that are needed most by species from lowest_count_src_ids
+//     if (_candidate->target_set) {
+//         _candidate->target_set->clear();
+//     } else {
+//         _candidate->target_set = new IDSet();
+//     }
+//     __TARGET_ID_SET.clear();
+//     for ( ID2IDMapCIter count_per_id = count_falses_per_id.begin();
+//           count_per_id != count_falses_per_id.end();
+//           ++count_per_id ) {
+//         if (count_per_id->second == highest_count) __TARGET_ID_SET.insert( count_per_id->first );
+//     }
+//     //PS_print_set_ranges( " target_set (by lowest count of trues) ", __TARGET_ID_SET );
+//     _candidate->target_set->insert( __TARGET_ID_SET.begin(), __TARGET_ID_SET.end() );
+
+//     // fourth -- put all IDs in __TARGET_ID_SET that are needed by species from highest_count_src_ids
+//     PS_BitSet::IndexSet next_target_ids;
+//     __TARGET_ID_SET.clear();
+//     for ( IDSetCIter source_id = highest_count_src_ids.begin();
+//           source_id != highest_count_src_ids.end();
+//           ++source_id ) {
+//         // get next target-IDs
+//         _candidate->map->getFalseIndicesFor( *source_id, next_target_ids );
+//         // 'append' target-IDs
+//         for ( PS_BitSet::IndexSet::iterator target_id = next_target_ids.begin();
+//               target_id != next_target_ids.end();
+//               ++target_id) {
+//             if ((*target_id < __MIN_ID) || (*target_id > __MAX_ID)) continue; // skip ID's that are outside DB-IDs-range (like zero if __MIN_ID is one)
+//             if (*target_id != *source_id) __TARGET_ID_SET.insert( *target_id );
+//         }
+//     }
+//     //PS_print_set_ranges( " target_set (by highest count of trues)", __TARGET_ID_SET );
+//     _candidate->target_set->insert( __TARGET_ID_SET.begin(), __TARGET_ID_SET.end() );
+
+//     if (*(__TARGET_ID_SET.begin())  < __MIN_SETS_ID) __MIN_SETS_ID = *(__TARGET_ID_SET.begin());
+//     if (*(__TARGET_ID_SET.rbegin()) > __MAX_SETS_ID) __MAX_SETS_ID = *(__TARGET_ID_SET.rbegin());
+//     //printf( "\n" ); fflush( stdout );
+// }
+
+
+//  ----------------------------------------------------
+//      void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
+//                                   PS_CandidateSet &_leaf_candidates,
+//                                   const bool       _ignore_passes_left = false )
+//  ----------------------------------------------------
+//
+void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
+                             PS_CandidateSet &_leaf_candidates,
+                             const bool       _ignore_passes_left = false ) {
+
+    for ( PS_CandidateByGainMapIter next_candidate = _candidate_parent->children.begin();
+          next_candidate != _candidate_parent->children.end();
+          ++next_candidate ) {
+
+        if ((next_candidate->second->children.size() == 0) &&
+            ((next_candidate->second->passes_left > 0) || _ignore_passes_left)){
+            _leaf_candidates.insert( next_candidate->second );
+        }
+        PS_get_leaf_candidates( &(*next_candidate->second), _leaf_candidates, _ignore_passes_left );
+    }
+}
+
+
+//  ----------------------------------------------------
+//      bool PS_test_candidate_sets_on_path( PS_CandidatePtr _candidate )
+//  ----------------------------------------------------
+//
+// bool PS_test_candidate_sets_on_path( PS_CandidatePtr _candidate ) {
+//     int round = PS_Candidate::MAX_PASSES - _candidate->passes_left;
+//     __SOURCE_MIN_MATCH_COUNT = (_candidate->source_set->size() * (__MIN_PERCENTAGE_SET_MATCH - (round * 5))) / 100.0;
+//     __SOURCE_MAX_MATCH_COUNT = (_candidate->source_set->size() * (__MAX_PERCENTAGE_SET_MATCH + (round * 5))) / 100.0;
+//     __TARGET_MIN_MATCH_COUNT = (_candidate->target_set->size() * (__MIN_PERCENTAGE_SET_MATCH - (round * 5))) / 100.0;
+//     __TARGET_MAX_MATCH_COUNT = (_candidate->target_set->size() * (__MAX_PERCENTAGE_SET_MATCH + (round * 5))) / 100.0;
+//     long count_matched_source = 0;
+//     long count_matched_target = 0;
+//     SpeciesID  path_id;
+//     IDSetCIter path_end   = __PATH.end();
+//     IDSetCIter path       = __PATH.begin();
+//     IDSetCIter source_end = _candidate->source_set->end();
+//     IDSetCIter source     = _candidate->source_set->begin();
+//     IDSetCIter target_end = _candidate->target_set->end();
+//     IDSetCIter target     = _candidate->target_set->begin();
+
+//     while (path != path_end) {
+//         path_id = *path;
+//         while ((*target < path_id) && (target != target_end)) {
+//             ++target;
+//         }
+//         if ((target != target_end) && (*target == path_id))
+//             ++count_matched_target;
+//         while ((*source < path_id) && (source != source_end)) {
+//             ++source;
+//         }
+//         if ((source != source_end) && (*source == path_id))
+//             ++count_matched_source;
+//         ++path;
+//     }
+
+//     if ((count_matched_source > __SOURCE_MIN_MATCH_COUNT) &&
+//         (count_matched_source < __SOURCE_MAX_MATCH_COUNT) &&
+//         (count_matched_target > __TARGET_MIN_MATCH_COUNT) &&
+//         (count_matched_target < __TARGET_MAX_MATCH_COUNT)) {
+//         return true;
+//     }
+//     return false;
+// }
+
+//  ----------------------------------------------------
+//      void PS_get_next_candidates( const PS_NodePtr  _root_node,
+//                                   PS_CandidateSet  &_leaf_candidates )
+//  ----------------------------------------------------
+//  scan PS_node-tree for next candidates for each of _leaf_candidates
+//
+void PS_get_next_candidates_descend( PS_NodePtr       _ps_node,
+                                     PS_CandidateSet &_leaf_candidates ) {
+    SpeciesID id         = _ps_node->getNum();
+    bool      has_probes = _ps_node->hasProbes();
+
+    //
+    // append ID to path
+    //
+    __PATH.insert( id );
+    
+    //
+    // dont look at path until ID is greater than lowest ID in the sets of IDs
+    // also dont use a node if its already used as candidate
+    //
+    if ((id >= __MIN_SETS_ID) && has_probes) {
+        unsigned long total_gain_of_node   = 0;
+        unsigned long total_tests_per_node = 0;
+        ++__PROBES_COUNTER;
+        // iterate over _leaf_candidates
+        for ( PS_CandidateSetIter candidate_iter = _leaf_candidates.begin();
+              candidate_iter != _leaf_candidates.end();
+              ++candidate_iter ) {
+            PS_CandidateSPtr candidate = *candidate_iter;
+
+            // next leaf-candidate if the probe was already used for current candidate
+            if (candidate->alreadyUsedNode( _ps_node )) continue;
+
+            ++__CANDIDATES_COUNTER; // possible candidates
+            if (__VERBOSE) printf( "%8lup %8lur %8luc %8lug %8luu\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b",
+                                   __PROBES_COUNTER,
+                                   __PROBES_REMOVED,
+                                   __CANDIDATES_COUNTER,
+                                   __CANDIDATES_TODO,
+                                   __CANDIDATES_FINISHED ); fflush( stdout );
+
+            // next leaf-candidate if __PATH doesnt fulfill matching criteria
+            unsigned long matches = candidate->matchPathOnOneFalseIDs( __PATH );
+            if (matches < candidate->one_false_IDs_matches) continue;
+
+            ++__CANDIDATES_TODO; // good candidates
+            if (__VERBOSE) printf( "%8lup %8lur %8luc %8lug %8luu\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b",
+                                   __PROBES_COUNTER,
+                                   __PROBES_REMOVED,
+                                   __CANDIDATES_COUNTER,
+                                   __CANDIDATES_TODO,
+                                   __CANDIDATES_FINISHED ); fflush( stdout );
+
+            // test node on candidate's bitmap
+            float filling_level;
+            ++total_tests_per_node;
+            unsigned long gain = PS_test_candidate_on_bitmap( &filling_level, candidate->map );
+            total_gain_of_node += gain;
+            if (candidate->updateBestChild( gain, matches, filling_level, _ps_node, __PATH )) {
+                ++__CANDIDATES_FINISHED; // used candiates
+                if (__VERBOSE) printf( "%8lup %8lur %8luc %8lug %8luu\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b",
+                                       __PROBES_COUNTER,
+                                       __PROBES_REMOVED,
+                                       __CANDIDATES_COUNTER,
+                                       __CANDIDATES_TODO,
+                                       __CANDIDATES_FINISHED ); fflush( stdout );
+            }
+        }
+        if ((total_tests_per_node == _leaf_candidates.size()) &&
+            (total_gain_of_node == 0)) {
+            ++__PROBES_REMOVED;
+            if (__VERBOSE) printf( "%8lup %8lur %8luc %8lug %8luu\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b",
+                                   __PROBES_COUNTER,
+                                   __PROBES_REMOVED,
+                                   __CANDIDATES_COUNTER,
+                                   __CANDIDATES_TODO,
+                                   __CANDIDATES_FINISHED ); fflush( stdout );
+            _ps_node->removeProbes();
+        }
+    }
+
+    //
+    // step down the children if either ID is lower than highest
+    // ID in the set of ID-pairs or the node has no probes
+    //
+    if ((id < __MAX_SETS_ID) || (! has_probes)) {
+        for ( PS_NodeMapConstIterator i = _ps_node->getChildrenBegin();
+              i != _ps_node->getChildrenEnd();
+              ++i) {
+            PS_get_next_candidates_descend( i->second, _leaf_candidates );
+        }
+    }
+
+    //
+    // remove ID from path
+    //
+    __PATH.erase( id );
+}
+
+
+void PS_get_next_candidates( const PS_NodePtr  _root_node,
+                             PS_CandidateSet  &_leaf_candidates ) {
+    struct tms before;
+    times( &before );
+    // first calc source/target/false_IDs sets
+    printf( "PS_get_next_candidates() : initializing %i candidates..\n", _leaf_candidates.size() ); fflush( stdout );
+    __PROBES_COUNTER      = 0;
+    __PROBES_REMOVED      = 0;
+    __CANDIDATES_COUNTER  = 0;
+    __CANDIDATES_TODO     = 0;
+    __CANDIDATES_FINISHED = 0;
+    __MIN_SETS_ID         = __MAX_ID;
+    __MAX_SETS_ID         = __MIN_ID;
+    for ( PS_CandidateSetIter iter = _leaf_candidates.begin();
+          iter != _leaf_candidates.end();
+          ++iter ) {
+        PS_CandidateSPtr candidate = *iter;
+        if (!candidate->map) {          // if candidate has no map yet
+            candidate->getParentMap();  // try to get its parent's map
+            if (candidate->map) {       // if parent had a map (if not a new map is created in PS_calc_next_speciesid_sets_for_candidate
+                PS_apply_path_to_bitmap( candidate->path, true, candidate->map ); // apply candidate's path
+            }
+        }
+        PS_make_map_for_candidate( &(*candidate) );
+        candidate->initFalseIDs( __MIN_ID, __MAX_ID, __MIN_SETS_ID, __MAX_SETS_ID );
+        //candidate->print();
+    }
+    // scan tree
+    printf( "PS_get_next_candidates() : " ); fflush( stdout );
+    for ( PS_NodeMapConstIterator node_iter = _root_node->getChildrenBegin();
+          (node_iter != _root_node->getChildrenEnd()) && (node_iter->first < __MAX_SETS_ID);
+          ++node_iter ) {
+        __PATH.clear();
+        PS_get_next_candidates_descend( node_iter->second, _leaf_candidates );
+    }
+    printf( "looked at probes (%lu) -> removed probes (%lu)   possible candidates (%lu) -> good candidates (%lu) -> used candidates (%lu)\nPS_get_next_candidates() : ",
+            __PROBES_COUNTER,
+            __PROBES_REMOVED,
+            __CANDIDATES_COUNTER,
+            __CANDIDATES_TODO,
+            __CANDIDATES_FINISHED ); fflush( stdout );
+    PS_print_time_diff( &before );
+
+    // 'descend' candidates
+    for ( PS_CandidateSetIter iter = _leaf_candidates.begin();
+          iter != _leaf_candidates.end();
+          ++iter ) {
+        PS_CandidateSPtr candidate = *iter;
+        candidate->print();
+        candidate->decreasePasses();
+    }
+
+    _leaf_candidates.clear();
+    PS_get_leaf_candidates( __CANDIDATES_ROOT, _leaf_candidates );
+}
 
 //  ====================================================
 //  ====================================================
@@ -711,15 +1156,22 @@ int main( int   argc,
     //
     // check arguments
     //
-    if (argc < 3) {
-        printf( "Missing argument\n Usage %s <database name> <result filename> [result filename prefix for output files]\n", argv[0] );
+    if (argc < 5) {
+        printf( "Missing argument\n Usage %s <database name> <result filename> <[-]candidates filename> <final candidates filename> [--verbose] [result filename prefix for output files]\n", argv[0] );
         exit( 1 );
     }
 
-    const char *input_DB_name      = argv[1];
-    const char *result_in_filename = argv[2];
-    const char *result_out_prefix  = (argc > 3) ? argv[3] : 0;
-
+    const char *input_DB_name             = argv[1];
+    const char *result_in_filename        = argv[2];
+    const char *candidates_filename       = argv[3];
+    const char *final_candidates_filename = argv[4];
+    const char *result_out_prefix         = (argc > 5) ? argv[5] : 0;
+    if (argc > 5) {
+        if (strcmp(result_out_prefix,"--verbose") == 0) {
+            __VERBOSE = true;
+            result_out_prefix  = (argc > 6) ? argv[6] : 0;
+        }
+    }
     //
     // open probe-set-database
     //
@@ -729,7 +1181,7 @@ int main( int   argc,
     __MAX_ID = db->getMaxID();
     __MIN_ID = db->getMinID();
     __SPECIES_COUNT = db->getSpeciesCount();
-    printf( "min ID (%i)  max ID (%i)  count of species (%li)\n", __MIN_ID, __MAX_ID, __SPECIES_COUNT );
+    printf( "min ID (%i)  max ID (%i)  count of species (%i)\n", __MIN_ID, __MAX_ID, __SPECIES_COUNT );
     printf( "..loaded database (enter to continue)\n" ); fflush( stdout );
 
     //
@@ -779,38 +1231,112 @@ int main( int   argc,
         oneMatchesMap[ ID2IDPair(id1,id2) ] = path;
     }
     printf( "loading preset bitmap..\n" ); fflush( stdout );
-    __MAP        = new PS_BitMap_Counted( result_file );
-    __PRESET_MAP = new PS_BitMap_Counted( false, __MAX_ID+1 );
+    __BITS_IN_MAP = ((__MAX_ID+1)*__MAX_ID)/2 + __MAX_ID+1;
+    __MAP         = new PS_BitMap_Counted( result_file );
+    __PRESET_MAP  = new PS_BitMap_Counted( false, __MAX_ID+1 );
+    for ( SpeciesID id1 = 0; id1 < __MIN_ID; ++id1 ) {
+        for ( SpeciesID id2 = 0; id2 <= __MAX_ID; ++id2 ) {
+            if (id1 > id2) {
+                __MAP->setTrue( id1,id2 );
+            } else {
+                __MAP->setTrue( id2,id1 );
+            }
+        }
+    }
+    for ( SpeciesID id = 0; id <= __MAX_ID; ++id ) {
+        __MAP->setTrue( id,id );
+    }
+    __MAP->recalcCounters();
     __PRESET_MAP->copy( __MAP );
     printf( "..loaded result file (enter to continue)\n" );
     printf( "cleaning up... result file\n" ); fflush( stdout );
     delete result_file;
 
     //
-    // recursively build a tree of candidates
+    // create or read candidates
     //
-    __MAX_DEPTH = 0;
-    for ( long species_count = __SPECIES_COUNT; species_count > 0; species_count >>= 1 ) {
-        ++__MAX_DEPTH;
-    }
-    __MAX_DEPTH = (__MAX_DEPTH * 3) >> 1;
-    __PATH_IN_CANDIDATES = (char *)calloc( __MAX_DEPTH+1, sizeof(char) );
-    __CANDIDATES_TODO = 0;
-    __CANDIDATES_FINISHED = 0;
     __CANDIDATES_ROOT = new PS_Candidate( 0.0 );
-    PS_descend( __CANDIDATES_ROOT, db->getConstRootNode(), 0, 0.0 );
+    PS_FileBuffer *candidates_file;
+    struct tms before;
+    if (candidates_filename[0] != '-') {
+        printf( "searching candidates..\n" );
+        //
+        // recursively build a tree of candidates
+        //
+        __MAX_DEPTH = 0;
+        for ( long species_count = __SPECIES_COUNT; species_count > 0; species_count >>= 1 ) {
+            ++__MAX_DEPTH;
+        }
+        __MAX_DEPTH = (__MAX_DEPTH * 3) >> 1;
+        __PATH_IN_CANDIDATES = (char *)calloc( __MAX_DEPTH+1, sizeof(char) );
+        __CANDIDATES_TODO = 0;
+        __CANDIDATES_FINISHED = 0;
+        times( &before );
+        PS_descend( __CANDIDATES_ROOT, db->getConstRootNode(), 0, 0.0 );
+        printf( "PS_descend : total " );
+        PS_print_time_diff( &before );
 
+        //
+        // save candidates
+        //
+        printf( "saving candidates to %s..\n", candidates_filename );
+        candidates_file = new PS_FileBuffer( candidates_filename, PS_FileBuffer::WRITEONLY );
+        __CANDIDATES_ROOT->false_IDs = __BITS_IN_MAP;
+        __CANDIDATES_ROOT->save( candidates_file, __BITS_IN_MAP );
+    } else {
+        printf( "loading candidates..\n" );
+        candidates_file = new PS_FileBuffer( candidates_filename+1, PS_FileBuffer::READONLY );
+        __CANDIDATES_ROOT->load( candidates_file, __BITS_IN_MAP, db->getConstRootNode() );
+        printf( "..loaded candidates file (enter to continue)\n" );
+    }
+    printf( "cleaning up... candidates file\n" ); fflush( stdout );
+    delete candidates_file;
+    
+    //
+    // scan candidates-tree for leaf candidates
+    //
     printf( "CANDIDATES :\n" );
     __CANDIDATES_ROOT->print();
-    printf( "\n" );
+    printf( "\nsearching leaf candidates.. " );
+    PS_CandidateSet leaf_candidates;
+    PS_get_leaf_candidates( __CANDIDATES_ROOT, leaf_candidates );
+    printf( "%i\n", leaf_candidates.size() );
 
     //
-    // scan candidates-tree for best candidate
+    // scan tree for next candidates (below the ones in leaf_candidates)
     //
-    PS_CandidatePtr best_candidate = __CANDIDATES_ROOT;
-    printf( "searching best candidate..\n" );
-    PS_search_best_candidate( __CANDIDATES_ROOT, best_candidate );
-    printf( "best candidate : depth (%lu) filling level (%.2f%%)\n", best_candidate->depth, best_candidate->filling_level ); fflush( stdout );
+    times( &before );
+    long round = 0;
+    while ((leaf_candidates.size() > 0) &&
+           (round < 200)) {
+        printf( "\nsearching next candidates [round #%li]..\n", ++round );
+        PS_get_next_candidates( db->getConstRootNode(), leaf_candidates );
+
+//         printf( "\nCANDIDATES :\n" );
+//         __CANDIDATES_ROOT->print();
+        printf( "rounds %li total ", round );
+        PS_print_time_diff( &before );
+        // getchar();
+    }
+
+    printf( "\nFINAL CANDIDATES:\n" );
+    __CANDIDATES_ROOT->print( 0,true );
+    printf( "\nfinal leaf candidates.. (%i)\n", leaf_candidates.size() );
+    PS_get_leaf_candidates( __CANDIDATES_ROOT, leaf_candidates, true );
+    for ( PS_CandidateSetIter c = leaf_candidates.begin();
+          c != leaf_candidates.end();
+          ++c ) {
+        (*(*c)).print();
+    }
+
+    //
+    // save final candidates
+    //
+    printf( "saving final candidates to %s..\n", final_candidates_filename );
+    candidates_file = new PS_FileBuffer( final_candidates_filename, PS_FileBuffer::WRITEONLY );
+    __CANDIDATES_ROOT->save( candidates_file, __BITS_IN_MAP );
+    printf( "cleaning up... candidates file\n" ); fflush( stdout );
+    delete candidates_file;
 
     //
     // starting with the best candidate print the __MAP for each
@@ -818,6 +1344,8 @@ int main( int   argc,
     //
     if (result_out_prefix) {
         // put __MAP in the state 'after applying best_candidate and its parents'
+        PS_CandidateSPtr best_candidate_smart = *leaf_candidates.begin();
+        PS_CandidatePtr  best_candidate       = &(*best_candidate_smart);
         PS_ascend( best_candidate );
         PS_apply_path_to_bitmap( best_candidate->path );
         while (best_candidate) {
@@ -829,6 +1357,8 @@ int main( int   argc,
     //
     // clean up
     //
+    printf( "cleaning up... candidates\n" ); fflush( stdout );
+    delete __CANDIDATES_ROOT;
     free( __PATH_IN_CANDIDATES );
     printf( "cleaning up... database\n" ); fflush( stdout );
     delete db;
