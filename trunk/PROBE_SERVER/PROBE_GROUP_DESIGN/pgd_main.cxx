@@ -12,6 +12,11 @@
 #include <servercntrl.h>
 #include <output.h>
 
+// SKIP_PROBES_TO_TARGET_CONVERSION in DEBUG mode only (for the ease of debugging)
+#if defined(DEBUG)
+// #define SKIP_PROBES_TO_TARGET_CONVERSION
+#endif // DEBUG
+
 #define pgd_assert(cond) arb_assert(cond)
 
 #include "../global_defs.h"
@@ -1125,11 +1130,6 @@ static GB_ERROR convertTargetsToProbes(GBDATA *pd_main) {
     return error;
 }
 
-// SKIP_PROBES_TO_TARGET_CONVERSION in DEBUG mode only (for the ease of debugging)
-#if defined(DEBUG)
-// #define SKIP_PROBES_TO_TARGET_CONVERSION
-#endif // DEBUG
-
 int main(int argc,char *argv[]) {
     out.put("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
     GB_ERROR error = 0;
@@ -1148,7 +1148,9 @@ int main(int argc,char *argv[]) {
             initDecodeTable();
             error = designProbes(probe_config);
         }
-#if !defined(SKIP_PROBES_TO_TARGET_CONVERSION)
+#if defined(SKIP_PROBES_TO_TARGET_CONVERSION)
+#warning probe to target conversion skipped for debugging
+#else
         if (!error) error = convertTargetsToProbes(pd_main);
 #endif // SKIP_PROBES_TO_TARGET_CONVERSION
         if (!error) {
