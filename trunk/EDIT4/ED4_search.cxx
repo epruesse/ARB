@@ -1048,7 +1048,7 @@ void ED4_SearchResults::search(ED4_sequence_terminal *seq_terminal)
 
     if (st_needed) {
         int len;
-        char *seq = seq_terminal->resolve_pointer_to_string(&len);
+        char *seq = seq_terminal->resolve_pointer_to_string_copy(&len);
 
         if (seq) {
             reportToResult = this;
@@ -1063,6 +1063,7 @@ void ED4_SearchResults::search(ED4_sequence_terminal *seq_terminal)
             }
             reportToResult = 0;
         }
+        free(seq);
     }
 }
 
@@ -1803,7 +1804,7 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
     return 0;
 }
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {
     ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
     ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
 

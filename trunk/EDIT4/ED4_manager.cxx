@@ -195,9 +195,11 @@ ED4_returncode ED4_manager::check_in_bases(ED4_base *added_base, int start_pos, 
         ED4_terminal *sequence_terminal = species_manager->get_consensus_relevant_terminal();
 
         if (sequence_terminal) {
-            int seq_len;
-            char *seq = sequence_terminal->resolve_pointer_to_string(&seq_len);
-            return check_bases(0, 0, seq, seq_len, start_pos, end_pos);
+            int   seq_len;
+            char *seq          = sequence_terminal->resolve_pointer_to_string_copy(&seq_len);
+            ED4_returncode res = check_bases(0, 0, seq, seq_len, start_pos, end_pos);
+            free(seq);
+            return res;
         }
     }
 
@@ -215,9 +217,11 @@ ED4_returncode ED4_manager::check_out_bases(ED4_base *subbed_base, int start_pos
         ED4_terminal *sequence_terminal = species_manager->get_consensus_relevant_terminal();
 
         if (sequence_terminal) {
-            int seq_len;
-            char *seq = sequence_terminal->resolve_pointer_to_string(&seq_len);
-            return check_bases(seq, seq_len, 0, 0, start_pos, end_pos);
+            int   seq_len;
+            char *seq          = sequence_terminal->resolve_pointer_to_string_copy(&seq_len);
+            ED4_returncode res = check_bases(seq, seq_len, 0, 0, start_pos, end_pos);
+            free(seq);
+            return res;
         }
     }
 
@@ -239,14 +243,16 @@ ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, c
     ED4_species_manager *new_species_manager = new_base->to_species_manager();
     ED4_terminal *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
 
-    int new_len;
-    const char *new_sequence = new_sequence_terminal->resolve_pointer_to_string(&new_len);
+    int   new_len;
+    char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
     if (end_pos==-1) {
         ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len), &start_pos, &end_pos);
     }
 
-    return check_bases(old_sequence, old_len, new_sequence, new_len, start_pos, end_pos);
+    ED4_returncode res = check_bases(old_sequence, old_len, new_sequence, new_len, start_pos, end_pos);
+    free(new_sequence);
+    return res;
 }
 
 ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_sequence, int old_len, ED4_base *new_base, ED4_update_flag update_flag,
@@ -258,8 +264,13 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     ED4_species_manager *new_species_manager = new_base->to_species_manager();
     ED4_terminal *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
 
-    int new_len;
-    const char *new_sequence = new_sequence_terminal->resolve_pointer_to_string(&new_len);
+    int   new_len;
+    char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
+
+#if defined(DEBUG)
+    printf("old: %s\n", old_sequence);
+    printf("new: %s\n", new_sequence);
+#endif // DEBUG
 
     if (end_pos==-1) {
         ED4_char_table::changed_range(old_sequence, new_sequence, min(old_len, new_len), &start_pos, &end_pos);
@@ -267,8 +278,11 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
 
     ED4_returncode result1 = check_bases(old_sequence, old_len, new_sequence, new_len, start_pos, end_pos);
     ED4_returncode result2 = rebuild_consensi(new_base, update_flag);
+    ED4_returncode result  = (result1 != ED4_R_OK) ? result1 : result2;
 
-    return result1!=ED4_R_OK ? result1 : result2;
+    free(new_sequence);
+
+    return result;
 }
 
 ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base *new_base, int start_pos, int end_pos)
@@ -278,17 +292,19 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
 
     if (old_base->is_species_manager()) {
         e4_assert(new_base->is_species_manager());
-        ED4_species_manager *old_species_manager = old_base->to_species_manager();
-        ED4_species_manager *new_species_manager = new_base->to_species_manager();
-        ED4_terminal *old_sequence_terminal = old_species_manager->get_consensus_relevant_terminal();
-        ED4_terminal *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
+        ED4_species_manager *old_species_manager   = old_base->to_species_manager();
+        ED4_species_manager *new_species_manager   = new_base->to_species_manager();
+        ED4_terminal        *old_sequence_terminal = old_species_manager->get_consensus_relevant_terminal();
+        ED4_terminal        *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
+        int                  old_len;
+        int                  new_len;
+        char                *old_seq               = old_sequence_terminal->resolve_pointer_to_string_copy(&old_len);
+        char                *new_seq               = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-        int old_len;
-        char *old_seq = old_sequence_terminal->resolve_pointer_to_string(&old_len);
-        int new_len;
-        char *new_seq = new_sequence_terminal->resolve_pointer_to_string(&new_len);
-
-        return check_bases(old_seq, old_len, new_seq, new_len, start_pos, end_pos);
+        ED4_returncode res = check_bases(old_seq, old_len, new_seq, new_len, start_pos, end_pos);
+        free(new_seq);
+        free(old_seq);
+        return res;
     }
 
     if (old_base->is_group_manager()) {

@@ -170,7 +170,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
             ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
             ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
             int name_len;
-            char *name = species_name->resolve_pointer_to_string(&name_len);
+            char *name = species_name->resolve_pointer_to_string_copy(&name_len);
             ED4_sequence_terminal *sequence_terminal;
 
             {
@@ -211,37 +211,39 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                     int size = group_manager->table().size();
 
-                    seq = GB_give_buffer(size+1);
+                    seq       = (char*)GB_calloc(size+1, sizeof(char)); // GB_give_buffer(size+1);
                     seq[size] = 0;
-                    seq = group_manager->table().build_consensus_string(0, size-1, seq);
-                    seq_len = size;
-                    e4_assert(strlen(seq)==size_t(seq_len));
+                    seq       = group_manager->table().build_consensus_string(0, size-1, seq);
+                    seq_len   = size;
+
+                    e4_assert(strlen(seq) == size_t(seq_len));
 
                     ED4_group_manager *folded_group_man = sequence_terminal->is_in_folded_group();
 
                     if (folded_group_man) { // we are in a folded group
                         if (folded_group_man==group_manager) { // we are the consensus of the folded group
                             if (folded_group_man->is_in_folded_group()) { // a folded group inside a folded group -> do not show
+                                free(seq);
                                 seq = 0;
                             }
                             else { // group folded but consensus shown -> add '-' before name
-                                char *new_name = GB_give_buffer2(name_len+2);
-#ifndef NDEBUG
-                                memset(new_name, 0, name_len+2); // avoids (rui)
-#endif
+                                char *new_name = (char*)GB_calloc(name_len+2, sizeof(char));
+
                                 sprintf(new_name, "-%s", name);
+                                free(name);
                                 name = new_name;
                                 name_len++;
                             }
                         }
                         else { // we are really inside a folded group -> don't show
+                            free(seq);
                             seq = 0;
                         }
                     }
                 }
                 else { // sequence
                     if (!sequence_terminal->is_in_folded_group()) {
-                        seq = sequence_terminal->resolve_pointer_to_string(&seq_len);
+                        seq = sequence_terminal->resolve_pointer_to_string_copy(&seq_len);
                     }
                 }
 
@@ -259,14 +261,17 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                             e4_assert(remark_term);
 
                             int remark_len;
-                            char *remark = remark_term->resolve_pointer_to_string(&remark_len);
+                            char *remark = remark_term->resolve_pointer_to_string_copy(&remark_len);
 
                             replaceChars(remark, ' ', '_');
                             set_and_realloc_gde_array(the_names, the_sequences, allocated, numberspecies, maxalign, name, name_len, remark, remark_len);
+                            free(remark);
                         }
                     }
+                    free(seq);
                 }
             }
+            free(name);
         }
     end_of_loop:
         if (terminal==last) break;

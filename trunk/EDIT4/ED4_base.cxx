@@ -335,10 +335,9 @@ bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction) 		// indi
 }
 
 
-char *ED4_base::resolve_pointer_to_string(int *) const
-{
-    return NULL;
-}
+char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
+const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
+
 ED4_ERROR *ED4_base::write_sequence(const char */*seq*/, int /*seq_len*/)
 {
     e4_assert(0);
@@ -424,12 +423,12 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
     sep_name[0] = 1;
     sep_name[1] = 0;
 
-    char	*old_string,
-        *dummy = NULL,
-        *species_name = NULL;
-    int	i;
-    long old_size,
-        new_size;
+    char *old_string;
+    char *dummy        = NULL;
+    char *species_name = NULL;
+    int	  i;
+    long  old_size;
+    long  new_size;
 
     AW_pos old_pos = 0;
 
@@ -457,8 +456,9 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             new_size   = old_size + strlen(dummy) + 2;
         }
         else { // we are Species or SAI
-            species_name = resolve_pointer_to_string();
-            new_size   = old_size + strlen(species_name) + 3; // 3 because of separator and identifier
+            int len;
+            species_name = resolve_pointer_to_string_copy(&len);
+            new_size     = old_size + len + 3; // 3 because of separator and identifier
         }
 
         *generated_string = new char[new_size];
@@ -562,6 +562,8 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
             multi_species_manager->children->append_member( consensus_manager );
         }
     }
+
+    free(species_name);
 
     return ED4_R_OK;
 }
@@ -882,10 +884,11 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)	//cre
             ED4_terminal *sequence_data_terminal = species_manager->get_consensus_relevant_terminal();
 
             if (sequence_data_terminal) {
-                int db_pointer_len;
-                char *db_pointer = sequence_data_terminal->resolve_pointer_to_string(&db_pointer_len);
+                int   db_pointer_len;
+                char *db_pointer = sequence_data_terminal->resolve_pointer_to_string_copy(&db_pointer_len);
                 group_manager_for_child->table().add(db_pointer, db_pointer_len);
                 e4_assert(!group_manager_for_child->table().empty());
+                free(db_pointer);
             }
         }else if (member->is_group_manager()){
             ED4_group_manager *sub_group = member->to_group_manager();

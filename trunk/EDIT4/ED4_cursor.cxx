@@ -765,20 +765,18 @@ void ED4_cursor::updateAwars()
     strcpy(iupac, IUPAC_EMPTY);
 
     if (owner_of_cursor) {
-        ED4_species_manager *species_manager =  owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
-        int len;
-        int allocated = 0;
-        char *seq;
+        ED4_species_manager *species_manager = owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
+        int                  len;
+        char                *seq;
 
         if (species_manager->flag.is_consensus) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
 
             seq = group_manager->table().build_consensus_string(seq_pos, seq_pos, 0);
             len = seq_pos+1; // fake
-            allocated = 1;
         }
         else {
-            seq = owner_of_cursor->resolve_pointer_to_string(&len);
+            seq = owner_of_cursor->resolve_pointer_to_string_copy(&len);
         }
 
         e4_assert(seq);
@@ -790,7 +788,7 @@ void ED4_cursor::updateAwars()
             strcpy(iupac, i);
         }
 
-        if (allocated) delete seq;
+        free(seq);
     }
 
     aw_root->awar(win->awar_path_for_IUPAC)->write_string(iupac);
@@ -947,12 +945,13 @@ static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, boo
     if (terminal->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
         int len;
-        char *seq = seqTerm->resolve_pointer_to_string(&len);
+        char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
         if (seq) {
             test_succeeded =
                 len>current_position &&
                 bool(ADPP_IS_ALIGN_CHARACTER(seq[current_position])) != test_for_base;
         }
+        free(seq);
     }
 
 #if defined(DEBUG) && 0
@@ -1378,20 +1377,18 @@ void ED4_base_position::calc4base(ED4_base *base)
 {
     e4_assert(base);
 
-    ED4_species_manager *species_manager =  base->get_parent(ED4_L_SPECIES)->to_species_manager();
-    int len;
-    int allocated = 0;
-    char *seq;
+    ED4_species_manager *species_manager = base->get_parent(ED4_L_SPECIES)->to_species_manager();
+    int                  len;
+    char                *seq;
 
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
         seq = group_manager->table().build_consensus_string();
         len = strlen(seq);
-        allocated = 1;
     }
     else {
-        seq = base->resolve_pointer_to_string(&len);
+        seq = base->resolve_pointer_to_string_copy(&len);
     }
 
     e4_assert(seq);
@@ -1423,7 +1420,7 @@ void ED4_base_position::calc4base(ED4_base *base)
         delete[] pos;
     }
 
-    if (allocated) delete seq;
+    free(seq);
 }
 int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
 {

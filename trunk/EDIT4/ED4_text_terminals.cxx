@@ -132,27 +132,19 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     static int	  len_of_colored_strings = 0;
     AW_device    *device                 = ED4_ROOT->temp_device;
 
+    resolve_pointer_to_string_copy(&max_seq_len);
+
     {
         AW_pos world_x, world_y;
 
-        // #if defined(DEBUG)
-        //         printf("this=%p\n", this);
-        // #endif // DEBUG
         calc_world_coords( &world_x, &world_y );
-        // #if defined(DEBUG)
-        //         printf("species_name='%s' world_x=%f world_y=%f\n", species_name, world_x, world_y);
-        // #endif // DEBUG
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
-        // #if defined(DEBUG)
-        //         printf("win_x=%f win_y=%f\n", world_x, world_y);
-        // #endif // DEBUG
 
         text_x = world_x + CHARACTEROFFSET;							// don't change
         text_y = world_y + height - MAXLETTERDESCENT - ED4_ROOT->helix_spacing;
     }
 
-    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
-    unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len);
+    const ED4_remap *rm         = ED4_ROOT->root_group_man->remap();
 
     long left,right;
     calc_update_intervall(&left, &right );
@@ -192,7 +184,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
     // transform strings, compress if needed
     {
-        AWT_reference *ref = ED4_ROOT->reference;
+        AWT_reference *ref        = ED4_ROOT->reference;
+        unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string_copy();
 
         ref->expand_to_length(seq_end);
         char *char_2_char = ED4_ROOT->sequence_colors->char_2_char;
@@ -208,6 +201,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             color_is_used[gc] = scr_pos+1;
             colored_strings[gc][scr_pos] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
         }
+
+        free(db_pointer);
     }
 
     // Set background
@@ -298,12 +293,13 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             screen_length = right;
         }
         if (screen_length) {
-            db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len); // this is necessary cause the old content of db_pointer is not valid till here
+            char *db_pointer = resolve_pointer_to_string_copy();
             device->text_overlay( ED4_G_HELIX,
                                   (char *)db_pointer, screen_length,
                                   text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
                                   (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
                                   1.0,1.0, ED4_show_helix_on_device);
+            free(db_pointer);
         }
     }
     // output strings
@@ -434,7 +430,7 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
         }
     }
     else {
-        char *db_pointer = resolve_pointer_to_string();
+        char *db_pointer = resolve_pointer_to_string_copy();
 
         if (is_sequence_info_terminal()) {
             ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);
@@ -445,6 +441,8 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
         else{
             GB_CORE;
         }
+
+        free(db_pointer);
     }
 
     return ( ED4_R_OK );
