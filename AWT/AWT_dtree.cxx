@@ -73,20 +73,20 @@ AP_tree *AWT_graphic_tree::search(AP_tree *root, const char *name)
 
 void AWT_graphic_tree::jump(AP_tree *at, const char *name)
 {
-    if (this->tree_sort == AP_NDS_TREE) return;
-    if (this->tree_sort == AP_NO_NDS) return;
+    if (sort_is_list_style(tree_sort)) return;
 
-    at = this->search(at,name);
+    at = search(at,name);
     if(!at) return;
-    if (this->tree_sort == AP_LIST_TREE) {
-        this->tree_root_display = this->tree_root;
+    if (tree_sort == AP_TREE_NORMAL) {
+        tree_root_display = tree_root;
     }else{
         while (at->father &&
                at->gr.view_sum<15 &&
-               0 == at->gr.grouped) {
+               0 == at->gr.grouped)
+        {
             at = at->father;
         }
-        this->tree_root_display = at;
+        tree_root_display = at;
     }
 }
 
@@ -480,13 +480,16 @@ void AWT_graphic_tree::rot_show_line(AW_device *device)
     device->line(gc, sx, sy, x, y, AWT_F_ALL, 0, 0);
 }
 
-void AWT_graphic_tree::rot_show_triangle( AW_device *device)
+void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 {
-    double          w;
-    double          len;
-    double             sx, sy;
-    double             x1, y1, x2, y2;
+    double   w;
+    double   len;
+    double   sx, sy;
+    double   x1, y1, x2, y2;
     AP_tree *at;
+    double   scale = 1.0;
+
+    if (tree_sort == AP_TREE_IRS) scale = irs_tree_ruler_scale_factor;
 
     at = this->rot_at;
 
@@ -496,10 +499,10 @@ void AWT_graphic_tree::rot_show_triangle( AW_device *device)
     sx = this->old_rot_cl.x0;
     sy = this->old_rot_cl.y0;
 
-    if (at == at->father->leftson)
-        len = at->father->leftlen;
-    else
-        len = at->father->rightlen;
+    if (at == at->father->leftson) len = at->father->leftlen;
+    else len = at->father->rightlen;
+
+    len *= scale;
 
     w = this->rot_orientation;  x1 = this->old_rot_cl.x0 + cos(w) * len;
     y1 = this->old_rot_cl.y0 + sin(w) * len;
@@ -559,12 +562,20 @@ double comp_rot_spread(AP_tree *at, AWT_graphic_tree *ntw)
     }
 
     zw *= bt->gr.spread;
-    zw *=   (double)at->gr.view_sum /
-        (double)bt->gr.view_sum;
-    if(ntw->tree_sort == AP_RADIAL_TREE){
-        zw *= 2*M_PI;
-    }else{
-        zw *= 0.5*M_PI;
+    zw *= (double)at->gr.view_sum / (double)bt->gr.view_sum;
+
+    switch (ntw->tree_sort) {
+        case AP_TREE_NORMAL:
+            zw *= 0.5*M_PI;
+            break;
+        case AP_TREE_IRS:
+            zw *= 0.5*M_PI * ntw->get_irs_tree_ruler_scale_factor();
+            break;
+        case AP_TREE_RADIAL:
+            zw *= 2*M_PI;
+            break;
+        default:
+            awt_assert(0);
     }
 
     return zw;
@@ -896,6 +907,14 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
     }
 }
 
+inline double discrete_ruler_lenght(double analog_ruler_lenth, double min_length) {
+    double drl = int(analog_ruler_lenth*10+0.5)/10.0;
+    if (drl<min_length) {
+        drl = min_length;
+    }
+    return drl;
+}
+
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                int button, AW_key_mod key_modifier, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
@@ -954,10 +973,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
         char awar[256];
         float h;
         switch(cmd){
+            case AWT_MODE_SELECT:
             case AWT_MODE_ROT:
             case AWT_MODE_SPREAD:
             case AWT_MODE_SWAP:
             case AWT_MODE_SETROOT:
+            case AWT_MODE_LENGTH:
             case AWT_MODE_MOVE: // Move Ruler text
                 switch(type){
                     case AW_Mouse_Press:
@@ -965,20 +986,20 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         rot_ct.x0 = x;
                         rot_ct.y0 = y;
                         break;
-                    case AW_Mouse_Drag:
-                        tree_awar = show_ruler(device, this->drag_gc);
-                        sprintf(awar,"ruler/text_x");
-                        h = (x - rot_ct.x0)/device->get_scale() +
-                            GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                    case AW_Mouse_Drag: {
+                        double scale = device->get_scale();
+                        tree_awar    = show_ruler(device, this->drag_gc);
+                        sprintf(awar,"ruler/%s/text_x", tree_awar);
+                        h            = (x - rot_ct.x0)/scale + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
-                        sprintf(awar,"ruler/text_y");
-                        h = (y - rot_ct.y0)/device->get_scale() +
-                            GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        sprintf(awar,"ruler/%s/text_y", tree_awar);
+                        h            = (y - rot_ct.y0)/scale + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
-                        rot_ct.x0 = x;
-                        rot_ct.y0 = y;
+                        rot_ct.x0    = x;
+                        rot_ct.y0    = y;
                         show_ruler(device, this->drag_gc);
                         break;
+                    }
                     case AW_Mouse_Release:
                         rot_ct.exists = AW_FALSE;
                         this->exports.resize = 1;
@@ -1014,12 +1035,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Drag:
                         tree_awar = show_ruler(device, this->drag_gc);
                         sprintf(awar,"ruler/%s/ruler_x",tree_awar);
-                        h = (x - rot_cl.x0)/device->get_scale() +
-                            GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        h = (x - rot_cl.x0)/device->get_scale() + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
                         sprintf(awar,"ruler/%s/ruler_y",tree_awar);
-                        h = (y - rot_cl.y0)/device->get_scale() +
-                            GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        h = (y - rot_cl.y0)/device->get_scale() + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
 
                         rot_cl.x0 = x;
@@ -1041,21 +1060,54 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Press:
                         rot_cl = *cl;
                         rot_cl.x0 = x;
+                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                            sprintf(awar,"ruler/size");
+                            tree_awar = show_ruler(device, this->drag_gc);
+                            double h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                            tree_awar = show_ruler(device, this->drag_gc);
+                        }
                         break;
-                    case AW_Mouse_Drag:
-                        tree_awar = show_ruler(device, this->drag_gc);
+                    case AW_Mouse_Drag: {
                         sprintf(awar,"ruler/size");
+                        h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        if (button == AWT_M_RIGHT) {
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                        }
+                        tree_awar = show_ruler(device, this->drag_gc);
 
-                        h = (x - rot_cl.x0)/device->get_scale() +
-                            GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        if (tree_sort == AP_TREE_IRS) {
+                            double scale = device->get_scale() * irs_tree_ruler_scale_factor;
+                            h += (rot_cl.x0 - x)/scale;
+                        }
+                        else {
+                            h += (x - rot_cl.x0)/device->get_scale();
+                        }
                         if (h<0.01) h = 0.01;
-                        GBT_write_float(this->tree_static->gb_tree, awar, h);
+
+                        double h_rounded = h;
+                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                            h_rounded = discrete_ruler_lenght(h, 0.1);
+                            GBT_write_float(this->tree_static->gb_tree, awar, h_rounded);
+                            show_ruler(device, this->drag_gc);
+                            GBT_write_float(this->tree_static->gb_tree, awar, h);
+                        }
+                        else {
+                            GBT_write_float(this->tree_static->gb_tree, awar, h);
+                            show_ruler(device, this->drag_gc);
+                        }
+
                         rot_cl.x0 = x;
-                        show_ruler(device, this->drag_gc);
                         break;
+                    }
                     case AW_Mouse_Release:
                         rot_cl.exists = AW_FALSE;
                         this->exports.refresh = 1;
+                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                            sprintf(awar,"ruler/size");
+                            double h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                        }
                         break;
                     default:
                         break;
@@ -1170,7 +1222,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 
         case AWT_MODE_LENGTH:
-            if(button!=AWT_M_LEFT){
+            if (button == AWT_M_MIDDLE) {
                 break;
             }
             switch(type){
@@ -1186,14 +1238,17 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         device->transform(cl->x1, cl->y1, rot_cl.x1, rot_cl.y1);
 
                         this->rot_orientation = comp_rot_orientation(&rot_cl);
-                        this->rot_spread = comp_rot_spread(at, this);
+                        this->rot_spread      = comp_rot_spread(at, this);
+#if defined(DEBUG)
+                        printf("rot_spread=%f\n", rot_spread);
+#endif // DEBUG
                         rot_show_triangle(device);
                     }
                     break;
 
                 case AW_Mouse_Drag:
                     if( bl_drag_flag && this->rot_at && this->rot_at->father){
-                        double len, ex, ey;
+                        double len, ex, ey, scale;
 
                         rot_show_triangle(device);
 
@@ -1209,15 +1264,23 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         len = ex * cos(this->rot_orientation) +
                             ey * sin(this->rot_orientation);
 
-                        if (len<0.0){
+                        if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
+                            len = discrete_ruler_lenght(len, 0.0);
+                        }
+                        else if (len<0.0) {
                             len = 0.0;
                         }
 
-                        len = len/device->get_scale();
+                        scale = device->get_scale();
+                        if (tree_sort == AP_TREE_IRS) {
+                            scale *= irs_tree_ruler_scale_factor;
+                        }
+                        len = len/scale;
 
                         if (rot_at == rot_at->father->leftson) {
                             rot_at->father->leftlen = len;
-                        }else{
+                        }
+                        else {
                             rot_at->father->rightlen = len;
                         }
 
@@ -1538,7 +1601,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 }
                 if (!at) break;
 
-                //this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh
+                this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
                 AD_map_viewer(at->gb_node, ADMVT_SELECT);
 
                 if (button == AWT_M_LEFT) goto act_like_group; // now do the same like in AWT_MODE_GROUP
@@ -1590,7 +1653,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
 {
-    if (type == AP_NDS_TREE || type == AP_NO_NDS) {
+    if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
             nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
         }
@@ -1600,7 +1663,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
     }
     tree_sort = type;
     switch(type) {
-        case AP_RADIAL_TREE:
+        case AP_TREE_RADIAL:
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 0;
             exports.dont_fit_larger = 0;
@@ -1611,8 +1674,8 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 0;
             break;
 
-        case AP_NO_NDS:
-        case AP_NDS_TREE:
+        case AP_LIST_SIMPLE:
+        case AP_LIST_NDS:
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1623,7 +1686,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 0;
             break;
 
-        case AP_IRS_TREE:
+        case AP_TREE_IRS:
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1634,7 +1697,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 1;
             break;
 
-        case AP_LIST_TREE:
+        case AP_TREE_NORMAL:
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1655,7 +1718,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini):AWT_grap
     mark_filter       = AW_SCREEN|AW_PRINTER_EXT;
     ruler_filter      = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE;
     root_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
-    set_tree_type(AP_LIST_TREE);
+    set_tree_type(AP_TREE_NORMAL);
     tree_root_display = 0;
     tree_root         = 0;
     y_pos             = 0;
@@ -2183,73 +2246,86 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     float ruler_add_x = 0.0;
 
     switch (tree_sort) {
-        case AP_LIST_TREE:
+        case AP_TREE_NORMAL:
             tree_awar = "LIST";
             break;
-        case AP_RADIAL_TREE:
+        case AP_TREE_RADIAL:
             tree_awar = "RADIAL";
             break;
-        case AP_NDS_TREE:
-            tree_awar = "NDS";
-            break;
-        case AP_NO_NDS:
-            tree_awar = "NONE";
-            break;
-        case AP_IRS_TREE:
+        case AP_TREE_IRS:
             tree_awar = "IRS";
             break;
+        case AP_LIST_SIMPLE:
+        case AP_LIST_NDS:
+            // rulers not allowed in these display modes
+            awt_assert(0);
+            tree_awar = 0;
+            break;
     }
 
-    sprintf(awar,"ruler/%s/ruler_y",tree_awar);
-    if (!GB_search(this->tree_static->gb_tree,awar,GB_FIND)){
-        if (device->type() == AW_DEVICE_SIZE) {
-            AW_world world;
-            device ->get_size_information(&world);
-            ruler_y = world.b * 1.3;
+    if (tree_awar) {
+        sprintf(awar,"ruler/%s/ruler_y",tree_awar);
+        if (!GB_search(this->tree_static->gb_tree,awar,GB_FIND)){
+            if (device->type() == AW_DEVICE_SIZE) {
+                AW_world world;
+                device ->get_size_information(&world);
+                ruler_y = world.b * 1.3;
+            }
         }
+
+        double half_ruler_width = ruler_size*0.5;
+
+        switch (tree_sort) {
+            case AP_TREE_IRS:
+                // scale is different for IRS tree -> adjust:
+                half_ruler_width *= irs_tree_ruler_scale_factor;
+                ruler_y     = 0;
+                ruler_add_y = this->list_tree_ruler_y;
+                ruler_add_x = -half_ruler_width;
+                break;
+            case AP_TREE_NORMAL:
+                ruler_y     = 0;
+                ruler_add_y = this->list_tree_ruler_y;
+                ruler_add_x = half_ruler_width;
+                break;
+            default:
+                break;
+        }
+
+
+        ruler_y = ruler_add_y + GBT_read_float2(this->tree_static->gb_tree, awar, ruler_y);
+
+        sprintf(awar,"ruler/%s/ruler_x",tree_awar);
+        ruler_x = ruler_add_x + GBT_read_float2(this->tree_static->gb_tree, awar, ruler_x);
+
+        sprintf(awar,"ruler/%s/text_x", tree_awar);
+        // ruler_text_x = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_x) * ruler_scale;
+        ruler_text_x = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_x);
+
+        sprintf(awar,"ruler/%s/text_y", tree_awar);
+        // ruler_text_y = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_y) * ruler_scale;
+        ruler_text_y = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_y);
+
+        sprintf(awar,"ruler/ruler_width");
+        double ruler_width = (double)GBT_read_int2(this->tree_static->gb_tree, awar, 0);
+
+        device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
+
+        device->line(gc,
+                     ruler_x - half_ruler_width, ruler_y,
+                     ruler_x + half_ruler_width, ruler_y,
+                     this->ruler_filter,
+                     0, (AW_CL)"ruler");
+        char ruler_text[20];
+        sprintf(ruler_text,"%4.2f",ruler_size);
+
+        device->text(gc, ruler_text,
+                     ruler_x + ruler_text_x,
+                     ruler_y + ruler_text_y,
+                     0.5,
+                     this->ruler_filter & ~AW_SIZE,
+                     0, (AW_CL)"ruler");
     }
-
-    switch (tree_sort) {
-        case AP_LIST_TREE:
-            ruler_y = 0;
-            ruler_add_y = this->list_tree_ruler_y;
-            ruler_add_x = ruler_size * 0.5;
-            break;
-        default:
-            break;
-    }
-
-
-    ruler_y = ruler_add_y +
-        GBT_read_float2(    this->tree_static->gb_tree, awar, ruler_y);
-
-    sprintf(awar,"ruler/%s/ruler_x",tree_awar);
-    ruler_x = ruler_add_x +
-        GBT_read_float2(    this->tree_static->gb_tree, awar, ruler_x);
-
-    sprintf(awar,"ruler/text_x");
-    ruler_text_x = GBT_read_float2( this->tree_static->gb_tree, awar, ruler_text_x);
-
-    sprintf(awar,"ruler/text_y");
-    ruler_text_y = GBT_read_float2( this->tree_static->gb_tree, awar, ruler_text_y);
-
-    sprintf(awar,"ruler/ruler_width");
-    double ruler_width = (double)GBT_read_int2(this->tree_static->gb_tree, awar, 0);
-
-    device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
-
-    device->line(gc,        ruler_x - ruler_size*.5 ,ruler_y,
-                 ruler_x + ruler_size*.5 , ruler_y,
-                 this->ruler_filter,
-                 0, (AW_CL)"ruler");
-    char ruler_text[20];
-    sprintf(ruler_text,"%4.2f",ruler_size);
-
-    device->text(gc,ruler_text,     ruler_x + ruler_text_x,
-                 ruler_y + ruler_text_y, 0.5,
-                 this->ruler_filter & ~AW_SIZE,
-                 0, (AW_CL)"ruler");
-
     return tree_awar;
 }
 
@@ -2331,57 +2407,58 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
 }
 
 void AWT_graphic_tree::show(AW_device *device)  {
-    int nsort = tree_sort;
-    if (this->tree_static && this->tree_static->gb_tree) {
-        this->check_update(this->gb_main);
+    AP_tree_sort nsort = tree_sort;
+    if (tree_static && tree_static->gb_tree) {
+        check_update(gb_main);
     }
-    if (!this->tree_root_display){
-        if (nsort != AP_NO_NDS && nsort != AP_NDS_TREE) {
-            nsort = AP_NDS_TREE;  // skip display
+    if (!tree_root_display) { // have no tree
+        if (sort_is_tree_style(nsort)) { // if display style needs tree
+            nsort = AP_LIST_NDS;  // display as list
         }
     }
 
-    this->disp_device = device;
+    disp_device = device;
 
     AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);
     scale = fontinfo->max_letter_height/ device->get_scale();
-    make_node_text_init(this->gb_main);
-    scale *= this->aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
-    this-> grey_level = this->aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+    make_node_text_init(gb_main);
+    scale *= aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
+    grey_level = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
 
-    this->baselinewidth = (int)this->aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
-    this->show_circle = (int)this->aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
-    this->circle_zoom_factor = this->aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
-    free(this->species_name);
-    this->species_name = this->aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    baselinewidth = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    show_circle = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
+    circle_zoom_factor = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
+    free(species_name);
+    species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     x_cursor = y_cursor = 0.0;
     switch (nsort) {
-        case AP_LIST_TREE:
-            if (!this->tree_root_display)   return;
+        case AP_TREE_NORMAL:
+            if (!tree_root_display)   return;
             y_pos = 0.05;
-            show_list_tree_rek(this->tree_root_display, 0, 0);
+            show_list_tree_rek(tree_root_display, 0, 0);
             list_tree_ruler_y = y_pos + 2.0 * scale;
             break;
-        case AP_RADIAL_TREE:
-            if (!this->tree_root_display)   return;
-            NT_emptybox(this->tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
-            show_tree_rek(this->tree_root_display, 0,0,2*M_PI,
-                          0.0,0, 0, this->tree_root_display->gr.left_linewidth);
+        case AP_TREE_RADIAL:
+            if (!tree_root_display)   return;
+            NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
+            show_tree_rek(tree_root_display, 0,0,2*M_PI,
+                          0.0,0, 0, tree_root_display->gr.left_linewidth);
             break;
-        case AP_IRS_TREE:
-            show_irs(this->tree_root_display,disp_device,fontinfo->max_letter_height);
+        case AP_TREE_IRS:
+            show_irs(tree_root_display,disp_device,fontinfo->max_letter_height);
+            list_tree_ruler_y = y_pos;
             break;
-        case AP_NDS_TREE: // this is the list all/marked species mode (no tree)
-            show_nds_list_rek(this->gb_main, true);
+        case AP_LIST_NDS: // this is the list all/marked species mode (no tree)
+            show_nds_list_rek(gb_main, true);
             break;
-        case AP_NO_NDS: // simple list of names (used at startup only)
-            show_nds_list_rek(this->gb_main, false);
+        case AP_LIST_SIMPLE: // simple list of names (used at startup only)
+            show_nds_list_rek(gb_main, false);
             break;
     }
     if (x_cursor != 0.0 || y_cursor != 0.0) {
         NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
     }
-    if (nsort != AP_NDS_TREE && nsort != AP_NO_NDS && nsort != AP_IRS_TREE) {
+    if (sort_is_tree_style(nsort)) { // show rulers in tree-style display modes
         show_ruler(device, AWT_GC_CURSOR);
     }
 }
