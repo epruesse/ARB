@@ -348,7 +348,7 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
 
     char *full_name = GBS_strdup(GBS_global_string("%s [%s]", full_species_name, gene_name));
 
-    char *sequence = GBT_read_gene_sequence(gb_gene);
+    char *sequence = GBT_read_gene_sequence(gb_gene, false);
     if (!sequence) {
         aw_message(GB_get_error());
     }
@@ -913,6 +913,47 @@ static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window);
 }
+//  ----------------------------------------------------------------------------------
+//      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu)
+//  ----------------------------------------------------------------------------------
+void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool submenu) {
+    const char *title  = "Organisms";
+    const char *hotkey = "O";
+
+    if (submenu) awm->insert_sub_menu(0, title, hotkey);
+    else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
+
+    {
+        AWMIMT( "organism_info", 	"Organism Info ...", 	"",	"organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,	0 );
+
+        awm->insert_separator();
+
+        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, 0);
+        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, 0);
+        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, 0);
+    }
+    if (submenu) awm->close_sub_menu();
+}
+//  --------------------------------------------------------------------------------------------
+//      void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
+//  --------------------------------------------------------------------------------------------
+void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool submenu) {
+    const char *title  = "Gene-Species";
+    const char *hotkey = "E";
+
+    if (submenu) awm->insert_sub_menu(0, title, hotkey);
+    else awm->create_menu(0, title, hotkey, "no.hlp", AWM_ALL);
+
+    {
+        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, 0);
+        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, 0);
+        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, 0);
+        awm->insert_separator();
+        AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "S", "gene_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, 0, 0);
+    }
+
+    if (submenu) awm->close_sub_menu();
+}
 
 
 //  -------------------------------------------------------------------------------------
@@ -925,8 +966,14 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
         AWMIMT("debug_awars", "Show Main AWARS", "", "no.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
         awm->insert_separator();
 #endif // DEBUG
+
         if (for_ARB_NTREE) {
             AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, 0 );
+            awm->insert_separator();
+
+            GEN_create_gene_species_submenu(awm, true); // Gene-species
+            GEN_create_organism_submenu(awm, true); // Organisms
+            EXP_create_experiments_submenu(awm, true); // Experiments
             awm->insert_separator();
         }
         AWMIMT( "gene_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
@@ -962,34 +1009,6 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
 }
 
 
-//  ----------------------------------------------------------------------------------------
-//      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
-//  ----------------------------------------------------------------------------------------
-void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
-    awm->create_menu(0,"Organisms","O","no.hlp",	AWM_ALL);
-    {
-        AWMIMT( "organism_info", 	"Organism Info ...", 	"",	"organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,	0 );
-
-        awm->insert_separator();
-
-        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, 0);
-        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, 0);
-        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, 0);
-    }
-}
-//  --------------------------------------------------------------------------------------------
-//      void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
-//  --------------------------------------------------------------------------------------------
-void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
-    awm->create_menu(0,"Gene-Species","E","no.hlp",	AWM_ALL);
-    {
-        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, 0);
-        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, 0);
-        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, 0);
-        awm->insert_separator();
-        AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "S", "gene_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, 0, 0);
-    }
-}
 //  ----------------------------------------------------------------
 //      void GEN_create_hide_submenu(AW_window_menu_modes *awm)
 //  ----------------------------------------------------------------
@@ -1051,20 +1070,13 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     awm->create_menu( 0, "File", "F", "no.hlp",  AWM_ALL );
     AWMIMT( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 
-    // Genes
-    GEN_create_genes_submenu(awm, false);
+    GEN_create_genes_submenu(awm, false); // Genes
+    GEN_create_gene_species_submenu(awm, false); // Gene-species
+    GEN_create_organism_submenu(awm, false); // Organisms
 
-    // Gene-species
-    GEN_create_gene_species_submenu(awm, false);
+    EXP_create_experiments_submenu(awm, false); // Experiments
 
-    // Organisms
-    GEN_create_organism_submenu(awm, false);
-
-    // Experiments
-    EXP_create_experiments_submenu(awm, false);
-
-    // Hide Menu
-    GEN_create_hide_submenu(awm);
+    GEN_create_hide_submenu(awm); // Hide Menu
 
     // Properties Menu
     awm->create_menu("props","Properties","r","no.hlp", AWM_ALL);
