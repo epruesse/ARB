@@ -68,7 +68,7 @@ argtext:$ARBHOME/GDEHELP/DATA_FILES/enzymes
 arg:PRE_EDIT
 argtype:chooser
 arglabel:Edit enzyme file first?
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.tmp;
+argchoice:Yes:arb_textedit in1.tmp;
 argchoice:No:
 
 in:in1

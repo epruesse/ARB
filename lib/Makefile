@@ -32,5 +32,5 @@ msg:	$(HOME)/.arb_prop/time
 
 $(HOME)/.arb_prop/time: $(ARBHOME)/lib/message
 	touch $@
-	$(ARB_TEXTEDIT) $(ARBHOME)/lib/message
+	arb_textedit $(ARBHOME)/lib/message
 

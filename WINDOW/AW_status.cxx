@@ -1204,9 +1204,11 @@ void aw_help_edit_help(AW_window *aww)
         system(buffer);
     }
 
-    sprintf(buffer,"textedit %s &", helpfile); // we use textedit to edit help-files to ensure correct format
-    printf("%s\n",buffer);
-    system(buffer);
+//     sprintf(buffer,"textedit %s &", helpfile); // we use textedit to edit help-files to ensure correct format
+//     printf("%s\n",buffer);
+//     system(buffer);
+
+    GB_edit(helpfile);
 
     free(helpfile);
 }

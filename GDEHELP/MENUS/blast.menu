@@ -1,6 +1,6 @@
 item:blastn
 itemmeta: n
-itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; blastn $BLASTDB in1.f W=$WORDLEN M=$MATCH N=$MMSCORE > in1.tmp; ${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1*)&
+itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; blastn $BLASTDB in1.f W=$WORDLEN M=$MATCH N=$MMSCORE > in1.tmp; arb_textedit in1.tmp; rm in1*)&
 itemhelp:blast.help
 
 in:in1
@@ -36,7 +36,7 @@ argvalue:-5
 
 item:blastx
 itemmeta: x
-itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; cp $ARBHOME/GDEHELP/BLAST/PAM??? .; blastx $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE> in1.tmp; ${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[//%]/>/" <in1 > in1.f; cp $ARBHOME/GDEHELP/BLAST/PAM??? .; blastx $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE> in1.tmp; arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -78,7 +78,7 @@ argchoice:Echinodermate Mitochondrial:8
 
 item:FASTA (DNA/RNA)
 itemmeta: F
-itemmethod:(sed "s/[//%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; ${ARB_TEXTEDIT:-textedit} in1.out;\rm in1*) &
+itemmethod:(sed "s/[//%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; arb_textedit in1.out;\rm in1*) &
 itemhelp:FASTA.help
 
 in:in1

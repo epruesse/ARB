@@ -124,7 +124,7 @@ outformat:colormask
 
 item:MFOLD
 itemmeta: M
-itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps; ZUKERGDE.sh .GDE.tmp.caps $CT $ARBHOME/GDEHELP/ZUKER/ > out1 && $METHOD < out1; Zuk_to_gen < $CT >file.gen; gde file.gen& ${ARB_TEXTEDIT:-textedit} RegionTable/*; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps*/)&
+itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps; ZUKERGDE.sh .GDE.tmp.caps $CT $ARBHOME/GDEHELP/ZUKER/ > out1 && $METHOD < out1; Zuk_to_gen < $CT >file.gen; gde file.gen& arb_textedit RegionTable/*; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps*/)&
 itemhelp:MFOLD.help
 
 in:seqGB

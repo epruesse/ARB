@@ -7,16 +7,16 @@ arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:What to do with the tree:?
 argchoice:ARB ('tree_phylip'):arb_read_tree $CONSFLAG tree_ph_$$ protml.tre "PRG=protml PARMETERS=$MODEL$SEARCH FILTER=$FILTER PKG=molphy"
-argchoice:TextEdit:arb_textedit outfile
+argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool treefile
 
 arg:BOOTSTRP
 arglabel:How many bootstraps ?
 argtype:chooser
 argchoice:Do not bootstrap:CONSFLAG=;protml $MODEL $SEARCH -v -I in1.in
-argchoice:10: arb_echo 1 r 10 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 10 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile
-argchoice:100: arb_echo 1 r 100 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 100 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile
-argchoice:1000: arb_echo 1 r 1000 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 1000 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile
+argchoice:10: arb_echo 1 r 10 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 10 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
+argchoice:100: arb_echo 1 r 100 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 100 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
+argchoice:1000: arb_echo 1 r 1000 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 1000 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
 
 arg:MODEL
 argtype:chooser

@@ -1,6 +1,6 @@
 item:Phylip help
 itemmeta: h
-itemmethod:(${ARB_TEXTEDIT:-textedit} $ARBHOME/GDEHELP/PHYLIP/$FILE)&
+itemmethod:(arb_textedit $ARBHOME/GDEHELP/PHYLIP/$FILE)&
 itemhelp:phylip.help
 
 arg:FILE

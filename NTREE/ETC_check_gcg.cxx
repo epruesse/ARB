@@ -158,7 +158,7 @@ void create_check_gcg_awars(AW_root *aw_root, AW_default aw_def)
 	aw_root->awar_string( "tmp/etc_check_gcg/directory", "",	aw_def);
 	aw_root->awar_string( "tmp/etc_check_gcg/filter", "",	aw_def);
 	aw_root->awar_string( "etc_check_gcg/fetch", "fetch",aw_def)		->add_target_var(&arcg.fetch);
-	aw_root->awar_string( "etc_check_gcg/textedit", "textedit",aw_def)	->add_target_var(&arcg.textedit);
+	aw_root->awar_string( "etc_check_gcg/textedit", "arb_textedit",aw_def)	->add_target_var(&arcg.textedit);
 	aw_root->awar_int( "etc_check_gcg/minlen", 400,	aw_def)			->add_target_var(&arcg.minbp);
 
 	int i;
