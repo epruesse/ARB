@@ -469,7 +469,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" depend;
-	@grep "DO NOT DELETE THIS LINE" $(@D)/Makefile >/dev/null && cat $(@D)/Makefile \
+	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null && cat $(@D)/Makefile \
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/[^ 	]*\.h//g" \
 			-e "s/\/[^ 	]*\/INCLUDE/\\\$$(ARBHOME)\/INCLUDE/g" \
