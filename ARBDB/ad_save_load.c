@@ -104,26 +104,12 @@ GB_CSTR gb_mapfile_name(GB_CSTR path)
 
 GB_CSTR gb_overwriteName(GB_CSTR path)
 {
-    static char *oname;
-    char *ext;
+    static char *oname = 0;
+    int          len   = strlen(path);
 
-    STATIC_BUFFER(oname,strlen(path)+2);
-
+    STATIC_BUFFER(oname, len+2);
     strcpy(oname,path);
-
-    ext = gb_findExtension(oname);
-
-    if (ext) { // replace last character of extension with '~'
-        int extlen = strlen(ext);
-
-        ad_assert(extlen <= 4);
-        ext[extlen-1] = '~';
-    }
-    else { // append '~' to filenames w/o extension
-        int len = strlen(oname);
-        oname[len] = '~';
-        oname[len+1] = 0;
-    }
+    strcpy(oname+len, "~");     // append ~
 
     return oname;
 }
