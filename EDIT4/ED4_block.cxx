@@ -1,8 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
+#include <cctype>
+#include <cmath>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -434,9 +435,9 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
     last_pos2 = range_col2;
 }
 
-static inline double fabs(double d) {
-    return d<0 ? -d : d;
-}
+// static inline double fabs(double d) {
+    // return d<0 ? -d : d;
+// }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
     static ED4_sequence_terminal *fix_term = 0;
