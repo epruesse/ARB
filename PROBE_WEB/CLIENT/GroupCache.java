@@ -12,7 +12,7 @@ public GroupCache()
         error  = null;
     }
 
-private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int probe_length)
+private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int probe_length) throws Exception 
     {
         String answer = webAccess.retrieveGroupMembers(groupId, probe_length);
         if (answer == null) {
@@ -31,24 +31,34 @@ private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int p
             return null;
         }
 
-        String memberList  = null;
-        int    membercount = Integer.parseInt(parsed.getValue("membercount"));
+        StringBuffer memberListBuffer      = new StringBuffer();
+        //         String       memberList = null;
+        int          membercount           = Integer.parseInt(parsed.getValue("membercount"));
 
-        for (int m = 1; m <= membercount; m++) {
-            String keyName = "m"+m;
-            if (!parsed.hasKey(keyName)) {
-                error = "'"+keyName+"' expected in server answer";
-                return null;
-            }
+        if (membercount<1) {
+            error = "No members found (shouldn't occur!)";            
+        }
+        else {
+            for (int m = 1; m <= membercount; m++) {
+                String keyName = "m"+m;
+                if (!parsed.hasKey(keyName)) {
+                    error = "'"+keyName+"' expected in server answer";
+                    return null;
+                }
 
-            String speciesName = parsed.getValue(keyName);
-            if (memberList == null) {
-                memberList = speciesName;
-            }
-            else {
-                memberList = memberList+","+speciesName;
+                String speciesName = parsed.getValue(keyName);
+                if (m > 1) memberListBuffer.append(",");
+                memberListBuffer.append(speciesName);
+
+                //             if (memberList == null) {
+                //                 memberList = speciesName;
+                //             }
+                //             else {
+                //                 memberList = memberList+","+speciesName;
+                //             }
             }
         }
+        String memberList = memberListBuffer.toString();
 
         if (memberList == null) {
             error = "No members found (shouldn't occur!)";
@@ -57,7 +67,7 @@ private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int p
         return memberList;
     }
 
-public String getGroupMembers(HttpSubsystem webAccess, String groupId, int probe_length)
+public String getGroupMembers(HttpSubsystem webAccess, String groupId, int probe_length) throws Exception 
     {
         error           = null;
         String hash_key = groupId+"_"+probe_length;
