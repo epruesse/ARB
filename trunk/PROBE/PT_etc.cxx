@@ -64,55 +64,21 @@ extern "C" const char *virt_name(PT_probematch *ml)
     if (gene_flag) {
         const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].name);
         return gs ? gs->get_arb_species_name() : "<cantResolveName>";
-
-        //         list<gene_struct*>::iterator gene_iterator;
-        //         gene_iterator = names_list_idp.begin();
-
-//         while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
-//             gene_iterator++;
-//         }
-
-//         if (gene_iterator == names_list_idp.end()) {
-//             printf("Error in Name Resolution\n");
-//             exit(1);
-//         }
-//         else {
-//             return (*gene_iterator)->arb_species_name;
-//         }
     }
     else {
+        pt_assert(psg.data[ml->name].name);
         return psg.data[ml->name].name;
     }
 }
 
-extern "C" const char *virt_fullname(PT_probematch * ml) {
+extern "C" const char *virt_fullname(PT_probematch * ml)
+{
     if (gene_flag) {
         const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].name);
-        return gs ? gs->get_arb_gene_name() : "<cantResolveFullname>";
-
-//         list<gene_struct*>::iterator gene_iterator;
-//         gene_iterator = names_list_idp.begin();
-
-//         while (strcmp((*gene_iterator)->gene_name,psg.data[ml->name].name) && gene_iterator != names_list_idp.end()) {
-//             gene_iterator++;
-//         }
-
-//         if (gene_iterator == names_list_idp.end()) {
-//             printf("Error in Name Resolution\n");
-//             exit(1);
-//         }
-//         else {
-//             return (*gene_iterator)->arb_gene_name;
-//         }
+        return gs ? gs->get_arb_gene_name() : "<cantResolveGeneFullname>";
     }
     else {
-
-        if (psg.data[ml->name].fullname) {
-            return psg.data[ml->name].fullname;
-        } else {
-            return (char*)"";
-        }
-
+        return psg.data[ml->name].fullname ?  psg.data[ml->name].fullname : "<undefinedFullname>";
     }
 }
 
@@ -234,7 +200,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         }
     }
 
-    if (not_found) return GBS_strclose(not_found, 1);
+    if (not_found) return GBS_strclose(not_found);
     return 0;
 }
 
@@ -327,9 +293,9 @@ char *ptpd_read_names_old(PT_local * locs, char *names_listi, char *checksumsi)
     free(to_free_names_list);
     if (to_free_checksums) free(to_free_checksums);
     if (nfound){
-        return GBS_strclose(not_found,1);
+        return GBS_strclose(not_found);
     }else{
-        free(GBS_strclose(not_found,0));
+        free(GBS_strclose(not_found));
     }
     return 0;
 }
