@@ -9,14 +9,5 @@ if (! $gb_main ) {
     exit 0;
 }
 
-BIO::remote_action($gb_main,"ARB_NT","ARB_NT/unmark_all");
-BIO::remote_action($gb_main,"ARB_NT","ARB_NT/SEARCH_SPECIES");
-BIO::remote_awar($gb_main,"ARB_NT","tmp/arbdb_query_0/query","Bacillus");
-BIO::remote_awar($gb_main,"ARB_NT","tmp/arbdb_query_0/query","*Bacillus*");
-BIO::remote_action($gb_main,"ARB_NT","SPECIES_QUERY/SEARCH");
-BIO::remote_awar($gb_main,"ARB_NT","tmp/arbdb_query_0/query","Bacillus*");
-BIO::remote_action($gb_main,"ARB_NT","SPECIES_QUERY/SEARCH");
-BIO::remote_awar($gb_main,"ARB_NT","tmp/arbdb_query_0/key","full_name");
-BIO::remote_action($gb_main,"ARB_NT","SPECIES_QUERY/SEARCH");
-BIO::remote_action($gb_main,"ARB_NT","SPECIES_QUERY/MARK_LISTED_UNMARK_REST");
+BIO::remote_action($gb_main,"ARB_NT","ARB_NT/swap_marked");
 ARB::close($gb_main);

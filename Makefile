@@ -563,8 +563,8 @@ tags2:
 
 links: SOURCE_TOOLS/generate_all_links.stamp
 
-SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links
-	-SOURCE_TOOLS/generate_all_links
+SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
+	-SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
 bin/fig2dev:
