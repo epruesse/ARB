@@ -1,7 +1,7 @@
-AUTODETECT	"LOCUS       *\nORIGIN*"
+AUTODETECT	"LOCUS       s*\nORIGIN*"
 	#Global settings:
 KEYWIDTH	12
-FILETAG		"RDP"
+FILETAG		RDP
 
 BEGIN	"LOCUS*"
 
@@ -15,127 +15,235 @@ MATCH	"LOCUS *"
 	WRITE "id"
 
 MATCH	"LOCUS *"
-	SRT "* RNA*RNA *=*3"
+	SRT "     = :    = :   = :  = :* * *=*2"
+	TAG	"RDP"
+	WRITE "db_nuc"
+
+MATCH	"LOCUS *"
+	SRT "     = :    = :   = :  = :* * * * * * *=*7"
 	TAG	"RDP"
 	WRITE "date"
 
-MATCH	"ACCESSION *"
-	SRT "\"*\"=*1:;=:No information="
-	ACI "extract_words("0123456789",4.0)"
-	WRITE "acc"
+MATCH	"DEFINITION *"
+	TAG	"RDP"
+	WRITE	"description"
 
 MATCH	"COMMENT*Corresponding GenBank entry*"
 	SRT	"*Corresponding GenBank entry\: *=*2:|*=:(*=:;=:not submitted="
 	ACI "extract_words("0123456789",4.0)"
 	WRITE	"acc"
 
+MATCH	"COMMENT*Corresponding GenBank entry*"
+	SRT	"*Corresponding GenBank entry\: *=*2:|*=:(*=:;=:not submitted="
+	ACI "extract_words("0123456789",4.0)"
+	WRITE	"db_acc"
+
+MATCH	"VERSION *"
+	TAG	"RDP"
+	WRITE	"version"
+
+MATCH	"KEYWORDS"
+	TAG	"RDP"
+	WRITE	"keywd"
+
 MATCH	"SOURCE *"
 	TAG	"RDP"
-	APPEND "source"
-
-MATCH	"DEFINITION *"
-	SRT 	" str. *=:biovar*=:.="
-	WRITE "full_name"
-
-MATCH	"DEFINITION *"
-	SRT 	" str. *=:biovar*=:.="
-	TAG	"RDP"
-	WRITE "db_name"
+	WRITE "source"
 
 MATCH	"  ORGANISM *"
-	SRT "*|*=*1"
-	WRITE "full_name"
+	TAG	"RDP"
+	SRT	"*|*=*1"
+	WRITE	"db_name"
 
 MATCH	"  ORGANISM *"
-	SRT "*|*=*1"
 	TAG	"RDP"
-	WRITE "db_name"
+	SRT	"*|*=*2"
+	WRITE	"tax"
+
+MATCH	"  ORGANISM *"
+	SRT	"* * *=*1 *2:*|*=*1"
+	WRITE 	"full_name"
+
+MATCH	"REFERENCE *"
+	SRT	"* *=*1"
+   SETVAR x
+	TAG	"RDP"
+	APPEND	"num_bib"
+
+MATCH	"REFERENCE *"
+	SRT	"(=:)=:?*=(?)*"
+	TAG	"RDP"
+	APPEND	"gene_pos"
 
 MATCH	"  AUTHORS *"
-	SRT	"No information*=:?*=?1*1"
+	SRT	"*=($x)\: *"
 	TAG	"RDP"
 	APPEND "author"
 
-MATCH	"COMMENT*auth line 2:*"
-	SRT	"*auth line 2\:*=*2:|*="
-	TAG	"RDP"
-	APPEND	"author"
-
-MATCH	"COMMENT*auth line 3:*"
-	SRT	"*auth line 3\:*=*2:|*="
-	TAG	"RDP"
-	APPEND	"author"
-
-MATCH	"COMMENT*auth line 4:*"
-	SRT	"*auth line 4\:*=*2:|*="
-	TAG	"RDP"
-	APPEND	"author"
-
 MATCH	"  TITLE *"
-	SRT	"No information*=:?*=?1*1"
-	TAG	"RDP"
-	APPEND	"title"
-
-MATCH	"COMMENT*title line 2:*"
-	SRT	"*title line 2\:*=*2:|*="
-	TAG	"RDP"
-	APPEND	"title"
-
-MATCH	"COMMENT*title line 3:*"
-	SRT	"*title line 3\:*=*2:|*="
-	TAG	"RDP"
-	APPEND	"title"
-
-MATCH	"COMMENT*title line 4:*"
-	SRT	"*title line 4\:*=*2:|*="
+	SRT	"*=($x)\: *"
 	TAG	"RDP"
 	APPEND	"title"
 
 MATCH	"  JOURNAL *"
-	SRT	"No information*=:Unpublished*=:?*=?1*1"
+	SRT	"*=($x)\: *"
 	TAG	"RDP"
 	APPEND	"journal"
 
-MATCH	"DEFINITION* str. *"
-	SRT 	"*str. *=*2"
+MATCH	"  MEDLINE *"
+	SRT	"*=($x)\: *"
 	TAG	"RDP"
-	APPEND "strain"
+	APPEND	"medline"
 
-MATCH	"COMMENT*Culture collection\: *"
-	SRT	"*Culture collection\: *=*2:|*="
+MATCH	"     source*cell_line*"
+	SRT	"*/cell_line\=\"*\"*=*2"
 	TAG	"RDP"
-	APPEND	"strain"
+	WRITE	"cell_line"
 
-MATCH	"COMMENT *strain=*"
+MATCH	"     source*cell_type*"
+	SRT	"*/cell_type\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"cell_type
+
+MATCH	"     source*cultivar*"
+	SRT	"*/cultivar\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"cultivar"
+
+MATCH	"     source*db_xref*"
+	SRT	"*/db_xref\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"db_ref"
+
+MATCH	"     source*isolate*"
+	SRT	"*/isolate\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"isolate"
+
+MATCH	"     source*isolation_source*"
+	SRT	"*/isolation_source\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"isol_src"
+
+MATCH	"     source*clone*"
+	SRT	"*/clone\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"clone"
+
+MATCH	"     source*map*"
+	SRT	"*/map\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"map"
+
+MATCH	"     source*organelle*"
+	SRT	"*/organelle\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"organelle"
+
+MATCH	"     source*plasmid*"
+	SRT	"*/plasmid\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"plasmid"
+
+MATCH	"     source*sero_type*"
+	SRT	"*/sero_type\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"serotype"
+
+MATCH	"     source*sero_var*"
+	SRT	"*/sero_var\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"serovar"
+
+MATCH	"     source*specimen_voucher*"
+	SRT	"*/specimen_voucher\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"voucher"
+
+MATCH	"     source*specific_host*"
+	SRT	"*/specific_host\=\"*\"*=*2"
+	TAG	"RDP"
+	WRITE	"host"
+
+MATCH	"     source*strain=*"
+	TAG	"RDP"
 	SRT	"*strain\=\"*\"*=*2"
-	TAG	"RDP"
-	APPEND	"strain"
+	WRITE	"strain"
 
-MATCH	"COMMENT *ref 2 =*"
-	SRT	"*ref 2*=ref 2*2"
+MATCH	"     source*sub_species=*"
 	TAG	"RDP"
-	APPEND	"reference"
+	SRT	"*sub_species\=\"*\"*=*2"
+	WRITE	"subspec"
 
-MATCH	"COMMENT*biovar:*"
-	SRT	"*biovar\:*=*2:|*="
+MATCH	"     source*sub_strain=*"
 	TAG	"RDP"
-	APPEND	"source"
+	SRT	"*sub_strain\=\"*\"*=*2"
+	WRITE	"substrain"
 
-MATCH	"DEFINITION * biovar *"
-	SRT 	"* biovar *=*2"
+MATCH	"     source*tissue_type=*"
 	TAG	"RDP"
-	APPEND "source"
+	SRT	"*tissue_type\=\"*\"*=*2"
+	WRITE	"tissue"
 
-MATCH	"COMMENT*IDENT:*"
-	SRT	"*IDENT\:*=*2:|*="
+MATCH	"     source*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	WRITE	"note"
+
+MATCH	"     rRNA*db_xref*"
+	SRT	"*/db_xref\=\"*\"*=*2"
 	TAG	"RDP"
-	APPEND	"id"
+	APPEND	"db_ref"
 
+MATCH	"     rRNA*evidence*"
+	SRT	"*/evidence\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"evidence"
+
+MATCH	"     rRNA*allele*"
+	SRT	"*/allele\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"allele"
+
+MATCH	"     rRNA*function*"
+	SRT	"*/function\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"function"
+
+MATCH	"     rRNA*citation*"
+	SRT	"*/citation\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"citation"
+
+MATCH	"     rRNA*gene*"
+	SRT	"*/gene\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"gene"
+
+MATCH	"     rRNA*map*"
+	SRT	"*/map\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"map"
+
+MATCH	"     rRNA*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"note"
+
+MATCH	"     rRNA*operon*"
+	SRT	"*/operon\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"operon"
+
+MATCH	"     rRNA*product*"
+	SRT	"*/product\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"product"
 
 SEQUENCEAFTER	"ORIGIN*"
 SEQUENCESRT	" =:~=.:*Check*..="
-SEQUENCEACI	"remove("0123456789 ")"
-# SEQUENCECOLUMN	10
+SEQUENCEACI	"remove("0123456789 /")"
+SEQUENCECOLUMN	0
 SEQUENCEEND	"//"
 CREATE_ACC_FROM_SEQUENCE
 
