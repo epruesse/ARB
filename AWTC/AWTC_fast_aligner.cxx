@@ -24,6 +24,7 @@
 #include "awtc_seq_search.hxx"
 #include "awtc_ClustalV.hxx"
 #include "awtc_fast_aligner.hxx"
+#include "awt.hxx"
 
 
 static IslandHopping *island_hopper = 0;
@@ -2379,7 +2380,7 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(	FA_AWAR_INSERT, 			0, 	db1);
     root->awar_int(	FA_AWAR_SHOW_GAPS_MESSAGES,		1, 	db1);
     root->awar_int(	FA_AWAR_USE_SECONDARY,		0, 	db1);
-    root->awar_int(	AWAR_PT_SERVER, 			-1, 	db1);
+    root->awar_int(	AWAR_PT_SERVER, 			0, 	db1);
     root->awar_int(	FA_AWAR_NEXT_RELATIVES,			1, 	db1)->set_minmax(1,100);
 
     // island hopping:
@@ -2576,33 +2577,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
 
     aws->label_length(0);
     aws->at( "pt_server" );
-    aws->create_option_menu(AWAR_PT_SERVER, "" , "" );
-    {
-        int i;
-        char *server;
-        char empty[]="";
-        char *file;
-        char search_for[256];
-        char choice[256];
-        char	*fr;
-
-        for (i=0;i<1000;i++) {
-            sprintf(search_for,"ARB_PT_SERVER%i",i);
-            server = GBS_read_arb_tcp(search_for);
-            if (!server) break;
-            fr = server;
-            file = server;	/* i got the machine name of the server */
-            if (*file) file += strlen(file)+1;	/* now i got the command string */
-            if (*file) file += strlen(file)+1;	/* now i got the file */
-            if (strrchr(file,'/')) file = strrchr(file,'/')-1;
-            if (!(server = strtok(server,":"))) server = empty;
-            sprintf(choice,"%s: %s",server,file+2);
-            aws->insert_option( choice, "", i );
-            delete fr;
-        }
-    }
-    aws->insert_default_option( "select a PT_SERVER", "d", -1);
-    aws->update_option_menu();
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, AW_TRUE);
 
     aws->at("relatives");
     aws->label("Number of relatives to use:");
