@@ -19,7 +19,7 @@
 #define LEFT_NONS "#*abcdefghij"
 #define RIGHT_NONS "#*ABCDEFGHIJ"
 
-char BI_helix::error[256];
+char *BI_helix::error = 0;
 
 struct helix_stack {
     struct helix_stack *next;
@@ -128,10 +128,10 @@ BI_helix::~BI_helix(void){
 extern "C" long BI_helix_check_error(const char *key, long val)
 {
     struct helix_stack *stack = (struct helix_stack *)val;
-    if (BI_helix::error[0]) return val;
+    if (BI_helix::error) return val; // don't overwrite existing error
     if (stack) {
-        sprintf(BI_helix::error,"Too many '%c' in Helix '%s' pos %li",
-                stack->c, key, stack->pos);
+        BI_helix::error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %li",
+                                                 stack->c, key, stack->pos);
     }
     return val;
 }
@@ -184,7 +184,10 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
         helix_nr = h;
     }
 
-    error[0] = 0;
+    if (error) {
+        free(error);
+        error = 0;
+    }
 
     strcpy(ident,"0");
     entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry),(size_t)size);
@@ -217,7 +220,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
         else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){   // pop
             stack = (struct helix_stack *)GBS_read_hash(hash,ident);
             if (!stack) {
-                sprintf(error,"Too many '%c' in Helix '%s' pos %i",c,ident,pos);
+                bi_assert(!error); // already have an error
+                error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %i", c, ident, pos);
                 goto helix_end;
             }
             if (strchr(RIGHT_HELIX,c)) {
@@ -226,8 +230,9 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             }else{
                 c = tolower(c);
                 if (stack->c != c) {
-                    sprintf(error,"Character '%c' pos %li don't match character '%c' pos %i in Helix '%s'",
-                            stack->c,stack->pos,c,pos,ident);
+                    bi_assert(!error); // already have an error
+                    error = GBS_global_string_copy("Character '%c' pos %li don't match character '%c' pos %i in Helix '%s'",
+                                                   stack->c, stack->pos, c, pos, ident);
                     goto helix_end;
                 }
                 if (isalpha(c)) {
@@ -261,8 +266,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
     GBS_free_hash(hash);
     free(helix_nr);
     free(helix);
-    if (error[0]) return error;
-    return 0;
+
+    return error;
 }
 
 
