@@ -224,12 +224,19 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
         if (ali){
             for (   data = GB_find(ali,0,0,down_level) ;
                     data;
-                    data = GB_find(data,0,0,this_level|search_next)){
+                    data = GB_find(data,0,0,this_level|search_next))
+            {
                 long type = GB_read_type(data);
                 if (type == GB_DB || type < GB_BITS) continue;
+
+                if (GB_read_key_pntr(data)[0] == '_') continue; // e.g. _STRUCT (of secondary structure)
+
                 len = GB_read_count(data);
                 if (ali_len<0) ali_len = len;
-                if (len>ali_len) ali_len = len;
+                if (ali_len !=len) {
+                    aligned = 0;
+                    if (len>ali_len) ali_len = len;
+                }
             }
         }
     }
