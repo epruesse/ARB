@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include "mo_assert.h"
+#define mo_assert(cond) arb_assert(cond)
 
 #include "matrixut.h"
 
@@ -33,6 +35,8 @@ int n;
 {
 	fvector v;
 
+    mo_assert(n>0);
+
 	v = (fvector) malloc((unsigned) (n * sizeof(float)));
 	if (v == NULL) maerror("in fvector().");
 	return v;
@@ -46,6 +50,9 @@ int ncol;
 {
 	int i;
 	fmatrix m;
+
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
 
 	m = (fmatrix) malloc((unsigned) (nrow * sizeof(fvector)));
 	if (m == NULL) maerror("1 in fmatrix().");
@@ -64,6 +71,10 @@ int ncol;
 {
 	int i, j;
 	fcube c;
+
+    mo_assert(ntri>0);
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
 
 	c = (fcube) malloc((unsigned) (ntri * sizeof(fmatrix)));
 	if (c == NULL) maerror("1 in fcube().");
@@ -116,6 +127,8 @@ int n;
 {
 	dvector v;
 
+    mo_assert(n>0);
+
 	v = (dvector) malloc((unsigned) (n * sizeof(double)));
 	if (v == NULL) maerror("in dvector().");
 	return v;
@@ -127,15 +140,18 @@ int nrow;
 int ncol;
 /* memory allocate a double matrix */
 {
-	int i;
-	dmatrix m;
+    int     i;
+    dmatrix m;
 
-	m = (dmatrix) malloc((unsigned) (nrow * sizeof(dvector)));
-	if (m == NULL) maerror("1 in dmatrix().");
-	*m = (dvector) malloc((unsigned) (nrow * ncol * sizeof(double)));
-	if (*m == NULL) maerror("2 in dmatrix().");
-	for (i = 1; i < nrow; i++) m[i] = m[i-1] + ncol;
-	return m;
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+
+    m = (dmatrix) malloc((unsigned) (nrow * sizeof(dvector)));
+    if (m == NULL) maerror("1 in dmatrix().");
+    *m = (dvector) malloc((unsigned) (nrow * ncol * sizeof(double)));
+    if (*m == NULL) maerror("2 in dmatrix().");
+    for (i = 1; i < nrow; i++) m[i] = m[i-1] + ncol;
+    return m;
 }
 
 dcube
@@ -148,6 +164,10 @@ int ncol;
 	int i, j;
 	dcube c;
 
+    mo_assert(ntri>0);
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+    
 	c = (dcube) malloc((unsigned) (ntri * sizeof(dmatrix)));
 	if (c == NULL) maerror("1 in dcube().");
 	*c = (dmatrix) malloc((unsigned) (ntri * nrow * sizeof(dvector)));
@@ -198,6 +218,8 @@ int n;
 /* memory allocate a char vector */
 {
 	cvector v;
+    
+    mo_assert(n>0);
 
 	v = (cvector) malloc((unsigned)n * sizeof(char));
 	if (v == NULL) maerror("in cvector().");
@@ -213,6 +235,9 @@ int ncol;
 	int i;
 	cmatrix m;
 
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+    
 	m = (cmatrix) malloc((unsigned) (nrow * sizeof(cvector)));
 	if (m == NULL) maerror("1 in cmatrix().");
 	*m = (cvector) malloc((unsigned) (nrow * ncol * sizeof(char)));
@@ -231,6 +256,10 @@ int ncol;
 	int i, j;
 	ccube c;
 
+    mo_assert(ntri>0);
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+    
 	c = (ccube) malloc((unsigned) (ntri * sizeof(cmatrix)));
 	if (c == NULL) maerror("1 in ccube().");
 	*c = (cmatrix) malloc((unsigned) (ntri * nrow * sizeof(cvector)));
@@ -282,6 +311,8 @@ int n;
 {
 	ivector v;
 
+    mo_assert(n>0);
+    
 	v = (ivector) malloc((unsigned) (n * sizeof(int)));
 	if (v == NULL) maerror("in ivector().");
 	return v;
@@ -296,6 +327,9 @@ int ncol;
 	int i;
 	imatrix m;
 
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+    
 	m = (imatrix) malloc((unsigned) (nrow * sizeof(ivector)));
 	if (m == NULL) maerror("1 in imatrix().");
 	*m = (ivector) malloc((unsigned) (nrow * ncol * sizeof(int)));
@@ -314,6 +348,10 @@ int ncol;
 	int i, j;
 	icube c;
 
+    mo_assert(ntri>0);
+    mo_assert(nrow>0);
+    mo_assert(ncol>0);
+    
 	c = (icube) malloc((unsigned) (ntri * sizeof(imatrix)));
 	if (c == NULL) maerror("1 in icube().");
 	*c = (imatrix) malloc((unsigned) (ntri * nrow * sizeof(ivector)));
