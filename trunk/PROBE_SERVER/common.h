@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Tue Jan/20/2004 17:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 20:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -199,7 +199,7 @@ static GB_ERROR saveProbeContainerToString(GBDATA *gb_father, const char *entry_
             }
         }
         else {
-            string data;
+            std::string data;
             {
                 int len   = 0;
                 int count = 0;
