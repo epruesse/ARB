@@ -1472,9 +1472,6 @@ static char *query_box_store_config(AW_window *aww, AW_CL cl_cbs, AW_CL) {
 //      static void query_box_restore_config(AW_window *, const char *stored, AW_CL cl_cbs, AW_CL )
 //  ----------------------------------------------------------------------------------------------------
 static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_cbs, AW_CL ) {
-#if defined(DEBUG)
-    printf("stored string='%s'\n", stored);
-#endif // DEBUG
     query_box_init_config(aww, (struct adaqbsstruct *)cl_cbs);
     AWT_restore_configDefinition(stored);
 }
@@ -1594,9 +1591,12 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
             aws->at(xpos+KEY_OPTION_X_OFFSET, ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
-                                                0,awtqs->rescan_pos_fig,
-                                                awtqs->selector, 20, 10, false);
+//             awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
+//                                                 0,awtqs->rescan_pos_fig,
+//                                                 awtqs->selector, 20, 1, true);
+             awt_create_selection_list_on_scandb(gb_main,aws,cbs->awar_keys[key], AWT_NDS_FILTER,
+                                                 0,awtqs->rescan_pos_fig,
+                                                 awtqs->selector, 23, 30, true);
 
             aws->at(xpos+KEY_NOT_X_OFFSET, ypos+key*KEY_Y_OFFSET);
             aws->create_toggle(cbs->awar_not[key], "matches.bitmap", "not.bitmap");
