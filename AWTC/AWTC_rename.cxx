@@ -57,6 +57,58 @@ void disconnect_an(void)
     ang.link = 0;
 }
 
+GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, char*& new_name) {
+    // create a unique short name for 'full_name'    
+    // the result is written into 'new_name' (as malloc-copy) 
+    // if fails: GB_ERROR!=0 && new_name==0
+    
+    new_name = 0;
+    
+    aw_openstatus(GBS_global_string("Generating new name for '%s'", full_name)); 
+    
+    aw_status("Connecting to name server");
+    aw_status((double)0);
+    
+    GB_ERROR err = connect_2_an(gb_main);
+    if (err) return err;
+    
+    aw_status("Generating name");
+    static char *shrt = 0;
+    if (strlen(full_name)) {
+        if (aisc_nput(ang.link, AN_LOCAL, ang.locs,
+                      LOCAL_FULL_NAME,	full_name,
+                      LOCAL_ACCESSION,	"",
+                      LOCAL_ADVICE,		"",
+                      0)){
+            err = "Connection Problems with the NAME_SERVER";
+        }
+        if (aisc_get(ang.link, AN_LOCAL, ang.locs,
+                     LOCAL_GET_SHORT,	&shrt,
+                     0)){
+            err = "Connection Problems with the NAME_SERVER";
+        }
+    }
+    
+    disconnect_an();    
+    
+    if (err) {
+        free(shrt);
+    }
+    else {
+        if (shrt) {
+            new_name = shrt;
+            shrt = 0;
+        }
+        else {
+            err = GB_export_error("Generation of short name for '%s' failed", full_name);
+        }
+    }
+    
+    aw_closestatus();
+    
+    return err;
+}
+
 
 GB_ERROR pars_names(GBDATA *gb_main, int update_status)
 {
@@ -106,6 +158,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
         if (gb_full_name) full_name = GB_read_string(gb_full_name);
         else		  full_name = strdup("");
         name = GB_read_string(gb_name);
+        
         if (strlen(acc) + strlen(full_name) ) {
             if (aisc_nput(ang.link, AN_LOCAL, ang.locs,
                           LOCAL_FULL_NAME,	full_name,
@@ -123,7 +176,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int update_status)
             shrt = strdup(name);
         }
         if (!err) {
-            printf("full='%s' short='%s'\n", full_name, shrt);
+            //printf("full='%s' short='%s'\n", full_name, shrt);
             
             if (GBS_read_hash(hash,shrt)) {
                 char *newshrt;
