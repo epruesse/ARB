@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/22/2002 19:17 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/22/2002 19:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -39,8 +39,8 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
     if (answer == -1 || dont_ask_again == false) {
 
         size_t  but_len         = strlen(buttons);
-//         size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0);
-        char   *new_buttons     = (char*)malloc(but_len*3+1+(add_abort ? 6 : 0));
+        size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0);
+        char   *new_buttons     = (char*)malloc(new_buttons_len);
         int     button_count    = 0; // number of buttons in 'buttons'
 
         { // transform "YES,NO"  ->   "YES,YES (to_all),^NO,NO (to_all)" or "YES (to_all),NO (to_all)"
