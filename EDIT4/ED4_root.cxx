@@ -1437,17 +1437,18 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     true, // use color groups
 
                                     "#ffffe0",
-                                    "STANDARD$black",                                       // Standard Color showing sequences
-                                    "#SEQUENCES$navy",                                      // Color for selected sequences
-                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",           "-COLOR 3$#0a0",
-                                    "+-COLOR 4$#80f",           "+-COLOR 5$#a90",       "-COLOR 6$grey",
-                                    "+-COLOR 7$red",            "+-COLOR 8$red",        "-COLOR 9$red",
-                                    "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
-                                    "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
-                                    "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
-                                    "-RANGE 9$#303030",
+                                    "STANDARD$black", // Standard Color showing sequences
+                                    "#SEQUENCES$navy", // Color for selected sequences
+                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",       "-COLOR 3$#0a0",
+                                    "+-COLOR 4$#80f",       "+-COLOR 5$#a90",       "-COLOR 6$grey",
+                                    "+-COLOR 7$red",        "+-COLOR 8$red",        "-COLOR 9$red",
 
-                                    "+-User1$#B8E2F8",          "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
+                                    "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
+                                    "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
+                                    "+-RANGE 6$#C0C0C0",    "+-RANGE 7$#B8B8B8",    "-RANGE 8$#B0B0B0",
+                                    "-RANGE 9$#A0A0A0",
+
+                                    "+-User1$#B8E2F8",      "+-User2$#B8E2F8",      "-Probe$#B8E2F8", // see also SEC_graphic::init_devices
                                     "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
                                     "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
@@ -1651,7 +1652,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     // ----------------------------------------------------------------------------------------------------
 
 #undef ____________________________SEP
-    
+
     aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
     awmm->set_bottom_area_height( 0 ); //No bottom area
 
