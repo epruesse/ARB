@@ -453,7 +453,17 @@ extern "C" char *get_match_hinfo(PT_probematch  *ml) {
     PT_base_2_string(seq,0);
     if (!ml) return (char*)"There are no targets";
     if (ml->N_mismatches>=0) {
+#ifdef DEVEL_IDP
+      //Hier wird der Headerstring gesetzt
+      if (gene_flag) {
+	return (char*)GBS_global_string("   UnserK     Kurzname                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
+      }
+      else {
+#endif
         return (char *)GBS_global_string("   name      fullname                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
+#ifdef DEVEL_IDP
+      }
+#endif
     }else{
         return (char*)"name     fullname                       dt   wmis pos   ecoli  rev";
     }
