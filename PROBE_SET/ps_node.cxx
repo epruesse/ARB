@@ -63,12 +63,12 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     //
     // write num
     //
-    _fb->put( &num,sizeof(num) );
+    _fb->put_int( num );
     //
     // write probes
     //
     size = (probes == 0) ? 0 : probes->size();
-    _fb->put( &size, sizeof(size) );
+    _fb->put_uint( size );
     if (size) {
         PS_Probe p;
 	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
@@ -80,7 +80,7 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     // write children
     //
     size = children.size();
-    _fb->put( &size, sizeof(size) );
+    _fb->put_uint( size );
     for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
         i->second->save( _fb );
     }
@@ -99,11 +99,11 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
     //
     // read num
     //
-    _fb->get( &num, sizeof(num) );
+    _fb->get_int( num );
     //
     // read probes
     //
-    _fb->get( &size, sizeof(size) );
+    _fb->get_uint( size );
     if (size) {               // does node have probes ?
 	probes = new PS_ProbeSet;                                 // make new probeset
 	for (unsigned int i=0; i<size; ++i) {
@@ -118,7 +118,7 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
     //
     // read children
     //
-    _fb->get( &size, sizeof(size) );
+    _fb->get_uint( size );
     if (num == -1) {
         for (unsigned int i=0; i<size; ++i) {
             PS_NodePtr new_child(new PS_Node(-1));                // make new child
@@ -147,12 +147,12 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
     // read num if root
     //
     if (num == -1) {
-        _fb->get( &num, sizeof(num) );
+        _fb->get_int( num );
     }
     //
     // read probes
     //
-    _fb->get( &size, sizeof(size) );
+    _fb->get_uint( size );
     if (size) {               // does node have probes ?
 	if (!probes) probes = new PS_ProbeSet;                    // make new probeset
 	for (unsigned int i=0; i<size; ++i) {
@@ -165,13 +165,13 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
     //
     // read children
     //
-    _fb->get( &size, sizeof(size) );
+    _fb->get_uint( size );
     for (unsigned int i=0; i<size; ++i) {
         //
         // read num of child
         //
         SpeciesID childNum;
-        _fb->get( &childNum, sizeof(childNum) );
+        _fb->get_int( childNum );
         if ((num == -1) && (i % 200 == 0)) printf( "appended 1st level #%i\n", childNum );
         //
         // test if child already exists

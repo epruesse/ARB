@@ -4,73 +4,6 @@
 using namespace std;
 
 // ************************************************************
-// * PS_FileBuffer( _name,_readonly )
-// ************************************************************
-PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
-    // init. file
-    file_name   = strdup(_name);
-    is_readonly = _readonly;
-    if (is_readonly) {
-        file_flags = O_RDONLY;
-        file_mode  = 0;
-    } else {
-        file_flags = O_WRONLY | O_CREAT | O_EXCL;
-        file_mode  = S_IRUSR | S_IWUSR;
-    }
-    file_handle = open( file_name, file_flags, file_mode );
-    if (file_handle == -1) {
-        fprintf( stderr, "failed to open file %s\n",file_name );
-        *(int *)0 = 0;
-    }
-
-    // init. buffer
-    size     = 0;
-    position = 0;
-    buffer   = (char *)malloc(BUFFER_SIZE);
-    if (!buffer) {
-        fprintf( stderr, "failed to allocate memory for buffer for file %s\n",file_name );
-        *(int *)0 = 0;
-    }
-
-    // debug
-    total_read  = 0;
-    total_write = 0;
-}
-
-// ************************************************************
-// * reinit( _name,_readonly )
-// ************************************************************
-void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
-    // finish old file
-    if (!is_readonly) flush();
-    if (file_name) free(file_name);
-    if (file_handle != -1) close(file_handle);
-
-    // init. file
-    file_name   = strdup(_name);
-    is_readonly = _readonly;
-    if (is_readonly) {
-        file_flags = O_RDONLY;
-        file_mode  = 0;
-    } else {
-        file_flags = O_WRONLY | O_CREAT | O_EXCL;
-        file_mode  = S_IRUSR | S_IWUSR;
-    }
-    file_handle = open( file_name, file_flags, file_mode );
-    if (file_handle == -1) {
-        fprintf( stderr, "failed to open file %s\n",file_name );
-        *(int *)0 = 0;
-    }    
-
-    // init. buffer
-    clear();
-
-    // debug
-    total_read  = 0;
-    total_write = 0;
-}
-
-// ************************************************************
 // * put( _data,_length )
 // ************************************************************
 void PS_FileBuffer::put( const void *_data, int _length ) {
@@ -108,6 +41,73 @@ void PS_FileBuffer::get( void *_data, int _length ) {
         refill();
         memcpy( _data,buffer,_length );
         position = _length;
+    }
+}
+
+
+// ************************************************************
+// * put_ulong( _ul )
+// ************************************************************
+void PS_FileBuffer::put_ulong( unsigned long int _ul ) {
+    if (_ul <= 0x7F) {                  // bit7 == 0 -> 1 byte integer
+        put_char( _ul ); 
+    }
+    else if (_ul <= 0x3FFF) {
+        put_char( (_ul>>8) | 0x80 );    // bit7==1 && bit6==0 -> 2 byte integer
+        put_char( _ul & 0xFF );
+    }
+    else if (_ul <= 0x1FFFFF) {
+        put_char( (_ul>>16) | 0xC0 );   // bit7==1 && bit6==1 && bit5==0 -> 3 byte integer
+        put_char( (_ul>>8) & 0xFF);
+        put_char( _ul & 0xFF);
+    }
+    else if (_ul <= 0x0FFFFFFF) {
+        put_char( (_ul>>24) | 0xE0 );   // bit7==1 && bit6==1 && bit5==1 && bit4==0 -> 4 byte integer
+        put_char( (_ul>>16) & 0xFF );
+        put_char( (_ul>>8) & 0xFF );
+        put_char( _ul & 0xFF );
+    }
+    else {                              // else -> 5 byte integer
+        put_char( 0xF0 );
+        put_char( (_ul>>24) & 0xFF );
+        put_char( (_ul>>16) & 0xFF );
+        put_char( (_ul>>8) & 0xFF );
+        put_char( _ul & 0xFF );
+    }
+
+}
+
+
+// ************************************************************
+// * get_ulong( _ul )
+// ************************************************************
+void PS_FileBuffer::get_ulong( unsigned long int &_ul ) {
+    unsigned char c;
+    get_char(c);
+
+    if ((c & 0x80) == 0) {                   // 1-byte
+        _ul = c;
+    } else {
+        if ((c & 0xC0) == 0x80) {            // 2-byte
+            _ul = (unsigned long)(c & 0x3F) << 8;
+        } else {
+            if ((c & 0xE0) == 0xC0) {        // 3-byte
+                _ul = (unsigned long)(c & 0x1F) << 16;
+            } else {
+                if ((c & 0xF0) == 0xE0) {    // 4-byte
+                    _ul = (unsigned long)(c & 0x0F) << 24;
+                } else {
+                    get_char(c);
+                    _ul = (unsigned long)c << 24;
+                }
+                get_char(c);
+                _ul = (unsigned long)c << 16;
+            }
+            get_char(c);
+            _ul |= (unsigned long)c << 8;
+        }
+        get_char(c);
+        _ul |= c;
     }
 }
 
@@ -156,4 +156,71 @@ void PS_FileBuffer::refill() {
     total_read += readen;
     size        = unread+readen;
     position    = 0;
+}
+
+// ************************************************************
+// * reinit( _name,_readonly )
+// ************************************************************
+void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
+    // finish old file
+    if (!is_readonly) flush();
+    if (file_name) free(file_name);
+    if (file_handle != -1) close(file_handle);
+
+    // init. file
+    file_name   = strdup(_name);
+    is_readonly = _readonly;
+    if (is_readonly) {
+        file_flags = O_RDONLY;
+        file_mode  = 0;
+    } else {
+        file_flags = O_WRONLY | O_CREAT | O_EXCL;
+        file_mode  = S_IRUSR | S_IWUSR;
+    }
+    file_handle = open( file_name, file_flags, file_mode );
+    if (file_handle == -1) {
+        fprintf( stderr, "failed to open file %s\n",file_name );
+        *(int *)0 = 0;
+    }    
+
+    // init. buffer
+    clear();
+
+    // debug
+    total_read  = 0;
+    total_write = 0;
+}
+
+// ************************************************************
+// * PS_FileBuffer( _name,_readonly )
+// ************************************************************
+PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
+    // init. file
+    file_name   = strdup(_name);
+    is_readonly = _readonly;
+    if (is_readonly) {
+        file_flags = O_RDONLY;
+        file_mode  = 0;
+    } else {
+        file_flags = O_WRONLY | O_CREAT | O_EXCL;
+        file_mode  = S_IRUSR | S_IWUSR;
+    }
+    file_handle = open( file_name, file_flags, file_mode );
+    if (file_handle == -1) {
+        fprintf( stderr, "failed to open file %s\n",file_name );
+        *(int *)0 = 0;
+    }
+
+    // init. buffer
+    size     = 0;
+    position = 0;
+    buffer   = (unsigned char *)malloc(BUFFER_SIZE);
+    if (!buffer) {
+        fprintf( stderr, "failed to allocate memory for buffer for file %s\n",file_name );
+        *(int *)0 = 0;
+    }
+
+    // debug
+    total_read  = 0;
+    total_write = 0;
 }
