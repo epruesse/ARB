@@ -21,7 +21,10 @@ DESCRIPTION	Any sequence of symbols stored as 'sequence associated
 		filter. It's name will be displayed just before the SAI names.
 
 		The characters of the filter which define columns to exclude
-		have to be defined by typing to the respective subwindow.
+		have to be defined in the respective input field.
+
+                Additionally or alternatively you may define the absolute column
+                range to be used (a range from 0 to 0 means 'use whole sequence').
 
 		The selected filter is displayed in the subwindow on the bottom.
 
@@ -33,7 +36,10 @@ NOTES		Any nucleotide sequence can be copied to SAI (sequence
 		associated information) (ARB_NT/Species/Info/SPECIES/Convert to
 		SAI) and then used as a filter.
 
-EXAMPLES	Include only positions which are occupied by a residue within 
+                Multiple filters may be combined. In this case only those columns
+                are used that are selected by ALL filters.
+
+EXAMPLES	Include only positions which are occupied by a residue within
 		the E. coli sequence:
 
 			1. Select 'ECOLI' from the 'Select a Filter' subwindow.
@@ -46,7 +52,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 			1. Select 'HELIX' from 	the 'Select a Filter' subwindow.
 
 			2. Type base pair symbols to the 'Exclude Column'
-				subwindow ([<>]).	
+				subwindow ([<>]).
 
 		Include only positions which have been unambiguously determined
 		within a particular sequence:
@@ -59,7 +65,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 
 			3. Type non-nucleotide and ambiguoity symbols to the
 				'Exclude Column' subwindow (.-acguRYS ....).
-		
+
 WARNINGS	None
 
 BUGS		No bugs known
