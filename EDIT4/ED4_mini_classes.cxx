@@ -512,7 +512,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                 int kcount; // count this character
 
                 if (BK_group) { // group -> iupac
-                    if (IS_NUCLEOTIDE) {
+                    if (IS_NUCLEOTIDE()) {
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
 
@@ -531,7 +531,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                         kchar = ED4_encode_iupac(used_bases, ED4_ROOT->alignment_type);
                     }
                     else {
-                        e4_assert(IS_AMINO);
+                        e4_assert(IS_AMINO());
 
                         int group_count[IUPAC_GROUPS];
 
@@ -636,11 +636,16 @@ ED4_char_table::ED4_char_table(int maxseqlength)
         char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
         used_bases_tables = strlen(align_string);
 
-        if (IS_NUCLEOTIDE) {
-            groups = "A,C,G,TU,MRWSYKVHDBN,";
+        if (IS_NUCLEOTIDE()) {
+            if (IS_RNA()) {
+                groups = "A,C,G,TU,MRWSYKVHDBN,";
+            }
+            else {
+                groups = "A,C,G,UT,MRWSYKVHDBN,";
+            }
         }
         else {
-            e4_assert(IS_AMINO);
+            e4_assert(IS_AMINO());
             groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,";
         }
 
