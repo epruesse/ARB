@@ -1097,7 +1097,9 @@ tarale:
 sourcetarfile:
 		util/arb_save
 
-build: tarfile sourcetarfile
+build: 
+	-rm arb.tgz arbsrc.tgz
+	$(MAKE) tarfile sourcetarfile
 
 export:	build
 	util/arb_export /beta
