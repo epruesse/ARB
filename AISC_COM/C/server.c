@@ -12,6 +12,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 #ifdef SGI
 #	include <bstring.h>
