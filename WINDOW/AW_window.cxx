@@ -278,6 +278,67 @@ AW_window::~AW_window(void) {
     delete picture;
 }
 
+
+#if defined(DEBUG)
+#define DUMP_MENU_LIST          // this should NOT be defined normally (if defined, every window writes all menu-entries to stdout)
+#endif // DEBUG
+
+#if defined(DUMP_MENU_LIST)
+
+static char *window_name = 0;
+static char *sub_menu    = 0;
+
+static void initMenuListing(const char *win_name) {
+    aw_assert(win_name);
+
+    free(window_name); window_name = strdup(win_name);
+    free(sub_menu); sub_menu       = 0;
+
+    printf("---------------------------------------- list of menus for '%s'\n", window_name);
+}
+
+static void dumpMenuEntry(const char *entry) {
+    aw_assert(window_name);
+    if (sub_menu) {
+        printf("'%s/%s/%s'\n", window_name, sub_menu, entry);
+    }
+    else {
+        printf("'%s/%s'\n", window_name, entry);
+    }
+}
+
+static void dumpOpenSubMenu(const char *sub_name) {
+    aw_assert(sub_name);
+
+    dumpMenuEntry(sub_name); // dump the menu itself
+
+    if (sub_menu) {
+        char *new_sub_menu = GBS_global_string_copy("%s/%s", sub_menu, sub_name);
+        free(sub_menu);
+        sub_menu = new_sub_menu;
+    }
+    else {
+        sub_menu = strdup(sub_name);
+    }
+}
+
+static void dumpCloseSubMenu() {
+    aw_assert(sub_menu);
+    char *lslash = strrchr(sub_menu, '/');
+    if (lslash) {
+        lslash[0] = 0;
+    }
+    else {
+        free(sub_menu); sub_menu = 0;
+    }
+}
+
+static void dumpCloseAllSubMenus() {
+    free(sub_menu); sub_menu = 0;
+}
+
+#endif // DUMP_MENU_LIST
+
 AW_window_menu_modes::AW_window_menu_modes( void ) {}
 AW_window_menu_modes::~AW_window_menu_modes( void ) {}
 
@@ -298,7 +359,6 @@ void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNleftOffset, (int)indent,NULL);
     left_indent_of_horizontal_scrollbar = indent;
 }
-
 
 /***********************************************************************/
 void value_changed_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
@@ -1370,9 +1430,9 @@ const char *aw_str_2_label(const char *str,AW_window *aww)
     AW_awar *vs;
     if (strchr(str,'/') &&
         (vs=aww->get_root()->awar_no_error(str))){
-        var_value = new char[aww->_at->length_of_buttons+1];
+        var_value = (char*)malloc(aww->_at->length_of_buttons+1);
         memset(var_value,'y',aww->_at->length_of_buttons);
-        var_value[aww->_at->length_of_buttons-2] = 0;
+        var_value[aww->_at->length_of_buttons-2] = 0; // @@@ strange! is this correct ?
         return var_value;
     }
     if (strlen(str)<256){
@@ -1613,16 +1673,20 @@ void aw_realize_widget(AW_window *aww) {
 void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *windowname,
                                 int width, int height,
                                 int posx, int posy) {
-    Widget main_window;
-    Widget help_popup;
-    Widget help_label;
-    Widget separator;
-    Widget form1;
-    Widget form2;
+    Widget      main_window;
+    Widget      help_popup;
+    Widget      help_label;
+    Widget      separator;
+    Widget      form1;
+    Widget      form2;
     //Widget frame;
-    const char *help_button = "HELP";
+    const char *help_button   = "HELP";
     const char *help_mnemonic = "H";
-    AW_active mask = AWM_ALL;
+    AW_active   mask          = AWM_ALL;
+
+#if defined(DUMP_MENU_LIST)
+    initMenuListing(windowname);
+#endif // DUMP_MENU_LIST
 
     root = root_in; // for makro
     window_name = strdup(windowname);
@@ -1844,8 +1908,12 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     const char *help_mnemonic = "H";
     AW_active mask = AWM_ALL;
 
-    root = root_in; // for makro
-    window_name = strdup(windowname);
+#if defined(DUMP_MENU_LIST)
+    initMenuListing(windowname);
+#endif // DUMP_MENU_LIST
+
+    root                 = root_in; // for makro
+    window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
     p_w->shell= aw_create_shell(this,AW_TRUE,
@@ -2305,7 +2373,7 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
     return (p_w->number_of_modes++);
 }
 
-#ifndef NDEBUG
+#ifdef DEBUG
 
 #define MAX_DEEP_TO_TEST 	 10
 #define MAX_MENU_ITEMS_TO_TEST 	 50
@@ -2389,7 +2457,11 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
     AWUSE(help_text);
     Widget shell, label;
 
-#ifndef NDEBUG
+#if defined(DUMP_MENU_LIST)
+    dumpOpenSubMenu(name);
+#endif // DUMP_MENU_LIST
+
+#ifdef DEBUG
     test_duplicate_mnemonics_new_sub(p_w->menu_deep, name, mnemonic);
 #endif
 
@@ -2426,25 +2498,36 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
 
 void AW_window::create_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask) {
     p_w->menu_deep = 0;
-#ifndef NDEBUG
+#ifdef DEBUG
     init_duplicate_mnemonic();
 #endif
+#if defined(DUMP_MENU_LIST)
+    dumpCloseAllSubMenus();
+#endif // DUMP_MENU_LIST
     insert_sub_menu(id,name,mnemonic,help_text,mask);
 }
 
 void AW_window::close_sub_menu(void) {
-#ifndef NDEBUG
+#ifdef DEBUG
     close_test_duplicate_mnemonics(p_w->menu_deep);
 #endif
+#if defined(DUMP_MENU_LIST)
+    dumpCloseSubMenu();
+#endif // DUMP_MENU_LIST
     if (p_w->menu_deep>0) p_w->menu_deep--;
 }
 
 void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
     if (!id) id = name;
+
+#if defined(DUMP_MENU_LIST)
+    dumpMenuEntry(name);
+#endif // DUMP_MENU_LIST
+
     if (mnemonic && *mnemonic && strchr(name,mnemonic[0])) {
         // create one sub-menu-point
-#ifndef NDEBUG
+#ifdef DEBUG
         test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic[0]);
 #endif
         button = XtVaCreateManagedWidget( "",
