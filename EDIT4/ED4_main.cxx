@@ -25,6 +25,7 @@
 #include "ed4_defs.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_nds.hxx"
+#include "ed4_visualizeSAI.hxx"
 
 #include "edit_naligner.hxx"
 
@@ -363,6 +364,7 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);
 
     root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(ED4_selected_species_changed_cb);
+    root->awar_string(AWAR_SAI_NAME, "", gb_main)->add_callback(ED4_selected_SAI_changed_cb);
 
     root->awar_string(AWAR_EDIT_CONFIGURATION,config_name,gb_main);
     ed4_changesecurity(root,0);
@@ -399,6 +401,8 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_CREATE_POINTS, 1);
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER, 1);
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
+
+    ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
 }
 
 const char *ED4_propertyName(int mode) {
