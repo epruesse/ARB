@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Mar/11/2004 13:37 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Mon Oct/04/2004 18:13 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -14,6 +14,8 @@
 /*  ====================================================================  */
 
 #include <stdio.h>
+#include <string.h>
+
 #include "adGene.h"
 #include "arbdbt.h"
 
