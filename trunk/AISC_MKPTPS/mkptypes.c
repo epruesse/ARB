@@ -13,6 +13,10 @@
  * (and then complain to the supplier of the defective compiler)
  */
 
+/*
+ * many extension were made for use in ARB build process   
+ */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -25,6 +29,9 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+
+static void Version(void);
+
 
 #define check_heap_sanity() do{ char *x = malloc(10); free(x); }while(0)
 
@@ -39,25 +46,26 @@
 #define MAXPARAM 20         /* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
-int  dostatic            = 0;   /* do static functions? */
-int  donum               = 0;   /* print line numbers? */
-int  define_macro        = 1;   /* define macro for prototypes? */
-int  use_macro           = 1;   /* use a macro for prototypes? */
-int  no_parm_names       = 0;   /* no parm names - only types */
-int  print_extern        = 0;   /* use "extern" before function declarations */
-int  dont_promote        = 0;   /* don't promote prototypes */
-int  aisc                = 0;   /* aisc compatible output */
-int  cansibycplus        = 0;   /* produce extern "C" */
-int  promote_extern_c    = 0;   /* produce extern "C" into prototype */
-int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
-int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
-int  inquote             = 0;   /* in a quote?? */
-int  newline_seen        = 1;   /* are we at the start of a line */
-long linenum             = 1L;  /* line number in current file */
-int  glastc              = ' '; /* last char. seen by getsym() */
+static int  dostatic            = 0;   /* do static functions? */
+static int  donum               = 0;   /* print line numbers? */
+static int  define_macro        = 1;   /* define macro for prototypes? */
+static int  use_macro           = 1;   /* use a macro for prototypes? */
+static int  no_parm_names       = 0;   /* no parm names - only types */
+static int  print_extern        = 0;   /* use "extern" before function declarations */
+static int  dont_promote        = 0;   /* don't promote prototypes */
+static int  promote_lines       = 0;   /* promote 'AISC_MKPT_PROMOTE'-lines */
+static int  aisc                = 0;   /* aisc compatible output */
+static int  cansibycplus        = 0;   /* produce extern "C" */
+static int  promote_extern_c    = 0;   /* produce extern "C" into prototype */
+static int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
+static int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
+static int  inquote             = 0;   /* in a quote?? */
+static int  newline_seen        = 1;   /* are we at the start of a line */
+static long linenum             = 1L;  /* line number in current file */
+static int  glastc              = ' '; /* last char. seen by getsym() */
 
-char const *macro_name = "P_";  /*   macro to use for prototypes */
-char const *ourname;            /* our name, from argv[] array */
+static char const *macro_name = "P_";  /*   macro to use for prototypes */
+static char const *ourname;            /* our name, from argv[] array */
 
 /* char *sym_part = 0;*/        /* create only prototypes starting with 'sym_start' */
 /* int sym_part_len = 0; */
@@ -70,7 +78,7 @@ typedef struct sym_part {
 
 SymPart *symParts = 0; /* create only prototypes for parts in this list */
 
-void addSymParts(const char *parts) {
+static void addSymParts(const char *parts) {
     char *p = strdup(parts);
     const char *sep = ",";
     char *s = strtok(p, sep);
@@ -90,7 +98,7 @@ void addSymParts(const char *parts) {
     free(p);
 }
 
-int containsSymPart(const char *name) {
+static int containsSymPart(const char *name) {
     SymPart *sp = symParts;
     int contains = 0;
 
@@ -102,7 +110,7 @@ int containsSymPart(const char *name) {
     return contains;
 }
 
-void freeSymParts() {
+static void freeSymParts() {
     SymPart *next = symParts;
 
     while (next) {
@@ -119,13 +127,13 @@ typedef struct word {
     char   string[1];
 } Word;
 
-#include "mkptypes.h"
+/* #include "mkptypes.h" */
 
 /*
  * Routines for manipulating lists of words.
  */
 
-Word *word_alloc(const char *s)
+static Word *word_alloc(const char *s)
 {
     Word *w;
 
@@ -139,7 +147,7 @@ Word *word_alloc(const char *s)
     return w;
 }
 
-void word_free(Word *w)
+static void word_free(Word *w)
 {
     Word *oldw;
     while (w) {
@@ -150,7 +158,7 @@ void word_free(Word *w)
 }
 
 /* return the length of a list; empty words are not counted */
-int List_len(Word *w)
+static int List_len(Word *w)
 {
     int count = 0;
 
@@ -163,7 +171,7 @@ int List_len(Word *w)
 
 /* Append two lists, and return the result */
 
-Word *word_append(Word *w1, Word *w2){
+static Word *word_append(Word *w1, Word *w2){
     Word *r, *w;
 
     r = w = word_alloc("");
@@ -184,7 +192,7 @@ Word *word_append(Word *w1, Word *w2){
 
 /* see if the last entry in w2 is in w1 */
 
-int foundin(Word *w1, Word *w2){
+static int foundin(Word *w1, Word *w2){
     while (w2->next)
         w2 = w2->next;
 
@@ -198,7 +206,7 @@ int foundin(Word *w1, Word *w2){
 
 /* add the string s to the given list of words */
 
-void addword(Word *w, const char *s){
+static void addword(Word *w, const char *s){
     while (w->next) w = w->next;
     w->next = word_alloc(s);
 
@@ -211,7 +219,7 @@ void addword(Word *w, const char *s){
    "short", or "unsigned short" to "int".
 */
 
-void typefixhack(Word *w){
+static void typefixhack(Word *w){
     Word *oldw = 0;
 
     if (dont_promote)
@@ -238,7 +246,7 @@ void typefixhack(Word *w){
 
 /* read a character: if it's a newline, increment the line count */
 
-int ngetc(FILE *f){
+static int ngetc(FILE *f){
     int c;
 
     c = getc(f);
@@ -253,12 +261,12 @@ static char  last_comment[MAX_COMMENT_SIZE];
 static int   lc_size            = 0;
 static char *found__attribute__ = 0;
 
-void clear_found_attribute() {
+static void clear_found_attribute() {
     free(found__attribute__);
     found__attribute__ = 0;
 }
 
-void search_comment_for_attribute() {
+static void search_comment_for_attribute() {
     char *att;
 
     if (found__attribute__) return; // only take first __attribute__
@@ -285,6 +293,93 @@ void search_comment_for_attribute() {
     }
 }
 
+struct promotion;
+struct promotion {
+    char             *to_promote; // text to promote to header
+    struct promotion *next;
+};
+
+static struct promotion *promotions = 0;
+
+static void add_promotion(char *to_promote) {
+    struct promotion *new_promotion = malloc(sizeof(struct promotion));
+    new_promotion->to_promote       = to_promote;
+    new_promotion->next             = 0;
+
+    if (!promotions) {
+        promotions = new_promotion;
+    }
+    else { // append
+        struct promotion *last = promotions;
+        while (last->next) last = last->next;
+
+        last->next = new_promotion;
+    }
+}
+
+static void print_promotions() {
+    struct promotion *p = promotions;
+
+    if (promotions) fputc('\n', stdout);
+
+    while (p) {
+        struct promotion *next = p->next;
+
+        printf("%s\n", p->to_promote);
+        free(p->to_promote);
+        free(p);
+
+        p = next;
+    }
+
+    if (promotions) fputc('\n', stdout);
+    promotions = 0;
+}
+
+static void search_comment_for_promotion() {
+    char       *promotion_found;
+    const char *promotion_tag     = "AISC_MKPT_PROMOTE:";
+    int         promotion_tag_len = 18;
+
+    last_comment[lc_size] = 0;  // close string
+
+    promotion_found = strstr(last_comment, promotion_tag);
+    while (promotion_found) {
+        char *behind_promo = promotion_found+promotion_tag_len;
+        char *eol, *eoc;
+        assert(behind_promo[-1] == ':'); // wrong promotion_tag_len
+
+        eol = strchr(behind_promo, '\n');
+        eoc = strstr(behind_promo, "*/");
+
+        if (eoc && eol) {
+            if (eoc<eol) eol = eoc;
+        }
+        else if (!eol) {
+            eol = eoc;
+        }
+
+        if (!eol) eol = strchr(behind_promo, 0);
+
+        assert(eol);
+        if (!eol) {
+            promotion_found = 0;
+        }
+        else {
+            int   promo_length = eol-behind_promo;
+            char *to_promote   = malloc(promo_length+1);
+
+            memcpy(to_promote, behind_promo, promo_length);
+            to_promote[promo_length] = 0;
+
+            DEBUG_PRINT("promotion found!\n");
+
+            add_promotion(to_promote);
+            promotion_found = strstr(eol, promotion_tag);
+        }
+    }
+}
+
 /* read the next character from the file. If the character is '\' then
  * read and skip the next character. Any comment sequence is converted
  * to a blank.
@@ -294,7 +389,7 @@ void search_comment_for_attribute() {
  */
 
 
-int fnextch(FILE *f){
+static int fnextch(FILE *f){
     int c, lastc, incomment;
 
     c = ngetc(f);
@@ -323,6 +418,7 @@ int fnextch(FILE *f){
                 }
             }
             if (search__attribute__) search_comment_for_attribute();
+            if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
         else if (c == '/') {    /* C++ style comment */
@@ -343,6 +439,7 @@ int fnextch(FILE *f){
                 }
             }
             if (search__attribute__) search_comment_for_attribute();
+            if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
         else {
@@ -360,7 +457,7 @@ int fnextch(FILE *f){
  * are converted to "0". Also, if a line starts with "#" it is skipped.
  */
 
-int nextch(FILE *f){
+static int nextch(FILE *f){
     int c, n;
     char *p, numbuf[10];
 
@@ -443,7 +540,7 @@ int nextch(FILE *f){
  * Also collapses everything between { and }
  */
 
-int getsym(char *buf, FILE *f){
+static int getsym(char *buf, FILE *f){
     register int c;
     int inbrack = 0;
 
@@ -520,7 +617,7 @@ int skipit(char *buf, FILE *f){
  * parm names
  */
 
-int is_type_word(char *s){
+static int is_type_word(char *s){
     static const char *typewords[] = {
         "char",     "const",    "double",   "enum",
         "float",    "int",      "long",     "short",
@@ -553,7 +650,7 @@ int is_type_word(char *s){
  * the base type, e.g. "struct word *x" would yield "struct word"
  */
 
-Word *typelist(Word *p){
+static Word *typelist(Word *p){
     Word *w, *r;
 
     r = w = word_alloc("");
@@ -576,7 +673,7 @@ Word *typelist(Word *p){
  * should be the first thing in the list.
  */
 
-Word *getparamlist(FILE *f){
+static Word *getparamlist(FILE *f){
     static Word *pname[MAXPARAM]; /* parameter names */
     Word    *tlist,       /* type name */
         *plist;       /* temporary */
@@ -768,12 +865,15 @@ Word *getparamlist(FILE *f){
  * are in wlist; the parameters are in plist.
  */
 
-void emit(Word *wlist, Word *plist, long startline){
+static void emit(Word *wlist, Word *plist, long startline){
     Word *w;
-    int count = 0;
-    int needspace = 0;
-    int isstatic = 0;
-    int refs =0 ;
+    int   count     = 0;
+    int   needspace = 0;
+    int   isstatic  = 0;
+    int   refs      = 0 ;
+
+    if (promote_lines) print_promotions();
+
     for (w = wlist; w; w = w->next) {
         if (w->string[0]) {
             count ++;
@@ -900,7 +1000,7 @@ void emit(Word *wlist, Word *plist, long startline){
  * get all the function declarations
  */
 
-void getdecl(FILE *f){
+static void getdecl(FILE *f){
     Word *plist, *wlist = NULL;
     char buf[80];
     int sawsomething;
@@ -1009,7 +1109,7 @@ void getdecl(FILE *f){
     }
 }
 
-void Usage(void){
+static void Usage(void){
     fprintf(stderr, "Usage: %s [flags] [files ...]\n", ourname);
 
     fputs("Supported flags:\n",stderr);
@@ -1027,6 +1127,7 @@ void Usage(void){
     fputs("   -C: insert 'extern \"C\"'\n", stderr);
     fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
     fputs("   -g: search for GNU extension __attribute__ in comment behind function header\n", stderr);
+    fputs("   -P: promote /*AISC_MKPT_PROMOTE:forHeader*/ to header\n", stderr);
     exit(EXIT_FAILURE);
 }
 
@@ -1062,6 +1163,7 @@ int main(int argc, char **argv){
             else if (*t == 's')         dostatic            = 1;
             else if (*t == 'x')         no_parm_names       = 1; /* no parm names, only types (sg) */
             else if (*t == 'z')         define_macro        = 0;
+            else if (*t == 'P')         promote_lines       = 1;
             else if (*t == 'p') {
                 t = *argv++; --argc;
                 if (!t) Usage();
@@ -1181,6 +1283,6 @@ int main(int argc, char **argv){
 
 #include "patchlev.h"
 
-void Version(void){
+static void Version(void) {
     fprintf(stderr, "%s 1.0 patchlevel %d\n", ourname, PATCHLEVEL);
 }
