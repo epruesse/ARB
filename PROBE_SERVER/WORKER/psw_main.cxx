@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Sun Sep/14/2003 19:45 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Sep/16/2003 15:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -122,11 +122,15 @@ namespace {
     }
 
 
-    GB_HASH *path_cache = 0;    // links encoded "path" content with "subtree" db-pointer
+    GB_HASH *path_cache       = 0; // links encoded "path" content with "subtree" db-pointer
+    GBDATA  *gb_is_inner_node = 0;
 
     GB_ERROR init_path_cache(GBDATA *gb_main) {
         GB_transaction  dummy(gb_main);
         GBDATA         *gb_subtrees = GB_search(gb_main, "subtree_counter", GB_FIND);
+
+        gb_is_inner_node = gb_subtrees; // the pointer is only used as flag!
+
         if (gb_subtrees) {
             int subtrees = GB_read_int(gb_subtrees);
             path_cache   = GBS_create_hash(subtrees, 1);
@@ -143,8 +147,20 @@ namespace {
                         error = "subtree w/o path (database corrupt!)";
                     }
                     else {
-                        const char *path = GB_read_char_pntr(gb_path);
+                        char *path = GB_read_string(gb_path);
                         GBS_write_hash(path_cache, path, (long)gb_subtree);
+
+                        int last = strlen(path)-1;
+                        while (last>0) {
+                            path[last--]      = 0; // remove last character ( = parent path)
+                            GBDATA *gb_exists = (GBDATA*)GBS_read_hash(path_cache, path);
+                            if (gb_exists) break; // path to root already inserted!
+
+                            // no entry for parent yet -> link to gb_is_inner_node
+                            GBS_write_hash(path_cache, path, (long)gb_is_inner_node);
+                        }
+
+                        free(path);
                     }
                 }
                 return error;
@@ -223,6 +239,46 @@ namespace {
 
     Commands command_list;
 
+    // returns a list of species for a specific probe-group
+    GB_ERROR CMD_getmembers(GBDATA *gb_main, const Arguments& args, FILE *out) {
+        const char *id;
+        GB_ERROR    error = expectArgument(args, "id", id);
+        GB_transaction dummy(gb_main);
+
+        if (!error) {
+            GBDATA *gb_subtree = (GBDATA*)GBS_read_hash(path_cache, id);
+            if (gb_subtree && gb_subtree != gb_is_inner_node) {
+                GBDATA             *gb_species = GB_find(gb_subtree, "species", 0, down_level);
+                list<const char *>  members;
+
+                if (gb_species) {
+                    for (GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                         gb_name && !error;
+                         gb_name = GB_find(gb_name, "name", 0, this_level|search_next))
+                    {
+                        members.push_back(GB_read_char_pntr(gb_name));
+                    }
+                }
+
+                if (members.empty()) {
+                    fprintf(out, "result=error\nmessage=probe group w/o members (shouldn't occur)\n");
+                }
+                else {
+                    fprintf(out, "result=ok\nmembercount=%i\n", members.size());
+                    int c = 1;
+                    for (list<const char*>::iterator m = members.begin(); m != members.end(); ++m, ++c) {
+                        fprintf(out, "m%06i=%s\n", c, *m);
+                    }
+                }
+            }
+            else {
+                error = "illegal probe-group id";
+            }
+        }
+        return error;
+    }
+
+    // returns a list of probes for a specific node
     GB_ERROR CMD_getprobes(GBDATA *gb_main, const Arguments& args, FILE *out) {
         //         printf("getprobes()\n");
         //         dumpArguments(args, stdout);
@@ -234,33 +290,39 @@ namespace {
         if (!error) {
             GBDATA *gb_subtree = (GBDATA*)GBS_read_hash(path_cache, path);
             if (gb_subtree) {
-                GBDATA *gb_probe_group_design = GB_search(gb_subtree, "probe_group_design", GB_FIND);
-                list<const char *> found_probes;
-
-                if (gb_probe_group_design) {
-                    for (GBDATA *gb_probe = GB_find(gb_probe_group_design, "common", 0, down_level);
-                         gb_probe && !error;
-                         gb_probe = GB_find(gb_probe, "common", 0, this_level|search_next))
-                    {
-                        found_probes.push_back(GB_read_char_pntr(gb_probe));
-                    }
-                }
-
-                if (found_probes.empty()) {
-                    error = "No probes.";
+                if (gb_subtree == gb_is_inner_node) { // inner node w/o info
+                    fprintf(out, "result=ok\nfound=0\n");
                 }
                 else {
-                    int count = found_probes.size();
-                    fprintf(out, "result=ok\nfound=%i\n", count);
+                    GBDATA             *gb_probe_group_design = GB_search(gb_subtree, "probe_group_design", GB_FIND);
+                    list<const char *>  found_probes;
 
-                    int c = 1;
-                    for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
-                        fprintf(out, "probe%04i=%s\n", c, *p);
+                    if (gb_probe_group_design) {
+                        for (GBDATA *gb_probe = GB_find(gb_probe_group_design, "common", 0, down_level);
+                             gb_probe && !error;
+                             gb_probe = GB_find(gb_probe, "common", 0, this_level|search_next))
+                        {
+                            found_probes.push_back(GB_read_char_pntr(gb_probe));
+                        }
+                    }
+
+                    if (found_probes.empty()) {
+                        fprintf(out, "result=ok\nfound=0\n");
+                    }
+                    else {
+                        int count = found_probes.size();
+                        fprintf(out, "result=ok\nfound=%i\n", count);
+
+                        int c = 1;
+                        for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
+                            const char *probe_group_id = path; // currently we have only 100% groups, so we can use the path
+                            fprintf(out, "probe%04i=%s,%s\n", c, *p, probe_group_id);
+                        }
                     }
                 }
             }
             else {
-                error = GBS_global_string("Unknown subtree '%s'", path);
+                error = GBS_global_string("Illegal subtree path '%s'", path);
             }
         }
 
@@ -268,7 +330,8 @@ namespace {
     }
 
     void init_commands() {
-        command_list["getprobes"] = CMD_getprobes;
+        command_list["getprobes"]  = CMD_getprobes;
+        command_list["getmembers"] = CMD_getmembers;
     }
 }
 
@@ -377,7 +440,7 @@ namespace {
                         if (!request_error) {
                             Commands::iterator cmd_found = command_list.find(command);
                             if (cmd_found == command_list.end()) {
-                                request_error = GBS_global_string("No such command '%s'", command.c_str());
+                                request_error = GBS_global_string("Unknown command '%s'", command.c_str());
                             }
                             else {
                                 Command cmd   = cmd_found->second;
@@ -449,7 +512,7 @@ namespace {
         findRequests(probe_length);
         if (requests.empty()) { // no request waiting
             if (!waiting) {
-                printf("[waiting for requests]\n");
+                printf("[%i] waiting for requests\n", probe_length);
                 waiting = true;
             }
             sleep(1);           // sleep a second
