@@ -32,7 +32,7 @@ typedef bool AW_BOOL;
 const bool AW_FALSE = false;
 const bool AW_TRUE = true;
 #else
-typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL; 
+typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL;
 #endif
 
 extern AW_default aw_main_root_default;
@@ -87,7 +87,7 @@ extern "C" {
 #endif
 
     int aw_status( double gauge );	// return 1 if exit button is pressed + set statusslider
-    
+
 #ifdef __cplusplus
 }
 #endif
@@ -111,7 +111,7 @@ class AW_root {
 private:
 protected:
 public:
-    static	AW_root		*THIS; 
+    static	AW_root		*THIS;
     AW_root_Motif		*prvt;  // Do not use !!!
     AW_BOOL			value_changed;
     long			changer_of_variable;
@@ -119,7 +119,7 @@ public:
     int				y_correction_for_input_labels;
 
     AW_active			global_mask;
-    
+
     GB_HASH			*hash_table_for_variables;
 
     AW_BOOL			variable_set_by_toggle_field;
@@ -160,7 +160,7 @@ public:
     void main_loop(void);
     void process_events(void);
     AW_ProcessEventType peek_key_event(AW_window *);
-    
+
     void add_timed_callback(	int ms,	void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void set_focus_callback(		void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);	/* any focus callback in any window */
 
@@ -176,7 +176,7 @@ public:
     AW_error	*save_default(AW_default aw_default,const char *file_name);
     AW_default 	get_default(const char *varname);
     AW_default 	get_gbdata(const char *varname);
-    
+
     // ************** Set and clear sensitivity of buttons and menus  *********
     void set_sensitive(AW_active mask);
     void set_sensitive( const char *id );
@@ -189,7 +189,7 @@ public:
     void	stop_execute_macro(); // Starts macro window main loop, delayed return
     GB_ERROR	enable_execute_macro(FILE *mfile,const char *mname); // leave macro window main loop, returns stop_execute_macro
     GB_ERROR	check_for_remote_command(AW_default gb_main,const char *rm_base);
-    
+
     /*************************************************************************
 									      Fonts
     *************************************************************************/
@@ -222,9 +222,9 @@ public:
     // read only
     class AW_root				*root;
 #ifdef GB_INCLUDED
-    
+
     friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
-    
+
     GBDATA				*gb_var;
     GBDATA				*gb_origin;
 #else
@@ -245,9 +245,11 @@ public:
     AW_awar *add_callback(void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(void (*f)(AW_root*,AW_CL), AW_CL cd1);
     AW_awar *add_callback(void (*f)(AW_root*));
-    
-    AW_awar *remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // remove a callback, please set unused AW_CL to (AW_CL)0
-    
+
+    AW_awar *remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // remove a callback
+    AW_awar *remove_callback( void (*f)(AW_root*,AW_CL), AW_CL cd1 );
+    AW_awar *remove_callback( void (*f)(AW_root*));
+
     AW_awar *add_target_var( char **ppchr);
     AW_awar *add_target_var( long *pint);
     AW_awar *add_target_var( float *pfloat);

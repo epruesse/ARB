@@ -35,7 +35,7 @@ void AW_var_gbdata_callback_delete_intern(GBDATA *, int *cl) {
     awar->update();
 }
 
-extern "C" 
+extern "C"
 void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
     AW_awar *awar = (AW_awar *)cl;
     awar->update();
@@ -45,7 +45,7 @@ extern "C"
 void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
     AW_var_gbdata_callback_delete_intern(gbd, cl);
 }
-    
+
 #define AW_MSG_UNMAPPED_AWAR "Sorry (Unmapped AWAR):\n"\
 		"	you cannot write to this field because it is either deleted or\n"\
 		"	unmapped. In the last case you should select a different item and\n"\
@@ -230,15 +230,8 @@ AW_awar *AW_awar::add_callback( void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1
     return this;
 }
 
-AW_awar *AW_awar::add_callback( void (*f)(AW_root*,AW_CL), AW_CL cd1 ) {
-    add_callback((AW_RCB)f,cd1,0);
-    return this;
-}
-
-AW_awar *AW_awar::add_callback( void (*f)(AW_root*)){
-    add_callback((AW_RCB)f,0,0);
-    return this;
-}
+AW_awar *AW_awar::add_callback( void (*f)(AW_root*,AW_CL), AW_CL cd1 ) { return add_callback((AW_RCB)f,cd1,0); }
+AW_awar *AW_awar::add_callback( void (*f)(AW_root*)){ return add_callback((AW_RCB)f,0,0); }
 
 AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ){
     // remove a callback, please set unused AW_CL to (AW_CL)0
@@ -260,6 +253,9 @@ AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, A
     }
     return this;
 }
+
+AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { return remove_callback((AW_RCB) f, cd1, 0); }
+AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
 GB_ERROR	AW_awar::toggle_toggle(){
     char *var = this->read_as_string();
