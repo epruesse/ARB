@@ -172,7 +172,7 @@ public int getExactMatches() { return exactMatches; }
 public int getMinNonGroupHits() { return minNonGroupHits; }
 public int getMaxCoverage() { return maxCoverage; }
 
-public String getNodeInformation() { // the string displayed in window
+public String getDisplayString() { // the string displayed in window
     String result;
 
     if (getExactMatches() != 0) {
