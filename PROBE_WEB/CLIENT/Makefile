@@ -52,7 +52,8 @@ compile:
 $(JAR) : $(CLASSES) $(JAVAS)
 		-(test -f $(BUILDLIST) && ($(MAKE) compile || rm $(BUILDLIST)))
 		-@rm $(BUILDLIST)
-		jar -cmf mymanifest $(JAR) $(CLASSES)
+		jar -cmf mymanifest $(JAR) *.class
+# $(CLASSES)
 
 update:
 	jar -uf $(JAR) *.class
