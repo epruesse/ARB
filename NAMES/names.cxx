@@ -54,24 +54,24 @@ void an_add_short(AN_local *locs,char *new_name, char *parsed_name,char *parsed_
 void an_remove_short(AN_shorts *an_shorts) {
     /* this should only be used to remove illegal entries from name-server.
        normally removing names does make problems - so use it very rarely */
-    
+
     AN_revers *an_revers = (AN_revers*)aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers), an_shorts->shrt);
-    
+
     if (an_revers) {
         aisc_unlink((struct_dllheader_ext*)an_revers);
-        
+
         free(an_revers->mh.ident);
         free(an_revers->full_name);
         free(an_revers->acc);
         free(an_revers);
     }
-    
+
     aisc_unlink((struct_dllheader_ext*)an_shorts);
-    
+
     free(an_shorts->mh.ident);
     free(an_shorts->shrt);
     free(an_shorts->full_name);
-    free(an_shorts->acc);    
+    free(an_shorts->acc);
     free(an_shorts);
 }
 
@@ -92,7 +92,7 @@ AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
 	else if fullname == 0 return advice
 	else if |advice| >=3 try advice first
 	else try first 3 characters of full
-	else try 
+	else try
 */
 char *nas_string_2_key(const char *str)	/* converts any string to a valid key */
 {
@@ -109,7 +109,7 @@ char *nas_string_2_key(const char *str)	/* converts any string to a valid key */
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
     printf("nas_string_2_key('%s') = '%s'\n", str, buf);
-#endif // DUMP_NAME_CREATION    
+#endif // DUMP_NAME_CREATION
     return strdup(buf);
 }
 
@@ -117,13 +117,13 @@ char *nas_remove_small_vocals(const char *str) {
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
-    
+
     for (i=0; i<GB_KEY_LEN_MAX; ) {
         c = *str++;
         if (!c) break;
         if (strchr("aeiouy", c)==0) {
             buf[i++] = c;
-        } 
+        }
     }
     for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '_';
     buf[i] = 0;
@@ -135,19 +135,19 @@ char *nas_remove_small_vocals(const char *str) {
 
 void an_complete_shrt(char *shrt, const char *rest_of_full) {
     int len = strlen(shrt);
-    
+
     while (len<5) {
         char c = *rest_of_full++;
-	
+
         if (!c) break;
         shrt[len++] = c;
     }
-    
+
     while (len<GB_KEY_LEN_MIN) {
         shrt[len++] = '_';
     }
-    
-    shrt[len] = 0; 
+
+    shrt[len] = 0;
 }
 
 char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
@@ -171,25 +171,25 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
     char shrt[10];
     int len2, len3;
     int p1, p2;
-    
+
     // try first three letters:
-    
+
     strncpy(shrt,full2,3);
     UPPERCASE(shrt[0]);
     shrt[3] = 0;
-    
-    look = an_find_shrt(shorts,shrt);    
+
+    look = an_find_shrt(shorts,shrt);
     if (!look) {
-        len2 = strlen(full2);        
+        len2 = strlen(full2);
         an_complete_shrt(shrt, len2>=3 ? full2+3 : "");
         goto insert_shrt;
     }
 
-    // generate names from consonants: 
+    // generate names from consonants:
 
-    full3 = nas_remove_small_vocals(full2); 
+    full3 = nas_remove_small_vocals(full2);
     len3 = strlen(full3);
-    
+
     for (p1=3; p1<(len3-1); p1++) {
         shrt[1] = full3[p1];
         for (p2=p1+1; p2<len3; p2++) {
@@ -201,10 +201,10 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
             }
         }
     }
-    
+
     // generate names from all characters:
-    
-    len2 = strlen(full2); 
+
+    len2 = strlen(full2);
     for (p1=3; p1<(len2-1); p1++) {
         shrt[1] = full2[p1];
         for (p2=p1+1; p2<len2; p2++) {
@@ -216,9 +216,9 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
             }
         }
     }
-    
+
     // generate names containing two characters and one digit:
-    
+
     for (p1=2; p1<len2; p1++) {
         shrt[1] = full2[p1];
         for (p2=0; p2<=9; p2++) {
@@ -230,9 +230,9 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
             }
         }
     }
-    
+
     // generate names containing one characters and two digits:
-    
+
     for (p1=0; p1<=99; p1++) {
         shrt[1] = '0'+(p1/10);
         shrt[2] = '0'+(p1%10);
@@ -245,29 +245,29 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
 
     free(full3);
     free(full2);
-    
+
     return 0;
 
     /* ---------------------------------------- */
-    
+
  insert_shrt:
-    
+
 #if defined(DUMP_NAME_CREATION)
     if (isdigit(shrt[0]) || isdigit(shrt[1])) {
         printf("generated new short-name '%s' for full-name '%s' full2='%s' full3='%s'\n", shrt, full, full2, full3);
     }
 #endif    // DUMP_NAME_CREATION
-    
+
     look = create_AN_shorts();
     look->mh.ident = strdup(full2);
     look->shrt = strdup(shrt);
     aisc_link((struct_dllpublic_ext*)parent,(struct_dllheader_ext*)look);
     aisc_main->touched = 1;
-    
+
     free(full3);
     free(full2);
-    
-    return strdup(shrt); 
+
+    return strdup(shrt);
 }
 
 extern "C" aisc_string get_short(AN_local *locs)
@@ -287,14 +287,14 @@ extern "C" aisc_string get_short(AN_local *locs)
 
     if(shrt) free(shrt);
     shrt = 0;
-    
-#define ILLEGAL_NAME_CHARS              " \t#;,@"    
-#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@="    
+
+#define ILLEGAL_NAME_CHARS              " \t#;,@"
+#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@="
 
     parsed_name = GBS_string_eval(locs->full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
     /* delete ' " \t and more than two words */
     parsed_sym = GBS_string_eval(locs->full_name, "\t= :* * *sym*=S",0);
-    
+
     if (strlen(parsed_sym)>1) {
         free(parsed_sym);
         parsed_sym = strdup("");
@@ -324,29 +324,29 @@ extern "C" aisc_string get_short(AN_local *locs)
         else {
             shrt = strdup(an_shorts->shrt);
         }
-    }    
+    }
     if (!shrt) { /* now there is no short name (or an illegal one) */
-        char *first_advice=0,*second_advice=0;        
-        
+        char *first_advice=0,*second_advice=0;
+
         if (locs->advice[0] && strpbrk(locs->advice, ILLEGAL_NAME_CHARS)!=0) {
             locs->advice[0] = 0; // delete advice
         }
-        
+
         if (locs->advice[0]) {
-            char *advice = GBS_string_eval(locs->advice, "0=:1=:2=:3=:4=:5=:6=:7=:8=:9=:" REPLACE_ILLEGAL_NAME_CHARS, 0); 
-            
-            first_advice = strdup(advice); 
+            char *advice = GBS_string_eval(locs->advice, "0=:1=:2=:3=:4=:5=:6=:7=:8=:9=:" REPLACE_ILLEGAL_NAME_CHARS, 0);
+
+            first_advice = strdup(advice);
             if (strlen(advice) > 3) {
                 second_advice = strdup(advice+3);
                 first_advice[3] = 0;
             }
         }
-        
+
         if (!first_advice) first_advice = strdup("Xxx");
         if (!second_advice) second_advice = strdup("Yyyyy");
-            
+
         char *first_short;
-        
+
         if (strlen(first)) {
             first_short = an_get_short(	aisc_main->shorts1, &(aisc_main->pshorts1),first);
         }else{
@@ -356,7 +356,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         if (!strlen(first_short)) sprintf(first_short,"Xxx");
 
         char *second_short;
-        
+
         shortlen = 5;
         second_short = (char *)calloc(sizeof(char), 10);
         if (strlen(second)) {
@@ -371,15 +371,15 @@ extern "C" aisc_string get_short(AN_local *locs)
         }
 
         first_short[3] = 0;		/* 3 characters for the first word */
-        
+
         shortlen = strlen(second_short);
-        
+
         char test_short[256];
         sprintf(test_short,"%s%s", first_short,second_short);
-        
+
         if (aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers),test_short)) {
             int	count;
-            
+
             if (shortlen<5) {
                 strcat(second_short+shortlen, "_____");
                 second_short[5] = 0;
@@ -393,7 +393,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                 else if (count==100)   second_short[shortlen-3] = 0;
                 else if (count==1000)  second_short[shortlen-4] = 0;
                 else if (count==10000) second_short[shortlen-5] = 0;
-                
+
                 sprintf(test_short,"%s%s%i",first_short,second_short,count);
                 if (!aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers),test_short)) break;
             }
@@ -529,8 +529,7 @@ int main(int argc,char **argv)
         }
     }
 
-    AN_global.cl_link = (aisc_com *)aisc_open(name,
-                                              (long *)&AN_global.cl_main,AISC_MAGIC_NUMBER);
+    AN_global.cl_link = (aisc_com *)aisc_open(name, (long *)&AN_global.cl_main,AISC_MAGIC_NUMBER);
 
     if (AN_global.cl_link) {
         if( !strcmp(argv[1],"-look")) {
@@ -561,7 +560,7 @@ int main(int argc,char **argv)
     AN_global.server_communication = so;
 
     aisc_main->server_file = strdup(params->default_file);
-    server_load(aisc_main);	
+    server_load(aisc_main);
 
     while (i == i) {
         aisc_accept_calls(so);
