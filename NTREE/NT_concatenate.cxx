@@ -862,20 +862,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
     aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR,5);
 
     aws->at("concatenate");
-    aws->callback((AW_CB1)concatenateAlignments,0); // bug4yadhu :
-    // it's a bad bahavior to cast a function-pointer to a different type (done too often in ARB code - sigh)
-    // better is to define the function correctly!
-    // aws->callback has 3 forms :
-    //     void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 );
-    //     void callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);
-    //     void callback( void (*f)(AW_window*));
-    // Your callback-function
-    //     void concatenateAlignments(AW_window *aws)
-    // already is of the third form, so
-    //     aws->callback(concatenateAlignments);
-    // will work straight away.
-    // end of bug4yadhu
-
+    aws->callback((AW_CB0)concatenateAlignments); 
     aws->create_button("CONCATENATE","CONCATENATE","A");
 
     aws->at("merge_species");
