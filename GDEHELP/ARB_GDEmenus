@@ -164,7 +164,7 @@ outformat:genbank
 
 menu:align
 arb_item:Clustalv Alignment (DNA)
-itemmethod:(tr '"%//' '>' <in1 >clus_in; ${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktuple=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait ; /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in; ${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktuple=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait'' ; /bin/rm -f clus_in* in1)
 
 itemhelp:clustal_help
 
@@ -211,7 +211,7 @@ outformat:flat
 
 
 item:Clustalw DNA Alignment
-itemmethod:(tr '"%//' '>' <in1 >clus_in;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA -DNAMATRIX=$MATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait ; /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA -DNAMATRIX=$MATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait'' ; /bin/rm -f clus_in* in1)
 
 itemhelp:clustal.help
 
@@ -261,7 +261,7 @@ outformat:flat
 
 
 item:Clustalw Protein Alignment
-itemmethod:(tr '"%//' '>' <in1 >clus_in;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait ;\/bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ $MATRIX_  -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )  ;arb_wait'' ;\/bin/rm -f clus_in* in1)
 
 
 itemhelp:clustalw.help
@@ -340,7 +340,7 @@ outformat:gde
 menu:user
 item: Start a slave arb on a foreign host ...
 
-itemmethod: ${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (DISPLAY=$dis:0;export DISPLAY;arb_ntree :)  ;arb_wait  &
+itemmethod: ${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (DISPLAY=$dis:0;export DISPLAY;arb_ntree :)  ;arb_wait''  &
 
 arg:dis
 argtype:text
@@ -405,7 +405,7 @@ insave:
 
 
 item:Clustal alignment
-itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; ${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )  ;arb_wait ; /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; ${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Trans /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )  ;arb_wait'' ; /bin/rm -f clus_in* in1)
 
 itemhelp:clustal_help
 
@@ -625,7 +625,7 @@ argchoice:prot.mat:-s $ARBHOME/GDEHELP/FASTA/MATRIX/prot.mat
 
 menu:Protein
 item:Clustal Protein Alignment
-itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; ${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Matrx  /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )  ;arb_wait ; /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; ${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (clustalv /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Matrx  /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )  ;arb_wait'' ; /bin/rm -f clus_in* in1)
 
 
 itemhelp:clustal_help
@@ -902,7 +902,7 @@ outformat:colormask
 
 menu:SAI
 item:Positional Variability by Olsons dnamlrates (max 5000 Species, 8000 seqlength) 
-itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (cat in1.ph |arb_dnarates)  ;arb_wait ;echo done )&
+itemmethod:(/bin/rm -f outfile infile treefile ;(echo C F M T U L;echo C 35; echo M 10; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 in1.ph;echo 1 >>in1.ph; arb_export_tree $TREE >>in1.ph;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (cat in1.ph |arb_dnarates)  ;arb_wait'' ;echo done )&
 itemhelp:phylip.help
 
 arg:TREE
@@ -918,7 +918,7 @@ insave:
 
 menu:Incremental_Phylogeny
 item:FastDnaMl (max 500 Species) ...
-itemmethod:(/bin/rm -f outfile infile treefile ;(echo Y F Q G T R "`arb_export_rates $RATES`";echo G 0 0; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 infile;arb_export_tree $TREE >>infile;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_fastdnaml;$DISPLAY_FUNC)  ;arb_wait ; rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile ;(echo Y F Q G T R "`arb_export_rates $RATES`";echo G 0 0; echo T 2.0 ) |arb_convert_aln -GenBank in1 -phylip2 infile;arb_export_tree $TREE >>infile;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_fastdnaml;$DISPLAY_FUNC)  ;arb_wait'' ; rm in1 )&
 itemhelp:phylip.help
 
 arg:RATES
@@ -946,7 +946,7 @@ insave:
 
 menu:Phylogeny
 item:DeSoete Tree fit
-itemmethod: ( ${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_readseq -a -f8 in1>in1.flat;count -t $CORR in1.flat> in1.tmp ; lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out; $DISPLAY_FUNC)  ;arb_wait ;/bin/rm -f in1* )&
+itemmethod: ( ${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_readseq -a -f8 in1>in1.flat;count -t $CORR in1.flat> in1.tmp ; lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out; $DISPLAY_FUNC)  ;arb_wait'' ;/bin/rm -f in1* )&
 itemhelp:lsadt.help
 
 in:in1
@@ -983,7 +983,7 @@ argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} in1.out
 argchoice:Treetool:treetool in1.out
 
 item:Phylip Distance Methods ( Original Phylip, Interactiv )
-itemmethod:(	/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  ( $DPGM;mv -f outfile infile;$PROGRAM;$DISPLAY_FUNC )  ;arb_wait ;	/bin/rm -f  in1  infile outfile treefile 	)&
+itemmethod:(	/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  ( $DPGM;mv -f outfile infile;$PROGRAM;$DISPLAY_FUNC )  ;arb_wait'' ;	/bin/rm -f  in1  infile outfile treefile 	)&
  
 arg:DISPLAY_FUNC
 argtype:chooser
@@ -1018,7 +1018,7 @@ insave:
  
 
 item:Phylip Distance Methods ( Simple GUI Based Interface )
-itemmethod:(	/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  ( $CORRECTION;$DPGM;mv -f outfile infile;arb_echo y |$PROGRAM;$DISPLAY_FUNC )  ;arb_wait ;	/bin/rm -f  in1  infile outfile treefile 	)&
+itemmethod:(	/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  ( $CORRECTION;$DPGM;mv -f outfile infile;arb_echo y |$PROGRAM;$DISPLAY_FUNC )  ;arb_wait'' ;	/bin/rm -f  in1  infile outfile treefile 	)&
 itemhelp:phylip.help
  
 arg:DISPLAY_FUNC
@@ -1083,7 +1083,7 @@ insave:
 
 item:Phylip Parsimony/M.L.
  
-itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (CONSFLAG=-consense;$BOOTSTRP;$DISPLAY_FUNC)  ;arb_wait ;/bin/rm -f  in1  infile outfile treefile  )&
+itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (CONSFLAG=-consense;$BOOTSTRP;$DISPLAY_FUNC)  ;arb_wait'' ;/bin/rm -f  in1  infile outfile treefile  )&
 itemhelp:phylip.help
 
 arg:DISPLAY_FUNC
@@ -1122,7 +1122,7 @@ insave:
 
 
 item:DNA_ML (FastDnaMl) (max 150 Species)
-itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_fastdnaml;$DISPLAY_FUNC)  ;arb_wait ; rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (arb_fastdnaml;which arb_read_tree; ldd arb_read_tree;echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH;$DISPLAY_FUNC)  ;arb_wait'' ; rm in1 )&
 itemhelp:phylip.help
 
 arg:RATES
@@ -1144,7 +1144,7 @@ insave:
 
 item:Protein_ML (molphy max 40 species)
  
-itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;cat infile |tr '?' '-' >in1.in;${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (CONSFLAG=-consense;$BOOTSTRP;$DISPLAY_FUNC)  ;arb_wait ;/bin/rm -f  in1  infile outfile treefile  )&
+itemmethod:(/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank  in1  -phylip infile ;cat infile |tr '?' '-' >in1.in;${ARB_XCMD:-cmdtool} sh -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH;  (CONSFLAG=-consense;$BOOTSTRP;$DISPLAY_FUNC)  ;arb_wait'' ;/bin/rm -f  in1  infile outfile treefile  )&
 itemhelp:phylip.help
 
 arg:DISPLAY_FUNC

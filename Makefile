@@ -581,6 +581,7 @@ figclean:
 	-(cd fig2dev;$(MAKE) clean)
 
 gde:		GDE/GDE.dummy
+agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
