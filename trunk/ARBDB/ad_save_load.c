@@ -863,12 +863,13 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version){
 GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
      /*
       * savetype 'a'    ascii
-      *      'b'    binary
-      *      'bm'   binary + mapfile
-      *      0=ascii
+      *          'aS'   dump to stdout
+      *          'b'    binary
+      *          'bm'   binary + mapfile
+      *          0      ascii
       */
 {
-    if (path)
+    if (path && strchr(savetype, 'S') == 0) // 'S' dumps to stdout -> do not change path
     {
         free(GB_MAIN(gb)->path);
         GB_MAIN(gb)->path = GB_STRDUP(path);
