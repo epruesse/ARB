@@ -494,15 +494,17 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         }
     }
 
-    if (!error) {
-        long counter = 0;
-        GBS_hash_do_loop2(species_name_hash, check_for_species_without_data, &counter);
-        if (counter>0) {
-            GB_warning("Found %li species without alignment data (only some were listed)", counter);
+    if (species_name_hash) {
+        if (!error) {
+            long counter = 0;
+            GBS_hash_do_loop2(species_name_hash, check_for_species_without_data, &counter);
+            if (counter>0) {
+                GB_warning("Found %li species without alignment data (only some were listed)", counter);
+            }
         }
-    }
 
-    if (species_name_hash) GBS_free_hash(species_name_hash);
+        GBS_free_hash(species_name_hash);
+    }
 
     return error;
 }
