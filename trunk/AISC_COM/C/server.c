@@ -1335,28 +1335,20 @@ int aisc_get_key(int *obj)
     return *obj;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {	/* call from server function */
-        struct Socinf  *si;
-        int             socket = aisc_server_con;
-        struct Hs_struct *hs = aisc_server_hs;
-        if (!hs)
-            return socket;
-        for (si = hs->soci; si; si = si->next) {
-            if (si->socket == socket) {
-                si->destroy_callback = callback;
-                si->destroy_clientdata = clientdata;
-            }
-        }
+extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {	/* call from server function */
+    struct Socinf  *si;
+    int             socket = aisc_server_con;
+    struct Hs_struct *hs = aisc_server_hs;
+    if (!hs)
         return socket;
+    for (si = hs->soci; si; si = si->next) {
+        if (si->socket == socket) {
+            si->destroy_callback = callback;
+            si->destroy_clientdata = clientdata;
+        }
     }
-
-#ifdef __cplusplus
+    return socket;
 }
-#endif
 
 void aisc_remove_destroy_callback() {	/* call from server
                                          * function */
