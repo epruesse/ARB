@@ -95,7 +95,7 @@ while (not $in->eof) {
       my $location = $2;
 
       if ($location =~ /[(](.*):(.*)[)]/) { # seems to have a valid '(file:line)' location at eol
-        if ($filtered eq 1) {
+        if ($filtered == 1) {
           $_ = $unmark_filtered.' '.&avoid_location($_);
         }
         else {
@@ -108,7 +108,7 @@ while (not $in->eof) {
               $_ = "$replace:$2: $reason ($content)\n";
               if ($reason eq $called_from) { # its a caller
                 $caller_count++;
-                if ($caller_count gt $callers) {
+                if ($caller_count > $callers) {
                   $_ = $unmark_callers.$_;
                 }               # hide this caller
               } else {
