@@ -398,7 +398,7 @@ checks: check_DEBUG check_DEVELOPER check_GCC_VERSION
 DIR = $(ARBHOME)
 LIBS = -lARBDB
 GUI_LIBS = $(LIBS) -lAW -lAWT $(RTC) $(XLIBS)
-LIBPATH = -LLIBLINK
+LIBPATH = -L$(ARBHOME)/LIBLINK
 
 DEST_LIB = lib
 DEST_BIN = bin
@@ -939,7 +939,6 @@ ds:		$(DBSERVER)
 pt:		$(PROBE)
 pr:		$(PROBE)
 pg:		$(PROBE_GROUP) $(PROBE_GROUP_DESIGN)
-#chip:		$(CA_MARK) $(CA_PROBE)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(NAMES)
 os:		$(ORS_SERVER)
@@ -1112,7 +1111,7 @@ arbbasic: links
 		$(MAKE) arbbasic2
 arbbasic2: mbin menus com nas ${MAKE_RTC}
 
-arbxtras: tg
+arbxtras: tg chip
 
 arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pr pg na al nal di ph ds trs
