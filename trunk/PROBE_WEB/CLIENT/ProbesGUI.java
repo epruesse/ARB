@@ -8,13 +8,13 @@ public class ProbesGUI extends Frame
 
 {
     //private Canvas td;
-private ScrollPane sc;
-private TextArea details;
-private java.awt.List info;
-private int treeLevels;
-private TreeDisplay td;
-private TreeNode root;
-private ProbeMenu pm;
+private ScrollPane              sc;
+private TextArea                details;
+private ProbeList               probe_list;
+private int                     treeLevels;
+private TreeDisplay             td;
+private TreeNode                root;
+private ProbeMenu               pm;
 private ProbesGUIActionListener al;
 
 // public static void main(String[] args)
@@ -37,12 +37,11 @@ public ProbesGUI( TreeNode root, int levels, String title)
     td = new TreeDisplay( root, levels);
 
     // debug code
-    if (td == null)
-        {
-            System.out.println("constructor/ProbesGUI: no TreeDisplay received");
+    if (td == null) {
+        System.out.println("constructor/ProbesGUI: no TreeDisplay received");
+    }
 
-        }
-
+    int tree_height = 400;
 
     al = new ProbesGUIActionListener(this);
     setMenuBar(pm = new ProbeMenu(al));
@@ -50,33 +49,28 @@ public ProbesGUI( TreeNode root, int levels, String title)
     details = new TextArea("Display detail information", 10, 40, TextArea.SCROLLBARS_BOTH);
     add(details, BorderLayout.SOUTH);
 
-    //    info = new TextArea("short information", 20, 15, TextArea.SCROLLBARS_BOTH);
-    info = new java.awt.List();
-    add(info, BorderLayout.EAST);
+    probe_list = new ProbeList();
+    probe_list.add("Right click a node");
+    probe_list.add("to display probes.");
 
-//     td = new Canvas();
-//     td.setSize(600,400);
-//     td.setBackground(Color.red);
-//     add(td, BorderLayout.CENTER);
+    add(probe_list, BorderLayout.EAST);
+    probe_list.resize(40, tree_height);
 
     sc = new ScrollPane();
-        if (root == null) {
-            Toolkit.InternalError("in ProbesGUI: can't display invalid tree node");
-        }
-
+    if (root == null) {
+        Toolkit.InternalError("in ProbesGUI: can't display invalid tree node");
+    }
 
     sc.add(td);
     sc.getVAdjustable().setUnitIncrement(1);
     sc.getHAdjustable().setUnitIncrement(1);
-    sc.setSize(600,400);
+    sc.setSize(600,tree_height);
     sc.setBackground(Color.red);
     add(sc, BorderLayout.CENTER);
 
-    //    add(new Button("second"));
-      //    pack();
-    //    add(new Button("third"));
-      //Window-Listener
+    //Window-Listener
     addWindowListener(new WindowClosingAdapter(true));
+
     //Dialogelement anordnen
     pack();
   }
@@ -84,21 +78,33 @@ public ProbesGUI( TreeNode root, int levels, String title)
 
 // public    void    paint (Graphics g){
 //         details.paint(g);
-//         info.paint(g);
+//         probe_list.paint(g);
 //         td.paint(g);
 //     }
 
 
 
- public TreeDisplay getTreeDisplay()
- {
-     if (td == null)
-         {
-             System.out.println("ProbesGUI/getTreeDisplay: TreeDisplay not defined");
-         }
+public TreeDisplay getTreeDisplay()
+    {
+        if (td == null)
+        {
+            System.out.println("ProbesGUI/getTreeDisplay: TreeDisplay not defined");
+        }
 
-     return td;
- }
+        return td;
+    }
 
+// public java.awt.List getProbeList()
+//     {
+//         if (probe_list == null) {
+//             System.out.println("ProbesGUI/getProbeList: probe list not defined");
+//         }
+//         return probe_list;
+//     }
+
+public void setProbeListContents(ServerAnswer parsed)
+    {
+        probe_list.setContents(parsed);
+    }
 
 }
