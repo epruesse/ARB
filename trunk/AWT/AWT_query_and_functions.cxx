@@ -786,7 +786,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     bool aborted = false;
     {
         if (GB_read_int(gb_key_type)!=GB_STRING) {
-            if (aw_message("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==1) {
+            if (aw_message("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0) {
                 aborted = true;
             }
         }
@@ -1010,6 +1010,22 @@ static void awt_colorize(void */*dummy*/, struct adaqbsstruct *cbs) {
     if (error) GB_export_error(error);
 }
 
+// --------------------------------------------------------------
+//      static const char *color_group_name(int color_group)
+// --------------------------------------------------------------
+static const char *color_group_name(int color_group) {
+    static char buf[30];
+
+    if (color_group) {
+        sprintf(buf, "color group %i", color_group);
+    }
+    else {
+        strcpy(buf, "no color group");
+    }
+
+    return buf;
+}
+
 //  ------------------------------------------------------------------------------------
 //      AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs)
 //  ------------------------------------------------------------------------------------
@@ -1029,24 +1045,14 @@ AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
     aws->at(10, 10);
     aws->auto_space(5, 5);
 
-    aws->callback((AW_CB0) AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE", "C");
-    aws->at_newline();
-
     {
         int color_group;
 
         aws->label(GBS_global_string("Set color of %s to", cbs->selector->items_name));
         aws->create_option_menu(AWAR_COLORIZE);
         for (color_group = 0; color_group <= AW_COLOR_GROUPS; ++color_group) {
-            char buf[50];
-            sprintf(buf, "color group %i", color_group);
-            if (color_group == 0) {
-                aws->insert_default_option(buf, "none", color_group);
-            }
-            else {
-                aws->insert_option(buf,"",color_group);
-            }
+            if (color_group == 0) aws->insert_default_option(color_group_name(0), "none", 0);
+            else aws->insert_option(color_group_name(color_group), "", color_group);
         }
         aws->update_option_menu();
     }
@@ -1054,6 +1060,13 @@ AW_window *create_awt_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
 
     aws->callback((AW_CB1)awt_colorize, (AW_CL)cbs);
     aws->create_button("GO","GO", "G");
+
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE", "C");
+
+	aws->callback(AW_POPUP_HELP,(AW_CL)"set_color_of_listed.hlp");
+	aws->create_button("HELP","HELP","H");
+
     aws->at_newline();
 
     aws->window_fit();
