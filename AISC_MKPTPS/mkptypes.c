@@ -26,11 +26,11 @@
 #include <ctype.h>
 #include <string.h>
 
-#if 0
-#define DEBUG_PRINT(s) (fputs((s), stderr))
-#else
+#define check_heap_sanity() do{ char *x = malloc(10); free(x); }while(0)
+
+/* #define DEBUG_PRINT(s) do{ fputs((s), stderr); check_heap_sanity(); }while(0) */
+/* #define DEBUG_PRINT(s) fputs((s), stderr) */
 #define DEBUG_PRINT(s)
-#endif
 
 #define PRINT(s) fputs((s), stdout)
 
@@ -247,7 +247,9 @@ int ngetc(FILE *f){
     return c;
 }
 
-static char  last_comment[500];
+#define MAX_COMMENT_SIZE 10000
+
+static char  last_comment[MAX_COMMENT_SIZE];
 static int   lc_size            = 0;
 static char *found__attribute__ = 0;
 
@@ -313,6 +315,7 @@ int fnextch(FILE *f){
                 lastc                   = c;
                 c                       = ngetc(f);
                 last_comment[lc_size++] = c;
+                assert(lc_size<MAX_COMMENT_SIZE);
 
                 if (lastc == '*' && c == '/') incomment = 0;
                 else if (c < 0) {
@@ -332,6 +335,7 @@ int fnextch(FILE *f){
                 lastc                   = c;
                 c                       = ngetc(f);
                 last_comment[lc_size++] = c;
+                assert(lc_size<MAX_COMMENT_SIZE);
 
                 if (lastc != '\\' && c == '\n') incomment = 0;
                 else if (c < 0) {
@@ -1132,6 +1136,7 @@ int main(int argc, char **argv){
         getdecl(stdin);
     }
     else {
+
         while (argc > 0 && *argv) {
             DEBUG_PRINT("trying a new file\n");
             if (!(f = fopen(*argv, "r"))) {
