@@ -1379,6 +1379,12 @@ static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {
     AWTC_create_faligner_window(awr, cd);
 }
 
+static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
+    int mode = (int)cl_mode;
+
+    AW_save_specific_defaults(aw, ED4_propertyName(mode));
+}
+
 ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new_window)
 {
     AW_window_menu_modes *awmm;
@@ -1407,7 +1413,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         int   len = strlen(alignment_name)+35;
         char *buf = GB_give_buffer(len);
         snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init( aw_root, buf,buf, 800,600,20, 20 ); //create window
+        awmm->init( aw_root, "ARB_EDIT4", buf, 800,600,20, 20 ); //create window
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); //Points to Middle Area device
@@ -1626,8 +1632,21 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "props_key_map", "Key Mappings ", "K","nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0 );
     awmm->insert_menu_topic( "props_nds", "Select visible info (NDS) ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
     ____________________________SEP;
+    awmm->insert_sub_menu(0, "Save properties ...", "a");
+    {
+        static const char * const tag[] = { "save_alispecific_props", "save_alitype_props", "save_props" };
+        static const char * const entry_type[] = { "alignment specific ", "alignment-type specific ", "" };
 
-    awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+        for (int mode = 2; mode >= 0; --mode) {
+            const char *entry = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
+
+            awmm->insert_menu_topic(tag[mode], entry, mode == 2 ? "a" : "", "e4_defaults.hlp", mode == 2 ? AWM_ALL : AWM_EXP, ED4_save_defaults, (AW_CL)mode, 0);
+        }
+//         awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
+//         awmm->insert_menu_topic ( "save_alitype_props", "Save alignment-type specific properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
+//         awmm->insert_menu_topic ( "save_alispecific_props", "Save alignment specific properties (~/.arb_prop/edit4)", "a","Save Def", AWM_ALL, (AW_CB1) EDIT4_save_defaults, 2, 0 );
+    }
+    awmm->close_sub_menu();
 
     // ----------------------------------------------------------------------------------------------------
 
