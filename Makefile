@@ -31,20 +31,26 @@ endif
 
 #----------------------
 
-ifdef DEBUG
+ifeq ($(DEBUG),1)
+ifeq ($(DEBUG_GRAPHICS),1)
+		dflags = -DDEBUG -DDEBUG_GRAPHICS
+else
 		dflags = -DDEBUG
+endif
 		cflags = $(dflag1) $(dflags)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
 		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
 		extended_cpp_warnings = -Wnon-virtual-dtor -Wreorder
 else
+ifeq ($(DEBUG),0)
 		dflags = -DNDEBUG
 		cflags = -O $(dflags)
 		lflags = -O
 		fflags = -O
 		extended_warnings =
 		extended_cpp_warnings =
+endif
 endif
 
    XHOME = /usr/X11
@@ -174,7 +180,7 @@ endif
    CTAGS = etags
    CLEAN_BEFORE_MAKE = $(MAKE) clean# rebuild templates! (needed because of bug in Sun CC)
 
-ifdef DEBUG
+ifeq ($(DEBUG),1)
 	MAKE_RTC = rtc_patch
 	RTC = -lRTC8M
 endif
@@ -245,29 +251,58 @@ ifndef ARCPPLIB
 endif
 
 dummy:
-	@echo 'Please choose a Makefile option:'
-	@echo '	arb		    - Just compile ARB'
-	@echo '	perl		- Compile the PERL XSUBS into lib/ARB.so  and create links in lib to perl'
-	@echo '	binlink		- Create all links in the bin directory'
-	@echo '	all		    - Compile ARB + TOOLs + and copy shared libs + link foreign software'
-	@echo '	tarfile		- make all and create "arb.tar.gz"'
-	@echo '	tarale		- compress emacs and ale lisp files int arb_ale.tar.gz'
-	@echo '	save		- save all basic ARB sources into arbsrc_DATE'
-	@echo '	savedepot	- save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
-	@echo '	clean		- remove intermediate files'
-	@echo '	realclean	- remove all generated files'
-	@echo '	rmbak		- remove all "*%" and cores'
-	@echo '	tags		- create tags for xemacs'
-	@echo '	depend		- create dependencies 			(not recommended)'
-	@echo '	XXX/.depend	- create dependencies in dir XXX 	(recommended)'
-	@echo '	rtc_patch	- create LIBLINK/libRTC8M.so (SOLARIS ONLY'
-	@echo '	menus		- create GDEHELP/ARB_GDEmenus from GDEHELP/ARB_GDEmenus.source'
-	@echo '	export		- make tarfile and export to homepage'
+		$(MAKE) tests
+		@echo ''
+		@echo 'Main targets:'
+		@echo ''
+		@echo ' all         - Compile ARB + TOOLs + and copy shared libs + link foreign software'
+		@echo '               (That is most likely the target you want)'
+		@echo ''
+		@echo ' clean       - remove intermediate files (objs,libs,etc.)'
+		@echo ' realclean   - remove ALL generated files'
+		@echo ' rebuild     - realclean + all'
+		@echo ''
+		@echo 'Some often used sub targets (make all makes them all):'
+		@echo ''
+		@echo ' arb         - Just compile ARB (but none of the integrated tools)'
+		@echo ' menus       - create GDEHELP/ARB_GDEmenus from GDEHELP/ARB_GDEmenus.source'
+		@echo ' perl        - Compile the PERL XSUBS into lib/ARB.so  and create links in lib to perl'
+		@echo ' binlink     - Create all links in the bin directory'
+		@echo ''
+		@echo 'Development targets:'
+		@echo ''
+		@echo ' depend      - create dependencies               (recommended for people not using our CVS)'
+		@echo ' XXX/.depend - create dependencies in dir XXX    (recommended for ARB developers)'
+		@echo ' tags        - create tags for xemacs'
+		@echo ' rmbak       - remove all "*%" and cores'
+		@echo ''
+		@echo 'Internal maintainance:'
+		@echo ''
+		@echo ' tarfile     - make all and create "arb.tar.gz"'
+		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
+		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
+		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
+		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
+ifeq ($(USER),westram)
+		@echo ' export      - make tarfile and export to homepage'
+endif
+		@echo ''
 
 #********************* End of user defined Section *******************
 
+test_DEBUG: 
+ifndef dflags
+		@echo DEBUG has to be defined. Valid values are 0 and 1
+		@echo Please check your config.makefile
+		@false
+else
+		@true
+endif
 
+tests: test_DEBUG
+		@echo Tests successful
 
+# end test section
 
 DIR = $(ARBHOME)
 LIBS = -lAW -lARBDB $(RTC) $(XLIBS)
@@ -670,7 +705,7 @@ export:	tarfile sourcetarfile
 binlink:
 	(cd bin; $(MAKE) all);
 
-all:	arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
+all: tests arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_DEPENDEND_TARGETS)
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 ifndef DEBIAN
@@ -766,6 +801,10 @@ realclean: clean
 	rm -f `find bin -type f -perm -001 -print`
 	rm -f AISC/aisc
 	rm -f AISC_MKPTPS/aisc_mkpt
+
+rebuild: 
+		$(MAKE) realclean
+		$(MAKE) all
 
 #*** basic arb libraries
 arbbasic: links
