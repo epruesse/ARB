@@ -920,7 +920,6 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
 #define AWMIMT awm->insert_menu_topic
 #define SEP________________________SEP() awm->insert_separator()
 
-
 //  --------------------------------------------------------------------
 //      AW_window * create_nt_main_window(AW_root *awr, AW_CL clone)
 //  --------------------------------------------------------------------
@@ -968,6 +967,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_SHOW_CIRCLE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_CIRCLE_ZOOM)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_DTREE_REFRESH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
 
     GBDATA *gb_arb_presets =    GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
@@ -1006,8 +1007,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database","A", "arb_ntree.hlp",   AWM_ALL, (AW_CB)NT_system_cb,   (AW_CL)"arb_ntree -export &",0 );
                 AWMIMT("export_seqs",   "Export sequences to foreign format",    "f","arb_export.hlp",  AWM_ALL, AW_POPUP, (AW_CL)open_AWTC_export_window, (AW_CL)gb_main);
-                AWMIMT("export_nds",    "Export fields using NDS","N","arb_export_nds.hlp",AWM_EXP, AW_POPUP, (AW_CL)create_nds_export_window, 0);
                 GDE_load_menu(awm,"export");
+                AWMIMT("export_nds",    "Export fields using NDS","N","arb_export_nds.hlp",AWM_EXP, AW_POPUP, (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             SEP________________________SEP();
