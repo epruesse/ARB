@@ -1840,10 +1840,13 @@ void pd_export_pt_server(AW_window *aww)
 
                 if (!error) {
                     // convert database (genes -> species)
-                    char *command = GBS_global_string_copy("$ARBHOME/bin/gene_probe %s %s", temp_server_name, file);
+                    aw_status("Preparing database for gene PT server");
+                    char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
                     printf("Executing '%s'\n", command);
                     int result = system(command);
-                    if (result != 0) error = GBS_global_string("Couldn't convert database for gene pt server (gene_probe failed)");
+                    if (result != 0) {
+                        error = GBS_global_string("Couldn't convert database for gene pt server (arb_gene_probe failed, see console for reason)");
+                    }
                     free(command);
                 }
                 free(temp_server_name);

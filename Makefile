@@ -760,7 +760,7 @@ $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
 
 #*********************************** gene_probe **************************************
-GENE_PROBE = bin/gene_probe
+GENE_PROBE = bin/arb_gene_probe
 ARCHS_GENE_PROBE = \
 		GENE_PROBE/GENE_PROBE.a \
 
