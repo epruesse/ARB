@@ -1,5 +1,5 @@
 item:Clustal Protein Alignment
-itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; RUN_IN_WINDOW((clustalv /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Matrx  /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;cp in1 test; RUN_IN_WINDOW((clustalw /output=PIR /infile=clus_in /align /ktup=$KTUP /window=$WIN $Matrx  /fixedgap=$FIXED /floatgap=$FLOAT;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
 
 
 itemhelp:clustal_help
