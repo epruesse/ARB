@@ -131,11 +131,43 @@ BI_helix::~BI_helix(void){
     if (!deleteable){
         GB_warning("Internal Programm Error: You cannot delete BI_helix !!");
     }
-    int i;
+    unsigned i;
     for (i=0;i<HELIX_MAX; i++)  free(pairs[i]);
     for (i=0;i<HELIX_MAX; i++)  free(char_bind[i]);
 
-    free(entries);
+    if (entries) {
+        for (i = 0; i<size; ++i) {
+            if (entries[i].helix_nr && entries[i].helix_nr[0] != '-') {
+#if defined(DEBUG)
+                unsigned pair_pos   = entries[i].pair_pos;
+                bi_assert(entries[pair_pos].helix_nr != 0);
+                bi_assert(entries[pair_pos].helix_nr[0] == '-');
+                bi_assert(entries[pair_pos].helix_nr == (entries[i].helix_nr-1));
+#endif // DEBUG
+                entries[i].helix_nr = 0; // those NOT starting with '-' are only pointers into pairing helix_nr
+            }
+        }
+
+        char *to_free = 0;      // each position in one helix points to the same string (free it only once!)
+
+        for (i = 0; i<size; ++i) {
+            if (entries[i].helix_nr) {
+#if defined(DEBUG)
+                bi_assert(entries[i].helix_nr != 0);
+                bi_assert(entries[i].helix_nr[0] == '-');
+                unsigned pair_pos = entries[i].pair_pos;
+                bi_assert(entries[pair_pos].helix_nr == 0);
+#endif // DEBUG
+                if (to_free != entries[i].helix_nr) {
+                    free(to_free);
+                    to_free = entries[i].helix_nr;
+                }
+            }
+        }
+
+        free(to_free);
+        free(entries);
+    }
 }
 
 extern "C" long BI_helix_check_error(const char *key, long val)
@@ -201,7 +233,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
 
     strcpy(ident,"0");
     entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry),(size_t)size);
-    sident = strdup("-");
+    sident  = 0;
     for (pos = 0; pos < size; pos ++ ) {
         if (helix_nr) {
             if ( isdigit(helix_nr[pos])) {
@@ -239,7 +271,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             }else{
                 c = tolower(c);
                 if (stack->c != c) {
-                    sprintf(error,"Character '%c' pos %li don't mach character '%c' pos %i in Helix '%s'",
+                    sprintf(error,"Character '%c' pos %li don't match character '%c' pos %i in Helix '%s'",
                             stack->c,stack->pos,c,pos,ident);
                     goto helix_end;
                 }
@@ -255,13 +287,13 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             entries[stack->pos].pair_pos = pos;
             GBS_write_hash(hash,ident,(long)stack->next);
 
-            if (strcmp(sident+1,ident)) {
-                //free(sident);
+            if (sident == 0 || strcmp(sident+1,ident) != 0) {
                 sident = (char*)malloc(strlen(ident)+2);
                 sprintf(sident,"-%s",ident);
             }
-            entries[pos].helix_nr = sident+1;
+            entries[pos].helix_nr        = sident+1;
             entries[stack->pos].helix_nr = sident;
+            bi_assert((long)pos != stack->pos);
 
             delete stack;
         }
