@@ -202,34 +202,43 @@ void GB_dump_db_path(GBDATA *gbd) {
     printf("Path to GBDATA %p (type=%s) is '%s'\n", gbd, GB_get_type_name(gbd), GB_get_db_path(gbd));
 }
 
-void GB_dump(GBDATA *gbd) {
-    int         type      = GB_TYPE(gbd);
-    const char *type_name = GB_get_type_name(gbd);
-    const char *key_name  = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
-    const char *content   = 0;
+void GB_dump(GBDATA *gbd) {    
+    int          type      = GB_TYPE(gbd);
+    const char  *type_name = GB_get_type_name(gbd);
+    const char  *key_name  = 0;
+    const char  *content   = 0;
+    GBCONTAINER *father    = GB_FATHER(gbd);
 
-    static int indent;
-
-    if (indent == 0) {
-        printf("\nGB_dump of '%s':\n", GB_get_db_path(gbd));
-    }
-
-    if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {
-        content = "<can't examine - entry is deleted>";
+    if (!father) {
+        key_name = "<unknown quark - element w/o father>";
     }
     else {
-        switch (type) {
-            case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
-            case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
-            case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
-            case GB_STRING: { content = GB_read_char_pntr(gbd); break; }
-            case GB_LINK:   { content = GBS_global_string("link to %p", GB_follow_link(gbd)); break; }
-            case GB_BITS:   { break; }
-            case GB_BYTES:  { break; }
-            case GB_INTS:   { break; }
-            case GB_FLOATS: { break; }
-            case GB_DB:     { content = "see below"; break; }
-            default:        { content = ""; break; }
+        key_name = GB_KEY_QUARK(gbd) ? GB_KEY(gbd) : "<illegal quark=0>";
+    }
+
+    static int indent = 0;
+    if (indent == 0) {
+        printf("\nGB_dump of '%s':\n", father ? GB_get_db_path(gbd) : "<GBDATA w/o father>");
+    }
+
+    if (father) {
+        if (GB_ARRAY_FLAGS(gbd).changed == gb_deleted) {
+            content = "<can't examine - entry is deleted>";
+        }
+        else {
+            switch (type) {
+                case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
+                case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
+                case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
+                case GB_STRING: { content = GB_read_char_pntr(gbd); break; }
+                case GB_LINK:   { content = GBS_global_string("link to %p", GB_follow_link(gbd)); break; }
+                case GB_BITS:   { break; }
+                case GB_BYTES:  { break; }
+                case GB_INTS:   { break; }
+                case GB_FLOATS: { break; }
+                case GB_DB:     { content = "see below"; break; }
+                default:        { content = ""; break; }
+            }
         }
     }
 
