@@ -26,13 +26,14 @@ public class TreeNode
     private String accession_number;
 
     // ARB Data (valid for internal nodes only)
-    private String groupName;
+    private String  groupName;
+    private boolean folded; // whether group is folded
 
     // probe information
     private int exactMatches;   // number of probes matching exactly
     private int minNonGroupHits; // the probe(s) matching all members of the group, hit(s) minimal that many species outside the group
     private int maxCoverage;    // the maximum coverage reached for this group (range is  0..100)
-    
+
     private NodeProbes retrievedProbes = null; // when Probes are retrieved, they are stored here
 
     private double totalDist = 0;
@@ -44,9 +45,11 @@ public class TreeNode
     // data structure
     private boolean  isLeaf;
     private TreeNode father;
-    private Vector   childNodes;
-    private int      noOfChildren = -1; // means: not initialized yet
-    private boolean  grouped      = false;
+    //     private Vector   childNodes;
+    private TreeNode upperSon;
+    private TreeNode lowerSon;
+    private int      noOfChildren   = -1; // means: not initialized yet
+    //     private boolean  grouped = false;
 
     // marks
     private int  marked = 0;        // 0 = none marked, 1 = has marked, 2 = all marked (1 and 2 only differ for internal nodes)
@@ -63,7 +66,7 @@ public class TreeNode
     public TreeNode(boolean is_leaf)
     {
         isLeaf      = is_leaf;
-        childNodes  = new Vector();
+//         childNodes  = new Vector();
         nodeSerial  = nodeCounter;
         father      = null;
         maxCoverage = 100;
@@ -81,11 +84,27 @@ public class TreeNode
         return root;
     }
 
+    public TreeNode getRootOfMarked() {
+        if (markedState() == 0)
+            return null;
+        
+        if (upperSon().markedState() != 0) {
+            if (lowerSon().markedState() != 0) {
+                return this;
+            }
+            return upperSon().getRootOfMarked();
+        }
+        return lowerSon().getRootOfMarked();
+    }
+
+    public TreeNode upperSon() { return upperSon; }
+    public TreeNode lowerSon() { return lowerSon; }
+
     public TreeNode getBrother() {
         if (father == this) return null; // root has no brother
-        int myIdx = (TreeNode)(father.childNodes.elementAt(0)) == this ? 0 : 1;
-        return (TreeNode)(father.childNodes.elementAt(1-myIdx));
-
+        return father.upperSon() == this ? father.lowerSon() : father.upperSon();
+        //         int myIdx                 = father.upperSon() == this ? 0 : 1;
+        //         return (TreeNode)(father.childNodes.elementAt(1-myIdx));
     }
     public NodeProbes getNodeProbes(boolean exactMatches) throws Exception {
         if (retrievedProbes == null) {
@@ -94,51 +113,30 @@ public class TreeNode
         return retrievedProbes;
     }
 
-    public void setGrouped(boolean b)
-    {
-        grouped = b;
-    }
-    public boolean testGrouped()
-    {
-        return grouped;
-    }
+    public void fold() { folded = true; }
+    public void unfold() { folded = false; }
+    public boolean isFolded() { return folded; }
+    public boolean isGroup() { return groupName != null; }
 
-    public double getTotalDist()
-    {
-        return totalDist;
-    }
+    public double getTotalDist() { return totalDist; }
+    public void setDistance(double d) { distance = d; }
+    public double getDistance() { return distance; }
 
-    public void calculateTotalDist(double td)
+    public int getCurrentXoffset() { return xOffset; }
+    public int getCurrentYoffset() { return yOffset; }
+
+    public double calculateTotalDist(double td)
     {
         totalDist = distance + td;
-        if (isLeaf != true)
-        {
-            ((TreeNode)this.getChilds().elementAt(0)).calculateTotalDist(totalDist);
-            ((TreeNode)this.getChilds().elementAt(1)).calculateTotalDist(totalDist);
-        }
+        if (isLeaf == true) return totalDist;
 
-    }
+        //         double d1 = ((TreeNode)this.getChilds().elementAt(0)).calculateTotalDist(totalDist);
+        //         double d2 = ((TreeNode)this.getChilds().elementAt(1)).calculateTotalDist(totalDist);
+        double d1 = upperSon().calculateTotalDist(totalDist);
+        double d2 = lowerSon().calculateTotalDist(totalDist);
 
-    // public void calculateTotalDist(float td, TreeDisplay dis)
-    // {
-    //     totalDist = distance + td;
-    //     if(totalDist > dis.maxDist) {dis.maxDist = totalDist;};
-
-    //     if (isLeaf != true)
-    //         {
-    //             ((TreeNode)this.getChilds().elementAt(0)).calculateTotalDist(totalDist);
-    //             ((TreeNode)this.getChilds().elementAt(1)).calculateTotalDist(totalDist);
-    //         }
-
-    // }
-
-
-    public void setDistance(double d){
-        distance = d;
-    }
-
-    public double getDistance(){
-        return distance;
+        if (isFolded()) return totalDist;
+        return d1>d2 ? d1 : d2;
     }
 
     public void setSpeciesInfo(String short_name, String full_name, String acc) throws Exception {
@@ -154,6 +152,7 @@ public class TreeNode
             throw new Exception("setGroupInfo called for leaf");
         }
         groupName = group_name;
+        folded    = true; // initially all groups are folded
     }
 
     public void setProbeInfo(int no_of_exact_matches, int min_non_group_hits, int max_coverage) throws Exception {
@@ -225,72 +224,64 @@ public class TreeNode
             throw new Exception("Tried to add a child to a leaf node");
         }
         else {
-            childNodes.addElement(tn);
+            if (upperSon == null) {
+                upperSon = tn;
+            }
+            else {
+                if (lowerSon == null) {
+                    lowerSon = tn;
+                }
+                else {
+                    throw new Exception("Tried to add 3rd son");
+                }
+            }
+
+//             childNodes.addElement(tn);
             tn.setFather(this);
         }
     }
 
     public int getNoOfLeaves()
     {
-        if (testLeaf()) {
+        if (isLeaf()) {
             noOfChildren = 0;
             return 1;
         }
 
         if (noOfChildren == -1) {   // not calculated yet
-            noOfChildren =
-                ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() +
-                ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
+            //             noOfChildren =
+            //                 ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() +
+            //                 ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
+
+            noOfChildren = upperSon().getNoOfLeaves()+lowerSon().getNoOfLeaves();
         }
 
         return noOfChildren;
     }
 
 
-    public Vector getChilds()
-    {
-        return childNodes;
-    }
+//     public Vector getChilds() { return childNodes; }
 
-    public boolean testLeaf()
-    {
-        return isLeaf;
-    }
-    public void setLeaf(boolean l)
-    {
-        isLeaf = l;
-    }
+    public boolean isLeaf() { return isLeaf; }
+    public void setLeaf(boolean l) { isLeaf = l; }
 
+    public int setXOffset(int x) { xOffset = x; return x; }
+    public int setYOffset(int y) { yOffset = y; return y; }
 
-    public void setXOffset(int x){
-        xOffset = x;
-    }
-
-    public int setYOffset(int y){
-        yOffset = y;
-        return y;
-    }
-
-
-    public int getXOffset(){
-        return xOffset;
-    }
-    public int getYOffset(){
-
-
-        return yOffset;
-    }
+    public int getXOffset(){ return xOffset; }
+    public int getYOffset(){ return yOffset; }
 
 
     // not used yet
 
-    public double getMaxDepth()
-    {
-        return testLeaf() ? getTotalDist()
-            : ((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist()
-            ?  ((TreeNode)getChilds().elementAt(0)).getMaxDepth()
-            : ((TreeNode)getChilds().elementAt(1)).getMaxDepth();
-    }
+//     public double getMaxDepth()
+//     {
+//         return isLeaf()
+//             ? getTotalDist()
+//             : (((TreeNode)getChilds().elementAt(0)).getTotalDist() > ((TreeNode)getChilds().elementAt(1)).getTotalDist()
+//                ? ((TreeNode)getChilds().elementAt(0)).getMaxDepth()
+//                : ((TreeNode)getChilds().elementAt(1)).getMaxDepth());
+//     }
 
     public boolean setMarked(int marker)
     {
@@ -300,10 +291,7 @@ public class TreeNode
         return true;
     }
 
-    public int isMarked()
-    {
-        return marked;
-    }
+    public int markedState() { return marked; }
 
     private boolean markSubtree_rek(boolean flag) {
         boolean marks_changed = false;
@@ -315,8 +303,11 @@ public class TreeNode
         }
 
         if (!isLeaf) {
-            marks_changed = ((TreeNode)childNodes.elementAt(0)).markSubtree_rek(flag) || marks_changed;
-            marks_changed = ((TreeNode)childNodes.elementAt(1)).markSubtree_rek(flag) || marks_changed;
+            //             marks_changed = ((TreeNode)childNodes.elementAt(0)).markSubtree_rek(flag) || marks_changed;
+            //             marks_changed = ((TreeNode)childNodes.elementAt(1)).markSubtree_rek(flag) || marks_changed;
+
+            marks_changed = upperSon().markSubtree_rek(flag) || marks_changed;
+            marks_changed = lowerSon().markSubtree_rek(flag) || marks_changed;
         }
 
         return marks_changed;
@@ -328,12 +319,13 @@ public class TreeNode
             return marked;
         }
 
-        int upState = ((TreeNode)childNodes.elementAt(0)).recalcMarkedState();
+        //         int upState = ((TreeNode)childNodes.elementAt(0)).recalcMarkedState();
+        int upState = upperSon().recalcMarkedState();
         if (upState == 1) { // marked partially -> no need to check other subtree
             return upState;
         }
 
-        int downState = ((TreeNode)childNodes.elementAt(1)).recalcMarkedState();
+        int downState = lowerSon().recalcMarkedState();
         if (downState == 1 || downState == upState) {
             return downState;
         }
@@ -362,6 +354,16 @@ public class TreeNode
             marks_changed = father.propagateMarkUpwards() || marks_changed;
         }
         return marks_changed;
+    }
+
+    public int countMarked() {
+        switch (markedState()) {
+            case 0: return 0;
+            case 2: return noOfChildren;
+            case 1: break;
+        }
+
+        return upperSon().countMarked()+lowerSon().countMarked();
     }
 
     public boolean unmarkRestOfTree()
@@ -418,22 +420,17 @@ public class TreeNode
     {
         binaryPath = path;
         codedPath  = encodePath(binaryPath);
-        if(!testLeaf())
-        {
-            ((TreeNode)childNodes.elementAt(0)).setPath(binaryPath + "0");
-            ((TreeNode)childNodes.elementAt(1)).setPath(binaryPath + "1");
+        if (!isLeaf()) {
+            //             ((TreeNode)childNodes.elementAt(0)).setPath(binaryPath + "0");
+            //             ((TreeNode)childNodes.elementAt(1)).setPath(binaryPath + "1");
+
+            upperSon().setPath(binaryPath + "0");
+            lowerSon().setPath(binaryPath + "1");
         }
     }
 
-    public String getBinaryPath()
-    {
-        return binaryPath;
-    }
-
-    public String getCodedPath()
-    {
-        return codedPath;
-    }
+    public String getBinaryPath() { return binaryPath; }
+    public String getCodedPath() { return codedPath; }
 
     // -------------------------------------------------------------------
     // NOTE: if you change encodePath() please keep encodePath/decodePath()
@@ -498,5 +495,130 @@ public class TreeNode
         //                System.out.println("am Ende: " + binary);
         return coded.toString();
     }
+
+    public boolean unfoldAll(boolean recursive) {
+        if (!isLeaf()) {
+            boolean changed = false;
+            if (isGroup() && isFolded()) { changed = true; unfold(); }
+            if (recursive || !changed) {
+                changed = upperSon.unfoldAll(recursive) || changed;
+                changed = lowerSon.unfoldAll(recursive) || changed;
+            }
+            return changed;
+        }
+        return false;
+    }
+    public boolean foldAll(boolean recursive) {
+        if (!isLeaf()) {
+            boolean changed = false;
+            changed = upperSon.foldAll(recursive) || changed;
+            changed = lowerSon.foldAll(recursive) || changed;
+            if ((recursive || !changed) && isGroup() && !isFolded()) { changed = true; fold(); }
+            return changed;
+        }
+        return false;
+    }
+    public boolean unfoldCompleteMarked(boolean recursive) {
+        if (!isLeaf() && markedState() != 0) {
+            boolean changed = false;
+            if (isGroup() && isFolded() && markedState() == 2) { changed = true; unfold(); }
+            if (recursive || !changed) {
+                changed = upperSon.unfoldCompleteMarked(recursive) || changed;
+                changed = lowerSon.unfoldCompleteMarked(recursive) || changed;
+            }
+            return changed;
+        }
+        return false;
+    }
+    public boolean foldCompleteMarked(boolean recursive) {
+        if (!isLeaf() && markedState() != 0) {
+            boolean changed = false;
+            changed = upperSon.foldCompleteMarked(recursive) || changed;
+            changed = lowerSon.foldCompleteMarked(recursive) || changed;
+            if ((recursive || !changed) && isGroup() && !isFolded() && markedState() == 2) { changed = true; fold(); }
+            return changed;
+        }
+        return false;
+    }
+    public boolean unfoldUnmarked(boolean recursive) {
+        if (!isLeaf()) {
+            boolean changed = false;
+            if (isGroup() && isFolded() && markedState() == 0) { changed = true; unfold(); }
+            if (recursive || !changed) {
+                changed = upperSon.unfoldUnmarked(recursive) || changed;
+                changed = lowerSon.unfoldUnmarked(recursive) || changed;
+            }
+            return changed;
+        }
+        return false;
+    }
+    public boolean foldUnmarked(boolean recursive) {
+        if (!isLeaf()) {
+            boolean changed = false;
+            changed = upperSon.foldUnmarked(recursive) || changed;
+            changed = lowerSon.foldUnmarked(recursive) || changed;
+            if ((recursive || !changed) && isGroup() && !isFolded() && markedState() == 0) { changed = true; fold(); }
+            return changed;
+        }
+        return false;
+    }
+    public boolean unfoldPartiallyMarked(boolean recursive) {
+        if (!isLeaf() && markedState() == 1) {
+            boolean changed = false;
+            if (isGroup() && isFolded()) { changed = true; unfold(); }
+            if (recursive || !changed) {
+                changed = upperSon.unfoldPartiallyMarked(recursive) || changed;
+                changed = lowerSon.unfoldPartiallyMarked(recursive) || changed;
+            }
+            return changed;
+        }
+        return false;
+    }
+    public boolean foldPartiallyMarked(boolean recursive) {
+        if (!isLeaf() && markedState() == 1) {
+            boolean changed = false;
+            changed = upperSon.foldPartiallyMarked(recursive) || changed;
+            changed = lowerSon.foldPartiallyMarked(recursive) || changed;
+            if ((recursive || !changed) && isGroup() && !isFolded()) { changed = true; fold(); }
+            return changed;
+        }
+        return false;
+    }
+
+//     public void smartFold() {
+//         if (foldUnmarked(false)) {
+//             System.out.println("folded unmarked");
+//         }
+//         else if (foldCompleteMarked(false)) {
+//             System.out.println("folded fully marked");
+//         }
+//         else if (foldPartiallyMarked(false)) {
+//             System.out.println("folded partially marked");
+//         }
+//         else {
+//             System.out.println("folded NOTHING");
+//         }
+//     }
+//     public void smartUnfold() {
+//         if (unfoldPartiallyMarked(true)) {
+//             System.out.println("unfolded partially marked");
+//         }
+//         else if (unfoldCompleteMarked(true)) {
+//             System.out.println("unfolded fully marked");
+//         }
+//         else if (unfoldUnmarked(true)) {
+//             System.out.println("unfolded unmarked");
+//         }
+//         else {
+//             System.out.println("unfolded NOTHING");
+//         }
+//     }
+    public boolean smartFold() {
+        return foldUnmarked(false) || foldCompleteMarked(false) || foldPartiallyMarked(false); // step-by-step folding
+    }
+    public boolean smartUnfold() {
+        return unfoldPartiallyMarked(true) || unfoldCompleteMarked(true) || unfoldUnmarked(true); // full-depth unfolding
+    }
+
 
 }// end of class
