@@ -21,6 +21,9 @@
 #include "GDE_def.h"
 #include "GDE_extglob.h"
 
+#include <string>
+#include <set>
+
 #define DEFAULT_COLOR 8
 extern AW_CL agde_filtercd;
 
@@ -598,7 +601,10 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
     if(method == NULL)      method=(char *)calloc(1,sizeof(char));
     if(symbol == NULL)      symbol="";
 
-    int j = 0;
+    set<string>warned_about;
+    int conversion_warning        = 0;
+    int j                         = 0;
+
     for(; (i=Find2(Action+j,symbol)) != -1;)
     {
         i += j;
@@ -618,11 +624,13 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
         }
         else
         {
-            fprintf(stderr,
-                    "old arb version converted '%s' to '%s' in '%s'.\n"
-                    "now this is not done any more (check the action!)\n"
-                    "If this error occurs, please send it to devel@arb-home.de - thanks\n",
-                    symbol, textvalue, Action);
+            if (warned_about.find(symbol) == warned_about.end()) {
+                fprintf(stderr,
+                        "old arb version converted '%s' to '%s' (now only '$%s' is converted)\n",
+                        symbol, textvalue, symbol);
+                conversion_warning++;
+                warned_about.insert(symbol);
+            }
             //             newlen = strlen(Action)-strlen(symbol)
             //                 +strlen(method)+1;
             //             temp   = (char *)calloc(newlen,1);
@@ -635,6 +643,13 @@ char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
             //             Action = temp;
         }
     }
+
+    if (conversion_warning) {
+        fprintf(stderr,
+                "Conversion warnings occurred in Action:\n'%s'\n",
+                Action);
+    }
+
     free(textvalue);
     free(method);
     return(Action);
