@@ -933,9 +933,10 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 //     aws->callback(awt_create_import_selection_window);
 //     aws->create_button("BROWSE", "BROWSE", "B");
 
-    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_","ARBHOME", AW_TRUE ); // select import filename
+    const char *startdir = "PWD"; // was ARBHOME
 
-    awt_create_selection_box(aws, AWAR_FORM, "","ARBHOME", AW_FALSE ); // select import filter
+    awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", startdir, AW_TRUE ); // select import filename
+    awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", AW_FALSE ); // select import filter
 
     aws->at("auto");
     aws->callback(awtc_check_input_format);
