@@ -47,7 +47,7 @@ int type;
 	if (dataset->gb_main) GB_close(dataset->gb_main);
 	dataset->gb_main = GB_open(filename,"rwt");
 	if (!dataset->gb_main) {
-		ErrorOut(0,"File not found");
+		ErrorOut1(0,"File not found");
 	}
 	GB_begin_transaction(dataset->gb_main);
 	GB_change_my_security(dataset->gb_main,6,"passwd");

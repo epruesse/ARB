@@ -136,7 +136,7 @@ int HELP P_((Panel_item item, Event *event));
 /* FileIO.c */
 void LoadData P_((char *filename));
 void LoadFile P_((char *filename, NA_Alignment *dataset, int type, int format));
-void ErrorOut P_((int code, const char *string));
+void ErrorOut1 P_((int code, const char *string));
 char *Calloc P_((int count, int size));
 char *Realloc P_((char *block, int size));
 void Cfree P_((char *block));

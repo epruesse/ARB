@@ -123,7 +123,7 @@ int maxseqs;
 }
 
 
-Errorout(string)
+Errorout2(string)
 char *string;
 {
 	fprintf(stderr,"%s\n",string);
