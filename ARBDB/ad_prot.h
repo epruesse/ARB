@@ -78,6 +78,7 @@ void GB_delete_set P_((GBDATA_SET *set));
 GB_ERROR GBS_fwrite_string P_((const char *strngi, FILE *out));
 char *GBS_fread_string P_((FILE *in, int optimize));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
+int GBS_strscmp P_((const char *s1, const char *s2));
 
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));
@@ -334,6 +335,8 @@ char *GB_ralfs_test P_((GBDATA *gb_main));
 char *GB_ralfs_menupoint P_((GBDATA *main_data));
 
 /* adtune.c */
+
+/* adGene.c */
 
 #ifdef __cplusplus
 }

@@ -2,6 +2,9 @@ ARB change log
 
 Major changes for next Beta:
 
+ - Information windows are detachable (allows to have multiple windows showing different items)
+ - Scanning for hidden/unknown database fields improved and seperated;
+   possibility to remove unused fields.
  - new tabbed format in 'Export NDS' and 'Export matrix' (useful for star-calc/excel/etc.)
  - Changed Parsimony method: Multiple consecutive gaps were counted as
    multiple mutations - now they are counted as one mutation.

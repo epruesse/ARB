@@ -45,16 +45,13 @@ void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetli
         switch(widgetlist->widget_type) {
 
             case AW_WIDGET_INPUT_FIELD:
-                widgetlist->aw->update_input_field(
-                                                   widgetlist->widget, var_value );
+                widgetlist->aw->update_input_field(widgetlist->widget, var_value );
                 break;
             case AW_WIDGET_TEXT_FIELD:
-                widgetlist->aw->update_text_field(
-                                                  widgetlist->widget, var_value );
+                widgetlist->aw->update_text_field(widgetlist->widget, var_value );
                 break;
             case AW_WIDGET_TOGGLE:
-                widgetlist->aw->update_toggle(
-                                              widgetlist->widget, var_value, widgetlist->cd );
+                widgetlist->aw->update_toggle(widgetlist->widget, var_value, widgetlist->cd );
                 break;
             case AW_WIDGET_LABEL_FIELD:
                 widgetlist->aw->update_label( widgetlist->widget, var_value );
@@ -77,11 +74,11 @@ void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetli
 
 
 AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi ) {
-    cd		= cd1;
+    cd		    = cd1;
     widget		= widgeti;
     widget_type	= type;
     awar		= vs;
-    aw		= awi;
+    aw		    = awi;
     next		= 0;
     awar->add_callback((AW_RCB1)aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
@@ -89,13 +86,13 @@ AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1
 
 void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, XtPointer call_data ) {
     AWUSE(wgt);AWUSE(call_data);
-    AW_variable_update_struct *vus = (AW_variable_update_struct *) variable_update_struct;
-    char	*tmp = 0;
-    long	h_int;
-    float	h_float;
-    GB_ERROR	error = 0;
-    XmListCallbackStruct *xml;
-    AW_root *root = vus->awar->root;
+    AW_variable_update_struct *vus   = (AW_variable_update_struct *) variable_update_struct;
+    char	                  *tmp   = 0;
+    long	                   h_int;
+    float	                   h_float;
+    GB_ERROR	               error = 0;
+    XmListCallbackStruct      *xml;
+    AW_root                   *root  = vus->awar->root;
 
     if (root->value_changed){
         root->changer_of_variable = (long)vus->widget;
@@ -155,7 +152,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             break;
 
 
-        case AW_WIDGET_SELECTION_LIST:
+        case AW_WIDGET_SELECTION_LIST: {
 
             char *ptr;
             AW_selection_list *selection_list;
@@ -198,6 +195,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             }
             XtFree( tmp );
             break;
+        }
         case AW_WIDGET_LABEL_FIELD:
             break;
         default:
@@ -209,7 +207,8 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
         root->changer_of_variable = 0;
         vus->awar->update();
         aw_message(error);
-    }else{
+    }
+    else {
         if (root->prvt->recording_macro_file){
             fprintf(root->prvt->recording_macro_file,"BIO::remote_awar($gb_main,\"%s\",",root->prvt->application_name_for_macros);
             GBS_fwrite_string(vus->awar->awar_name,root->prvt->recording_macro_file);
@@ -349,22 +348,11 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         if (_at->attach_any){ // +
             aw_attach_widget(label,_at);
         }
-        /*
-        label = XtVaCreateManagedWidget( "label",
-                                         xmLabelWidgetClass,
-                                         INFO_WIDGET,
-                                         XmNx, _at->x_for_next_button,
-                                         XmNy, _at->y_for_next_button + 4,
-                                         XmNrecomputeSize, AW_FALSE,
-                                         RES_LABEL_CONVERT(_at->label_for_inputfield),
-                                         XmNalignment, XmALIGNMENT_BEGINNING,
-                                         XmNfontList, p_global->fontlist,
-                                         NULL );
-        */
 
         AW_LABEL_IN_AWAR_LIST(this,label,_at->label_for_inputfield);
-        x_correcting_for_label =width_of_label+10;
-    }else{
+        x_correcting_for_label = width_of_label+10;
+    }
+    else {
         x_correcting_for_label = 0;
     }
 
@@ -400,7 +388,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
             fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
             color_switch = 0;
-        }else{
+        }
+        else {
             bg_color = color.pixel;
         }
     }
@@ -422,7 +411,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
             aw_attach_widget(button,_at,width_of_button + 2);
             width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
             height_of_last_widget = _at->to_position_y - _at->y_for_next_button;
-        }else{
+        }
+        else {
             button = XtVaCreateManagedWidget( "label",
                                               xmPushButtonWidgetClass,
                                               fatherwidget,
@@ -441,7 +431,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         AW_INSERT_BUTTON_IN_SENS_LIST ( root,
                                         _at->id_for_next_button, _at->mask_for_next_button, button );
 
-    }else{
+    }
+    else {
         button = XtVaCreateManagedWidget( "label",
                                           xmLabelWidgetClass,
                                           (_at->attach_any)?INFO_FORM:fatherwidget,
@@ -467,7 +458,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         if (!height)	height = _at->to_position_y - _at->y_for_next_button;
         if (!height)	XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
         height_of_last_widget = height;
-    }else{
+    }
+    else {
         if (!height) XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
         width_of_last_widget = x_correcting_for_label + width;
 
@@ -570,23 +562,23 @@ void AW_window::create_toggle( const char *var_name ) {
 
 
 void AW_window::create_input_field( const char *var_name,  int columns ) {
-    Widget	textField = 0;
-    Widget	label = 0;
-    AW_cb_struct *cbs;
+    Widget	                   textField              = 0;
+    Widget	                   label                  = 0;
+    AW_cb_struct              *cbs;
     AW_variable_update_struct *vus;
-    char	*string;
-    int x_correcting_for_label = 0;
-    int width_of_input_label;
-    int width_of_input;
-    int width_of_last_widget;
-    int height_of_last_widget;
+    char	                  *String;
+    int                        x_correcting_for_label = 0;
+    int                        width_of_input_label;
+    int                        width_of_input;
+    int                        width_of_last_widget;
+    int                        height_of_last_widget;
 
 
     check_at_pos();
     if (!columns) columns = _at->length_of_buttons;
 
     AW_awar *vs =root->awar(var_name);
-    string = root->awar( var_name )->read_string();
+    String = root->awar( var_name )->read_string();
 
     width_of_input_label = this->calculate_string_width( calculate_label_length() );
     width_of_input = this->calculate_string_width( columns ) + 18;
@@ -623,7 +615,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                                              (_at->attach_any)?INFO_FORM:INFO_WIDGET,
                                              XmNwidth, (int)width_of_input,
                                              XmNrows, 1,
-                                             XmNvalue, string,
+                                             XmNvalue, String,
                                              XmNfontList, p_global->fontlist,
                                              (_at->attach_any) ? NULL:XmNx, (int)(_at->x_for_next_button + x_correcting_for_label ),
                                              XmNy, (int)(_at->y_for_next_button + 5) - 8,
@@ -633,7 +625,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
         }
 
     }
-    free( string );
+    free( String );
 
     // user-own callback
     cbs = _callback;
@@ -706,7 +698,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
     Widget label =0;
     AW_cb_struct *cbs;
     AW_variable_update_struct *vus;
-    char *string = NULL;
+    char *String = NULL;
     short width_of_last_widget = 0;
     short height_of_last_widget = 0;
     int width_of_text = 0;
@@ -715,7 +707,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
     int x_correcting_for_label = 0;
 
     AW_awar *vs = root->awar(var_name);
-    string = root->awar( var_name )->read_string();
+    String = root->awar( var_name )->read_string();
 
     width_of_text_label = this->calculate_string_width( calculate_label_length() );
     width_of_text = this->calculate_string_width( columns ) + 18;
@@ -772,14 +764,14 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                             xmTextWidgetClass,
                                             scrolledWindowText,
                                             XmNeditMode, XmMULTI_LINE_EDIT ,
-                                            XmNvalue, string,
+                                            XmNvalue, String,
                                             XmNscrollLeftSide, AW_FALSE,
                                             XmNwidth, (int)width_of_text,
                                             XmNheight, (int)height_of_text,
                                             XmNfontList, p_global->fontlist,
                                             NULL );
 
-    delete string;
+    delete String;
 
     if (!_at->to_position_exists){
         XtVaGetValues( scrolledWindowText,	XmNheight, &height_of_last_widget,
@@ -844,16 +836,16 @@ void AW_window::update_text_field( int *widget, const char *var_value ) {
 
 AW_selection_list* AW_window::create_selection_list( const char *var_name, const char *label, const char *mnemonic, int columns, int rows  ) {
     AWUSE(mnemonic);
-    Widget scrolledWindowList;
-    Widget scrolledList;
-    Widget l = 0;
+    Widget                     scrolledWindowList;
+    Widget                     scrolledList;
+    Widget                     l                     = 0;
     AW_variable_update_struct *vus;
-    AW_cb_struct	*cbs;
-    int width_of_label = 0;
-    int width_of_list;
-    int height_of_list;
-    int width_of_last_widget = 0;
-    int height_of_last_widget = 0;
+    AW_cb_struct	          *cbs;
+    int                        width_of_label        = 0;
+    int                        width_of_list;
+    int                        height_of_list;
+    int                        width_of_last_widget  = 0;
+    int                        height_of_last_widget = 0;
 
     if ( _at->label_for_inputfield ) {
         label = _at->label_for_inputfield;

@@ -174,7 +174,8 @@ void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_
     GBDATA *gb_table_field;
     for (gb_table_field = GBT_first_table_field(gb_table);
          gb_table_field;
-         gb_table_field = GBT_next_table_field(gb_table_field)){
+         gb_table_field = GBT_next_table_field(gb_table_field))
+    {
         GBDATA *gb_name = GB_find(gb_table_field,"name",0,down_level);
         GBDATA *gb_description = GB_search(gb_table_field,"description",GB_STRING);
         if (!gb_name) continue;

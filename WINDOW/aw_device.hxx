@@ -254,7 +254,7 @@ class AW_device: public AW_matrix, public AW_gc {
 		virtual 	void	_privat_reset(void);
 
 	public:
-		AW_device(class AW_common *common);			// get the device from the AW_window class
+		AW_device(AW_common *common);			// get the device from  AW_window
 									// by device = get_device(area);
 /***************** The Read Only  Section ******************/
 		AW_bitset 	filter;

@@ -77,10 +77,11 @@ AW_window *create_ad_table_field_reorder_window(AW_root *root,awt_table *awtt)
 	aws->button_length(0);
 	aws->callback((AW_CB1)ad_table_field_reorder_cb,(AW_CL)awtt);
 	aws->help_text("spaf_reorder.hlp");
-	aws->create_button("MOVE_TO_NEW_POSITION",
-                       "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
+	aws->create_button("MOVE_TO_NEW_POSITION", "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
+
 	aws->at("source");
 	awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_source);
+
 	aws->at("dest");
 	awt_create_selection_list_on_table_fields(awtt->gb_main,aws,awtt->table_name,awtt->awar_field_reorder_dest);
 

@@ -92,13 +92,13 @@ private:
     class AW_cb_struct *next;
 public:
     // ************ This is not the public section *************
-    class	AW_window	*pop_up_window;
+    AW_window	*pop_up_window;
     void (*f)(AW_window*,AW_CL ,AW_CL);
     AW_window *aw;
     const char *help_text;
     char *id;
     // ************ The real public section *************
-    AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i = 0, AW_CL cd2i = 0, const char *help_texti = 0, class AW_cb_struct *next = 0);
+    AW_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i = 0, AW_CL cd2i = 0, const char *help_texti = 0, AW_cb_struct *next = 0);
     void		run_callback(void);	// runs the whole list
 };
 
@@ -237,7 +237,7 @@ public:
 	void hide(void);		// hide (dont destroy) a window (<->show)
 	AW_BOOL get_show(void);	// is window shown (== AW_TRUE) or hidden (== AW_FALSE)
 	void message( char *title, int ms );	// Set for ms milliseconds the title of the window
-	void set_window_title( char *title );	// Set the window title forever
+	void set_window_title( const char *title );	// Set the window title forever
 	void set_icon( const char *pixmap_name = 0,const char *default_icon = 0); // Set the Pixmap
 	char *get_window_title( void );		// Get the window's title
 	void set_info_area_height(int height);
