@@ -3,15 +3,15 @@ itemmeta: L
 itemmethod:(GEN_INFILE(in1);\
             cat infile |tr '?' '-' >in1.in;\
             mv in1.in infile;\
-            RUN_IN_WINDOW(($BOOTSTRP;\
+            RUN_IN_WINDOW((arb_protml $MODEL $SEARCH $REARRANGE $CALCLENGTH infile ;\
                            $DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1 arb_read_tree_args))&
+            RM_LOCAL_FILES(in1))&
 itemhelp:protml.help
 
 arg:DISPLAY_FUNC
-argtype:chooser
+argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_phylip'):arb_read_tree `/bin/cat arb_read_tree_args` tree_ph_$$ treefile "PRG=protml PARMETERS=$MODEL$SEARCH FILTER=$FILTER PKG=molphy"
+argchoice:ARB ('tree_ph_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_ph_$$ treefile "PRG=protml MODEL=$MODEL SEARCH=$SEARCH FILTER=$FILTER PKG=molphy"
 argchoice:TextEdit:arb_textedit treefile &
 argchoice:Treetool:treetool treefile
 
@@ -27,24 +27,25 @@ argchoice:Dayhoff-F:-df
 argchoice:mtREV24-F:-mf
 argchoice:Proportional:-pf
 
-arg:BOOTSTRP
-arglabel:How many bootstraps ?
-argtype:chooser
-argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_protml $MODEL -s infile
-argchoice:10:   arb_bootstrap 10   "arb_protml $MODEL $SEARCH infile 10"
-argchoice:100:  arb_bootstrap 100  "arb_protml $MODEL $SEARCH infile 100"
-argchoice:1000: arb_bootstrap 1000 "arb_protml $MODEL $SEARCH infile 1000"
-#argchoice:xDo not bootstrap:echo >arb_read_tree_args;protml $MODEL $SEARCH -v -I in1.in;mv protml.tre treefile
-#argchoice:x10:   arb_echo 1 r 10 y   |seqboot ; /bin/mv -f outfile infile; arb_echo m 10 y   |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-#argchoice:x100:  arb_echo 1 r 100 y  |seqboot ; /bin/mv -f outfile infile; arb_echo m 100 y  |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-#argchoice:x1000: arb_echo 1 r 1000 y |seqboot ; /bin/mv -f outfile infile; arb_echo m 1000 y |$PROGRAM; /bin/mv -f treefile infile;arb_echo y | consense;arb_textedit outfile &
-
 arg:SEARCH
-argtype:chooser
-arglabel:Search strategy (bootstrap only)
-# argchoice:star decomposition:-s
-argchoice:exhaustive:-e
-argchoice:quickadd (does not work):-q
+argtype:choice_menu
+arglabel:Search strategy
+argchoice:Star decomposition:-s
+argchoice:Exhaustive:-e
+argchoice:Quick add:-q
+
+arg:CALCLENGTH
+argtype:choice_menu
+arglabel:Calc branchlens
+argchoice:Yes:1
+argchoice:No:0
+
+arg:REARRANGE
+argtype:choice_menu
+arglabel:Rearrange
+argchoice:None:0
+argchoice:local Rearrangement search:-R
+argchoice:LBP only:-RX
 
 in:in1
 informat:genbank
