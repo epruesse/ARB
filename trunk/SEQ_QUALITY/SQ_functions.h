@@ -18,7 +18,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option);
       value_of_evaluation
     */
 
-void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average);
+void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus);
     /*
       The "weight_..."  -values are passed to the function "SQ_evaluate()".
       SQ_evaluate() generates the final estimation for the quality of an alignment.

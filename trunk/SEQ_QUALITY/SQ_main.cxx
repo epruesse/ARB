@@ -24,7 +24,8 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_MARKED           AWAR_SQ_PERM "marked"
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
-
+#define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
+#define AWAR_SQ_WEIGHT_CONSENSUS AWAR_SQ_PERM "weight_consensus"
 
 void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
     {
@@ -33,8 +34,10 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
         free(default_tree);
     }
     aw_root->awar_int(AWAR_SQ_MARKED, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 30, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 70, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 20, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 50, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 15, aw_def);
 }
 
 // --------------------------------------------------------------------------------
@@ -63,7 +66,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
     if (!error) {
-        const char *option = "consensus_conformity";
+        const char *option = "value_of_evaluation";// "consensus_conformity";
 
         /*
           "option" is variable which is passed to function "SQ_get_value()".
@@ -85,6 +88,8 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
         int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
+	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -99,9 +104,9 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         //SQ_traverse_through_tree(gb_main, tree, marked_only);
 	SQ_calc_sequence_structure(gb_main, marked_only);
-        SQ_evaluate(gb_main, weight_bases, weight_diff_from_average);
+        SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus);
 	int value = SQ_get_value(gb_main, option);
-        aw_message(GBS_global_string("Value in container: %i", value));
+        aw_message(GBS_global_string("Value in container %s : %i",option, value));
 
     }
 
@@ -137,6 +142,12 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
 
     aws->at("deviation");
     aws->create_input_field(AWAR_SQ_WEIGHT_DEVIATION, 3);
+
+    aws->at("no helices");
+    aws->create_input_field(AWAR_SQ_WEIGHT_HELIX, 3);
+
+    aws->at("consensus");
+    aws->create_input_field(AWAR_SQ_WEIGHT_CONSENSUS, 3);
 
     aws->at("tree");
     awt_create_selection_list_on_trees(gb_main,(AW_window *)aws, AWAR_SQ_TREE);

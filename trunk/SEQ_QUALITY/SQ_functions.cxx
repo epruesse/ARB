@@ -209,20 +209,18 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 		/*calculate consensus conformity*/
 		if (read_sequence) {
-		    int sequenceLength = 0;
+		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
-				
+		    int cons_conf           = 0;
+		    int cons_conf_percent   = 0;		
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
-		    int cons_conf=0;
-		    int cons_conf_percent=0;
+
 		    
 		    for (int i = 0; i < sequenceLength; i++) {
 			char c;
-
 			c = cons_mkd.SQ_get_consensus(i);
 			if (rawSequence[i] == c) {
-			    //printf("%c",c);
 			    cons_conf++;
 			}
 		    }
@@ -296,7 +294,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 
 
 
-void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average){
+void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus){
 
 
     char *alignment_name;
@@ -331,24 +329,32 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
 	    if (gb_ali) {
-		int bases = 0;
-		int dfa = 0;
-		int result = 0;
+		int bases      = 0;
+		int dfa        = 0;
+		int result     = 0;
+		int nh         = 0;
+		int cc         = 0;
 
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+
 		GBDATA *gb_result1 = GB_search(gb_quality, "percent_of_bases", GB_INT);
 		bases = GB_read_int(gb_result1);
-
 		GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
 		dfa = GB_read_int(gb_result2);
+		GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
+		nh = GB_read_int(gb_result3);
+		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_conformity", GB_INT);
+		cc = GB_read_int(gb_result4);
 
 		/*this is the equation for the evaluation of the stored values*/
-		result = 100 - ((weight_bases * bases) + (weight_diff_from_average * dfa)) / 100;
+		printf("\n debug info:%i %i %i %i \n", bases, dfa, nh, cc );
+		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * nh) + (weight_consensus * cc);
+		result = 2 * result / 45;
 
 		/*write the final value of the evaluation*/
-		GBDATA *gb_result3 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
-		seq_assert(gb_result3);
-		GB_write_int(gb_result3, result);
+		GBDATA *gb_result5 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
+		seq_assert(gb_result5);
+		GB_write_int(gb_result5, result);
 
 	    }
 	}
