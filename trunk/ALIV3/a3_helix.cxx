@@ -322,7 +322,7 @@ static str CleanHelix ( str hel )
     if (all)
     {
         cout << "\nhelix     = "   << helix;
-        cout << "\n\nkonsensus = " << konsensus;
+        // cout << "\n\nkonsensus = " << konsensus;
         cout << "\n\nlength    = " << length;
 
         cout << "\n";

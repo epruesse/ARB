@@ -46,7 +46,7 @@ void ALI_ARBDB::close(void)
       free(alignment);
 }
 
-char *ALI_ARBDB::get_sequence_string(char *name,int and_mark)
+char *ALI_ARBDB::get_sequence_string(const char *name,int and_mark)
 {
    char *sequence = 0;
    GBDATA *gb_species_data;
