@@ -22,7 +22,7 @@ struct adawcbstruct {
 	char	                scannermode;
 	char	               *def_dir;
     const ad_item_selector *selector;
-    AW_BOOL                 add_all_fields_pseudo_field; // true => add a pseudo-field named 'all_fields' (used by 'awt_create_selection_list_on_scandb_cb')
+    AW_BOOL                 add_all_fields_pseudo_field; // true => add a pseudo-field named '[all_fields]' (used by 'awt_create_selection_list_on_scandb_cb')
 };
 
 struct awt_sel_list_for_tables {
@@ -111,6 +111,7 @@ struct awt_table {
 #define AWAR_TABLE_EXPORT      		"tmp/ad_table/export_table"
 #define AWAR_TABLE_IMPORT      		"tmp/ad_table/import_table"
 
+#define ALL_FIELDS_PSEUDO_FIELD "[any field]"
 
 void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs);
 
