@@ -4,3 +4,4 @@ ARB.bs
 ARB.c
 ARB.xs
 proto.h
+pm_to_blib
