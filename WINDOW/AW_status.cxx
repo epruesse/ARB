@@ -508,7 +508,9 @@ int aw_message(const char *msg, const char *buttons)
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
 {
-    if (!buttons){		/* asynchronous message */
+    printf("in aw_message\n");
+
+    if (!buttons){		        /* asynchronous message */
         if (aw_stg.local_message){
             aw_insert_message_in_tmp_message(AW_root::THIS,msg);
         }else{
