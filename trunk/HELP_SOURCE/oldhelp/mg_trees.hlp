@@ -10,31 +10,24 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Transfer Trees
 
-OCCURRENCE	ARBB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Trees>
+OCCURRENCE	ARB_INTRO <MERGE TWO ARB DATABASES> ARB_MERGE <Transfer Trees>
 
 DESCRIPTION	Transferres trees.
 
 		Press the 'Transfer Trees' button of the 'ARB_MERGE' window to
-			display the 'MERGE TREES' window.
+                display the 'MERGE TREES' window.
 
 		Select source tree from the left (database I) 'Trees' subwindow
-			and the destination from the right (database II) 'Trees'
-			subwindow.
+                and the destination from the right (database II) 'Trees'
+                subwindow.
 
-		Press the 'Transfer Tree' button between the 'Tree' subwindows.
+		Press the 'Transfer Tree' button below the 'Tree' subwindows.
 
 		To delete or rename trees in the individual databases press the
-			corresponding buttons below the 'Tree' subwindows.
-
-		To save modifications pres the 'Save result' button of the
-			'ARB_MERGE' window.
+                corresponding buttons below the 'Tree' subwindows.
 
 
-NOTES		If a 'Tree' should be transferred which does not exist within
-		database II and no other destination tree has been specified
-		the tree will be created in database II.
-
-	
+NOTES		None
 
 EXAMPLES	None
 
