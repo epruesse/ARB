@@ -1439,12 +1439,12 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     0,                      // AW_CL for callback function
                                     true, // use color groups
 
-                                    "#ffffe0",
+                                    "#f8f8f8",
                                     "STANDARD$black", // Standard Color showing sequences
-                                    "#SEQUENCES$navy", // Color for selected sequences
-                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#07f",       "-COLOR 3$#0a0",
-                                    "+-COLOR 4$#80f",       "+-COLOR 5$#a90",       "-COLOR 6$grey",
-                                    "+-COLOR 7$red",        "+-COLOR 8$red",        "-COLOR 9$red",
+                                    "#SEQUENCES$#808080", // default color for sequences (color 0)
+                                    "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
+                                    "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
+                                    "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
 
                                     "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
                                     "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
@@ -1458,7 +1458,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
                                     "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                                    "+-MARKED$#FFFFBD",     "-SELECTED$#FFFF80",
+                                    "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
                                     0);
 
