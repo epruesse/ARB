@@ -292,6 +292,17 @@ ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
     return ( ED4_R_OK );
 }
 
+void ED4_root::announce_deletion(ED4_base *object) {
+    // remove any links which might point to the object
+
+    ED4_cursor& cursor = temp_ed4w->cursor;
+    if (cursor.owner_of_cursor == object) { // about to delete owner_of_cursor
+        cursor.HideCursor();
+        e4_assert(cursor.owner_of_cursor != object);
+    }
+}
+
+
 ED4_returncode  ED4_root::add_to_selected( ED4_terminal *object )
 {
     ED4_base            *tmp_object;
@@ -498,9 +509,9 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
     {
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
-        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",NULL, 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
+        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",/*NULL,*/ 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
                            new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL),
-                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal",NULL, 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
+                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal",/*NULL,*/ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
                            new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
     }
     x = 100;
