@@ -18,7 +18,6 @@ public class DialogWrapper implements ActionListener
     public DialogWrapper(Frame parent, String title, String text, Vector buttons){
         dl = new Dialog(parent, title, true);
         dl.setLayout(new BorderLayout());
-        // dl.setResizable(true);
         
         Point parloc = parent.getLocation();
         // position inside parent window
@@ -48,7 +47,6 @@ public class DialogWrapper implements ActionListener
         {
             Enumeration en = buttons.elements();
             while (en.hasMoreElements()){
-                //  System.out.println("Adding Button");
                 Button aButton = new Button((String) en.nextElement());
                 aButton.addActionListener(this);
                 p.add(aButton);
@@ -61,24 +59,14 @@ public class DialogWrapper implements ActionListener
             Dimension cd = c.getSize();
             Dimension pd = p.getSize();
 
-            // System.out.println("cd="+cd.width+"/"+cd.height);
-            // System.out.println("pd="+pd.width+"/"+pd.height);
-
             dl.setSize((cd.width > pd.width ? pd.width : cd.width)+50,
                        cd.height+pd.height+25);
-
-            // Dimension dld = dl.getSize();
-            // System.out.println("dld="+dld.width+"/"+dld.height);
         }
 
         dl.pack();
 
-        // Dimension dld = dl.getSize();
-        // System.out.println("dld="+dld.width+"/"+dld.height);
-
         dl.setResizable(false);
         dl.setVisible(true);
-
     }
 
 
@@ -94,10 +82,5 @@ public class DialogWrapper implements ActionListener
         dl.setVisible(false);
         dl.dispose();
     }
-
-//     class WClAdapter extends WindowAdapter{
-
-
-//     }
 
 } // class DialogWrapper
