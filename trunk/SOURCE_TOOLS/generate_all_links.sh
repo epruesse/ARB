@@ -182,6 +182,7 @@ symlink ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx
 symlink ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx
 symlink ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx
 symlink ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx
+symlink ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx
 symlink ../XML/xml.hxx INCLUDE/xml.hxx
 
 # gl stuff
