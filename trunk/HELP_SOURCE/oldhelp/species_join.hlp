@@ -1,0 +1,37 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Join species
+
+OCCURRENCE	ARB_NT/Species/Merge Species/Join marked species
+
+DESCRIPTION
+
+            "Join species" merges several similar species into one species.
+
+            All database fields and the sequences get concatenated.
+
+            - Mark all species that should be examined for similarity.
+
+            - Select a database field entry from the list
+              to set a similarity-criterion used to detect
+              candidates for joining (for e.g., full_name).
+
+            - Check seperators for fields and sequences.
+
+            - Press GO to start.
+
+NOTES		There's a second function to merge species: see LINK{merge_species.hlp}
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
