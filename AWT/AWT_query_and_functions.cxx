@@ -7,6 +7,9 @@
 #include <memory.h>
 #include <ctype.h>
 
+#include <slist>
+#include <string>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -20,6 +23,8 @@
 #include "awt_config_manager.hxx"
 
 #include "GEN.hxx"
+
+using namespace std;
 
 /***************** Create the database query box and functions *************************/
 
@@ -79,7 +84,7 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
             {
                 if (IS_QUERIED(gb_item,cbs)) {
                     if (count < AWT_MAX_QUERY_LIST_LEN ) {
-                        char *name = cbs->selector->generate_item_name(cbs->gb_main, aw_root, gb_item);
+                        char *name = cbs->selector->generate_item_id(cbs->gb_main, gb_item);
                         if (!name) continue; // a guy w/o name
 
                         char flag                       = ' ';
@@ -944,6 +949,14 @@ void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs){
     free(str);
 }
 
+char *AWT_get_item_id(GBDATA *gb_main, ad_item_selector *sel, GBDATA *gb_item) {
+    return sel->generate_item_id(gb_main, gb_item);
+}
+
+GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const char *id) {
+    return sel->find_item_by_id(gb_main, id);
+}
+
 static void awt_colorize_listed(AW_window */*dummy*/, AW_CL cl_cbs) {
     struct adaqbsstruct *cbs         = (struct adaqbsstruct *)cl_cbs;
     GB_transaction       trans_dummy(cbs->gb_main);
@@ -1000,7 +1013,7 @@ static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
     if (error) GB_export_error(error);
 }
 
-// @@@ awt_mark_colored is obsolete!
+// @@@ awt_mark_colored is obsolete! (will be replaced by dynamic coloring in the future)
 static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
 {
     const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
@@ -1040,6 +1053,303 @@ static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode)
     if (error) GB_export_error(error);
 }
 
+// --------------------------------------------------------------------------------
+// color sets
+
+struct color_save_data {
+    color_mark_data   *cmd;
+    const char        *items_name;
+    AW_window         *aww; // window of selection list
+    AW_selection_list *sel_id;
+};
+
+#define AWT_COLOR_LOADSAVE_NAME "tmp/colorset/name"
+
+static GBDATA *get_colorset_root(const color_save_data *csd) {
+    GBDATA *gb_main      = csd->cmd->gb_main;
+    GBDATA *gb_colorsets = GB_search(gb_main, "colorsets", GB_CREATE_CONTAINER);
+    GBDATA *gb_item_root = GB_search(gb_colorsets, csd->items_name, GB_CREATE_CONTAINER);
+
+    awt_assert(gb_item_root);
+    return gb_item_root;
+}
+
+static void update_colorset_selection_list(const color_save_data *csd) {
+    GB_transaction  ta(csd->cmd->gb_main);
+    AW_window      *aww = csd->aww;
+
+    aww->clear_selection_list(csd->sel_id);
+    GBDATA *gb_item_root = get_colorset_root(csd);
+
+    for (GBDATA *gb_colorset = GB_find(gb_item_root, "colorset", 0, down_level);
+         gb_colorset;
+         gb_colorset = GB_find(gb_colorset, "colorset", 0, this_level|search_next))
+    {
+        GBDATA *gb_name = GB_find(gb_colorset, "name", 0, down_level);
+        if (gb_name) {
+            const char *name = GB_read_char_pntr(gb_name);
+            aww->insert_selection(csd->sel_id, name, name);
+        }
+    }
+    aww->insert_default_selection(csd->sel_id, "<new colorset>", "");
+
+    aww->update_selection_list(csd->sel_id);
+}
+
+static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
+    awt_assert(cbt&GB_CB_CHANGED);
+    const color_save_data *csd = (const color_save_data*)cl_csd;
+    update_colorset_selection_list(csd);
+}
+
+static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
+    const color_mark_data  *cmd     = csd->cmd;
+    const ad_item_selector *sel     = cmd->sel;
+    AWT_QUERY_RANGE         range   = AWT_QUERY_ALL_SPECIES;
+    AW_root                *aw_root = csd->aww->get_root();
+    GBDATA                 *gb_main = cmd->gb_main;
+
+    typedef slist<string> ColorList;
+    ColorList             cl;
+
+    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+         !error && gb_item_container;
+         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item = sel->get_next_item(gb_item))
+        {
+            long        color     = AW_find_color_group(gb_item, AW_TRUE);
+            char       *id        = sel->generate_item_id(gb_main, gb_item);
+            const char *color_def = GBS_global_string("%s=%li", id, color);
+            cl.push_front(color_def);
+            free(id);
+        }
+    }
+
+    char *result = 0;
+    if (cl.empty()) {
+        error = GBS_global_string("Could not find any %s", sel->items_name);
+    }
+    else {
+        string res;
+        for (ColorList::iterator ci = cl.begin(); ci != cl.end(); ++ci) {
+            res += (*ci) + ';';
+        }
+
+        result               = (char*)malloc(res.length());
+        memcpy(result, res.c_str(), res.length()-1); // skip trailing ';'
+        result[res.length()] = 0;
+    }
+    return result;
+}
+
+static GB_ERROR clear_all_colors(const color_save_data *csd) {
+    const color_mark_data  *cmd     = csd->cmd;
+    const ad_item_selector *sel     = cmd->sel;
+    AWT_QUERY_RANGE         range   = AWT_QUERY_ALL_SPECIES;
+    AW_root                *aw_root = csd->aww->get_root();
+    GB_ERROR                error   = 0;
+
+    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+         !error && gb_item_container;
+         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item = sel->get_next_item(gb_item))
+        {
+            AW_set_color_group(gb_item, 0); // clear colors
+        }
+    }
+
+    return error;
+}
+
+static void awt_clear_all_colors(AW_window *, AW_CL cl_csd) {
+    const color_save_data *csd   = (const color_save_data*)cl_csd;
+    GB_transaction         ta(csd->cmd->gb_main);
+    GB_ERROR               error = clear_all_colors(csd);
+
+    if (error) {
+        ta.abort();
+        aw_message(error);
+    }
+}
+
+static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
+    const color_mark_data  *cmd     = csd->cmd;
+    const ad_item_selector *sel     = cmd->sel;
+    GBDATA                 *gb_main = cmd->gb_main;
+
+    int   buffersize = 200;
+    char *buffer     = (char*)malloc(buffersize);
+
+    while (colorset) {
+        const char *equal = strchr(colorset, '=');
+        awt_assert(equal);
+        const char *semi  = strchr(equal, ';');
+
+        int size = equal-colorset;
+        if (size >= buffersize) {
+            buffersize = int(size*1.5);
+            free(buffer);
+            buffer     = (char*)malloc(buffersize);
+        }
+
+        awt_assert(buffer && buffersize>size);
+        memcpy(buffer, colorset, size);
+        buffer[size] = 0;       // now buffer contains the item id
+
+        GBDATA *gb_item = AWT_get_item_with_id(gb_main, sel, buffer);
+        if (!gb_item) {
+            aw_message(GBS_global_string("No such %s: '%s'", sel->item_name, buffer));
+        }
+        else {
+            int color_group = atoi(equal+1);
+            AW_set_color_group(gb_item, color_group);
+        }
+        colorset = semi ? semi+1 : 0;
+    }
+
+    free(buffer);
+    return 0;
+}
+
+static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
+    const color_save_data *csd     = (const color_save_data*)cl_csd;
+    int              mode          = (int)cl_mode; // 0 = save; 1 = load; 2 = overlay; 3 = delete;
+    AW_root               *aw_root = aws->get_root();
+    char                  *name    = aw_root->awar(AWT_COLOR_LOADSAVE_NAME)->read_string();
+    GB_ERROR               error   = 0;
+
+    if (name[0] == 0) {
+        error = "Please enter a name for the colorset.";
+    }
+    else {
+        GB_transaction ta(csd->cmd->gb_main);
+        GBDATA *gb_colorset_root = get_colorset_root(csd);
+        awt_assert(gb_colorset_root);
+
+        GBDATA *gb_colorset_name = GB_find(gb_colorset_root, "name", name, down_2_level);
+        GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
+        if (mode == 0) {        // save-mode
+            if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
+                gb_colorset             = GB_create_container(gb_colorset_root, "colorset");
+                if (!gb_colorset) error = GB_get_error();
+                else {
+                    GBDATA *gb_name = GB_create(gb_colorset, "name", GB_STRING);
+                    if (!gb_name) error = GB_get_error();
+                    else error = GB_write_string(gb_name, name);
+                }
+            }
+            if (!error) {
+                char *colorset = create_colorset_representation(csd, error);
+                if (colorset) {
+                    GBDATA *gb_set     = GB_search(gb_colorset, "color_set", GB_STRING);
+                    if (!gb_set) error = GB_get_error();
+                    else    error      = GB_write_string(gb_set, colorset);
+                    free(colorset);
+                }
+            }
+        }
+        else { // load/delete
+            if (!gb_colorset) {
+                error = GBS_global_string("Colorset '%s' not found", name);
+            }
+            else {
+                if (mode == 1 || mode == 2) { // load- and overlay-mode
+                    GBDATA *gb_set = GB_find(gb_colorset, "color_set", 0, down_level);
+                    if (!gb_set) {
+                        error = "colorset is empty (oops)";
+                    }
+                    else {
+                        const char *colorset = GB_read_char_pntr(gb_set);
+                        if (!colorset) error = GB_get_error();
+                        else {
+                            if (mode == 1) { // load => clear all colors
+                                error = clear_all_colors(csd);
+                            }
+                            if (!error) {
+                                error = restore_colorset_representation(csd, colorset);
+                            }
+                        }
+                    }
+                }
+                else {
+                    awt_assert(mode == 3); // delete-mode
+                    error = GB_delete(gb_colorset);
+                }
+            }
+        }
+
+        if (error) ta.abort();
+    }
+    free(name);
+
+    if (error) aw_message(error);
+}
+
+static AW_window *awt_create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd) {
+    color_save_data *csd = (color_save_data*)cl_csd;
+
+    // init data
+    aw_root->awar_string(AWT_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
+
+    // init window
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(aw_root, "colorset_loadsave", GBS_global_string("Load/Save %s colorset", csd->items_name));
+    aws->load_xfig("color_loadsave.fig");
+
+    aws->at("close");
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"color_loadsave.hlp");
+    aws->create_button("HELP","HELP","H");
+
+    aws->at("name");
+    aws->create_input_field(AWT_COLOR_LOADSAVE_NAME, 60);
+
+    awt_assert(csd->sel_id == 0);
+    aws->at("list");
+    csd->sel_id = aws->create_selection_list(AWT_COLOR_LOADSAVE_NAME, 0, 0, 0, 0);
+    csd->aww    = aws;
+
+    update_colorset_selection_list(csd);
+
+    aws->at("save");
+    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)0); // 0 = save
+    aws->create_button("save", "Save", "S");
+
+    aws->at("load");
+    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)1); // 1 = load
+    aws->create_button("load", "Load", "L");
+
+    aws->at("overlay");
+    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)2); // 2 = overlay
+    aws->create_button("overlay", "Overlay", "O");
+
+    aws->at("delete");
+    aws->callback(awt_loadsave_colorset, (AW_CL)csd, (AW_CL)3); // 3 = delete
+    aws->create_button("delete", "Delete", "D");
+
+    aws->at("reset");
+    aws->callback(awt_clear_all_colors, (AW_CL)csd);
+    aws->create_button("reset", "Reset", "R");
+
+    // callbacks
+    {
+        GB_transaction  ta(csd->cmd->gb_main);
+        GBDATA         *gb_colorset = get_colorset_root(csd);
+        GB_add_callback(gb_colorset, GB_CB_CHANGED, colorset_changed_cb, (int*)csd);
+    }
+
+    return aws;
+}
+
 static const char *color_group_name(int color_group) {
     static char buf[30];
 
@@ -1073,7 +1383,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
         awt_assert(mode == AWT_COL_INVALID);
         mode = AWT_COL_COLORIZE_MARKED;
     }
-    awt_assert(mode != AWT_COL_INVALID);
+    awt_assert(!(mode == AWT_COL_INVALID));
 
     const ad_item_selector *Sel  = mode == AWT_COL_COLORIZE_LISTED ? cbs->selector : sel;
     const char             *what = mode == AWT_COL_COLORIZE_LISTED ? "listed" : "marked";
@@ -1124,6 +1434,16 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
         }
         aws->update_option_menu();
     }
+
+    color_save_data *csd = new color_save_data; // do not free!
+    csd->cmd             = cmd;
+    csd->items_name      = Sel->items_name;
+    csd->aww             = 0;
+    csd->sel_id          = 0;
+
+    aws->at("loadsave");
+    aws->callback(AW_POPUP, (AW_CL)awt_create_loadsave_colored_window, (AW_CL)csd);
+    aws->create_autosize_button("LOADSAVE_COLORED", "Load/Save", "L");
 
     if (mode == AWT_COL_COLORIZE_MARKED) {
         aws->at("mark");
@@ -1571,17 +1891,22 @@ static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
     return gb_species;
 }
 
-static char* awt_species_result_name(GBDATA *, AW_root *, GBDATA *gb_species) {
-    // awt_species_result_name creates the label that occurs in the search and query result list
+static char* awt_get_species_id(GBDATA *, GBDATA *gb_species) {
+    // awt_get_species_id creates the label that occurs in the search and query result list
     GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
     if (!gb_name) return 0;     // species w/o name -> skip
     return GB_read_as_string(gb_name);
 }
 
+static GBDATA *awt_find_species_by_id(GBDATA *gb_main, const char *id) {
+    return GBT_find_species(gb_main, id); // id is 'name' field
+}
+
 struct ad_item_selector AWT_species_selector = {
     AWT_QUERY_ITEM_SPECIES,
     awt_select_species,
-    awt_species_result_name,
+    awt_get_species_id,
+    awt_find_species_by_id,
     (AW_CB)awt_selection_list_update_cb,
     12,
     CHANGE_KEY_PATH,
@@ -1597,7 +1922,8 @@ struct ad_item_selector AWT_species_selector = {
 struct ad_item_selector AWT_organism_selector = {
     AWT_QUERY_ITEM_SPECIES,
     awt_select_species,
-    awt_species_result_name,
+    awt_get_species_id,
+    awt_find_species_by_id,
     (AW_CB)awt_selection_list_update_cb,
     12,
     CHANGE_KEY_PATH,
