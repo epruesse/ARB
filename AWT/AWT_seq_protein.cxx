@@ -21,7 +21,7 @@ extern long global_combineCount;
 AP_sequence_protein::AP_sequence_protein(AP_tree_root *root)
     : AP_sequence(root)
 {
-	sequence = 0;
+    sequence = 0;
 }
 
 // ----------------------------------------------------
@@ -29,8 +29,8 @@ AP_sequence_protein::AP_sequence_protein(AP_tree_root *root)
 // ----------------------------------------------------
 AP_sequence_protein::~AP_sequence_protein()
 {
-	if (sequence != 0) delete sequence;
-	sequence = 0;
+    if (sequence != 0) delete sequence;
+    sequence = 0;
 }
 
 // ------------------------------------------------
@@ -38,7 +38,7 @@ AP_sequence_protein::~AP_sequence_protein()
 // ------------------------------------------------
 AP_sequence *AP_sequence_protein::dup()
 {
-	return (AP_sequence *)new AP_sequence_protein(root);
+    return (AP_sequence *)new AP_sequence_protein(root);
 }
 
 static AP_PROTEINS prot2AP_PROTEIN[26] = {
@@ -157,11 +157,11 @@ static void update_min_mutations() {
 
 void AP_sequence_protein::set(char *isequence)
 {
-	if (!awt_pro_a_nucs) awt_pro_a_nucs_gen_dist(this->root->gb_main);
+    if (!awt_pro_a_nucs) awt_pro_a_nucs_gen_dist(this->root->gb_main);
     if (awt_pro_a_nucs->time_stamp != min_mutations_initialized_time_stamp) update_min_mutations();
 
-	sequence_len = root->filter->real_len;
-	sequence     = new AP_PROTEINS[sequence_len+1];
+    sequence_len = root->filter->real_len;
+    sequence     = new AP_PROTEINS[sequence_len+1];
 
     awt_assert(root->filter->bootstrap == 0); // bootstrapping not implemented for protein parsimony
 
@@ -205,9 +205,9 @@ void AP_sequence_protein::set(char *isequence)
     fputc('\n', stdout);
 #endif // SHOW_SEQ
 
-	update          = AP_timer();
-	is_set_flag     = AP_TRUE;
-	cashed_real_len = -1.0;
+    update          = AP_timer();
+    is_set_flag     = AP_TRUE;
+    cashed_real_len = -1.0;
 }
 
 //     for (int idx = 0; idx<sequence_len; ++idx) {
@@ -229,18 +229,18 @@ void AP_sequence_protein::set(char *isequence)
 
 
 // ------------------------------------------------------------------------------------------------------
-//      AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_sequence *rights)
+//      AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_sequence *rights)
 // ------------------------------------------------------------------------------------------------------
 // this works similar to AP_sequence_parsimony::combine
 
-AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_sequence *rights)
+AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_sequence *rights)
 {
     const AP_sequence_protein *left  = (const AP_sequence_protein *)lefts;
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
 
     if (!sequence) {
         sequence_len = root->filter->real_len;
-		sequence = new AP_PROTEINS[sequence_len +1];
+        sequence = new AP_PROTEINS[sequence_len +1];
     }
 
     const AP_PROTEINS *p1 = left->sequence;
@@ -252,7 +252,7 @@ AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_seque
 
     if (mutation_per_site) { // count site specific mutations in mutation_per_site
         w        = root->weights->weights;
-	    mutpsite = mutation_per_site;
+        mutpsite = mutation_per_site;
     }
     else if (root->weights->dummy_weights) { // no weights, no mutation_per_site
         ;
@@ -317,13 +317,29 @@ AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_seque
         }
     }
 
-	global_combineCount++;
-	this->is_set_flag = AP_TRUE;
-	cashed_real_len   = -1.0;
+#if defined(DEBUG) && 0
+#define P1 75
+#define P2 90
+    printf("Seq1: ");
+    for (long idx = P1; idx <= P2; ++idx) printf("%3i ", p1[idx]);
+    printf("\nSeq2: ");
+    for (long idx = P1; idx <= P2; ++idx) printf("%3i ", p2[idx]);
+    printf("\nCombine value: %f\n", float(result));
+#undef P1
+#undef P2
+#endif // DEBUG
+
+#if defined(DEBUG) && 0
+    printf("\nCombine value: %f\n", float(result));
+#endif // DEBUG
+
+    global_combineCount++;
+    this->is_set_flag = AP_TRUE;
+    cashed_real_len   = -1.0;
 
     awt_assert(result >= 0.0);
 
-	return (AP_FLOAT)result;
+    return (AP_FLOAT)result;
 }
 
 // -------------------------------------------------
@@ -331,16 +347,16 @@ AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_seque
 // -------------------------------------------------
 AP_FLOAT AP_sequence_protein::real_len()
 {
-	if (!sequence) return -1.0;
-	if (cashed_real_len>=0.0) return cashed_real_len;
+    if (!sequence) return -1.0;
+    if (cashed_real_len>=0.0) return cashed_real_len;
 
-	long sum = 0;
+    long sum = 0;
     for (long idx = 0; idx<sequence_len; ++idx) {
         if (sequence[idx] != APP_GAP) {
             ++sum;
         }
     }
-	cashed_real_len = sum;
+    cashed_real_len = sum;
     return sum;
 }
 
@@ -348,74 +364,74 @@ AP_FLOAT AP_sequence_protein::real_len()
 
 
 AP_sequence_protein_old::AP_sequence_protein_old(AP_tree_root *rooti) : AP_sequence(rooti)
-	{
-	sequence = 0;
+{
+    sequence = 0;
 }
 
 AP_sequence_protein_old::~AP_sequence_protein_old(void)
 {
-	if (sequence != 0) delete sequence;
-	sequence = 0;
+    if (sequence != 0) delete sequence;
+    sequence = 0;
 }
 
 AP_sequence *AP_sequence_protein_old::dup(void)
-	{
-	return (AP_sequence *)new AP_sequence_protein_old(root);
+{
+    return (AP_sequence *)new AP_sequence_protein_old(root);
 }
 
 
 
 void AP_sequence_protein_old::set(char *isequence)
-	{
-	register char *s,*f,c;
-	register int i;
-	register AWT_PDP *d;
-	register const uchar *simplify;
-	if (!awt_pro_a_nucs) {
-		awt_pro_a_nucs_gen_dist(this->root->gb_main);
-	}
+{
+    register char *s,*f,c;
+    register int i;
+    register AWT_PDP *d;
+    register const uchar *simplify;
+    if (!awt_pro_a_nucs) {
+        awt_pro_a_nucs_gen_dist(this->root->gb_main);
+    }
 
-	register struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
-	sequence_len = root->filter->real_len;
-	sequence = new AWT_PDP[sequence_len+1];
-	memset(sequence,-1,(size_t)(sizeof(AWT_PDP) * sequence_len));
-	s = isequence;
-	d = sequence;
-	f = root->filter->filter_mask;
-	simplify = root->filter->simplify;
-	i = root->filter->filter_len;
-	while ( (c = (*s++)) ) {
-		if (!i) break;
-		i--;
-		if (*(f++)) {
-			if (! (s2str[c] ) ) {	// unknown character
-				d++;
-				continue;
-			}
-			int index = s2str[simplify[c]]->index;
-			*(d++) = *awt_pro_a_nucs->dist[index];
-		}
-	}
-	update = AP_timer();
-	is_set_flag = AP_TRUE;
-	cashed_real_len = -1.0;
+    register struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
+    sequence_len = root->filter->real_len;
+    sequence = new AWT_PDP[sequence_len+1];
+    memset(sequence,-1,(size_t)(sizeof(AWT_PDP) * sequence_len));
+    s = isequence;
+    d = sequence;
+    f = root->filter->filter_mask;
+    simplify = root->filter->simplify;
+    i = root->filter->filter_len;
+    while ( (c = (*s++)) ) {
+        if (!i) break;
+        i--;
+        if (*(f++)) {
+            if (! (s2str[c] ) ) {   // unknown character
+                d++;
+                continue;
+            }
+            int index = s2str[simplify[c]]->index;
+            *(d++) = *awt_pro_a_nucs->dist[index];
+        }
+    }
+    update = AP_timer();
+    is_set_flag = AP_TRUE;
+    cashed_real_len = -1.0;
 }
 
 AP_FLOAT AP_sequence_protein_old::combine( const AP_sequence *lefts, const AP_sequence *rights) {
-	const AP_sequence_protein_old *left  = (const AP_sequence_protein_old *)lefts;
-	const AP_sequence_protein_old *right = (const AP_sequence_protein_old *)rights;
+    const AP_sequence_protein_old *left  = (const AP_sequence_protein_old *)lefts;
+    const AP_sequence_protein_old *right = (const AP_sequence_protein_old *)rights;
 
-	if (sequence == 0)	{
-		sequence_len = root->filter->real_len;
-		sequence = new AWT_PDP[sequence_len+1];
-	}
+    if (sequence == 0)  {
+        sequence_len = root->filter->real_len;
+        sequence = new AWT_PDP[sequence_len+1];
+    }
 
-	AWT_PDP  *p1 = left->sequence;
-	AWT_PDP  *p2 = right->sequence;
-	AWT_PDP  *p  = sequence;
-	GB_UINT4 *w  = root->weights->weights;
+    AWT_PDP  *p1 = left->sequence;
+    AWT_PDP  *p2 = right->sequence;
+    AWT_PDP  *p  = sequence;
+    GB_UINT4 *w  = root->weights->weights;
 
-	long result   = 0;
+    long result   = 0;
     long dash_bit = 1<<(awt_pro_a_nucs->s2str['-']->index); // bit that represents a '-'
 
     for (long i = 0; i<sequence_len; ++i, ++p, ++p1, ++p2, ++w) {
@@ -478,7 +494,7 @@ AP_FLOAT AP_sequence_protein_old::combine( const AP_sequence *lefts, const AP_se
             if (!ignore_continued_dashes) result += min_mutations * (*w);
         }
 
-		p->patd[1] |= (awt_pro_a_nucs->transform07  [  p->patd[0]      & 0xff ] |
+        p->patd[1] |= (awt_pro_a_nucs->transform07  [  p->patd[0]      & 0xff ] |
                        awt_pro_a_nucs->transform815 [ (p->patd[0]>>8)  & 0xff ] |
                        awt_pro_a_nucs->transform1623[ (p->patd[0]>>16) & 0xff ] );
 
@@ -487,20 +503,20 @@ AP_FLOAT AP_sequence_protein_old::combine( const AP_sequence *lefts, const AP_se
                        awt_pro_a_nucs->transform1623[ (p->patd[1]>>16) & 0xff ] );
     }
 
-	cashed_real_len = -1.0;
-	is_set_flag     = AP_TRUE;
+    cashed_real_len = -1.0;
+    is_set_flag     = AP_TRUE;
 
-	global_combineCount++;
+    global_combineCount++;
 
-	return (AP_FLOAT)result;
+    return (AP_FLOAT)result;
 }
 
 // here's the old code of the above for-loop (rewritten Fri Jul 26 17:42:15 2002) :
 
-// 	register long h0,h1,h2,d11,d22;
-// 	for ( i = sequence_len-1; i>=0 ;i-- ) {
-// 		d11 = p2->patd[1] & p1->patd[1]; // all proteins with 'distance <= 1' to p1 AND p2
-// 		d22 = p2->patd[2] & p1->patd[2]; // all proteins with 'distance <= 2' to p1 AND p2
+//  register long h0,h1,h2,d11,d22;
+//  for ( i = sequence_len-1; i>=0 ;i-- ) {
+//      d11 = p2->patd[1] & p1->patd[1]; // all proteins with 'distance <= 1' to p1 AND p2
+//      d22 = p2->patd[2] & p1->patd[2]; // all proteins with 'distance <= 2' to p1 AND p2
 
 //         h1 = p1->patd[0];       // all proteins with 'no distance' to p1
 //         h2 = p2->patd[0];       // all proteins with 'no distance' to p2
@@ -512,67 +528,67 @@ AP_FLOAT AP_sequence_protein_old::combine( const AP_sequence *lefts, const AP_se
 //         //                                or both have distance <= 2 ( => combined distance <= 2)
 
 
-// 		if ( (h0 = (h1 & h2)) ) { // hit (p1 and p2 have zero distance)
-// 			p->patd[0] = h0;    // 'no distance' to p1 AND p2 => 'no distance' to combined
-// 			p->patd[1] = (h1 | h2) & d11;
+//      if ( (h0 = (h1 & h2)) ) { // hit (p1 and p2 have zero distance)
+//          p->patd[0] = h0;    // 'no distance' to p1 AND p2 => 'no distance' to combined
+//          p->patd[1] = (h1 | h2) & d11;
 //             p->patd[2] = ((h1 | h2) & d22) | d11;
-// 			goto co_end_of_loop;
-// 		}
-// 		if ( (h0 = ( (h1 | h2) & d11 )) ) { // mask proteins with distance == 0 to one and distance <= 1 to both
-// 			p->patd[0] = h0;
-// 			p->patd[1] = ((h1 | h2) & d22) | d11;
-// 			p->patd[2] = h1 | h2 | (p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
-// 			result += *w;
-// 			goto co_end_of_loop;
-// 		}
-// 		if ( (h0 = ( ((h1 | h2) & d22) | d11 ))) { // (distance == 0 for one and distance <= 2 for both) or distance <= 1 for both
-// 			result     += (*w) * 2;
-// 			p->patd[0]  = h0;
-// 			p->patd[1]  = h1 | h2 | (p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
-// 			p->patd[2]  = p1->patd[1] |p2->patd[1] | d22;
-// 			goto co_end_of_loop;
-// 		}
-// 		{
-// 		    result += (*w) * 3;
-// 		    p->patd[0] = h1 | h2 |	(p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
-// 		    p->patd[1] = p1->patd[1] |p2->patd[1] | d22;
-// 		    p->patd[2] = p1->patd[2] | p2->patd[2];
-// 		}
+//          goto co_end_of_loop;
+//      }
+//      if ( (h0 = ( (h1 | h2) & d11 )) ) { // mask proteins with distance == 0 to one and distance <= 1 to both
+//          p->patd[0] = h0;
+//          p->patd[1] = ((h1 | h2) & d22) | d11;
+//          p->patd[2] = h1 | h2 | (p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
+//          result += *w;
+//          goto co_end_of_loop;
+//      }
+//      if ( (h0 = ( ((h1 | h2) & d22) | d11 ))) { // (distance == 0 for one and distance <= 2 for both) or distance <= 1 for both
+//          result     += (*w) * 2;
+//          p->patd[0]  = h0;
+//          p->patd[1]  = h1 | h2 | (p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
+//          p->patd[2]  = p1->patd[1] |p2->patd[1] | d22;
+//          goto co_end_of_loop;
+//      }
+//      {
+//          result += (*w) * 3;
+//          p->patd[0] = h1 | h2 |  (p2->patd[1] & p1->patd[2]) | (p2->patd[2] & p1->patd[1]);
+//          p->patd[1] = p1->patd[1] |p2->patd[1] | d22;
+//          p->patd[2] = p1->patd[2] | p2->patd[2];
+//      }
 // co_end_of_loop:
-// 		h0 = p->patd[0];
-// 		h1 = h0>>8;
-// 		h2 = h1>>8;
-// 		p->patd[1] |=	awt_pro_a_nucs->transform07[  h0 & 0xff ] |
-// 				awt_pro_a_nucs->transform815[ h1 & 0xff ] |
-// 				awt_pro_a_nucs->transform1623[ h2 & 0xff ];
-// 		h0 = p->patd[1];
-// 		h1 = h0>>8;
-// 		h2 = h1>>8;
-// 		p->patd[2] |=	awt_pro_a_nucs->transform07[  h0 & 0xff ] |
-// 				awt_pro_a_nucs->transform815[ h1 & 0xff ] |
-// 				awt_pro_a_nucs->transform1623[ h2 & 0xff ];
+//      h0 = p->patd[0];
+//      h1 = h0>>8;
+//      h2 = h1>>8;
+//      p->patd[1] |=   awt_pro_a_nucs->transform07[  h0 & 0xff ] |
+//              awt_pro_a_nucs->transform815[ h1 & 0xff ] |
+//              awt_pro_a_nucs->transform1623[ h2 & 0xff ];
+//      h0 = p->patd[1];
+//      h1 = h0>>8;
+//      h2 = h1>>8;
+//      p->patd[2] |=   awt_pro_a_nucs->transform07[  h0 & 0xff ] |
+//              awt_pro_a_nucs->transform815[ h1 & 0xff ] |
+//              awt_pro_a_nucs->transform1623[ h2 & 0xff ];
 
 
-// 		w++;
-// 		p++;
-// 		p1++;
-// 		p2++;
-// 	}
+//      w++;
+//      p++;
+//      p1++;
+//      p2++;
+//  }
 
 
-AP_FLOAT AP_sequence_protein_old::real_len(void)	// count all bases
-	{
-	if (!sequence) return -1.0;
-	if (cashed_real_len>=0.0) return cashed_real_len;
-	AP_FLOAT sum = 0.0;
-	register long i;
-	register AWT_PDP *p = sequence;
+AP_FLOAT AP_sequence_protein_old::real_len(void)    // count all bases
+{
+    if (!sequence) return -1.0;
+    if (cashed_real_len>=0.0) return cashed_real_len;
+    AP_FLOAT sum = 0.0;
+    register long i;
+    register AWT_PDP *p = sequence;
 
-	for ( i = sequence_len; i ;i-- ) {	// all but no gaps
-		if (p->patd[0] == -1) continue;
-		sum +=1.0;
-	}
-	cashed_real_len = sum;
-	return sum;
+    for ( i = sequence_len; i ;i-- ) {  // all but no gaps
+        if (p->patd[0] == -1) continue;
+        sum +=1.0;
+    }
+    cashed_real_len = sum;
+    return sum;
 }
 
