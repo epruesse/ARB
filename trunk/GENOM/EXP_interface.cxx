@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Jun/26/2002 13:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Aug/07/2002 15:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -14,6 +14,7 @@
 //  ==================================================================== //
 
 #include <awt.hxx>
+#include <awt_canvas.hxx>
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 
@@ -26,6 +27,7 @@
 #include "GEN_interface.hxx"
 
 #include "../NTREE/ad_spec.hxx"
+#include <../NTREE/nt_internal.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -183,7 +185,7 @@ struct ad_item_selector EXP_item_selector =
         AWT_QUERY_ITEM_EXPERIMENTS,
         EXP_select_experiment,
         EXP_experiment_result_name,
-        (AW_CB)awt_experiment_field_selection_list_rescan_cb,
+        (AW_CB)awt_experiment_field_selection_list_update_cb,
         25,
         CHANGE_KEY_PATH_EXPERIMENTS,
         "experiment",
@@ -502,7 +504,11 @@ void EXP_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("reorder_fields",	"Reorder    Fields ...", "r","spaf_reorder.hlp", AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
     aws->insert_menu_topic("delete_field",		"Delete/Hide Field ...", "D","spaf_delete.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
     aws->insert_menu_topic("create_field",		"Create Field ...",	     "C","spaf_create.hlp",	 AD_F_ALL,	AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_separator();
+//     aws->insert_menu_topic("unhide_fields",		"Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("unhide_fields", "Show all hidden fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields","U","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("del_unused_fields", "Remove unused fields","e","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 //  ------------------------------------------------------------
@@ -545,7 +551,14 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws->create_menu(       0,   "FIELDS",     "I", "experiment_fields.hlp",  AD_F_ALL );
     EXP_create_field_items(aws);
 
-    aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
+    Awar_Callback_Info *cb_info = new Awar_Callback_Info(aws->get_root(), AWAR_EXPERIMENT_NAME, EXP_map_experiment, scannerid); // do not delete!
+    cb_info->add_callback();
+
+    aws->at("detach");
+    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+    aws->create_button("DETACH", "DETACH", "D");
+
+//     aws->get_root()->awar(AWAR_EXPERIMENT_NAME)->add_callback(EXP_map_experiment,scannerid);
 
     aws->show();
     EXP_map_experiment(aws->get_root(),scannerid);
