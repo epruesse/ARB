@@ -59,6 +59,9 @@ compile:
 
 $(JAR) : $(CLASSES) $(JAVAS) Makefile $(MANIFEST)
 		test \! -f $(BUILDLIST) || ($(MAKE) compile && rm $(BUILDLIST))
+		$(MAKE) linkjar
+
+linkjar:
 		jar -cmf $(MANIFEST) $(JAR) $(LINKCLASSES)
 
 rebuild: clean all
