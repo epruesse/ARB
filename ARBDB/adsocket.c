@@ -896,13 +896,22 @@ int GB_host_is_local(const char *hostname){
 /* Returns the physical memory size in k available for one process */
 GB_ULONG GB_get_physical_memory(void){
 #if defined(SUN5) || defined(LINUX)
-    long pagesize = sysconf(_SC_PAGESIZE);
-    long pages = sysconf(_SC_PHYS_PAGES);
+    long pagesize     = sysconf(_SC_PAGESIZE);
+    long pages        = sysconf(_SC_PHYS_PAGES);
     /*    long test = sysconf(_SC_AVPHYS_PAGES); */
-    long memsize = pagesize/1024 * pages;
-    long nettomemsize = memsize- 10000; /* kernel size */
-    return nettomemsize * 70 / 100; /* maximum 70 % of memory */
+    long memsize      = (pagesize/1024) * pages;
+    long nettomemsize = memsize - 10000; /* kernel size */
+
+    long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of memory (was 70% in the past) */
+
+#if defined(DEBUG)
+    printf("- memsize(real)   =%li\n", memsize);
+    printf("- memsize(netto)  =%li\n", nettomemsize);
+    printf("- memsize(for ARB)=%li\n", maxmemsize4arb);
+#endif /* DEBUG */
+
+    return maxmemsize4arb;
 #else
-    return 128*1024;        /* 128 Mb default memory */
+    return 128*1024;            /* 128 Mb default memory */
 #endif
 }
