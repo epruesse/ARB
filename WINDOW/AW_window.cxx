@@ -120,12 +120,43 @@ AW_buttons_struct::AW_buttons_struct(AW_root *root, const char *idi, AW_active m
     button = w;
     next   = 0;
 
-    if (p_global->button_list) {
-        p_global->last_button->next = this;
-    }else{
-        p_global->button_list = this;
-    }
+    if (p_global->button_list) p_global->last_button->next = this;
+    else p_global->button_list = this;
+    
     p_global->last_button = this;
+}
+
+AW_buttons_struct::~AW_buttons_struct() {
+    aw_assert(next == 0);       // has to be removed from global list before calling dtor
+    free(id);
+}
+
+
+bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
+    bool removed = false;
+    if (p_global->button_list) {
+        AW_buttons_struct *prev = 0;
+        AW_buttons_struct *bl   = p_global->button_list;
+
+        while (bl) {
+            if (bl->button == w) break; // found wanted widget
+            prev = bl;
+            bl   = bl->next;
+        }
+
+        if (bl) {
+            // remove from list
+            if (prev) prev->next       = bl->next;
+            else p_global->button_list = bl->next;
+
+            if (p_global->last_button == bl) p_global->last_button = prev;
+
+            bl->next = 0;
+            removed  = true;
+            delete bl;
+        }
+    }
+    return removed;
 }
 
 
@@ -143,44 +174,49 @@ AW_config_struct::AW_config_struct( const char *idi, AW_active maski, Widget w, 
 
 /*************************************************************************************************************/
 
-AW_option_struct::AW_option_struct( const char *variable_valuei, Widget choice_widgeti ) {
+AW_option_struct::AW_option_struct( const char *variable_valuei, Widget choice_widgeti )
+    : variable_value(strdup(variable_valuei))
+    , choice_widget(choice_widgeti)
+    , next(0)
+{
+}
 
-    variable_value = strdup( variable_valuei );
-    choice_widget  = choice_widgeti;
+AW_option_struct::AW_option_struct( int variable_valuei, Widget choice_widgeti )
+    : variable_value(0)
+    , variable_int_value(variable_valuei)
+    , choice_widget(choice_widgeti)
+    , next(0)
+{
+}
+
+AW_option_struct::AW_option_struct( float variable_valuei, Widget choice_widgeti )
+    : variable_value(0)
+    , variable_float_value(variable_valuei)
+    , choice_widget(choice_widgeti)
+    , next(0)
+{
+}
+
+AW_option_struct::~AW_option_struct() {
+    aw_assert(next == 0);       // has to be unlinked from list BEFORE calling dtor
+    free(variable_value);
+}
+
+AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct) {
+    option_menu_number      = numberi;
+    unique_option_menu_name = unique_option_menu_namei ? strdup(unique_option_menu_namei) : 0;
+    
+    variable_name  = strdup( variable_namei );
+    variable_type  = variable_typei;
+    label_widget   = label_widgeti;
+    menu_widget    = menu_widgeti;
+    first_choice   = NULL;
+    last_choice    = NULL;
+    default_choice = NULL;
     next           = NULL;
+    x              = xi;
+    y              = yi;
 
-}
-AW_option_struct::AW_option_struct( int variable_valuei, Widget choice_widgeti ) {
-
-    variable_int_value = variable_valuei;
-    choice_widget      = choice_widgeti;
-    next               = NULL;
-
-}
-AW_option_struct::AW_option_struct( float variable_valuei, Widget choice_widgeti ) {
-
-    variable_float_value = variable_valuei;
-    choice_widget        = choice_widgeti;
-    next                 = NULL;
-
-}
-
-AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, AW_pos xi, AW_pos yi, int correct) {
-    option_menu_number = numberi;
-    if (unique_option_menu_namei) {
-        unique_option_menu_name = strdup( unique_option_menu_namei );
-    }else{
-        unique_option_menu_name = 0;
-    }
-    variable_name                = strdup( variable_namei );
-    variable_type                = variable_typei;
-    label_widget                 = label_widgeti;
-    first_choice                 = NULL;
-    last_choice                  = NULL;
-    default_choice               = NULL;
-    next                         = NULL;
-    x                            = xi;
-    y                            = yi;
     correct_for_at_center_intern = correct;
 }
 
@@ -1293,9 +1329,9 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     p_r->config_list = new AW_config_struct( "", AWM_ALL, NULL, "Programmer Name", "SH", NULL );
     p_r->last_config = p_r->config_list;
 
-    p_r->last_option_menu = p_r->option_menu_list = NULL;
-    p_r->last_toggle_field = p_r->toggle_field_list = NULL;
-    p_r->last_selection_list = p_r->selection_list = NULL;
+    p_r->last_option_menu    = p_r->current_option_menu = p_r->option_menu_list  = NULL;
+    p_r->last_toggle_field   =                            p_r->toggle_field_list = NULL;
+    p_r->last_selection_list =                            p_r->selection_list    = NULL;
 
     value_changed = AW_FALSE;
     y_correction_for_input_labels = 5;
@@ -1584,7 +1620,7 @@ const char *aw_str_2_label(const char *str,AW_window *aww)
 }
 
 
-void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
+void AW_label_in_awar_list(AW_window *aww,Widget widget,const char *str) {
     AW_awar *vs =0;
     if (strchr(str,'/') &&
         (vs=aww->get_root()->awar_no_error(str))){
@@ -1592,7 +1628,7 @@ void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
         if (var_value){
             aww->update_label((int*)widget,var_value);
         } else {
-            AW_ERROR("AW_LABEL_IN_AWAR_LIST:: AWAR %s not found\n",str);
+            AW_ERROR("AW_label_in_awar_list:: AWAR %s not found\n",str);
             aww->update_label((int*)widget,str);
         }
         free(var_value);
@@ -2891,7 +2927,7 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
 
     }
 
-    AW_LABEL_IN_AWAR_LIST(this,button,name);
+    AW_label_in_awar_list(this,button,name);
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, help_text);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
