@@ -579,6 +579,27 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
     return result;
 }
 
+static void gene_rel_2_abs(PT_probematch *ml) {
+    // after gene probe match all positions are gene-relative.
+    // gene_rel_2_abs() makes them genome-absolute.
+
+    GB_transaction ta(psg.gb_main);
+
+    for (; ml; ml = ml->next) {
+        probe_input_data&  pid    = psg.data[ml->name];
+        GBDATA            *gb_pos = GB_find(pid.gbd, "abspos", 0, down_level);
+
+        if (gb_pos) {
+            long gene_pos  = GB_read_int(gb_pos);
+            ml->b_pos     += gene_pos;
+        }
+        else {
+            fprintf(stderr, "Error in gene-pt-server: gene w/o position info\n");
+            pt_assert(gb_pos);
+        }
+    }
+}
+
 /* Create a big output string:	header\001name\001info\001name\001info....\000 */
 extern "C" bytestring *match_string(PT_local *locs) {
     static bytestring bs = {0,0};
@@ -591,6 +612,8 @@ extern "C" bytestring *match_string(PT_local *locs) {
     memfile      = GBS_stropen(50000);
 
     if (locs->pm) {
+        if (gene_flag) gene_rel_2_abs(locs->pm);
+
         format_props format = detect_format_props(locs);
 
         GBS_strcat(memfile, get_match_hinfo_formatted(locs->pm, format));
