@@ -14,9 +14,12 @@ void show_error(GBDATA *gb_main) {
     GB_print_error();
 }
 
-// this interprets the length of the branches as bootstrap value
-// (needed by Phylip DNAPARS/PROTPARS with bootstrapping)
+// add_bootstrap interprets the length of the branches as bootstrap value
+// (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
 //
+// if maxval <= 1.0 the values are expected in Range [0.0 ; 1.0]
+// otherwise no range is assumed
+
 void add_bootstrap(GBT_TREE *node, double max_val) {
     char buffer[256];
     if (node->is_leaf) return;
@@ -26,9 +29,15 @@ void add_bootstrap(GBT_TREE *node, double max_val) {
             sprintf(buffer,"%2.0f%%",node->leftlen*100.0+0.5);
             node->leftson->remark_branch = strdup(buffer);
         }
+        else {
+            node->leftson->remark_branch = strdup("100%");
+        }
         if (node->rightlen < 1.0){
             sprintf(buffer,"%2.0f%%",node->rightlen*100.0+0.5);
             node->rightson->remark_branch = strdup(buffer);
+        }
+        else {
+            node->rightson->remark_branch = strdup("100%");
         }
     }
     else {
