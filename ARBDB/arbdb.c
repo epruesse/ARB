@@ -1046,9 +1046,16 @@ GBDATA *gb_create_container(GBDATA *father, const char *key){
 GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
 {
     GBDATA *gbd;
+
     if (GB_check_key(key)) {
         GB_print_error();
         return 0;
+    }
+
+    if (type == GB_DB) {
+        gb_assert(type != GB_DB); // you like to use GB_create_container!
+        GB_export_error("GB_create error: can't create containers");
+        return NULL;
     }
 
     if ( (*key == '\0')) {
