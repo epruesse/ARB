@@ -89,6 +89,7 @@ AWTC_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -273,12 +273,14 @@ adtools.o: ad_lpro.h
 adtools.o: ad_prot.h
 adtools.o: ad_t_lpro.h
 adtools.o: ad_t_prot.h
+adtools.o: adGene.h
 adtools.o: adlmacros.h
 adtools.o: adlocal.h
 adtools.o: adtune.h
 adtools.o: arb_assert.h
 adtools.o: arbdb.h
 adtools.o: arbdbt.h
+adtools.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 
 adtune.o: adtune.h
 

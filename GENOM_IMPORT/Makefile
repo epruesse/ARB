@@ -120,6 +120,7 @@ GAGenomEmbl.o: GAGenomReference.h
 GAGenomEmbl.o: GAGenomReferenceEmbl.h
 GAGenomEmbl.o: GAGenomUtilities.h
 GAGenomEmbl.o: GAParser.h
+GAGenomEmbl.o: $(ARBHOME)/INCLUDE/perf_timer.h
 
 GAGenomFeatureTable.o: GAGenomFeatureTable.h
 GAGenomFeatureTable.o: GAParser.h
@@ -233,17 +234,29 @@ GAGenomGeneLocationGenBank.o: GAGenomUtilities.h
 GAGenomGeneLocationGenBank.o: GAParser.h
 
 GAGenomImport.o: GAGenom.h
+GAGenomImport.o: GAGenomDDBJ.h
+GAGenomImport.o: GAGenomEmbl.h
 GAGenomImport.o: GAGenomFeatureTable.h
+GAGenomImport.o: GAGenomFeatureTableDDBJ.h
+GAGenomImport.o: GAGenomFeatureTableEmbl.h
 GAGenomImport.o: GAGenomFeatureTableGenBank.h
 GAGenomImport.o: GAGenomFeatureTableSource.h
+GAGenomImport.o: GAGenomFeatureTableSourceDDBJ.h
+GAGenomImport.o: GAGenomFeatureTableSourceEmbl.h
 GAGenomImport.o: GAGenomFeatureTableSourceGenBank.h
 GAGenomImport.o: GAGenomGenBank.h
 GAGenomImport.o: GAGenomGene.h
+GAGenomImport.o: GAGenomGeneDDBJ.h
+GAGenomImport.o: GAGenomGeneEmbl.h
 GAGenomImport.o: GAGenomGeneGenBank.h
 GAGenomImport.o: GAGenomGeneLocation.h
+GAGenomImport.o: GAGenomGeneLocationDDBJ.h
+GAGenomImport.o: GAGenomGeneLocationEmbl.h
 GAGenomImport.o: GAGenomGeneLocationGenBank.h
 GAGenomImport.o: GAGenomImport.h
 GAGenomImport.o: GAGenomReference.h
+GAGenomImport.o: GAGenomReferenceDDBJ.h
+GAGenomImport.o: GAGenomReferenceEmbl.h
 GAGenomImport.o: GAGenomReferenceGenBank.h
 GAGenomImport.o: GAGenomUtilities.h
 GAGenomImport.o: GAParser.h
