@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Mon Feb/23/2004 23:50 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sun Feb/29/2004 12:54 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -584,7 +584,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
     if (!error) error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
 
     size_t       max_possible_groups = probe_count; // not quite correct (but only used for % display)
-    const size_t dot_devisor         = 10; // slow down dots
+    const size_t dot_devisor         = max_possible_groups ? static_cast<size_t>(sqrt(max_possible_groups)) : 1; // slow down dots
 
     if (!error) {
         out.put("Calculating probe-groups for found probes:");
@@ -599,6 +599,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
             while ((probe = PG_find_next_probe(error)) && !error) {
                 pg_assert(strlen(probe) == (size_t)length);
                 probe_count2++;
+                if ((probe_count2%dot_devisor) == 0) out.point();
 
                 PG_Group group;
                 error = PG_probe_match(group, probe_config, probe);
@@ -639,7 +640,7 @@ static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_co
 
                             if (created) {
                                 ++group_count;
-                                if ((group_count%dot_devisor) == 0) out.point();
+//                                 if ((group_count%dot_devisor) == 0) out.point();
                             }
                         }
 
