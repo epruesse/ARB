@@ -139,7 +139,7 @@ extern "C" {
         if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH)
         {
             sprintf(AW_ERROR_BUFFER,
-                    "Species %s has too short sequence (%i < %i)",
+                    "Species %s has too short sequence (%i, minimum is %i)",
                     key,
                     (int)leaf->sequence->real_len(),
                     MIN_SEQUENCE_LENGTH);
@@ -356,7 +356,7 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
 
 
     if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH) {
-        sprintf(AW_ERROR_BUFFER,"Species %s has too short sequence (%i < %i)",
+        sprintf(AW_ERROR_BUFFER,"Species %s has too short sequence (%i, minimum is %i)",
                 key, 	(int)leaf->sequence->real_len(), 	MIN_SEQUENCE_LENGTH);
         aw_message();
         delete leaf;
@@ -992,9 +992,13 @@ static GB_ERROR pars_check_size(AW_root *awr){
     }
 
     long tree_size = GBT_size_of_tree(gb_main,tree_name);
-    assert(tree_size!=-1);
-    if ((unsigned long)(ali_len * tree_size * 4/ 1000) > GB_get_physical_memory()){
-        error  = GB_export_error("Very big tree");
+    if (tree_size == -1) {
+        error = GB_export_error("Please select an existing tree");
+    }
+    else {
+        if ((unsigned long)(ali_len * tree_size * 4/ 1000) > GB_get_physical_memory()){
+            error  = GB_export_error("Very big tree");
+        }
     }
     delete filter;
     delete tree_name;
