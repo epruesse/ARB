@@ -39,12 +39,15 @@ if (defined $options{of}){
 my $sequenceEntry = "";
 while ($sequenceEntry = <$seqSourceRef>){
 #print $sequenceEntry."\n";
-my $result = parseEntry(\$sequenceEntry, $testOptionsRef,$logWanted);
+  my $result = parseEntry(\$sequenceEntry, $testOptionsRef,$logWanted);
 
 #
 # analyze sequence entry
 #
 
-if ($result != 0) {print  "sequence accepted\n";}else{print "sequence rejected\n";}
-print $seqDestRef $sequenceEntry;
+  if ($result != 0) {#print  "sequence accepted\n";
+    print $seqDestRef $sequenceEntry;
+  }else{
+    #print "sequence rejected\n";
+  }
 }

@@ -49,8 +49,8 @@ return 0;
 sub getOptions{
   foreach my $option (@ARGV) {
     $option =~ m /-([a-z]{2,4})=(.*)/ or die " Maus::getOptions: unknown option detected\n";
-    print "key:  >>>$1<<<\n";
-    print "value:>>>$2<<<\n";
+#    print "key:  >>>$1<<<\n";
+#    print "value:>>>$2<<<\n";
     if ( not isInList([ keys(%options)], $1)){die " Maus::getOptions: unknown option detected\n";}
     $options{$1} = $2;
   }
@@ -153,9 +153,10 @@ sub analyseKeywords{
   my %selection = %{shift()};
   my @keywords = split(/[\s,]/, shift()); # split on white space
 
-  foreach $w(@keywords){print ">>$w<<\n";}
+#  foreach $w(@keywords){print ">>$w<<\n";}
   foreach $kw(@keywords){
-    if($kw ne "" and ($entryLine =~ m/$kw/i)){ print ">>>$kw<<<\n";return 1;}
+    if($kw ne "" and ($entryLine =~ m/$kw/i)){ #print ">>>$kw<<<\n";
+      return 1;}
   }
   return 0;
 }
@@ -233,7 +234,7 @@ sub compareDates{
   my $date1 = date2number (shift());
   my $date2 = date2number (shift());
 
-print "date1: >>$date1<< date2: >>$date2<<\n";
+  #print "date1: >>$date1<< date2: >>$date2<<\n";
   return $date1 == $date2 ? 0 : $date1 > $date2 ?  1 : -1;
 }
 
@@ -245,11 +246,11 @@ sub analyseCreationDate{
 #    print "creation date found\n";
     if ($option eq ""){return 1};
     my $cdate = $1;
-    print "option value: ".$selection{$option}."\n";
+#    print "option value: ".$selection{$option}."\n";
     if (!($selection{$option} =~ /([0-9]{1,2}-[A-Z]{3}-[0-9]{4})([+-]?)/))
       {die "no valid date format:\nPlease use e.g 27-AUG-1969\n"}
     my $cflag = $2;
-    print "dates to compare cdate: >>$cdate<< stamp:>>$1<<\n";
+#    print "dates to compare cdate: >>$cdate<< stamp:>>$1<<\n";
     my $comparation = compareDates($cdate, $1);
     if ((defined $cflag) and ($cflag eq "-")){return $comparation == -1 ? 1 : 0;}
     else{return $comparation == 1 ? 1 : 0;}
@@ -264,7 +265,7 @@ sub analyseUpdateDate{
   my $option = shift();
   my %selection = %{shift()};
   if($line =~ m/DT[ ]{3}([0-9]{1,2}-[A-Z]{3}-[0-9]{4}) \(Rel.*Last updated.*\)/){
-    print "update date found\n";
+#    print "update date found\n";
     if ($option eq ""){return 1};
     my $cdate = $1;
     if (!($selection{$option} =~ /([0-9]{1,2}-[A-Z]{3}-[0-9]{4})([+-]?)/))
@@ -381,7 +382,7 @@ sub parseEntry{
   my $result = 1;
   foreach my $sectionResult(keys(%optionResults)){
     $result = $result && $optionResults{$sectionResult};
-  print "$sectionResult: $optionResults{$sectionResult}\n";
+#  print "$sectionResult: $optionResults{$sectionResult}\n";
   }
   ## combine evaluation results goes here
 #  print "sectionResult: $sectionResult\n";
