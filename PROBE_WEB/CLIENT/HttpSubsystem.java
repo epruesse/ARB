@@ -49,7 +49,7 @@ public HttpSubsystem(String name) throws Exception
             probeSocket.close();
         }
         catch (Exception e) {
-            Toolkit.AbortWithConnectionProblem("Cannot connect to server '"+host+"'");
+            Toolkit.AbortWithConnectionProblem("Cannot connect to server '"+host+"' ("+e.getMessage()+")");
         }
 
         // init other members
