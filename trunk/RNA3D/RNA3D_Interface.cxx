@@ -100,7 +100,6 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
 	xr = (XButtonEvent*) event;
 
     extern bool rotateMolecule;
-    extern bool enableZoom;
 
     switch(xr->button) {
 

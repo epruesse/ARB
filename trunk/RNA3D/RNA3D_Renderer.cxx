@@ -90,12 +90,16 @@ void GLRenderer::BeginTexturizer(){
    
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
    glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_BLEND );
    glEnable(GL_POINT_SPRITE_ARB);
+
    glEnable(GL_TEXTURE_2D);
+   glPushMatrix();
 }
 
 void GLRenderer::EndTexturizer(){
+    glPopMatrix();
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
 }
