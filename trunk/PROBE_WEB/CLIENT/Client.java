@@ -156,7 +156,6 @@ class Client
         //     Toolkit.AbortWithError("Test error");
     }
 
-//     public void updateNodeInformation(String encodedPath, boolean exactMatches) throws Exception
     public void updateNodeInformation(TreeNode clickedNode) throws Exception
     {
         ProbeList list = display.getProbeList();
@@ -368,23 +367,20 @@ class Client
         ta.setVisible(true);
     }
 
-    public void fillShortNameHash(TreeNode node)
-    {
-        if (!node.testLeaf())
-        {
-            fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
-            fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
+    public void fillShortNameHash(TreeNode node) {
+        if (!node.isLeaf()) {
+            //             fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
+            //             fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
+            
+            fillShortNameHash(node.upperSon());
+            fillShortNameHash(node.lowerSon());
         }
-        else
-        {
+        else {
             shortNameHash.put(node.getShortName(), node);
         }
     }
 
-    public HashMap getShortNameHash()
-    {
-        return shortNameHash;
-    }
+    public HashMap getShortNameHash() { return shortNameHash; }
 
     public static void main(String[] args)
     {
@@ -440,7 +436,7 @@ class Client
                 // cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
                 cl.display.initTreeDisplay(cl.root);
 
-                // cl.display.getTreeDisplay().setBoss(cl); // obtain reference to Treedisplay first !
+                // cl.display.getTreeDisplay().setClient(cl); // obtain reference to Treedisplay first !
                 // cl.display.setLocation(200, 200); // this seems to cause display problems with fvwm
                 // cl.display.setVisible(true);
                 // cl.display.setLocation(200, 200);
