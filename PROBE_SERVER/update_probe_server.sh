@@ -1,12 +1,16 @@
 #!/bin/bash
 
-SOURCE_DIR=./source_db
-TEMP_DIR=./tmpdata
-DEST_DIR=./serverdata
+SOURCE_DIR=./ps_source_db
+TEMP_DIR=./ps_tmpdata
+DEST_DIR=./ps_serverdata
+WORKER_DIR=./ps_workerdir
+
+DB_BASENAME=probe_db_
 
 mkdir -p $SOURCE_DIR
 mkdir -p $DEST_DIR
 mkdir -p $TEMP_DIR
+mkdir -p $WORKER_DIR
 
 usage() {
     echo ""
@@ -62,22 +66,31 @@ if [ $UPDATE = 1 ]; then
     rm $PT_SERVER_DB.pt
 fi
 
-OUT=$TEMP_DIR/out_db_
+OUT=$TEMP_DIR/$DB_BASENAME
 rm $OUT*
+rm $DEST_DIR/$DB_BASENAME*
 
-create_db() {
+create_group_db() {
     echo "------------------------------------------------------------"
     echo "Generating probe_groups for length=$1"
     ./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1
+}
+create_group_design_db() {
     echo "------------------------------------------------------------"
     echo "Designing probes for length=$1"
     ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1
 }
 
+create_db() {
+    create_group_db $1 && \
+        create_group_design_db $1 && \
+        mv $OUT$1_design.arb $DEST_DIR
+}
+
 create_db 15
-# create_db 16
-# create_db 17
-# create_db 18
-# create_db 19
-# create_db 20
+create_db 16
+create_db 17
+create_db 18
+create_db 19
+create_db 20
 
