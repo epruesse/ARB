@@ -20,24 +20,28 @@ ARB copyright and license information
         Please read as well the attached copyright notices below
         whether you may or may not install this package.
 
+        Since many of the included programs is free software and
+        nobody is allowed to sell that software you may safely assume
+        ARB will never become a commercial product. 
+
     REDISTRIBUTION LICENSE
 
         This release of the ARB program and documentation may not be
         sold or incorporated into a commercial product, in whole or in
         part, without the expressed written consent of the Technical
-        University of Munich and of its supervisors Oliver Strunk,
-        Ralf Westram & Wolfgang Ludwig.
+        University of Munich and of its supervisors Ralf Westram or
+        Wolfgang Ludwig.
 
         All interested parties may redistribute and modify ARB as long
         as all copies are accompanied by this license information and
         all copyright notices remain intact.  Parties redistributing
         ARB must do so on a non-profit basis, charging only for cost
-        of media.
+        of media or distribution.
 
         If you modify parts of ARB and redistribute these changes the
-        'Lehrstuhl fuer Mikrobiologie' gains the right to incorporate
-        these changes into ARB and to redistribute them with future
-        versions of ARB.
+        'Lehrstuhl fuer Mikrobiologie' of the TU Muenchen gains the
+        right to incorporate these changes into ARB and to redistribute
+        them with future versions of ARB.
 
     Disclaimer
 
