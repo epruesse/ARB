@@ -121,7 +121,7 @@ if [ -f $TREENAME ]; then
     rm $TREENAME $TREEVERSIONFILE
 else
     echo "Error: $TREENAME was not generated"
-    exit 1;
+    exit 1
 fi
 
 CLIENTBASENAME=arb_probe_library.jar
@@ -129,9 +129,11 @@ CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTBASENAME
 CLIENTZIP=$DEST_DIR/$CLIENTBASENAME.gz
 
 if [ -f $CLIENTSOURCE ]; then
+    echo Packing client for download..
     gzip -c $CLIENTSOURCE > $CLIENTZIP
-    ls -al $CLIENTZIP
 else
     echo "Could not update client version (file not found '$CLIENTSOURCE')"
+    exit 1
 fi
 
+ls -al $DEST_DIR
