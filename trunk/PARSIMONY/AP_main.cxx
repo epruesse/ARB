@@ -130,7 +130,7 @@ void AP_main::pop(void) {
     }
     while ( (knoten = stack->pop()) ) {
         if (stack_level != knoten->stack_level) {
-            GB_internal_error("AP_main::pop","Error in stack_level");
+            GB_internal_error("AP_main::pop: Error in stack_level");
             cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
             return;
         }
