@@ -217,16 +217,20 @@ int r_frame,min_frame,letter_code, sep;
 	extern char *Realloc(), ThreeToOne();
 	int i,true_start,k,pos,fptr = 0,start = 0;
 	int last_start = 0,codon_count = 0;
-	char c,codon[4],*temp, *save_c_elem, *save_name, strtmp[80];
+	char c,codon[4],*temp, *save_c_elem, save_name[80], strtmp[80];
 	extern int Default_PROColor_LKUP[];
 	int grp = 0;
+
 
 	codon[3] = '\0';
 	fptr = 0;
 
-	save_name = malloc(80);
+	/* save_name = malloc(80); */
+	
 	strncpy(save_name, seq->name, 80);
 	temp=(char*)Calloc(seq->seqlen+1,sizeof(char));
+	if (!temp) exit(-1);
+
 	for(i=0;i<seq->seqlen;i++)
 		temp[i] = '-';
 
