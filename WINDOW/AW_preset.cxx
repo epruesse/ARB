@@ -308,11 +308,11 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
 }
 
 static const char *color_group[AW_COLOR_GROUPS+1] = {
-    "+-" AW_COLOR_GROUP_PREFIX  "1$#ff0000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",
-    "+-" AW_COLOR_GROUP_PREFIX  "3$#00ff00", "-" AW_COLOR_GROUP_PREFIX  "4$#ff00ff",
-    "+-" AW_COLOR_GROUP_PREFIX  "5$#0000ff", "-" AW_COLOR_GROUP_PREFIX  "6$#ffff00",
+    "+-" AW_COLOR_GROUP_PREFIX  "1$#D50000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",
+    "+-" AW_COLOR_GROUP_PREFIX  "3$#00FF77", "-" AW_COLOR_GROUP_PREFIX  "4$#c700c7",
+    "+-" AW_COLOR_GROUP_PREFIX  "5$#0000ff", "-" AW_COLOR_GROUP_PREFIX  "6$#FFCE5B",
 
-    "+-" AW_COLOR_GROUP_PREFIX  "7$#880000", "-" AW_COLOR_GROUP_PREFIX  "8$#008888",
+    "+-" AW_COLOR_GROUP_PREFIX  "7$#AB2323", "-" AW_COLOR_GROUP_PREFIX  "8$#008888",
     "+-" AW_COLOR_GROUP_PREFIX  "9$#008800", "-" AW_COLOR_GROUP_PREFIX "10$#880088",
     "+-" AW_COLOR_GROUP_PREFIX "11$#000088", "-" AW_COLOR_GROUP_PREFIX "12$#888800",
 
@@ -327,7 +327,9 @@ long AW_find_color_group(GBDATA *gbd) { /* species and genes may have color grou
 }
 
 void AW_set_color_group(GBDATA *gbd, long color_group) {
-    GBDATA *gb_group = GB_create(gbd, AW_COLOR_GROUP_ENTRY, GB_INT);
+    GBDATA *gb_group        = GB_find(gbd, AW_COLOR_GROUP_ENTRY, 0, down_level);
+    if (!gb_group) gb_group = GB_create(gbd, AW_COLOR_GROUP_ENTRY, GB_INT);
+
     if (gb_group) GB_write_int(gb_group, color_group);
 }
 
@@ -407,10 +409,10 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
         }
 
         while (id) {
-            AW_BOOL flag_fixed_fonts_only = AW_FALSE;
-            AW_BOOL flag_no_color_selector = AW_FALSE;
+            AW_BOOL flag_fixed_fonts_only    = AW_FALSE;
+            AW_BOOL flag_no_color_selector   = AW_FALSE;
             AW_BOOL flag_append_in_same_line = AW_FALSE;
-            AW_BOOL flag_no_fonts = AW_FALSE;
+            AW_BOOL flag_no_fonts            = AW_FALSE;
 
             AW_MGC_awar_cb_struct *acbs = 0;
             {
@@ -445,9 +447,9 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 while (1){
                     switch( id_copy[offset] ){
                         case '#':	flag_fixed_fonts_only = AW_TRUE; 	    offset++; continue;
-                        case '-':	flag_no_fonts = AW_TRUE; 		        offset++; continue;
                         case '=':	flag_no_color_selector = AW_TRUE; 	    offset++; continue;
                         case '+':	flag_append_in_same_line = AW_TRUE; 	offset++; continue;
+                        case '-':	flag_no_fonts = AW_TRUE; 		        offset++; continue;
                         default:	break;
                     }
                     break;
@@ -525,13 +527,19 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
         AW_BOOL flag_no_color_selector   = AW_FALSE;
         AW_BOOL flag_append_in_same_line = AW_FALSE;
         AW_BOOL flag_no_fonts            = AW_FALSE;
+        AW_BOOL flag_hide_this_gc        = AW_FALSE;
 
         while (1){
             switch( id[0] ){
                 case '#':	flag_fixed_fonts_only = AW_TRUE; 	id++; continue;
-                case '-':	flag_no_fonts = AW_TRUE; 		id++; continue;
                 case '=':	flag_no_color_selector = AW_TRUE; 	id++; continue;
                 case '+':	flag_append_in_same_line = AW_TRUE; 	id++; continue;
+                case '-':	{
+                    if (flag_no_fonts) flag_hide_this_gc = AW_TRUE; // if gc definition contains -- the gc is completely hidden
+                    else flag_no_fonts = AW_TRUE;
+                    id++;
+                    continue;
+                }
                 default:	break;
             }
             break;
@@ -549,49 +557,51 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             if (insert_color_groups) continue;
         }
 
-        sprintf(awar_name, AWP_COLORNAME_TEMPLATE, window_awar_name, fontbasename);
-        aws->label_length(15);
-        aws->label(id);
+        if (!flag_hide_this_gc) {
+            sprintf(awar_name, AWP_COLORNAME_TEMPLATE, window_awar_name, fontbasename);
+            aws->label_length(15);
+            aws->label(id);
 
-        if (!flag_no_color_selector){
-            aws->button_length(2);
-            AW_preset_create_color_chooser(aws, awar_name, id);
-        }
-        aws->create_input_field(awar_name, 10);
+            if (!flag_no_color_selector){
+                aws->button_length(2);
+                AW_preset_create_color_chooser(aws, awar_name, id);
+            }
+            aws->create_input_field(awar_name, 10);
 
-        if (!flag_no_fonts) {
-            sprintf(awar_name, AWP_FONTNAME_TEMPLATE,window_awar_name, fontbasename);
-            aws->label_length(5);
-            aws->create_option_menu(awar_name, "Font", 0);
-            {
-                int         font_nr;
-                const char *font_string;
+            if (!flag_no_fonts) {
+                sprintf(awar_name, AWP_FONTNAME_TEMPLATE,window_awar_name, fontbasename);
+                aws->label_length(5);
+                aws->create_option_menu(awar_name, "Font", 0);
+                {
+                    int         font_nr;
+                    const char *font_string;
 
-                for (font_nr = 0;; font_nr++) {
-                    font_string = aw_root->font_2_ascii((AW_font) font_nr);
-                    if (!font_string) break;
-                    if (flag_fixed_fonts_only && aw_root->font_2_xfig((AW_font) font_nr) >= 0) continue;
-                    aws->insert_option(font_string, 0, (int) font_nr);
+                    for (font_nr = 0;; font_nr++) {
+                        font_string = aw_root->font_2_ascii((AW_font) font_nr);
+                        if (!font_string) break;
+                        if (flag_fixed_fonts_only && aw_root->font_2_xfig((AW_font) font_nr) >= 0) continue;
+                        aws->insert_option(font_string, 0, (int) font_nr);
+                    }
+                    aws->update_option_menu();
+                }
+
+                sprintf(awar_name, AWP_FONTSIZE_TEMPLATE,window_awar_name, fontbasename);
+                aws->label_length(5);
+
+                aws->create_option_menu(awar_name, "size", 0);
+
+                int  size;
+                char ssize[20];
+
+                for (size = 2; size < 25; size++) {
+                    sprintf(ssize, "%i", size);
+                    aws->insert_option(ssize, 0, (int) size);
                 }
                 aws->update_option_menu();
+
             }
-
-            sprintf(awar_name, AWP_FONTSIZE_TEMPLATE,window_awar_name, fontbasename);
-            aws->label_length(5);
-
-            aws->create_option_menu(awar_name, "size", 0);
-
-            int  size;
-            char ssize[20];
-
-            for (size = 2; size < 25; size++) {
-                sprintf(ssize, "%i", size);
-                aws->insert_option(ssize, 0, (int) size);
-            }
-            aws->update_option_menu();
-
+            if (!flag_append_in_same_line)	aws->at_newline();
         }
-        if (!flag_append_in_same_line)	aws->at_newline();
         first = AW_FALSE;
         delete fontbasename;
     }
