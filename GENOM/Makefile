@@ -6,6 +6,7 @@
 CPP_OBJECTS =   \
 	GEN_read.o \
 	GEN_db.o \
+	GEN_interface.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
