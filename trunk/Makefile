@@ -1111,7 +1111,7 @@ arbbasic: links
 		$(MAKE) arbbasic2
 arbbasic2: mbin menus com nas ${MAKE_RTC}
 
-arbxtras: tg chip
+arbxtras: tg #chip
 
 arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pr pg na al nal di ph ds trs
