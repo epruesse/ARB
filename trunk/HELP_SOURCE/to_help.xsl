@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 
+<!--          <!ENTITY acute "&#180;">-->
+
 <!DOCTYPE xsl:stylesheet [
           <!ENTITY nbsp "&#160;">
-          <!ENTITY acute "&#180;">
+          <!ENTITY acute "&#39;">
           <!ENTITY dotwidth "20">
           <!ENTITY dotheight "16">
           <!ENTITY tab "&#x9;">
@@ -373,6 +375,7 @@
   </xsl:template>
 
   <xsl:template match="ENTRY"><xsl:apply-templates/></xsl:template>
+
   <xsl:template match="P"><xsl:apply-templates/></xsl:template>
 
   <xsl:template match="ENUM"><xsl:apply-templates/></xsl:template>
