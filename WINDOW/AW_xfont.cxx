@@ -92,6 +92,8 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-*-lucida-bold-i-*-*-", (struct xfont*) NULL},
     {"-*-lucidatypewriter-medium-*-*-*-", (struct xfont*) NULL},
     {"-*-lucidatypewriter-bold-*-*-*-", (struct xfont*) NULL},
+    {"-*-screen-medium-*-*-*-", (struct xfont*) NULL},
+    {"-*-screen-bold-*-*-*-", (struct xfont*) NULL},
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
@@ -139,6 +141,8 @@ struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
     {"LucidaSans-BoldItalic",		19},
     {"LucidaSansTypewriter",		-12},
     {"LucidaSansTypewriter-Bold",	-14},
+    {"Screen",	-16},
+    {"Screen-Bold",	-18},
 };
 
 
@@ -317,14 +321,14 @@ lookfont(Display *tool_d, int f, int s)
     if (found) {		/* found exact size (or only larger available) */
 	strcpy(fn,nf->fname);  /* put the name in fn */
 	if (s < nf->size)
-	    put_msg("Font size %d not found, using larger %d point",s,nf->size);
+	    put_msg("Font size %d not found, using larger %d point\n",s,nf->size);
 	if (appres.debug)
 	    fprintf(stderr, "Located font %s\n", fn);
     } else if (!appres.SCALABLEFONTS) {	/* not found, use largest available */
 	nf = oldnf;
 	strcpy(fn,nf->fname);  		/* put the name in fn */
 	if (s > nf->size)
-	    put_msg("Font size %d not found, using smaller %d point",s,nf->size);
+	    put_msg("Font size %d not found, using smaller %d point\n",s,nf->size);
 	if (appres.debug)
 	    fprintf(stderr, "Using font %s for size %d\n", fn, s);
     } else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
@@ -348,14 +352,23 @@ lookfont(Display *tool_d, int f, int s)
 	    /* attach pointsize to font name */
 	    strcat(templat,"%d-*-*-*-*-*-");
 	    /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name */
-	    if (strstr(templat,"symbol") == NULL &&
-		strstr(templat,"zapfdingbats") == NULL)
-		strcat(templat,"ISO8859-*");
-	    else
-		strcat(templat,"*-*");
+// 	    if (strstr(templat,"symbol")          == NULL &&
+//             strstr(templat,"zapfdingbats") == NULL)
+            strcat(templat,"%s-*");
+// 	    else
+//             strcat(templat,"*-*");
 	    /* use the pixel field instead of points in the fontname so that the
 	       font scales with screen size */
-	    sprintf(fn, templat, s);
+
+	    sprintf(fn, templat, s, "ISO8859");
+        fontst = XLoadQueryFont(tool_d, fn);
+        if (fontst == NULL) {
+            sprintf(fn, templat, s, "ISO10646");
+            fontst = XLoadQueryFont(tool_d, fn);
+            if (fontst == NULL) {
+                sprintf(fn, templat, s, "*");
+            }
+        }
 	}
 	/* allocate space for the name and put it in the structure */
 	nf->fname = strdup(fn);
