@@ -1,3 +1,4 @@
+#!/bin/sh
 cd $ARBHOME/lib/help
 rm -f index
 

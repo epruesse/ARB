@@ -1,12 +1,28 @@
 
 ifndef OPENWINHOME
+ifndef DEBIAN
 ARCHS = CLUSTAL/CLUSTAL.dummy  \
 	CLUSTALW/CLUSTALW.dummy  \
 	PHYLIP/PHYLIP.dummy \
 	SUPPORT/SUPPORT.dummy \
 	MOLPHY/MOLPHY.dummy \
 	TREEPUZZLE/TREEPUZZLE.dummy \
-	FASTDNAML/FASTDNAML.dummy 
+	FASTDNAML/FASTDNAML.dummy
+else
+export OPENWINHOME = /usr/X11R6
+ARCHS = CLUSTAL/CLUSTAL.dummy  \
+	SUPPORT/SUPPORT.dummy \
+	HGL_SRC/HGL_SRC.dummy \
+	MOLPHY/MOLPHY.dummy \
+	LOOPTOOL/LOOPTOOL.dummy \
+	CORE/CORE.dummy
+## Debian has the following own packages:
+#	CLUSTALW/CLUSTALW.dummy  \
+#	PHYLIP/PHYLIP.dummy \
+#	FASTDNAML/FASTDNAML.dummy \
+#	TREEPUZZLE/TREEPUZZLE.dummy \
+#
+endif
 else
 ARCHS = CLUSTAL/CLUSTAL.dummy  \
 	CLUSTALW/CLUSTALW.dummy  \
@@ -26,7 +42,7 @@ $(MAIN): $(ARCHS)
 
 depend: $(ARCHS:.dummy=.depend)
 
-%.depend: 
+%.depend:
 	@$(MAKE) -C $(@D) -r \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" depend;

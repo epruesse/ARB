@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <time.h>
 #include <xview/xview.h>
 #include <xview/panel.h>
 #include "menudefs.h"
@@ -184,7 +185,7 @@ int type;
 					}
                     for(j=start_col;(c = Inline[j]) != '\0';j++)
 					{
-						if((c != '\n') &&  
+						if((c != '\n') &&
 						    ((j-start_col + 1) % 11 !=0))
 							buffer[len++] = c;
 					}

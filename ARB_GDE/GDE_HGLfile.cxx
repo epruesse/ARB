@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include <time.h>
 
 //#include <xview/xview.h>
 //#include <xview/panel.h>
@@ -293,7 +294,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 		    }
 		    if(line[j] == '"') done = TRUE;
 
-		    else 
+		    else
 			buffer[len++] = line[j];
 		}
 		/*
@@ -523,7 +524,7 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
 *	If selecting a region, the offset should be moved to the first
 *	non-'0' space in the mask.
 */
-					for(k=this_elem->offset;k<aln->selection_mask_len && 
+					for(k=this_elem->offset;k<aln->selection_mask_len &&
 					aln->selection_mask[k] == '0';k++);
 					fprintf(file,"offset        %d\n", aln->rel_offset+k);
 			}
@@ -595,9 +596,9 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
 					{
 						if(k%60 == 0)
 							putc('\n',file);
-						if(method == SELECT_REGION) 
+						if(method == SELECT_REGION)
 						{
-                            if(aln->selection_mask[k] == '1') 
+                            if(aln->selection_mask[k] == '1')
 								putc(this_elem->tmatrix[getelem(this_elem,k)],
 						    file);
 						}
@@ -630,9 +631,9 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
 					{
 						if(k%60 == 0)
 							putc('\n',file);
-						if(method == SELECT_REGION) 
+						if(method == SELECT_REGION)
 						{
-                            if(aln->selection_mask[k] == '1') 
+                            if(aln->selection_mask[k] == '1')
                                 putc(getelem(this_elem,k),file);
 						}
 						else
@@ -807,7 +808,7 @@ int OverWrite(NA_Sequence *thiss,NA_Alignment *aln)
 	    that->baggage_len += thiss->baggage_len;
 	    that->baggage_maxlen += thiss->baggage_maxlen;
 	    if(that->baggage)
-		that->baggage = 
+		that->baggage =
 		    Realloc(that->baggage,that->baggage_maxlen*sizeof(char));
 	    else
 		that->baggage = Calloc(that->baggage_maxlen,sizeof(char));
@@ -818,7 +819,7 @@ int OverWrite(NA_Sequence *thiss,NA_Alignment *aln)
 	    that->comments_len += thiss->comments_len;
 	    that->comments_maxlen += thiss->comments_maxlen;
 	    if(that->comments)
-		that->comments = 
+		that->comments =
 		    Realloc(that->comments,that->comments_maxlen*sizeof(char));
 	    else
 		that->comments = Calloc(that->comments_maxlen,sizeof(char));
