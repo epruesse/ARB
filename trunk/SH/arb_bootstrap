@@ -1,24 +1,51 @@
-#!/bin/sh
-# usage: arb_bootstrap count count2 treeprog
-# 'count' is passed to treeprog
-# 'count2' is passed to arb_readtree (bootstrap values are devided by count2)
-# 'treeprog' calculates the trees (e.g. dnapars, protpars)
+#!/bin/bash -x
+# usage: arb_bootstrap count treeprog [keyin4treeprog]
+# 'count'            is the number of generated trees
+# 'treeprog'         calculates the trees (e.g. dnapars, protpars)
+# 'keyin4treeprog'   is echoed to stdin of 'treeprog'
 
-echo "-consense $2" >arb_read_tree_args
+COUNT=$1
+TREEPROG=$2
+KEYIN=$3
+RANDOMSEED=$(($RANDOM|1)) # a odd number
 
-arb_echo "1 r $1 y" | seqboot
-/bin/mv -f outfile infile
+echo "-consense $COUNT" >arb_read_tree_args
 
-arb_wait
+arb_echo $RANDOMSEED r $COUNT y | seqboot
 
-arb_echo "m $1 y" | $3
-/bin/mv -f treefile infile
+if [ \! -f outfile ] ; then
+    echo "Error in seqboot: 'outfile' not generated"
+else
+    mv -f outfile infile
+    if [ -z "$KEYIN" ]; then
+        $TREEPROG
+    else
+        arb_echo $KEYIN | $TREEPROG
+    fi
 
-arb_wait
+    if [ \! -f treefile ] ; then
+        echo "Error running $TREEPROG: 'treefile' not generated"
+    else
+        if [ \! -s treefile ] ; then
+            echo "Error running $TREEPROG: 'treefile' is empty"
+            rm treefile
+        else
+            mv -f treefile infile
+            arb_echo y | consense
 
-arb_echo y | consense
-
-arb_wait
-
-arb_textedit outfile &
-
+            if [ \! -f treefile ] ; then
+                echo "Error running consense: 'treefile' not generated"
+            else
+                if [ \! -f outfile ] ; then
+                    echo "Warning running consense: 'outfile' not generated"
+                else
+                    if [ \! -s outfile ] ; then
+                        echo "Warning running consense: 'outfile' is empty"
+                    else
+                        arb_textedit outfile &
+                    fi
+                fi
+            fi
+        fi
+    fi
+fi
