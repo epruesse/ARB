@@ -53,7 +53,7 @@ public:
     virtual void setFalse( const long _index );
 
     virtual void invert();
-    virtual void xor( const PS_BitSet *_other_set );
+    virtual void x_or( const PS_BitSet *_other_set );
     
     virtual void print( const bool _header, const long _fill_index );
     virtual bool save( PS_FileBuffer *_file );
@@ -177,7 +177,7 @@ long PS_BitSet::getTrueIndices( PS_BitSet::IndexSet &_index_set, const long _fil
 // ************************************************************
 // * PS_BitSet::getCountOfTrues()
 // ************************************************************
-long PS_BitSet::getCountOfTrues( const long _fill_index = -1 ) {
+long PS_BitSet::getCountOfTrues( const long _fill_index) {
     long count = 0;
     // get indices of trues from bitset up to max_index
     long index      = 0;
@@ -327,9 +327,9 @@ void PS_BitSet::invert() {
 
 
 // ************************************************************
-// * PS_BitSet::xor( _other_set )
+// * PS_BitSet::x_or( _other_set )
 // ************************************************************
-void PS_BitSet::xor( const PS_BitSet *_other_set ) {
+void PS_BitSet::x_or( const PS_BitSet *_other_set ) {
     for (long i = 0; i < capacity/8; ++i) {
         data[i] ^= _other_set->data[i];
     }
