@@ -2,7 +2,8 @@
 #define RNA3D_GRAPHICS_HXX
 
 #define RNA3D_assert(cond) arb_assert(cond)
-#define AWAR_SAI_SELECTED "RNA3D/sai_selected"
+
+
 
 enum {
     RNA3D_GC_BACKGROUND,

@@ -1,32 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include <ctype.h>
-#include <iostream>
+#include "RNA3D_GlobalHeader.hxx"
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-#include <aw_root.hxx>
-
-#include <GL/glew.h>
-#include <GL/GLwMDrawA.h>
-
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <Xm/Xm.h>
-#include <Xm/Protocols.h>
-#include <Xm/MwmUtil.h>
-#include <Xm/MainW.h>
-
+// The following includes are needed to use AW_window_Motif 
 #define _AW_COMMON_INCLUDED
 #include <aw_root.hxx>
 #include <aw_device.hxx>
@@ -42,11 +16,15 @@
 #include "../WINDOW/aw_window_Xm.hxx"
 #include "../WINDOW/aw_xkey.hxx"
 
+#include "RNA3D_Global.hxx"
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 #include "RNA3D_Interface.hxx"
 
 using namespace std;
+
+AWT_canvas *gl_Canvas;
+AW_window_menu_modes_opengl *awm;
 
 extern GBDATA *gb_main;
 Widget OpenGLParentWidget;
@@ -57,14 +35,8 @@ GLboolean    Spinning = GL_FALSE;
 
 Boolean SpinMolecule(XtPointer clientData) {
     extern float ROTATION_SPEED;
-    extern bool autoRotate;
-    if(autoRotate) {
-        ROTATION_SPEED = 0.05;
-    }
-    else {
-        ROTATION_SPEED = 0.5;
-    }
-    refreshOpenGLDisplay();
+    ROTATION_SPEED = 0.05;
+    RefreshOpenGLDisplay();
     return false; /* leave work proc active */
 }
 
@@ -95,7 +67,7 @@ void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
 
 	MapStateChanged(event);
 
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
 
@@ -126,7 +98,7 @@ void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
         break;
     }
 
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
 void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
@@ -141,14 +113,13 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
         rotateMolecule = false;   
         break;
     case MIDDLE_BUTTON:
-        enableZoom = false;
         break;
     case RIGHT_BUTTON:
         cout<<"Right Button REleased !!!"<<endl;
         break;
     }
 
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
 
@@ -158,7 +129,7 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
 	xp = (XButtonEvent*) event;
 	extern GLfloat saved_x, saved_y;
     extern bool rotateMolecule;
-    extern bool enableZoom;
+    extern float scale;
 
     switch(xp->button) {
     case LEFT_BUTTON:
@@ -167,21 +138,23 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
         saved_y = xp->y;
         break;
     case MIDDLE_BUTTON:
-        enableZoom = true;
+        gl_Canvas->set_mode(AWT_MODE_NONE);
         cout<<"Middle Button pressed !!!"<<endl;
         break;
     case RIGHT_BUTTON:
         cout<<"Right Button PRESSed !!!"<<endl;
         break;
     case WHEEL_UP:
+        scale += ZOOM_FACTOR;
         cout<<"Wheel Up !!!"<<endl;
         break;
     case WHEEL_DOWN:
+        scale -= ZOOM_FACTOR;
         cout<<"Wheel Down !!!"<<endl;
         break;
 	}
     
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
 void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
@@ -194,11 +167,15 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
 	else if ( xp->state & Button3Mask ) {
 		/* do nothing*/
 	}
+    extern float ROTATION_SPEED;
+    extern bool autoRotate;
+    if (!autoRotate)  ROTATION_SPEED = 0.5;
     extern bool rotateMolecule;
-    if(rotateMolecule)
-    rotate(xp->x, xp->y);
+    if(rotateMolecule) {
+        RotateMolecule(xp->x, xp->y);
+    }
 
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
 void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
@@ -219,10 +196,10 @@ void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
 		ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
 	}
 
-    refreshOpenGLDisplay();
+    RefreshOpenGLDisplay();
 }
 
-void refreshOpenGLDisplay() {
+void RefreshOpenGLDisplay() {
 	extern int OpenGLEngineState;
 	if ( OpenGLEngineState == CREATED ) {
 		extern Widget _glw;
@@ -230,19 +207,34 @@ void refreshOpenGLDisplay() {
     }
 }
 
-/*---------------------------- Creating WINDOWS ------------------------------ */
-static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
-    // repaints the canvas
-    AWUSE(awr);
-    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    ntw->refresh();
+void SetOpenGLBackGroundColor() {
+	extern Widget _glw;
+	unsigned long bgColor;
+	XtVaGetValues( _glw, XmNbackground, &bgColor, NULL );
+
+    extern AWT_canvas *gl_Canvas;
+    Widget w = gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
+
+    XColor xcolor;
+    xcolor.pixel = bgColor;
+    Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
+    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+
+    float r, g, b; r = g = b = 0.0;
+    r = (float) xcolor.red / 65535.0;
+    g = (float) xcolor.green / 65535.0;
+    b = (float) xcolor.blue / 65535.0;
+
+    // set OpenGL Backgroud Color to the widget's backgroud     
+    glClearColor(r, g, b, 0);
 }
 
-static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
+/*---------------------------- Creating WINDOWS ------------------------------ */
+static void AddCallBacks(AW_root *awr, AWT_canvas *ntw) {
     // adding callbacks to the awars to refresh the display if recieved any changes
 }
 
-static AW_window *createSelectSAI_window(AW_root *aw_root){
+static AW_window *CreateSelectSAI_window(AW_root *aw_root){
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
     if(aws) return (AW_window *)aws;
@@ -263,30 +255,33 @@ static AW_window *createSelectSAI_window(AW_root *aw_root){
     return (AW_window *)aws;
 }
 
-AW_window *createRNA3DMainWindow(AW_root *awr){
+AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(gb_main);
 
     awr->awar_int(AWAR_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
     int width = 600, height = 400;
 
-    AW_window_menu_modes_opengl *awm = new AW_window_menu_modes_opengl();
+    extern AW_window_menu_modes_opengl *awm;
+    awm = new AW_window_menu_modes_opengl();
     awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA",width,height);
+
     AW_gc_manager aw_gc_manager;
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,gb_main);
 
-    AWT_canvas *gl_Canvas = (AWT_canvas *) new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
+    extern AWT_canvas *gl_Canvas;
+    gl_Canvas = new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
 
     gl_Canvas->recalc_size();
     gl_Canvas->refresh();
-    //    gl_Canvas->set_mode(AWT_MODE_ZOOM); // Default-Mode
+    gl_Canvas->set_mode(AWT_MODE_NONE); 
 
     awm->insert_help_topic("rna3D_help_how", "How to Visualize 3D structure of rRNA ?", "H", "rna3DHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"rna3DHelp.hlp", 0);
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
     awm->create_menu( 0, "Properties", "P", 0,  AWM_ALL );
-    awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
-    awm->insert_menu_topic( "SetColors", "Set Colors and Fonts", "t","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+    awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)CreateSelectSAI_window, (AW_CL)0);
+    awm->insert_menu_topic( "SetColors", "Change Colors ", "c","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
 
     {
         awm->at(11,2);
@@ -300,9 +295,9 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
         awm->create_button("Close", "Close");
     
         awm->get_at_position( &cur_x,&cur_y );
-        awm->button_length(15);
-        awm->callback( (AW_CB0)AW_POPDOWN );
-        awm->create_button("bla1", "Cloooose");
+        awm->callback(AW_POPUP,(AW_CL)CreateSelectSAI_window,(AW_CL)0);
+        awm->button_length(25);
+        awm->create_button("SELECT_SAI", AWAR_SAI_SELECTED);
 
         awm->at_newline();
         awm->get_at_position( &start_x,&second_line_y);
@@ -311,7 +306,7 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
         awm->create_button("sai", "Select SAI");
     }
 
-    addCallBacks(awr, gl_Canvas);
+    AddCallBacks(awr, gl_Canvas);
 
     appContext = awr->prvt->context;
 
@@ -342,7 +337,7 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
 //                       VisibilityChangeMask, 0, (XtEventHandler) RotateMolecule, (XtPointer) 0 );
 		
     extern Widget OpenGLParentWidget;
-    OpenGLParentWidget = awm->p_w->frame;
+    OpenGLParentWidget = awm->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
 #ifdef DEBUG
     cout<<"Openglwindow created!!"<<endl;

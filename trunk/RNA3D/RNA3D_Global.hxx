@@ -2,23 +2,15 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-enum {
-    CIRCLE,  
-    RECTANGLE, 
-    RECTANGLE_ROUND, 
-    POLYGON,
-    STAR,
-    STAR_SMOOTH, 
-    DIAMOND,
-    CONE_UP,
-    CONE_DOWN,
-    FREEFORM_1,
-    LETTER_A,
-    LETTER_G,
-    LETTER_C,
-    LETTER_U,
-    SHAPE_MAX
-};
+#define zoomFactor	1.0f     // scaling factor in z-axis (ZOOM)
+
+#define TRUE        1
+#define FALSE       0
+
+#define SKELETON_SIZE  1.0f
+#define ZOOM_FACTOR    0.0005f
+
+#define AWAR_SAI_SELECTED "RNA3D/sai_selected"
 
 struct Vector3 {
 public:

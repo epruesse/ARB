@@ -1,10 +1,14 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = RNA3D_Interface.o RNA3D_Graphics.o RNA3D_OpenGLEngine.o \
-			RNA3D_Textures.o
-
-#CPP_OBJECTS = Main.o Camera.o Menu.o Mouse.o Structure3D.o 
+CPP_OBJECTS = 	RNA3D_Main.o \
+				RNA3D_Interface.o \
+				RNA3D_Graphics.o \
+				RNA3D_OpenGLEngine.o \
+				RNA3D_OpenGLGraphics.o \
+				RNA3D_Textures.o \
+				RNA3D_StructureData.o \
+				RNA3D_Renderer.o 
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
