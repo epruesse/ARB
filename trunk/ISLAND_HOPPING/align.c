@@ -17,7 +17,7 @@
 #define U    align_U
 
 #define MSIZE          512
-#define ESIZE          36 
+#define ESIZE          36
 
 /*============================================================================*/
 
@@ -30,7 +30,7 @@
 typedef struct score {
  double score;
  int up,down;
-} Score;   
+} Score;
 
 
 typedef struct fragment {
@@ -159,7 +159,7 @@ void updateEntropy(double **P,double **S,double **E) {
  M=E[0];
  for(i=0,m=mmin+0.5*dm;i<MSIZE;i++,m+=dm) M[i]=m;
 
- for(i=0;i<MSIZE;i++) E[1][i]=0.; 
+ for(i=0;i<MSIZE;i++) E[1][i]=0.;
  for(i=0;i<N;i++)
   for(j=0;j<N;j++) {
    k=floor((S[i][j]-mmin)*idm);
@@ -206,7 +206,7 @@ void updateEntropy(double **P,double **S,double **E) {
     if(k>=MSIZE) k=MSIZE-1; else if(k<0) k=0;
     E[l][k]+=E[ll][i]*E[ll][j];
    }
- } 
+ }
 
  for(l=25,ll=l-8;l<=32;l++,ll++) {
   for(k=0;k<MSIZE;k++) E[l][k]=0.;
@@ -217,7 +217,7 @@ void updateEntropy(double **P,double **S,double **E) {
     if(k>=MSIZE) k=MSIZE-1; else if(k<0) k=0;
     E[l][k]+=E[ll][i]*E[ll][j];
    }
- } 
+ }
 
  for(l=33,ll=l-1;l<=36;l++,ll++) {
   for(k=0;k<MSIZE;k++) E[l][k]=0.;
@@ -228,7 +228,7 @@ void updateEntropy(double **P,double **S,double **E) {
     if(k>=MSIZE) k=MSIZE-1; else if(k<0) k=0;
     E[l][k]+=E[ll][i]*E[ll][j];
    }
- } 
+ }
 
  for(l=1;l<=ESIZE;l++) {m=0.; for(k=MSIZE-1;k>=0;k--) m=E[l][k]+=m;}
 
@@ -249,7 +249,7 @@ void updateEntropy(double **P,double **S,double **E) {
   fprintf(fp,"}),PlotRange->{{1,100},{1,%d},{0,1}},ViewPoint->{1.5,1.1,0.8}]\n",nbp);
   fclose(fp);
 
- } 
+ }
 
 }
 
@@ -268,13 +268,13 @@ double getEntropy(double **E,double m,int l) {
  if(k==MSIZE-1) {ja=k-1; jb=k;  } else
  if(m>M[k])     {ja=k;   jb=k+1;} else
                 {ja=k-1; jb=k;  }
-               
+
  ma=M[ja]; mb=M[jb];
 
  if(l<=16) {
   return(
    ((mb-m)*E[l][ja]+(m-ma)*E[l][jb])/(mb-ma)
-  ); 
+  );
  } else {
   if(l<=32) {
    if(l<=18) {la=16; lb=18; ia=16; ib=17;} else
@@ -308,7 +308,7 @@ double getEntropy(double **E,double m,int l) {
    )
    /((lb-la)*(mb-ma))
   );
- } 
+ }
 
 }
 
@@ -317,14 +317,14 @@ double getEntropy(double **E,double m,int l) {
 Island *newIsland(char *X,char *Y,int i,int j,int d) {
  Island *p; Fragment *f,**ff,*L; int k,ii,jj,iii,jjj,l; double s;
 
- p=newBlock(sizeof(Island)); 
+ p=newBlock(sizeof(Island));
 
  ii=i; jj=j; l=0; s=0.;
 
  if(d>0) {
   ff=&L;
   for(;;) {
-   s+=S[(int)X[ii]][(int)Y[jj]];
+   s+=S[X[ii]][Y[jj]];
    if(++l==1) {iii=ii; jjj=jj;}
    k=U[ii][jj].up;
    if(k) {
@@ -344,7 +344,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
    s+=S[X[ii]][Y[jj]];
    if(++l==1) {iii=ii; jjj=jj;}
    k=U[ii][jj].down;
-   if(k) { 
+   if(k) {
     f=newBlock(sizeof(Fragment));
     f->beginX=iii-l+1; f->beginY=jjj-l+1; f->length=l;
     l=0; f->next=L; L=f;
@@ -357,7 +357,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
  }
 
  p->fragments=L;
-           
+
  p->score=s;
 
  return(p);
@@ -379,7 +379,7 @@ void freeIsland(Island **pp) {
 /*............................................................................*/
 
 void registerIsland(Island *f) {
- Island **pli; 
+ Island **pli;
 
  f->next=Z; Z=f;
 
@@ -423,7 +423,7 @@ Island *selectLowerIslands(Island *f,int *incomplete) {
     if(!g->hasLower) {*incomplete=TRUE; return(NULL);}
     g->nextSelected=l; l=g;
    }
- 
+
  *incomplete=FALSE;
 
  return(l);
@@ -489,7 +489,7 @@ void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
 
  for(q=f->fragments;q;q=q->next) {
   while(I<q->beginX) {XX[K]=decodeBase(X[I++]); YY[K]='-';                K++;}
-  while(J<q->beginY) {XX[K]='-';                YY[K]=decodeBase(Y[J++]); K++;}    
+  while(J<q->beginY) {XX[K]='-';                YY[K]=decodeBase(Y[J++]); K++;}
   for(k=0;k<q->length;k++)
    {XX[K]=decodeBase(X[I++]); YY[K]=decodeBase(Y[J++]); K++;}
  }
@@ -516,7 +516,7 @@ void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
   }
 
  while(I<nX) {XX[K]=decodeBase(X[I++]); YY[K]='-';                K++;}
- while(J<nY) {XX[K]='-';                YY[K]=decodeBase(Y[J++]); K++;}   
+ while(J<nY) {XX[K]='-';                YY[K]=decodeBase(Y[J++]); K++;}
 
  XX[K]='\0';
  YY[K]='\0';
@@ -637,7 +637,7 @@ void AlignTwo(
     for(k=1;k<=MAXGAP&&jj+k<nY;k++) {
      ss=U[ii][jj+k].score+k*Gap*expectedScore; if(ss>s) {s=ss; r=-k;}
     }
-   } 
+   }
    s+=secS(i,j,X,secX,Y,secY); if(s<0.) {s=0.; r=NOWHERE;}
    U[i][j].score=s;
    U[i][j].up=r;
@@ -678,7 +678,7 @@ void AlignTwo(
    if(z->hasUpper) continue;
    zz=selectUpperIslands(z,nX,nY,&i); if(i) continue;
    if(zz) {
-    s=0.; best=NULL; 
+    s=0.; best=NULL;
     for(zzz=zz;zzz;zzz=zzz->nextSelected) {
      if(zzz->upperScore+zzz->score>s) {s=zzz->upperScore+zzz->score; best=zzz;}
     }
@@ -696,7 +696,7 @@ void AlignTwo(
    zz=selectLowerIslands(z,&i); if(i) continue;
    if(zz) {
     s=0.; best=NULL;
-    for(zzz=zz;zzz;zzz=zzz->nextSelected) { 
+    for(zzz=zz;zzz;zzz=zzz->nextSelected) {
      if(zzz->lowerScore+zzz->score>s) {s=zzz->lowerScore+zzz->score; best=zzz;}
     }
     if(best) {z->lower=best; z->lowerScore=s;}
@@ -704,7 +704,7 @@ void AlignTwo(
    z->hasLower=TRUE;
    changed=TRUE;
   }
- } while(changed); 
+ } while(changed);
 
 /*******************/
 
@@ -798,8 +798,10 @@ void Align(
  char *s;
  int i,j,maxlen;
 
- *XX=newBlock((nX+nY+1)*sizeof(char));
- *YY=newBlock((nX+nY+1)*sizeof(char));
+ test_mem();
+
+ *XX = newBlock((nX+nY+1)*sizeof(char));
+ *YY = newBlock((nX+nY+1)*sizeof(char));
 
  Supp=supp;
  Gap=gap;
@@ -807,7 +809,7 @@ void Align(
 
  if(dist>MAXDIST||dist<MINDIST) {Error="Bad argument"; return;}
 
- if(Gap<0.) {Error="Bad argument"; return;}  
+ if(Gap<0.) {Error="Bad argument"; return;}
 
  if(Thres>1.||Thres<=0.) {Error="Bad argument"; return;}
  LogThres=log(Thres);
@@ -829,15 +831,15 @@ void Align(
     case 'A': fA++; break; case 'G': fG++; break;
     default: fT+=0.25; fC+=0.25; fA+=0.25; fG+=0.25;
    }
-  }  
+  }
  }
 
- if(rates) { 
+ if(rates) {
   if(rTC<=0.||rTA<=0.||rTG<=0.||rCA<=0.||rCG<=0.||rAG<=0.) {Error="Bad argument"; return;}
  } else {
   rTC=4.0; rTA=1.0; rTG=1.0; rCA=1.0; rCG=1.0; rAG=4.0;
  }
- 
+
  normalizeBaseFreqs(F,fT,fC,fA,fG);
  normalizeRateParams(R,rTC,rTA,rTG,rCA,rCG,rAG);
 
