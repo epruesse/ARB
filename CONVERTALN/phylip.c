@@ -45,10 +45,10 @@ int	readstdin;
 		error(117, temp);
 	}
 	maxsize = 1;
-	out_of_memory = 0; 
+	out_of_memory = 0;
 	name = NULL;
 	init();
-	init_phylip();  
+	init_phylip();
 	total_seq = 0;
 	do	{
 		if(informat==ALMA)	{
@@ -77,7 +77,7 @@ int	readstdin;
 		total_seq++;
 		if((name = Dupstr(temp))==NULL&&temp!=NULL)
 			{ out_of_memory=1; break; }
-		if(data.seq_length>maxsize) 
+		if(data.seq_length>maxsize)
 			maxsize = data.seq_length;
 		data.ids=(char**)Reallocspace((char *)data.ids,
 			sizeof(char*)*total_seq);
@@ -88,9 +88,9 @@ int	readstdin;
 		data.ids[total_seq-1] = name;
 		data.seqs[total_seq-1]=(char*)Dupstr(data.sequence);
 	} while(!out_of_memory);
-	
+
 	if(out_of_memory)	{	/* cannot hold all seqs into mem. */
-		fprintf(stderr, 
+		fprintf(stderr,
 		"Rerun the conversion throught one seq. by one seq. base.\n");
 		fclose(ifp); fclose(ofp);
 		to_phylip_1x1(inf, outf, informat);
@@ -99,20 +99,21 @@ int	readstdin;
 	current = 0;
 	fprintf(ofp, "%4d %4d ", maxsize, current);
 	if (readstdin){
-	    int c;	    
+	    int c;
 	    while (1) {
-		c = getchar();	
-		if (c == EOF||c=='\n') break;
+		c = getchar();
+		if (c == EOF) break; /* read all from stdin now (not only one line)*/
+        /* 		if (c == EOF||c=='\n') break; */
 		fputc(c,ofp);
 	    }
-	    
+
 	}
 	fprintf(ofp,"\n");
-	
+
 	while(maxsize>current)	{
 		for(indi=0; indi<total_seq; indi++)	{
 			phylip_print_line(data.ids[indi],
-				data.seqs[indi], current, ofp);	
+				data.seqs[indi], current, ofp);
 		}
 		if(current==0) current +=(SEQLINE-10);
 		else current += SEQLINE;
@@ -153,7 +154,7 @@ int	informat;
 		sprintf(temp, "Cannot open output file %s, exit\n", outf);
 		error(124, temp);
 	}
-	maxsize = 1; current = 0; 
+	maxsize = 1; current = 0;
 	name = NULL;
 	fprintf(ofp, "%4d %4d\n", maxsize, current);
 	while(maxsize>current)	{
@@ -161,7 +162,7 @@ int	informat;
 		rewind(ifp);
 		total_seq = 0;
 		do	{	/* read in one sequence */
-			init_phylip();  
+			init_phylip();
 			if(informat==ALMA)	{
 				init_alma();
 				eof=alma_in(ifp);
@@ -188,7 +189,7 @@ int	informat;
 		 "UNKNOW input format when converting to PHYLIP format.");
 			Freespace(&name);
 			name = Dupstr(temp);
-			if(data.seq_length>maxsize) 
+			if(data.seq_length>maxsize)
 				maxsize = data.seq_length;
 			phylip_print_line(name, data.sequence, current, ofp);
 			total_seq++;
@@ -237,7 +238,7 @@ FILE	*fp;
 	} else if(index>=data.seq_length) length = 0;
 		else length = SEQLINE;
 	seq_length = Lenstr(sequence);
-	for(indi=indj=0; indi<length; indi++)	{	
+	for(indi=indj=0; indi<length; indi++)	{
 		if((index+indi)<seq_length)	{
 			char c= sequence[index+indi];
 			if (c=='.') c= '?';
