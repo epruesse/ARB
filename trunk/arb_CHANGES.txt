@@ -1,7 +1,7 @@
 
 Major changes in Beta 20011107:
 -------------------------------
-
+ - design probes to maximum length of 60 nucleotides
  - fastAligner1.03 bug fixed (chooses best match now in 'auto search' mode)
  - import default changed to foreign data format, ali name '16s' 
  - printing of multi-page-trees works again
