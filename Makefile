@@ -429,6 +429,7 @@ ARCHS = \
 			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
 			PROBE_GROUP/PROBE_GROUP.a \
+			PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a \
 			PROBE_SET/PROBE_SET.a \
 			READSEQ/READSEQ.a \
 			SECEDIT/SECEDIT.a \
@@ -591,6 +592,16 @@ ARCHS_PROBE_GROUP = \
 $(PROBE_GROUP):	$(ARCHS_PROBE_GROUP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
+
+#***********************************	arb_probe_group_design    **************************************
+PROBE_GROUP_DESIGN = bin/arb_probe_group_design
+ARCHS_PROBE_GROUP_DESIGN = \
+		SERVERCNTRL/SERVERCNTRL.a \
+		$(ARCHS_CLIENTACC) \
+		PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a \
+
+$(PROBE_GROUP_DESIGN):	$(ARCHS_PROBE_GROUP_DESIGN:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS)
 
 #***********************************	chip **************************************
 CHIP = bin/chip
@@ -907,7 +918,7 @@ tg:		$(TREEGEN)
 ds:		$(DBSERVER)
 pt:		$(PROBE)
 pr:		$(PROBE)
-pg:		$(PROBE_GROUP)
+pg:		$(PROBE_GROUP) $(PROBE_GROUP_DESIGN)
 chip:	$(CHIP)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(NAMES)
