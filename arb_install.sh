@@ -10,6 +10,16 @@ err() {
 	exit 1
 }
 
+cont() {
+	echo "Warning: $@" 1>&2
+	echo 'Do you want to continue [y]'
+	read var
+	case "$var" in
+		n) err "Script aborted by user" ;;
+		*) echo 'Continuing...' ;;
+	esac
+}
+
 untar() {
 	#remove old DEPOT BUG
 	rm -f DEPOT/gde/bin
@@ -38,13 +48,14 @@ seperator() {
 
 seperator
 echo 'Welcome to the ARB Package'
-echo ''
-echo 'Please answer some questions:'
-echo '	Note:   - You may abort this scipt with ctrl-"C"'
+seperator
+echo '	Note:   - You may abort this script with ctrl-"C"'
 echo '		- You can rerun this script as often as you like'
 echo '		- Old ARB data will be kept if requested (in this case'
 echo '		  you can simply change some options)'
 echo '		- Pressing <return> will select the value in brackets'
+seperator
+echo 'Please answer some questions:'
 seperator
 echo 'Enter path where to install ARB ?'
 echo '	ARB is not a single programm but a set of programs, datafiles ...'
@@ -55,9 +66,9 @@ echo '	some X11 stuff. Please enter the path of the directory where you want'
 echo '	to install ARB.'
 echo '	Notes:	This script optionally creates the destination directory.'
 echo '		You should have write permission at the destination location.'
-echo '			1. To install ARB in your home directory: Enter "arb"'
-echo '			2. Otherwise become root and rerun script.'
-echo '			3. On Linux computers this script should be run under root'
+echo '			- To install ARB in your home directory: Enter "arb"'
+echo '			- Otherwise become root and rerun script.'
+echo '			- On Linux computers this script should be run under root'
 echo ''
 echo '	Example: If there is enough space (40 MB) at your /usr partition and'
 echo '	you want to install arb at /usr/arb, enter "/usr/arb"'
@@ -96,7 +107,7 @@ if test -d $ARBHOME; then
 				if rm -r $ARBHOME/* ;then
 					echo ">>> all data in $ARBHOME deleted"
 				else
-					err "cannot delete all data in $ARBHOME"
+					cont "cannot delete all data in $ARBHOME"
 				fi;;
 			*)
 				if test -f $ARBHOME/lib/arb_tcp.dat; then
@@ -130,7 +141,7 @@ if test -d lib/pictures; then
 		n)
 			echo "Old version unchanged";;
 		*)
-			echo "updating ARB"
+			echo "updating ARB";
 			untar arb.tgz;;
 	esac
 else
@@ -182,8 +193,7 @@ echo
 case "$pt_dir" in
 	"")
 		echo "installing the pt_server data in $ARBHOME/lib/pts"
-		if test -L                 echo "Are you sure to delete "
-${ARBHOME}/lib/pts; then
+		if test -L ${ARBHOME}/lib/pts; then
 			echo ">>> pt_server files at non default location:"
 			ls -ld ${ARBHOME}/lib/pts
 		else
@@ -200,8 +210,14 @@ ${ARBHOME}/lib/pts; then
 			rm lib/pts
 		else
 			if test -d ${ARBHOME}/lib/pts; then
-				echo ">>> data in default location found: removing old data"
-				rm	-r lib/pts
+				echo ">>> data in default location found"
+				echo 'Do you want to remove old ptserver data (recommended)? [y]'
+				read ANSWER
+				case "$ANSWER" in
+					n) echo 'data not deleted' ;;
+					*) rm -r lib/pts
+					   echo 'data deleted' ;;
+				esac
 			fi
 		fi
 		if test ! -d $pt_dir; then
@@ -217,7 +233,7 @@ esac
 
 seperator
 echo 'Who is responsible for the PT_SERVER index files ?'
-echo '	Answer 	y: if you trust your users'
+echo '	Answer 	y: if you trust your users (less administration)'
 echo '		n: if YOU want to administrate all PT_SERVER files'
 echo '	or simply press return to keep the settings of an old installation.'
 echo 'Should everybody may update PT_SERVER files (y/n/dont_change)[dont_change]?'
@@ -275,8 +291,8 @@ echo '			3.	have a lot of swap space (>=400 meg),'
 echo '			4.	allow all users to run "rsh H ...",'
 echo '			5.	contain the discs with the PT_SERVER files.'
 
-echo '	n	You want to assign a special *N*etwork host'
-echo '	s	You have a *S*tand alone computer'
+echo '	n	You want to assign a special Network host'
+echo '	s	You have a Stand alone computer'
 if test "X$bckup" != "X"; then
   echo '	o	Use information of already installed ARB'
   echo 'Choose (s/n/o)[s]?'
@@ -334,17 +350,23 @@ seperator
 echo "Finally, we have to tell your system where to find arb:"
 echo ""
 echo "You may either:"
-echo "    1. Change your local .profile (if you are using ksh/bash)"
-  echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
-    echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
+echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash,"
+echo "       which is the default shell for Linux)"
+echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
+echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
 
 	read var
 
+	echo '';
+	echo '******************************************************';
+	echo 'Follow the steps below with care!!!';
+	echo '******************************************************';
+	echo '';
 	case "$var" in
 	  1)
 	     echo '******************************************************';
 	     echo "add the following lines to your ~/.profile";
-	     echo "or to your ~/.bashrc if you are using bash under SuSE";
+	     echo "or to your ~/.bashrc for bash-users";
 	     echo '******************************************************';
 	     echo "	ARBHOME=$ARBHOME;export ARBHOME";
 	     echo '	LD_LIBRARY_PATH=${ARBHOME}/lib:${LD_LIBRARY_PATH}';
@@ -369,14 +391,26 @@ echo "    1. Change your local .profile (if you are using ksh/bash)"
 	     echo 'enter the following command:';
 	     echo '	source ~/.cshrc';;
 	  *)
+	     echo '**************************************************';
+	     echo "add one of the following lines to your init file";
+	     echo '**************************************************';
+	     echo "	alias arb=$ARBHOME/bin/arb";
+	     echo "	alias arb '$ARBHOME/bin/arb'";
+	     echo "and reread the file or"
+	     echo "type one of these lines at the command prompt."
 	     rm -f /usr/lib/libAW.so;;
 	esac
 
 	echo ""
+	echo "Note for sysadmins: You might want to edit the global init files"
+	echo "                    in /etc to provide arb for all users."
 	echo ""
-	echo "to start arb type 'arb'"
+	echo "When you performed these changes, you can start arb "
+	echo "from a new shell by typing 'arb'"
 	echo ""
 	echo "Have much fun using ARB"
+	echo "ARB Team <arb@arb-home.de>"
+	echo ""
 
 	unset host
 	unset cwd
