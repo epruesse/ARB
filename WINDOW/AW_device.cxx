@@ -4,8 +4,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
-
-#define _AW_COMMON_INCLUDED
 #include "aw_root.hxx"
 #include "aw_device.hxx"
 #include "aw_window.hxx"
@@ -331,13 +329,13 @@ void AW_GC_Xm::set_background_color(unsigned long colori) {
     XSetBackground(common->display,gc, colori );
 }
 
-class AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
-    register AW_GC_Xm *gcm = (common->gcs[gc]);
-    class AW_font_information *ptr = &common->gcs[gc]->fontinfo;
-    ptr->this_letter_ascent = gcm->ascent_of_chars[c];
+const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
+    AW_GC_Xm            *gcm = (common->gcs[gc]);
+    AW_font_information *ptr = &common->gcs[gc]->fontinfo;
+    ptr->this_letter_ascent  = gcm->ascent_of_chars[c];
     ptr->this_letter_descent = gcm->descent_of_chars[c];
-    ptr->this_letter_width = gcm->width_of_chars[c];
-    ptr->this_letter_height = ptr->this_letter_ascent + ptr->this_letter_descent;
+    ptr->this_letter_width   = gcm->width_of_chars[c];
+    ptr->this_letter_height  = ptr->this_letter_ascent + ptr->this_letter_descent;
     return ptr;
 }
 
