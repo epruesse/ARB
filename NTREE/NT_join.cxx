@@ -9,6 +9,11 @@
 #include <aw_awars.hxx>
 #include <awt.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
 extern GBDATA *gb_main;
 
 #define AWAR_SPECIES_JOIN_FIELD "/tmp/NT/species_join/field"
@@ -29,21 +34,33 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
             GBDATA     *gb_dest_field;
 
             for (gb_source_field = GB_find(source,0,0,down_level);
-                 gb_source_field;
+                 !error && gb_source_field;
                  gb_source_field = GB_find(gb_source_field,0,0,this_level|search_next))
             {
                 source_field = GB_read_key_pntr(gb_source_field);
                 if (!strcmp(source_field,"name")) continue;
 
                 gb_dest_field = GB_find(dest,source_field,0,down_level);
-                if (gb_dest_field) {
+                if (gb_dest_field) { // if destination exists -> recurse
                     error = nt_species_join(gb_dest_field,gb_source_field,0,sep,sep2);
-                    if (error) break;
-                    continue;
                 }
-                gb_dest_field = GB_create(dest,source_field, GB_read_type(gb_source_field));
-                error = GB_copy(gb_dest_field,gb_source_field);
-                if (error) break;
+                else {
+                    GB_TYPES type = GB_read_type(gb_source_field);
+
+                    if (type == GB_DB) {
+                        GBDATA *gb_dest_container = GB_create_container(dest, source_field);
+                        if (gb_dest_container) {
+                            error = nt_species_join(gb_dest_container, gb_source_field, 0, sep, sep2);
+                        }
+                        else {
+                            error = GB_get_error();
+                        }
+                    }
+                    else {
+                        gb_dest_field = GB_create(dest,source_field, GB_read_type(gb_source_field));
+                        error         = GB_copy(gb_dest_field,gb_source_field);
+                    }
+                }
             }
             break;
         }
@@ -116,8 +133,19 @@ void species_rename_join(AW_window *aww){
             GBS_write_hash(hash,fv,(long)gb_species);
             continue;
         }
+#if defined(DEBUG)
+        GB_commit_transaction(gb_main);
+        GB_begin_transaction(gb_main);
+#endif // DEBUG
+
         error = nt_species_join(gb_old,gb_species,0,sep,sep2);
         if (error) break;
+
+#if defined(DEBUG)
+        GB_commit_transaction(gb_main);
+        GB_begin_transaction(gb_main);
+#endif // DEBUG
+
         error = GB_delete(gb_species);
         if (error) break;
     }
