@@ -37,7 +37,7 @@ void create_primer_design_variables( AW_root *aw_root, AW_default aw_def, AW_def
   aw_root->awar_int( AWAR_PRIMER_DESIGN_GC_FACTOR,		   50, aw_def);
   aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMP_FACTOR,		   50, aw_def);
 
-  aw_root->awar_string( AWAR_TARGET_STRING,                        "", global);
+  aw_root->awar_string( AWAR_PRIMER_TARGET_STRING,                 "", global);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////// create_primer_design_result_window
@@ -63,7 +63,7 @@ void create_primer_design_result_window( AW_window *aww )
     pdrw->create_button( "HELP", "HELP", "H" );
 
     pdrw->at( "result" );
-    pdrw_id = pdrw->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
+    pdrw_id = pdrw->create_selection_list( AWAR_PRIMER_TARGET_STRING, NULL, "", 40, 5 );
     pdrw->set_selection_list_suffix( pdrw_id, "primer" );
 
     pdrw->at( "save" );
