@@ -234,54 +234,6 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 #undef P2
 #endif // DEBUG
 
-
-    //  if (this->mutation_per_site){
-    //      register GB_UINT4 *w;
-    //      w = root->weights->weights;
-    //      char *mutpsite = mutation_per_site;
-    //      while ( p1 < end_seq1 ) {
-    //             c1 = *(p1);
-    //             c2 = *(p2);
-    //             p1++; p2++;
-    //             if ( !(c1&c2)) {
-    //                 *(p++) = c1 | c2;
-    //                 mutpsite[0]++; // count one mutation
-    //                 result += *w; // count one mutation (weighted)
-    //             }else{
-    //                 *(p++) = c1&c2;
-    //             }
-    //             w++;
-    //             mutpsite++;
-    //      }
-    //  }else   if (root->weights->dummy_weights){
-    //      while ( p1 < end_seq1 ) {
-    //             c1 = *(p1);
-    //             c2 = *(p2);
-    //             p1++; p2++;
-    //             if ( !(c1&c2)) {
-    //                 *(p++) = c1 | c2;
-    //                 result += 1; // count one mutation
-    //             }else{
-    //                 *(p++) = c1&c2;
-    //             }
-    //      }
-    //  }else{
-    //      register GB_UINT4 *w;
-    //      w = root->weights->weights;
-    //      while ( p1 < end_seq1 ) {
-    //             c1 = *(p1);
-    //             c2 = *(p2);
-    //             p1++; p2++;
-    //             if ( !(c1&c2)) {
-    //                 *(p++) = c1 | c2;
-    //                 result += *(w++); // count one mutation (weighted)
-    //             }else{
-    //                 *(p++) = c1&c2;
-    //                 w++;
-    //             }
-    //      }
-    //  }
-
     global_combineCount++;
     this->is_set_flag = AP_TRUE;
     cashed_real_len   = -1.0;
@@ -290,6 +242,84 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 
     return (AP_FLOAT)result;
 }
+
+
+void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overlapPtr, long *penaltyPtr) const {
+    // matches the partial sequences 'part_' against 'this'
+    // '*penaltyPtr' is set to the number of mismatches (possibly weighted)
+    // '*overlapPtr' is set to the number of base positions both sequences overlap
+    //          example:
+    //          fullseq      'XXX---XXX'        'XXX---XXX'
+    //          partialseq   '-XX---XX-'        '---XXX---'
+    //          overlap       7                  3
+    //
+    // algorithm is similar to AP_sequence_parsimony::combine()
+
+    const AP_sequence_parsimony *part = (const AP_sequence_parsimony *)part_;
+
+    const char *pf = sequence;
+    const char *pp = part->sequence;
+
+    GB_UINT4 *w                          = 0;
+    if (!root->weights->dummy_weights) w = root->weights->weights;
+
+    long min_end; // minimum of both last non-gap positions
+
+    for (min_end = sequence_len-1; min_end >= 0; --min_end) {
+        char both = pf[min_end]|pp[min_end];
+        if (both != AP_S) { // last non-gap found
+            if (pf[min_end] != AP_S) { // occurred in full sequence
+                for (; min_end >= 0; --min_end) { // search same in partial sequence
+                    if (pp[min_end] != AP_S) break;
+                }
+            }
+            else {
+                awt_assert(pp[min_end] != AP_S); // occurred in partial sequence
+                for (; min_end >= 0; --min_end) { // search same in full sequence
+                    if (pf[min_end] != AP_S) break;
+                }
+            }
+            break;
+        }
+    }
+
+    long penalty = 0;
+    long overlap = 0;
+
+    if (min_end >= 0) {
+        long max_start; // maximum of both first non-gap positions
+        for (max_start = 0; max_start <= min_end; ++max_start) {
+            char both = pf[max_start]|pp[max_start];
+            if (both != AP_S) { // first non-gap found
+                if (pf[max_start] != AP_S) { // occurred in full sequence
+                    for (; max_start <= min_end; ++max_start) { // search same in partial
+                        if (pp[max_start] != AP_S) break;
+                    }
+                }
+                else {
+                    awt_assert(pp[max_start] != AP_S); // occurred in partial sequence
+                    for (; max_start <= min_end; ++max_start) { // search same in full
+                        if (pf[max_start] != AP_S) break;
+                    }
+                }
+                break;
+            }
+        }
+
+        if (max_start <= min_end) { // if sequences overlap
+            for (long idx = max_start; idx <= min_end; ++idx) {
+                if ((pf[idx]&pp[idx]) == 0) { // bases are distinct (aka mismatch)
+                    penalty += w ? w[idx] : 1;
+                }
+            }
+            overlap = min_end-max_start+1;
+        }
+    }
+
+    *overlapPtr = overlap;
+    *penaltyPtr = penalty;
+}
+
 
 
 AP_FLOAT AP_sequence_parsimony::real_len(void)  // count all bases
