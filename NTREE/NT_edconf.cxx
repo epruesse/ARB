@@ -366,45 +366,13 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     return (AW_window *)aws;
 }
 
-// void nt_save_configuration(AW_window *aww){
-//     aww->hide();
-//     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-//     delete cn;
-// }
-// AW_window *NT_open_save_configuration_window(AW_root *awr){
-//     static AW_window_simple *aws = 0;
-//     if (aws) return (AW_window *)aws;
-
-//     awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
-//     aws = new AW_window_simple;
-//     aws->init( awr, "SAVE_CONFIFURATION", "SAVE A CONFIGURATION", 400, 200 );
-//     aws->at(10,10);
-//     aws->auto_space(0,0);
-
-//     awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
-//     aws->at_newline();
-
-//     aws->callback((AW_CB0)nt_save_configuration);
-//     aws->create_button("SAVE","SAVE");
-
-//     aws->callback(AW_POPDOWN);
-//     aws->create_button("CLOSE","CLOSE","C");
-
-//     aws->window_fit();
-//     return (AW_window *)aws;
-// }
-
-// static char *nt_get_configuration_name() {
-//     return aw_string_selection("Enter Name of Config.",0, 0);
-// }
-
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
 	GBT_TREE *tree = *ptree;
 	char     *to_free = 0;
 
 	if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(gb_main);
-        conf_name              = to_free = aw_string_selection("Enter Name of Config.", 0, "default_configuration", existing_configs);
+        conf_name              = to_free = aw_string_selection("Enter Name of Config.", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0);
         free(existing_configs);
     }
 	if (!conf_name) return GB_export_error("no config name");

@@ -847,6 +847,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     awtqs.result_pos_fig	  = "result";
     awtqs.count_pos_fig	      = "count";
     awtqs.do_query_pos_fig	  = "doquery";
+    awtqs.config_pos_fig	  = "doconfig";
     awtqs.do_mark_pos_fig	  = "domark";
     awtqs.do_unmark_pos_fig	  = "dounmark";
     awtqs.do_delete_pos_fig	  = "dodelete";

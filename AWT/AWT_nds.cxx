@@ -13,6 +13,7 @@
 #include <arbdbt.h>
 #include <awt.hxx>
 #include "awt_nds.hxx"
+#include "awt_config_manager.hxx"
 
 #define NDS_COUNT 10
 #define NDS_STRING_SIZE 4000
@@ -213,6 +214,28 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
 	win->show();
 }
 
+static void nds_init_config(AW_window *aww) {
+    AWT_reset_configDefinition(aww->get_root());
+    for (int i = 0; i<NDS_COUNT; ++i) {
+		char buf[256];
+		sprintf(buf,"tmp/viewkey_%i/flag1",i); AWT_add_configDefinition(buf, "active", i);
+		sprintf(buf,"tmp/viewkey_%i/key_text",i); AWT_add_configDefinition(buf, "key_text", i);
+		sprintf(buf,"tmp/viewkey_%i/inherit",i); AWT_add_configDefinition(buf, "inherit", i);
+		sprintf(buf,"tmp/viewkey_%i/len1",i); AWT_add_configDefinition(buf, "len1", i);
+		sprintf(buf,"tmp/viewkey_%i/pars",i); AWT_add_configDefinition(buf, "pars", i);
+    }
+}
+
+static char *nds_store_config(AW_window *aww, AW_CL, AW_CL) {
+    nds_init_config(aww);
+    return AWT_store_configDefinition();
+}
+static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL) {
+    nds_init_config(aww);
+    AWT_restore_configDefinition(stored);
+}
+
+
 AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 {
 	AW_window_simple *aws = new AW_window_simple;
@@ -227,6 +250,8 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"props_nds.hlp");
 	aws->create_button("HELP", "HELP","H");
+
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, 0, 0);
 
 	aws->button_length(13);
 	int dummy,closey;

@@ -617,11 +617,19 @@ void aw_error(const char *text,const char *text2){
 /***********************************************************************/
 char  *aw_input_cb_result = 0;
 
+static int aw_string_selected_button = -1;
+
+int aw_string_selection_button() {
+    aw_assert(aw_string_selected_button != -1);
+    return aw_string_selected_button;
+}
+
 #define AW_INPUT_AWAR "tmp/input/string"
 #define AW_INPUT_TITLE_AWAR "tmp/input/title"
 
 void input_cb( AW_window *aw, AW_CL cd1 ) {
-    aw_input_cb_result = 0;
+    aw_input_cb_result        = 0;
+    aw_string_selected_button = int(cd1);
     if (cd1<0) return;
     aw_input_cb_result = aw->get_root()->awar(AW_INPUT_AWAR)->read_as_string();
     return;
@@ -685,9 +693,10 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
 }
 
 
-//  ------------------------------------------------------------------------------------------------------------------------------
-//      char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list)
-//  ------------------------------------------------------------------------------------------------------------------------------
+
+//  ---------------------------------------------------------------------------------------------------------------------------------------------------
+//      char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
+//  ---------------------------------------------------------------------------------------------------------------------------------------------------
 // A modal input window. A String may be entered by hand or selected from value_list
 //
 //      title           window title
@@ -695,7 +704,9 @@ char *aw_input( const char *title, const char *awar_value, const char *default_i
 //      default_value   default value (if NULL => "")
 //      value_list      Existing selections (seperated by ';' ; if NULL => uses aw_input)
 //
-char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list)
+// returns the value of the inputfield
+//
+char *aw_string_selection(const char *title, const char *awar_name, const char *default_value, const char *value_list, const char *buttons)
 {
     if (!value_list) return aw_input(title, awar_name, default_value);
 
@@ -733,13 +744,27 @@ char *aw_string_selection(const char *title, const char *awar_name, const char *
 
         aw_msg->at_newline();
 
-        aw_msg->button_length( 0 );
+        if (buttons)  {
+            char *but    = GB_strdup(buttons);
+            char *word;
+            int   result = 0;
 
-        aw_msg->callback     ( input_cb, 0 );
-        aw_msg->create_button( "OK", "OK", "O" );
+            aw_msg->button_length(9);
 
-        aw_msg->callback     ( input_cb, -1 );
-        aw_msg->create_button( "CANCEL", "CANCEL", "C" );
+            for (word = strtok(but, ","); word; word = strtok(0, ","), ++result) {
+                aw_msg->callback(input_cb, result);
+                aw_msg->create_button(word, word, "");
+            }
+        }
+        else {
+            aw_msg->button_length( 0 );
+
+            aw_msg->callback     ( input_cb, 0 );
+            aw_msg->create_button( "OK", "OK", "O" );
+
+            aw_msg->callback     ( input_cb, -1 );
+            aw_msg->create_button( "CANCEL", "CANCEL", "C" );
+        }
 
         aw_msg->window_fit();
     }
@@ -756,6 +781,7 @@ char *aw_string_selection(const char *title, const char *awar_name, const char *
         }
         free(values);
     }
+    aw_msg->insert_default_selection(sel, "<new config>", "");
     aw_msg->update_selection_list(sel);
 
     // do modal loop :

@@ -17,6 +17,7 @@
 #include <aw_color_groups.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
+#include "awt_config_manager.hxx"
 
 #include "GEN.hxx"
 
@@ -1442,6 +1443,41 @@ static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW
     free(item_name);
 }
 
+//  ------------------------------------------------------------------------------------
+//      static void query_box_init_config(AW_window *aww, struct adaqbsstruct *cbs)
+//  ------------------------------------------------------------------------------------
+static void query_box_init_config(AW_window *aww, struct adaqbsstruct *cbs) { // this defines what is saved/restored to/from configs
+    AWT_reset_configDefinition(aww->get_root());
+
+    //  don't save these
+    //     AWT_add_configDefinition(cbs->awar_ere, "action");
+    //     AWT_add_configDefinition(cbs->awar_where, "range");
+    //     AWT_add_configDefinition(cbs->awar_by, "by");
+
+    for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
+        AWT_add_configDefinition(cbs->awar_keys[key_id], "key", key_id);
+        AWT_add_configDefinition(cbs->awar_queries[key_id], "query", key_id);
+        AWT_add_configDefinition(cbs->awar_not[key_id], "not", key_id);
+        AWT_add_configDefinition(cbs->awar_operator[key_id], "operator", key_id);
+    }
+}
+//  ------------------------------------------------------------------------------
+//      static char *query_box_store_config(AW_window *, AW_CL cl_cbs, AW_CL)
+//  ------------------------------------------------------------------------------
+static char *query_box_store_config(AW_window *aww, AW_CL cl_cbs, AW_CL) {
+    query_box_init_config(aww, (struct adaqbsstruct *)cl_cbs);
+    return AWT_store_configDefinition();
+}
+//  ----------------------------------------------------------------------------------------------------
+//      static void query_box_restore_config(AW_window *, const char *stored, AW_CL cl_cbs, AW_CL )
+//  ----------------------------------------------------------------------------------------------------
+static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_cbs, AW_CL ) {
+#if defined(DEBUG)
+    printf("stored string='%s'\n", stored);
+#endif // DEBUG
+    query_box_init_config(aww, (struct adaqbsstruct *)cl_cbs);
+    AWT_restore_configDefinition(stored);
+}
 
 /***************** Create the database query box and functions *************************/
 struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs) // create the query box
@@ -1612,13 +1648,18 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 		aws->create_button(0,cbs->awar_count);
 	}
 
+	if (awtqs->config_pos_fig){
+        aws->button_length(0);
+		aws->at(awtqs->config_pos_fig);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_store_config, query_box_restore_config, (AW_CL)cbs, 0);
+    }
 	aws->button_length(19);
 	if (awtqs->do_query_pos_fig){
 		aws->at(awtqs->do_query_pos_fig);
 		aws->callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE);
 		aws->highlight();
 		aws->create_button("SEARCH", "SEARCH","Q");
-	}
+    }
 	if (awtqs->do_refresh_pos_fig && !GB_NOVICE){
 		aws->at(awtqs->do_refresh_pos_fig);
 		aws->callback((AW_CB1)awt_query_update_list,(AW_CL)cbs);
