@@ -1367,6 +1367,7 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
         }
     }
 
+    if (err) aw_message(err);
 
     free(helix_name);
     free(alignment_name);
