@@ -3,6 +3,7 @@
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 
 #include "MultiProbe.hxx"
@@ -282,20 +283,8 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *afil
 
 AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 {
-    char file_name[GB_PATH_MAX];
-    char directory[GB_PATH_MAX];
-    char filter[GB_PATH_MAX];
-    char base_name[GB_PATH_MAX];
-    sprintf(base_name,"tmp/load_box_sel_%li",(long)selid);
-
-    sprintf(file_name,"%s/file_name",base_name);
-    aw_root->awar_string( file_name, "");
-
-    sprintf(directory,"%s/directory",base_name);
-    aw_root->awar_string( directory, ".");
-
-    sprintf(filter,"%s/filter",base_name);
-    aw_root->awar_string( filter, "list");
+    char *base_name = GBS_global_string_copy("tmp/load_box_sel_%li",(long)selid);
+    aw_create_selection_box_awars(aw_root, base_name, ".", ".list", "");
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "LOAD", "Load");
@@ -307,10 +296,11 @@ AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
 
     aws->at("load");
     aws->highlight();
-    aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)strdup(file_name));
+    aws->callback((AW_CB)mp_load_list,(AW_CL)selid,(AW_CL)strdup(""));
     aws->create_button("LOAD","LOAD","L");
 
     awt_create_selection_box((AW_window *)aws,base_name);
+    free(base_name);
     return (AW_window*) aws;
 }
 

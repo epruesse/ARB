@@ -9,6 +9,7 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <awtc_rename.hxx>
 
@@ -350,14 +351,10 @@ AW_window *create_merge_init_window(AW_root *awr)
 
 void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, const char *fname_two)
 {
-    awr->awar_string( AWAR_MAIN_DB"/filter", "arb",aw_def);
-    awr->awar_string( AWAR_MAIN_DB"/directory", "",aw_def);
-    awr->awar_string( AWAR_MAIN_DB"/file_name", fname_two,aw_def);
+    aw_create_selection_box_awars(awr, AWAR_MAIN_DB, "", ".arb", fname_two, aw_def);
     awr->awar_string( AWAR_MAIN_DB"/type", "b",aw_def);
 
-    awr->awar_string( AWAR_MERGE_DB"/filter", "arb",aw_def);
-    awr->awar_string( AWAR_MERGE_DB"/directory", "",aw_def);
-    awr->awar_string( AWAR_MERGE_DB"/file_name", fname_one,aw_def);
+    aw_create_selection_box_awars(awr, AWAR_MERGE_DB, "", ".arb", fname_one, aw_def);
 
     MG_create_trees_awar(awr,aw_def);
     MG_create_config_awar(awr,aw_def);

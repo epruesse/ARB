@@ -11,6 +11,7 @@
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_global.hxx>
 #include <awtc_fast_aligner.hxx>
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
@@ -808,20 +809,11 @@ void ED4_create_search_awars(AW_root *root)
 #undef cb
 
     // awars to save/load search parameters:
-
-    root->awar_string(ED4_SEARCH_SAVE_BASE"/file_name", "noname.asp");
-    root->awar_string(ED4_SEARCH_SAVE_BASE"/filter", "asp");
-
     {
-        GB_CSTR arbhome = GB_getenvARBHOME();
-        GB_CSTR sub = "/lib/search_settings";
-        char *buf = (char*)malloc(strlen(arbhome)+strlen(sub)+1);
-
-        strcpy(buf, arbhome);
-        strcat(buf, sub);
-
-        root->awar_string(ED4_SEARCH_SAVE_BASE"/directory", buf)->write_string(buf);
-        free(buf);
+        char *dir = GBS_global_string_copy("%s/lib/search_settings", GB_getenvARBHOME());
+        aw_create_selection_box_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
+        root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
+        free(dir);
     }
 }
 

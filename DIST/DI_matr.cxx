@@ -13,6 +13,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 
 #include <awt_tree.hxx>
@@ -108,9 +109,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
     aw_root->awar("dist/filter/alignment")      ->map("dist/alignment");
     aw_root->awar("dist/col_stat/alignment")    ->map("dist/alignment");
 
-    aw_root->awar_string( "tmp/dist/save_matrix/file_name", "infile",   def);
-    aw_root->awar_string( "tmp/dist/save_matrix/directory", ".",    def);
-    aw_root->awar_string( "tmp/dist/save_matrix/filter", "",    def);
+    aw_create_selection_box_awars(aw_root, "tmp/dist/save_matrix", ".", "", "infile", def);
     aw_root->awar_int(  "tmp/dist/save_matrix/type",    0,  def);
 
     aw_root->awar_string( "dist/tree/tree_name","tree_temp",def);

@@ -8,6 +8,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 #include <inline.h>
 
@@ -371,13 +372,9 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *) aws;
 
-
-    awr->awar_string(AWAR_EXPORT_FORM"/directory","lib/export",AW_ROOT_DEFAULT);
-    awr->awar_string(AWAR_EXPORT_FORM"/filter",".eft",AW_ROOT_DEFAULT);
-    awr->awar_string(AWAR_EXPORT_FORM"/file_name","",AW_ROOT_DEFAULT);
-    awr->awar_string(AWAR_EXPORT_FILE"/directory","",AW_ROOT_DEFAULT);
-    awr->awar_string(AWAR_EXPORT_FILE"/filter","",AW_ROOT_DEFAULT);
-    awr->awar_string(AWAR_EXPORT_FILE"/file_name","noname",AW_ROOT_DEFAULT);
+    aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, AWT_path_in_ARBHOME("lib/export"), ".eft", "*");
+    aw_create_selection_box_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
+    
     awr->awar_string(AWAR_EXPORT_ALI,"16s",AW_ROOT_DEFAULT);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES,0,AW_ROOT_DEFAULT);
 

@@ -7,6 +7,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_global.hxx>
 #include <awt.hxx>
 
 
@@ -154,9 +155,7 @@ void create_check_gcg_awars(AW_root *aw_root, AW_default aw_def)
     char buffer[256];memset(buffer,0,256);
     memset((char *)&arcg,0,sizeof(struct arb_arcg_struct));
 
-    aw_root->awar_string( "tmp/etc_check_gcg/file_name","",aw_def)      ->add_target_var(&arcg.infile);
-    aw_root->awar_string( "tmp/etc_check_gcg/directory", "",    aw_def);
-    aw_root->awar_string( "tmp/etc_check_gcg/filter", "",   aw_def);
+    aw_create_selection_box_awars(aw_root, "tmp/etc_check_gcg", "", "", "", aw_def);
     aw_root->awar_string( "etc_check_gcg/fetch", "fetch",aw_def)        ->add_target_var(&arcg.fetch);
     aw_root->awar_string( "etc_check_gcg/textedit", "arb_textedit",aw_def)  ->add_target_var(&arcg.textedit);
     aw_root->awar_int( "etc_check_gcg/minlen", 400, aw_def)         ->add_target_var(&arcg.minbp);
