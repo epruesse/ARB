@@ -8,6 +8,7 @@
 #include <arbdbt.h>
 #include <awt_tree.hxx>
 #include "awt_seq_dna.hxx"
+#include "awt_assert.hxx"
 
 char	*AP_sequence_parsimony::table;
 
@@ -95,70 +96,117 @@ void AP_sequence_parsimony::set(char *isequence)
 long global_combineCount;
 
 AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights) {
-	register char *p1,*p2,*p;
-	register char c1,c2;
-	register long result;
+// 	register char *p1,*p2,*p;
+// 	register char c1,c2;
+// 	register long result;
 
-	AP_sequence_parsimony *left = (AP_sequence_parsimony *)lefts;
-	AP_sequence_parsimony *right = (AP_sequence_parsimony *)rights;
+	const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
+	const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
 	if (sequence == 0)	{
 		sequence_len = root->filter->real_len;
 		sequence = new char[root->filter->real_len +1];
 	}
 
-	p1 = left->sequence;
-	p2 = right->sequence;
-	p = sequence;
+	const char *p1 = left->sequence;
+	const char *p2 = right->sequence;
+	char       *p  = sequence;
 
-	result = 0;
-	char *end_seq1 = p1 + sequence_len;
-	if (this->mutation_per_site){
-	    register GB_UINT4 *w;
-	    w = root->weights->weights;
-	    char *mutpsite = mutation_per_site;
-	    while ( p1 < end_seq1 ) {
-            c1 = *(p1);
-            c2 = *(p2);
-            p1++; p2++;
-            if ( !(c1&c2)) {
-                *(p++) = c1 | c2;
-                mutpsite[0]++;
-                result += *w;
-            }else{
-                *(p++) = c1&c2;
+// 	result         = 0;
+// 	char *end_seq1 = p1 + sequence_len;
+
+    GB_UINT4 *w        = 0;
+    char     *mutpsite = 0;
+
+    if (mutation_per_site) { // count site specific mutations in mutation_per_site
+        w        = root->weights->weights;
+	    mutpsite = mutation_per_site;
+    }
+    else if (root->weights->dummy_weights) { // no weights, no mutation_per_site
+        ;
+    }
+    else { // weighted (but don't count mutation_per_site)
+        w = root->weights->weights;
+    }
+
+    long result = 0;
+
+    for (long idx = 0; idx<sequence_len; ++idx) {
+        char c1 = p1[idx];
+        char c2 = p2[idx];
+
+        awt_assert(c1 != 0); // not a base and not a gap -- what should it be ?
+        awt_assert(c2 != 0);
+
+        if ((c1&c2) == 0) {    // bases are distinct (that means we count a mismatch)
+            p[idx] = c1|c2;     // mix distinct bases
+
+            if (p[idx]&AP_S) { // contains a gap
+                if (idx>0 && (p[idx-1]&AP_S)) { // last position also contained gap
+                    if ((c1 == AP_S && p1[idx-1] == AP_S) ||
+                        (c2 == AP_S && p2[idx-1] == AP_S))
+                    {
+                        continue; // skip multiple gaps
+                    }
+                }
             }
-            w++;
-            mutpsite++;
-	    }
-	}else 	if (root->weights->dummy_weights){
-	    while ( p1 < end_seq1 ) {
-            c1 = *(p1);
-            c2 = *(p2);
-            p1++; p2++;
-            if ( !(c1&c2)) {
-                *(p++) = c1 | c2;
-                result += 1;
-            }else{
-                *(p++) = c1&c2;
-            }
-	    }
-	}else{
-	    register GB_UINT4 *w;
-	    w = root->weights->weights;
-	    while ( p1 < end_seq1 ) {
-            c1 = *(p1);
-            c2 = *(p2);
-            p1++; p2++;
-            if ( !(c1&c2)) {
-                *(p++) = c1 | c2;
-                result += *(w++);
-            }else{
-                *(p++) = c1&c2;
-                w++;
-            }
-	    }
-	}
+
+            if (mutpsite) mutpsite[idx]++; // count mutations per site (unweighted)
+            result += w ? w[idx] : 1; // count weighted or simple
+        }
+        else {
+            p[idx] = c1&c2; // store what's common for both bases
+        }
+
+        awt_assert(p[idx] != 0);
+    }
+
+// 	if (this->mutation_per_site){
+// 	    register GB_UINT4 *w;
+// 	    w = root->weights->weights;
+// 	    char *mutpsite = mutation_per_site;
+// 	    while ( p1 < end_seq1 ) {
+//             c1 = *(p1);
+//             c2 = *(p2);
+//             p1++; p2++;
+//             if ( !(c1&c2)) {
+//                 *(p++) = c1 | c2;
+//                 mutpsite[0]++; // count one mutation
+//                 result += *w; // count one mutation (weighted)
+//             }else{
+//                 *(p++) = c1&c2;
+//             }
+//             w++;
+//             mutpsite++;
+// 	    }
+// 	}else 	if (root->weights->dummy_weights){
+// 	    while ( p1 < end_seq1 ) {
+//             c1 = *(p1);
+//             c2 = *(p2);
+//             p1++; p2++;
+//             if ( !(c1&c2)) {
+//                 *(p++) = c1 | c2;
+//                 result += 1; // count one mutation
+//             }else{
+//                 *(p++) = c1&c2;
+//             }
+// 	    }
+// 	}else{
+// 	    register GB_UINT4 *w;
+// 	    w = root->weights->weights;
+// 	    while ( p1 < end_seq1 ) {
+//             c1 = *(p1);
+//             c2 = *(p2);
+//             p1++; p2++;
+//             if ( !(c1&c2)) {
+//                 *(p++) = c1 | c2;
+//                 result += *(w++); // count one mutation (weighted)
+//             }else{
+//                 *(p++) = c1&c2;
+//                 w++;
+//             }
+// 	    }
+// 	}
 
 	global_combineCount++;
 	this->is_set_flag = AP_TRUE;
