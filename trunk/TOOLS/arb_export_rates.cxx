@@ -24,7 +24,7 @@ int main(int argc, char **argv){
         fprintf(stderr,
                 "\n"
                 "arb_export_rates:  Add a line to phylip format which can be used by fastdnaml for rates\n"
-                "syntax: arb_export_rates SAI_NAME [other_fastdnaml_args]*\n"
+                "syntax: arb_export_rates [SAI_NAME|'--none'] [other_fastdnaml_args]*\n"
                 "if other_fastdnaml_args are given they are inserted to the output\n"
                 "\n");
         return EXIT_FAILURE;
@@ -39,11 +39,15 @@ int main(int argc, char **argv){
     char *firstline         = strdup("");
     char *SAI_name          = argv[1];
 
-    for (int arg = 2; arg<argc; ++arg) {
-        char        command_char  = argv[arg][0];
-        const char *not_in_header = "Y";
+#define APPEARS_IN_HEADER(c) (strchr(not_in_header, (c)) == 0)
 
-        if (strchr(not_in_header, command_char) == 0) {
+    const char *not_in_header = "Y"; // these flags don't appear in header and they should be written directly after header
+
+    for (int arg = 2; arg<argc; ++arg) { // put all fastdnaml arguments to header
+        char command_char = argv[arg][0];
+        if (!command_char) continue; // skip empty arguments
+
+        if (APPEARS_IN_HEADER(command_char)) {
             char *neu = GB_strdup(GBS_global_string("%s %c", firstline, command_char));
             free(firstline);
             firstline = neu;
@@ -52,30 +56,37 @@ int main(int argc, char **argv){
 
     {
         GB_transaction  dummy(gb_main);
-        GBDATA         *gb_sai  = GBT_find_SAI(gb_main,SAI_name);
+        GBDATA         *gb_sai  = 0;
         GBDATA         *gb_data = 0;
         long            ali_len = 0;
 
-        if (gb_sai)  {
-            char *ali_name = GBT_get_default_alignment(gb_main);
-            ali_len        = GBT_get_alignment_len(gb_main,ali_name);
-            gb_data        = GBT_read_sequence(gb_sai,ali_name);
+        if (SAI_name[0] == 0 || strcmp(SAI_name, "--none") != 0) {
+            gb_sai = GBT_find_SAI(gb_main,SAI_name);
+            if (gb_sai)  {
+                char *ali_name = GBT_get_default_alignment(gb_main);
+                ali_len        = GBT_get_alignment_len(gb_main,ali_name);
+                gb_data        = GBT_read_sequence(gb_sai,ali_name);
+            }
         }
 
         // print header
-        fputc(gb_data ? 'C' : 'F', stdout);
-        fputs(firstline, stdout);
-        fputc('\n', stdout);
+        if (gb_data) fputc('C', stdout); // prefix with categories
+        fputs(firstline, stdout); // then other_fastdnaml_args
 
-        for (int arg = 2; arg<argc; ++arg) { // print [other_fastdnaml_args]*
-            if (argv[arg][1]) { // dont print single character commands again on a own line
-                fputs(argv[arg], stdout);
+        // print other_fastdnaml_args in reverse order
+        // (first those which do not appear in header, rest afterwards)
+        for (int appears_in_header = 0; appears_in_header <= 1; ++appears_in_header) {
+            for (int arg = 2; arg < argc; ++arg) { // print [other_fastdnaml_args]*
+                if (!argv[arg][0]) continue; // skip empty arguments
+                if (!argv[arg][1]) continue; // dont print single character commands again on a own line
+                if (APPEARS_IN_HEADER(argv[arg][0]) != appears_in_header) continue;
                 fputc('\n', stdout);
+                fputs(argv[arg], stdout);
             }
         }
 
         if (gb_data) { // if SAI was found
-            printf("C 35 ");
+            printf("\nC 35 ");
             double rate = 1.0;
             int    i;
             for (i=0;i<35;i++){
