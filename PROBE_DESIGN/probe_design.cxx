@@ -295,7 +295,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GB_ERROR  error     = 0;
 
     GB_begin_transaction(gb_main);
-    const char *use = "ali_genom"; // gene pt server is always build on 'ali_genom'
+    const char *use = GENOM_ALIGNMENT; // gene pt server is always build on 'ali_genom'
 
     for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
         const char *sequence     = 0;
@@ -1811,10 +1811,10 @@ void pd_export_pt_server(AW_window *aww)
     // check alignment first
     if (create_gene_server) {
         GB_transaction dummy(gb_main);
-        GBDATA *gb_ali = GBT_get_alignment(gb_main, "ali_genom");
+        GBDATA *gb_ali = GBT_get_alignment(gb_main, GENOM_ALIGNMENT);
         if (!gb_ali) {
             error             = GB_get_error();
-            if (!error) error = "cannot find 'ali_genom'";
+            if (!error) error = "cannot find alignment '" GENOM_ALIGNMENT "'";
         }
     }
     else { // normal pt server
