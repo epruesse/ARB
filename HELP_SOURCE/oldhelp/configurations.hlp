@@ -15,7 +15,7 @@ OCCURRENCE	Anywhere (buttons with disk icon)
 DESCRIPTION     This provides a general way to store and restore some settings
                 from the previous window.
 
-NOTES		None
+NOTES		To save stored settings permanently, SAVE PROPERTIES!
 
 EXAMPLES	None
 

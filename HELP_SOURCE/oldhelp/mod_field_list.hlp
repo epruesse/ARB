@@ -56,7 +56,11 @@ NOTES		You may add new commands by editing one of the files:
 			$ARBHOME/lib/sellists/mod_fields.sellst
 			$ARBHOME/lib/sellists/mod_gene_fields.sellst
 		You should save this file to another location when
-		installing new versions of ARB
+		installing new versions of ARB.
+
+		A better way is to create your own list(s). All list
+		matching 'mod_fields*.sellst' will be loaded, where 
+		'mod_fields.sellst' is loaded.
 
 EXAMPLES	':p?r=p?1w'	replaces 	par to paw
 						pbr to pbw 

@@ -1558,7 +1558,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
             nl              = strchr(ko,'\n');
             if (nl) *(nl++) = 0;
 
-            if (ko[0] && !pl[0] == '#') this->insert_selection(selection_list,pl,ko);
+            if (ko[0] && pl[0] != '#') this->insert_selection(selection_list,pl,ko);
         }
         delete data;
     }
