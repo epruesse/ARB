@@ -24,9 +24,10 @@ void nt_mode_event P_((AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode));
 void NT_count_mark_all_cb P_((void *dummy, AW_CL cl_ntw));
 void NT_mark_all_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
 void NT_mark_tree_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
+void NT_mark_nontree_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
 void NT_mark_color_cb P_((AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode));
 void NT_insert_color_mark_submenu P_((AW_window_menu_modes *awm, AWT_canvas *ntree_canvas, const char *menuname, int mark_basemode));
-void NT_insert_mark_submenus P_((AW_window_menu_modes *awm, AWT_canvas *ntw));
+void NT_insert_mark_submenus P_((AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu));
 void NT_group_tree_cb P_((void *dummy, AWT_canvas *ntw));
 void NT_group_not_marked_cb P_((void *dummy, AWT_canvas *ntw));
 void NT_group_terminal_cb P_((void *dummy, AWT_canvas *ntw));
@@ -42,6 +43,7 @@ void NT_remove_bootstrap P_((void *dummy, AWT_canvas *ntw));
 void NT_jump_cb P_((AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups));
 void NT_jump_cb_auto P_((AW_window *dummy, AWT_canvas *ntw));
 void NT_reload_tree_event P_((AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs));
+void NT_remove_species_in_tree_from_hash P_((AP_tree *tree, GB_HASH *hash));
 
 #ifdef __cplusplus
 }
