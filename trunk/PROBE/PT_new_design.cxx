@@ -889,11 +889,14 @@ void ptnd_print_probes(PT_pdc *pdc) {
 }
 
 extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
-    PT_local *locs = (PT_local*)pdc->mh.parent->parent;
-    ptnd.new_match = 0;
-    ptnd.locs = locs;
-    ptnd.pdc = pdc;
-    char *ierror = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data);	/* read the names */
+
+    //  IDP probe design
+
+    PT_local *locs   = (PT_local*)pdc->mh.parent->parent;
+    ptnd.new_match   = 0;
+    ptnd.locs        = locs;
+    ptnd.pdc         = pdc;
+    char     *ierror = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data); /* read the names */
     if (ierror) delete ierror;
 
     PT_sequence *seq;

@@ -69,6 +69,9 @@ int PT_base_2_string(char *id_string, long len)
 
 void probe_read_data_base(char *name)
 {
+    // IDP Datenbank oeffnen
+
+
     GBDATA *gb_main;
     GBDATA *gb_species_data;
 

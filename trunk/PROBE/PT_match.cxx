@@ -329,8 +329,10 @@ void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence){
 /* find out where a given probe matches */
 extern "C" int probe_match(PT_local * locs, aisc_string probestring)
 {
-    PT_probematch  *ml;
-    char           *rev_pro;
+    // IDP probe match
+
+    PT_probematch *ml;
+    char          *rev_pro;
     if (locs->pm_sequence) free(locs->pm_sequence);
     locs->pm_sequence = psg.main_probe = strdup(probestring);
     compress_data(probestring);
