@@ -1178,6 +1178,7 @@ clean:	rmbak
 	rm -f *_COM/GENH/*.h
 	rm -f *_COM/GENC/*.c
 	rm -f lib/ARB.pm
+	rm -f NTREE/nt_date.h
 
 realclean: clean
 	rm -f `find bin -type f -perm -001 -print`
