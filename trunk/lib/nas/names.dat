@@ -33055,3 +33055,4 @@ NAMES{ IDENT {*Pyro_h}FULL_NAME {Pyrococcus horikoshii}ACC {Pyro_h}SHORT {Pu8Hor
 NAMES{ IDENT {*AJ235269}FULL_NAME {Rickettsia prowazekii}ACC {AJ235269}SHORT {RckPro11}}
 NAMES{ IDENT {*AF222894}FULL_NAME {Ureaplasma urealyticum}ACC {AF222894}SHORT {UrpUre39}}
 NAMES{ IDENT {*AE003849}FULL_NAME {Xylella fastidiosa}ACC {AE003849}SHORT {XylFas48}}
+NAMES{ IDENT {*Pyroh}FULL_NAME {Pyrococcus horikoshii}ACC {Pyroh}SHORT {Pu8Hor10}}
