@@ -67,7 +67,7 @@ void BI_helix::_init(void)
     pairs[HELIX_DEFAULT]=strdup("");
     char_bind[HELIX_DEFAULT] = strdup("?");
 
-    for (i=HELIX_NON_STANDART0;i<=HELIX_NON_STANDART9;i++){
+    for (i=HELIX_NON_STANDARD0;i<=HELIX_NON_STANDARD9;i++){
         pairs[i] = strdup("");
         char_bind[i] = strdup("");
     }
@@ -231,8 +231,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
                     goto helix_end;
                 }
                 if (isalpha(c)) {
-                    entries[pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDART0+c-'a');
-                    entries[stack->pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDART0+c-'a');
+                    entries[pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDARD0+c-'a');
+                    entries[stack->pos].pair_type = (BI_PAIR_TYPE)(HELIX_NON_STANDARD0+c-'a');
                 }else{
                     entries[pos].pair_type = HELIX_NO_PAIR;
                     entries[stack->pos].pair_type = HELIX_NO_PAIR;
