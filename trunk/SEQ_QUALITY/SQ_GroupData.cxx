@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.cxx                                       //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Thu Feb/19/2004 18:12 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Mar/30/2004 14:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -220,6 +220,7 @@ double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) cons
 		current[3] = current[3] + 33;
                 break;
             case 'N':
+            case 'X':
 		current[2] = current[2] + 20;
 		current[1] = current[1] + 20;
 		current[0] = current[0] + 20;
@@ -330,6 +331,7 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
 		consensus[i].i[3] = consensus[i].i[3] + 33;
                 break;
             case 'N':
+            case 'X':
 		consensus[i].i[2] = consensus[i].i[2] + 20;
 		consensus[i].i[1] = consensus[i].i[1] + 20;
 		consensus[i].i[0] = consensus[i].i[0] + 20;
