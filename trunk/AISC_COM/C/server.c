@@ -17,16 +17,19 @@
 #	include <bstring.h>
 #endif
 
-#if defined(SUN4) || defined(SUN5)
-# ifndef __cplusplus
-#  define SIG_PF void (*)()
-# else
-#  include <sysent.h>	/* c++ only for sun */
-# endif
-#else
-# if defined(HP) || defined(LINUX) || defined(DIGITAL) || defined(DARWIN)
-#  define SIG_PF void (*)(int)
-# endif
+#include "SIG_PF.h"
+#if 0
+/* #if defined(SUN4) || defined(SUN5) */
+/* # ifndef __cplusplus */
+/* #  define SIG_PF void (*)() */
+/* # else */
+/* #  include <sysent.h>	/* c++ only for sun */ */
+/* # endif */
+/* #else */
+/* # if defined(HP) || defined(LINUX) || defined(DIGITAL) || defined(DARWIN) */
+/* #  define SIG_PF void (*)(int) */
+/* # endif */
+/* #endif */
 #endif
 
 #if defined(SUN4) || defined(SUN5) || defined(SGI)
