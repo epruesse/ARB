@@ -862,8 +862,8 @@ GB_ULONG GB_get_physical_memory(void){
     long nettomemsize = memsize- 10000;	/* kernel size */
     return nettomemsize * 70 / 100; /* maximum 70 % of memory */
 #elif defined(DIGITAL)
-    return 80000;		/* 100 megabyte */
+    return 80000;		/* 80 megabyte */
 #else
-    return 80000;		/* 40 megabyte default memory */
+    return 80000;		/* 80 megabyte default memory */
 #endif
 }
