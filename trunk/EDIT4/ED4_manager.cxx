@@ -1100,11 +1100,15 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
         }
     }
     else if (refresh_all || update_info.refresh) {
-        int f;
-
-        ED4_font_info::reset_maximas();
-        for (f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
-            ED4_ROOT->font_info[f].update(ED4_ROOT->temp_device->get_font_information(f, 'A'));
+        // int f;
+        // ED4_font_info::reset_maximas();
+        // for (f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
+            // ED4_ROOT->font_info[f].update(ED4_ROOT->temp_device->get_font_information(f, 'A'));
+        // }
+        
+        ED4_ROOT->font_group.unregisterAll();
+        for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
+            ED4_ROOT->font_group.registerFont(ED4_ROOT->temp_device, f);
         }
 
         AW_rectangle area_rect;

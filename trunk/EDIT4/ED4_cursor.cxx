@@ -227,7 +227,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y, /*ED4_gc gc,*/ED4_bas
 {
     CursorShape(ctype, int(x), int(y),
                 int(target_terminal->extension.size[HEIGHT]),
-                ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width())
+                ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES))
         .draw(ED4_ROOT->temp_device);
 
     return ED4_R_OK;
@@ -296,7 +296,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     int xmin, xmax, ymin, ymax;
     CursorShape shape(ctype, int(x), int(y),
                       int(target_terminal->extension.size[HEIGHT]),
-                      ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width());
+                      ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES));
     shape.get_bounding_box(xmin, ymin, xmax, ymax);
 
 #if !defined(NDEBUG) && 0
@@ -923,7 +923,8 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
     if ((cursor_diff==0 && !center_cursor) || new_cursor_screen_pos<0) return; // already at new position
 
     int terminal_pixel_length = aww->get_device(AW_MIDDLE_AREA)->get_string_size(ED4_G_SEQUENCES, 0, owner_of_cursor->to_text_terminal()->get_length());
-    int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
     int x_pos_cursor_new = abs_x+cursor_diff*length_of_char;
 
     if (x_pos_cursor_new > terminal_x+terminal_pixel_length+CHARACTEROFFSET ||
@@ -1151,12 +1152,14 @@ void ED4_cursor::set_abs_x()
 {
     AW_pos x, y;
     owner_of_cursor->calc_world_coords( &x, &y );
-    abs_x = int(get_sequence_pos()*ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width() + CHARACTEROFFSET + x);
+    // abs_x = int(get_sequence_pos()*ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width() + CHARACTEROFFSET + x);
+    abs_x = int(get_sequence_pos()*ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) + CHARACTEROFFSET + x);
 }
 
 void ED4_cursor::calc_cursor_position(AW_pos x, AW_pos *corrected_x_Ptr, ED4_index *scr_pos_Ptr) // x is pixelposition in terminal (relative to start of terminal)
 {
-    int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
     ED4_index scr_pos = (int)((x-CHARACTEROFFSET)/length_of_char);
     int max_scrpos = ED4_ROOT->root_group_man->remap()->get_max_screen_pos();
     int sub = 0;
@@ -1293,7 +1296,8 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
     owner_of_cursor = terminal;
 
     //    AW_device *device = aww->get_device(AW_MIDDLE_AREA);
-    int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
     AW_pos seq_relx = AW_pos(screen_position*length_of_char + CHARACTEROFFSET);	// position relative to start of terminal
 
     AW_pos world_x = seq_relx+termw_x;		// world position of cursor
