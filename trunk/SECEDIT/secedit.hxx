@@ -1,15 +1,11 @@
 #ifndef secedit_hxx_included
 #define secedit_hxx_included
 
-
-#include <iostream.h>
-
-#ifndef _STDLIB_H
-#include <stdlib.h>
+#ifndef _CPP_CMATH
+#include <cmath>
 #endif
-
-#ifndef _MATH_H
-#include <math.h>
+#ifndef _CPP_IOSFWD
+#include <iosfwd>
 #endif
 
 class AW_window;
@@ -66,8 +62,8 @@ public:
     ~SEC_region();
 
     //methods
-    void save(ostream & out, int indent, SEC_root *root);
-    void read(istream & in, SEC_root *root);
+    void save(std::ostream & out, int indent, SEC_root *root);
+    void read(std::istream & in, SEC_root *root);
     void count_bases(SEC_root *root);
     void align_helix_strands(SEC_root *root, SEC_region *other_region);
     int get_faked_basecount();
@@ -112,9 +108,9 @@ public:
     virtual ~SEC_helix_strand();
 
     //methods
-    void save_all(ostream & out, int indent);
-    void save_core(ostream & out, int indent);
-    void read(SEC_loop *loop_, istream & in);
+    void save_all(std::ostream & out, int indent);
+    void save_core(std::ostream & out, int indent);
+    void read(SEC_loop *loop_, std::istream & in);
     void compute_length();
     void compute_coordinates(double distance, double *x, double *y, double previous_x, double previous_y);
     void computeLoopCoordinates(double distance, double *x, double *y, double previous_x, double previous_y);
@@ -328,8 +324,8 @@ public:
     virtual ~SEC_segment();
 
     //methods
-    void save(ostream & out, int indent);
-    void read(SEC_loop *loop_,istream & in);
+    void save(std::ostream & out, int indent);
+    void read(SEC_loop *loop_,std::istream & in);
     void update_center_point(double start_x, double start_y, double end_x, double end_y);
     void update_alpha();
     void paint(AW_device *device, SEC_helix_strand *previous_strand_pointer);
@@ -439,8 +435,8 @@ public:
     virtual ~SEC_loop();    //Destruktor
 
     //methods
-    void save(ostream & out, SEC_helix_strand *caller, int indent);
-    void read(SEC_helix_strand *other_strand, istream & in);
+    void save(std::ostream & out, SEC_helix_strand *caller, int indent);
+    void read(SEC_helix_strand *other_strand, std::istream & in);
     void find(int pos, SEC_helix_strand *caller, SEC_segment **found_segment, SEC_helix_strand **found_strand);
     void compute_umfang();
     void compute_radius();
@@ -493,8 +489,8 @@ public:
     ~SEC_helix();
 
     //methods
-    void save(ostream & out, int indent);
-    void read(istream & in);
+    void save(std::ostream & out, int indent);
+    void read(std::istream & in);
 
     //selector methods
     double get_max_length () 	{ return max_length; }
