@@ -1,0 +1,4 @@
+SUFFIX		fasta
+BEGIN
+>*(name)	*(|sequence|len(.-)) bp		*(|sequence_type)
+*(|sequence)
