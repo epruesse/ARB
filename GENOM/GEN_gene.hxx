@@ -46,7 +46,7 @@ public:
     GEN_root *Root() { return root; }
 };
 
-typedef set<GEN_gene> GEN_gene_set;
+typedef multiset<GEN_gene> GEN_gene_set;
 typedef GEN_gene_set::iterator GEN_iterator;
 
 //  -----------------------
