@@ -49,6 +49,10 @@ NOTES           If you select the '[any field]' pseudo search field, all direct 
                 the species are search for the expression.
                 This does NOT work for subcontainers (i.e. ali16s/data is not searched).
 
+                If can use '>xxx' or '<xxx' as search string (where xxx should be a number)
+                to perform a numeric comparison.
+
+
 EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 
 			Select: List all species that match the query
