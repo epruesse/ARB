@@ -104,7 +104,7 @@ void table_add(int *mis_tabled, int *mis_tables, int length)
 #define MAX_LIST_PART_SIZE 50
 
 static const char *get_list_part(const char *list, int& offset) {
-    // scans strings with format "xxxx#yyyy#zzzz#" (Note: has to end with '#')
+    // scans strings with format "xxxx#yyyy#zzzz" 
     // your first call should be with offset == 0
     //
     // returns : static copy of each part or 0 when done
@@ -120,11 +120,14 @@ static const char *get_list_part(const char *list, int& offset) {
     int         num_offset;
     if (numsign) {
         num_offset = numsign-list;
+        pt_assert(list[num_offset] == '#');
     }
     else { // last list part
         num_offset = offset+strlen(list+offset);
+        pt_assert(list[num_offset] == 0);
     }
-    pt_assert(list[num_offset] == '#');
+
+    // now num_offset points to next '#' or to end-of-string
 
     int len = num_offset-offset;
     pt_assert(len <= MAX_LIST_PART_SIZE);
@@ -132,7 +135,7 @@ static const char *get_list_part(const char *list, int& offset) {
     memcpy(buffer[curr_buff], list+offset, len);
     buffer[curr_buff][len] = 0; // EOS
 
-    offset = list[num_offset+1] ? num_offset+1 : -1; // set offset for next part
+    offset = (list[num_offset] == '#') ? num_offset+1 : -1; // set offset for next part
 
     return buffer[curr_buff];
 }
@@ -143,12 +146,12 @@ static const char *get_list_part(const char *list, int& offset) {
    + returns a list of names which have not been found */
 
 char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
-    /* clear 'is_group' */    
+    /* clear 'is_group' */
     for (int i = 0; i < psg.data_count; i++) {
         psg.data[i].is_group = 0; // Note: probes are designed for species with is_group == 1
     }
     locs->group_count = 0;
-    error             = 0; 
+    error             = 0;
 
     if (!names_list) {
         error = "Can't design probes for no species (species list is empty)";
@@ -318,14 +321,14 @@ extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc){
     static bytestring un = {0,0};
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;
-    
+
     const char *error;
-    un.data = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data, error);    
+    un.data = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data, error);
     if (un.data) {
         un.size = strlen(un.data) + 1;
         pt_assert(!error);
     }
-    else {        
+    else {
         un.data = strdup("");
         un.size = 1;
         if (error) pt_export_error(locs, error);
