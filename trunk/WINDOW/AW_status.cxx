@@ -826,7 +826,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
         }
         free(values);
     }
-    aw_msg->insert_default_selection(sel, "<new config>", "");
+    aw_msg->insert_default_selection(sel, "<new>", "");
     aw_msg->update_selection_list(sel);
 
     // do modal loop :
