@@ -183,8 +183,8 @@ public void retrieveVersionInformation()
         neededClientVersion = parsedVersionInfo.getValue("client_version");
         neededTreeVersion   = parsedVersionInfo.getValue("tree_version");
 
-        if (neededClientVersion == null) Toolkit.AbortWithServerProblem("no client version info");
-        if (neededTreeVersion == null) Toolkit.AbortWithServerProblem("no tree version info");
+        if (neededClientVersion == null) Toolkit.AbortWithServerProblem("no client version info ("+parsedVersionInfo.getError()+")");
+        if (neededTreeVersion == null) Toolkit.AbortWithServerProblem("no tree version info  ("+parsedVersionInfo.getError()+")");
     }
 
 public String getNeededClientVersion()

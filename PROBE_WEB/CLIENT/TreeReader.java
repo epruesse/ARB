@@ -15,25 +15,31 @@ public TreeReader(String treefile)
         StringBuffer inputTree = new StringBuffer();
         try {
 
-            //            File f =  new File("demo.newick");
-            File f =  new File(treefile);
+            //            File f = new File("demo.newick");
 
-            //  String archiveName = new String("allProbes.jar");
-            //            FileReader in = new FileReader(f);
-            InputStreamReader in = new InputStreamReader(new GZIPInputStream( new FileInputStream(f)));
-            //JarFile archive = new JarFile(archiveName, false);
-            //InputStreamReader in = new InputStreamReader(archive.getInputStream(archive.getEntry("demo.newick")));
+            File f = new File(treefile);
+            if (f == null)  {
+                error = "File not found ("+treefile+")";
+            }
+            else {
+
+                //  String archiveName = new String("allProbes.jar");
+                //            FileReader in = new FileReader(f);
+                InputStreamReader in = new InputStreamReader(new GZIPInputStream( new FileInputStream(f)));
+                //JarFile archive = new JarFile(archiveName, false);
+                //InputStreamReader in = new InputStreamReader(archive.getInputStream(archive.getEntry("demo.newick")));
 
 
 
-            char[] buffer = new char[4096];
-            int len;
-            while((len = in.read(buffer)) != -1)
+                char[] buffer = new char[4096];
+                int len;
+                while((len = in.read(buffer)) != -1)
                 {
                     String s = new String(buffer,0,len);
                     inputTree.append(s);
                 }
-            in.close();
+                in.close();
+            }
         }
         catch (Exception e) {
             error = "Couldn't open treefile '"+treefile+"'";
