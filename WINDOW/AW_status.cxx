@@ -792,9 +792,9 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
 //  ------------------------------------------------------------------------
 //      static GB_CSTR get_full_qualified_help_file_name(AW_root *root)
 //  ------------------------------------------------------------------------
-static char *get_full_qualified_help_file_name(AW_root *awr) {
+static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit = false) {
     char *helpfile = awr->awar("tmp/aw_window/helpfile")->read_string();
-    char *qualified = get_full_qualified_help_file_name(helpfile);
+    char *qualified = get_full_qualified_help_file_name(helpfile, path_for_edit);
     delete helpfile;
     return qualified;
 }
@@ -803,7 +803,7 @@ void aw_help_edit_help(AW_window *aww)
 {
     AWUSE(aww);
     char buffer[1024];
-    char *helpfile = get_full_qualified_help_file_name(aww->get_root());
+    char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
     if (GB_size_of_file(helpfile)<=0){
         sprintf(buffer,"cp %s/HELP_SOURCE/oldhelp/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
