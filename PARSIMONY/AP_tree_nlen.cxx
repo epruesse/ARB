@@ -14,17 +14,18 @@
 #include "pars_debug.hxx"
 #include "ap_tree_nlen.hxx"
 #include <aw_root.hxx>
-#include <assert.h>
+
+#define ap_assert(x) arb_assert(x)
 
 // ---------------------------------
-//      Section	base operations:
+//      Section base operations:
 // ---------------------------------
 
-// 	constructor/destructor
-// 	dup
-// 	check_update
-// 	copy
-// 	ostream&<<
+//  constructor/destructor
+//  dup
+//  check_update
+//  copy
+//  ostream&<<
 
 AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
     : AP_tree(Tree_root)
@@ -34,7 +35,7 @@ AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
     sequence  = NULL;
 
     edge[0]  = edge[1] = edge[2] = NULL;
-	index[0] = index[1] = index[2] = 0;
+    index[0] = index[1] = index[2] = 0;
     distance = INT_MAX;
 
     //    cout << "AP_tree_nlen-constructor\n";
@@ -129,13 +130,13 @@ ostream& operator<<(ostream& out, const AP_tree_nlen& node)
 
 /********************************************
 
-Section	Edge operations:
+Section Edge operations:
 
-	unusedEdge
-	edgeTo
-	nextEdge
-	unlinkAllEdges
-	destroyAllEdges
+    unusedEdge
+    edgeTo
+    nextEdge
+    unlinkAllEdges
+    destroyAllEdges
 
 ********************************************/
 
@@ -174,9 +175,9 @@ AP_tree_edge* AP_tree_nlen::nextEdge(const AP_tree_edge *thisEdge) const
 
 void AP_tree_nlen::unlinkAllEdges(AP_tree_edge **edgePtr1, AP_tree_edge **edgePtr2, AP_tree_edge **edgePtr3)
 {
-    assert(edge[0]!=NULL);
-    assert(edge[1]!=NULL);
-    assert(edge[2]!=NULL);
+    ap_assert(edge[0]!=NULL);
+    ap_assert(edge[1]!=NULL);
+    ap_assert(edge[2]!=NULL);
 
     *edgePtr1 = edge[0]->unlink();
     *edgePtr2 = edge[1]->unlink();
@@ -185,9 +186,9 @@ void AP_tree_nlen::unlinkAllEdges(AP_tree_edge **edgePtr1, AP_tree_edge **edgePt
 
 void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tree_edge *edge3)
 {
-    assert(edge[0]==NULL);
-    assert(edge[1]==NULL);
-    assert(edge[2]==NULL);
+    ap_assert(edge[0]==NULL);
+    ap_assert(edge[1]==NULL);
+    ap_assert(edge[2]==NULL);
 
     edge1->relink(this,Father()->Father() ? Father() : Brother());
     edge2->relink(this,Leftson());
@@ -198,12 +199,12 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 
 Section Tree operations:
 
-	insert
-  	remove
-  	swap
-	set_root
-	move
-	costs
+    insert
+    remove
+    swap
+    set_root
+    move
+    costs
 
 ********************************************/
 
@@ -214,14 +215,16 @@ Section Tree operations:
 GB_ERROR AP_tree_nlen::insert(AP_tree *new_brother)
 {
     //
-    //	inserts a node at the father-edge of new_brother
+    //  inserts a node at the father-edge of new_brother
     //
     //
 
-    AP_tree		*pntr;
-    GB_ERROR error = 0;
-    AP_tree_nlen	*newBrother = (AP_tree_nlen*)new_brother;
-    AP_tree_edge	*oldEdge;
+    AP_tree      *pntr;
+    GB_ERROR      error      = 0;
+    AP_tree_nlen *newBrother = dynamic_cast<AP_tree_nlen*>(new_brother);
+    ap_assert(new_brother);
+
+    AP_tree_edge *oldEdge;
 
     ap_main->push_node(new_brother, STRUCTURE);
 
@@ -246,8 +249,8 @@ GB_ERROR AP_tree_nlen::insert(AP_tree *new_brother)
         new AP_tree_edge(Father(),newBrother);
     }
     else { // insert at root
-        AP_tree_nlen 	*lson = newBrother->Leftson(),
-			*rson = newBrother->Rightson();
+        AP_tree_nlen    *lson = newBrother->Leftson(),
+            *rson = newBrother->Rightson();
 
         ap_main->push_node(lson, STRUCTURE);
         ap_main->push_node(rson, STRUCTURE);
@@ -273,10 +276,10 @@ GB_ERROR AP_tree_nlen::remove(void)
     //
     // Removes the node and its father from the tree:
     //
-    // 	     grandpa				grandpa
-    //           /   				  /
-    //          /					 /
-    //	  father		=>	      brother
+    //       grandpa                grandpa
+    //           /                    /
+    //          /                    /
+    //    father        =>        brother
     //       /     \                                            .
     //      /       \                                           .
     //   this       brother
@@ -290,9 +293,9 @@ GB_ERROR AP_tree_nlen::remove(void)
     //
 {
     GB_ERROR error = 0;
-    AP_tree 		*pntr;
-    AP_tree_edge 	*oldEdge;
-    AP_tree_nlen	*oldBrother = Brother();
+    AP_tree         *pntr;
+    AP_tree_edge    *oldEdge;
+    AP_tree_nlen    *oldBrother = Brother();
 
 
     if (father == 0) {
@@ -343,9 +346,9 @@ GB_ERROR AP_tree_nlen::remove(void)
 
             ap_main->set_tree_root(oldBrother);
 
-            //	delete edgeTo(oldBrother);
+            //  delete edgeTo(oldBrother);
             oldBrother->edgeTo(lson)->unlink();
-            //	delete oldBrother->edgeTo(lson);
+            //  delete oldBrother->edgeTo(lson);
             oldEdge = oldBrother->edgeTo(rson)->unlink();
             error = this->AP_tree::remove();
             oldEdge->relink(lson,rson);
@@ -370,8 +373,8 @@ GB_ERROR AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode)
 
     //    cout << "swap" << *this << '\n';
 
-    if (is_leaf == AP_TRUE)	return AP_tree::swap_assymetric(mode);
-    if (father == 0) 		return AP_tree::swap_assymetric(mode);
+    if (is_leaf == AP_TRUE) return AP_tree::swap_assymetric(mode);
+    if (father == 0)        return AP_tree::swap_assymetric(mode);
 
     oldBrother = Brother();
 
@@ -549,15 +552,15 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
         if (thisFather==newBrothersFather->Father()) { // son -> son of brother
             if (grandFather) {
                 if(grandFather->Father()) {
-                    //		    cout << "son -> son of brother\n";
+                    //          cout << "son -> son of brother\n";
 
                     thisFather->unlinkAllEdges(&e1,&e2,&e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
                     res = this->AP_tree::move(new_brother,rel_pos);
 
-                    sort(&e1,&e2,&e3);				// sort by age (e1==oldest edge)
-                    e1->relink(oldBrother,grandFather);		// use oldest edge at remove position
+                    sort(&e1,&e2,&e3);              // sort by age (e1==oldest edge)
+                    e1->relink(oldBrother,grandFather);     // use oldest edge at remove position
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
                 else { // grandson of root -> son of brother
@@ -568,7 +571,7 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
 
                     res = this->AP_tree::move(new_brother,rel_pos);
 
-                    sort(&e1,&e2,&e3);	// sort by age (e1==oldest edge)
+                    sort(&e1,&e2,&e3);  // sort by age (e1==oldest edge)
                     e1->relink(oldBrother,uncle);
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
@@ -610,7 +613,7 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
 
                 sort(&e1,&e2,&e3);
                 e1->relink(oldBrother->Leftson(),oldBrother->Rightson()); // new root-edge
-                thisFather->linkAllEdges(e2,e3,e4); 	// old root
+                thisFather->linkAllEdges(e2,e3,e4);     // old root
             }
             else if (!grandFather->Father()) { // grandson of root
                 if (newBrothersFather->Father()->Father()==NULL) { // grandson of root -> grandson of root
@@ -620,7 +623,7 @@ const char *AP_tree_nlen::move(AP_tree *new_brother,AP_FLOAT rel_pos)
                     res = this->AP_tree::move(new_brother,rel_pos);
 
                     sort(&e1,&e2,&e3);
-                    e1->relink(oldBrother,newBrothersFather); 	// new root-edge
+                    e1->relink(oldBrother,newBrothersFather);   // new root-edge
                     thisFather->linkAllEdges(e2,e3,e4);
                 }
                 else {
@@ -684,10 +687,10 @@ AP_FLOAT AP_tree_nlen::costs(void) { /* cost of a tree (number of changes ..) */
 
 Section Buffer Operations:
 
-	unhash_sequence()	// only deletes an existing parsimony sequence
-	push()
-  	pop()
-  	clear()
+    unhash_sequence()   // only deletes an existing parsimony sequence
+    push()
+    pop()
+    clear()
 
 ********************************************/
 
@@ -728,7 +731,7 @@ AP_BOOL AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count
         if (buff->mode & SEQUENCE) delete buff->sequence;
 
         stack_level = buff->controll;
-        delete	buff;
+        delete  buff;
         result      = AP_TRUE;
     }
     else {
@@ -748,12 +751,12 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     AP_tree_buffer *new_buff;
     AP_BOOL ret;
 
-    if (is_leaf && !(STRUCTURE & mode)) return AP_FALSE;	// tips push only structure
+    if (is_leaf && !(STRUCTURE & mode)) return AP_FALSE;    // tips push only structure
 
     if (this->stack_level == datum) {
         AP_tree_buffer *last_buffer = stack.get_first();
         if (sequence &&(mode & SEQUENCE)) sequence->is_set_flag = AP_FALSE;
-        if (0 == (mode & ~last_buffer->mode)) {	// already buffered
+        if (0 == (mode & ~last_buffer->mode)) { // already buffered
             return AP_FALSE;
         }
         new_buff = last_buffer;
@@ -771,7 +774,7 @@ AP_BOOL AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     }
 
     if ( (mode & STRUCTURE) && !(new_buff->mode & STRUCTURE) ) {
-        //	cout << "push structure " << *this << '\n';
+        //  cout << "push structure " << *this << '\n';
         new_buff->father   = father;
         new_buff->leftson  = leftson;
         new_buff->rightson = rightson;
@@ -819,7 +822,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     AP_STACK_MODE   mode = buff->mode;
 
     if (mode&STRUCTURE) {
-        //	cout << "pop structure " << this << '\n';
+        //  cout << "pop structure " << this << '\n';
 
         father   = buff->father;
         leftson  = buff->leftson;
@@ -850,7 +853,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
     }
 
     if (ROOT==mode) {
-        //	cout << "root popped:" << this << "\n";
+        //  cout << "root popped:" << this << "\n";
         ap_main->set_tree_root(this);
     }
 
@@ -859,7 +862,7 @@ void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
 }
 
 /********************************************************
-Section	Parsimony:
+Section Parsimony:
 ********************************************************/
 
 void AP_tree_nlen::parsimony_rek(void)
@@ -875,7 +878,7 @@ void AP_tree_nlen::parsimony_rek(void)
     if (!Rightson()->sequence|| !Rightson()->sequence->is_set_flag ) Rightson()->parsimony_rek();
 
     if (!Leftson()->sequence->is_set_flag || !Rightson()->sequence->is_set_flag) {
-        AW_ERROR("AP_tree_nlen::parsimony_rek:	Cannot set sequence");
+        AW_ERROR("AP_tree_nlen::parsimony_rek:  Cannot set sequence");
         return;
     }
 
@@ -894,7 +897,7 @@ void AP_tree_nlen::parsimony_rek(void)
 }
 
 /********************************************************
-Section	NNI
+Section NNI
 ********************************************************/
 
 AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,int deep, AP_BL_MODE mode, GB_BOOL skip_hidden)
@@ -917,7 +920,7 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(AP_BOOL openclosestatus, int &Abort,in
 
 
 /********************************************************
-Section	Kernighan-Lin
+Section Kernighan-Lin
 ********************************************************/
 
 void            AP_tree_nlen::
@@ -926,188 +929,188 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
               AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
               AP_KL_FLAG rek_width_type, AP_BOOL *abort_flag)
 {
-	//
-	// rek_deep Rekursionstiefe
-	// rek_2_width Verzweigungsgrad
-	// neg_counter zaehler fuer die Aeste in denen Kerninghan Lin schon angewendet wurde
-	// funktino Funktion fuer den dynamischen Schwellwert
-	// pars_ Verschiedene Parsimonywerte
+    //
+    // rek_deep Rekursionstiefe
+    // rek_2_width Verzweigungsgrad
+    // neg_counter zaehler fuer die Aeste in denen Kerninghan Lin schon angewendet wurde
+    // funktino Funktion fuer den dynamischen Schwellwert
+    // pars_ Verschiedene Parsimonywerte
 
-	AP_FLOAT help, pars[8];
-	//acht parsimony werte
-	AP_tree_nlen * pars_refpntr[8];
-	//zeiger auf die naechsten Aeste
-	int             help_ref, pars_ref[8];
-	//referenzen auf die vertauschten parsimonies
-	static AP_TREE_SIDE pars_side_ref[8];
-	//linker oder rechter ast
-	int             i, t, bubblesort_change = 0;
-	//
-	int             rek_width, rek_width_static = 0, rek_width_dynamic = 0;
-	AP_FLOAT        schwellwert = funktion(rek_deep, param_liste, param_anz) + pars_start;
+    AP_FLOAT help, pars[8];
+    //acht parsimony werte
+    AP_tree_nlen * pars_refpntr[8];
+    //zeiger auf die naechsten Aeste
+    int             help_ref, pars_ref[8];
+    //referenzen auf die vertauschten parsimonies
+    static AP_TREE_SIDE pars_side_ref[8];
+    //linker oder rechter ast
+    int             i, t, bubblesort_change = 0;
+    //
+    int             rek_width, rek_width_static = 0, rek_width_dynamic = 0;
+    AP_FLOAT        schwellwert = funktion(rek_deep, param_liste, param_anz) + pars_start;
 
-	//parameterausgabe
+    //parameterausgabe
 
 #if 0
-	cout << "DEEP  " << rek_deep << "	";
-	cout << "  maxdeep " << rek_deep_max << " suche " << rek_width_type << " abbruch " << *abort_flag;
-	cout << "\npbest	" << pars_best << " pstart	" << pars_start << " pprev 	" << pars_prev << "\nParam : ";
-	for (i = 0; i < param_anz; i++)
-		cout << i << " : " << param_liste[i] << "    ";
-	cout << "\nSchwellwert 	" << schwellwert << "\n";
-	cout.flush();
+    cout << "DEEP  " << rek_deep << "   ";
+    cout << "  maxdeep " << rek_deep_max << " suche " << rek_width_type << " abbruch " << *abort_flag;
+    cout << "\npbest    " << pars_best << " pstart  " << pars_start << " pprev  " << pars_prev << "\nParam : ";
+    for (i = 0; i < param_anz; i++)
+        cout << i << " : " << param_liste[i] << "    ";
+    cout << "\nSchwellwert  " << schwellwert << "\n";
+    cout.flush();
 #endif
-	if (rek_deep >= rek_deep_max)		return;
-	if (is_leaf == AP_TRUE)			return;
-	if (*abort_flag == AP_TRUE)		return;
+    if (rek_deep >= rek_deep_max)       return;
+    if (is_leaf == AP_TRUE)         return;
+    if (*abort_flag == AP_TRUE)     return;
 
-	//
-	//Referenzzeiger auf die vier Kanten und
-	// zwei swapmoeglichkeiten initialisieren
-	//
-	AP_tree *this_brother = this->brother();
-	if (rek_deep == 0) {
-		for (i = 0; i < 8; i+=2) {
-			pars_side_ref[i] = AP_LEFT;
-			pars_side_ref[i+1] = AP_RIGHT;
-		}
-		pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this;
-		pars_refpntr[2] = pars_refpntr[3] = 0;
-		pars_refpntr[4] = pars_refpntr[5] = 0;
-		pars_refpntr[6] = pars_refpntr[7] = 0;
-        //		cout << "NEW REKURSION\n\n";
-	}else{
-		pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this->leftson;
-		pars_refpntr[2] = pars_refpntr[3] = (AP_tree_nlen *) this->rightson;
-		if (father->father != 0) {
-			//Referenzzeiger falls nicht an der Wurzel
-			pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this->father;
-			pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother;
-		} else {
-			//an der Wurzel nehme linken und rechten Sohns des Bruders
-			if (this->brother()->is_leaf == AP_FALSE) {
-				pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this_brother->leftson;
-				pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother->rightson;
-			} else {
-				pars_refpntr[4] = pars_refpntr[5] = 0;
-				pars_refpntr[6] = pars_refpntr[7] = 0;
-			}
-		}
-	}
+    //
+    //Referenzzeiger auf die vier Kanten und
+    // zwei swapmoeglichkeiten initialisieren
+    //
+    AP_tree *this_brother = this->brother();
+    if (rek_deep == 0) {
+        for (i = 0; i < 8; i+=2) {
+            pars_side_ref[i] = AP_LEFT;
+            pars_side_ref[i+1] = AP_RIGHT;
+        }
+        pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this;
+        pars_refpntr[2] = pars_refpntr[3] = 0;
+        pars_refpntr[4] = pars_refpntr[5] = 0;
+        pars_refpntr[6] = pars_refpntr[7] = 0;
+        //      cout << "NEW REKURSION\n\n";
+    }else{
+        pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this->leftson;
+        pars_refpntr[2] = pars_refpntr[3] = (AP_tree_nlen *) this->rightson;
+        if (father->father != 0) {
+            //Referenzzeiger falls nicht an der Wurzel
+            pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this->father;
+            pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother;
+        } else {
+            //an der Wurzel nehme linken und rechten Sohns des Bruders
+            if (this->brother()->is_leaf == AP_FALSE) {
+                pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this_brother->leftson;
+                pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother->rightson;
+            } else {
+                pars_refpntr[4] = pars_refpntr[5] = 0;
+                pars_refpntr[6] = pars_refpntr[7] = 0;
+            }
+        }
+    }
 
 
-	if (!father) return;		// no kl at root
+    if (!father) return;        // no kl at root
 
-	//
-	//parsimony werte bestimmen
-	//
+    //
+    //parsimony werte bestimmen
+    //
 
-	// Wurzel setzen
+    // Wurzel setzen
 
     ap_main->push();
-	this->set_root();
-	(*ap_main->tree_root)->costs();
+    this->set_root();
+    (*ap_main->tree_root)->costs();
 
-	int             visited_subtrees = 0;
-	int		better_subtrees = 0;
-	for (i = 0; i < 8; i++) {
-	    pars_ref[i] = i;
-	    pars[i] = -1;
+    int             visited_subtrees = 0;
+    int     better_subtrees = 0;
+    for (i = 0; i < 8; i++) {
+        pars_ref[i] = i;
+        pars[i] = -1;
 
-	    if (!pars_refpntr[i])	continue;
-	    if (pars_refpntr[i]->is_leaf) continue;
-	    if (!pars_refpntr[i]->kernighan == AP_NONE) continue;
-	    if (pars_refpntr[i]->gr.hidden) continue;
-	    if (pars_refpntr[i]->father->gr.hidden) continue;
+        if (!pars_refpntr[i])   continue;
+        if (pars_refpntr[i]->is_leaf) continue;
+        if (!pars_refpntr[i]->kernighan == AP_NONE) continue;
+        if (pars_refpntr[i]->gr.hidden) continue;
+        if (pars_refpntr[i]->father->gr.hidden) continue;
 
-	    //nur wenn kein Blatt ist
-	    ap_main->push();
-	    pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
-	    pars[i] = (*ap_main->tree_root)->costs();
-	    if (pars[i] < pars_best) {
+        //nur wenn kein Blatt ist
+        ap_main->push();
+        pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
+        pars[i] = (*ap_main->tree_root)->costs();
+        if (pars[i] < pars_best) {
             better_subtrees++;
             pars_best      = pars[i];
             rek_width_type = AP_BETTER;
-	    }
-	    if (pars[i] < schwellwert) {
+        }
+        if (pars[i] < schwellwert) {
             rek_width_dynamic++;
-	    }
-	    ap_main->pop();
-	    visited_subtrees ++;
+        }
+        ap_main->pop();
+        visited_subtrees ++;
 
-	}
-	//Bubblesort, in pars[0] steht kleinstes element
-	//
-	//!!CAUTION ! !The original parsimonies will be exchanged
-
-
-	for (i=7,t=0;t<i;t++) {
-		if (pars[t] <0) {
-			pars[t]     = pars[i];
-			pars_ref[t] = i;
-			t--;
-			i--;
-		}
-	}
-
-	bubblesort_change = 0;
-	for (t = visited_subtrees - 1; t > 0; t--) {
-		for (i = 0; i < t; i++) {
-			if (pars[i] > pars[i+1] ) {
-				bubblesort_change = 1;
-				help_ref          = pars_ref[i];
-				pars_ref[i]       = pars_ref[i + 1];
-				pars_ref[i + 1]   = help_ref;
-				help              = pars[i];
-				pars[i]           = pars[i + 1];
-				pars[i + 1]       = help;
-			}
-		}
-		if (bubblesort_change == 0)
-			break;
-	}
-
-	display_out(pars, visited_subtrees, pars_prev, pars_start, rek_deep);
-	//Darstellen
+    }
+    //Bubblesort, in pars[0] steht kleinstes element
+    //
+    //!!CAUTION ! !The original parsimonies will be exchanged
 
 
-    //	for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
+    for (i=7,t=0;t<i;t++) {
+        if (pars[t] <0) {
+            pars[t]     = pars[i];
+            pars_ref[t] = i;
+            t--;
+            i--;
+        }
+    }
+
+    bubblesort_change = 0;
+    for (t = visited_subtrees - 1; t > 0; t--) {
+        for (i = 0; i < t; i++) {
+            if (pars[i] > pars[i+1] ) {
+                bubblesort_change = 1;
+                help_ref          = pars_ref[i];
+                pars_ref[i]       = pars_ref[i + 1];
+                pars_ref[i + 1]   = help_ref;
+                help              = pars[i];
+                pars[i]           = pars[i + 1];
+                pars[i + 1]       = help;
+            }
+        }
+        if (bubblesort_change == 0)
+            break;
+    }
+
+    display_out(pars, visited_subtrees, pars_prev, pars_start, rek_deep);
+    //Darstellen
 
 
-	if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
+    //  for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
+
+
+    if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
     else rek_width_static                            = 1;
 
-	rek_width = visited_subtrees;
-	if (rek_width_type == AP_BETTER) {
-		rek_width =  better_subtrees;
-	}
+    rek_width = visited_subtrees;
+    if (rek_width_type == AP_BETTER) {
+        rek_width =  better_subtrees;
+    }
     else {
-		if (rek_width_type & AP_STATIC) {
-			if (rek_width> rek_width_static) rek_width = rek_width_static;
-		}
-		if (rek_width_type & AP_DYNAMIK) {
-			if (rek_width> rek_width_dynamic) rek_width = rek_width_dynamic;
-		}else	if (!(rek_width_type & AP_STATIC)) {
-			if (rek_width> 1) rek_width = 1;
-		}
+        if (rek_width_type & AP_STATIC) {
+            if (rek_width> rek_width_static) rek_width = rek_width_static;
+        }
+        if (rek_width_type & AP_DYNAMIK) {
+            if (rek_width> rek_width_dynamic) rek_width = rek_width_dynamic;
+        }else   if (!(rek_width_type & AP_STATIC)) {
+            if (rek_width> 1) rek_width = 1;
+        }
 
-	}
+    }
 
-	if (rek_width > visited_subtrees)	rek_width = visited_subtrees;
+    if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
 
-    //	cout << "   rek_width:  " << rek_width << "\n";
-    //	cout.flush();
+    //  cout << "   rek_width:  " << rek_width << "\n";
+    //  cout.flush();
 
-	for (i=0;i < rek_width; i++) {
-		ap_main->push();
-		pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
-		//Markieren
-		pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
-		//vertausche seite
-		(*ap_main->tree_root)->parsimony_rek();
-		switch (rek_width_type) {
+    for (i=0;i < rek_width; i++) {
+        ap_main->push();
+        pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
+        //Markieren
+        pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
+        //vertausche seite
+        (*ap_main->tree_root)->parsimony_rek();
+        switch (rek_width_type) {
             case AP_BETTER:{
-				//starte kerninghan_rek mit rekursionstiefe 3, statisch
+                //starte kerninghan_rek mit rekursionstiefe 3, statisch
                 AP_BOOL flag = AP_FALSE;
                 cout << "found better !\n";
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
@@ -1125,132 +1128,132 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
                                                          pars_best, pars_start, pars[i],
                                                          rek_width_type, abort_flag);
                 break;
-		}
-		pars_refpntr[pars_ref[i]]->kernighan = AP_NONE;
-		//Demarkieren
-		if (*abort_flag == AP_TRUE) {
-			cout << "   parsimony:  " << pars_best << "took: " << i <<"\n";
-			for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
-			cout << "\n";
-			if (!rek_deep){
-				cout << "NEW REKURSION\n\n";
-			}
-			cout.flush();
+        }
+        pars_refpntr[pars_ref[i]]->kernighan = AP_NONE;
+        //Demarkieren
+        if (*abort_flag == AP_TRUE) {
+            cout << "   parsimony:  " << pars_best << "took: " << i <<"\n";
+            for (i=0;i<visited_subtrees;i++)  cout << "  " << pars[i];
+            cout << "\n";
+            if (!rek_deep){
+                cout << "NEW REKURSION\n\n";
+            }
+            cout.flush();
 
-			ap_main->clear();
-			break;
-		} else {
-			ap_main->pop();
-		}
-	}
-	if (*abort_flag == AP_TRUE) {		// pop/clear wegen set_root
-		ap_main->clear();
-	} else {
-		ap_main->pop();
-	}
-	return;
+            ap_main->clear();
+            break;
+        } else {
+            ap_main->pop();
+        }
+    }
+    if (*abort_flag == AP_TRUE) {       // pop/clear wegen set_root
+        ap_main->clear();
+    } else {
+        ap_main->pop();
+    }
+    return;
 }
 
 /*************************************************************************
 Section Crossover List (Funktionen die die crossover liste aufbauen):
 
-	createListRekUp
-	createListRekSide
-	createList
+    createListRekUp
+    createListRekSide
+    createList
 
 **************************************************************************/
 
 #if 0
 
 void addToList(AP_CO_LIST *list,int *number,AP_tree_nlen *pntr,CO_LISTEL& wert0,CO_LISTEL& wert1) {
-	if (wert0.isLeaf == AP_TRUE) {
-		list[*number].leaf0 = wert0.refLeaf;
-		list[*number].node0 = -10;
-	} else {
-		list[*number].leaf0 = 0;
-		list[*number].node0 = wert0.refNode;
-	}
-	if (wert1.isLeaf == AP_TRUE) {
-		list[*number].leaf1 = wert1.refLeaf;
-		list[*number].node1 = -1;
-	} else {
-		list[*number].leaf1 = 0;
-		list[*number].node1 = wert1.refNode;
-	}
-	list[*number].pntr = pntr;
-	return;
+    if (wert0.isLeaf == AP_TRUE) {
+        list[*number].leaf0 = wert0.refLeaf;
+        list[*number].node0 = -10;
+    } else {
+        list[*number].leaf0 = 0;
+        list[*number].node0 = wert0.refNode;
+    }
+    if (wert1.isLeaf == AP_TRUE) {
+        list[*number].leaf1 = wert1.refLeaf;
+        list[*number].node1 = -1;
+    } else {
+        list[*number].leaf1 = 0;
+        list[*number].node1 = wert1.refNode;
+    }
+    list[*number].pntr = pntr;
+    return;
 }
 
 void AP_tree_nlen::createListRekUp(AP_CO_LIST *list,int *cn) {
-	if (this->is_leaf == AP_TRUE) {
-		refUp.init    = AP_TRUE;
-		refUp.isLeaf  = AP_TRUE;
+    if (this->is_leaf == AP_TRUE) {
+        refUp.init    = AP_TRUE;
+        refUp.isLeaf  = AP_TRUE;
         refUp.refLeaf = gb_node;
-		return;
-	}
-	if (refUp.init == AP_FALSE) {
-		if (leftson->refUp.init == AP_FALSE) leftson->createListRekUp(list,cn);
-		if (rightson->refUp.init == AP_FALSE) rightson->createListRekUp(list,cn);
+        return;
+    }
+    if (refUp.init == AP_FALSE) {
+        if (leftson->refUp.init == AP_FALSE) leftson->createListRekUp(list,cn);
+        if (rightson->refUp.init == AP_FALSE) rightson->createListRekUp(list,cn);
 
-		refUp.init    = AP_TRUE;
-		refUp.isLeaf  = AP_FALSE;
-		refUp.refNode = *cn;
-		(*cn)++;
+        refUp.init    = AP_TRUE;
+        refUp.isLeaf  = AP_FALSE;
+        refUp.refNode = *cn;
+        (*cn)++;
 
 
-		addToList(list,cn,this,leftson->refUp,rightson->refUp);
-		if (father == 0) { // at root
-			refRight.init = rightson->refUp.init;
-			if ((refRight.isLeaf = rightson->refUp.isLeaf) == AP_TRUE) {
+        addToList(list,cn,this,leftson->refUp,rightson->refUp);
+        if (father == 0) { // at root
+            refRight.init = rightson->refUp.init;
+            if ((refRight.isLeaf = rightson->refUp.isLeaf) == AP_TRUE) {
                 refRight.refLeaf = rightson->refUp.refLeaf;
             }
-			else {
+            else {
                 refRight.refNode = rightson->refUp.refNode;
             }
 
-			refLeft.init = leftson->refUp.init;
-			if ((refLeft.isLeaf = leftson->refUp.isLeaf) == AP_TRUE) {
+            refLeft.init = leftson->refUp.init;
+            if ((refLeft.isLeaf = leftson->refUp.isLeaf) == AP_TRUE) {
                 refLeft.refLeaf = leftson->refUp.refLeaf;
             }
-			else {
+            else {
                 refLeft.refNode = leftson->refUp.refNode;
             }
-		}
-	}
+        }
+    }
     return;
 }
 
 void AP_tree_nlen::createListRekSide(AP_CO_LIST *list,int *cn) {
-	//
-	// has to be called after createListRekUp !!
-	if (refRight.init == AP_FALSE) {
-		refRight.init    = AP_TRUE;
-		refRight.isLeaf  = AP_FALSE;
-		refRight.refNode = *cn;
-		(*cn)++;
+    //
+    // has to be called after createListRekUp !!
+    if (refRight.init == AP_FALSE) {
+        refRight.init    = AP_TRUE;
+        refRight.isLeaf  = AP_FALSE;
+        refRight.refNode = *cn;
+        (*cn)++;
 
-		if (father->leftson == this) {
-			if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
-			addToList(list,cn,this,leftson->refUp,father->refLeft);
-		} else {
-			if (father->refRight.init ==  AP_FALSE) father->createListRekSide(list,cn);
-			addToList(list,cn,this,leftson->refUp,father->refRight);
-		}
-	}
-	if (refLeft.init == AP_FALSE) {
-		refLeft.init    = AP_TRUE;
-		refLeft.isLeaf  = AP_FALSE;
-		refLeft.refNode = *cn;
-		(*cn)++;
-		if (father->leftson == this) {
-			if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
-			addToList(list,cn,this,rightson->refUp,father->refLeft);
-		} else {
-			if (father->refRight.init == AP_FALSE) father->createListRekSide(list,cn);
-			addToList(list,cn,this,rightson->refUp,father->refRight);
-		}
-	}
-	return;
+        if (father->leftson == this) {
+            if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
+            addToList(list,cn,this,leftson->refUp,father->refLeft);
+        } else {
+            if (father->refRight.init ==  AP_FALSE) father->createListRekSide(list,cn);
+            addToList(list,cn,this,leftson->refUp,father->refRight);
+        }
+    }
+    if (refLeft.init == AP_FALSE) {
+        refLeft.init    = AP_TRUE;
+        refLeft.isLeaf  = AP_FALSE;
+        refLeft.refNode = *cn;
+        (*cn)++;
+        if (father->leftson == this) {
+            if (father->refLeft.init == AP_FALSE) father->createListRekSide(list,cn);
+            addToList(list,cn,this,rightson->refUp,father->refLeft);
+        } else {
+            if (father->refRight.init == AP_FALSE) father->createListRekSide(list,cn);
+            addToList(list,cn,this,rightson->refUp,father->refRight);
+        }
+    }
+    return;
 }
 
 
@@ -1278,15 +1281,15 @@ AP_CO_LIST * AP_tree_nlen::createList(int *size)
 /*************************************************************************
 Section Misc stuff:
 
-	sortByName
-	test
-	fullname
+    sortByName
+    test
+    fullname
 
 **************************************************************************/
 
 const char* AP_tree_nlen::sortByName()
 {
-    if (name) return name;	// leaves
+    if (name) return name;  // leaves
 
     const char *n1 = Leftson()->sortByName();
     const char *n2 = Rightson()->sortByName();
@@ -1354,7 +1357,7 @@ int AP_tree_nlen::test(void) const
         }
     }
 
-    test_tree(); 	// AP_tree::
+    test_tree();    // AP_tree::
 
     return 0;
 }
@@ -1372,15 +1375,15 @@ const char *AP_tree_nlen::fullname() const
         buffer = (char*)malloc(len);
 
         strcpy(buffer,"[");
-    	strcat(buffer,lName);
-    	strcat(buffer,",");
-    	strcat(buffer,rName);
-    	strcat(buffer,"]");
+        strcat(buffer,lName);
+        strcat(buffer,",");
+        strcat(buffer,rName);
+        strcat(buffer,"]");
 
-    	free(lName);
-    	free(rName);
+        free(lName);
+        free(rName);
 
-    	return buffer;
+        return buffer;
     }
 
     return name;
@@ -1393,7 +1396,7 @@ char* AP_tree_nlen::getSequence()
 
     costs();
     AP_sequence_parsimony *pseq = (AP_sequence_parsimony*)sequence;
-    assert(pseq->is_set_flag);
+    ap_assert(pseq->is_set_flag);
     s = new char[pseq->sequence_len];
     memcpy(s,pseq->sequence,(unsigned int)pseq->sequence_len);
 
