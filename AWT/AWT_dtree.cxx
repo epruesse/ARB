@@ -88,76 +88,94 @@ void AWT_graphic_tree::jump(AP_tree *at, const char *name)
     }
 }
 
-void AWT_graphic_tree::mark_tree(AP_tree *at, int mark, int color_group)
-{
+void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
     /*
       mode      does
 
       0         unmark all
       1         mark all
       2         invert all marks
-
-      or mix above mark values with :
-
-      4         apply to color_group only
-      8         apply to all but color_group
-
     */
 
     if (!at) return;
 
-    awt_assert((mark&(4|8)) != (4|8)); // mark 4 and 8 not allowed together
-
-    GB_transaction dummy(this->tree_static->gb_species_data);
-
+    GB_transaction dummy(tree_static->gb_species_data);
     if (at->is_leaf) {
         if(at->gb_node) {       // not a zombie
-            bool apply = true;
-            if (mark&(4|8)) { // if has to match color_group
-                int my_color_group = AW_find_color_group(at->gb_node, AW_TRUE);
-                if (mark&4) {
-                    if (my_color_group != color_group) apply = false;
-                }
-                else {
-                    awt_assert(mark&8);
-                    if (my_color_group == color_group) apply = false;
-                }
+            switch (mark_mode) {
+                case 0: GB_write_flag(at->gb_node, 0); break;
+                case 1: GB_write_flag(at->gb_node, 1); break;
+                case 2: GB_write_flag(at->gb_node, !GB_read_flag(at->gb_node)); break;
+                default : awt_assert(0);
             }
+        }
+    }
 
-            if (apply) {
-                if (mark&1) {
-                    GB_write_flag(at->gb_node, 1);
-                }
-                else if (mark&2) {
-                    GB_write_flag(at->gb_node, !GB_read_flag(at->gb_node));
-                }
-                else {
-                    awt_assert((mark&(1|2)) == 0);
-                    GB_write_flag(at->gb_node, 0);
+    mark_species_in_tree(at->leftson, mark_mode);
+    mark_species_in_tree(at->rightson, mark_mode);
+}
+
+void AWT_graphic_tree::mark_species_in_tree_that(AP_tree *at, int mark_mode, int (*condition)(GBDATA*, void*), void *cd) {
+    /*
+      mark_mode does
+
+      0         unmark all
+      1         mark all
+      2         invert all marks
+
+      marks are only changed for those species for that condition() != 0
+    */
+
+    if (!at) return;
+
+    GB_transaction dummy(tree_static->gb_species_data);
+    if (at->is_leaf) {
+        if(at->gb_node) {       // not a zombie
+            int oldMark = GB_read_flag(at->gb_node);
+            if (oldMark != mark_mode && condition(at->gb_node, cd)) {
+                switch (mark_mode) {
+                    case 0: GB_write_flag(at->gb_node, 0); break;
+                    case 1: GB_write_flag(at->gb_node, 1); break;
+                    case 2: GB_write_flag(at->gb_node, !oldMark); break;
+                    default : awt_assert(0);
                 }
             }
         }
     }
 
-    mark_tree(at->leftson, mark, color_group);
-    mark_tree(at->rightson, mark, color_group);
+    mark_species_in_tree_that(at->leftson, mark_mode, condition, cd);
+    mark_species_in_tree_that(at->rightson, mark_mode, condition, cd);
 }
 
-// same as mark_tree but works on rest of tree
-void AWT_graphic_tree::mark_rest_tree(AP_tree *at, int mark, int color_group) {
+
+// same as mark_species_in_tree but works on rest of tree
+void AWT_graphic_tree::mark_species_in_rest_of_tree(AP_tree *at, int mark_mode) {
     if (!at) return;
 
     AP_tree *pa = at->father;
     if (!pa) return;
 
-    if (at == pa->leftson) { // i am the left son
-        mark_tree(pa->rightson, mark, color_group);
-    }
-    else {
-        mark_tree(pa->leftson, mark, color_group);
-    }
+    GB_transaction dummy(tree_static->gb_species_data);
 
-    mark_rest_tree(pa, mark, color_group);
+    if (at == pa->leftson)  mark_species_in_tree(pa->rightson, mark_mode);
+    else mark_species_in_tree(pa->leftson, mark_mode);
+
+    mark_species_in_rest_of_tree(pa, mark_mode);
+}
+
+// same as mark_species_in_tree_that but works on rest of tree
+void AWT_graphic_tree::mark_species_in_rest_of_tree_that(AP_tree *at, int mark_mode, int (*condition)(GBDATA*, void*), void *cd) {
+    if (!at) return;
+
+    AP_tree *pa = at->father;
+    if (!pa) return;
+
+    GB_transaction dummy(tree_static->gb_species_data);
+
+    if (at == pa->leftson)  mark_species_in_tree_that(pa->rightson, mark_mode, condition, cd);
+    else mark_species_in_tree_that(pa->leftson, mark_mode, condition, cd);
+
+    mark_species_in_rest_of_tree_that(pa, mark_mode, condition, cd);
 }
 
 bool AWT_graphic_tree::tree_has_marks(AP_tree *at) {
@@ -757,22 +775,20 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
 
             switch (key_char) {
                 case 'm':  {    // m = mark/unmark (sub)tree
-                    if (tree_has_marks(at)) mark_tree(at, 0, 0); // unmark subtree
-                    else mark_tree(at, 1, 0); // mark subtree
+                    mark_species_in_tree(at, !tree_has_marks(at));
                     break;
                 }
                 case 'M':  {    // M = mark/unmark all but (sub)tree
-                    if (rest_tree_has_marks(at)) mark_rest_tree(at, 0, 0); // unmark resttree
-                    else mark_rest_tree(at, 1, 0); // mark resttree
+                    mark_species_in_rest_of_tree(at, !rest_tree_has_marks(at));
                     break;
                 }
 
                 case 'i':  {    // i = invert (sub)tree
-                    mark_tree(at, 2, 0);
+                    mark_species_in_tree(at, 2);
                     break;
                 }
                 case 'I':  {    // I = invert all but (sub)tree
-                    mark_rest_tree(at, 2, 0);
+                    mark_species_in_rest_of_tree(at, 2);
                     break;
                 }
                 case 'c':
@@ -1492,10 +1508,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     if (type == AW_Mouse_Press) {
                         switch (button) {
                             case AWT_M_LEFT:
-                                mark_tree(at, 1, 0);
+                                mark_species_in_tree(at, 1);
                                 break;
                             case AWT_M_RIGHT:
-                                mark_tree(at, 0, 0);
+                                mark_species_in_tree(at, 0);
                                 break;
                         }
                     }
@@ -1506,30 +1522,6 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             }
             break;
 
-//             if (type==AW_Mouse_Press && (cl->exists || ct->exists)) {
-//                 if (cl->exists) {
-//                     at = (AP_tree *)cl->client_data1;
-//                 }else{
-//                     at = (AP_tree *)ct->client_data1;
-//                 }
-//                 if (!at) break;
-//                 GB_transaction dummy(this->tree_static->gb_species_data);
-//                 switch(button){
-//                     case AWT_M_LEFT:
-//                         this->mark_tree(at, 1, 0);
-//                         break;
-//                     case AWT_M_RIGHT:
-//                         this->mark_tree(at, 0, 0);
-//                         break;
-//                 }
-//                 this->exports.refresh = 1;
-//                 this->tree_static->update_timers(); // do not reload the tree
-//                 this->tree_root->calc_color();
-//             }
-//             else if (type == AW_Keyboard_Press && (cl->exists || ct->exists)) {
-
-//             }
-//             break;
         case AWT_MODE_NONE:
         case AWT_MODE_SELECT:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE){
