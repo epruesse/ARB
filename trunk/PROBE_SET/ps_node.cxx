@@ -1,15 +1,3 @@
-//  =============================================================== //
-//                                                                  //
-//    File      : ps_node.cxx                                       //
-//    Purpose   :                                                   //
-//    Time-stamp: <Thu Jun/13/2002 12:36 MET Coder@ReallySoft.de>   //
-//                                                                  //
-//    Coded by Ralf Westram (coder@reallysoft.de) in June 2002      //
-//    Institute of Microbiology (Technical University Munich)       //
-//    http://www.arb-home.de/                                       //
-//                                                                  //
-//  =============================================================== //
-
 #include "ps_node.hxx"
 #include <unistd.h>
 
