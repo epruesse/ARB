@@ -20,6 +20,7 @@
 #include <awt_config_manager.hxx>
 
 #include "SaiProbeVisualization.hxx"
+#include "probe_match_parser.hxx"
 
 #define PROBE_PREFIX_LENGTH 9
 #define PROBE_SUFFIX_LENGTH 9
@@ -271,142 +272,63 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
     return saiColors;
 }
 
-static int calculateEndPosition(int startPos, int speciesNo, int mode, int probeLen) {
+static int calculateEndPosition(int startPos, int speciesNo, int mode, int probeLen, GB_ERROR *err) {
+    // returns -2 in case of error
+    // Note: if mode == 'PROBE_PREFIX' the result is 1 in front of last base (and so may be -1)
+
     int i, endPos, baseCntr;
-    i = endPos = baseCntr = 0;
+    i      = baseCntr = 0;
+    endPos = -2;
+    *err   = 0;
 
     GB_push_transaction(gb_main);
-    const char *seqData;
-    char     *alignment_name = GBT_get_default_alignment(gb_main);
-    const char *species_name = g_pbdata->probeSpecies[speciesNo];
-    GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
-    GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
-    if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
+    char       *alignment_name = GBT_get_default_alignment(gb_main);
+    const char *species_name   = g_pbdata->probeSpecies[speciesNo];
+    GBDATA     *gb_species     = GBT_find_species(gb_main, species_name);
+    if (gb_species) {
+        GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
+        if (gb_seq_data) {
+            const char *seqData = GB_read_char_pntr(gb_seq_data);
 
-    if (seqData) {
-        switch (mode) {
-        case PROBE:
-            for ( i = startPos; baseCntr < probeLen; ++i) {
-                if ((seqData[i] != '-') && (seqData[i] != '.'))
-                    baseCntr++;
+            if (seqData) {
+                switch (mode) {
+                    case PROBE:
+                        for ( i = startPos; baseCntr < probeLen; ++i) {
+                            if ((seqData[i] != '-') && (seqData[i] != '.'))
+                                baseCntr++;
+                        }
+                        break;
+                    case PROBE_PREFIX:
+                        for ( i = startPos; baseCntr < PROBE_PREFIX_LENGTH && i >= 0; --i) {
+                            if ((seqData[i] != '-') && (seqData[i] != '.'))
+                                baseCntr++;
+                        }
+                        break;
+                    case PROBE_SUFFIX:
+                        for ( i = startPos; baseCntr < PROBE_SUFFIX_LENGTH && seqData[i]; ++i) {
+                            if ((seqData[i] != '-') && (seqData[i] != '.'))
+                                baseCntr++;
+                        }
+                        break;
+                }
+                endPos = i;
             }
-            break;
-        case PROBE_PREFIX:
-            for ( i = startPos; baseCntr < PROBE_PREFIX_LENGTH && i >= 0; --i) {
-                if ((seqData[i] != '-') && (seqData[i] != '.'))
-                    baseCntr++;
+            else {
+                *err = "can't read data";
             }
-            break;
-        case PROBE_SUFFIX:
-            for ( i = startPos; baseCntr < PROBE_SUFFIX_LENGTH && seqData[i]; ++i) {
-                if ((seqData[i] != '-') && (seqData[i] != '.'))
-                    baseCntr++;
-            }
-            break;
         }
-        endPos = i;
+        else {
+            *err = "no data";
+        }
+    }
+    else {
+        *err = "species not found";
     }
     free(alignment_name);
     GB_pop_transaction(gb_main);
 
     return endPos;
 }
-
-// --------------------------------------------------------------------------------
-// helper class to parse probe match results
-
-class ProbeMatchParser {
-    char *init_error;
-    int   pos_offset; // position of 's' in 'pos' (pos is right-aligned)
-    int   probe_region_offset; // left index of probe region
-
-    ProbeMatchParser(const ProbeMatchParser& other); // copying not allowed
-    ProbeMatchParser& operator=(const ProbeMatchParser& other); // assignment not allowed
-public:
-    ProbeMatchParser(const char *probe_target, const char *headline)
-        : init_error(0)
-    {
-        if (!headline) {
-            init_error = strdup("No headline given");
-        }
-        else if (!probe_target) {
-            init_error = strdup("No probe target given.");
-        }
-        else {
-            const char *pos = strstr(headline, " pos ");
-            if (!pos) {
-                init_error = strdup("Expected 'pos' in headline");
-            }
-            else {
-                pos_offset = (pos-headline)+3;
-
-                const char *target;
-                char *probe_target_copy = strdup(probe_target);
-                for (int i = 0; probe_target_copy[i]; ++i) {
-                    probe_target_copy[i] = toupper(probe_target_copy[i]);
-                    if (probe_target_copy[i] == 'T') {
-                        probe_target_copy[i] = 'U';
-                    }
-                }
-
-                target = strstr(headline, probe_target_copy);
-
-                if (!target) {
-                    init_error = GBS_global_string_copy("Could not find target '%s' in headline", probe_target_copy);
-                }
-                else {
-                    probe_region_offset = (target-headline)-(PROBE_PREFIX_LENGTH+1);
-                    sai_assert(probe_region_offset>pos_offset);
-
-                    // Note: match-lines are shorter than the headline!
-                    probe_region_offset -= 2;
-                    pos_offset          -= 2;
-                }
-                free(probe_target_copy);
-            }
-        }
-    }
-    ~ProbeMatchParser() {
-        free(init_error);
-    }
-
-    bool parse_match(const char *match, const char *& result_probeRegion, int& result_startPos, GB_ERROR& error) {
-        result_probeRegion = 0;
-        result_startPos    = 0;
-
-        if (init_error) {
-            error = init_error;
-            return false;
-        }
-
-        error = 0;
-        if (match) {
-            int matchlen = strlen(match);
-            if (probe_region_offset > matchlen) {
-                error = GBS_global_string("can't parse match info '%s'", match);
-            }
-            else {
-                result_probeRegion    = match+probe_region_offset;
-                const char *pos_start = match+pos_offset;
-                while (pos_start>match && pos_start[0] != ' ') {
-                    --pos_start; // search backward for last space
-                }
-                if (pos_start>match) {
-                    result_startPos = atoi(pos_start+1);
-                }
-                else {
-                    error = GBS_global_string("can't parse match info '%s' (no space found in front of '%s')", match, match+pos_offset);
-                }
-            }
-        }
-        else {
-            error = "no match info";
-        }
-
-        return error == 0;
-    }
-};
-
 
 // --------------------------------------------------------------------------------
 // painting routine
@@ -506,68 +428,94 @@ void SAI_graphic::paint(AW_device *device) {
         paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep, yStep, maxDescent, (AW_CL)0);
         device->set_line_attributes(SAI_GC_FOREGROUND,2, AW_SOLID);
 
-        int probeLen = g_pbdata->getProbeTargetLen();
+        int              probeLen = g_pbdata->getProbeTargetLen();
         ProbeMatchParser parser(g_pbdata->getProbeTarget(), g_pbdata->getHeadline());
+        if (parser.get_error()) {
+            device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", parser.get_error()), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)0, 0, 0);
+        }
+        else {
+            for (size_t i = 0;  i < g_pbdata->probeSeq.size(); ++i) { // loop over all matches
+                GB_ERROR    error;
 
-        for (size_t i = 0;  i < g_pbdata->probeSeq.size(); ++i) { // loop over all matches
-            const char *probeRegion;
-            GB_ERROR    error;
+                ParsedProbeMatch parsed(g_pbdata->probeSeq[i], parser);
 
-            if (parser.parse_match(g_pbdata->probeSeq[i], probeRegion, startPos, error)) {
-                sai_assert(probeRegion);
-                char *probeRegion_copy = strdup(probeRegion);
-
-                const char *tok_prefix = strtok(probeRegion_copy, "-");
-                const char *tok_infix  = tok_prefix ? strtok(0, "-") : 0;
-                const char *tok_suffix = tok_infix ? strtok(0, "-") : 0;
-
-                if (!tok_suffix) {
-                    // handle special case where no suffix exists
-                    char *end = strchr(probeRegion, 0);
-                    if (end>probeRegion && end[-1] == '-') tok_suffix = "";
-                }
-
-                if (tok_suffix) {
-                    // --------------------
-                    // pre-probe region - 9 bases
-                    endPos = calculateEndPosition(startPos-1, i, PROBE_PREFIX, probeLen);
-                    sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
-                    endPos++; // calculateEndPosition returns 'one position in front of start'
-                    saiCols = translateSAItoColors(aw_root, endPos, startPos-1, i);
-                    if (saiCols)  {
-                        int positions = strlen(saiCols);
-                        int skipLeft  = PROBE_PREFIX_LENGTH-positions;
-                        sai_assert(skipLeft >= 0);
-                        paintBackgroundAndSAI(device, positions, pbRgX1+skipLeft*xStep, pbY, xStep, yStep, saiCols, dispSai);
-                    }
-                    paintProbeInfo(device, tok_prefix, pbRgX1, pbY, xStep, yStep, maxDescent, (AW_CL)i);
-
-                    // --------------------
-                    // probe region
-                    endPos  = calculateEndPosition(startPos, i, PROBE, probeLen);
-                    saiCols = translateSAItoColors(aw_root, startPos, endPos, i);
-
-                    paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep, yStep, saiCols, dispSai);
-                    paintProbeInfo(device, tok_infix, pbX, pbY, xStep, yStep, maxDescent, (AW_CL)i);
-
-                    //post-probe region - 9 bases
-                    size_t post_start_pos = endPos;
-
-                    endPos  = calculateEndPosition(post_start_pos, i, PROBE_SUFFIX, probeLen);
-                    saiCols = translateSAItoColors(aw_root, post_start_pos, endPos, i);
-                    if (saiCols) paintBackgroundAndSAI(device, strlen(tok_suffix), pbRgX2, pbY, xStep, yStep, saiCols, dispSai);
-                    paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+                if ((error = parsed.get_error())) {
+                    device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
                 }
                 else {
-                    device->text(SAI_GC_PROBE, GBS_global_string("probe-region '%s' has invalid format", probeRegion),
-                                 pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                    const char *probeRegion      = parsed.get_probe_region();
+                    sai_assert(probeRegion);
+                    char       *probeRegion_copy = strdup(probeRegion);
+
+                    const char *tok_prefix = strtok(probeRegion_copy, "-");
+                    const char *tok_infix  = tok_prefix ? strtok(0, "-") : 0;
+                    const char *tok_suffix = tok_infix ? strtok(0, "-") : 0;
+
+                    if (!tok_suffix) {
+                        // handle special case where no suffix exists
+                        char *end = strchr(probeRegion, 0);
+                        if (end>probeRegion && end[-1] == '-') tok_suffix = "";
+                    }
+
+                    const char *err = 0;
+                    if (tok_suffix) {
+                        // --------------------
+                        // pre-probe region - 9 bases
+                        startPos = parsed.get_position();
+                        if (parsed.get_error()) {
+                            err = GBS_global_string("Could not parse match position (Reason: %s).", parsed.get_error());
+                        }
+                        else {
+                            const char *endErr;
+                            endPos = calculateEndPosition(startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
+                            if (endPos == -2) {
+                                err = GBS_global_string("Can't handle '%s' (%s)", g_pbdata->probeSpecies[i], endErr);
+                            }
+                            else {
+                                sai_assert(!endErr);
+                                sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
+                                endPos++; // calculateEndPosition returns 'one position in front of start'
+                                saiCols = translateSAItoColors(aw_root, endPos, startPos-1, i);
+                                if (saiCols)  {
+                                    int positions = strlen(saiCols);
+                                    int skipLeft  = PROBE_PREFIX_LENGTH-positions;
+                                    sai_assert(skipLeft >= 0);
+                                    paintBackgroundAndSAI(device, positions, pbRgX1+skipLeft*xStep, pbY, xStep, yStep, saiCols, dispSai);
+                                }
+                                paintProbeInfo(device, tok_prefix, pbRgX1, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+
+                                // --------------------
+                                // probe region
+                                endPos  = calculateEndPosition(startPos, i, PROBE, probeLen, &endErr);
+                                sai_assert(endPos >= startPos);
+                                sai_assert(!endErr);
+                                saiCols = translateSAItoColors(aw_root, startPos, endPos, i);
+
+                                paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep, yStep, saiCols, dispSai);
+                                paintProbeInfo(device, tok_infix, pbX, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+
+                                //post-probe region - 9 bases
+                                size_t post_start_pos = endPos;
+
+                                endPos = calculateEndPosition(post_start_pos, i, PROBE_SUFFIX, probeLen, &endErr);
+                                sai_assert(endPos >= int(post_start_pos));
+                                sai_assert(!endErr);
+
+                                saiCols = translateSAItoColors(aw_root, post_start_pos, endPos, i);
+                                if (saiCols) paintBackgroundAndSAI(device, strlen(tok_suffix), pbRgX2, pbY, xStep, yStep, saiCols, dispSai);
+                                paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep, yStep, maxDescent, (AW_CL)i);
+                            }
+                        }
+                    }
+                    else {
+                        err = GBS_global_string("probe-region '%s' has invalid format", probeRegion);
+                    }
+
+                    if (err) device->text(SAI_GC_PROBE, err, pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                    free(probeRegion_copy);
                 }
-                free(probeRegion_copy);
+                pbY += yLineStep;
             }
-            else {
-                device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
-            }
-            pbY += yLineStep;
         }
         lineXpos = pbRgX2 + (9 * xStep);
         device->set_line_attributes(SAI_GC_FOREGROUND,1, AW_SOLID);
