@@ -808,9 +808,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
-            //	AWMIMT("save_whole_db",	"Save Whole Database",		       	"S","save.hlp",	F_ALL, (AW_CB)NT_save_cb, 	0, 	0);
             AWMIMT("save_changes",	"Save Changes",			"S","save.hlp",	AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 	0);
-            //	AWMIMT("save_changes_as","Save Changes As ...",			"A","save.hlp",	AWM_EXP, AW_POPUP,	(AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb");
             AWMIMT("save_all_as",	"Save Whole Database As ...",		"W","save.hlp",	AWM_ALL, AW_POPUP, 	(AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             awm->insert_separator();
 
