@@ -195,8 +195,8 @@ void PrimerDesign::run ( int print_stages_ )
 // returns child_index
 int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ )
 {
-  int  index     = CHAR2CHILD.INDEX[ base_ ];
-  bool is_primer = primer_length.includes( delivered_ );			// new child is primer if true
+    int  index     = CHAR2CHILD.INDEX[ base_ ];
+    bool is_primer = primer_length.includes( delivered_ ); // new child is primer if true
 
   //
   // create new node if necessary or update existing node if its a primer
@@ -206,12 +206,13 @@ int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_
     total_node_counter_right += right_;
 
     if ( is_primer ) {
-      current_->child[index] = new Node ( current_,base_,pos_,offset_ );	// primer => new child with positive last_base_index
-      primer_node_counter_left  += left_;
-      primer_node_counter_right += right_;
-    } else
-      current_->child[index] = new Node ( current_,base_,0 );			// no primer => new child with zero position
+        current_->child[index]     = new Node ( current_,base_,pos_,offset_ ); // primer => new child with positive last_base_index
+        primer_node_counter_left  += left_;
+        primer_node_counter_right += right_;
+    } else {
+        current_->child[index] = new Node ( current_,base_,0 ); // no primer => new child with zero position
 
+    }
     current_->child_bits |= CHAR2BIT.FIELD[ base_ ];				// update child_bits of current node
   }
   else {
@@ -267,7 +268,7 @@ void PrimerDesign::buildPrimerTrees ()
     primer2.print("buildPrimerTrees : pos2\t\t","\n");
     primer_length.print("buildPrimerTrees : length\t","\n");
     printf("buildPrimerTrees : 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789\n");
-//     printf("buildPrimerTrees : %s\n",sequence);
+    //     printf("buildPrimerTrees : %s\n",sequence);
     printf("buildPrimerTrees : (pos,base,delivered,last_base_index)\n" );
 #endif
 
