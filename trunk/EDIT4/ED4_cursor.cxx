@@ -1409,12 +1409,17 @@ void ED4_base_position::calc4base(ED4_base *base)
                 pos[count++] = p;
             }
         }
-
-        seq_pos = new int[count];
-        for (p=0; p<count; p++) {
-            seq_pos[p] = pos[p];
+        
+        if (count) {
+            seq_pos = new int[count];
+            for (p=0; p<count; p++) {
+                seq_pos[p] = pos[p];
+            }            
         }
-
+        else {
+            seq_pos = 0;
+        }
+        
         delete[] pos;
     }
 
@@ -1424,6 +1429,8 @@ int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
 {
     if (!base) return 0;
     if (base!=calced4base) calc4base(base);
+    
+    if (count==0) return 0;
     if (sequence_position>seq_pos[count-1]) return count;
 
     int h = count-1,

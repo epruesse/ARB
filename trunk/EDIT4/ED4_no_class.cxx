@@ -1898,6 +1898,37 @@ static void freeSpeciesMergeList(SpeciesMergeList sml)
 
 // --------------------------------------------------------------------------------
 
+inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
+    return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
+}
+
+static char *makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
+    // generates a non-existing short-name (name starts with prefix)    
+    char *result = 0;
+    
+    int prefix_len = strlen(prefix);
+    e4_assert(prefix_len<8); // short name will be 8 chars - prefix has to be shorter!
+    
+    int max_num = 1;
+    for (int l=prefix_len+1; l<=8; ++l) max_num *= 10; // calculate max possibilities
+    
+    if (max_num>1) {    
+        char short_name[9];
+        strcpy(short_name, prefix);
+        char *dig_pos = short_name+prefix_len;
+        
+        for (int x = 0; x<max_num; ++x) {
+            sprintf(dig_pos, "%i", x);
+        
+            if (nameIsUnique(short_name, gb_species_data))  {
+                result = strdup(short_name);
+                break;
+            }
+        }
+    }
+    return result;
+}
+
 static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
     // creation_mode == 	0 -> create new species
     //			            1 -> create new species from group konsensus
@@ -1912,7 +1943,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
     if (!new_species_full_name || new_species_full_name[0]==0) {
         error = GB_export_error("Please enter a full_name for the new species");
     }
-    else {        
+    else { 
         error = GB_begin_transaction(gb_main);        
         GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);        
         char *new_species_name = 0;        
@@ -1958,14 +1989,22 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         if (!error) {
             error = generate_one_name(gb_main, new_species_full_name, acc, new_species_name);        
             if (!error) { // name was created
-                GBDATA *gb_new_species = GBT_find_species_rel_species_data(gb_species_data, new_species_name);
-                if (gb_new_species) { // oops exists
-                    error = GB_export_error("A species named '%s' already exists!", new_species_name);                
+                if (!nameIsUnique(new_species_name, gb_species_data)) {
+                    char *uniqueName = 0;
+                    int name_len = strlen(new_species_name);
+                    
+                    for (int l=name_len-1; l>=0 && !uniqueName; --l) {
+                        new_species_name[l] = 0;
+                        uniqueName = makeUniqueShortName(new_species_name, gb_species_data);
+                    }
+                    
                     free(new_species_name);
-                    new_species_name = 0;
-                }            
+                    new_species_name = uniqueName;
+                    
+                    if (!new_species_name) error = "No short name created.";
+                }
             }
-        
+            
             if (error) { // try to make a random name
                 error = 0;
             
@@ -1975,7 +2014,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
             
                 while (count--) {
                     for (int x=0; x<8; ++x) {
-                        int r = int(random()*36);
+                        int r = int((double(rand())/RAND_MAX)*36);                        
                         short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
                     }
             
@@ -2182,7 +2221,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 						    
                                                         e4_assert(content);
                                                         int add_len = names_len+1+strlen(content);
-                                                        char *whole = (char*)malloc(new_content_len+1+add_len);
+                                                        char *whole = (char*)malloc(new_content_len+1+add_len+1);
                                                         e4_assert(whole);
                                                         char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                                         sl2 = sml;
