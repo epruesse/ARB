@@ -151,7 +151,7 @@ AW_window *create_species_rename_window(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the species");
+    aws->create_autosize_button(0,"Please enter the new name\nof the species");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);
@@ -174,7 +174,7 @@ AW_window *create_species_copy_window(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new species");
+    aws->create_autosize_button(0,"Please enter the name\nof the new species");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);
@@ -197,7 +197,7 @@ AW_window *create_species_create_window(AW_root *root)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new species");
+    aws->create_autosize_button(0,"Please enter the name\nof the new species");
 
     aws->at("input");
     aws->create_input_field(AWAR_SPECIES_DEST,15);

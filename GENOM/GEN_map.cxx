@@ -1221,7 +1221,7 @@ AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the alignment to extract to");
+    aws->create_autosize_button(0,"Please enter the name\nof the alignment to extract to");
 
     aws->at("input");
     aws->create_input_field(AWAR_GENE_EXTRACT_ALI,15);

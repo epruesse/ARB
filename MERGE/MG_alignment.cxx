@@ -210,7 +210,7 @@ AW_window *create_alignment_copy_window(AW_root *root,AW_CL db_nr)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the alignment");
+    aws->create_autosize_button(0,"Please enter the new name\nof the alignment");
 
     aws->at("input");
     char buffer[256];
@@ -236,7 +236,7 @@ AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the name\nof the new alignment");
+    aws->create_autosize_button(0,"Please enter the name\nof the new alignment");
 
     aws->at("input");
     char buffer[256];
@@ -285,7 +285,7 @@ AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_button(0,"Please enter the new name\nof the alignment");
+    aws->create_autosize_button(0,"Please enter the new name\nof the alignment");
 
     aws->at("input");
     char buffer[256];
