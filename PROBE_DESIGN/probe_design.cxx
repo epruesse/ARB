@@ -29,7 +29,7 @@
 #include <probe_design.hxx>
 
 #include <GEN.hxx>
-#include "SaiProbeVisualization.hxx" 
+#include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
@@ -108,15 +108,32 @@ static void auto_match_cb(AW_root *root) {
     }
 }
 
+static const char *auto_match_sensitive_awars[] = {
+    AWAR_TARGET_STRING,
+    AWAR_PT_SERVER,
+    AWAR_PD_MATCH_COMPLEMENT,
+    AWAR_MAX_MISMATCHES,
+    AWAR_PD_MATCH_SORTBY,
+    0
+};
+
 static void auto_match_changed(AW_root *root) {
     static bool callback_active = false;
     int         autoMatch       = root->awar(AWAR_PD_MATCH_AUTOMATCH)->read_int();
 
     if (autoMatch) {
-        if (!callback_active) root->awar(AWAR_TARGET_STRING)->add_callback(auto_match_cb);
+        if (!callback_active) {
+            for (int i = 0; auto_match_sensitive_awars[i]; ++i) {
+                root->awar(auto_match_sensitive_awars[i])->add_callback(auto_match_cb);
+            }
+        }
     }
     else {
-        if (callback_active) root->awar(AWAR_TARGET_STRING)->remove_callback(auto_match_cb);
+        if (callback_active) {
+            for (int i = 0; auto_match_sensitive_awars[i]; ++i) {
+                root->awar(auto_match_sensitive_awars[i])->remove_callback(auto_match_cb);
+            }
+        }
     }
     callback_active = bool(autoMatch);
 }
@@ -333,7 +350,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
     GBS_str_cut_tail(names, 1); // remove trailing '#'
     GBS_str_cut_tail(checksums, 1); // remove trailing '#'
-    
+
     bs.data = GBS_strclose(names);
     bs.size = strlen(bs.data)+1;
 
@@ -476,7 +493,7 @@ void probe_design_event(AW_window *aww)
 
     char *unames = unknown_names.data;
     bool  abort  = false;
-    
+
     if (unknown_names.size>1) {
         if (design_gene_probes) { // updating sequences of missing genes is not possible with gene PT server
             aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen.\n"
@@ -496,7 +513,7 @@ void probe_design_event(AW_window *aww)
         }
         else {
             GB_transaction dummy(gb_main);
-            
+
             char *h;
             char *ali_name = GBT_get_default_alignment(gb_main);
 
@@ -608,7 +625,7 @@ void probe_design_event(AW_window *aww)
                           TPROBE_LAST, &my_TPROBE_LAST,
                           TPROBE_IDENT, &my_TPROBE_IDENT,
                           TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
-                          TPROBE_QUALITY, &my_TPROBE_QUALITY, // quality of probe ? 
+                          TPROBE_QUALITY, &my_TPROBE_QUALITY, // quality of probe ?
 #endif // TEST_PD
                           0)) break;
 
@@ -1666,7 +1683,7 @@ AW_window *create_probe_match_window( AW_root *root,AW_default)  {
     aws->at( "mark" );
     aws->create_toggle( AWAR_PD_MATCH_MARKHITS );
 
-    aws->at( "sort" );
+    aws->at( "weighted" );
     aws->create_toggle( AWAR_PD_MATCH_SORTBY );
 
     aws->at( "mismatches" );
