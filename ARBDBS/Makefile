@@ -9,7 +9,7 @@ OBJECTS = $(GB_O) $(GB_T) $(GB_PP)
 $(MAIN): $(OBJECTS)
 	$(AR) $(MAIN) $(OBJECTS)
 .c.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+	$(ACC) $(cflags) -c $< $(AINCLUDES)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 depend:
@@ -23,7 +23,7 @@ adGene.o: adGene.h arbdb.h $(ARBHOME)/INCLUDE/arb_assert.h
 adGene.o:  ./ad_prot.h arbdbt.h ./ad_t_prot.h
 adReference.o:   arbdb.h
 adReference.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
-adReference.o: adlocal.h adtune.h adlmacros.h 
+adReference.o: adlocal.h adtune.h adlmacros.h
 adRevCompl.o:   arbdb.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adRevCompl.o:  ./ad_prot.h arbdbt.h
@@ -59,12 +59,12 @@ adseqcompr.o:  adlocal.h adtune.h adlmacros.h arbdb.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 adseqcompr.o: arbdbt.h ./ad_t_prot.h adseqcompr.h
 adsocket.o:   adlocal.h
-adsocket.o: adtune.h adlmacros.h 
+adsocket.o: adtune.h adlmacros.h
 adsort.o:   arbdb.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 adsort.o: arbdbt.h ./ad_t_prot.h
 adstring.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
-adstring.o: ./ad_t_prot.h  
+adstring.o: ./ad_t_prot.h
 adsystem.o:  adlocal.h adtune.h adlmacros.h
 adsystem.o: arbdbt.h ./ad_t_prot.h
 adtables.o:  adlocal.h adtune.h adlmacros.h arbdb.h

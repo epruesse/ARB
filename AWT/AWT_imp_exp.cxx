@@ -220,7 +220,15 @@ const char * AWT_date_string(void) {
     struct tm *p;
 
     gettimeofday(&date, 0);
-    p              = localtime(&date.tv_sec);
+
+#if defined(DARWIN)
+    struct timespec local;
+    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
+    p = localtime(&local.tv_sec);
+#else
+    p = localtime(&date.tv_sec);
+#endif // DARWIN
+
     char *readable = asctime(p); // points to a static buffer
     char *cr       = strchr(readable, '\n');
     awt_assert(cr);
