@@ -922,7 +922,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     AWMIMT("gene_layout", "Layout", "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
     AWMIMT("gene_options", "Options", "L", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
     AWMIMT(	"gene_nds",		"NDS ( Select Gene Information ) ...",		"N","props_nds.hlp",	AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main );
-    AWMIMT("gene_save_props",	"Save Defaults (in ~/.arb_prop/genemap.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    AWMIMT("gene_save_props",	"Save Defaults (in ~/.arb_prop/ntree.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // Create mode buttons
     awm->create_mode( 0, "zoom.bitmap", "gen_mode.hlp", AWM_ALL, (AW_CB)GEN_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
