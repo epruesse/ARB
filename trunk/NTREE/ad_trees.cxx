@@ -55,9 +55,11 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
         aw_root->awar(AWAR_TREE_SECURITY)->map((void*)tree_prot);
         aw_root->awar(AWAR_TREE_REM)->map((void*)tree_rem);
 	}
-	char *fname = GBS_string_eval(treename,"*=*1.tree:tree_*=*1",0);
-	aw_root->awar(AWAR_TREE_EXPORT "/file_name")->write_string(fname);	// create default file name
-	delete fname;
+    char *suffix = aw_root->awar(AWAR_TREE_EXPORT_FILTER)->read_string();
+	char *fname  = GBS_string_eval(treename,GBS_global_string("*=*1.%s:tree_*=*1", suffix),0);
+	aw_root->awar(AWAR_TREE_EXPORT "/file_name")->write_string(fname); // create default file name
+	free(fname);
+	free(suffix);
 	GB_pop_transaction(gb_main);
 	free(treename);
 }
@@ -250,30 +252,32 @@ void create_tree_last_window(AW_window *aww) {
 }
 
 void tree_save_cb(AW_window *aww){
-	AW_root        *aw_root   = aww->get_root();
-	GB_ERROR        error     = 0;
-	char           *fname     = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
-	char           *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
+	AW_root  *aw_root   = aww->get_root();
+	GB_ERROR  error     = 0;
+	char     *fname     = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
+	char     *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
+	char     *db_name   = aw_root->awar(AWAR_DB_NAME)->read_string();
+    bool      use_NDS   = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
 
 	if (!tree_name || !strlen(tree_name)) error = GB_export_error("Please select a tree first");
 	if (!error){
 		switch(ExportTreeType(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
-			case AD_TREE_EXPORT_FORMAT_ORS:
+			case AD_TREE_EXPORT_FORMAT_ORS: {
 				error = create_and_save_CAT_tree(gb_main,tree_name,fname);
 				break;
-            case AD_TREE_EXPORT_FORMAT_XML:
-                error = AWT_export_XML_tree(gb_main, tree_name,
-                                            (ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS),
-                                            fname);
+            }
+            case AD_TREE_EXPORT_FORMAT_XML: {
+                error = AWT_export_XML_tree(gb_main, db_name, tree_name, use_NDS, fname);
 				break;
-            case AD_TREE_EXPORT_FORMAT_NEWICK:
-                error = AWT_export_tree(gb_main, tree_name,
-                                        (ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS),
+            }
+            case AD_TREE_EXPORT_FORMAT_NEWICK: {
+                error = AWT_export_tree(gb_main, tree_name, use_NDS,
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
                                         aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
                                         fname);
                 break;
+            }
 			default: assert(0); break;
 		}
 	}
@@ -283,8 +287,9 @@ void tree_save_cb(AW_window *aww){
 		aw_root->awar(AWAR_TREE_EXPORT "/directory")->touch();
 		aww->hide();
 	}
-	delete fname;
+	delete db_name;
 	delete tree_name;
+	delete fname;
 }
 
 AW_window *create_tree_export_window(AW_root *root)
@@ -331,6 +336,7 @@ AW_window *create_tree_export_window(AW_root *root)
 	aws->create_button("CANCEL","CANCEL","C");
 
     aws->window_fit();
+    update_filter_cb(root);
 
 	return (AW_window *)aws;
 }
