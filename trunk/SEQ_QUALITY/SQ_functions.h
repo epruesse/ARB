@@ -1,1 +1,1 @@
-int SQ_get_raw_sequence(GBDATA *gb_main);
+int SQ_calc_sequence_diff(GBDATA *gb_main);
