@@ -340,7 +340,7 @@ void nt_build_conf_marked(GB_HASH *used, void *file){
         GBS_chrcat(file,1);
         GBS_strcat(file,"L");
         GBS_strcat(file,name);
-        delete name;
+        free(name);
     }
 
     GBS_chrcat(file,1);	// Seperated by 1
@@ -488,7 +488,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 	    nt_build_conf_marked(used,topmid);
 	    char *mid = GBS_strclose(middlefile,0);
 	    GBS_strcat(topmid,mid);
-	    delete mid;
+	    free(mid);
 	}
 
 	char *middle = GBS_strclose(topmid,0);
@@ -507,8 +507,8 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 	    }
 	}
 	delete to_free;
-	delete middle;
-	delete top;
+	free(middle);
+	free(top);
 	GBS_free_hash(used);
 	if (error) aw_message(error);
 	return error;
