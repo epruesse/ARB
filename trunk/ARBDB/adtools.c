@@ -82,13 +82,12 @@ GBDATA *GBT_create_alignment(   GBDATA *gbd,
     gb_presets = GB_search(gbd,"presets",GB_CREATE_CONTAINER);
     if (!gb_presets) return 0;
 
-    if (GB_check_key(name)) {
+    error = GBT_check_alignment_name(name);
+    if (error) {
+        GB_export_error(error);
         return 0;
     }
-    if (strncmp("ali_",name,4) ){
-        error = GB_export_error("your alignment_name '%s' must start with 'ali_'",name);
-        return 0;
-    }
+
     if ( aligned<0 ) aligned = 0;
     if ( aligned>1 ) aligned = 1;
     if ( security<0) {
@@ -2565,7 +2564,7 @@ GB_ERROR GBT_message(GBDATA *gb_main, const char *msg)
 
     // Note : it is NOT possible to read gb_msg and see whether db-server
     // has received the message.
-    
+
     GB_write_string(gb_msg, msg);
 
     GB_pop_transaction(gb_main);
