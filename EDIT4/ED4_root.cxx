@@ -476,7 +476,14 @@ ED4_returncode ED4_root::init_alignment() {
     return ED4_R_OK;
 }
 
-ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
+void ED4_root::recalc_font_group() {
+    font_group.unregisterAll();
+    for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
+        font_group.registerFont(temp_device, f);
+    }
+}
+
+ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) // creates internal hierarchy of editor
 {
     int index = 0, x = 0, change = 0;
     ED4_index y = 0, help = 0;
@@ -522,6 +529,8 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
     }
     x = 100;
 
+    recalc_font_group();
+
     {
         ED4_area_manager *middle_area_manager;
         ED4_tree_terminal *tree_terminal;
@@ -565,15 +574,23 @@ ED4_returncode  ED4_root::create_hierarchy(char *area_string_middle, char *area_
                                             area_string_top, &index, &y);
             GB_pop_transaction( gb_main );
 
-            top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
+            const int TOP_MID_LINE_HEIGHT   = 3;
+            int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
+
+            top_mid_line_terminal = new ED4_line_terminal( "Top_Mid_Line_Terminal" ,0, y, 0, TOP_MID_LINE_HEIGHT, device_manager );   // width will be set below
             device_manager->children->append_member( top_mid_line_terminal );
 
-            y+=3;
+            y += TOP_MID_LINE_HEIGHT;
 
 
-            top_mid_spacer_terminal = new ED4_spacer_terminal( "Top_Middle_Spacer", 0, y, 880, 10 , device_manager);
+            top_mid_spacer_terminal = new ED4_spacer_terminal( "Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT , device_manager);
             device_manager->children->append_member( top_mid_spacer_terminal );
-            y += 10;                                                // add top-mid_spacer_terminal height
+
+            // needed to avoid text-clipping problems: 
+            main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal); 
+            main_manager->set_top_middle_line_terminal(top_mid_line_terminal); 
+
+            y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
 
             top_multi_species_manager->generate_id_for_groups();
 
@@ -1656,7 +1673,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "props_data", "Change Colors & Fonts "  ,  "C", 0,     AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awmm->insert_menu_topic( "props_seq_colors", "Set Sequence Colors "  , "S", "no help",   AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors );
     SEP________________________SEP;
-    awmm->insert_menu_topic( "props_helix_sym", "Helix Settings ","H","helixsym.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_refresh_window,0,0) );
+    awmm->insert_menu_topic( "props_helix_sym", "Helix Settings ","H","helixsym.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_expose_cb,0,0) );
     awmm->insert_menu_topic( "props_key_map", "Key Mappings ", "K","nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0 );
     awmm->insert_menu_topic( "props_nds", "Select visible info (NDS) ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
     SEP________________________SEP;
