@@ -1,8 +1,14 @@
 #include "arbdb.h"
 #include "arbdbt.h"
 #include "stdio.h"
+#include "stdlib.h"
 
+#include "BI_helix.hxx"
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define seq_assert(bed) arb_assert(bed)
 
 int SQ_calc_sequence_diff(GBDATA *gb_main) {
 
@@ -14,7 +20,6 @@ int SQ_calc_sequence_diff(GBDATA *gb_main) {
     int avr = 0; //average length of Sequence
     char working_on_sequence[100000];
     int sequenceLength = 0;
-    int sequenceQuality;
     int qualities[100][3];
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
@@ -24,7 +29,6 @@ int SQ_calc_sequence_diff(GBDATA *gb_main) {
 
     GB_push_transaction(gb_main);
 
-
     //qualities init
     for (int i = 0; i <=99; i++) {
 	qualities [i][0] = 0;
@@ -33,40 +37,69 @@ int SQ_calc_sequence_diff(GBDATA *gb_main) {
     }
 
 
-    gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);
 
+    seq_assert(alignment_name);
+
+    {
+      BI_helix my_helix;
+      my_helix.init(gb_main, alignment_name);
+      // get_symbol
+    }
 
 
-    for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*) = 0;
 
+    if (true /*marked_only*/) {
+      getFirst = GBT_first_marked_species;
+      getNext = GBT_next_marked_species;
+    }
+    else {
 
-        gb_name = GB_find(gb_species, "name", 0, down_level);
-	if (gb_name) {
+    }
 
-	    read_sequence = GBT_read_sequence(gb_species, alignment_name);
+    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
+      gb_name = GB_find(gb_species, "name", 0, down_level);
+      if (gb_name) {
 
-	    if (read_sequence) {
+	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+	if (!gb_ali) {
+	  GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);	 
+	  
+	  read_sequence = GB_find(gb_ali,"data",0,down_level);
 
-		rawSequence = GB_read_char_pntr(read_sequence);
-		sequenceLength = GB_read_count(read_sequence);
-		sequenceQuality = sequenceLength;
-		strcpy (working_on_sequence, rawSequence);
+	  if (read_sequence) {
+	    int sequenceQuality;
 
-		for (int i = 0; i < sequenceLength; i++) {
-		    if (working_on_sequence[i] == '-') {
-			sequenceQuality--;
-		    }
-		    if (working_on_sequence[i] == '.') {
-			sequenceQuality--;
-		    }
-		}
+	    rawSequence = GB_read_char_pntr(read_sequence);
+	    sequenceLength = GB_read_count(read_sequence);
+	    sequenceQuality = sequenceLength;
+	    strcpy (working_on_sequence, rawSequence);
 
-		qualities[j][0] = sequenceQuality;
-		j++;
-
+	    for (int i = 0; i < sequenceLength; i++) {
+	      if (working_on_sequence[i] == '-') {
+		sequenceQuality--;
+	      }
+	      if (working_on_sequence[i] == '.') {
+		sequenceQuality--;
+	      }
 	    }
+
+	    qualities[j][0] = sequenceQuality;
+	    j++;
+
+	    
+	    {
+	      GBDATA *gb_example_result = GB_search(gb_quality, "example_result",GB_INT);
+	      seq_assert(gb_example_result);
+
+	      GB_write_int(gb_example_result, 4711);
+	    }
+	  }
 	}
+      }
 
     }
 
@@ -93,6 +126,7 @@ int SQ_calc_sequence_diff(GBDATA *gb_main) {
 	    qualities[i][2] = ((100*qualities[i][1]) / avr);
     }
 
+    free(alignment_name);
 
     result = qualities[0][2];
     return result;
@@ -133,7 +167,7 @@ int SQ_calc_insertations(GBDATA *gb_main) {
 
     gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
     alignment_name = GBT_get_default_alignment(gb_main);
-
+    
 
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
