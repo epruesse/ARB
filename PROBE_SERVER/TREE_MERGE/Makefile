@@ -36,8 +36,8 @@ depend.init:
 
 # DO NOT DELETE
 
-tree_merge.o: $(ARBHOME)/INCLUDE/arbdb.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arb_assert.h
+tree_merge.o: $(ARBHOME)/INCLUDE/arbdb.h
 tree_merge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arbdbt.h
 tree_merge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
