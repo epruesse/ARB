@@ -212,13 +212,25 @@ void ParseMenu()
 		else if(Find(in_line,"argtype:"))
 		{
 			crop(in_line,head,temp);
-			if(strcmp(temp,"text")==0)
-			{
+
+            int arglen = -1;
+			if(strncmp(temp,"text", (arglen = 4)) == 0) {
 				thisarg->type      = TEXTFIELD;
-				thisarg->textvalue =
-					(char*)calloc(GBUFSIZ,sizeof(char));
-				if(thisarg->textvalue == NULL)
-					Error("Calloc");
+				thisarg->textvalue = (char*)calloc(GBUFSIZ,sizeof(char));
+				if(thisarg->textvalue == NULL) Error("Out of memory");
+
+                if (temp[arglen] == 0) thisarg->textwidth = TEXTFIELDWIDTH; // only 'text'
+                else {
+                    if (temp[arglen] != '(' || temp[strlen(temp)-1] != ')') {
+                        sprintf(head, "Unknown argtype '%s' -- syntax: text(width) i.e. text(20)", temp);
+                        Error(head);
+                    }
+                    thisarg->textwidth = atoi(temp+arglen+1);
+                    if (thisarg->textwidth<1) {
+                        sprintf(head, "Illegal textwidth specified in '%s'", temp);
+                        Error(head);
+                    }
+                }
 			}
 			else if(strcmp(temp,"choice_list") == 0) thisarg->type=CHOICE_LIST;
 			else if(strcmp(temp,"choice_menu") == 0) thisarg->type=CHOICE_MENU;
