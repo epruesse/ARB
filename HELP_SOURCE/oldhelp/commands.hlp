@@ -111,6 +111,11 @@ SECTION COMMANDLIST
 					remove all chars that are not a member
 					of 'str'
 
+                compare("str", ignore); compares all input streams with "str". For each comparation it
+                                        returns '0' if strings are equal, '-1' if input stream is
+                                        alphabethically smaller than "str" and '1' in the opposite case.
+                                        When 'ignore' is non-zero the compare works case-insensitive.
+
 		srt("orig=dest",...)	replace command, invokes SRT
                                         (see LINK{parser.hlp})
 
@@ -230,6 +235,15 @@ SECTION COMMANDLIST
                         percantage of characters of a word that mach a character in 'chars'
                         before word is taken. All words will be seperated by white space.
 
+                taxonomy([treename,] depth)
+
+                        Returns the taxonomy of the current species or group as defined by a tree.
+
+                        If 'treename' is specified, its used as tree, otherwise the 'default tree'
+                        is used (which in most cases is the tree displayed in the ARB_NT main window).
+
+                        'depth' specifies how many "levels" of the taxonomy are used.
+
 	SPECIALS
 
 		exec(command,var1,...)
@@ -305,4 +319,9 @@ EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE_";dd
 
 				the number of non '.-' symbols (sequence length )
 
-		sequence|statistic
+                "[";taxonomy(tree_other,3);" -> ";taxonomy(3);"]"
+
+                                shows for each species how their taxonomy
+                                changed between "tree_other" and current tree
+
+BUGS            The output of taxonomy() is not always instantly refreshed.
