@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Wed Dec/10/2003 14:29 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Tue Dec/16/2003 14:33 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -43,6 +43,7 @@
 
 
 #endif
+
 
 
 //  --------------
@@ -133,8 +134,8 @@ GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
     gb_name = GB_find(gb_pseudo, "name", 0, down_level);
 
     error = GB_export_error("The gene-species '%s' refers to an unknown organism (%s)\n"
-                            "This occurs if you rename or delete the organism or change the entry 'ARB_origin_species'\n"
-                            "and might cause serious problems.",
+                            "This occurs if you rename or delete the organism or change the entry\n"
+                            "'ARB_origin_species' and will most likely cause serious problems.",
                             GB_read_char_pntr(gb_name),
                             GEN_origin_organism(gb_pseudo));
 
@@ -212,5 +213,76 @@ GBDATA* GEN_next_pseudo_species(GBDATA *gb_species) {
     return gb_species;
 }
 
+GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main) {
+    GBDATA *gb_species = GBT_first_marked_species(gb_main);
 
+    if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) return gb_species;
+    return GEN_next_marked_pseudo_species(gb_species);
+}
+
+GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
+    if (gb_species) {
+        while (1) {
+            gb_species = GBT_next_marked_species(gb_species);
+            if (!gb_species || GEN_is_pseudo_gene_species(gb_species)) break;
+        }
+    }
+    return gb_species;
+}
+
+
+
+/* ------------------------ */
+/*        organisms         */
+/* ------------------------ */
+
+GB_BOOL GEN_is_organism(GBDATA *gb_species) {
+    return
+        !GEN_is_pseudo_gene_species(gb_species) &&
+        GEN_get_gene_data(gb_species) != 0; // has gene_data
+}
+
+GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name) {
+    GBDATA *gb_orga = GBT_find_species(gb_main, name);
+    if (gb_orga) {
+        if (!GEN_is_organism(gb_orga)) {
+            fprintf(stderr, "ARBDB-warning: found unspecific species named '%s', but expected an 'organism' with that name\n", name);
+            gb_orga = 0;
+        }
+    }
+    return gb_orga;
+}
+
+GBDATA *GEN_first_organism(GBDATA *gb_main) {
+    GBDATA *gb_organism = GBT_first_species(gb_main);
+
+    if (!gb_organism || GEN_is_organism(gb_organism)) return gb_organism;
+    return GEN_next_organism(gb_organism);
+}
+GBDATA *GEN_next_organism(GBDATA *gb_organism) {
+    if (gb_organism) {
+        while (1) {
+            gb_organism = GBT_next_species(gb_organism);
+            if (!gb_organism || GEN_is_organism(gb_organism)) break;
+        }
+    }
+    return gb_organism;
+
+}
+
+GBDATA *GEN_first_marked_organism(GBDATA *gb_main) {
+    GBDATA *gb_organism = GBT_first_marked_species(gb_main);
+
+    if (!gb_organism || GEN_is_organism(gb_organism)) return gb_organism;
+    return GEN_next_marked_organism(gb_organism);
+}
+GBDATA *GEN_next_marked_organism(GBDATA *gb_organism) {
+    if (gb_organism) {
+        while (1) {
+            gb_organism = GBT_next_marked_species(gb_organism);
+            if (!gb_organism || GEN_is_organism(gb_organism)) break;
+        }
+    }
+    return gb_organism;
+}
 
