@@ -262,6 +262,12 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     free(filter);
 }
 
+static bool filter_has_changed = false;
+
+void awt_create_selection_box_changed_filter(void *, struct adawcbstruct *) {
+    filter_has_changed = true;
+}
+
 void awt_create_selection_box_changed_filename(void *, struct adawcbstruct *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
@@ -337,6 +343,10 @@ void awt_create_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                         GB_CSTR  suffix  = AWT_get_suffix(newName);
 
                         if (!suffix || strcmp(suffix, pfilter) != 0) {
+                            if (suffix && filter_has_changed) {
+                                *(char*)suffix = 0; // suffix points into new name - so changing is ok here
+                            }
+
                             char *n = strdup(AWT_append_suffix(newName, pfilter));
                             free(newName);
                             newName = n;
@@ -359,6 +369,8 @@ void awt_create_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
         }
     }
 
+    filter_has_changed = false;
+
     free(fname);
 }
 
@@ -380,6 +392,7 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char
     aw_root->awar(acbs->def_dir)->add_callback((AW_RCB1)awt_create_selection_box_cb,(AW_CL)acbs);
 
     acbs->def_filter = GBS_string_eval(awar_prefix,"*=*/filter",0);
+    aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)awt_create_selection_box_changed_filter,(AW_CL)acbs);
     aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)awt_create_selection_box_changed_filename,(AW_CL)acbs);
     aw_root->awar(acbs->def_filter)->add_callback((AW_RCB1)awt_create_selection_box_cb,(AW_CL)acbs);
 
