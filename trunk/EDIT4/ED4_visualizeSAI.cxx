@@ -235,6 +235,7 @@ AW_selection_list *buildClrTransTabNamesList(AW_window *aws, AW_selection_list *
     aws->update_selection_list(clrTransTabNamesList);
 
     free(tok); free(clrTransTabNames);
+
     return clrTransTabNamesList;
 }
 
@@ -265,41 +266,48 @@ char *getSaiColorString(int start, int end){
 
     if (gb_extended) {
         GBDATA *saiSequence = GBT_read_sequence(gb_extended,alignment_name);
-        if(saiSequence){
-            int seqLen          = GB_read_string_count(saiSequence);
-            char *saiData       = GB_read_string(saiSequence);
-            
-            free(saiColors);
-            saiColors = (char *)malloc(sizeof(char) * (seqLen+1));
+        if (saiSequence) {
+            int seqLen    = GB_read_string_count(saiSequence);
+            char *saiData = GB_read_string(saiSequence);
             
             char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", saiSelected);                  
-            char *clrTransTabName   = awr->awar(buf)->read_string();
-            char *clrTransTabString = awr->awar(getClrDefAwar(clrTransTabName))->read_string(); 
-            char *tok; int clrRange = 0;
-            
-            if (strcmp(clrTransTabString,"") != 0) {
-                for (tok = strtok(clrTransTabString,";"); tok; tok = strtok(0,";"), clrRange++) {
-                    int j = 0; 
-                    while(tok[j]) {
-                        for (int i = 0; i<seqLen; i++) {
-                            if(tok[j]==saiData[i])
-                                saiColors[i] = clrRange;
+            awr->awar_string(buf, "", AW_ROOT_DEFAULT);
+            char *clrTransTabName = awr->awar(buf)->read_string();
+
+            if(strcmp(clrTransTabName,"") != 0) {
+                char *clrTransTabString = awr->awar(getClrDefAwar(clrTransTabName))->read_string(); 
+                char *tok; int clrRange = 0;
+                
+                if (strcmp(clrTransTabString,"") != 0) {
+                    free(saiColors);
+                    saiColors = (char *)malloc(sizeof(char) * (seqLen+1));
+                    
+                    for (tok = strtok(clrTransTabString,";"); tok; tok = strtok(0,";"), clrRange++) {
+                        int j = 0; 
+                        while(tok[j]) {
+                            for (int i = 0; i<seqLen; i++) {
+                                if(tok[j]==saiData[i])
+                                    saiColors[i] = clrRange;
+                            }
+                            j++;
                         }
-                        j++;
                     }
                 }
+                free(tok);free(clrTransTabString);
             }
-            free(tok); free(clrTransTabString); free(clrTransTabName); free(saiData);
+            free(clrTransTabName); free(saiData);
         }
     }
     free(alignment_name); free(saiSelected);
     GB_pop_transaction(gb_main);
 
-    for (int i = end-start; i>=0; i--) {   // checking for the negative values 
-        if(saiColors[i]<0) saiColors[i] = 0;
+    if (saiColors){
+        for (int i = end-start; i>=0; i--) {   // checking for the negative values 
+            if(saiColors[i]<0) saiColors[i] = 0;
+        }
+        return saiColors;
     }
-
-    return saiColors;
+    else  return 0;
 }
 
 
@@ -449,7 +457,9 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root){
 
     aws->at("clrTrList");
     clrTransTableLst = buildClrTransTabNamesList(aws,clrTransTableLst);
-    saiChanged_callback(aw_root);
+    if (const char *transTabName = clrTransTableLst->first_element()) {
+        saiChanged_callback(aw_root);
+    }
 
     aws->at("edit");
     aws->button_length(10);
