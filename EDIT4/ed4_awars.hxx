@@ -107,7 +107,7 @@
 #define ED4_AWAR_PROBE_SEARCH_COMPLEMENT	    "search/probe/complement"
 #define ED4_AWAR_PROBE_SEARCH_EXACT		        "search/probe/exact"
 
-#define ED4_AWAR_PRIMER1_SEARCH_PATTERN		    "search/primer1/pattern"
+#define ED4_AWAR_PRIMER1_SEARCH_PATTERN		    AWAR_PRIMER_TARGET_STRING
 #define ED4_AWAR_PRIMER1_SEARCH_MIN_MISMATCHES	"search/primer1/min_mismatches"
 #define ED4_AWAR_PRIMER1_SEARCH_MAX_MISMATCHES	"search/primer1/max_mismatches"
 #define ED4_AWAR_PRIMER1_SEARCH_CASE		    "search/primer1/case"

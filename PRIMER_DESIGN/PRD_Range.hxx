@@ -15,8 +15,8 @@ public:
   Range ();
   ~Range () {};
 
-  PRD_Sequence_Pos  min()   { return minimum; }
-  PRD_Sequence_Pos  max()   { return maximum; }
+  PRD_Sequence_Pos  min() const  { return minimum; }
+  PRD_Sequence_Pos  max() const  { return maximum; }
   PRD_Sequence_Pos  range() { return maximum - minimum; }
   bool includes ( PRD_Sequence_Pos value_ );				// check if given value is in range
   bool includes ( PRD_Sequence_Pos min_, PRD_Sequence_Pos max_ );	// check if given range overlaps self

@@ -168,7 +168,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 
 	create_insertchar_variables(awr,def);
 	create_probe_design_variables(awr,def,gb_main);
-	create_primer_design_variables(awr,def);
+	create_primer_design_variables(awr,def, gb_main);
 	create_trees_var(awr,def);
 	create_extendeds_var(awr,def);
 	create_species_var(awr,def);

@@ -1175,7 +1175,7 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
 void AW_window::insert_selection( AW_selection_list *selection_list, const char *displayed, const char *value ) {
 
     if ( selection_list->variable_type != AW_STRING ) {
-        AW_ERROR( "Selection list not defined for strings" );
+        AW_ERROR( "This selection list is only defined for strings" );
         return;
     }
 
@@ -1192,7 +1192,7 @@ void AW_window::insert_selection( AW_selection_list *selection_list, const char 
 void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, const char *value ) {
 
     if ( selection_list->variable_type != AW_STRING ) {
-        AW_ERROR( "Selection list nor defined for strings" );
+        AW_ERROR( "This selection list is only defined for strings" );
         return;
     }
     if ( selection_list->default_select ) {
@@ -1205,7 +1205,7 @@ void AW_window::insert_default_selection( AW_selection_list *selection_list, con
 void AW_window::insert_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
 
     if ( selection_list->variable_type != AW_INT ) {
-        AW_ERROR( "Selection list nor defined for ints" );
+        AW_ERROR( "This selection list is only defined for ints" );
         return;
     }
     if ( selection_list->list_table ) {
@@ -1221,7 +1221,7 @@ void AW_window::insert_selection( AW_selection_list *selection_list, const char 
 void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
 
     if ( selection_list->variable_type != AW_INT ) {
-        AW_ERROR( "Selection list nor defined for ints" );
+        AW_ERROR( "This selection list is only defined for ints" );
         return;
     }
     if ( selection_list->default_select ) {

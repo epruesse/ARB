@@ -8,6 +8,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -94,7 +95,7 @@ bool PrimerDesign::setPositionalParameters( Range pos1_, Range pos2_, Range leng
       return false;
     }
     // pos2_.min - pos1_.max must be less than distance_.max
-    if ( distance_.max() < pos2_.min() - pos1_.max() ) {  
+    if ( distance_.max() < pos2_.min() - pos1_.max() ) {
       error = "invalid maximal primer distance (less than min.right - max.left)";
       return false;
     }
@@ -532,7 +533,7 @@ void PrimerDesign::convertTreesToLists ()
     }
 
   if ( !stack->empty() ) {
-    GC_and_temperature_matched = false;    
+    GC_and_temperature_matched = false;
 
     while ( !stack->empty() ) {
       // next node
@@ -658,7 +659,7 @@ void PrimerDesign::convertTreesToLists ()
 	return;
       }
     }
-    
+
     if ( !GC_and_temperature_matched ) {
       error = "no primer over right range matched the given GC-Ratio and Temperature";
       delete stack;
@@ -685,7 +686,7 @@ void PrimerDesign::convertTreesToLists ()
     cur_item = list1;
 
     while ( cur_item != NULL ) {
-      if ( !primer_distance.includes( max_pos_2-cur_item->start_pos, min_pos_2-cur_item->start_pos ) ) {
+      if ( !primer_distance.includes( max_pos_2-cur_item->end_pos, min_pos_2-cur_item->end_pos ) ) {
 	// primer in list 1 out of range of primers in list 2 => remove from list 1
 
 	if ( cur_item == list1 ) {
@@ -851,4 +852,15 @@ void PrimerDesign::printPrimerPairs ()
     printf( "printPairs : [%3i]",i );
     pairs[i].print( "\t","\n",sequence );
   }
+}
+
+//  ------------------------------------------------------------
+//      const char *PrimerDesign::get_result(int num) const
+//  ------------------------------------------------------------
+const char *PrimerDesign::get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length) const {
+    if (num < 0 || num >= max_count_primerpairs) return 0;
+    if (!pairs[num].one || !pairs[num].two) return 0;
+
+    primers = pairs[num].get_primers(sequence);
+    return pairs[num].get_result(sequence,  max_primer_length,  max_position_length,  max_length_length);
 }

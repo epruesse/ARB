@@ -49,29 +49,29 @@ void probe_design_create_result_window(AW_window *aww)
         pd_gl.pd_design->show();
         return;
     }
-    pd_gl.pd_design = new AW_window_simple; 
+    pd_gl.pd_design = new AW_window_simple;
     pd_gl.pd_design->init(aww->get_root(), "PD_RESULT", "PD RESULT", 0, 400);
     pd_gl.pd_design->load_xfig("pd_reslt.fig");
 
     pd_gl.pd_design->at("close");
     pd_gl.pd_design->callback((AW_CB0)AW_POPDOWN);
-    pd_gl.pd_design->create_button("CLOSE", "CLOSE", "C");				       
+    pd_gl.pd_design->create_button("CLOSE", "CLOSE", "C");
 
     pd_gl.pd_design->at("help");
     pd_gl.pd_design->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
-    pd_gl.pd_design->create_button("HELP", "HELP", "H");				       
+    pd_gl.pd_design->create_button("HELP", "HELP", "H");
 
     pd_gl.pd_design->at( "result" );
     pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
     pd_gl.pd_design->set_selection_list_suffix(pd_gl.pd_design_id, "prb");
-	
+
     pd_gl.pd_design->at("save");
     pd_gl.pd_design->callback( AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
-    pd_gl.pd_design->create_button("SAVE", "SAVE", "S");				       
+    pd_gl.pd_design->create_button("SAVE", "SAVE", "S");
 
     pd_gl.pd_design->at("print");
     pd_gl.pd_design->callback( create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
-    pd_gl.pd_design->create_button("PRINT", "PRINT", "P");				       
+    pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
 
     pd_gl.pd_design->show();
 }
@@ -145,7 +145,7 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 {
     int i;
     char buffer[256];
-    if (aisc_put(pd_gl.link, PT_PDC, pdc, 
+    if (aisc_put(pd_gl.link, PT_PDC, pdc,
                  PDC_DTEDGE, 	(double)root->awar("probe_design/DTEDGE")->read_float()*100.0,
                  PDC_DT,		(double)root->awar("probe_design/DT")->read_float()*100.0,
                  PDC_SPLIT,	(double)root->awar("probe_design/SPLIT")->read_float(),
@@ -248,7 +248,7 @@ void probe_design_event(AW_window *aww)
         aw_closestatus();
         return;
     }
-	
+
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_NAMES, &bs,
              PDC_CHECKSUMS, &check,
@@ -314,7 +314,7 @@ void probe_design_event(AW_window *aww)
     aw_status("Read the results from the server");
     {
         char *locs_error = 0;
-        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+        if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
                       LOCS_ERROR	,&locs_error,
                       0)){
             aw_message ("Connection to PT_SERVER lost (1)");
@@ -327,13 +327,13 @@ void probe_design_event(AW_window *aww)
         delete locs_error;
     }
 
-    aisc_get( pd_gl.link, PT_PDC, pdc, 
+    aisc_get( pd_gl.link, PT_PDC, pdc,
               PDC_TPROBE, &tprobe,
               0);
 
     probe_design_create_result_window(aww);
     pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
-	
+
     if (tprobe) {
         aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                   TPROBE_INFO_HEADER,	&match_info,
@@ -366,7 +366,7 @@ void probe_design_event(AW_window *aww)
     int my_TPROBE_MISHIT;
     int my_TPROBE_APOS;
     int my_TPROBE_ECOLI_POS;
-    
+
 #endif // TEST_PD
 
     while (	tprobe ){
@@ -375,12 +375,12 @@ void probe_design_event(AW_window *aww)
                       TPROBE_NEXT,		&tprobe_next,
                       TPROBE_INFO,		&match_info,
 #if defined(TEST_PD)
-                      TPROBE_KEY, &my_TPROBE_KEY, 
-                      TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING, 
-                      TPROBE_CNT, &my_TPROBE_CNT, 
-                      TPROBE_PARENT, &my_TPROBE_PARENT, 
-                      TPROBE_LAST, &my_TPROBE_LAST, 
-                      TPROBE_IDENT, &my_TPROBE_IDENT, 
+                      TPROBE_KEY, &my_TPROBE_KEY,
+                      TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
+                      TPROBE_CNT, &my_TPROBE_CNT,
+                      TPROBE_PARENT, &my_TPROBE_PARENT,
+                      TPROBE_LAST, &my_TPROBE_LAST,
+                      TPROBE_IDENT, &my_TPROBE_IDENT,
                       TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // Sondensequenz codiert (2=A 3=C 4=G 5=U)
                       TPROBE_QUALITY, &my_TPROBE_QUALITY, // Qualitaet der Sonde ?
 #endif // TEST_PD
@@ -390,13 +390,13 @@ void probe_design_event(AW_window *aww)
 #if defined(TEST_PD)
         if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                       TPROBE_GROUPSIZE, &my_TPROBE_GROUPSIZE, // groesse der Gruppe,  die von Sonde getroffen wird?
-                      TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN, 
-                      TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN, 
-                      //                      TPROBE_PERC, &my_TPROBE_PERC, 
-                      TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE, 
+                      TPROBE_HAIRPIN, &my_TPROBE_HAIRPIN,
+                      TPROBE_WHAIRPIN, &my_TPROBE_WHAIRPIN,
+                      //                      TPROBE_PERC, &my_TPROBE_PERC,
+                      TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
                       TPROBE_MISHIT, &my_TPROBE_MISHIT, // Treffer ausserhalb von Gruppe ?
                       TPROBE_APOS, &my_TPROBE_APOS, // Alignment-Position
-                      TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS, 
+                      TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS,
                       0)) break;
 #endif // TEST_PD
         tprobe = tprobe_next;
@@ -439,7 +439,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     GBDATA *gb_species_data = 0;
     GBDATA *gb_species;
     int show_status = 0;
-    int extras = 1; // mark species, write to temp fields, 
+    int extras = 1; // mark species, write to temp fields,
 
     if( !(servername=(char *)probe_pt_look_for_server(root)) ){
         return;
@@ -447,16 +447,16 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
     if (selection_id) {
         aww->clear_selection_list(selection_id);
-        pd_assert(!counter); 
+        pd_assert(!counter);
         show_status = 1;
     }
     else {
         pd_assert(counter); // either selection_id or counter must be defined!
         extras = 0;
     }
-    
+
     if (show_status) {
-        aw_openstatus("Probe Match"); 
+        aw_openstatus("Probe Match");
         aw_status("Open Connection");
     }
 
@@ -470,7 +470,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
         return;
     }
-    if (show_status) aw_status("Initialize Server"); 
+    if (show_status) aw_status("Initialize Server");
     if (init_local_com_struct() ) {
         aw_message ("Cannot contact Probe bank server (2)");
         if (show_status) aw_closestatus();
@@ -503,7 +503,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         if (show_status) aw_closestatus();
         return;
     }
-    
+
     if (selection_id) {
         sprintf(result, "Searched for                                     %s",probe);
         aww->insert_selection( selection_id, result, probe );
@@ -535,7 +535,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     bytestring bs;
     bs.data = 0;
     if (show_status) aw_status("Read the Results");
-    if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, 
+    if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_LIST,	&match_list,
                   LOCS_MATCH_LIST_CNT,	&match_list_cnt,
                   LOCS_MATCH_STRING,	&bs,
@@ -544,7 +544,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         aw_message ("Connection to PT_SERVER lost (3)");
         if (show_status) aw_closestatus();
     }
-	
+
     if (*locs_error) {
         aw_message(locs_error);
     }
@@ -558,11 +558,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     toksep[0] = 1;
     toksep[1] = 0;
     char *hinfo = strtok(bs.data,toksep);
-    
+
     if (hinfo) {
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
     }
-    
+
     while (hinfo && (match_name = strtok(0,toksep)) ) {
         match_info = strtok(0,toksep);
         if (!match_info) break;
@@ -603,25 +603,25 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }else{
             sprintf(result, ". %s",match_info);
         }
-	
+
         if (selection_id) aww->insert_selection( selection_id, result, match_name );
         mcount++;
     }
-    
+
     if (counter) *counter = mcount;
-    
+
     delete bs.data;
     if (gb_main) GB_commit_transaction(gb_main);
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
 
     if (selection_id) {
-        aww->insert_default_selection( selection_id, "****** End of List *******", "" );	
+        aww->insert_default_selection( selection_id, "****** End of List *******", "" );
         if (show_status) aw_status("Formatting output");
         aww->update_selection_list( selection_id );
     }
-    
-    if (show_status) aw_closestatus(); 
+
+    if (show_status) aw_closestatus();
     return;
 }
 
@@ -632,33 +632,33 @@ void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
 
     aww->init_list_entry_iterator(iselection_id); // init
     aw_openstatus("Matching all resolved strings");
-    
+
     int string_count = aww->get_no_of_entries(iselection_id);
     int local_count = 0;
-    
+
     for (;;) {
-        const char *entry = aww->get_list_entry_char_value(); 
+        const char *entry = aww->get_list_entry_char_value();
         if (!entry) break;
-	
+
         double percent = local_count++/double(string_count);
         aw_status(GBS_global_string("Match string %i of %i", local_count, string_count));
         aw_status(percent);
-	
+
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
         probe_match_event(aww, AW_CL(0), AW_CL(&counter));
         if (counter==-1) break;
 
         char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
-        sprintf(buffer, "%5i %s", counter, entry); 
+        sprintf(buffer, "%5i %s", counter, entry);
         aww->set_list_entry_displayed(buffer);
         delete buffer;
-	
-        aww->iterate_list_entry(1); // iterate	
+
+        aww->iterate_list_entry(1); // iterate
     }
-    
+
     aw_closestatus();
-    
+
     aww->sort_selection_list(iselection_id, 1);
     aww->update_selection_list(iselection_id);
     root->awar(AWAR_TARGET_STRING)->write_string(target_string);
@@ -666,7 +666,7 @@ void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
 
 void resolved_probe_chosen(AW_root *root) {
     char *string = root->awar(AWAR_PD_MATCH_RESOLVE)->read_string();
-    root->awar(AWAR_TARGET_STRING)->write_string(string);    
+    root->awar(AWAR_TARGET_STRING)->write_string(string);
 }
 
 void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
@@ -742,7 +742,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_int( "probe_match/clip_hits", 1000  ,    db1);
     root->awar_string(AWAR_TARGET_STRING, ""  ,    global);
     root->awar_int( "tmp/probe_match/nhits", 0  ,    db1);
-	
+
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", db1)->add_callback(resolved_probe_chosen);
     root->awar_string(AWAR_ITARGET_STRING, "", global);
 
@@ -755,7 +755,7 @@ AW_window *create_fig( AW_root *root, char *file)  {
 	aws->load_xfig(file);
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 	return aws;
 }
 */
@@ -771,11 +771,11 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->callback( AW_POPUP_HELP, (AW_CL)"pd_spec_param.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","C");			   
+    aws->create_button("HELP","HELP","C");
 
     aws->at("dt");
     aws->create_input_field("probe_design/DT",6);
@@ -904,16 +904,16 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP,(AW_CL)"probedesign.hlp");
-    aws->create_button("HELP","HELP","H");			   
+    aws->create_button("HELP","HELP","H");
 
     aws->callback( probe_design_event);
     aws->at("design");
     aws->highlight();
-    aws->create_button("GO","GO","G");			   
+    aws->create_button("GO","GO","G");
 
     //	aws->callback( (AW_CB1)AW_save_defaults, (int) def);
     //	aws->at("save_default");
@@ -921,15 +921,15 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
 
     aws->callback( probe_design_create_result_window);
     aws->at("result");
-    aws->create_button("RESULT","RESULT","S");			   
+    aws->create_button("RESULT","RESULT","S");
 
     //	aws->callback( AW_POPUP, (AW_CL)create_probe_design_window, (int)def);
     //	aws->at("open");
-    //	aws->create_button("REOPEN","REOPEN","S");	
+    //	aws->create_button("REOPEN","REOPEN","S");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
     aws->at("expert");
-    aws->create_button("EXPERT","EXPERT","S");			   
+    aws->create_button("EXPERT","EXPERT","S");
 
     aws->at( "pt_server" );
     probe_design_build_pt_server_choices(aws,AWAR_PT_SERVER,AW_FALSE);
@@ -987,43 +987,43 @@ static GB_alignment_type ali_used_for_resolvement = GB_AT_UNKNOWN;
 
 static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid) {
     AW_window *aww = (AW_window*)cl_aww;
-    AW_selection_list *selection_id = (AW_selection_list*)cl_selid; 
-    
+    AW_selection_list *selection_id = (AW_selection_list*)cl_selid;
+
     pd_assert(ali_used_for_resolvement==GB_AT_RNA || ali_used_for_resolvement==GB_AT_DNA);
     int index = ali_used_for_resolvement==GB_AT_RNA ? 1 : 0;
-    
+
     aww->clear_selection_list(selection_id);
-    
+
     AW_root *root = aww->get_root();
     char *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
     GB_ERROR err = 0;
-    
+
     if (istring && istring[0]) { // contains sth?
         my_strupr(istring);
-	
+
         int bases_to_resolve = 0;
         char *istr = istring;
         int istring_length = strlen(istring);
-	
+
         for (;;) {
             char i = *istr++;
             if (!i) break;
             if (i=='?') continue; // ignore '?'
-	    
-            int idx = i-'A';	    
-            if (idx<0 || idx>=26 || AWT_iupac_code[idx][index].iupac==0) {		
+
+            int idx = i-'A';
+            if (idx<0 || idx>=26 || AWT_iupac_code[idx][index].iupac==0) {
                 err = GB_export_error("Illegal character '%c' in IUPAC-String", i);
                 break;
             }
-	    
+
             if (AWT_iupac_code[idx][index].count>1) {
                 bases_to_resolve++;
             }
         }
-	
+
         if (!err) {
             int *offsets_to_resolve = new int[bases_to_resolve];
-            int resolutions = 1;	    
+            int resolutions = 1;
             {
                 istr = istring;
                 int offset = 0;
@@ -1031,58 +1031,58 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                 for (;;) {
                     char i = *istr++;
                     if (!i) break;
-		    
+
                     if (i!='?') {
                         int idx = AWT_iupac2index(i);
-                        pd_assert(AWT_iupac_code[idx][index].iupac);		
-		
+                        pd_assert(AWT_iupac_code[idx][index].iupac);
+
                         if (AWT_iupac_code[idx][index].count>1) {
                             offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
                             resolutions *= AWT_iupac_code[idx][index].count; // calc # of resolutions
                         }
                     }
-                    offset++;		
+                    offset++;
                 }
             }
-	    
+
             int cont = 1;
             if (resolutions>5000) {
                 const char *warning = GBS_global_string("Resolution of this string will result in %i single strings", resolutions);
                 cont = aw_message(warning, "Abort,Continue");
             }
-	    
-            if (cont) { // continue with resolution?		
+
+            if (cont) { // continue with resolution?
                 int *resolution_idx = new int[bases_to_resolve];
                 int *resolution_max_idx = new int[bases_to_resolve];
                 {
-                    int i;		
+                    int i;
                     for (i=0; i<bases_to_resolve; i++) {
                         resolution_idx[i] = 0;
                         int idx = AWT_iupac2index(istring[offsets_to_resolve[i]]);
                         resolution_max_idx[i] = AWT_iupac_code[idx][index].count-1;
                     }
                 }
-		
+
                 char *buffer = new char[istring_length+1];
                 int not_last = resolutions-1;
-		
+
                 for (;;) {
                     // create string according to resolution_idx[]:
                     int i;
-		    
+
                     memcpy(buffer, istring, istring_length+1);
                     for (i=0; i<bases_to_resolve; i++) {
                         int off = offsets_to_resolve[i];
                         int idx = AWT_iupac2index(istring[off]);
-			
+
                         pd_assert(AWT_iupac_code[idx][index].iupac);
                         buffer[off] = AWT_iupac_code[idx][index].iupac[resolution_idx[i]];
                     }
-		    
-                    /*if (not_last) */	aww->insert_selection        (selection_id, buffer, buffer); 
+
+                    /*if (not_last) */	aww->insert_selection        (selection_id, buffer, buffer);
                     /*else 		aww->insert_default_selection(selection_id, buffer, buffer); */
                     not_last--;
-		    
+
                     // permutatate indices:
                     int nidx = bases_to_resolve-1;
                     int done = 0;
@@ -1094,24 +1094,24 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                         }
                         nidx--;
                     }
-                    if (!done) break; // we did all permutations!		    
-		    
+                    if (!done) break; // we did all permutations!
+
                     nidx++; // do not touch latest incremented index
                     while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
                 }
-		
+
                 delete buffer;
                 delete resolution_max_idx;
                 delete resolution_idx;
-		
+
                 aww->insert_default_selection(selection_id, "", "");
                 aww->update_selection_list(selection_id);
-            }	    
-	    
+            }
+
             delete offsets_to_resolve;
         }
     }
-    
+
     if (err) {
         aw_message(err);
     }
@@ -1127,15 +1127,15 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"probematch.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");			   
+    aws->create_button("HELP","HELP","H");
 
     aws->at("string");
     aws->create_input_field(AWAR_TARGET_STRING,32);
-	
+
     AW_selection_list *selection_id;
     aws->at( "result" );
     selection_id = aws->create_selection_list( AWAR_PD_MATCH_ITEM, NULL, "", 110, 15 );
@@ -1143,11 +1143,11 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
 
     aws->callback( create_print_box_for_selection_lists, (AW_CL)selection_id );
     aws->at("print");
-    aws->create_button("PRINT","PRINT","P");			   
+    aws->create_button("PRINT","PRINT","P");
 
     aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_probe_design_expert_window);
     aws->at("expert");
-    aws->create_button("EXPERT","EXPERT","S");			   
+    aws->create_button("EXPERT","EXPERT","S");
 
     aws->at( "pt_server" );
     probe_design_build_pt_server_choices(aws,AWAR_PT_SERVER,AW_FALSE);
@@ -1172,29 +1172,29 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->update_option_menu();
 
     aws->at("tmp");
-    aws->create_toggle( "probe_match/write_2_tmp" );	
+    aws->create_toggle( "probe_match/write_2_tmp" );
 
     aws->at("nhits");
     aws->create_button(0,"tmp/probe_match/nhits");
-	
+
     // stuff for resolution ofg iupac-codes
-	
+
     AW_selection_list *iselection_id;
     aws->at( "iresult" );
     iselection_id = aws->create_selection_list( AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15 );
-    aws->insert_default_selection( iselection_id, "---empty---", "" ); 
-	
+    aws->insert_default_selection( iselection_id, "---empty---", "" );
+
     aws->at("istring");
-    aws->create_input_field(AWAR_ITARGET_STRING,32);	
-	
-    // automatically resolve AWAR_ITARGET_STRING: 
+    aws->create_input_field(AWAR_ITARGET_STRING,32);
+
+    // automatically resolve AWAR_ITARGET_STRING:
     ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-    root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id)); 
-	
+    root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
+
     aws->callback(probe_match_all_event, (AW_CL)iselection_id);
     aws->at("match_all");
     aws->create_button("MATCH_ALL", "MATCH ALL", "A");
-	
+
     aws->callback(probe_match_event,(AW_CL)selection_id, (AW_CL)0);
     aws->at("match");
     aws->create_button("MATCH","MATCH","D");
@@ -1206,7 +1206,7 @@ void pd_start_pt_server(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
     char pt_server[256];
-    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());	
+    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     GB_ERROR error;
     aw_openstatus("Start a server");
     aw_status("Look for server or start one");
@@ -1233,7 +1233,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
             if (!choice) break;
             sprintf(AW_ERROR_BUFFER,"Try to call '%s'",choice);
             aw_status(AW_ERROR_BUFFER);
-            sprintf(pt_server,"ARB_PT_SERVER%li",i);	
+            sprintf(pt_server,"ARB_PT_SERVER%li",i);
             error = arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
             if (error) {
                 sprintf(AW_ERROR_BUFFER,"NOP    '%s' -- %s",choice,error);
@@ -1273,7 +1273,7 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strcat(strstruct,"$ARBHOME/bin/arb_who");
     char *sys = GBS_strclose(strstruct,0);
     GB_xcmd(sys,1);
-    delete sys;	
+    delete sys;
     delete rsh;
 }
 
@@ -1313,7 +1313,7 @@ void pd_export_pt_server(AW_window *aww)
                 *dir = '/';
                 modi &= 0666;
                 error = GB_set_mode_of_file(file,modi);
-            } 
+            }
         }
         error = 0;
         aw_status("Start new server");
@@ -1338,11 +1338,11 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"probeadmin.hlp");
     aws->at("help");
-    aws->create_button("HELP","HELP","H");			   
+    aws->create_button("HELP","HELP","H");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");			   
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->button_length(18);
 
@@ -1351,74 +1351,74 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
 
     aws->at( "kill" );
     aws->callback(pd_kill_pt_server,0);
-    aws->create_button("KILL_SERVER","KILL SERVER");			   
+    aws->create_button("KILL_SERVER","KILL SERVER");
 
     aws->at( "kill_all" );
     aws->callback(pd_kill_pt_server,1);
-    aws->create_button("KILL_ALL_SERVERS","KILL ALL SERVERS");			   
+    aws->create_button("KILL_ALL_SERVERS","KILL ALL SERVERS");
 
     aws->at( "start" );
     aws->callback(pd_start_pt_server);
-    aws->create_button("START_SERVER","START SERVER");			   
+    aws->create_button("START_SERVER","START SERVER");
 
     aws->at( "export" );
     aws->callback(pd_export_pt_server);
-    aws->create_button("UPDATE_SERVER","UPDATE SERVER");			   
+    aws->create_button("UPDATE_SERVER","UPDATE SERVER");
 
     aws->at( "query" );
     aws->callback(pd_query_pt_server);
-    aws->create_button("CHECK_SERVER","CHECK SERVER");			   
+    aws->create_button("CHECK_SERVER","CHECK SERVER");
 
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp);
-    aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");			   
+    aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
 
     return aws;
 }
 
-// -------------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------------
 // Probe group result visualization
 
 #define AWAR_PG_SELECTED_RESULT "tmp/pg_result/selected"
 
-static struct pg_global_struct {    
-    char *awar_pg_result_filename; // awar containing result filename    
-    AW_window_simple *pg_groups_window; // window showing groups    
+static struct pg_global_struct {
+    char *awar_pg_result_filename; // awar containing result filename
+    AW_window_simple *pg_groups_window; // window showing groups
     AW_selection_list *selList; // list containing groups
-    AW_root *aw_root; 
+    AW_root *aw_root;
     AWT_canvas *ntw; // canvas of main window
-    
+
     char *pg_filename;  // database containing results (from one result file)
     GBDATA *pg_main;    // root-handle of database
-    
+
 } pg_global;
 
 
 
 static void pg_result_selected(AW_window *aww) {
-    
+
     AW_root *aw_root = pg_global.aw_root;
     long position = aw_root->awar(AWAR_PG_SELECTED_RESULT)->read_int();
-    
+
     if (position) { // ignore headline
         long i = 1;
-        
+
         GB_transaction dummy(pg_global.pg_main);
         GB_transaction dummy2(gb_main);
-        
+
         GBT_mark_all(gb_main, 0); // unmark all species
-        
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);        
+
+        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
         gb_assert(gb_species_data);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
-        
+
         for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
             if (i==position) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
                 for (; pg_species; pg_species=GB_find(pg_species, 0, 0, this_level+search_next), count++)  {
-                    const char *name = GB_read_char_pntr(pg_species);                    
+                    const char *name = GB_read_char_pntr(pg_species);
                     GBDATA *gb_speciesname = GB_find(gb_species_data, "name", name, down_2_level);
                     if (gb_speciesname) {
                         GBDATA *gb_species = GB_get_father(gb_speciesname);
@@ -1431,163 +1431,163 @@ static void pg_result_selected(AW_window *aww) {
                     }
                     else {
                         aw_message(GBS_global_string("No species '%s' in current DB", name));
-                    }                    
+                    }
                 }
                 break;
             }
         }
-        
+
         if (marked!=count) {
             aw_message(GBS_global_string("%i species were in group - %i species marked in database", count, marked));
         }
-        
+
         NT_group_not_marked_cb(0, pg_global.ntw);
     }
 }
 
 
 // --------------------------------------------------------------------------------
-//     static void create_probe_group_result_awars(AW_root *aw_root) 
+//     static void create_probe_group_result_awars(AW_root *aw_root)
 // --------------------------------------------------------------------------------
 static void create_probe_group_result_awars(AW_root *aw_root) {
-    aw_root->awar_int(AWAR_PG_SELECTED_RESULT, 0);    
+    aw_root->awar_int(AWAR_PG_SELECTED_RESULT, 0);
 }
 
 // --------------------------------------------------------------------------------
-//     static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
+//     static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws)
 // --------------------------------------------------------------------------------
 static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) {
     char *file_name = aw_root->awar(pg_global.awar_pg_result_filename)->read_string();
-    
+
     AW_selection_list *selList = pg_global.selList;
-    
+
     static bool awars_created;
     if (!awars_created) {
         create_probe_group_result_awars(aw_root);
         awars_created = 1;
     }
     aw_root->awar(AWAR_PG_SELECTED_RESULT)->write_int(0); // reset to element #0
-    
+
     if (selList==0) {
         aws->at("box");
         aws->callback(pg_result_selected);
-        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 0, "", 2, 2); 
+        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 0, "", 2, 2);
     }
     else {
-        aws->clear_selection_list(selList);        
+        aws->clear_selection_list(selList);
     }
-    
+
     GB_ERROR error = 0;
-    
+
     if (pg_global.pg_main) {
         GB_close(pg_global.pg_main);
         free(pg_global.pg_filename);
-        
+
         pg_global.pg_main = 0;
         pg_global.pg_filename = 0;
     }
-    
+
     pg_global.aw_root = aw_root;
     pg_global.pg_filename = strdup(file_name);
     pg_global.pg_main = GB_open(file_name, "r");
-    
-    if (pg_global.pg_main) {        
+
+    if (pg_global.pg_main) {
         const char *reason = 0;
         long i = 0;
-        aws->insert_selection(selList, "members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++); 
-        
+        aws->insert_selection(selList, "members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
+
         GB_transaction dummy(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         if (pg_group) {
             for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
-                
+
                 double fitness=-1, quality=-1, min_targets=-1;
-                int mishit=-1, probelength=-1, birth=-1;                
+                int mishit=-1, probelength=-1, birth=-1;
                 int member_count = 0;
                 int probe_count = 0;
-                
+
                 GBDATA *field;
-                
+
                 field = GB_find(pg_group, "fitness", 0, down_level);        if (field) fitness = GB_read_float(field);
                 field = GB_find(pg_group, "quality", 0, down_level);        if (field) quality = GB_read_float(field);
                 field = GB_find(pg_group, "min_targets", 0, down_level);    if (field) min_targets = GB_read_float(field);
                 field = GB_find(pg_group, "mishit", 0, down_level);         if (field) mishit = GB_read_int(field);
                 field = GB_find(pg_group, "probelength", 0, down_level);    if (field) probelength = GB_read_int(field);
                 field = GB_find(pg_group, "birth", 0, down_level);          if (field) birth = GB_read_int(field);
-                
+
                 GBDATA *species = GB_search(pg_group, "species/name", GB_FIND);
                 for (; species; species=GB_find(species, 0, 0, this_level+search_next)) member_count++;
-                
+
                 GBDATA *probe = GB_search(pg_group, "probes/data", GB_FIND);
                 for (; probe; probe=GB_find(probe, 0, 0, this_level+search_next)) probe_count++;
-                
+
                 char entry[200];
-                
+
                 sprintf(entry, "%7i | %6i | %7.5f | %7.1f | %9.2f | %6i | %8i | %5i",
-                        member_count, 
-                        probe_count, 
-                        fitness, 
-                        quality, 
-                        min_targets, 
-                        mishit, 
-                        probelength, 
+                        member_count,
+                        probe_count,
+                        fitness,
+                        quality,
+                        min_targets,
+                        mishit,
+                        probelength,
                         birth);
-                
-                aws->insert_selection(selList, entry, i); 
+
+                aws->insert_selection(selList, entry, i);
             }
         }
         else {
             reason = "probe_group/group - no such entry";
         }
-        
+
         if (reason) {
             error = GB_export_error("Error in database format (reason: %s)", reason);
-            aws->insert_selection(selList, error, (long)0);            
+            aws->insert_selection(selList, error, (long)0);
         }
-    
-        aws->update_selection_list(selList);        
+
+        aws->update_selection_list(selList);
     }
     else {
-        error = GB_export_error("Can't open database '%s'", file_name);        
+        error = GB_export_error("Can't open database '%s'", file_name);
         free(pg_global.pg_filename);
         pg_global.pg_filename = 0;
     }
-    
+
     free(file_name);
-    
+
     if (error) {
         aw_message(error);
-    }    
+    }
 }
 
 // --------------------------------------------------------------------------------
-//     static void create_probe_group_groups_window(AW_window *aww) 
+//     static void create_probe_group_groups_window(AW_window *aww)
 // --------------------------------------------------------------------------------
 static void create_probe_group_groups_window(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
-    
+
     if (pg_global.pg_groups_window==0) { // window was not created yet
         AW_window_simple *aws = new AW_window_simple;
-    
+
         aws->init(aw_root, "PG_RESULT_SELECTION", "Probe group results", 600, 600);
         aws->load_xfig("pg_select.fig");
-    
+
         aws->at("close");
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE","C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP,(AW_CL)"");
-        aws->create_button("HELP","HELP");			   
-    
+        aws->create_button("HELP","HELP");
+
         create_probe_group_result_sel_box(aw_root, aws);
-    
+
         pg_global.pg_groups_window = aws;
     }
-    else { // window already created -> refresh selection box        
+    else { // window already created -> refresh selection box
         create_probe_group_result_sel_box(aw_root, pg_global.pg_groups_window);
     }
-    
+
     pg_global.pg_groups_window->show();
 }
 
@@ -1597,13 +1597,13 @@ static void create_probe_group_groups_window(AW_window *aww) {
 AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw){
     if (pg_global.awar_pg_result_filename) {
         free(pg_global.awar_pg_result_filename);
-        pg_global.awar_pg_result_filename = 0;        
+        pg_global.awar_pg_result_filename = 0;
     }
-    
+
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
-    
+
 	return awt_create_load_box(awr, "arb_probe_group result", "arb", &pg_global.awar_pg_result_filename,
-                               create_probe_group_groups_window, 
+                               create_probe_group_groups_window,
                                0);
 }
 

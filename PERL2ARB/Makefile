@@ -73,8 +73,8 @@ FIRST_MAKEFILE = Makefile
 MAKE_APERL_FILE = Makefile.aperl
 PERLMAINCC = $(CC)
 PERL_INC = /usr/lib/perl5/5.00503/i586-linux/CORE
-PERL = /home/westram/ARB/bin/perl
-FULLPERL = /home/westram/ARB/bin/perl
+PERL = /usr/arb/bin/perl
+FULLPERL = /usr/arb/bin/perl
 
 VERSION_MACRO = VERSION
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
@@ -259,10 +259,10 @@ SPLIT =
 # ARB might depend on some other libraries:
 # See ExtUtils::Liblist for details
 #
-EXTRALIBS = -L/home/westram/ARB/PERL2ARB/../ARBDB2 -lARBDB
-LDLOADLIBS = -L/home/westram/ARB/PERL2ARB/../ARBDB2 -lARBDB
+EXTRALIBS = -L/trance1/ARB/source/ARB/PERL2ARB/../ARBDB2 -lARBDB
+LDLOADLIBS = -L/trance1/ARB/source/ARB/PERL2ARB/../ARBDB2 -lARBDB
 BSLOADLIBS = 
-LD_RUN_PATH = /home/westram/ARB/PERL2ARB/../ARBDB2
+LD_RUN_PATH = /trance1/ARB/source/ARB/PERL2ARB/../ARBDB2
 
 
 # --- MakeMaker const_cccmd section:
@@ -712,7 +712,7 @@ Makefile : Makefile.PL $(CONFIGDEP)
 
 # --- MakeMaker makeaperl section ---
 MAP_TARGET    = perl
-FULLPERL      = /home/westram/ARB/bin/perl
+FULLPERL      = /usr/arb/bin/perl
 
 $(MAP_TARGET) :: static $(MAKE_APERL_FILE)
 	$(MAKE) -f $(MAKE_APERL_FILE) $@
