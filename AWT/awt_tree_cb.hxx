@@ -1,11 +1,16 @@
 #ifndef P_
-#if defined(__STDC__) || defined(__cplusplus)
-# define P_(s) s
+# if defined(__STDC__) || defined(__cplusplus)
+#  define P_(s) s
+# else
+#  define P_(s) ()
+# endif
 #else
-# define P_(s) ()
-#endif
+# error P_ already defined elsewhere
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* AWT_tree_cb.cxx */
 void nt_mode_event P_((AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode));
@@ -28,5 +33,9 @@ void NT_remove_bootstrap P_((void *dummy, AWT_canvas *ntw));
 void NT_jump_cb P_((AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups));
 void NT_jump_cb_auto P_((AW_window *dummy, AWT_canvas *ntw));
 void NT_reload_tree_event P_((AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs));
+
+#ifdef __cplusplus
+}
+#endif
 
 #undef P_
