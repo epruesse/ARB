@@ -246,4 +246,4 @@ ln -s ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt
 
 # help files (make sure the files is present in user distribution!)
 
-ln -s ../inputMasks/format.readme lib/help/input_mask_format.hlp
+ln -s ../help/input_mask_format.hlp lib/inputMasks/format.readme 
