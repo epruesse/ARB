@@ -67,6 +67,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
     |grep -v '/lib/help/' \
     |grep -v '/lib/nas/names.dat$' \
     |grep -v '\.xvpics' \
+    |grep -v '\.genmenu$' \
     |sort|uniq | tee arbsrc.lst \
     |cpio -oH tar |gzip - >$name
 
