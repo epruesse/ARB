@@ -418,7 +418,7 @@ void gene_rename_cb(AW_window *aww){
 AW_window *create_gene_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_GENE", "GENE RENAME", 100, 100 );
+    aws->init( root, "RENAME_GENE", "GENE RENAME");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -487,7 +487,7 @@ void gene_copy_cb(AW_window *aww){
 AW_window *create_gene_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_GENE", "GENE COPY", 100, 100 );
+    aws->init( root, "COPY_GENE", "GENE COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -554,7 +554,7 @@ void gene_create_cb(AW_window *aww){
 AW_window *create_gene_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_GENE","GENE CREATE", 100, 100 );
+    aws->init( root, "CREATE_GENE","GENE CREATE");
     aws->load_xfig("ad_al_si3.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -637,7 +637,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "GENE_INFORMATION", "GENE INFORMATION", 0,0,800, 0 );
+    aws->init( aw_root, "GENE_INFORMATION", "GENE INFORMATION");
     aws->load_xfig("ad_spec.fig");
 
     aws->button_length(8);
@@ -683,6 +683,11 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
+void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH does not work
+    AW_window *aws = GEN_create_gene_window(aww->get_root());
+    aws->show();
+}
+
 //  ------------------------------------------------------------------
 //      AW_window *GEN_create_gene_query_window(AW_root *aw_root)
 //  ------------------------------------------------------------------
@@ -693,7 +698,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
         return (AW_window *)aws;
     }
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY", 0,0,500, 0 );
+    aws->init( aw_root, "GEN_QUERY", "Gene SEARCH and QUERY");
     aws->create_menu(0,"More functions","F");
     aws->load_xfig("ad_query.fig");
 
