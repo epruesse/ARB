@@ -50,6 +50,13 @@ public:
 
     void forbidAll() { set(0); }
     void allowAll() { set(1); }
+
+    void forbidAllBut(int nr) {
+        legal(nr);
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            if (a != nr) allowed[a] = 0;
+        }
+    }
 };
 
 // --------------------------------------------------------------------------------
