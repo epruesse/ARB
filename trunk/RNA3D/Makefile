@@ -24,3 +24,29 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+Camera.o: Camera.hxx
+Camera.o: GlobalHeader.hxx
+Camera.o: Structure3D.hxx
+
+Main.o: Camera.hxx
+Main.o: GlobalHeader.hxx
+Main.o: Globals.hxx
+Main.o: Main.hxx
+Main.o: Menu.hxx
+Main.o: Mouse.hxx
+Main.o: OPENGL/OpenGLGraphics.hxx
+Main.o: OPENGL/Renderer.hxx
+Main.o: OPENGL/TextureMapping.hxx
+Main.o: Structure3D.hxx
+
+Menu.o: GlobalHeader.hxx
+Menu.o: Menu.hxx
+
+Mouse.o: GlobalHeader.hxx
+Mouse.o: Mouse.hxx
+
+Structure3D.o: GlobalHeader.hxx
+Structure3D.o: Globals.hxx
+Structure3D.o: OPENGL/OpenGLGraphics.hxx
+Structure3D.o: Structure3D.hxx
