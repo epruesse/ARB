@@ -191,7 +191,7 @@ void awt_aps_go(AW_window *aww){
     char *tmp_file2 = GBS_eval_env("/tmp/arb_aprint_$(USER)_$(ARB_PID).ps");
     FILE *tmpf = fopen(tmp_file,"w");
     if (!tmpf){
-        aw_message(GB_export_error("Sorry, couldn't open '%'",tmp_file));
+        aw_message(GB_export_error("Sorry, couldn't open '%s'",tmp_file));
         delete text;
         return;
     }
