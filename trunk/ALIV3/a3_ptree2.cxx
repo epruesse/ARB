@@ -2,15 +2,18 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <fstream.h>
-#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
+using std::cout;
+
 // -----------------------------------------------------------------------------
-	static int int_compare ( const void *a,
-							 const void *b )
+static int int_compare ( const void *a,
+                         const void *b )
 // -----------------------------------------------------------------------------
 {
 	int result = 0,

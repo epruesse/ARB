@@ -2,14 +2,18 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <fstream.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
+using std::cout;
+using std::hex;
+using std::dec;
+
 // -----------------------------------------------------------------------------
-	static void CountAppearances ( str  seq,
+static void CountAppearances ( str  seq,
 								   int *pos,
 								   int  num,
 								   int  off,

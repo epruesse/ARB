@@ -2,13 +2,16 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <string.h>
-#include <fstream.h>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 #include "a3_ali.hxx"
 
+using std::cout;
+
 // -----------------------------------------------------------------------------
-	int psolcmp ( const void *a,
+int psolcmp ( const void *a,
 				  const void *b )
 // -----------------------------------------------------------------------------
 {

@@ -2,14 +2,17 @@
 //	Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <fstream.h>
-#include <string.h>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 #include "a3_matrix.hxx"
 
+using std::cout;
+
 // -----------------------------------------------------------------------------
-	void A3Matrix::Init ( int xlen,
-						  int ylen,
+void A3Matrix::Init ( int xlen,
+                      int ylen,
 						  int del )
 // -----------------------------------------------------------------------------
 {
