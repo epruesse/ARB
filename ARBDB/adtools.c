@@ -2890,6 +2890,62 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 
 }
 
+const char *GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name){
+    char awar_awar[1024];
+    char awar_action[1024];
+    char awar_value[1024];
+    char awar_result[1024];
+    GBDATA *gb_awar;
+    GBDATA *gb_action;
+    GBDATA *gb_value;
+/*     GBDATA *gb_result; */
+    const char *result = 0;
+    sprintf(awar_awar,"tmp/remote/%s/awar",application);
+    sprintf(awar_action,"tmp/remote/%s/action",application);
+    sprintf(awar_value,"tmp/remote/%s/value",application);
+    sprintf(awar_result,"tmp/remote/%s/result",application);
+    /* search awar var */
+    while (1){
+        GB_begin_transaction(gb_main);
+        gb_awar = GB_search(gb_main,awar_awar,GB_FIND);
+        GB_commit_transaction(gb_main);
+        if (gb_awar) break;
+        GB_usleep(20000);
+    }
+    /* write command */
+    {
+        GB_begin_transaction(gb_main);
+
+/*         gb_value  = GB_search(gb_main,awar_value,GB_STRING); */
+        gb_action = GB_search(gb_main,awar_action,GB_STRING);
+
+        GB_write_string(gb_awar,awar_name);
+        GB_write_string(gb_action, "AWAR_REMOTE_READ");
+/*         GB_write_string(gb_value,"");  */
+
+        GB_commit_transaction(gb_main);
+    }
+    /* wait to end of action */
+    while(1){
+        char *ac;
+        GB_begin_transaction(gb_main);
+        ac = GB_read_string(gb_awar);
+        if (!strlen(ac)){
+            gb_value = GB_search(gb_main,awar_value,GB_STRING);
+            result = GB_read_char_pntr(gb_value);
+            GB_commit_transaction(gb_main);
+            free(ac);
+            break;
+        }
+        GB_commit_transaction(gb_main);
+        free(ac);
+        GB_usleep(20000);
+    }
+    return result;
+
+}
+
+
 /*  ---------------------------------------------------------------------------------  */
 /*      char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement)       */
 /*  ---------------------------------------------------------------------------------  */
