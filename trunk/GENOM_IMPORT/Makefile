@@ -6,13 +6,14 @@
 
 # objects for library
 CPP_OBJECTS =   \
-		GeneEmbl.o \
 		GenomEmbl.o \
+    GeneEmbl.o \
 		GenomFeatureTableEmbl.o \
 		GenomLocation.o \
 		GenomReferenceEmbl.o \
 		GenomSourceFeatureEmbl.o \
 		GenomUtilities.o \
+		GenomImport.o \
 
 #		GenomArbConnection.o \
 
@@ -45,12 +46,15 @@ endif
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	rm *.o
-	rm *.a
-	rm *.bak
-	rm *~
-	rm *#
-	rm *\%
+	-rm *.o
+	-rm *.a
+	-rm *.bak
+	-rm *~
+	-rm *#
+	-rm *\%
+ifeq ($(CREATE_TEST_EXECUTABLE),1)
+	-rm test_import
+endif
 
 #.IGNORE:
 #	clean
@@ -62,7 +66,7 @@ depends: $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
-.cxx.depend:
+.cpp.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
@@ -70,3 +74,30 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+GeneEmbl.o: GeneEmbl.h
+GeneEmbl.o: GenomLocation.h
+GeneEmbl.o: GenomUtilities.h
+
+GenomEmbl.o: GeneEmbl.h
+GenomEmbl.o: GenomEmbl.h
+GenomEmbl.o: GenomFeatureTableEmbl.h
+GenomEmbl.o: GenomLocation.h
+GenomEmbl.o: GenomReferenceEmbl.h
+GenomEmbl.o: GenomSourceFeatureEmbl.h
+GenomEmbl.o: GenomUtilities.h
+
+GenomFeatureTableEmbl.o: GeneEmbl.h
+GenomFeatureTableEmbl.o: GenomFeatureTableEmbl.h
+GenomFeatureTableEmbl.o: GenomLocation.h
+GenomFeatureTableEmbl.o: GenomSourceFeatureEmbl.h
+GenomFeatureTableEmbl.o: GenomUtilities.h
+
+GenomLocation.o: GenomLocation.h
+
+GenomReferenceEmbl.o: GenomReferenceEmbl.h
+GenomReferenceEmbl.o: GenomUtilities.h
+
+GenomSourceFeatureEmbl.o: GenomSourceFeatureEmbl.h
+GenomSourceFeatureEmbl.o: GenomUtilities.h
+
+GenomUtilities.o: GenomUtilities.h
