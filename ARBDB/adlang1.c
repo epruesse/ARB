@@ -472,7 +472,7 @@ GB_ERROR gbl_mid0(GBDATA *gb_species, char *com,
                   int *argcout, GBL **argvout)	{
     int start;
     int end;
-    if (argcparam!=2) return "mid syntax: mid(#start;#end)";
+    if (argcparam!=2) return "mid0 syntax: mid0(#start;#end)";
     GBUSE(gb_species);GBUSE(com);
     start = atoi(argvparam[0].str);
     end = atoi(argvparam[1].str);
@@ -489,9 +489,7 @@ GB_ERROR gbl_mid(GBDATA *gb_species, char *com,
     GBUSE(gb_species);GBUSE(com);
     start = atoi(argvparam[0].str)-1;
     end = atoi(argvparam[1].str)-1;
-    return _gbl_mid(argcinput, argvinput,
-                    argcout, argvout,
-                    start, -start, end, -end);
+    return _gbl_mid(argcinput, argvinput, argcout, argvout, start, -start, end, -end);
 }
 
 GB_ERROR gbl_tab(GBDATA *gb_species, char *com,
@@ -506,16 +504,82 @@ GB_ERROR gbl_tab(GBDATA *gb_species, char *com,
     GBL_CHECK_FREE_PARAM(*argcout,argcinput);
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
         char *p;
-        if ((int)strlen(argvinput[i].str)>= tab) {
+        int   len = strlen(argvinput[i].str);
+
+        if (len >= tab) {
             (*argvout)[(*argcout)++].str = GB_STRDUP(argvinput[i].str);
         }else{
             p = (char *)GB_calloc(sizeof(char),tab+1);
             strcpy(p,argvinput[i].str);
-            for (j= strlen(p);j<tab;j++){
-                p[j] = ' ';
-            }
+            for (j=len; j<tab; j++) p[j] = ' ';
             (*argvout)[(*argcout)++].str = p;
         }
+    }
+    return 0;
+}
+
+GB_ERROR gbl_pretab(GBDATA *gb_species, char *com,
+                 int     argcinput, GBL *argvinput,
+                 int     argcparam,GBL *argvparam,
+                 int *argcout, GBL **argvout)	{
+    int i,j;
+    int tab;
+    if (argcparam!=1) return "pretab syntax: pretab(#tab)";
+    GBUSE(gb_species);GBUSE(com);
+    tab = atoi(argvparam[0].str);
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
+        char *p;
+        int   len = strlen(argvinput[i].str);
+
+        if (len >= tab) {
+            (*argvout)[(*argcout)++].str = GB_STRDUP(argvinput[i].str);
+        }else{
+            int spaces = tab-len;
+
+            p = (char *)GB_calloc(sizeof(char),tab+1);
+            for (j = 0; j<spaces; ++j) p[j] = ' ';
+            strcpy(p+j, argvinput[i].str);
+            (*argvout)[(*argcout)++].str = p;
+        }
+    }
+    return 0;
+}
+
+GB_ERROR gbl_crop(GBDATA *gb_species, char *com,
+                 int     argcinput, GBL *argvinput,
+                 int     argcparam,GBL *argvparam,
+                 int *argcout, GBL **argvout)	{
+    int         i;
+    const char *chars_to_crop;
+
+    GBUSE(gb_species);GBUSE(com);
+    if (argcparam != 1) return "crop syntax: pretab(chars_to_crop)";
+
+    chars_to_crop = argvparam[0].str;
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+    for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
+        const char *s = argvinput[i].str;
+        char       *p;
+        int         len;
+
+        while (s[0] && strchr(chars_to_crop, s[0]) != 0) s++; /* crop at beg of line */
+
+        len = strlen(s);
+        p   = (char*)GB_calloc(sizeof(char), len+1);
+        memcpy(p, s, len);
+
+        {
+            char *pe = p+len-1;
+
+            while (pe >= p && strchr(chars_to_crop, pe[0]) != 0) { /* crop at end of line */
+                --pe;
+            }
+            ad_assert(pe >= (p-1));
+            pe[1] = 0;
+        }
+
+        (*argvout)[(*argcout)++].str = p;
     }
     return 0;
 }
@@ -1194,6 +1258,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"command", gbl_command } ,
     {"count", gbl_count } ,
     {"cut", gbl_cut } ,
+    {"crop", gbl_crop } ,
     {"dd", gbl_dd } ,
     {"diff", gbl_diff },
     {"div", gbl_calculator } ,
@@ -1207,6 +1272,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"gcgchecksum", gbl_gcgcheck } ,
     {"head", gbl_head } ,
     {"keep", gbl_keep } ,
+    {"left", gbl_head } ,
     {"len", gbl_len } ,
     {"lower", gbl_string_convert } ,
     {"mid", gbl_mid } ,
@@ -1215,8 +1281,10 @@ struct GBL_command_table gbl_command_table[] = {
     {"mult", gbl_calculator } ,
     {"per_cent", gbl_calculator } ,
     {"plus", gbl_calculator } ,
+    {"pretab", gbl_pretab } ,
     {"readdb", gbl_readdb } ,
     {"remove", gbl_remove } ,
+    {"right", gbl_tail } ,
     {"sequence", gbl_sequence } ,
     {"sequence_type", gbl_sequence_type } ,
     {"srt", gbl_srt },
