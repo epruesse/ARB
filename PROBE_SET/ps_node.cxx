@@ -41,7 +41,7 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     size = children.size();
     _fb->put( &size, sizeof(size) );
     for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
-	i->second->save( _fb );
+        i->second->save( _fb );
     }
     //
     // return true to signal success
@@ -77,10 +77,19 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
     // read children
     //
     _fb->get( &size, sizeof(size) );
-    for (unsigned int i=0; i<size; ++i) {
-	PS_NodePtr new_child(new PS_Node(-1));                    // make new child
-	new_child->load( _fb );                                   // read new child
-	children[new_child->getNum()] = new_child;                // insert new child to childmap
+    if (num == -1) {
+        for (unsigned int i=0; i<size; ++i) {
+            PS_NodePtr new_child(new PS_Node(-1));                // make new child
+            new_child->load( _fb );                               // read new child
+            children[new_child->getNum()] = new_child;            // insert new child to childmap
+            if (i % 200 == 0) printf( "loaded 1st level #%i\n",new_child->getNum() );
+        }
+    } else {
+        for (unsigned int i=0; i<size; ++i) {
+            PS_NodePtr new_child(new PS_Node(-1));                // make new child
+            new_child->load( _fb );                               // read new child
+            children[new_child->getNum()] = new_child;            // insert new child to childmap
+        }
     }
     // return true to signal success
     return true;
@@ -120,6 +129,7 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
         //
         SpeciesID childNum;
         _fb->get( &childNum, sizeof(childNum) );
+        if ((num == -1) && (i % 200 == 0)) printf( "appended 1st level #%i\n", childNum );
         //
         // test if child already exists
         //

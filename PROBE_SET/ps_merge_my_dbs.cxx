@@ -70,10 +70,10 @@ int main( int argc,  char *argv[] ) {
 
 
     delete ps_db_fb;
-    root.SetNull();
-    printf( "root should be destroyed now\n" );
-    printf( "(enter to continue)\n" );
-//    getchar();
+//     root.SetNull();
+//     printf( "root should be destroyed now\n" );
+//     printf( "(enter to continue)\n" );
+//     getchar();
 
 //     nodes_per_depth.clear();
 //     probes_per_depth.clear();

@@ -22,6 +22,7 @@ PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
         fprintf( stderr, "failed to open file %s\n",file_name );
         *(int *)0 = 0;
     }
+
     // init. buffer
     size     = 0;
     position = 0;
@@ -30,16 +31,22 @@ PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
         fprintf( stderr, "failed to allocate memory for buffer for file %s\n",file_name );
         *(int *)0 = 0;
     }
+
+    // debug
+    total_read  = 0;
+    total_write = 0;
 }
 
 // ************************************************************
 // * reinit( _name,_readonly )
 // ************************************************************
 void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
-    // init. file
+    // finish old file
+    if (!is_readonly) flush();
     if (file_name) free(file_name);
     if (file_handle != -1) close(file_handle);
 
+    // init. file
     file_name   = strdup(_name);
     is_readonly = _readonly;
     if (is_readonly) {
@@ -57,6 +64,10 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
 
     // init. buffer
     clear();
+
+    // debug
+    total_read  = 0;
+    total_write = 0;
 }
 
 // ************************************************************
@@ -127,8 +138,9 @@ void PS_FileBuffer::flush() {
         fprintf( stderr, "failed to write %i bytes to file %s\n",size,file_name );
         *(int *)0 = 0;
     }
-    size     = 0;
-    position = 0;
+    total_write += written;
+    size         = 0;
+    position     = 0;
 }
 
 
@@ -141,6 +153,7 @@ void PS_FileBuffer::refill() {
     memcpy( buffer, &buffer[position], unread );
     // read data from file
     ssize_t readen = read( file_handle, &buffer[size-position], BUFFER_SIZE-unread );
-    size     = unread+readen;
-    position = 0;
+    total_read += readen;
+    size        = unread+readen;
+    position    = 0;
 }
