@@ -8,14 +8,8 @@ using namespace std;
 //
 Range::Range ( const PRD_Sequence_Pos value1_, const PRD_Sequence_Pos value2_ )
 {
-  if ( value1_ <= value2_ ) {
-    minimum = value1_;
-    maximum = value2_;
-  }
-  else {
-    minimum = value2_;
-    maximum = value1_;
-  }
+  minimum = value1_;
+  maximum = value2_;
 }
 
 Range::Range ()

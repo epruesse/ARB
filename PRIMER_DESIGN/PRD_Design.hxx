@@ -30,8 +30,8 @@ private:
   Range primer1;
   Range primer2;
 
-  // Abstand der Primer (bzgl. der Positionen nicht der Basen, <=0 = ignorieren)
-  // min/max distance of primers (regading positions, not number of bases between, <=0 = ignore)
+  // Abstand der Primer (bzgl. der Basen dazwischen, <=0 = ignorieren)
+  // min/max distance of primers (regading number of bases between, <=0 = ignore)
 
   Range primer_distance;
 
@@ -66,7 +66,7 @@ private:
 
   // erweitern der IUPAC-Codes beim matching der sequence gegen die primerbaeume ?
   // expand IUPAC-Codes while matching sequence vs. primertrees ?
-
+  
   bool expand_IUPAC_Codes;
 
 
@@ -86,7 +86,7 @@ private:
 
   // primerpairs
   Pair* pairs;
-
+  
   GB_ERROR error;
 
 public:
@@ -100,7 +100,7 @@ public:
   PrimerDesign( const char *sequence_ );
   ~PrimerDesign();
 
-  bool setPositionalParameters ( Range pos1_, Range pos2_, Range length_, Range distance_ ); // true = valid parameters
+  void setPositionalParameters ( Range pos1_, Range pos2_, Range length_, Range distance_ );
   void setConditionalParameters( Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );
 
   void buildPrimerTrees ();
@@ -114,13 +114,13 @@ public:
   void evaluatePrimerPairs ();
   void printPrimerPairs    ();
 
-    void run ( int print_stages_ );
+  void run ( int print_stages_ );
 
-    GB_ERROR get_error() const { return error; }
+  GB_ERROR get_error() const { return error; }
 
-    PRD_Sequence_Pos get_max_primer_length() const { return primer_length.max(); }
-    PRD_Sequence_Pos get_max_primer_pos() const { return primer2.max(); }
-    const char *get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length) const; // return 0 if no more results (primers is set to "leftPrimer,rightPrimer")
+  PRD_Sequence_Pos  get_max_primer_length() const { return primer_length.max(); }
+  PRD_Sequence_Pos  get_max_primer_pos()    const { return primer2.max(); }
+  const char       *get_result( int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length ) const; // return 0 if no more results (primers is set to "leftPrimer,rightPrimer")
 
 public:
   const static int PRINT_RAW_TREES     = 1;
@@ -132,7 +132,7 @@ private:
   void              init               ( const char *sequence_, Range pos1_, Range pos2_, Range length_, Range distance_, Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );
   PRD_Sequence_Pos  followUp           ( Node *node_, deque<char> *primer_, int direction_ );
   void              findNextPrimer     ( Node *start_at_, int depth_, int *counter_, int delivered_ );
-  int               insertNode         ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_ );
+  int               insertNode         ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset );
   bool              treeContainsPrimer ( Node *start );
   void              calcGCandAT        ( int &GC_, int &AT_, Node *start_at_ );
   double            evaluatePair       ( Item *one_, Item *two_ );

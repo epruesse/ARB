@@ -16,9 +16,9 @@ using namespace std;
 // Constructor
 //
 void PrimerDesign::init ( const char *sequence_, \
-			  Range                   pos1_, Range pos2_, Range length_, Range distance_, \
-			  Range                   ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, \
-			  int                     max_count_primerpairs_, double GC_factor_, double temp_factor_ )
+			  Range pos1_, Range pos2_, Range length_, Range distance_, \
+			  Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, \
+			  int   max_count_primerpairs_, double GC_factor_, double temp_factor_ )
 {
     error    = 0;
     sequence = sequence_;
@@ -28,14 +28,14 @@ void PrimerDesign::init ( const char *sequence_, \
     list2    = 0;
     pairs    = 0;
 
-    if ( setPositionalParameters ( pos1_, pos2_, length_, distance_ ) ) printf ( "positions OK\n" );
+    setPositionalParameters ( pos1_, pos2_, length_, distance_ );
     setConditionalParameters( ratio_, temperature_, min_dist_to_next_, expand_IUPAC_Codes_, max_count_primerpairs_, GC_factor_, temp_factor_ );
 }
 
 PrimerDesign::PrimerDesign( const char *sequence_, \
 			    Range pos1_, Range pos2_, Range length_, Range distance_, \
 			    Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_,\
-			    int max_count_primerpairs_, double GC_factor_, double temp_factor_ )
+			    int   max_count_primerpairs_, double GC_factor_, double temp_factor_ )
 {
   init ( sequence_, pos1_, pos2_, length_, distance_, ratio_, temperature_, min_dist_to_next_, expand_IUPAC_Codes_, max_count_primerpairs_, GC_factor_, temp_factor_ );
 }
@@ -67,42 +67,47 @@ PrimerDesign::~PrimerDesign ()
 }
 
 
-bool PrimerDesign::setPositionalParameters( Range pos1_, Range pos2_, Range length_, Range distance_ )
+void PrimerDesign::setPositionalParameters( Range pos1_, Range pos2_, Range length_, Range distance_ )
 {
   // first take all parameters, then test em
-  primer1         = pos1_;
-  primer2         = pos2_;
+  primer1         = (pos1_.min() < pos2_.min()) ? pos1_ : pos2_;
+  primer2         = (pos1_.min() < pos2_.min()) ? pos2_ : pos1_;
   primer_length   = length_;
   primer_distance = distance_;
 
   // length > 0
   if ( (length_.min() <= 0) || (length_.max() <= 0)  ) {
     error = "invalid primer length (length <= 0)";
-    return false;
+    return;
   }
 
-  // pos1_.max + length_.max < pos2_.min
-  if ( pos2_.min() <= pos1_.max() + length_.max() ) {
-    error = "invalid primer positions (right pos overlaps left pos)";
-    return false;
+  // determine end of ranges
+  SequenceIterator *i = new SequenceIterator( sequence, primer1.min(), SequenceIterator::IGNORE, primer1.max(), SequenceIterator::FORWARD );
+  while ( i->nextBase() != SequenceIterator::EOS ) ;
+  primer1.max( i->pos );
+  i->restart( primer2.min(), SequenceIterator::IGNORE, primer2.max(), SequenceIterator::FORWARD );
+  while ( i->nextBase() != SequenceIterator::EOS ) ;
+  primer2.max( i->pos );
+
+  // primer1.max > primer2_.min =>  distance must be given
+  if ( (primer2.min() <= primer1.max()) && (distance_.min() <= 0) ) {
+    error = "using overlapping primer positions you MUST give a primer distance";
+    return;
   }
 
   // use distance-parameter ? (-1 = no)
   if ( distance_.min() > 0 ) {
     // pos2_.max - pos1_.min must be greater than distance_.min
-    if ( distance_.min() > pos2_.max() - pos1_.min() ) {
-      error = "invalid minimal primer distance (more than max.right - min.left)";
-      return false;
+    if ( distance_.min() > primer2.max() - primer1.min() ) {
+      error = "invalid minimal primer distance (more than right.max - left.min)";
+      return;
     }
     // pos2_.min - pos1_.max must be less than distance_.max
-    if ( distance_.max() < pos2_.min() - pos1_.max() ) {
-      error = "invalid maximal primer distance (less than min.right - max.left)";
-      return false;
+    if ( distance_.max() < primer2.min() - primer1.max() ) {
+      error = "invalid maximal primer distance (less than right.min - left.max)";
+      return;
     }
   }
-
-  // all parameters are valid at this point
-  return true;
 }
 
 
@@ -177,23 +182,23 @@ void PrimerDesign::run ( int print_stages_ )
 
 // add new child to parent or update existing child
 // returns child_index
-int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_ )
+int PrimerDesign::insertNode ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_ )
 {
   int  index     = CHAR2CHILD.INDEX[ base_ ];
-  bool is_primer = primer_length.includes( delivered_ );		// new child is primer if true
+  bool is_primer = primer_length.includes( delivered_ );			// new child is primer if true
 
   //
   // create new node if necessary or update existing node if its a primer
   //
   if ( current_->child[index] == NULL ) {
     if ( is_primer )
-      current_->child[index] = new Node ( current_,base_,pos_ );	// primer => new child with positive last_base_index
+      current_->child[index] = new Node ( current_,base_,pos_,offset_ );	// primer => new child with positive last_base_index
     else
-      current_->child[index] = new Node ( current_,base_,0 );		// no primer => new child with zero position
-    current_->child_bits |= CHAR2BIT.FIELD[ base_ ];			// update child_bits of current node
+      current_->child[index] = new Node ( current_,base_,0 );			// no primer => new child with zero position
+    current_->child_bits |= CHAR2BIT.FIELD[ base_ ];				// update child_bits of current node
   }
   else {
-    if ( is_primer ) current_->child[index]->last_base_index = -pos_;	// primer, but already exists => set pos to negative
+    if ( is_primer ) current_->child[index]->last_base_index = -pos_;		// primer, but already exists => set pos to negative
   }
 
   return index;
@@ -235,22 +240,32 @@ void PrimerDesign::buildPrimerTrees ()
   //
   // init iterator with sequence
   //
-  SequenceIterator *sequence_iterator = new SequenceIterator ( sequence );
+  SequenceIterator *sequence_iterator = new SequenceIterator( sequence );
   char  base;
   int   child_index;
   Node *current_node;
+  int   offset = 0;
+
+  //
+  // init. offset-counter
+  //
+  sequence_iterator->restart( 0,primer1.min(),SequenceIterator::IGNORE,SequenceIterator::FORWARD );	// start at 1st absolute pos in aligned seq.
+  while ( sequence_iterator->nextBase() != SequenceIterator::EOS )					// count bases till left range
+    offset++;
 
   //
   // build first tree
   //
-  for ( PRD_Sequence_Pos start_pos = primer1.min(); (start_pos < primer1.max()-primer_length.max()) && (sequence[start_pos] != '\x00'); start_pos++ ) {
+  for ( PRD_Sequence_Pos start_pos = primer1.min();
+	(start_pos < primer1.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
+	start_pos++ ) {
     // start iterator at new position
-    sequence_iterator->restart( start_pos,primer_length.max(),SequenceIterator::FORWARD );
+    sequence_iterator->restart( start_pos,primer1.max(),primer_length.max(),SequenceIterator::FORWARD );
     sequence_iterator->nextBase();
     if ( sequence_iterator->pos != start_pos ) {		// sequence_iterator has skipped spaces => restart at first valid base
       start_pos = sequence_iterator->pos;
     }
-    sequence_iterator->restart( start_pos,primer_length.max(),SequenceIterator::FORWARD );
+    sequence_iterator->restart( start_pos,primer1.max(),primer_length.max(),SequenceIterator::FORWARD );
 
     // start at top of tree
     current_node = root1;
@@ -258,14 +273,23 @@ void PrimerDesign::buildPrimerTrees ()
     // iterate through sequence till end-of-sequence or primer_length.max bases read
     base = sequence_iterator->nextBase();
     while ( base != SequenceIterator::EOS ) {
-      child_index  = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered );
+      child_index  = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset );
       current_node = current_node->child[child_index];
       if (! ((base == 'A') || (base == 'T') || (base == 'U') || (base == 'C') || (base == 'G')) ) break; // stop at IUPAC-Codes
 
       // get next base
       base = sequence_iterator->nextBase();
     }
+
+    offset++;
   }
+
+  //
+  // count bases till right range
+  //
+  sequence_iterator->restart( sequence_iterator->pos, primer2.min(),SequenceIterator::IGNORE,SequenceIterator::FORWARD ); // run from current pos
+  while ( sequence_iterator->nextBase() != SequenceIterator::EOS )							  // till begin of right range
+    offset++;
 
   if ( !treeContainsPrimer( root1 ) ) {
     error = "no primer in left range found .. maybe only spaces in that range ?";
@@ -276,14 +300,16 @@ void PrimerDesign::buildPrimerTrees ()
   //
   // build second tree
   //
-  for ( PRD_Sequence_Pos start_pos = primer2.min(); (start_pos < primer2.max()-primer_length.max()) && (sequence[start_pos] != '\x00'); start_pos++ ) {
+  for ( PRD_Sequence_Pos start_pos = primer2.min();
+	(start_pos < primer2.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
+	start_pos++ ) {
     // start iterator at new position
-    sequence_iterator->restart( start_pos,primer_length.max(),SequenceIterator::FORWARD );
+    sequence_iterator->restart( start_pos,primer2.max(),primer_length.max(),SequenceIterator::FORWARD );
     sequence_iterator->nextBase();
     if ( sequence_iterator->pos != start_pos ) {		// sequence_iterator has skipped spaces => restart at first valid base
       start_pos = sequence_iterator->pos;
     }
-    sequence_iterator->restart( start_pos,primer_length.max(),SequenceIterator::FORWARD );
+    sequence_iterator->restart( start_pos,primer2.max(),primer_length.max(),SequenceIterator::FORWARD );
 
     // start at top of tree
     current_node = root2;
@@ -291,13 +317,15 @@ void PrimerDesign::buildPrimerTrees ()
     // iterate through sequence till end-of-sequence or primer_length.max bases read
     base = sequence_iterator->nextBase();
     while ( base != SequenceIterator::EOS ) {
-      child_index = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered );
+      child_index = insertNode( current_node, base, sequence_iterator->pos, sequence_iterator->delivered, offset+sequence_iterator->delivered );
       current_node = current_node->child[child_index];
       if (! ((base == 'A') || (base == 'T') || (base == 'U') || (base == 'C') || (base == 'G')) ) break; // stop at unsure bases
 
       // get next base
       base = sequence_iterator->nextBase();
     }
+
+    offset++;
   }
 
   if ( !treeContainsPrimer( root2 ) ) {
@@ -389,7 +417,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
 {
   SearchFIFO        *fifo1             = new SearchFIFO( root1,min_distance_to_next_match,expand_IUPAC_Codes );
   SearchFIFO        *fifo2             = new SearchFIFO( root2,min_distance_to_next_match,expand_IUPAC_Codes );
-  SequenceIterator  *sequence_iterator = new SequenceIterator( sequence,0,SequenceIterator::IGNORE_LENGTH,SequenceIterator::FORWARD );
+  SequenceIterator  *sequence_iterator = new SequenceIterator( sequence,0,SequenceIterator::IGNORE,SequenceIterator::IGNORE,SequenceIterator::FORWARD );
   char               base;
   PRD_Sequence_Pos   pos;
 
@@ -430,7 +458,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     base = sequence_iterator->nextBase();
   }
 
-  sequence_iterator->restart( pos, SequenceIterator::IGNORE_LENGTH, SequenceIterator::BACKWARD );
+  sequence_iterator->restart( pos, 0, SequenceIterator::IGNORE, SequenceIterator::BACKWARD );
   fifo1->flush();
   fifo2->flush();
 
@@ -463,7 +491,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     }
 
     // get next base in sequence
-    base = sequence_iterator->nextBase();
+    base = INVERT.BASE[ sequence_iterator->nextBase() ];
   }
 
   delete fifo1;
@@ -513,10 +541,10 @@ void PrimerDesign::convertTreesToLists ()
   int               AT;
   int               GC;
   bool              GC_and_temperature_matched;
-  PRD_Sequence_Pos  min_pos_1 = PRD_MAX_SEQUENCE_POS;
-  PRD_Sequence_Pos  max_pos_1 = -1;
-  PRD_Sequence_Pos  min_pos_2 = PRD_MAX_SEQUENCE_POS;
-  PRD_Sequence_Pos  max_pos_2 = -1;
+  PRD_Sequence_Pos  min_offset_1 = PRD_MAX_SEQUENCE_POS;
+  PRD_Sequence_Pos  max_offset_1 = -1;
+  PRD_Sequence_Pos  min_offset_2 = PRD_MAX_SEQUENCE_POS;
+  PRD_Sequence_Pos  max_offset_2 = -1;
   pair< Node*,int > new_pair;      // < cur_node->child[i], depth >
   deque< pair<Node*,int> > *stack;
 
@@ -533,7 +561,7 @@ void PrimerDesign::convertTreesToLists ()
     }
 
   if ( !stack->empty() ) {
-    GC_and_temperature_matched = false;
+    GC_and_temperature_matched = false;    
 
     while ( !stack->empty() ) {
       // next node
@@ -552,7 +580,7 @@ void PrimerDesign::convertTreesToLists ()
 	// create new item if conditional parameters are in range
 	if ( GC_ratio.includes(GC) && temperature.includes(AT) ) {
 	  GC_and_temperature_matched = true;
-	  new_item = new Item( cur_node->last_base_index, depth, GC, AT, NULL );
+	  new_item = new Item( cur_node->last_base_index, cur_node->offset, depth, GC, AT, NULL );
 
 	  // begin list with new item or append to list
 	  if ( cur_item == NULL ) list1          = new_item;
@@ -561,8 +589,8 @@ void PrimerDesign::convertTreesToLists ()
 	  cur_item = new_item;
 
 	  // store position
-	  if ( cur_node->last_base_index < min_pos_1 ) min_pos_1 = cur_node->last_base_index;
-	  if ( cur_node->last_base_index > max_pos_1 ) max_pos_1 = cur_node->last_base_index;
+	  if ( cur_node->offset < min_offset_1 ) min_offset_1 = cur_node->offset;
+	  if ( cur_node->offset > max_offset_1 ) max_offset_1 = cur_node->offset;
 	}
       }
 
@@ -586,7 +614,7 @@ void PrimerDesign::convertTreesToLists ()
   }
 
 #ifdef DEBUG
-  printf( "convertTreesToLists : list1 : min_pos %li  max_pos %li\n", min_pos_1, max_pos_1 );
+  printf( "convertTreesToLists : list1 : min_offset %7li  max_offset %7li\n", min_offset_1, max_offset_1 );
 #endif
 
   //
@@ -624,7 +652,7 @@ void PrimerDesign::convertTreesToLists ()
       if ( primer_length.includes(depth) && cur_node->isValidPrimer() ) {
 	// check position
 	if ( primer_distance.min() > 0 ) {
-	  distance_matched = primer_distance.includes( cur_node->last_base_index-max_pos_1, cur_node->last_base_index-min_pos_1 );
+	  distance_matched = primer_distance.includes( cur_node->offset-max_offset_1, cur_node->offset-min_offset_1 );
 	  if ( !distance_matched ) continue;
 	}
 
@@ -637,7 +665,7 @@ void PrimerDesign::convertTreesToLists ()
 	// create new item if conditional parameters are in range
 	if ( GC_ratio.includes(GC) && temperature.includes(AT) ) {
 	  GC_and_temperature_matched = true;
-	  new_item = new Item( cur_node->last_base_index, depth, GC, AT, NULL );
+	  new_item = new Item( cur_node->last_base_index, cur_node->offset, depth, GC, AT, NULL );
 
 	  // begin list with new item or append to list
 	  if ( cur_item == NULL ) list2          = new_item;
@@ -646,8 +674,8 @@ void PrimerDesign::convertTreesToLists ()
 	  cur_item = new_item;
 
 	  // store position
-	  if ( cur_node->last_base_index < min_pos_2 ) min_pos_2 = cur_node->last_base_index;
-	  if ( cur_node->last_base_index > max_pos_2 ) max_pos_2 = cur_node->last_base_index;
+	  if ( cur_node->offset < min_offset_2 ) min_offset_2 = cur_node->offset;
+	  if ( cur_node->offset > max_offset_2 ) max_offset_2 = cur_node->offset;
 	}
       }
     }
@@ -659,7 +687,7 @@ void PrimerDesign::convertTreesToLists ()
 	return;
       }
     }
-
+    
     if ( !GC_and_temperature_matched ) {
       error = "no primer over right range matched the given GC-Ratio and Temperature";
       delete stack;
@@ -675,7 +703,7 @@ void PrimerDesign::convertTreesToLists ()
   delete stack;
 
 #ifdef DEBUG
-  printf( "convertTreesToLists : list2 : min_pos %li  max_pos %li\n", min_pos_2, max_pos_2 );
+  printf( "convertTreesToLists : list2 : min_offset %7li  max_offset %7li\n", min_offset_2, max_offset_2 );
 #endif
 
   //
@@ -686,7 +714,7 @@ void PrimerDesign::convertTreesToLists ()
     cur_item = list1;
 
     while ( cur_item != NULL ) {
-      if ( !primer_distance.includes( max_pos_2-cur_item->end_pos, min_pos_2-cur_item->end_pos ) ) {
+      if ( !primer_distance.includes( max_offset_2-cur_item->offset, min_offset_2-cur_item->offset ) ) {
 	// primer in list 1 out of range of primers in list 2 => remove from list 1
 
 	if ( cur_item == list1 ) {
@@ -744,14 +772,14 @@ void PrimerDesign::printPrimerLists ()
 {
   int count = 0;
 
-  printf( "printPrimerLists : list 1 : [(start_pos,length), GC_ratio, temperature]\n" );
+  printf( "printPrimerLists : list 1 : [(start_pos,offset,length), GC_ratio, temperature]\n" );
   Item *current = list1;
   while ( current != NULL ) {
     current->print( "","\n" );
     current = current->next;
     count++;
   }
-  printf( " : %i valid primers\nprintPrimerLists : list 2 : [(start_pos,length), GC_ratio, temperature]\n", count );
+  printf( " : %i valid primers\nprintPrimerLists : list 2 : [(start_pos,offset,length), GC_ratio, temperature]\n", count );
   count = 0;
   current = list2;
   while ( current != NULL ) {
@@ -802,7 +830,7 @@ void PrimerDesign::insertPair( double rating_, Item *one_, Item *two_ )
   pairs[index].two    = two_;
 
 #ifdef DEBUG
-  printf( "insertPair : [%i] %6.2f\n", index, rating_ );
+  printf( "insertPair : [%3i] %6.2f\n", index, rating_ );
 #endif
 }
 
@@ -812,6 +840,10 @@ void PrimerDesign::evaluatePrimerPairs ()
   Item    *two;
   double   rating;
   long int counter = 0;
+
+#ifdef DEBUG
+  printf ( "evaluatePrimerPairs : ...\ninsertPair : [index], rating\n" );
+#endif
 
   // outer loop <=> run through list1
   while ( one != NULL )
@@ -848,6 +880,9 @@ void PrimerDesign::evaluatePrimerPairs ()
 
 void PrimerDesign::printPrimerPairs ()
 {
+#ifdef DEBUG
+  printf ( "printPairs [index] [rating ( primer1[(start_pos,offset,length),(GC,temp)] , primer2[(pos,offs,len),(GC,temp)])] \n" );
+#endif
   for (int i = 0; i < max_count_primerpairs; i++) {
     printf( "printPairs : [%3i]",i );
     pairs[i].print( "\t","\n",sequence );
@@ -857,10 +892,11 @@ void PrimerDesign::printPrimerPairs ()
 //  ------------------------------------------------------------
 //      const char *PrimerDesign::get_result(int num) const
 //  ------------------------------------------------------------
-const char *PrimerDesign::get_result(int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length) const {
-    if (num < 0 || num >= max_count_primerpairs) return 0;
-    if (!pairs[num].one || !pairs[num].two) return 0;
+const char *PrimerDesign::get_result( int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length )  const
+{
+  if ( (num < 0) || (num >= max_count_primerpairs) ) return 0;		// check for valid index
+  if ( !pairs[num].one || !pairs[num].two )          return 0;		// check for valid items at given index
 
-    primers = pairs[num].get_primers(sequence);
-    return pairs[num].get_result(sequence,  max_primer_length,  max_position_length,  max_length_length);
+  primers = pairs[num].get_primers( sequence );
+  return pairs[num].get_result( sequence,  max_primer_length,  max_position_length,  max_length_length );
 }

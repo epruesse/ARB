@@ -6,34 +6,37 @@ using namespace std;
 //
 // Constructor
 //
-SequenceIterator::SequenceIterator ( const char *sequence_, PRD_Sequence_Pos start_pos_, int max_length_, int direction_ )
+SequenceIterator::SequenceIterator ( const char *sequence_, PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ )
 {
-  sequence   = sequence_;
-  max_length = max_length_;
-  direction  = ( direction_ < 0 ) ? BACKWARD : FORWARD;
-  pos        = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
-  delivered  = 0;
+  sequence      = sequence_;
+  max_length    = max_length_;
+  stop_position = stop_pos_;
+  direction     = ( direction_ < 0 ) ? BACKWARD : FORWARD;
+  pos           = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
+  delivered     = 0;
 }
 
 SequenceIterator::SequenceIterator ( const char *sequence_ )
 {
-  sequence   = sequence_;
-  max_length = 0;
-  pos        = 0;
-  delivered  = 0;
-  direction  = FORWARD;
+  sequence      = sequence_;
+  max_length    = IGNORE;
+  stop_position = IGNORE;
+  direction     = FORWARD;
+  pos           = 0;
+  delivered     = 0;
 }
 
 
 //
 // restart at new position
 //
-void SequenceIterator::restart ( PRD_Sequence_Pos start_pos_, int max_length_, int direction_ )
+void SequenceIterator::restart ( PRD_Sequence_Pos start_pos_, PRD_Sequence_Pos stop_pos_, int max_length_, int direction_ )
 {
-  max_length = max_length_;
-  direction  = ( direction_ < 0 ) ? BACKWARD : FORWARD;
-  pos        = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
-  delivered  = 0;
+  max_length    = max_length_;
+  stop_position = stop_pos_;
+  direction     = ( direction_ < 0 ) ? BACKWARD : FORWARD;
+  pos           = start_pos_ - direction; // -direction because nextBase() starts with pos+direction
+  delivered     = 0;
 }
 
 
@@ -42,7 +45,8 @@ void SequenceIterator::restart ( PRD_Sequence_Pos start_pos_, int max_length_, i
 //
 char SequenceIterator::nextBase ()
 {
-  if ((max_length != IGNORE_LENGTH) && (delivered >= max_length)) return EOS;
+  if (((max_length != IGNORE) && (delivered >= max_length)) ||
+      ((stop_position != IGNORE) && (pos == stop_position))) return EOS;
 
   char cur_char;
 
