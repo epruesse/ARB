@@ -188,17 +188,29 @@ else
 endif
 endif
 
+# OPENGL specials:
+
+GL=
+GL_LIB=
+GL_PNGLIBS=
+GLLIBS=
+
+ifeq ($(OPENGL),1)
+GL=gl# this is the name of the OPENGL base target
+GL_LIB:=-lGL
+GL_PNGLIBS: = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
+GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw $(GL_LIB) -lglut $(GL_PNGLIBS)
+endif
+
+
 ifeq ($(X11R6),1)
    XINCLUDES = -I/usr/X11R6/include
    XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 else
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc -lGL
+   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc $(GL_LIB)
 endif
 
-
-   GLPNGLIBS = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-   GLLIBS = -L$(XHOME)/lib -lGLEW -lGLw -lGL -lglut $(GLPNGLIBS) 
    OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
@@ -1256,7 +1268,8 @@ release: tarfile save
 # basic arb libraries
 arbbasic: links
 		$(MAKE) arbbasic2
-arbbasic2: mbin com nas ${MAKE_RTC} sl gl
+
+arbbasic2: mbin com nas ${MAKE_RTC} sl $(GL)
 
 # shared arb libraries
 arbshared: dball aw dp awt
