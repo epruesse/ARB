@@ -2,11 +2,9 @@
 #include <PT_com.h>
 #include <arbdb.h>
 
-#ifdef DEVEL_IDP
 #include <list.h>
 #include <map.h>
 #include <PT_server.h>
-#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -168,17 +166,16 @@ extern struct probe_struct_global   {
     probe_statistic_struct  stat;
 } psg;
 
-#ifdef DEVEL_IDP
 struct gene_struct {
-  char gene_name[9];
-  char full_name[128];
-  char arb_gene_name[128];
-  char arb_species_name[128];
+    char gene_name[9];
+    char full_name[128];
+    char arb_gene_name[128];
+    char arb_species_name[128];
+    // @@@ FIXME: use dynamic strings  
 };
 
-extern list<gene_struct*> names_list_idp;
-extern GBDATA *map_ptr_idp;
-extern int gene_flag;
-#endif
+extern list<gene_struct*>  names_list_idp;
+extern GBDATA             *map_ptr_idp;
+extern int                 gene_flag; // if 'gene_flag' == 1 -> we are a gene pt server
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
