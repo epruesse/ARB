@@ -5,10 +5,12 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
+#define ASRS_BUFFERSIZE 256
+
 struct arb_asrs_struct {
 	GBDATA	*gb_main;
-	char	source[256];
-	char	dest[256];
+	char	source[ASRS_BUFFERSIZE];
+	char	dest[ASRS_BUFFERSIZE];
 	char	*sp_name;
 	char	*sequence;
 } asrs;
@@ -16,9 +18,9 @@ struct arb_asrs_struct {
 void arb_asrs_menu()
 	{
 	printf("please select source file name\n");
-	gets(asrs.source);
+	fgets(asrs.source, ASRS_BUFFERSIZE, stdin);
 	printf("please select dest file name\n");
-	gets(asrs.dest);
+	fgets(asrs.dest, ASRS_BUFFERSIZE, stdin);
 }
 #define NEXTBASE(p) while ( *p && ((*p<'A') || (*p>'Z')) && ((*p<'a') || (*p>'z')) ) p++;
 void arb_asrs_swap()
