@@ -380,7 +380,7 @@ void tree_load_cb(AW_window *aww){
     char     *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
     char     *tree_name    = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
     char     *tree_comment = 0;
-    GBT_TREE *tree         = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment);
+    GBT_TREE *tree         = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1);
 
     //  long fuzzy = aw_root->awar( AWAR_TREE_IMPORT "/fuzzy")->read_int();
 
