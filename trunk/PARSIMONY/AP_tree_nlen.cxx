@@ -2,7 +2,7 @@
 #include <stdlib.h>
 // #include <malloc.h>
 #include <string.h>
-#include <iostream.h>
+#include <iostream>
 #include <math.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -14,6 +14,8 @@
 #include "pars_debug.hxx"
 #include "ap_tree_nlen.hxx"
 #include <aw_root.hxx>
+
+using namespace std;
 
 #define ap_assert(x) arb_assert(x)
 
