@@ -1,20 +1,20 @@
-#include <iostream.h>
-#include <stdlib.h>
-#include <fstream.h>
-#include <strstream.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include <memory.h>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 #include <arbdb.h>
-
 #include <aw_root.hxx>
-
 
 #include"secedit.hxx"
 
 #define BUFFERLENGTH 20
 
+using namespace std;
 
 void SEC_root::generate_x_string(void) {
     x_string = new char[template_length+1];
@@ -127,7 +127,7 @@ char * SEC_root::write_data(void) {
         generate_x_string();
     }
 
-    ostrstream out;
+    ostringstream out;
     out << "MAX_INDEX=" << max_index << "\n";
     out << "ROOT_ANGLE=" << rootAngle << "\n";
     SEC_loop *root_loop = root_segment->get_loop();
@@ -138,7 +138,11 @@ char * SEC_root::write_data(void) {
     delete [] number_found;
     number_found = 0;
 
-    return out.str();
+    const string&  outstr = out.str();
+    char          *result = new char[outstr.length()+1];
+    strcpy(result, outstr.c_str());
+
+    return result;
 }
 
 
