@@ -49,7 +49,7 @@ void alignment_vars_callback(AW_root *aw_root)
     free(use);
 }
 
-void create_alignment_vars(AW_root *aw_root,AW_default aw_def)
+void NT_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 {
     aw_root->awar_string( "presets/use", "" ,   aw_def);
     GB_push_transaction(gb_main);
@@ -239,10 +239,19 @@ AW_window *create_alignment_create_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
+AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
 {
-    AWUSE(aw_def);
-    AW_window_simple *aws = new AW_window_simple;
+    // if popmedown points to a window, that window is popped down
+    
+    static AW_window_simple *aws = 0;
+
+    AW_window *aw_popmedown = (AW_window*)popmedown;
+    if (aw_popmedown) aw_popmedown->hide();
+
+    if (aws) return aws; // do not duplicate
+
+    aws = new AW_window_simple;
+
     aws->init( root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
     aws->load_xfig("ad_align.fig");
 
