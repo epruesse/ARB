@@ -276,7 +276,7 @@ void AP_calc_pos_var_pars(AW_window *aww){
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
         tree = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) {
-            delete tree_name;
+            free(tree_name);
             aw_message("Please select a valid tree");
             return;
         }
