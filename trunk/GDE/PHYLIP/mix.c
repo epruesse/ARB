@@ -1,62 +1,57 @@
-#include "phylip.h"
 
-/* version 3.572c. (c) Copyright 1995 by Joseph Felsenstein.
+#include "phylip.h"
+#include "disc.h"
+#include "wagner.h"
+
+/* version 3.6. (c) Copyright 1993-2002 by the University of Washington.
    Written by Joseph Felsenstein, Akiko Fuseki, Sean Lamont, and Andrew Keeffe.
    Permission is granted to copy and use this program provided no fee is
    charged for it and provided that this copyright notice is not removed. */
 
-#define nmlngth         10   /* number of characters in species name    */
 #define maxtrees        100  /* maximum number of tied trees stored     */
-#define maxuser         10   /* maximum number of user-defined trees    */
 
-#define ibmpc0          false
-#define ansi0           true
-#define vt520           false
-#define down            2
-
-typedef long *bitptr;
-/* nodes will form a binary tree */
-
-typedef struct node {           /* describes a tip species or an ancestor */
-  struct node *next, *back;     /* pointers to nodes                      */
-  long index;                   /* number of the node                     */
-  boolean tip, bottom,visited;  /* present species are tips of tree       */
-  bitptr fulstte1, fulstte0;  /* see in PROCEDURE fillin                */
-  bitptr empstte1, empstte0;  /* see in PROCEDURE fillin                */
-  bitptr fulsteps,empsteps;
-  long xcoord, ycoord, ymin;    /* used by printree                       */
-  long ymax;
-} node;
-
-typedef long *steptr;
-typedef node **pointptr;
-typedef long longer[6];
 typedef long *placeptr;
-char ch;
 
-typedef struct gbit {
-  bitptr bits_;
-  struct gbit *next;
-} gbit;
+#ifndef OLDC
+/* function prototypes */
+void   getoptions(void);
+void   allocrest(void);
+void   doinit(void);
+void   inputoptions(void);
+void   doinput(void);
+void   evaluate(node2 *);
+void   reroot(node2 *);
+void   savetraverse(node2 *);
+void   savetree(void);
+void   mix_addtree(long *pos);
+
+void   mix_findtree(boolean *, long *, long, long *, long **);
+void   tryadd(node2 *, node2 **, node2 **);
+void   addpreorder(node2 *, node2 *, node2 *);
+void   tryrearr(node2 *, node2 **, boolean *);
+void   repreorder(node2 *, node2 **, boolean *);
+void   rearrange(node2 **r);
+void   mix_addelement(node2 **, long *, long *, boolean *);
+void   mix_treeread(void);
+void   describe(void);
+void   maketree(void);
+void   reallocchars(void);
+/* function prototypes */
+#endif
 
 
-node *root;
-FILE *infile, *outfile, *treefile;
-long spp, nonodes, chars, words, inseed, outgrno,  datasets, ith,
-            j, l, jumb, njumble;
-/* spp = number of species
-  nonodes = number of nodes in tree
-  chars = number of binary characters
-  words = number of words needed to represent characters of one organism
-  outgrno indicates outgroup */
+
+Char infilename[FNMLNGTH], outfilename[FNMLNGTH], intreename[FNMLNGTH], outtreename[FNMLNGTH], weightfilename[FNMLNGTH], ancfilename[FNMLNGTH], mixfilename[FNMLNGTH];
+node2 *root;
+long outgrno, msets, ith, njumble, jumb;
+/*  outgrno indicates outgroup */
+long inseed, inseed0;
 boolean jumble, usertree, weights, thresh, ancvar, questions, allsokal,
                allwagner, mixture, trout, noroot, outgropt, didreroot,
-                printdata, progress, treeprint, stepbox, ancseq,
-               mulsets, firstset, ibmpc, vt52, ansi;
-steptr extras, weight;
+               progress, treeprint, stepbox, ancseq, mulsets, firstset,
+               justwts;
 boolean *ancone, *anczero, *ancone0, *anczero0;
-pointptr treenode;   /* pointers to all nodes in tree */
-char **nayme;   /* names of species */
+pointptr2 treenode;   /* pointers to all nodes in tree */
 double threshold;
 double *threshwt;
 bitptr wagner, wagner0;
@@ -67,134 +62,24 @@ char *guess;
 long **bestrees;
 steptr numsteps, numsone, numszero;
 gbit *garbage;
-long bits =  (8*sizeof(long) - 1);
+char ch;
+char *progname;
 
-void openfile(fp,filename,mode,application,perm)
-FILE **fp;
-char *filename;
-char *mode;
-char *application;
-char *perm;
-{
-  FILE *of;
-  char file[100];
-  strcpy(file,filename);
-  while (1){
-    of = fopen(file,mode);
-    if (of)
-      break;
-    else {
-      switch (*mode){
-      case 'r':
-	printf("%s:  can't read %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      case 'w':
-        printf("%s: can't write %s\n",application,file);
-	file[0] = '\0';
-        while (file[0] =='\0'){
-          printf("Please enter a new filename>");
-          gets(file);}
-        break;
-      }
-    }
-  }
-  *fp=of;
-  if (perm != NULL)
-    strcpy(perm,file);
-}
-
-void gnu(p)
-gbit **p;
-{
-  /* this and the following are do-it-yourself garbage collectors.
-     Make a new node or pull one off the garbage list */
-  if (garbage != NULL) {
-    *p = garbage;
-    garbage = garbage->next;
-  } else {
-    *p = (gbit *)Malloc(sizeof(gbit));
-    (*p)->bits_ = (bitptr)Malloc(words*sizeof(long));
-  }
-  (*p)->next = NULL;
-}  /* gnu */
-
-
-void chuck(p)
-gbit *p;
-{
-  /* collect garbage on p -- put it on front of garbage list */
-  p->next = garbage;
-  garbage = p;
-}  /* chuck */
-
-
-double randum(seed)
-long *seed;
-{
-  /* random number generator -- slow but machine independent */
-  long i, j, k, sum;
-  longer mult, newseed;
-  double x;
-
-  mult[0] = 13;
-  mult[1] = 24;
-  mult[2] = 22;
-  mult[3] = 6;
-  for (i = 0; i <= 5; i++)
-    newseed[i] = 0;
-  for (i = 0; i <= 5; i++) {
-    sum = newseed[i];
-    k = i;
-    if (i > 3)
-      k = 3;
-    for (j = 0; j <= k; j++)
-      sum += mult[j] * seed[i - j];
-    newseed[i] = sum;
-    for (j = i; j <= 4; j++) {
-      newseed[j + 1] += newseed[j] / 64;
-      newseed[j] &= 63;
-    }
-  }
-  memcpy(seed, newseed, sizeof(longer));
-  seed[5] &= 3;
-  x = 0.0;
-  for (i = 0; i <= 5; i++)
-    x = x / 64.0 + seed[i];
-  x /= 4.0;
-  return x;
-}  /* randum */
-
-
-void uppercase(ch)
-Char *ch;
-{  /* convert a character to upper case -- either ASCII or EBCDIC */
-     *ch = (islower (*ch) ? toupper(*ch) : (*ch));
-}  /* uppercase */
-
-void newline(i, j, k)
-long i, j, k;
-{
-  /* go to new line if i is a multiple of j, indent k spaces */
-  long m;
-
-  if ((i - 1) % j != 0 || i <= 1)
-    return;
-  putc('\n', outfile);
-  for (m = 1; m <= k; m++)
-    putc(' ', outfile);
-}  /* newline */
-
+/* Local variables for maketree: */
+long minwhich;
+double like, bestyet, bestlike, bstlike2, minsteps;
+boolean lastrearr,full;
+double nsteps[maxuser];
+node2 *there;
+long fullset;
+bitptr steps, zeroanc, oneanc, fulzeroanc, empzeroanc;
+long *place, col;
 
 void getoptions()
 {
   /* interactively set options */
-  long i, inseed0;
-  Char ch;
-  boolean  done1;
+  long loopcount, loopcount2;
+  Char ch, ch2;
 
   fprintf(outfile, "\nMixed parsimony algorithm, version %s\n\n",VERSION);
   putchar('\n');
@@ -207,6 +92,7 @@ void getoptions()
   trout = true;
   usertree = false;
   weights = false;
+  justwts = false;
   ancvar = false;
   allsokal = false;
   allwagner = true;
@@ -214,11 +100,10 @@ void getoptions()
   printdata = false;
   progress = true;
   treeprint = true;
-  stepbox = false;
-  ancseq = false;
+  stepbox = false;  ancseq = false;
+  loopcount = 0;
   for (;;) {
-    printf(ansi ?  "\033[2J\033[H" :
-           vt52 ?  "\033E\033H"    : "\n");
+    cleerhome();
     printf("\nMixed parsimony algorithm, version %s\n\n",VERSION);
     printf("Settings for this run:\n");
     printf("  U                 Search for best tree?  %s\n",
@@ -249,16 +134,16 @@ void getoptions()
       printf("  No, use ordinary parsimony\n");
     printf("  A   Use ancestral states in input file?  %s\n",
     (ancvar ? "Yes" : "No"));
+    printf("  W                       Sites weighted?  %s\n",
+           (weights ? "Yes" : "No"));
     printf("  M           Analyze multiple data sets?");
     if (mulsets)
-      printf("  Yes, %2ld sets\n", datasets);
+    printf("  Yes, %2ld %s\n", msets,
+               (justwts ? "sets of weights" : "data sets"));
     else
       printf("  No\n");
-    printf("  0   Terminal type (IBM PC, VT52, ANSI)?  %s\n",
-           (ibmpc ? "IBM PC" :
-            ansi  ? "ANSI"   :
-            vt52  ? "VT52"   : "(none)"));
-
+    printf("  0   Terminal type (IBM PC, ANSI, none)?  %s\n",
+           (ibmpc ? "IBM PC" : ansi  ? "ANSI" : "(none)"));
     printf("  1    Print out the data at start of run  %s\n",
            (printdata ? "Yes" : "No"));
     printf("  2  Print indications of progress of run  %s\n",
@@ -271,8 +156,17 @@ void getoptions()
            (ancseq ? "Yes" : "No"));
     printf("  6       Write out trees onto tree file?  %s\n",
            (trout ? "Yes" : "No"));
+    if(weights && justwts){
+        printf(
+         "WARNING:  W option and Multiple Weights options are both on.  ");
+        printf(
+         "The W menu option is unnecessary and has no additional effect. \n");
+    }
     printf("\nAre these settings correct? ");
     printf("(type Y or the letter for one to change)\n");
+#ifdef WIN32
+    phyFillScreenColor();
+#endif
     scanf("%c%*[^\n]", &ch);
     getchar();
     if (ch == '\n')
@@ -280,509 +174,246 @@ void getoptions()
     uppercase(&ch);
     if (ch == 'Y')
       break;
-    if (strchr("JOTUMPAX1234560",ch)){
+    if (strchr("WJOTUMPAX1234560",ch) != NULL){
       switch (ch) {
-	
+
+      case 'W':
+        weights = !weights;
+        break;
+        
       case 'U':
-	usertree = !usertree;
-	break;
-	
+        usertree = !usertree;
+        break;
+        
       case 'X':
-	mixture = !mixture;
-	break;
-	
+        mixture = !mixture;
+        break;
+        
       case 'P':
-	allwagner = !allwagner;
-	break;
-	
+        allwagner = !allwagner;
+        break;
+        
       case 'A':
-	ancvar = !ancvar;
-	break;
-	
+        ancvar = !ancvar;
+        break;
+        
       case 'J':
-	jumble = !jumble;
-	if (jumble) {
-	  do {
-	    printf("Random number seed (must be odd)?\n");
-	    scanf("%ld%*[^\n]", &inseed);
-	    getchar();
-	  } while (!(inseed & 1));
-	  inseed0 = inseed;
-	  for (i = 0; i <= 5; i++)
-	    seed[i] = 0;
-	  i = 0;
-	  do {
-	    seed[i] = inseed & 63;
-	    inseed /= 64;
-	    i++;
-	  } while (inseed != 0);
-	  printf("Number of times to jumble?\n");
-	  scanf("%ld%*[^\n]", &njumble);
-	  getchar();
-	}
-	else njumble = 1;
-	break;
-	
+        jumble = !jumble;
+        if (jumble)
+          initjumble(&inseed, &inseed0, seed, &njumble);
+        else njumble = 1;
+        break;
+        
       case 'O':
-	outgropt = !outgropt;
-	if (outgropt) {
-	  done1 = true;
-	  do {
-	    printf("Type number of the outgroup:\n");
-	    scanf("%ld%*[^\n]", &outgrno);
-	    getchar();
-	    done1 = (outgrno >= 1 && outgrno <= spp);
-	    if (!done1) {
-	      printf("BAD OUTGROUP NUMBER: %4ld\n", outgrno);
-	      printf("  Must be in range 1 -%2ld\n", spp);
-	    }
-	  } while (done1 != true);
-	}
-	break;
-	
+        outgropt = !outgropt;
+        if (outgropt)
+          initoutgroup(&outgrno, spp);
+        break;
+        
       case 'T':
-	thresh = !thresh;
-	if (thresh) {
-	  done1 = false;
-	  do {
-	    printf("What will be the threshold value?\n");
-	    scanf("%lf%*[^\n]", &threshold);
-	    getchar();
-	    done1 = (threshold >= 1.0);
-	    if (!done1)
-	      printf("BAD THRESHOLD VALUE:  it must be greater than 1\n");
-	    else
-	      threshold = (long)(threshold * 10.0 + 0.5) / 10.0;
-	  } while (done1 != true);
-	}
-	break;
-	
+        thresh = !thresh;
+        if (thresh)
+          initthreshold(&threshold);
+        break;
+        
       case 'M':
-	mulsets = !mulsets;
-	if (mulsets) {
-	  done1 = false;
-	  do {
-	    printf("How many data sets?\n");
-	    scanf("%ld%*[^\n]", &datasets);
-	    getchar();
-	    done1 = (datasets >= 1);
-	    if (!done1)
-	      printf("BAD DATA SETS NUMBER:  it must be greater than 1\n");
-	  } while (done1 != true);
-	}
-	break;
-	
+        mulsets = !mulsets;
+        if (mulsets){
+            printf("Multiple data sets or multiple weights?");
+          loopcount2 = 0;
+          do {
+            printf(" (type D or W)\n");
+#ifdef WIN32
+            phyFillScreenColor();
+#endif
+            scanf("%c%*[^\n]", &ch2);
+            getchar();
+            if (ch2 == '\n')
+              ch2 = ' ';
+            uppercase(&ch2);
+            countup(&loopcount2, 10);
+          } while ((ch2 != 'W') && (ch2 != 'D'));
+          justwts = (ch2 == 'W');
+          if (justwts)
+            justweights(&msets);
+          else
+            initdatasets(&msets);
+          if (!jumble) {
+            jumble = true;
+            initjumble(&inseed, &inseed0, seed, &njumble);
+          }
+        }
+        break;
+
       case '0':
-	if (ibmpc) {
-	  ibmpc = false;
-	  vt52 = true;
-	} else {
-	  if (vt52) {
-	    vt52 = false;
-	    ansi = true;
-	  } else if (ansi)
-	    ansi = false;
-	  else
-	    ibmpc = true;
-	}
-	break;
-	
+        initterminal(&ibmpc, &ansi);
+        break;
+        
       case '1':
-	printdata = !printdata;
-	break;
-	
+        printdata = !printdata;
+        break;
+        
       case '2':
-	progress = !progress;
-	break;
-	
+        progress = !progress;
+        break;
+        
       case '3':
-	treeprint = !treeprint;
-	break;
-	
+        treeprint = !treeprint;
+        break;
+        
       case '4':
-	stepbox = !stepbox;
-	break;
-	
+        stepbox = !stepbox;
+        break;
+        
       case '5':
-	ancseq = !ancseq;
-	break;
-	
+        ancseq = !ancseq;
+        break;
+        
       case '6':
-	trout = !trout;
-	break;
+        trout = !trout;
+        break;
       }
     } else
       printf("Not a possible option!\n");
+    countup(&loopcount, 100);
   }
   allsokal = (!allwagner && !mixture);
 }  /* getoptions */
 
-void inputnumbers()
+void reallocchars() 
 {
-  /* input the numbers of species and of characters */
-  fscanf(infile, "%ld%ld", &spp, &chars);
-  if (printdata)
-    fprintf(outfile, "%2ld species, %3ld  characters\n", spp, chars);
-  if (printdata)
-    putc('\n', outfile);
-  words = chars / bits + 1;
-  nonodes = spp * 2 - 1;
-}  /* inputnumbers */
+  long i;
+
+  if (usertree) {
+    for (i = 0; i < maxuser; i++) {
+      free (fsteps[i]);
+      fsteps[i] = (double *)Malloc(chars*sizeof(double));
+    }
+  }
+  free(extras);
+  free(weight);
+  free(threshwt);
+  free(numsteps);
+  free(numszero);
+  free(numsone);
+  free(guess);
+  free(ancone);
+  free(anczero);
+  free(ancone0);
+  free(anczero0);
+
+  extras = (steptr)Malloc(chars*sizeof(long));
+  weight = (steptr)Malloc(chars*sizeof(long));
+  threshwt = (double *)Malloc(chars*sizeof(double));
+  numsteps = (steptr)Malloc(chars*sizeof(long));
+  numszero = (steptr)Malloc(chars*sizeof(long));
+  numsone = (steptr)Malloc(chars*sizeof(long));
+  guess = (Char *)Malloc(chars*sizeof(Char));
+  ancone = (boolean *)Malloc(chars*sizeof(boolean));
+  anczero = (boolean *)Malloc(chars*sizeof(boolean));
+  ancone0 = (boolean *)Malloc(chars*sizeof(boolean));
+  anczero0 = (boolean *)Malloc(chars*sizeof(boolean));
+}
+
+void allocrest()
+{
+  long i;
+
+  if (usertree) {
+    fsteps = (double **)Malloc(maxuser*sizeof(double *));
+    for (i = 0; i < maxuser; i++)
+      fsteps[i] = (double *)Malloc(chars*sizeof(double));
+  }
+  bestrees = (long **)Malloc(maxtrees*sizeof(long *));
+  for (i = 1; i <= maxtrees; i++)
+    bestrees[i - 1] = (long *)Malloc(spp*sizeof(long));
+  extras = (steptr)Malloc(chars*sizeof(long));
+  weight = (steptr)Malloc(chars*sizeof(long));
+  threshwt = (double *)Malloc(chars*sizeof(double));
+  numsteps = (steptr)Malloc(chars*sizeof(long));
+  numszero = (steptr)Malloc(chars*sizeof(long));
+  numsone = (steptr)Malloc(chars*sizeof(long));
+  guess = (Char *)Malloc(chars*sizeof(Char));
+  nayme = (naym *)Malloc(spp*sizeof(naym));
+  enterorder = (long *)Malloc(spp*sizeof(long));
+  ancone = (boolean *)Malloc(chars*sizeof(boolean));
+  anczero = (boolean *)Malloc(chars*sizeof(boolean));
+  ancone0 = (boolean *)Malloc(chars*sizeof(boolean));
+  anczero0 = (boolean *)Malloc(chars*sizeof(boolean));
+  wagner = (bitptr)Malloc(words*sizeof(long));
+  wagner0 = (bitptr)Malloc(words*sizeof(long));
+  place = (long *)Malloc(nonodes*sizeof(long));
+  steps = (bitptr)Malloc(words*sizeof(long));
+  zeroanc = (bitptr)Malloc(words*sizeof(long));
+  oneanc = (bitptr)Malloc(words*sizeof(long));
+  fulzeroanc = (bitptr)Malloc(words*sizeof(long));
+  empzeroanc = (bitptr)Malloc(words*sizeof(long));
+}  /* allocrest */
 
 
-Static Void doinit()
+void doinit()
 {
   /* initializes variables */
-  long i;
-  node *p, *q;
 
-  inputnumbers();
+  inputnumbers(&spp, &chars, &nonodes, 1);
+  words = chars / bits + 1;
   getoptions();
-  treenode = (pointptr)Malloc(nonodes*sizeof(node *));
-  for (i = 0; i < (spp); i++) {
-    treenode[i] = (node *)Malloc(sizeof(node));
-    treenode[i]->fulstte1 = (bitptr)Malloc(words*sizeof(long));
-    treenode[i]->fulstte0 = (bitptr)Malloc(words*sizeof(long));
-    treenode[i]->empstte1 = (bitptr)Malloc(words*sizeof(long));
-    treenode[i]->empstte0 = (bitptr)Malloc(words*sizeof(long));
-    treenode[i]->fulsteps = (bitptr)Malloc(words*sizeof(long));
-    treenode[i]->empsteps = (bitptr)Malloc(words*sizeof(long));
-  }
-  for (i = spp; i < (nonodes); i++) {
-    q = NULL;
-    for (j = 1; j <= 3; j++) {
-      p = (node *)Malloc(sizeof(node));
-      p->fulstte1 = (bitptr)Malloc(words*sizeof(long));
-      p->fulstte0 = (bitptr)Malloc(words*sizeof(long));
-      p->empstte1 = (bitptr)Malloc(words*sizeof(long));
-      p->empstte0 = (bitptr)Malloc(words*sizeof(long));
-      p->fulsteps = (bitptr)Malloc(words*sizeof(long));
-      p->empsteps = (bitptr)Malloc(words*sizeof(long));
-      p->next = q;
-      q = p;
-    }
-    p->next->next->next = p;
-    treenode[i] = p;
-  }
+  if (printdata)
+      fprintf(outfile, "%ld species, %ld characters\n\n", spp, chars);
+  alloctree2(&treenode);
+  setuptree2(treenode);
+  allocrest();
 }  /* doinit */
 
-void inputmixture()
-{
-  /* input mixture of methods */
-  long i, j, k;
-  Char ch;
-  boolean wag;
-
-  for (i = 1; i < nmlngth; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-  }
-  for (i = 0; i < (words); i++)
-    wagner0[i] = 0;
-  j = 0;
-  k = 1;
-  for (i = 1; i <= (chars); i++) {
-    do {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-      if (ch == '\n')
-        ch = ' ';
-    } while (ch == ' ');
-    uppercase(&ch);
-    wag = false;
-    if (ch == 'W' || ch == '?')
-      wag = true;
-    else if (ch == 'S' || ch == 'C')
-      wag = false;
-    else {
-      printf("BAD METHOD: %c\n", ch);
-      exit(-1);
-    }
-    j++;
-    if (j > bits) {
-      j = 1;
-      k++;
-    }
-    if (wag)
-      wagner0[k - 1] = ((long)wagner0[k - 1]) | (1L << ((int)j));
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-}  /* inputmixture */
-
-void printmixture()
-{
-  /* print out list of parsimony methods */
-  long i, k, l;
-
-  fprintf(outfile, "Parsimony methods:\n");
-  l = 0;
-  k = 1;
-  for (i = 1; i <= nmlngth + 3; i++)
-    putc(' ', outfile);
-  for (i = 1; i <= (chars); i++) {
-    newline(i, 55L, nmlngth + 3L);
-    l++;
-    if (l > bits) {
-      l = 1;
-      k++;
-    }
-    if ((unsigned long)l < 32 && ((1L << l) & wagner[k - 1]) != 0)
-      putc('W', outfile);
-    else
-      putc('S', outfile);
-    if (i % 5 == 0)
-      putc(' ', outfile);
-  }
-  fprintf(outfile, "\n\n");
-}  /* printmixture */
-
-void inputweights()
-{
-  /* input the character weights, 0-9 and A-Z for weights 0 - 35 */
-  Char ch;
-  long i;
-
-  for (i = 1; i < nmlngth; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-  }
-  for (i = 0; i < (chars); i++) {
-    do {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-      if (ch == '\n')
-        ch = ' ';
-    } while (ch == ' ');
-    weight[i] = 1;
-    if (isdigit(ch))
-      weight[i] = ch - '0';
-    else if (isalpha(ch)) {
-      uppercase(&ch);
-      if (ch >= 'A' && ch <= 'I')
-        weight[i] = ch - 55;
-      else if (ch >= 'J' && ch <= 'R')
-        weight[i] = ch - 55;
-      else
-        weight[i] = ch - 55;
-    } else {
-      printf("BAD WEIGHT CHARACTER: %c\n", ch);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  weights = true;
-}  /* inputweights */
-
-void printweights()
-{
-  /* print out the weights of characters */
-  long i, j, k;
-
-  fprintf(outfile, "Characters are weighted as follows:\n");
-  fprintf(outfile, "       ");
-  for (i = 0; i <= 9; i++)
-    fprintf(outfile, "%3ld", i);
-  fprintf(outfile, "\n      *---------------------------------\n");
-  for (j = 0; j <= (chars / 10); j++) {
-    fprintf(outfile, "%5ld!  ", j * 10);
-    for (i = 0; i <= 9; i++) {
-      k = j * 10 + i;
-      if (k > 0 && k <= chars)
-        fprintf(outfile, "%3ld", weight[k - 1]);
-      else
-        fprintf(outfile, "   ");
-    }
-    putc('\n', outfile);
-  }
-  putc('\n', outfile);
-}  /* printweights */
-
-void inputancestors()
-{
-  /* reads the ancestral states for each character */
-  long i;
-  Char ch;
-
-  for (i = 1; i < nmlngth; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-  }
-  for (i = 0; i < (chars); i++) {
-    anczero0[i] = true;
-    ancone0[i] = true;
-    do {
-      if (eoln(infile)) {
-        fscanf(infile, "%*[^\n]");
-        getc(infile);
-      }
-      ch = getc(infile);
-      if (ch == '\n')
-        ch = ' ';
-    } while (ch == ' ');
-    if (ch == 'p')
-      ch = 'P';
-    if (ch == 'b')
-      ch = 'B';
-    if (ch == '0' || ch == '1' || ch == 'P' || ch == 'B' || ch == '?') {
-      switch (ch) {
-
-      case '1':
-        anczero0[i] = false;
-        break;
-
-      case '0':
-        ancone0[i] = false;
-        break;
-
-      case 'P':
-        /* blank case */
-        break;
-
-      case 'B':
-        /* blank case */
-        break;
-
-      case '?':
-        /* blank case */
-        break;
-      }
-    } else {
-      printf("BAD ANCESTOR STATE: %c AT CHARACTER %4ld\n", ch, i + 1);
-      exit(-1);
-    }
-  }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-}  /* inputancestors */
-
-void printancestors()
-{
-  /* print out list of ancestral states */
-  long i;
-
-  fprintf(outfile, "Ancestral states:\n");
-  for (i = 1; i <= nmlngth + 3; i++)
-    putc(' ', outfile);
-  for (i = 1; i <= (chars); i++) {
-    newline(i, 55L, nmlngth + 3L);
-    if (ancone[i - 1] && anczero[i - 1])
-      putc('?', outfile);
-    else if (ancone[i - 1])
-      putc('1', outfile);
-    else
-      putc('0', outfile);
-    if (i % 5 == 0)
-      putc(' ', outfile);
-  }
-  fprintf(outfile, "\n\n");
-}  /* printancestor */
 
 void inputoptions()
 {
   /* input the information on the options */
-  Char ch;
-  long extranum, i, cursp, curchs;
-  boolean avar, mix;
+  long i;
 
-  if (!firstset) {
-    if (eoln(infile)) {
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-    }
-    fscanf(infile, "%ld%ld", &cursp, &curchs);
-    if (cursp != spp) {
-      printf("\nERROR: INCONSISTENT NUMBER OF SPECIES IN DATA SET %4ld\n",
-             ith);
-      exit(-1);
-    }
-    chars = curchs;
-  }
-  extranum = 0;
-  avar = false;
-  mix = false;
-  while (!eoln(infile)) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-    uppercase(&ch);
-    if (ch == 'A' || ch == 'M' || ch == 'W')
-      extranum++;
-    else if (ch != ' ') {
-      printf("BAD OPTION CHARACTER: %c\n", ch);
-      exit(-1);
+  if(justwts){
+    if(firstset){
+      scan_eoln(infile);
+      if (ancvar)
+        inputancestorsnew(anczero0, ancone0);
+      if (mixture)
+        inputmixturenew(wagner0);
+      }
+    for (i = 0; i < (chars); i++)
+      weight[i] = 1;
+    inputweights(chars, weight, &weights);
+    for (i = 0; i < (words); i++) {
+      if (mixture)
+        wagner[i] = wagner0[i];
+      else if (allsokal)
+        wagner[i] = 0;
+      else
+        wagner[i] = (1L << (bits + 1)) - (1L << 1);
     }
   }
-  fscanf(infile, "%*[^\n]");
-  getc(infile);
-  for (i = 0; i < (chars); i++)
-    weight[i] = 1;
-  for (i = 1; i <= extranum; i++) {
-    ch = getc(infile);
-    if (ch == '\n')
-      ch = ' ';
-    uppercase(&ch);
-    if (ch != 'A' && ch != 'M' && ch != 'W') {
-      printf("ERROR: INCORRECT AUXILIARY OPTIONS LINE");
-      printf(" WHICH STARTS WITH %c\n", ch);
-      exit(-1);
+  else {
+    if (!firstset) {
+      samenumsp(&chars, ith);
+      reallocchars();
     }
-    if (ch == 'A') {
-      avar = true;
-      if (!ancvar) {
-	printf("ERROR: ANCESTOR OPTION NOT CHOSEN IN MENU");
-	printf(" WITH OPTION %c IN INPUT\n", ch);
-	exit(-1);
-      } else
-	inputancestors();
+    scan_eoln(infile);
+    for (i = 0; i < (chars); i++)
+      weight[i] = 1;
+    if (ancvar)
+      inputancestorsnew(anczero0, ancone0);
+    if (mixture)
+      inputmixturenew(wagner0);
+    if (weights)
+      inputweights(chars, weight, &weights);
+    for (i = 0; i < (words); i++) {
+      if (mixture)
+        wagner[i] = wagner0[i];
+      else if (allsokal)
+        wagner[i] = 0;
+      else
+        wagner[i] = (1L << (bits + 1)) - (1L << 1);
     }
-    if (ch == 'M') {
-      mix = true;
-      if (!mixture) {
-	printf("ERROR: MIXTURE OPTION NOT CHOSEN IN MENU");
-	printf(" WITH OPTION %c IN INPUT\n", ch);
-	exit(-1);
-      } else
-	inputmixture();
-    }
-    if (ch == 'W')
-      inputweights();
   }
-  if (ancvar && !avar) {
-    printf("ERROR: ANCESTOR OPTION CHOSEN IN MENU");
-    printf(" WITH NO OPTION A IN INPUT\n");
-    exit(-1);
-  }
-  if (mixture && !mix) {
-    printf("ERROR: MIXTURE OPTION CHOSEN IN MENU WITH NO OPTION M IN INPUT\n");
-    exit(-1);
-  }
-  if (weights && printdata)
-    printweights();
-  for (i = 0; i < (words); i++) {
-    if (mixture && mix)
-      wagner[i] = wagner0[i];
-    else if (allsokal)
-      wagner[i] = 0;
-    else
-      wagner[i] = (1L << (bits + 1)) - (1L << 1);
-  }
-  if (allsokal)
-    fprintf(outfile, "Camin-Sokal parsimony method\n\n");
-  if (allwagner)
-    fprintf(outfile, "Wagner parsimony method\n\n");
-  if (mixture && mix && printdata)
-    printmixture();
   for (i = 0; i < (chars); i++) {
     if (!ancvar) {
       anczero[i] = true;
@@ -792,255 +423,697 @@ void inputoptions()
       ancone[i] = ancone0[i];
     }
   }
-  if (ancvar && avar && printdata)
-    printancestors();
   noroot = true;
   questions = false;
   for (i = 0; i < (chars); i++) {
     if (weight[i] > 0) {
       noroot = (noroot && ancone[i] && anczero[i] &&
-          ((((1L << (i % bits + 1)) & wagner[i / bits]) != 0)
-                || threshold <= 2.0));
+                ((((1L << (i % bits + 1)) & wagner[i / bits]) != 0)
+                 || threshold <= 2.0));
     }
     questions = (questions || (ancone[i] && anczero[i]));
     threshwt[i] = threshold * weight[i];
   }
 }  /* inputoptions */
 
-void inputdata()
-{
-  /* input the names and character state data for species */
-  long i, j, l;
-  char k;
-  Char charstate;
-  /* possible states are '0', '1', 'P', 'B', and '?' */
-  node *p;
-
-  putc('\n', outfile);
-  j = nmlngth + (chars + (chars - 1) / 10) / 2 - 4;
-  if (j < nmlngth - 1)
-    j = nmlngth - 1;
-  if (j > 36)
-    j = 36;
-  if (printdata) {
-    fprintf(outfile, "Name");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "Characters\n");
-    fprintf(outfile, "----");
-    for (i = 1; i <= j; i++)
-      putc(' ', outfile);
-    fprintf(outfile, "----------\n\n");
-  }
-  for (i = 0; i < (chars); i++)
-    extras[i] = 0;
-  for (i = 1; i <= (nonodes); i++) {
-    treenode[i - 1]->back = NULL;
-    treenode[i - 1]->tip = (i <= spp);
-    treenode[i - 1]->visited = false;
-    treenode[i - 1]->index = i;
-    if (i > spp) {
-      p = treenode[i - 1]->next;
-      while (p != treenode[i - 1]) {
-	p->back = NULL;
-	p->tip = false;
-	p->visited = false;
-	p->index = i;
-	p = p->next;
-      }
-    } else {
-      for (j = 0; j < nmlngth; j++) {
-	nayme[i - 1][j] = getc(infile);
-	if (nayme[i - 1][j] == '\n')
-	  nayme[i - 1][j] = ' ';
-	if ( eof(infile) || eoln(infile)){
-	  printf("ERROR: END-OF-LINE OR END-OF-FILE");
-	  printf(" IN THE MIDDLE OF A SPECIES NAME\n");
-	  exit(-1);}
-      }
-      if (printdata) {
-	for (j = 0; j < nmlngth; j++)
-	  putc(nayme[i - 1][j], outfile);
-      }
-      fprintf(outfile, "   ");
-      for (j = 0; j < (words); j++) {
-	treenode[i - 1]->fulstte1[j] = 0;
-	treenode[i - 1]->fulstte0[j] = 0;
-	treenode[i - 1]->empstte1[j] = 0;
-	treenode[i - 1]->empstte0[j] = 0;
-      }
-      for (j = 1; j <= (chars); j++) {
-	k = (j - 1) % bits + 1;
-	l = (j - 1) / bits + 1;
-	do {
-	  if (eoln(infile)) {
-	    fscanf(infile, "%*[^\n]");
-	    getc(infile);
-	  }
-/*	  anerror |= eof(infile); */
-	  charstate = getc(infile);
-	  if (charstate == '\n')
-	    charstate = ' ';
-	} while (charstate == ' ');
-	if (charstate == 'b')	  charstate = 'B';
-	if (charstate == 'p')	  charstate = 'P';
-	if (charstate != '0' && charstate != '1' && charstate != '?' &&
-	    charstate != 'P' && charstate != 'B') {
-	  printf("ERROR: BAD CHARACTER STATE: %c ",charstate);
-	  printf("AT CHARACTER %5ld OF SPECIES %3ld\n",j,i);
-	  exit(-1);
-	}
-	if (printdata) {
-	  newline(j, 55L, nmlngth + 3L);
-	  putc(charstate, outfile);
-	  if (j % 5 == 0)
-	    putc(' ', outfile);
-	}
-	if (charstate == '1') {
-	  treenode[i - 1]->fulstte1[l - 1] =
-	    ((long)treenode[i - 1]->fulstte1[l - 1]) | (1L << k);
-	  treenode[i - 1]->empstte1[l - 1] =
-	    treenode[i - 1]->fulstte1[l - 1];
-	}
-	if (charstate == '0') {
-	  treenode[i - 1]->fulstte0[l - 1] =
-	    ((long)treenode[i - 1]->fulstte0[l - 1]) | (1L << k);
-	  treenode[i - 1]->empstte0[l - 1] =
-	    treenode[i - 1]->fulstte0[l - 1];
-	}
-	if (charstate == 'P' || charstate == 'B')
-	  extras[j - 1] += weight[j - 1];
-      }
-      fscanf(infile, "%*[^\n]");
-      getc(infile);
-      if (printdata)
-	putc('\n', outfile);
-    }
-  }
-  fprintf(outfile, "\n\n");
-}  /* inputdata */
-
 
 void doinput()
 {
   /* reads the input data */
   inputoptions();
-  inputdata();
+  if(!justwts || firstset)
+      inputdata2(treenode);
 }  /* doinput */
 
-main(argc, argv)
-int argc;
-Char *argv[];
+
+void evaluate(node2 *r)
+{
+  /* Determines the number of steps needed for a tree.
+    This is the minimum number needed to evolve chars on
+    this tree */
+  long i, stepnum, smaller;
+  double sum, term;
+
+  sum = 0.0;
+  for (i = 0; i < (chars); i++) {
+    numszero[i] = 0;
+    numsone[i] = 0;
+  }
+  full = true;
+  for (i = 0; i < (words); i++)
+    zeroanc[i] = fullset;
+  postorder(r, fullset, full, wagner, zeroanc);
+  cpostorder(r, full, zeroanc, numszero, numsone);
+  count(r->fulstte1, zeroanc, numszero, numsone);
+  for (i = 0; i < (words); i++)
+    zeroanc[i] = 0;
+  full = false;
+  postorder(r, fullset, full, wagner, zeroanc);
+  cpostorder(r, full, zeroanc, numszero, numsone);
+  count(r->empstte0, zeroanc, numszero, numsone);
+  for (i = 0; i < (chars); i++) {
+    smaller = spp * weight[i];
+    numsteps[i] = smaller;
+    if (anczero[i]) {
+      numsteps[i] = numszero[i];
+      smaller = numszero[i];
+    }
+    if (ancone[i] && numsone[i] < smaller)
+      numsteps[i] = numsone[i];
+    stepnum = numsteps[i] + extras[i];
+    if (stepnum <= threshwt[i])
+      term = stepnum;
+    else
+      term = threshwt[i];
+    sum += term;
+    if (usertree && which <= maxuser)
+      fsteps[which - 1][i] = term;
+    guess[i] = '?';
+    if (!ancone[i] || (anczero[i] && numszero[i] < numsone[i]))
+      guess[i] = '0';
+    else if (!anczero[i] || (ancone[i] && numsone[i] < numszero[i]))
+      guess[i] = '1';
+  }
+  if (usertree && which <= maxuser) {
+    nsteps[which - 1] = sum;
+    if (which == 1) {
+      minwhich = 1;
+      minsteps = sum;
+    } else if (sum < minsteps) {
+      minwhich = which;
+      minsteps = sum;
+    }
+  }
+  like = -sum;
+}  /* evaluate */
+
+
+void reroot(node2 *outgroup)
+{
+  /* reorients tree, putting outgroup in desired position. */
+  node2 *p, *q;
+
+  if (outgroup->back->index == root->index)
+    return;
+  p = root->next;
+  q = root->next->next;
+  p->back->back = q->back;
+  q->back->back = p->back;
+  p->back = outgroup;
+  q->back = outgroup->back;
+  outgroup->back->back = q;
+  outgroup->back = p;
+}  /* reroot */
+
+
+void savetraverse(node2 *p)
+{
+  /* sets BOOLEANs that indicate which way is down */
+  p->bottom = true;
+  if (p->tip)
+    return;
+  p->next->bottom = false;
+  savetraverse(p->next->back);
+  p->next->next->bottom = false;
+  savetraverse(p->next->next->back);
+}  /* savetraverse */
+
+
+void savetree()
+{
+  /* record in place where each species has to be
+    added to reconstruct this tree */
+  long i, j;
+  node2 *p;
+  boolean done;
+
+  if (noroot)
+    reroot(treenode[outgrno - 1]);
+  savetraverse(root);
+  for (i = 0; i < (nonodes); i++)
+   place[i] = 0;
+  place[root->index - 1] = 1;
+  for (i = 1; i <= (spp); i++) {
+    p = treenode[i - 1];
+    while (place[p->index - 1] == 0) {
+      place[p->index - 1] = i;
+      while (!p->bottom)
+        p = p->next;
+      p = p->back;
+    }
+    if (i > 1) {
+      place[i - 1] = place[p->index - 1];
+      j = place[p->index - 1];
+      done = false;
+      while (!done) {
+        place[p->index - 1] = spp + i - 1;
+        while (!p->bottom)
+          p = p->next;
+        p = p->back;
+        done = (p == NULL);
+        if (!done)
+          done = (place[p->index - 1] != j);
+      }
+    }
+  }
+}  /* savetree */
+
+
+void mix_addtree(long *pos)
+{
+  /* puts tree from ARRAY place in its proper position
+    in ARRAY bestrees */
+  long i;
+  for (i =nextree - 1; i >= (*pos); i--)
+    memcpy(bestrees[i], bestrees[i - 1], spp*sizeof(long));
+  for (i = 0; i < (spp); i++)
+    bestrees[(*pos) - 1][i] = place[i];
+  nextree++;
+}  /* mix_addtree */
+
+
+void mix_findtree(boolean *found, long *pos, long nextree,
+                        long *place, long **bestrees)
+{
+  /* finds tree given by ARRAY place in ARRAY bestrees by binary search */
+  /* used by dnacomp, dnapars, dollop, mix, & protpars */
+  long i, lower, upper;
+  boolean below, done;
+
+  below = false;
+  lower = 1;
+  upper = nextree - 1;
+  (*found) = false;
+  while (!(*found) && lower <= upper) {
+    (*pos) = (lower + upper) / 2;
+    i = 3;
+    done = false;
+    while (!done) {
+      done = (i > spp);
+      if (!done)
+        done = (place[i - 1] != bestrees[(*pos) - 1][i - 1]);
+      if (!done)
+        i++;
+    }
+    (*found) = (i > spp);
+    below = (place[i - 1] <  bestrees[(*pos )- 1][i - 1]);
+    if (*found)
+      break;
+    if (below)
+      upper = (*pos) - 1;
+    else
+      lower = (*pos) + 1;
+  }
+  if (!(*found) && !below)
+    (*pos)++;
+}  /* mix_findtree */
+
+
+void tryadd(node2 *p, node2 **item, node2 **nufork)
+{
+  /* temporarily adds one fork and one tip to the tree.
+    if the location where they are added yields greater
+    "likelihood" than other locations tested up to that
+    time, then keeps that location as there */
+
+  long pos;
+  boolean found; 
+  node2 *rute;
+
+  add3(p, *item, *nufork, &root, treenode);
+  evaluate(root);
+  if (lastrearr) {
+    if (like >= bstlike2) {
+      rute = root->next->back;
+      savetree();
+      reroot(rute);
+      if (like > bstlike2) {
+        bestlike = bstlike2 = like;
+        pos = 1;
+        nextree = 1;
+        mix_addtree(&pos);
+      } else {
+        pos = 0;
+        mix_findtree(&found, &pos, nextree, place, bestrees);
+        if (!found) { 
+          if (nextree <= maxtrees)
+            mix_addtree(&pos);
+        }
+      }
+    }
+  }
+  if (like > bestyet) {
+    bestyet = like;
+    there = p;
+  }
+  re_move3(item, nufork, &root, treenode);
+}  /* tryadd */
+
+
+void addpreorder(node2 *p, node2 *item, node2 *nufork)
+{
+  /* traverses a binary tree, calling PROCEDURE tryadd
+    at a node before calling tryadd at its descendants */
+
+  if (p == NULL)
+    return;
+  tryadd(p, &item, &nufork);
+  if (!p->tip) {
+    addpreorder(p->next->back, item, nufork);
+    addpreorder(p->next->next->back, item, nufork);
+  }
+}  /* addpreorder */
+
+
+void tryrearr(node2 *p, node2 **r, boolean *success)
+{
+  /* evaluates one rearrangement of the tree.
+    if the new tree has greater "likelihood" than the old
+    one sets success := TRUE and keeps the new tree.
+    otherwise, restores the old tree */
+  node2 *frombelow, *whereto, *forknode;
+  double oldlike;
+
+  if (p->back == NULL)
+    return;
+  forknode = treenode[p->back->index - 1];
+  if (forknode->back == NULL)
+    return;
+  oldlike = bestyet;
+  if (p->back->next->next == forknode)
+    frombelow = forknode->next->next->back;
+  else
+    frombelow = forknode->next->back;
+  whereto = treenode[forknode->back->index - 1];
+  re_move3(&p, &forknode, &root, treenode);
+  add3(whereto, p, forknode, &root, treenode);
+  evaluate(*r);
+  if (like <= oldlike) {
+    re_move3(&p, &forknode, &root, treenode);
+    add3(frombelow, p, forknode, &root, treenode);
+  } else {
+    *success = true;
+    bestyet = like;
+  }
+}  /* tryrearr */
+
+
+void repreorder(node2 *p, node2 **r, boolean *success)
+{
+  /* traverses a binary tree, calling PROCEDURE tryrearr
+    at a node before calling tryrearr at its descendants */
+  if (p == NULL)
+    return;
+  tryrearr(p, r, success);
+  if (!p->tip) {
+    repreorder(p->next->back, r,success);
+    repreorder(p->next->next->back, r,success);
+  }
+}  /* repreorder */
+
+
+void rearrange(node2 **r)
+{
+  /* traverses the tree (preorder), finding any local
+    rearrangement which decreases the number of steps.
+    if traversal succeeds in increasing the tree's
+    "likelihood", PROCEDURE rearrange runs traversal again */
+  boolean success=true;
+  while (success) {
+    success = false;
+    repreorder(*r,r,&success);
+  }
+}  /* rearrange */
+
+
+void mix_addelement(node2 **p, long *nextnode, long *lparens,
+                        boolean *names)
+{
+  /* recursive procedure adds nodes to user-defined tree */
+  node2 *q;
+  long i, n;
+  boolean found;
+  Char str[nmlngth];
+
+  getch(&ch, lparens, intree);
+  if (ch == '(' ) {
+    if ((*lparens) >= spp) {
+      printf("\n\nERROR IN USER TREE: Too many left parentheses\n\n");
+      exxit(-1);
+    }
+    (*nextnode)++;
+    q = treenode[(*nextnode) - 1];
+    mix_addelement(&q->next->back, nextnode, lparens, names);
+    q->next->back->back = q->next;
+    findch(',', &ch, which);
+    mix_addelement(&q->next->next->back, nextnode, lparens, names);
+    q->next->next->back->back = q->next->next;
+    findch(')', &ch, which);
+    *p = q;
+    return;
+  }
+  for (i = 0; i < nmlngth; i++)
+    str[i] = ' ';
+  n = 1;
+  do {
+    if (ch == '_')
+      ch = ' ';
+    str[n - 1] =ch;
+    if (eoln(intree)) 
+      scan_eoln(intree);
+    ch = gettc(intree);
+    if (ch == '\n')
+      ch = ' ';
+    n++;
+  } while (ch != ',' && ch != ')' && ch != ':' && n <= nmlngth);
+  n = 1;
+  do {
+    found = true;
+    for (i = 0; i < nmlngth; i++)
+      found = (found && ((str[i] == nayme[n - 1][i]) ||
+                         ((nayme[n - 1][i] == '_') && (str[i] == ' '))));
+    if (found) {
+      if (names[n - 1] == false) {
+        *p = treenode[n - 1];
+        names[n - 1] = true;
+      } else {
+        printf("\n\nERROR IN USER TREE: Duplicate name found: ");
+        for (i = 0; i < nmlngth; i++)
+          putchar(nayme[n - 1][i]);
+        printf("\n\n");
+        exxit(-1);
+      }
+    } else
+      n++;
+  } while (!(n > spp || found ));
+  if (n <= spp)
+    return;
+  printf("CANNOT FIND SPECIES: ");
+  for (i = 0; i < nmlngth; i++)
+    putchar(str[i]);
+  putchar('\n');
+}  /* mix_addelement */
+
+
+void mix_treeread()
+{
+  /* read in user-defined tree and set it up */
+  long nextnode, lparens, i;
+  boolean *names;
+
+  root = treenode[spp];
+  nextnode = spp;
+  root->back = NULL;
+  names = (boolean *)Malloc(spp*sizeof(boolean));
+  for (i = 0; i < (spp); i++)
+    names[i] = false;
+  lparens = 0;
+  mix_addelement(&root, &nextnode, &lparens, names);
+  if (ch == '[') {
+    do
+      ch = gettc(intree);
+    while (ch != ']');
+    ch = gettc(intree);
+  }
+  findch(';', &ch, which);
+  if (progress)
+    printf(".");
+  scan_eoln(intree);
+  free(names);
+}  /* mix_treeread */
+
+
+void describe()
+{
+  /* prints ancestors, steps and table of numbers of steps in
+    each character */
+
+  if (treeprint)
+    fprintf(outfile, "\nrequires a total of %10.3f\n", -like);
+  putc('\n', outfile);
+  if (stepbox)
+    writesteps(weights, numsteps);
+  if (questions && (!noroot || didreroot))
+    guesstates(guess);
+  if (ancseq) {
+    hypstates(fullset, full, noroot, didreroot, root, wagner,
+                zeroanc, oneanc, treenode, guess, garbage);
+    putc('\n', outfile);
+  }
+  putc('\n', outfile);
+  if (trout) {
+    col = 0;
+    treeout2(root, &col, root);
+  }
+}  /* describe */
+
+
+void maketree()
+{
+  /* constructs a binary tree from the pointers in treenode.
+    adds each node at location which yields highest "likelihood"
+    then rearranges the tree for greatest "likelihood" */
+  long i, j, numtrees;
+  double gotlike;
+  node2 *item, *nufork, *dummy;
+
+  fullset = (1L << (bits + 1)) - (1L << 1);
+  for (i=0 ; i<words ; ++i){
+    fulzeroanc[i]=fullset;
+    empzeroanc[i]= 0;}
+  if (!usertree) {
+    for (i = 1; i <= (spp); i++)
+      enterorder[i - 1] = i;
+    if (jumble)
+      randumize(seed, enterorder);
+    root = treenode[enterorder[0] - 1];
+    add3(treenode[enterorder[0] - 1], treenode[enterorder[1] - 1],
+        treenode[spp], &root, treenode);
+    if (progress) {
+      printf("Adding species:\n");
+      writename(0, 2, enterorder);
+#ifdef WIN32
+      phyFillScreenColor();
+#endif
+    }
+    lastrearr = false;
+    for (i = 3; i <= (spp); i++) {
+      bestyet = -350.0 * spp * chars;
+      item = treenode[enterorder[i - 1] - 1];
+      nufork = treenode[spp + i - 2];
+      addpreorder(root, item, nufork);
+      add3(there, item, nufork, &root, treenode);
+      like = bestyet;
+      rearrange(&root);
+      if (progress) {
+        writename(i - 1, 1, enterorder);
+#ifdef WIN32
+        phyFillScreenColor();
+#endif
+      }
+      lastrearr = (i == spp);
+      if (lastrearr) {
+        if (progress) {
+          printf("\nDoing global rearrangements\n");
+          printf("  !");
+          for (j = 1; j <= (nonodes); j++)
+            putchar('-');
+          printf("!\n");
+#ifdef WIN32
+          phyFillScreenColor();
+#endif
+        }
+        bestlike = bestyet;
+        if (jumb == 1) {
+          bstlike2 = bestlike;
+          nextree = 1;
+        }
+        do {
+          if (progress)
+            printf("   ");
+          gotlike = bestlike;
+          for (j = 0; j < (nonodes); j++) {
+            bestyet = -350.0  * spp * chars;
+            item = treenode[j];
+            if (item != root) {
+              re_move3(&item, &nufork, &root, treenode);
+              there = root;
+              addpreorder(root, item, nufork);
+              add3(there, item, nufork, &root, treenode);
+            }
+            if (progress) {
+              putchar('.');
+              fflush(stdout);
+            }
+          }
+          if (progress) {
+            putchar('\n');
+#ifdef WIN32
+            phyFillScreenColor();
+#endif
+          }
+        } while (bestlike > gotlike);
+      }
+    }
+    if (progress)
+      putchar('\n');
+    for (i = spp - 1; i >= 1; i--)
+      re_move3(&treenode[i], &dummy, &root, treenode);
+    if (jumb == njumble) {
+      if (treeprint) {
+        putc('\n', outfile);
+        if (nextree == 2)
+          fprintf(outfile, "One most parsimonious tree found:\n");
+        else
+          fprintf(outfile, "%6ld trees in all found\n", nextree - 1);
+      }
+      if (nextree > maxtrees + 1) {
+        if (treeprint)
+          fprintf(outfile, "here are the first%4ld of them\n",(long)maxtrees);
+        nextree = maxtrees + 1;
+      }
+      if (treeprint)
+        putc('\n', outfile);
+      for (i = 0; i <= (nextree - 2); i++) {
+        root = treenode[0];
+        add3(treenode[0], treenode[1], treenode[spp], &root, treenode);
+        for (j = 3; j <= (spp); j++)
+            add3(treenode[bestrees[i][j - 1] - 1], treenode[j - 1],
+            treenode[spp + j - 2], &root, treenode);
+        if (noroot)
+          reroot(treenode[outgrno - 1]);
+        didreroot = (outgropt && noroot);
+        evaluate(root);
+        printree(treeprint, noroot, didreroot, root);
+        describe();
+        for (j = 1; j < (spp); j++)
+          re_move3(&treenode[j], &dummy, &root, treenode);
+      }
+    }
+  } else {
+    openfile(&intree,INTREE,"input tree file", "r",progname,intreename);
+    numtrees = countsemic(&intree);
+    if (numtrees > 2)
+      initseed(&inseed, &inseed0, seed);
+    if (treeprint) {
+      fprintf(outfile, "User-defined tree");
+      if (numtrees > 1)
+        putc('s', outfile);
+      fprintf(outfile, ":\n\n");
+    }
+    which = 1;
+    if (progress)
+      printf("   ");
+    while (which <= numtrees ) {
+      mix_treeread();
+      didreroot = (outgropt && noroot);
+      if (noroot)
+        reroot(treenode[outgrno - 1]);
+      evaluate(root);
+      printree(treeprint, noroot, didreroot, root);
+      describe();
+      which++;
+    }
+    if (progress)
+      printf("\n");
+    FClose(intree);
+    fprintf(outfile, "\n\n");
+    if (numtrees > 2 && chars > 1 ) {
+      if (progress)
+        printf("   sampling for SH test\n");
+      standev(numtrees, minwhich, minsteps, nsteps, fsteps, seed);
+    }
+  }
+  if (jumb == njumble) {
+    if (progress) {
+      printf("\nOutput written to file \"%s\"\n\n", outfilename);
+      if (trout)
+        printf("Trees also written onto file \"%s\"\n", outtreename);
+      putchar('\n');
+    }
+  }
+  if (ancseq)
+    freegarbage(&garbage);
+}  /* maketree */
+
+int main(int argc, Char *argv[])
 {  /* Mixed parsimony by uphill search */
-char infilename[100],outfilename[100],trfilename[100];
 #ifdef MAC
-  macsetup("Mix","");
+  argc = 1;         /* macsetup("Mix","");                */
   argv[0] = "Mix";
 #endif
-  openfile(&infile,INFILE,"r",argv[0],infilename);
-  openfile(&outfile,OUTFILE,"w",argv[0],outfilename);
+  init(argc, argv);
+  progname = argv[0];
+  openfile(&infile,INFILE,"input file", "r",argv[0],infilename);
+  openfile(&outfile,OUTFILE,"output file", "w",argv[0],outfilename);
 
-  ibmpc = ibmpc0;
-  ansi = ansi0;
-  vt52 = vt520;
+  ibmpc = IBMCRT;
+  ansi = ANSICRT;
   mulsets = false;
-  datasets = 1;
+  msets = 1;
   firstset = true;
   garbage = NULL;
+  bits = 8*sizeof(long) - 1;
   doinit();
-  if (usertree) {
-    fsteps = (double **)Malloc(maxuser*sizeof(double *));
-    for (j = 1; j <= maxuser; j++)
-      fsteps[j - 1] = (double *)Malloc(chars*sizeof(double));
-  }
-  bestrees = (long **)Malloc(maxtrees*sizeof(long *));
-  for (j = 1; j <= maxtrees; j++)
-    bestrees[j - 1] = (long *)Malloc(spp*sizeof(long));
-  extras = (steptr)Malloc(chars*sizeof(long));
-  weight = (steptr)Malloc(chars*sizeof(long));
-  threshwt = (double *)Malloc(chars*sizeof(double));
-  numsteps = (steptr)Malloc(chars*sizeof(long));
-  numszero = (steptr)Malloc(chars*sizeof(long));
-  numsone = (steptr)Malloc(chars*sizeof(long));
-  guess = (Char *)Malloc(chars*sizeof(Char));
-  nayme = (Char **)Malloc(spp*sizeof(Char *));
-  for (j = 1; j <= spp; j++)
-    nayme[j - 1] = (Char *)Malloc(nmlngth*sizeof(Char));
-  enterorder = (long *)Malloc(spp*sizeof(long));
-  ancone = (boolean *)Malloc(chars*sizeof(boolean));
-  anczero = (boolean *)Malloc(chars*sizeof(boolean));
-  ancone0 = (boolean *)Malloc(chars*sizeof(boolean));
-  anczero0 = (boolean *)Malloc(chars*sizeof(boolean));
-  wagner = (bitptr)Malloc(words*sizeof(long));
-  wagner0 = (bitptr)Malloc(words*sizeof(long));
+  if (weights || justwts)
+    openfile(&weightfile,WEIGHTFILE,"weights file","r",argv[0],weightfilename);
   if (trout)
-    openfile(&treefile,TREEFILE,"w",argv[0],trfilename);
-  for (ith = 1; ith <= datasets; ith++) {
+    openfile(&outtree,OUTTREE,"output tree file", "w",argv[0],outtreename);
+  if(ancvar)
+      openfile(&ancfile,ANCFILE,"ancestors file", "r",argv[0],ancfilename);
+  if(mixture)
+      openfile(&mixfile,MIXFILE,"mixture file", "r",argv[0],mixfilename);
+  
+  for (ith = 1; ith <= msets; ith++) {
+    if(firstset){
+        if (allsokal && !mixture)
+            fprintf(outfile, "Camin-Sokal parsimony method\n\n");
+        if (allwagner && !mixture)
+            fprintf(outfile, "Wagner parsimony method\n\n");
+    }
     doinput();
-    if (ith == 1)
-      firstset = false;
-    if (datasets > 1) {
+    if (msets > 1 && !justwts) {
       fprintf(outfile, "Data set # %ld:\n\n",ith);
       if (progress)
         printf("\nData set # %ld:\n",ith);
     }
+    if (justwts){
+        if(firstset && mixture && printdata)
+            printmixture(outfile, wagner);
+        fprintf(outfile, "Weights set # %ld:\n\n", ith);
+        if (progress)
+            printf("\nWeights set # %ld:\n\n", ith);
+    }
+    else if (mixture && printdata)
+        printmixture(outfile, wagner);
+    if (printdata){
+        if (weights || justwts)
+            printweights(outfile, 0, chars, weight, "Characters");
+        if (ancvar)
+            printancestors(outfile, anczero, ancone);
+    }
+    
+
+    if (ith == 1)
+      firstset = false;
     for (jumb = 1; jumb <= njumble; jumb++)
       maketree();
   }
+  free(place);
+  free(steps);
+  free(zeroanc);
+  free(oneanc);
+  free(fulzeroanc);
+  free(empzeroanc);
   FClose(outfile);
   FClose(infile);
-  FClose(treefile);
+  FClose(outtree);
 #ifdef MAC
-  fixmacfile(trfilename);
+  fixmacfile(outtreename);
   fixmacfile(outfilename);
 #endif
-  exit(0);
+#ifdef WIN32
+  phyRestoreConsoleAttributes();
+#endif
+  return 0;
 }  /* Mixed parsimony by uphill search */
-
-
-int eof(f)
-FILE *f;
-{
-    register int ch;
-
-    if (feof(f))
-        return 1;
-    if (f == stdin)
-        return 0;
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return 0;
-}
-
-
-int eoln(f)
-FILE *f;
-{
-    register int ch;
-
-    ch = getc(f);
-    if (ch == EOF)
-        return 1;
-    ungetc(ch, f);
-    return (ch == '\n');
-}
-
-void memerror()
-{
-printf("Error allocating memory\n");
-exit(-1);
-}
-
-
-MALLOCRETURN *mymalloc(x)
-long x;
-{
-MALLOCRETURN *mem;
-mem = (MALLOCRETURN *)malloc((size_t)x);
-if (!mem)
-  memerror();
-else
-  return (MALLOCRETURN *)mem;
-}
