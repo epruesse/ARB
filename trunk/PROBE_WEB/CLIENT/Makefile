@@ -43,7 +43,7 @@ BUILDLIST=.build.lst
 
 all:
 	test \! -f $(BUILDLIST) || rm $(BUILDLIST)
-	$(MAKE) $(JAR)
+	$(MAKE) updatejar
 
 %.class : %.java
 		@-((test -f $@ && rm $@) || true)
@@ -58,6 +58,9 @@ $(JAR) : $(CLASSES) $(JAVAS) Makefile $(MANIFEST)
 		jar -cmf $(MANIFEST) $(JAR) $(LINKCLASSES)
 
 rebuild: clean all
+
+updatejar: $(JAR)
+	test \! -d $(ARBHOME)/PROBE_SERVER/ps_serverdata || cp -p $(JAR) $(ARBHOME)/PROBE_SERVER/ps_serverdata/
 
 test: all
 	(	mkdir -p $(TESTDIR)/debug ;\
@@ -99,5 +102,8 @@ include .depends
 depends:
 		rm .depends
 		$(MAKE) .depends
+
+tags:
+		etags *.java
 
 
