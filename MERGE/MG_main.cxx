@@ -19,13 +19,13 @@ GBDATA *gb_merge = NULL;
 GBDATA *gb_dest = NULL;
 
 void MG_exit(AW_window *aww) {
-	if(gb_main) {
-		aww->hide();
-	}else{
-		exit (0);
-	}
+    if(gb_main) {
+        aww->hide();
+    }else{
+        exit (0);
+    }
 }
-
+  
 int mg_save_enabled = 1;
 
 void MG_save_merge_cb(AW_window *aww)
@@ -41,7 +41,7 @@ void MG_save_merge_cb(AW_window *aww)
 }
 
 AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 
@@ -64,8 +64,7 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
 	return (AW_window *)aws;
 }
 
-void
-MG_save_cb(AW_window *aww)
+void MG_save_cb(AW_window *aww)
 {
 	char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
 	char *type = aww->get_root()->awar(AWAR_MAIN_DB"/type")->read_string();
@@ -82,7 +81,7 @@ MG_save_cb(AW_window *aww)
 }
 
 AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 	aw_root->awar_string( AWAR_DB_COMMENT, "<no description>", gb_dest);
@@ -99,8 +98,8 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 	aws->at("user");
 	aws->label("Type");
 	aws->create_option_menu(AWAR_MAIN_DB"/type");
-		aws->insert_option("Binary","B","b");
-		aws->insert_option("Bin (with FastLoad File)","f","bm");
+    aws->insert_option("Binary","B","b");
+    aws->insert_option("Bin (with FastLoad File)","f","bm");
 	aws->update_option_menu();
 
 	aws->at("user2");
@@ -142,7 +141,7 @@ MG_save_quick_cb(AW_window *aww)
 }
 
 AW_window *MG_save_quick_result_cb(AW_root *aw_root, char *base_name)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 
@@ -166,15 +165,15 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 {
 	mg_save_enabled = save_enabled;
 	GB_transaction dummy2(gb_merge);
-//	if (GB_read_clients(gb_merge) >= 0) {
-//		awt_selection_list_rescan(gb_merge,AWT_NDS_FILTER);
-//	}
+    //	if (GB_read_clients(gb_merge) >= 0) {
+    //		awt_selection_list_rescan(gb_merge,AWT_NDS_FILTER);
+    //	}
 
 	GB_transaction dummy(gb_dest);
 	GBT_mark_all(gb_dest,0);
-//	if (GB_read_clients(gb_merge) >= 0) {
-//		awt_selection_list_rescan(gb_dest,AWT_NDS_FILTER);
-//	}
+    //	if (GB_read_clients(gb_merge) >= 0) {
+    //		awt_selection_list_rescan(gb_dest,AWT_NDS_FILTER);
+    //	}
 
 	GB_change_my_security(gb_dest,6,"passwd");
 	GB_change_my_security(gb_merge,6,"passwd");
@@ -204,8 +203,6 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 		awm->help_text("mg_names.hlp");
 		awm->create_button("CHECK_NAMES", "Check Names ...");
 	}
-
-
 
 	awm->at("species");
 	awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_species_cb);
@@ -292,7 +289,7 @@ void MG_start_cb(AW_window *aww)
 
 
 AW_window *create_merge_init_window(AW_root *awr)
-	{
+{
 	AW_window_simple *aws = new AW_window_simple;
 	aws->init( awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES", 100, 100 );
 	aws->load_xfig("merge/startup.fig");
@@ -356,13 +353,11 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 	AWTC_create_rename_variables(awr,aw_def);
 }
 
-AW_window *
-create_MG_main_window(AW_root *aw_root)
+AW_window *create_MG_main_window(AW_root *aw_root)
 {
 	MG_create_all_awars(aw_root,AW_ROOT_DEFAULT);
 	AW_window *aww=create_merge_init_window(aw_root);
 	aww->show();
 	return aww;
 }
-
 

@@ -48,11 +48,12 @@
 #include <EXP.hxx>
 #include <awt_input_mask.hxx>
 
+#include <nt_concatenate.hxx>
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
 #define nt_assert(bed) arb_assert(bed)
-
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
@@ -901,6 +902,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->close_sub_menu();
 
             awm->insert_separator();
+            AWMIMT( "merge_species",	"Merge Similar Species",	"", "sp_merge.hlp",	AWM_EXP,AW_POPUP,(AW_CL)NT_createMergeSimilarSpeciesWindow, 0 );
+
+            awm->insert_separator();
             awm->insert_sub_menu(0, "Etc",				"E");
             {
                 AWMIMT( "new_names",	"Generate New Names ...",	"G", "sp_rename.hlp",	AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window, 		(AW_CL)gb_main );
@@ -920,6 +924,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_menu(0,"Sequence","S","sequence.hlp",	AWM_ALL);
         {
             AWMIMT("seq_admin",	"Admin ...",			"","ad_align.hlp",	AWM_EXP, 	AW_POPUP, (AW_CL)create_alignment_window,	0 );
+            AWMIMT("seq_concat",	"Concatenate Sequences/Alignments",	"","concatenate_align.hlp",	AWM_EXP, 	AW_POPUP, (AW_CL)NT_createConcatenationWindow, (AW_CL)AW_ROOT_DEFAULT );
             awm->insert_separator();
             AWMIMT("new_arb_edit4",	"Edit Marked Sequences using Selected Species and Tree",	"4", "arb_edit4.hlp",AWM_ALL,	(AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0 );
             AWMIMT("new2_arb_edit4","Edit Marked Sequences (plus sequences aside) ...",	"4", "arb_edit4.hlp",AWM_ALL,	(AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), -1);

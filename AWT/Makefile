@@ -10,7 +10,7 @@ OBJECTS =	\
 		BI_helix.o AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
 		AWT_query_and_functions.o AWT_file_selection.o AWT_species_sel_box.o \
 		AWT_imp_exp.o AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
-		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o
+		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o 
 
 $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)

@@ -4,7 +4,7 @@
 
 
 CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o \
-	NT_ins_col.o NT_import.o\
+	NT_ins_col.o NT_import.o NT_concatenate.o\
 	ad_spec.o ad_trees.o  ad_ali.o ad_ext.o ad_transpro.o \
 	AP_consensus.o AP_cprofile.o AP_pos_var_pars.o \
 	ETC_check_gcg.o AP_csp_2_gnuplot.o
@@ -162,7 +162,17 @@ NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx
 NT_import.o: ad_spec.hxx $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/adGene.h
-ad_spec.o:  $(ARBHOME)/INCLUDE/arbdb.h
+NT_concatenate.o:  $(ARBHOME)/INCLUDE/arbdb.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx nt_concatenate.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h

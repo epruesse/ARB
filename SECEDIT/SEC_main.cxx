@@ -899,6 +899,30 @@ AW_window *SEC_create_display_window(AW_root *awr) {
     return aws;
 }
 
+// void ED4_detach_sec_structure_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info) {
+//     AW_window          **aww_pointer  = (AW_window**)cl_pointer_to_aww;
+//     Awar_Callback_Info  *cb_info      = (Awar_Callback_Info*)cl_Awar_Callback_Info;
+//     AW_root             *awr          = cb_info->get_root();
+//     char                *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
+
+//     if (*aww_pointer == aww) {  // first click on detach-button
+//         // create unique awar :
+//         static int detach_counter = 0;
+//         char       new_awar[100];
+//         sprintf(new_awar, "tmp/DETACHED_INFO_%i", detach_counter++);
+//         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
+
+//         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
+
+//         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
+//         // [Note : the aww_pointer points to the static window pointer]
+//     }
+
+//     awr->awar(cb_info->get_awar_name())->write_string(curr_species);
+//     aww->set_window_title(GBS_global_string("%s INFORMATION", curr_species));
+//     free(curr_species);
+// }
+
 
 AW_window *SEC_create_main_window(AW_root *awr){
     GB_transaction tscope(gb_main);
@@ -967,6 +991,15 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("Close", "Close");
 #endif
+    //----- Detaching existing secondary structure window and creating new window ------
+   //  const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+//     Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, scannerid, (AW_CL)organismWindow); // do not delete!
+//     cb_info->add_callback();
+
+//     //    awm->at("detach");
+//     awm->callback(ED4_detach_sec_structure_window, (AW_CL)&awm, (AW_CL)cb_info);
+//     awm->create_button("DETACH", "DETACH", "D");
+    //----------------------------------------------------------------------------------
 
     awm->callback(AW_POPUP_HELP,(AW_CL)"arb_secedit.hlp");
     awm->button_length(0);
