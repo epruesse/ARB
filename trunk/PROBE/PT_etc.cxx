@@ -30,7 +30,15 @@ void pt_export_error(PT_local *locs, const char *error)
 /* get the name with a virtual function */
 extern "C" char *virt_name(PT_probematch *ml)
 {
+#ifdef DEVEL_IDP
+  if (is_gene_db == 1) {
+    return gene_map_reverse[psg.data[ml->name].name];
+  }
+  else {
     return psg.data[ml->name].name;
+  }
+#endif
+  return psg.data[ml->name].name; 
 }
 
 extern "C" char *virt_fullname(PT_probematch * ml) {
