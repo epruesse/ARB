@@ -480,7 +480,7 @@ void gbm_free_mem(char *data, size_t size, long index)
             ggi->extern_data_size -= (size_t)nsize;
             ggi->extern_data_items--;
 
-            if (block->size<size) { imemerr("block size does not mach"); return; }
+            if (block->size<size) { imemerr("block size does not match"); return; }
 
             if (block->allocFromSystem)
             {
