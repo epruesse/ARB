@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Jun/03/2004 16:51 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Aug/17/2004 14:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -95,7 +95,9 @@ void remove_from_configs(const string& config, string& existing_configs) {
             break;
         }
     }
+#if defined(DEBUG)
     printf("result: '%s'\n", existing_configs.c_str());
+#endif // DEBUG
 }
 // ---------------------------------------------------------
 //      static char *correct_key_name(const char *name)
@@ -193,10 +195,6 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     aww->create_button("SAVELOAD_CONFIG", "#disk.bitmap", 0);
 }
 
-
-//  --------------------------------------------------
-//      inline GB_ERROR decode_escapes(string& s)
-//  --------------------------------------------------
 static GB_ERROR decode_escapes(string& s) {
     string::iterator f = s.begin();
     string::iterator t = s.begin();
@@ -230,131 +228,206 @@ static GB_ERROR decode_escapes(string& s) {
     return 0;
 }
 
-//  ---------------------------------------------------------------------------------------
-//      inline void encode_escapes(string& s, const char *to_escape, char escape_char)
-//  ---------------------------------------------------------------------------------------
-inline void encode_escapes(string& s, const char *to_escape, char escape_char) {
+static void encode_escapes(string& s, const char *to_escape) {
     string neu;
     neu.reserve(s.length()*2+1);
 
     for (string::iterator p = s.begin(); p != s.end(); ++p) {
-        if (*p == escape_char || strchr(to_escape, *p) != 0) {
-            neu = neu+escape_char+*p;
+        if (*p == '\\' || strchr(to_escape, *p) != 0) {
+            neu = neu+'\\'+*p;
         }
-        else if (*p == '\n') { neu = neu+escape_char+'n'; }
-        else if (*p == '\r') { neu = neu+escape_char+'r'; }
-        else if (*p == '\t') { neu = neu+escape_char+'t'; }
+        else if (*p == '\n') { neu = neu+"\\n"; }
+        else if (*p == '\r') { neu = neu+"\\r"; }
+        else if (*p == '\t') { neu = neu+"\\t"; }
         else { neu = neu+*p; }
     }
     s = neu;
 }
 
+typedef map<string, string> config_map;
+struct AWT_config_mapping {
+    config_map cmap;
+
+    config_map::iterator entry(const string &e) { return cmap.find(e); }
+
+    config_map::iterator begin() { return cmap.begin(); }
+    config_map::const_iterator end() const { return cmap.end(); }
+    config_map::iterator end() { return cmap.end(); }
+};
+
+// ---------------------------------------
+//      class AWT_config
+// ---------------------------------------
+
+AWT_config::AWT_config(const char *config_char_ptr)
+    : mapping(new AWT_config_mapping)
+    , parse_error(0)
+{
+    // parse string in format "key1='value1';key2='value2'"..
+    // and put values into a map.
+    // assumes that keys are unique
+
+    string      config_string(config_char_ptr);
+    config_map& cmap  = mapping->cmap;
+    size_t      pos   = 0;
+
+    while (!parse_error) {
+        size_t equal = config_string.find('=', pos);
+        if (equal == string::npos) break;
+
+        if (config_string[equal+1] != '\'') {
+            parse_error = "expected quote \"'\"";
+            break;
+        }
+        size_t start = equal+2;
+        size_t end   = config_string.find('\'', start);
+        while (end != string::npos) {
+            if (config_string[end-1] != '\\') break;
+            end = config_string.find('\'', end+1);
+        }
+        if (end == string::npos) {
+            parse_error = "could not find matching quote \"'\"";
+            break;
+        }
+
+        string config_name = config_string.substr(pos, equal-pos);
+        string value       = config_string.substr(start, end-start);
+
+        parse_error = decode_escapes(value);
+        if (!parse_error) {
+            cmap[config_name] = value;
+        }
+
+        pos = end+2;            // skip ';'
+    }
+}
+AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar, AW_root *root)
+    : mapping(new AWT_config_mapping)
+    , parse_error(0)
+{
+    const config_map& awarmap  = cfgname_2_awar->cmap;
+    config_map& valuemap = mapping->cmap;
+
+    for (config_map::const_iterator c = awarmap.begin(); c != awarmap.end(); ++c) {
+        const string& key(c->first);
+        const string& awar_name(c->second);
+        
+        char *awar_value = root->awar(awar_name.c_str())->read_as_string();
+        valuemap[key]    = awar_value;
+        free(awar_value);
+    }
+
+    awt_assert(valuemap.size() == awarmap.size());
+}
+
+AWT_config::~AWT_config() {
+    delete mapping;
+}
+
+bool AWT_config::has_entry(const char *entry) const {
+    awt_assert(!parse_error);
+    return mapping->entry(entry) != mapping->end();
+}
+const char *AWT_config::get_entry(const char *entry) const {
+    awt_assert(!parse_error);
+    config_map::iterator found = mapping->entry(entry);
+    return (found == mapping->end()) ? 0 : found->second.c_str();
+}
+void AWT_config::set_entry(const char *entry, const char *value) {
+    awt_assert(!parse_error);
+    mapping->cmap[entry] = value;
+}
+void AWT_config::delete_entry(const char *entry) {
+    awt_assert(!parse_error);
+    mapping->cmap.erase(entry);
+}
+
+char *AWT_config::config_string() const {
+    awt_assert(!parse_error);
+    string result;
+    for (config_map::iterator e = mapping->begin(); e != mapping->end(); ++e) {
+        const string& config_name(e->first);
+        string        value(e->second);
+
+        encode_escapes(value, "\'");
+        string entry = config_name+"='"+value+'\'';
+        if (result.empty()) {
+            result = entry;
+        }
+        else {
+            result = result+';'+entry;
+        }
+    }
+    return strdup(result.c_str());
+}
+GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const {
+    GB_ERROR        error = 0;
+    GB_transaction *ta    = 0;
+    awt_assert(!parse_error);
+    for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
+        const string& config_name(e->first);
+        const string& value(e->second);
+
+        config_map::const_iterator found = cfgname_2_awar->cmap.find(config_name);
+        if (found == cfgname_2_awar->end()) {
+            error = GBS_global_string("config contains unmapped entry '%s'", config_name.c_str());
+        }
+        else {
+            const string&  awar_name(found->second);
+            AW_awar       *awar = root->awar(awar_name.c_str());
+            if (!ta) {
+                ta = new GB_transaction((GBDATA*)awar->gb_var); // do all awar changes in 1 transaction
+            }
+            awar->write_as_string(value.c_str());
+        }
+    }
+    if (ta) delete ta; // close transaction
+    return error;
+}
+
 //  ------------------------------------
 //      class AWT_config_definition
 //  ------------------------------------
-class AWT_config_definition {
-private:
-    AW_root                     *root;
-    typedef map<string, string>  AWT_configMapping;
-    AWT_configMapping            config_mapping;
 
-public:
-    AWT_config_definition(AW_root *aw_root) : root(aw_root) {}
-    virtual ~AWT_config_definition() {}
+AWT_config_definition::AWT_config_definition(AW_root *aw_root)
+    : root(aw_root) , config_mapping(new AWT_config_mapping) {}
 
-    void add(const string& awar_name, const string& config_name) { config_mapping[config_name] = awar_name; }
-
-    string read() const {       // creates a string from awar values
-        string result;
-        for (AWT_configMapping::const_iterator cm = config_mapping.begin(); cm != config_mapping.end(); ++cm) {
-            const string& config_name = cm->first;
-            const string& awar_name   = cm->second;
-            string        escaped_content;
-            {
-                char *content   = root->awar(awar_name.c_str())->read_as_string();
-                escaped_content = content;
-                free(content);
-                encode_escapes(escaped_content, "'", '\\');
-            }
-
-            result = result + (result.length() ? ";" : "") + config_name+"='"+escaped_content+'\'';
-        }
-        return result;
-    }
-
-    void write(const string& s) const { // write values from string to awars
-        size_t pos = 0;
-        bool   err = false;
-
-        while (1) {
-            err = false;
-
-            size_t equal = s.find('=', pos);
-            if (equal == string::npos) break;
-
-            err = true;
-
-            if (s[equal+1] != '\'') break;
-            size_t start = equal+2;
-            size_t end   = s.find('\'', start);
-            while (end != string::npos) {
-                if (s[end-1] != '\\') break;
-                end = s.find('\'', end+1);
-            }
-            if (end == string::npos) break;
-
-            string                            config_name = s.substr(pos, equal-pos);
-            AWT_configMapping::const_iterator found       = config_mapping.find(config_name);
-
-            if (found != config_mapping.end()) {
-                string   value     = s.substr(start, end-start);
-                GB_ERROR err       = decode_escapes(value);
-                string   awar_name = found->second;
-
-                if (!err) root->awar(awar_name.c_str())->write_as_string(value.c_str());
-            }
-            pos = end+2;        // skip ';'
-        }
-
-        if (err) aw_message("Error in configuration (delete or save again)");
-    }
-};
-
-
-static AWT_config_definition *config_def = 0;
-
-//  ----------------------------------------------------------
-//      void AWT_reset_configDefinition(AW_root *aw_root)
-//  ----------------------------------------------------------
-void AWT_reset_configDefinition(AW_root *aw_root) {
-    delete config_def;
-    config_def = new AWT_config_definition(aw_root);
+AWT_config_definition::AWT_config_definition(AW_root *aw_root, AWT_config_mapping_def *mdef)
+    : root(aw_root) , config_mapping(new AWT_config_mapping)
+{
+    add(mdef);
 }
 
-//  ---------------------------------------------------------------------------------------------------
-//      void AWT_add_configDefinition(const char *awar_name, const char *config_name, int counter)
-//  ---------------------------------------------------------------------------------------------------
-void AWT_add_configDefinition(const char *awar_name, const char *config_name, int counter) {
-    awt_assert(config_def);
-    if (counter == -1) {
-        config_def->add(awar_name, config_name);
-    }
-    else {
-        config_def->add(awar_name, GBS_global_string("%s%i", config_name, counter));
+AWT_config_definition::~AWT_config_definition() {
+    delete config_mapping;
+}
+
+void AWT_config_definition::add(const char *awar_name, const char *config_name) {
+    config_mapping->cmap[config_name] = awar_name;
+}
+void AWT_config_definition::add(const char *awar_name, const char *config_name, int counter) {
+    add(awar_name, GBS_global_string("%s%i", config_name, counter));
+}
+void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
+    while (mdef->awar_name && mdef->config_name) {
+        add(mdef->awar_name, mdef->config_name);
+        mdef++;
     }
 }
 
-//  -------------------------------------------
-//      char *AWT_store_configDefinition()
-//  -------------------------------------------
-char *AWT_store_configDefinition() {
-    awt_assert(config_def);
-    return GB_strdup(config_def->read().c_str());
+char *AWT_config_definition::read() const {
+    // creates a string from awar values
+    
+    AWT_config current_state(config_mapping, root);
+    return current_state.config_string();
 }
-//  ---------------------------------------------------------
-//      void AWT_restore_configDefinition(const char *s)
-//  ---------------------------------------------------------
-void AWT_restore_configDefinition(const char *s) {
-    awt_assert(config_def);
-    config_def->write(s);
+void AWT_config_definition::write(const char *config_char_ptr) const {
+    // write values from string to awars
+    // if the string contains unknown settings, they are silently ignored
+
+    AWT_config wanted_state(config_char_ptr);
+    GB_ERROR   error  = wanted_state.parseError();
+    if (!error) error = wanted_state.write_to_awars(config_mapping, root);
+    if (error) aw_message(GBS_global_string("Error restoring configuration (%s)", error));
 }
+
