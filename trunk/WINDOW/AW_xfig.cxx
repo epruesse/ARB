@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.7  2005/03/04 23:14:24  westram
+ * - fixed calls to AW_device::clear/clear_part
+ *
  * Revision 1.6  2005/01/28 14:32:04  westram
  * - fixed set_font() call
  *
@@ -541,7 +544,7 @@ void AW_xfig::print(AW_device *device)
     int i;
     AW_rectangle ws;    // window size
     device->get_area_size(&ws);
-    device->clear();
+    device->clear(-1);
     struct AW_xfig_text *xtext;
     for (xtext = text; xtext; xtext=xtext->next){
         char *str = xtext->text;

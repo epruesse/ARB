@@ -3187,7 +3187,7 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     AW_device *device = aww->get_device ( AW_INFO_AREA );
     device->reset();
     if (aww->get_root()->color_mode == 0) {     // mono colr
-        device->clear();
+        device->clear(-1);
     }
     device->shift_x(-xfig->minx);
     device->shift_y(-xfig->miny);
