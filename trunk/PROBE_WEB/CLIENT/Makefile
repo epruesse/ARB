@@ -130,6 +130,7 @@ clean:
 	@-rm		*.class \
 			$(JAR) \
 			.depends \
+			$(BUILDLIST) \
 
 # dependencies
 
