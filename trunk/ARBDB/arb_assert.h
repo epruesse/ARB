@@ -2,7 +2,7 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Thu Nov/21/2002 19:14 MET Coder@ReallySoft.de>
+    Time-stamp: <Mon Nov/03/2003 11:08 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002
@@ -28,17 +28,18 @@
 /* check correct definition of DEBUG/NDEBUG */
 #ifndef NDEBUG
 # ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
+#  error Neither DEBUG nor NDEBUG is defined!
 # endif
 #else
 # ifdef DEBUG
-#  error DEBUG is defined - but it should not!
+#  error Both DEBUG and NDEBUG are defined - only one should be!
 # endif
 #endif
 
 #ifdef arb_assert
 #error arb_assert already defined
 #endif
+
 
 /* only use ONE of the following ASSERT_xxx defines : */
 
