@@ -9,7 +9,6 @@ sub run_request() {
   if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed 15..20)"; }
 
   # generate request/result file names
-
   my $request_name = $probe_server::requestdir.'/'.$plength.'_'.$$.'_0';
   my $result_name = $request_name.".res";
   $request_name.=".req";
@@ -23,14 +22,11 @@ sub run_request() {
   close REQUEST;
 
   # now wait for server to answer request
-  while (not -f $result_name) { sleep 1; }
+  probe_server::wait_answer($result_name);
 
   # send answer to client software
-  if (not open(RESULT,"<$result_name")) { return "Can't read '$result_name'"; }
-  foreach (<RESULT>) { print $_; }
-  close RESULT;
-  unlink $result_name;    # remove the result file
-  return;
+  my $error = probe_server::send_result($result_name);
+  return $error;
 }
 
 # main block:
