@@ -67,7 +67,14 @@ enum {
     AW_LUCIDA_SANS_TYPEWRITER_BOLD = 40,
     AW_SCREEN_MEDIUM               = 41,
     AW_SCREEN_BOLD                 = 42,
-    AW_NUM_FONTS                   = 43,
+    AW_CLEAN_MEDIUM                = 43,
+    AW_CLEAN_BOLD                  = 44,
+    AW_BIWIDTH_MEDIUM              = 45,
+    AW_BIWIDTH_BOLD                = 46,
+    AW_TERMINAL_MEDIUM             = 47,
+    AW_TERMINAL_BOLD               = 48,
+
+    AW_NUM_FONTS = 49,
 
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
     AW_DEFAULT_BOLD_FONT   = AW_LUCIDA_SANS_BOLD,
