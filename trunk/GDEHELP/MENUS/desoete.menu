@@ -1,5 +1,5 @@
 item:DeSoete Tree fit
-itemmeta: D
+itemmeta: S
 itemmethod: (RUN_IN_WINDOW((arb_readseq -a -f8 in1>in1.flat;\
                             count -t $CORR in1.flat> in1.tmp;\
                             lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out;\

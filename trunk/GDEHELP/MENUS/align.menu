@@ -155,7 +155,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW DNA Alignment (slow & accurate)
-itemmeta: N
+itemmeta: s
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                      $INTERACTIVE \
@@ -243,7 +243,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW Protein Alignment (fast)
-itemmeta: N
+itemmeta: o
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                     -quicktree  $INTERACTIVE \
@@ -348,7 +348,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW Protein Alignment (slow & accurate)
-itemmeta: N
+itemmeta: l
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                      $INTERACTIVE \
@@ -446,7 +446,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:Assemble Contigs
-itemmeta: s
+itemmeta: g
 itemmethod: ( tr '"%//' '>' <in1 >in1.tmp; \
               CAP2 in1.tmp $OVERLAP $PMATCH >  out1; \
               /bin/rm -f in1.tmp )
