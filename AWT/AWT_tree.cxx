@@ -1043,6 +1043,9 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
         if (node->gb_node){
             gbd = GB_find(node->gb_node,key,0,down_level);
             if (gbd) {
+#if defined(DEBUG)
+                printf("[PH_tree_write_byte] deleting db entry %p\n", gbd);
+#endif // DEBUG
                 GB_delete(gbd);
             }
         }
@@ -1053,6 +1056,9 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
         gbd = GB_find(node->gb_node,key,0,down_level);
         if (!gbd) {
             gbd = GB_create(node->gb_node,key,GB_BYTE);
+#if defined(DEBUG)
+            printf("[PH_tree_write_byte] created db entry %p\n", gbd);
+#endif // DEBUG
         }
         error = GB_write_byte(gbd,i);
     }
@@ -1616,7 +1622,7 @@ void AP_tree::branchlen2bootstrap(GBDATA *gb_main) { // copy branchlengths to bo
     }
     if (!is_leaf) {
         remark_branch = GBS_global_string_copy("%i%%", 100-int(get_branchlength()*100.0));
-        
+
         leftson->branchlen2bootstrap(gb_main);
         rightson->branchlen2bootstrap(gb_main);
     }
