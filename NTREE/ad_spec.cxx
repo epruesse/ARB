@@ -857,22 +857,13 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
 //      void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info)
 // -----------------------------------------------------------------------------------------------------------------
 
-struct Detach_Information {
-    Awar_Callback_Info *cb_info;
-    Widget              detach_button;
-
-    Detach_Information(Awar_Callback_Info *cb_info_)
-        : cb_info(cb_info_), detach_button(0)
-    {}
-};
-
-void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Detach_Information) {
+void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) {
     AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
 
-    Detach_Information *di           = (Detach_Information*)cl_Detach_Information;
-    Awar_Callback_Info *cb_info      = di->cb_info;
-    AW_root            *awr          = cb_info->get_root();
-    char               *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
+    AW_detach_information *di           = (AW_detach_information*)cl_AW_detach_information;
+    Awar_Callback_Info    *cb_info      = di->get_cb_info();
+    AW_root               *awr          = cb_info->get_root();
+    char                  *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
 
     if (*aww_pointer == aww) {  // first click on detach-button
         // create unique awar :
@@ -882,10 +873,7 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
 
         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-
-        if (di->detach_button) {
-            aww->update_label((int*)di->detach_button, "GET");
-        }
+        aww->update_label((int*)di->get_detach_button(), "GET");
 
         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
         // [Note : the aww_pointer points to the static window pointer]
@@ -944,18 +932,20 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->create_menu(       0,   "FIELDS",     "F", "spa_fields.hlp",  AD_F_ALL );
     ad_spec_create_field_items(aws);
 
-    const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-    AW_root            *awr       = aws->get_root();
-    Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, scannerid, (AW_CL)organismWindow); // do not delete!
-    cb_info->add_callback();
+    {
+        const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+        AW_root            *awr       = aws->get_root();
+        Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
+        cb_info->add_callback();
 
-    Detach_Information *detach_info = new Detach_Information(cb_info);
+        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
 
-    aws->at("detach");
-    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
-    aws->create_button("DETACH", "DETACH", "D");
+        aws->at("detach");
+        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+        aws->create_button("DETACH", "DETACH", "D");
 
-    detach_info->detach_button = aws->get_last_button_widget();
+        detach_info->set_detach_button(aws->get_last_button_widget());
+    }
 
     aws->show();
     AD_map_species(aws->get_root(),scannerid, (AW_CL)organismWindow);
