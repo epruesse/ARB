@@ -1245,10 +1245,10 @@ static void aw_root_create_color_map(AW_root *root)
 
 }
 
-static void aw_message_dummy(const char *msg){
+static void aw_message_forwarder(const char *msg){
     aw_message(msg);
 }
-static void aw_message_dummy_verbose(const char *msg) {
+static void aw_message_forwarder_verbose(const char *msg) {
     fprintf(stderr, "ARB: %s\n", msg); // print to console as well
     aw_message(msg);
 }
@@ -1277,9 +1277,9 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
         fallback_resources[i] = strdup(buffer);
     }
     fallback_resources[i] = 0;
-    GB_install_error_handler((gb_warning_func_type)aw_message_dummy_verbose);
-    GB_install_warning((gb_warning_func_type)aw_message_dummy);
-    GB_install_information((gb_information_func_type)0); // set to 0 to avoid pop-up message window
+    GB_install_error_handler((gb_warning_func_type)aw_message_forwarder_verbose);
+    GB_install_warning((gb_warning_func_type)aw_message_forwarder);
+    GB_install_information((gb_information_func_type)0); // 0 means -> write to stdout only
 
     GB_install_status((gb_status_func_type)aw_status_dummy);
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
@@ -3270,7 +3270,7 @@ void AW_window::_set_activate_callback(void *widget)
 /*****************      AW_MACRO_MESSAGE     *******************/
 /***********************************************************************/
 
-#define AW_MESSAGE_AWAR "tmp/message/string" //  @@@ does this clash with AWAR_ERROR_MESSAGES ? --ralf
+#define AW_MESSAGE_AWAR "tmp/message/macro"
 
 static void macro_message_cb( AW_window *aw,AW_CL  ) {
     AW_root *root = aw->get_root();
@@ -3292,12 +3292,12 @@ static void macro_message_cb( AW_window *aw,AW_CL  ) {
     return;
 }
 
-static void aw_clear_macro_message_cb(AW_window *aww){
+static void aw_clear_macro_message_cb(AW_window *aww){ 
     aww->get_root()->awar(AW_MESSAGE_AWAR)->write_string("");
 }
 
-void aw_macro_message( const char *templat, ... )
-    // @@@ FIXME: this function is unused.
+void aw_macro_message( const char *templat, ... ) 
+    // @@@ this function is unused.
 {
 
     AW_root *root = AW_root::THIS;
