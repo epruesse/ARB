@@ -239,7 +239,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 
                                 GB_CSTR msg;
                                 if (reg) {
-                                    msg = GBS_global_string("Clicked on %s : positions[%i, %i[", (char*)whatAmI, reg->get_sequence_start(), reg->get_sequence_end());
+                                    msg = GBS_global_string("Clicked on %s : positions[%i, %i]", (char*)whatAmI, reg->get_sequence_start(), reg->get_sequence_end());
                                 }
                                 else {
                                     msg = GBS_global_string("Clicked on %s - should not happen!?!", (char*)whatAmI);
@@ -252,10 +252,10 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                                         aw_message("Index of clicked Base is out of range");
                                         break;
                                     }
-                                    if (sec_root->helix->entries[clicked_pos].pair_type == HELIX_NONE) {
+				    if (sec_root->helix->entries[clicked_pos].pair_type == HELIX_NONE) {
                                         aw_message("Selected Base is not suitable to split");
                                         break;
-                                    }
+				    }
 
                                     char *clicked_helix_nr = sec_root->helix->entries[clicked_pos].helix_nr;
                                     char *helix_nr;

@@ -452,11 +452,12 @@ private:
     double length;
 
     double delta;
+    double deltaIn; //yadhu
     double max_length, min_length; // constraints
     
 public:
 
-    SEC_helix(double delta=7.7, double max_length=0, double min_length=0);
+    SEC_helix(double delta=7.7,double deltaIn=7.7, double max_length=0, double min_length=0);
     ~SEC_helix();
 
     //methods
@@ -468,7 +469,9 @@ public:
     double get_min_length()		{ return min_length; }
 
     double get_length() 		{ return length; }
+
     double get_delta () 		{ return delta; }
+    double get_deltaIn () 		{ return deltaIn; } //yadhu
 
     double& get_max_length_ref() 	{ return max_length; }
     double& get_min_length_ref() 	{ return min_length; }
@@ -480,6 +483,13 @@ public:
 	    delta_ -= (2*M_PI);
 	}
 	delta = delta_;
+    }
+
+    void set_deltaIn (double deltaIn_) {   //yadhu
+	while(deltaIn_ >= (2*M_PI)) {
+	    deltaIn_ -= (2*M_PI);
+	}
+	deltaIn = deltaIn_;
     }
 };
 
