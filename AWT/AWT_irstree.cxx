@@ -30,6 +30,7 @@ static struct {
     int y;
     int min_y;
     int max_y;
+    int ruler_y;
     int min_x;
     int max_x;
     int step_y;
@@ -64,9 +65,11 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     int right_x;
 
 
+    // if (irs_gl.y > irs_gl.max_clipped_y) irs_gl.max_clipped_y = irs_gl.max_y; // @@@ ralf
+    
     /* *********************** Check clipping rectangle ************************ */
     if (!irs_gl.is_size_device){
-        if (irs_gl.y > irs_gl.max_y){
+        if (irs_gl.y > irs_gl.max_y) {
             return irs_gl.max_y;
         }
         int height_of_subtree = irs_gl.step_y*node->gr.view_sum;
@@ -185,6 +188,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
     /* *********************** connect two nodes == draw branches ************************ */
     int y_center;
+
     left_x = (int)(x_offset + 0.9 + irs_gl.x_scale * node->leftlen);
     left_y = paint_sub_tree(node->leftson, left_x, type);
 
@@ -206,7 +210,9 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     }
 
     y_center = (left_y + right_y) / 2; // clip conter on bottom border
-    if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) {
+
+    if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) { // visible right branch in lower part of display
+
         if (node->rightson->remark_branch ) {
             AWT_show_remark_branch(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
         }
@@ -215,6 +221,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
     irs_gl.device->line(node->leftson->gr.gc, x_offset,y_center,x_offset, left_y,  -1, (AW_CL)node,0);
     irs_gl.device->line(node->rightson->gr.gc,x_offset,y_center,x_offset, right_y, -1, (AW_CL)node,0);
+    irs_gl.ruler_y = y_center;
 
     if (node_string != 0) {		//  A node name should be displayed
         irs_gl.y+=irs_gl.step_y /2;
@@ -230,6 +237,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
             irs_gl.nodes_id[irs_gl.nodes_nnnodes] = node;
         }
     }
+
     return y_center;
 }
 
@@ -261,7 +269,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     int x;
     int y;
     AW_font_information *font_info = device->get_font_information(AWT_GC_SELECTED,0);
-    device->rtransform(0,0,x,y); // berechne reale Welkoordinaten des linken oberen Bildschirmrands
+    device->rtransform(0,0,x,y); // calculate real world coordinates of left/upper screen border
     int clipped_l,clipped_t;
     int clipped_r,clipped_b;
     device->rtransform(device->clip_rect.l,device->clip_rect.t,clipped_l,clipped_t);
@@ -277,6 +285,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     irs_gl.max_x = 100;
     irs_gl.min_y = y;
     irs_gl.max_y = clipped_b;
+    irs_gl.ruler_y = 0;
     irs_gl.step_y = height;
     irs_gl.x_scale = 600.0 / at->gr.tree_depth;
     irs_gl.is_size_device = 0;
@@ -285,6 +294,11 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     }
 
     this->paint_sub_tree(at,0,AWT_IRS_NORMAL_TREE );
+
+    // provide some information for ruler :
+    y_pos                       = irs_gl.ruler_y;
+    irs_tree_ruler_scale_factor = irs_gl.x_scale;
+
     if (irs_gl.is_size_device){
         irs_gl.device->invisible(0,irs_gl.min_x,irs_gl.y + (irs_gl.min_y-y) + 200,-1,0,0);
     }
