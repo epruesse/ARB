@@ -28,7 +28,7 @@ private:
     //  ----------------------------------
     int init_local_com_names()
     {
-        if (!link) return 1;	/*** create and init local com structure ***/
+        if (!link) return 1;    /*** create and init local com structure ***/
         if (aisc_create(link, AN_MAIN, com,
                         MAIN_LOCAL, AN_LOCAL, &locs,
                         LOCAL_WHOAMI, "i bin der arb_tree",
@@ -104,14 +104,14 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     static char *shrt = 0;
     if (strlen(full_name)) {
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                      LOCAL_FULL_NAME,	full_name,
-                      LOCAL_ACCESSION,	acc,
-                      LOCAL_ADVICE,		"",
+                      LOCAL_FULL_NAME,  full_name,
+                      LOCAL_ACCESSION,  acc,
+                      LOCAL_ADVICE,     "",
                       0)){
             err = "Connection Problems with the NAME_SERVER";
         }
         if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                     LOCAL_GET_SHORT,	&shrt,
+                     LOCAL_GET_SHORT,   &shrt,
                      0)){
             err = "Connection Problems with the NAME_SERVER";
         }
@@ -143,11 +143,11 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
     GBDATA *gb_name;
     GBDATA *gb_acc;
     GB_HASH *hash;
-    static 	char *shrt;
+    static  char *shrt;
 
-    char	*full_name;
-    char	*name;
-    char	*acc;
+    char    *full_name;
+    char    *name;
+    char    *acc;
 
     GB_ERROR err;
     GB_ERROR err2;
@@ -167,7 +167,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
     long count = 0;
     if (update_status) spcount = GBT_count_species(gb_main);
 
-    for (	gb_species = GBT_first_species(gb_main);
+    for (   gb_species = GBT_first_species(gb_main);
             gb_species&&!err;
             gb_species = GBT_next_species(gb_species)){
         if (update_status) aw_status(count++/(double)spcount);
@@ -176,22 +176,22 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
         gb_name = GB_find(gb_species,"name",0,down_level);
         gb_acc = GBT_gen_accession_number(gb_species,ali_name);
 
-        if (gb_acc)	acc = GB_read_string(gb_acc);
-        else		acc = strdup("");
+        if (gb_acc) acc = GB_read_string(gb_acc);
+        else        acc = strdup("");
         if (gb_full_name) full_name = GB_read_string(gb_full_name);
-        else		  full_name = strdup("");
+        else          full_name = strdup("");
         name = GB_read_string(gb_name);
 
         if (strlen(acc) + strlen(full_name) ) {
             if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                          LOCAL_FULL_NAME,	full_name,
-                          LOCAL_ACCESSION,	acc,
-                          LOCAL_ADVICE,		name,
+                          LOCAL_FULL_NAME,  full_name,
+                          LOCAL_ACCESSION,  acc,
+                          LOCAL_ADVICE,     name,
                           0)){
                 err = "Connection Problems with the NAME_SERVER";
             }
             if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                         LOCAL_GET_SHORT,	&shrt,
+                         LOCAL_GET_SHORT,   &shrt,
                          0)){
                 err = "Connection Problems with the NAME_SERVER";
             }
@@ -215,12 +215,12 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
             GBS_incr_hash(hash,shrt);
             err = GBT_rename_species(name,shrt);
         }
-        if (name)	free(name);	name = 0;
-        if (acc)	free(acc);	acc = 0;
-        if (full_name)	free(full_name);full_name = 0;
-        if (shrt)	free(shrt);	shrt = 0;
+        if (name)   free(name); name = 0;
+        if (acc)    free(acc);  acc = 0;
+        if (full_name)  free(full_name);full_name = 0;
+        if (shrt)   free(shrt); shrt = 0;
     }
-    delete ali_name; ali_name = 0;
+    free(ali_name); ali_name = 0;
 
     GBS_free_hash(hash);
     hash = 0;
@@ -239,8 +239,8 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
 void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
 {
     AWUSE(aww);
-    //	int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
-    //	int save_data = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
+    //  int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
+    //  int save_data = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
     aw_openstatus("Generating new names");
     GB_ERROR error = AWTC_pars_names(gb_main,1);
     aw_closestatus();
@@ -270,24 +270,24 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
     aws->callback((AW_CB1)awt_rename_cb,gb_main);
     aws->create_button("GO", "GO","G");
 
-    //	aws->at("advice");
-    //	aws->create_option_menu(AWT_RENAME_USE_ADVICE,0,0);
-    //	aws->insert_option("Create totally new names","n",0);
-    //	aws->insert_default_option("Use Advice","U",1);
-    //	aws->update_option_menu();
+    //  aws->at("advice");
+    //  aws->create_option_menu(AWT_RENAME_USE_ADVICE,0,0);
+    //  aws->insert_option("Create totally new names","n",0);
+    //  aws->insert_default_option("Use Advice","U",1);
+    //  aws->update_option_menu();
 
-    //	aws->at("save");
-    //	aws->create_option_menu(AWT_RENAME_SAVE_DATA,0,0);
-    //	aws->insert_option("dont update","f",0);
-    //	aws->insert_default_option("update $ARBHOME/lib/nas/names.dat","s",1);
-    //	aws->update_option_menu();
+    //  aws->at("save");
+    //  aws->create_option_menu(AWT_RENAME_SAVE_DATA,0,0);
+    //  aws->insert_option("dont update","f",0);
+    //  aws->insert_default_option("update $ARBHOME/lib/nas/names.dat","s",1);
+    //  aws->update_option_menu();
 
     return (AW_window *)aws;
 }
 
 void AWTC_create_rename_variables(AW_root *root,AW_default db1){
-    root->awar_int( AWT_RENAME_USE_ADVICE, 0  , 	db1);
-    root->awar_int( AWT_RENAME_SAVE_DATA, 1  , 	db1);
+    root->awar_int( AWT_RENAME_USE_ADVICE, 0  ,     db1);
+    root->awar_int( AWT_RENAME_SAVE_DATA, 1  ,  db1);
 }
 
 
