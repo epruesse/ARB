@@ -285,6 +285,28 @@ class Client
 
     public HashMap getShortNameHash() { return shortNameHash; }
 
+    private static Dimension detectScreenSize() {
+        GraphicsEnvironment   ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice        gd = ge.getDefaultScreenDevice();
+        GraphicsConfiguration gc = gd.getDefaultConfiguration();
+        Rectangle             sr = gc.getBounds();
+
+        int width  = (int)sr.getWidth();
+        int height = (int)sr.getHeight();
+
+        // assume minimum size to ignore errors in detection: 
+        if (width<640) width   = 640;
+        if (height<480) height = 480;
+
+        return new Dimension(width, height);
+    }
+
+    public static void showRect(Rectangle rect, String name) {
+        System.out.println("Rectangle "+name+": lu="+rect.x+"/"+rect.y+
+                           " rl="+(rect.x+rect.width-1)+"/"+(rect.y+rect.height-1)+
+                           " sz="+rect.width+"/"+rect.height);
+    }
+
     public static void main(String[] args)
     {
         Client cl          = new Client();
@@ -298,33 +320,47 @@ class Client
                 cl.baseurl = cmdline.getOptionValue("server");
             }
             else {
-                cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL (DNS not propagated yet)
-                // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
+                cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
                 // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
             }
 
-            Dimension screenSize = new Dimension();
-            {
-                GraphicsEnvironment   ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                GraphicsDevice        gd = ge.getDefaultScreenDevice();
-                GraphicsConfiguration gc = gd.getDefaultConfiguration();
+            Dimension screenSize = detectScreenSize();
+            System.out.println("* detected screen size = "+screenSize.width+"/"+screenSize.height);
 
-                Rectangle screenRect = gc.getBounds();
-                
-                screenSize.width = (int)screenRect.getWidth();
-                screenSize.height = (int)screenRect.getHeight();
-
-            // DisplayMode         dm = gd.getDisplayMode();
-                // screenSize             = new Dimension(dm.getWidth(), dm.getHeight());
-
-                System.out.println("screenSize = "+screenSize.width+"/"+screenSize.height);
+            // test other screensizes:
+            Dimension fakedSize = null;
+            // fakedSize        = new Dimension(640, 480);
+            // fakedSize           = new Dimension(800, 600);
+            fakedSize        = new Dimension(1024, 768);
+            // fakedSize        = new Dimension(1280, 1024);
+            if (fakedSize != null) {
+                screenSize = fakedSize;
+                System.out.println("* faked screen size = "+screenSize.width+"/"+screenSize.height);
             }
 
-            cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.client_version, cl,
-                                       new Point(10, 10), new Dimension(screenSize.width-20, screenSize.height-20), 20);
-                                       // new Point(10, 10), new Dimension(640-20, 480-20), 40);
-                                       // new Point(10, 10), new Dimension(640-20, 480-20));
+            Dimension wantedScrollPaneSize = null; // shall be loaded from config
+            // // Dimension wantedScrollPaneSize = new Dimension(622, 724); // shall be loaded from config            
+            // // Dimension wantedScrollPaneSize = new Dimension(416, 634); // shall be loaded from config            
+            // Dimension wantedScrollPaneSize = new Dimension(438, 871); // shall be loaded from config            
+
+            int       dxborder     = screenSize.width/7;
+            int       dyborder     = screenSize.height/7;
+            String    title        = Toolkit.clientName+" v"+Toolkit.client_version;
+            Rectangle wantedBounds = new Rectangle(dxborder/2, dyborder/2, screenSize.width-dxborder, screenSize.height-dyborder);
+            showRect(wantedBounds, "wantedBounds");
+            // Point     origin = new Point(dxborder/2, dyborder/2);
+            // Dimension size   = new Dimension(screenSize.width-dxborder, screenSize.height-dyborder);
+            // System.out.println("* origin = "+origin.x+"/"+origin.y);
+            // System.out.println("* size = "+size.width+"/"+size.height);
+            // System.out.println("* origin+size = "+(origin.x+size.width)+"/"+(origin.y+size.height));
+
+            cl.display = new ProbesGUI(10, title, cl, wantedBounds, wantedScrollPaneSize, 40);
             cl.iom     = new IOManager(cl.display);
+
+            // check correctness of application placement:
+            Rectangle resBounds = cl.display.getBounds(null);
+            showRect(resBounds, "resBounds (wrong value, but seems correct)");
+            // System.out.println("resBounds= "+resBounds.x+"/"+resBounds.y+"  w/h="+resBounds.width+"/"+resBounds.height+"");
 
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
@@ -347,11 +383,6 @@ class Client
                     if (whatToDo.equals("Exit")) {
                         System.exit(1);
                     }
-
-                    //                     MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice",
-                    //                                                             "A newer version of this client is available from\n"+
-                    //                                                             cl.baseurl+"arb_probe_library.jar");
-                    //                     while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 }
                 else {
                     Toolkit.showMessage("Your client is up to date.");
@@ -373,23 +404,17 @@ class Client
             catch (ClientException e) {
                 Toolkit.showError(e.getMessage());
                 Toolkit.clickButton(e.get_kind(), e.get_plain_message(), "Exit");
-
-                // MessageDialog popup = new MessageDialog(cl.getDisplay(), e.get_kind(), e.get_plain_message());
-                // while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
-
                 System.exit(e.get_exitcode());
             }
             catch (Exception e) {
                 Toolkit.showError(e.getMessage());
                 e.printStackTrace();
                 Toolkit.clickButton("Uncaught exception", e.getMessage(), "Exit");
-                // MessageDialog popup = new MessageDialog(cl.getDisplay(), "Uncaught exception", e.getMessage());
-                // while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 System.exit(3);
             }
         }
         catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Uncaught exception: "+e.getMessage());
             System.exit(1);
         }
     }
@@ -414,11 +439,16 @@ class Client
 
     public void saveConfig() // called at shutdown
     {
-        Point     location = display.getLocationOnScreen();
-        Dimension size     = display.getScrollPaneSize();
-
+        Point location = display.getLocationOnScreen();
         System.out.println("Current location on screen: x="+location.x+" y="+location.y);
-        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height);
+
+        Dimension psize = display.getPreferredScrollPaneSize();
+        System.out.println("Scroll pane dimension:      width="+psize.width+" height="+psize.height+" (getPreferredScrollPaneSize)");
+        Dimension size = display.getScrollPaneViewportSize();
+        System.out.println("Scroll pane dimension:      width="+size.width+" height="+size.height+" (getScrollPaneViewportSize)");
+
+        Rectangle resBounds = display.getBounds(null);
+        System.out.println("resBounds= "+resBounds.x+"/"+resBounds.y+"  w/h="+resBounds.width+"/"+resBounds.height);
 
         System.out.println("Saving config to ... [not implemented yet]");
     }

@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : TreeToolbar.java                                       // 
 //    Purpose   : Toolbar for tree display                               // 
-//    Time-stamp: <Fri Mar/12/2004 11:01 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/13/2004 14:19 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -66,22 +66,32 @@ class TreeToolbar extends Panel {
 
     }
 
-    public Dimension getMaximumSize() {
-        Dimension scdim = gui.getScrollPaneSize();
-        return new Dimension(scdim.width-10, 500);
-    }
-    public Dimension getPreferredSize() {
-        Dimension scdim  = gui.getScrollPaneSize();
-        Dimension mypdim = super.getPreferredSize();
+//     public Dimension getMaximumSize() {
+//         Dimension scdim = gui.getScrollPaneSize();
+//         System.out.println("in TreeToolbar::getMaximumSize:");
+//         System.out.println("scdim = "+scdim.width+"/"+scdim.height);
+//         return new Dimension(scdim.width-10, 500);
+//     }
+     public Dimension getPreferredSize() {
+         Dimension scdim  = gui.getPreferredScrollPaneSize();
+         Dimension mypdim = super.getPreferredSize();
 
-        System.out.println("in TreeToolbar::getPreferredSize:");
-        System.out.println("scdim = "+scdim.width+"/"+scdim.height);
-        System.out.println("mypdim = "+mypdim.width+"/"+mypdim.height);
+         System.out.println("in TreeToolbar::getPreferredSize:");
+         System.out.println("scdim = "+scdim.width+"/"+scdim.height);
+         System.out.println("mypdim = "+mypdim.width+"/"+mypdim.height);
 
-        if (mypdim.width > scdim.width) {
-            return new Dimension(scdim.width-5, mypdim.height*2+5);
-        }
+         if (mypdim.width > scdim.width) {
+             if (scdim.width == 0) return mypdim;
+             int lines = (int)(mypdim.width/scdim.width)+1;
+             System.out.println("TreeToolbar occupies "+lines+" lines.");
 
-        return mypdim;
-    }
+             Dimension myWantedDim = new Dimension(scdim.width-5, mypdim.height*lines+5);
+             if (myWantedDim.height>scdim.height) {
+                 myWantedDim.height = scdim.height; // do not get too tall
+             }
+             return myWantedDim;
+         }
+
+         return mypdim;
+     }
 }
