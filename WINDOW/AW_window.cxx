@@ -56,12 +56,12 @@
 
 /** OpenGL header files */
 #include <GL/glew.h>
-#include <GL/GLwMDrawA.h>       /** Provides a special motif widget class */
+// #include <GL/GLwMDrawA.h>       /** Provides a special motif widget class */
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glut.h>
 
-// #include "GLwMDrawA.h"
+#include "GLwMDrawA.h" /** Provides a special motif widget class */
 
 /* defined here by Yadhu inorder to make it more General */
 bool alpha_Size_Supported = false;
