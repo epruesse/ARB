@@ -4,12 +4,12 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-public class ProbeListActionListener implements /*ActionListener,*/ ItemListener
+public class ProbeListActionListener implements /*ActionListener,*/ ItemListener 
 {
 private ProbesGUI gui;
 private TreeDisplay td;
 
-public ProbeListActionListener(ProbesGUI g)
+public ProbeListActionListener(ProbesGUI g) throws Exception
     {
         if (g == null) {
             Toolkit.InternalError("ProbesGUIActionListener: no gui obtained");
@@ -23,15 +23,20 @@ public ProbeListActionListener(ProbesGUI g)
         }
     }
 
-public void itemStateChanged(ItemEvent e)
+public void itemStateChanged(ItemEvent e) 
     {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            ProbeList pl         = (ProbeList)e.getSource();
-            int       selected   = pl.getSelectedIndex();
-            String    probe_info = pl.getProbeInfo(selected);
+            try {
+                ProbeList pl         = (ProbeList)e.getSource();
+                int       selected   = pl.getSelectedIndex();
+                String    probe_info = pl.getProbeInfo(selected);
 
-//             System.out.println("Action Source: " + probe_info);
-            gui.getClient().matchProbes(probe_info);
+                //             System.out.println("Action Source: " + probe_info);
+                gui.getClient().matchProbes(probe_info);
+            }
+            catch (Exception ce) {
+                gui.getClient().showError(ce.getMessage());
+            }
         }
     }
 

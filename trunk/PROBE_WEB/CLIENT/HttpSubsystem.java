@@ -27,7 +27,7 @@ private String neededTreeVersion;
 
 private String error;
 
-public HttpSubsystem(String name)
+public HttpSubsystem(String name) throws Exception
     {
         // check URL
         try {
@@ -123,7 +123,7 @@ public String retrieveGroupMembers(String groupId, int plength)
         return members;
     }
 
-public void retrieveVersionInformation()
+public void retrieveVersionInformation() throws Exception
     {
         String versionInfo = conductRequest("getVersion.cgi");
         if (versionInfo == null) {

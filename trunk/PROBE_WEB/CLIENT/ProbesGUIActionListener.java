@@ -9,7 +9,7 @@ public class ProbesGUIActionListener implements ActionListener
 private ProbesGUI gui;
 private TreeDisplay td;
 
-public ProbesGUIActionListener(ProbesGUI g)
+public ProbesGUIActionListener(ProbesGUI g) throws Exception 
 
     {
 
