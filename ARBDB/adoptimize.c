@@ -287,7 +287,7 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
     gb_extended_data = GB_find(gb_main,"extended_data",0,down_level);
     if (gb_extended_data){
         GB_warning("Converting data from old V2.0 to V2.1 Format:\n"
-                   "	Please Wait (up to 5 minutes on a pentium 100)");
+                   " Please Wait (may take some time)");
     }
     error = gb_convert_compression(gb_main);
     GB_disable_quicksave(gb_main,"Database converted to new format");
