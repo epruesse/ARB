@@ -701,22 +701,26 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
  *  returns -1 no map file found
  *      0   mapfile error
  *      1   mapfile ok
+ *     -1   MEMORY_TEST (don't use mapfile)
  */
 
-int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader)
+int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose)
 
 {
     /* Dont map anything in memory debug mode */
 #if  ( MEMORY_TEST == 1)
     GBUSE(path);
     GBUSE(mheader);
+    GBUSE(verbose);
     return -1;
 #else
     FILE *in;
     in = fopen(path,"r");
 
     if (in) {
-        printf("ARB: Opening FastLoad File '%s' ...\n",path);
+        if (verbose) {
+            printf("ARB: Opening FastLoad File '%s' ...\n",path);
+        }
         fread((char *)mheader, sizeof(*mheader),1,in);
         fclose(in);
 
@@ -759,7 +763,7 @@ GBDATA *gb_map_mapfile(const char *path)
 {
     struct gb_map_header mheader;
 
-    if (gb_is_valid_mapfile(path, &mheader)>0)
+    if (gb_is_valid_mapfile(path, &mheader, 1)>0)
     {
         char *mapped;
         mapped = GB_map_file(path, 1);
