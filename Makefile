@@ -359,7 +359,7 @@ first_target:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_ignore" to skip rebuild)'
+		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
 #		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
@@ -1097,7 +1097,7 @@ menus: binlink
 
 tarfile:	rebuild
 	util/arb_compress
-tarfile_ignore: all
+tarfile_quick: all
 	util/arb_compress
 tarale:
 	util/arb_compress_emacs
@@ -1115,8 +1115,16 @@ export_beta: build
 export:
 	util/arb_export
 
+
+ifeq ($(DEBUG),1)
+BIN_TARGET=develall
+else
+BIN_TARGET=all
+endif
+
+
 binlink:
-	(cd bin; $(MAKE) all);
+	$(MAKE) -C bin $(BIN_TARGET)
 
 bin/arb_%:	DEPOT2/%
 	cp $< $@
