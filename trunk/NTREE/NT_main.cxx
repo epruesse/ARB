@@ -118,7 +118,9 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
             if (perform_format) {
                 aw_status(GBS_global_string("Formatting '%s'", ali_name));
+                GB_push_my_security(gb_main);
                 err = GBT_format_alignment(gb_main, ali_name);
+                GB_pop_my_security(gb_main);
             }
         }
     }
@@ -242,8 +244,9 @@ void main3(AW_root *aw_root)
         if (error) {
             aw_message("THIS PROGRAMM IS NOT THE ONLY DB SERVER !!!\nDONT USE ANY ARB PROGRAMM !!!!");
         }else{
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER,
-                                        (AW_RCB)serve_db_interrupt,0,0);
+            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt,0,0);
+            error = nt_check_database_consistency();
+            if (error) aw_message(error);
         }
     }
     return;
