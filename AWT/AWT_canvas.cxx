@@ -394,7 +394,7 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 								   ((screenheight-event.y)+ screenheight)*2);
 				}
 				else{
-					ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP,
+				    ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP,
 								   screenwidth  + AWT_ZOOM_OUT_STEP,
 								   screenheight + AWT_ZOOM_OUT_STEP);
 				}
