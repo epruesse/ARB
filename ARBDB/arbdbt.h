@@ -10,13 +10,13 @@
 typedef float GBT_LEN;
 
 #define GBT_TREE_ELEMENTS(type)                     \
-	GB_BOOL			is_leaf;                        \
-	GB_BOOL			tree_is_one_piece_of_memory;    \
-	type			*father,*leftson,*rightson;     \
-	GBT_LEN			leftlen,rightlen;               \
-	GBDATA			*gb_node;                       \
-	char			*name;                          \
-	char			*remark_branch
+    GB_BOOL         is_leaf;                        \
+    GB_BOOL         tree_is_one_piece_of_memory;    \
+    type            *father,*leftson,*rightson;     \
+    GBT_LEN         leftlen,rightlen;               \
+    GBDATA          *gb_node;                       \
+    char            *name;                          \
+    char            *remark_branch
 
 // remark_branch normally contains some bootstrap value in format 'xx%'
 // if you store other info there, please make sure that this info does not
@@ -37,15 +37,15 @@ typedef float GBT_LEN;
 (tree_obj_ptr)->remark_branch = 0
 
 #define AWAR_SPECIES_DATA       "species_data"
-#define AWAR_SPECIES	        "species"
+#define AWAR_SPECIES            "species"
 
-#define AWAR_SAI_DATA	        "extended_data"
-#define AWAR_SAI	            "extended"
+#define AWAR_SAI_DATA           "extended_data"
+#define AWAR_SAI                "extended"
 
-#define AWAR_CONFIG_DATA	    "configuration_data"
-#define AWAR_CONFIG		        "configuration"
+#define AWAR_CONFIG_DATA        "configuration_data"
+#define AWAR_CONFIG             "configuration"
 
-#define AWAR_TREE_DATA		    "tree_data"
+#define AWAR_TREE_DATA          "tree_data"
 
 #ifdef FAKE_VIRTUAL_TABLE_POINTER
 typedef FAKE_VIRTUAL_TABLE_POINTER virtualTable;
@@ -63,11 +63,11 @@ typedef struct gb_seq_compr_tree {
     virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
 #endif
     GBT_TREE_ELEMENTS(struct gb_seq_compr_tree);
-    int	index;			/* either master/sequence index */
-} GB_CTREE;				/* @@@ OLI */
+    int index;          /* either master/sequence index */
+} GB_CTREE;             /* @@@ OLI */
 
-#define	GBT_TREE_AWAR_SRT       " =:\n=:*=tree_*1:tree_tree_*=tree_*1"
-#define	GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
+#define GBT_TREE_AWAR_SRT       " =:\n=:*=tree_*1:tree_tree_*=tree_*1"
+#define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 
 #define P_(s) s
 
