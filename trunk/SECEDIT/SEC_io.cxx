@@ -302,9 +302,10 @@ SEC_loop::SEC_loop(SEC_root *root_, SEC_segment *segment_, double max_radius_, d
 }
 
 
-SEC_helix::SEC_helix(double delta_, double max_length_, double min_length_)
+SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double min_length_) //yadhu
 {
     delta = delta_;
+    deltaIn = deltaIn_;
     max_length = max_length_;
     min_length = min_length_;
     length = 0;

@@ -11,7 +11,7 @@
 
 #include <aw_root.hxx>
 #include <aw_device.hxx>
-#include <aw_window.hxx>
+#include <aw_window.hxx> 
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <awt_canvas.hxx>
