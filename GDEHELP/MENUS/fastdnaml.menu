@@ -1,4 +1,4 @@
-item:DNA_ML (FastDnaMl) (max 150 Species)
+item:FastDnaMl (max 150 Species)
 itemmethod:(/bin/rm -f outfile infile treefile ;echo Y F "`arb_export_rates $RATES`" |arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((arb_fastdnaml;$DISPLAY_FUNC)); rm in1 )&
 itemhelp:fastdnaml.help
 

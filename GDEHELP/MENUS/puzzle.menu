@@ -1,0 +1,15 @@
+item:TREEPUZZLE
+itemmethod:(/bin/rm -f outfile infile treefile ;arb_convert_aln -GenBank in1 -phylip2 infile;RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC)); rm in1 )&
+itemhelp:fastdnaml.help
+
+arg:DISPLAY_FUNC
+argtype:chooser
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_puz_//'):arb_read_tree tree_puz_$$ treefile "PRG=PUZZLE FILTER=$FILTER PKG=strimmer/v. haeseler"
+argchoice:Treetool:treetool treefile
+
+in:in1
+informat:genbank
+inmask:
+insave:
+
