@@ -51,47 +51,16 @@ int GDE_odd(long a)
     return 1;
 }
 
-void GDE_showhelp_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
-{
-    AWUSE(cd);
-    AW_root *awr=aw->get_root();
-    static AW_window_simple *helpwindow=0;
-
-    char helpfile[1024], *help_file;
-    char *helptext=0;
-
-    help_file=AWinfo->gmenuitem->help;
-    if(!(help_file)) awr->awar("tmp/gde/helptext")->write_string("no help\0");
-    else
-    {
-        sprintf(helpfile,"%s/GDEHELP/%s",GB_getenvARBHOME(),help_file);
-
-        helptext=GB_read_file(helpfile);
-        if(helptext)
-        {
-            awr->awar("tmp/gde/helptext")->write_string(helptext);
-            free(helptext);
-        }
-        else awr->awar("tmp/gde/helptext")->write_string("can not find help file\0");
+void GDE_showhelp_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL cd) {
+    const char *help_file = AWinfo->gmenuitem->help;
+    if (help_file) {
+        char *agde_help_file = GBS_string_eval(help_file, "*.help=agde_*1.hlp", 0);
+        AW_POPUP_HELP(aw, (AW_CL)agde_help_file);
+        free(agde_help_file);
     }
-
-    if(helpwindow) { helpwindow->show() ; return; }
-
-    helpwindow = new AW_window_simple;
-    helpwindow->init(awr,"GDE_HELP", "GDE HELP");
-    helpwindow->load_xfig("gde_help.fig");
-
-    //  helpwindow->button_length(10);
-    //  helpwindow->at(10,10);
-    helpwindow->at("close");
-    helpwindow->callback((AW_CB0)AW_POPDOWN);
-    helpwindow->create_button("CLOSE", "CLOSE","C");
-
-    helpwindow->at("text");
-    helpwindow->create_text_field("tmp/gde/helptext",10,10);
-
-    //  helpwindow->window_fit();
-    helpwindow->show();
+    else {
+        aw_message("Sorry - no help available (please report to devel@arb-home.de)");
+    }
 }
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
