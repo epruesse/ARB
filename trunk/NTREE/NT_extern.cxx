@@ -1271,7 +1271,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->at(behind_buttonsx, second_liney+10);
     if (!GB_NOVICE){
-	//        awm->label("Protect");
+	awm->label("Protect");
         awm->create_option_menu(AWAR_SECURITY_LEVEL);
         awm->insert_option("0",0,0);
         awm->insert_option("1",0,1);
