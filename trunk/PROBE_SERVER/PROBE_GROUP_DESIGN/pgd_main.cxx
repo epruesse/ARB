@@ -679,7 +679,7 @@ static GB_ERROR pgd_openDatabases() {
     const char *db_name = para.db_name.c_str();
     out.put("Opening ARB-database '%s' ..",db_name);
 
-    // @@@ FIXME:  I think this programm should be able to run w/o the main database
+    // @@@ FIXME:  I think this program should be able to run w/o the main database
     // it only uses the db to open the pt-server connection and does
     // some unneeded species checking..
 
