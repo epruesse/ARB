@@ -239,7 +239,9 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 		/*this is the equation for the evaluation of the stored values*/
 		double gc_proportion = gcprop;    // hack->SQ_physical_layout.h
-		gc_proportion = 100 / gcprop;
+		if (gc_proportion !=0) {
+		  gc_proportion = 100 / gcprop;
+		}
 		//printf("\n debug info:%i %i %i %e \n", bases, dfa, noh, gcprop );
 
 		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * noh) + (weight_consensus * coc) + (weight_iupac * iupv);
@@ -263,6 +265,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 
 
+//GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
 GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
@@ -330,14 +333,17 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    i = ps_chan->SQ_get_number_of_bases();
 		    avg_bases = avg_bases + i;
 		    worked_on_sequences++;
+		    delete ps_chan;
 
 		    /*get values for  ambiguities*/
 		    SQ_ambiguities* ambi_chan = new SQ_ambiguities();
 		    ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
+		    delete ambi_chan;
 
 		    /*claculate the number of strong, weak and no helixes*/
 		    SQ_helix* heli_chan = new SQ_helix(sequenceLength);
 		    heli_chan->SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
+		    delete heli_chan;
 
 		    /*calculate consensus sequence*/
 		    {
@@ -358,6 +364,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 				globalData->SQ_add_consensus(p,i,j);
 			    }
 			}
+			delete consens;
 		    }
 
 
@@ -436,11 +443,11 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		if (read_sequence) {
 		    int sequenceLength      = 0;
 		    const char *rawSequence = 0;
-		    double value            = 0;
+		    //double value            = 0;
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
-		    int temp                = 0;
+		    //int temp                = 0;
 		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
@@ -462,7 +469,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, bool marked_only) {
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
 
-		    value = globalData->SQ_test_against_consensus(rawSequence);
+		    // value = globalData->SQ_test_against_consensus(rawSequence);
 		}
 	    }
 	}

@@ -19,7 +19,12 @@
 #include <cstddef>
 #endif
 
-struct Int7 { int i[7]; };
+struct Int7 { 
+  int i[7]; 
+  Int7() {
+    for (int j=0; j<7; ++j) i[j]=0; 
+  }
+};
 
 class SQ_GroupData {
 

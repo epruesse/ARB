@@ -35,16 +35,7 @@ void SQ_GroupData::SQ_init_consensus(int size){
 
     // two dimensional array
     consensus = new Int7[size];
-
-//     consensus = new int *[size];
-//     for (int i=0; i < size; i++ ){
-// 	consensus[i] = new int [7];
-//     }
-//     for (int i=0; i < size; i++ ){
-// 	for (int j=0; j<7; j++) {
-// 	    consensus[i][j] = 0;
-// 	}
-//     }
+    
     initialised=true;
 }
 
