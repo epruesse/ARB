@@ -164,12 +164,12 @@ void ad_extended_delete_cb(AW_window *aww){
 
 void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
 {
-	char *source = aw_root->awar(AWAR_EX_NAME)->read_string();
+	char   *source      = aw_root->awar(AWAR_EX_NAME)->read_string();
 	GB_push_transaction(gb_main);
 	GBDATA *gb_extended = GBT_find_SAI(gb_main,source);
 	awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_main);
-	delete source;
+	free(source);
 }
 
 void ad_ad_remark(AW_window *aww){

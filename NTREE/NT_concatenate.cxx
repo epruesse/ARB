@@ -315,9 +315,9 @@ void concatenateAlignments(AW_window *aws){
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
 		void *str_seq = GBS_stropen(new_alignment_len+1000);			/* create output stream */
 		const char *concatenated_ali_seq_data;
-        int separator_tag = 0; int found =0; int missing = 0; int ali_len = 0; 
+        int separator_tag = 0; int found =0; int missing = 0; int ali_len = 0;
         ali_name = con_alignment_list->first_element();
-        
+
         while(ali_name){             // concatenation of the selected alignments in the database
 			GBDATA *gb_seq_data = GBT_read_sequence(gb_species, ali_name);
 			if(gb_seq_data) {
@@ -342,7 +342,7 @@ void concatenateAlignments(AW_window *aws){
                 free(question);
             }
             ali_name = con_alignment_list->next_element();
-		} 
+		}
 		concatenated_ali_seq_data = GBS_strclose(str_seq, 0);
 		GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
 		GB_write_string(gb_data, concatenated_ali_seq_data);
@@ -782,9 +782,9 @@ AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root, int option){
 
 	AW_window_simple *aws = new AW_window_simple;
 
-    struct adawcbstruct *cbs = new adawcbstruct;
-    cbs->gb_main = gb_main;
-    cbs->aws     = aws;
+//     struct adawcbstruct *cbs = new adawcbstruct;
+//     cbs->gb_main = gb_main;
+//     cbs->aws     = aws;
 
     aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW", 100, 100 );
     aws->load_xfig("merge_species.fig");

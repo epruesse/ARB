@@ -56,7 +56,7 @@ else
         echo "Running valgrind on '$*' ..."
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
-        valgrind --leak-check=yes $* 2>&1 >/dev/null | $DIR/valgrind2grep $CALLERS "$FILTER"
+        valgrind --leak-check=yes --num-callers=10 $* 2>&1 >/dev/null | $DIR/valgrind2grep $CALLERS "$FILTER"
         echo 'valgrind done.'
     fi
 fi
