@@ -10,6 +10,10 @@
 #ifndef GEN_LOCAL_HXX
 #include "GEN_local.hxx"
 #endif
+#ifndef GEN_MAP_HXX
+#include "GEN_map.hxx"
+#endif
+
 
 // --------------------------------------------------------------------------------
 
@@ -476,7 +480,6 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
-
 //  ------------------------------------------------------------------
 //      AW_window *GEN_create_gene_query_window(AW_root *aw_root)
 //  ------------------------------------------------------------------
@@ -537,3 +540,22 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
     return (AW_window *)aws;
 
 }
+//  ----------------------------------------------
+//      AW_window *GEN_map(AW_root *aw_root)
+//  ----------------------------------------------
+AW_window *GEN_map(AW_root *aw_root) {
+    static AW_window *aw_gen = 0;
+
+    if (!aw_gen) { // do not open window twice
+        aw_gen = GEN_map_create_main_window(aw_root);
+        if (!aw_gen) {
+            aw_message("Couldn't start Gene-Map");
+            return 0;
+        }
+    }
+
+    aw_gen->show();
+    return aw_gen;
+}
+
+
