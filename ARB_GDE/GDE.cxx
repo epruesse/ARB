@@ -37,10 +37,12 @@ NA_Alignment *DataSet = NULL;
 
 char GDEBLANK[] = "\0";
 
-enum {
-	SLIDERWIDTH = 5, // input field for numbers
-	TEXTFIELDWIDTH = 15
-	};
+#define SLIDERWIDTH 5           // input field width for numbers
+
+// enum {
+// 	SLIDERWIDTH    = 5,
+// 	TEXTFIELDWIDTH = 15
+// 	};
 
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i);
 
@@ -277,8 +279,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             }else{
                 aw_root->awar_float(newawar,AWinfo->gmenuitem->arg[i].fvalue,AW_ROOT_DEFAULT);
             }
-            aw_root->awar(newawar)
-                ->set_minmax(AWinfo->gmenuitem->arg[i].min,AWinfo->gmenuitem->arg[i].max);
+            aw_root->awar(newawar)->set_minmax(AWinfo->gmenuitem->arg[i].min,AWinfo->gmenuitem->arg[i].max);
             aws->label(AWinfo->gmenuitem->arg[i].label);
             GDE_create_infieldwithpm(aws,newawar,SLIDERWIDTH);
             // maybe bound checking //
@@ -336,11 +337,11 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             delete newawar;
         }
         else if(itemarg.type==TEXTFIELD) {
-            char *defopt=itemarg.textvalue;
-            char *newawar=GDE_makeawarname(AWinfo,i);
+            char *defopt  = itemarg.textvalue;
+            char *newawar = GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            aws->create_input_field(newawar,TEXTFIELDWIDTH);
+            aws->create_input_field(newawar,itemarg.textwidth/*TEXTFIELDWIDTH*/);
             delete newawar;
         }
         else if(itemarg.type==CHOICE_TREE) {
