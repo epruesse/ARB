@@ -1,26 +1,24 @@
-#include "MultiProbe.hxx"
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <math.h>
 
-awar_vars	mp_gl_awars;
-MP_Main		*mp_main = NULL;
-char		MP_probe_tab[256];		//zum checken, ob ein eingegebener Sondenstring ok ist
-int		remembered_mismatches;
-int		anz_elem_marked = 0;
-int		anz_elem_unmarked = 0;
-int		outside_mismatches = 0;
-BOOL		pt_server_different = FALSE;
+#include "MultiProbe.hxx"
+#include "mp_proto.hxx"
+
+awar_vars  mp_gl_awars;
+MP_Main	  *mp_main             = NULL;
+char	   MP_probe_tab[256];	//zum checken, ob ein eingegebener Sondenstring ok ist
+int		   remembered_mismatches;
+int		   anz_elem_marked     = 0;
+int		   anz_elem_unmarked   = 0;
+int		   outside_mismatches  = 0;
+BOOL	   pt_server_different = FALSE;
 
 double MAXMARKEDFACTOR = 1.0;
 double MINUNMARKEDFACTOR = 1.0;
 double SUMMARKEDFACTOR = 1.0;
 double SUMUNMARKEDFACTOR = 1.0;
 
-extern		void MP_gen_quality(AW_root *awr,AW_CL cd1,AW_CL cd2);
-extern		void MP_gen_singleprobe(AW_root *awr,AW_CL cd1,AW_CL cd2);
-extern		void MP_modify_selected(AW_root *awr,AW_CL cd1,AW_CL cd2);
-extern char		*glob_old_seq;
 
 
 
