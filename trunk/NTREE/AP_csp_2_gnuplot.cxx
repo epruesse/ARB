@@ -115,6 +115,94 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
     return found_files;
 }
 
+enum PlotType {
+    PT_GC_RATIO,
+    PT_GA_RATIO,
+    PT_RATE,
+    PT_TT_RATIO,
+    PT_MOST_FREQUENT_BASE,
+    PT_SECOND_FREQUENT_BASE,
+    PT_THIRD_FREQUENT_BASE,
+    PT_LEAST_FREQUENT_BASE,
+    PT_BASE_A,
+    PT_BASE_C,
+    PT_BASE_G,
+    PT_BASE_TU,
+    PT_HELIX,
+
+    PT_PLOT_TYPES,
+    PT_UNKNOWN
+};
+
+static const char *plotTypeName[PT_PLOT_TYPES] = {
+    "gc_gnu",
+    "ga_gnu",
+    "rate_gnu",
+    "tt_gnu",
+    "f1_gnu",
+    "f2_gnu",
+    "f3_gnu",
+    "f4_gnu",
+    "a_gnu",
+    "c_gnu",
+    "g_gnu",
+    "tu_gnu",
+    "helix_gnu"
+};
+
+static const char *plotTypeDescription[PT_PLOT_TYPES] = {
+    "G+C ratio",
+    "G+A ratio",
+    "Rate",
+    "TT Ratio",
+    "Most frequent base",
+    "2nd frequent base",
+    "3rd frequent base",
+    "Least frequent base",
+    "A ratio",
+    "C ratio",
+    "G ratio",
+    "T/U ratio",
+    "Helix"
+};
+
+static PlotType string2PlotType(const char *type) {
+    for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
+        if (strcmp(type, plotTypeName[pt]) == 0) {
+            return PlotType(pt);
+        }
+    }
+
+    return PT_UNKNOWN;
+}
+
+static const char *makeTitle(const char *fname) {
+    const char *rslash = strrchr(fname, '/');
+    if (rslash) rslash++;
+    else        rslash = fname;
+
+    char *name = strdup(rslash);
+    char *rdot = strrchr(name, '.');
+
+    PlotType pt  = PT_UNKNOWN;
+    if (rdot) pt = string2PlotType(rdot+1);
+
+    static char *title  = 0;
+    free(title); title = 0;
+
+    if (pt == PT_UNKNOWN) {
+        title = GBS_global_string_copy("%s (unknown type)", name);
+    }
+    else {
+        rdot[0] = 0;
+        title = GBS_global_string_copy("%s (%s)", name, plotTypeDescription[pt]);
+    }
+
+    free(name);
+
+    return title;
+}
+
 // ------------------------------------------------------------------------------
 //      void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode)
 // ------------------------------------------------------------------------------
@@ -123,19 +211,19 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
-	GB_transaction  dummy(gb_main);
-	AWT_csp        *csp   = (AWT_csp *)cspcd;
-	GB_ERROR        error = 0;
-	AP_filter       filter;
+    GB_transaction  dummy(gb_main);
+    AWT_csp        *csp   = (AWT_csp *)cspcd;
+    GB_ERROR        error = 0;
+    AP_filter       filter;
     int             mode  = int(cl_mode);
 
     if (mode != 2) {
-        char *filterstring = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
-        char *alignment_name =  aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
-        long alignment_length = GBT_get_alignment_len(gb_main,alignment_name);
-        error = filter.init(filterstring,"0",alignment_length);
-        delete alignment_name;
-        delete filterstring;
+        char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
+        char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
+        long  alignment_length = GBT_get_alignment_len(gb_main,alignment_name);
+        error                  = filter.init(filterstring,"0",alignment_length);
+        free(alignment_name);
+        free(filterstring);
 
         if (!error) error = csp->go(&filter);
 
@@ -205,47 +293,58 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                             }
                         }
                     }
-
                 }
+
+                PlotType plot_type = string2PlotType(type);
+                nt_assert(plot_type != PT_UNKNOWN); // 'type' is not a PlotType
 
                 for (j=0;j<csp->seq_len; j++) {
                     if (!csp->weights[j]) continue;
                     fprintf(out,"%i ",j);
-                    if (!strcmp(type,"all")){
-                        fprintf(out," %f %f %f %f\n",
-                                csp->frequency['A'][j], csp->frequency['C'][j],
-                                csp->frequency['G'][j], csp->frequency['U'][j]);
-                        continue;
-                    }
-                    if (!strcmp(type,"gc_gnu")) {
-                        val = ( csp->frequency['G'][j] + csp->frequency['C'][j] ) /
-                            (double)( csp->frequency['A'][j] + csp->frequency['C'][j] +
-                                      csp->frequency['G'][j] + csp->frequency['U'][j] );
-                    }else if (!strcmp(type,"ga_gnu")) {
-                        val = ( csp->frequency['G'][j] + csp->frequency['A'][j] ) /
-                            (double)( csp->frequency['A'][j] + csp->frequency['C'][j] +
-                                      csp->frequency['G'][j] + csp->frequency['U'][j] );
-                    }else if (!strcmp(type,"rate_gnu")) {
-                        val = csp->rates[j];
-                    }else if (!strcmp(type,"tt_gnu")) {
-                        val = csp->ttratio[j];
-                    }else if (!strcmp(type,"f1_gnu")) {
-                        val = f[3][j];
-                    }else if (!strcmp(type,"f2_gnu")) {
-                        val = f[2][j];
-                    }else if (!strcmp(type,"f3_gnu")) {
-                        val = f[1][j];
-                    }else if (!strcmp(type,"f4_gnu")) {
-                        val = f[0][j];
-                    }else if (!strcmp(type,"helix_gnu")) {
-                        val = csp->is_helix[j];
-                    }else{
-                        val = 0;
+
+                    //                     if (plot_type == PT_ALL_FREQUENCIES) {
+                    //                         fprintf(out," %f %f %f %f\n",
+                    //                                 csp->frequency['A'][j], csp->frequency['C'][j],
+                    //                                 csp->frequency['G'][j], csp->frequency['U'][j]);
+                    //                     }
+                    //                     else {
+
+                    double amount =
+                        csp->frequency['A'][j] + csp->frequency['C'][j] +
+                        csp->frequency['G'][j] + csp->frequency['U'][j] ;
+
+                    switch (plot_type) {
+                        case PT_GC_RATIO:
+                            val = ( csp->frequency['G'][j] + csp->frequency['C'][j] ) / amount;
+                            break;
+                        case PT_GA_RATIO:
+                            val = ( csp->frequency['G'][j] + csp->frequency['A'][j] ) / amount;
+                            break;
+
+                        case PT_BASE_A: val  = csp->frequency['A'][j] / amount; break;
+                        case PT_BASE_C: val  = csp->frequency['C'][j] / amount; break;
+                        case PT_BASE_G: val  = csp->frequency['G'][j] / amount; break;
+                        case PT_BASE_TU: val = csp->frequency['U'][j] / amount; break;
+
+                        case PT_RATE:                   val = csp->rates[j]; break;
+                        case PT_TT_RATIO:               val = csp->ttratio[j]; break;
+                        case PT_HELIX:                  val = csp->is_helix[j]; break;
+
+                        case PT_MOST_FREQUENT_BASE:     val = f[3][j]; break;
+                        case PT_SECOND_FREQUENT_BASE:   val = f[2][j]; break;
+                        case PT_THIRD_FREQUENT_BASE:    val = f[1][j]; break;
+                        case PT_LEAST_FREQUENT_BASE:    val = f[0][j]; break;
+                        default:  {
+                            nt_assert(0); // unknown calculation requested..
+                            val = 0;
+                        }
                     }
                     smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
                     fprintf(out,"%f\n",smoothed);
+                    //                     }
                 }
-                delete type;
+
+                free(type);
                 fclose(out);
                 aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
 
@@ -272,22 +371,21 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         if (found_files) {
                             for (char *name = strtok(found_files, "*"); name; name = strtok(0, "*")) {
                                 if (strcmp(name, fname) != 0) { // latest data file is done below
-                                    fprintf(out, "%s \"%s\" %s\n", plot_command[int(plotted)], name, smooth);
+                                    fprintf(out, "%s \"%s\" %s title \"%s\"\n", plot_command[int(plotted)], name, smooth, makeTitle(name));
                                     plotted = true;
                                 }
                             }
                             free(found_files);
                         }
 
-                        fprintf(out, "%s \"%s\" %s\n", plot_command[int(plotted)], fname, smooth);
+                        fprintf(out, "%s \"%s\" %s title \"%s\"\n", plot_command[int(plotted)], fname, smooth, makeTitle(fname));
                         fprintf(out, "pause -1 \"Press RETURN to close gnuplot\"\n");
                         fclose(out);
 
                         if (mode == 1) {
                             printf("command_file='%s'\n", command_file);
-                            char *script = GB_strdup(GBS_global_string("gnuplot %s;rm -f %s", command_file, command_file));
+                            char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
                             GB_xcmd(script, true, true);
-
                             free(script);
                         }
                         else {
@@ -302,78 +400,81 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
         free(fname);
     }
 
- 	if (error) aw_message(error);
+    if (error) aw_message(error);
 }
 
 AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
-	GB_transaction dummy(gb_main);
-	AWT_csp *csp = new AWT_csp(gb_main,root,AP_AWAR_CSP_NAME);
-	AW_window_simple *aws = new AW_window_simple;
+    GB_transaction dummy(gb_main);
+    AWT_csp *csp = new AWT_csp(gb_main,root,AP_AWAR_CSP_NAME);
+    AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot", 10,10);
-  	aws->load_xfig("cpro/csp_2_gnuplot.fig");
+    aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
-	root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", gb_main);
+    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", gb_main);
 
-	root->awar_int(AP_AWAR_CSP_SMOOTH);
-	root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX);
-	root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX);
-	root->awar_string(AP_AWAR_CSP_SMOOTH_GNUPLOT);
+    root->awar_int(AP_AWAR_CSP_SMOOTH);
+    root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX);
+    root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX);
+    root->awar_string(AP_AWAR_CSP_SMOOTH_GNUPLOT);
 
-	root->awar_string(AP_AWAR_CSP_NAME);
-	root->awar_string(AP_AWAR_CSP_ALIGNMENT);
-	root->awar(AP_AWAR_CSP_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);	// csp of the correct al.
+    root->awar_string(AP_AWAR_CSP_NAME);
+    root->awar_string(AP_AWAR_CSP_ALIGNMENT);
+    root->awar(AP_AWAR_CSP_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT); // csp of the correct al.
 
-	root->awar_string(AP_AWAR_FILTER_NAME);
-	root->awar_string(AP_AWAR_FILTER_FILTER);
-	root->awar_string(AP_AWAR_FILTER_ALIGNMENT);
-	root->awar(AP_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);	// csp of the correct al.
+    root->awar_string(AP_AWAR_FILTER_NAME);
+    root->awar_string(AP_AWAR_FILTER_FILTER);
+    root->awar_string(AP_AWAR_FILTER_ALIGNMENT);
+    root->awar(AP_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // csp of the correct al.
 
-	root->awar_string(AP_AWAR_CSP_SUFFIX, "gc_gnu", AW_ROOT_DEFAULT);
-	root->awar_string(AP_AWAR_CSP_DIRECTORY);
-	root->awar_string(AP_AWAR_CSP_FILENAME, "noname.gc_gnu", AW_ROOT_DEFAULT);
+    root->awar_string(AP_AWAR_CSP_SUFFIX, "gc_gnu", AW_ROOT_DEFAULT);
+    root->awar_string(AP_AWAR_CSP_DIRECTORY);
+    root->awar_string(AP_AWAR_CSP_FILENAME, "noname.gc_gnu", AW_ROOT_DEFAULT);
 
-	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-	aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"csp_2_gnuplot.hlp");
-	aws->create_button("HELP","HELP","H");
+    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"csp_2_gnuplot.hlp");
+    aws->create_button("HELP","HELP","H");
 
-	awt_create_selection_box(aws,AP_AWAR_CSP);
+    awt_create_selection_box(aws,AP_AWAR_CSP);
 
-	aws->at("csp");
-	create_selection_list_on_csp(aws,csp);
+    aws->at("csp");
+    create_selection_list_on_csp(aws,csp);
 
-	aws->at("what");
-	AW_selection_list* selid = aws->create_selection_list(AP_AWAR_CSP_SUFFIX);
-    aws->insert_selection(selid, "G+C Ratio",	"gc_gnu");
-    aws->insert_selection(selid, "G+A Ratio",	"ga_gnu");
-    aws->insert_selection(selid, "Rate",		"rate_gnu");
-    aws->insert_selection(selid, "TT Ratio",	"tt_gnu");
-    aws->insert_selection(selid, "Most Frequent Base","f1_gnu");
-    aws->insert_selection(selid, "Second Frequent Base","f2_gnu");
-    aws->insert_selection(selid, "Third Frequent Base","f3_gnu");
-    aws->insert_selection(selid, "Least Frequent Base","f4_gnu");
-    aws->insert_selection(selid, "All Frequencies","all");
-    aws->insert_selection(selid, "Helix",		"helix_gnu");
-	aws->update_selection_list(selid);
+    aws->at("what");
+    AW_selection_list* selid = aws->create_selection_list(AP_AWAR_CSP_SUFFIX);
+    for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
+        aws->insert_selection(selid, plotTypeDescription[pt], plotTypeName[pt]);
+    }
+    //     aws->insert_selection(selid, "G+C Ratio",   "gc_gnu");
+    //     aws->insert_selection(selid, "G+A Ratio",   "ga_gnu");
+    //     aws->insert_selection(selid, "Rate",        "rate_gnu");
+    //     aws->insert_selection(selid, "TT Ratio",    "tt_gnu");
+    //     aws->insert_selection(selid, "Most Frequent Base","f1_gnu");
+    //     aws->insert_selection(selid, "Second Frequent Base","f2_gnu");
+    //     aws->insert_selection(selid, "Third Frequent Base","f3_gnu");
+    //     aws->insert_selection(selid, "Least Frequent Base","f4_gnu");
+    //     aws->insert_selection(selid, "All Frequencies","all");
+    //     aws->insert_selection(selid, "Helix",       "helix_gnu");
+    aws->update_selection_list(selid);
 
-	AW_CL filter = awt_create_select_filter(root,gb_main,AP_AWAR_FILTER_NAME);
-	aws->at("ap_filter");
-	aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filter);
-	aws->create_button("SELECT_FILTER", AP_AWAR_FILTER_NAME);
+    AW_CL filter = awt_create_select_filter(root,gb_main,AP_AWAR_FILTER_NAME);
+    aws->at("ap_filter");
+    aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filter);
+    aws->create_button("SELECT_FILTER", AP_AWAR_FILTER_NAME);
 
-	aws->at("smooth");
-	aws->create_option_menu(AP_AWAR_CSP_SMOOTH);
+    aws->at("smooth");
+    aws->create_option_menu(AP_AWAR_CSP_SMOOTH);
     aws->insert_option("Dont Smooth","D",0);
     aws->insert_option("Smooth 1","1",1);
     aws->insert_option("Smooth 2","2",2);
     aws->insert_option("Smooth 3","3",3);
     aws->insert_option("Smooth 5","5",5);
     aws->insert_option("Smooth 10","0",10);
-	aws->update_option_menu();
+    aws->update_option_menu();
 
-	aws->at("smooth2");
+    aws->at("smooth2");
     aws->create_toggle_field(AP_AWAR_CSP_SMOOTH_GNUPLOT, 1);
     aws->insert_default_toggle("None","N", "");
     aws->insert_toggle("Unique","U", "smooth unique");
@@ -384,13 +485,13 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     aws->auto_space(10, 10);
     aws->button_length(13);
 
-	aws->at("save");
-	aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)0);
-	aws->create_button("SAVE","Save");
+    aws->at("save");
+    aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)0);
+    aws->create_button("SAVE","Save");
 
-	aws->highlight();
-	aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)1);
-	aws->create_button("SAVE_AND_VIEW","Save & View");
+    aws->highlight();
+    aws->callback(AP_csp_2_gnuplot_cb,(AW_CL)csp, (AW_CL)1);
+    aws->create_button("SAVE_AND_VIEW","Save & View");
 
     aws->at("overlay1");
     aws->label("Overlay statistics with same prefix?");
@@ -404,5 +505,5 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)2);
     aws->create_autosize_button("DEL_OVERLAYS", "Delete currently overlayed files", "D", 2);
 
-	return (AW_window *)aws;
+    return (AW_window *)aws;
 }
