@@ -26,6 +26,9 @@ private:
     char *buffer;
     int   size;                         // how much is in buffer
     int   position;                     // where am i in the buffer
+    // debug
+    unsigned long int total_read;
+    unsigned long int total_write;
 
     PS_FileBuffer();
 
@@ -55,9 +58,12 @@ public:
     PS_FileBuffer( const char *_name, bool _readonly );
 
     ~PS_FileBuffer() {
-        if (buffer) free(buffer);
+        // finish file
+        if (!is_readonly) flush();
         if (file_name) free(file_name);
         if (file_handle != -1) close(file_handle);
+        // finish buffer
+        if (buffer) free(buffer);
     }
 
 };

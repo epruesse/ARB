@@ -206,7 +206,7 @@ int main( int argc,  char *argv[] ) {
 
     // open probe-group-database
     if (argc < 2) {
-        printf("Missing arguments\n Usage %s <input database name> [<output database name> <output mapping-file name>]\n",argv[0]);
+        printf("Missing arguments\n Usage %s <input database name> [<output database name> [output mapping-file name]]\n",argv[0]);
         exit(1);
     }
 
@@ -337,7 +337,7 @@ int main( int argc,  char *argv[] ) {
         printf( "(enter to continue)\n" );
 //        getchar();
 
-        root.SetNull();
+//        root.SetNull();
     }
 
 
