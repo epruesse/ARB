@@ -90,6 +90,9 @@ NOTES		Unlike the 'ARB_PROBE_DESIGN' tool, the 'ARB_PROBE_MATCH' tool
 		homologous or non-homologous, aligned or crude data can be
 		searched for potential probe target matches.
 
+                Please note that all positions returned from PT-Server are in
+                the range [0..N-1]. They differ by 1 from positions in ARB_EDIT4.
+
 EXAMPLES	None
 
 WARNINGS	None
