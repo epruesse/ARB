@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+// #include <fcntl.h>
 
 #include <arbdb.h>
 #include "aw_root.hxx"
@@ -514,29 +516,55 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 
 
 
-AW_default AW_root::open_default(const char *default_name)
+AW_default AW_root::open_default(const char *default_name, bool create_if_missing)
 {
-    GBDATA *gb_default;
-    gb_default = GB_open(default_name,"rwcD");
-    if (gb_default) GB_no_transaction(gb_default);
-    else GB_print_error();
+    if (!create_if_missing) { // used to check for existing specific properties
+        const char *home   = GB_getenvHOME();
+        char       *buffer = (char *)GB_calloc(sizeof(char),strlen(home)+ strlen(default_name) + 2);
+
+        sprintf(buffer,"%s/%s", home, default_name);
+
+        struct stat st;
+        bool        found = stat(buffer, &st) == 0;
+
+        free(buffer);
+
+        if (!found) {
+            GB_information("No '%s' found", default_name);
+            return 0;
+        }
+    }
+
+
+    GBDATA *gb_default = GB_open(default_name, "rwcD");
+
+    if (gb_default) {
+        GB_no_transaction(gb_default);
+    }
+    else {
+        GB_print_error();
+    }
     return (AW_default) gb_default;
 }
 
 
 AW_error *AW_root::save_default( const char *var_name ) {
+    save_default(var_name, NULL);
+}
+
+AW_error *AW_root::save_default( const char *var_name, const char *file_name) {
     AW_awar *vs;
     if ( (vs = this->awar( var_name ))  ) {
-        AW_root::save_default((AW_default)vs->gb_var,NULL);
+        AW_root::save_default((AW_default)vs->gb_var, file_name);
         return 0;
     }else {
         AW_ERROR("AW_root::save_default: Variable %s not defined", var_name);
     }
     return 0;
+
 }
 
-
-AW_error *AW_root::save_default(AW_default aw_default,const char *file_name)
+AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
 {
     GBDATA *gb_tmp;
     GBDATA *gb_main = GB_get_root((GBDATA *)aw_default);
