@@ -898,8 +898,17 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
     ptnd.new_match   = 0;
     ptnd.locs        = locs;
     ptnd.pdc         = pdc;
-    char     *ierror = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data); /* read the names */
-    if (ierror) delete ierror;
+
+    const char *error;
+    {
+        char *unknown_names = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error); /* read the names */
+        if (unknown_names) free(unknown_names); // unused here (handled by PT_unknown_names)
+    }
+
+    if (error) {
+        pt_export_error(locs, error);
+        return 0;
+    }
 
     PT_sequence *seq;
     for ( seq = pdc->sequences; seq; seq = seq->next){ // Convert all external sequence to internal format
