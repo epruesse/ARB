@@ -33,7 +33,7 @@ SECTION SPECIAL CHARACTERS
 		=               seperates the search from the replace string
 		\               Escape symbol
 		\\              the '\' symbol itself
-		\n              newline
+		|               newline
 		\t              tabulator
 		\:              ':'
 		\=              '='
