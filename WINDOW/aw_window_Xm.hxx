@@ -275,6 +275,8 @@ public:
 
     AW_root_Motif() {};
     ~AW_root_Motif() {};
+
+    Widget get_last_button_widget() { return last_button ? last_button->button : 0; }
 };
 
 // void create_help_entry(AW_window *aww);
