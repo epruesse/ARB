@@ -3262,7 +3262,7 @@ GB_ERROR AW_root::execute_macro(const char *file){
     }else{
         path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),file);
     }
-    const char *com = GBS_global_string("%s/bin/perl %s &",GB_getenvARBHOME(),path);
+    const char *com = GBS_global_string("perl %s &",path);
     printf("Action '%s'\n",com);
     if(system(com)){
         aw_message(GBS_global_string("Calling '%s' failed",com));
