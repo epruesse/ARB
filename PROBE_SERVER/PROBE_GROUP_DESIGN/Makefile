@@ -45,4 +45,4 @@ pgd_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pgd_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 pgd_main.o: $(ARBHOME)/INCLUDE/client.h
 pgd_main.o: $(ARBHOME)/INCLUDE/servercntrl.h ../global_defs.h
-pgd_main.o: ../common.h
+pgd_main.o: ../common.h ../mapping.h
