@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed Jul/17/2002 00:37 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri Nov/08/2002 23:01 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -135,7 +135,7 @@ inline void to_indent(FILE *out, int indent) { int i = indent*the_XML_Document->
 //      XML_Tag::XML_Tag(const string &name_)
 //  ---------------------------------------------
 XML_Tag::XML_Tag(const string &name_)
-: XML_Node(true), name(name_), son(0), attribute(0), state(0)
+    : XML_Node(true), name(name_), son(0), attribute(0), state(0), onExtraLine(true)
 {
 }
 //  ----------------------------
@@ -186,7 +186,10 @@ void XML_Tag::remove_son(XML_Node *son_) {
 //  --------------------------------------
 void XML_Tag::open(FILE *out) {
     if (father && !father->Opened()) father->open(out);
-    fputc('\n', out); to_indent(out, Indent());
+    if (onExtraLine) {
+        fputc('\n', out);
+        to_indent(out, Indent());
+    }
     fputc('<', out); fputs(name.c_str(), out);
     if (attribute) attribute->print(out);
     fputc('>', out);
@@ -199,14 +202,17 @@ void XML_Tag::close(FILE *out)  {
     if (!opened) {
         if (!the_XML_Document->skip_empty_tags || attribute || !father) {
             if (father && !father->Opened()) father->open(out);
-            fputc('\n', out); to_indent(out, Indent());
+            if (onExtraLine) {
+                fputc('\n', out);
+                to_indent(out, Indent());
+            }
             fputc('<', out); fputs(name.c_str(), out);
             if (attribute) attribute->print(out);
             fputs("/>", out);
         }
     }
     else {
-        if (state >= 2) { fputc('\n', out); to_indent(out, Indent()); }
+        if (state >= 2 && onExtraLine) { fputc('\n', out); to_indent(out, Indent()); }
         fprintf(out, "</%s>", name.c_str());
     }
 }
