@@ -903,8 +903,7 @@ void AP_tree_nlen::parsimony_rek(void)
 
     if (sequence && sequence->is_set_flag) return;
 
-    if (is_leaf)
-    {
+    if (is_leaf) {
         sequence->is_set_flag = AP_TRUE;
         return;
     }
@@ -912,16 +911,18 @@ void AP_tree_nlen::parsimony_rek(void)
     if (!lefts->sequence || !lefts->sequence->is_set_flag  ) lefts->parsimony_rek();
     if (!rights->sequence|| !rights->sequence->is_set_flag ) rights->parsimony_rek();
 
-    if (!lefts->sequence->is_set_flag || !rights->sequence->is_set_flag)
-    {
+    if (!lefts->sequence->is_set_flag || !rights->sequence->is_set_flag) {
         AW_ERROR("AP_tree_nlen::parsimony_rek:	Cannot set sequence");
         return;
     }
 
     if (sequence == 0) sequence = tree_root->sequence_template->dup();
 
-    mutation_rate = leftson->mutation_rate + rightson->mutation_rate +
+    mutation_rate =
+        leftson->mutation_rate +
+        rightson->mutation_rate +
     	sequence->combine(lefts->sequence, rights->sequence);
+
     sequence->is_set_flag = AP_TRUE;
 }
 

@@ -1166,56 +1166,21 @@ static void pars_start_cb(AW_window *aww)
     awm->insert_help_topic("help_arb",		"ARB Help",			"A","arb.hlp",		AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
     awm->insert_help_topic("help_arb_pars",		"ARB PARSIMONY Help",		"N","arb_pars.hlp",	AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SELECT
-                      );
-    awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_MARK
-                      );
-    awm->create_mode( 0, "group.bitmap", "mode_group.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_GROUP
-                      );
-    awm->create_mode( 0, "zoom.bitmap", "mode_pzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_ZOOM
-                      );
-    awm->create_mode( 0, "lzoom.bitmap", "mode_lzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_LZOOM
-                      );
-    awm->create_mode( 0, "swap.bitmap", "mode_swap.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SWAP
-                      );
-    awm->create_mode( 0, "move.bitmap", "mode_move.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_MOVE
-                      );
+    awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
+    awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
+    awm->create_mode( 0, "group.bitmap", "mode_group.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_GROUP);
+    awm->create_mode( 0, "zoom.bitmap", "mode_pzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_ZOOM);
+    awm->create_mode( 0, "lzoom.bitmap", "mode_lzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_LZOOM);
+    awm->create_mode( 0, "swap.bitmap", "mode_swap.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SWAP);
+    awm->create_mode( 0, "move.bitmap", "mode_move.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MOVE);
 #ifdef NNI_MODES
-    awm->create_mode( 0, "nearestn.bitmap", "mode_nni.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_NNI
-                      );
-    awm->create_mode( 0, "kernlin.bitmap", "mode_kernlin.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_KERNINGHAN
-                      );
-    awm->create_mode( 0, "optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_OPTIMIZE
-                      );
+    awm->create_mode( 0, "nearestn.bitmap", "mode_nni.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_NNI);
+    awm->create_mode( 0, "kernlin.bitmap", "mode_kernlin.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_KERNINGHAN);
+    awm->create_mode( 0, "optimize.bitmap", "mode_optimize.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_OPTIMIZE);
 #endif // NNI_MODES
-    awm->create_mode( 0, "setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_SETROOT
-                      );
-    awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_RESET
-                      );
+    awm->create_mode( 0, "setroot.bitmap", "mode_set_root.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SETROOT);
+    awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_RESET);
+
     awm->at(5,2);
     awm->auto_space(0,-2);
     awm->shadow_width(1);
