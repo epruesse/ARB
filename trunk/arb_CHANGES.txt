@@ -2,6 +2,8 @@ ARB change log
 
 Major changes for next Beta:
 
+Major changes in Beta 2003_08_22:
+
  - automatic formatting of alignments
  - SECEDIT may use EDIT4 colors
  - fixed bootstrapping (DNAPARS, PROTPARS, PROTML(experimental!))
@@ -67,7 +69,7 @@ Major changes for next Beta:
      - a HTML version is in $ARBHOME/lib/help_html
      - a text version is in $ARBHOME/lib/help (like before, but now generated)
 
-Major changes in Beta 20011107:
+Major changes in Beta 2001_11_07:
 
  - design probes to maximum length of 60 nucleotides
  - fastAligner1.03 bug fixed (chooses best match now in 'auto search' mode)
@@ -80,7 +82,7 @@ Major changes in Beta 20011107:
  - reads EMBL genom files
  - support for experiments (genom databases only)
 
-Major changes in Beta 20010724:
+Major changes in Beta 2001_07_24:
 
  - basic support for genoms (Gene Map, reads Genebank files)
  - ported to libc6

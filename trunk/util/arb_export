@@ -4,7 +4,7 @@
 dest=/trance1/ARB_download/ARB
 destmach=$dest$1/$HOSTTYPE
 
-FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
+FILES="arb_install.sh arb.tgz zcat"
 echo "****************************************"
 echo "exporting $FILES to $destmach"
 for i in $FILES; do
@@ -27,6 +27,7 @@ done
 
 # export names.dat:
 echo "****************************************"
-echo "exporting $names.dat to $dest/xtra/names.dat.gz"
+echo "exporting names.dat"
+echo gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
 gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
 
