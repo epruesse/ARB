@@ -16,6 +16,8 @@ depend:
 main.o:   loop.h globals.h
 Window.o:  loop.h globals.h
 menu.o:  loop.h globals.h
-ReadData.o:  loop.h globals.h
-Draw.o:  loop.h globals.h
-WriteData.o:  loop.h globals.h
+ReadData.o:   loop.h
+ReadData.o: globals.h
+Draw.o:   loop.h globals.h
+WriteData.o:   loop.h
+WriteData.o: globals.h

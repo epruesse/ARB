@@ -43,10 +43,10 @@ $(ARBHOME)/bin/Consto01mask: Consto01mask.c $(libs.o) $(MKFILE)
 Alloc.o:  global_defs.h 
 Consto01mask.o: global_defs.h  
 DotPlotTool.o: global_defs.h  
-DotPlotTool.o:  plot.icon
+DotPlotTool.o: plot.icon
 HGLfuncs.o: global_defs.h  
-MakeCons.o:   global_defs.h
+MakeCons.o:  global_defs.h 
 PrintStrat.o: global_defs.h  
-Translate.o:  global_defs.h 
+Translate.o: global_defs.h  
 heapsortHGL.o:  global_defs.h
 mapview.o:   global_defs.h

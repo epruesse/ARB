@@ -30,7 +30,6 @@ depend:
 ../../bin/Restriction:  
 ../../bin/Restriction: 
 ../../bin/Restriction: 
-../../bin/Restriction: 
 ../../bin/Zuk_to_gen:  
 ../../bin/Zuk_to_gen:  
 ../../bin/Zuk_to_gen: 
@@ -49,14 +48,12 @@ depend:
 ../../bin/count:  
 ../../bin/count: 
 ../../bin/count: 
-../../bin/count: 
 ../../bin/findall: Flatio.c  
 ../../bin/findall:  
 ../../bin/findall: 
 ../../bin/findall:  
 ../../bin/findall:  
 ../../bin/findall:  
-../../bin/findall: 
 ../../bin/findall: 
 ../../bin/findall: 
 ../../bin/lsadt:  
@@ -86,13 +83,11 @@ depend:
 ../../bin/sho_helix:  
 ../../bin/sho_helix: 
 ../../bin/sho_helix: 
-../../bin/sho_helix: 
 ../../bin/varpos: Flatio.c  
 ../../bin/varpos:  
 ../../bin/varpos: 
 ../../bin/varpos:  
 ../../bin/varpos:  
 ../../bin/varpos:  
-../../bin/varpos: 
 ../../bin/varpos: 
 ../../bin/varpos: 

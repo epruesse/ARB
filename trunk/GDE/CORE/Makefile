@@ -28,27 +28,23 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-ParseMenu.o:   menudefs.h
-ParseMenu.o: defines.h functions.h
-main.o:   menudefs.h
-main.o: defines.h functions.h globals.h icon_gde.bitmap
+ParseMenu.o:  menudefs.h defines.h functions.h
+main.o:  menudefs.h defines.h functions.h
+main.o: globals.h icon_gde.bitmap
 BasicDisplay.o:  menudefs.h defines.h functions.h
-EventHandler.o:  menudefs.h defines.h functions.h
-FileIO.o:   menudefs.h
-FileIO.o: defines.h functions.h
+EventHandler.o: menudefs.h defines.h functions.h
+FileIO.o:  menudefs.h defines.h functions.h
 DrawNA.o:  menudefs.h defines.h functions.h
-Free.o:   menudefs.h
-Free.o: defines.h functions.h
-BuiltIn.o:  menudefs.h defines.h functions.h
+Free.o:  menudefs.h defines.h functions.h
+BuiltIn.o:   menudefs.h
+BuiltIn.o: defines.h functions.h
 Edit.o:  menudefs.h
 Edit.o: defines.h functions.h
-Genbank.o:   menudefs.h
-Genbank.o: defines.h functions.h
+Genbank.o:  menudefs.h defines.h functions.h
 Scroll.o:  menudefs.h defines.h functions.h
-CutCopyPaste.o:  menudefs.h defines.h functions.h
-HGLfile.o:   menudefs.h
-HGLfile.o: defines.h functions.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
+CutCopyPaste.o: menudefs.h defines.h functions.h
+HGLfile.o:  menudefs.h defines.h functions.h
+arbdb_io.o:  $(ARBHOME)/INCLUDE/arbdb.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h defines.h
