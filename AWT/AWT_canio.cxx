@@ -78,7 +78,8 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 	return error;
 }
 
-void AWT_print_tree_to_file_xfig(AW_window *aww, AWT_canvas * ntw){
+void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw){
+    AWT_canvas * ntw = (AWT_canvas*)cl_ntw;
     AW_root *awr = aww->get_root();
     const char *error = AWT_print_tree_to_file(aww,ntw);
     if (!error) {
@@ -137,7 +138,7 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
 
 
 
-	aws->at("xfig");aws->callback((AW_CB1)AWT_print_tree_to_file_xfig,(AW_CL)ntw);
+	aws->at("xfig");aws->callback(AWT_print_tree_to_file_xfig,(AW_CL)ntw);
 	aws->create_button("START_XFIG", "GO XFIG","X");
 
 	aws->at("cancel");aws->callback((AW_CB0)AW_POPDOWN);

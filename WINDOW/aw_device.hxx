@@ -10,7 +10,7 @@
 #ifdef DEBUG
 // if you want flush() to be called after every motif command :
 #define AUTO_FLUSH(device) (device)->flush()
-// #define AUTO_FLUSH()
+//#define AUTO_FLUSH(device)
 #else
 #define AUTO_FLUSH(device)
 #endif
