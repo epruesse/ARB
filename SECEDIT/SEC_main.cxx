@@ -282,11 +282,11 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 
     switch(mode){
     case AWT_MODE_ZOOM: {
-            text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
+            text="ZOOM MODE : CLICK or SELECT an area to ZOOM IN (LEFT) or ZOOM OUT (RIGHT) ";
             break;
         }
     case AWT_MODE_STRETCH: {
-	    text="STRETCH MODE    LEFT: Click and drag to EXPAND    RIGHT: Click and drag to COMPRESS";
+	    text="STRETCH MODE  : Click and drag to EXPAND or CONTRACT the HELICES and LOOPS ";
             break;
         }
 	case AWT_MODE_PROINFO: {
@@ -835,7 +835,8 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
     awm->insert_menu_topic("props_secedit",	"SECEDIT: Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/edit4)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    //    awm->insert_menu_topic("secStruct2xfig", "Edit view using XFIG", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_export_window, 0);
+    awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/secedit)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);

@@ -182,8 +182,13 @@ void SEC_loop::save(ostream & out, SEC_helix_strand *caller, int indent) {
     for (i=0; i<indent; i++) {
         out << "\t";
     }
-
     out << "RADIUS=" << min_radius << ":" << max_radius << "\n";
+    /*
+    for (i=0; i<indent; i++) {
+        out << "\t";
+    }
+    out << "ROOT_ANGLE = " << root->rootAngle <<"\n";  //stores rootAngle to the file
+    */
     SEC_segment *next_segment;
     SEC_helix_strand *next_strand;
     next_segment = caller->get_next_segment();
@@ -326,6 +331,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     show_constraints = 0;
     fresh_sequence = 1;
 
+    rootAngle = 0;
     seqTerminal = 0;//seqTerminal pointer is initialised to 0 --yadhu
 
     drag_recursive = 0;
