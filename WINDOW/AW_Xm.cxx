@@ -90,8 +90,8 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
     if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
-        x1 = x0 + width-1;
-        y1 = y0 + height-1;
+        x1 = x0 + width;
+        y1 = y0 + height;
         this->transform(x0,y0,X0,Y0);
         this->transform(x1,y1,X1,Y1);
         drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
