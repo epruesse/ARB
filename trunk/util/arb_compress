@@ -1,5 +1,8 @@
 	rm -f arb.tgz
-    tar cfvo - demo.arb arb_install.sh arb_README.txt \
+    tar cfvo - demo.arb \
+		arb_install.sh \
+		arb_README.txt \
+		arb_INSTALL.txt \
         `(  find bin ! -type d; \
             find PERL_SCRIPTS ! -type d; \
             find SH ! -type d; \
