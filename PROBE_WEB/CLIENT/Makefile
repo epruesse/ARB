@@ -49,9 +49,13 @@ all:
 		@-((test -f $@ && rm $@) || true)
 		@echo "$<" >>$(BUILDLIST)
 
+
+#JFLAGS=-deprecation -O -g:none# optimized version
+JFLAGS=-deprecation -g# debug version
+
 compile:
-		@echo javac -deprecation `cat $(BUILDLIST)`
-		@javac -deprecation `cat $(BUILDLIST)`
+		@echo javac $(JFLAGS) `cat $(BUILDLIST)`
+		@javac $(JFLAGS) `cat $(BUILDLIST)`
 
 $(JAR) : $(CLASSES) $(JAVAS) Makefile $(MANIFEST)
 		test \! -f $(BUILDLIST) || ($(MAKE) compile && rm $(BUILDLIST))
@@ -71,7 +75,7 @@ test: all
 		echo "----------------------------------------" ;\
 	        ls -al -rt )
 
-test_master: all
+testmaster: all
 	(	mkdir -p $(TESTDIR)/master ;\
 		cd $(TESTDIR)/master ;\
 		echo "----------------------------------------" ;\
@@ -79,7 +83,15 @@ test_master: all
 		echo "----------------------------------------" ;\
 		ls -al -rt )
 
-test_rs: all
+testmasterproxy127: all
+	(	mkdir -p $(TESTDIR)/master ;\
+		cd $(TESTDIR)/master ;\
+		echo "----------------------------------------" ;\
+		java -DproxySet=true -DproxyHost=hi.er -jar $(BASE)/$(JAR)  ;\
+		echo "----------------------------------------" ;\
+		ls -al -rt )
+
+testrs: all
 	(	mkdir -p $(TESTDIR)/local ;\
 		cd $(TESTDIR)/local ;\
 		echo "----------------------------------------" ;\
