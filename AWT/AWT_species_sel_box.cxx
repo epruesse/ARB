@@ -23,6 +23,8 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
 
     cbs->aws->clear_selection_list(cbs->id);
 
+    cbs->aws->insert_selection(cbs->id, "all_fields", "all_fields");
+
     GBDATA *gb_key;
     GBDATA *gb_key_name;
     for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
@@ -222,7 +224,8 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           const ad_item_selector *selector,
                                           size_t                  columns,
                                           size_t                  visible_rows,
-                                          AW_BOOL                 popup_list_in_window)
+                                          AW_BOOL                 popup_list_in_window,
+                                          AW_BOOL                 add_all_fields_pseudo_field)
 {
     AW_selection_list*  id              = 0;
     GBDATA	           *gb_key_data;
@@ -266,12 +269,13 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
 //     }
 
     struct adawcbstruct *cbs;
-    cbs             = new adawcbstruct;
-    cbs->aws        = win_for_sellist;
-    cbs->gb_main    = gb_main;
-    cbs->id         = id;
-    cbs->def_filter = (char *)type_filter;
-    cbs->selector   = selector;
+    cbs                              = new adawcbstruct;
+    cbs->aws                         = win_for_sellist;
+    cbs->gb_main                     = gb_main;
+    cbs->id                          = id;
+    cbs->def_filter                  = (char *)type_filter;
+    cbs->selector                    = selector;
+    cbs->add_all_fields_pseudo_field = add_all_fields_pseudo_field;
 
     if (rescan_xfig_label) {
         aws->at(rescan_xfig_label);
@@ -470,9 +474,9 @@ void awt_mark_changed_cb(AW_window *aws, struct adawcbstruct *cbs, char *awar_na
     cbs->may_be_an_error = 0;
     long flag = aws->get_root()->awar(awar_name)->read_int();
     GB_push_transaction(cbs->gb_main);
-    if (	(!cbs->gb_user) ||
-            cbs->may_be_an_error) {		// something changed in the database
-    }else{
+    if ( (!cbs->gb_user) || cbs->may_be_an_error) {		// something changed in the database
+    }
+    else{
         GB_write_flag(cbs->gb_user,flag);
     }
     GB_pop_transaction(cbs->gb_main);
