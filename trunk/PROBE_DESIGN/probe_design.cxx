@@ -7,6 +7,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
@@ -26,6 +27,7 @@
 #include <probe_design.hxx>
 
 #include <awt_canvas.hxx>
+
 #ifdef DEVEL_IDP
 #include <GEN.hxx>
 #endif
@@ -252,7 +254,7 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
 
     len = 0;
     for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
-      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+      for (gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
 	gb_name = GB_find(gb_gene, "name", 0, down_level);
 	if (!gb_name) continue;
 	gb_data = GBT_read_sequence(gb_species, use);
@@ -681,10 +683,16 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
         if (mark){
             if (show_status) aw_status("Unmark all species");
-            for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_marked_species(gb_species) ){
+            for (gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+                 gb_species;
+                 gb_species = GBT_next_marked_species(gb_species) )
+            {
                 GB_write_flag(gb_species,0);
 #ifdef DEVEL_IDP
-		for (gb_gene = GBT_first_marked_gene_rel_species(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+		for (gb_gene = GEN_first_marked_gene(GEN_get_gene_data(gb_species));
+                     gb_gene;
+                     gb_gene = GEN_next_marked_gene(gb_gene))
+                {
 		  GB_write_flag(gb_gene,0);
 		}
 #endif
@@ -692,7 +700,10 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
         if (write_2_tmp){
             if (show_status) aw_status("Delete all old tmp fields");
-            for (gb_species = GBT_first_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_species(gb_species) ){
+            for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
+                 gb_species;
+                 gb_species = GBT_next_species(gb_species) )
+            {
                 GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
                 if (gb_tmp) GB_delete(gb_tmp);
             }
@@ -756,7 +767,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                     GB_write_flag(gb_species,1);
 #ifdef DEVEL_IDP
 		    if (gene_flag) {
-		      gb_gene = GBT_find_gene_rel_species(gb_species,gene_str);
+		      gb_gene = GEN_find_gene(gb_species,gene_str);
 		      GB_write_flag(gb_gene,1);
 		    }
 #endif
