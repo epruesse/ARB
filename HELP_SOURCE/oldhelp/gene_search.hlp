@@ -12,7 +12,7 @@ SUB	write_field_list.hlp
 SUB	mod_field_list.hlp
 SUB	selected_gene.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Search Database for Genes

@@ -3,7 +3,7 @@ UP	multiprobe.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile strunk ********
 TITLE		Multiproberesults

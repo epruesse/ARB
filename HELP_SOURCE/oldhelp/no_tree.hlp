@@ -8,7 +8,7 @@ SUB	nt_align_select.hlp
 SUB	arb_edit.hlp
 
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		How to get an initial tree

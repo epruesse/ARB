@@ -7,7 +7,7 @@ SUB	color.hlp
 SUB	tgroupcolor.hlp
 SUB	markcolor.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Colorize listed species

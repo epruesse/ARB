@@ -7,7 +7,7 @@ SUB	color.hlp
 SUB	markcolor.hlp
 SUB	set_color_of_listed.hlp
 
-# Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Group all but color group
