@@ -1,4 +1,4 @@
-#include <list.h>
+#include <vector.h>
 
 // to use to display SAI in the probe match section
 #define AWAR_PROBE_SAI_MATCH  "tmp/probe_design/probe_sai_match"
@@ -27,8 +27,8 @@ enum {
 
 struct saiProbeData {
     const char *probeTarget;
-    list<const char*> probeSpecies;
-    list<const char*> probeSeq;
+    std::vector<const char*> probeSpecies;
+    std::vector<const char*> probeSeq;
 };
 
 class SAI_graphic: public AWT_graphic {
@@ -43,7 +43,10 @@ public:
 
     void show(AW_device *device);
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
+    void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char,
+                 AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
     void paint(AW_device *device);
+
 };
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr);

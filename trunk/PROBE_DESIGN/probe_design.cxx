@@ -665,10 +665,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         return;
     }
 
-    char *matchName;
-    char *tmpMatchInfo;
-    char *tmpProbe;
-    g_spd = new saiProbeData; //saibaba
+    char *matchName, *tmpMatchInfo, *tmpProbe;
+    g_spd = new saiProbeData; 
 
     if (selection_id) {
         sprintf(result, "Searched for                                     %s",probe);
@@ -747,7 +745,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
     if (show_status) aw_status("Parse the Results");
 
-    g_spd->probeSpecies.clear(); //saibaba
+    g_spd->probeSpecies.clear(); 
     g_spd->probeSeq.clear();
 
     while (hinfo && (match_name = strtok(0,toksep)) ) {
@@ -827,12 +825,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 g_spd->probeSpecies.push_back(matchName);
             }
         }
-
         mcount++;
     }
 
     if (g_spd)  transferProbeData(g_spd);               // to update probe list in sai probe match window
-    root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //????
+    root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //update probe list if probe match results changed
 
     if (counter) *counter = mcount;
 
