@@ -1793,35 +1793,39 @@ void AWT_graphic_tree::unload(void)
     this->tree_name         = 0;
 }
 
-GB_ERROR AWT_graphic_tree::load(GBDATA *dummy, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs)
+GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs)
 {
-    AWUSE(dummy);
-    static GB_ERROR olderror = 0;
-    AP_tree_root *tr = 0;
-    AP_tree *apt = this->tree_proto->dup();
-    tr = new AP_tree_root(gb_main,apt,name);
-    GB_ERROR error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE); // show status
-
-    this->unload();
-
-    if (error) {
-        delete apt;
-        delete tr;
-        if (error == olderror) return 0;
-        olderror = error;
-        return error;
+    GB_ERROR error = 0;
+    if (strcmp(name, "tree_????") == 0) { // no tree selected
+        this->unload();
     }
-    olderror                = 0;
-    this->tree_root         = apt;
-    this->tree_static       = tr;
-    this->tree_root_display = this->tree_root;
-    this->tree_root->compute_tree(gb_main);
-    this->tree_name         = strdup(name);
-    tr->root_changed_cd     = (void*)this;
-    tr->root_changed        = AWT_graphic_tree_root_changed;
-    tr->node_deleted_cd     = (void*)this;
-    tr->node_deleted        = AWT_graphic_tree_node_deleted;
-    return 0;
+    else {
+        AP_tree      *apt = this->tree_proto->dup();
+        AP_tree_root *tr  = new AP_tree_root(gb_main,apt,name);
+        
+        error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE); // show status
+        this->unload();
+
+        if (error) {
+            delete tr;
+            delete apt;
+        }
+        else {
+            this->tree_root         = apt;
+            this->tree_static       = tr;
+            this->tree_root_display = this->tree_root;
+            
+            this->tree_root->compute_tree(gb_main);
+            
+            this->tree_name     = strdup(name);
+            tr->root_changed_cd = (void*)this;
+            tr->root_changed    = AWT_graphic_tree_root_changed;
+            tr->node_deleted_cd = (void*)this;
+            tr->node_deleted    = AWT_graphic_tree_node_deleted;
+        }
+    }
+
+    return error;
 }
 
 GB_ERROR AWT_graphic_tree::save(GBDATA *dummy, const char *name,AW_CL cd1,AW_CL cd2)
