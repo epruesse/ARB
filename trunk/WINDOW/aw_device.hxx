@@ -163,19 +163,19 @@ public:
     void set_left_clip_border(int left, AW_BOOL allow_oversize = AW_FALSE);
     void set_right_clip_border(int right, AW_BOOL allow_oversize = AW_FALSE);
     void set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize = AW_FALSE);
-    
+
     void set_top_font_overlap(int val=1);
-    void set_bottom_font_overlap(int val=1); 
-    void set_left_font_overlap(int val=1); 
+    void set_bottom_font_overlap(int val=1);
+    void set_left_font_overlap(int val=1);
     void set_right_font_overlap(int val=1);
-    
+
     // like set_xxx_clip_border but make window only smaller:
-    
+
     void reduce_top_clip_border(int top);
     void reduce_bottom_clip_border(int bottom);
     void reduce_left_clip_border(int left);
     void reduce_right_clip_border(int right);
-    
+
     void reduceClipBorders(int top, int bottom, int left, int right);
 
     AW_clip();
@@ -281,12 +281,12 @@ class AW_device: public AW_matrix, public AW_gc {
                                        AW_pos alignment,AW_pos rotation,AW_bitset filteri,AW_CL cd1,AW_CL cd2);
         virtual int     zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_pos scale,
                                        AW_pos alignment,AW_pos rotation, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-        virtual int     zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, 
+        virtual int     zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1,
                                        AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
 
 
 	virtual	int	box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-	virtual	int	circle(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int	circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
 	virtual	int	filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 									// * third level functions (never virtual)
@@ -294,7 +294,7 @@ class AW_device: public AW_matrix, public AW_gc {
 									// reduces any string (or virtual string) to its actual drawn size
 									// and calls the function f with the result
 	int	text_overlay( int gc, const char *opt_string, long opt_strlen,	// either string or strlen != 0
-					AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2, 
+					AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
 					AW_pos opt_ascent,AW_pos opt_descent,	// optional height (if == 0 take font height)
 					int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size,
 						AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
