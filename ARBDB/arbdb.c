@@ -306,9 +306,14 @@ GB_ERROR GB_close(GBDATA *gbd)
     if (!Main->local_mode){
         gbcmc_close(Main->c_link);
     }
-    return 0; /* @@@ there's an error below (return to avoid crash) */
+
+#if defined(DEVEL_RALF)
+#warning fix that error!    
+#endif /* DEVEL_RALF */
+    return 0;                   /* @@@ there's an error below (return to avoid crash) */
+
     gb_delete_entry(gbd);
-    gb_do_callback_list(gbd);       /* do all callbacks */
+    gb_do_callback_list(gbd);   /* do all callbacks */
     gb_destroy_main(Main);
     return 0;
 }
@@ -726,10 +731,10 @@ GB_ERROR GB_write_string(GBDATA *gbd,const char *s)
         GB_ERROR error = GB_write_pntr(gbd,s,size+1,size);
         if (!error) {
             char *check = GB_read_string(gbd);
-            
+
             gb_assert(check);
             gb_assert(strcmp(check, s) == 0);
-            
+
             free(check);
         }
         return error;
@@ -1682,8 +1687,7 @@ GB_ERROR gb_add_changed_callback_list(GBDATA *gbd,struct gb_transaction_save *ol
 {
     struct gb_callback_list *cbl;
     GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    cbl = (struct gb_callback_list *)gbm_get_mem(
-                                                 sizeof(struct gb_callback_list),GBM_CB_INDEX);
+    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list),GBM_CB_INDEX);
     if (Main->cbl){
         Main->cbl_last->next = cbl;
     }else{
@@ -1805,18 +1809,52 @@ long GB_read_old_size(){
                     CALLBACKS
 ********************************************************************************************/
 
-GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
-{
+GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, int priority) {
+    /* smaller priority values get executed before bigger priority values */  
+    
     struct gb_callback *cb;
+
     GB_TEST_TRANSACTION(gbd);
     GB_CREATE_EXT(gbd);
     cb = (struct gb_callback *)gbm_get_mem(sizeof(struct gb_callback),GB_GBM_INDEX(gbd));
-    cb->next = gbd->ext->callback;
-    gbd->ext->callback = cb;
-    cb->type = type;
+
+    if (gbd->ext->callback) {
+        struct gb_callback *prev = 0;
+        struct gb_callback *curr = gbd->ext->callback;
+
+        while (curr) {
+            if (priority <= curr->priority) {
+                // wanted priority is lower -> insert here
+                break;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+
+        if (prev) { prev->next = cb; }
+        else { gbd->ext->callback = cb; }
+
+        cb->next = curr;
+    }
+    else {
+        cb->next           = 0;
+        gbd->ext->callback = cb;
+    }
+
+    /* cb->next = gbd->ext->callback; */
+    /* gbd->ext->callback = cb; */
+    
+    cb->type       = type;
     cb->clientdata = clientdata;
-    cb->func = func;
+    cb->func       = func;
+    cb->priority   = priority;
+
     return 0;
+}
+
+GB_ERROR GB_add_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
+{
+    return GB_add_priority_callback(gbd, type, func, clientdata, 5); // use default priority 5
 }
 
 GB_ERROR GB_remove_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata)
