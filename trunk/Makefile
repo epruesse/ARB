@@ -292,6 +292,7 @@ ARCHS = \
 			DBSERVER/DBSERVER.a NAMES/NAMES.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
 			PROBE_GROUP/PROBE_GROUP.a \
+			CHIP/CHIP.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			AWTC/AWTC.a AWTI/AWTI.a AWDEMO/AWDEMO.a NTREE/NTREE.a \
 			ARB_GDE/ARB_GDE.a  ALIV3/ALIV3.a \
@@ -383,6 +384,12 @@ PROBE_GROUP = bin/arb_probe_group
 ARCHS_PROBE_GROUP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) PROBE_GROUP/PROBE_GROUP.a
 $(PROBE_GROUP):	$(ARCHS_PROBE_GROUP) PROBE_COM/server.a PROBE/PROBE.a
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
+
+#***********************************	chip **************************************
+CHIP = bin/chip
+ARCHS_CHIP = SERVERCNTRL/SERVERCNTRL.a $(ARCHS_CLIENTACC) CHIP/CHIP.a
+$(CHIP):	$(ARCHS_CHIP) PROBE_COM/server.a PROBE/PROBE.a
+	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_CHIP) $(LIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
@@ -533,6 +540,7 @@ acc:	$(ARCHS_ACORR:.a=.dummy)	$(ACORR)
 ds:		$(ARCHS_DBSERVER:.a=.dummy)	$(DBSERVER)
 pr:		$(ARCHS_PROBE:.a=.dummy)	$(PROBE)
 pg:		$(ARCHS_PROBE_GROUP:.a=.dummy)	$(PROBE_GROUP)
+chip:	$(ARCHS_CHIP:.a=.dummy)	$(CHIP)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(ARCHS_NAMES:.a=.dummy)	$(NAMES)
 os:		$(ARCHS_ORS_SERVER:.a=.dummy)	$(ORS_SERVER)
