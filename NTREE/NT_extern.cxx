@@ -349,7 +349,7 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-#ifdef NDEBUG
+#ifdef DEBUG
 #define DO_DATA_OPTIMIZE
 #else
 #define DO_DATA_OPTIMIZE
