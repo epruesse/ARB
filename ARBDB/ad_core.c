@@ -192,6 +192,18 @@ void gb_link_entry(GBCONTAINER* father, GBDATA * gbd, long index_pos)
         index_pos = father->d.nheader++;
         gb_create_header_array(father, (int)index_pos+1);
     }
+
+    /* the following code skips just-deleted index position, while searching for an unused
+       index position. I'm unsure whether this works w/o problems (ralf 2004-Oct-08) */
+    
+    while (GB_DATA_LIST_HEADER(father->d)[index_pos].flags.changed >= gb_deleted) {
+#if defined(DEBUG)
+        fprintf(stderr, "Warning: index_pos %li of father(%p) contains just-deleted entry -> using next index_pos..\n", index_pos, father);
+#endif /* DEBUG */
+        index_pos = father->d.nheader++;
+        gb_create_header_array(father, (int)index_pos+1);
+    }
+
     gbd->index = index_pos;
     SET_GBCONTAINER_ELEM(father,index_pos,gbd);
     father->d.size++;
