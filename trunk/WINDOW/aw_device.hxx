@@ -7,6 +7,13 @@
 	class AW_common { void *dummy;};
 #endif
 
+#ifdef DEBUG
+// if you want flush() to be called after every motif command :
+#define AUTO_FLUSH(device) (device)->flush()
+// #define AUTO_FLUSH()
+#else
+#define AUTO_FLUSH(device)
+#endif
 
 #define AW_PIXELS_PER_MM 1.0001
 
