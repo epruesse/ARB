@@ -1088,7 +1088,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                         continue;
                     case 3:
                         awr->awar_string(NEW_NAME_AWAR)->write_string((char *)GBS_global_string("%s.%i",m_name,count));
-                        delete m_name;
+                        free(m_name);
                         m_name = aw_input("New name of species",NEW_NAME_AWAR);
                         goto new_try;
                     case 4:
