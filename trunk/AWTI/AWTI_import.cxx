@@ -148,7 +148,7 @@ GB_ERROR awtc_read_import_format(char *file)
         }else if (!strcmp(s1,"MATCH")) {
             pl             = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
             pl->start_line = lineNumber;
-            pl->next       = ifo->pl;
+            pl->next       = ifo->pl; // this concatenates the filters to the front -> that is corrected below
             ifo->pl        = pl;
             pl->match      = GBS_remove_escape(s2); free(s2); s2 = 0;
         }else if (pl && !strcmp(s1,"SRT")) {
@@ -181,6 +181,9 @@ GB_ERROR awtc_read_import_format(char *file)
 
     free(s2);
     free(s1);
+
+    // reverse order of match list (was appended backwards during creation)
+    if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
 
     fclose(in);
     return 0;
