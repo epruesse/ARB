@@ -7,6 +7,8 @@ class GroupCache
     private String  error;
     private Client  client;
 
+    public Client getClient() { return client; }
+
     public GroupCache(Client c)
     {
         groups = new HashMap();
@@ -16,6 +18,7 @@ class GroupCache
 
     private String retrieveMemberList(String groupId, int probe_length) throws Exception
     {
+        Toolkit.showMessage("retrieving hits..");
         String answer = client.webAccess().retrieveGroupMembers(groupId, probe_length);
         if (answer == null) {
             error = client.webAccess().getLastRequestError();
@@ -34,7 +37,6 @@ class GroupCache
         }
 
         StringBuffer memberListBuffer      = new StringBuffer();
-        //         String       memberList = null;
         int          membercount           = Integer.parseInt(parsed.getValue("membercount"));
 
         if (membercount<1) {
@@ -51,17 +53,10 @@ class GroupCache
                 String speciesName = parsed.getValue(keyName);
                 if (m > 1) memberListBuffer.append(",");
                 memberListBuffer.append(speciesName);
-
-                //             if (memberList == null) {
-                //                 memberList = speciesName;
-                //             }
-                //             else {
-                //                 memberList = memberList+","+speciesName;
-                //             }
             }
         }
-        String memberList = memberListBuffer.toString();
 
+        String memberList = memberListBuffer.toString();
         if (memberList == null) {
             error = "No members found (shouldn't occur!)";
         }
@@ -73,13 +68,9 @@ class GroupCache
     {
         error           = null;
         String hash_key = groupId+"_"+probe_length;
-
-        // System.out.println("hash_key='"+hash_key+"'");
-
-        String members = null;
+        String members  = null;
         if (groups.containsKey(hash_key)) {
             members = (String)groups.get(hash_key);
-            // System.out.println("cached: '"+members+"'");
         }
         else {
             members = retrieveMemberList(groupId, probe_length);
