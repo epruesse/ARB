@@ -33,6 +33,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
     vector<string> tmp_vector;
     vector<string> tmp_lines_vector;
     string t_str;
+    int seq_len = 0;
 
     GAGenomReferenceEmbl *tmp_reference;
 
@@ -83,10 +84,16 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                         del_str = "SQ";
                         GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
                         tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',true);
+                        int tmp_int_4 = 0;
                         for(int i = 1; i < (int)tmp_vector.size(); i = i + 2)
                         {
                             t_str = tmp_vector[i];
-                            sequence_header.push_back(GAGenomUtilities::stringToInteger(&t_str));
+                            tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
+                            if(i == 1)
+                            {
+                            	seq_len = tmp_int_4;
+                            }
+                            sequence_header.push_back(tmp_int_4);
                         }
                         sq = true;
                         break;
@@ -282,8 +289,11 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 }
                 break;
             case '/':
+            	if(seq_len == (int) sequence.size()) 
+            	{
+            		complete_file = true;
+            	}
                 flatfile.close();
-                complete_file = true;
                 break;
             case 'X':
                 if(de)
