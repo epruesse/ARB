@@ -27,7 +27,6 @@ extern GBDATA *gb_main;
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
-    //  aw_root->awar_string( AWAR_SPECIES_NAME, "" ,   gb_main);
     aw_root->awar_string( AWAR_SPECIES_DEST, "" ,   aw_def);
     aw_root->awar_string( AWAR_SPECIES_INFO, "" ,   aw_def);
     aw_root->awar_string( AWAR_SPECIES_KEY, "" ,    aw_def);
@@ -294,8 +293,19 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
     GB_pop_transaction(gb_main);
 }
 
-void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
+static int count_key_data_elements(GBDATA *gb_key_data) {
+    int nitems  = 0;
+    for (GBDATA *gb_cnt  = GB_find(gb_key_data,0,0,down_level);
+         gb_cnt;
+         gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next))
+    {
+        ++nitems;
+    }
 
+    return nitems;
+}
+
+static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     GB_begin_transaction(gb_main);
     char     *source  = aws->get_root()->awar(AWAR_FIELD_REORDER_SOURCE)->read_string();
     char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
@@ -306,7 +316,6 @@ void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     const ad_item_selector *selector    = cbs1->selector;
     GBDATA                 *gb_source   = awt_get_key(gb_main,source, selector->change_key_path);
     GBDATA                 *gb_dest     = awt_get_key(gb_main,dest, selector->change_key_path);
-    GBDATA                 *gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
 
     int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
     int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
@@ -314,29 +323,25 @@ void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     if (!gb_source) {
         aw_message("Please select an item you want to move (left box)");
     }
-    if (gb_source &&!gb_dest) {
+    else if (!gb_dest) {
         aw_message("Please select a destination where to place your item (right box)");
     }
-    if (gb_source && gb_dest && (gb_dest !=gb_source) ) {
+    else if (gb_dest !=gb_source) {
         nt_assert(left_index != right_index);
 
-        GBDATA **new_order;
-        int nitems = 0;
-        GBDATA *gb_cnt;
-        for (   gb_cnt  = GB_find(gb_key_data,0,0,down_level);
-                gb_cnt;
-                gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
-            nitems++;
-        }
-        new_order = new GBDATA *[nitems];
+        GBDATA  *gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        int      nitems      = count_key_data_elements(gb_key_data);
+        GBDATA **new_order   = new GBDATA *[nitems];
+
         nitems = 0;
-        for (   gb_cnt  = GB_find(gb_key_data,0,0,down_level);
-                gb_cnt;
-                gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next))
+
+        for (GBDATA *gb_key  = GB_find(gb_key_data,0,0,down_level);
+             gb_key;
+             gb_key = GB_find(gb_key,0,0,this_level|search_next))
         {
-            if (gb_cnt == gb_source) continue;
-            new_order[nitems++] = gb_cnt;
-            if (gb_cnt == gb_dest) {
+            if (gb_key == gb_source) continue;
+            new_order[nitems++] = gb_key;
+            if (gb_key == gb_dest) {
                 new_order[nitems++] = gb_source;
             }
         }
@@ -360,6 +365,62 @@ void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     }
 }
 
+static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
+    GB_begin_transaction(gb_main);
+    int                 dir  = (int)cl_dir;
+    const adawcbstruct *cbs2 = (const adawcbstruct*)cl_cbs2;
+
+    GB_ERROR warning = 0;
+
+    char                   *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
+    const ad_item_selector *selector   = cbs2->selector;
+    GBDATA                 *gb_field   = awt_get_key(gb_main, field_name, selector->change_key_path);
+
+    if (!gb_field) {
+        warning = "Please select an item to move (right box)";
+    }
+    else {
+        GBDATA  *gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        int      nitems      = count_key_data_elements(gb_key_data);
+        GBDATA **new_order   = new GBDATA *[nitems];
+
+        nitems         = 0;
+        int curr_index = -1;
+
+        for (GBDATA *gb_key = GB_find(gb_key_data, 0, 0, down_level);
+             gb_key;
+             gb_key = GB_find(gb_key, 0, 0, this_level|search_next))
+        {
+            if (gb_key == gb_field) curr_index = nitems;
+            new_order[nitems++] = gb_key;
+        }
+
+        nt_assert(curr_index != -1);
+        int new_index = curr_index+dir;
+
+        if (new_index<0 || new_index > nitems) {
+            warning = GBS_global_string("Illegal target index '%i'", new_index);
+        }
+        else {
+            if (new_index<curr_index) {
+                for (int i = curr_index; i>new_index; --i) new_order[i] = new_order[i-1];
+                new_order[new_index] = gb_field;
+            }
+            else if (new_index>curr_index) {
+                for (int i = curr_index; i<new_index; ++i) new_order[i] = new_order[i+1];
+                new_order[new_index] = gb_field;
+            }
+
+            warning = GB_resort_data_base(gb_main,new_order,nitems);
+        }
+
+        delete [] new_order;
+    }
+
+    GB_commit_transaction(gb_main);
+    if (warning) aw_message(warning);
+}
+
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
 {
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
@@ -380,12 +441,22 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     AW_CL cbs1 = awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
     AW_CL cbs2 = awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
-    aws->at("doit");
     aws->button_length(0);
-//     aws->callback(ad_list_reorder_cb, cl_item_selector);
+
+    aws->at("doit");
     aws->callback(ad_list_reorder_cb, cbs1, cbs2);
     aws->help_text("spaf_reorder.hlp");
-    aws->create_button("MOVE_TO_NEW_POSITION", "MOVE  SELECTED LEFT  ITEM\nAFTER SELECTED RIGHT ITEM","P");
+    aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT","L");
+
+    aws->at("doit2");
+    aws->callback(ad_list_reorder_cb2, cbs2, -1);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP","U");
+
+    aws->at("doit3");
+    aws->callback(ad_list_reorder_cb2, cbs2, 1);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN","U");
 
     return (AW_window *)aws;
 }
@@ -581,9 +652,6 @@ void ad_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("unhide_fields", "Show all hidden fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
     aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields","u","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
     aws->insert_menu_topic("del_unused_fields", "Remove unused fields","e","scandb.hlp",AD_F_ALL,(AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-//     aws->insert_menu_topic("unhide_fields",      "Unhide all fields",        "U","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-//     aws->insert_menu_topic("delete_unused_fields", "Delete unused fields",  "e","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-//     aws->insert_menu_topic("rebuild_fields",     "Rebuild fields",       "B","scandb.hlp",       AD_F_ALL,   (AW_CB)awt_selection_list_rebuild_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
 }
 
 #include <probe_design.hxx>
