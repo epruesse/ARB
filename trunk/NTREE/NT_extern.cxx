@@ -653,6 +653,9 @@ public:
     virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
         root->awar(get_self_awar())->add_callback(f, cl_mask);
     }
+    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // remove callbacks to awars
+        root->awar(get_self_awar())->remove_callback(f, cl_mask);
+    }
     virtual GBDATA *current(AW_root *root) const { // give the current item
         char           *species_name = root->awar(get_self_awar())->read_string();
         GBDATA         *gb_species   = 0;
@@ -1279,8 +1282,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->set_bottom_area_height( 0 );
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
-#if defined(DEBUG) && 0
-    NT_test_input_mask(awm->get_root());
+    //  -----------------------------------
+    //      Automatically start tests:
+    //  -----------------------------------
+#if defined(DEBUG)
+    if (strcmp(GB_getenvUSER(), "westram") == 0) {
+        NT_test_input_mask(awm->get_root());
+    }
 #endif // DEBUG
 
     GB_pop_transaction(gb_main);

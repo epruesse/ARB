@@ -541,11 +541,11 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     aws->highlight();
 
     if (callback) {
-        aw_assert(!create_popup);
+        awt_assert(!create_popup);
         aws->callback((AW_CB0)callback);
     }
     else  {
-        aw_assert(create_popup);
+        awt_assert(create_popup);
         aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_popup);
     }
 
