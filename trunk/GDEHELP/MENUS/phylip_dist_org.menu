@@ -3,7 +3,7 @@ itemmeta: I
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\
-                           $PROGRAM;\
+                           ${ARB_XCMD:-cmdtool} $PROGRAM;\
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1))&
 itemhelp:phylip_distance.help
@@ -18,9 +18,9 @@ argchoice:Treetool:treetool outtree
 arg:PROGRAM
 arglabel:Which method?
 argtype:choice_menu
-argchoice:Fitch:${ARB_XCMD:-cmdtool} fitch
-argchoice:Kitsch:${ARB_XCMD:-cmdtool} kitsch
-argchoice:Neighbor:${ARB_XCMD:-cmdtool} neighbor
+argchoice:Fitch:fitch
+argchoice:Kitsch:kitsch
+argchoice:Neighbor:neighbor
 
 arg:DPGM
 arglabel:Treat data as..
