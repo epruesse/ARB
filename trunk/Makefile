@@ -326,7 +326,7 @@ endif
 # ---------------------------------------- check gcc version
 
 GCC_VERSION_FOUND=$(shell $(GCC) --version | head -1 | sed 's/^[^0-9]*\([0-9.]\+\).*/\1/' )
-GCC_VERSION_ALLOWED=$(strip $(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring $(version),$(GCC_VERSION_FOUND))))
+GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_gcc_version.pl $(GCC_VERSION_ALLOWED)
