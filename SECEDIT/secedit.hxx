@@ -207,6 +207,7 @@ public:
     bool show_strSkeleton; // to display the skeleton
     bool hide_bases; // to toggle b/w show and hide bases
     bool hide_bonds; // to toggle b/w show and hide bonds
+    bool display_sai;
 
     double rootAngle; // to store root angle
 
@@ -286,6 +287,7 @@ public:
     void set_show_strSkeleton (bool show){ show_strSkeleton = show; }
     void set_hide_bases (bool hide)      { hide_bases = hide; }
     void set_hide_bonds (bool hide)      { hide_bonds = hide; }
+    void set_display_sai (bool show)     { display_sai = show; }
 
     void set_cursor(int cursor_) 						{ cursor = cursor_; }
     void set_show_constraints(int show_constraints_) 				{ show_constraints = show_constraints_; }
@@ -541,6 +543,7 @@ void SEC_show_helixNrs_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_show_strSkeleton_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_hide_bases_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_hide_bonds_toggled_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_display_sai_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_pair_def_changed_cb(AW_root *awr, AW_CL cl_ntw);
 
 // --------------------------------------------------------------------------------

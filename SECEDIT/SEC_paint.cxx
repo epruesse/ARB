@@ -16,8 +16,10 @@
 #include "sec_graphic.hxx"
 #include "../EDIT4/ed4_class.hxx"
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
+#include "../EDIT4/ed4_visualizeSAI.hxx" 
 
 #define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0) // to link to the colors defined in primary editor ed4_defs.hxx
+#define SAICOLORS SEC_GC_CBACK_0
 
 int SEC_font_info::max_width;
 int SEC_font_info::max_height;
@@ -65,9 +67,15 @@ inline int cursor_is_between(int abs_pos, int cursor, int last_abs_pos) {
 
 /*------------------------- Validates the search colors selected in secondary structure window---------------------------------*/
 
-static inline int validSearchColor(int posColor){
-    if(posColor>=SEC_GC_SBACK_0 && posColor<SEC_GC_MAX)  return 1;
-    else                                                 return 0;
+static inline int validSearchColor(int posColor, bool showSai){
+    if (showSai) {
+        if (posColor>=SEC_GC_CBACK_0 && posColor<SEC_GC_MAX)  return 1;
+        else                                                  return 0;
+    }
+    else {
+        if (posColor>=SEC_GC_SBACK_0 && posColor<SEC_GC_MAX)  return 1;
+        else                                                  return 0;
+    }
 }
 
 /*------------------ Gets the search pattern results for the probes selected in primary editor ---------------------------------*/
@@ -77,7 +85,13 @@ const char *SEC_root::getSearchResults(int startPos,int endPos){                
     //seqTerminal is a pointer to ED4_sequence_terminal declared in SEC_root
 
     if (seqTerminal) {                                                                        //if seqTerminal is initialised and selected
-        const char *searchColResults = seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);  // buildColorString builds the background color of each base
+        const char *searchColResults = 0; 
+        
+        if(display_sai && ED4_ROOT->visualizeSAI) 
+            searchColResults = getSaiColorString(startPos, endPos);
+        else
+            searchColResults = seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);  // buildColorString builds the background color of each base
+
         return searchColResults;                                                                       // returning the color strings
     }
     else return 0;                                                                                   //if not return 0
@@ -662,18 +676,23 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
 
     double lineCenter = radius*0.6;
 
-    if (searchCols && searchCols[absPos]){
-        backColor = searchCols[absPos] - COLORLINK;
+    if (searchCols && searchCols[absPos] >= 0){
+        if (display_sai) backColor = searchCols[absPos] + SAICOLORS;
+        else             backColor = searchCols[absPos] - COLORLINK;
 
-        if(!validSearchColor(backColor)) return;
+        if(!validSearchColor(backColor,display_sai)) return;
+
         device->set_line_attributes(backColor,lineWidth+3, AW_SOLID);
+
         if(next_x!=next_y){
             if(otherStrand){
-                lastBackColor = searchCols[absPos-1] - COLORLINK;
+                if (display_sai) lastBackColor = searchCols[absPos-1] + SAICOLORS;
+                else             lastBackColor = searchCols[absPos-1] - COLORLINK;
                 if(backColor==lastBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
             }
             else {
-                nextBackColor = searchCols[absPos+1] - COLORLINK;
+                if (display_sai) nextBackColor = searchCols[absPos+1] + SAICOLORS;
+                else             nextBackColor = searchCols[absPos+1] - COLORLINK;
                 if(backColor==nextBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
             }
         }
@@ -681,7 +700,7 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
     }
 }
 
-/*-------------------------------Painting the seacrch pattern strings with probe information ----------------------------------*/
+/*-------------------------------Painting the search pattern strings with probe information ----------------------------------*/
 
 void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_pos xPos,  AW_pos yPos){
     int searchColor = 0;
@@ -1204,8 +1223,9 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     start_x = previous_strand_pointer->get_attachp1_x();
     start_y = previous_strand_pointer->get_attachp1_y();
 
-    if(bgColor && bgColor[seqStart] && bgColor[seqStart-1]){
-        lastSearchColor = bgColor[seqStart-1] - COLORLINK;
+    if(bgColor && bgColor[seqStart] >= 0 && bgColor[seqStart-1] >= 0){
+        if(root->display_sai) lastSearchColor = bgColor[seqStart-1] + SAICOLORS;
+        else                  lastSearchColor = bgColor[seqStart-1] - COLORLINK;
     }
 
     char helixStartBase[2], helixEndBase[2];
@@ -1232,27 +1252,12 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
         }
 
         if (abs_pos<root->sequence_length && i == 0) {
-            // @@@ hi yadhu - I've corrected this code here (rewrote the loop, cause tempAbsPos was getting negativ in your's)
-            // (happens if you do 'File/New Structure')
-
             for (tempAbsPos = abs_pos; tempAbsPos >= 0; tempAbsPos--) {
                 if (root->sequence[tempAbsPos] != '-' && root->sequence[tempAbsPos] != '.') {
                     helixEndBase[0] = root->sequence[tempAbsPos]; //getting the last base of helix region
                     break;
                 }
             }
-
-            // Note : if sequence contains NO bases tempAbsPos is -1 now (see below)
-
-//             tempAbsPos = abs_pos;
-//             do {
-//                 tempAbsPos--;
-//                 sec_assert(tempAbsPos >= 0);
-//                 if (root->sequence[tempAbsPos] != '-' && root->sequence[tempAbsPos] != '.') {
-//                     helixEndBase[0] = root->sequence[tempAbsPos];  //getting the last base of helix region
-//                 }
-//             }
-//             while(root->sequence[tempAbsPos] == '-'|| root->sequence[tempAbsPos] == '.');
         }
 
         device->set_line_attributes(SEC_SKELE_LOOP,root->get_skeleton_thickness(), AW_SOLID);  //setting the line attributes

@@ -84,6 +84,16 @@ void SEC_show_strSkeleton_toggled_cb(AW_root *awr, AW_CL cl_ntw)
     ntw->refresh();
 }
 
+void SEC_display_sai_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool displaySai = awr->awar(AWAR_SECEDIT_DISPLAY_SAI)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_display_sai(displaySai);
+    ntw->refresh();
+}
+
 void SEC_hide_bonds_toggled_cb(AW_root *awr, AW_CL cl_ntw)
 {
     SEC_root *root = SEC_GRAPHIC->sec_root;
@@ -888,6 +898,10 @@ AW_window *SEC_create_display_window(AW_root *awr) {
     aws->label("Hide Bonds                 :");
     aws->create_toggle(AWAR_SECEDIT_HIDE_BONDS);
 
+    aws->at("sai");
+    aws->label("Visualise SAI              :");
+    aws->create_toggle(AWAR_SECEDIT_DISPLAY_SAI);
+
     aws->at("skelThickness");
     aws->label("Skeleton Thickness         :");
     aws->create_input_field( AWAR_SECEDIT_SKELETON_THICKNESS);
@@ -948,8 +962,8 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->create_menu( 0, "File", "F", "secedit_file.hlp",  AWM_ALL );
 
     awm->insert_menu_topic("secedit_new", "New Structure", "N", 0, AWM_ALL, (AW_CB)SEC_new_structure, (AW_CL)ntw, 0);
-    awm->insert_menu_topic("secedit_import", "Load Structure ", "I", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
-    awm->insert_menu_topic("secedit_export", "Save Structure ", "E", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
+    awm->insert_menu_topic("secedit_import", "Load Structure ", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
+    awm->insert_menu_topic("secedit_export", "Save Structure ", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
     awm->insert_separator();
     awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
     awm->insert_menu_topic("print_secedit", "Print Structure ", "P","secedit2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
@@ -966,7 +980,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout Settings", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Properties (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_menu_topic("save_props",	"Save Properties (~/.arb_prop/secedit)",	"P","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);

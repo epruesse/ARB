@@ -1,3 +1,15 @@
+/*=======================================================================================*/
+/*                                                                                       */
+/*    File       : ED4_visualizeSAI.cxx                                                  */
+/*    Purpose    : To Visualise the Sequence Associated Information (SAI) in the Editor  */
+/*    Time-stamp : Tue Apr 1 2003                                                        */
+/*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
+/*    web site   : http://www.arb-home.de/                                               */
+/*                                                                                       */
+/*        Copyright Department of Microbiology (Technical University Munich)             */
+/*                                                                                       */
+/*=======================================================================================*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,7 +28,8 @@
 extern GBDATA *gb_main;
 static AW_selection_list *clrTransTableLst;
 AW_window_simple *aws = new AW_window_simple;
-char *saiColors;
+static int seqBufferSize = 100;
+static char *saiColors   = (char*)GB_calloc(seqBufferSize, sizeof(char));
 
 /* --------------------------------------------------------- */
 #define BUFSIZE 100
@@ -239,7 +252,7 @@ AW_selection_list *buildClrTransTabNamesList(AW_window *aws, AW_selection_list *
     return clrTransTabNamesList;
 }
 
-int checkSai(const char *species_name){
+int checkSai(const char *species_name) {
     int matchesSai = 0;
     
     for( GBDATA *gb_extended = GBT_first_SAI(gb_main); 
@@ -254,7 +267,18 @@ int checkSai(const char *species_name){
     return matchesSai;
 }
 
-char *getSaiColorString(int start, int end){
+char *getSaiColorString(int start, int end) {
+
+    e4_assert(start<=end);
+
+    int seqSize = end-start+1;
+
+    if(seqSize>seqBufferSize){
+        free(saiColors);
+        seqBufferSize = seqSize;
+        saiColors =  (char*)GB_calloc(seqBufferSize, sizeof(char));    
+    }
+    else memset(saiColors,0,sizeof(char)*seqSize);
 
     AW_root *awr      = aws->get_root();
     char *saiSelected = awr->awar(AWAR_SAI_SELECT)->read_string();
@@ -267,25 +291,21 @@ char *getSaiColorString(int start, int end){
     if (gb_extended) {
         GBDATA *saiSequence = GBT_read_sequence(gb_extended,alignment_name);
         if (saiSequence) {
-            int seqLen    = GB_read_string_count(saiSequence);
             char *saiData = GB_read_string(saiSequence);
             
             char buf[100];  sprintf(buf, AWAR_SAI_CLR_TAB "%s", saiSelected);                  
             awr->awar_string(buf, "", AW_ROOT_DEFAULT);
             char *clrTransTabName = awr->awar(buf)->read_string();
 
-            if(strcmp(clrTransTabName,"") != 0) {
+            if (strcmp(clrTransTabName,"") != 0) {
                 char *clrTransTabString = awr->awar(getClrDefAwar(clrTransTabName))->read_string(); 
                 char *tok; int clrRange = 0;
                 
                 if (strcmp(clrTransTabString,"") != 0) {
-                    free(saiColors);
-                    saiColors = (char *)malloc(sizeof(char) * (seqLen+1));
-                    
                     for (tok = strtok(clrTransTabString,";"); tok; tok = strtok(0,";"), clrRange++) {
                         int j = 0; 
                         while(tok[j]) {
-                            for (int i = 0; i<seqLen; i++) {
+                            for (int i = start; i<=end; i++) {
                                 if(tok[j]==saiData[i])
                                     saiColors[i] = clrRange;
                             }
@@ -293,7 +313,7 @@ char *getSaiColorString(int start, int end){
                         }
                     }
                 }
-                free(tok);free(clrTransTabString);
+                free(clrTransTabString);
             }
             free(clrTransTabName); free(saiData);
         }

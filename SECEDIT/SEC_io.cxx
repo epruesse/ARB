@@ -340,6 +340,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     set_show_strSkeleton(true);
     set_hide_bases(false);
     set_hide_bonds(false);
+    set_display_sai(false);
     helix_filter = (-1);
     segment_filter = (-1);
     loop_filter = (-1);

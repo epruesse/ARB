@@ -1,3 +1,15 @@
+/*=======================================================================================*/
+/*                                                                                       */
+/*    File       : ed4_visualizeSAI.hxx                                                  */
+/*    Purpose    : To Visualise the Sequence Associated Information (SAI) in the Editor  */
+/*    Time-stamp : Tue Apr 1 2003                                                        */
+/*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
+/*    web site   : http://www.arb-home.de/                                               */
+/*                                                                                       */
+/*        Copyright Department of Microbiology (Technical University Munich)             */
+/*                                                                                       */
+/*=======================================================================================*/
+
 #define AWAR_SAI_CLR_TAB             "saicolors/"
 #define AWAR_SAI_SELECT              AWAR_SAI_CLR_TAB "select"
 #define AWAR_SAI_CLR_DEF             AWAR_SAI_CLR_TAB "clr_trans_tab/"
@@ -24,6 +36,6 @@
 #define COPY_CLR_TR_TABLE    0
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root);
-char *getSaiColorString(int start, int end);
-int checkSai(const char *species_name);
+char      *getSaiColorString(int start, int end);   //used in ED4_text_terminal.cxx & SEC_paint.cxx to paint the SAI in the background
+int        checkSai(const char *species_name);      //used in ED4_text_terminal.cxx  to validate SAI with respect to species 
 
