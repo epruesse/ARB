@@ -9,26 +9,23 @@ UP	dist.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		IMPORTANT BOOTSTRAP NOTES
+TITLE		IMPORTANT bootstrap notes
 
 OCCURRENCE	ARB_DIST
 
-DESCRIPTION	Read Notes also !!!!!
-		Calculates a great number of trees based on a partial set of
-		columns and shows the consensus tree. The branches in the
-		final tree are marked by a percentage.
-		The higher the percentage (best > 99%) the more likely that
+DESCRIPTION     Calculates a number of trees (specified at 'No. of trees')
+                based on a partial set of columns and shows the consensus tree.
+                The branches in that tree are marked by a percentage value.
+
+		The higher that percentage is (best > 99%), the more likely that
 		the branch is correct.
 
-NOTES		****************** IMPORTANT NOTES *********************
+                Percentages above 99% are not displayed. 
 
-		This program will NEVER end unless you stop it by pressing
-		kill.If you get a question whether to wait or kill after
-		pressing the kill button, press wait !!!!
-		There is no bootstrap counter limit, just press kill
-		if you think enough samples have been calculated.
-
-		****************** MORE IMPORTANT NOTES *********************
+NOTES           If you specify '0' at 'No. of trees', the calculation won't stop.
+                You may stop it by pressing 'KILL'.
+                When you're then asked whether to wait or kill (after pressing the kill button),
+                press 'WAIT' - or you'll kill the complete calculation.
 
 		The output tree is a consensus partial tree. Species and
 		subgroups which wander around in the input trees
