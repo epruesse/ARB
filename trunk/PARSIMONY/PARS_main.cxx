@@ -542,50 +542,83 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
     if (!error)	PARS_export_tree();
 }
 
+// -----------------------------
+//      add marked / seleted
+// -----------------------------
 
-static void NT_add(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
+// normal versions :
+
+static void NT_add(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_FALSE,0);
 }
 
-static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
+static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_TRUE,0);
 }
 
-static void NT_radd(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
-    NT_remove_leafs(0,ntw,AWT_REMOVE_BUT_DONT_FREE | AWT_REMOVE_MARKED);
-    nt_add(aww,ntw,what,AP_FALSE,0);
-}
+// test versions :
 
-static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
-    NT_remove_leafs(0,ntw,AWT_REMOVE_BUT_DONT_FREE | AWT_REMOVE_MARKED);
-    nt_add(aww,ntw,what,AP_TRUE,0);
-}
-
-static void NT_add_test(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
+static void NT_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_FALSE,1);
 }
 
-static void NT_quick_add_test(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
+static void NT_quick_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
     nt_add(aww,ntw,what,AP_TRUE,1);
 }
 
-static void NT_radd_test(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
+// -----------------------------------------
+//      remove and add marked / selected
+// -----------------------------------------
+
+static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, int test) {
+    // what == 0 marked  ==1 selected
+
+    AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
+    int      oldparsval     = awar_best_pars->read_int();
+
     NT_remove_leafs(0,ntw,AWT_REMOVE_BUT_DONT_FREE | AWT_REMOVE_MARKED);
-    nt_add(aww,ntw,what,AP_FALSE,1);
+
+    // restore old parsimony value (otherwise the state where species were removed would count) :
+    awar_best_pars->write_int(oldparsval);
+
+    nt_add(aww,ntw,what,quick,test);
 }
 
-static void NT_rquick_add_test(AW_window * aww, AWT_canvas *ntw, int what)
-{	// what == 0 marked  ==1 selected
-    NT_remove_leafs(0,ntw,AWT_REMOVE_BUT_DONT_FREE | AWT_REMOVE_MARKED);
-    nt_add(aww,ntw,what,AP_TRUE,1);
+// normal versions :
+
+static void NT_radd(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
+    NT_radd_internal(aww, ntw, what, AP_FALSE, 0);
 }
+
+static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
+    NT_radd_internal(aww, ntw, what, AP_TRUE, 0);
+}
+
+// static void NT_radd_test_internal(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick) {
+//     // what == 0 marked  ==1 selected
+//     NT_remove_leafs(0,ntw,AWT_REMOVE_BUT_DONT_FREE | AWT_REMOVE_MARKED);
+//     nt_add(aww,ntw,what,quick,1);
+// }
+
+// test versions :
+
+static void NT_radd_test(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
+    NT_radd_internal(aww, ntw, what, AP_FALSE, 1);
+}
+
+static void NT_rquick_add_test(AW_window * aww, AWT_canvas *ntw, int what) {
+    // what == 0 marked  ==1 selected
+    NT_radd_internal(aww, ntw, what, AP_TRUE, 1);
+}
+
+// --------------------------------------------------------------------------------
 
 static void NT_branch_lengths(AW_window * aww,AWT_canvas *ntw)
 {
