@@ -13,8 +13,8 @@ extern "C" { char *gbs_malloc_copy(char *,long); }
 /* change a sequence with normal bases the PT_? format and delete all other signs */
 int compress_data(char *probestring)
 {
-    char	c;
-    char	*src,
+    char    c;
+    char    *src,
         *dest;
     dest = src = probestring;
 
@@ -44,8 +44,8 @@ int compress_data(char *probestring)
 /* get a string with readable bases from a string with PT_? */
 int PT_base_2_string(char *id_string, long len)
 {
-    char	c;
-    char	*src,
+    char    c;
+    char    *src,
         *dest;
     if (!len) len = strlen(id_string);
     dest = src = id_string;
@@ -58,7 +58,7 @@ int PT_base_2_string(char *id_string, long len)
             case PT_G: *(dest++) = 'G';break;
             case PT_T: *(dest++) = 'U';break;
             case PT_N: *(dest++) = 'N';break;
-            case 0:	*(dest++) = '0'; break;
+            case 0: *(dest++) = '0'; break;
             default: *(dest++) = c;break;
         }
 
@@ -71,6 +71,8 @@ void probe_read_data_base(char *name)
 {
     GBDATA *gb_main;
     GBDATA *gb_species_data;
+
+    GB_set_verbose();
     gb_main = GB_open(name,"r");
     if (!gb_main) {
         printf("Error reading file %s\n",name);
@@ -130,7 +132,7 @@ char *probe_read_string_append_point(GBDATA *gb_data,int *psize)
 {
     char *data;
     char *buffer;
-    int	len;
+    int len;
     len = (int)GB_read_string_count(gb_data);
     data = GB_read_string(gb_data);
     if (data[len-1] != '.') {
@@ -147,7 +149,7 @@ char           *
 probe_read_alignment(int j, int *psize)
 {
     static char    *buffer = 0;
-    GBDATA	*gb_ali,*gb_data;
+    GBDATA  *gb_ali,*gb_data;
     buffer = 0;
     gb_ali = GB_find(psg.data[j].gbd, psg.alignment_name, 0, down_level);
     if (!gb_ali)
@@ -163,70 +165,97 @@ probe_read_alignment(int j, int *psize)
 void probe_read_alignments()
     /* liest die Alignments in psg.data */
 {
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    GBDATA *gb_ali;
-    GBDATA *gb_data;
-    char	*data;
-    int	count;
-    static int	size,hsize;
+    GBDATA     *gb_species;
+    GBDATA     *gb_name;
+    GBDATA     *gb_ali;
+    GBDATA     *gb_data;
+    char       *data;
+    int         count;
+    static int  size,hsize;
+
     count = 0;
     GB_begin_transaction(psg.gb_main);
+
     /* count all data */
     char *def_ref = GBT_get_default_ref(psg.gb_main);
-    gb_species = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
+    gb_species    = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
     delete def_ref;
-    psg.ecoli = 0;
+    psg.ecoli     = 0;
     if (gb_species) {
         gb_data = GBT_read_sequence(gb_species,psg.alignment_name);
         if (gb_data) {
             psg.ecoli = GB_read_string(gb_data);
         }
     }
-    for (	gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
-            gb_species;
-            gb_species = GBT_next_species(gb_species) ){
+    for (gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+         gb_species;
+         gb_species = GBT_next_species(gb_species) )
+    {
         count ++;
     }
-    psg.data = (struct probe_input_data *)
-        calloc(sizeof(struct probe_input_data),count);
+    psg.data       = (struct probe_input_data *) calloc(sizeof(struct probe_input_data),count);
     psg.data_count = 0;
+    printf("Database contains %i species.\nPreparing sequence data:\n", count);
+
+    int data_missing  = 0;
+    int species_count = count;
+
     count = 0;
-    for (	gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
-            gb_species;
-            gb_species = GBT_next_species(gb_species) ){
+
+    for (gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+         gb_species;
+         gb_species = GBT_next_species(gb_species) )
+    {
         gb_name = GB_find(gb_species,"name",0,down_level);
         if (!gb_name) continue;
         psg.data[count].name = GB_read_string(gb_name);
         gb_name = GB_find(gb_species,"full_name",0,down_level);
         if (gb_name) {
             psg.data[count].fullname = GB_read_string(gb_name);
-        }else{
+        }
+        else {
             static char empty[] = "";
             psg.data[count].fullname = empty;
         }
         psg.data[count].is_group = 1;
         psg.data[count].gbd = gb_species;
         /* get alignments */
-        gb_ali = GB_find(gb_species,psg.alignment_name,0,down_level);
+        gb_ali = GB_find(gb_species, psg.alignment_name, 0, down_level);
         if (!gb_ali) continue;
         /* this alignment doesnt exist */
         gb_data = GB_find(gb_ali,"data",0,down_level);
         if (!gb_data) {
-            fprintf(stderr,"Bact. %s has no ali_xxx/data\n",
-                    psg.data[count].name);
+            fprintf(stderr,"Species '%s' has no data in '%s'\n", psg.data[count].name, psg.alignment_name);
+            data_missing++;
             continue;
         }
         psg.data[count].checksum = GBS_checksum(GB_read_char_pntr(gb_data),1,".-");
-        data = probe_read_string_append_point(gb_data,&hsize);
-        size = probe_compress_sequence(data);
-        psg.data[count].data = (char *)gbs_malloc_copy(data,size);
+        data                     = probe_read_string_append_point(gb_data,&hsize);
+        size                     = probe_compress_sequence(data);
+        psg.data[count].data     = (char *)gbs_malloc_copy(data,size);
         psg.data[count].size = size;
         free(data);
         count ++;
+#if defined(DEBUG)
+        if (count%10 == 0) {
+            if (count%500) {
+                printf(".");
+                fflush(stdout);
+            }
+            else {
+                printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
+            }
+        }
+#endif // DEBUG
     }
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
+    if (data_missing) {
+        printf("%i species were ignored because of missing data.\n", data_missing);
+    }
+    else {
+        printf("All species contain data in alignment.\n");
+    }
 }
 
 void PT_build_species_hash(void){
@@ -235,9 +264,9 @@ void PT_build_species_hash(void){
     for (i=0;i<psg.data_count;i++){
         GBS_write_hash(psg.namehash, psg.data[i].name,i+1);
     }
-    unsigned int	max_size;
+    unsigned int    max_size;
     max_size = 0;
-    for (i = 0; i < psg.data_count; i++){	/* get max sequence len */
+    for (i = 0; i < psg.data_count; i++){   /* get max sequence len */
         max_size = max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }
