@@ -27,8 +27,21 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 	if (gb_merge){
 		GB_close(gb_merge);
 	}
+
+//     int gb_main_is_genom_db = 0;
+//     {
+//         GB_transaction  dummy1(gb_main);
+//         GBDATA         *gb_main_genom_db          = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+//         if (gb_main_genom_db) gb_main_is_genom_db = GB_read_int(gb_main_genom_db);
+//     }
+
+    AW_root *awr = aww->get_root();
+    awr->awar_int(AWAR_READ_GENOM_DB, 0); // only default
+//     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? 0 : 2);
+
 	gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
 
+    // change awar value (import window just opened!)
     int gb_main_is_genom_db = 0;
     {
         GB_transaction dummy1(gb_main);
@@ -41,6 +54,6 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
         GB_write_int(gb_merge_genom_db, gb_main_is_genom_db);
     }
 
-    aww->get_root()->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db);
+    awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? 0 : 2);
 }
 

@@ -286,6 +286,7 @@ int main(int argc, char **argv)
 				case 0:	break;
 				case 2: return 0;
 				case 1:
+                    aw_root->awar_int(AWAR_READ_GENOM_DB, 2);
 					gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
 					aw_root->main_loop();
 				default:	break;
