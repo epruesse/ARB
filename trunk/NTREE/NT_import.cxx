@@ -5,9 +5,11 @@
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <awti_import.hxx>
-
+#include <awt_canvas.hxx>
 #include <mg_merge.hxx>
+
 #include "nt_import.hxx"
+#include "nt_internal.h"
 #include "ad_spec.hxx"
 #include "GEN.hxx"
 
@@ -17,14 +19,13 @@
 #define nt_assert(bed) arb_assert(bed)
 
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
-    gb_dest = gb_main;
-    AW_window *aww = ad_create_query_window(awr);
+    gb_dest          = gb_main;
+    AW_window *aww   = ad_create_query_window(awr);
     ad_unquery_all();
     GB_ERROR   error = MG_simple_merge(awr);
+    if (!error) error = NT_format_all_alignments(gb_main);
     ad_query_update_list();
-    if (!error){
-        aww->show();
-    }
+    if (!error) aww->show();
 }
 
 
