@@ -1,18 +1,22 @@
 #!/bin/bash -x
 
-if [ -z "$8" ]; then
-    echo "Usage: arb_proml bootstrap aachangemodel viewreport analysis randomize rearrange rate_variation interactive"
-else
-    BOOTSTRAP=$1
-    MODEL=$2
-    REPORT=$3
-    ANALYSIS=$4
-    RANDOMIZE=$5
-    REARRANGE=$6
-    RATE_VARIATION=$7
-    INTERACTIVE=$8
+BOOTSTRAP=$1 ; shift
+MODEL=$1 ; shift
+REPORT=$1 ; shift
+ANALYSIS=$1 ; shift
+RANDOMIZE=$1 ; shift
+REARRANGE=$1 ; shift
+RATE_VARIATION=$1 ; shift
+VARIATION_COEFF=$1 ; shift
+HMM_RATES=$1 ; shift
+INV_FRACTION=$1 ; shift
+INTERACTIVE=$1 ; shift
 
+if [ -z "$INTERACTIVE" ]; then
+    echo "Usage: arb_proml bootstrap aachangemodel viewreport analysis randomize rearrange rate_variation variation_coeff hmm_rates inv_fraction interactive"
+else
     FLAGS=""
+    ADD_PARA=""
 
     if [ "$MODEL" = "PAM" ]; then
         FLAGS="$FLAGS p"
@@ -30,14 +34,20 @@ else
 
     case $RATE_VARIATION in
         0) ;;
-        1) FLAGS="$FLAGS r" ;;
-        2) FLAGS="$FLAGS r r" ;;
-        *)  echo "Illegal value for 'rate_variation'"; exit 1 ;;
+        1) FLAGS="$FLAGS r"
+           ADD_PARA="$ADD_PARA $VARIATION_COEFF $HMM_RATES"
+           ;;
+        2) FLAGS="$FLAGS r r"
+           ADD_PARA="$ADD_PARA $VARIATION_COEFF $HMM_RATES $INV_FRACTION"
+           ;;
+        *) echo "Illegal value for 'rate_variation'"
+           exit 1
+           ;;
     esac
 
     if [ "$BOOTSTRAP" = "0" ]; then
         if [ "$INTERACTIVE" = "0" ]; then
-            arb_echo $FLAGS y | proml
+            arb_echo $FLAGS y $ADD_PARA | proml
         else
             (arb_echo $FLAGS ; cat - ) | ( proml ; echo "Press RETURN to continue.." )
         fi
