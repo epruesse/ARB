@@ -3,7 +3,7 @@
 #include <string.h>
 #include <memory.h>
 // #include <malloc.h>
-#include <assert.h>
+// #include <assert.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -116,7 +116,7 @@ void ED4_manager::changed_by_database(void) {
         printf("ED4_manager::changed_by_database: I have no parent!\n");
 #endif // DEBUG
     }
-    // ED4_ROOT->main_manager->Show();
+    ED4_ROOT->main_manager->Show();
 }
 
 void ED4_terminal::changed_by_database(void)
@@ -214,7 +214,10 @@ void ED4_sequence_terminal::deleted_from_database()
 #endif // DEBUG
 
     ED4_terminal::deleted_from_database();
-    dynamic_prop = ED4_properties(dynamic_prop&~ED4_P_CONSENSUS_RELEVANT);
+
+    bool was_consensus_relevant = dynamic_prop & ED4_P_CONSENSUS_RELEVANT;
+    
+    dynamic_prop = ED4_properties(dynamic_prop&~(ED4_P_CONSENSUS_RELEVANT|ED4_P_ALIGNMENT_DATA));
 
     // @@@ hide all cursors pointing to this terminal!
 
@@ -223,7 +226,7 @@ void ED4_sequence_terminal::deleted_from_database()
 
     ED4_multi_species_manager *multi_species_man = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-    if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
+    if (was_consensus_relevant) { 
         multi_species_man->check_bases(data, data_len, 0);
         multi_species_man->rebuild_consensi(get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
     }
@@ -353,50 +356,66 @@ void ED4_species_pointer::set_species_pointer(GBDATA *gbd, int *clientdata)
 //* ED4_base Methods		beginning *
 //*****************************************
 
-bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction) 		// indicates whether x, y are in the visible
-{										// scrolling area; x, y are calculated by calc_world_coords !!!
+bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction)
+  // indicates whether x, y are in the visible scrolling area
+  // x, y are calculated by calc_world_coords
+{
+    bool        visible = true;
+    ED4_coords& coords  = ED4_ROOT->temp_ed4w->coords;
+
     switch (direction)
     {
-        case ED4_D_HORIZONTAL:
-            if ((long(x)<ED4_ROOT->temp_ed4w->coords.window_left_clip_point) ||
-                (long(x)>ED4_ROOT->temp_ed4w->coords.window_right_clip_point))
-                return 0;
-            else
-                return 1;
-
+        case ED4_D_HORIZONTAL: 
+            if ((long(x)<coords.window_left_clip_point) ||
+                (long(x)>coords.window_right_clip_point)) {
+                visible = false;
+            }
             break;
-
-        case ED4_D_VERTICAL:
-            if ((long(y)<ED4_ROOT->temp_ed4w->coords.window_upper_clip_point) ||
-                (long(y)>ED4_ROOT->temp_ed4w->coords.window_lower_clip_point))
-                return 0;
-            else
-                return 1;
-
+        case ED4_D_VERTICAL: 
+            if ((long(y)<coords.window_upper_clip_point) ||
+                (long(y)>coords.window_lower_clip_point)) {
+                visible = false;
+            }
             break;
-
-        case ED4_D_VERTICAL_ALL:								// special case for scrolling (whole object visible)
-            if (((long) y < ED4_ROOT->temp_ed4w->coords.window_upper_clip_point) ||
-                ((long) y + extension.size[HEIGHT] > ED4_ROOT->temp_ed4w->coords.window_lower_clip_point))
-                return 0;
-            else
-                return 1;
-
+        case ED4_D_VERTICAL_ALL: // special case for scrolling (whole object visible)
+            if ((long(y) < coords.window_upper_clip_point) ||
+                (long(y) + extension.size[HEIGHT] > coords.window_lower_clip_point)) {
+                visible = false;
+            }
             break;
         case ED4_D_ALL_DIRECTION:
-            if (((long)x< ED4_ROOT->temp_ed4w->coords.window_left_clip_point) ||
-                ((long) x  > ED4_ROOT->temp_ed4w->coords.window_right_clip_point) ||
-                ((long) y < ED4_ROOT->temp_ed4w->coords.window_upper_clip_point) ||
-                ((long) y + extension.size[HEIGHT] > ED4_ROOT->temp_ed4w->coords.window_lower_clip_point))
-                return 0;
-            else
-                return 1;
-
+            if ((long(x) < coords.window_left_clip_point)  ||
+                (long(x) > coords.window_right_clip_point) ||
+                (long(y) < coords.window_upper_clip_point) ||
+                (long(y) > coords.window_lower_clip_point)) {
+                visible = false;
+            }
+            break;
+        default:
+            visible = false;
+            e4_assert(0);
             break;
     }
 
-    assert(0);
-    return 0;
+    return visible;
+}
+
+bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction)
+// optimized case of function above (to avoid the need to call it 4 times)
+{
+    e4_assert(direction == ED4_D_ALL_DIRECTION);
+    e4_assert(x1 <= x2);
+    e4_assert(y1 <= y2);
+
+    bool        visible = true;
+    ED4_coords& coords  = ED4_ROOT->temp_ed4w->coords;
+    if ((long(x2)<coords.window_left_clip_point) ||
+        (long(x1)>coords.window_right_clip_point) ||
+        (long(y2)<coords.window_upper_clip_point) ||
+        (long(y1)>coords.window_lower_clip_point)) {
+        visible = true;
+    }
+    return visible;
 }
 
 
@@ -689,8 +708,8 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, int (*condition)(ED4_bas
 
 int ED4_base::calc_group_depth()
 {
-    ED4_base	*temp_parent;
-    int 		cntr = 0;
+    ED4_base *temp_parent;
+    int       cntr = 0;
 
     temp_parent = parent;
     while (temp_parent->parent && !(temp_parent->is_area_manager())) {
@@ -700,16 +719,16 @@ int ED4_base::calc_group_depth()
         temp_parent = temp_parent->parent;
     }
 
-    return cntr;									// don't count our own group
+    return cntr; // don't count our own group
 }
 
-ED4_returncode ED4_base::remove_callbacks()						//removes callbacks
+ED4_returncode ED4_base::remove_callbacks() //removes callbacks
 {
     return ED4_R_IMPOSSIBLE;
 }
 
 
-ED4_base *ED4_base::search_spec_child_rek( ED4_level level )					//recursive search for level
+ED4_base *ED4_base::search_spec_child_rek( ED4_level level ) //recursive search for level
 {
     return spec->level&level ? this : (ED4_base*)NULL;
 }
@@ -982,16 +1001,25 @@ ED4_terminal *ED4_base::get_consensus_relevant_terminal()
         return NULL;
     }
 
-    ED4_manager *manager = this->to_manager();
+    ED4_manager  *manager           = this->to_manager();
+    ED4_terminal *relevant_terminal = 0;
+    int           members           = manager->children->members();
 
-    for (i=0; i<manager->children->members(); i++){
-        ED4_base *member = manager->children->member(i);
-        ED4_terminal *result = member->get_consensus_relevant_terminal();
-        if (result){
-            return result;
+    for (i=0; !relevant_terminal && i<members; ++i) {
+        ED4_base     *member = manager->children->member(i);
+        relevant_terminal    = member->get_consensus_relevant_terminal();
+    }
+
+#if defined(DEBUG)
+    if (relevant_terminal) {
+        for (; i<members; ++i) {
+            ED4_base *member = manager->children->member(i);        
+            e4_assert(!member->get_consensus_relevant_terminal()); // there shall be only 1 consensus relevant terminal, since much code assumes that
         }
     }
-    return NULL;
+#endif // DEBUG
+
+    return relevant_terminal;
 }
 
 int ED4_multi_species_manager::count_visible_children() // is called by a multi_species_manager
@@ -1371,14 +1399,14 @@ void ED4_base::check_all()
 
 }
 
-ED4_returncode ED4_base::adjust_clipping_rectangle( void )
+int ED4_base::adjust_clipping_rectangle( void )
+// return 0 if clipping rectangle disappeared (nothing left to draw)
 {
     AW_pos x, y;
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
-    ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
-    return (ED4_R_OK);
+    return ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
 
@@ -1543,12 +1571,13 @@ ED4_returncode ED4_base::clear_background(int color)
         ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
         ED4_ROOT->temp_device->push_clip_scale();
-        adjust_clipping_rectangle();
-        if (!color) {
-            ED4_ROOT->temp_device->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT] );
-        }
-        else {
-            ED4_ROOT->temp_device->box(color, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0); // fill range with color for debugging
+        if (adjust_clipping_rectangle()) {
+            if (!color) {
+                ED4_ROOT->temp_device->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1);
+            }
+            else {
+                ED4_ROOT->temp_device->box(color, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0); // fill range with color for debugging
+            }
         }
         ED4_ROOT->temp_device->pop_clip_scale();
     }
@@ -1560,7 +1589,7 @@ ED4_returncode ED4_base::clear_whole_background( void )						// clear AW_MIDDLE_
     if (ED4_ROOT->temp_device)
     {
         ED4_ROOT->temp_device->push_clip_scale();
-        ED4_ROOT->temp_device->clear();
+        ED4_ROOT->temp_device->clear((AW_bitset)-1);
         ED4_ROOT->temp_device->pop_clip_scale();
     }
 
@@ -1569,23 +1598,20 @@ ED4_returncode ED4_base::clear_whole_background( void )						// clear AW_MIDDLE_
 
 void ED4_base::draw_bb(int color)
 {
-    AW_pos x1, y1, x2, y2;
-
-    if (ED4_ROOT->temp_device)
-    {
-        calc_world_coords( &x1, &y1 );
-        ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x1, &y1 );
-        x2 = x1+extension.size[WIDTH]-1;
-        y2 = y1+extension.size[HEIGHT]-1;
-
+    if (ED4_ROOT->temp_device) {
         ED4_ROOT->temp_device->push_clip_scale();
-        adjust_clipping_rectangle();
+        if (adjust_clipping_rectangle()) {
+            AW_pos x1, y1, x2, y2;
+            calc_world_coords( &x1, &y1 );
+            ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x1, &y1 );
+            x2 = x1+extension.size[WIDTH]-1;
+            y2 = y1+extension.size[HEIGHT]-1;
 
-        ED4_ROOT->temp_device->line(color, x1, y1, x1, y2, (AW_bitset)-1, 0, 0);
-        ED4_ROOT->temp_device->line(color, x1, y1, x2, y1, (AW_bitset)-1, 0, 0);
-        ED4_ROOT->temp_device->line(color, x2, y1, x2, y2, (AW_bitset)-1, 0, 0);
-        ED4_ROOT->temp_device->line(color, x1, y2, x2, y2, (AW_bitset)-1, 0, 0);
-
+            ED4_ROOT->temp_device->line(color, x1, y1, x1, y2, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->temp_device->line(color, x1, y1, x2, y1, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->temp_device->line(color, x2, y1, x2, y2, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->temp_device->line(color, x1, y2, x2, y2, (AW_bitset)-1, 0, 0);
+        }
         ED4_ROOT->temp_device->pop_clip_scale();
     }
 }
