@@ -345,7 +345,7 @@ class Client
         Client cl          = new Client();
         Toolkit.clientName = "ARB probe library";
 
-        System.out.println(Toolkit.clientName+" v"+Toolkit.clientVersion+" -- (C) 2003/2004 Lothar Richter & Ralf Westram");
+        System.out.println(Toolkit.clientName+" v"+Toolkit.client_version+" -- (C) 2003/2004 Lothar Richter & Ralf Westram");
         try {
             CommandLine cmdline = new CommandLine(args, cl.knownOptions());
 
@@ -358,7 +358,7 @@ class Client
                 //             cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
             }
 
-            cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
+            cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.client_version, cl);
             cl.iom     = new IOManager(cl.display);
 
 //             cl.iom = new IOManager(cl.display, ".arb_probe_library_config"); // no config file name given, using default
@@ -372,8 +372,14 @@ class Client
                 // ask server for version info
                 Toolkit.showMessage("Contacting probe server ..");
                 cl.webAccess.retrieveVersionInformation(); // terminates on failure
-                if (!Toolkit.clientVersion.equals(cl.webAccess.getNeededClientVersion())) {
+                
+                if (!Toolkit.interface_version.equals(cl.webAccess.getNeededInterfaceVersion())) {
                     Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
+                }
+                if (!Toolkit.client_version.equals(cl.webAccess.getAvailableClientVersion())) {
+                    MessageDialog popup = new MessageDialog(cl.getDisplay(), "Notice", "A newer version of this client is available from\n"+cl.baseurl+"arb_probe_library.jar");
+                    while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
+                    // Toolkit.AbortWithError("Your client is out-of-date!\nPlease get the newest version from\n  "+cl.baseurl+"arb_probe_library.jar");
                 }
 
                 // load and parse the most recent tree
@@ -397,6 +403,7 @@ class Client
             }
             catch (Exception e) {
                 Toolkit.showError(e.getMessage());
+                e.printStackTrace();
                 MessageDialog popup = new MessageDialog(cl.getDisplay(), "Uncaught exception", e.getMessage());
                 while (!popup.okClicked()) ; // @@@ do non-busy wait here (how?)
                 System.exit(3);
@@ -406,6 +413,12 @@ class Client
             System.out.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    public void clearMatches() {
+        display.getProbeList().clearContents();
+        display.getTreeDisplay().clearMatches();
+        Toolkit.showMessage("Cleared.");
     }
 
     private void save(String content_type, String content, boolean ask_for_name) throws Exception {
