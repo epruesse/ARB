@@ -1,6 +1,7 @@
 #define GEN_INFILE(in1)			/bin/rm -f treefile infile outfile; arb_convert_aln -GenBank in1 -phylip infile
 #define RM_LOCAL_FILES(in1)		/bin/rm -f in1 infile outfile treefile	
-#define RUN_IN_WINDOW(item_command)	${ARB_XCMD:-cmdtool} sh -c 'LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH; item_command ;arb_wait'
+#define RUN_IN_WINDOW1(cmd)	${ARB_XCMD:-cmdtool} sh -c 'LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH; cmd ;arb_wait'
+#define RUN_IN_WINDOW(cmd)	${ARB_XCMD:-cmdtool} sh -c LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb}";export LD_LIBRARY_PATH; cmd ;arb_wait
 #include <warning.menu>
 
 lmenu:export
