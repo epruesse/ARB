@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Sat Nov/09/2002 15:13 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Feb/11/2003 17:54 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -30,6 +30,16 @@
 #include <sys/stat.h>
 
 #include <xml.hxx>
+
+
+/* hide GNU extensions for non-gnu compilers: */
+#ifndef GNU
+# ifndef __attribute__
+#  define __attribute__(x)
+# endif
+#endif
+
+string strf(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
