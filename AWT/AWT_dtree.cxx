@@ -131,8 +131,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode)	// run on father !!!
     at->gr.grouped=0;
     if (!flag) {
         if (at->gb_node) {
-            gn = GB_find(at->gb_node,
-                         "group_name",NULL,down_level);
+            gn = GB_find(at->gb_node, "group_name",NULL,down_level);
             if (gn) {
                 if (strlen(GB_read_char_pntr(gn))>0){
                     at->gr.grouped=1;
@@ -419,7 +418,8 @@ AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
 
         GBDATA *gb_name;
         gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
-        GB_write_string(gb_name, "noname");
+        GBT_write_group_name(gb_name, "noname");
+//         GB_write_string(gb_name, "noname");
     }
     return AW_TRUE;
 }
