@@ -606,8 +606,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
     delete button_list;
     aw_message_cb_result = -13;
 
-    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY,
-                             aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
+    root->add_timed_callback(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
     while (aw_message_cb_result == -13) {
         root->process_events();
