@@ -11,7 +11,6 @@ CLIENTCOMPILER = $(CPP) $(cflags)
 
 # DONT CHANGE THE NEXT LINES
 server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c)
-		-mkdir O
 		$(MAKE) -r $(makeflags) -f AISC/Makefile \
 				"MAIN_SOURCE=$(MAIN_SOURCE)" \
 				"PRIVATE_SERVER_OBJECTS = $(PRIVATE_SERVER_OBJECTS)" \
