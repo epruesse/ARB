@@ -122,7 +122,7 @@ protected:
 };
 
 
-class SQ_GroupData_RNA: public SQ_GroupData_Impl<7> {
+class SQ_GroupData_RNA: public SQ_GroupData_Impl<6> {
 
     SQ_GroupData_RNA(const SQ_GroupData_RNA& other);            // copying not allowed
 public:
@@ -130,7 +130,7 @@ public:
 
     SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
     SQ_GroupData_RNA& operator=(const SQ_GroupData& other) {
-	return static_cast<SQ_GroupData_RNA&>(SQ_GroupData_Impl<7>::operator=(static_cast<const SQ_GroupData_Impl<7>& >(other)));
+	return static_cast<SQ_GroupData_RNA&>(SQ_GroupData_Impl<6>::operator=(static_cast<const SQ_GroupData_Impl<6>& >(other)));
     }
 
     double SQ_calc_consensus_deviation(const char *sequence) const;
