@@ -9,68 +9,100 @@ public class CommandLine
 {
 
 private HashMap hm;
+private HashMap knownOptions;
 
 
-public static void main(String[] args)
+// public static void main(String[] args)
+//     {
+//         CommandLine lc = new CommandLine(args);
+//         lc.printArgs();
+//         System.out.println("Test: " + lc.getOptionValue("error"));
+
+//    }
+
+
+
+
+public CommandLine(String[] arguments, HashMap known)
     {
-        CommandLine lc = new CommandLine(args);
-        lc.printArgs();
-        System.out.println("Test: " + lc.getOptionValue("error"));
+        hm            = new HashMap();
+        knownOptions  = known;
+        int     i     = 0;
+        String  option;
+        String  value;
 
-   }
-
-
-
-
-public CommandLine(String[] arguments)
-    {
-        hm = new HashMap();
-        int i = 0;
-        String option;
-        String value;
         while (i < arguments.length)
+        {
+            // System.out.println("Arg="+arguments[i]);
+            if(arguments[i].indexOf('=') != -1)
             {
-                System.out.println(arguments[i]);
-                if(arguments[i].indexOf('=') != -1)
-                    {
-                        option = arguments[i].substring(0,arguments[i].indexOf('='));
-                        //System.out.println(option);
-                        value = arguments[i].substring(arguments[i].indexOf('=')+1);
-                        //System.out.println(value);
-                    }
-                else
-                    {
-                        option = arguments[i];
-                        value = null;
-                    }
-
-                hm.put(option, value);
-                i++;
+                option = arguments[i].substring(0,arguments[i].indexOf('='));
+                value  = arguments[i].substring(arguments[i].indexOf('=')+1);
+            }
+            else
+            {
+                option = arguments[i];
+                value = null;
             }
 
+            if (knownOptions.containsKey(option) || option == "help") {
+                hm.put(option, value);
+            }
+            else {
+                showHelpAndAbortWithError("Unknown option '"+option+"'");
+            }
+            i++;
+        }
 
+        if (hm.containsKey("help")) {
+            showHelp();
+            System.exit(0); // sucessfully displayed help
+        }
+    }
+
+public void showHelpAndAbortWithError(String error)
+    {
+        showHelp();
+        Toolkit.AbortWithError(error);
+    }
+
+public void showHelp()
+    {
+        System.out.println("Known options:");
+        Set keys = knownOptions.keySet();
+        for (Iterator it = keys.iterator(); it.hasNext(); ) {
+            Object o = it.next();
+            if (o != null) {
+                String key = (String)o;
+                System.out.println("    "+key+knownOptions.get(key)+"\n");
+            }
+        }
+    }
+
+private void checkLegalOption(String optionName)
+    {
+        if (!knownOptions.containsKey(optionName)) {
+            showHelpAndAbortWithError("Unknown option '"+optionName+"'");
+        }
     }
 
 public boolean getOption(String optionName)
     {
-        if (hm.containsKey(optionName))
-            {
-                return true;
-            }
-        else
-            {
-                return false;
-            }
-
+        checkLegalOption(optionName);
+        if (hm.containsKey(optionName)) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 
-public String getOptionValue(String option)
+public String getOptionValue(String optionName)
     {
-        return (String) hm.get(option);
-
+        checkLegalOption(optionName);
+        return (String) hm.get(optionName);
     }
-
 
 public void printArgs()
     {
