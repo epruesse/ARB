@@ -37,8 +37,15 @@ endif
 # --------------------------------------------------------------------------------
 # no warnings in this subtree
 
+RAISE_WARNINGS=0
+
+ifeq ($(RAISE_WARNINGS),1)
+SUB_CPP=$(CPP)
+SUB_ACC=$(ACC)
+else
 SUB_CPP=$(CPP:-W -Wall=-w)
 SUB_ACC=$(ACC:-W -Wall=-w)
+endif
 
 # --------------------------------------------------------------------------------
 
