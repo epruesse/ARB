@@ -22,10 +22,10 @@
 
 #if defined(__cplusplus)
 extern "C" {
-#	include <sys/mman.h>
+#   include <sys/mman.h>
 }
 #else
-#	include <sys/mman.h>
+#   include <sys/mman.h>
 #endif
 
 #if defined(SUN4) || defined(SUN5)
@@ -43,30 +43,30 @@ int gbcm_sig_violation_flag;
 int gbcm_pipe_violation_flag;
 
 #if defined(HP)
-#	include <codelibs/nap.h>
+#   include <codelibs/nap.h>
 void GB_usleep(long usec){
     nap((int)(usec/1000)+1);
 }
 #else
-#	if defined(SUN5)
+#   if defined(SUN5)
 void GB_usleep(long usec){
     struct timespec timeout,time2;
     timeout.tv_sec  = 0;
     timeout.tv_nsec = usec*1000;
     nanosleep(&timeout,&time2);
 }
-#	else
-#		if defined(DIGITAL)
-#			if defined(__cplusplus)
-extern "C" {	extern void usleep(unsigned int	);	}
-#			else
+#   else
+#       if defined(DIGITAL)
+#           if defined(__cplusplus)
+extern "C" {    extern void usleep(unsigned int );  }
+#           else
 extern void usleep(unsigned int);
-#			endif
-#		endif
+#           endif
+#       endif
 void GB_usleep(long usec){
     usleep(usec);
 }
-#	endif
+#   endif
 #endif
 
 long gbcm_sig_violation_end();
@@ -108,7 +108,7 @@ void *gbcm_sig_violation(long sig,long code,long *scpin,char *addr)
     gbcm_sig_violation_flag =1;
 
     if ( (scp->sc_pc<a) || (scp->sc_pc>e) ){
-        signal(SIGSEGV,SIG_DFL);		/* make core */
+        signal(SIGSEGV,SIG_DFL);        /* make core */
         return 0;
     }
     scp->sc_pc = scp->sc_npc;
@@ -131,7 +131,7 @@ void *gbcms_sigpipe()
     return 0;
 }
 /**************************************************************************************
-				private read and write socket functions
+                private read and write socket functions
 ***************************************************************************************/
 void gbcm_read_flush(int socket)
 {gb_local->write_ptr = gb_local->write_buffer;
@@ -141,8 +141,8 @@ void gbcm_read_flush(int socket)
 long gbcm_read_buffered(int socket,char *ptr, long size)
 {
     /* write_ptr ptr to not read data
-       write_free	= write_bufsize-size of non read data;
-	*/
+       write_free   = write_bufsize-size of non read data;
+    */
     long holding;
     holding = gb_local->write_bufsize - gb_local->write_free;
     if (holding <= 0) {
@@ -164,7 +164,7 @@ long gbcm_read_buffered(int socket,char *ptr, long size)
 
 long gbcm_read(int socket,char *ptr,long size)
 {
-    long	leftsize,readsize;
+    long    leftsize,readsize;
     leftsize = size;
     readsize = 0;
 
@@ -182,7 +182,7 @@ int
 gbcm_write_flush(int socket)
 {
     char *ptr;
-    long	leftsize,writesize;
+    long    leftsize,writesize;
     ptr = gb_local->write_buffer;
     leftsize = gb_local->write_ptr - ptr;
     gb_local->write_free = gb_local->write_bufsize;
@@ -254,7 +254,7 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
 {
     char           *p;
     char           *mn;
-    char	*to_free = NULL;
+    char    *to_free = NULL;
     long             i;
     if (!path) {
         return "OPEN_ARB_DB_CLIENT ERROR: missing hostname:socketid";
@@ -264,7 +264,7 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
         if (!path) return GB_get_error();
     }
     p = (char *) strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':'){	/* UNIX MODE */
+    if (path[0] == '*' || path[0] == ':'){  /* UNIX MODE */
         if (!p) {
             return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: missing ':' in %s",path);
         }
@@ -281,7 +281,7 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
     *m_name = mn;
     i = atoi(p + 1);
     if ((i < 1) || (i > 4096)) {
-        return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: socketnumber %i not in [1024..4095]",i);
+        return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: socketnumber %li not in [1024..4095]",i);
     }
     *id = i;
     if (to_free) free(to_free);
@@ -293,7 +293,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
 {
     long      socket_id[1];
     char    *mach_name[1];
-    struct in_addr  addr;	/* union -> u_long  */
+    struct in_addr  addr;   /* union -> u_long  */
     struct hostent *he;
     GB_ERROR err;
 
@@ -303,7 +303,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         if (mach_name[0]) free((char *)mach_name[0]);
         return err;
     }
-    if (socket_id[0] >= 0) {	/* TCP */
+    if (socket_id[0] >= 0) {    /* TCP */
         struct sockaddr_in so_ad;
         memset((char *)&so_ad,0,sizeof(struct sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -320,11 +320,11 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         addr.s_addr = *(long *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons((unsigned short)(socket_id[0]));	/* @@@ = pb_socket  */
+        so_ad.sin_port = htons((unsigned short)(socket_id[0])); /* @@@ = pb_socket  */
         if (do_connect){
             /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id[0]);*/
             if (connect((int)*psocket,(struct sockaddr *)(&so_ad), sizeof(so_ad))) {
-                GB_warning("Cannot connect to %s:%i   errno %i",mach_name[0],socket_id[0],errno);
+                GB_warning("Cannot connect to %s:%li   errno %i",mach_name[0],socket_id[0],errno);
                 return "";
             }
         }else{
@@ -342,7 +342,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
         }
         *unix_name = 0;
         return 0;
-    } else {		/* UNIX */
+    } else {        /* UNIX */
         struct sockaddr_un so_ad; memset((char *)&so_ad,0,sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
@@ -358,7 +358,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
             }
         }else{
 #if 0
-            FILE	*test;
+            FILE    *test;
             test = fopen(mach_name[0],"r");
             if (test) {
                 fclose(test);
@@ -387,7 +387,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
 }
 
 
-long	gbcms_close(struct gbcmc_comm *link)
+long    gbcms_close(struct gbcmc_comm *link)
 {
     if (link->socket) {
         close(link->socket);
@@ -411,26 +411,26 @@ gbcmc_open(const char *path)
     link = (struct gbcmc_comm *)GB_calloc(sizeof(struct gbcmc_comm), 1);
     err = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
     if (err) {
-        if (link->unix_name) free(link->unix_name);	/* @@@ */
+        if (link->unix_name) free(link->unix_name); /* @@@ */
         free((char *)link);
         if(*err){
             GB_internal_error("ARB_DB_CLIENT_OPEN");
         }
         return 0;
     }
-    /*	signal(SIGSEGV, (SIG_PF) gbcm_sig_violation); */
+    /*  signal(SIGSEGV, (SIG_PF) gbcm_sig_violation); */
     signal(SIGPIPE, (SIG_PF) gbcm_sigio);
     gb_local->iamclient = 1;
     return link;
 }
 
 /**************************************************************************************
-				write and read triples
+                write and read triples
 ***************************************************************************************/
 
 long gbcm_write_two(int socket, long a, long c)
 {
-    long	ia[3];
+    long    ia[3];
     ia[0] = a;
     ia[1] = 3;
     ia[2] = c;
@@ -439,22 +439,22 @@ long gbcm_write_two(int socket, long a, long c)
 }
 
 
-/** read two values:	length and any user long
- *	if data are send be gbcm_write_two than b should be zero
- *	and is not used !!! */
+/** read two values:    length and any user long
+ *  if data are send be gbcm_write_two than b should be zero
+ *  and is not used !!! */
 
 long gbcm_read_two(int socket, long a, long *b, long *c)
 {
-    long	ia[3];
-    long	size;
+    long    ia[3];
+    long    size;
     size = gbcm_read(socket,(char *)&(ia[0]),sizeof(long)*3);
     if (size != sizeof(long) * 3) {
-        GB_internal_error("recieve failed: %i bytes expected, %i got, keyword %lX",
+        GB_internal_error("recieve failed: %i bytes expected, %li got, keyword %lX",
                           sizeof(long) * 3,size, a );
         return GBCM_SERVER_FAULT;
     }
     if (ia[0] != a) {
-        GB_internal_error("recieved keyword failed %x != %x\n",ia[0],a);
+        GB_internal_error("recieved keyword failed %lx != %lx\n",ia[0],a);
         return GBCM_SERVER_FAULT;
     }
     if (b) {
@@ -561,11 +561,11 @@ long GB_getuid_of_file(char *path){
 }
 
 int GB_unlink(const char *path)
-{	/* returns
-	   0 	success
-	   1 	File does not exist
-	   -1 	Error
-	*/
+{   /* returns
+       0    success
+       1    File does not exist
+       -1   Error
+    */
     if (unlink(path)) {
         if (errno == ENOENT) return 1;
         perror(0);
@@ -575,7 +575,7 @@ int GB_unlink(const char *path)
     return 0;
 }
 
-char *GB_follow_unix_link(const char *path){	/* returns the real path of a file */
+char *GB_follow_unix_link(const char *path){    /* returns the real path of a file */
     char buffer[1000];
     char *path2;
     char *pos;
@@ -597,7 +597,7 @@ char *GB_follow_unix_link(const char *path){	/* returns the real path of a file 
     return res;
 }
 
-GB_ERROR GB_symlink(const char *name1, const char *name2){	/* name1 is the existing file !!! */
+GB_ERROR GB_symlink(const char *name1, const char *name2){  /* name1 is the existing file !!! */
     if (symlink(name1,name2)<0){
         return GB_export_error("Cannot create symlink '%s' to file '%s'",name2,name1);
     }
@@ -624,7 +624,7 @@ GB_ERROR GB_rename(const char *oldpath,const char *newpath){
 }
 
 /********************************************************************************************
-					read a file to memory
+                    read a file to memory
 ********************************************************************************************/
 char *GB_read_file(const char *path)
 {
@@ -698,7 +698,7 @@ long GB_size_of_FILE(FILE *in){
     int fi = fileno(in);
     struct stat st;
     if (fstat(fi, &st)) {
-        GB_export_error("GB_size_of_FILE: sorry file '%s' not readable");
+        GB_export_error("GB_size_of_FILE: sorry file '%s' not readable"); // @@@ pass filename as parameter and show here
         return -1;
     }
     return st.st_size;
@@ -822,8 +822,8 @@ GB_CSTR GB_getenvARBHOME(void){
     if (!arbhome) {
         arbhome = getenv("ARBHOME"); // doc in arb_envar.hlp
         if (!arbhome){
-            fprintf(stderr,	"ERROR: Environment Variable ARBHOME not found !!!\n"
-                    "	Please set 'ARBHOME' to the installation path of ARB\n");
+            fprintf(stderr, "ERROR: Environment Variable ARBHOME not found !!!\n"
+                    "   Please set 'ARBHOME' to the installation path of ARB\n");
             exit(-1);
         }
     }
@@ -900,9 +900,9 @@ GB_ULONG GB_get_physical_memory(void){
     long pages = sysconf(_SC_PHYS_PAGES);
     /*    long test = sysconf(_SC_AVPHYS_PAGES); */
     long memsize = pagesize/1024 * pages;
-    long nettomemsize = memsize- 10000;	/* kernel size */
+    long nettomemsize = memsize- 10000; /* kernel size */
     return nettomemsize * 70 / 100; /* maximum 70 % of memory */
 #else
-    return 128*1024;		/* 128 Mb default memory */
+    return 128*1024;        /* 128 Mb default memory */
 #endif
 }
