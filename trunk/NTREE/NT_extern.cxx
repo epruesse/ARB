@@ -615,17 +615,17 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
 }
 
 GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
-    GBT_TREE **ptree = (GBT_TREE**)(cl_GBT_TREE_ptr);
-    int use_species_aside = int(cl_use_species_aside);
+    GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
+    int        use_species_aside = int(cl_use_species_aside);
     return NT_create_configuration(0, ptree, 0, use_species_aside);
 }
 
 #define AWMIMT awm->insert_menu_topic
 AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GB_push_transaction(gb_main);
-    AW_gc_manager aw_gc_manager;
-    char	*awar_tree;
-    char	window_title[256];
+    AW_gc_manager  aw_gc_manager;
+    char	      *awar_tree;
+    char	       window_title[256];
     awar_tree = (char *)GB_calloc(sizeof(char),strlen(AWAR_TREE) + 10);	// do not free this
 
     if (clone){
@@ -788,6 +788,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT( "gene_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
                 AWMIMT( "gene_search",	"Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
+                awm->insert_separator();
+                AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, 0 );
             }
         }
         // --------------------------------------------------------------------------------

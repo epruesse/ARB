@@ -32,7 +32,7 @@ GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_) {
     gbd         = GB_find(gb_gene, "pos_begin", 0, down_level);
     pos1        = gbd ? GB_read_int(gbd) : -1L;
     gbd         = GB_find(gb_gene, "pos_end", 0, down_level);
-    pos1        = gbd ? GB_read_int(gbd) : -1L;
+    pos2        = gbd ? GB_read_int(gbd) : -1L;
 }
 
 //  ------------------------------
@@ -44,7 +44,7 @@ GEN_gene::~GEN_gene() {
 //  -----------------------------------------------------------------------------------------------------------------------------
 //      GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment)
 //  -----------------------------------------------------------------------------------------------------------------------------
-GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment) {
+GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment, int lines) {
     gb_main      = gb_main_;
     species_name = species_name_;
     gene_name    = gene_name_;
@@ -63,13 +63,13 @@ GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb
             GBDATA *gb_gene = GEN_first_gene(gb_species);
 
             if (!gb_gene) {
-                error_reason = strdup(GBS_global_string("Species '%s' has no gene-information", species_name));
+                error_reason = GBS_global_string("Species '%s' has no gene-information", species_name.c_str());
             }
             else {
                 GBDATA *gb_seq = GBT_read_sequence(gb_species, genom_alignment);
 
-                length      = GB_GETSIZE(gb_seq);
-                bp_per_line = length/10;
+                length      = GB_read_count(gb_seq);// get sequence length
+                bp_per_line = length/lines;
 
                 while (gb_gene) {
                     gene_set.insert(GEN_gene(gb_gene, this));
@@ -84,8 +84,5 @@ GEN_root::GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb
 //      GEN_root::~GEN_root()
 //  ------------------------------
 GEN_root::~GEN_root() {
-    free(error_reason);
-    free(gene_name);
-    free(species_name);
 }
 

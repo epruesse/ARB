@@ -14,8 +14,9 @@ enum {
 
 	GEN_GC_GENE,
 	GEN_GC_MARKED,
+    GEN_GC_CURSOR,
 
-    GEN_GC_LAST_FONT = GEN_GC_MARKED,
+    GEN_GC_LAST_FONT = GEN_GC_CURSOR,
 
 	GEN_GC_MAX
 };                              // AW_gc
