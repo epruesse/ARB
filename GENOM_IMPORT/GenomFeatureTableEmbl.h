@@ -18,30 +18,30 @@ class GenomFeatureTableEmbl
 {
 	private:
 		GenomSourceFeatureEmbl source;	//	source feature of feature table
-		vector<GeneEmbl> genes;
-		vector<string> gene_ids;
+		std::vector<GeneEmbl> genes;
+		std::vector<std::string> gene_ids;
 		int type_ref_nums[80];
 		int genes_num;
-		vector<string> row_lines;
-		vector<string> features;
+		std::vector<std::string> row_lines;
+		std::vector<std::string> features;
 
 		bool prepared;
 		int actual_gene_id;
 		int actual_gene;
 
-		int featureNameToNumber(string);
+		int featureNameToNumber(std::string);
 
 	public:
 		GenomFeatureTableEmbl();
 		~GenomFeatureTableEmbl();
 
 		GenomSourceFeatureEmbl* getSource(void);
-		string* getGeneID(void);
-		GeneEmbl* getGeneByID(string*);
+		std::string* getGeneID(void);
+		GeneEmbl* getGeneByID(std::string*);
 		GeneEmbl* getGene(void);
 
 
-		void updateContain(string*);
+		void updateContain(std::string*);
 		void prepareFeatureTable(void);
 
 

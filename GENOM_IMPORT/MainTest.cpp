@@ -1,5 +1,5 @@
-#include <GenomUtilities.h>
-#include <GenomEmbl.h>
+#include "GenomUtilities.h"
+#include "GenomEmbl.h"
 #include <iostream>
 #include <string>
 
@@ -8,6 +8,7 @@ using namespace std;
 
 void showLocation(GenomLocation & loc)
 {
+  cout << "--In Location--" << endl;
   GenomLocation tloc;
   if(loc.isSingleValue())
   {
@@ -22,6 +23,15 @@ void showLocation(GenomLocation & loc)
   {
     cout << "GenomLocation.isSingleValue()=false" << endl;
     cout << "GenomLocation.isRanged()=" << loc.isRanged() << endl;
+    cout << "GenomLocation.isCollection()=" << loc.isCollection() << endl;
+    /*if(loc.isCollection())
+    {
+      cout << "GenomLocation.isCollection()=true" << endl;
+    }
+    else
+    {
+      cout << "GenomLocation.isCollection()=false" << endl;
+    }*/
     cout << "GenomLocation.isJoin()=" << loc.isJoin() << endl;
     cout << "GenomLocation.isComplement()=" << loc.isComplement() << endl;
     cout << "GenomLocation.isOrder()=" << loc.isOrder() << endl;
@@ -115,9 +125,9 @@ int main()
     cout << "GeneEmbl.getRefNumOfType()=" << tgene->getRefNumOfType() << endl;
     cout << "GeneEmbl.getRefNumOfGene()=" << tgene->getRefNumOfGene() << endl;
     cout << "GeneEmbl.getTempLocation()=" << tgene->getTempLocation() << endl;
-//    gloc = tgene->getGeneLocation();
+    gloc = tgene->getGeneLocation();
     cout << "---Locations---" << endl;
-    //showLocation(gloc);
+    showLocation(gloc);
     cout << "---Locations End---" << endl;
   }
   cout << "------------Interessant Ende------------" << endl;  

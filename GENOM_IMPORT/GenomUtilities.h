@@ -1,30 +1,29 @@
 #ifndef GENOMUTILITIES_H
 #define GENOMUTILITIES_H
 
-#ifndef VECTOR
+
+
 #include <vector>
-#endif
-#ifndef STRING
 #include <string>
-#endif
+
 
 // #include <iostream>
 //#include <GenomLocation.h>
 
 
-void eliminateFeatureTableSign(string * source_string, string * fts, bool semi = true, bool equal = true);
-string parseSequenceDataLine(string&);
-bool isNewGene(string&);
-bool isSource(string&);
-vector<long> parseSourceLocation(string&);
-string toOneString(vector<string>&, bool = true);
-void trimByDoubleQuote(string&);
-void onlyOneSpace(string&);
+void eliminateFeatureTableSign(std::string * source_string, std::string * fts, bool semi = true, bool equal = true);
+std::string parseSequenceDataLine(std::string&);
+bool isNewGene(std::string&);
+bool isSource(std::string&);
+std::vector<long> parseSourceLocation(std::string&);
+std::string toOneString(std::vector<std::string>&, bool = true);
+void trimByDoubleQuote(std::string&);
+void onlyOneSpace(std::string&);
 //GenomLocation splitLocation(string&);
-string generateID(string,int);
-string trimString(string);
-vector<string> findAndSeparateWordsBy(string*,char,bool);
-string intToString(int);
+std::string generateID(std::string,int);
+std::string trimString(std::string);
+std::vector<std::string> findAndSeparateWordsBy(std::string*,char,bool);
+std::string intToString(int);
 
 #else
 #error GenomUtilities.h included twice

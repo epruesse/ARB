@@ -1,6 +1,8 @@
 #include "GenomReferenceEmbl.h"
 #include "GenomUtilities.h"
 
+using namespace std;
+
 GenomReferenceEmbl::GenomReferenceEmbl()
 {
 	actual_RP = 0;

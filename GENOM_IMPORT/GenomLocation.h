@@ -1,12 +1,9 @@
 #ifndef GENOMLOCATION_H
 #define GENOMLOCATION_H
 
-#ifndef VECTOR
 #include <vector>
-#endif
-#ifndef STRING
 #include <string>
-#endif
+#include <iostream>
 
 
 //typedef vector<GenomLocation> LocationVector;
@@ -18,7 +15,7 @@ class GenomLocation
 {
 	private:
 //		LocationVektor locations;
-    vector<GenomLocation> locations;
+    std::vector<GenomLocation> locations;
 		long value;
 
 		bool range;				//	..
@@ -32,32 +29,19 @@ class GenomLocation
 		bool smaller_end;			//	<
 		bool bigger_end;			//	>
     bool normal;				//	Not Range, only single value
+    bool coll;
 		int actual_value;
     bool pointer;
-    string reference;
+    std::string reference;
+
+    std::vector<std::string> getParts(const std::string&);
 
   //    GenomLocation(const GenomLocation&) {}
   // GenomLocation& operator=(const GenomLocation& other) { return *this; }
   static int tmp;
 	public:
-		GenomLocation()
-    {
-  		value = 0;
-  		range = false;
-  		complement = false;
-  		join = false;
-  		order = false;
-  		point = false;
-  		roof = false;
-  		smaller_begin = false;
-  		bigger_begin = false;
-  		smaller_end = false;
-  		bigger_end = false;
-      normal = true;
-  		actual_value = 0;
-      pointer = false;
-    }
-
+		GenomLocation();
+    
 		bool isSingleValue(void){return normal;}
 		bool isRanged(void) {return range;}
 		bool isJoin(void){return join;}
@@ -70,6 +54,7 @@ class GenomLocation
 		bool isSmallerEnd(void){return smaller_end;}
 		bool isBiggerEnd(void){return bigger_end;}
     bool isReference(void){return pointer;}
+    bool isCollection(void){return coll;}
 
 		/*void isSingleValue(bool b){ normal = b;}
 		void isRanged(bool b){ range = b;}
@@ -83,12 +68,12 @@ class GenomLocation
 		void isSmallerEnd(bool b){ smaller_end = b;}
 		void isBiggerEnd(bool b){ bigger_end = b;}
     void isReference(bool b){ pointer = b;}*/
-    void parseLocation(string&);
+    void parseLocation(std::string&);
 
 		void setSingleValue(long val){value = val;}
 		long getSingleValue(void){return value;}
-    void setReference(string& ref){ reference = ref;}
-    string * getReference(void) { return &reference;}
+    void setReference(std::string& ref){ reference = ref;}
+    std::string & getReference(void) { return reference;}
 
 //    LocationVector::iterator begin() { return locations.begin(); }
 //    LocationVector::iterator end() { return locations.end(); }
@@ -102,39 +87,10 @@ class GenomLocation
       //  if (current.isSingleValue()) { ... }
 //    }
 
-    bool hasMore()
-    {
-      if(actual_value < (int)locations.size())
-      {
-        return true;
-      }
-      else
-      {
-        return false;
-      }
-    }
-
-		GenomLocation getNextValue(void)
-		{
-    	return locations[actual_value++];
-		}
-
-		bool hasMoreValues()
-		{
-			if(actual_value < (int)locations.size())
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		void setValue(const GenomLocation& nValue)
-		{
-			locations.push_back(nValue);
-		}
+    bool hasMore();
+		GenomLocation getNextValue();
+		bool hasMoreValues();
+		void setValue(const GenomLocation& nValue);
 };
 
 #else
