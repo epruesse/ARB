@@ -50,10 +50,10 @@ int AW_device_Xm::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bits
 
             XDrawLine(common->display, common->window_id,
                       gcm->gc, AW_INT(CX0), AW_INT(CY0), AW_INT(CX1), AW_INT(CY1));
+            
+            AUTO_FLUSH(this);
         }
     }
-
-    AUTO_FLUSH(this);
 
     return drawflag;
 }
@@ -90,8 +90,8 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
     if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
-        x1 = x0 + width;
-        y1 = y0 + height;
+        x1 = x0 + width-1;
+        y1 = y0 + height-1;
         this->transform(x0,y0,X0,Y0);
         this->transform(x1,y1,X1,Y1);
         drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
@@ -106,10 +106,9 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
 
             XFillRectangle(common->display, common->window_id, gcm->gc,
                            cx0, cy0, cx1-cx0+1, cy1-cy0+1);
+            AUTO_FLUSH(this);
         }
     }
-
-    AUTO_FLUSH(this);
 
     return 0;
 }
@@ -147,45 +146,42 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
              else {
                 XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0, 64*360);
             }
+            AUTO_FLUSH(this);
         }
     }
-
-    AUTO_FLUSH(this);
 
     return 0;
 }
 
-void AW_device_Xm::clear() {
-    XClearWindow(common->display,common->window_id);
-
-    AUTO_FLUSH(this);
+void AW_device_Xm::clear(AW_bitset filteri) {
+    if (filteri & filter) {
+        XClearWindow(common->display,common->window_id);
+        AUTO_FLUSH(this);
+    }
 }
 
-void AW_device_Xm::clear_part( AW_pos x, AW_pos y,AW_pos width, AW_pos height ) {
-AW_pos X,Y;                                 // Transformed pos
+void AW_device_Xm::clear_part( AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
+{
+    if (filteri & filter) {
+        AW_pos x1 = x0+width-1;
+        AW_pos y1 = y0+height-1;
+        
+        AW_pos X0,Y0,X1,Y1;     // Transformed pos
+        this->transform(x0, y0, X0, Y0);
+        this->transform(x1, y1, X1, Y1);
 
-    this->transform( x, y, X, Y );
-    if ( X > this->clip_rect.r ) return;
-    if ( X < this->clip_rect.l ) {
-        width = width + X - this->clip_rect.l;
-        X = this->clip_rect.l;
-    }
-    if( X + width > this->clip_rect.r ) {
-        width = this->clip_rect.r - X;
-    }
-    if ( Y < this->clip_rect.t ) {
-        height = height - ( this->clip_rect.t - Y );
-        Y = this->clip_rect.t;
-    }
-    if ( Y + height > this->clip_rect.b ) {
-        height = this->clip_rect.b - Y;
-    }
-    if ( Y > this->clip_rect.b ) return;
-    if ( width <= 0 || height <= 0 ) return;
+        AW_pos CX0,CY0,CX1,CY1; // Clipped line
+        int    drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
+        if (drawflag) {
+            int cx0 = AW_INT(CX0);
+            int cx1 = AW_INT(CX1);
+            int cy0 = AW_INT(CY0);
+            int cy1 = AW_INT(CY1);
 
-    XClearArea(common->display,common->window_id, AW_INT(X), AW_INT(Y), AW_INT(width), AW_INT(height), False);
-
-    AUTO_FLUSH(this);
+            XClearArea(common->display,common->window_id, cx0, cy0, cx1-cx0+1, cy1-cy0+1, False);
+            AUTO_FLUSH(this);
+        }
+    }
 }
 
 
