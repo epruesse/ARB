@@ -1,8 +1,8 @@
 #include "GAGenomUtilities.h"
 
-#ifndef _CPP_CMATH
-#include <cmath>
-#endif
+// #ifndef _CPP_CMATH
+// #include <cmath>
+// #endif
 
 using namespace std;
 using namespace gellisary;
@@ -415,72 +415,78 @@ void gellisary::GAGenomUtilities::trimStringByChar(string * source_str, char tri
 
 int gellisary::GAGenomUtilities::stringToInteger(string * source_str)
 {
-	int target_int = 0;
-	int tmp_int = 0;
-	for(int i = (((int) source_str->size()) - 1); i >= 0; i--)
-	{
-		switch((source_str->c_str())[i])
-		{
-			case '0':
-				tmp_int = 0;
-				break;
-			case '1':
-				tmp_int = 1;
-				break;
-			case '2':
-				tmp_int = 2;
-				break;
-			case '3':
-				tmp_int = 3;
-				break;
-			case '4':
-				tmp_int = 4;
-				break;
-			case '5':
-				tmp_int = 5;
-				break;
-			case '6':
-				tmp_int = 6;
-				break;
-			case '7':
-				tmp_int = 7;
-				break;
-			case '8':
-				tmp_int = 8;
-				break;
-			case '9':
-				tmp_int = 9;
-				break;
-			default:
-				break;
-		}
-		target_int += (tmp_int * (int)pow(10,i));
-	}
-	return target_int;
+    return atoi(source_str->c_str());
+
+// 	int target_int = 0;
+// 	int tmp_int = 0;
+// 	for(int i = (((int) source_str->size()) - 1); i >= 0; i--)
+// 	{
+// 		switch((source_str->c_str())[i])
+// 		{
+// 			case '0':
+// 				tmp_int = 0;
+// 				break;
+// 			case '1':
+// 				tmp_int = 1;
+// 				break;
+// 			case '2':
+// 				tmp_int = 2;
+// 				break;
+// 			case '3':
+// 				tmp_int = 3;
+// 				break;
+// 			case '4':
+// 				tmp_int = 4;
+// 				break;
+// 			case '5':
+// 				tmp_int = 5;
+// 				break;
+// 			case '6':
+// 				tmp_int = 6;
+// 				break;
+// 			case '7':
+// 				tmp_int = 7;
+// 				break;
+// 			case '8':
+// 				tmp_int = 8;
+// 				break;
+// 			case '9':
+// 				tmp_int = 9;
+// 				break;
+// 			default:
+// 				break;
+// 		}
+// 		target_int += (tmp_int * (int)pow((double)10,i));
+// 	}
+// 	return target_int;
 }
 
 string gellisary::GAGenomUtilities::integerToString(int source_int)
 {
-	string target_str;
-	bool before = false;
-	long source_double = (long) source_int;	// nicht unbedingt notwendig trotzdem ...
-	for(long i = 9; i >= 0; i++)
-	{
-		if((source_double >= pow(10,i)) && (source_double < pow(10,(i+1))))
-  		{
-		    target_str += (char)(((int)(source_double / pow(10,i)))+48);
-		    source_double = source_double % ((long)pow(10,i));
-		    before = true;
-		}
-		else
-		{
-			if(before)
-			{
-				target_str += '0';
-			}
-		}
-	}
-	return target_str;
+    char buffer[50];
+    sprintf(buffer, "%i", source_int);
+    return string(buffer);
+
+// 	string target_str;
+// 	bool before = false;
+// 	long source_double = (long) source_int;	// nicht unbedingt notwendig trotzdem ...
+// 	for(long i = 9; i >= 0; i++)
+// 	{
+//             if((source_double >= pow(10,i)) && (source_double < pow((double)10,(i+1))))
+//   		{
+// 		    target_str += (char)(((int)(source_double / pow((double)10,i)))+48);
+// 		    source_double = source_double % ((long)pow((double)10,i));
+// 		    before = true;
+// 		}
+// 		else
+// 		{
+// 			if(before)
+// 			{
+// 				target_str += '0';
+// 			}
+// 		}
+// 	}
+// 	return target_str;
 }
 
 string gellisary::GAGenomUtilities::generateGeneID(string * source_str, int gene_type)
