@@ -39,35 +39,68 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-ParseMenu.o: menudefs.h defines.h functions.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-main.o: menudefs.h defines.h functions.h globals.h icon_gde.bitmap
-
-BasicDisplay.o: menudefs.h defines.h functions.h
-
-EventHandler.o: menudefs.h defines.h functions.h
-
-FileIO.o: menudefs.h defines.h functions.h
-
-DrawNA.o: menudefs.h defines.h functions.h
-
-Free.o: menudefs.h defines.h functions.h
-
-BuiltIn.o: menudefs.h defines.h functions.h
-
-Edit.o: menudefs.h defines.h functions.h
-
-Genbank.o: menudefs.h defines.h functions.h
-
-Scroll.o: menudefs.h defines.h functions.h
-
-CutCopyPaste.o: menudefs.h defines.h functions.h
-
-HGLfile.o: menudefs.h defines.h functions.h
-
-arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
-arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h defines.h
+arbdb_io.o: defines.h
 arbdb_io.o: functions.h
+arbdb_io.o: menudefs.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
+arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
+
+BasicDisplay.o: defines.h
+BasicDisplay.o: functions.h
+BasicDisplay.o: menudefs.h
+
+BuiltIn.o: defines.h
+BuiltIn.o: functions.h
+BuiltIn.o: menudefs.h
+
+CutCopyPaste.o: defines.h
+CutCopyPaste.o: functions.h
+CutCopyPaste.o: menudefs.h
+
+DrawNA.o: defines.h
+DrawNA.o: functions.h
+DrawNA.o: menudefs.h
+
+Edit.o: defines.h
+Edit.o: functions.h
+Edit.o: menudefs.h
+
+EventHandler.o: defines.h
+EventHandler.o: functions.h
+EventHandler.o: menudefs.h
+
+FileIO.o: defines.h
+FileIO.o: functions.h
+FileIO.o: menudefs.h
+
+Free.o: defines.h
+Free.o: functions.h
+Free.o: menudefs.h
+
+Genbank.o: defines.h
+Genbank.o: functions.h
+Genbank.o: menudefs.h
+
+HGLfile.o: defines.h
+HGLfile.o: functions.h
+HGLfile.o: menudefs.h
+
+main.o: defines.h
+main.o: functions.h
+main.o: globals.h
+main.o: icon_gde.bitmap
+main.o: menudefs.h
+
+ParseMenu.o: defines.h
+ParseMenu.o: functions.h
+ParseMenu.o: menudefs.h
+
+Scroll.o: defines.h
+Scroll.o: functions.h
+Scroll.o: menudefs.h

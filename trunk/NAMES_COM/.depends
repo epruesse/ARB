@@ -5,6 +5,7 @@ O/aisc_extern.o: C/aisc_extern_privat.h
 O/client.o: C/ad_varargs.h
 O/client.o: C/client_privat.h
 O/client.o: C/client.h
+O/client.o: ../INCLUDE/SIG_PF.h
 O/debug.o: C/ad_varargs.h
 O/debug.o: GENH/aisc_com.h
 O/debug.o: C/client.h

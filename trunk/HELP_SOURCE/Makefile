@@ -238,5 +238,8 @@ depend.init:
 
 # DO NOT DELETE
 
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

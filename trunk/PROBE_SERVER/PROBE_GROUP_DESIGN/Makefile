@@ -37,14 +37,21 @@ depend.init:
 
 # DO NOT DELETE
 
-pgd_main.o: $(ARBHOME)/INCLUDE/arbdb.h
-pgd_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+pgd_main.o: ../common.h
+pgd_main.o: ../global_defs.h
+pgd_main.o: ../mapping.h
+pgd_main.o: ../path_code.h
+pgd_main.o: ../read_config.h
 pgd_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
-pgd_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pgd_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-pgd_main.o: $(ARBHOME)/INCLUDE/PT_com.h
+pgd_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+pgd_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+pgd_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pgd_main.o: $(ARBHOME)/INCLUDE/client.h
-pgd_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
-pgd_main.o: $(ARBHOME)/INCLUDE/output.h ../global_defs.h ../common.h
-pgd_main.o: ../mapping.h ../path_code.h ../read_config.h
 pgd_main.o: $(ARBHOME)/INCLUDE/config_parser.h
+pgd_main.o: $(ARBHOME)/INCLUDE/output.h
+pgd_main.o: $(ARBHOME)/INCLUDE/PT_com.h
+pgd_main.o: $(ARBHOME)/INCLUDE/servercntrl.h

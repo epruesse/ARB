@@ -40,22 +40,38 @@ depend.init:
 
 # DO NOT DELETE
 
-src/gamma.o: src/util.h src/gamma.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-src/ml1.o: src/util.h src/ml.h
+src/gamma.o: src/gamma.h
+src/gamma.o: src/util.h
 
-src/ml2.o: src/util.h src/ml.h
+src/ml1.o: src/ml.h
+src/ml1.o: src/util.h
 
-src/ml3.o: src/util.h src/ml.h src/gamma.h
+src/ml2.o: src/ml.h
+src/ml2.o: src/util.h
 
-src/model1.o: src/util.h src/ml.h
+src/ml3.o: src/gamma.h
+src/ml3.o: src/ml.h
+src/ml3.o: src/util.h
 
-src/model2.o: src/util.h src/ml.h
+src/model1.o: src/ml.h
+src/model1.o: src/util.h
 
-src/puzzle1.o: src/puzzle.h src/util.h src/ml.h src/gamma.h
+src/model2.o: src/ml.h
+src/model2.o: src/util.h
 
-src/puzzle2.o: src/puzzle.h src/util.h src/ml.h
+src/puzzle1.o: src/gamma.h
+src/puzzle1.o: src/ml.h
+src/puzzle1.o: src/puzzle.h
+src/puzzle1.o: src/util.h
 
-src/sched.o: src/sched.h src/util.h
+src/puzzle2.o: src/ml.h
+src/puzzle2.o: src/puzzle.h
+src/puzzle2.o: src/util.h
+
+src/sched.o: src/sched.h
+src/sched.o: src/util.h
 
 src/util.o: src/util.h

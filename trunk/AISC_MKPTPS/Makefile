@@ -25,4 +25,8 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-mkptypes.o: mkptypes.h patchlev.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+mkptypes.o: mkptypes.h
+mkptypes.o: patchlev.h

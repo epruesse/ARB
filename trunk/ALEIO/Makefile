@@ -24,17 +24,26 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-io_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
-io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ring.h getopt.h xmalloc.h
-io_arbdb.o: lenstring.h hash.h careful.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 getopt.o: getopt.h
 
 getopt1.o: getopt.h
 
-xmalloc.o: xmalloc.h
+io_arbdb.o: careful.h
+io_arbdb.o: getopt.h
+io_arbdb.o: hash.h
+io_arbdb.o: lenstring.h
+io_arbdb.o: ring.h
+io_arbdb.o: xmalloc.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
+io_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 
-lenstring.o: lenstring.h xmalloc.h
+lenstring.o: lenstring.h
+lenstring.o: xmalloc.h
+
+xmalloc.o: xmalloc.h

@@ -25,4 +25,8 @@ depend.init:
 
 # DO NOT DELETE
 
-xml.o: xml.hxx $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+xml.o: xml.hxx
+xml.o: $(ARBHOME)/INCLUDE/arb_assert.h

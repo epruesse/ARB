@@ -22,14 +22,18 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-names.o: $(ARBHOME)/INCLUDE/names_server.h
-names.o: $(ARBHOME)/INCLUDE/names_client.h names.h
-names.o: $(ARBHOME)/INCLUDE/arbdb.h
-names.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+names.o: names.h
 names.o: $(ARBHOME)/INCLUDE/ad_prot.h
-names.o: $(ARBHOME)/INCLUDE/names_prototypes.h
-names.o: $(ARBHOME)/INCLUDE/server.h
 names.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+names.o: $(ARBHOME)/INCLUDE/arb_assert.h
+names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/client.h
+names.o: $(ARBHOME)/INCLUDE/names_client.h
+names.o: $(ARBHOME)/INCLUDE/names_prototypes.h
+names.o: $(ARBHOME)/INCLUDE/names_server.h
+names.o: $(ARBHOME)/INCLUDE/server.h
 names.o: $(ARBHOME)/INCLUDE/servercntrl.h
 names.o: $(ARBHOME)/INCLUDE/struct_man.h

@@ -30,30 +30,61 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-main.o: convert.h global.h prototypes.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-fconv.o: convert.h global.h prototypes.h
+alma.o: convert.h
+alma.o: global.h
+alma.o: prototypes.h
 
-mg.o: convert.h global.h prototypes.h
+date.o: convert.h
+date.o: global.h
+date.o: prototypes.h
 
-genbank.o: convert.h global.h prototypes.h
+embl.o: convert.h
+embl.o: global.h
+embl.o: prototypes.h
 
-macke.o: convert.h global.h prototypes.h
+fconv.o: convert.h
+fconv.o: global.h
+fconv.o: prototypes.h
 
-phylip.o: convert.h global.h prototypes.h
+gcg.o: convert.h
+gcg.o: global.h
+gcg.o: prototypes.h
 
-paup.o: convert.h global.h prototypes.h
+genbank.o: convert.h
+genbank.o: global.h
+genbank.o: prototypes.h
 
-util.o: convert.h global.h prototypes.h
+macke.o: convert.h
+macke.o: global.h
+macke.o: prototypes.h
 
-date.o: convert.h global.h prototypes.h
+main.o: convert.h
+main.o: global.h
+main.o: prototypes.h
 
-embl.o: convert.h global.h prototypes.h
+mg.o: convert.h
+mg.o: global.h
+mg.o: prototypes.h
 
-gcg.o: convert.h global.h prototypes.h
+paup.o: convert.h
+paup.o: global.h
+paup.o: prototypes.h
 
-printable.o: convert.h global.h prototypes.h
+phylip.o: convert.h
+phylip.o: global.h
+phylip.o: prototypes.h
 
-alma.o: convert.h global.h prototypes.h
+printable.o: convert.h
+printable.o: global.h
+printable.o: prototypes.h
 
-routines.o: convert.h global.h prototypes.h
+routines.o: convert.h
+routines.o: global.h
+routines.o: prototypes.h
+
+util.o: convert.h
+util.o: global.h
+util.o: prototypes.h

@@ -36,8 +36,14 @@ depend.init:
 
 # DO NOT DELETE
 
-psw_main.o: $(ARBHOME)/INCLUDE/arbdb.h
-psw_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+psw_main.o: ../common.h
+psw_main.o: ../global_defs.h
+psw_main.o: ../mapping.h
+psw_main.o: ../path_code.h
 psw_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
-psw_main.o: $(ARBHOME)/INCLUDE/smartptr.h ../global_defs.h ../common.h
-psw_main.o: ../mapping.h ../path_code.h
+psw_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+psw_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+psw_main.o: $(ARBHOME)/INCLUDE/smartptr.h

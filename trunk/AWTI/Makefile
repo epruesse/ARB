@@ -23,29 +23,36 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+AWTI_export.o: awti_exp_local.hxx
+AWTI_export.o: awti_export.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
+
+AWTI_import.o: awti_imp_local.hxx
+AWTI_import.o: awti_import.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/adGene.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/adGene.h awti_import.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx awti_imp_local.hxx
-
-AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h awti_export.hxx
-AWTI_export.o: awti_exp_local.hxx $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx

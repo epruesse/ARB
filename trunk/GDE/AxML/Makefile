@@ -53,4 +53,7 @@ depend.init:
 
 # DO NOT DELETE
 
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
 axml.o: axml.h

@@ -22,34 +22,56 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-alnscore.o: clustalw.h general.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-amenu.o: clustalw.h general.h
+alnscore.o: clustalw.h
+alnscore.o: general.h
 
-calcgapcoeff.o: clustalw.h general.h
+amenu.o: clustalw.h
+amenu.o: general.h
 
-calcprf1.o: clustalw.h general.h
+calcgapcoeff.o: clustalw.h
+calcgapcoeff.o: general.h
 
-calcprf2.o: clustalw.h general.h
+calcprf1.o: clustalw.h
+calcprf1.o: general.h
 
-calctree.o: clustalw.h general.h
+calcprf2.o: clustalw.h
+calcprf2.o: general.h
 
-clustalw.o: clustalw.h general.h
+calctree.o: clustalw.h
+calctree.o: general.h
 
-interface.o: clustalw.h general.h param.h
+clustalw.o: clustalw.h
+clustalw.o: general.h
 
-malign.o: clustalw.h general.h
+interface.o: clustalw.h
+interface.o: general.h
+interface.o: param.h
 
-pairalign.o: clustalw.h general.h
+malign.o: clustalw.h
+malign.o: general.h
 
-prfalign.o: clustalw.h general.h
+pairalign.o: clustalw.h
+pairalign.o: general.h
 
-readmat.o: clustalw.h general.h matrices.h
+prfalign.o: clustalw.h
+prfalign.o: general.h
 
-sequence.o: clustalw.h general.h
+readmat.o: clustalw.h
+readmat.o: general.h
+readmat.o: matrices.h
 
-showpair.o: clustalw.h general.h
+sequence.o: clustalw.h
+sequence.o: general.h
 
-trees.o: clustalw.h general.h dayhoff.h
+showpair.o: clustalw.h
+showpair.o: general.h
 
-util.o: clustalw.h general.h
+trees.o: clustalw.h
+trees.o: dayhoff.h
+trees.o: general.h
+
+util.o: clustalw.h
+util.o: general.h

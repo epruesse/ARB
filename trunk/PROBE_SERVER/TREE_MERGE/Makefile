@@ -36,9 +36,13 @@ depend.init:
 
 # DO NOT DELETE
 
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+tree_merge.o: ../common.h
+tree_merge.o: $(ARBHOME)/INCLUDE/ad_prot.h
+tree_merge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arbdb.h
-tree_merge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_merge.o: $(ARBHOME)/INCLUDE/arbdbt.h
-tree_merge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-tree_merge.o: $(ARBHOME)/INCLUDE/smartptr.h ../common.h
+tree_merge.o: $(ARBHOME)/INCLUDE/smartptr.h

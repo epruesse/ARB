@@ -189,40 +189,96 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-getseq.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h prot_tml.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-seqproc.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+altree.o: ../../INCLUDE/arb_assert.h
+altree.o: matrixut.h
+altree.o: molphy.h
+altree.o: protml.h
 
-mltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+distan.o: ../../INCLUDE/arb_assert.h
+distan.o: matrixut.h
+distan.o: molphy.h
+distan.o: protml.h
 
-altree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+dyhfjtt.o: ../../INCLUDE/arb_assert.h
+dyhfjtt.o: matrixut.h
+dyhfjtt.o: molphy.h
+dyhfjtt.o: protml.h
 
-qltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
-
-sltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
-
-njtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h prot_tml.h
-
-njmtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
-
-prtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
-
-pstree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+getseq.o: ../../INCLUDE/arb_assert.h
+getseq.o: matrixut.h
+getseq.o: molphy.h
+getseq.o: prot_tml.h
+getseq.o: protml.h
 
 matrixut.o: matrixut.h
 
+mlklhd.o: ../../INCLUDE/arb_assert.h
+mlklhd.o: matrixut.h
+mlklhd.o: molphy.h
+mlklhd.o: protml.h
+
+mltree.o: ../../INCLUDE/arb_assert.h
+mltree.o: matrixut.h
+mltree.o: molphy.h
+mltree.o: protml.h
+
+mtrev24.o: ../../INCLUDE/arb_assert.h
+mtrev24.o: matrixut.h
+mtrev24.o: molphy.h
+mtrev24.o: protml.h
+
 mygetopt.o: molphy.h
 
-protml.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+njmtree.o: ../../INCLUDE/arb_assert.h
+njmtree.o: matrixut.h
+njmtree.o: molphy.h
+njmtree.o: protml.h
 
-protproc.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+njtree.o: ../../INCLUDE/arb_assert.h
+njtree.o: matrixut.h
+njtree.o: molphy.h
+njtree.o: prot_tml.h
+njtree.o: protml.h
 
-dyhfjtt.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+protml.o: ../../INCLUDE/arb_assert.h
+protml.o: matrixut.h
+protml.o: molphy.h
+protml.o: protml.h
 
-mtrev24.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+protproc.o: ../../INCLUDE/arb_assert.h
+protproc.o: matrixut.h
+protproc.o: molphy.h
+protproc.o: protml.h
 
-tranprb.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+prtree.o: ../../INCLUDE/arb_assert.h
+prtree.o: matrixut.h
+prtree.o: molphy.h
+prtree.o: protml.h
 
-distan.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+pstree.o: ../../INCLUDE/arb_assert.h
+pstree.o: matrixut.h
+pstree.o: molphy.h
+pstree.o: protml.h
 
-mlklhd.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
+qltree.o: ../../INCLUDE/arb_assert.h
+qltree.o: matrixut.h
+qltree.o: molphy.h
+qltree.o: protml.h
+
+seqproc.o: ../../INCLUDE/arb_assert.h
+seqproc.o: matrixut.h
+seqproc.o: molphy.h
+seqproc.o: protml.h
+
+sltree.o: ../../INCLUDE/arb_assert.h
+sltree.o: matrixut.h
+sltree.o: molphy.h
+sltree.o: protml.h
+
+tranprb.o: ../../INCLUDE/arb_assert.h
+tranprb.o: matrixut.h
+tranprb.o: molphy.h
+tranprb.o: protml.h

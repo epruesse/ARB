@@ -22,18 +22,30 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-clustalv.o: clustalv.h general.h matrices.h
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-amenu.o: clustalv.h general.h
+amenu.o: clustalv.h
+amenu.o: general.h
 
-myers.o: clustalv.h general.h
+clustalv.o: clustalv.h
+clustalv.o: general.h
+clustalv.o: matrices.h
 
-sequence.o: clustalv.h general.h
+myers.o: clustalv.h
+myers.o: general.h
 
-showpair.o: clustalv.h general.h
+sequence.o: clustalv.h
+sequence.o: general.h
 
-upgma.o: clustalv.h general.h
+showpair.o: clustalv.h
+showpair.o: general.h
 
-util.o: clustalv.h general.h
+trees.o: clustalv.h
+trees.o: general.h
 
-trees.o: clustalv.h general.h
+upgma.o: clustalv.h
+upgma.o: general.h
+
+util.o: clustalv.h
+util.o: general.h
