@@ -275,7 +275,11 @@ static const char *awtc_next_file(void){
 		char srt[1024];
 
 		if (awtcig.ifo2 && awtcig.ifo2->system){
-			sprintf(mid_file_name,"/tmp/%s_%i",sorigin, getpid());
+            {
+                const char *sorigin_nameonly        = strrchr(sorigin, '/');
+                if (!sorigin_nameonly) sorigin_nameonly = sorigin;
+                sprintf(mid_file_name,"/tmp/%s_%i",sorigin_nameonly, getpid());
+            }
 			sprintf(srt,"$<=%s:$>=%s",origin_file_name, mid_file_name);
 			char *sys = GBS_string_eval(awtcig.ifo2->system,srt,0);
 			sprintf(AW_ERROR_BUFFER,"exec '%s'",awtcig.ifo2->system);
@@ -292,7 +296,11 @@ static const char *awtc_next_file(void){
 		}
 
 		if (awtcig.ifo->system){
-			sprintf(dest_file_name,"/tmp/%s_2_%i",sorigin, getpid());
+            {
+                const char *sorigin_nameonly        = strrchr(sorigin, '/');
+                if (!sorigin_nameonly) sorigin_nameonly = sorigin;
+                sprintf(dest_file_name,"/tmp/%s_2_%i",sorigin, getpid());
+            }
 			sprintf(srt,"$<=%s:$>=%s",origin_file_name, dest_file_name);
 			char *sys = GBS_string_eval(awtcig.ifo->system,srt,0);
 			sprintf(AW_ERROR_BUFFER,"Converting File %s",awtcig.ifo->system);
