@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.cxx                                       //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Thu Feb/05/2004 12:12 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/19/2004 18:12 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -32,7 +32,6 @@ SQ_GroupData::~SQ_GroupData() { }
 
 double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) const {
     double deviation = 0;
-    //    double value     = 0;
     int current[7];
 
 
@@ -258,72 +257,6 @@ double SQ_GroupData_RNA::SQ_calc_consensus_conformity(const char *sequence) cons
     value = value / size;  //set conformity in relation to sequencelength
     return value;
 }
-
-
-// double SQ_GroupData_RNA::SQ_calc_consensus_deviation(const char *sequence) {
-//     bool sema = false;
-//     double result    = 0;
-//     double div       = 0;
-//     int temp         = 1;
-//     int base_counter = 0;
-//     int current      = 0;
-
-//     for (int i = 0; i < size; i++ ){
-// 	current = 0;
-// 	div     = 0;
-// 	sema    = false;
-//         switch(toupper(sequence[i])) {
-//             case 'A':
-//                 current = consensus[i].i[0];
-// 		sema=true;
-// 		base_counter++;
-//                 break;
-//             case 'T':
-//                 current = consensus[i].i[1];
-// 		sema=true;
-// 		base_counter++;
-//                 break;
-//             case 'C':
-//                 current = consensus[i].i[2];
-// 		sema=true;
-// 		base_counter++;
-//                 break;
-//             case 'G':
-//                 current = consensus[i].i[3];
-// 		sema=true;
-// 		base_counter++;
-//                 break;
-//             case 'U':
-//                 current = consensus[i].i[4];
-// 		sema=true;
-// 		base_counter++;
-//                 break;
-//         }
-//   	if (sema==true){
-// 	    temp=0;
-// 	    for (int j = 0; j < 5; j++) {
-// 		temp = temp + consensus[i].i[j];
-// 	    }
-// 	    if (temp !=0) {
-// 	        div = current / temp;
-// 	    }
-// 	    else {
-// 	        div = 0;
-// 	    }
-// 	}
-// 	result = result + div;
-// 	//printf(" %f",result);
-//     }
-//     if(base_counter!=0){
-// 	result = result / base_counter;
-// 	//printf(" %i",base_counter);
-//     }
-//     else{
-// 	result=0;
-//     }
-//     //printf(" %f",result);
-//     return result;
-// }
 
 
 void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {

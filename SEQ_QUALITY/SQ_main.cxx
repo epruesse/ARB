@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_main.cxx                                            //
 //    Purpose   : Entrypoint to Seq. Quality analysis; calls funktions   //
-//    Time-stamp: <Thu Feb/05/2004 10:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/19/2004 18:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -53,14 +53,14 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
         aw_root->awar_string(AWAR_SQ_TREE, default_tree, aw_def);
         free(default_tree);
     }
-    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 10, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 5, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
     aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 36, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
 }
 
@@ -110,6 +110,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
 	int mark_flag  = aw_root->awar(AWAR_SQ_MARK_FLAG)->read_int();
 	int mark_below = aw_root->awar(AWAR_SQ_MARK_BELOW)->read_int();
+	int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         /*
           SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -120,42 +121,57 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         */
 
 	if(tree==0){
-	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
-	    SQ_count_nr_of_species(gb_main);
-	    aw_openstatus("Calculating pass 1 of 2 ...");
-	    SQ_pass1_no_tree(globalData, gb_main);
-	    aw_closestatus();
-	    aw_openstatus("Calculating pass 2 of 2 ...");
-	    SQ_pass2_no_tree(globalData, gb_main);
-	    SQ_evaluate(gb_main, weights);
-	    aw_closestatus();
-            if (mark_flag) {
-                aw_openstatus("Marking Sequences...");
-                SQ_mark_species(gb_main, mark_below);
-                aw_closestatus();
-            }
-	    delete globalData;
+	    if (reevaluate) {
+		aw_openstatus("Marking Sequences...");
+		SQ_mark_species(gb_main, mark_below);
+		aw_closestatus();
+	    }
+	    else {
+		SQ_GroupData* globalData = new SQ_GroupData_RNA;
+		SQ_count_nr_of_species(gb_main);
+		aw_openstatus("Calculating pass 1 of 2 ...");
+		SQ_pass1_no_tree(globalData, gb_main);
+		aw_closestatus();
+		aw_openstatus("Calculating pass 2 of 2 ...");
+		SQ_pass2_no_tree(globalData, gb_main);
+		SQ_evaluate(gb_main, weights);
+		aw_closestatus();
+		if (mark_flag) {
+		    aw_openstatus("Marking Sequences...");
+		    SQ_mark_species(gb_main, mark_below);
+		    aw_closestatus();
+		}
+		delete globalData;
+	    }
 
 	}
 	else {
-	    aw_openstatus("Calculating pass 1 of 2...");
-            SQ_reset_counters(tree);
-	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
-	    SQ_calc_and_apply_group_data(tree, gb_main, globalData);
-	    aw_closestatus();
-	    SQ_reset_counters(tree);
-	    aw_openstatus("Calculating pass 2 of 2...");
-	    SQ_calc_and_apply_group_data2(tree, gb_main, globalData);
-	    SQ_evaluate(gb_main, weights);
-	    aw_closestatus();
-	    SQ_reset_counters(tree);
-            if (mark_flag) {
-                aw_openstatus("Marking Sequences...");
-                SQ_count_nr_of_species(gb_main);
-                SQ_mark_species(gb_main, mark_below);
-                aw_closestatus();
-            }
-            delete globalData;
+	    if (reevaluate) {
+		aw_openstatus("Marking Sequences...");
+		SQ_count_nr_of_species(gb_main);
+		SQ_mark_species(gb_main, mark_below);
+		aw_closestatus();
+	    }
+	    else {
+		aw_openstatus("Calculating pass 1 of 2...");
+		SQ_reset_counters(tree);
+		SQ_GroupData* globalData = new SQ_GroupData_RNA;
+		SQ_calc_and_apply_group_data(tree, gb_main, globalData);
+		aw_closestatus();
+		SQ_reset_counters(tree);
+		aw_openstatus("Calculating pass 2 of 2...");
+		SQ_calc_and_apply_group_data2(tree, gb_main, globalData);
+		SQ_evaluate(gb_main, weights);
+		aw_closestatus();
+		SQ_reset_counters(tree);
+		if (mark_flag) {
+		    aw_openstatus("Marking Sequences...");
+		    SQ_count_nr_of_species(gb_main);
+		    SQ_mark_species(gb_main, mark_below);
+		    aw_closestatus();
+		}
+		delete globalData;
+	    }
 	}
 
     }
