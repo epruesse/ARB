@@ -212,14 +212,10 @@ void primer_design_event_go(AW_window *aww) {
 	pdrw->insert_selection( pdrw_id, result, primers );
       }
 
-      if ( !r ) {
-	pdrw->insert_default_selection( pdrw_id, "**** There are no results", "" );
-      }
-      else {
-	pdrw->insert_default_selection( pdrw_id, "**** End of list", "" );
-      }
+      pdrw->insert_default_selection( pdrw_id, (r ? "**** End of list" : "**** There are no results"), "" );
 
       pdrw->update_selection_list( pdrw_id );
+      pdrw->show();
     }
   }
   if ( sequence ) free( sequence );
