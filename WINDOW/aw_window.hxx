@@ -316,6 +316,7 @@ public:
 
     void label_length( int length ); // Justifies all following labels
     void button_length( int length ); // Sets the width of all following buttons
+    int  get_button_length() const; // returns the current width of buttons
     void highlight( void );     // Creates a frame around the button
     void auto_increment( int dx, int dy ); // enable automatic placement of buttons
     // dx is the horizontal distance between the left
