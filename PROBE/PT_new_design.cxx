@@ -851,7 +851,7 @@ void ptnd_build_tprobes(PT_pdc *pdc) {
         hash = GBS_create_hash(defhash,0); // count in how many groups/sequences the tprobe occurs
 
         for (name = 0; name < psg.data_count; name++) {
-            if(psg.data[name].is_group<=0) continue;
+            if(psg.data[name].is_group != 1) continue;
 
             GB_HASH *hash_one = GBS_create_hash(defhash,0); // count tprobe occurances for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
