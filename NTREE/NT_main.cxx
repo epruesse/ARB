@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <adGene.h>
 
 #include <servercntrl.h>
 #include <aw_root.hxx>
@@ -70,7 +71,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
             GBDATA     *gb_ali_name  = GB_find(gb_ali,"alignment_name",0,down_level);
             const char *ali_name     = GB_read_char_pntr(gb_ali_name);
-            bool        is_ali_genom = strcmp(ali_name, "ali_genom") == 0;
+            bool        is_ali_genom = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
 
             if (GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level)) {
                 format_action = GB_read_int(gb_auto_format);
@@ -276,7 +277,7 @@ void nt_intro_start_import(AW_window *aws)
 {
     aws->hide();
     aws->get_root()->awar_string( AWAR_DB_PATH )->write_string( "noname.arb");
-    aws->get_root()->awar_int(AWAR_READ_GENOM_DB, 2); // Default toggle  in window  "Create&import" is Non-Genom
+    aws->get_root()->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
     gb_main = open_AWTC_import_window(aws->get_root(),"",1,(AW_RCB)main3,0,0);
 }
 
@@ -484,7 +485,7 @@ int main(int argc, char **argv)
                     break;
                 }
                 case 1: {        // Start converter
-                    aw_root->awar_int(AWAR_READ_GENOM_DB, 2);
+                    aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
                     gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
                     aw_root->main_loop();
                     break;
