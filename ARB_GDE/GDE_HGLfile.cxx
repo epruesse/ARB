@@ -87,7 +87,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 //	extern int OVERWRITE,Default_NA_RTrans[], Default_PROColor_LKUP[];
     type=0;count=0;c=0;
 
-    ErrorOut(0!=(file = fopen(filename,"r")),"No such file");
+    ErrorOut5(0!=(file = fopen(filename,"r")),"No such file");
 
     for(;fgets(in_line,GBUFSIZ,file) != 0;)
     {
@@ -279,7 +279,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 
 	    for(;line[0] != '"';line++)
 		if(line[0] == '\0')
-		    ErrorOut(0,"Error in input file");
+		    ErrorOut5(0,"Error in input file");
 	    line++;
 	    buffer = Calloc(buflen,sizeof(char));
 	    for(;!done;)
@@ -322,7 +322,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 	    buffer = Calloc(buflen,sizeof(char));
 	    for(;line[0] != '"';line++)
 		if(line[0] == '\0')
-		    ErrorOut(0,"Error in input file");
+		    ErrorOut5(0,"Error in input file");
 
 	    line++;
 	    for(;!done;)

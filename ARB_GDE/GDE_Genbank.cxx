@@ -49,7 +49,7 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
     NA_Sequence *this_elem =0;
     FILE *file;
 
-    ErrorOut(0 != (file = fopen(filename,"r")),"No such file");
+    ErrorOut5(0 != (file = fopen(filename,"r")),"No such file");
 
     for(;fgets(in_line,GBUFSIZ,file) != 0;)
     {

@@ -62,7 +62,7 @@ void Regroup(NA_Alignment *alignment)
 /*
  *   Print error message, and die
  */
-void ErrorOut(int code,const char *string)
+void ErrorOut5(int code,const char *string)
 {
     if (code == 0)
     {
@@ -86,7 +86,7 @@ char *Calloc(int count,int size)
     fprintf(stderr,"Calloc %d %d\n",count*size,TotalCalloc);
 #endif
     temp = (char *)malloc(size);
-    ErrorOut(0!= temp,"Cannot allocate memory");
+    ErrorOut5(0!= temp,"Cannot allocate memory");
     memset(temp,0,size);
     return(temp);
 }
@@ -100,7 +100,7 @@ char *Realloc(char *block,int size)
     fprintf(stderr,"Realloc %d\n",TotalRealloc);
 #endif
     temp          = (char *)realloc(block,size);
-    ErrorOut(0   != temp,"Cannot change memory size");
+    ErrorOut5(0   != temp,"Cannot change memory size");
 
     return(temp);
 }
