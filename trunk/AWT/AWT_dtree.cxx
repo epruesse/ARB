@@ -156,8 +156,10 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
        2	center (to top)
        3	center (to bottom; don't use this - it's used internal)
 
+       post-condition: leafname contains alphabetically "smallest" name of subtree
+
     */
-    static char *leafname;
+    static const char *leafname;
 
     if (!at) {
         GB_transaction dummy(this->gb_main);
@@ -174,8 +176,6 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
         leafname = at->name;
         return 1;
     }
-    char *leftleafname = 0;
-    char *rightleafname = 0;
     int leftsize = at->leftson->gr.leave_sum;
     int rightsize = at->rightson->gr.leave_sum;
 
@@ -197,16 +197,22 @@ int AWT_graphic_tree::resort_tree( int mode, struct AP_tree *at ) // run on fath
     }
 
     resort_tree(lmode,at->leftson);
-    leftleafname = leafname;
+    gb_assert(leafname);
+    const char *leftleafname = leafname;
+
     resort_tree(rmode,at->rightson);
-    rightleafname = leafname;
+    gb_assert(leafname);
+    const char *rightleafname = leafname;
+
+    gb_assert(leftleafname && rightleafname);
 
     if (leftleafname && rightleafname) {
-        if (strcmp(leftleafname,rightleafname) <0) {
+        int name_cmp = strcmp(leftleafname,rightleafname);
+        if (name_cmp<0) { // leftleafname < rightleafname
             leafname = leftleafname;
-        }else{
+        } else { // (name_cmp>=0) aka: rightleafname <= leftleafname
             leafname = rightleafname;
-            if (rightsize == leftsize){
+            if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
                 at->swap_sons();
             }
         }
