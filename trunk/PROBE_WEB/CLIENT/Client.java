@@ -303,7 +303,27 @@ class Client
                 // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
             }
 
-            cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.client_version, cl);
+            Dimension screenSize = new Dimension();
+            {
+                GraphicsEnvironment   ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                GraphicsDevice        gd = ge.getDefaultScreenDevice();
+                GraphicsConfiguration gc = gd.getDefaultConfiguration();
+
+                Rectangle screenRect = gc.getBounds();
+                
+                screenSize.width = (int)screenRect.getWidth();
+                screenSize.height = (int)screenRect.getHeight();
+
+            // DisplayMode         dm = gd.getDisplayMode();
+                // screenSize             = new Dimension(dm.getWidth(), dm.getHeight());
+
+                System.out.println("screenSize = "+screenSize.width+"/"+screenSize.height);
+            }
+
+            cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.client_version, cl,
+                                       new Point(10, 10), new Dimension(screenSize.width-20, screenSize.height-20), 20);
+                                       // new Point(10, 10), new Dimension(640-20, 480-20), 40);
+                                       // new Point(10, 10), new Dimension(640-20, 480-20));
             cl.iom     = new IOManager(cl.display);
 
             try {
@@ -322,9 +342,9 @@ class Client
                     String whatToDo = Toolkit.askUser("Notice", "A newer version of this client is available", "Ignore,Exit");
 
                     if (whatToDo.equals("Download")) {
-                        Toolkit.AbortWithError("download not implemented yet.");                        
+                        Toolkit.AbortWithError("download not implemented yet.");
                     }
-                    if (whatToDo.equals("Exit")) {                        
+                    if (whatToDo.equals("Exit")) {
                         System.exit(1);
                     }
 
