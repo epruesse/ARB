@@ -14,6 +14,7 @@
 #include <awt_canvas.hxx>
 #include "awt.hxx"
 #include "awt_tree.hxx"
+#include "awt_attributes.hxx"
 
 /*****************************************************************************************
  ************           Filter                      **********
@@ -1209,7 +1210,8 @@ int AP_tree::calc_color(void) {
             }
             else {
                 // check for user color
-                long color_group = AW_find_color_group(gb_node);
+                long color_group = AWT_species_get_dominant_color(gb_node);
+                // long color_group = AW_find_color_group(gb_node);
                 if (color_group == 0) {
                     res = AWT_GC_NSELECTED;
                 }
