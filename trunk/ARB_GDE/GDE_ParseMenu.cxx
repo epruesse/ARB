@@ -470,17 +470,14 @@ int Find2(const char *target,const char *key)
     int i,j,len1,dif,flag = FALSE;
     dif = (strlen(target)) - (len1 = strlen(key)) +1;
 
-    if(len1>0)
-    {
-	for(j=0;j<dif && flag == FALSE;j++)
-	{
-	    flag = TRUE;
-	    for(i=0;i<len1 && flag;i++)
-		flag = (key[i] == target[i+j])?TRUE:FALSE;
+    if(len1>0) {
+        for(j=0;j<dif && flag == FALSE;j++) {
+            flag = TRUE;
+            for(i=0;i<len1 && flag;i++)
+                flag = (key[i] == target[i+j])?TRUE:FALSE;
+        }
 
-	}
-
-	return(flag?j-1:-1);
+        return(flag?j-1:-1);
     }
 
     return -1;
