@@ -49,9 +49,10 @@ typedef enum {
 typedef enum {
 	AWT_QUERY_MARKED,
 	AWT_QUERY_MATCH,
-	AWT_QUERY_DOAWT_MATCH
+	AWT_QUERY_DONT_MATCH
 } AWT_QUERY_TYPES;
 
+#define AWT_QUERY_SEARCHES 3 // no of search-lines in search tool
 
 struct adaqbsstruct {
     AW_window         *aws;
@@ -59,14 +60,16 @@ struct adaqbsstruct {
     GBDATA            *gb_ref;		// second reference database
     AW_BOOL	           look_in_ref_list; // for querys
     AWAR	           species_name;
-    AWAR	           awar_key;
+    AWAR	           awar_keys[AWT_QUERY_SEARCHES];
     AWAR	           awar_setkey;
     AWAR	           awar_setprotection;
     AWAR	           awar_setvalue;
     AWAR	           awar_parskey;
     AWAR	           awar_parsvalue;
     AWAR	           awar_parspredefined;
-    AWAR	           awar_query;
+    AWAR	           awar_queries[AWT_QUERY_SEARCHES];
+    AWAR	           awar_not[AWT_QUERY_SEARCHES]; // not flags for queries
+    AWAR	           awar_operator[AWT_QUERY_SEARCHES]; // not flags for queries
     AWAR	           awar_ere;
     AWAR	           awar_where;
     AWAR	           awar_by;
