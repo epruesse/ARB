@@ -1,7 +1,7 @@
 item:Phylip DNAPARS
 itemmeta: D
 itemmethod:(GEN_INFILE(in1);\
-            RUN_IN_WINDOW((arb_dnapars $BOOTSTRP $SEARCH $VIEWOUT $RANDOM $STEPCOUNT $THRESHOLD;$DISPLAY_FUNC));\
+            RUN_IN_WINDOW((arb_dnapars $BOOTSTRP $SEARCH $VIEWOUT $RANDOM $TRANSVERSION_PARS $THRESHOLD_PARS $INTERACTIVE;$DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1) )&
 itemhelp:dnapars.help
 
@@ -25,15 +25,15 @@ arglabel:Randomize sequence order
 argchoice:Yes:1
 argchoice:No:0
 
-arg:STEPCOUNT
+arg:TRANSVERSION_PARS
 argtype:choice_menu
-arglabel:Steps to count
-argchoice:Count all steps:1
-argchoice:Count only transversions:0
+arglabel:Use transversion parsimony?
+argchoice:No:0
+argchoice:Yes:1
 
-arg:THRESHOLD
+arg:THRESHOLD_PARS
 argtype:text
-arglabel:Step threshold (0=none)
+arglabel:Use threshold parsimony (0=no)
 argtext:0
 
 arg:BOOTSTRP
@@ -53,6 +53,12 @@ arglabel:View report
 argchoice:No:0
 argchoice:Yes:1
 
+arg:INTERACTIVE
+argtype:choice_menu
+arglabel:Interactive? (no for bootstrap)
+argchoice:No:0
+argchoice:Yes:1
+
 in:in1
 informat:genbank
 inmask:
@@ -63,7 +69,7 @@ insave:
 item:Phylip PROTPARS
 itemmeta: P
 itemmethod:(GEN_INFILE(in1);\
-            RUN_IN_WINDOW((arb_protpars $BOOTSTRP $GENETIC_CODE $VIEWOUT $RANDOM $THRESHOLD;$DISPLAY_FUNC));\
+            RUN_IN_WINDOW((arb_protpars $BOOTSTRP $GENETIC_CODE $VIEWOUT $RANDOM $THRESHOLD_PARS $INTERACTIVE;$DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1) )&
 itemhelp:protpars.help
 
@@ -89,9 +95,9 @@ arglabel:Randomize sequence order
 argchoice:Yes:1
 argchoice:No:0
 
-arg:THRESHOLD
+arg:THRESHOLD_PARS
 argtype:text
-arglabel:Step threshold (0=none)
+arglabel:Use threshold parsimony (0=no)
 argtext:0
 
 arg:BOOTSTRP
@@ -108,6 +114,12 @@ argchoice:10000:10000
 arg:VIEWOUT
 argtype:choice_menu
 arglabel:View report
+argchoice:No:0
+argchoice:Yes:1
+
+arg:INTERACTIVE
+argtype:choice_menu
+arglabel:Interactive? (no for bootstrap)
 argchoice:No:0
 argchoice:Yes:1
 
