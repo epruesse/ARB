@@ -1,40 +1,47 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .cxx
+#-----------------------------------------------------------------------------
+# Makefile for ca_mark and ca_probe
+# Kai Bader (baderk@in.tum.de)
+# 2003, TU Muenchen
+#-----------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------
+#LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -lARBDB
+LIB = $(LIBPATH) $(SYSLIBS) $(CCPLIBS) -L /usr/arb/LIBLINK -lARBDB
 
-CPP_OBJECTS = probe_functions.o \
-		chip_main.o
+.SUFFIXES: .o .c .cxx
 
-all :
-	$(CLEAN_BEFORE_MAKE)
-	$(MAKE) $(MAIN)
+OBJECT = ca_mark.o ca_probe.o
 
-$(MAIN): $(CPP_OBJECTS)
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
+all: $(OBJECT:%.o=$(ARBHOME)/bin/%)
 
-.cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
+$(ARBHOME)/bin/ca_probe: ca_probe.cxx
+	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB)
 
-depend:
-	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
-
-clean:
-	-rm *.a *.o
-	-rm -r SunWS_cache
+$(ARBHOME)/bin/%: %.cxx
+	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB)
 
 # DO NOT DELETE
 
-probe_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
-probe_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
-probe_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
-probe_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-probe_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-probe_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-probe_functions.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-probe_functions.o: $(ARBHOME)/INCLUDE/PT_com.h
-probe_functions.o: $(ARBHOME)/INCLUDE/client.h
-probe_functions.o: $(ARBHOME)/INCLUDE/servercntrl.h
-probe_functions.o: probe_functions.hxx chip.hxx
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/arbdb.h
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/arb_assert.h
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/ad_prot.h
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/aw_window.hxx
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/aw_root.hxx
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/aw_device.hxx
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/aw_awars.hxx
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/PT_com.h
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/client.h
+$(ARBHOME)/bin/ca_mark: $(ARBHOME)/INCLUDE/servercntrl.h
+$(ARBHOME)/bin/ca_mark: ca_mark.hxx
+
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/arbdb.h
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/arb_assert.h
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/ad_prot.h
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/aw_window.hxx
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/aw_root.hxx
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/aw_device.hxx
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/aw_awars.hxx
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/PT_com.h
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/client.h
+$(ARBHOME)/bin/ca_probe: $(ARBHOME)/INCLUDE/servercntrl.h
+$(ARBHOME)/bin/ca_probe: ca_probe.hxx
