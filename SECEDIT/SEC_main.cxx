@@ -15,7 +15,6 @@
 #include <aw_awars.hxx>
 #include <awt_canvas.hxx>
 #include <awt.hxx>
-#define _USE_AW_WINDOW
 #include <BI_helix.hxx>
 #include <sec_graphic.hxx>
 #include "secedit.hxx"
@@ -329,7 +328,7 @@ void SEC_root::init_sequences(AW_root *awr, AWT_canvas *ntw){
     awr->awar_string(AWAR_CURSOR_POSITION,"",gb_main)->add_callback((AW_RCB1)SEC_cursor_position_changed_cb, (AW_CL)ntw);;
     SEC_cursor_position_changed_cb(awr, ntw);
 
-    helix = new BI_helix(awr);
+    helix = new BI_helix();
     GB_ERROR error = helix->init(gb_main);
     if (error){
         aw_message(error);
