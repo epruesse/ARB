@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : config_parser.h                                        //
 //    Purpose   : reads config files                                     //
-//    Time-stamp: <Thu Oct/09/2003 11:54 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -175,6 +175,12 @@ namespace {
             }
             return 0;
         }
+        GB_ERROR check_bool_range(int value) {
+            if (value<0 || value>1) {
+                return GBS_global_string("%i is not boolean (has to be 0 or 1).", value);
+            }
+            return 0;
+        }
 
         void parseInt(const string& key, int& value) {
             const string *val = parser.getValue(key, error);
@@ -216,6 +222,16 @@ namespace {
                 error             = check_int_range(low, min_value, max_value);
                 if (!error) error = check_int_range(high, min_value, max_value);
                 if (error) error  = parser.makeError(key, error);
+            }
+        }
+
+        void parseBool(const string& key, bool& boolean) {
+            int b;
+            parseInt(key, b);
+            if (!error) {
+                error            = check_bool_range(b);
+                if (error) error = parser.makeError(key, error);
+                else boolean     = static_cast<bool>(b);
             }
         }
 
