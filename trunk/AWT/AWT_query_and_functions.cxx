@@ -256,17 +256,20 @@ private:
     awt_query          *next;
 
     AW_BOOL rek;
+    AW_BOOL all_fields;
+
     GBQUARK keyquark;
 
 public:
 
     awt_query() {
-        op    = ILLEGAL;
-        key   = 0;
-        query = 0;
-        Not   = AW_FALSE;
-        next  = 0;
-        rek   = AW_FALSE;
+        op         = ILLEGAL;
+        key        = 0;
+        query      = 0;
+        Not        = AW_FALSE;
+        next       = 0;
+        rek        = AW_FALSE;
+        all_fields = AW_FALSE;
     }
     awt_query(struct adaqbsstruct *cbs);
     virtual ~awt_query() {
@@ -286,13 +289,23 @@ public:
         rek      = 0;
         keyquark = -1;
 
-        if (GB_first_non_key_char(key)) rek = 1;
-        else keyquark                       = GB_key_2_quark(gb_item_container, key);
+        if (GB_first_non_key_char(key)) {
+            if (strcmp(key, ALL_FIELDS_PSEUDO_FIELD) == 0) {
+                all_fields = 1;
+            }
+            else {
+                rek = 1;
+            }
+        }
+        else {
+            keyquark = GB_key_2_quark(gb_item_container, key);
+        }
 
         if (next) next->initForContainer(gb_item_container);
     }
 
     AW_BOOL is_rek() const { return rek; }
+    AW_BOOL query_all_fields() const { return all_fields; }
     GBQUARK getKeyquark() const { return keyquark; }
 };
 
@@ -407,70 +420,94 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                         AW_BOOL  this_hit   = 0;
                         GBDATA  *gb_key     = 0;
                         AW_BOOL  abortQuery = 0;
+                        AW_BOOL  all_fields = 0;
 
                         if (this_query->is_rek()) {
                             gb_key = GB_search(gb_item,this_query->getKey(),GB_FIND);
-                        }else{
+                        }
+                        else if (this_query->query_all_fields()) {
+                            gb_key     = GB_find(gb_item, 0, 0, down_level);
+                            all_fields = 1;
+                        }
+                        else {
                             gb_key = GB_find_sub_by_quark(gb_item,this_query->getKeyquark(),0,0);
                         }
 
-                        bool all_fields = !gb_key && strcmp(this_query->getKey(), "all_fields") == 0;
-
-                        // @@@ if all_fields is true => search through all fields
-
-                        switch(ext_query){
-                            case AWT_EXT_QUERY_NONE: {
-                                const char *query_string = this_query->getQuery();
-                                if (gb_key) {
-                                    char *data = GB_read_as_string(gb_key);
-                                    switch (query_string[0]) {
-                                        case '>': if (atoi(data)> atoi(query_string+1)) this_hit   = 1; break;
-                                        case '<': if (atoi(data) < atoi(query_string+1)) this_hit  = 1; break;
-                                        default: if (GBS_string_cmp(data,query_string,1) == 0) this_hit = 1; break;
+                        while (gb_key) {
+                            switch(ext_query) {
+                                case AWT_EXT_QUERY_NONE: {
+                                    const char *query_string = this_query->getQuery();
+                                    if (gb_key) {
+                                        char *data = GB_read_as_string(gb_key);
+                                        awt_assert(data || all_fields);
+                                        if (data) {
+                                            switch (query_string[0]) {
+                                                case '>': if (atoi(data)> atoi(query_string+1)) this_hit   = 1; break;
+                                                case '<': if (atoi(data) < atoi(query_string+1)) this_hit  = 1; break;
+                                                default: if (GBS_string_cmp(data,query_string,1) == 0) this_hit = 1; break;
+                                            }
+                                            free(data);
+                                        }
                                     }
-                                    free(data);
-                                }else{
-                                    this_hit = (strlen(query_string) == 0);
+                                    else {
+                                        this_hit = (strlen(query_string) == 0);
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
-                            case AWT_EXT_QUERY_COMPARE_LINES:
-                            case AWT_EXT_QUERY_COMPARE_WORDS: {
-                                if (gb_key) {
-                                    char   *data        = GB_read_as_string(gb_key);
-                                    GBDATA *gb_ref_pntr = 0;
+                                case AWT_EXT_QUERY_COMPARE_LINES:
+                                case AWT_EXT_QUERY_COMPARE_WORDS: {
+                                    if (gb_key) {
+                                        char   *data        = GB_read_as_string(gb_key);
+                                        GBDATA *gb_ref_pntr = 0;
 
-                                    if (!data || !data[0]) {
-                                        delete data;
-                                        break;
-                                    }
-                                    if (ext_query == AWT_EXT_QUERY_COMPARE_WORDS){
-                                        for (char *t = strtok(data," "); t; t = strtok(0," ")) {
-                                            gb_ref_pntr = 	(GBDATA *)GBS_read_hash(ref_hash,t);
+                                        if (!data || !data[0]) {
+                                            delete data;
+                                            break;
+                                        }
+                                        if (ext_query == AWT_EXT_QUERY_COMPARE_WORDS){
+                                            for (char *t = strtok(data," "); t; t = strtok(0," ")) {
+                                                gb_ref_pntr = 	(GBDATA *)GBS_read_hash(ref_hash,t);
+                                                if (gb_ref_pntr){
+                                                    if (cbs->look_in_ref_list) {
+                                                        if (IS_QUERIED(gb_ref_pntr,cbs)) this_hit = 1;
+                                                    }
+                                                    else {
+                                                        this_hit = 1;
+                                                    }
+                                                }
+                                            }
+                                        }else{
+                                            gb_ref_pntr = 	(GBDATA *)GBS_read_hash(ref_hash,data);
                                             if (gb_ref_pntr){
                                                 if (cbs->look_in_ref_list) {
                                                     if (IS_QUERIED(gb_ref_pntr,cbs)) this_hit = 1;
-                                                }
-                                                else {
+                                                }else{
                                                     this_hit = 1;
                                                 }
                                             }
                                         }
-                                    }else{
-                                        gb_ref_pntr = 	(GBDATA *)GBS_read_hash(ref_hash,data);
-                                        if (gb_ref_pntr){
-                                            if (cbs->look_in_ref_list) {
-                                                if (IS_QUERIED(gb_ref_pntr,cbs)) this_hit = 1;
-                                            }else{
-                                                this_hit = 1;
-                                            }
-                                        }
+                                        delete data;
                                     }
-                                    delete data;
+                                    abortQuery = true;
+                                    hit        = this_hit;
+                                    break;
                                 }
-                                abortQuery = true;
-                                hit        = this_hit;
+                            }
+
+                            if (abortQuery) break;
+
+                            if (hit) {
+                                if (all_fields) {
+                                    // @@@ store field for display?
+                                }
                                 break;
+                            }
+
+                            if (all_fields) {
+                                gb_key = GB_find(gb_key, 0, 0, this_level|search_next);
+                            }
+                            else {
+                                gb_key = 0;
                             }
                         }
 
