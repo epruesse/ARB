@@ -2,6 +2,6 @@
 #define awt_imp_exp_hxx_included
 
 GB_ERROR AWT_export_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_NDS, AW_BOOL save_branchlengths, AW_BOOL save_bootstraps, AW_BOOL save_groupnames, char *path);
-GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *tree_name, AW_BOOL use_NDS, const char *path);
+GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path);
 
 #endif
