@@ -83,7 +83,7 @@ struct {
     int        hide_delay;      // in seconds
     pid_t      pid;
     int        pipe_broken;
-    int        errno;
+    int        err_no;
     AW_window *aws;
     AW_window *awm;
     AW_BOOL    status_initialized;
@@ -110,8 +110,8 @@ struct {
 };
 
 // including errno.h sucks for some reason, so errno is manually declared here:
-// #include <errno.h>
-extern int errno;
+#include <errno.h>
+//extern int errno;
 
 // timeouts :
 
@@ -125,18 +125,18 @@ extern int errno;
 
 void aw_status_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 
-static void mark_pipe_broken(int errno) {
+static void mark_pipe_broken(int err_no) {
 #if defined(PIPE_DEBUGGING)
     if (aw_stg.pipe_broken != 0) {
         fprintf(stderr,
                 "Pipe already broken in mark_pipe_broken(); pipe_broken=%i aw_stg.errno=%i errno=%i\n",
-                aw_stg.pipe_broken, aw_stg.errno, errno);
+                aw_stg.pipe_broken, aw_stg.err_no, err_no);
     }
 
-    fprintf(stderr, "Marking pipe as broken (errno=%i)\n", errno);
+    fprintf(stderr, "Marking pipe as broken (errno=%i)\n", err_no);
 #endif // PIPE_DEBUGGING
 
-    aw_stg.errno       = errno;
+    aw_stg.err_no       = err_no;
     aw_stg.pipe_broken = 1;
 
     static bool error_shown = false;
