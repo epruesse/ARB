@@ -57,12 +57,14 @@ void disconnect_an(void)
     ang.link = 0;
 }
 
-GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, char*& new_name) {
+GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name) {
     // create a unique short name for 'full_name'    
     // the result is written into 'new_name' (as malloc-copy) 
     // if fails: GB_ERROR!=0 && new_name==0
+    // acc may be 0
     
     new_name = 0;
+    if (!acc) acc = "";
     
     aw_openstatus(GBS_global_string("Generating new name for '%s'", full_name)); 
     
@@ -77,7 +79,7 @@ GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, char*& new_na
     if (strlen(full_name)) {
         if (aisc_nput(ang.link, AN_LOCAL, ang.locs,
                       LOCAL_FULL_NAME,	full_name,
-                      LOCAL_ACCESSION,	"",
+                      LOCAL_ACCESSION,	acc,
                       LOCAL_ADVICE,		"",
                       0)){
             err = "Connection Problems with the NAME_SERVER";
