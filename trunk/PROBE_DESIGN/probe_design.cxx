@@ -1665,9 +1665,9 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
 
 #ifdef DEVEL_IDP
-    aws->at( "idp" );
+    aws->at( "export_gene" );
     aws->callback(pd_export_pt_server, 1);
-    aws->create_button("idp","IDP");
+    aws->create_button("update_genesrv","Update GeneSrv");
 #endif
 
     return aws;
