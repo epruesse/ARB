@@ -838,7 +838,7 @@ void *GBS_stropen(long init_size)   { /* opens a memory file */
 }
 
 char *GBS_strclose(void *strstruct, int optimize) /* returns the memory file */
-     /* if optimize == 1 then dont waste memory; if optimize == 0 than fast */
+     /* if optimize == 1 then dont waste memory; if optimize == 0 then fast */
      /* Note: optimize is now ignored due to speed-optimization */
 {
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
