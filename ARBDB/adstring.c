@@ -390,67 +390,73 @@ char *gbs_malloc_copy(const char *source, long len)
 }
 
 GB_ERROR GB_check_key(const char *key)
-     /* test whether all characters are letters or numbers */
+     /* test whether all characters are letters, numbers or _ */
 {
-	register char c;
-	long	len;
-	if (!key) return GB_export_error("Empty key is not allowed");
+	int  i;
+	long len;
+
+	if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
 	len = strlen(key);
 	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
 	if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key);
-	for (;(c=key[0]);key++){
+
+	for (i = 0; key[i]; ++i) {
+        char c = key[i];
 		if ( (c>='a') && (c<='z')) continue;
 		if ( (c>='A') && (c<='Z')) continue;
 		if ( (c>='0') && (c<='9')) continue;
 		if ( (c=='_') ) continue;
-		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ",c,key);
+		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
 	}
 
 	return 0;
 }
 GB_ERROR GB_check_link_name(const char *key)
-     /* test whether all characters are letters or numbers */
+     /* test whether all characters are letters, numbers or _ */
 {
-	register char c;
-	long	      len;
+	int  i;
+	long len;
 
-	if (!key) return GB_export_error("Empty key is not allowed");
+	if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
 	len = strlen(key);
 	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
-	if (len < 1) return GB_export_error("Invalid key '%s': too short",key);
+	if (len < 1) return GB_export_error("Invalid key '%s': too short",key); // here it differs from GB_check_key
 
-	for (;(c=key[0]);key++){
+	for (i = 0; key[i]; ++i) {
+        char c = key[i];
 		if ( (c>='a') && (c<='z')) continue;
 		if ( (c>='A') && (c<='Z')) continue;
 		if ( (c>='0') && (c<='9')) continue;
 		if ( (c=='_') ) continue;
-		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ",c,key);
+		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
 	}
 
-	return 0;
+    return 0;
 }
-GB_ERROR GB_check_hkey(const char *key)		/* RALF: 27-01-97 */
-     /* test whether all characters are letters or numbers */
+GB_ERROR GB_check_hkey(const char *key)
+     /* test whether all characters are letters, numbers or _ */
+     /* additionally allow '/' and '->' for hierarchical keys */
 {
-	register char c;
-	long	len;
-	if (!key) return GB_export_error("Empty key is not allowed");
+	int  i;
+	long len;
+
+	if (!key || key[0] == 0) return GB_export_error("Empty key is not allowed");
 	len = strlen(key);
-	if (len>GB_KEY_LEN_MAX) return
-                                GB_export_error("Invalid key '%s': too long",key);
-	if (len < GB_KEY_LEN_MIN) return
-                                  GB_export_error("Invalid key '%s': too short",key);
-	for (;(c=key[0]);key++){
+	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
+	if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key);
+
+	for (i = 0; key[i]; ++i) {
+        char c = key[i];
 		if ( (c>='a') && (c<='z')) continue;
 		if ( (c>='A') && (c<='Z')) continue;
 		if ( (c>='0') && (c<='9')) continue;
 		if ( (c=='_') ) continue;
+
+        /* hierarchical keys :  */
 		if ( (c=='/') ) continue;
-		if ( (c=='-') && (key[1] == '>') ) {
-		    key++;
-		    continue;
-		}
-		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ",c,key);
+		if ( (c=='-') && (key[i+1] == '>') ) { ++i; continue; }
+
+		return GB_export_error("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' '->' '/'", c, key);
 	}
 
 	return 0;
