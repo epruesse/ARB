@@ -1,14 +1,19 @@
 #!/usr/bin/perl -w
 
-## next line mandatory
-## maybe sometimes other type like gzip or similar useful
-
-#use CGI qw(:standard);
+use probe_server;
 use strict;
 
-my $now = localtime(time());
+probe_server::print_header();
+my $treefile = probe_server::treefilename();
+
+if (-f $treefile) {
+  my $mtime = (stat($treefile))[9];
+  print "result=ok\nversion=ARB_PS_TREE_$mtime\n";
+}
+else {
+  probe_server::print_critical_error("no such file:'$treefile'");
+}
 
 
-# print header;
-print STDOUT "Content-type: text/plain\n\n";
-print "CURRENTVERSION_16S_27081969";
+
+# print "CURRENTVERSION_16S_27081969";
