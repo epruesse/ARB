@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Tue May/28/2002 18:19 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jun/28/2002 13:50 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -367,6 +367,12 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);
                     parseSection(title, rest, rest-line, read);
+
+                    const char *t = title.front().c_str();
+
+                    if (strstr(t, "Standard help file form") != 0) {
+                        throw strf("Illegal title for help file: '%s'", t);
+                    }
                 }
                 else {
                     if (keyword == "NOTE") keyword      = "NOTES";
@@ -1079,11 +1085,9 @@ int main(int argc, char *argv[]) {
 
         return EXIT_SUCCESS;
     }
-    catch (string& err)     { cerr << "arb_help2xml (" << arb_help << "):" << err << "\n"; }
-    catch (const char *err) { cerr << "arb_help2xml (" << arb_help << "):" << err << "\n"; }
-    catch (...) {
-        cerr << "unknown exception\n";
-    }
+    catch (string& err)         { cerr << err << " (arb_help2xml " << arb_help << ")\n"; }
+    catch (const char * err)    { cerr << err << " (arb_help2xml " << arb_help << ")\n"; }
+    catch (...)                 { cerr << "unknown exception (arb_help2xml)\n"; }
 
     return EXIT_FAILURE;
 }
