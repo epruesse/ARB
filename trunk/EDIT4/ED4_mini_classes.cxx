@@ -316,7 +316,7 @@ ED4_bases_table::ED4_bases_table(int maxseqlength)
 
 ED4_bases_table::~ED4_bases_table()
 {
-    delete no_of_bases.shortTable;
+    delete [] no_of_bases.shortTable;
 #ifdef COUNT_BASES_TABLE_SIZE
     bases_table_size -= (no_of_entries+1)*table_entry_size;
     printf("bases_table_size = %li\n", bases_table_size);
@@ -729,7 +729,7 @@ ED4_char_table::~ED4_char_table()
         delete bases_table[i];
     }
 
-    delete bases_table;
+    delete [] bases_table;
 }
 
 int ED4_char_table::changed_range(const ED4_char_table& other, int *startPtr, int *endPtr) const

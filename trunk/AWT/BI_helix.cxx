@@ -257,7 +257,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
 
             if (strcmp(sident+1,ident)) {
                 //free(sident);
-                sident = new char[strlen(ident)+2];
+                sident = (char*)malloc(strlen(ident)+2);
                 sprintf(sident,"-%s",ident);
             }
             entries[pos].helix_nr = sident+1;
@@ -272,8 +272,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
  helix_end:;
     GBS_hash_do_loop(hash,BI_helix_free_hash);
     GBS_free_hash(hash);
-    delete helix_nr;
-    delete helix;
+    free(helix_nr);
+    free(helix);
     if (error[0]) return error;
     return 0;
 }
@@ -291,8 +291,8 @@ const char *BI_helix::init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t sizei)
         helix = GB_read_string(gb_helix);
         err = init(helix_nr,helix,sizei);
     }
-    delete helix_nr;
-    delete helix;
+    free(helix_nr);
+    free(helix);
     if (gb_helix) GB_pop_transaction(gb_helix);
     return err;
 }
@@ -328,9 +328,9 @@ const char *BI_helix::init(GBDATA *gb_main)
     char *use = GBT_get_default_alignment(gb_main);
     err = 	init(gb_main,use,helix_nr,helix);
     GB_pop_transaction(gb_main);
-    delete helix;
-    delete helix_nr;
-    delete use;
+    free(helix);
+    free(helix_nr);
+    free(use);
 
     return err;
 
@@ -499,9 +499,9 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
 *******			Reference to abs pos					********
 ****************************************************************************************/
 void BI_ecoli_ref::exit(void){
-    delete _abs_2_rel1;
-    delete _abs_2_rel2;
-    delete _rel_2_abs;
+    delete [] _abs_2_rel1;
+    delete [] _abs_2_rel2;
+    delete [] _rel_2_abs;
     _abs_2_rel1 = 0;
     _abs_2_rel2 = 0;
     _rel_2_abs = 0;
@@ -575,8 +575,8 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main)
     char *ref = GBT_get_default_ref(gb_main);
     char *use = GBT_get_default_alignment(gb_main);
     err = 	init(gb_main,use,ref);
-    delete ref;
-    delete use;
+    free(ref);
+    free(use);
 
     return err;
 

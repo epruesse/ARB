@@ -1186,7 +1186,7 @@ const char *AW_window::get_element_of_index(AW_selection_list *selection_list, i
             listEntry = selection_list->next_element();
         }
     }
-    
+
     if(!element) return NULL;
     else return element;
 }
@@ -1748,7 +1748,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
 
 
     p_w->option_menu = optionMenu;
-    delete p_w->option_menu_var_name;
+    free(p_w->option_menu_var_name);
     p_w->option_menu_var_name = strdup( var_name );
     p_w->option_menu_var_type = vs->variable_type;
 
@@ -2210,7 +2210,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     }
 
     p_w->toggle_field = toggle_field;
-    delete (p_w->toggle_field_var_name);
+    free((p_w->toggle_field_var_name));
     p_w->toggle_field_var_name = strdup(var_name );
     p_w->toggle_field_var_type = vs->variable_type;
 
@@ -2471,8 +2471,7 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             }
         }
 
-        delete global_var_value;
-
+        free(global_var_value);
     }
 
     short length;

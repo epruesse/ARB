@@ -226,18 +226,20 @@ void aw_root_init_font(Display *tool_d)
             strcpy(templat,x_fontinfo[f].templat);
             strcat(templat,"*-*-*-*-*-*-");
             /* add ISO8859 (if not Symbol font or ZapfDingbats) to font name */
-            if (strstr(templat,"symbol") == NULL &&
-                strstr(templat,"zapfdingbats") == NULL)
+            if (strstr(templat,"symbol") == NULL && strstr(templat,"zapfdingbats") == NULL) {
                 strcat(templat,"ISO8859-*");
-            else
+            }
+            else {
                 strcat(templat,"*-*");
-            /* don't free the Fontlist because we keep pointers into it */
+            }
+
             p = 0;
-            if ((fontlist = XListFonts(tool_d, templat, MAXNAMES, &count))==0) {
+            if ((fontlist = XListFonts(tool_d, templat, MAXNAMES, &count))==0) { /* don't free the Fontlist because we keep pointers into it */
                 /* no fonts by that name found, substitute the -normal font name */
                 flist[p].fn = NORMAL_FONT;
                 flist[p++].s = 12;	/* just set the size to 12 */
-            } else {
+            }
+            else {
                 fname = fontlist; /* go through the list finding point sizes */
                 while (count--) {
                     ss = parsesize(*fname); /* get the point size from the name */

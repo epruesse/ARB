@@ -27,11 +27,15 @@ void AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1);
 
 
 void AWT_graphic_exports::clear(){
-	resize=0;
-	refresh=0;
-	structure_change=0;
-	save = 0;
-	zoom_reset=0;
+	zoom_reset       = 0;
+	resize           = 0;
+	refresh          = 0;
+	save             = 0;
+	structure_change = 0;
+	dont_fit_x       = 0;
+	dont_fit_y       = 0;
+	dont_fit_larger  = 0;
+	dont_scroll      = 0;
 }
 
 void
@@ -792,6 +796,7 @@ AWT_graphic::~AWT_graphic(void)
 
 AWT_graphic::AWT_graphic(void)
 {
+    exports.clear();
 }
 
 

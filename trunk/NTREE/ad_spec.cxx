@@ -243,7 +243,7 @@ void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
         awt_map_arbdb_scanner(scannerid,gb_species,0, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(gb_main);
-    delete source;
+    free(source);
 }
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 {

@@ -265,7 +265,7 @@ AW_window_Motif::AW_window_Motif()
 AW_window::AW_window(void) {
     memset((char *)this,0,sizeof(AW_window));
     p_w					= new AW_window_Motif;
-    _at					= new AW_at;
+    _at					= new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
     picture					= new AW_rectangle;
     reset_scrolled_picture_size();
     slider_pos_vertical			= 0;
@@ -1252,7 +1252,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname)
         memset((char *)color_table,-1,(size_t)(color_table_size*sizeof(unsigned long)));
     }else{
         if (colnum>=color_table_size) {
-            color_table = (unsigned long *)realloc((char *)color_table,(8 + colnum)*sizeof(long));
+            color_table = (unsigned long *)realloc((char *)color_table,(8 + colnum)*sizeof(long)); // valgrinders : never free'd because AW_window never is free'd
             memset( (char *)(color_table+color_table_size),-1, (int)(8 + colnum - color_table_size) * sizeof(long));
             color_table_size = 8+colnum;
         }
@@ -2277,10 +2277,12 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cb2);
 
-    if (!p_w->modes_f_callbacks) p_w->modes_f_callbacks =
-                                     (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*),AW_NUMBER_OF_F_KEYS);
-    if (!p_w->modes_widgets) p_w->modes_widgets =
-                                 (Widget *)GB_calloc(sizeof(Widget),AW_NUMBER_OF_F_KEYS);
+    if (!p_w->modes_f_callbacks) {
+        p_w->modes_f_callbacks = (AW_cb_struct **)GB_calloc(sizeof(AW_cb_struct*),AW_NUMBER_OF_F_KEYS); // valgrinders : never free'd because AW_window never is free'd
+    }
+    if (!p_w->modes_widgets) {
+        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget),AW_NUMBER_OF_F_KEYS);
+    }
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
         p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
         p_w->modes_widgets[p_w->number_of_modes] = button;
@@ -2655,7 +2657,7 @@ void AW_window::set_window_title_intern( char *title ) {
 
 void AW_window::set_window_title( const char *title ) {
     XtVaSetValues( p_w->shell ,XmNtitle, title, NULL );
-    delete window_name;
+    free(window_name);
     window_name = strdup(title);
 }
 

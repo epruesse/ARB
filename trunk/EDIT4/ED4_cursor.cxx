@@ -1393,7 +1393,7 @@ void ED4_base_position::calc4base(ED4_base *base)
 
     e4_assert(seq);
 
-    delete seq_pos;
+    delete [] seq_pos;
     calced4base = base;
 
     {

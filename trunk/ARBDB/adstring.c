@@ -488,6 +488,8 @@ GB_ERROR GB_check_hkey(const char *key)
                 start = 0;
             }
         }
+
+        free(key_copy);
     }
 
     return err;

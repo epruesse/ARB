@@ -281,7 +281,7 @@ void AW_window::unset_at_commands( void ) {
 	_at->to_position_exists	= AW_FALSE;
 
 	_at->highlight = AW_FALSE;
-	delete _at->background_colorname;
+	free(_at->background_colorname);
 	_at->background_colorname = 0;
 }
 

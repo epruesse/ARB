@@ -488,8 +488,8 @@ int main(int argc,char **argv)
                 char *config_data_top	= GB_read_as_string(gb_top_area);
 
                 ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
-                delete config_data_middle;
-                delete config_data_top;
+                free(config_data_middle);
+                free(config_data_top);
 
                 found_config = 1;
             }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
@@ -33,7 +34,8 @@ void ed_rehash_mapping(AW_root *awr, ed_key *ek)
 		if (strlen(ps) && strlen(pd) ) {
 			ek->map[ps[0]] = pd[0];
 		}
-		delete ps; delete pd;
+		free(ps);
+        free(pd);
 	   }
 	}
 }

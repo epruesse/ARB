@@ -121,7 +121,7 @@ SEC_helix_strand * SEC_segment::get_previous_strand(void) {
 }
 
 char * SEC_root::write_data(void) {
-    delete x_string;
+    delete [] x_string;
     x_string = 0;
     if (template_sequence != 0) {
         generate_x_string();
@@ -135,7 +135,7 @@ char * SEC_root::write_data(void) {
 
     out << '\0';
 
-    delete number_found;
+    delete [] number_found;
     number_found = 0;
 
     return out.str();
@@ -184,7 +184,7 @@ void SEC_loop::save(ostream & out, SEC_helix_strand *caller, int indent) {
         out << "\t";
     }
     out << "RADIUS=" << min_radius << ":" << max_radius << "\n";
-    
+
     SEC_segment *next_segment;
     SEC_helix_strand *next_strand;
     next_segment = caller->get_next_segment();
@@ -216,7 +216,7 @@ void SEC_helix::save(ostream & out, int indent) {
     }
     out << "DELTA=" << delta << "\n";
 
-    //writing to export file 
+    //writing to export file
      for (i=0; i<indent; i++) {
          out << "\t";
      }
@@ -346,7 +346,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     cursor = 0;
     show_constraints = 0;
     fresh_sequence = 1;
-    
+
     rotateBranchesMode = 0;
     rootAngle = 0;
     seqTerminal = 0;

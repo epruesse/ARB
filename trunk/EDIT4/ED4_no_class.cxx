@@ -1432,8 +1432,8 @@ void ED4_load_new_config(char *string)
     // 	ED4_ROOT->temp_aww = aw_temp;
     // 	ED4_ROOT->temp_device = dev_temp;						// show_all for all windows end
 
-    delete config_data_middle;
-    delete config_data_top;
+    free(config_data_middle);
+    free(config_data_top);
 }
 
 static long ED4_get_edit_modus(AW_root *root)
@@ -1523,7 +1523,7 @@ void ED4_start_editor_on_configuration(AW_window *aww){
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
 
     ED4_load_new_config(cn);
-    delete cn;
+    free(cn);
 }
 
 void ED4_compression_changed_cb(AW_root *awr){
@@ -1791,7 +1791,7 @@ void ED4_save_configuration(AW_window *aww,AW_CL close_flag){
 
     ED4_ROOT->database->generate_config_string( cn );
 
-    delete cn;
+    free(cn);
 }
 
 AW_window *ED4_save_configuration_as_open_window(AW_root *awr){

@@ -75,7 +75,7 @@ public:
     {
         AW_root *root = ED4_ROOT->aw_root;
 
-        delete pattern;
+        free(pattern);
         pattern        = root->awar(awarList->pattern)->read_string();
         min_mismatches = root->awar(awarList->min_mismatches)->read_int();
         max_mismatches = root->awar(awarList->max_mismatches)->read_int();
@@ -804,6 +804,7 @@ void ED4_create_search_awars(AW_root *root)
         strcat(buf, sub);
 
         root->awar_string(ED4_SEARCH_SAVE_BASE"/directory", buf)->write_string(buf);
+        free(buf);
     }
 }
 
@@ -974,6 +975,11 @@ ED4_SearchResults::ED4_SearchResults()
     for (i=0; i<SEARCH_PATTERNS; i++) {
         timeOf[i] = 0;
     }
+}
+
+ED4_SearchResults::~ED4_SearchResults() {
+    delete first;
+    free(array);
 }
 
 // --------------------------------------------------------------------------------
@@ -1326,7 +1332,7 @@ void ED4_SearchResults::to_array() const {
 }
 void ED4_SearchResults::to_list() const {
     e4_assert(arraySize>0); // assert array-format
-    delete array;
+    free(array);
 
     *((int*)&arraySize) = 0;
     *((ED4_SearchPosition***)&array) = 0;

@@ -2013,8 +2013,8 @@ ED4_remap::ED4_remap()
 }
 ED4_remap::~ED4_remap()
 {
-    delete screen_to_sequence_tab;
-    delete sequence_to_screen_tab;
+    delete [] screen_to_sequence_tab;
+    delete [] sequence_to_screen_tab;
 }
 int ED4_remap::screen_to_sequence(int screen_pos) const
 {
