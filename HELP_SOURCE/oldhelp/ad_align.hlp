@@ -42,11 +42,20 @@ DESCRIPTION  This module allows handling and modification of 'alignments'
                       FORMAT:     Append '.' to sequences up to 'Maximum Seq.
                                   Length'. [*]
 
+                Auto format: Whether to ask, format or skip w/o asking
+                             whenever an unformatted alignment is detected.
+
 NOTES		Some functions require setting a protection level equal to or
 		higher than that of the 'alignment'.
 
 		Asterisks indicate functions which are not available with the
 		'ALIGNMENT CONTROL' functions of the 'MERGE TWO DATABASES' tool.
+
+                There is one special alignment called "ali_genom" used for full
+                genome sequences. You can't format that alignment because it is
+                necessary to ensure that it's alignment positions match those
+                used in the gene entries. For the same reason you should never
+                ever put any gap into that alignment.
 
 EXAMPLES	None
 
