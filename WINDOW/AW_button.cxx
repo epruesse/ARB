@@ -94,7 +94,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
     AW_variable_update_struct *vus   = (AW_variable_update_struct *) variable_update_struct;
 
     aw_assert(vus);
-    
+
     char                      *tmp   = 0;
     long                       h_int;
     float                      h_float;
@@ -384,7 +384,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
                 *width = atoi(temp);
                 temp = strtok(NULL,  " ");
                 *height = atoi(temp);
-#ifdef DEBUG               
+#ifdef DEBUG
                 printf("XPM file successfully parsed %d x %d !\n",*width, *height);
 #endif
             }
@@ -392,7 +392,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
                 err = "size detection failed";
             }
         }
-        
+
         free(name);
         fclose(in);
     }
@@ -2218,8 +2218,13 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
 }
 
 static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
-    bool removed = AW_remove_button_from_sens_list(aw_root, os->choice_widget);
+#if defined(DEBUG)
+    bool removed =
+#endif // DEBUG
+        AW_remove_button_from_sens_list(aw_root, os->choice_widget);
+#if defined(DEBUG)
     aw_assert(removed);
+#endif // DEBUG
     // XtRemoveAllCallbacks(os->choice_widget, XmNactivateCallback);
     XtDestroyWidget(os->choice_widget);
 }
@@ -2287,7 +2292,7 @@ inline void option_menu_add_option(AW_option_menu_struct *oms, AW_option_struct 
         else {
             oms->last_choice = oms->first_choice = os;
         }
-    }    
+    }
 }
 
 // for string :
@@ -2300,7 +2305,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     else {
         Widget        entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
         AW_cb_struct *cbs   = _callback; // user-own callback
-        
+
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
@@ -2313,14 +2318,14 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 }
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, int var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
-    
+
     if (oms->variable_type != AW_INT){
         AW_ERROR("insert_option(..int..) used for non-int awar");
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
         AW_cb_struct *cbs   = _callback; // user-own callback
-        
+
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
@@ -2333,14 +2338,14 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 }
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
-    
+
     if (oms->variable_type != AW_FLOAT){
         AW_ERROR("insert_option(..float..) used for non-float awar");
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
         AW_cb_struct *cbs   = _callback; // user-own callback
-        
+
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
