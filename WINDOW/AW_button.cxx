@@ -1576,7 +1576,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
     check_at_pos();
 
     if ( _at->correct_for_at_center ) {
-        _at->correct_for_at_center_intern = _at->correct_for_at_center;
+//         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         if ( label ) {
             _at->saved_x = _at->x_for_next_button;
             x_for_position_of_menu = 10;
@@ -1671,14 +1671,13 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
     get_root()->number_of_option_menues++;
 
     if ( p_global->option_menu_list ) {
-        p_global->last_option_menu->next = new AW_option_menu_struct(
-                                                                     get_root()->number_of_option_menues,
-                                                                     _at->id_for_next_button,
-                                                                     var_name, vs->variable_type, optionMenu1, _at->x_for_next_button - 7, _at->y_for_next_button );
+        p_global->last_option_menu->next =
+            new AW_option_menu_struct(get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1, _at->x_for_next_button - 7, _at->y_for_next_button, _at->correct_for_at_center);
         p_global->last_option_menu = p_global->last_option_menu->next;
     }
     else {
-        p_global->last_option_menu = p_global->option_menu_list = new AW_option_menu_struct( get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1,  _at->x_for_next_button - 7, _at->y_for_next_button );
+        p_global->last_option_menu = p_global->option_menu_list =
+            new AW_option_menu_struct( get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1,  _at->x_for_next_button - 7, _at->y_for_next_button, _at->correct_for_at_center);
     }
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_option_menues, optionMenu, AW_WIDGET_CHOICE_MENU, this);
@@ -1918,19 +1917,20 @@ void AW_window::update_option_menu( void ) {
 
 
 void AW_window::update_option_menu( int option_menu_number ) {
-    AW_option_menu_struct		*option_menu_list;
-    AW_option_struct	*menu_choice_list;
-    AW_BOOL 								cont;
-    char									*global_var_value = NULL;
-    long									global_var_int_value =0;
-    float									global_var_float_value =0;
-    int	width_of_last_widget;
-    int	height_of_last_widget;
+    AW_option_menu_struct *option_menu_list;
+    AW_option_struct	  *menu_choice_list;
+    AW_BOOL 			   cont;
+    char				  *global_var_value       = NULL;
+    long				   global_var_int_value   = 0;
+    float				   global_var_float_value = 0;
+    int	                   width_of_last_widget;
+    int	                   height_of_last_widget;
 
 
     for ( 	option_menu_list = p_global->option_menu_list;
             option_menu_list;
-            option_menu_list = option_menu_list->next) {
+            option_menu_list = option_menu_list->next)
+    {
         if ( option_menu_number == option_menu_list->option_menu_number ) {
             break;
         }
@@ -1960,8 +1960,6 @@ void AW_window::update_option_menu( int option_menu_number ) {
 
     menu_choice_list = option_menu_list->first_choice;
     while ( menu_choice_list && cont ) {
-
-
         switch ( option_menu_list->variable_type ) {
             case AW_STRING:	if ( (strcmp( global_var_value, menu_choice_list->variable_value ) == 0) ) {
                 cont = AW_FALSE;
@@ -2020,19 +2018,19 @@ void AW_window::update_option_menu( int option_menu_number ) {
     short length;
     short height;
     XtVaGetValues( option_menu_list->label_widget ,XmNwidth ,&length ,XmNheight, &height, NULL );
-    width_of_last_widget = length;
-    height_of_last_widget = height;
-    if ( _at->correct_for_at_center_intern ) {
+    width_of_last_widget              = length;
+    height_of_last_widget             = height;
 
-        if ( _at->correct_for_at_center_intern == 1 ) { // middle centered
+    if ( option_menu_list->correct_for_at_center_intern ) {
+        if ( option_menu_list->correct_for_at_center_intern == 1 ) { // middle centered
             XtVaSetValues( option_menu_list->label_widget, XmNx,(short)((short)_at->saved_x - (short)(length/2)), NULL );
             width_of_last_widget = width_of_last_widget / 2;
         }
-        if ( _at->correct_for_at_center_intern == 2 ) { // right centered
+        if ( option_menu_list->correct_for_at_center_intern == 2 ) { // right centered
             XtVaSetValues( option_menu_list->label_widget, XmNx,(short)((short)_at->saved_x - length) + 7, NULL );
             width_of_last_widget = 0;
         }
-        _at->correct_for_at_center_intern = 0;
+//         _at->correct_for_at_center_intern = 0;
     }
     width_of_last_widget -= 4;
 
@@ -2071,7 +2069,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     AW_awar *vs = root->awar(var_name);
 
     if ( _at->correct_for_at_center ) {
-        _at->correct_for_at_center_intern = _at->correct_for_at_center;
+//         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         _at->saved_x = _at->x_for_next_button;
         x_for_position_of_option = 10;
     }else {
@@ -2135,12 +2133,10 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     get_root()->number_of_toggle_fields++;
 
     if ( p_global->toggle_field_list ) {
-        p_global->last_toggle_field->next = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field );
+        p_global->last_toggle_field->next = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field, _at->correct_for_at_center);
         p_global->last_toggle_field = p_global->last_toggle_field->next;
     }else {
-        p_global->last_toggle_field = p_global->toggle_field_list =
-            new AW_toggle_field_struct( get_root()->number_of_toggle_fields,
-                                        var_name, vs->variable_type, toggle_field );
+        p_global->last_toggle_field = p_global->toggle_field_list = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field, _at->correct_for_at_center);
     }
 
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_toggle_fields, toggle_field, AW_WIDGET_TOGGLE_FIELD, this);
@@ -2398,26 +2394,26 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
     short length;
     short height;
     XtVaGetValues( p_w->toggle_field ,XmNwidth ,&length ,XmNheight, &height, NULL );
-    length += (short)_at->saved_x_correction_for_label;
-    width_of_last_widget = length;
-    height_of_last_widget = height;
-    if ( _at->correct_for_at_center_intern ) {
+    length                += (short)_at->saved_x_correction_for_label;
+    width_of_last_widget   = length;
+    height_of_last_widget  = height;
 
-        if ( _at->correct_for_at_center_intern == 1 ) { // middle centered
+    if ( toggle_field_list->correct_for_at_center_intern ) {
+        if ( toggle_field_list->correct_for_at_center_intern == 1 ) { // middle centered
             XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_x_correction_for_label ), NULL );
             if ( p_w->toggle_label ) {
                 XtVaSetValues( p_w->toggle_label, XmNx,(short)((short)_at->saved_x - (short)(length/2) ), NULL );
             }
             width_of_last_widget = width_of_last_widget / 2;
         }
-        if ( _at->correct_for_at_center_intern == 2 ) { // right centered
+        if ( toggle_field_list->correct_for_at_center_intern == 2 ) { // right centered
             XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - length + (short)_at->saved_x_correction_for_label ), NULL );
             if ( p_w->toggle_label ) {
                 XtVaSetValues( p_w->toggle_label, XmNx,(short)( (short)_at->saved_x - length ) , NULL );
             }
             width_of_last_widget = 0;
         }
-        _at->correct_for_at_center_intern = 0;
+//         _at->correct_for_at_center_intern = 0;
     }
 
     this->unset_at_commands();
