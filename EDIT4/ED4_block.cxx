@@ -81,7 +81,8 @@ static GB_ERROR perform_block_operation_on_whole_sequence(ED4_blockoperation blo
             else if (new_len>len) {
                 for (int l=new_len-1; l>=len; l--) {
                     if (!ADPP_IS_ALIGN_CHARACTER(new_seq[l])) {
-                        error = "Result of block-operation to large (not enough gaps at end of sequence data)";
+                        error = "Result of block-operation to large (not enough gaps at end of sequence data)\n"
+                            "Maybe your sequences are not formatted?";
                         break;
                     }
                 }

@@ -112,7 +112,9 @@ ED4_ERROR * ED4_Edit_String::insert(char *text,long position, int direction, int
     return 0;
 
  no_gaps:
-    return GBS_global_string("There are no/not enough gaps at %s of sequence => can't insert characters", direction>=0 ? "end" : "start");
+    return GBS_global_string("There are no/not enough gaps at %s of sequence => can't insert characters%s",
+                             direction >= 0 ? "end" : "start",
+                             direction >= 0 ? "\nMaybe your sequences are not formatted?" : "");
 }
 
 ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
