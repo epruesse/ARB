@@ -372,6 +372,7 @@ public:
     void get_at_position( int *x, int *y );
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
+    void at_attach(AW_BOOL attach_x, AW_BOOL attach_y); // attach to X, Y or both
     void at_set_to(AW_BOOL attach_x, AW_BOOL attach_y, int xoff, int yoff); // set "to:XY:id" manually
     void at_unset_to();         // unset "to:id" manually
     void at_set_min_size(int xmin, int ymin); // define minimum window size
@@ -394,8 +395,9 @@ public:
     void set_background(const char *colorname);
     // *** create the buttons ********
 
-    void create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
-    void create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
+    void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
+    void   create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
+    Widget get_last_button_widget() const;
 
     void create_toggle( const char *awar_name);     // int 0/1  string yes/no   float undef
     void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap);
@@ -524,7 +526,7 @@ private:
 public:
     AW_window_message(void);
     ~AW_window_message(void);
-    void init(AW_root *root, const char *windowname);
+    void init(AW_root *root, const char *windowname, bool allow_close);
 };
 
 
