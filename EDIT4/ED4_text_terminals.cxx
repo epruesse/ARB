@@ -31,41 +31,63 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
     AW_pos text_x, text_y;
     long left_index = 0, right_index = 0;
 
-    static char *buffer;
-    static size_t buffer_size = 0;
+    static char   *buffer      = 0;
+    static size_t  buffer_size = 0;
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
     calc_update_intervall(&left_index, &right_index );
-    text_x = x + CHARACTEROFFSET;							// don't change
+
+    text_x = x + CHARACTEROFFSET; // don't change
     text_y = y + height - MAXLETTERDESCENT;
 
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     rm->clip_screen_range(&left_index, &right_index);
-    int seq_start = rm->screen_to_sequence(left_index);
-    int seq_end = rm->screen_to_sequence(right_index);
 
-    char *cons = GB_give_buffer(seq_end+1);
-    cons = get_parent( ED4_L_GROUP )->to_group_manager()->table().build_consensus_string(seq_start, seq_end, cons);
+    if (right_index<0 || left_index<0) {
+        e4_assert(left_index == -1 && right_index <= 0); // no update intervall
 
-    if ( size_t(right_index) >= buffer_size){
-        delete buffer;
-        buffer_size = right_index + 10;
-        buffer = new char[buffer_size];
-        memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
+        const char *no_data = "No consensus data";
+        size_t      len     = strlen(no_data);
+        if (buffer_size <= len) {
+            delete buffer;
+            buffer_size = len+10;
+            buffer      = new char[buffer_size];
+            memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
+        }
+        memcpy(buffer, no_data, len);
+        right_index = buffer_size;
     }
+    else {
+        int seq_start = rm->screen_to_sequence(left_index);
+        int seq_end   = rm->screen_to_sequence(right_index);
 
-    {
-        int pos;
-        for (pos = left_index; pos <= right_index; pos++){
-            int seq_pos = rm->screen_to_sequence(pos);
-            if (seq_pos<0){
-                buffer[pos] = ' ';
-            }else{
-                buffer[pos] = cons[seq_pos];
+        char *cons = GB_give_buffer(seq_end+1);
+        cons = get_parent( ED4_L_GROUP )->to_group_manager()->table().build_consensus_string(seq_start, seq_end, cons);
+
+        if ( size_t(right_index) >= buffer_size){
+            delete buffer;
+            buffer_size = right_index + 10;
+            e4_assert(buffer_size>0);
+            buffer = new char[buffer_size];
+            memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
+        }
+
+
+        {
+            int pos;
+            for (pos = left_index; pos <= right_index; pos++){
+                int seq_pos = rm->screen_to_sequence(pos);
+                if (seq_pos<0){
+                    buffer[pos] = ' ';
+                }else{
+                    buffer[pos] = cons[seq_pos];
+                }
             }
         }
     }
+
+
     if (buffer_size) {
         ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index);
     }
@@ -130,7 +152,13 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
 
         if (right>max_seq_len) right = max_seq_pos;
-        if (left>right) return ED4_R_OK;
+        if (left>right) {
+            const char *no_data = "No sequence data";
+            size_t      len     = strlen(no_data);
+
+            device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, 1, 0, 0, len);
+            return ED4_R_OK;
+        }
     }
 
     if (right > len_of_colored_strings){
@@ -210,7 +238,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             e4_assert(height>0);
 
             for ( i = real_left; i < real_right; i++,x2 += width) {
-                int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence 
+                int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
 
                 if (searchColors && searchColors[new_pos]) {
                     color = searchColors[new_pos];
@@ -256,7 +284,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             screen_length = right;
         }
         if (screen_length) {
-            db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len); // this is necessary cause the old content of db_pointer is not valid till here	    
+            db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len); // this is necessary cause the old content of db_pointer is not valid till here
             device->text_overlay( ED4_G_HELIX,
                                   (char *)db_pointer, screen_length,
                                   text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
