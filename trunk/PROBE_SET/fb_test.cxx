@@ -3,8 +3,43 @@
 
 #include "ps_bitmap.hxx"
 #include "ps_defs.hxx"
+#include "ps_node.hxx"
 
 int main( void ) {
+    PS_BitSet_Fast *x = new PS_BitSet_Fast( false, 20 );
+    x->setTrue( 0 );
+    x->setTrue( 3 );
+    x->setTrue( 4 );
+    x->setTrue( 7 );
+    x->setTrue( 10 );
+    x->setTrue( 11 );
+    x->setTrue( 14 );
+    x->print( true,20 );
+    PS_BitSet::IndexSet indices;
+    x->getTrueIndices( indices );
+    printf( " true  indices (%2i) : ",indices.size() );
+    for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
+        printf( " %4li", *i );
+    }
+    x->getTrueIndices( indices,15 );
+    printf( "\n true  indices (%2i) : ",indices.size() );
+    for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
+        printf( " %4li", *i );
+    }
+    x->getFalseIndices( indices );
+    printf( "\n false indices (%2i) : ",indices.size() );
+    for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
+        printf( " %4li", *i );
+    }
+    x->getFalseIndices( indices,15 );
+    printf( "\n false indices (%2i) : ",indices.size() );
+    for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
+        printf( " %4li", *i );
+    }
+    printf( "\n" );
+    delete x;
+    return 0;
+
     PS_BitMap *map = new PS_BitMap_Fast( false, 10 );
     for (long i = 0; i < 10; ++i) {
         map->set( i,i,true );
