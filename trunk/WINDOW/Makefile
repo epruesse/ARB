@@ -92,6 +92,7 @@ AW_status.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_status.o: $(ARBHOME)/INCLUDE/ad_prot.h aw_root.hxx
 AW_status.o: aw_device.hxx aw_window.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/awt_www.hxx
+AW_status.o: $(ARBHOME)/INCLUDE/SIG_PF.h ../INCLUDE/arb_assert.h
 
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
