@@ -30,6 +30,6 @@ EXAMPLES	Mark one known gene:
 			2. Press <Mark Listed/Unmark Rest>
 
 WARNINGS	Be careful: The marked genes can be spread over several
-		species w/o showing this in the ARB_GENEMAP window.
+		organisms w/o showing this in the ARB_GENEMAP window.
 
 BUGS		No bugs known
