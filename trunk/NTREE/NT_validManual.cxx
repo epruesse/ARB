@@ -50,26 +50,79 @@ struct selectValidNameStruct* createSelNameList(GBDATA *gb_main,AW_window *aws, 
     GBDATA *gb_presets;
     AW_root *aw_root  = aws->get_root();
     validNamesList = aws->create_selection_list(awarName,0,"",10,20);
+    
+
+
     struct selectValidNameStruct *svnp = 0;
     svnp = new struct selectValidNameStruct;
     svnp->aws = aws;
     svnp->gb_main = gb_main;
     svnp->validNamesList = validNamesList;
 
-    createNamesList_callBack(svnp); // calling callback to get the alingments in the database
-
-    // adopt to own databse transaction
-    /*    GB_push_transaction(gb_main);
-    gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);
-    GB_add_callback(gb_presets, GB_CB_CHANGED, createSelectionList_callBack_gb, (int *)cas);
-    GB_pop_transaction(gb_main);
-    */
-
-    return svnp;
+    GB_begin_transaction(gb_main);
 
 
-    //    return NULL;
+    GBDATA* GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
+    if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
+    
+    GB_ERROR err = 0;
+
+    // search validNames
+
+    for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
+         GB_validNamePair && !err;
+         GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
+        //    if (!GB_validNamePair){std::cout << "GB_validNamePair not found" << std:: cout; return; } 
+        // retrieve list of all species names
+        
+        GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
+        char* typeString = GB_read_string(actDesc);
+        if (strcmp(typeString, "NOTYPE") != 0){
+            GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
+            char* validName = newName ? GB_read_string(newName) : 0;
+            //if (!validName){std::cout << "validName not found" << std:: cout; return; } // string
+            
+            
+            if (!validName) {
+                err = GBS_global_string("Invalid names entry");
+            }
+            aws->insert_selection(validNamesList,validName, validName);            
+            free (validName);
+        }
+
+
+        //        free (depName);
+        free (typeString);                     
+    }
+
+
+
+
+    if (err) {
+        GB_abort_transaction(gb_main);
+        aw_message(err);
+    }
+    else {
+        GB_commit_transaction(gb_main);
+
+        svnp->aws->insert_default_selection(validNamesList , "????", "????" );
+        svnp->aws->update_selection_list(validNamesList);
+        createNamesList_callBack(svnp);
+    }
+        // adopt to own databse transaction
+        /*    GB_push_transaction(gb_main);
+              gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);
+              GB_add_callback(gb_presets, GB_CB_CHANGED, createSelectionList_callBack_gb, (int *)cas);
+              GB_pop_transaction(gb_main);
+        */
+
+        return svnp;
+
+
+        //    return NULL;
+    
 }
+
 // callback function for selection list event
 void createSelectionList_callBack(struct selectValidNameStruct *vns){
 aw_message("ValidNameSelectionList was received");

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include <aw_root.hxx>
-#include <aw_global_awars.hxx>
+#include "aw_global_awars.hxx"
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
