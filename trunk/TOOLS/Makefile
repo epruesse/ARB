@@ -11,7 +11,7 @@ TOOLS = \
 	arb_newick_2_otb arb_dnarates \
 	arb_2_bin arb_replace arb_read_tree \
 	arb_proto_2_xsub arb_probe arb_test arb_export_rates arb_export_tree arb_count_chars \
-	arb_perf_test arb_message
+	arb_perf_test arb_message arb_gene_probe
 
 TARGETS = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
 
