@@ -52,14 +52,27 @@ clean:
 
 # DO NOT DELETE
 
-ps_dump_db.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_node.o: ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
+ps_node.o:  ../PROBE_GROUP/pg_search.hxx
+ps_node.o: ../PROBE_GROUP/pg_def.hxx ../PROBE_GROUP/pg_db.hxx
+ps_node.o: $(ARBHOME)/INCLUDE/arbdb.h 
+ps_node.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ps_dump_db.o:  $(ARBHOME)/INCLUDE/arbdb.h
 ps_dump_db.o: $(ARBHOME)/INCLUDE/ad_prot.h ps_node.hxx
-ps_dump_db.o: $(ARBHOME)/INCLUDE/smartptr.h
-ps_dump_db.o:  ../PROBE_GROUP/pg_search.hxx
-ps_dump_db.o: ../PROBE_GROUP/pg_def.hxx ../PROBE_GROUP/pg_db.hxx
-ps_dump_db.o: ps_pg_tree_functions.cxx
+ps_dump_db.o: $(ARBHOME)/INCLUDE/smartptr.h 
+ps_dump_db.o: ../PROBE_GROUP/pg_search.hxx ../PROBE_GROUP/pg_def.hxx
+ps_dump_db.o: ../PROBE_GROUP/pg_db.hxx ps_pg_tree_functions.cxx
 ps_merge_my_dbs.o:  ps_node.hxx
+ps_merge_my_dbs.o:  ps_bitmap.hxx
+ps_merge_my_dbs.o:  ps_bitset.hxx
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_merge_my_dbs.o:  ../PROBE_GROUP/pg_search.hxx
 ps_merge_my_dbs.o: ../PROBE_GROUP/pg_def.hxx ../PROBE_GROUP/pg_db.hxx
-ps_merge_my_dbs.o: ps_pg_tree_functions.cxx
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/ad_prot.h ps_bitset.hxx
+ps_make_sample_db.o:  ps_node.hxx
+ps_make_sample_db.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_make_sample_db.o: ../PROBE_GROUP/pg_search.hxx ../PROBE_GROUP/pg_def.hxx
+ps_make_sample_db.o: ../PROBE_GROUP/pg_db.hxx
+ps_make_sample_db.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_make_sample_db.o: $(ARBHOME)/INCLUDE/ad_prot.h

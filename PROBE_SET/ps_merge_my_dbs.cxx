@@ -4,74 +4,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include <set>
 #include <vector>
-//#define TEST_SMART_COUNTERS
 #include "ps_node.hxx"
-// #include "ps_pg_tree_functions.cxx"
-
-//  ############################################################
-//  # PS_BitSet
-//  ############################################################
-class PS_BitSet {
-private:
-
-    char *data;
-    long  size;
-    long  capacity;
-    bool  bias;
-
-public:
-    bool get( const long index );
-    void set( const long index, const bool value );
-
-    bool reserve( const long _capacity );
-
-    PS_BitSet();
-    PS_BitSet( bool _bias ) {
-        data     = 0;
-        size     = -1;
-        capacity = -1;
-        bias     = _bias;
-    };
-    PS_BitSet( const PS_BitSet& );
-
-    ~PS_BitSet() {
-        if (data) free( data );
-    }
-};
-
-void PS_BitSet::set( const long index, const bool value ) {
-    reserve( index );
-    char byte   = data[index / 8];
-    char offset = index % 8;
-    char mask   = 1 << offset;
-    if (value == true) {
-        data[index / 8] |= mask; 
-    } else {
-        data[index / 8] &= ~mask;
-    }
-}
-
-bool PS_BitSet::get( const long index ) {
-    reserve( index );
-    char byte   = data[index / 8];
-    char offset = index % 8;
-    byte = (byte >> offset);
-    return (byte & 1 == 1);
-}
-
-bool PS_BitSet::reserve( const long _capacity ) {
-    char *new_data;
-    if (_capacity < capacity) return false;                       // smaller size requested ?
-    if (_capacity == capacity) return true;                       // same size requested ?
-    new_data = (char *)malloc((_capacity >> 3)+1);                // get new memory
-    if (new_data == 0) return false;
-    memset(new_data,bias ? 0xFF : 0,_capacity);                   // set memory to bias value
-    memcpy(new_data,data,capacity);                               // copy old values
-    capacity = _capacity;                                         // store new capacity
-    return true;
-}
+#include "ps_bitset.hxx"
+#include "ps_bitmap.hxx"
 
 
 //  ----------------------------------------------------
@@ -132,10 +68,9 @@ void PS_make_stats( PS_NodePtr ps_node, unsigned long int depth ) {
 //  of SpeciesID's where true means that the 2 species can be distinguished
 //  by a probe
 //
-typedef map<SpeciesID,bit_vector> IDmap;
-typedef vector<SpeciesID>         IDvector;
+typedef vector<SpeciesID> IDvector;
 
-void PS_detect_weak_differences_stepdown( const PS_NodePtr ps_node, IDmap &theMap, IDvector &upper, IDvector &lower, SpeciesID &maxID ) {
+void PS_detect_weak_differences_stepdown( const PS_NodePtr ps_node, PS_BitMap &theMap, IDvector &upper, IDvector &lower, SpeciesID &maxID ) {
     
     // store maximum SpeciesID
     if (ps_node->getNum() > maxID) maxID = ps_node->getNum();
@@ -155,17 +90,15 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr ps_node, IDmap &theMa
     // set value in the map if node has probes : true for all upper-lower pairs
     if (ps_node->hasProbes()) {
         for (IDvector::iterator upper_it = upper.begin(); upper_it != upper.end(); ++upper_it) {
-            // reserve space in the vector up to the highest index in lower, which is always the first element
-            theMap[*upper_it].reserve( lower.front() );
             for (IDvector::iterator lower_it = lower.begin(); lower_it != lower.end(); ++lower_it) {
-                theMap[*upper_it][*lower_it] = true;
+                theMap.triangle_set(*upper_it,*lower_it,true);
             }
         }
     }
 }
 
 void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
-    IDmap     theMap;
+    PS_BitMap theMap( false );
     IDvector  upper;
     IDvector  lower;
     SpeciesID maxID = 0;
@@ -177,21 +110,9 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
     }
     printf( "max ID = %i\n (enter to continue)",maxID );
     getchar();
-
-    for (SpeciesID i = 0; i <= maxID; ++i) {
-        printf( "[%6i] : ",i );
-        IDmap::iterator m = theMap.find(i);
-        if (m != theMap.end()) {
-            int c = 0;
-            for (bit_vector::iterator bit = m->second.begin(); bit != m->second.end(); ++bit, ++c) {
-                printf( *bit ? "+" : "_" );
-            }
-            printf( " %i",c );
-        } else {
-            printf( "---" );
-        }
-        printf( "\n" );
-    }
+    theMap.print();
+    printf( "(enter to continue)\n" );
+    getchar();
 }
 
 
