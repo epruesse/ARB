@@ -1,9 +1,16 @@
-// bla
 #include <stdlib.h>
+#include <sys/times.h>
 
 #include "ps_bitmap.hxx"
 #include "ps_defs.hxx"
 #include "ps_node.hxx"
+
+void PS_print_times() {
+    struct tms time;
+    times( &time );
+    printf( "user (%.3f) system (%.3f)", (float)time.tms_utime/CLK_TCK, (float)time.tms_stime/CLK_TCK );
+}
+
 
 int main( void ) {
     PS_BitSet_Fast *x = new PS_BitSet_Fast( false, 20 );
@@ -38,6 +45,13 @@ int main( void ) {
     }
     printf( "\n" );
     delete x;
+    cout << "CLK_TCK : " << CLK_TCK << endl;
+    PS_print_times(); fflush( stdout );
+    for (long i = 0; i < 10000; ++i) {
+        for (long j = 0; j < 10000; ++j) {
+        }
+    }
+    PS_print_times();
     return 0;
 
     PS_BitMap *map = new PS_BitMap_Fast( false, 10 );
