@@ -324,9 +324,26 @@ static GB_ERROR gbl_apply_binary_operator(GBL_command_arguments *args, gbl_binar
             break;
 
         case 2:
-            (*args->voutput)[(*args->coutput)++].str = op(args->vparam[0].str, args->vparam[1].str, client_data);
-            break;
+            {
+                GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+                int     i;
+                
+                for (i = 0; i<args->cinput; ++i) {
+                    char *result1       = GB_command_interpreter(gb_main, args->vinput[i].str, args->vparam[0].str, args->gb_ref, args->default_tree_name);
+                    if (!result1) error = GB_get_error();
+                    else {
+                        char *result2       = GB_command_interpreter(gb_main, args->vinput[i].str, args->vparam[1].str, args->gb_ref, args->default_tree_name);
+                        if (!result2) error = GB_get_error();
+                        else {
+                            (*args->voutput)[(*args->coutput)++].str = op(result1, result2, client_data);
+                            free(result2);
+                        }
+                        free(result1);
+                    }
+                }
 
+                break;
+            }
         default :
             error = "0 to 2 arguments expected";
             break;
@@ -972,39 +989,50 @@ static GB_ERROR gbl_swap(GBL_command_arguments *args)
     return 0;
 }
 
-static GB_ERROR gbl_toback(GBL_command_arguments *args)
+static GB_ERROR backfront_stream(GBL_command_arguments *args, int toback)
 {
     int i;
-    int put_back;
+    int stream_to_move;
     int firstout = *args->coutput;
 
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
     if (args->cinput<1) return "need at least one input stream";
     if (args->cparam != 1) return "expecting one parameter";
 
-    put_back = atoi(args->vparam[0].str);
-    if (put_back<1 || put_back>args->cinput) {
-        return GBS_global_string("Illegal stream number '%i'", put_back);
+    stream_to_move = atoi(args->vparam[0].str);
+    if (stream_to_move<1 || stream_to_move>args->cinput) {
+        return GBS_global_string("Illegal stream number '%i'", stream_to_move);
     }
-    --put_back;
+    --stream_to_move;
 
     for (i = 0; i<args->cinput; ++i) {
         (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(args->vinput[i].str); /* export result string */
     }
 
-    if (put_back<(args->cinput-1)) { /* not last */
-        char *new_last = (*args->voutput)[firstout+put_back].str;
-        for (i = put_back+1; i<args->cinput; ++i) {
-            (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str;
+    if (toback) {
+        if (stream_to_move<(args->cinput-1)) { /* not last */
+            GBL  new_last = (*args->voutput)[firstout+stream_to_move];
+            /* char *new_last = (*args->voutput)[firstout+stream_to_move].str; */
+            for (i = stream_to_move+1; i<args->cinput; ++i) {
+                (*args->voutput)[firstout+i-1] = (*args->voutput)[firstout+i];
+                /* (*args->voutput)[firstout+i-1].str = (*args->voutput)[firstout+i].str; */
+            }
+            (*args->voutput)[firstout+args->cinput-1] = new_last;
         }
-        (*args->voutput)[firstout+args->cinput-1].str = new_last;
+    }
+    else { /* to front */
+        if (stream_to_move != 0) { /* not first */
+            GBL new_first = (*args->voutput)[firstout+stream_to_move];
+            for (i = stream_to_move-1;  i >= 0; --i) {
+                (*args->voutput)[firstout+i+1] = (*args->voutput)[firstout+i];
+            }
+            (*args->voutput)[0] = new_first;
+        }
     }
     return 0;
 }
-static GB_ERROR gbl_tofront(GBL_command_arguments *args)
-{
-    return "not implemented yet";
-}
+static GB_ERROR gbl_toback (GBL_command_arguments *args) { return backfront_stream(args, 1); }
+static GB_ERROR gbl_tofront(GBL_command_arguments *args) { return backfront_stream(args, 0); }
 
 static GB_ERROR gbl_merge(GBL_command_arguments *args)
 {
@@ -1178,6 +1206,35 @@ static GB_ERROR gbl_div     (GBL_command_arguments *args){ return gbl_apply_bina
 static GB_ERROR gbl_rest    (GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_rest    ); }
 static GB_ERROR gbl_per_cent(GBL_command_arguments *args){ return gbl_apply_binary_operator(args, apply_numeric_binop, binop_per_cent); }
 
+
+/********************************************************************************************
+                                        Logical Functions
+********************************************************************************************/
+
+static GB_ERROR gbl_select(GBL_command_arguments *args) {
+    int       i;
+    GB_ERROR  error   = 0;
+    GBDATA   *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+    
+    GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
+    
+    for (i=0;i<args->cinput && !error;i++) { /* go through all in streams */
+        int value = atoi(args->vinput[i].str);
+        if (value<0 || value >= args->cparam) {
+            error = GBS_global_string("Input stream value (%i) is out of bounds (0 to %i)", value, args->cparam-1);
+        }
+        else {
+            char *result = GB_command_interpreter(gb_main, "", args->vparam[value].str, args->gb_ref, args->default_tree_name);
+            if (!result) {
+                error = GB_get_error();
+            }
+            else {
+                (*args->voutput)[(*args->coutput)++].str = result;
+            }
+        }
+    }
+    return error;
+}
 
 /********************************************************************************************
                                         Database Functions
@@ -2037,6 +2094,7 @@ static struct GBL_command_table gbl_command_table[] = {
     {"remove",           gbl_remove },
     {"rest",             gbl_rest },
     {"right",            gbl_tail },
+    {"select",           gbl_select },
     {"sequence",         gbl_sequence },
     {"sequence_type",    gbl_sequence_type },
     {"srt",              gbl_srt },
