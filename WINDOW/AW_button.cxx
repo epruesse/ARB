@@ -2656,10 +2656,10 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
 
 }
 
-Widget _aw_create_toggle_entry(AW_window *aww,Widget toggle_field,
-                               const char *label,const char *mnemonic,
-                               AW_variable_update_struct *awus,
-                               AW_toggle_struct *awts, AW_BOOL default_toggle){
+static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
+                                      const char *label,const char *mnemonic,
+                                      AW_variable_update_struct *awus,
+                                      AW_toggle_struct *awts, AW_BOOL default_toggle) {
     AW_root *root = aww->get_root();
 
     Widget          toggleButton;
