@@ -15,6 +15,7 @@ private long displayCounter;
 private String treeString;
 private TreeNode root;
 private TreeNode vs; // visible subtree
+private TreeNode prevNode;
 
 // private int xSize = 800;
 // private int ySize = 1000;
@@ -378,6 +379,8 @@ public void handleLeftMouseClick(int x, int y)
         TreeNode clickedNode = getClickedNode(x, y);
         if ( clickedNode != null)
             {
+                prevNode = vs;
+
                 if(clickedNode.equals(vs))
                     {
                         vs = clickedNode.getFather();
@@ -402,6 +405,60 @@ public void handleRightMouseClick(int x, int y)
                 clickedNode.markSubtree(!state);
                 repaint();
             }
+    }
+
+
+    // methods offer by pull down menus
+
+public void unmarkNodes()
+    {
+        root.markSubtree(false);
+        repaint();
+    }
+
+public void goDown()
+    {
+        prevNode = vs;
+//         System.out.println("TreeDisplay/goDown() was called");
+//         System.out.println("current node: " + vs);
+//         System.out.println("father node: " + vs.getFather());
+
+        vs = vs.getFather();
+        newLayout = true;
+        repaint();
+    }
+
+public void enterUBr()
+    {
+        if (!vs.testLeaf())
+            {
+                prevNode = vs;
+                vs = (TreeNode)vs.getChilds().elementAt(0);
+                newLayout = true;
+                repaint();
+            }
+
+    }
+
+
+public void enterLBr()
+    {
+        if (!vs.testLeaf())
+            {
+                prevNode = vs;
+                vs = (TreeNode)vs.getChilds().elementAt(1);
+                newLayout = true;
+                repaint();
+            }
+
+    }
+
+public void resetRoot()
+    {
+        prevNode = vs;
+        vs = root;
+        newLayout = true;
+        repaint();
     }
 
 

@@ -44,6 +44,8 @@ public static void main(String[] args)
 
 
         cl.display = new ProbesGUI(cl.root, 10);
+        //        ProbesGUIActionListener al = new ProbesGUIActionListener(cl.display);
+        //        cl.display.setMenuBar(new ProbeMenu(al));
         cl.display.setLocation(200, 200);
         cl.display.setVisible(true);
 

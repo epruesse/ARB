@@ -14,6 +14,8 @@ private TextArea info;
 private int treeLevels;
 private TreeDisplay td;
 private TreeNode root;
+private ProbeMenu pm;
+private ProbesGUIActionListener al;
 
 // public static void main(String[] args)
 //     {
@@ -30,7 +32,21 @@ public ProbesGUI( TreeNode root, int levels)
 
     setLayout(new BorderLayout());
     //    add(new Button("first"));
+    System.out.println("reference to ProbesGUI: " + this);
 
+    td = new TreeDisplay( root, levels);
+
+    // debug code
+    if (td == null)
+        {
+            System.out.println("constructor/ProbesGUI: no TreeDisplay received");
+
+        }
+
+
+    al = new ProbesGUIActionListener(this);
+    setMenuBar(pm = new ProbeMenu(al));
+    // setMenuBar(pm = new ProbeMenu());
 
     details = new TextArea("Display detail information", 10, 40, TextArea.SCROLLBARS_BOTH);
     add(details, BorderLayout.SOUTH);
@@ -47,15 +63,15 @@ public ProbesGUI( TreeNode root, int levels)
         if (root == null) 
             {
                 System.out.println("in ProbesGUI(): no valid node given to display");
-                System.exit(1);
+                                System.exit(1);
             }
 
-    td = new TreeDisplay( root, levels);
+
     sc.add(td);
     sc.getVAdjustable().setUnitIncrement(1);
     sc.getHAdjustable().setUnitIncrement(1);
     sc.setSize(600,400);
-    //    sc.setBackground(Color.red);    
+    sc.setBackground(Color.red);    
     add(sc, BorderLayout.CENTER);
 
     //    add(new Button("second"));
@@ -78,6 +94,11 @@ public ProbesGUI( TreeNode root, int levels)
 
  public TreeDisplay getTreeDisplay()
  {
+     if (td == null)
+         {
+             System.out.println("ProbesGUI/getTreeDisplay: TreeDisplay not defined");
+         }
+
      return td;
  }
 
