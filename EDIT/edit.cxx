@@ -9,7 +9,6 @@
 #include <arbdb++.hxx>
 
 #include <aw_root.hxx>
-#include <aw_keysym.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -611,11 +610,10 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
     AW_pos width;
     AW_pos height;
     AW_rectangle screen;
-    AW_font_information *font_information;
     char left_text[100];
     AW_BOOL tmp;
 
-    font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
+    const AW_font_information *font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
@@ -728,7 +726,7 @@ static int AED_show_colored_sequence(AW_device *device, int gc, const char *opt_
     char *sname = (char *)cduser;   // The name of the species
     ST_ML_Color *colors = st_ml_get_color_string(   st_ml, sname, 0, start, start+size );
     if (colors) {
-        AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
+        const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
         int i;
         long len  = start+size;
         AW_pos height = font_information->max_letter_ascent;
@@ -757,11 +755,10 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
     AW_pos width;
     AW_pos height;
     AW_rectangle screen;
-    AW_font_information *font_information;
     char left_text[100];
     AW_BOOL tmp;
 
-    font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
+    const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
@@ -893,11 +890,10 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
     AW_pos width;
     AW_pos height;
     AW_rectangle screen;
-    AW_font_information *font_information;
     char left_text[100];
     AW_BOOL tmp;
 
-    font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
+    const AW_font_information *font_information = device->get_font_information(AED_GC_SEQUENCE, 'A');
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
@@ -1240,11 +1236,11 @@ void AED_window::show_cursor( AW_device *device, AW_window *awmm ) {
 
 AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL use_last_slider_position ) {
     AW_rectangle screen;
-    AW_font_information *font_information;
-    AW_pos slider_position_horizontal;
-    AW_BOOL cursor_drawn;
+    AW_pos       slider_position_horizontal;
+    AW_BOOL      cursor_drawn;
+    
     if (!selected_area_entry) return AW_FALSE;
-    font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
+    const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
     if ( use_last_slider_position ) {
         slider_position_horizontal = last_slider_position;
     }
@@ -1317,9 +1313,8 @@ void AED_window::show_single_area_entry( AW_device *device, AW_window *awmm, AED
 
 
 void drag_box(AW_device *device, int gc, AW_pos x, AW_pos y, AW_pos width, AW_pos height, char *str) {
-    AW_font_information *font_information;
     if( width == 0 ) {
-        font_information = device->get_font_information( AED_GC_SELECTED_DRAG, 'A' );
+        const AW_font_information *font_information = device->get_font_information( AED_GC_SELECTED_DRAG, 'A' );
         width = strlen( str ) * font_information->max_letter_width + 4;
         height = font_information->max_letter_height + 4;
     }
@@ -1467,20 +1462,21 @@ void AED_dlist::remove_hash(const char *name){
 /********************************************************************************************************/
 
 void set_cursor_to( AED_window *aedw, long cursor, class AED_area_entry *aed ) {
-    AW_window       *awmm;
-    AW_device       *device;
-    AW_font_information *font_information;
-    const   int AED_WINBORDER = 50;
-    awmm    = aedw->aww;
-    device  = awmm->get_device (AW_MIDDLE_AREA  );
+    AW_window   *awmm;
+    AW_device   *device;
+    const   int  AED_WINBORDER = 50;
+
+    awmm   = aedw->aww;
+    device = awmm->get_device (AW_MIDDLE_AREA  );
     device->set_filter(AED_F_ALL);
-    font_information = device->get_font_information(AED_GC_SEQUENCE, 'A' );
-    AW_rectangle                screen;
+    
+    const AW_font_information *font_information = device->get_font_information(AED_GC_SEQUENCE, 'A' );
+    AW_rectangle               screen;
     device->get_area_size(&screen);
 
-    long    wincursor = cursor*font_information->max_letter_width;
-    long    widthofscrolledwin = (long)(screen.r  - awmm->left_indent_of_horizontal_scrollbar);
-    long    worldwidth = (long) aedw->size_information.r;
+    long wincursor          = cursor*font_information->max_letter_width;
+    long widthofscrolledwin = (long)(screen.r  - awmm->left_indent_of_horizontal_scrollbar);
+    long worldwidth         = (long) aedw->size_information.r;
 
     aedw->hide_cursor( device, awmm );
 
@@ -1552,24 +1548,17 @@ static void jump_to_cursor_position(AW_window *aww, AED_window *aedw, char *awar
 
 static void set_cursor_up_down(AED_window *aedw, int direction)
 {
-    //up = -1;
-    int                 jump,d_x=0,d_y=0;
-    AW_window           *awmm       = aedw->aww;
-    AW_font_information     *font_information;
-    AW_device *device,      *click_device;
-    AW_rectangle            screen;
-    AW_clicked_text         clicked_text;
-
-    device  = awmm->get_device (AW_MIDDLE_AREA  );
+    AW_window    *awmm   = aedw->aww;
+    AW_device    *device = awmm->get_device (AW_MIDDLE_AREA  );
     device->set_filter(AED_F_ALL);
-    font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
+
+    const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
+    AW_rectangle               screen;
     device->get_area_size(&screen);
 
-
-    if (direction == -1)
-        jump = -(font_information->max_letter_height + AED_LINE_SPACING);
-    else
-        jump = (font_information->max_letter_height + AED_LINE_SPACING);
+    int jump = (font_information->max_letter_height + AED_LINE_SPACING) * (direction == -1 ? -1 : 1);
+    int d_x  = 0;
+    int d_y  = 0;
 
     if (aedw->selected_area_entry->in_area == aedw->area_top) {
         d_x = awmm->left_indent_of_horizontal_scrollbar - awmm->picture->l - awmm->slider_pos_horizontal;
@@ -1583,12 +1572,16 @@ static void set_cursor_up_down(AED_window *aedw, int direction)
         d_x = awmm->left_indent_of_horizontal_scrollbar - awmm->picture->l - awmm->slider_pos_horizontal;
         d_y = screen.b - awmm->bottom_indent_of_vertical_scrollbar;
     }
-    click_device = awmm->get_click_device (AW_MIDDLE_AREA,
-                                           1 + aedw->cursor * font_information->max_letter_width + d_x,
-                                           (int)aedw->selected_area_entry->in_line + d_y + jump, 10, 5, 0);
+    
+    AW_device *click_device = awmm->get_click_device (AW_MIDDLE_AREA,
+                                                      1 + aedw->cursor * font_information->max_letter_width + d_x,
+                                                      (int)aedw->selected_area_entry->in_line + d_y + jump,
+                                                      10, 5, 0);
     click_device->reset();
     click_device->set_filter(AED_F_NAME | AED_F_SEQUENCE);
     aedw->show_data(click_device, awmm, AW_FALSE);
+
+    AW_clicked_text clicked_text;
     click_device->get_clicked_text(&clicked_text);
 
     if (clicked_text.exists == AW_TRUE) {
@@ -1645,16 +1638,15 @@ static void aed_double_click( AW_window *aw, AED_window         *aedw ) {
 
 static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     AWUSE(cd2);
-    AW_event            event;
-    AW_device           *device,*info_device,*click_device;
-    AED_window          *aedw = (AED_window *)cd1;
-    AW_window           *awmm = aedw->aww;
-    AW_clicked_text         clicked_text;
-    AW_font_information     *font_information;
-    AED_area_entry          *area_entry = aedw->selected_area_entry;
-    AD_ERR              *error_flag = 0;
-    char                left_text[100];
-    AED_area_entry          *first_entry, *last_entry;
+    AW_event         event;
+    AW_device       *device,*info_device,*click_device;
+    AED_window      *aedw       = (AED_window *)cd1;
+    AW_window       *awmm       = aedw->aww;
+    AW_clicked_text  clicked_text;
+    AED_area_entry  *area_entry = aedw->selected_area_entry;
+    AD_ERR          *error_flag = 0;
+    char             left_text[100];
+    AED_area_entry  *first_entry, *last_entry;
 
     aw->get_event( &event );
 
@@ -1667,7 +1659,6 @@ static void aed_input( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     click_device    = aw->get_click_device (AW_MIDDLE_AREA, event.x, event.y, 10, 10, 0 );
     click_device->reset();
     click_device->set_filter(AED_F_NAME | AED_F_SEQUENCE);
-    font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
 
     int direction = 1;
     int changeflag = 0;
