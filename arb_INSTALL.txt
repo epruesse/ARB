@@ -16,6 +16,7 @@ Software that is needed to run ARB:
 
 - xview
 - (open)motif
+- bash
 
 Software that is useful together with ARB:
 ------------------------------------------
@@ -49,10 +50,10 @@ To build ARB from source
 Additional software that is needed to compile ARB:
 --------------------------------------------------
 
-- expat, rxp, sablotron (needed for target 'help' only)
-- (STLport)
+- expat, rxp, sablotron 0.82 (needed for target 'help' only)
 - xaw
 - xview-devel
+- (STLport)
 
 ----------------------------------------------------------------------
 If we forgot something (or if your OS needs something special)
