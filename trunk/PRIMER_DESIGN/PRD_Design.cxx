@@ -163,6 +163,10 @@ void PrimerDesign::run ( int print_stages_ )
         return;
     }
 
+#if defined(DEBUG)
+    printf("sizeof(Node) = %i\n", sizeof(Node));
+#endif // DEBUG
+
     show_status("searching possible primers");
     buildPrimerTrees();
     if ( error ) return;
@@ -227,12 +231,12 @@ bool PrimerDesign::treeContainsPrimer ( Node *start )
 
 void PrimerDesign::buildPrimerTrees ()
 {
-#ifdef DEBUG
+#if defined(DEBUG)
     primer1.print("buildPrimerTrees : pos1\t\t","\n");
     primer2.print("buildPrimerTrees : pos2\t\t","\n");
     primer_length.print("buildPrimerTrees : length\t","\n");
     printf("buildPrimerTrees : 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789\n");
-    printf("buildPrimerTrees : %s\n",sequence);
+//     printf("buildPrimerTrees : %s\n",sequence);
     printf("buildPrimerTrees : (pos,base,delivered,last_base_index)\n" );
 #endif
 
@@ -263,14 +267,19 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // build first tree
     //
+    long int primer1_length = primer1.max()-primer1.min()+1;
+
     for ( PRD_Sequence_Pos start_pos = primer1.min();
           (start_pos < primer1.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
           start_pos++ ) {
+
+        show_status((double)(start_pos-primer1.min())/primer1_length/2);
+
         // start iterator at new position
         sequence_iterator->restart( start_pos,primer1.max(),primer_length.max(),SequenceIterator::FORWARD );
         sequence_iterator->nextBase();
-        if ( sequence_iterator->pos != start_pos ) {		// sequence_iterator has skipped spaces => restart at first valid base
-            start_pos = sequence_iterator->pos;
+        if ( sequence_iterator->pos != start_pos ) { // sequence_iterator has skipped spaces = > restart at first valid base
+            start_pos                                                                        = sequence_iterator->pos;
         }
         sequence_iterator->restart( start_pos,primer1.max(),primer_length.max(),SequenceIterator::FORWARD );
 
@@ -307,14 +316,19 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // build second tree
     //
+    long int primer2_length = primer2.max()-primer2.min()+1;
+
     for ( PRD_Sequence_Pos start_pos = primer2.min();
           (start_pos < primer2.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
           start_pos++ ) {
+
+        show_status((double)(start_pos-primer2.min())/primer2_length/2+0.5);
+
         // start iterator at new position
         sequence_iterator->restart( start_pos,primer2.max(),primer_length.max(),SequenceIterator::FORWARD );
         sequence_iterator->nextBase();
-        if ( sequence_iterator->pos != start_pos ) {		// sequence_iterator has skipped spaces => restart at first valid base
-            start_pos = sequence_iterator->pos;
+        if ( sequence_iterator->pos != start_pos ) { // sequence_iterator has skipped spaces = > restart at first valid base
+            start_pos                                                                        = sequence_iterator->pos;
         }
         sequence_iterator->restart( start_pos,primer2.max(),primer_length.max(),SequenceIterator::FORWARD );
 
