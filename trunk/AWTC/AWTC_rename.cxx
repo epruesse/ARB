@@ -49,8 +49,7 @@ public:
         com = 0;
     }
     virtual ~NameServerConnection() {
-        if (link) aisc_close(link);
-        link = 0;
+        disconnect();
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
@@ -74,6 +73,13 @@ public:
             }
         }
         return err;
+    }
+
+    void disconnect() {
+        if (link) {
+            aisc_close(link);
+        }
+        link = 0;
     }
 
     aisc_com *getLink() { return link; }
@@ -131,6 +137,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     }
 
     if (openstatus) aw_closestatus();
+    name_server.disconnect();
 
     return err;
 }
@@ -138,101 +145,92 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
 
 GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
 {
-    GBDATA *gb_species;
-    GBDATA *gb_full_name;
-    GBDATA *gb_name;
-    GBDATA *gb_acc;
-    GB_HASH *hash;
-    static  char *shrt;
-
-    char    *full_name;
-    char    *name;
-    char    *acc;
-
-    GB_ERROR err;
-    GB_ERROR err2;
-
-    err = name_server.connect(gb_main);
-    if (err) return err;
-
-    err = GBT_begin_rename_session(gb_main,1);
-    if (err) return err;
-
-    char *ali_name = GBT_get_default_alignment(gb_main);
-
-    hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
-    err2 = 0;
-
-    long spcount = 0;
-    long count = 0;
-    if (update_status) spcount = GBT_count_species(gb_main);
-
-    for (   gb_species = GBT_first_species(gb_main);
-            gb_species&&!err;
-            gb_species = GBT_next_species(gb_species)){
-        if (update_status) aw_status(count++/(double)spcount);
-
-        gb_full_name = GB_find(gb_species,"full_name",0,down_level);
-        gb_name = GB_find(gb_species,"name",0,down_level);
-        gb_acc = GBT_gen_accession_number(gb_species,ali_name);
-
-        if (gb_acc) acc = GB_read_string(gb_acc);
-        else        acc = strdup("");
-        if (gb_full_name) full_name = GB_read_string(gb_full_name);
-        else          full_name = strdup("");
-        name = GB_read_string(gb_name);
-
-        if (strlen(acc) + strlen(full_name) ) {
-            if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                          LOCAL_FULL_NAME,  full_name,
-                          LOCAL_ACCESSION,  acc,
-                          LOCAL_ADVICE,     name,
-                          0)){
-                err = "Connection Problems with the NAME_SERVER";
-            }
-            if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                         LOCAL_GET_SHORT,   &shrt,
-                         0)){
-                err = "Connection Problems with the NAME_SERVER";
-            }
-        }else{
-            shrt = strdup(name);
-        }
+    GB_ERROR err = name_server.connect(gb_main);
+    if (!err) {
+        err = GBT_begin_rename_session(gb_main,1);
         if (!err) {
-            //printf("full='%s' short='%s'\n", full_name, shrt);
+            char     *ali_name = GBT_get_default_alignment(gb_main);
+            GB_HASH  *hash     = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
+            GB_ERROR  warning  = 0;
+            long      spcount  = 0;
+            long      count    = 0;
 
-            if (GBS_read_hash(hash,shrt)) {
-                char *newshrt;
-                int i;
-                newshrt = (char *)GB_calloc(sizeof(char),strlen(shrt)+10);
-                for (i= 1 ; ; i++) {
-                    sprintf(newshrt,"%s.%i",shrt,i);
-                    if (!GBS_read_hash(hash,newshrt))break;
+            if (update_status) spcount = GBT_count_species(gb_main);
+
+            for (GBDATA *gb_species = GBT_first_species(gb_main);
+                 gb_species && !err;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                if (update_status) aw_status(count++/(double)spcount);
+
+                GBDATA *gb_full_name = GB_find(gb_species,"full_name",0,down_level);
+                GBDATA *gb_name      = GB_find(gb_species,"name",0,down_level);
+                GBDATA *gb_acc       = GBT_gen_accession_number(gb_species,ali_name);
+
+                char *acc       = gb_acc ? GB_read_string(gb_acc) : strdup("");
+                char *full_name = gb_full_name ? GB_read_string(gb_full_name) : strdup("");
+                char *name      = GB_read_string(gb_name);
+
+                /*static*/ char *shrt = 0;
+
+                if (strlen(acc) + strlen(full_name) ) {
+                    if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                  LOCAL_FULL_NAME,  full_name,
+                                  LOCAL_ACCESSION,  acc,
+                                  LOCAL_ADVICE,     name,
+                                  0)){
+                        err = "Connection Problems with the NAME_SERVER";
+                    }
+                    if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                 LOCAL_GET_SHORT,   &shrt,
+                                 0)){
+                        err = "Connection Problems with the NAME_SERVER";
+                    }
                 }
-                err2 = "There are duplicated entries!!.\nThe duplicated entries contain a '.' character !!!";
-                free(shrt); shrt = newshrt;
-            }
-            GBS_incr_hash(hash,shrt);
-            err = GBT_rename_species(name,shrt);
-        }
-        if (name)   free(name); name = 0;
-        if (acc)    free(acc);  acc = 0;
-        if (full_name)  free(full_name);full_name = 0;
-        if (shrt)   free(shrt); shrt = 0;
-    }
-    free(ali_name); ali_name = 0;
+                else {
+                    shrt = strdup(name);
+                }
+                if (!err) {
+                    if (GBS_read_hash(hash,shrt)) {
+                        char *newshrt;
+                        int i;
+                        newshrt = (char *)GB_calloc(sizeof(char),strlen(shrt)+10);
+                        for (i= 1 ; ; i++) {
+                            sprintf(newshrt,"%s.%i",shrt,i);
+                            if (!GBS_read_hash(hash,newshrt))break;
+                        }
+                        warning = "There are duplicated entries!!.\nThe duplicated entries contain a '.' character !!!";
+                        free(shrt); shrt = newshrt;
+                    }
+                    GBS_incr_hash(hash,shrt);
+                    err = GBT_rename_species(name,shrt);
+                }
 
-    GBS_free_hash(hash);
-    hash = 0;
-    if (err) {
-        GBT_abort_rename_session();
-        return err;
-    }else{
-        aw_status("Renaming species in trees");
-        aw_status((double)0);
-        GBT_commit_rename_session(aw_status);
+                if (name)       free(name);
+                if (acc)        free(acc);
+                if (full_name)  free(full_name);
+
+                free(shrt);
+            }
+
+            if (err) {
+                GBT_abort_rename_session();
+            }
+            else {
+                aw_status("Renaming species in trees");
+                aw_status((double)0);
+                GBT_commit_rename_session(aw_status);
+            }
+
+            GBS_free_hash(hash);
+            free(ali_name);
+
+            if (!err) err = warning;
+        }
+        name_server.disconnect();
     }
-    return err2;
+
+    return err;
 }
 
 
