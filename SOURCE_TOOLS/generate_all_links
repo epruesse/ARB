@@ -128,6 +128,7 @@ ln -s ../AISC_COM/C/server.h INCLUDE/server.h
 ln -s ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h
 ln -s ../STAT/st_window.hxx INCLUDE/st_window.hxx
 ln -s ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h
+ln -s ../GENOM/GEN.hxx INCLUDE/GEN.hxx
 
 # arbdb dirs
 

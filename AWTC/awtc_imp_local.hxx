@@ -2,6 +2,7 @@
 #define AWAR_FORM "tmp/import/form"
 #define AWAR_ALI "tmp/import/alignment"
 #define AWAR_ALI_TYPE "tmp/import/alignment_type"
+#define AWAR_READ_GENOM_DB "tmp/import/genom_db"
 #define GB_MAIN	awtcig.gb_main
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
@@ -28,7 +29,7 @@ struct input_format_struct {
     struct input_format_per_line	*pl;
 
     char	*sequencestart;
-    int		read_this_sequence_line_too;	
+    int		read_this_sequence_line_too;
     char	*sequenceend;
     char 	*sequencesrt;
     char 	*sequenceaci;

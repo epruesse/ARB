@@ -1902,33 +1902,6 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
-static char *makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
-    // generates a non-existing short-name (name starts with prefix)
-    char *result = 0;
-
-    int prefix_len = strlen(prefix);
-    e4_assert(prefix_len<8); // short name will be 8 chars - prefix has to be shorter!
-
-    int max_num = 1;
-    for (int l=prefix_len+1; l<=8; ++l) max_num *= 10; // calculate max possibilities
-
-    if (max_num>1) {
-        char short_name[9];
-        strcpy(short_name, prefix);
-        char *dig_pos = short_name+prefix_len;
-
-        for (int x = 0; x<max_num; ++x) {
-            sprintf(dig_pos, "%i", x);
-
-            if (nameIsUnique(short_name, gb_species_data))  {
-                result = strdup(short_name);
-                break;
-            }
-        }
-    }
-    return result;
-}
-
 static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
     // creation_mode == 	0 -> create new species
     //			            1 -> create new species from group konsensus
@@ -1991,7 +1964,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 error = "It's no good to create short-name for new species by nameserver! (has no acc yet)";
             }
             else {
-                error = generate_one_name(gb_main, new_species_full_name, acc, new_species_name);
+                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name);
                 if (!error) { // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         char *uniqueName = 0;
@@ -1999,7 +1972,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
                         for (int l=name_len-1; l>=0 && !uniqueName; --l) {
                             new_species_name[l] = 0;
-                            uniqueName = makeUniqueShortName(new_species_name, gb_species_data);
+                            uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
                         }
 
                         free(new_species_name);

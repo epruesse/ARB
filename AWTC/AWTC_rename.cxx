@@ -82,7 +82,7 @@ public:
 static NameServerConnection name_server;
 
 
-GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name) {
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -135,7 +135,7 @@ GB_ERROR generate_one_name(GBDATA *gb_main, const char *full_name, const char *a
 }
 
 
-GB_ERROR pars_names(GBDATA *gb_main, int update_status)
+GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
 {
     GBDATA *gb_species;
     GBDATA *gb_full_name;
@@ -241,13 +241,13 @@ void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
     //	int use_advice = (int)aww->get_root()->awar(AWT_RENAME_USE_ADVICE)->read_int();
     //	int save_data = (int)aww->get_root()->awar(AWT_RENAME_SAVE_DATA)->read_int();
     aw_openstatus("Generating new names");
-    GB_ERROR error = pars_names(gb_main,1);
+    GB_ERROR error = AWTC_pars_names(gb_main,1);
     aw_closestatus();
     if (error) aw_message(error);
 }
 
 
-AW_window *create_rename_window(AW_root *root, AW_CL gb_main)
+AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
 {
     AWUSE(root);
 
@@ -284,7 +284,44 @@ AW_window *create_rename_window(AW_root *root, AW_CL gb_main)
     return (AW_window *)aws;
 }
 
-void create_rename_variables(AW_root *root,AW_default db1){
+void AWTC_create_rename_variables(AW_root *root,AW_default db1){
     root->awar_int( AWT_RENAME_USE_ADVICE, 0  , 	db1);
     root->awar_int( AWT_RENAME_SAVE_DATA, 1  , 	db1);
 }
+
+
+//  ------------------------------------------------------------------------------------
+//      char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data)
+//  ------------------------------------------------------------------------------------
+
+inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
+    return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
+}
+
+char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
+    // generates a non-existing short-name (name starts with prefix)
+    char *result = 0;
+
+    int prefix_len = strlen(prefix);
+    gb_assert(prefix_len<8); // short name will be 8 chars - prefix has to be shorter!
+
+    int max_num = 1;
+    for (int l=prefix_len+1; l<=8; ++l) max_num *= 10; // calculate max possibilities
+
+    if (max_num>1) {
+        char short_name[9];
+        strcpy(short_name, prefix);
+        char *dig_pos = short_name+prefix_len;
+
+        for (int x = 0; x<max_num; ++x) {
+            sprintf(dig_pos, "%i", x);
+
+            if (nameIsUnique(short_name, gb_species_data))  {
+                result = strdup(short_name);
+                break;
+            }
+        }
+    }
+    return result;
+}
+

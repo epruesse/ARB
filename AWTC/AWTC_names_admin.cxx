@@ -7,8 +7,6 @@
 #include <awt.hxx>
 #include "awtc_rename.hxx"
 
-
-
 void awtc_delete_names_file(AW_window *aws){
 	AWUSE(aws);
 	char *path = GBS_eval_env(NAMES_FILE_LOCATION);
@@ -62,7 +60,7 @@ AW_window *create_awtc_names_admin_window( AW_root *root)  {
 	aws->at("edit");
 	aws->callback(awtc_edit_names_file);
 	aws->create_button("EDIT_NAMES_FILE", "Edit names file");
-	
+
 	aws->at("remove_arb");
 	aws->callback(awtc_remove_arb_acc);
 	aws->create_button("REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE",

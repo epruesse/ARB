@@ -449,7 +449,7 @@ public:
 };
 
 #ifdef DEBUG
-//# define TEST_BASES_TABLE
+# define TEST_BASES_TABLE
 #endif
 
 #define SHORT_TABLE_ELEM_SIZE 	1
@@ -473,7 +473,7 @@ class ED4_bases_table
     void set_elem_long(int offset, int value) {
 #ifdef TEST_BASES_TABLE
         e4_assert(legal(offset));
-        e4_assert(table_size==LONG_TABLE_ELEM_SIZE);
+        e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
 #endif
         no_of_bases.longTable[offset] = value;
     }
@@ -481,7 +481,7 @@ class ED4_bases_table
     void set_elem_short(int offset, int value) {
 #ifdef TEST_BASES_TABLE
         e4_assert(legal(offset));
-        e4_assert(table_size==SHORT_TABLE_ELEM_SIZE);
+        e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
         e4_assert(value>=0 && value<=SHORT_TABLE_MAX_VALUE);
 #endif
         no_of_bases.shortTable[offset] = value;
@@ -490,7 +490,7 @@ class ED4_bases_table
     int get_elem_long(int offset) const {
 #ifdef TEST_BASES_TABLE
         e4_assert(legal(offset));
-        e4_assert(table_size==LONG_TABLE_ELEM_SIZE);
+        e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
 #endif
         return no_of_bases.longTable[offset];
     }
@@ -498,7 +498,7 @@ class ED4_bases_table
     int get_elem_short(int offset) const {
 #ifdef TEST_BASES_TABLE
         e4_assert(legal(offset));
-        e4_assert(table_size==SHORT_TABLE_ELEM_SIZE);
+        e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
 #endif
         return no_of_bases.shortTable[offset];
     }
@@ -531,7 +531,7 @@ public:
     void sub(const ED4_bases_table& other, int start, int end);
     void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, int start, int end);
 
-    void change_table_length(int new_length);
+    void change_table_length(int new_length, int default_entry);
 
 
 #ifdef DEBUG
@@ -540,6 +540,8 @@ public:
 };
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
+
+#define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
 
 // --------------------------------------------------------------------------------
 //     class ED4_char_table
@@ -551,7 +553,11 @@ class ED4_char_table
     int 			ignore;		// this table will be ignored when calculating tables higher in hierarchy
     // (used to suppress SAI in root_group_man tables)
 
-    static int			initialized;
+#ifdef TEST_CHAR_TABLE_INTEGRITY
+    static bool tables_are_valid;
+#endif
+
+    static bool			initialized;
     static unsigned char	char_to_index_tab[MAXCHARTABLE];
     static char 		*upper_index_chars;
     static char 		*lower_index_chars;
@@ -577,6 +583,16 @@ class ED4_char_table
     }
 
 public:
+
+#if defined(TEST_CHAR_TABLE_INTEGRITY)
+    static void set_validity(bool valid) { tables_are_valid = valid; }
+    bool empty() const;
+    bool ok() const;
+    void test() const; // test if table is valid (dumps core if invalid)
+#else
+    static void set_validity(bool /*valid*/) { }
+    void test() const { }
+#endif
 
     ED4_char_table(int maxseqlength=0);
     ~ED4_char_table();
@@ -616,12 +632,6 @@ public:
     char *build_consensus_string(int left_idx=0, int right_index=-1, char *fill_id=0) const;
 
     void change_table_length(int new_length);
-
-#if defined(DEBUG)
-    int empty() const;
-    int ok() const;
-#endif
-
 };
 
 // --------------------------------------------------------------------------------
