@@ -2483,7 +2483,7 @@ void AWTC_create_faligner_variables(AW_root *root,AW_default db1)
     root->awar_int(     FA_AWAR_REFERENCE,          1,      db1);
     root->awar_string(  FA_AWAR_REFERENCE_NAME,         "My name is nobody!",       db1);
     root->awar_int( FA_AWAR_RANGE,              0,  db1);
-#ifdef DEBUG
+#if defined(DEVEL_RALF)
     root->awar_int(     FA_AWAR_PROTECTION,         0,  db1)->write_int(6);
 #else
     root->awar_int(     FA_AWAR_PROTECTION,         0,  db1)->write_int(0);
