@@ -18,23 +18,23 @@ lproto: lpro tlpro
 
 lpro: $(GB_O:.o=.c)
 	rm -f ad_lpro.h
-	../MAKEBIN/aisc_mkpt -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h
 #	../MAKEBIN/aisc_mkpt $(GB_O:.o=.c) |awk '$$2 ~ /gb/ {print;}' >ad_lpro.h
 
 tlpro: $(GB_T:.o=.c)
 	rm -f ad_t_lpro.h
-	../MAKEBIN/aisc_mkpt -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h
 #	../MAKEBIN/aisc_mkpt $(GB_T:.o=.c) |awk '$$2 ~ /gb/ {print;}' >ad_t_lpro.h
 
 
 pro: $(GB_O:.o=.c)
 	rm -f ad_prot.h
-	../MAKEBIN/aisc_mkpt -z -C -F GB $(GB_O:.o=.c) >ad_prot.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_O:.o=.c) >ad_prot.h
 #	../MAKEBIN/aisc_mkpt $(GB_O:.o=.c) |awk '$$2 ~ /GB/ {print;}' >ad_prot.h
 
 tpro: $(GB_T:.o=.c)
 	rm -f ad_t_prot.h
-	../MAKEBIN/aisc_mkpt -z -C -F GB $(GB_T:.o=.c) >ad_t_prot.h
+	../MAKEBIN/aisc_mkpt -g -z -C -F GB $(GB_T:.o=.c) >ad_t_prot.h
 #	../MAKEBIN/aisc_mkpt $(GB_T:.o=.c) |awk '$$2 ~ /GB/ {print;}' >ad_t_prot.h
 
 wc:
@@ -49,12 +49,12 @@ depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) *.c *.cxx
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adGene.o: adGene.h arbdb.h ./arb_assert.h 
+adGene.o: adGene.h arbdb.h ./arb_assert.h
 adGene.o:  ./ad_prot.h arbdbt.h ./ad_t_prot.h
 adReference.o:   arbdb.h
 adReference.o: ./arb_assert.h ./ad_prot.h adlocal.h adtune.h adlmacros.h
 adRevCompl.o:   arbdb.h
-adRevCompl.o: ./arb_assert.h  
+adRevCompl.o: ./arb_assert.h
 adRevCompl.o:  ./ad_prot.h arbdbt.h
 adRevCompl.o: ./ad_t_prot.h
 adTest.o:   adlocal.h adtune.h
@@ -85,11 +85,11 @@ adquery.o:  adlocal.h adtune.h adlmacros.h
 adseqcompr.o:  adlocal.h adtune.h adlmacros.h arbdb.h
 adseqcompr.o: ./arb_assert.h ./ad_prot.h arbdbt.h ./ad_t_prot.h adseqcompr.h
 adsocket.o:   adlocal.h
-adsocket.o: adtune.h adlmacros.h 
+adsocket.o: adtune.h adlmacros.h
 adsort.o:   arbdb.h ./arb_assert.h
 adsort.o: ./ad_prot.h arbdbt.h ./ad_t_prot.h
 adstring.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
-adstring.o: ./ad_t_prot.h  
+adstring.o: ./ad_t_prot.h
 adsystem.o:  adlocal.h adtune.h adlmacros.h
 adsystem.o: arbdbt.h ./ad_t_prot.h
 adtables.o:  adlocal.h adtune.h adlmacros.h arbdb.h
