@@ -24,6 +24,7 @@ void gellisary::GAGenomReferenceGenBank::parse()
     bool rx = false;
     bool rl = false;
     bool rc = false;
+    bool cs = false;
     for(int i = 0; i < (int) row_lines.size(); i++)
     {
         tmp_str = row_lines[i];
@@ -579,6 +580,29 @@ void gellisary::GAGenomReferenceGenBank::parse()
                     tmp_lines_vector.clear();
                     ra = false;
                 }
+                /*if(cs)
+                {
+                	del_str = "CONSRTM";
+                    rep_str = " ";
+                    string t_str = GAGenomUtilities::toOneString(&tmp_lines_vector,true);
+                    GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+                    del_str = "\r";
+                    GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+                    GAGenomUtilities::onlyOneDelimerChar(&t_str,' ');
+                    GAGenomUtilities::trimString(&t_str);
+                    tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&t_str,' ',false);
+                    vector<string> tt_vector;
+                    for(int j = 0; j < (int)tmp_vector.size(); j++)
+                    {
+                        string tt_str = tmp_vector[j];
+                        GAGenomUtilities::trimString(&tt_str);
+                        tt_vector.push_back(tt_str);
+                    }
+                    reference_comment = GAGenomUtilities::toOneString(&tt_vector,true);
+                    tmp_vector.clear();
+                    tmp_lines_vector.clear();
+                	cs = false;
+                }*/
                 if(rc)
                 {
                     del_str = "RC";
@@ -607,7 +631,8 @@ void gellisary::GAGenomReferenceGenBank::parse()
             }
             else if(tmp_str2 == "CONSRTM")
             {
-
+				/*cs = true;
+                tmp_lines_vector.push_back(tmp_str3);*/
             }
             else if((tmp_str2 == "PUBMED") || (tmp_str2 == "MEDLINE"))
             {

@@ -1336,11 +1336,19 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                     gellisary::writeInteger(gb_species,&field,tmp_int);
                 }
             }
+            
             field = "sequence_length";
             tmp_int = 0;
-            for(int i = 0; i < (int)tmp_int_vector.size(); i++)
+            if((int)tmp_int_vector.size() > 0)
             {
-                tmp_int += tmp_int_vector[i];
+            	for(int i = 0; i < (int)tmp_int_vector.size(); i++)
+            	{
+                	tmp_int += tmp_int_vector[i];
+            	}
+            }
+            else
+            {
+            	tmp_int = genomgenbank.getSequenceLength();
             }
             gellisary::writeInteger(gb_species,&field,tmp_int);
             gellisary::writeFeatureTableGenBank(gb_species,genomgenbank.getFeatureTable());

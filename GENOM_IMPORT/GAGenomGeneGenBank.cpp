@@ -48,8 +48,11 @@ void gellisary::GAGenomGeneGenBank::parse()
     }
     location_as_string = tmp_str;
     GAGenomGeneLocationGenBank * new_location;
+//    cout << "Location 0 : -" << location_as_string << "-" << endl;
     new_location = new GAGenomGeneLocationGenBank(&tmp_str);
+//    cout << "Location 1" << endl;
     new_location->parse();
+//    cout << "Location 2" << endl;
     location = *new_location;
     delete(new_location);
 
