@@ -18,7 +18,7 @@ SUB	helixsym.hlp
 
 #************* Title of helpfile !! and start of real helpfile ********
 
-TITLE		Prototype of The New Sequence and Secondary Structure Editor
+TITLE		The New Sequence and Secondary Structure Editor
 
 OCCURRENCE	ARB_NT/Sequence/Edit marked sequences
 
@@ -203,6 +203,9 @@ EXAMPLES	None
 WARNINGS	The key mappings may conflict with some window managers
 		(eg. olvwm). Disable the CNTRL-LEFT/RIGHT keys of the window
 		manager.
+
+                Please make sure NUM_LOCK is not active! Otherwise some of
+                the editor keys do not work.
 
 		If you perform major database modifications such as
 

@@ -1,7 +1,8 @@
 Major changes for next Beta:
 ----------------------------
 
- - fixed appearance of 'tiny little boxes' in tree-view
+ - Mark mode now works in list-view as well (ARB_NTREE)
+ - fixed appearance of 'tiny little boxes' (everywhere)
  - redesign of ARB help:
      - a HTML version is in $ARBHOME/lib/help_html
      - a text version is in $ARBHOME/lib/help (like before, but now generated)

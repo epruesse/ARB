@@ -53,7 +53,7 @@ HELP2XML=$(ARBHOME)/bin/arb_help2xml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 
 #OLD_HELP= oldhelp/arb_commands.hlp
-OLD_HELP= $(wildcard $(HLP_SOURCE)/*.hlp $(HLP_SOURCE)/seer/*.hlp)
+OLD_HELP= $(HLP_SOURCE)/arb.hlp $(wildcard $(HLP_SOURCE)/*.hlp $(HLP_SOURCE)/seer/*.hlp)
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
 
