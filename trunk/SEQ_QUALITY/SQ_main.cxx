@@ -146,7 +146,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
     aws->at("deviation");
     aws->create_input_field(AWAR_SQ_WEIGHT_DEVIATION, 3);
 
-    aws->at("no helices");
+    aws->at("no_helices");
     aws->create_input_field(AWAR_SQ_WEIGHT_HELIX, 3);
 
     aws->at("consensus");

@@ -406,8 +406,8 @@ void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only)
     GBT_TREE *parent = 0;
 
 
-    if (node->gb_node){
-	if (node->is_leaf==true && (!(node->gb_node==0))){
+    
+	if (node->is_leaf){
 	    parent = node->father;
 	    if (parent->name){
 		//gb_main = parent->gb_node;
@@ -424,5 +424,4 @@ void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only)
 		SQ_traverse_through_tree(gb_main, node, marked_only);
 	    }
 	}
-    }
 }
