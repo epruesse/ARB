@@ -51,6 +51,30 @@ void an_add_short(AN_local *locs,char *new_name, char *parsed_name,char *parsed_
     aisc_main->touched = 1;
 }
 
+void an_remove_short(AN_shorts *an_shorts) {
+    /* this should only be used to remove illegal entries from name-server.
+       normally removing names does make problems - so use it very rarely */
+    
+    AN_revers *an_revers = (AN_revers*)aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers), an_shorts->shrt);
+    
+    if (an_revers) {
+        aisc_unlink((struct_dllheader_ext*)an_revers);
+        
+        free(an_revers->mh.ident);
+        free(an_revers->full_name);
+        free(an_revers->acc);
+        free(an_revers);
+    }
+    
+    aisc_unlink((struct_dllheader_ext*)an_shorts);
+    
+    free(an_shorts->mh.ident);
+    free(an_shorts->shrt);
+    free(an_shorts->full_name);
+    free(an_shorts->acc);    
+    free(an_shorts);
+}
+
 
 AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
 {
@@ -133,7 +157,7 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
     //     int	end_pos;
     //     char	*p;
 
-    if (strlen(full) == 0) {
+    if (full[0]==0) {
         return strdup("Xxx");
     }
 
@@ -156,7 +180,8 @@ char *an_get_short(AN_shorts *shorts,dll_public *parent,char *full){
     
     look = an_find_shrt(shorts,shrt);    
     if (!look) {
-        an_complete_shrt(shrt, full2+3);
+        len2 = strlen(full2);        
+        an_complete_shrt(shrt, len2>=3 ? full2+3 : "");
         goto insert_shrt;
     }
 
@@ -262,26 +287,27 @@ extern "C" aisc_string get_short(AN_local *locs)
 
     if(shrt) free(shrt);
     shrt = 0;
+    
+#define ILLEGAL_NAME_CHARS              " \t#;,@"    
+#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@="    
 
-    parsed_name = GBS_string_eval(locs->full_name,
-                                  "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
+    parsed_name = GBS_string_eval(locs->full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
     /* delete ' " \t and more than two words */
-    parsed_sym = GBS_string_eval(locs->full_name,
-                                 "\t= :* * *sym*=S",0);
+    parsed_sym = GBS_string_eval(locs->full_name, "\t= :* * *sym*=S",0);
+    
     if (strlen(parsed_sym)>1) {
         free(parsed_sym);
         parsed_sym = strdup("");
     }
-    parsed_acc = GBS_string_eval(locs->acc,";=:\t=: =:\"=:,=",0);
+    parsed_acc = GBS_string_eval(locs->acc,REPLACE_ILLEGAL_NAME_CHARS,0);
     /* delete spaces and more */
     first = GBS_string_eval(parsed_name,"* *=*1",0);
     p = strdup(parsed_name+strlen(first));
-    second = GBS_string_eval(p," =:\t=",0);
+    second = GBS_string_eval(p,REPLACE_ILLEGAL_NAME_CHARS,0);
     UPPERCASE(second[0]);
     free(p);
 
-    new_name = (char *)calloc(sizeof(char),
-                              strlen(first)+strlen(second)+strlen(parsed_acc)+4);
+    new_name = (char *)calloc(sizeof(char), strlen(first)+strlen(second)+strlen(parsed_acc)+4);
 
     if (strlen(parsed_acc)){
         sprintf(new_name,"*%s",parsed_acc);
@@ -290,39 +316,47 @@ extern "C" aisc_string get_short(AN_local *locs)
     }
 
     an_shorts = (AN_shorts *)aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->pnames),new_name);
-    if (!an_shorts){		/* now there is no short name */
-        char *first_short,*second_short;
-        char *first_advice,*second_advice;
-        int	count;
-        char 	test_short[256];
-
-        if (strlen(locs->advice) ) {
-            first_advice = GBS_string_eval(locs->advice,
-                                           "???*=?1?2?3:0=:1=:2=:3=:4=:5=:6=:7=:8=:9=",0);
-        }else{
-            first_advice = strdup("Xxx");
+    if (an_shorts) { // we already have a short name
+        if (strpbrk(an_shorts->shrt, ILLEGAL_NAME_CHARS)!=0) { // contains illegal characters
+            an_remove_short(an_shorts);
+            an_shorts = 0;
         }
-
-        if (strlen(locs->advice) > 3) {
-            second_advice = GBS_string_eval(locs->advice+3,
-                                            " =:\t=:,=:;=",0);
-        }else{
-            second_advice = strdup("Yyyyy");
+        else {
+            shrt = strdup(an_shorts->shrt);
         }
-
+    }    
+    if (!shrt) { /* now there is no short name (or an illegal one) */
+        char *first_advice=0,*second_advice=0;        
+        
+        if (locs->advice[0] && strpbrk(locs->advice, ILLEGAL_NAME_CHARS)!=0) {
+            locs->advice[0] = 0; // delete advice
+        }
+        
+        if (locs->advice[0]) {
+            char *advice = GBS_string_eval(locs->advice, "0=:1=:2=:3=:4=:5=:6=:7=:8=:9=:" REPLACE_ILLEGAL_NAME_CHARS, 0); 
+            
+            first_advice = strdup(advice); 
+            if (strlen(advice) > 3) {
+                second_advice = strdup(advice+3);
+                first_advice[3] = 0;
+            }
+        }
+        
+        if (!first_advice) first_advice = strdup("Xxx");
+        if (!second_advice) second_advice = strdup("Yyyyy");
+            
+        char *first_short;
+        
         if (strlen(first)) {
-            first_short = an_get_short(	aisc_main->shorts1,
-                                        &(aisc_main->pshorts1),first);
+            first_short = an_get_short(	aisc_main->shorts1, &(aisc_main->pshorts1),first);
         }else{
             first_short = strdup(first_advice);
         }
         first_short = (char *)realloc(first_short,strlen(first_short)+3);
+        if (!strlen(first_short)) sprintf(first_short,"Xxx");
 
-        if (!strlen(first_short)) {
-            sprintf(first_short,"Xxx");
-        }
-
-
+        char *second_short;
+        
         shortlen = 5;
         second_short = (char *)calloc(sizeof(char), 10);
         if (strlen(second)) {
@@ -337,19 +371,29 @@ extern "C" aisc_string get_short(AN_local *locs)
         }
 
         first_short[3] = 0;		/* 3 characters for the first word */
-
-        sprintf(test_short,"%s%s",
-                first_short,second_short);
-
+        
+        shortlen = strlen(second_short);
+        
+        char test_short[256];
+        sprintf(test_short,"%s%s", first_short,second_short);
+        
         if (aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers),test_short)) {
+            int	count;
+            
+            if (shortlen<5) {
+                strcat(second_short+shortlen, "_____");
+                second_short[5] = 0;
+                shortlen = 5;
+            }
+
+            gb_assert(shortlen==5);
             second_short[shortlen-1] = 0;
-            for (count = 2; count <100000; count++) {
-                if (count>=10){
-                    second_short[shortlen-2] = 0;
-                }
-                if (count>=100){
-                    second_short[shortlen-3] = 0;
-                }
+            for (count = 2; count <99999; count++) {
+                if      (count==10)    second_short[shortlen-2] = 0;
+                else if (count==100)   second_short[shortlen-3] = 0;
+                else if (count==1000)  second_short[shortlen-4] = 0;
+                else if (count==10000) second_short[shortlen-5] = 0;
+                
                 sprintf(test_short,"%s%s%i",first_short,second_short,count);
                 if (!aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->prevers),test_short)) break;
             }
@@ -363,8 +407,6 @@ extern "C" aisc_string get_short(AN_local *locs)
         free(second_short);
         free(first_advice);
         free(second_advice);
-    }else{
-        shrt = strdup(an_shorts->shrt);
     }
     free(first);free(second);free(parsed_name);free(parsed_sym);
     free(parsed_acc); free(new_name);
