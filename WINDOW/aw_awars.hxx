@@ -16,6 +16,7 @@
 #define AWAR_DEFAULT_ALIGNMENT "presets/use"
 
 #define AWAR_TREE          "focus/tree_name"
+#define AWAR_TREE_REFRESH  "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 #define AWAR_CONFIGURATION "focus/configuration"
 
 #define AWAR_SECURITY_LEVEL    "/tmp/etc/sequrity_level"
