@@ -135,6 +135,7 @@ int main(int argc,char **argv)
   char *arg_input_file;
   char *arg_result_file;
   char *arg_ptserver;
+  int numMismatches;
 
   if (argc < 4)
     args_help = 1;
@@ -154,20 +155,27 @@ int main(int argc,char **argv)
 
    if(!args_help && !args_err && argc>3)
      {
-     if( argv[argc-3][0]!='-' && argv[argc-2][0]!='-' && argv[argc-1][0]!='-')
+     if( argv[1][0]!='-' && argv[2][0]!='-' && argv[3][0]!='-')
      {
-        arg_input_file = argv[argc-3];
-        arg_result_file = argv[argc-2];
-        arg_ptserver = argv[argc-1];
+        arg_input_file = argv[1];
+        arg_result_file = argv[2];
+        arg_ptserver = argv[3];
       }
     else
       args_err=1;
+     if (argc>4)
+       numMismatches = atoi(argv[4]);
+     else
+       numMismatches = 0;
      }
-
+   
+   
+   
   if (args_help && !args_err)
     {
-      printf("Usage: %s [OPTION] input_probefile result_probefile pt-servername\n\n", argv[0]);
-      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb'\n\n", argv[0]);
+      printf("Usage: %s  input_probefile result_probefile pt-servername [numberOfMismatches] [Option]\n\n", argv[0]);
+      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0'\n\n", argv[0]);
+      printf("The default for numberOfMismatches is 0\n");
       printf("-h\tprint this help and exit\n\n");
       return -1;
     }
@@ -233,7 +241,8 @@ int main(int argc,char **argv)
 	// Gehe probeData durch, und rufe fuer jeden Eintrag PG_probe_match auf
 	for (uint j=0; j<probeData.size(); j++)
 	{
-	  error =  PG_probe_match(probeData[j] , my_para,  arg_result_file);
+	  //printf("j=%d and probename=%s\n", j, probeData[j].name);
+	  error =  PG_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches);
 	}
 
 	// Testdaten !!
@@ -282,13 +291,15 @@ GB_ERROR read_input_file(char *fn)
     {
        while(iS.getline(line, 255))
        {
-
-        if(strstr(line,"probe")  && !strstr(line, "name")) {
+	 if (line[0]=='#')
+	   {
+	     //do nothing
+	   }
+	 else if(strstr(line,"probe")  && !strstr(line, "name")) {
 	     tmpname[0] = 0;
 	     tmplongname[0] = 0;
 	     tmpsequence[0] = 0;
 	     gotProbe = true;
-
 	}
 
 	else if(strstr(line, "name") && !strstr(line, "longname"))
@@ -431,7 +442,6 @@ GB_ERROR read_input_file(char *fn)
 	   buf[buf_count]=0;
 	  if (strlen(buf)>0)
 	    strcpy(tmpsequence, buf);
-
 	} // end sequence
 
 	else if(!line[0])
@@ -637,11 +647,11 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const PG_
 
 
 //  -----------------------------------------------------------------------------------------------------
-//      GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn)
+//      GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn, int numMismatches)
 //  -----------------------------------------------------------------------------------------------------
 //  calls probe-match for the sequence contained in pD  and appends all matching species to the result-probefile fn
 
-GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn ) {
+GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *fn, int numMismatches ) {
 
   //  printf("PG_probe_match\n");
 
@@ -686,7 +696,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
                   LOCS_MATCH_REVERSED,		1,
                   LOCS_MATCH_SORT_BY,		0,
                   LOCS_MATCH_COMPLEMENT, 	0,
-                  LOCS_MATCH_MAX_MISMATCHES,	0, 	// no mismatches
+                  LOCS_MATCH_MAX_MISMATCHES,	numMismatches, 
                   LOCS_MATCH_MAX_SPECIES, 	MAX_SPECIES,
                   LOCS_SEARCHMATCH,		pD.sequence,
                   0))
