@@ -2,6 +2,8 @@
 #include "Globals.hxx"
 #include "TextureMapping.hxx"
 
+using namespace std;
+
 Texture2D::Texture2D(void){
 }
 
@@ -61,19 +63,19 @@ char* Texture2D::GetImageFile(int ImageId){
 }
 
 // Load Bitmaps And Convert To Textures
-void Texture2D::LoadGLTextures(int mode) {	
+void Texture2D::LoadGLTextures(int mode) {
     switch(mode)
      {
      case PNG:
          {
-         for (int i = 0; i < SHAPE_MAX; i++) 
+         for (int i = 0; i < SHAPE_MAX; i++)
              {
              const char *ImageFile = GetImageFile(i);
              pngInfo info;
 
              // Using pngLoadAndBind to set texture parameters automatically.
              texture[i] = pngBind(ImageFile, PNG_NOMIPMAP, PNG_ALPHA, &info, GL_CLAMP, GL_NEAREST, GL_NEAREST);
-             
+
              if (texture[i] == 0) {
                  cout<<"Error loading file : "<<ImageFile<<" !!!"<<endl;
                  exit(0);
