@@ -1,4 +1,7 @@
 
+#define AWAR_DIST_PREFIX           "dist/"
+#define AWAR_DIST_CORR_TRANS       AWAR_DIST_PREFIX "correction/trans"
+#define AWAR_DIST_SAVE_MATRIX_BASE "tmp/" AWAR_DIST_PREFIX "save_matrix"
 
 typedef enum {
     PH_TRANSFORMATION_NONE,
@@ -18,8 +21,6 @@ typedef enum {
     PH_TRANSFORMATION_OLSEN_VOIGT,
     PH_TRANSFORMATION_ML
 } PH_TRANSFORMATION;
-
-//extern const char *enum_trans_to_string[];
 
 enum PH_MATRIX_TYPE {
     PH_MATRIX_FULL,
@@ -83,7 +84,7 @@ public:
     PHMATRIX(GBDATA *gb_main,AW_root *awr);
     ~PHMATRIX(void);
 
-    char *load(char *use,AP_filter *filter,AP_weights *weights,AP_smatrix *ratematrix, int all, GB_CSTR sort_tree_name);
+    char *load(char *use,AP_filter *filter,AP_weights *weights,AP_smatrix *ratematrix, int all, GB_CSTR sort_tree_name, bool show_warnings);
     char *unload(void);
     const char *save(char *filename,enum PH_SAVE_TYPE type);
 
