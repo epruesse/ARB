@@ -37,7 +37,20 @@ void gellisary::GAGenomGeneDDBJ::parse()
         GAGenomUtilities::trimString2(&tmp_str);
     }
     gene_type = tmp_str;
-    tmp_str = tmp_vector[1];
+    int art = 0;
+    for(art = 1; art < (int)tmp_vector.size(); art++)
+    {
+    	tmp_str = tmp_vector[art];
+    	if(tmp_str[0] == '/')
+    	{
+    		break;
+    	}
+    	else
+    	{
+    		location_as_string += tmp_str;
+    	}
+    }
+	tmp_str = location_as_string;
     if(tmp_str[0] == ' ')
     {
         GAGenomUtilities::trimString(&tmp_str);

@@ -75,6 +75,12 @@ namespace gellisary{
         int error_number;
         std::string error_message;
         bool prepared;
+        int sequence_a;
+		int sequence_c;
+		int sequence_g;
+		int sequence_t;
+		int sequence_other;
+		int sequence_length;
         /*
          * error_number:
          *  0 - all okay
@@ -104,6 +110,12 @@ namespace gellisary{
         bool isFileComplete();
         int getErrorNumber();
         std::string * getErrorMessage();
+        int getSequenceLength();
+        int getSequenceA();
+        int getSequenceC();
+        int getSequenceG();
+        int getSequenceT();
+        int getSequenceOther();
     };
 
 };

@@ -19,7 +19,6 @@ namespace gellisary{
         gellisary::GAGenomFeatureTableGenBank feature_table;
         int iter;
         GAGenomReferenceGenBank tmp_ref;
-        int sequence_length;
         std::string consortium;
 
     public:
@@ -31,9 +30,7 @@ namespace gellisary{
         gellisary::GAGenomFeatureTableGenBank * getFeatureTable();
         gellisary::GAGenomReferenceGenBank * getReference();
         virtual void parseSequence(std::string *);
-        int getSequenceLength();
     };
-
 };
 
 #endif // GAGENOMGENBANK_H

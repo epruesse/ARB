@@ -40,12 +40,9 @@ void gellisary::GAGenomGeneEmbl::parse()
     	}
     	else
     	{
-//    		cout << tmp_str << endl;
     		location_as_string += tmp_str;
     	}
     }
-//    cout << location_as_string << endl;
-//    tmp_str = tmp_vector[1];
 	tmp_str = location_as_string;
     GAGenomGeneLocationEmbl * new_location;
     new_location = new GAGenomGeneLocationEmbl(&tmp_str);

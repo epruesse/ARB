@@ -1224,21 +1224,22 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
                     break;
                 case '/':
                     if(ori)
-                    {
-                        ori = false;
-                    }
-                    if(seq_len == (int) sequence.size()) 
-	            	{
-    	        		complete_file = true;
-        	    		error_number = 0;
+	                {
+    	            	ori = false;
+        	        }
+            	    sequence_length = (int)sequence.size();
+                	if(seq_len == (int) sequence.size()) 
+		            {
+    		        	complete_file = true;
+        		    	error_number = 0;
             			error_message = "All Okay!";
             		}
-	            	else
-	            	{
-    	        		error_number = 1;
-        	    		error_message = "Sequence string of genome is incomplete!";
+		            else
+    		        {
+        		    	error_number = 1;
+            			error_message = "Sequence string of genome is incomplete!";
             		}
-                	flatfile.close();
+		            flatfile.close();
                     break;
                 case ' ':
                     if(de)
@@ -1331,18 +1332,43 @@ void gellisary::GAGenomDDBJ::parseFlatFile()
         }
         else
         {
-            if(ori)
+            if(tmp_str[0] == '/')
             {
-            	parseSequence(&tmp_str);
-                sequence += tmp_str;
-            }
-            if(fe)
-            {
-                feature_table.update(&tmp_str);
+//            	cout << "seq_len : -" << seq_len << "-" << endl;
+//              cout << "sequence.size() : -" << sequence.size() << "-" << endl;
+                if(ori)
+                {
+                	ori = false;
+                }
+                sequence_length = (int)sequence.size();
+                if(seq_len == (int) sequence.size()) 
+	            {
+    	        	complete_file = true;
+        	    	error_number = 0;
+            		error_message = "All Okay!";
+            	}
+	            else
+    	        {
+        	    	error_number = 1;
+            		error_message = "Sequence string of genome is incomplete!";
+            	}
+	            flatfile.close();
             }
             else
             {
-                tmp_lines_vector.push_back(tmp_str);
+	            if(ori)
+    	        {
+        	    	parseSequence(&tmp_str);
+            	    sequence += tmp_str;
+	            }
+	            if(fe)
+	            {
+	                feature_table.update(&tmp_str);
+	            }
+	            else
+	            {
+	                tmp_lines_vector.push_back(tmp_str);
+	            }
             }
         }
     }
@@ -1446,6 +1472,15 @@ vector<int> * gellisary::GAGenomDDBJ::getSequenceHeader()
         parseFlatFile();
     }
     return &sequence_header;
+}
+
+int gellisary::GAGenomDDBJ::getSequenceLength()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_length;
 }
 
 void gellisary::GAGenomDDBJ::parseSequence(string * source_str)
