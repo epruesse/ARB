@@ -232,15 +232,16 @@ public:
     void increment_at_commands( int width, int height );
 
 
-    AW_color  alloc_named_data_color(int colnum, char *colorname);
-    void      _get_area_size(AW_area area, AW_rectangle *square);
-    int       label_widget( void *wgt, AW_label str, char *mnemonic=0 , int width =0 , int alignment =0 );
+    AW_color    alloc_named_data_color(int colnum, char *colorname);
+    const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
+    void        _get_area_size(AW_area area, AW_rectangle *square);
+    int         label_widget( void *wgt, AW_label str, char *mnemonic=0 , int width =0 , int alignment =0 );
     //***************************** *********************** ***********************************
     //***************************** The read only   section ***********************************
     //***************************** *********************** ***********************************
-    char     *window_name;      // window title
-    char     *window_defaults_name;
-    AW_BOOL   window_is_shown;
+    char       *window_name;    // window title
+    char       *window_defaults_name;
+    AW_BOOL     window_is_shown;
 
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
