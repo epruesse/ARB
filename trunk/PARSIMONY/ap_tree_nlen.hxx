@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include <limits.h>
 
 #define ap_assert(x) arb_assert(x)
@@ -140,7 +140,7 @@ public:
     char *getSequence();
 
     friend 	class AP_tree_edge;
-    friend 	ostream& operator<<(ostream&,const AP_tree_nlen&);
+    friend 	std::ostream& operator<<(std::ostream&,const AP_tree_nlen&);
 };
 
 
@@ -181,7 +181,7 @@ class AP_tree_edge
     // my friends:
 
     friend class AP_tree_nlen;
-    friend ostream& operator<<(ostream&,const AP_tree_edge&);
+    friend std::ostream& operator<<(std::ostream&,const AP_tree_edge&);
 
 protected:
 
@@ -243,7 +243,7 @@ public:
     static int nodesInTree; 	// no of nodes in tree
 };
 
-ostream& operator<<(ostream&, const AP_tree_edge&);
+std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 
 /******** two easy-access-functions for the root *********/
 
