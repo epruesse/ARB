@@ -53,7 +53,7 @@ void AWT_species_set_root::add(const char *species_name){
 }
 
 void AWT_species_set_root::add(AWT_species_set *set){
-    assert(nsets<nspecies*2);
+    aw_assert(nsets<nspecies*2);
     sets[nsets++] = set;
 }
 
@@ -192,9 +192,9 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
 }
 
 // --------------------------------------------------------------------------------
-//     static AW_BOOL containsMarkedSpecies(const AP_tree *tree) 
+//     static AW_BOOL containsMarkedSpecies(const AP_tree *tree)
 // --------------------------------------------------------------------------------
-static AW_BOOL containsMarkedSpecies(const AP_tree *tree) {    
+static AW_BOOL containsMarkedSpecies(const AP_tree *tree) {
     if (tree->is_leaf) {
         GBDATA *gb_species = tree->gb_node;
         int flag = GB_read_flag(gb_species);
@@ -204,22 +204,22 @@ static AW_BOOL containsMarkedSpecies(const AP_tree *tree) {
 }
 
 // --------------------------------------------------------------------------------
-//     GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) 
+//     GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only)
 // --------------------------------------------------------------------------------
 GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
     GB_ERROR error = 0;
     long j;
-    
+
     for (j=this->nsets-1;j>=0;j--){
         AWT_species_set *set = this->sets[j];
         char *old_group_name = 0;
         AW_BOOL insert_new_node = set->best_node && set->best_node->name;
-        
+
         if (nodes_with_marked_only && insert_new_node) {
             int hasMarked = containsMarkedSpecies(set->node);
             if (!hasMarked) insert_new_node = AW_FALSE;
         }
-        
+
         if (set->node->gb_node && (delete_old_nodes || insert_new_node)) { // There is already a node, delete old
             old_group_name = strdup(set->node->name); // store old_group_name to rename new inserted node
 #if defined(DEBUG)
@@ -233,19 +233,19 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
         }
         if (insert_new_node) {
             set->node->gb_node = GB_create_container(set->node->tree_root->gb_tree,"node");
-            error = GB_copy(set->node->gb_node,set->best_node->gb_node);            
+            error = GB_copy(set->node->gb_node,set->best_node->gb_node);
             if (error) break;
-            
+
             GB_dump(set->node->gb_node);
-            
+
             GBDATA *gb_name = GB_find(set->node->gb_node, "group_name", 0, down_level);
             gb_assert(gb_name);
-            if (gb_name) {                
+            if (gb_name) {
                 char *name = GB_read_string(gb_name);
-                
+
                 if (old_group_name && strcmp(old_group_name, name)!=0 && !delete_old_nodes) {
                     // there was a group with a different name and we are adding nodes
-                    string new_group_name = (string)name+" [was: "+old_group_name+"]"; 
+                    string new_group_name = (string)name+" [was: "+old_group_name+"]";
                     GB_write_string(gb_name, new_group_name.c_str());
                     delete name; name = GB_read_string(gb_name);
                 }
@@ -261,7 +261,7 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
     return error;
 }
 
-GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) { 
+GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
     GB_ERROR error = 0;
     GB_begin_transaction(gb_main);
     FILE *log = 0;
@@ -271,10 +271,10 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
                 "**********************************************************************\n"
                 "       LOGFILE: %s Node Info From Tree '%s' to Tree '%s'\n"
                 "**********************************************************************\n\n",
-                delete_old_nodes ? "Moving" : "Adding", 
+                delete_old_nodes ? "Moving" : "Adding",
                 tree_source,tree_dest);
     }
-    
+
     AP_tree *source= 0;
     AP_tree *dest= 0;
 
@@ -305,7 +305,7 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
             error = GB_export_error("Destination tree has less than 3 species");
             break;
         }
- 
+
         AWT_species_set *root_setl = ssr->find_best_matches_info(source->leftson,log,compare_node_info);
         AWT_species_set *root_setr = ssr->find_best_matches_info(source->rightson,log,compare_node_info);
 
@@ -337,7 +337,7 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
     delete dest;
     delete rsource;
     delete rdest;
-    
+
     if(error){
         aw_message(error);
         GB_abort_transaction(gb_main);
