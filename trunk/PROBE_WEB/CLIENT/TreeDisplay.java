@@ -29,19 +29,23 @@ private int leafNumber;
 private HashMap         branchLines; // vertical lines
 private HashMap         rootLines; // horizontal lines
 private Client          myBoss;
-private int             yPosition      = 10;
-private int             leafSpace      = 15 ; // (ySpan / leafNumber)
-private int             yPointer       = 0; // serves as pointer to the y-space already used up
-private int             xSpreading     = 1000;
+private int             yPosition  = 10;
+private int             leafSpace  = 15 ; // (ySpan / leafNumber)
+private int             yPointer   = 0; // serves as pointer to the y-space already used up
+private int             xSpreading = 1000;
 private int             treeLevels;
-private boolean         newLayout      = true;
+private boolean         newLayout  = true;
 private LineAreaFactory laf;
 private Set             rootSet;
 private Set             branchSet;
-private Color           dc;
-private Color           mc             = Color.yellow;
-public float            maxDist        = 0;
-private int             clickTolerance = 5;
+
+private static Color dc;        // normal display color
+private static Color mc  = Color.yellow; // marked display color
+private static Color pmc = Color.white; // partly marked display color
+private static Color nic = Color.blue; // node info color (not used for species name etc.)
+
+public float maxDist        = 0;
+private int  clickTolerance = 5;
 
 
 public TreeDisplay(TreeNode root, int treeLevels)
@@ -181,142 +185,127 @@ public int calculateYValues4internal(TreeNode node, int depth)
 }
 
 
-
+private static void setColor(int markedState, Graphics g) {
+    switch (markedState) {
+        case 0: g.setColor(dc); break;
+        case 1: g.setColor(pmc); break;
+        case 2: g.setColor(mc); break;
+    }
+}
 
 public void displayTreeGraph(Graphics g, TreeNode node, int depth)
     {
-
         if (node == null) {
             Toolkit.AbortWithError("no valid node given to display");
         }
 
-        if (node.isMarked() == true )
-            {
-                g.setColor(mc);
+        if ((node.testLeaf() == true) || (depth == 0)) {
+
+            // horizontal line to leaf/folded_subtree
+
+            int[] line = new int[4];
+            line[0]    = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
+            line[1]    = (int) node.getYOffset();
+            line[2]    = (int)(node.getTotalDist()*xSpreading);
+            line[3]    = (int) node.getYOffset();
+
+            setColor(node.isMarked(), g);
+            g.drawLine( line[0], line[1], line[2], line[3]);
+            if (newLayout == true) {
+                rootLines.put(laf.getLAObject(line), node);
+                node.setXOffset(line[2]);
             }
-        else
+
+            if (node.testGrouped() == false) // add the node name if node is leaf
             {
-                g.setColor(dc);
+                String info = node.getNodeInformation();
+                int    x    = (int)( node.getTotalDist() * xSpreading) + 5;
+                int    y    = node.getYOffset() +3;
+
+                g.drawString(info, x, y);
+
+                if (info.charAt(0) == '[') { // has info about probes
+                    int brclose = info.indexOf(']');
+                    if (brclose != -1) {
+                        info = info.substring(0, brclose+1); // cut rest after '[...]'
+                        g.setColor(nic); // and draw again in different color
+                        g.drawString(info, x, y);
+                    }
+                }
             }
-        if ((node.testLeaf() == true) || (depth == 0))
-             {
-                 int[] line = new int[4];
-                 line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
-                 line[1] = (int) node.getYOffset();
-                 line[2] = (int)(node.getTotalDist()*xSpreading);
-                 line[3] = (int) node.getYOffset();
-
-                 if (node.isMarked() == true)
-                     {
-                         g.setColor(Color.yellow);
-                     }
-                 g.drawLine( line[0],
-                             line[1],
-                             line[2],
-                             line[3]
-                             );
-                 if (newLayout == true)
-                     {
-//                          rootLines.put(new Integer((int) node.getYOffset()), new Pair(
-//                                                                                 (int)((node.getTotalDist() - node.getDistance())* xSpreading),
-//                                                                                 (int)(node.getTotalDist()*xSpreading)
-//                                                                                 )
-//                                          );
-
-                         rootLines.put(laf.getLAObject(line), node);
-
-                         node.setXOffset(
-                                         line[2]
-                                         //  (int)(node.getTotalDist()*xSpreading)
-                                         );
-                     };
+            else // draws a box with number of child if node is internal
+            {
+                g.drawRect((int)( node.getTotalDist() * xSpreading),
+                           node.getYOffset() - ( leafSpace/2 - 1 ),
+                           leafSpace * 3 ,
+                           (int)(leafSpace * 0.8) );
+                g.drawString(Integer.toString(node.getNoOfLeaves()), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +4 );
+            }
 
 
+        }
+        else {
+            if (depth <= 0) { // rather obsolete
+                Toolkit.InternalError("displayTreeGraph: unexpected node reached");
+            }
 
-                 if (node.testGrouped() == false) // add the node name if node is leaf
-                     {
-                         g.drawString(node.getNodeInformation(), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +3 );
-                     }
-                 else // draws a box with number of child if node is internal
-                     {
-                         g.drawRect((int)( node.getTotalDist() * xSpreading),
-                                    node.getYOffset() - ( leafSpace/2 - 1 ),
-                                    leafSpace * 3 ,
-                                    (int)(leafSpace * 0.8) );
-                         g.drawString(Integer.toString(node.getNoOfLeaves()), (int)( node.getTotalDist() * xSpreading) + 5, node.getYOffset() +4 );
-                     }
+            int[] line = new int[4];
 
+            line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
+            line[1] = node.getYOffset();
+            line[2] = (int)(node.getTotalDist()*xSpreading);
+            line[3] = node.getYOffset();
 
-             } // end of scope of old line object
-         else
-             {
-                 if(depth > 0){ // rather obsolete
+            setColor(node.isMarked(), g);
+            g.drawLine( line[0], line[1], line[2], line[3]); // draw horizontal line
+            if (newLayout == true) {
+                rootLines.put(laf.getLAObject(line), node);
+                node.setXOffset(line[2]);
+            }
 
+            // draw upper child
 
-                 int[] line = new int[4];
-                 line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
-                 line[1] = node.getYOffset();
-                 line[2] = (int)(node.getTotalDist()*xSpreading);
-                 line[3] = node.getYOffset();
-                 g.drawLine( line[0],
-                             line[1],
-                             line[2],
-                             line[3]
-                             );
+            TreeNode upChild = (TreeNode)(node.getChilds().elementAt(0));
+            int[] upline     = new int[4];
 
+            upline[0] = (int)((node.getTotalDist())* xSpreading);
+            upline[1] = upChild.getYOffset();
+            upline[2] = line[2];
+            upline[3] = line[3];
 
-                 if (newLayout == true)
-                     {
-//                          branchLines.put(new Integer((int)(node.getYOffset())), new Pair(
-//                                                                                 (int)((node.getTotalDist() - node.getDistance())* xSpreading),
-//                                                                                 (int)(node.getTotalDist()*xSpreading)
-//                                                                                 )
-//                                          );
+            setColor(upChild.isMarked(), g);
+            g.drawLine( upline[0], upline[1], upline[2], upline[3]);
+            if (newLayout == true) branchLines.put(laf.getLAObject(upline), upChild);
 
+            displayTreeGraph (g, upChild, depth -1);
 
-                         rootLines.put(laf.getLAObject(line), node);
+            // draw lower child
 
-                         // node.setXOffset((int)(node.getTotalDist()*xSpreading));
-                         node.setXOffset(line[2]);
-                     };
+            TreeNode downChild = (TreeNode)(node.getChilds().elementAt(1));
+            int[] downline     = new int[4];
 
-                 // vertical branching lines
+            downline[0] = upline[0];
+            downline[1] = downChild.getYOffset();
+            downline[2] = line[2];
+            downline[3] = line[3];
 
-                 //                 int[]
-                 line = new int[4];
-                 line[0] = (int)((node.getTotalDist())* xSpreading);
-                 line[1] = ((TreeNode)(node.getChilds().elementAt(0))).getYOffset();
-                 line[2] = (int)((node.getTotalDist())* xSpreading);
-                 line[3] = ((TreeNode)(node.getChilds().elementAt(1))).getYOffset();
+            setColor(downChild.isMarked(), g);
+            g.drawLine( downline[0], downline[1], downline[2], downline[3]);
+            if (newLayout == true) branchLines.put(laf.getLAObject(downline), downChild);
 
-                 g.drawLine( line[0],
-                             line[1],
-                             line[2],
-                             line[3]
-                             );
+            displayTreeGraph (g, downChild, depth -1);
 
-                 if (newLayout == true)
-                     {
-                         branchLines.put(laf.getLAObject(line), node);
-                     };
+            // draw inner node information
+            // (this is done AFTER drawing childs to ensure it's on top)
+            {
+                String info = node.getNodeInformation();
+                if (info.length() > 0) {
+                    g.setColor(nic);
+                    g.drawString(info, line[0]+3, line[1]-1);
+                }
+            }
 
-                 displayTreeGraph (g, (TreeNode)(node.getChilds().elementAt(0)), depth -1);
-                 displayTreeGraph (g, (TreeNode)(node.getChilds().elementAt(1)), depth -1);
-                 }
-                 else
-                     {
-//                          g.drawLine( (int)((node.getTotalDist() - node.getDistance())* xSpreading),
-//                                      node.getYOffset(),
-//                                      (int)(node.getTotalDist()*xSpreading),
-//                                      node.getYOffset()
-//                                      );
-
-                         Toolkit.InternalError("displayTreeGraph: unexpected node reached");
-                     }
-
-             }
-
-
+        }
     }
 
 
@@ -394,7 +383,7 @@ public void handleRightMouseClick(int x, int y)
                 System.out.println("path to clicked node: " + clickedNode.getCodedPath());
                 System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
 
-                boolean state = clickedNode.isMarked();
+                boolean state = clickedNode.isMarked() != 0;
                 clickedNode.markSubtree(!state);
                 updateListOfMarked();
                 repaint();
@@ -484,11 +473,9 @@ public void countMarkedSpecies ()
 
 public int countMarkedRecursive(TreeNode node)
     {
-
         return  !node.testLeaf() ?
              countMarkedRecursive( (TreeNode)node.getChilds().elementAt(0)) +  countMarkedRecursive ((TreeNode)node.getChilds().elementAt(1))
-            : node.isMarked() ? 1 : 0
-            ;
+            : node.isMarked() == 2 ? 1 : 0 ;
 
     }
 
