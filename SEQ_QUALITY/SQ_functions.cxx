@@ -28,7 +28,8 @@
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
 
-static int globalcounter = 0;
+static int globalcounter  = 0;
+static int globalcounter2 = 0;
 
 enum { CS_CLEAR, CS_PASS1 };
 
@@ -641,7 +642,7 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	SQ_GroupData *data = new SQ_GroupData_RNA;
 	SQ_pass1(data, gb_main, node);
 	globalcounter++;
-	aw_status(GBS_global_string("%i Sequence(s) finished", globalcounter));
+	aw_status(GBS_global_string("1st pass: %i Sequence(s) finished\n2nd pass: %i Sequence(s) finished", globalcounter, globalcounter2));
 	return data;
     }
 
@@ -666,6 +667,7 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 
 	if (node->name) {  //  group identified!
 	  SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
+	  globalcounter2++;
 	}
 	return data;
     }
