@@ -142,11 +142,13 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
             p[idx] = c1|c2;     // mix distinct bases
 
             if (p[idx]&AP_S) { // contains a gap
-                if (idx>0 && (p[idx-1]&AP_S)) { // last position also contained gap
-                    if ((c1 == AP_S && p1[idx-1] == AP_S) ||
-                        (c2 == AP_S && p2[idx-1] == AP_S))
+                if (idx>0 && (p[idx-1]&AP_S)) { // last position also contained gap..
+                    if (((c1&AP_S) && (p1[idx-1]&AP_S)) || // ..in same sequence
+                        ((c2&AP_S) && (p2[idx-1]&AP_S)))
                     {
-                        continue; // skip multiple gaps
+                        if (!(p1[idx-1]&AP_S) || !(p2[idx-1]&AP_S)) { // if one of the sequences had no gap at previous position
+                            continue; // skip multiple gaps
+                        }
                     }
                 }
             }
@@ -160,6 +162,19 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 
         awt_assert(p[idx] != 0);
     }
+
+#if defined(DEBUG) && 0
+#define P1 75
+#define P2 90
+    printf("Seq1: ");
+    for (long idx = P1; idx <= P2; ++idx) printf("%3i ", p1[idx]);
+    printf("\nSeq2: ");
+    for (long idx = P1; idx <= P2; ++idx) printf("%3i ", p2[idx]);
+    printf("\nCombine value: %f\n", float(result));
+#undef P1
+#undef P2
+#endif // DEBUG
+
 
 // 	if (this->mutation_per_site){
 // 	    register GB_UINT4 *w;
@@ -210,7 +225,10 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
 
 	global_combineCount++;
 	this->is_set_flag = AP_TRUE;
-	cashed_real_len = -1.0;
+	cashed_real_len   = -1.0;
+
+    awt_assert(result >= 0.0);
+
 	return (AP_FLOAT)result;
 }
 
