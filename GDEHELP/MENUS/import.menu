@@ -15,15 +15,15 @@ outformat:genbank
 
 item:Import using MAUS
 itemmeta: M
-itemmethod:mausdriver.pl -if=$INPUTFILE -of=$OUTPUTFILE \
+itemmethod:(cd $ARBHOME/PERL_SCRIPTS/MAUS;perl mausdriver.pl -if=$INPUTFILE -of=OUTPUTFILE \
 -exff=$EXCLUDEFILE -exfl=$EXLCUDELIST -kwl=$KWLIST -acl=ACLIST -avl=$AVLIST\
--log=$LOG -cdat=$CDATE -udat=$UDATE -min=$MIN -max=$MAX -spec=$SPEC
+-log=$LOG -cdat=$CDATE -udat=$UDATE -min=$MIN -max=$MAX -spec=$SPEC )
 
 itemhelp:MAUS.help
 
 arg:INPUTFILE
 argtype:text
-arglabel:Input Sequece File
+arglabel:Input Sequence File
 
 arg:EXCLUDEFILE
 argtype:text
@@ -58,11 +58,11 @@ argtype:text
 arglabel:Date of Last Update
 
 arg:MIN
-argtype:number
+argtype:text
 arglabel:Minimal Sequence Length
 
 arg:MAX
-argtype:number
+argtype:text
 arglabel:Maximal Sequence Length
 
 arg:SPEC
@@ -70,5 +70,5 @@ argtype:text
 arglabel:Species Name Compoments
 
 out:OUTPUTFILE
-outformat:EMBL
+outformat:genbank
 
