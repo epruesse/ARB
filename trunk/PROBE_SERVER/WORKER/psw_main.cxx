@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Thu Oct/02/2003 17:02 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 17:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -32,6 +32,8 @@
 
 #include "../global_defs.h"
 #define SKIP_SETDATABASESTATE
+#define SKIP_ENCODETREENODE
+#define SKIP_DECODETREENODE
 #include "../common.h"
 #include "../mapping.h"
 
@@ -106,128 +108,7 @@ namespace {
 
 namespace {
 
-#define MAXPATH 1024
-
-    // Note: When changing encoding please adjust
-    //       encodePath() in ./PROBE_WEB/CLIENT/TreeNode.java
-
-    const char *encodePath(const char *path, int pathlen, GB_ERROR& error) {
-        // path contains strings like 'LRLLRRL'
-        // 'L' is interpreted as 0 ('R' as 1)
-        // (paths containing 0 and 1 are ok as well)
-
-        psw_assert(!error);
-        psw_assert(strlen(path) == (unsigned)pathlen);
-
-        if (!pathlen) return "0000"; // encoding for root node
-
-        static char buffer[MAXPATH+1];
-        sprintf(buffer, "%04X", pathlen);
-        int         idx = 4;
-
-        while (pathlen>0 && !error) {
-            int halfbyte = 0;
-            for (int p = 0; p<4 && !error; ++p, --pathlen) {
-                halfbyte <<= 1;
-                if (pathlen>0) {
-                    char c = toupper(*path++);
-                    psw_assert(c);
-
-                    if (c == 'R' || c == '1') halfbyte |= 1;
-                    else if (c != 'L' && c != '0') {
-                        error = GBS_global_string("Illegal character '%c' in path", c);
-                    }
-                }
-            }
-
-            psw_assert(halfbyte >= 0 && halfbyte <= 15);
-            buffer[idx++] = "0123456789ABCDEF"[halfbyte];
-        }
-
-        if (error) return 0;
-
-        buffer[idx] = 0;
-        return buffer;
-    }
-
-    const char *decodeTable[256];
-    bool  decodeTableInitialized = false;
-
-    void initDecodeTable() {
-        for (int i = 0; i<256; ++i) decodeTable[i] = 0;
-
-        char decoded[5] = "LLLL";
-        GB_ERROR error  = 0;
-
-        for (int i = 0; i<16; ++i) {
-            const char *enc = encodePath(decoded, 4, error);
-            psw_assert(!error);
-
-            decodeTable[enc[4]] = strdup(decoded);
-
-            for (int j = 3; j >= 0; --j) { // permutate decoded path
-                if (decoded[j] == 'L') {
-                    decoded[j] = 'R';
-                    break;
-                }
-                decoded[j] = 'L';
-            }
-        }
-
-        decodeTableInitialized = true;
-
-#if defined(DEBUG) && 0
-        printf("decodeTable:\n");
-        for (int i = 0; i<256; ++i) {
-            if (decodeTable[i]) {
-                printf("decodeTable[%c]=%s\n", (char)i, decodeTable[i]);
-            }
-        }
-#endif // DEBUG
-    }
-
-    const char *decodePath(const char *encodedPath, GB_ERROR& error) {
-        // does the opposite of encodePath
-
-        static char buffer[MAXPATH+1];
-
-        psw_assert(decodeTableInitialized);
-
-        memcpy(buffer, encodedPath, 4);
-        buffer[4] = 0;
-
-        char *end  = 0;
-        long  bits = strtoul(buffer, &end, 16);
-
-        if (end == (buffer+4) && bits<MAXPATH) {
-            char       *bp = buffer;
-            const char *pp = encodedPath+4;
-
-            while (bits > 0) {
-                const char *dec = decodeTable[*pp++];
-                if (!dec) {
-                    error = GBS_global_string("Illegal char '%c' in path ('%s')", *pp, encodedPath);
-                    return 0;
-                }
-
-                memcpy(bp, dec, 4);
-
-                bp   += 4;
-                bits -= 4;
-            }
-
-            if (bits < 0) { // too many chars written to decoded path
-                bp += bits;
-            }
-            *bp = 0;
-
-            error = 0;
-            return buffer;
-        }
-
-        error = "cannot decode path";
-        return 0;
-    }
+#include "../path_code.h"
 
     GB_HASH *path_cache          = 0; // links encoded "path" content with "subtree" db-pointer
     GB_HASH *group_cache         = 0; // links encoded "path" content with "subtree" db-pointer
@@ -255,11 +136,11 @@ namespace {
                         error = "subtree w/o path (database corrupt!)";
                     }
                     else {
-                        const char *path     = GB_read_char_pntr(gb_path);
-                        int         pathlen  = GB_read_string_count(gb_path);
-                        const char *enc_path = encodePath(path, pathlen, error);
-
-                        if (enc_path) GBS_write_hash(path_cache, enc_path, (long)gb_subtree);
+                        const char *path    = GB_read_char_pntr(gb_path);
+                        // int         pathlen = GB_read_string_count(gb_path);
+                        //                         const char *enc_path = encodePath(path, pathlen, error);
+                        //                         if (enc_path) GBS_write_hash(path_cache, enc_path, (long)gb_subtree);
+                        GBS_write_hash(path_cache, path, (long)gb_subtree);
                     }
                 }
                 return error;
@@ -283,16 +164,10 @@ namespace {
                      gb_probe_group && !error;
                      gb_probe_group = GB_find(gb_probe_group, "probe_group", 0, this_level|search_next))
                 {
-                    GBDATA *gb_path = GB_search(gb_probe_group, "subtreepath", GB_FIND);
-                    if (gb_path) {
-                        const char *path     = GB_read_char_pntr(gb_path);
-                        int         pathlen  = GB_read_string_count(gb_path);
-                        const char *enc_path = encodePath(path, pathlen, error);
-
-                        GBS_write_hash(group_cache, enc_path, (long)gb_probe_group);
-                    }
-                    else {
-                        error = "Not implemented yet: cache 'probe_group' w/o 'subtreepath'";
+                    GBDATA *gb_id = GB_search(gb_probe_group, "id", GB_FIND);
+                    if (gb_id) {
+                        const char *group_id = GB_read_char_pntr(gb_id);
+                        GBS_write_hash(group_cache, group_id, (long)gb_probe_group);
                     }
                 }
                 return error;
@@ -362,6 +237,78 @@ namespace {
     }
 }
 
+// -------------------------------------
+//      Helper functions for commands
+
+namespace {
+    GB_ERROR extractProbes(const char *group_id, list<const char *>& probes) {
+        GB_ERROR  error          = 0;
+        GBDATA   *gb_probe_group = (GBDATA*)GBS_read_hash(group_cache, group_id); // search for probe group
+
+        if (!gb_probe_group) {
+            error = GBS_global_string("Can't find probe group '%s'", group_id);
+        }
+        else {
+            GBDATA *gb_probe_group_common = GB_search(gb_probe_group, "probe_group_common", GB_FIND);
+
+            if (!gb_probe_group_common) {
+                error = "no 'probe_group_common' entry found";
+            }
+            else {
+                for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
+                     gb_probe;
+                     gb_probe = GB_find(gb_probe, "probe", 0, this_level|search_next))
+                {
+                    probes.push_back(GB_read_char_pntr(gb_probe));
+                }
+            }
+        }
+
+        return error;
+    }
+
+    GB_ERROR extractSubtreeMembers(const char *decoded_path, int len, list<string>& members) {
+        GB_ERROR  error      = 0;
+        GBDATA   *gb_subtree = 0;
+        {
+            const char *encoded_path = encodePath(decoded_path, len, error);
+            if (!error) gb_subtree = (GBDATA*)GBS_read_hash(path_cache, encoded_path);
+        }
+
+        if (!error) {
+            if (!gb_subtree) {
+                error = GBS_global_string("unknown subtree '%s'", decoded_path);
+            }
+            else {
+                GBDATA *gb_member = GB_find(gb_subtree, "member", 0, down_level);
+
+                if (gb_member) { // leaf node
+                    SpeciesID id   = GB_read_int(gb_member);
+                    string    name = PM_ID2name(id);
+
+                    if (name.length()) {
+                        members.push_back(name);
+                    }
+                    else {
+                        error = GBS_global_string("No such species '%i'", id);
+                    }
+                }
+                else {
+                    char *sonpath = GBS_global_string_copy("%sL", decoded_path);
+
+                    if (!error) error = extractSubtreeMembers(sonpath, len+1, members); // left son
+                    sonpath[len]      = 'R';
+                    if (!error) error = extractSubtreeMembers(sonpath, len+1, members); // right son
+
+                    free(sonpath);
+                }
+            }
+        }
+        return error;
+    }
+}
+
+
 // -----------------------
 //      Known commands
 
@@ -378,43 +325,29 @@ namespace {
         GB_transaction  dummy(gb_main);
 
         if (!error) {
-
-            // @@@ FIXME: this should search for the probe group (in a probe group hash)
-            // if the probe group contains 'subtreepath' it shall raise an error (because the request is unneeded)
-
-
-            GBDATA *gb_subtree = 0;
+            list<string> members;
 
             if (id[0] == 'p') {
-                gb_subtree = (GBDATA*)GBS_read_hash(path_cache, id+1);
+                // @@@ FIXME: in final version this should raise an error (not necessary - should be done by client)
+
+                const char *decoded_path = decodePath(id+1, error);
+                if (!error) error = extractSubtreeMembers(decoded_path, strlen(decoded_path), members);
+            }
+            else {
+                error = GBS_global_string("Can't handle probe-group '%s' (not implemented yet)", id);
             }
 
-            if (gb_subtree /*&& gb_subtree != gb_is_inner_node*/) {
-                GBDATA             *gb_species = GB_find(gb_subtree, "species", 0, down_level);
-                list<const char *>  members;
-
-                if (gb_species) {
-                    for (GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
-                         gb_name && !error;
-                         gb_name = GB_find(gb_name, "name", 0, this_level|search_next))
-                    {
-                        members.push_back(GB_read_char_pntr(gb_name));
-                    }
-                }
-
+            if (!error) {
                 if (members.empty()) {
-                    fprintf(out, "result=error\nmessage=probe group w/o members (shouldn't occur)\n");
+                    error = "probe group with zero members (internal error)";
                 }
                 else {
                     fprintf(out, "result=ok\nmembercount=%i\n", members.size());
                     int c = 1;
-                    for (list<const char*>::iterator m = members.begin(); m != members.end(); ++m, ++c) {
-                        fprintf(out, "m%06i=%s\n", c, *m);
+                    for (list<string>::iterator m = members.begin(); m != members.end(); ++m, ++c) {
+                        fprintf(out, "m%i=%s\n", c, m->c_str());
                     }
                 }
-            }
-            else {
-                error = GBS_global_string("illegal probe-group id ('%s')", id);
             }
         }
         return error;
@@ -464,36 +397,19 @@ namespace {
 
                         psw_assert(exact != 0); // in that case gb_exact should be 0
 
-                        GBDATA *gb_probe_group = (GBDATA*)GBS_read_hash(group_cache, enc_path); // search for my group
-                        if (!gb_probe_group) {
-                            error = GBS_global_string("Can't find probe group '%s'", enc_path);
+                        const char *group_id = GBS_global_string("p%s", enc_path);
+                        error                = extractProbes(group_id, exactProbes);
+
+                        if (!error && (exactProbes.size() != exact)) {
+                            error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
                         }
-                        else {
-                            GBDATA *gb_probe_group_common = GB_search(gb_probe_group, "probe_group_common", GB_FIND);
 
-                            if (!gb_probe_group_common) {
-                                error = "no 'probe_group_common' entry found";
-                            }
-                            else {
-                                for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
-                                     gb_probe && !error;
-                                     gb_probe = GB_find(gb_probe, "probe", 0, this_level|search_next))
-                                {
-                                    exactProbes.push_back(GB_read_char_pntr(gb_probe));
-                                }
-                            }
+                        if (!error) {
+                            fprintf(out, "result=ok\nfound=%i\n", exact);
+                            int count = 0;
 
-                            if (!error && (exactProbes.size() != exact)) {
-                                error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
-                            }
-
-                            if (!error) {
-                                fprintf(out, "result=ok\nfound=%i\n", exact);
-                                int count = 0;
-
-                                for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
-                                    fprintf(out, "probe%i=%s,E,%s\n", count, *p, enc_path);
-                                }
+                            for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
+                                fprintf(out, "probe%i=%s,E,p%s\n", count, *p, enc_path);
                             }
                         }
                     }
@@ -509,48 +425,6 @@ namespace {
 
                     fprintf(out, "result=ok\nfound=0\n");
                 }
-
-
-/*
-                GBDATA             *gb_probe_group_common = GB_search(gb_subtree, "probe_group_common", GB_FIND);
-                list<const char *>  found_probes;
-
-                if (gb_probe_group_common) {
-                    for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
-                         gb_probe && !error;
-                         gb_probe = GB_find(gb_probe, "probe", 0, this_level|search_next))
-                    {
-                        found_probes.push_back(GB_read_char_pntr(gb_probe));
-                    }
-                }
-
-                GBDATA *gb_path = GB_find(gb_subtree, "path", 0, down_level);
-                if (gb_path) {
-                    fprintf(out, "path=%s\n", GB_read_char_pntr(gb_path));
-                }
-
-                if (found_probes.empty()) {
-                    fprintf(out, "result=ok\nfound=0\n");
-                }
-                else {
-                    int     count   = found_probes.size();
-                    fprintf(out, "result=ok\nfound=%i\n", count);
-#if defined(DEBUG)
-                    GBDATA *gb_path = GB_find(gb_subtree, "path", 0, down_level);
-                    if (gb_path) {
-                        fprintf(out, "debug_path=%s\n", GB_read_char_pntr(gb_path));
-                    }
-                    fprintf(out, "debug_enc_path=%s\n", enc_path);
-#endif                          // DEBUG
-
-                    int c = 1;
-                    for (list<const char*>::iterator p = found_probes.begin(); p != found_probes.end(); ++p, ++c) {
-                        // currently we have only 100% groups, so we can use the path as id
-                        const char *probe_group_id = enc_path;
-                        fprintf(out, "probe%04i=%s,%c,p%s\n", c, *p, "FCN"[random()%3], probe_group_id);
-                    }
-                }
-*/
             }
         }
 
@@ -828,8 +702,9 @@ int main(int argc, char *argv[])
             if (!error) error = GB_export_error("Can't open database '%s'", db_name);
         }
         else {
-            error = checkDatabaseType(gb_main, db_name, "probe_group_design_db", "complete");
+            error             = checkDatabaseType(gb_main, db_name, "probe_group_design_db", "complete");
             initDecodeTable();
+            if (!error) error = PM_initSpeciesMaps(gb_main);
 
             if (!error) error = init_path_cache(gb_main);
             if (!error) error = init_group_cache(gb_main);
