@@ -268,13 +268,20 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // uses color groups
                      "#AAAA55",
-                     "CURSOR$#FFFFFF",
-                     "unused1",
-                     "unused2",
-                     "MARKED$#FFC671",
-                     "SOME MARKED$#FFC671",
-                     "NOT MARKED$#F1F1A2",
-                     "ZOMBIES etc.$#797924",
+
+                     // Important note :
+                     // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
+                     // e.g. the tree drawing routines use same gc's for drawing both trees
+                     // (check AWT_dtree.cxx AWT_graphic_tree::init_devices)
+
+                     "Cursor$#FFFFFF",
+                     "Branch remarks$#DBE994",
+                     "+-Bootstrap$#DBE994",    "-B.(limited)$white",
+                     "--unused$#ff0000",
+                     "Marked$#FFFF00",
+                     "Some marked$#eeee88",
+                     "Not marked$black",
+                     "Zombies etc.$#cc5924",
 
                      "--unused", "--unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
                      "--unused", "--unused", // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
