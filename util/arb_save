@@ -14,20 +14,29 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
 	-o -name "*.pl" -o -name "*.PL" \
 	-o -name "*.sh" -o -name "*.dat" \
 	-o -name "*.pod" -o -name "*.POD" \
-	-o -name "*.xs" -o -name "*.pm" -o -name "*.html" \
+	-o -name "*.xs" -o -name "*.pm" \
+    -o -name "*.html" \
+    -o -name "*.dtd" -o -name "*.xsl" \
 	-o -name "typemap" \
  	-o \(	-name "C" -type l \) \
 	-o \(	-name "AISC" -type l \) \
 	\) -print; \
 	find MAKEBIN LIBLINK */LIBLINK etc SH \
 		./lib/*.dat ./lib/pictures ./lib/pixmaps ./lib/config.* \
-		./lib/submit ./lib/help ./lib/Makefile ./lib/macros \
+		./lib/submit ./lib/Makefile ./lib/macros \
 		./lib/import ./lib/export ./lib/sellists ./lib/arb_default \
 		./lib/inputMasks \
-		./lib/macro.head ./util ./GDEHELP -print; \
+		./lib/macro.head ./util ./GDEHELP \
+        ./HELP_SOURCE/oldhelp \
+        -print; \
 	) \
     |grep -v '/CVS/' \
     |grep -v '/CVS$' \
+    |grep -v '/ARB_SOURCE_DOC/' \
+    |grep -v '/GEN[CH]/' \
+    |grep -v '/lib/help_html/' \
+    |grep -v '/lib/help_html/' \
+    |grep -v '/lib/help/' \
     |grep -v '\.xvpics' \
     |sort|uniq \
     |cpio -oH tar |gzip - >$name
