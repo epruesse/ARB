@@ -82,15 +82,15 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
         }
     }
     printf( "max ID = %i\n(enter to continue)",maxID );
-    //getchar();
+//     getchar();
 
     theMap->print();
     printf( "(enter to continue)\n" );
-    //getchar();
+//     getchar();
 
     delete theMap;
-    //printf( "(enter to continue)\n" );
-    //getchar();
+//     printf( "(enter to continue)\n" );
+//     getchar();
 }
 
 
@@ -112,19 +112,19 @@ int main( int argc,  char *argv[] ) {
     PS_NodePtr     root(new PS_Node(-1));
     root->load( fb );
     printf( "loaded database (enter to continue)\n" );
-    getchar();
+//     getchar();
 
 
     PS_detect_weak_differences( root );
 
     printf( "(enter to continue)\n" );
-    //getchar();
+//     getchar();
     
     delete fb;
     root.SetNull();
     printf( "root should be destroyed now\n" );
     printf( "(enter to continue)\n" );
-    //getchar();
+//     getchar();
 
     return 0;
 }

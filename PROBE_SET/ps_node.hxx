@@ -170,6 +170,7 @@ public:
     // *** disk i/o ***
     //
     bool save( PS_FileBuffer* _fb );
+    bool saveASCII( PS_FileBuffer* _fb, char *buffer );
     bool load( PS_FileBuffer* _fb );
     bool append( PS_FileBuffer* _fb ); // load from file and append to node
 
