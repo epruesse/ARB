@@ -32,10 +32,9 @@
 #define FONT_EXAMINE_MAX   500
 #define KNOWN_ISO_VERSIONS 3
 
-// #if defined(DEBUG)
-#warning DUMP_FONT_LOOKUP only activated for test purpose
-#define DUMP_FONT_LOOKUP
-// #endif // DEBUG
+#if defined(DEBUG)
+// #define DUMP_FONT_LOOKUP
+#endif // DEBUG
 
 // --------------------------------------------------------------------------------
 
