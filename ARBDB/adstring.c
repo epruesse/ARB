@@ -1589,7 +1589,9 @@ char **GBS_read_dir(const char *dir, const char *filter)
     long    resultptr=0;
     FILE    *ls;
 
+#if defined(DEVEL_RALF)
 #warning rewrite me
+#endif /* DEVEL_RALF */
 
 #ifdef DEBUG
     printf("dir='%s' filter='%s'\n",dir, filter);
