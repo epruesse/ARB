@@ -1383,7 +1383,6 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 {
     AW_window_menu_modes *awmm;
     AW_gc_manager         aw_gc_manager; //every window has its own gc_manager
-    char                  buf[25];
     ED4_window           *ed4w = first_window;
 
     while (ed4w)                                        // before creating a window look for a hidden window
@@ -1397,20 +1396,21 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         ed4w = ed4w->next;
     }
 
-
     if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
     {
         aw_message(GBS_global_string("Restricted to %i windows", MAXWINDOWS), 0);
         return ED4_R_BREAK;
     }
 
-    sprintf(buf,"ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-
     awmm = new AW_window_menu_modes;
-    awmm->init( aw_root, buf,buf, 800,600,20, 20 );                 //create window
-    *device = awmm->get_device(AW_MIDDLE_AREA);                     //Points to Middle Area device
+    {
+        int   len = strlen(alignment_name)+35;
+        char *buf = GB_give_buffer(len);
+        snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
+        awmm->init( aw_root, buf,buf, 800,600,20, 20 ); //create window
+    }
 
-    //     ED4_window *test = first_window->insert_window( awmm ); //append to window list
+    *device     = awmm->get_device(AW_MIDDLE_AREA); //Points to Middle Area device
     *new_window = ED4_window::insert_window( awmm ); //append to window list
 
     if (ED4_window::no_of_windows >= 1)                         // this is the first window
@@ -1634,7 +1634,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 #undef ____________________________SEP
 
     aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
-    awmm->set_bottom_area_height( 0 );                          //No bottom area
+    awmm->set_bottom_area_height( 0 ); //No bottom area
 
     awmm->auto_space(5,-2);
     awmm->shadow_width(3);
@@ -1782,23 +1782,25 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     return ( ED4_R_OK );
 }
 
-
 AW_window *ED4_root::create_new_window( void )                      // only the first time, other cases: generate_window
 {
-    AW_device       *device = NULL;
-    ED4_window      *new_window = NULL;
+    AW_device  *device     = NULL;
+    ED4_window *new_window = NULL;
 
     generate_window( &device, &new_window );
+
     ED4_calc_terminal_extentions();
 
-    last_window_reached = 1;
-    MARGIN = 5;
-    DRAW = 1;
-    move_cursor = 0;
-    all_found = 0;
-    species_read = 0;
+    last_window_reached     = 1;
+    MARGIN                  = 5;
+    DRAW                    = 1;
+    move_cursor             = 0;
+    all_found               = 0;
+    species_read            = 0;
     max_seq_terminal_length = 0;
+
     not_found_message = GBS_stropen(1000);
+
     GBS_strcat(not_found_message,"Some species not found:\n");
 
     return ( new_window->aww );
