@@ -1,3 +1,7 @@
+2004-04-29  Ralf Westram  <Coder@ReallySoft.de>
+
+	* doc/manual.html: - removed umlauts
+
 2003-09-19  Ralf Westram  <Coder@ReallySoft.de>
 
 	* src/util.c: - const fix
