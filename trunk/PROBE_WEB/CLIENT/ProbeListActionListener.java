@@ -29,13 +29,17 @@ public void itemStateChanged(ItemEvent e)
             try {
                 ProbeList pl         = (ProbeList)e.getSource();
                 int       selected   = pl.getSelectedIndex();
-                String    probe_info = pl.getProbeInfo(selected);
-
+                // String    probe_info = pl.getProbeInfo(selected);
                 //             System.out.println("Action Source: " + probe_info);
-                gui.getClient().matchProbes(probe_info);
+                // gui.getClient().matchProbes(probe_info);
+                gui.getClient().matchProbes(pl.getProbe(selected));
             }
-            catch (Exception ce) {
+            catch (ClientException ce) {
                 gui.getClient().showError(ce.getMessage());
+            }
+            catch (Exception ex) {
+                gui.getClient().showError("in itemStateChanged: "+ex.getMessage());
+                ex.printStackTrace();
             }
         }
     }

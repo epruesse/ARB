@@ -3,20 +3,22 @@ import java.util.*;
 
 class GroupCache
 {
-private HashMap groups;
-private String  error;
+    private HashMap groups;
+    private String  error;
+    private Client  client;
 
-public GroupCache()
+    public GroupCache(Client c)
     {
         groups = new HashMap();
         error  = null;
+        client = c;
     }
 
-private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int probe_length) throws Exception 
+    private String retrieveMemberList(String groupId, int probe_length) throws Exception
     {
-        String answer = webAccess.retrieveGroupMembers(groupId, probe_length);
+        String answer = client.webAccess().retrieveGroupMembers(groupId, probe_length);
         if (answer == null) {
-            error = webAccess.getLastRequestError();
+            error = client.webAccess().getLastRequestError();
             return null;
         }
 
@@ -36,7 +38,7 @@ private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int p
         int          membercount           = Integer.parseInt(parsed.getValue("membercount"));
 
         if (membercount<1) {
-            error = "No members found (shouldn't occur!)";            
+            error = "No members found (shouldn't occur!)";
         }
         else {
             for (int m = 1; m <= membercount; m++) {
@@ -67,7 +69,7 @@ private String retrieveMemberList(HttpSubsystem webAccess, String groupId, int p
         return memberList;
     }
 
-public String getGroupMembers(HttpSubsystem webAccess, String groupId, int probe_length) throws Exception 
+    public String getGroupMembers(String groupId, int probe_length) throws Exception
     {
         error           = null;
         String hash_key = groupId+"_"+probe_length;
@@ -80,7 +82,7 @@ public String getGroupMembers(HttpSubsystem webAccess, String groupId, int probe
             // System.out.println("cached: '"+members+"'");
         }
         else {
-            members = retrieveMemberList(webAccess, groupId, probe_length);
+            members = retrieveMemberList(groupId, probe_length);
             // System.out.println("retrieved: '"+members+"'");
             if (error == null) {
                 groups.put(hash_key, members);
@@ -89,7 +91,7 @@ public String getGroupMembers(HttpSubsystem webAccess, String groupId, int probe
         return members;
     }
 
-public String getError()
+    public String getError()
     {
         return error;
     }
