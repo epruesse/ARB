@@ -1030,7 +1030,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
 
                 //this->exports.refresh = 1;		// No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node, ADMVT_SELECT);
-                goto act_like_group; // now do the same like in AWT_MODE_GROUP
+
+                if (button == AWT_M_LEFT) goto act_like_group; // now do the same like in AWT_MODE_GROUP
             }
             break;
 
