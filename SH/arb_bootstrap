@@ -6,19 +6,16 @@
 
 echo "-consense $2" >arb_read_tree_args
 
-echo arb_bootstrap: arb_echo "1 r $1 y" \| seqboot
 arb_echo "1 r $1 y" | seqboot
 /bin/mv -f outfile infile
 
 arb_wait
 
-echo arb_bootstrap: arb_echo "m $1 y" \| $3
 arb_echo "m $1 y" | $3
 /bin/mv -f treefile infile
 
 arb_wait
 
-echo arb_bootstrap: arb_echo y \| consense
 arb_echo y | consense
 
 arb_wait
