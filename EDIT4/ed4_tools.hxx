@@ -1,8 +1,11 @@
 
-#define IUPAC_EMPTY 	" "
-#define IS_NUCLEOTIDE	(ED4_ROOT->alignment_type==GB_AT_RNA || ED4_ROOT->alignment_type==GB_AT_DNA)
-#define IS_AMINO 	(ED4_ROOT->alignment_type==GB_AT_AA)
-#define IUPAC_GROUPS 	6
+#define IUPAC_EMPTY     " "
+#define IUPAC_GROUPS    6
+
+#define IS_NUCLEOTIDE()   (ED4_ROOT->alignment_type==GB_AT_RNA || ED4_ROOT->alignment_type==GB_AT_DNA)
+#define IS_RNA()          (ED4_ROOT->alignment_type==GB_AT_RNA)
+#define IS_DNA()          (ED4_ROOT->alignment_type==GB_AT_DNA)
+#define IS_AMINO()        (ED4_ROOT->alignment_type==GB_AT_AA)
 
 extern int ED4_iupac_group[26];
 char ED4_encode_iupac(const char bases[/*4*/], GB_alignment_type ali);
