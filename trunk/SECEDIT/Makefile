@@ -38,6 +38,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -65,6 +66,8 @@ SEC_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -84,6 +87,8 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

@@ -83,6 +83,7 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
@@ -99,6 +100,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -124,6 +126,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -148,6 +151,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

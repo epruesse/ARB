@@ -267,6 +267,7 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
