@@ -11,15 +11,21 @@ TITLE		Multiproberesults
 
 DESCRIPTION	Shows the best multi-probes. Each multi-probe has a score, the
 		higher the score the better.
+
 		The user may add any string as a comment (or one of the
 		three default comments)
 
 		The selected multi-probe can be used to set the colors
 		at the tips at the tree. First probe will be red, the
-		next green, blue, red, green, blue and so on.
+		second green, the third blue. If multiple probes hit a
+                species it is displayed in mix-colors of red, green and blue.
 
-NOTE		If you do not see any colors, you are probably using an
-		old default file. You should delete the file
-		'~/.arb_prob/ntree.arb' and restart arb.
+NOTE		If you do not see any colors, try the following:
+
+                - the colors in 'Properties/Tree-Colors' are misconfigured
+
+                - you are probably using an old default file. You should delete the file
+                  '~/.arb_prob/ntree.arb' and restart arb. This will delete all your
+                  Settings - so backup first.
 
 
