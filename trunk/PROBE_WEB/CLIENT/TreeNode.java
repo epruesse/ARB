@@ -42,7 +42,7 @@ private  static  final char[] hexToken = {'0','1','2','3','4','5','6','7','8','9
 private boolean  isLeaf;
 private TreeNode father;
 private Vector   childNodes;
-private int      noOfChildren = 0;
+private int      noOfChildren = -1; // means: not initialized yet
 private boolean  grouped      = false;
 
     // marks
@@ -69,29 +69,6 @@ public TreeNode(boolean is_leaf)
 
     nodeCounter++;
 }
-
-    // copy constructor
-// public TreeNode( TreeNode oldNode)
-// {
-//     nodeName = new StringBuffer(oldNode.getNodeName());
-//     childNodes = new Vector(oldNode.getChilds());
-//     nodeSerial = oldNode.nodeCounter;
-//     //    System.out.println("TreeNode:node number " + nodeSerial + " generated");
-//     //    nodeCounter++;
-
-// }
-
-
-// public int getNoOfChildren()
-
-//     {
-//         if (noOfChildren == 0)
-//             {
-//                 noOfChildren = getNoOfLeaves();
-//             };
-//         return noOfChildren;
-//     }
-
 
 public TreeNode getRoot() {
     TreeNode root = this;
@@ -245,30 +222,19 @@ public void addChild(TreeNode tn) throws Exception
 }
 
 public int getNoOfLeaves()
-    //throws Exception e
 {
-//      try {
-//          return testLeaf() ? 1 : ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
-//              +  ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
-//      }catch (Exception e)
-//          {
-//              new NodeError(this);
-//              System.exit(1);
-//              return 0;
-//          }
+    if (testLeaf()) {
+        noOfChildren = 0;
+        return 1;
+    }
+    
+    if (noOfChildren == -1) {   // not calculated yet
+        noOfChildren =
+            ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves() +
+            ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
+    }
 
-     if (testLeaf())
-         {
-             noOfChildren = 0;
-             //             return 0;
-             return 1;
-         }
-     else {
-         //  return noOfChildren = 1 + ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
-  return noOfChildren = ((TreeNode)this.getChilds().elementAt(0)).getNoOfLeaves()
-      +  ((TreeNode)this.getChilds().elementAt(1)).getNoOfLeaves();
-     }
-
+    return noOfChildren;
 }
 
 
