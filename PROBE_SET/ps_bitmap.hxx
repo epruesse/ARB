@@ -43,7 +43,7 @@ public:
     bool triangle_set( const long _row, const long _col, const bool _value );
 
     virtual void invert();
-    virtual void xor( const PS_BitMap *_other_map );
+    virtual void x_or( const PS_BitMap *_other_map );
 
     virtual void print();
     virtual void printGNUplot( const char *_title, char *_buffer, PS_FileBuffer *_file );
@@ -346,11 +346,11 @@ void PS_BitMap::invert() {
 
 
 // ************************************************************
-// * PS_BitMap::xor( const PS_BitMap *_other_map )
+// * PS_BitMap::x_or( const PS_BitMap *_other_map )
 // ************************************************************
-void PS_BitMap::xor( const PS_BitMap *_other_map ) {
+void PS_BitMap::x_or( const PS_BitMap *_other_map ) {
     for (long i = 0; i <= max_row; ++i) {
-        data[i]->xor( _other_map->data[i] );
+        data[i]->x_or( _other_map->data[i] );
     }
 }
 
