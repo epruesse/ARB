@@ -161,7 +161,7 @@ AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequ
             result += w ? w[idx] : 1; // count weighted or simple
         }
         else {
-            p[idx] = c1&c2; // store what's common for both bases
+            p[idx] = c1&c2; // store common bases for both subtrees
         }
 
         awt_assert(p[idx] != 0);

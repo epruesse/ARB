@@ -31,8 +31,7 @@ void AP_sequence_simple_protein::set(char *isequence)
 	register char *s,c;
 	register ap_pro *d;
 	if (!awt_pro_a_nucs) {
-		awt_pro_a_nucs_gen_dist
-		    (this->root->gb_main);
+		awt_pro_a_nucs_gen_dist (this->root->gb_main);
 	}
 
 	register struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
@@ -55,7 +54,7 @@ void AP_sequence_simple_protein::set(char *isequence)
 		}
 		int ind = s2str[simplify[c]]->index;
 		if (ind >= sindex) ind --;
-		d[i] = ind;		
+		d[i] = ind;
 	    }
 	}else{
 	    register char *f = root->filter->filter_mask;
@@ -71,7 +70,7 @@ void AP_sequence_simple_protein::set(char *isequence)
 		    int ind = s2str[simplify[c]]->index;
 		    if (ind >= sindex) ind --;
 		    *(d++) = ind;
-		}		
+		}
 	    }
 	}
 	is_set_flag = AP_TRUE;

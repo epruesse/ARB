@@ -400,13 +400,14 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char
     aws->at(buffer);
     acbs->id = aws->create_selection_list(acbs->def_name,0,"",2,2);
     awt_create_selection_box_cb(0,acbs);
+    awt_create_selection_box_changed_filename(0, acbs); // this fixes the path name
 }
 
 char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     char *file = awr->awar(GBS_global_string("%s/file_name", awar_prefix))->read_string();
     if (file[0] == '/') return file; // it's a full path name -> use it
 
-    awt_assert(0);
+    // if name w/o directory was entered by hand (or by default) then append the directory :
 
     char *dir  = awr->awar(GBS_global_string("%s/directory", awar_prefix))->read_string();
     char *full = strdup(AWT_concat_full_path(dir, file));
