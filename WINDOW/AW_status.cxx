@@ -504,9 +504,12 @@ void aw_set_local_message(){
     aw_stg.local_message = 1;
 }
 
-int aw_message(const char *msg, const char *buttons) {
+int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
     // the single buttons are seperated by kommas (i.e. "YES,NO")
+    // If the button-name starts with ^ it starts a new row of buttons
+    // If fixedSizeButtons is true all buttons have the same size
+
     if (!buttons){		        /* asynchronous message */
 #if defined(DEBUG)
         printf("aw_message: '%s'\n", msg);
@@ -527,9 +530,10 @@ int aw_message(const char *msg, const char *buttons) {
     AW_root *root = AW_root::THIS;
 
     AW_window_message *aw_msg;
-    char *button_list;
+    char              *button_list;
+
     if (buttons) button_list = strdup( buttons );
-    else	button_list = strdup("OK");
+    else button_list         = strdup("OK");
 
     static GB_HASH *hash_windows = 0;
     if (!hash_windows) hash_windows = GBS_create_hash(256,0);
@@ -558,13 +562,36 @@ int aw_message(const char *msg, const char *buttons) {
 
         aw_msg->at_newline();
 
+        if (fixedSizeButtons) {
+            size_t  max_button_length = 0;
+            char   *pos               = button_list;
+
+            while (1) {
+                char *komma       = strchr(pos, ',');
+                if (!komma) komma = strchr(pos, 0);
+
+                size_t len                                   = komma-pos;
+                if (len>max_button_length) max_button_length = len;
+
+                if (!komma[0]) break;
+                pos = komma+1;
+            }
+
+            aw_msg->button_length(max_button_length);
+        }
+
         char *ret = strtok( button_list, "," );
         while( ret ) {
+            if (ret[0] == '^') {
+                aw_msg->at_newline();
+                ++ret;
+            }
             if ( strcmp( ret, "EXIT" ) == 0 ) {
                 aw_msg->callback     ( message_cb, -1 );
             }else {
                 aw_msg->callback     ( message_cb, (AW_CL)counter++ );
             }
+
             aw_msg->create_button( 0,ret, "1" );
             ret = strtok( NULL, "," );
         }
