@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Tue Oct/07/2003 17:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Oct/11/2003 13:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -252,7 +252,8 @@ namespace {
             GBDATA *gb_probe_group_common = GB_search(gb_probe_group, "probe_group_common", GB_FIND);
 
             if (!gb_probe_group_common) {
-                error = "no 'probe_group_common' entry found";
+                fprintf(stderr, "no 'probe_group_common' entry found for group_id '%s' -- ignored\n", group_id);
+                // error = "no 'probe_group_common' entry found";
             }
             else {
                 for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
@@ -542,7 +543,7 @@ namespace {
     Request::~Request() {
         if (owned) {
             const char *name = filename.c_str();
-            printf("deleting '%s'\n", name);
+            // printf("deleting '%s'\n", name);
             if (unlink(name) != 0) {
                 const char *ioerr = strerror(errno);
                 fprintf(stderr, "Error unlinking '%s' (%s)\n", name, ioerr);
@@ -644,7 +645,7 @@ namespace {
                                 fprintf(stderr, "Error unlinking useless result file '%s' (%s)\n", outname, ioerr);
                             }
                         }
-                        if (!error) printf("result written ('%s')\n", finaloutname);
+                        // if (!error) printf("result written ('%s')\n", finaloutname);
                     }
                 }
             }
