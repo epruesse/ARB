@@ -114,7 +114,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
         device->shift_y( 0 - slider_pos_vertical );
         device->set_top_clip_border( top_indent_of_vertical_scrollbar );
 
-        y += AED_LINE_SPACING + font_information->max_letter_ascent;
+        y += AED_LINE_SPACING + font_information->max_letter.ascent;
 
         current_entry_of_dlist->absolut_x = 4 - picture_l - slider_pos_horizontal;
         current_entry_of_dlist->absolut_y = y - slider_pos_vertical;
@@ -123,10 +123,10 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             device->text( gc1, text, 4, y , 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, (AW_CL)0 );
         }
         else {
-            AW_pos help_y = y + font_information->max_letter_descent + 1;
+            AW_pos help_y = y + font_information->max_letter.descent + 1;
 
-            width = strlen( text ) * font_information->max_letter_width + 4;
-            height = font_information->max_letter_height + 2;
+            width  = strlen( text ) * font_information->max_letter.width + 4;
+            height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
 
@@ -138,7 +138,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
 
         device->pop_clip_scale();
 
-        y += 2.0 + font_information->max_letter_descent;
+        y += 2.0 + font_information->max_letter.descent;
 
         current_entry_of_dlist = current_entry_of_dlist->next;
     }
@@ -158,7 +158,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
         device->shift_y( 0 - slider_pos_vertical );
         device->set_top_clip_border( top_indent_of_vertical_scrollbar );
 
-        y += AED_LINE_SPACING + font_information->max_letter_ascent;
+        y += AED_LINE_SPACING + font_information->max_letter.ascent;
 
         current_entry_of_dlist->absolut_x = 4+right_offset - picture_l - slider_pos_horizontal;
         current_entry_of_dlist->absolut_y = y - slider_pos_vertical;
@@ -167,10 +167,10 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             device->text( gc1, text, 4+right_offset, y , 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, (AW_CL)0 );
         }
         else {
-            AW_pos help_y = y + font_information->max_letter_descent + 1;
+            AW_pos help_y = y + font_information->max_letter.descent + 1;
 
-            width = strlen( text ) * font_information->max_letter_width + 4;
-            height = font_information->max_letter_height + 2;
+            width  = strlen( text ) * font_information->max_letter.width + 4;
+            height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4+right_offset, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
 
@@ -182,7 +182,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
 
         device->pop_clip_scale();
 
-        y += 2.0 + font_information->max_letter_descent;
+        y += 2.0 + font_information->max_letter.descent;
 
         current_entry_of_dlist = current_entry_of_dlist->next;
     }

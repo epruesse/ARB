@@ -617,7 +617,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
-        *y += AED_TOP_LINE + font_information->max_letter_ascent;
+        *y += AED_TOP_LINE + font_information->max_letter.ascent;
         area_entry->absolut_x = 2;
         area_entry->absolut_y = *y;
     }
@@ -639,21 +639,21 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
 
         if( !area_entry->is_selected ) {
             if ( display_struct.clear ) {
-                width = strlen( left_text ) * font_information->max_letter_width + 4;
-                height = font_information->max_letter_height + 2;
-                device->clear_part(  0, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                width  = strlen( left_text ) * font_information->max_letter.width + 4;
+                height = font_information->max_letter.height + 2;
+                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
             }
             device->text( AED_GC_NAME, left_text,
                           4, *y, 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
         }
         else {
-            AW_pos help_y = *y + font_information->max_letter_descent + 1;
+            AW_pos help_y = *y + font_information->max_letter.descent + 1;
 
-            width = strlen( left_text ) * font_information->max_letter_width + 4;
-            height = font_information->max_letter_height + 2;
+            width  = strlen( left_text ) * font_information->max_letter.width + 4;
+            height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  0, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
 
             if ( (tmp  = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -683,17 +683,19 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
     }
 
     if ( display_struct.clear ) {
-        width = screen.r;
-        height = font_information->max_letter_height+AED_LINE_SPACING+AED_TOP_LINE;
-        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter_ascent - 1,
-                             width+1, height+1 );
+        width  = screen.r;
+        height = font_information->max_letter.height+AED_LINE_SPACING+AED_TOP_LINE;
+        device->clear_part((display_struct.picture_l + display_struct.slider_pos_horizontal),
+                           *y - font_information->max_letter.ascent - 1,
+                           width+1,
+                           height+1);
     }
     if (area_entry->adt_sequence) {
 
         if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
             edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
                                    area_entry->adt_sequence->show_get(), 0.0,
-                                   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
+                                   *y + font_information->max_letter.ascent + AED_CENTER_SPACING,
                                    AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
         }
         device->text(   AED_GC_SEQUENCE, area_entry->adt_sequence->show_get(), 0, *y, 0.0,
@@ -702,7 +704,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
 
     if ( display_struct.calc_size ) {
         area_entry->in_line = *y;
-        *y += AED_LINE_SPACING + font_information->max_letter_descent;
+        *y += AED_LINE_SPACING + font_information->max_letter.descent;
     }
 
     device->invisible( AED_GC_NAME, 0, *y, AED_F_NAME | AED_F_SEQUENCE, (AW_CL)0, (AW_CL)0 );
@@ -727,14 +729,15 @@ static int AED_show_colored_sequence(AW_device *device, int gc, const char *opt_
     ST_ML_Color *colors = st_ml_get_color_string(   st_ml, sname, 0, start, start+size );
     if (colors) {
         const AW_font_information *font_information = device->get_font_information( AED_GC_SEQUENCE, 'A' );
-        int i;
-        long len  = start+size;
-        AW_pos height = font_information->max_letter_ascent;
-        register AW_pos width = font_information->max_letter_width;
-        register AW_pos x2 = x;
-        AW_pos y2 = y - height;
-        int old_color = AED_GC_0;
-        int color = AED_GC_0;
+        int    i;
+        long   len       = start+size;
+        AW_pos height    = font_information->max_letter.ascent;
+        AW_pos width     = font_information->max_letter.width;
+        AW_pos x2        = x;
+        AW_pos y2        = y - height;
+        int    old_color = AED_GC_0;
+        int    color     = AED_GC_0;
+
         for ( x2 = x, i = start; i < len; i++,x2 += width) {
             color = colors[i] + AED_GC_0;
             if (color > AED_GC_9) color = AED_GC_9;
@@ -762,7 +765,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
-        *y += AED_TOP_LINE + font_information->max_letter_ascent;
+        *y += AED_TOP_LINE + font_information->max_letter.ascent;
         area_entry->absolut_x = 2;
         area_entry->absolut_y = *y - (display_struct.picture_t + display_struct.slider_pos_vertical) + display_struct.top_indent;
     }
@@ -786,20 +789,20 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
         if( !area_entry->is_selected ) {
             if ( display_struct.clear ) {
-                width = strlen( left_text ) * font_information->max_letter_width + 4;
-                height = font_information->max_letter_height + 2;
-                device->clear_part(  2, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                width  = strlen( left_text ) * font_information->max_letter.width + 4;
+                height = font_information->max_letter.height + 2;
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
             }
             device->text( AED_GC_NAME, left_text, 4, *y, 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
         }
         else {
-            AW_pos help_y = *y + font_information->max_letter_descent + 1;
+            AW_pos help_y = *y + font_information->max_letter.descent + 1;
 
-            width = strlen( left_text ) * font_information->max_letter_width + 4;
-            height = font_information->max_letter_height + 2;
+            width  = strlen( left_text ) * font_information->max_letter.width + 4;
+            height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  2, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME ))  ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -832,17 +835,17 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
     device->invisible( AED_GC_NAME, 0, 0, AED_F_SEQUENCE, (AW_CL)0, (AW_CL)0 );
     if ( display_struct.clear ) {
-        width = screen.r;
-        height = font_information->max_letter_height+AED_LINE_SPACING+AED_TOP_LINE;
+        width  = screen.r;
+        height = font_information->max_letter.height+AED_LINE_SPACING+AED_TOP_LINE;
 
-        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1 );
     }
 
     if (area_entry->adt_sequence) {
         if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
             edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
                                    area_entry->adt_sequence->show_get(), 0.0,
-                                   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
+                                   *y + font_information->max_letter.ascent + AED_CENTER_SPACING,
                                    AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
         }
         if (st_ml && st_is_inited(st_ml) && device->type() == AW_DEVICE_SCREEN ){
@@ -862,9 +865,9 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
     if ( display_struct.calc_size ) {
         area_entry->in_line = *y;
-        *y += AED_LINE_SPACING + font_information->max_letter_descent;
+        *y += AED_LINE_SPACING + font_information->max_letter.descent;
         AW_pos help;
-        help = ( alignment->len()+50) * font_information->max_letter_width;
+        help = ( alignment->len()+50) * font_information->max_letter.width;
         //      printf("width %f\n",help);
         device->invisible( AED_GC_NAME, help, *y, AED_F_ALL, (AW_CL)0, (AW_CL)0 );
     }
@@ -897,7 +900,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
     device->get_area_size( &screen );
 
     if ( display_struct.calc_size ) {
-        *y += AED_TOP_LINE + font_information->max_letter_ascent;
+        *y += AED_TOP_LINE + font_information->max_letter.ascent;
         area_entry->absolut_x = 2;
         area_entry->absolut_y = *y + screen.b - display_struct.bottom_indent;
     }
@@ -918,20 +921,20 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 
         if( !area_entry->is_selected ) {
             if ( display_struct.clear ) {
-                width = strlen( left_text ) * font_information->max_letter_width + 4;
-                height = font_information->max_letter_height + 2;
-                device->clear_part(  2, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                width = strlen( left_text ) * font_information->max_letter.width + 4;
+                height = font_information->max_letter.height + 2;
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
             }
             device->text( AED_GC_NAME, left_text, 4, *y , 0.0, AED_F_NAME, (AW_CL)area_entry, AED_F_NAME );
         }
         else {
-            AW_pos help_y = *y + font_information->max_letter_descent + 1;
+            AW_pos help_y = *y + font_information->max_letter.descent + 1;
 
-            width = strlen( left_text ) * font_information->max_letter_width + 4;
-            height = font_information->max_letter_height + 2;
+            width = strlen( left_text ) * font_information->max_letter.width + 4;
+            height = font_information->max_letter.height + 2;
 
             if ( display_struct.clear )
-                device->clear_part(  2, *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+                device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1 );
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
                 device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
@@ -961,15 +964,15 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 
     if ( display_struct.clear ) {
         width = screen.r;
-        height = font_information->max_letter_height+AED_LINE_SPACING+AED_TOP_LINE ;
-        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter_ascent - 1, width+1, height+1 );
+        height = font_information->max_letter.height+AED_LINE_SPACING+AED_TOP_LINE ;
+        device->clear_part(  (display_struct.picture_l + display_struct.slider_pos_horizontal), *y - font_information->max_letter.ascent - 1, width+1, height+1 );
     }
     if (area_entry->adt_sequence) {
 
         if (aed_root.helix_at_extendeds || !area_entry->ad_extended) {
             edg.helix->show_helix( (void*)device, AED_GC_HELIX ,
                                    area_entry->adt_sequence->show_get(), 0.0,
-                                   *y + font_information->max_letter_ascent + AED_CENTER_SPACING,
+                                   *y + font_information->max_letter.ascent + AED_CENTER_SPACING,
                                    AED_F_HELIX, (AW_CL)area_entry, AED_F_HELIX);
         }
         device->text(   AED_GC_SEQUENCE, area_entry->adt_sequence->show_get(), 0, *y, 0.0,
@@ -978,7 +981,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 
     if ( display_struct.calc_size ) {
         area_entry->in_line = *y;
-        *y += AED_LINE_SPACING + font_information->max_letter_descent;
+        *y += AED_LINE_SPACING + font_information->max_letter.descent;
     }
 
     device->invisible( AED_GC_NAME, 0, *y, AED_F_ALL, (AW_CL)0, (AW_CL)0 );
@@ -1271,7 +1274,7 @@ AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL u
         device->shift_y( screen.b - awmm->bottom_indent_of_vertical_scrollbar );
         device->set_top_clip_border( screen.b - awmm->bottom_indent_of_vertical_scrollbar );
     }
-    cursor_drawn = (AW_BOOL)device->cursor( AED_GC_NAME_DRAG, cursor * font_information->max_letter_width, selected_area_entry->in_line, AW_cursor_insert, AED_F_CURSOR, 0, 0 );
+    cursor_drawn = (AW_BOOL)device->cursor( AED_GC_NAME_DRAG, cursor * font_information->max_letter.width, selected_area_entry->in_line, AW_cursor_insert, AED_F_CURSOR, 0, 0 );
     device->pop_clip_scale();
     root->aw_root->awar( AWAR_CURSOR_POSITION_LOCAL)->write_int( cursor );
 
@@ -1315,8 +1318,9 @@ void AED_window::show_single_area_entry( AW_device *device, AW_window *awmm, AED
 void drag_box(AW_device *device, int gc, AW_pos x, AW_pos y, AW_pos width, AW_pos height, char *str) {
     if( width == 0 ) {
         const AW_font_information *font_information = device->get_font_information( AED_GC_SELECTED_DRAG, 'A' );
-        width = strlen( str ) * font_information->max_letter_width + 4;
-        height = font_information->max_letter_height + 4;
+
+        width  = strlen( str ) * font_information->max_letter.width + 4;
+        height = font_information->max_letter.height + 4;
     }
     AW_pos y_help = y + 2;
     device->line( gc, x,       y_help,        x+width, y_help,        AED_F_ALL,(AW_CL)"drag_box",0);                       // unten
@@ -1474,7 +1478,7 @@ void set_cursor_to( AED_window *aedw, long cursor, class AED_area_entry *aed ) {
     AW_rectangle               screen;
     device->get_area_size(&screen);
 
-    long wincursor          = cursor*font_information->max_letter_width;
+    long wincursor          = cursor*font_information->max_letter.width;
     long widthofscrolledwin = (long)(screen.r  - awmm->left_indent_of_horizontal_scrollbar);
     long worldwidth         = (long) aedw->size_information.r;
 
@@ -1556,7 +1560,7 @@ static void set_cursor_up_down(AED_window *aedw, int direction)
     AW_rectangle               screen;
     device->get_area_size(&screen);
 
-    int jump = (font_information->max_letter_height + AED_LINE_SPACING) * (direction == -1 ? -1 : 1);
+    int jump = (font_information->max_letter.height + AED_LINE_SPACING) * (direction == -1 ? -1 : 1);
     int d_x  = 0;
     int d_y  = 0;
 
@@ -1574,7 +1578,7 @@ static void set_cursor_up_down(AED_window *aedw, int direction)
     }
     
     AW_device *click_device = awmm->get_click_device (AW_MIDDLE_AREA,
-                                                      1 + aedw->cursor * font_information->max_letter_width + d_x,
+                                                      1 + aedw->cursor * font_information->max_letter.width + d_x,
                                                       (int)aedw->selected_area_entry->in_line + d_y + jump,
                                                       10, 5, 0);
     click_device->reset();

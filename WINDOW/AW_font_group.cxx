@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_font_group.cxx                                      //
 //   Purpose   : Bundles a group of fonts and provides overall maximas  //
-//   Time-stamp: <Wed Jan/05/2005 11:02 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Wed Feb/02/2005 16:43 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -27,6 +27,7 @@ void AW_font_group::unregisterAll()
     max_width   = 0;
     max_ascent  = 0;
     max_descent = 0;
+    max_height  = 0;
 
     for (int i = 0; i<(AW_FONT_GROUP_MAX_GC+1); ++i) font_info[i] = 0;
 }
@@ -41,6 +42,7 @@ void AW_font_group::registerFont(AW_device *device, int gc)
     set_max(get_width(gc), max_width);
     set_max(get_ascent(gc), max_ascent);
     set_max(get_descent(gc), max_descent);
+    set_max(get_height(gc), max_height);
 }
 
 

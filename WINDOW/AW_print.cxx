@@ -76,7 +76,7 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
         fprintf(device->get_FILE(), "4 0 %d %d 0 0 0 0.000 4 %d %d %d %d ",
                 fontnr,
                 gcm->fontsize,
-                (int)gcm->fontinfo.max_letter_height,
+                (int)gcm->fontinfo.max_letter.height,
                 (int)device->get_string_size(gc,str,0),
                 AW_INT(X),AW_INT(Y));
         char *p;
