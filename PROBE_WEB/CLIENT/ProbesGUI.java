@@ -59,7 +59,7 @@ public ProbesGUI(TreeNode root, int levels, String title, Client b)
         sc.getVAdjustable().setUnitIncrement(1);
         sc.getHAdjustable().setUnitIncrement(1);
         sc.setSize(600,tree_height);
-        sc.setBackground(Color.red);
+        //        sc.setBackground(Color.red);
         add(sc, BorderLayout.CENTER);
 
         //Window-Listener
@@ -91,6 +91,11 @@ public ProbeList getProbeList()
 public Client getClient()
     {
         return boss;
+    }
+
+public TextArea getDetails()
+    {
+        return details;
     }
 
 }
