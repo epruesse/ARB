@@ -264,7 +264,7 @@ int main(int argc, char **argv)
     if (!strcmp(command_flag, "-kill")) {
         exit(0);
     }
-    printf("\n TUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \ninitializing:\n");
+    printf("\nTUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \ninitializing:\n");
     printf("open connection...\n");
     sleep(1);
     for (i = 0, so = 0; (i < MAX_TRY) && (!so); i++) {
