@@ -39,21 +39,11 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-
 using namespace std;
 
 extern GBDATA               *gb_main;
 static AW_selection_list    *con_alignment_list;
 static AW_selection_list    *db_alignment_list;
-static AW_repeated_question *ask_about_missing_alignment;
-
-// static int mergeSimilarConcatenateAlignments = 0;
-// 2YADHU : I moved this to an parameter of mergeSimilarSpecies - your way does NOT work properly,
-// because the value of mergeSimilarConcatenateAlignments depended on the order in which the windows are opened
-// failure-example :
-// 1. open concat window, press merge+concat -> merge window opens
-// 2. open "other" merge window from species menu
-// 3. press button in 1. merge window -> does merge, but not concatenate
 
 /*--------------------------creating and initializing AWARS----------------------------------------*/
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
@@ -78,7 +68,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
     GB_push_transaction(gb_main);  //opening a transaction if not opened yet
 
     AW_root *aw_root = cas->aws->get_root();
-    char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string(); // @@@ FIXME : not free'd
+    char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string(); 
     ali_type         = GBS_global_string_copy("%s=", ali_type);
 
     cas->aws->clear_selection_list(cas->db_id); //clearing the selection list
@@ -295,26 +285,22 @@ void concatenateAlignments(AW_window *aws){
     GBDATA   *gb_alignment_exists = 0;
     GBDATA   *gb_new_alignment    = 0;
 
-    ask_about_missing_alignment = new  AW_repeated_question;
-    // @@@ FIXME: there's no need to declare ask_about_missing_alignment global - it is only used inside concatenateAlignments.
-    // as well there's no need to declare it as a pointer; in opposite it's dangerous : it's never free'd.
-    // best would be to declare it simply as
-    //      AW_repeated_question ask_about_missing_alignment;
-    // so you cannot forget to free it.
+    AW_repeated_question ask_about_missing_alignment;
 
     char *new_ali_name        = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
     char *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
     char *alignment_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
 
-    const char *ali_name;
-    long new_alignment_len   = 0;
     int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list);
     int found[no_of_sel_alignments], missing[no_of_sel_alignments];
     for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }
 
-    for(int i = 1; i<no_of_sel_alignments; i++){  //computing the length for the new concatenated alignment
-        ali_name = aws->get_element_of_index(con_alignment_list, i); // @@@ FIXME: get_element_of_index returns a malloc copy (never free'd)
-        new_alignment_len += GBT_get_alignment_len(gb_main, ali_name);
+    const char *const_ali_name = con_alignment_list->first_element();
+    long new_alignment_len     = 0;
+    
+    while(const_ali_name){   //computing the length for the new concatenated alignment
+        new_alignment_len += GBT_get_alignment_len(gb_main, const_ali_name);
+        const_ali_name     = con_alignment_list->next_element();
     }
 
     error = GBT_check_alignment_name(new_ali_name);
@@ -349,43 +335,45 @@ void concatenateAlignments(AW_window *aws){
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
         void *str_seq = GBS_stropen(new_alignment_len+1000);            /* create output stream */
-        const char *concatenated_ali_seq_data;
+        char *concatenated_ali_seq_data;
         int ali_len = 0; int ali_ctr = 0;
-        ali_name = con_alignment_list->first_element();
+        const_ali_name = con_alignment_list->first_element();
 
-        while(ali_name){             // concatenation of the selected alignments in the database
-            GBDATA *gb_seq_data = GBT_read_sequence(gb_species, ali_name);
+        while(const_ali_name){             // concatenation of the selected alignments in the database
+            GBDATA *gb_seq_data = GBT_read_sequence(gb_species, const_ali_name);
             if (gb_seq_data) {
-                char *str_data = GB_read_char_pntr(gb_seq_data); // @@@ FIXME: This should be stored in GB_CSTR (ne real problem here)
+                char *str_data = GB_read_char_pntr(gb_seq_data); 
                 GBS_strcat(str_seq,str_data);
                 ++found[ali_ctr];
+                free(str_data);
             }
             else {
-                gb_assert(ask_about_missing_alignment);
-                char *question = GBS_global_string_copy("\"%s\" alignment doesn`t exist in \"%s\"!", ali_name, GB_read_string(GB_find(gb_species, "full_name", 0, down_level)));
-                // @@@ FIXME: here you use GB_read_string as parameter, the return value is a malloc-copy which is not free'd
-                int skip_ali = ask_about_missing_alignment->get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
+                char *speciesName = GB_read_string(GB_find(gb_species, "full_name", 0, down_level));
+                char *question    = GBS_global_string_copy("\"%s\" alignment doesn`t exist in \"%s\"!", const_ali_name, speciesName);
+                int skip_ali      = ask_about_missing_alignment.get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
                 if (!skip_ali) {
-                    ali_len = GBT_get_alignment_len(gb_main, ali_name);
+                    ali_len = GBT_get_alignment_len(gb_main, const_ali_name);
                     for ( int j = 0; j<ali_len; j++) {  GBS_strcat(str_seq,"."); }
                 }
                 ++missing[ali_ctr];
                 free(question);
+                free(speciesName);
             }
-            ali_name = con_alignment_list->next_element(); ali_ctr++;
-            if (ali_name) GBS_strcat(str_seq,alignment_separator);
+            const_ali_name = con_alignment_list->next_element(); ali_ctr++;
+            if (const_ali_name) GBS_strcat(str_seq,alignment_separator);
         }
-        concatenated_ali_seq_data = GBS_strclose(str_seq, 0); // @@@ FIXME : not free'd
+        concatenated_ali_seq_data = GBS_strclose(str_seq, 0); 
         GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
         GB_write_string(gb_data, concatenated_ali_seq_data);
+        free(concatenated_ali_seq_data);
     }
 
     {
         aw_message(GBS_global_string("Concatenation of Alignments was performed for\"%d\" species.",GBT_count_marked_species(gb_main)));
-        ali_name = con_alignment_list->first_element(); int i = 0;
-        while (ali_name) {
-            aw_message(GBS_global_string("%s : Found in \"%d\" species & Missing in \"%d\" species.",ali_name,found[i],missing[i]));
-            ali_name = con_alignment_list->next_element();
+        const_ali_name = con_alignment_list->first_element(); int i = 0;
+        while (const_ali_name) {
+            aw_message(GBS_global_string("%s : Found in \"%d\" species & Missing in \"%d\" species.",const_ali_name,found[i],missing[i]));
+            const_ali_name = con_alignment_list->next_element();
             i++;
         }
     }
@@ -394,19 +382,19 @@ void concatenateAlignments(AW_window *aws){
         GBDATA *gb_extended = GBT_create_SAI(gb_main,"Alignment Information");
         GBDATA *gb_data     = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
         void *ali_str       = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
-        ali_name            = con_alignment_list->first_element();
+        const_ali_name            = con_alignment_list->first_element();
 
-        while (ali_name){
-            int alignment_len = GBT_get_alignment_len(gb_main,ali_name);
-            int ali_str_len   = strlen(ali_name);
+        while (const_ali_name){
+            int alignment_len = GBT_get_alignment_len(gb_main,const_ali_name);
+            int ali_str_len   = strlen(const_ali_name);
             for (int pos = 0; pos<alignment_len; pos++) {
                 if (pos<5)  GBS_strcat(ali_str,"<");
                 else if (pos >= (alignment_len-5))  GBS_strcat(ali_str,">");
-                else if (pos == (alignment_len/2 - ali_str_len/2)) { GBS_strcat(ali_str,ali_name); pos+=ali_str_len-1;}
+                else if (pos == (alignment_len/2 - ali_str_len/2)) { GBS_strcat(ali_str,const_ali_name); pos+=ali_str_len-1;}
                 else  GBS_strcat(ali_str,"=");
             }
-            ali_name = con_alignment_list->next_element();
-            if (ali_name) GBS_strcat(ali_str,alignment_separator);
+            const_ali_name = con_alignment_list->next_element();
+            if (const_ali_name) GBS_strcat(ali_str,alignment_separator);
         }
         char *ali_info_SAI = GBS_strclose(ali_str, 0);
         error              = GB_write_string(gb_data,ali_info_SAI);
@@ -467,10 +455,10 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     if (!error) {   // name was created
         if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
             char *uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
-            // @@@ FIXME: AWTC_makeUniqueShortName returns malloc-copy - it's transferred into new_species_name which is not free'd
             free(new_species_name);
             new_species_name = uniqueName;
             if (!new_species_name) error = "No short name created.";
+            free(uniqueName);
         }
     }
 
@@ -684,6 +672,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     else         GB_pop_transaction(gb_main);
 
     if (error) aw_message(error, "OK");
+    free(new_species_name);
     return gb_new_species;
 
 }
@@ -706,8 +695,8 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
 
     if (!error2) error2 = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
     if (error2) {
-        aw_message(GBS_global_string("\"%s\" field found! Please enter a new field name!",new_field_name));
-        goto ERROR1;
+        int answer = aw_message(GBS_global_string("\"%s\" field found! Do you want to overwrite to the existing field?",new_field_name),"YES,NO",false);
+        if (answer)  goto ERROR1;
     }
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
@@ -716,33 +705,31 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
             aw_message("Selected ENTRY doesnt contain any data!. Please select a VALID DATABASE FIELD ENTRY!");
             goto ERROR1;
         }
-        GB_CSTR gb_species_field_content = GB_read_string(gb_species_field);
-        // @@@ FIXME: GB_read_string return a heap copy ( = malloc copy)
-        // it should NOT be stored in GB_CSTR but in char*
-        // it should be free'd when no longer in use.
-
-        int     similar_species          = 0;
+        char *gb_species_field_content = GB_read_string(gb_species_field);
+        int   similar_species          = 0;
 
         for (GBDATA *gb_species_next =  GBT_next_marked_species(gb_species);
              gb_species_next;
              gb_species_next = GBT_next_marked_species(gb_species_next))
         {
-            GBDATA  *gb_next_species_field         = GB_find(gb_species_next, merge_field_name, 0, down_level);
-            GB_CSTR  gb_next_species_field_content = GB_read_string(gb_next_species_field); // @@@ FIXME: not free'd
+            GBDATA *gb_next_species_field         = GB_find(gb_species_next, merge_field_name, 0, down_level);
+            char   *gb_next_species_field_content = GB_read_string(gb_next_species_field); 
 
             if (strcmp(gb_species_field_content,gb_next_species_field_content) == 0){
-                GBDATA  *gb_species_name = GB_find(gb_species_next, "name", 0, down_level);
-                GB_CSTR  species_name    = GB_read_string(gb_species_name); // @@@ FIXME:  not free'd
+                GBDATA *gb_species_name = GB_find(gb_species_next, "name", 0, down_level);
+                char   *species_name    = GB_read_string(gb_species_name); 
                 addSpeciesToConcatenateList((void**)&scl,species_name);
                 GB_write_flag(gb_species_next, 0);
                 ++similar_species;
                 similarSpeciesFound = true;
+                free(species_name);
             }
+            free(gb_next_species_field_content);
         }
 
         if(similarSpeciesFound){
-            GBDATA  *gb_species_name = GB_find(gb_species, "name", 0, down_level);
-            GB_CSTR  species_name    = GB_read_string(gb_species_name); // @@@ FIXME: species_name is a malloc-copy and is never free'd
+            GBDATA *gb_species_name = GB_find(gb_species, "name", 0, down_level);
+            char   *species_name    = GB_read_string(gb_species_name); 
 
             addSpeciesToConcatenateList((void**)&scl, species_name);
             GB_write_flag(gb_species, 0);
@@ -755,8 +742,10 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
             similarSpeciesFound = false;
             freeSpeciesConcatenateList(scl); scl = 0;
             free(similar_species_no);
+            free(species_name);
         }
         similar_species = 0;
+        free(gb_species_field_content);
     }
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
@@ -786,10 +775,6 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
 
 /*----------------------------Creating concatenation window-----------------------------------------*/
 AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
-
-    //     NT_createConcatenationAwars(aw_root,def);
-    // 2YADHU : I've moved this to create_all_awars, because then I can use the
-    // 2nd parameter of NT_createConcatenationWindow for AWT_canvas (which we need to do a refresh of the main window)
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -874,19 +859,8 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
 }
 
 static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, AW_CL cl_ntw) {
-    //  static AW_window_simple *aws = 0;
-    //     mergeSimilarConcatenateAlignments = option;
-
-    //     if(!aws){  //creates window only once and points to species->Merge similar species (menu) and to concatenation window (button)
-
-    // 2YADHU :  no good idea to create the window only once - because we need 2 windows (one calling merge+concat and one calling merge w/o concat)
-    // there's no need to store the AW_window* anywhere (this is done inside the different AW_POPUP-callbacks)
 
     AW_window_simple    *aws = new AW_window_simple;
-
-    //     struct adawcbstruct *cbs = new adawcbstruct; // 2YADHU :  what does this do ?
-    //     cbs->gb_main             = gb_main;
-    //     cbs->aws                 = aws;
 
     aws->init(aw_root, "MERGE_SPECIES", "MERGE SPECIES WINDOW", 100, 100 );
     aws->load_xfig("merge_species.fig");
@@ -911,8 +885,6 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, 
     aws->at("close");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
-    //     }
-    //     aws->show();
 
     return (AW_window *)aws;
 }
