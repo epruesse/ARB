@@ -3070,149 +3070,145 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
                     REMOTE COMMANDS
 ********************************************************************************************/
 
-GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name){
-    char awar_action[1024];
-    char awar_result[1024];
+#define AWAR_REMOTE_BASE_TPL            "tmp/remote/%s/"
+#define MAX_REMOTE_APPLICATION_NAME_LEN 30
+#define MAX_REMOTE_AWAR_STRING_LEN      (11+MAX_REMOTE_APPLICATION_NAME_LEN+1+6+1)
+
+struct gbt_remote_awars {
+    char awar_action[MAX_REMOTE_AWAR_STRING_LEN];
+    char awar_result[MAX_REMOTE_AWAR_STRING_LEN];
+    char awar_awar[MAX_REMOTE_AWAR_STRING_LEN];
+    char awar_value[MAX_REMOTE_AWAR_STRING_LEN];
+};
+
+static void gbt_build_remote_awars(struct gbt_remote_awars *awars, const char *application) {
+    int length;
+
+    gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
+
+    length = sprintf(awars->awar_action, AWAR_REMOTE_BASE_TPL, application);
+    gb_assert(length < (MAX_REMOTE_AWAR_STRING_LEN-6)); // Note :  6 is length of longest name appended below !
+
+    strcpy(awars->awar_result, awars->awar_action);
+    strcpy(awars->awar_awar, awars->awar_action);
+    strcpy(awars->awar_value, awars->awar_action);
+
+    strcpy(awars->awar_action+length, "action");
+    strcpy(awars->awar_result+length, "result");
+    strcpy(awars->awar_awar+length,   "awar");
+    strcpy(awars->awar_value+length,  "value");
+}
+
+static GBDATA *gbt_remote_search_awar(GBDATA *gb_main, const char *awar_name) {
     GBDATA *gb_action;
-    GBDATA *gb_result;
-    const char *result = 0;
-    sprintf(awar_action,"tmp/remote/%s/action",application);
-    sprintf(awar_result,"tmp/remote/%s/result",application);
-    /* search action var */
-    while (1){
+    while (1) {
         GB_begin_transaction(gb_main);
-        gb_action = GB_search(gb_main,awar_action,GB_FIND);
+        gb_action = GB_search(gb_main, awar_name, GB_FIND);
         GB_commit_transaction(gb_main);
         if (gb_action) break;
-        GB_usleep(20000);
+        GB_usleep(2000);
     }
-    /* write command */
-    {
-        GB_begin_transaction(gb_main);
-        GB_write_string(gb_action,action_name);
-        GB_commit_transaction(gb_main);
-    }
+    return gb_action;
+}
+
+static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, const char *awar_read) {
+    GB_ERROR error = 0;
+
     /* wait to end of action */
-    while(1){
+    while(1) {
         char *ac;
+        GB_usleep(2000);
         GB_begin_transaction(gb_main);
         ac = GB_read_string(gb_action);
-        if (!strlen(ac)){
-            gb_result = GB_search(gb_main,awar_result,GB_STRING);
-            result = GB_read_char_pntr(gb_result);
+        if (ac[0] == 0) { // action has been cleared from remote side
+            GBDATA *gb_result = GB_search(gb_main, awar_read, GB_STRING);
+            error             = GB_read_char_pntr(gb_result); // check for errors
             free(ac);
             GB_commit_transaction(gb_main);
             break;
         }
         free(ac);
         GB_commit_transaction(gb_main);
-        GB_usleep(20000);
     }
-    return result;
+
+    return error; // may be error or result
 }
 
-GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value){
-    char awar_awar[1024];
-    char awar_value[1024];
-    char awar_result[1024];
-    GBDATA *gb_awar;
-    GBDATA *gb_value;
-    GBDATA *gb_result;
-    const char *result = 0;
-    sprintf(awar_awar,"tmp/remote/%s/awar",application);
-    sprintf(awar_value,"tmp/remote/%s/value",application);
-    sprintf(awar_result,"tmp/remote/%s/result",application);
-    /* search awar var */
-    while (1){
-        GB_begin_transaction(gb_main);
-        gb_awar = GB_search(gb_main,awar_awar,GB_FIND);
-        GB_commit_transaction(gb_main);
-        if (gb_awar) break;
-        GB_usleep(20000);
-    }
-    /* write command */
-    {
-        GB_begin_transaction(gb_main);
-        gb_value = GB_search(gb_main,awar_value,GB_STRING);
-        GB_write_string(gb_awar,awar_name);
-        GB_write_string(gb_value,value);
-        GB_commit_transaction(gb_main);
-    }
-    /* wait to end of action */
-    while(1){
-        char *ac;
-        GB_begin_transaction(gb_main);
-        ac = GB_read_string(gb_awar);
-        if (!strlen(ac)){
-            gb_result = GB_search(gb_main,awar_result,GB_STRING);
-            result = GB_read_char_pntr(gb_result);
-            GB_commit_transaction(gb_main);
-            free(ac);
-            break;
-        }
-        GB_commit_transaction(gb_main);
-        free(ac);
-        GB_usleep(20000);
-    }
-    return result;
+GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name){
+    struct gbt_remote_awars  awars;
+    GBDATA                  *gb_action;
 
+    gbt_build_remote_awars(&awars, application);
+    gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
+
+    GB_begin_transaction(gb_main);
+    GB_write_string(gb_action, action_name); /* write command */
+    GB_commit_transaction(gb_main);
+
+    return gbt_wait_for_remote_action(gb_main, gb_action, awars.awar_result);
 }
 
-const char *GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name){
-    char awar_awar[1024];
-    char awar_action[1024];
-    char awar_value[1024];
-    char awar_result[1024];
-    GBDATA *gb_awar;
-    GBDATA *gb_action;
-    GBDATA *gb_value;
-/*     GBDATA *gb_result; */
-    const char *result = 0;
-    sprintf(awar_awar,"tmp/remote/%s/awar",application);
-    sprintf(awar_action,"tmp/remote/%s/action",application);
-    sprintf(awar_value,"tmp/remote/%s/value",application);
-    sprintf(awar_result,"tmp/remote/%s/result",application);
-    /* search awar var */
-    while (1){
-        GB_begin_transaction(gb_main);
-        gb_awar = GB_search(gb_main,awar_awar,GB_FIND);
-        GB_commit_transaction(gb_main);
-        if (gb_awar) break;
-        GB_usleep(20000);
-    }
-    /* write command */
+GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
+    struct gbt_remote_awars  awars;
+    GBDATA                  *gb_awar;
+
+    gbt_build_remote_awars(&awars, application);
+    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
+
     {
+        GBDATA *gb_value;
+
         GB_begin_transaction(gb_main);
+        gb_value = GB_search(gb_main, awars.awar_value, GB_STRING);
+        GB_write_string(gb_awar, awar_name);
+        GB_write_string(gb_value, value);
+        GB_commit_transaction(gb_main);
+    }
 
-/*         gb_value  = GB_search(gb_main,awar_value,GB_STRING); */
-        gb_action = GB_search(gb_main,awar_action,GB_STRING);
+    return gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+}
 
-        GB_write_string(gb_awar,awar_name);
+const char *GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
+    struct gbt_remote_awars  awars;
+    GBDATA                  *gb_awar;
+    const char              *result = 0;
+
+    gbt_build_remote_awars(&awars, application);
+    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
+
+    {
+        GBDATA *gb_action;
+
+        GB_begin_transaction(gb_main);
+        gb_action = GB_search(gb_main, awars.awar_action, GB_STRING);
+        GB_write_string(gb_awar, awar_name);
         GB_write_string(gb_action, "AWAR_REMOTE_READ");
-/*         GB_write_string(gb_value,"");  */
+        GB_commit_transaction(gb_main);
+    }
 
-        GB_commit_transaction(gb_main);
-    }
-    /* wait to end of action */
-    while(1){
-        char *ac;
-        GB_begin_transaction(gb_main);
-        ac = GB_read_string(gb_awar);
-        if (!strlen(ac)){
-            gb_value = GB_search(gb_main,awar_value,GB_STRING);
-            result = GB_read_char_pntr(gb_value);
-            GB_commit_transaction(gb_main);
-            free(ac);
-            break;
-        }
-        GB_commit_transaction(gb_main);
-        free(ac);
-        GB_usleep(20000);
-    }
+    result = gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_value);
     return result;
-
 }
 
+const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
+    struct gbt_remote_awars  awars;
+    GBDATA                  *gb_awar;
+
+    gbt_build_remote_awars(&awars, application);
+    gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
+
+    {
+        GBDATA *gb_action;
+
+        GB_begin_transaction(gb_main);
+        gb_action = GB_search(gb_main, awars.awar_action, GB_STRING);
+        GB_write_string(gb_awar, awar_name);
+        GB_write_string(gb_action, "AWAR_REMOTE_TOUCH");
+        GB_commit_transaction(gb_main);
+    }
+
+    return gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
+}
 
 /*  ---------------------------------------------------------------------------------  */
 /*      char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement)       */
