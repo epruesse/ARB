@@ -132,18 +132,23 @@ int main(int argc,char **argv)
    error = 0;
   int args_err= 0;
   int args_help= 0;
-  char *arg_input_file;
-  char *arg_result_file;
-  char *arg_ptserver;
-  char *arg_numMismatches;
-  int numMismatches;
-
+  char *arg_input_file= NULL;
+  char *arg_result_file= NULL;
+  char *arg_ptserver= NULL;
+  char *arg_numMismatches= NULL;
+  int numMismatches= 0;
+  int weightedMismatches= 0;
+  
+  
   if (argc < 4)
     args_help = 1;
 
   for(int c= 1; c < argc; c++) {
     if((argv[c][0]== '-') && (argv[c][1]!= '-')) {
       switch(argv[c][1]) {
+      case 'w':
+	weightedMismatches= 1; // 0= do not use weighted, 1= use weighted mm.
+	break;
       case 'h':
 	args_help= 1;
 	break;
@@ -177,16 +182,17 @@ int main(int argc,char **argv)
 
   if (args_help && !args_err)
     {
-      printf("Usage: %s  input_probefile result_probefile pt-servername [numberOfMismatches] [Option]\n\n", argv[0]);
-      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0'\n\n", argv[0]);
-      printf("The default for numberOfMismatches is 0\n");
-      printf("-h\tprint this help and exit\n\n");
+      printf("Usage: %s input_probefile result_probefile pt-servername [numberOfMismatches] [Options]\n\n", argv[0]);
+      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0' -w\n\n", argv[0]);
+      printf("The default for numberOfMismatches is 0.\n");
+      printf("-w\tuse weighted mismatches for the probematch.\n");
+      printf("-h\tprint this help and exit.\n\n");
       return -1;
     }
 
   if (args_err)
     {
-      printf("%s: Error while processing input. Try %s -h for help\n", argv[0], argv[0]);
+      printf("%s: Error while processing input. Try %s -h for help.\n", argv[0], argv[0]);
       return -1;
     }
 
@@ -248,18 +254,8 @@ int main(int argc,char **argv)
 	for (unsigned int j=0; j<probeData.size(); j++)
 	{
 	  //printf("j=%d and probename=%s\n", j, probeData[j].name);
-	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches);
+	  error =  CHIP_probe_match(probeData[j] , my_para,  arg_result_file, numMismatches, weightedMismatches);
 	}
-
-	// Testdaten !!
-	/*
-	  probe_data my_pd;
-	strcpy(my_pd.name, "WtzKmRs");
-	strcpy(my_pd.longname, "Staffilokokkus Minimus");
-	strcpy(my_pd.sequence, "acggcgca");
-	error =  CHIP_probe_match(my_pd , my_para, arg_result_file);
-	*/
-	// Ende Testdaten
 
 	if (error)
 	  {
@@ -657,7 +653,8 @@ static bool chip_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const C
 //  -----------------------------------------------------------------------------------------------------
 //  calls probe-match for the sequence contained in pD  and appends all matching species to the result-probefile fn
 
-GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches ) {
+GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches, int weightedMismatches)
+{
 
   //  printf("CHIP_probe_match\n");
 
@@ -700,7 +697,7 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
     if (aisc_nput(pd_gl.link,
 		  PT_LOCS, 			pd_gl.locs,
                   LOCS_MATCH_REVERSED,		1,
-                  LOCS_MATCH_SORT_BY,		0,
+                  LOCS_MATCH_SORT_BY,		weightedMismatches,
                   LOCS_MATCH_COMPLEMENT, 	0,
                   LOCS_MATCH_MAX_MISMATCHES,	numMismatches,
                   LOCS_MATCH_MAX_SPECIES, 	MAX_SPECIES,
