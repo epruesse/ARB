@@ -1458,8 +1458,8 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
     long chksum;
     int restart = 1;
     AWTC_CompactedSubSequence *toAlignSequence = NULL;
-    str *nearestRelative = new str[maxNextRelatives];
-    long *relativeScore = new long[maxNextRelatives];
+    str *nearestRelative = new str[maxNextRelatives+1];
+    long *relativeScore = new long[maxNextRelatives+1];
     int next_relatives;
     int i;
 
@@ -1498,7 +1498,7 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                                 bestScore = fl->matches;
                             }
 
-                            if (next_relatives<maxNextRelatives) {
+                            if (next_relatives<maxNextRelatives+1) {
                                 nearestRelative[next_relatives] = strdup(fl->name);
                                 relativeScore[next_relatives] = fl->matches;
                                 next_relatives++;
