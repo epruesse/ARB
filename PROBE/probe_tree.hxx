@@ -188,18 +188,18 @@ do {                                                                            
         mycharp[4]<<24 | mycharp[5]<<16 | mycharp[6]<<8 | mycharp[7];               \
 } while(0)
 
-# define PT_WRITE_PNTR(ptr,my_int_i)									\
-    do {												\
-        unsigned char *mycharp=(unsigned char *)(ptr);unsigned long myinti = (unsigned long)(my_int_i);	\
-	mycharp[0]= (unsigned char)(myinti>>56);							\
-	mycharp[1]= (unsigned char)(myinti>>48);							\
-	mycharp[2]= (unsigned char)(myinti>>40);							\
-	mycharp[3]= (unsigned char)(myinti>>32);							\
-	mycharp[4]= (unsigned char)(myinti>>24);							\
-	mycharp[5]= (unsigned char)(myinti>>16);							\
-	mycharp[6]= (unsigned char)(myinti>>8);								\
-	mycharp[7]= (unsigned char)myinti;								\
-    } while(0)
+# define PT_WRITE_PNTR(ptr,my_int_i)                                                                \
+do {                                                                                                \
+    unsigned char *mycharp=(unsigned char *)(ptr);unsigned long myinti = (unsigned long)(my_int_i); \
+	mycharp[0]= (unsigned char)(myinti>>56);                                                        \
+	mycharp[1]= (unsigned char)(myinti>>48);                                                        \
+	mycharp[2]= (unsigned char)(myinti>>40);                                                        \
+	mycharp[3]= (unsigned char)(myinti>>32);                                                        \
+	mycharp[4]= (unsigned char)(myinti>>24);                                                        \
+	mycharp[5]= (unsigned char)(myinti>>16);                                                        \
+	mycharp[6]= (unsigned char)(myinti>>8);                                                         \
+	mycharp[7]= (unsigned char)myinti;                                                              \
+} while(0)
 
 
 #else
@@ -240,53 +240,60 @@ do {                                                            \
 /********************* PT_READ_CHAIN_ENTRY ***********************/
 
 
-#define PT_READ_CHAIN_ENTRY(ptr,mainapos,name,apos,rpos) do {           \
-	unsigned int rcei;                                                  \
-	unsigned char *rcep = (unsigned char*)ptr;                          \
-	int	isapos;                                                         \
-	apos = 0;                                                           \
-	rpos = 0;                                                           \
-	rcei = (*rcep);                                                     \
-	if (rcei==PT_CHAIN_END) { name = -1; ptr++;                         \
-	}else {                                                             \
-		if (rcei&0x80) {                                                \
-            if (rcei&0x40) {                                            \
-                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;    \
-            }                                                           \
-            else {                                                      \
-                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;      \
-            }                                                           \
-		}                                                               \
-        else {                                                          \
-            rcei&= 0x7f;rcep++;                                         \
-        }                                                               \
-		name += rcei;                                                   \
-		rcei = (*rcep);                                                 \
-		if (rcei&0x80) isapos = 1;                                      \
-        else isapos = 0;                                                \
-		if (rcei&0x40) {                                                \
-            PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;        \
-		}else{                                                          \
-            PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;          \
-		}                                                               \
-		rpos = (int)rcei;                                               \
-		if (isapos) {                                                   \
-			rcei = (*rcep);                                             \
-			if (rcei&0x80) {                                            \
-                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;    \
-			}else{                                                      \
-                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;      \
-			}                                                           \
-			apos = (int)rcei;                                           \
-		}else{                                                          \
-			apos = (int)mainapos;}                                      \
-		ptr = (char *)rcep;                                             \
-	}                                                                   \
-} while(0)
+GB_INLINE const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name,int *apos,int *rpos) {
+	unsigned int rcei;
+	unsigned char *rcep = (unsigned char*)ptr;
+	int	isapos;
+
+	*apos = 0;
+	*rpos = 0;
+	rcei = (*rcep);
+
+	if (rcei==PT_CHAIN_END) {
+        *name = -1;
+        ptr++;
+	}
+    else {
+		if (rcei&0x80) {
+            if (rcei&0x40) {
+                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;
+            }
+            else {
+                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;
+            }
+		}
+        else {
+            rcei&= 0x7f;rcep++;
+        }
+		*name += rcei;
+		rcei = (*rcep);
+		if (rcei&0x80) isapos = 1;
+        else isapos = 0;
+		if (rcei&0x40) {
+            PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x3fffffff;
+		}else{
+            PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x3fff;
+		}
+		*rpos = (int)rcei;
+		if (isapos) {
+			rcei = (*rcep);
+			if (rcei&0x80) {
+                PT_READ_INT(rcep,rcei); rcep+=4; rcei &= 0x7fffffff;
+			}else{
+                PT_READ_SHORT(rcep,rcei); rcep+=2; rcei &= 0x7fff;
+			}
+			*apos = (int)rcei;
+		}else{
+			*apos = (int)mainapos;}
+		ptr = (char *)rcep;
+	}
+
+    return ptr;
+}
 
 
 /* stage 1 */
-GB_INLINE char *PT_WRITE_CHAIN_ENTRY(char *ptr,int mainapos,int name,int apos,int rpos)
+GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int name,const int apos,const int rpos)
 {
     register unsigned char *wcep = (unsigned char *)ptr;
     int	 isapos;
@@ -423,7 +430,7 @@ GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int a
     int pos, apos, rpos;
     int cname;
     int	error;
-    char *data;
+    const char *data;
 
     data = (&node->data) + ptmain->mode;
     if (node->flags&1){
@@ -436,7 +443,7 @@ GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int a
     error = 0;
     cname = 0;
     while (cname>=0){
-        PT_READ_CHAIN_ENTRY(data,pos,cname,apos,rpos);
+        data = PT_READ_CHAIN_ENTRY(data,pos,&cname,&apos,&rpos);
         if (cname>=0){
             error = func(cname,apos,rpos,clientdata);
             if (error) return error;

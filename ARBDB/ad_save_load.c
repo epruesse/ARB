@@ -39,24 +39,24 @@ GB_CPNTR gb_findExtension(GB_CSTR path)
 
 /*
  * CAUTION!!!
- * 
+ *
  * The following functions (quicksaveName, oldQuicksaveName, mapfile_name, gb_overwriteName)
  * use static buffers for the created filenames.
  *
  * So you have to make sure, to use only one instance of every of these
  * functions or to dup the string before using the second instance
  *
- */	
-   
+ */
+
 
 
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
 {
     static char *qname = 0;
     char *ext;
-    
+
     STATIC_BUFFER(qname,strlen(path)+10);
-    
+
     strcpy(qname,path);
     ext = gb_findExtension(qname);
     if (!ext) ext = qname + strlen(qname);
@@ -71,9 +71,9 @@ GB_CSTR gb_quicksaveName(GB_CSTR path,int nr)
 {
     static char *qname = 0;
     char *ext;
-    
+
     STATIC_BUFFER(qname,strlen(path)+4);
-    
+
     strcpy(qname,path);
     ext = gb_findExtension(qname);
     if (!ext){
@@ -90,15 +90,15 @@ GB_CSTR gb_mapfile_name(GB_CSTR path)
 {
     static char *mapname = 0;
     char *ext;
-     
+
     STATIC_BUFFER(mapname,strlen(path)+4);
 
     strcpy(mapname,path);
     ext = gb_findExtension(mapname);
     if (!ext) ext = mapname + strlen(mapname);
-    
+
     strcpy(ext,".ARM");
-  
+
     return mapname;
 }
 
@@ -110,7 +110,7 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
     STATIC_BUFFER(oname,strlen(path)+1);
 
     strcpy(oname,path);
-     
+
     ext = gb_findExtension(oname);
 
     if (ext)
@@ -128,12 +128,12 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
 
 GB_CSTR gb_reffile_name(GB_CSTR path){
     static char *refname = 0;
-    char *ext;    
+    char *ext;
     STATIC_BUFFER(refname,  strlen(path)+4);
 
     strcpy(refname,path);
     ext = gb_findExtension(refname);
-    if (!ext) ext = refname + strlen(refname);    
+    if (!ext) ext = refname + strlen(refname);
     strcpy(ext,".ARF");
     return refname;
 }
@@ -194,14 +194,14 @@ GB_ERROR gb_remove_quick_saved(GB_MAIN_TYPE *Main, const char *path)
 {
     int i;
     GB_ERROR error = 0;
-    
-    for (i=0; i< GB_MAX_QUICK_SAVE_INDEX; i++) 
+
+    for (i=0; i< GB_MAX_QUICK_SAVE_INDEX; i++)
     {
         if (GB_unlink(gb_quicksaveName(path,i))<0)
             error = GB_get_error();
     }
 
-    for (i=0; i< 10; i++) 
+    for (i=0; i< 10; i++)
     {
         if (GB_unlink(gb_oldQuicksaveName(path,i))<0)
             error = GB_get_error();
@@ -253,17 +253,17 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
                 }
 
                 j++;
-            } 
+            }
         }
 
         if (j<=GB_MAX_QUICK_SAVES) break; /* less or equal than GB_MAX_QUICK_SAVES files -> ok */
 
         i = 0;
-        while (j>GB_MAX_QUICK_SAVES) /* otherwise delete files from lower numbers till there 
+        while (j>GB_MAX_QUICK_SAVES) /* otherwise delete files from lower numbers till there
                                       * are only GB_MAX_QUICK_SAVES left */
         {
             GB_CSTR qsave = gb_quicksaveName(path,i);
-	       
+
             if (GB_is_regularfile(qsave)) remove(qsave);
             j--;
             i++;
@@ -280,7 +280,7 @@ static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main)
     int cnt = 0,
         i;
     char *path = Main->path;
-    
+
     for (i=0; i<GB_MAX_QUICK_SAVE_INDEX; i++)
     {
         GB_CSTR qsave = gb_quicksaveName(path,i);
@@ -561,7 +561,7 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
     return 0;
 }
 
-						
+
 
 
 /********************************************************************************************
@@ -572,7 +572,7 @@ long	gb_read_in_long(FILE *in,long reversed)
 {
     long sdata = 0;
     register char *p = (char *)&sdata;
-	
+
     if (!reversed) {
         *(p++) = getc(in);
         *(p++) = getc(in);
@@ -698,7 +698,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
     struct gb_header_list_struct *header;
     register int i,index;
     int	counter;
-    header = GB_DATA_LIST_HEADER(gbc->d);	
+    header = GB_DATA_LIST_HEADER(gbc->d);
     for (i=0, index = 0; index < gbc->d.nheader; index++) {
         if (gb_is_writeable(&(header[index]),GB_HEADER_LIST_GBD(header[index]),version,diff_save)) i++;
     }
@@ -708,7 +708,7 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
     }else{
         gb_write_out_long(i,out);
     }
-    
+
     counter = 0;
     for (index = 0; index < gbc->d.nheader; index++){
         GBDATA *h_gbd;
@@ -719,15 +719,15 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
         }
 
         h_gbd = GB_HEADER_LIST_GBD(header[index]);
-	
-        if(!gb_is_writeable(&(header[index]),h_gbd,version,diff_save)) 
+
+        if(!gb_is_writeable(&(header[index]),h_gbd,version,diff_save))
         {	/* mark deleted in master */
             if (version <= 1 && header[index].flags.changed == gb_deleted) {
                 header[index].flags.changed = gb_deleted_in_master;
             }
             continue;
         }
-	
+
         if (h_gbd) {
             i = (int)gb_write_bin_rek(out,h_gbd,version,diff_save,index-counter);
             if (i) return i;
@@ -758,12 +758,12 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
     }
 
     i = 	(type<<4)
-        + 	(gbd->flags.security_delete<<1) 
+        + 	(gbd->flags.security_delete<<1)
         +	(gbd->flags.security_write>>2);
     putc(i,out);
 
     i =  	((gbd->flags.security_write &3) <<6)
-        + 	(gbd->flags.security_read<<3) 
+        + 	(gbd->flags.security_read<<3)
         +	(gbd->flags.compressed_data<<2)
         +	((GB_ARRAY_FLAGS(gbd).flags&1)<<1)
         +	(gbd->flags.unused);
@@ -794,7 +794,7 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
             i = gb_write_bin_sub_containers(out,gbc,version,diff_save,0);
             return i;
 
-        case	GB_INT:{  
+        case	GB_INT:{
             GB_UINT4 buffer = (GB_UINT4)htonl(gbd->info.i);
             if (!fwrite((char *)&buffer,sizeof(float),1,out)) return -1;
             return 0;
@@ -871,12 +871,12 @@ int gb_write_bin(FILE *out,GBDATA *gbd,long version){
 ********************************************************************************************/
 
 
-GB_ERROR GB_save(GBDATA *gb,char *path,const char *savetype)	
-     /* 	
- *	savetype 'a' 	ascii 
- *		 'b' 	binary 
+GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
+     /*
+ *	savetype 'a' 	ascii
+ *		 'b' 	binary
  *		 'bm'	binary + mapfile
- *		 0=ascii 
+ *		 0=ascii
  */
 {
     if (path)
@@ -887,14 +887,14 @@ GB_ERROR GB_save(GBDATA *gb,char *path,const char *savetype)
     return GB_save_as(gb,path,savetype);
 }
 
-GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)	
-     /* 
- *	savetype 'a' 	ascii 
- *		 'b' 	binary 
+GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
+     /*
+ *	savetype 'a' 	ascii
+ *		 'b' 	binary
  *		 'bm'	binary + mapfile
- *		 0=ascii 
+ *		 0=ascii
  *
- *      creates subdirectories too 
+ *      creates subdirectories too
  */
 {
     GB_ERROR error = 0;
@@ -923,12 +923,12 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
 
 /** Save whole database */
 GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
-     /* 	
- *	savetype 	'a' ascii 
+     /*
+ *	savetype 	'a' ascii
  *			'b' binary
  *			'm' save mapfile too (only with binary)
  *			'f' force saving even in disabled path to a different directory (out of order save)
- *			 0=ascii 
+ *			 0=ascii
  */
 {
     FILE *out;
@@ -944,7 +944,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     gb = (GBDATA *)Main->data;
 
     if (path == NULL) path = Main->path;
-    if (!path || !strlen(path) ) 
+    if (!path || !strlen(path) )
     {
         GB_export_error("Please specify a file name");
         goto error;
@@ -953,7 +953,7 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     if (gb_check_saveable(gb,path,savetype)) goto error;
 
     sec_path = GB_STRDUP(gb_overwriteName(path));
-    if ((out = fopen(sec_path, "w")) == NULL) 
+    if ((out = fopen(sec_path, "w")) == NULL)
     {
         printf(" file %s could not be opened for writing \n", sec_path);
         GB_export_error("ARBDB ERROR: Cannot save file to '%s'",sec_path);
@@ -966,13 +966,13 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
     if (!translevel) Main->transaction = 1;
     else
     {
-        if (translevel> 0 ) 
+        if (translevel> 0 )
         {
             GB_commit_transaction(gb);
             GB_begin_transaction(gb);
         }
     }
-    
+
     Main->security_level = 7;
 
     if (!savetype || strchr(savetype,'a')) 			/* ASCII */
@@ -983,22 +983,22 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
         {
             if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
             Main->qs.quick_save_disabled = strdup("Database saved in ASCII mode");
-            if (deleteQuickAllowed && gb_remove_all_but_main(Main,path)) goto error; 
+            if (deleteQuickAllowed && gb_remove_all_but_main(Main,path)) goto error;
         }
     }
     else if (strchr(savetype,'b'))				/* binary */
     {
-        /* it's necessary to save the mapfile FIRST, cause this re-orders all GB_CONTAINERs  
+        /* it's necessary to save the mapfile FIRST, cause this re-orders all GB_CONTAINERs
          * containing NULL-entries in their header */
 
         erg = 0;
-        if (strchr(savetype,'m')) 
+        if (strchr(savetype,'m'))
         {
             map_path = gb_mapfile_name(path);
             erg |= gb_save_mapfile(Main,map_path);          /* save mapfile */
             erg |= gb_write_bin(out,gb,1);                  /* save binary */
         }
-        else 
+        else
         {
             GB_unlink(gb_mapfile_name(path));                  /* delete old mapfile */
             erg |= gb_write_bin(out,gb,1);                  /* save binary */
@@ -1007,24 +1007,24 @@ GB_ERROR GB_save_as(GBDATA *gb,const char *path,const char *savetype)
         if (erg==0){
             if (!strchr(savetype,'f')){				/* allow quick saving unless saved in 'f' mode */
                 if (Main->qs.quick_save_disabled) free(Main->qs.quick_save_disabled);
-                Main->qs.quick_save_disabled = 0; /* and allow quicksaving */ 
+                Main->qs.quick_save_disabled = 0; /* and allow quicksaving */
             }
-            if (deleteQuickAllowed && gb_remove_quick_saved(Main,path)) goto error; 
+            if (deleteQuickAllowed && gb_remove_quick_saved(Main,path)) goto error;
         }
     }
 
     Main->security_level = slevel;
     Main->transaction = translevel;
     erg |= fclose(out);
-	
-    if (erg) 
+
+    if (erg)
     {
         GB_export_error("ARBDB: Write Error, system errno = '%i', see console");
         perror("Write Error");
         goto error;
     }
 
-    
+
     if (GB_rename(sec_path, path)==0){
         if (map_path){
             GB_CSTR overwrite_map_path = gb_overwriteName(map_path);
@@ -1085,7 +1085,7 @@ GB_ERROR GB_delete_database(GB_CSTR filename)
     {
         return GB_get_error();
     }
-    
+
     if (gb_remove_all_but_main(0,filename)){
         return GB_get_error();
     }
@@ -1126,8 +1126,8 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     }else{
         org_master = GB_STRDUP(Main->path);
     }
-     
-    if( gb_remove_all_but_main(Main,path)) 
+
+    if( gb_remove_all_but_main(Main,path))
     {
         free(org_master);
         return GB_get_error();
@@ -1168,7 +1168,7 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
     if (gb_add_reference(full_path_of_source,path)){
         GB_warning("%s",GB_get_error());
     }
-     
+
     free(Main->path);		/* Symlink created -> rename allowed */
     Main->path = GB_STRDUP(path);
 
@@ -1195,7 +1195,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     if (gb_check_quick_save(gb,refpath)) return GB_get_error();
     if (gb_check_saveable(gb,refpath,"q")) return GB_get_error();
 
-    if (refpath && strcmp(refpath, Main->path) ) 
+    if (refpath && strcmp(refpath, Main->path) )
     {
         return GB_export_error("Internal ARB Error, master file rename '%s'!= '%s',\n"
                                "	save database first", refpath,Main->path);
@@ -1204,13 +1204,13 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     fmaster = fopen( Main->path, "r");
 
     if (!fmaster) /* Oh no, where is my old master */
-    {		
+    {
         return GB_export_error("Quick save is missing master ARB file '%s',\n"
                                "	save database first", refpath);
     }
     fclose(fmaster);
 
-    if (Main->local_mode == GB_FALSE) 
+    if (Main->local_mode == GB_FALSE)
     {
         GB_export_error("You cannot save a remote database");
         GB_print_error();
@@ -1219,7 +1219,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 
     Main->qs.last_index++;
     if (Main->qs.last_index >= GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(Main);
-     
+
     path = gb_quicksaveName(Main->path, Main->qs.last_index);
     sec_path = gb_overwriteName(path);
 
@@ -1228,11 +1228,11 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     slevel = Main->security_level;
     translevel = Main->transaction;
 
-    if (!translevel) 
+    if (!translevel)
         Main->transaction = 1;
     else
     {
-        if (translevel> 0 ) 
+        if (translevel> 0 )
         {
             GB_commit_transaction(gb);
             GB_begin_transaction(gb);
@@ -1244,7 +1244,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
 
     Main->security_level = slevel;
     Main->transaction = translevel;
-    erg |= fclose(out);	
+    erg |= fclose(out);
     if (erg!=0) return GB_export_error("Cannot write to '%s'",sec_path); /* was: '%s%%'",path);*/
 
     if (GB_rename(sec_path,path)) return GB_get_error();
@@ -1253,7 +1253,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     Main->last_saved_time = GB_time_of_day();
 
     deleteSuperfluousQuicksaves(Main);
-     
+
     return NULL;
 }
 

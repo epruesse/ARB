@@ -72,7 +72,7 @@ char *PTM_get_mem(int size)
 }
 
 /********************* malloc all small free blocks ***********************/
-int	
+int
 PTM_destroy_mem(void){	/* destroys all left memory sources */
 	register int    pos,i;
 	int sum;
@@ -241,7 +241,7 @@ POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int 
 	psg.stat.cut_offs ++;
 	return 0;
 }
-	
+
 
 POS_TREE *PT_change_leaf_to_node(PTM2 */*ptmain*/, POS_TREE *node)		/*stage 1*/
 	{
@@ -273,7 +273,7 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)		/* stage 1*/
 	rpos = PT_read_rpos(ptmain,node);
 	chain_size = PT_EMPTY_CHAIN_SIZE;
 	if (apos>PT_SHORT_SIZE) chain_size+=2;
-	
+
 	new_elem = (POS_TREE *)PTM_get_mem(chain_size);
 	PT_change_father(father,node,new_elem);
 	PTM_free_mem((char *)node,PT_LEAF_SIZE(node));
@@ -472,28 +472,28 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 */*ptmain*/ , char ** 
     int apos;
     int lastname = 0;
     while (n_entries>0){
-	char *entry = entry_tab[n_entries-1];
-	n_entries --;
-	register char *rp = entry;
-	rp+= sizeof(PT_PNTR);
+        char *entry = entry_tab[n_entries-1];
+        n_entries --;
+        register char *rp = entry;
+        rp+= sizeof(PT_PNTR);
 
-	PT_READ_NAT(rp,name);
-	PT_READ_NAT(rp,rpos);
-	PT_READ_NAT(rp,apos);
-	if (name < lastname) {
-	    fprintf(stderr, "Chain Error name order error %i < %i\n",name, lastname);
-	    return;
-	}
-	char *wp = buffer;
-	wp = PT_WRITE_CHAIN_ENTRY(wp,mainapos,name-lastname,apos,rpos);
-	int size = wp -buffer;
-	if (1 !=fwrite(buffer,size,1,out) ) {
-	    fprintf(stderr,"Write Error (Disc Full ???)\n");
-	    exit(-1);
-	}
-	*ppos += size;
-	PTM_free_mem(entry,rp-entry);
-	lastname = name;
+        PT_READ_NAT(rp,name);
+        PT_READ_NAT(rp,rpos);
+        PT_READ_NAT(rp,apos);
+        if (name < lastname) {
+            fprintf(stderr, "Chain Error name order error %i < %i\n",name, lastname);
+            return;
+        }
+        char *wp = buffer;
+        wp = PT_WRITE_CHAIN_ENTRY(wp,mainapos,name-lastname,apos,rpos);
+        int size = wp -buffer;
+        if (1 !=fwrite(buffer,size,1,out) ) {
+            fprintf(stderr,"Write Error (Disc Full ???)\n");
+            exit(-1);
+        }
+        *ppos += size;
+        PTM_free_mem(entry,rp-entry);
+        lastname = name;
     }
 }
 
@@ -513,7 +513,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos)	
 		pos += 4;
 	}else{
 		PT_READ_SHORT(data,mainapos);
-		PTD_put_short(out,mainapos);	
+		PTD_put_short(out,mainapos);
 		data += 2;
 		pos += 2;
 	}
@@ -522,7 +522,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos)	
 	int n_entries = ptd_count_chain_entries( (char *)first_entry );
 	{
 	    char **entry_tab = (char **)GB_calloc(sizeof(char *),n_entries);
-	    ptd_set_chain_references((char *)first_entry, entry_tab);	
+	    ptd_set_chain_references((char *)first_entry, entry_tab);
 	    ptd_write_chain_entries(out, &pos, ptmain, entry_tab,n_entries,mainapos);
 	    delete entry_tab;
 	}
@@ -637,7 +637,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
 	pos += size-sizeof(PT_PNTR);				/* no father */
 	return pos;
 }
-int 
+int
 PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock)
 {
 				// returns new pos when son is written 0 otherwise
@@ -653,7 +653,7 @@ PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, lon
 	if (type == PT_NT_SAVED) {			// already saved
 		long father;
 		PT_READ_PNTR((&node->data),father);
-		*pnodepos = father; 
+		*pnodepos = father;
 		return 0;
 	}else	if (type == PT_NT_LEAF) {
 		*pnodepos = pos;
@@ -675,7 +675,7 @@ PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, lon
 					pos = r_pos;
 				}else{
 					son_size[i] = 0;
-				}			
+				}
 			}else{
 				son_size[i] = 0;
 			}
