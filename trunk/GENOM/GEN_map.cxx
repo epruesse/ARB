@@ -564,8 +564,8 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
-    awm->auto_space(-2,-2);
-//     awm->auto_space(5,-2);
+//     awm->auto_space(-2,-2);
+    awm->auto_space(5,-2);
     awm->shadow_width(1);
 
     // close + undo button, info area, define line y-positions:
@@ -573,7 +573,7 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
     int cur_x, cur_y, start_x, first_line_y, second_line_y, third_line_y;
     awm->get_at_position( &start_x,&first_line_y);
 
-    awm->button_length(0);
+    awm->button_length(5);
 
     awm->at(cur_x, first_line_y);
     awm->help_text("quit.hlp");
