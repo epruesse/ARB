@@ -257,7 +257,7 @@ dummy:
 	@echo '	XXX/.depend	- create dependencies in dir XXX 	(recommended)'
 	@echo '	rtc_patch	- create LIBLINK/libRTC8M.so (SOLARIS ONLY'
 	@echo '	menus		- create GDEHELP/ARB_GDEmenus from GDEHELP/ARB_GDEmenus.source'
-	@echo '	export		- make tarfile and export tarfile'
+	@echo '	export		- make tarfile and export to homepage'
 
 #********************* End of user defined Section *******************
 
@@ -625,8 +625,13 @@ tarfile_ignore:
 	util/arb_compress
 tarale:
 	util/arb_compress_emacs
-export:	tarfile
-	util/arb_export
+
+sourcetarfile:
+		util/arb_save
+
+export:	tarfile sourcetarfile
+	util/arb_export /beta
+#	util/arb_export
 
 binlink:
 	(cd bin; $(MAKE) all);
