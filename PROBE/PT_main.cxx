@@ -18,6 +18,11 @@
 struct probe_struct_global psg;
 char *pt_error_buffer = new char[1024];
 ulong physical_memory = 0;
+#ifdef DEVEL_IDP
+int gene_flag = 0;
+list<gene_struct *> names_list;
+GBDATA *map_ptr_idp;
+#endif
 
 /*****************************************************************************
         Communication
@@ -64,6 +69,72 @@ void PT_init_psg(){
     }
 }
 
+#ifdef DEVEL_IDP
+
+
+void PT_init_map(){
+  GB_begin_transaction(psg.gb_main);
+  map_ptr_idp = NULL;
+  map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
+  
+  if (map_ptr_idp != NULL) {
+    gene_flag = 1;
+    GBDATA * map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
+    char *map_str;
+    map_str = new char[strlen(GB_read_char_pntr(map_ptr_str))+1];
+    strcpy (map_str,GB_read_char_pntr(map_ptr_str));
+
+    char *gene_name_str;
+    char *full_name_str;
+    char *temp1;
+    char *temp2;
+    
+    gene_struct *tempstruct;
+
+    temp1 = strtok(map_str," \n");
+    temp2 = strtok(NULL," \n");
+    temp2 = strtok(NULL," \n");
+
+    gene_name_str = new char[strlen(temp1)+1];
+    full_name_str = new char[strlen(temp2)+1];
+
+    strcpy (gene_name_str,temp1);
+    strcpy (full_name_str,temp2);
+    
+    tempstruct = new gene_struct;
+
+    strcpy(tempstruct->gene_name,gene_name_str);
+    strcpy(tempstruct->full_name,full_name_str);
+
+    names_list.push_back(tempstruct);
+
+    temp1 = strtok(NULL," \n");
+    temp2 = strtok(NULL," \n");
+    temp2 = strtok(NULL," \n");
+
+    while (temp1 != NULL)
+      {
+	gene_name_str = new char[strlen(temp1)+1];
+	full_name_str = new char[strlen(temp2)+1];
+	
+	strcpy (gene_name_str,temp1);
+	strcpy (full_name_str,temp2);
+
+	tempstruct = new gene_struct;
+	
+	strcpy(tempstruct->gene_name,gene_name_str);
+	strcpy(tempstruct->full_name,full_name_str);
+	
+	names_list.push_back(tempstruct);
+
+	temp1 = strtok(NULL," \n");
+	temp2 = strtok(NULL," \n");
+	temp2 = strtok(NULL," \n");
+      }
+  }
+}
+#endif
+      
 extern int aisc_core_on_error;
 
 int main(int argc, char **argv)
@@ -196,6 +267,9 @@ int main(int argc, char **argv)
         exit(0);
     }
     enter_stage_3_load_tree(aisc_main,tname);
+#ifdef DEVEL_IDP
+    PT_init_map();
+#endif
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
     aisc_server_shutdown(so);
