@@ -429,7 +429,20 @@ void ED4_select_named_sequence_terminal(const char *name, int mode) {
         {
             ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
             if (cursor) {
-                ED4_sequence_terminal *cursor_seq_term = cursor->owner_of_cursor->to_sequence_terminal();
+                ED4_sequence_terminal *cursor_seq_term = 0;
+                
+                ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();;
+                if (cursor_term->is_sequence_terminal()) {
+                    cursor_seq_term = cursor_term->to_sequence_terminal();
+                }
+                else {          // user clicked into a non-sequence text terminal
+                    // search for corresponding sequence terminal
+                    ED4_multi_sequence_manager *seq_man = cursor_term->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+                    if (seq_man) {
+                        cursor_seq_term = seq_man->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
+                    }
+                }
+
                 if (cursor_seq_term) {
                     cursor_name_term = cursor_seq_term->corresponding_species_name_terminal();
                 }
@@ -437,7 +450,7 @@ void ED4_select_named_sequence_terminal(const char *name, int mode) {
         }
         if (name_term!=cursor_name_term) { // do not change if already there!
 #if defined(DEBUG) && 1
-            printf("Selected species/SAI changed to '%s'\n", name);
+            printf("Jumping to species/SAI '%s'\n", name);
 #endif
             jump_to_species(name_term, -1, 0);
         }
@@ -903,9 +916,7 @@ void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool cen
         allowed_to_draw = 0;
         int set = term->setCursorTo(this, get_sequence_pos(), 0);
         allowed_to_draw = old_allowed_to_draw;
-        if (!set) return;
-
-        e4_assert(is_visible());
+        if (!set || !is_visible()) return;
     }
 
     int cursor_diff = new_cursor_screen_pos-screen_position;
