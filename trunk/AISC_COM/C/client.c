@@ -22,10 +22,11 @@
 #include "client.h"
 
 #ifdef SGI
-#	include <bstring.h>
+# include <bstring.h>
 #endif
 
-#include "SIG_PF.h"
+#include "../INCLUDE/SIG_PF.h"
+
 #if 0
 /* #if defined(SUN5_ECGS) */
 /* #else */
