@@ -7,6 +7,7 @@
 #include <arbdb.h>
 #include "aw_root.hxx"
 #include "aw_nawar.hxx"
+#include "awt.hxx"
 #define AWAR_EPS 0.00000001
 
 //#define DUMP_AWAR_CHANGES
@@ -540,10 +541,11 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
     if (gb_default) {
         GB_no_transaction(gb_default);
+        AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
     }
     else {
         GB_print_error();
-        
+
         const char *shown_name      = strrchr(default_name, '/');
         if (!shown_name) shown_name = default_name;
         fprintf(stderr, "Error loading properties '%s'\n", shown_name);
@@ -577,7 +579,7 @@ AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
     GB_push_transaction(gb_main);
     gb_tmp = GB_find(gb_main,"tmp",0,down_level);
     if (gb_tmp) GB_set_temporary(gb_tmp);
-    aw_update_awar_window_geometrie(this);
+    aw_update_awar_window_geometry(this);
     GB_pop_transaction(gb_main);
     GB_save_in_home(gb_main,file_name,"a");
     return 0;
