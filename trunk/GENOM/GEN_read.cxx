@@ -291,7 +291,7 @@ static string removeFunction(string& content, const char *&error) {
 //      class GeneBorder
 //  -------------------------
 
-class GeneBorder { 
+class GeneBorder {
 private:
     char sureness;              // 0 -> sure; '<' -> maybe lower; '>' -> maybe higher
     long pos;
@@ -309,7 +309,7 @@ public:
             ++p;
         }
         char *end = 0;
-        pos             = strtoul(p, &end, 10); 
+        pos             = strtoul(p, &end, 10);
         if (end[0] != 0) {
           return GBS_global_string("Garbage ('%s') found after position", end);
         }
@@ -334,25 +334,25 @@ public:
     //  ['<'|'>']<num>'...'['<'|'>']<num>
   GenePosition(const string& pos_string, const char *&error) {
     size_t points         = pos_string.find("..");
-    //    size_t roof         = pos_string.find('^'); 
+    //    size_t roof         = pos_string.find('^');
     //        size_t points         = pos_string.find("..");
-	
+
 
     if (points != string::npos) { 				// points found
       error             = lower.parsePosString(pos_string.substr(0, points));
       //            if (!error) error = upper.parsePosString(pos_string.substr(points+2));
 
       if (!error) {
-	error = upper.parsePosString(pos_string.substr(points+2)); 
+	error = upper.parsePosString(pos_string.substr(points+2));
       }
     }
     else {
-      size_t roof         = pos_string.find('^'); 
+      size_t roof         = pos_string.find('^');
       if (roof != string::npos) {
 	error             = lower.parsePosString(pos_string.substr(0, roof));
 	if (!error) error = upper.parsePosString(pos_string.substr(roof+1));
       }
-      else {       
+      else {
 	// lower equal upper border
 	error             = lower.parsePosString(pos_string);
 	if (!error) upper = lower;
@@ -1391,7 +1391,7 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
 
     int         line_type, feature_type = -1, new_line_type, new_feature_type;
     int         line_number                   = 0;
-    const char* ccontent;
+//     const char* ccontent;
 
     typedef map<string, int> NonGene;
     NonGene                  nonGene;
@@ -1426,11 +1426,13 @@ GB_ERROR GEN_read_embl(GBDATA *gb_main, const char *filename, const char *ali_na
                 continue;
             }
         }
-        if (line_type>=0)
+        if (line_type>=0) {
 #if defined(DEBUG)
             cout << "Parsing line " << line_number  <<", Section " << LINE_INDICATOR[line_type] << ": ";
 #endif // DEBUG
-        ccontent = content.c_str();
+        }
+
+        const char *ccontent = content.c_str();
         switch(line_type) {
             case SC_AC:
                 GB_write_string( GB_search(gb_species, "acc", GB_STRING), ccontent);
