@@ -18,8 +18,8 @@
 #include "../EDIT4/ed4_defs.hxx"  //for background colors
 #include "../EDIT4/ed4_visualizeSAI.hxx" 
 
-#define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0) // to link to the colors defined in primary editor ed4_defs.hxx
-#define SAICOLORS SEC_GC_CBACK_0
+#define COLORLINK (ED4_G_SBACK_0 - SEC_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
+#define SAICOLORS (ED4_G_CBACK_0 - SEC_GC_CBACK_0) 
 
 int SEC_font_info::max_width;
 int SEC_font_info::max_height;
@@ -677,7 +677,7 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
     double lineCenter = radius*0.6;
 
     if (searchCols && searchCols[absPos] >= 0){
-        if (display_sai) backColor = searchCols[absPos] + SAICOLORS;
+        if (display_sai) backColor = searchCols[absPos] - SAICOLORS;
         else             backColor = searchCols[absPos] - COLORLINK;
 
         if(!validSearchColor(backColor,display_sai)) return;
@@ -686,12 +686,12 @@ void SEC_root::paintSearchBackground(AW_device *device, const char* searchCols, 
 
         if(next_x!=next_y){
             if(otherStrand){
-                if (display_sai) lastBackColor = searchCols[absPos-1] + SAICOLORS;
+                if (display_sai) lastBackColor = searchCols[absPos-1] - SAICOLORS;
                 else             lastBackColor = searchCols[absPos-1] - COLORLINK;
                 if(backColor==lastBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
             }
             else {
-                if (display_sai) nextBackColor = searchCols[absPos+1] + SAICOLORS;
+                if (display_sai) nextBackColor = searchCols[absPos+1] - SAICOLORS;
                 else             nextBackColor = searchCols[absPos+1] - COLORLINK;
                 if(backColor==nextBackColor ) device->line(backColor, last_x, last_y-lineCenter, next_x, next_y-lineCenter, -1, 0, 0);
             }
@@ -1224,7 +1224,7 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     start_y = previous_strand_pointer->get_attachp1_y();
 
     if(bgColor && bgColor[seqStart] >= 0 && bgColor[seqStart-1] >= 0){
-        if(root->display_sai) lastSearchColor = bgColor[seqStart-1] + SAICOLORS;
+        if(root->display_sai) lastSearchColor = bgColor[seqStart-1] - SAICOLORS;
         else                  lastSearchColor = bgColor[seqStart-1] - COLORLINK;
     }
 

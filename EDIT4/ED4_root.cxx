@@ -1574,7 +1574,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "detail_col_stat", "Detailed column statistics", "c", "st_ml.hlp",AWM_ALL, ED4_show_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     ____________________________SEP;
-    awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0);
+    awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
 
     // ------------------------------
     //  Block
@@ -1842,7 +1842,8 @@ ED4_root::ED4_root()
     ecoli_ref           = NULL;
     column_stat_activated = 0;
     column_stat_initialized = 0;
-    visualizeSAI = 0;
+    visualizeSAI            = 0;
+    visualizeSAI_allSpecies = 0;
 
     aw_initstatus();
 }

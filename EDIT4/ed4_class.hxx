@@ -1134,6 +1134,7 @@ public:
     int                      column_stat_activated;
     int                      column_stat_initialized;
     int                      visualizeSAI;     
+    int                      visualizeSAI_allSpecies;     
 
     // temporary Variables changing during runtime
     ED4_window    *temp_ed4w;

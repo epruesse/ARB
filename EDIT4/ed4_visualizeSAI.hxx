@@ -16,6 +16,7 @@
 #define AWAR_SAI_CLR_TRANS_TAB_NAMES AWAR_SAI_CLR_TAB "clr_trans_tab_names"
 
 #define AWAR_SAI_ENABLE                "tmp/sai/enable"
+#define AWAR_SAI_ALL_SPECIES           "tmp/sai/all_species"
 #define AWAR_SAI_CLR_TRANS_TABLE       "tmp/sai/clr_trans_table"
 #define AWAR_SAI_CLR_TRANS_TAB_CREATE  "tmp/sai/clr_trans_tab_create"
 #define AWAR_SAI_CLR_TRANS_TAB_COPY    "tmp/sai/clr_trans_tab_copy"
