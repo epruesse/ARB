@@ -92,7 +92,10 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
 
     if (pt == NULL)
         return 0;
-    if (locs->ppm.cnt > PT_MAX_MATCHES) return 1;
+    if (locs->ppm.cnt > PT_MAX_MATCHES) {
+        locs->matches_truncated = 1;
+        return 1;
+    }
     if (PT_read_type(pt) == PT_NT_LEAF) {
         name = PT_read_name(psg.ptmain,pt);
         pos  = PT_read_apos(psg.ptmain,pt);
@@ -214,7 +217,6 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         }
     }
     return read_names_and_pos(locs, pt);
-
 }
 
 
@@ -335,9 +337,11 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     PT_probematch *ml;
     char          *rev_pro;
     if (locs->pm_sequence) free(locs->pm_sequence);
-    locs->pm_sequence = psg.main_probe = strdup(probestring);
-    compress_data(probestring);
-    while ((ml = locs->pm))	destroy_PT_probematch(ml);
+    locs->pm_sequence       = psg.main_probe = strdup(probestring);
+    compress_data(probestring);    
+    while ((ml = locs->pm)) destroy_PT_probematch(ml);
+    locs->matches_truncated = 0;
+
     {
         int probe_len = strlen(probestring);
         if ((probe_len - 2*locs->pm_max) < MIN_PROBE_LENGTH) {
@@ -356,7 +360,7 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
                 }
             }
             else {
-                pt_export_error(locs, GBS_global_string("Min. probe length is %i\n", MIN_PROBE_LENGTH));
+                pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
             }
             return 0;
         }
