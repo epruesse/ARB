@@ -310,7 +310,7 @@ void aw_root_init_font(Display *tool_d)
             aw_assert(found_fonts <= FONT_EXAMINE_MAX);
             struct xfont *nf = NULL;
 
-            for (int size = 4; size <= 50; size++) { // scan all useful sizes
+            for (int size = MIN_FONTSIZE; size <= MAX_FONTSIZE; size++) { // scan all useful sizes
                 int i;
                 for (i = 0; i < found_fonts; i++) {
                     if (flist[i].s == size) break; // search first font matching current size
@@ -335,7 +335,7 @@ void aw_root_init_font(Display *tool_d)
                 struct xfont *newfont   = (struct xfont *)malloc(sizeof(struct xfont));
                 x_fontinfo[f].xfontlist = newfont;
 
-                newfont->size    = 12;
+                newfont->size    = DEF_FONTSIZE;
                 newfont->fname   = strdup(NORMAL_FONT);
                 newfont->fstruct = NULL;
                 newfont->next    = NULL;
@@ -373,12 +373,14 @@ static void dumpFontInformation(struct xfont *xf) {
  * close in size to "s"
  */
 
-PIX_FONT lookfont(Display *tool_d, int f, int s)
+static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose)
 {
     PIX_FONT      fontst;
     char          fn[128];      memset(fn,0,128);
     AW_BOOL       found;
     struct xfont *newfont, *nf, *oldnf;
+
+    found_size = -1;
 
     if (f == DEFAULT)
         f = 0;          /* pass back the -normal font font */
@@ -412,18 +414,18 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
     }
     if (found) {                /* found exact size (or only larger available) */
         strcpy(fn,nf->fname);  /* put the name in fn */
-        if (s < nf->size)
-            printf("Font size %d not found, using larger %d point\n",s,nf->size);
-        if (appres.debug)
-            fprintf(stderr, "Located font %s\n", fn);
+        if (verboose) {
+            if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n",s,nf->size);
+            if (appres.debug) fprintf(stderr, "Located font %s\n", fn);
+        }
     }
     else if (!appres.SCALABLEFONTS) { /* not found, use largest available */
         nf = oldnf;
         strcpy(fn,nf->fname);           /* put the name in fn */
-        if (s > nf->size)
-            printf("Font size %d not found, using smaller %d point\n",s,nf->size);
-        if (appres.debug)
-            fprintf(stderr, "Using font %s for size %d\n", fn, s);
+        if (verboose) {
+            if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n",s,nf->size);
+            if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", fn, s);
+        }
     }
     else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
         newfont = (struct xfont *) malloc(sizeof(struct xfont));
@@ -449,7 +451,7 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
             for (int iso = 0; !fontst && iso<KNOWN_ISO_VERSIONS; ++iso) {
                 sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
 #if defined(DUMP_FONT_LOOKUP)
-                fprintf(stderr, "Cheking for '%s' (x_fontinfo[%i].templat='%s')\n", fn, f, x_fontinfo[f].templat);
+                fprintf(stderr, "Checking for '%s' (x_fontinfo[%i].templat='%s')\n", fn, f, x_fontinfo[f].templat);
 #endif
                 fontst = XLoadQueryFont(tool_d, fn);
             }
@@ -459,7 +461,7 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
     } /* scalable */
 
     if (nf->fstruct == NULL) {
-        if (appres.debug) fprintf(stderr, "Loading font '%s'\n", fn);
+        if (appres.debug && verboose) fprintf(stderr, "Loading font '%s'\n", fn);
         fontst = XLoadQueryFont(tool_d, fn);
         if (fontst == NULL) {
             fprintf(stderr, "ARB fontpackage: Can't load font '%s' ?!, using '%s' (f=%i, s=%i)\n", fn, NORMAL_FONT, f, s);
@@ -470,11 +472,41 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
         nf->fstruct = fontst;
     }
 
+    found_size = nf->size; // report used size
+
 #if defined(DEBUG) && 0
     dumpFontInformation(nf);
 #endif // DEBUG
 
     return (nf->fstruct);
+}
+
+static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes) {
+    // returns number of available sizes
+    // specific sizes are stored in available_sizes[]
+
+    int size_count = 0;
+    for (int size = MAX_FONTSIZE; size >= MIN_FONTSIZE; --size) {
+        int found_size;
+        lookfont(tool_d, f, size, found_size, false);
+
+        if (found_size<size) size = found_size;
+        if (found_size == size) available_sizes[size_count++] = size;
+    }
+
+    // reverse order of found fontsizes 
+    if (size_count>1) {
+        for (int reverse = size_count/2-1; reverse >= 0; --reverse) {
+            int o = size_count-1-reverse;
+            aw_assert(o >= 0 && o<size_count);
+
+            int s                    = available_sizes[reverse];
+            available_sizes[reverse] = available_sizes[o];
+            available_sizes[o]       = s;
+        }
+    }
+
+    return size_count;
 }
 
 static char *caps(char *sentence) {
@@ -616,10 +648,16 @@ int AW_root::font_2_xfig(AW_font font_nr)
 }
 #endif
 
-void AW_GC_Xm::set_font(AW_font font_nr, int size)
+void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
+// if found_size != 0 -> return value for used font size 
 {
     XFontStruct *xfs;
-    xfs     = lookfont(common->display, font_nr, size);
+
+    {
+        int found_font_size;
+        xfs = lookfont(common->display, font_nr, size, found_font_size, true);
+        if (found_size) *found_size = found_font_size;
+    }
     XSetFont(common->display, gc, xfs->fid);
     curfont = *xfs;
 
@@ -675,3 +713,8 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size)
     this->fontnr   = font_nr;
     this->fontsize = size;
 }
+
+int AW_GC_Xm::get_available_fontsizes(AW_font font_nr, int *available_sizes) {
+    return ::get_available_fontsizes(common->display, font_nr, available_sizes);
+}
+
