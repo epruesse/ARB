@@ -1389,6 +1389,29 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar)
                            (unsigned int **)&aww->color_table );
 }
 
+const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
+    AW_common *common = device->common;
+    AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
+    aw_assert(gcm);
+    unsigned   pixel  = (unsigned short)(gcm->color);
+    GB_ERROR   error  = 0;
+    XColor     query_color;
+    
+    query_color.pixel = pixel;
+    XQueryColor(p_global->display, p_global->colormap, &query_color);
+    // @@@ FIXME: error handling!
+
+    red   = query_color.red;
+    green = query_color.green;
+    blue  = query_color.blue;
+
+    if (error) {
+        red = green = blue = -1;
+    }
+    return error;
+}
+
+
 AW_color AW_window::alloc_named_data_color(int colnum, char *colorname)
 {
     if (!color_table_size){
