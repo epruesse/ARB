@@ -7,8 +7,8 @@
 #include <cstdio>
 #include <sstream>
 #include <iostream>
-
-#define ARTEM_EINS 
+//fuer gene_product
+//#define ARTEM_EINS 
 
 using namespace std;
 using namespace gellisary;
