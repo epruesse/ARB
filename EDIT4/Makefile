@@ -245,6 +245,7 @@ ED4_text_terminals.o: ed4_defs.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_text_terminals.o: ed4_search.hxx ed4_awars.hxx ed4_edit_string.hxx
 ED4_text_terminals.o: ed4_block.hxx ed4_nds.hxx ed4_visualizeSAI.hxx
+ED4_text_terminals.o: ed4_protein_2nd_structure.hxx
 
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -335,3 +336,8 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
+
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_protein_2nd_structure.o: ed4_protein_2nd_structure.hxx
