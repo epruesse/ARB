@@ -163,8 +163,13 @@ void primer_design_event_go(AW_window *aww) {
             const char *alignment = GBT_get_default_alignment(gb_main);
             GBDATA     *gb_seq    = GBT_read_sequence(gb_species, alignment);
 
-            sequence = GB_read_string(gb_seq);
-            length   = GB_read_count(gb_seq);
+            if (!gb_seq) {
+                error = GBS_global_string("Selected species has no sequence data in alignment '%s'", alignment);
+            }
+            else {
+                sequence = GB_read_string(gb_seq);
+                length   = GB_read_count(gb_seq);
+            }
         }
     }
 
